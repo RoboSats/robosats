@@ -1,4 +1,5 @@
 # RoboSats: Buy and sell non-KYC Satoshis.
+## What is RoboSats?
 
 RoboSats is a simple and private way to exchange bitcoin for national currencies. Robosats aims to simplify the peer-to-peer experience and uses lightning hodl invoices to minimize the trust needed to trade. In addition, your Robotic Satoshi will help you stick to best privacy practices. 
 
