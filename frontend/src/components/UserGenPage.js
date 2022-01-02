@@ -38,6 +38,7 @@ export default class UserGenPage extends Component {
       });
   }
 
+
   // Fix next two handler functions so they work sequentially
   // at the moment they make the request generate a new user in parallel
   // to updating the token in the state. So the it works a bit weird.
