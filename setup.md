@@ -38,6 +38,11 @@ python3 manage.py migrate
 python3 manage.py runserver
 ```
 
+### Install python dependencies
+```
+pip install robohash
+```
+
 ## React development environment
 ### Install npm
 `sudo apt install npm`

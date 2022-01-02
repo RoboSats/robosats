@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-export default class NickGenPage extends Component {
+export default class UserGenPage extends Component {
     constructor(props) {
       super(props);
     }

@@ -7,6 +7,9 @@ from django.contrib.auth.models import User
 from .serializers import OrderSerializer, MakeOrderSerializer
 from .models import Order
 
+from .nick_generator.nick_generator import NickGenerator
+from robohash import Robohash
+
 # Create your views here.
 
 class MakeOrder(APIView):
@@ -77,5 +80,26 @@ class OrderView(APIView):
             return Response({'Order Not Found':'Invalid Order Id'},status=status.HTTP_404_NOT_FOUND)
 
         return Response({'Bad Request':'Order ID parameter not found in request'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserGenerator(APIView):
+    lookup_url_kwarg = 'token'
+    NickGen = NickGenerator(
+        lang='English', 
+        use_adv=False, 
+        use_adj=True, 
+        use_noun=True, 
+        max_num=999)
+
+    def get(self,request):
+        '''
+        Get a new user based on high entropy token
+        
+        - Request has a high-entropy token,
+        - Generates new nickname and avatar.
+        - Creates login credentials (new User object)
+        Response with Avatar and Nickname.
+        '''
+        pass
 
 

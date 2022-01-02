@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { BrowserRouter as Router, Switch, Route, Link, Redirect } from "react-router-dom";
 
-import NickGenPage from "./NickGenPage";
+import UserGenPage from "./UserGenPage";
 import LoginPage from "./LoginPage.js";
 import MakerPage from "./MakerPage";
 import BookPage from "./BookPage";
@@ -17,7 +17,7 @@ export default class HomePage extends Component {
         return (
               <Router >
                   <Switch>
-                      <Route exact path='/' component={NickGenPage}/>
+                      <Route exact path='/' component={UserGenPage}/>
                       <Route path='/home'><p>You are at the start page</p></Route>
                       <Route path='/login'component={LoginPage}/>
                       <Route path='/make' component={MakerPage}/>
