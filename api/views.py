@@ -18,6 +18,7 @@ class MakeOrder(APIView):
             otype = serializer.data.get('type')
             currency = serializer.data.get('currency')
             amount = serializer.data.get('amount')
+            payment_method = serializer.data.get('payment_method')
             premium = serializer.data.get('premium')
             satoshis = serializer.data.get('satoshis')
 
@@ -30,6 +31,7 @@ class MakeOrder(APIView):
                 type=otype,
                 currency=currency,
                 amount=amount,
+                payment_method=payment_method,
                 premium=premium,
                 satoshis=satoshis)
             order.save()
