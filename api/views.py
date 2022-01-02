@@ -140,9 +140,15 @@ class UserGenerator(APIView):
         # Create new credentials if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname, password=token, is_staff=False)
-        
         else:
+            ## TODO only report a match was found if it has 
+            ## been at least 30 minutes since user creation
+            ## Why: frontend gets confused to say Welcome back too soon
             context['found'] = 'A matching nickname was found'
+
+            # TODO, "A matching nickname was found, but it is not yours!"
+            # why? It is unlikely but there is only 20 billion names
+            # but if the token is not exact
 
         # TODO Keep user authenticated.
         # BaseBackend.authenticate(self, request=None,username=nickname, password=token)
