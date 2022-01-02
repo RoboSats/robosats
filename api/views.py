@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth.models import User
 
 from .serializers import OrderSerializer, MakeOrderSerializer
@@ -9,6 +9,11 @@ from .models import Order
 
 from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
+from scipy.stats import entropy
+from math import log2
+import numpy as np
+import hashlib
+from pathlib import Path
 
 # Create your views here.
 
@@ -93,13 +98,55 @@ class UserGenerator(APIView):
 
     def get(self,request):
         '''
-        Get a new user based on high entropy token
+        Get a new user derived from a high entropy token
         
         - Request has a high-entropy token,
         - Generates new nickname and avatar.
         - Creates login credentials (new User object)
         Response with Avatar and Nickname.
         '''
-        pass
+        token = request.GET.get(self.lookup_url_kwarg)
+
+        # Compute token entropy
+        value, counts = np.unique(list(token), return_counts=True)
+        shannon_entropy = entropy(counts, base=62)
+        bits_entropy = log2(len(value)**len(token))
+
+        # Start preparing payload
+        context = {'token_shannon_entropy': shannon_entropy, 'token_bits_entropy': bits_entropy}
+
+        # Deny user gen if entropy below 128 bits or 0.7 shannon heterogeneity
+        if bits_entropy < 128 or shannon_entropy < 0.7:
+            context['Bad Request'] = 'The token does not have enough entropy'
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+
+        # Hashes the token, only 1 iteration. Maybe more is better.
+        hash = hashlib.sha256(str.encode(token)).hexdigest() 
+
+        # generate nickname
+        nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0] 
+        context['nickname'] = nickname
+
+        # generate avatar
+        rh = Robohash(hash)
+        rh.assemble(roboset='set1') # bgset='any' for backgrounds ON
+
+        avatars_path = Path('frontend/static/assets/avatars')
+        avatars_path.mkdir(parents=True, exist_ok=True)
+    
+        with open(avatars_path.joinpath(nickname+".png"), "wb") as f:
+            rh.img.save(f, format="png")
+
+        # Create new credentials if nickname is new
+        if len(User.objects.filter(username=nickname)) == 0:
+            User.objects.create_user(username=nickname, password=token, is_staff=False)
+        
+        else:
+            context['found'] = 'A matching nickname was found'
+
+        # TODO Keep user authenticated.
+        # BaseBackend.authenticate(self, request=None,username=nickname, password=token)
+
+        return Response(context, status=status.HTTP_201_CREATED)
 
 

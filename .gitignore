@@ -638,3 +638,6 @@ FodyWeavers.xsd
 # Django
 *migrations*
 frontend/static/frontend/main*
+
+# robosats
+frontend/static/assets/avatars*
