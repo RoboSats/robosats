@@ -29,7 +29,7 @@ export default class MakerPage extends Component {
   constructor(props) {
     super(props);
     this.state={
-        explicit: false, 
+        isExplicit: false, 
         type: 0,
         currency: this.defaultCurrency,
         currencyCode: this.defaultCurrencyCode,
@@ -74,14 +74,14 @@ export default class MakerPage extends Component {
     }
     handleClickRelative=(e)=>{
         this.setState({
-            explicit: false, 
+            isExplicit: false, 
             satoshis: null,
             premium: 0,     
         });
     }
-    handleClickExplicit=(e)=>{
+    handleClickisExplicit=(e)=>{
         this.setState({
-            explicit: true,
+            isExplicit: true,
             satoshis: 10000, 
             premium: null,     
         });
@@ -97,7 +97,7 @@ export default class MakerPage extends Component {
                 currency: this.state.currency,
                 amount: this.state.amount,
                 payment_method: this.state.payment_method,
-                explicit: this.state.explicit,
+                is_explicit: this.state.isExplicit,
                 premium: this.state.premium,
                 satoshis: this.state.satoshis,
             }),
@@ -210,7 +210,7 @@ export default class MakerPage extends Component {
                         control={<Radio color="secondary"/>}
                         label="Explicit"
                         labelPlacement="Top"
-                        onClick={this.handleClickExplicit}
+                        onClick={this.handleClickisExplicit}
                         onShow="false"
                         />
                     </RadioGroup>
@@ -222,7 +222,7 @@ export default class MakerPage extends Component {
                 </FormControl>
             </Grid>
 {/* conditional shows either Premium % field or Satoshis field based on pricing method */}
-            { this.state.explicit 
+            { this.state.isExplicit 
                     ? <Grid item xs={12} align="center">
                             <FormControl >
                                 <TextField 
@@ -270,7 +270,7 @@ export default class MakerPage extends Component {
                 <Typography component="subtitle2" variant="subtitle2">
                     <div align='center'>
                         Create a BTC {this.state.type==0 ? "buy":"sell"} order for {this.state.amount} {this.state.currencyCode} 
-                        {this.state.explicit ? " of " + this.state.satoshis + " Satoshis" : 
+                        {this.state.isExplicit ? " of " + this.state.satoshis + " Satoshis" : 
                             (this.state.premium == 0 ? " at market price" : 
                                 (this.state.premium > 0 ? " at a " + this.state.premium + "% premium":" at a " + -this.state.premium + "% discount")
                             )
