@@ -53,7 +53,8 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=30, null=False, default="Not specified")
     premium = models.DecimalField(max_digits=5, decimal_places=2, default=0, null=True, validators=[MinValueValidator(-100), MaxValueValidator(999)])
     satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(min_satoshis_trade), MaxValueValidator(max_satoshis_trade)])
-    
+    explicit = models.BooleanField(default=False, null=False) # pricing method. A explicit amount of sats, or a relative premium above/below market.
+
     # order participants
     maker = models.ForeignKey(User, related_name='maker', on_delete=models.SET_NULL, null=True, default=None)  # unique = True, a maker can only make one order
     taker = models.ForeignKey(User, related_name='taker', on_delete=models.SET_NULL, null=True, default=None)  # unique = True, a taker can only take one order

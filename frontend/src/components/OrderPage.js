@@ -11,6 +11,7 @@ export default class OrderPage extends Component {
         is_participant: false,
         amount: 1,
         paymentMethod:"",
+        explicit: false,
         premium: 0,
         satoshis: null,
         makerId: "", 
@@ -19,10 +20,11 @@ export default class OrderPage extends Component {
         // takerNick:"",
     };
     this.orderId = this.props.match.params.orderId;
+    this.getOrderDetails();
   }
 
-  get_order_details() {
-    fetch('api/order' + '?order_id' + this.orderId)
+  getOrderDetails() {
+    fetch('/api/order' + '?order_id=' + this.orderId)
       .then((response) => response.json())
       .then((data) => {
         this.setState({
@@ -31,9 +33,10 @@ export default class OrderPage extends Component {
             currency: data.currency,
             amount: data.amount,
             paymentMethod: data.payment_method,
-            premium: data.premium,
-            makerId: maker, 
+            explicit: data.explicit,
+            //premium: data.premium,
             // satoshis: satoshis,
+            // makerId: maker, 
             // isParticipant: is_participant,
             // makerNick: maker_nick,
             // takerId: taker,
@@ -52,8 +55,9 @@ export default class OrderPage extends Component {
         <p>Currency: {this.state.currencyCode}</p>
         <p>Amount: {this.state.amount}</p>
         <p>Payment method: {this.state.paymentMethod}</p>
-        <p>Premium: {this.state.premium}</p>
-        <p>Maker: {this.makerId}</p>
+        <p>Pricing method is explicit: {this.state.explicit.toString()}</p>
+        {/* <p>Premium: {this.state.premium}</p>
+        <p>Maker: {this.makerId}</p> */}
       </div>
     );
   }
