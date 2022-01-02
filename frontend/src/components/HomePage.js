@@ -17,7 +17,7 @@ export default class HomePage extends Component {
         return (
               <Router >
                   <Switch>
-                      <Route path='' component={NickGenPage}/>
+                      <Route exact path='/' component={NickGenPage}/>
                       <Route path='/home'><p>You are at the start page</p></Route>
                       <Route path='/login'component={LoginPage}/>
                       <Route path='/make' component={MakerPage}/>
