@@ -3,4 +3,10 @@ from .views import index
 
 urlpatterns = [
     path('', index),
+    path('home/', index),
+    path('login/', index),
+    path('make/', index),
+    path('book/', index),
+    path('order/', index),
+    path('wait/', index),    
 ]
