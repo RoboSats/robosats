@@ -1,4 +1,4 @@
-from rest_framework import generics, status
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -10,7 +10,7 @@ from .models import Order
 class MakeOrder(APIView):
     serializer_class  = MakeOrderSerializer
 
-    def post(self,request, format=None):
+    def post(self,request):
 
         serializer = self.serializer_class(data=request.data)
         print(serializer)
