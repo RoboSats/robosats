@@ -50,7 +50,8 @@ class Order(models.Model):
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False)
     currency = models.PositiveSmallIntegerField(choices=Currencies.choices, null=False)
     amount = models.DecimalField(max_digits=9, decimal_places=4, validators=[MinValueValidator(0.00001)])
-    premium = models.DecimalField(max_digits=3, decimal_places=2, default=0, null=True, validators=[MinValueValidator(-100), MaxValueValidator(1000)])
+    payment_method = models.CharField(max_length=30, null=False, default="Not specified")
+    premium = models.DecimalField(max_digits=5, decimal_places=2, default=0, null=True, validators=[MinValueValidator(-100), MaxValueValidator(999)])
     satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(min_satoshis_trade), MaxValueValidator(max_satoshis_trade)])
     
     # order participants
