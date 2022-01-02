@@ -117,7 +117,7 @@ class UserGenerator(APIView):
 
         # Deny user gen if entropy below 128 bits or 0.7 shannon heterogeneity
         if bits_entropy < 128 or shannon_entropy < 0.7:
-            context['Bad Request'] = 'The token does not have enough entropy'
+            context['bad_request'] = 'The token does not have enough entropy'
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
         # Hashes the token, only 1 iteration. Maybe more is better.
