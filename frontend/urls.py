@@ -7,6 +7,6 @@ urlpatterns = [
     path('login/', index),
     path('make/', index),
     path('book/', index),
-    path('order/', index),
+    path('order/<int:orderId>', index),
     path('wait/', index),    
 ]

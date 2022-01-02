@@ -79,7 +79,7 @@ export default class MakerPage extends Component {
             premium: 0,     
         });
     }
-    handleClickExplicit=(e)=>{
+    handleClickisExplicit=(e)=>{
         this.setState({
             isExplicit: true,
             satoshis: 10000, 
@@ -97,13 +97,14 @@ export default class MakerPage extends Component {
                 currency: this.state.currency,
                 amount: this.state.amount,
                 payment_method: this.state.payment_method,
+                is_explicit: this.state.isExplicit,
                 premium: this.state.premium,
                 satoshis: this.state.satoshis,
             }),
         };
         fetch("/api/make/",requestOptions)
         .then((response) => response.json())
-        .then((data) => console.log(data));
+        .then((data) => this.props.history.push('/order/' + data.id));
     }
 
   render() {
@@ -209,7 +210,7 @@ export default class MakerPage extends Component {
                         control={<Radio color="secondary"/>}
                         label="Explicit"
                         labelPlacement="Top"
-                        onClick={this.handleClickExplicit}
+                        onClick={this.handleClickisExplicit}
                         onShow="false"
                         />
                     </RadioGroup>
