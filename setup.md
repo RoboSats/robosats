@@ -58,6 +58,7 @@ npm install @material-ui/core
 npm install @babel/plugin-proposal-class-properties
 npm install react-router-dom@5.2.0
 npm install @material-ui/icons
+npm install material-ui-image
 ```
 
 ### Launch the React render
