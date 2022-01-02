@@ -38,7 +38,6 @@ export default class UserGenPage extends Component {
       });
   }
 
-
   // Fix next two handler functions so they work sequentially
   // at the moment they make the request generate a new user in parallel
   // to updating the token in the state. So the it works a bit weird.
@@ -74,12 +73,13 @@ export default class UserGenPage extends Component {
             />
           </Grid>
           <Grid item xs={12} align="center">
-            <div style={{ width: 200, height: 200 }}>
-            <Image
-              imageStyle={{ width: 200, height: 200}}
-              disableError='true'
-              src={this.state.avatar_url}
-            />
+            <div style={{ maxWidth: 200, maxHeight: 200 }}>
+              <Image className='newAvatar'
+                disableError='true'
+                animationDuration='1500'
+                cover='true'
+                src={this.state.avatar_url}
+              />
             </div>
           </Grid>
           <Grid item xs={12} align="center">
