@@ -103,7 +103,7 @@ export default class MakerPage extends Component {
         };
         fetch("/api/make/",requestOptions)
         .then((response) => response.json())
-        .then((data) => console.log(data));
+        .then((data) => this.props.history.push('/order/' + data.id));
     }
 
   render() {

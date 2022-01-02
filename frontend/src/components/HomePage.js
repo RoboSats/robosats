@@ -22,7 +22,7 @@ export default class HomePage extends Component {
                       <Route path='/login'component={LoginPage}/>
                       <Route path='/make' component={MakerPage}/>
                       <Route path='/book' component={BookPage}/>
-                      <Route path='/order' component={OrderPage}/>
+                      <Route path="/order/:orderId" component={OrderPage}/>
                       <Route path='/wait' component={WaitingRoomPage}/>
                   </Switch>
               </Router>
