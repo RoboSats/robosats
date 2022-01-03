@@ -14,6 +14,8 @@ from math import log2
 import numpy as np
 import hashlib
 from pathlib import Path
+from datetime import timedelta
+from django.utils import timezone
 
 # Create your views here.
 
@@ -143,24 +145,32 @@ class UserGenerator(APIView):
         # Create new credentials if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname, password=token, is_staff=False)
-        else:
-            ## TODO only report a match was found if it has 
-            ## been at least 30 minutes since user creation
-            ## Why: frontend gets confused to say Welcome back too soon
-            context['found'] = 'A matching nickname was found'
-
-            # TODO, "A matching nickname was found, but it is not yours!"
-            # why? It is unlikely but there is only 20 billion names
-            # but if the token is not exact
-
-        user = authenticate(request, username=nickname, password=token)
-        if user is not None:
+            user = authenticate(request, username=nickname, password=token)
             login(request, user)
+            return Response(context, status=status.HTTP_201_CREATED)
 
-        return Response(context, status=status.HTTP_201_CREATED)
+        else:
+            user = authenticate(request, username=nickname, password=token)
+            if user is not None:
+                login(request, user)
+                # Sends the welcome back message, only if created +30 mins ago
+                if request.user.date_joined < (timezone.now()-timedelta(minutes=1)):
+                    context['found'] = 'We found your Robosat. Welcome back!'
+                return Response(context, status=status.HTTP_202_ACCEPTED)
+            else:
+                # It is unlikely (1/20 Billions) but maybe the nickname is taken
+                context['found'] = 'Bad luck, this nickname is taken'
+                context['bad_request'] = 'Enter a different token'
+                return Response(context, status=status.HTTP_403_FORBIDDEN)
+
+        
 
     def delete(self,request):
         user = User.objects.get(id = request.user.id)
+
+        # TO DO. Pressing give me another will delete the logged in user
+        # However it might be a long time recovered user
+        # Only delete if user live is < 5 minutes
 
         if user is not None:
             logout(request)

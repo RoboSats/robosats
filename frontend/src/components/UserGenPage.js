@@ -120,7 +120,7 @@ export default class UserGenPage extends Component {
             this.state.found ?
               <Grid item xs={12} align="center">
                 <Typography component="subtitle2" variant="subtitle2" color='primary'>
-                  We found your robosat, welcome back!<br/>
+                  {this.state.found}<br/>
                 </Typography>
                 <Button variant='contained' color='primary' to='/home' component={Link}>Cool!</Button>
               </Grid>
