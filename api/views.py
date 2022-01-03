@@ -17,6 +17,9 @@ from pathlib import Path
 from datetime import timedelta
 from django.utils import timezone
 
+avatar_path = Path('frontend/static/assets/avatars')
+avatar_path.mkdir(parents=True, exist_ok=True)
+
 # Create your views here.
 
 class MakeOrder(APIView):
@@ -140,11 +143,8 @@ class UserGenerator(APIView):
         # generate avatar
         rh = Robohash(hash)
         rh.assemble(roboset='set1') # bgset='any' for backgrounds ON
-
-        avatars_path = Path('frontend/static/assets/avatars')
-        avatars_path.mkdir(parents=True, exist_ok=True)
     
-        with open(avatars_path.joinpath(nickname+".png"), "wb") as f:
+        with open(avatar_path.joinpath(nickname+".png"), "wb") as f:
             rh.img.save(f, format="png")
 
         # Create new credentials if nickname is new
@@ -178,9 +178,12 @@ class UserGenerator(APIView):
         # Only delete if user live is < 5 minutes
 
         if user is not None:
+            avatar_file = avatar_path.joinpath(str(request.user)+".png")
+            avatar_file.unlink() # Unsafe if avatar does not exist.
             logout(request)
             user.delete()
-            return Response(status=status.HTTP_301_MOVED_PERMANENTLY)
+
+            return Response({'user_deleted':'User deleted permanently'},status=status.HTTP_301_MOVED_PERMANENTLY)
 
         return Response(status=status.HTTP_403_FORBIDDEN)
 
@@ -188,14 +191,14 @@ class BookView(APIView):
     serializer_class = OrderSerializer
 
     def get(self,request, format=None):
-        currency = request.GET.get('currency_code')
-        type = request.GET.get('order_type')
+        currency = request.GET.get('currency')
+        type = request.GET.get('type')
         queryset = Order.objects.filter(currency=currency, type=type)
         if len(queryset)== 0:
-            return Response({'not_found':'No orders found, be the first to make one.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'not_found':'No orders found, be the first to make one'}, status=status.HTTP_404_NOT_FOUND)
 
-        book_data = {}
-        for i, order in enumerate(queryset):
+        book_data = []
+        for order in queryset:
             data = OrderSerializer(order).data
             user = User.objects.filter(id=data['maker'])
             print(user)
@@ -203,7 +206,7 @@ class BookView(APIView):
                 data['maker_nick'] = user[0].username
             # TODO avoid sending status and takers for book views
             #data.pop('status','taker')
-            book_data[i] = data
+            book_data.append(data)
         
         return Response(book_data, status=status.HTTP_200_OK)
         
