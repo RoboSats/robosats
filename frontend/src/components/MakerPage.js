@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, Menu} from "@material-ui/core"
+import { Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, Menu} from "@material-ui/core"
 import { Link } from 'react-router-dom'
 
 function getCookie(name) {
@@ -111,130 +111,134 @@ export default class MakerPage extends Component {
     return (
         <Grid container spacing={1}>
             <Grid item xs={12} align="center">
-                <Typography component="h4" variant="h4">
-                    Make an Order
-                </Typography>
-            </Grid>
-            <Grid item xs={12} align="center">
-                <FormControl component="fieldset">
-                    <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
-                        <FormControlLabel 
-                            value="0" 
-                            control={<Radio color="primary"/>}
-                            label="Buy"
-                            labelPlacement="Top"
-                        />
-                        <FormControlLabel 
-                            value="1" 
-                            control={<Radio color="secondary"/>}
-                            label="Sell"
-                            labelPlacement="Top"
-                        />
-                    </RadioGroup>
+                <Grid item xs={12} align="center">
+                    <Typography component="h4" variant="h4">
+                        Make an Order
+                    </Typography>
+                </Grid>
+                <Paper elevation={12} style={{ padding: 8,}}>
+                <Grid item xs={12} align="center">
+                    <FormControl component="fieldset">
                     <FormHelperText>
                         <div align='center'>
                         Choose Buy or Sell Bitcoin
                         </div>
                     </FormHelperText>
-                </FormControl>
-            </Grid>
-            <Grid item xs={12} align="center">
-                <FormControl >
-                    <TextField 
-                        label="Amount of Fiat to Trade"
-                        type="number" 
-                        required="true"
-                        defaultValue={this.defaultAmount} 
-                        inputProps={{
-                            min:0 , 
-                            style: {textAlign:"center"}
-                        }}
-                        onChange={this.handleAmountChange}
-                    />
-                    <Select
-                        label="Select Payment Currency"
-                        required="true" 
-                        defaultValue={this.defaultCurrency} 
-                        inputProps={{
-                            style: {textAlign:"center"}
-                        }}
-                        onChange={this.handleCurrencyChange}
-                    >
-                        <MenuItem value={1}>USD</MenuItem>
-                        <MenuItem value={2}>EUR</MenuItem>
-                        <MenuItem value={3}>ETH</MenuItem>
-                    </Select>
-                </FormControl>
-            </Grid>
-
-            <Grid item xs={12} align="center">
-                <FormControl >
-                    <TextField 
-                        label="Payment Method(s)"
-                        type="text" 
-                        require={true}  
-                        inputProps={{
-                            style: {textAlign:"center"}
-                        }}
-                        onChange={this.handlePaymentMethodChange}
-                    />
-                </FormControl>
-            </Grid>
-            <Grid item xs={12} align="center">
-                <FormControl component="fieldset">
-                    <RadioGroup row defaultValue="relative">
-                        <FormControlLabel 
-                        value="relative" 
-                        control={<Radio color="primary"/>}
-                        label="Relative"
-                        labelPlacement="Top"
-                        onClick={this.handleClickRelative}
-                        />
-                        <FormControlLabel 
-                        value="explicit" 
-                        control={<Radio color="secondary"/>}
-                        label="Explicit"
-                        labelPlacement="Top"
-                        onClick={this.handleClickisExplicit}
-                        onShow="false"
-                        />
-                    </RadioGroup>
-                    <FormHelperText >
-                        <div align='center'>
-                            Choose a Pricing Method
-                        </div>
-                    </FormHelperText>
-                </FormControl>
-            </Grid>
-{/* conditional shows either Premium % field or Satoshis field based on pricing method */}
-            { this.state.isExplicit 
-                    ? <Grid item xs={12} align="center">
+                        <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
+                            <FormControlLabel 
+                                value="0" 
+                                control={<Radio color="primary"/>}
+                                label="Buy"
+                                labelPlacement="Top"
+                            />
+                            <FormControlLabel 
+                                value="1" 
+                                control={<Radio color="secondary"/>}
+                                label="Sell"
+                                labelPlacement="Top"
+                            />
+                        </RadioGroup>
+                    </FormControl>
+                </Grid>
+                <Grid item xs={12} align="center">
+                    <FormControl >
                         <TextField 
-                                label="Explicit Amount in Satoshis"
-                                type="number" 
-                                required="true" 
-                                inputProps={{
-                                    // TODO read these from .env file
-                                    min:10000 , 
-                                    max:500000 , 
-                                    style: {textAlign:"center"}
-                                }}
-                                onChange={this.handleSatoshisChange}
-                                // defaultValue={this.defaultSatoshis} 
+                            label="Amount of Fiat to Trade"
+                            type="number" 
+                            required="true"
+                            defaultValue={this.defaultAmount} 
+                            inputProps={{
+                                min:0 , 
+                                style: {textAlign:"center"}
+                            }}
+                            onChange={this.handleAmountChange}
+                        />
+                        <Select
+                            label="Select Payment Currency"
+                            required="true" 
+                            defaultValue={this.defaultCurrency} 
+                            inputProps={{
+                                style: {textAlign:"center"}
+                            }}
+                            onChange={this.handleCurrencyChange}
+                        >
+                            <MenuItem value={1}>USD</MenuItem>
+                            <MenuItem value={2}>EUR</MenuItem>
+                            <MenuItem value={3}>ETH</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+
+                <Grid item xs={12} align="center">
+                    <FormControl >
+                        <TextField 
+                            label="Payment Method(s)"
+                            type="text" 
+                            require={true}  
+                            inputProps={{
+                                style: {textAlign:"center"}
+                            }}
+                            onChange={this.handlePaymentMethodChange}
+                        />
+                    </FormControl>
+                </Grid>
+                <Grid item xs={12} align="center">
+                    <FormControl component="fieldset">
+                        <RadioGroup row defaultValue="relative">
+                            <FormControlLabel 
+                            value="relative" 
+                            control={<Radio color="primary"/>}
+                            label="Relative"
+                            labelPlacement="Top"
+                            onClick={this.handleClickRelative}
                             />
-                        </Grid>
-                    :   <Grid item xs={12} align="center">
+                            <FormControlLabel 
+                            value="explicit" 
+                            control={<Radio color="secondary"/>}
+                            label="Explicit"
+                            labelPlacement="Top"
+                            onClick={this.handleClickisExplicit}
+                            onShow="false"
+                            />
+                        </RadioGroup>
+                        <FormHelperText >
+                            <div align='center'>
+                                Choose a Pricing Method
+                            </div>
+                        </FormHelperText>
+                    </FormControl>
+                </Grid>
+    {/* conditional shows either Premium % field or Satoshis field based on pricing method */}
+                { this.state.isExplicit 
+                        ? <Grid item xs={12} align="center">
                             <TextField 
-                                label="Premium over Market (%)"
-                                type="number" 
-                                // defaultValue={this.defaultPremium} 
-                                inputProps={{
-                                    style: {textAlign:"center"}
-                                }}
-                                onChange={this.handlePremiumChange}
-                            />
-                        </Grid>
-                }
+                                    label="Explicit Amount in Satoshis"
+                                    type="number" 
+                                    required="true" 
+                                    inputProps={{
+                                        // TODO read these from .env file
+                                        min:10000 , 
+                                        max:500000 , 
+                                        style: {textAlign:"center"}
+                                    }}
+                                    onChange={this.handleSatoshisChange}
+                                    // defaultValue={this.defaultSatoshis} 
+                                />
+                            </Grid>
+                        :   <Grid item xs={12} align="center">
+                                <TextField 
+                                    label="Premium over Market (%)"
+                                    type="number" 
+                                    // defaultValue={this.defaultPremium} 
+                                    inputProps={{
+                                        style: {textAlign:"center"}
+                                    }}
+                                    onChange={this.handlePremiumChange}
+                                />
+                            </Grid>
+                    }
+                </Paper>
+            </Grid>
             <Grid item xs={12} align="center">
                 <Button color="primary" variant="contained" onClick={this.handleCreateOfferButtonPressed}>
                     Create Order

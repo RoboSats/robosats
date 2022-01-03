@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider} from "@material-ui/core"
+import { Paper, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider} from "@material-ui/core"
 import { Link } from 'react-router-dom'
 
 // pretty numbers
@@ -46,8 +46,9 @@ export default class OrderPage extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="h5" variant="h5">
-          Robosat BTC {this.state.type ? " Sell " : " Buy "} Order
+          BTC {this.state.type ? " Sell " : " Buy "} Order
           </Typography>
+          <Paper elevation={12} style={{ padding: 8,}}>
           <List component="nav" aria-label="mailbox folders">
             <ListItem>
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
@@ -97,6 +98,7 @@ export default class OrderPage extends Component {
           <Grid item xs={12} align="center">
           {this.state.isParticipant ? "" : <Button variant='contained' color='primary' to='/home' component={Link}>Take Order</Button>}
           </Grid>
+        </Paper>
         </Grid>
       </Grid>
     );

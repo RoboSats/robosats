@@ -131,9 +131,9 @@ export default class UserGenPage extends Component {
           </Grid>
           <Grid item xs={12} align="center">
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
-              <Button color='primary' to='/home' component={Link}>Buy BTC</Button>
+              <Button color='primary' to='/make' component={Link}>Make Order</Button>
               <Button to='/home' component={Link}>INFO</Button>
-              <Button color='secondary' to='/home' component={Link}>Sell BTC</Button>
+              <Button color='secondary' to='/book' component={Link}>View Book</Button>
             </ButtonGroup>
           </Grid>
           <Grid item xs={12} align="center">
