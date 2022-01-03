@@ -81,7 +81,7 @@ class OrderView(APIView):
                 
                 #To do fix: data['status_message'] = Order.Status.get(order.status).label
                 data['status_message'] = Order.Status.WFB.label # Hardcoded WFB, should use order.status value.
-                
+
                 data['maker_nick'] = str(order.maker)
                 data['taker_nick'] = str(order.taker)
 
@@ -106,7 +106,7 @@ class UserGenerator(APIView):
         use_noun=True, 
         max_num=999)
 
-    def get(self,request):
+    def get(self,request, format=None):
         '''
         Get a new user derived from a high entropy token
         
@@ -159,7 +159,7 @@ class UserGenerator(APIView):
             if user is not None:
                 login(request, user)
                 # Sends the welcome back message, only if created +30 mins ago
-                if request.user.date_joined < (timezone.now()-timedelta(minutes=1)):
+                if request.user.date_joined < (timezone.now()-timedelta(minutes=30)):
                     context['found'] = 'We found your Robosat. Welcome back!'
                 return Response(context, status=status.HTTP_202_ACCEPTED)
             else:
@@ -183,4 +183,26 @@ class UserGenerator(APIView):
             return Response(status=status.HTTP_301_MOVED_PERMANENTLY)
 
         return Response(status=status.HTTP_403_FORBIDDEN)
+
+class BookView(APIView):
+    serializer_class = OrderSerializer
+
+    def get(self,request, format=None):
+        currency = request.GET.get('currency_code')
+        type = request.GET.get('order_type')
+        queryset = Order.objects.filter(currency=currency, type=type)
+        book_data = {}
+        for i, order in enumerate(queryset):
+            data = OrderSerializer(order).data
+            user = User.objects.filter(id=data['maker'])
+            print(user)
+            if len(user) == 1:
+                data['maker_nick'] = user[0].username
+            # TODO avoid sending status and takers for book views
+            #data.pop('status','taker')
+            book_data[i] = data
+        return Response(book_data,status.HTTP_200_OK)
+        
+
+        
 

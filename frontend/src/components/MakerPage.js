@@ -133,15 +133,27 @@ export default class MakerPage extends Component {
                     </RadioGroup>
                     <FormHelperText>
                         <div align='center'>
-                            Choose Buy or Sell Bitcoin
+                        Choose Buy or Sell Bitcoin
                         </div>
                     </FormHelperText>
                 </FormControl>
             </Grid>
             <Grid item xs={12} align="center">
                 <FormControl >
+                    <TextField 
+                        label="Amount of Fiat to Trade"
+                        type="number" 
+                        required="true"
+                        defaultValue={this.defaultAmount} 
+                        inputProps={{
+                            min:0 , 
+                            style: {textAlign:"center"}
+                        }}
+                        onChange={this.handleAmountChange}
+                    />
                     <Select
-                        require={true} 
+                        label="Select Payment Currency"
+                        required="true" 
                         defaultValue={this.defaultCurrency} 
                         inputProps={{
                             style: {textAlign:"center"}
@@ -152,35 +164,13 @@ export default class MakerPage extends Component {
                         <MenuItem value={2}>EUR</MenuItem>
                         <MenuItem value={3}>ETH</MenuItem>
                     </Select>
-                    <FormHelperText>
-                        <div align='center'>
-                            Select Payment Currency
-                        </div>
-                    </FormHelperText>
                 </FormControl>
             </Grid>
+
             <Grid item xs={12} align="center">
                 <FormControl >
                     <TextField 
-                        type="number" 
-                        require={true} 
-                        defaultValue={this.defaultAmount} 
-                        inputProps={{
-                            min:0 , 
-                            style: {textAlign:"center"}
-                        }}
-                        onChange={this.handleAmountChange}
-                    />
-                </FormControl>
-                <FormHelperText>
-                        <div align='center'>
-                            Amount of Fiat to Trade
-                        </div>
-                </FormHelperText>
-            </Grid>
-            <Grid item xs={12} align="center">
-                <FormControl >
-                    <TextField 
+                        label="Payment Method(s)"
                         type="text" 
                         require={true}  
                         inputProps={{
@@ -188,11 +178,6 @@ export default class MakerPage extends Component {
                         }}
                         onChange={this.handlePaymentMethodChange}
                     />
-                    <FormHelperText>
-                        <div align='center'>
-                            Enter the Payment Method(s)
-                        </div>
-                    </FormHelperText>
                 </FormControl>
             </Grid>
             <Grid item xs={12} align="center">
@@ -224,43 +209,30 @@ export default class MakerPage extends Component {
 {/* conditional shows either Premium % field or Satoshis field based on pricing method */}
             { this.state.isExplicit 
                     ? <Grid item xs={12} align="center">
-                            <FormControl >
-                                <TextField 
-                                    type="number" 
-                                    require={true} 
-                                    inputProps={{
-                                        // TODO read these from .env file
-                                        min:10000 , 
-                                        max:500000 , 
-                                        style: {textAlign:"center"}
-                                    }}
-                                    onChange={this.handleSatoshisChange}
-                                    defaultValue={this.defaultSatoshis} 
-                                />
-                                <FormHelperText>
-                                    <div align='center'>
-                                        Explicit Amount in Satoshis
-                                    </div>
-                                </FormHelperText>
-                            </FormControl>
+                        <TextField 
+                                label="Explicit Amount in Satoshis"
+                                type="number" 
+                                required="true" 
+                                inputProps={{
+                                    // TODO read these from .env file
+                                    min:10000 , 
+                                    max:500000 , 
+                                    style: {textAlign:"center"}
+                                }}
+                                onChange={this.handleSatoshisChange}
+                                // defaultValue={this.defaultSatoshis} 
+                            />
                         </Grid>
                     :   <Grid item xs={12} align="center">
-                            <FormControl >
-                                <TextField 
-                                    type="number" 
-                                    require={true} 
-                                    defaultValue={this.defaultPremium} 
-                                    inputProps={{
-                                        style: {textAlign:"center"}
-                                    }}
-                                    onChange={this.handlePremiumChange}
-                                />
-                                <FormHelperText>
-                                    <div align='center'>
-                                        Premium Relative to Market Price (%)
-                                    </div>
-                                </FormHelperText>
-                            </FormControl>
+                            <TextField 
+                                label="Premium over Market (%)"
+                                type="number" 
+                                // defaultValue={this.defaultPremium} 
+                                inputProps={{
+                                    style: {textAlign:"center"}
+                                }}
+                                onChange={this.handlePremiumChange}
+                            />
                         </Grid>
                 }
             <Grid item xs={12} align="center">

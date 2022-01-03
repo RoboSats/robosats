@@ -2,6 +2,11 @@ import React, { Component } from "react";
 import { Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider} from "@material-ui/core"
 import { Link } from 'react-router-dom'
 
+// pretty numbers
+function pn(x) {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 export default class OrderPage extends Component {
   constructor(props) {
     super(props);
@@ -49,14 +54,13 @@ export default class OrderPage extends Component {
                 <Avatar 
                   alt={this.state.makerNick} 
                   src={window.location.origin +'/static/assets/avatars/' + this.state.makerNick + '.png'} 
-                  sx={{ width: 56, height: 56 }}
                   />
               </ListItemAvatar>
               <ListItemText primary={this.state.makerNick} secondary="Order maker" />
             </ListItem>
             <Divider />
             <ListItem>
-              <ListItemText primary={this.state.amount+" "+this.state.currencyCode} secondary="Amount and currency requested"/>
+              <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))+" "+this.state.currencyCode} secondary="Amount and currency requested"/>
             </ListItem>
             <Divider />
             <ListItem>
@@ -65,9 +69,9 @@ export default class OrderPage extends Component {
             <Divider />
             <ListItem>
             {this.state.isExplicit ? 
-              <ListItemText primary={this.state.satoshis} secondary="Amount of Satoshis"/>
+              <ListItemText primary={pn(this.state.satoshis)} secondary="Amount of Satoshis"/>
               :
-              <ListItemText primary={this.state.premium} secondary="Premium over market price"/>
+              <ListItemText primary={parseFloat(parseFloat(this.state.premium).toFixed(2))+"%"} secondary="Premium over market price"/>
             }
             </ListItem>
             <Divider />
