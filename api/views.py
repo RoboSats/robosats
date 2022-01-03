@@ -191,6 +191,9 @@ class BookView(APIView):
         currency = request.GET.get('currency_code')
         type = request.GET.get('order_type')
         queryset = Order.objects.filter(currency=currency, type=type)
+        if len(queryset)== 0:
+            return Response({'not_found':'No orders found, be the first to make one.'}, status=status.HTTP_404_NOT_FOUND)
+
         book_data = {}
         for i, order in enumerate(queryset):
             data = OrderSerializer(order).data
@@ -201,7 +204,8 @@ class BookView(APIView):
             # TODO avoid sending status and takers for book views
             #data.pop('status','taker')
             book_data[i] = data
-        return Response(book_data,status.HTTP_200_OK)
+        
+        return Response(book_data, status=status.HTTP_200_OK)
         
 
         
