@@ -99,7 +99,6 @@ class OrderView(APIView):
 
         return Response({'Bad Request':'Order ID parameter not found in request'}, status=status.HTTP_400_BAD_REQUEST)
 
-
 class UserGenerator(APIView):
     lookup_url_kwarg = 'token'
     NickGen = NickGenerator(
@@ -143,7 +142,8 @@ class UserGenerator(APIView):
         # generate avatar
         rh = Robohash(hash)
         rh.assemble(roboset='set1') # bgset='any' for backgrounds ON
-    
+
+        # replaces image if existing (in of case nickname collusion avatar would change!)
         with open(avatar_path.joinpath(nickname+".png"), "wb") as f:
             rh.img.save(f, format="png")
 
@@ -167,8 +167,6 @@ class UserGenerator(APIView):
                 context['found'] = 'Bad luck, this nickname is taken'
                 context['bad_request'] = 'Enter a different token'
                 return Response(context, status=status.HTTP_403_FORBIDDEN)
-
-        
 
     def delete(self,request):
         user = User.objects.get(id = request.user.id)
@@ -201,7 +199,6 @@ class BookView(APIView):
         for order in queryset:
             data = OrderSerializer(order).data
             user = User.objects.filter(id=data['maker'])
-            print(user)
             if len(user) == 1:
                 data['maker_nick'] = user[0].username
             # TODO avoid sending status and takers for book views
