@@ -1,4 +1,4 @@
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
@@ -32,8 +32,7 @@ class MakeOrder(APIView):
             payment_method = serializer.data.get('payment_method')
             premium = serializer.data.get('premium')
             satoshis = serializer.data.get('satoshis')
-
-            user = User.objects.get(id=request.user.id)
+            is_explicit = serializer.data.get('is_explicit')
 
             # query if the user is already a maker or taker, return error
             queryset = Order.objects.filter(maker=request.user.id)
@@ -51,7 +50,8 @@ class MakeOrder(APIView):
                 payment_method=payment_method,
                 premium=premium,
                 satoshis=satoshis,
-                maker=user)
+                is_explicit=is_explicit,
+                maker=request.user)
             order.save()
 
         if not serializer.is_valid():
@@ -72,19 +72,24 @@ class OrderView(APIView):
 
             # check if exactly one order is found in the db
             if len(order) == 1 :
-                print("It is only one!")
                 order = order[0]
                 data = self.serializer_class(order).data
                 nickname = request.user.username
 
                 # Check if requester is participant in the order and add boolean to response
                 data['is_participant'] = (str(order.maker) == nickname or str(order.taker) == nickname)
+                
+                #To do fix: data['status_message'] = Order.Status.get(order.status).label
+                data['status_message'] = Order.Status.WFB.label # Hardcoded WFB, should use order.status value.
+                
+                data['maker_nick'] = str(order.maker)
+                data['taker_nick'] = str(order.taker)
 
                 if data['is_participant']:
                     return Response(data, status=status.HTTP_200_OK)
                 else:
                     # Non participants should not see the status or who is the taker
-                    data.pop('status','taker')
+                    data.pop('status','status_message','taker','taker_nick')
                     return Response(data, status=status.HTTP_200_OK)
 
             return Response({'Order Not Found':'Invalid Order Id'},status=status.HTTP_404_NOT_FOUND)
