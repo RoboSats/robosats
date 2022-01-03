@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.contrib.auth.backends import BaseBackend
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from .serializers import OrderSerializer, MakeOrderSerializer
@@ -31,9 +31,15 @@ class MakeOrder(APIView):
             premium = serializer.data.get('premium')
             satoshis = serializer.data.get('satoshis')
 
-            #################
-            # TODO
+            user = User.objects.get(id=request.user.id)
+
             # query if the user is already a maker or taker, return error
+            queryset = Order.objects.filter(maker=request.user.id)
+            if queryset.exists():
+                return Response({'Bad Request':'You are already maker of an order'},status=status.HTTP_400_BAD_REQUEST)
+            queryset = Order.objects.filter(taker=request.user.id)
+            if queryset.exists():
+                return Response({'Bad Request':'You are already taker of an order'},status=status.HTTP_400_BAD_REQUEST) 
 
             # Creates a new order in db
             order = Order(
@@ -42,7 +48,8 @@ class MakeOrder(APIView):
                 amount=amount,
                 payment_method=payment_method,
                 premium=premium,
-                satoshis=satoshis)
+                satoshis=satoshis,
+                maker=user)
             order.save()
 
         if not serializer.is_valid():
@@ -66,21 +73,17 @@ class OrderView(APIView):
                 print("It is only one!")
                 order = order[0]
                 data = self.serializer_class(order).data
-                
-                # TODO
-                # # Check if requester is participant in the order and add boolean to response
-                
-                # user = authenticate(username=username, password=password)
-                # data['is_participant'] = any(user.id == order.maker, user.id == order.taker)
+                nickname = request.user.username
 
-                # if data['is_participant']:
-                #     return Response(data, status=status.HTTP_200_OK)
-                # else:
-                #     # Non participants can't get access to the status or who is the taker
-                #     data.pop(['status'],['taker'])
-                #     return Response(data, status=status.HTTP_200_OK)
+                # Check if requester is participant in the order and add boolean to response
+                data['is_participant'] = (str(order.maker) == nickname or str(order.taker) == nickname)
 
-                return Response(data, status=status.HTTP_200_OK)
+                if data['is_participant']:
+                    return Response(data, status=status.HTTP_200_OK)
+                else:
+                    # Non participants should not see the status or who is the taker
+                    data.pop('status','taker')
+                    return Response(data, status=status.HTTP_200_OK)
 
             return Response({'Order Not Found':'Invalid Order Id'},status=status.HTTP_404_NOT_FOUND)
 
@@ -150,9 +153,19 @@ class UserGenerator(APIView):
             # why? It is unlikely but there is only 20 billion names
             # but if the token is not exact
 
-        # TODO Keep user authenticated.
-        # BaseBackend.authenticate(self, request=None,username=nickname, password=token)
+        user = authenticate(request, username=nickname, password=token)
+        if user is not None:
+            login(request, user)
 
         return Response(context, status=status.HTTP_201_CREATED)
 
+    def delete(self,request):
+        user = User.objects.get(id = request.user.id)
+
+        if user is not None:
+            logout(request)
+            user.delete()
+            return Response(status=status.HTTP_301_MOVED_PERMANENTLY)
+
+        return Response(status=status.HTTP_403_FORBIDDEN)
 

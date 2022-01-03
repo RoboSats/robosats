@@ -3,13 +3,30 @@ import { Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem,
 import { Link } from 'react-router-dom'
 import Image from 'material-ui-image'
 
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+          }
+      }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
 export default class UserGenPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
       token: this.genBase62Token(32),
     };
-    this.getGenerateUser();
+    this.getGeneratedUser();
   }
 
   // sort of cryptographically strong function to generate Base62 token client-side
@@ -23,7 +40,7 @@ export default class UserGenPage extends Component {
           .substring(0, length);
   }
 
-  getGenerateUser() {
+  getGeneratedUser() {
     fetch('/api/usergen' + '?token=' + this.state.token)
       .then((response) => response.json())
       .then((data) => {
@@ -38,22 +55,34 @@ export default class UserGenPage extends Component {
       });
   }
 
+  delGeneratedUser() {
+    const requestOptions = {
+      method: 'DELETE',
+      headers: {'Content-Type':'application/json', 'X-CSRFToken': csrftoken},
+    };
+    fetch("/api/usergen", requestOptions)
+      .then((response) => response.json())
+      .then((data) => console.log(data));
+  }
+
   // Fix next two handler functions so they work sequentially
   // at the moment they make the request generate a new user in parallel
   // to updating the token in the state. So the it works a bit weird.
 
   handleAnotherButtonPressed=(e)=>{
+    this.delGeneratedUser()
     this.setState({
       token: this.genBase62Token(32),
     })
-    this.getGenerateUser();
+    this.getGeneratedUser();
   }
 
   handleChangeToken=(e)=>{
+    this.delGeneratedUser()
     this.setState({
       token: e.target.value,
     })
-    this.getGenerateUser();
+    this.getGeneratedUser();
   }
 
   render() {
@@ -76,8 +105,8 @@ export default class UserGenPage extends Component {
             <div style={{ maxWidth: 200, maxHeight: 200 }}>
               <Image className='newAvatar'
                 disableError='true'
-                animationDuration='1500'
                 cover='true'
+                color='null'
                 src={this.state.avatar_url}
               />
             </div>
@@ -107,5 +136,4 @@ export default class UserGenPage extends Component {
       </Grid>
     );
   }
-
 }
