@@ -254,13 +254,7 @@ export default class MakerPage extends Component {
                     </div>
                 </Typography>
             </Grid>
-            <Grid item xs={12} align="center">
-                <Button color="secondary" variant="contained" to="/" component={Link}>
-                    Back
-                </Button>
-            </Grid>
         </Grid>
-      
     );
   }
 }
