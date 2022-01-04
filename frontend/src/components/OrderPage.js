@@ -103,7 +103,7 @@ export default class OrderPage extends Component {
           {this.state.isParticipant ? "" : <Button variant='contained' color='primary' to='/home' component={Link}>Take Order</Button>}
           </Grid>
           <Grid item xs={12} align="center">
-          {this.state.isParticipant ? "" : <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>}
+            <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
           </Grid>
         </Paper>
         </Grid>

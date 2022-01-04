@@ -23,8 +23,8 @@ export default class BookPage extends Component {
   }
 
   handleCardClick=(e)=>{
-    console.log(e.target)
-    this.props.history.push('/order/' + e.target);
+    console.log(e)
+    this.props.history.push('/order/' + e);
   }
 
   // Make these two functions sequential. getOrderDetails needs setState to be finish beforehand.
@@ -107,7 +107,7 @@ export default class BookPage extends Component {
             <Card elevation={6} sx={{ width: 945 }}>
 
               {/* To fix! does not pass order.id to handleCardCLick. Instead passes the clicked </>*/}
-              <CardActionArea value={order.id} onClick={this.handleCardClick}>
+              <CardActionArea value={order.id} onClick={() => this.handleCardClick(order.id)}>
                 <CardContent>
 
                   <List dense="true">

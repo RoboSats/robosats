@@ -97,7 +97,8 @@ class OrderView(APIView):
                     return Response(data, status=status.HTTP_200_OK)
                 else:
                     # Non participants should not see the status or who is the taker
-                    data.pop('status','status_message','taker','taker_nick')
+                    for key in ('status','status_message','taker','taker_nick'):
+                        del data[key]
                     return Response(data, status=status.HTTP_200_OK)
 
             return Response({'Order Not Found':'Invalid Order Id'},status=status.HTTP_404_NOT_FOUND)
