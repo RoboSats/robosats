@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.conf.urls.static import static
 
 from .serializers import OrderSerializer, MakeOrderSerializer
 from .models import Order
@@ -145,16 +146,20 @@ class UserGenerator(APIView):
 
         # generate avatar
         rh = Robohash(hash)
-        rh.assemble(roboset='set1') # bgset='any' for backgrounds ON
+        rh.assemble(roboset='set1', bgset='any')# for backgrounds ON
 
-        # replaces image if existing (in of case nickname collusion avatar would change!)
-        with open(avatar_path.joinpath(nickname+".png"), "wb") as f:
-            rh.img.save(f, format="png")
+        # Does not replace image if existing (avoid re-avatar in case of nick collusion)
 
-        # Create new credentials if nickname is new
+        image_path = avatar_path.joinpath(nickname+".png")
+        if not image_path.exists():
+            with open(image_path, "wb") as f:
+                rh.img.save(f, format="png")
+
+        # Create new credentials and logsin if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname, password=token, is_staff=False)
             user = authenticate(request, username=nickname, password=token)
+            user.profile.avatar = str(image_path)[9:] # removes frontend/ from url (ugly, to be fixed) 
             login(request, user)
             return Response(context, status=status.HTTP_201_CREATED)
 
@@ -167,7 +172,7 @@ class UserGenerator(APIView):
                     context['found'] = 'We found your Robosat. Welcome back!'
                 return Response(context, status=status.HTTP_202_ACCEPTED)
             else:
-                # It is unlikely (1/20 Billions) but maybe the nickname is taken
+                # It is unlikely, but maybe the nickname is taken (1 in 20 Billion change)
                 context['found'] = 'Bad luck, this nickname is taken'
                 context['bad_request'] = 'Enter a different token'
                 return Response(context, status=status.HTTP_403_FORBIDDEN)
@@ -179,6 +184,7 @@ class UserGenerator(APIView):
         # However it might be a long time recovered user
         # Only delete if user live is < 5 minutes
 
+        # TODO check if user exists AND it is not a maker or taker!
         if user is not None:
             avatar_file = avatar_path.joinpath(str(request.user)+".png")
             avatar_file.unlink() # Unsafe if avatar does not exist.
@@ -195,7 +201,7 @@ class BookView(APIView):
     def get(self,request, format=None):
         currency = request.GET.get('currency')
         type = request.GET.get('type')
-        queryset = Order.objects.filter(currency=currency, type=type)
+        queryset = Order.objects.filter(currency=currency, type=type, status=0) # TODO status = 1 for orders that are Public
         if len(queryset)== 0:
             return Response({'not_found':'No orders found, be the first to make one'}, status=status.HTTP_404_NOT_FOUND)
 

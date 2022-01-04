@@ -103,7 +103,7 @@ export default class BookPage extends Component {
           </Grid>
           {this.state.orders.map((order) =>
           <Grid container item sm={4}>
-            <Card elevation={6} sx={{ width: 245 }}>
+            <Card elevation={6} sx={{ width: 945 }}>
               {/* Linking to order details not working yet as expected */}
               {/* <CardActionArea onClick={this.handleCardClick(15)} component={RouterLink} to="/order"> */}
               <CardActionArea>
@@ -139,8 +139,8 @@ export default class BookPage extends Component {
                       <Typography variant="subtitle1" color="text.secondary">
                       ◑ Priced {order.is_explicit ? 
                         " explicitly at " + this.pn(order.satoshis) + " Sats" : (
-                        " to market with " + 
-                        parseFloat(parseFloat(order.premium).toFixed(4)) + "% premium"                     
+                        " at " + 
+                        parseFloat(parseFloat(order.premium).toFixed(4)) + "% over the market"                     
                         )}
                       </Typography>
 

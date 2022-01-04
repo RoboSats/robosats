@@ -79,7 +79,7 @@ export default class MakerPage extends Component {
             premium: 0,     
         });
     }
-    handleClickIsExplicit=(e)=>{
+    handleClickExplicit=(e)=>{
         this.setState({
             isExplicit: true,
             satoshis: 10000, 
@@ -197,8 +197,7 @@ export default class MakerPage extends Component {
                             control={<Radio color="secondary"/>}
                             label="Explicit"
                             labelPlacement="Top"
-                            onClick={this.handleClickisExplicit}
-                            onShow="false"
+                            onClick={this.handleClickExplicit}
                             />
                         </RadioGroup>
                         <FormHelperText >

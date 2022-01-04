@@ -1,11 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, validate_comma_separated_integer_list
+from django.db.models.signals import post_save, pre_delete
+from django.dispatch import receiver
+
+from pathlib import Path
 
 #############################
 # TODO
 # Load hparams from .env file
-
 min_satoshis_trade = 10*1000
 max_satoshis_trade = 500*1000
 
@@ -57,7 +60,7 @@ class Order(models.Model):
     is_explicit = models.BooleanField(default=False, null=False) # pricing method. A explicit amount of sats, or a relative premium above/below market.
 
     # order participants
-    maker = models.ForeignKey(User, related_name='maker', on_delete=models.SET_NULL, null=True, default=None)  # unique = True, a maker can only make one order
+    maker = models.ForeignKey(User, related_name='maker', on_delete=models.CASCADE, null=True, default=None)  # unique = True, a maker can only make one order
     taker = models.ForeignKey(User, related_name='taker', on_delete=models.SET_NULL, null=True, default=None)  # unique = True, a taker can only take one order
     
     # order collateral
@@ -72,3 +75,33 @@ class Order(models.Model):
     # buyer payment LN invoice
     has_invoice = models.BooleanField(default=False, null=False) # has invoice and is valid
     invoice = models.CharField(max_length=300, unique=False, null=True, default=None)
+
+class Profile(models.Model):
+    user = models.OneToOneField(User,on_delete=models.CASCADE)
+
+    # Ratings stored as a comma separated integer list
+    total_ratings = models.PositiveIntegerField(null=False, default=0) 
+    latest_ratings = models.CharField(max_length=999, null=True, default=None, validators=[validate_comma_separated_integer_list]) # Will only store latest ratings
+    avg_rating = models.DecimalField(max_digits=3, decimal_places=1, default=None, null=True, validators=[MinValueValidator(0), MaxValueValidator(100)])
+
+    # Disputes
+    num_disputes = models.PositiveIntegerField(null=False, default=0)
+    lost_disputes = models.PositiveIntegerField(null=False, default=0)
+
+    # RoboHash
+    avatar = models.ImageField(default="static/assets/avatars/unknown.png")
+
+    @receiver(post_save, sender=User)
+    def create_user_profile(sender, instance, created, **kwargs):
+        if created:
+            Profile.objects.create(user=instance)
+
+    @receiver(post_save, sender=User)
+    def save_user_profile(sender, instance, **kwargs):
+        instance.profile.save()
+    
+    # Move avatar handling from views.py to here
+    # @receiver(pre_delete, sender=User)
+    # def _mymodel_delete(sender, instance, **kwargs):
+    #     avatar_file = Path('frontend', instance.profile.avatar)
+    #     avatar_file.unlink() # Unsafe if avatar does not exist.
