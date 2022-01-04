@@ -45,6 +45,7 @@ class Order(models.Model):
     # order info, id = models.CharField(max_length=64, unique=True, null=False)
     status = models.PositiveSmallIntegerField(choices=Status.choices, default=Status.WFB)
     created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
 
     # order details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False)

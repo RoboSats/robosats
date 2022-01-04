@@ -79,7 +79,7 @@ export default class MakerPage extends Component {
             premium: 0,     
         });
     }
-    handleClickisExplicit=(e)=>{
+    handleClickIsExplicit=(e)=>{
         this.setState({
             isExplicit: true,
             satoshis: 10000, 
@@ -104,7 +104,7 @@ export default class MakerPage extends Component {
         };
         fetch("/api/make/",requestOptions)
         .then((response) => response.json())
-        .then((data) => this.props.history.push('/order/' + data.id));
+        .then((data) => (console.log(data) & this.props.history.push('/order/' + data.id)));
     }
 
   render() {

@@ -17,6 +17,9 @@ from pathlib import Path
 from datetime import timedelta
 from django.utils import timezone
 
+# .env
+expiration_time = 8
+
 avatar_path = Path('frontend/static/assets/avatars')
 avatar_path.mkdir(parents=True, exist_ok=True)
 
@@ -54,6 +57,7 @@ class MakeOrder(APIView):
                 premium=premium,
                 satoshis=satoshis,
                 is_explicit=is_explicit,
+                expires_at= timezone.now()+timedelta(hours=expiration_time),
                 maker=request.user)
             order.save()
 

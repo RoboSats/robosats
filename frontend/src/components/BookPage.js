@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Paper, Button , Card, CardActionArea, CardContent, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, Link, RouterLink} from "@material-ui/core"
+import { Paper, Button , Divider, Card, CardActionArea, CardContent, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, Link, RouterLink, ListItemAvatar} from "@material-ui/core"
 
 export default class BookPage extends Component {
   constructor(props) {
@@ -22,8 +22,8 @@ export default class BookPage extends Component {
       this.setState({orders: data}));
   }
 
-  handleCardClick=(orderId)=>{
-    this.props.history.push('/order/' + orderId)
+  handleCardClick (orderId){
+    this.props.history.push('/order/' + orderId);
   }
 
   // Make these two functions sequential. getOrderDetails needs setState to be finish beforehand.
@@ -41,11 +41,10 @@ export default class BookPage extends Component {
     this.getOrderDetails();
   }
 
-  // Gets currency 3 letters code from numeric (e.g., 1 -> USD)
+  // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
   // Improve this function so currencies are read from json
   getCurrencyCode(val){
-    var code = (this.state.currency== 1 ) ? "USD": ((this.state.currency == 2 ) ? "EUR":"ETH")
-    return (code)
+    return (val == 1 ) ? "USD": ((val == 2 ) ? "EUR":"ETH")
   }
 
   // pretty numbers
@@ -103,36 +102,55 @@ export default class BookPage extends Component {
             </FormControl>
           </Grid>
           {this.state.orders.map((order) =>
-          <Grid container item sm={6}>
-            <Card >
+          <Grid container item sm={4}>
+            <Card elevation={6} sx={{ width: 245 }}>
               {/* Linking to order details not working yet as expected */}
-              {/* <CardActionArea onClick={this.handleCardClick(order.id)} component={RouterLink} to="/order"> */}
-              <CardActionArea >
+              {/* <CardActionArea onClick={this.handleCardClick(15)} component={RouterLink} to="/order"> */}
+              <CardActionArea>
                 <CardContent>
-                  <Avatar
-                      alt={order.maker_nick}
-                      src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
-                      />
-                  <Typography gutterBottom variant="h5" component="div">
-                    {order.maker_nick}
-                  </Typography>
 
-                  <Typography variant="body2" color="text.secondary">
+                  <List dense="true">
+                    <ListItem >
+                    <ListItemAvatar>
+                        <Avatar
+                            alt={order.maker_nick}
+                            src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
+                            />
+                      </ListItemAvatar>
+                      <ListItemText>
+                        <Typography gutterBottom variant="h6">
+                          {order.maker_nick}
+                        </Typography>
+                      </ListItemText>
+                    </ListItem>
+
                     {/* CARD PARAGRAPH CONTENT */}
-                    {order.type == 0 ? "Buys bitcoin for " : "Sells bitcoin for "} 
-                    {parseFloat(parseFloat(order.amount).toFixed(4))} 
-                    {" " +this.getCurrencyCode(order.currency)}.
+                    <ListItemText>
+                      <Typography variant="subtitle1" color="text.secondary">
+                      ◑{order.type == 0 ? <b> Buys </b>: <b> Sells </b>} 
+                        <b>{parseFloat(parseFloat(order.amount).toFixed(4))}
+                        {" " +this.getCurrencyCode(order.currency)}</b> <a> worth of bitcoin</a> 
+                      </Typography>
 
-                    Prefers payment via {order.payment_method}.
-                    
-                    This offer is priced 
-                    {order.is_explicit ? 
-                    " explicitly at " + this.pn(order.satoshis) + " Sats" : (
-                    " relative to the market at a premium of " + 
-                    parseFloat(parseFloat(order.premium).toFixed(4)) + "%"                     
-                    )}.
-                    Currently that is {"42,354"} {this.getCurrencyCode(order.currency)}/BTC.
-                  </Typography>
+                      <Typography variant="subtitle1" color="text.secondary">
+                      ◑ Payment via <b>{order.payment_method}</b>
+                      </Typography>
+
+                      <Typography variant="subtitle1" color="text.secondary">
+                      ◑ Priced {order.is_explicit ? 
+                        " explicitly at " + this.pn(order.satoshis) + " Sats" : (
+                        " to market with " + 
+                        parseFloat(parseFloat(order.premium).toFixed(4)) + "% premium"                     
+                        )}
+                      </Typography>
+
+                      <Typography variant="subtitle1" color="text.secondary">
+                      ◑ <b>{" 42,354 "}{this.getCurrencyCode(order.currency)}/BTC</b>  (Binance API)
+                      </Typography>
+                    </ListItemText>
+
+                  </List>
+
                 </CardContent>
               </CardActionArea>
             </Card>
