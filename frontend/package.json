@@ -22,8 +22,11 @@
   },
   "dependencies": {
     "@babel/plugin-proposal-class-properties": "^7.16.7",
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
+    "@mui/system": "^5.2.6",
     "material-ui-image": "^3.3.2",
     "react-router-dom": "^5.2.0"
   }

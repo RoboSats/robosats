@@ -41,6 +41,10 @@ export default class OrderPage extends Component {
       });
   }
 
+  // Fix to use proper react props
+  handleClickBackButton=()=>{
+    window.history.back();
+  }
   render (){
     return (
       <Grid container spacing={1}>
@@ -97,6 +101,9 @@ export default class OrderPage extends Component {
 
           <Grid item xs={12} align="center">
           {this.state.isParticipant ? "" : <Button variant='contained' color='primary' to='/home' component={Link}>Take Order</Button>}
+          </Grid>
+          <Grid item xs={12} align="center">
+          {this.state.isParticipant ? "" : <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>}
           </Grid>
         </Paper>
         </Grid>

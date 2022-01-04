@@ -85,6 +85,11 @@ export default class UserGenPage extends Component {
     this.getGeneratedUser();
   }
 
+  // TO FIX CSRF TOKEN IS NOT UPDATED UNTIL WINDOW IS RELOADED
+  reload_for_csrf_to_work=()=>{
+    window.location.reload()
+  }
+
   render() {
     return (
       <Grid container spacing={1}>

@@ -22,8 +22,9 @@ export default class BookPage extends Component {
       this.setState({orders: data}));
   }
 
-  handleCardClick (orderId){
-    this.props.history.push('/order/' + orderId);
+  handleCardClick=(e)=>{
+    console.log(e.target)
+    this.props.history.push('/order/' + e.target);
   }
 
   // Make these two functions sequential. getOrderDetails needs setState to be finish beforehand.
@@ -104,14 +105,14 @@ export default class BookPage extends Component {
           {this.state.orders.map((order) =>
           <Grid container item sm={4}>
             <Card elevation={6} sx={{ width: 945 }}>
-              {/* Linking to order details not working yet as expected */}
-              {/* <CardActionArea onClick={this.handleCardClick(15)} component={RouterLink} to="/order"> */}
-              <CardActionArea>
+
+              {/* To fix! does not pass order.id to handleCardCLick. Instead passes the clicked </>*/}
+              <CardActionArea value={order.id} onClick={this.handleCardClick}>
                 <CardContent>
 
                   <List dense="true">
                     <ListItem >
-                    <ListItemAvatar>
+                    <ListItemAvatar >
                         <Avatar
                             alt={order.maker_nick}
                             src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
