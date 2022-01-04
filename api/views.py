@@ -200,11 +200,12 @@ class BookView(APIView):
 
     def get(self,request, format=None):
         currency = request.GET.get('currency')
-        type = request.GET.get('type')
+        type = request.GET.get('type') 
         queryset = Order.objects.filter(currency=currency, type=type, status=0) # TODO status = 1 for orders that are Public
         if len(queryset)== 0:
             return Response({'not_found':'No orders found, be the first to make one'}, status=status.HTTP_404_NOT_FOUND)
 
+        queryset = queryset.order_by('created_at')
         book_data = []
         for order in queryset:
             data = OrderSerializer(order).data

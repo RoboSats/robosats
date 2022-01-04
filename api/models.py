@@ -4,6 +4,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator, validat
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 
+from django.utils.html import mark_safe
+
 from pathlib import Path
 
 #############################
@@ -82,14 +84,14 @@ class Profile(models.Model):
     # Ratings stored as a comma separated integer list
     total_ratings = models.PositiveIntegerField(null=False, default=0) 
     latest_ratings = models.CharField(max_length=999, null=True, default=None, validators=[validate_comma_separated_integer_list]) # Will only store latest ratings
-    avg_rating = models.DecimalField(max_digits=3, decimal_places=1, default=None, null=True, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    avg_rating = models.DecimalField(max_digits=4, decimal_places=1, default=None, null=True, validators=[MinValueValidator(0), MaxValueValidator(100)])
 
     # Disputes
     num_disputes = models.PositiveIntegerField(null=False, default=0)
     lost_disputes = models.PositiveIntegerField(null=False, default=0)
 
     # RoboHash
-    avatar = models.ImageField(default="static/assets/avatars/unknown.png")
+    avatar = models.ImageField(default="static/assets/avatars/unknown.png", verbose_name='Avatar')
 
     @receiver(post_save, sender=User)
     def create_user_profile(sender, instance, created, **kwargs):
@@ -99,9 +101,16 @@ class Profile(models.Model):
     @receiver(post_save, sender=User)
     def save_user_profile(sender, instance, **kwargs):
         instance.profile.save()
+
+    def __str__(self):
+        return self.user.username
     
-    # Move avatar handling from views.py to here
-    # @receiver(pre_delete, sender=User)
-    # def _mymodel_delete(sender, instance, **kwargs):
-    #     avatar_file = Path('frontend', instance.profile.avatar)
-    #     avatar_file.unlink() # Unsafe if avatar does not exist.
+    # to display avatars in admin panel
+    def get_avatar(self):
+        if not self.avatar:
+            return 'static/assets/avatars/unknown.png'
+        return self.avatar.url
+
+    # method to create a fake table field in read only mode
+    def avatar_tag(self):
+        return mark_safe('<img src="%s" width="50" height="50" />' % self.get_avatar())
