@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db import models 
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.admin import UserAdmin
-from .models import Order, Profile
+from .models import Order, LNPayment, Profile
 
 admin.site.unregister(Group)
 admin.site.unregister(User)
@@ -24,7 +24,13 @@ class EUserAdmin(UserAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id','type','maker','taker','status','amount','currency','created_at','expires_at', 'invoice')
+    list_display = ('id','type','maker','taker','status','amount','currency','created_at','expires_at', 'buyer_invoice','maker_bond','taker_bond','trade_escrow')
+    list_display_links = ['id']
+    pass
+
+@admin.register(LNPayment)
+class LNPaymentAdmin(admin.ModelAdmin):
+    list_display = ('id','concept','status','amount','type','invoice','secret','expires_at','sender','receiver')
     list_display_links = ['id']
     pass
 

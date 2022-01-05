@@ -11,8 +11,50 @@ from pathlib import Path
 #############################
 # TODO
 # Load hparams from .env file
-min_satoshis_trade = 10*1000
-max_satoshis_trade = 500*1000
+
+MIN_TRADE = 10*1000  #In sats
+MAX_TRADE = 500*1000
+FEE = 0.002 # Trade fee in %
+BOND_SIZE = 0.01 # Bond in %
+
+
+class LNPayment(models.Model):
+
+    class Types(models.IntegerChoices):
+        NORM = 0, 'Regular invoice' # Only outgoing HTLCs will be regular invoices (Non-hodl)
+        HODL = 1, 'Hodl invoice'
+
+    class Concepts(models.IntegerChoices):
+        MAKEBOND = 0, 'Maker bond'
+        TAKEBOND = 1, 'Taker-buyer bond'
+        TRESCROW = 2, 'Trade escrow'
+        PAYBUYER = 3, 'Payment to buyer'
+
+    class Status(models.IntegerChoices):
+        INVGEN = 0, 'Hodl invoice was generated'
+        LOCKED = 1, 'Hodl invoice has HTLCs locked'
+        CHRGED = 2, 'Hodl invoice was charged'
+        RETNED = 3, 'Hodl invoice was returned'
+        MISSNG = 4, 'Buyer invoice is missing'
+        IVALID = 5, 'Buyer invoice is valid'
+        INPAID = 6, 'Buyer invoice was paid'
+        INFAIL = 7, 'Buyer invoice routing failed'
+
+    # payment use case
+    type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HODL)
+    concept = models.PositiveSmallIntegerField(choices=Concepts.choices, null=False, default=Concepts.MAKEBOND)
+    status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.INVGEN)
+    
+    # payment details
+    invoice = models.CharField(max_length=300, unique=False, null=True, default=None)
+    secret = models.CharField(max_length=300, unique=False, null=True, default=None)
+    expires_at = models.DateTimeField()
+    amount = models.DecimalField(max_digits=9, decimal_places=4, validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
+    
+    # payment relationals
+    sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE, null=True, default=None)
+    receiver = models.ForeignKey(User, related_name='receiver', on_delete=models.CASCADE, null=True, default=None)
+
 
 class Order(models.Model):
     
@@ -25,7 +67,7 @@ class Order(models.Model):
         EUR = 2, 'EUR'
         ETH = 3, 'ETH'
 
-    class Status(models.TextChoices):
+    class Status(models.IntegerChoices):
         WFB = 0, 'Waiting for bond'
         PUB = 1, 'Published in order book'
         DEL = 2, 'Deleted from order book'
@@ -48,36 +90,37 @@ class Order(models.Model):
         EXP = 19, 'Expired'
 
     # order info
-    status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=int(Status.WFB))
+    status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.WFB)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
 
     # order details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False)
     currency = models.PositiveSmallIntegerField(choices=Currencies.choices, null=False)
-    amount = models.DecimalField(max_digits=9, decimal_places=4, validators=[MinValueValidator(0.00001)])
+    amount = models.DecimalField(max_digits=9, decimal_places=4, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)])
     payment_method = models.CharField(max_length=30, null=False, default="Not specified")
-    premium = models.DecimalField(max_digits=5, decimal_places=2, default=0, null=True, validators=[MinValueValidator(-100), MaxValueValidator(999)])
-    satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(min_satoshis_trade), MaxValueValidator(max_satoshis_trade)])
-    is_explicit = models.BooleanField(default=False, null=False) # pricing method. A explicit amount of sats, or a relative premium above/below market.
 
+    # order pricing method. A explicit amount of sats, or a relative premium above/below market.
+    is_explicit = models.BooleanField(default=False, null=False)
+    # marked to marked
+    premium = models.DecimalField(max_digits=5, decimal_places=2, default=0, null=True, validators=[MinValueValidator(-100), MaxValueValidator(999)])
+    t0_market_satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)])
+    # explicit
+    satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)])
+    
     # order participants
     maker = models.ForeignKey(User, related_name='maker', on_delete=models.CASCADE, null=True, default=None)  # unique = True, a maker can only make one order
     taker = models.ForeignKey(User, related_name='taker', on_delete=models.SET_NULL, null=True, default=None)  # unique = True, a taker can only take one order
     
     # order collateral
-    has_maker_bond = models.BooleanField(default=False, null=False)
-    has_taker_bond = models.BooleanField(default=False, null=False)
-    has_trade_collat = models.BooleanField(default=False, null=False)
-
-    maker_bond_secret = models.CharField(max_length=300, unique=False, null=True, default=None)
-    taker_bond_secret = models.CharField(max_length=300, unique=False, null=True, default=None)
-    trade_collat_secret = models.CharField(max_length=300, unique=False, null=True, default=None)
+    maker_bond = models.ForeignKey(LNPayment, related_name='maker_bond', on_delete=models.SET_NULL, null=True, default=None)
+    taker_bond = models.ForeignKey(LNPayment, related_name='taker_bond', on_delete=models.SET_NULL, null=True, default=None)
+    trade_escrow = models.ForeignKey(LNPayment, related_name='trade_escrow', on_delete=models.SET_NULL, null=True, default=None)
 
     # buyer payment LN invoice
-    has_invoice = models.BooleanField(default=False, null=False) # has invoice and is valid
-    invoice = models.CharField(max_length=300, unique=False, null=True, default=None)
-    
+    buyer_invoice = models.ForeignKey(LNPayment, related_name='buyer_invoice', on_delete=models.SET_NULL, null=True, default=None)
+
+
 class Profile(models.Model):
 
     user = models.OneToOneField(User,on_delete=models.CASCADE)

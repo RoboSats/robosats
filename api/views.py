@@ -8,7 +8,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
-from .models import Order
+from .models import Order, LNPayment
+from .lightning import LNNode
 
 from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
@@ -39,11 +40,6 @@ def validate_already_maker_or_taker(request):
     
     return True, None
 
-def validate_ln_invoice(invoice):
-    '''Checks if a LN invoice is valid'''
-    #TODO
-    return True
-
 # Create your views here.
 
 class OrderMakerView(CreateAPIView):
@@ -68,7 +64,7 @@ class OrderMakerView(CreateAPIView):
             # Creates a new order in db
             order = Order(
                 type=otype,
-                status=int(Order.Status.PUB), # TODO orders are public by default for the moment. Future it will be WFB (waiting for bond)
+                status=Order.Status.PUB, # TODO orders are public by default for the moment. Future it will be WFB (waiting for bond)
                 currency=currency,
                 amount=amount,
                 payment_method=payment_method,
@@ -105,11 +101,11 @@ class OrderView(viewsets.ViewSet):
                 data['is_maker'] = str(order.maker) == nickname
                 data['is_taker'] = str(order.taker) == nickname
                 data['is_participant'] = data['is_maker'] or data['is_taker']
-                data['is_buyer'] = (data['is_maker'] and order.type == int(Order.Types.BUY)) or (data['is_taker'] and order.type == int(Order.Types.SELL))
-                data['is_seller'] = (data['is_maker'] and order.type == int(Order.Types.SELL)) or (data['is_taker'] and order.type == int(Order.Types.BUY))
+                data['is_buyer'] = (data['is_maker'] and order.type == Order.Types.BUY) or (data['is_taker'] and order.type == Order.Types.SELL)
+                data['is_seller'] = (data['is_maker'] and order.type == Order.Types.SELL) or (data['is_taker'] and order.type == Order.Types.BUY)
                 
                 # If not a participant and order is not public, forbid.
-                if not data['is_participant'] and order.status != int(Order.Status.PUB):
+                if not data['is_participant'] and order.status != Order.Status.PUB:
                     return Response({'bad_request':'Not allowed to see this order'},status.HTTP_403_FORBIDDEN)
 
                 # return nicks too
@@ -142,28 +138,28 @@ class OrderView(viewsets.ViewSet):
             invoice = serializer.data.get('invoice')
 
         # If this is an empty POST request (no invoice), it must be taker request!
-        if not invoice and order.status == int(Order.Status.PUB):
+        if not invoice and order.status == Order.Status.PUB:
             
             valid, response = validate_already_maker_or_taker(request)
             if not valid:
                 return response
 
             order.taker = self.request.user
-            order.status = int(Order.Status.TAK)
+            order.status = Order.Status.TAK
 
             #TODO REPLY WITH HODL INVOICE
             data = ListOrderSerializer(order).data
 
         # An invoice came in! update it
         elif invoice:
-            if validate_ln_invoice(invoice):
+            if LNNode.validate_ln_invoice(invoice):
                 order.invoice = invoice
 
             #TODO Validate if request comes from PARTICIPANT AND BUYER
 
                 #If the order status was Payment Failed. Move foward to invoice Updated.
-                if order.status == int(Order.Status.FAI):
-                    order.status = int(Order.Status.UPI)
+                if order.status == Order.Status.FAI:
+                    order.status = Order.Status.UPI
 
             else:
                 return Response({'bad_request':'Invalid Lightning Network Invoice. It starts by LNTB...'})
