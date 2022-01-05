@@ -44,8 +44,8 @@ class Order(models.Model):
         UPI = 15, 'Updated invoice'
         DIS = 16, 'In dispute'
         MLD = 17, 'Maker lost dispute'
-        # TLD = 18, 'Taker lost dispute'
-        # EXP = 19, 'Expired'
+        TLD = 18, 'Taker lost dispute'
+        EXP = 19, 'Expired'
 
     # order info
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=int(Status.WFB))
@@ -77,7 +77,7 @@ class Order(models.Model):
     # buyer payment LN invoice
     has_invoice = models.BooleanField(default=False, null=False) # has invoice and is valid
     invoice = models.CharField(max_length=300, unique=False, null=True, default=None)
-
+    
 class Profile(models.Model):
 
     user = models.OneToOneField(User,on_delete=models.CASCADE)

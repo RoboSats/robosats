@@ -1,4 +1,4 @@
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
 from rest_framework import viewsets
@@ -101,19 +101,30 @@ class OrderView(viewsets.ViewSet):
                 data = ListOrderSerializer(order).data
                 nickname = request.user.username
 
-                #To do fix: data['status_message'] = Order.Status.get(order.status).label
-                data['status_message'] = Order.Status.WFB.label # Hardcoded WFB, should use order.status value.
+                # Add booleans if user is maker, taker, partipant, buyer or seller
+                data['is_maker'] = str(order.maker) == nickname
+                data['is_taker'] = str(order.taker) == nickname
+                data['is_participant'] = data['is_maker'] or data['is_taker']
+                data['is_buyer'] = (data['is_maker'] and order.type == int(Order.Types.BUY)) or (data['is_taker'] and order.type == int(Order.Types.SELL))
+                data['is_seller'] = (data['is_maker'] and order.type == int(Order.Types.SELL)) or (data['is_taker'] and order.type == int(Order.Types.BUY))
                 
-                # Check if requester is participant in the order and add boolean to response
-                data['is_participant'] = (str(order.maker) == nickname or str(order.taker) == nickname)
+                # If not a participant and order is not public, forbid.
+                if not data['is_participant'] and order.status != int(Order.Status.PUB):
+                    return Response({'bad_request':'Not allowed to see this order'},status.HTTP_403_FORBIDDEN)
+
+                # return nicks too
                 data['maker_nick'] = str(order.maker)
                 data['taker_nick'] = str(order.taker)
+                
+                #To do fix: data['status_message'] = Order.Status.get(order.status).label
+                # Needs to serialize the order.status into the message.
+                data['status_message'] = Order.Status.WFB.label # Hardcoded WFB, should use order.status value.
 
                 if data['is_participant']:
                     return Response(data, status=status.HTTP_200_OK)
                 else:
-                    # Non participants should not see the status or who is the taker
-                    for key in ('status','status_message','taker','taker_nick'):
+                    # Non participants should not see the status, who is the taker, etc
+                    for key in ('status','status_message','taker','taker_nick','is_maker','is_taker','is_buyer','is_seller'):
                         del data[key]
                     return Response(data, status=status.HTTP_200_OK)
 
@@ -139,6 +150,8 @@ class OrderView(viewsets.ViewSet):
 
             order.taker = self.request.user
             order.status = int(Order.Status.TAK)
+
+            #TODO REPLY WITH HODL INVOICE
             data = ListOrderSerializer(order).data
 
         # An invoice came in! update it
