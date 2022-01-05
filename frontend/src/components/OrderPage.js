@@ -73,7 +73,7 @@ export default class OrderPage extends Component {
     console.log(this.state)
       const requestOptions = {
           method: 'POST',
-          headers: {'Content-Type':'application/json', 'X-CSRFToken': csrftoken},
+          headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
           body: JSON.stringify({}),
       };
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
