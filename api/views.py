@@ -112,9 +112,7 @@ class OrderView(viewsets.ViewSet):
                 data['maker_nick'] = str(order.maker)
                 data['taker_nick'] = str(order.taker)
                 
-                #To do fix: data['status_message'] = Order.Status.get(order.status).label
-                # Needs to serialize the order.status into the message.
-                data['status_message'] = Order.Status.WFB.label # Hardcoded WFB, should use order.status value.
+                data['status_message'] = Order.Status(order.status).label 
 
                 if data['is_participant']:
                     return Response(data, status=status.HTTP_200_OK)
@@ -125,8 +123,8 @@ class OrderView(viewsets.ViewSet):
                     return Response(data, status=status.HTTP_200_OK)
 
             return Response({'Order Not Found':'Invalid Order Id'},status=status.HTTP_404_NOT_FOUND)
-
         return Response({'Bad Request':'Order ID parameter not found in request'}, status=status.HTTP_400_BAD_REQUEST)
+
 
     def take_or_update(self, request, format=None):
         order_id = request.GET.get(self.lookup_url_kwarg)
@@ -135,7 +133,7 @@ class OrderView(viewsets.ViewSet):
         order = Order.objects.get(id=order_id)
 
         if serializer.is_valid():
-            invoice = serializer.data.get('invoice')
+            invoice = serializer.data.get('buyer_invoice')
 
         # If this is an empty POST request (no invoice), it must be taker request!
         if not invoice and order.status == Order.Status.PUB:
@@ -196,8 +194,7 @@ class UserView(APIView):
         value, counts = np.unique(list(token), return_counts=True)
         shannon_entropy = entropy(counts, base=62)
         bits_entropy = log2(len(value)**len(token))
-
-        # Start preparing payload
+        # Payload
         context = {'token_shannon_entropy': shannon_entropy, 'token_bits_entropy': bits_entropy}
 
         # Deny user gen if entropy below 128 bits or 0.7 shannon heterogeneity
@@ -208,11 +205,11 @@ class UserView(APIView):
         # Hashes the token, only 1 iteration. Maybe more is better.
         hash = hashlib.sha256(str.encode(token)).hexdigest() 
 
-        # generate nickname
+        # Generate nickname
         nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0] 
         context['nickname'] = nickname
 
-        # generate avatar
+        # Generate avatar
         rh = Robohash(hash)
         rh.assemble(roboset='set1', bgset='any')# for backgrounds ON
 

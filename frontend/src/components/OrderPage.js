@@ -130,13 +130,12 @@ export default class OrderPage extends Component {
                     </ListItem>
                     <Divider />               
                   </>: 
-                  <>
-                    <ListItem>
-                      <ListItemText primary={this.state.statusText} secondary="Order status"/>
-                    </ListItem>
-                    <Divider />
-                  </>
+                  ""
                   }
+                  <ListItem>
+                    <ListItemText primary={this.state.statusText} secondary="Order status"/>
+                  </ListItem>
+                  <Divider />
               </>
             :""
             }

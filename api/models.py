@@ -46,15 +46,18 @@ class LNPayment(models.Model):
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.INVGEN)
     
     # payment details
-    invoice = models.CharField(max_length=300, unique=False, null=True, default=None)
-    secret = models.CharField(max_length=300, unique=False, null=True, default=None)
+    invoice = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
+    secret = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
     expires_at = models.DateTimeField()
-    amount = models.DecimalField(max_digits=9, decimal_places=4, validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
+    amount = models.PositiveBigIntegerField(validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
     
     # payment relationals
     sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE, null=True, default=None)
     receiver = models.ForeignKey(User, related_name='receiver', on_delete=models.CASCADE, null=True, default=None)
 
+    def __str__(self):
+        # Make relational back to ORDER
+        return (f'HTLC {self.id}: {self.Concepts(self.concept).label}')
 
 class Order(models.Model):
     
@@ -97,28 +100,28 @@ class Order(models.Model):
     # order details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False)
     currency = models.PositiveSmallIntegerField(choices=Currencies.choices, null=False)
-    amount = models.DecimalField(max_digits=9, decimal_places=4, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)])
-    payment_method = models.CharField(max_length=30, null=False, default="Not specified")
+    amount = models.DecimalField(max_digits=9, decimal_places=4, validators=[MinValueValidator(0.00001)])
+    payment_method = models.CharField(max_length=30, null=False, default="not specified", blank=True)
 
     # order pricing method. A explicit amount of sats, or a relative premium above/below market.
     is_explicit = models.BooleanField(default=False, null=False)
     # marked to marked
-    premium = models.DecimalField(max_digits=5, decimal_places=2, default=0, null=True, validators=[MinValueValidator(-100), MaxValueValidator(999)])
-    t0_market_satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)])
+    premium = models.DecimalField(max_digits=5, decimal_places=2, default=0, null=True, validators=[MinValueValidator(-100), MaxValueValidator(999)], blank=True)
+    t0_market_satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)], blank=True)
     # explicit
-    satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)])
+    satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)], blank=True)
     
     # order participants
     maker = models.ForeignKey(User, related_name='maker', on_delete=models.CASCADE, null=True, default=None)  # unique = True, a maker can only make one order
-    taker = models.ForeignKey(User, related_name='taker', on_delete=models.SET_NULL, null=True, default=None)  # unique = True, a taker can only take one order
+    taker = models.ForeignKey(User, related_name='taker', on_delete=models.SET_NULL, null=True, default=None, blank=True)  # unique = True, a taker can only take one order
     
     # order collateral
-    maker_bond = models.ForeignKey(LNPayment, related_name='maker_bond', on_delete=models.SET_NULL, null=True, default=None)
-    taker_bond = models.ForeignKey(LNPayment, related_name='taker_bond', on_delete=models.SET_NULL, null=True, default=None)
-    trade_escrow = models.ForeignKey(LNPayment, related_name='trade_escrow', on_delete=models.SET_NULL, null=True, default=None)
+    maker_bond = models.ForeignKey(LNPayment, related_name='maker_bond', on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    taker_bond = models.ForeignKey(LNPayment, related_name='taker_bond', on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    trade_escrow = models.ForeignKey(LNPayment, related_name='trade_escrow', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
     # buyer payment LN invoice
-    buyer_invoice = models.ForeignKey(LNPayment, related_name='buyer_invoice', on_delete=models.SET_NULL, null=True, default=None)
+    buyer_invoice = models.ForeignKey(LNPayment, related_name='buyer_invoice', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
 
 class Profile(models.Model):
@@ -127,15 +130,15 @@ class Profile(models.Model):
 
     # Ratings stored as a comma separated integer list
     total_ratings = models.PositiveIntegerField(null=False, default=0) 
-    latest_ratings = models.CharField(max_length=999, null=True, default=None, validators=[validate_comma_separated_integer_list]) # Will only store latest ratings
-    avg_rating = models.DecimalField(max_digits=4, decimal_places=1, default=None, null=True, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    latest_ratings = models.CharField(max_length=999, null=True, default=None, validators=[validate_comma_separated_integer_list], blank=True) # Will only store latest ratings
+    avg_rating = models.DecimalField(max_digits=4, decimal_places=1, default=None, null=True, validators=[MinValueValidator(0), MaxValueValidator(100)], blank=True)
 
     # Disputes
     num_disputes = models.PositiveIntegerField(null=False, default=0)
     lost_disputes = models.PositiveIntegerField(null=False, default=0)
 
     # RoboHash
-    avatar = models.ImageField(default="static/assets/misc/unknown_avatar.png", verbose_name='Avatar')
+    avatar = models.ImageField(default="static/assets/misc/unknown_avatar.png", verbose_name='Avatar', blank=True)
 
     @receiver(post_save, sender=User)
     def create_user_profile(sender, instance, created, **kwargs):

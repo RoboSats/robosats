@@ -14,4 +14,4 @@ class MakeOrderSerializer(serializers.ModelSerializer):
 class UpdateOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ('id','invoice')
+        fields = ('id','buyer_invoice')
