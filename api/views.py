@@ -1,11 +1,13 @@
-from rest_framework import serializers, status
+from rest_framework import status
+from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
+from rest_framework import viewsets
 from rest_framework.response import Response
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.conf.urls.static import static
 
-from .serializers import OrderSerializer, MakeOrderSerializer
+from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
 from .models import Order
 
 from .nick_generator.nick_generator import NickGenerator
@@ -24,9 +26,27 @@ expiration_time = 8
 avatar_path = Path('frontend/static/assets/avatars')
 avatar_path.mkdir(parents=True, exist_ok=True)
 
+def validate_already_maker_or_taker(request):
+    '''Checks if the user is already partipant of an order'''
+
+    queryset = Order.objects.filter(maker=request.user.id)
+    if queryset.exists():
+        return False, Response({'Bad Request':'You are already maker of an order'}, status=status.HTTP_400_BAD_REQUEST)
+
+    queryset = Order.objects.filter(taker=request.user.id)
+    if queryset.exists():
+        return False, Response({'Bad Request':'You are already taker of an order'}, status=status.HTTP_400_BAD_REQUEST) 
+    
+    return True, None
+
+def validate_ln_invoice(invoice):
+    '''Checks if a LN invoice is valid'''
+    #TODO
+    return True
+
 # Create your views here.
 
-class MakeOrder(APIView):
+class OrderMakerView(CreateAPIView):
     serializer_class  = MakeOrderSerializer
 
     def post(self,request):
@@ -41,17 +61,14 @@ class MakeOrder(APIView):
             satoshis = serializer.data.get('satoshis')
             is_explicit = serializer.data.get('is_explicit')
 
-            # query if the user is already a maker or taker, return error
-            queryset = Order.objects.filter(maker=request.user.id)
-            if queryset.exists():
-                return Response({'Bad Request':'You are already maker of an order'},status=status.HTTP_400_BAD_REQUEST)
-            queryset = Order.objects.filter(taker=request.user.id)
-            if queryset.exists():
-                return Response({'Bad Request':'You are already taker of an order'},status=status.HTTP_400_BAD_REQUEST) 
+            valid, response = validate_already_maker_or_taker(request)
+            if not valid:
+                return response
 
             # Creates a new order in db
             order = Order(
                 type=otype,
+                status=int(Order.Status.PUB), # TODO orders are public by default for the moment. Future it will be WFB (waiting for bond)
                 currency=currency,
                 amount=amount,
                 payment_method=payment_method,
@@ -65,11 +82,11 @@ class MakeOrder(APIView):
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
             
-        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+        return Response(ListOrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
 
-class OrderView(APIView):
-    serializer_class = OrderSerializer
+class OrderView(viewsets.ViewSet):
+    serializer_class = UpdateOrderSerializer
     lookup_url_kwarg = 'order_id'
 
     def get(self, request, format=None):
@@ -81,15 +98,14 @@ class OrderView(APIView):
             # check if exactly one order is found in the db
             if len(order) == 1 :
                 order = order[0]
-                data = self.serializer_class(order).data
+                data = ListOrderSerializer(order).data
                 nickname = request.user.username
 
-                # Check if requester is participant in the order and add boolean to response
-                data['is_participant'] = (str(order.maker) == nickname or str(order.taker) == nickname)
-                
                 #To do fix: data['status_message'] = Order.Status.get(order.status).label
                 data['status_message'] = Order.Status.WFB.label # Hardcoded WFB, should use order.status value.
-
+                
+                # Check if requester is participant in the order and add boolean to response
+                data['is_participant'] = (str(order.maker) == nickname or str(order.taker) == nickname)
                 data['maker_nick'] = str(order.maker)
                 data['taker_nick'] = str(order.taker)
 
@@ -105,7 +121,48 @@ class OrderView(APIView):
 
         return Response({'Bad Request':'Order ID parameter not found in request'}, status=status.HTTP_400_BAD_REQUEST)
 
-class UserGenerator(APIView):
+    def take_or_update(self, request, format=None):
+        order_id = request.GET.get(self.lookup_url_kwarg)
+
+        serializer = UpdateOrderSerializer(data=request.data)
+        order = Order.objects.get(id=order_id)
+
+        if serializer.is_valid():
+            invoice = serializer.data.get('invoice')
+
+        # If this is an empty POST request (no invoice), it must be taker request!
+        if not invoice and order.status == int(Order.Status.PUB):
+            
+            valid, response = validate_already_maker_or_taker(request)
+            if not valid:
+                return response
+
+            order.taker = self.request.user
+            order.status = int(Order.Status.TAK)
+            data = ListOrderSerializer(order).data
+
+        # An invoice came in! update it
+        elif invoice:
+            if validate_ln_invoice(invoice):
+                order.invoice = invoice
+
+            #TODO Validate if request comes from PARTICIPANT AND BUYER
+
+                #If the order status was Payment Failed. Move foward to invoice Updated.
+                if order.status == int(Order.Status.FAI):
+                    order.status = int(Order.Status.UPI)
+
+            else:
+                return Response({'bad_request':'Invalid Lightning Network Invoice. It starts by LNTB...'})
+        
+        # Something else is going on. Probably not allowed.
+        else:
+            return Response({'bad_request':'Not allowed'})
+
+        order.save()
+        return self.get(request)
+
+class UserView(APIView):
     lookup_url_kwarg = 'token'
     NickGen = NickGenerator(
         lang='English', 
@@ -114,6 +171,7 @@ class UserGenerator(APIView):
         use_noun=True, 
         max_num=999)
 
+    # Probably should be turned into a post method
     def get(self,request, format=None):
         '''
         Get a new user derived from a high entropy token
@@ -181,40 +239,39 @@ class UserGenerator(APIView):
     def delete(self,request):
         user = User.objects.get(id = request.user.id)
 
-        # TO DO. Pressing give me another will delete the logged in user
+        # TO DO. Pressing "give me another" deletes the logged in user
         # However it might be a long time recovered user
         # Only delete if user live is < 5 minutes
 
         # TODO check if user exists AND it is not a maker or taker!
         if user is not None:
-            avatar_file = avatar_path.joinpath(str(request.user)+".png")
-            avatar_file.unlink() # Unsafe if avatar does not exist.
             logout(request)
             user.delete()
 
-            return Response({'user_deleted':'User deleted permanently'},status=status.HTTP_301_MOVED_PERMANENTLY)
+            return Response({'user_deleted':'User deleted permanently'},status=status.HTTP_302_FOUND)
 
         return Response(status=status.HTTP_403_FORBIDDEN)
 
-class BookView(APIView):
-    serializer_class = OrderSerializer
+class BookView(ListAPIView):
+    serializer_class = ListOrderSerializer
 
     def get(self,request, format=None):
         currency = request.GET.get('currency')
         type = request.GET.get('type') 
-        queryset = Order.objects.filter(currency=currency, type=type, status=0) # TODO status = 1 for orders that are Public
+        queryset = Order.objects.filter(currency=currency, type=type, status=int(Order.Status.PUB)) 
         if len(queryset)== 0:
             return Response({'not_found':'No orders found, be the first to make one'}, status=status.HTTP_404_NOT_FOUND)
 
         queryset = queryset.order_by('created_at')
         book_data = []
         for order in queryset:
-            data = OrderSerializer(order).data
+            data = ListOrderSerializer(order).data
             user = User.objects.filter(id=data['maker'])
             if len(user) == 1:
                 data['maker_nick'] = user[0].username
-            # TODO avoid sending status and takers for book views
-            #data.pop('status','taker')
+            # Non participants should not see the status or who is the taker
+            for key in ('status','taker'):
+                del data[key]
             book_data.append(data)
         
         return Response(book_data, status=status.HTTP_200_OK)

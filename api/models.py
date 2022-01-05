@@ -44,11 +44,11 @@ class Order(models.Model):
         UPI = 15, 'Updated invoice'
         DIS = 16, 'In dispute'
         MLD = 17, 'Maker lost dispute'
-        TLD = 18, 'Taker lost dispute'
-        EXP = 19, 'Expired'
+        # TLD = 18, 'Taker lost dispute'
+        # EXP = 19, 'Expired'
 
-    # order info, id = models.CharField(max_length=64, unique=True, null=False)
-    status = models.PositiveSmallIntegerField(choices=Status.choices, default=Status.WFB)
+    # order info
+    status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=int(Status.WFB))
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
 
@@ -79,6 +79,7 @@ class Order(models.Model):
     invoice = models.CharField(max_length=300, unique=False, null=True, default=None)
 
 class Profile(models.Model):
+
     user = models.OneToOneField(User,on_delete=models.CASCADE)
 
     # Ratings stored as a comma separated integer list
@@ -91,7 +92,7 @@ class Profile(models.Model):
     lost_disputes = models.PositiveIntegerField(null=False, default=0)
 
     # RoboHash
-    avatar = models.ImageField(default="static/assets/avatars/unknown.png", verbose_name='Avatar')
+    avatar = models.ImageField(default="static/assets/misc/unknown_avatar.png", verbose_name='Avatar')
 
     @receiver(post_save, sender=User)
     def create_user_profile(sender, instance, created, **kwargs):
@@ -102,13 +103,18 @@ class Profile(models.Model):
     def save_user_profile(sender, instance, **kwargs):
         instance.profile.save()
 
+    @receiver(pre_delete, sender=User)
+    def del_avatar_from_disk(sender, instance, **kwargs):
+        avatar_file=Path('frontend/' + instance.profile.avatar.url)
+        avatar_file.unlink() # FIX deleting user fails if avatar is not found
+
     def __str__(self):
         return self.user.username
     
     # to display avatars in admin panel
     def get_avatar(self):
         if not self.avatar:
-            return 'static/assets/avatars/unknown.png'
+            return 'static/assets/misc/unknown_avatar.png'
         return self.avatar.url
 
     # method to create a fake table field in read only mode

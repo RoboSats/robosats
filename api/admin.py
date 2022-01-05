@@ -24,8 +24,8 @@ class EUserAdmin(UserAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id','type','maker','taker','status','amount','currency','created_at','expires_at')
-    list_display_links = ('maker','taker')
+    list_display = ('id','type','maker','taker','status','amount','currency','created_at','expires_at', 'invoice')
+    list_display_links = ['id']
     pass
 
 @admin.register(Profile)

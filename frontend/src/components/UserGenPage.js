@@ -74,7 +74,7 @@ export default class UserGenPage extends Component {
     this.setState({
       token: this.genBase62Token(32),
     })
-    this.getGeneratedUser();
+    this.reload_for_csrf_to_work();
   }
 
   handleChangeToken=(e)=>{

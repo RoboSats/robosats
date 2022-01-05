@@ -2,6 +2,23 @@ import React, { Component } from "react";
 import { Paper, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider} from "@material-ui/core"
 import { Link } from 'react-router-dom'
 
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+          }
+      }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
 // pretty numbers
 function pn(x) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -26,7 +43,7 @@ export default class OrderPage extends Component {
             statusText: data.status_message,
             type: data.type,
             currency: data.currency,
-            currencyCode: (data.currency== 1 ) ? "USD": ((data.currency == 2 ) ? "EUR":"ETH"),
+            currencyCode: this.getCurrencyCode(data.currency),
             amount: data.amount,
             paymentMethod: data.payment_method,
             isExplicit: data.is_explicit,
@@ -41,10 +58,29 @@ export default class OrderPage extends Component {
       });
   }
 
+  // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
+  // Improve this function so currencies are read from json
+  getCurrencyCode(val){
+    return (val == 1 ) ? "USD": ((val == 2 ) ? "EUR":"ETH")
+  }
+
   // Fix to use proper react props
   handleClickBackButton=()=>{
     window.history.back();
   }
+
+  handleClickTakeOrderButton=()=>{
+    console.log(this.state)
+      const requestOptions = {
+          method: 'POST',
+          headers: {'Content-Type':'application/json', 'X-CSRFToken': csrftoken},
+          body: JSON.stringify({}),
+      };
+      fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+      .then((response) => response.json())
+      .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
+  }
+
   render (){
     return (
       <Grid container spacing={1}>
@@ -53,7 +89,7 @@ export default class OrderPage extends Component {
           BTC {this.state.type ? " Sell " : " Buy "} Order
           </Typography>
           <Paper elevation={12} style={{ padding: 8,}}>
-          <List component="nav" aria-label="mailbox folders">
+          <List dense="true">
             <ListItem>
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
                 <Avatar 
@@ -89,6 +125,12 @@ export default class OrderPage extends Component {
               { this.state.takerNick!='None' ?
                 <><ListItem>
                   <ListItemText primary={this.state.takerNick} secondary="Order taker"/>
+                    <ListItemAvatar sx={{ width: 56, height: 56 }}>
+                    <Avatar 
+                      alt={this.state.makerNick} 
+                      src={window.location.origin +'/static/assets/avatars/' + this.state.takerNick + '.png'} 
+                      />
+                  </ListItemAvatar>
                 </ListItem>
               <Divider /> </>: ""}
               </>
@@ -98,14 +140,16 @@ export default class OrderPage extends Component {
               <ListItemText primary={'#'+this.orderId} secondary="Order ID"/>
             </ListItem>
             </List>
+          
+          </Paper>
 
           <Grid item xs={12} align="center">
-          {this.state.isParticipant ? "" : <Button variant='contained' color='primary' to='/home' component={Link}>Take Order</Button>}
+          {this.state.isParticipant ? "" : <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>}
           </Grid>
           <Grid item xs={12} align="center">
             <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
           </Grid>
-        </Paper>
+
         </Grid>
       </Grid>
     );
