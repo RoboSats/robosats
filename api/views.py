@@ -89,6 +89,12 @@ class OrderView(viewsets.ViewSet):
             if order.status == Order.Status.EXP:
                 return Response({'bad_request':'This order has expired'},status.HTTP_400_BAD_REQUEST)
 
+            # 2) If order cancelled
+            if order.status == Order.Status.UCA:
+                return Response({'bad_request':'This order has been cancelled by the maker'},status.HTTP_400_BAD_REQUEST)
+            if order.status == Order.Status.CCA:
+                return Response({'bad_request':'This order has been cancelled collaborativelly'},status.HTTP_400_BAD_REQUEST)
+
             data = ListOrderSerializer(order).data
 
             # Add booleans if user is maker, taker, partipant, buyer or seller
@@ -96,11 +102,11 @@ class OrderView(viewsets.ViewSet):
             data['is_taker'] = order.taker == request.user
             data['is_participant'] = data['is_maker'] or data['is_taker']
             
-            # 2) If not a participant and order is not public, forbid.
+            # 3) If not a participant and order is not public, forbid.
             if not data['is_participant'] and order.status != Order.Status.PUB:
                 return Response({'bad_request':'Not allowed to see this order'},status.HTTP_403_FORBIDDEN)
             
-            # 3) Non participants can view details (but only if PUB)
+            # 4) Non participants can view details (but only if PUB)
             elif not data['is_participant'] and order.status != Order.Status.PUB:
                 return Response(data, status=status.HTTP_200_OK) 
 
@@ -111,7 +117,7 @@ class OrderView(viewsets.ViewSet):
             data['taker_nick'] = str(order.taker)
             data['status_message'] = Order.Status(order.status).label 
 
-            # 4) If status is 'waiting for maker bond', reply with a MAKER HODL invoice.
+            # 5) If status is 'waiting for maker bond' and user is MAKER, reply with a MAKER HODL invoice.
             if order.status == Order.Status.WFB and data['is_maker']:
                 valid, context = Logics.gen_maker_hodl_invoice(order, request.user)
                 if valid:
@@ -119,24 +125,16 @@ class OrderView(viewsets.ViewSet):
                 else:
                     return Response(context, status.HTTP_400_BAD_REQUEST)
             
-            # 5) If status is 'Taken' and user is taker/buyer, reply with a TAKER HODL invoice.
-            elif order.status == Order.Status.TAK and data['is_taker'] and data['is_buyer']:
-                valid, context = Logics.gen_takerbuyer_hodl_invoice(order, request.user)
-                if valid:
-                    data = {**data, **context}
-                else:
-                    return Response(context, status.HTTP_400_BAD_REQUEST)
-
-            # 6) If status is 'Public' and user is taker/seller, reply with a ESCROW HODL invoice.
-            elif order.status == Order.Status.PUB and data['is_taker'] and data['is_seller']:
-                valid, context = Logics.gen_seller_hodl_invoice(order, request.user)
+            # 6)  If status is 'waiting for taker bond' and user is TAKER, reply with a TAKER HODL invoice.
+            elif order.status == Order.Status.TAK and data['is_taker']:
+                valid, context = Logics.gen_taker_hodl_invoice(order, request.user)
                 if valid:
                     data = {**data, **context}
                 else:
                     return Response(context, status.HTTP_400_BAD_REQUEST)
             
-            # 7) If status is 'WF2/WTC' and user is maker/seller, reply with an ESCROW HODL invoice.
-            elif (order.status == Order.Status.WF2 or order.status == Order.Status.WF2) and data['is_maker'] and data['is_seller']:
+            # 7) If status is 'WF2'or'WTC' and user is Seller, reply with an ESCROW HODL invoice.
+            elif (order.status == Order.Status.WF2 or order.status == Order.Status.WFE) and data['is_seller']:
                 valid, context = Logics.gen_seller_hodl_invoice(order, request.user)
                 if valid:
                     data = {**data, **context}
@@ -147,6 +145,10 @@ class OrderView(viewsets.ViewSet):
         return Response({'Order Not Found':'Invalid Order Id'}, status.HTTP_404_NOT_FOUND)
 
     def take_update_confirm_dispute_cancel(self, request, format=None):
+        '''
+        Here take place all of the user updates to the order object.
+        That is: take, confim, cancel, dispute, update_invoice or rate.
+        '''
         order_id = request.GET.get(self.lookup_url_kwarg)
 
         serializer = UpdateOrderSerializer(data=request.data)
@@ -169,13 +171,14 @@ class OrderView(viewsets.ViewSet):
             else: Response({'bad_request':'This order is not public anymore.'}, status.HTTP_400_BAD_REQUEST)
 
         # 2) If action is update (invoice)
-        elif action == 'update' and invoice:
-            updated, context = Logics.update_invoice(order,request.user,invoice)
-            if not updated: return Response(context,status.HTTP_400_BAD_REQUEST)
+        elif action == 'update_invoice' and invoice:
+            valid, context = Logics.update_invoice(order,request.user,invoice)
+            if not valid: return Response(context,status.HTTP_400_BAD_REQUEST)
         
         # 3) If action is cancel
         elif action == 'cancel':
-            pass
+            valid, context = Logics.cancel_order(order,request.user,invoice)
+            if not valid: return Response(context,status.HTTP_400_BAD_REQUEST)
 
         # 4) If action is confirm
         elif action == 'confirm':

@@ -80,57 +80,81 @@ class Logics():
     def update_invoice(cls, order, user, invoice):
         is_valid_invoice, num_satoshis, description, payment_hash, expires_at = LNNode.validate_ln_invoice(invoice)
         # only user is the buyer and a valid LN invoice
-        if cls.is_buyer(order, user) and is_valid_invoice:
-            order.buyer_invoice, _ = LNPayment.objects.update_or_create(
-                concept = LNPayment.Concepts.PAYBUYER, 
-                type = LNPayment.Types.NORM, 
-                sender = User.objects.get(username=ESCROW_USERNAME),
-                receiver= user, 
-                 # if there is a LNPayment matching these above, it updates that with defaults below.
-                defaults={
-                    'invoice' : invoice,
-                    'status' : LNPayment.Status.VALIDI,
-                    'num_satoshis' : num_satoshis,
-                    'description' :  description,
-                    'payment_hash' : payment_hash,
-                    'expires_at' : expires_at}
-                )
+        if not (cls.is_buyer(order, user) or is_valid_invoice):
+            return False, {'bad_request':'Invalid Lightning Network Invoice. It starts by LNTB...'}
 
-            #If the order status was Payment Failed. Move foward to invoice Updated.
-            if order.status == Order.Status.FAI:
-                    order.status = Order.Status.UPI
-            order.save()
-            return True, None
+        order.buyer_invoice, _ = LNPayment.objects.update_or_create(
+            concept = LNPayment.Concepts.PAYBUYER, 
+            type = LNPayment.Types.NORM, 
+            sender = User.objects.get(username=ESCROW_USERNAME),
+            receiver= user, 
+            # if there is a LNPayment matching these above, it updates that one with defaults below.
+            defaults={
+                'invoice' : invoice,
+                'status' : LNPayment.Status.VALIDI,
+                'num_satoshis' : num_satoshis,
+                'description' :  description,
+                'payment_hash' : payment_hash,
+                'expires_at' : expires_at}
+            )
 
-        return False, {'bad_request':'Invalid Lightning Network Invoice. It starts by LNTB...'}
+        # If the order status is 'Waiting for invoice'. Move forward to 'waiting for invoice'
+        if order.status == Order.Status.WFE: order.status = Order.Status.CHA
+
+        # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow' or to 'chat'
+        if order.status == Order.Status.WF2:
+            print(order.trade_escrow)
+            if order.trade_escrow:
+                if order.trade_escrow.status == LNPayment.Status.LOCKED:
+                    order.status = Order.Status.CHA
+            else:
+                order.status = Order.Status.WFE
+
+        # If the order status was Payment Failed. Move forward to invoice Updated.
+        if order.status == Order.Status.FAI:
+            order.status = Order.Status.UPI
+
+        order.save()
+        return True, None
+
+        
 
     @classmethod
     def cancel_order(cls, order, user, state):
     
     # 1) When maker cancels before bond
-        '''The order never shows up on the book and status
-        changes to cancelled. That's it.'''
+        '''The order never shows up on the book and order 
+        status becomes "cancelled". That's it.'''
+        if order.status == Order.Status.WFB and order.maker == user:
+            order.maker = None
+            order.status = Order.Status.UCA
+            order.save()
+            return True, None
 
-    # 2) When maker cancels after bond
-        '''The order dissapears from book and goes to cancelled. 
-        Maker is charged a small amount of sats, to prevent DDOS 
-        on the LN node and order book'''
 
-    # 3) When taker cancels before bond
-        ''' The order goes back to the book as public.
-        LNPayment "order.taker_bond" is deleted() '''
+        # 2) When maker cancels after bond
+            '''The order dissapears from book and goes to cancelled. 
+            Maker is charged a small amount of sats, to prevent DDOS 
+            on the LN node and order book'''
 
-    # 4) When taker or maker cancel after bond
-        '''The order goes into cancelled status if maker cancels.
-        The order goes into the public book if taker cancels.
-        In both cases there is a small fee.'''
+        # 3) When taker cancels before bond
+            ''' The order goes back to the book as public.
+            LNPayment "order.taker_bond" is deleted() '''
 
-    # 5) When trade collateral has been posted
-        '''Always goes to cancelled status. Collaboration  is needed.
-        When a user asks for cancel, 'order.is_pending_cancel' goes True.
-        When the second user asks for cancel. Order is totally cancelled.
-        Has a small cost for both parties to prevent node DDOS.'''
-        pass
+        # 4) When taker or maker cancel after bond
+            '''The order goes into cancelled status if maker cancels.
+            The order goes into the public book if taker cancels.
+            In both cases there is a small fee.'''
+
+        # 5) When trade collateral has been posted
+            '''Always goes to cancelled status. Collaboration  is needed.
+            When a user asks for cancel, 'order.is_pending_cancel' goes True.
+            When the second user asks for cancel. Order is totally cancelled.
+            Has a small cost for both parties to prevent node DDOS.'''
+        
+        else:
+            return False, {'bad_request':'You cannot cancel this order'}
+
 
 
     @classmethod
@@ -168,7 +192,7 @@ class Logics():
         return True, {'invoice':invoice,'bond_satoshis':bond_satoshis}
 
     @classmethod
-    def gen_takerbuyer_hodl_invoice(cls, order, user):
+    def gen_taker_hodl_invoice(cls, order, user):
 
         # Do not gen and cancel if a taker invoice is there and older than 2 minutes
         if order.taker_bond:
