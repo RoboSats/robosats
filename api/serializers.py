@@ -11,12 +11,7 @@ class MakeOrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ('type','currency','amount','payment_method','is_explicit','premium','satoshis')
 
-class UpdateOrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Order
-        fields = ('id','buyer_invoice')
-
-class UpdateInvoiceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = LNPayment
-        fields = ['invoice']
+class UpdateOrderSerializer(serializers.Serializer):
+    invoice = serializers.CharField(max_length=300, allow_null=True, allow_blank=True, default=None)
+    action = serializers.ChoiceField(choices=('take','dispute','cancel','confirm','rate'), allow_null=False)
+    rating = serializers.ChoiceField(choices=('1','2','3','4','5'), allow_null=True, allow_blank=True, default=None)

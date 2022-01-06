@@ -11,6 +11,12 @@ BOND_SIZE = float(config('BOND_SIZE'))
 MARKET_PRICE_API = config('MARKET_PRICE_API')
 ESCROW_USERNAME = config('ESCROW_USERNAME')
 
+EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
+EXP_TAKER_BOND_INVOICE = int(config('EXP_TAKER_BOND_INVOICE'))
+EXP_TRADE_ESCR_INVOICE = int(config('EXP_TRADE_ESCR_INVOICE'))
+
+BOND_EXPIRY = int(config('BOND_EXPIRY'))
+ESCROW_EXPIRY = int(config('ESCROW_EXPIRY'))
 
 class Logics():
 
@@ -46,12 +52,10 @@ class Logics():
         if order.is_explicit:
             satoshis_now = order.satoshis
         else:
+            # TODO Add fallback Public APIs and error handling
             market_prices = requests.get(MARKET_PRICE_API).json()
-            print(market_prices)
             exchange_rate = float(market_prices[Order.Currencies(order.currency).label]['last'])
-            print(exchange_rate)
             satoshis_now = ((float(order.amount) * 1+float(order.premium)) / exchange_rate) * 100*1000*1000
-            print(satoshis_now)
 
         return satoshis_now
     
@@ -85,25 +89,57 @@ class Logics():
             if order.status == Order.Status.FAI:
                     order.status = Order.Status.UPI
             order.save()
-            return True
+            return True, None
 
-        return False
+        return False, {'bad_request':'Invalid Lightning Network Invoice. It starts by LNTB...'}
+
+    @classmethod
+    def cancel_order(cls, order, user, state):
+    
+    # 1) When maker cancels before bond
+        '''The order never shows up on the book and status
+        changes to cancelled. That's it.'''
+
+    # 2) When maker cancels after bond
+        '''The order dissapears from book and goes to cancelled. 
+        Maker is charged a small amount of sats, to prevent DDOS 
+        on the LN node and order book'''
+
+    # 3) When taker cancels before bond
+        ''' The order goes back to the book as public.
+        LNPayment "order.taker_bond" is deleted() '''
+
+    # 4) When taker or maker cancel after bond
+        '''The order goes into cancelled status if maker cancels.
+        The order goes into the public book if taker cancels.
+        In both cases there is a small fee.'''
+
+    # 5) When trade collateral has been posted
+        '''Always goes to cancelled status. Collaboration  is needed.
+        When a user asks for cancel, 'order.is_pending_cancel' goes True.
+        When the second user asks for cancel. Order is totally cancelled.
+        Has a small cost for both parties to prevent node DDOS.'''
+        pass
+
 
     @classmethod
     def gen_maker_hodl_invoice(cls, order, user):
 
-        # Do not and delete if order is more than 5 minutes old
+        # Do not gen and delete if order is more than 5 minutes old
         if order.expires_at < timezone.now():
             cls.order_expires(order)
             return False, {'Order expired':'cannot generate a bond invoice for an expired order. Make a new one.'}
 
+        # Return the previous invoice if there was one
         if order.maker_bond:
             return True, {'invoice':order.maker_bond.invoice,'bond_satoshis':order.maker_bond.num_satoshis}
 
         order.satoshis_now = cls.satoshis_now(order)
         bond_satoshis = order.satoshis_now * BOND_SIZE
-        description = f'Robosats maker bond for order ID {order.id}. Will return to you if you do not cheat!'
-        invoice, payment_hash, expires_at = LNNode.gen_hodl_invoice(num_satoshis = bond_satoshis, description=description)
+        description = f'RoboSats - Maker bond for order ID {order.id}. These sats will return to you if you do not cheat!'
+
+        # Gen HODL Invoice
+        invoice, payment_hash, expires_at = LNNode.gen_hodl_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
         
         order.maker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.MAKEBOND, 
@@ -115,30 +151,32 @@ class Logics():
             num_satoshis = bond_satoshis,
             description =  description,
             payment_hash = payment_hash,
-            expires_at = expires_at,
-            )
+            expires_at = expires_at)
 
         order.save()
         return True, {'invoice':invoice,'bond_satoshis':bond_satoshis}
 
     @classmethod
-    def gen_taker_buyer_hodl_invoice(cls, order, user):
+    def gen_takerbuyer_hodl_invoice(cls, order, user):
 
-        # Do not and delete if order is more than 5 minutes old
-        if order.expires_at < timezone.now():
-            cls.order_expires(order)
-            return False, {'Order expired':'cannot generate a bond invoice for an expired order. Make a new one.'}
+        # Do not gen and cancel if a taker invoice is there and older than 2 minutes
+        if order.taker_bond.created_at < (timezone.now()+timedelta(minutes=EXP_TAKER_BOND_INVOICE)):
+            cls.cancel_order(order, user, 3) # State 3, cancel order before taker bond
+            return False, {'Invoice expired':'You did not confirm taking the order in time.'}
 
-        if order.maker_bond:
-            return True, {'invoice':order.maker_bond.invoice,'bond_satoshis':order.maker_bond.num_satoshis}
+        # Return the previous invoice if there was one
+        if order.taker_bond:
+            return True, {'invoice':order.taker_bond.invoice,'bond_satoshis':order.taker_bond.num_satoshis}
 
         order.satoshis_now = cls.satoshis_now(order)
         bond_satoshis = order.satoshis_now * BOND_SIZE
-        description = f'Robosats maker bond for order ID {order.id}. Will return to you if you do not cheat!'
-        invoice, payment_hash, expires_at = LNNode.gen_hodl_invoice(num_satoshis = bond_satoshis, description=description)
+        description = f'RoboSats - Taker bond for order ID {order.id}. These sats will return to you if you do not cheat!'
+
+        # Gen HODL Invoice
+        invoice, payment_hash, expires_at = LNNode.gen_hodl_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
         
-        order.maker_bond = LNPayment.objects.create(
-            concept = LNPayment.Concepts.MAKEBOND, 
+        order.taker_bond = LNPayment.objects.create(
+            concept = LNPayment.Concepts.TAKEBOND, 
             type = LNPayment.Types.HODL, 
             sender = user,
             receiver = User.objects.get(username=ESCROW_USERNAME),
@@ -147,8 +185,7 @@ class Logics():
             num_satoshis = bond_satoshis,
             description =  description,
             payment_hash = payment_hash,
-            expires_at = expires_at,
-            )
+            expires_at = expires_at)
 
         order.save()
         return True, {'invoice':invoice,'bond_satoshis':bond_satoshis}

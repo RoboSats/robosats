@@ -49,7 +49,6 @@ class LNPayment(models.Model):
     # payment info
     invoice = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
     payment_hash = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
-    preimage = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
     description = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
@@ -79,22 +78,21 @@ class Order(models.Model):
         PUB = 1, 'Public'
         DEL = 2, 'Deleted'
         TAK = 3, 'Waiting for taker bond' # only needed when taker is a buyer
-        UCA = 4, 'Unilaterally cancelled'
-        RET = 5, 'Returned to order book' # Probably same as 1 in most cases.
-        WF2 = 6, 'Waiting for trade collateral and buyer invoice'
-        WTC = 7, 'Waiting only for trade collateral'
-        WBI = 8, 'Waiting only for buyer invoice'
-        EXF = 9, 'Exchanging fiat / In chat'
-        CCA = 10, 'Collaboratively cancelled'
-        FSE = 11, 'Fiat sent'
-        FCO = 12, 'Fiat confirmed'
-        SUC = 13, 'Sucessfully settled'
-        FAI = 14, 'Failed lightning network routing'
-        UPI = 15, 'Updated invoice'
-        DIS = 16, 'In dispute'
-        MLD = 17, 'Maker lost dispute'
-        TLD = 18, 'Taker lost dispute'
-        EXP = 19, 'Expired'
+        UCA = 4, 'Cancelled'
+        WF2 = 5, 'Waiting for trade collateral and buyer invoice'
+        WTC = 6, 'Waiting only for seller trade collateral'
+        WBI = 7, 'Waiting only for buyer invoice'
+        EXF = 8, 'Sending fiat - In chatroom'
+        CCA = 9, 'Collaboratively cancelled'
+        FSE = 10, 'Fiat sent - In chatroom'
+        FCO = 11, 'Fiat confirmed'
+        SUC = 12, 'Sucessfully settled'
+        FAI = 13, 'Failed lightning network routing'
+        UPI = 14, 'Updated invoice'
+        DIS = 15, 'In dispute'
+        MLD = 16, 'Maker lost dispute'
+        TLD = 17, 'Taker lost dispute'
+        EXP = 18, 'Expired'
 
     # order info
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.WFB)
@@ -117,11 +115,11 @@ class Order(models.Model):
     t0_satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)], blank=True) # sats at creation
     last_satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(0), MaxValueValidator(MAX_TRADE*2)], blank=True) # sats last time checked. Weird if 2* trade max...
     
-    
     # order participants
     maker = models.ForeignKey(User, related_name='maker', on_delete=models.CASCADE, null=True, default=None)  # unique = True, a maker can only make one order
     taker = models.ForeignKey(User, related_name='taker', on_delete=models.SET_NULL, null=True, default=None, blank=True)  # unique = True, a taker can only take one order
-    
+    is_pending_cancel = models.BooleanField(default=False, null=False) # When collaborative cancel is needed and one partner has cancelled.
+
     # order collateral
     maker_bond = models.ForeignKey(LNPayment, related_name='maker_bond', on_delete=models.SET_NULL, null=True, default=None, blank=True)
     taker_bond = models.ForeignKey(LNPayment, related_name='taker_bond', on_delete=models.SET_NULL, null=True, default=None, blank=True)

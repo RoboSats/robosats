@@ -7,9 +7,9 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
-from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateInvoiceSerializer
+from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
 from .models import Order
-from .logics import Logics
+from .logics import EXP_MAKER_BOND_INVOICE, Logics
 
 from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
@@ -23,7 +23,7 @@ from django.utils import timezone
 
 from decouple import config
 
-EXPIRATION_MAKE = config('EXPIRATION_MAKE')
+EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
 
 avatar_path = Path('frontend/static/assets/avatars')
 avatar_path.mkdir(parents=True, exist_ok=True)
@@ -36,44 +36,39 @@ class OrderMakerView(CreateAPIView):
     def post(self,request):
         serializer = self.serializer_class(data=request.data)
 
-        if serializer.is_valid():
-            otype = serializer.data.get('type')
-            currency = serializer.data.get('currency')
-            amount = serializer.data.get('amount')
-            payment_method = serializer.data.get('payment_method')
-            premium = serializer.data.get('premium')
-            satoshis = serializer.data.get('satoshis')
-            is_explicit = serializer.data.get('is_explicit')
+        if not serializer.is_valid(): return Response(status=status.HTTP_400_BAD_REQUEST)
 
-            valid, context = Logics.validate_already_maker_or_taker(request.user)
-            if not valid:
-                return Response(context, status=status.HTTP_409_CONFLICT)
+        type = serializer.data.get('type')
+        currency = serializer.data.get('currency')
+        amount = serializer.data.get('amount')
+        payment_method = serializer.data.get('payment_method')
+        premium = serializer.data.get('premium')
+        satoshis = serializer.data.get('satoshis')
+        is_explicit = serializer.data.get('is_explicit')
 
-            # Creates a new order in db
-            order = Order(
-                type=otype,
-                status=Order.Status.WFB,
-                currency=currency,
-                amount=amount,
-                payment_method=payment_method,
-                premium=premium,
-                satoshis=satoshis,
-                is_explicit=is_explicit,
-                expires_at=timezone.now()+timedelta(minutes=EXPIRATION_MAKE),
-                maker=request.user)
+        valid, context = Logics.validate_already_maker_or_taker(request.user)
+        if not valid: return Response(context, status=status.HTTP_409_CONFLICT)
 
-            order.t0_satoshis=Logics.satoshis_now(order) # TODO reate Order class method when new instance is created!
-            order.last_satoshis=Logics.satoshis_now(order) 
-            order.save()
+        # Creates a new order
+        order = Order(
+            type=type,
+            currency=currency,
+            amount=amount,
+            payment_method=payment_method,
+            premium=premium,
+            satoshis=satoshis,
+            is_explicit=is_explicit,
+            expires_at=timezone.now()+timedelta(minutes=EXP_MAKER_BOND_INVOICE),
+            maker=request.user)
 
-        if not serializer.is_valid():
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-            
+        order.last_satoshis = order.t0_satoshis = Logics.satoshis_now(order) # TODO move to Order class method when new instance is created!
+        
+        order.save()
         return Response(ListOrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
 
 class OrderView(viewsets.ViewSet):
-    serializer_class = UpdateInvoiceSerializer
+    serializer_class = UpdateOrderSerializer
     lookup_url_kwarg = 'order_id'
 
     def get(self, request, format=None):
@@ -88,7 +83,7 @@ class OrderView(viewsets.ViewSet):
         if len(order) == 1 :
             order = order[0]
 
-            # If order expired
+            # 1) If order expired
             if order.status == Order.Status.EXP:
                 return Response({'bad_request':'This order has expired'},status.HTTP_400_BAD_REQUEST)
 
@@ -99,11 +94,11 @@ class OrderView(viewsets.ViewSet):
             data['is_taker'] = order.taker == request.user
             data['is_participant'] = data['is_maker'] or data['is_taker']
             
-            # If not a participant and order is not public, forbid.
+            # 2) If not a participant and order is not public, forbid.
             if not data['is_participant'] and order.status != Order.Status.PUB:
                 return Response({'bad_request':'Not allowed to see this order'},status.HTTP_403_FORBIDDEN)
             
-            # non participants can view some details, but only if PUB
+            # 3) Non participants can view details (but only if PUB)
             elif not data['is_participant'] and order.status != Order.Status.PUB:
                 return Response(data, status=status.HTTP_200_OK) 
 
@@ -114,45 +109,73 @@ class OrderView(viewsets.ViewSet):
             data['taker_nick'] = str(order.taker)
             data['status_message'] = Order.Status(order.status).label 
 
-            # If status is 'waiting for maker bond', reply with a hodl invoice too.
+            # 4) If status is 'waiting for maker bond', reply with a MAKER HODL invoice.
             if order.status == Order.Status.WFB and data['is_maker']:
                 valid, context = Logics.gen_maker_hodl_invoice(order, request.user)
-                if valid:
-                    data = {**data, **context}
-                else:
-                    Response(context, status=status.HTTP_400_BAD_REQUEST)
+                data = {**data, **context} if valid else Response(context, status.HTTP_400_BAD_REQUEST)
+            
+            # 5) If status is 'Public' and user is taker/buyer, reply with a TAKER HODL invoice.
+            elif order.status == Order.Status.PUB and data['is_taker'] and data['is_buyer']:
+                valid, context = Logics.gen_takerbuyer_hodl_invoice(order, request.user)
+                data = {**data, **context} if valid else Response(context, status.HTTP_400_BAD_REQUEST)
+
+            # 6) If status is 'Public' and user is taker/seller, reply with a ESCROW HODL invoice.
+            elif order.status == Order.Status.PUB and data['is_taker'] and data['is_seller']:
+                valid, context = Logics.gen_seller_hodl_invoice(order, request.user)
+                data = {**data, **context} if valid else  Response(context, status.HTTP_400_BAD_REQUEST)
+            
+            # 7) If status is 'WF2/WTC' and user is maker/seller, reply with an ESCROW HODL invoice.
+            elif (order.status == Order.Status.WF2 or order.status == Order.Status.WF2) and data['is_maker'] and data['is_seller']:
+                valid, context = Logics.gen_seller_hodl_invoice(order, request.user)
+                data = {**data, **context} if valid else Response(context, status=status.HTTP_400_BAD_REQUEST)
 
             return Response(data, status=status.HTTP_200_OK)
-
         return Response({'Order Not Found':'Invalid Order Id'},status=status.HTTP_404_NOT_FOUND)
-        
 
-
-    def take_or_update(self, request, format=None):
+    def take_update_confirm_dispute_cancel(self, request, format=None):
         order_id = request.GET.get(self.lookup_url_kwarg)
 
-        serializer = UpdateInvoiceSerializer(data=request.data)
+        serializer = UpdateOrderSerializer(data=request.data)
+        if not serializer.is_valid(): return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         order = Order.objects.get(id=order_id)
 
-        if serializer.is_valid():
-            invoice = serializer.data.get('invoice')
+        # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update' (invoice) 6)'rate' (counterparty)
+        action = serializer.data.get('action') 
+        invoice = serializer.data.get('invoice')
+        rating = serializer.data.get('rating')
 
+        # 1) If action is take, it is be taker request!
+        if action == 'take':
+            if order.status == Order.Status.PUB: 
+                valid, context = Logics.validate_already_maker_or_taker(request.user)
+                if not valid: return Response(context, status=status.HTTP_409_CONFLICT)
+
+                Logics.take(order, request.user)
+            else: Response({'bad_request':'This order is not public anymore.'}, status.HTTP_400_BAD_REQUEST)
+
+        # 2) If action is update (invoice)
+        elif action == 'update' and invoice:
+            updated, context = Logics.update_invoice(order,request.user,invoice)
+            if not updated: return Response(context,status.HTTP_400_BAD_REQUEST)
         
-        # If this is an empty POST request (no invoice), it must be taker request!
-        if not invoice and order.status == Order.Status.PUB:    
-            valid, context = Logics.validate_already_maker_or_taker(request.user)
-            if not valid: return Response(context, status=status.HTTP_409_CONFLICT)
+        # 3) If action is cancel
+        elif action == 'cancel':
+            pass
 
-            Logics.take(order, request.user)
+        # 4) If action is confirm
+        elif action == 'confirm':
+            pass
 
-        # An invoice came in! update it
-        elif invoice:
-            print(invoice)
-            updated = Logics.update_invoice(order=order,user=request.user,invoice=invoice)
-            if not updated:
-                return Response({'bad_request':'Invalid Lightning Network Invoice. It starts by LNTB...'})
-        
-        # Something else is going on. Probably not allowed.
+        # 5) If action is dispute
+        elif action == 'dispute':
+            pass
+
+        # 6) If action is dispute
+        elif action == 'rate' and rating:
+            pass
+
+        # If nothing... something else is going on. Probably not allowed!
         else:
             return Response({'bad_request':'Not allowed'})
 
@@ -264,6 +287,7 @@ class BookView(ListAPIView):
             user = User.objects.filter(id=data['maker'])
             if len(user) == 1:
                 data['maker_nick'] = user[0].username
+            
             # Non participants should not see the status or who is the taker
             for key in ('status','taker'):
                 del data[key]

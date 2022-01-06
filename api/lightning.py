@@ -13,7 +13,7 @@ class LNNode():
     Place holder functions to interact with Lightning Node
     '''
     
-    def gen_hodl_invoice(num_satoshis, description):
+    def gen_hodl_invoice(num_satoshis, description, expiry):
         '''Generates hodl invoice to publish an order'''
         # TODO
         invoice = ''.join(random.choices(string.ascii_uppercase + string.digits, k=80)) #FIX
