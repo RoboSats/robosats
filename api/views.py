@@ -1,7 +1,6 @@
-from rest_framework import status, serializers
+from rest_framework import status, viewsets
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
-from rest_framework import viewsets
 from rest_framework.response import Response
 
 from django.contrib.auth import authenticate, login, logout
@@ -9,7 +8,7 @@ from django.contrib.auth.models import User
 
 from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
 from .models import Order
-from .logics import EXP_MAKER_BOND_INVOICE, Logics
+from .logics import Logics
 
 from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
@@ -20,7 +19,6 @@ import hashlib
 from pathlib import Path
 from datetime import timedelta
 from django.utils import timezone
-
 from decouple import config
 
 EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
@@ -47,7 +45,7 @@ class OrderMakerView(CreateAPIView):
         is_explicit = serializer.data.get('is_explicit')
 
         valid, context = Logics.validate_already_maker_or_taker(request.user)
-        if not valid: return Response(context, status=status.HTTP_409_CONFLICT)
+        if not valid: return Response(context, status.HTTP_409_CONFLICT)
 
         # Creates a new order
         order = Order(
@@ -58,10 +56,14 @@ class OrderMakerView(CreateAPIView):
             premium=premium,
             satoshis=satoshis,
             is_explicit=is_explicit,
-            expires_at=timezone.now()+timedelta(minutes=EXP_MAKER_BOND_INVOICE),
+            expires_at=timezone.now()+timedelta(minutes=EXP_MAKER_BOND_INVOICE), # TODO Move to class method
             maker=request.user)
+        
+        # TODO move to Order class method when new instance is created!
+        order.last_satoshis = order.t0_satoshis = Logics.satoshis_now(order)
 
-        order.last_satoshis = order.t0_satoshis = Logics.satoshis_now(order) # TODO move to Order class method when new instance is created!
+        valid, context = Logics.validate_order_size(order)
+        if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
         
         order.save()
         return Response(ListOrderSerializer(order).data, status=status.HTTP_201_CREATED)
@@ -112,25 +114,37 @@ class OrderView(viewsets.ViewSet):
             # 4) If status is 'waiting for maker bond', reply with a MAKER HODL invoice.
             if order.status == Order.Status.WFB and data['is_maker']:
                 valid, context = Logics.gen_maker_hodl_invoice(order, request.user)
-                data = {**data, **context} if valid else Response(context, status.HTTP_400_BAD_REQUEST)
+                if valid:
+                    data = {**data, **context}
+                else:
+                    return Response(context, status.HTTP_400_BAD_REQUEST)
             
-            # 5) If status is 'Public' and user is taker/buyer, reply with a TAKER HODL invoice.
-            elif order.status == Order.Status.PUB and data['is_taker'] and data['is_buyer']:
+            # 5) If status is 'Taken' and user is taker/buyer, reply with a TAKER HODL invoice.
+            elif order.status == Order.Status.TAK and data['is_taker'] and data['is_buyer']:
                 valid, context = Logics.gen_takerbuyer_hodl_invoice(order, request.user)
-                data = {**data, **context} if valid else Response(context, status.HTTP_400_BAD_REQUEST)
+                if valid:
+                    data = {**data, **context}
+                else:
+                    return Response(context, status.HTTP_400_BAD_REQUEST)
 
             # 6) If status is 'Public' and user is taker/seller, reply with a ESCROW HODL invoice.
             elif order.status == Order.Status.PUB and data['is_taker'] and data['is_seller']:
                 valid, context = Logics.gen_seller_hodl_invoice(order, request.user)
-                data = {**data, **context} if valid else  Response(context, status.HTTP_400_BAD_REQUEST)
+                if valid:
+                    data = {**data, **context}
+                else:
+                    return Response(context, status.HTTP_400_BAD_REQUEST)
             
             # 7) If status is 'WF2/WTC' and user is maker/seller, reply with an ESCROW HODL invoice.
             elif (order.status == Order.Status.WF2 or order.status == Order.Status.WF2) and data['is_maker'] and data['is_seller']:
                 valid, context = Logics.gen_seller_hodl_invoice(order, request.user)
-                data = {**data, **context} if valid else Response(context, status=status.HTTP_400_BAD_REQUEST)
+                if valid:
+                    data = {**data, **context}
+                else:
+                    return Response(context, status.HTTP_400_BAD_REQUEST)
 
-            return Response(data, status=status.HTTP_200_OK)
-        return Response({'Order Not Found':'Invalid Order Id'},status=status.HTTP_404_NOT_FOUND)
+            return Response(data, status.HTTP_200_OK)
+        return Response({'Order Not Found':'Invalid Order Id'}, status.HTTP_404_NOT_FOUND)
 
     def take_update_confirm_dispute_cancel(self, request, format=None):
         order_id = request.GET.get(self.lookup_url_kwarg)
@@ -140,7 +154,7 @@ class OrderView(viewsets.ViewSet):
         
         order = Order.objects.get(id=order_id)
 
-        # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update' (invoice) 6)'rate' (counterparty)
+        # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice' 6)'rate' (counterparty)
         action = serializer.data.get('action') 
         invoice = serializer.data.get('invoice')
         rating = serializer.data.get('rating')
@@ -232,7 +246,7 @@ class UserView(APIView):
             with open(image_path, "wb") as f:
                 rh.img.save(f, format="png")
 
-        # Create new credentials and logsin if nickname is new
+        # Create new credentials and log in if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname, password=token, is_staff=False)
             user = authenticate(request, username=nickname, password=token)

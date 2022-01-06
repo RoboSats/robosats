@@ -11,6 +11,9 @@ BOND_SIZE = float(config('BOND_SIZE'))
 MARKET_PRICE_API = config('MARKET_PRICE_API')
 ESCROW_USERNAME = config('ESCROW_USERNAME')
 
+MIN_TRADE = int(config('MIN_TRADE'))
+MAX_TRADE = int(config('MAX_TRADE'))
+
 EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
 EXP_TAKER_BOND_INVOICE = int(config('EXP_TAKER_BOND_INVOICE'))
 EXP_TRADE_ESCR_INVOICE = int(config('EXP_TRADE_ESCR_INVOICE'))
@@ -32,6 +35,14 @@ class Logics():
             return False, {'Bad Request':'You are already taker of an order'}
         return True, None
 
+    def validate_order_size(order):
+        '''Checks if order is withing limits at t0'''
+        if order.t0_satoshis > MAX_TRADE:
+            return False, {'Bad_request': 'Your order is too big. It is worth {order.t0_satoshis} now, max is {MAX_TRADE}'}
+        if order.t0_satoshis < MIN_TRADE:
+            return False, {'Bad_request': 'Your order is too small. It is worth {order.t0_satoshis} now, min is {MIN_TRADE}'}
+        return True, None
+        
     def take(order, user):
         order.taker = user
         order.status = Order.Status.TAK
@@ -135,7 +146,7 @@ class Logics():
             return True, {'invoice':order.maker_bond.invoice,'bond_satoshis':order.maker_bond.num_satoshis}
 
         order.satoshis_now = cls.satoshis_now(order)
-        bond_satoshis = order.satoshis_now * BOND_SIZE
+        bond_satoshis = int(order.satoshis_now * BOND_SIZE)
         description = f'RoboSats - Maker bond for order ID {order.id}. These sats will return to you if you do not cheat!'
 
         # Gen HODL Invoice
@@ -160,16 +171,16 @@ class Logics():
     def gen_takerbuyer_hodl_invoice(cls, order, user):
 
         # Do not gen and cancel if a taker invoice is there and older than 2 minutes
-        if order.taker_bond.created_at < (timezone.now()+timedelta(minutes=EXP_TAKER_BOND_INVOICE)):
-            cls.cancel_order(order, user, 3) # State 3, cancel order before taker bond
-            return False, {'Invoice expired':'You did not confirm taking the order in time.'}
-
-        # Return the previous invoice if there was one
         if order.taker_bond:
-            return True, {'invoice':order.taker_bond.invoice,'bond_satoshis':order.taker_bond.num_satoshis}
+            if order.taker_bond.created_at > (timezone.now()+timedelta(minutes=EXP_TAKER_BOND_INVOICE)):
+                cls.cancel_order(order, user, 3) # State 3, cancel order before taker bond
+                return False, {'Invoice expired':'You did not confirm taking the order in time.'}
+            else:
+                # Return the previous invoice if there was one
+                return True, {'invoice':order.taker_bond.invoice,'bond_satoshis':order.taker_bond.num_satoshis}
 
         order.satoshis_now = cls.satoshis_now(order)
-        bond_satoshis = order.satoshis_now * BOND_SIZE
+        bond_satoshis = int(order.satoshis_now * BOND_SIZE)
         description = f'RoboSats - Taker bond for order ID {order.id}. These sats will return to you if you do not cheat!'
 
         # Gen HODL Invoice
@@ -188,4 +199,4 @@ class Logics():
             expires_at = expires_at)
 
         order.save()
-        return True, {'invoice':invoice,'bond_satoshis':bond_satoshis}
+        return True, {'invoice':invoice,'bond_satoshis': bond_satoshis}
