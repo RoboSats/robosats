@@ -8,8 +8,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateInvoiceSerializer
-from .models import Order, LNPayment, Logics
-from .lightning import LNNode
+from .models import Order
+from .logics import Logics
 
 from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
@@ -21,8 +21,9 @@ from pathlib import Path
 from datetime import timedelta
 from django.utils import timezone
 
-# .env
-EXPIRATION_MAKE = 5 # minutes
+from decouple import config
+
+EXPIRATION_MAKE = config('EXPIRATION_MAKE')
 
 avatar_path = Path('frontend/static/assets/avatars')
 avatar_path.mkdir(parents=True, exist_ok=True)

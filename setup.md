@@ -4,7 +4,10 @@
 `sudo apt install python3 python3 pip`
 
 ### Install virtual environments
-`pip install virtualenvwrapper`
+```
+pip install virtualenvwrapper
+pip install python-decouple
+```
 
 ### Add to .bashrc
 
