@@ -9,6 +9,7 @@ from datetime import timedelta
 from django.utils import timezone
 
 from pathlib import Path
+import requests
 
 from .lightning import LNNode
 
@@ -21,6 +22,8 @@ MAX_TRADE = 500*1000
 FEE = 0.002 # Trade fee in %
 BOND_SIZE = 0.01 # Bond in %
 ESCROW_USERNAME = 'admin'
+MARKET_PRICE_API = 'https://blockchain.info/ticker'
+
 
 class LNPayment(models.Model):
 
@@ -133,6 +136,16 @@ class Order(models.Model):
     # buyer payment LN invoice
     buyer_invoice = models.ForeignKey(LNPayment, related_name='buyer_invoice', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
+@receiver(pre_delete, sender=Order)
+def delelete_HTLCs_at_order_deletion(sender, instance, **kwargs):
+    to_delete = (instance.maker_bond, instance.buyer_invoice, instance.taker_bond, instance.trade_escrow)
+
+    for htlc in to_delete:
+        try:
+            htlc.delete()
+        except:
+            pass
+
 class Profile(models.Model):
 
     user = models.OneToOneField(User,on_delete=models.CASCADE)
@@ -207,11 +220,17 @@ class Logics():
     
     def satoshis_now(order):
         ''' checks trade amount in sats '''
-        # TODO
-        # order.last_satoshis =
-        # order.save()
+        if order.is_explicit:
+            satoshis_now = order.satoshis
+        else:
+            market_prices = requests.get(MARKET_PRICE_API).json()
+            print(market_prices)
+            exchange_rate = float(market_prices[Order.Currencies(order.currency).label]['last'])
+            print(exchange_rate)
+            satoshis_now = ((float(order.amount) * 1+float(order.premium)) / exchange_rate) * 100*1000*1000
+            print(satoshis_now)
 
-        return 50000
+        return satoshis_now
     
     def order_expires(order):
         order.status = Order.Status.EXP
@@ -256,11 +275,12 @@ class Logics():
             return False, {'Order expired':'cannot generate a bond invoice for an expired order. Make a new one.'}
 
         if order.maker_bond:
-            return order.maker_bond.invoice
-            
-        bond_amount = cls.satoshis_now(order)
+            return True, {'invoice':order.maker_bond.invoice,'bond_satoshis':order.maker_bond.num_satoshis}
+
+        order.satoshis_now = cls.satoshis_now(order)
+        bond_satoshis = order.satoshis_now * BOND_SIZE
         description = f'Robosats maker bond for order ID {order.id}. Will return to you if you do not cheat!'
-        invoice, payment_hash, expires_at = LNNode.gen_hodl_invoice(num_satoshis = bond_amount, description=description)
+        invoice, payment_hash, expires_at = LNNode.gen_hodl_invoice(num_satoshis = bond_satoshis, description=description)
         
         order.maker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.MAKEBOND, 
@@ -269,12 +289,13 @@ class Logics():
             receiver = User.objects.get(username=ESCROW_USERNAME),
             invoice = invoice,
             status = LNPayment.Status.INVGEN,
-            num_satoshis = bond_amount,
+            num_satoshis = bond_satoshis,
             description =  description,
             payment_hash = payment_hash,
             expires_at = expires_at,
             )
 
         order.save()
-        return invoice
+        
+        return True, {'invoice':invoice,'bond_satoshis':bond_satoshis}
 

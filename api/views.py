@@ -58,8 +58,11 @@ class OrderMakerView(CreateAPIView):
                 premium=premium,
                 satoshis=satoshis,
                 is_explicit=is_explicit,
-                expires_at= timezone.now()+timedelta(minutes=EXPIRATION_MAKE),
+                expires_at=timezone.now()+timedelta(minutes=EXPIRATION_MAKE),
                 maker=request.user)
+
+            order.t0_satoshis=Logics.satoshis_now(order) # TODO reate Order class method when new instance is created!
+            order.last_satoshis=Logics.satoshis_now(order) 
             order.save()
 
         if not serializer.is_valid():
@@ -112,7 +115,11 @@ class OrderView(viewsets.ViewSet):
 
             # If status is 'waiting for maker bond', reply with a hodl invoice too.
             if order.status == Order.Status.WFB and data['is_maker']:
-                data['hodl_invoice'] = Logics.gen_maker_hodl_invoice(order, request.user)
+                valid, context = Logics.gen_maker_hodl_invoice(order, request.user)
+                if valid:
+                    data = {**data, **context}
+                else:
+                    Response(context, status=status.HTTP_400_BAD_REQUEST)
 
             return Response(data, status=status.HTTP_200_OK)
 
