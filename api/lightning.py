@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.utils import timezone
 
 import random
@@ -12,9 +13,14 @@ class LNNode():
     Place holder functions to interact with Lightning Node
     '''
     
-    def gen_hodl_invoice():
+    def gen_hodl_invoice(num_satoshis, description):
         '''Generates hodl invoice to publish an order'''
-        return ''.join(random.choices(string.ascii_uppercase + string.digits, k=80))
+        # TODO
+        invoice = ''.join(random.choices(string.ascii_uppercase + string.digits, k=80)) #FIX
+        payment_hash = ''.join(random.choices(string.ascii_uppercase + string.digits, k=40)) #FIX
+        expires_at = timezone.now() + timedelta(hours=8)  ##FIX
+
+        return invoice, payment_hash, expires_at 
 
     def validate_hodl_invoice_locked():
         '''Generates hodl invoice to publish an order'''

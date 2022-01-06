@@ -22,7 +22,7 @@ from datetime import timedelta
 from django.utils import timezone
 
 # .env
-expiration_time = 8
+EXPIRATION_MAKE = 5 # minutes
 
 avatar_path = Path('frontend/static/assets/avatars')
 avatar_path.mkdir(parents=True, exist_ok=True)
@@ -51,14 +51,14 @@ class OrderMakerView(CreateAPIView):
             # Creates a new order in db
             order = Order(
                 type=otype,
-                status=Order.Status.PUB, # TODO orders are public by default for the moment. Future it will be WFB (waiting for bond)
+                status=Order.Status.WFB,
                 currency=currency,
                 amount=amount,
                 payment_method=payment_method,
                 premium=premium,
                 satoshis=satoshis,
                 is_explicit=is_explicit,
-                expires_at= timezone.now()+timedelta(hours=expiration_time),
+                expires_at= timezone.now()+timedelta(minutes=EXPIRATION_MAKE),
                 maker=request.user)
             order.save()
 
@@ -75,42 +75,49 @@ class OrderView(viewsets.ViewSet):
     def get(self, request, format=None):
         order_id = request.GET.get(self.lookup_url_kwarg)
 
-        if order_id != None:
-            order = Order.objects.filter(id=order_id)
+        if order_id == None:
+            return Response({'Bad Request':'Order ID parameter not found in request'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        order = Order.objects.filter(id=order_id)
 
-            # check if exactly one order is found in the db
-            if len(order) == 1 :
-                order = order[0]
-                data = ListOrderSerializer(order).data
-                nickname = request.user.username
+        # check if exactly one order is found in the db
+        if len(order) == 1 :
+            order = order[0]
 
-                # Add booleans if user is maker, taker, partipant, buyer or seller
-                data['is_maker'] = str(order.maker) == nickname
-                data['is_taker'] = str(order.taker) == nickname
-                data['is_participant'] = data['is_maker'] or data['is_taker']
-                data['is_buyer'] = (data['is_maker'] and order.type == Order.Types.BUY) or (data['is_taker'] and order.type == Order.Types.SELL)
-                data['is_seller'] = (data['is_maker'] and order.type == Order.Types.SELL) or (data['is_taker'] and order.type == Order.Types.BUY)
-                
-                # If not a participant and order is not public, forbid.
-                if not data['is_participant'] and order.status != Order.Status.PUB:
-                    return Response({'bad_request':'Not allowed to see this order'},status.HTTP_403_FORBIDDEN)
+            # If order expired
+            if order.status == Order.Status.EXP:
+                return Response({'bad_request':'This order has expired'},status.HTTP_400_BAD_REQUEST)
 
-                # return nicks too
-                data['maker_nick'] = str(order.maker)
-                data['taker_nick'] = str(order.taker)
-                
-                data['status_message'] = Order.Status(order.status).label 
+            data = ListOrderSerializer(order).data
 
-                if data['is_participant']:
-                    return Response(data, status=status.HTTP_200_OK)
-                else:
-                    # Non participants should not see the status, who is the taker, etc
-                    for key in ('status','status_message','taker','taker_nick','is_maker','is_taker','is_buyer','is_seller'):
-                        del data[key]
-                    return Response(data, status=status.HTTP_200_OK)
+            # Add booleans if user is maker, taker, partipant, buyer or seller
+            data['is_maker'] = order.maker == request.user
+            data['is_taker'] = order.taker == request.user
+            data['is_participant'] = data['is_maker'] or data['is_taker']
+            
+            # If not a participant and order is not public, forbid.
+            if not data['is_participant'] and order.status != Order.Status.PUB:
+                return Response({'bad_request':'Not allowed to see this order'},status.HTTP_403_FORBIDDEN)
+            
+            # non participants can view some details, but only if PUB
+            elif not data['is_participant'] and order.status != Order.Status.PUB:
+                return Response(data, status=status.HTTP_200_OK) 
 
-            return Response({'Order Not Found':'Invalid Order Id'},status=status.HTTP_404_NOT_FOUND)
-        return Response({'Bad Request':'Order ID parameter not found in request'}, status=status.HTTP_400_BAD_REQUEST)
+            # For participants add position side, nicks and status as message
+            data['is_buyer'] = Logics.is_buyer(order,request.user)
+            data['is_seller'] = Logics.is_seller(order,request.user)
+            data['maker_nick'] = str(order.maker)
+            data['taker_nick'] = str(order.taker)
+            data['status_message'] = Order.Status(order.status).label 
+
+            # If status is 'waiting for maker bond', reply with a hodl invoice too.
+            if order.status == Order.Status.WFB and data['is_maker']:
+                data['hodl_invoice'] = Logics.gen_maker_hodl_invoice(order, request.user)
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        return Response({'Order Not Found':'Invalid Order Id'},status=status.HTTP_404_NOT_FOUND)
+        
 
 
     def take_or_update(self, request, format=None):

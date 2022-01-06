@@ -5,6 +5,9 @@ from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.utils.html import mark_safe
 
+from datetime import timedelta
+from django.utils import timezone
+
 from pathlib import Path
 
 from .lightning import LNNode
@@ -75,10 +78,10 @@ class Order(models.Model):
         ETH = 3, 'ETH'
 
     class Status(models.IntegerChoices):
-        WFB = 0, 'Waiting for bond'
-        PUB = 1, 'Published in order book'
-        DEL = 2, 'Deleted from order book'
-        TAK = 3, 'Taken'
+        WFB = 0, 'Waiting for maker bond'
+        PUB = 1, 'Public'
+        DEL = 2, 'Deleted'
+        TAK = 3, 'Waiting for taker bond' # only needed when taker is a buyer
         UCA = 4, 'Unilaterally cancelled'
         RET = 5, 'Returned to order book' # Probably same as 1 in most cases.
         WF2 = 6, 'Waiting for trade collateral and buyer invoice'
@@ -109,11 +112,14 @@ class Order(models.Model):
 
     # order pricing method. A explicit amount of sats, or a relative premium above/below market.
     is_explicit = models.BooleanField(default=False, null=False)
-    # marked to marked
+    # marked to market
     premium = models.DecimalField(max_digits=5, decimal_places=2, default=0, null=True, validators=[MinValueValidator(-100), MaxValueValidator(999)], blank=True)
-    t0_market_satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)], blank=True)
     # explicit
     satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)], blank=True)
+    # how many sats at creation and at last check (relevant for marked to market)
+    t0_satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)], blank=True) # sats at creation
+    last_satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(0), MaxValueValidator(MAX_TRADE*2)], blank=True) # sats last time checked. Weird if 2* trade max...
+    
     
     # order participants
     maker = models.ForeignKey(User, related_name='maker', on_delete=models.CASCADE, null=True, default=None)  # unique = True, a maker can only make one order
@@ -172,6 +178,8 @@ class Profile(models.Model):
 
 class Logics():
 
+    # escrow_user = User.objects.get(username=ESCROW_USERNAME)
+
     def validate_already_maker_or_taker(user):
         '''Checks if the user is already partipant of an order'''
         queryset = Order.objects.filter(maker=user)
@@ -197,16 +205,30 @@ class Logics():
         is_taker = order.taker == user
         return (is_maker and order.type == Order.Types.SELL) or (is_taker and order.type == Order.Types.BUY)
     
+    def satoshis_now(order):
+        ''' checks trade amount in sats '''
+        # TODO
+        # order.last_satoshis =
+        # order.save()
+
+        return 50000
+    
+    def order_expires(order):
+        order.status = Order.Status.EXP
+        order.maker = None
+        order.taker = None
+        order.save()
+
     @classmethod
     def update_invoice(cls, order, user, invoice):
         is_valid_invoice, num_satoshis, description, payment_hash, expires_at = LNNode.validate_ln_invoice(invoice)
         # only user is the buyer and a valid LN invoice
         if cls.is_buyer(order, user) and is_valid_invoice:
-            order.buyer_invoice, created = LNPayment.objects.update_or_create(
-                receiver= user, 
+            order.buyer_invoice, _ = LNPayment.objects.update_or_create(
                 concept = LNPayment.Concepts.PAYBUYER, 
                 type = LNPayment.Types.NORM, 
                 sender = User.objects.get(username=ESCROW_USERNAME),
+                receiver= user, 
                  # if there is a LNPayment matching these above, it updates that with defaults below.
                 defaults={
                     'invoice' : invoice,
@@ -224,3 +246,35 @@ class Logics():
             return True
 
         return False
+
+    @classmethod
+    def gen_maker_hodl_invoice(cls, order, user):
+
+        # Do not and delete if order is more than 5 minutes old
+        if order.expires_at < timezone.now():
+            cls.order_expires(order)
+            return False, {'Order expired':'cannot generate a bond invoice for an expired order. Make a new one.'}
+
+        if order.maker_bond:
+            return order.maker_bond.invoice
+            
+        bond_amount = cls.satoshis_now(order)
+        description = f'Robosats maker bond for order ID {order.id}. Will return to you if you do not cheat!'
+        invoice, payment_hash, expires_at = LNNode.gen_hodl_invoice(num_satoshis = bond_amount, description=description)
+        
+        order.maker_bond = LNPayment.objects.create(
+            concept = LNPayment.Concepts.MAKEBOND, 
+            type = LNPayment.Types.HODL, 
+            sender = user,
+            receiver = User.objects.get(username=ESCROW_USERNAME),
+            invoice = invoice,
+            status = LNPayment.Status.INVGEN,
+            num_satoshis = bond_amount,
+            description =  description,
+            payment_hash = payment_hash,
+            expires_at = expires_at,
+            )
+
+        order.save()
+        return invoice
+
