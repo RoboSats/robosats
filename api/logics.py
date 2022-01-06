@@ -131,7 +131,6 @@ class Logics():
             order.save()
             return True, None
 
-
         # 2) When maker cancels after bond
             '''The order dissapears from book and goes to cancelled. 
             Maker is charged a small amount of sats, to prevent DDOS 
@@ -171,7 +170,7 @@ class Logics():
 
         order.satoshis_now = cls.satoshis_now(order)
         bond_satoshis = int(order.satoshis_now * BOND_SIZE)
-        description = f'RoboSats - Maker bond for order ID {order.id}. These sats will return to you if you do not cheat!'
+        description = f'RoboSats - Publishing {str(order)} - This bond will return to you if you do not cheat.'
 
         # Gen HODL Invoice
         invoice, payment_hash, expires_at = LNNode.gen_hodl_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
@@ -205,7 +204,7 @@ class Logics():
 
         order.satoshis_now = cls.satoshis_now(order)
         bond_satoshis = int(order.satoshis_now * BOND_SIZE)
-        description = f'RoboSats - Taker bond for order ID {order.id}. These sats will return to you if you do not cheat!'
+        description = f'RoboSats - Taking {str(order)} - This bond will return to you if you do not cheat.'
 
         # Gen HODL Invoice
         invoice, payment_hash, expires_at = LNNode.gen_hodl_invoice(bond_satoshis, description, BOND_EXPIRY*3600)

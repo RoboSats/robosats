@@ -128,6 +128,10 @@ class Order(models.Model):
     # buyer payment LN invoice
     buyer_invoice = models.ForeignKey(LNPayment, related_name='buyer_invoice', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
+    def __str__(self):
+        # Make relational back to ORDER
+        return (f'Order {self.id}: {self.Types(self.type).label} {"{:,}".format(self.t0_satoshis)} Sats for {self.Currencies(self.currency).label}')
+
 @receiver(pre_delete, sender=Order)
 def delelete_HTLCs_at_order_deletion(sender, instance, **kwargs):
     to_delete = (instance.maker_bond, instance.buyer_invoice, instance.taker_bond, instance.trade_escrow)
