@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
-from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
-from .models import Order, LNPayment
+from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateInvoiceSerializer
+from .models import Order, LNPayment, Logics
 from .lightning import LNNode
 
 from .nick_generator.nick_generator import NickGenerator
@@ -27,19 +27,6 @@ expiration_time = 8
 avatar_path = Path('frontend/static/assets/avatars')
 avatar_path.mkdir(parents=True, exist_ok=True)
 
-def validate_already_maker_or_taker(request):
-    '''Checks if the user is already partipant of an order'''
-
-    queryset = Order.objects.filter(maker=request.user.id)
-    if queryset.exists():
-        return False, Response({'Bad Request':'You are already maker of an order'}, status=status.HTTP_400_BAD_REQUEST)
-
-    queryset = Order.objects.filter(taker=request.user.id)
-    if queryset.exists():
-        return False, Response({'Bad Request':'You are already taker of an order'}, status=status.HTTP_400_BAD_REQUEST) 
-    
-    return True, None
-
 # Create your views here.
 
 class OrderMakerView(CreateAPIView):
@@ -57,9 +44,9 @@ class OrderMakerView(CreateAPIView):
             satoshis = serializer.data.get('satoshis')
             is_explicit = serializer.data.get('is_explicit')
 
-            valid, response = validate_already_maker_or_taker(request)
+            valid, context = Logics.validate_already_maker_or_taker(request.user)
             if not valid:
-                return response
+                return Response(context, status=status.HTTP_409_CONFLICT)
 
             # Creates a new order in db
             order = Order(
@@ -82,7 +69,7 @@ class OrderMakerView(CreateAPIView):
 
 
 class OrderView(viewsets.ViewSet):
-    serializer_class = UpdateOrderSerializer
+    serializer_class = UpdateInvoiceSerializer
     lookup_url_kwarg = 'order_id'
 
     def get(self, request, format=None):
@@ -129,44 +116,31 @@ class OrderView(viewsets.ViewSet):
     def take_or_update(self, request, format=None):
         order_id = request.GET.get(self.lookup_url_kwarg)
 
-        serializer = UpdateOrderSerializer(data=request.data)
+        serializer = UpdateInvoiceSerializer(data=request.data)
         order = Order.objects.get(id=order_id)
 
         if serializer.is_valid():
-            invoice = serializer.data.get('buyer_invoice')
+            invoice = serializer.data.get('invoice')
 
+        
         # If this is an empty POST request (no invoice), it must be taker request!
-        if not invoice and order.status == Order.Status.PUB:
-            
-            valid, response = validate_already_maker_or_taker(request)
-            if not valid:
-                return response
+        if not invoice and order.status == Order.Status.PUB:    
+            valid, context = Logics.validate_already_maker_or_taker(request.user)
+            if not valid: return Response(context, status=status.HTTP_409_CONFLICT)
 
-            order.taker = self.request.user
-            order.status = Order.Status.TAK
-
-            #TODO REPLY WITH HODL INVOICE
-            data = ListOrderSerializer(order).data
+            Logics.take(order, request.user)
 
         # An invoice came in! update it
         elif invoice:
-            if LNNode.validate_ln_invoice(invoice):
-                order.invoice = invoice
-
-            #TODO Validate if request comes from PARTICIPANT AND BUYER
-
-                #If the order status was Payment Failed. Move foward to invoice Updated.
-                if order.status == Order.Status.FAI:
-                    order.status = Order.Status.UPI
-
-            else:
+            print(invoice)
+            updated = Logics.update_invoice(order=order,user=request.user,invoice=invoice)
+            if not updated:
                 return Response({'bad_request':'Invalid Lightning Network Invoice. It starts by LNTB...'})
         
         # Something else is going on. Probably not allowed.
         else:
             return Response({'bad_request':'Not allowed'})
 
-        order.save()
         return self.get(request)
 
 class UserView(APIView):

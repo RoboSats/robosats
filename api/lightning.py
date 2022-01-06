@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 import random
 import string
 
@@ -18,9 +20,15 @@ class LNNode():
         '''Generates hodl invoice to publish an order'''
         return True
 
-    def validate_ln_invoice(invoice):
-        '''Checks if a LN invoice is valid'''
-        return True
+    def validate_ln_invoice(invoice): # num_satoshis
+        '''Checks if the submited LN invoice is as expected'''
+        valid = True
+        num_satoshis = 50000 # TODO decrypt and confirm sats are as expected
+        description = 'Placeholder desc' # TODO decrypt from LN invoice
+        payment_hash = '567126' # TODO decrypt
+        expires_at = timezone.now() # TODO decrypt
+
+        return valid, num_satoshis, description, payment_hash, expires_at
 
     def pay_buyer_invoice(invoice):
         '''Sends sats to buyer'''

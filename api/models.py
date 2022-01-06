@@ -3,10 +3,11 @@ from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator, validate_comma_separated_integer_list
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
-
 from django.utils.html import mark_safe
 
 from pathlib import Path
+
+from .lightning import LNNode
 
 #############################
 # TODO
@@ -16,7 +17,7 @@ MIN_TRADE = 10*1000  #In sats
 MAX_TRADE = 500*1000
 FEE = 0.002 # Trade fee in %
 BOND_SIZE = 0.01 # Bond in %
-
+ESCROW_USERNAME = 'admin'
 
 class LNPayment(models.Model):
 
@@ -33,25 +34,28 @@ class LNPayment(models.Model):
     class Status(models.IntegerChoices):
         INVGEN = 0, 'Hodl invoice was generated'
         LOCKED = 1, 'Hodl invoice has HTLCs locked'
-        CHRGED = 2, 'Hodl invoice was charged'
+        SETLED = 2, 'Invoice settled'
         RETNED = 3, 'Hodl invoice was returned'
         MISSNG = 4, 'Buyer invoice is missing'
-        IVALID = 5, 'Buyer invoice is valid'
-        INPAID = 6, 'Buyer invoice was paid'
-        INFAIL = 7, 'Buyer invoice routing failed'
+        VALIDI = 5, 'Buyer invoice is valid'
+        INFAIL = 6, 'Buyer invoice routing failed'
 
-    # payment use case
+    # payment use details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HODL)
     concept = models.PositiveSmallIntegerField(choices=Concepts.choices, null=False, default=Concepts.MAKEBOND)
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.INVGEN)
+    routing_retries = models.PositiveSmallIntegerField(null=False, default=0)
     
-    # payment details
+    # payment info
     invoice = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
-    secret = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
+    payment_hash = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
+    preimage = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
+    description = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
-    amount = models.PositiveBigIntegerField(validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
+    num_satoshis = models.PositiveBigIntegerField(validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
     
-    # payment relationals
+    # involved parties
     sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE, null=True, default=None)
     receiver = models.ForeignKey(User, related_name='receiver', on_delete=models.CASCADE, null=True, default=None)
 
@@ -123,7 +127,6 @@ class Order(models.Model):
     # buyer payment LN invoice
     buyer_invoice = models.ForeignKey(LNPayment, related_name='buyer_invoice', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
-
 class Profile(models.Model):
 
     user = models.OneToOneField(User,on_delete=models.CASCADE)
@@ -166,3 +169,58 @@ class Profile(models.Model):
     # method to create a fake table field in read only mode
     def avatar_tag(self):
         return mark_safe('<img src="%s" width="50" height="50" />' % self.get_avatar())
+
+class Logics():
+
+    def validate_already_maker_or_taker(user):
+        '''Checks if the user is already partipant of an order'''
+        queryset = Order.objects.filter(maker=user)
+        if queryset.exists():
+            return False, {'Bad Request':'You are already maker of an order'}
+        queryset = Order.objects.filter(taker=user)
+        if queryset.exists():
+            return False, {'Bad Request':'You are already taker of an order'}
+        return True, None
+
+    def take(order, user):
+        order.taker = user
+        order.status = Order.Status.TAK
+        order.save()
+
+    def is_buyer(order, user):
+        is_maker = order.maker == user
+        is_taker = order.taker == user
+        return (is_maker and order.type == Order.Types.BUY) or (is_taker and order.type == Order.Types.SELL)
+
+    def is_seller(order, user):
+        is_maker = order.maker == user
+        is_taker = order.taker == user
+        return (is_maker and order.type == Order.Types.SELL) or (is_taker and order.type == Order.Types.BUY)
+    
+    @classmethod
+    def update_invoice(cls, order, user, invoice):
+        is_valid_invoice, num_satoshis, description, payment_hash, expires_at = LNNode.validate_ln_invoice(invoice)
+        # only user is the buyer and a valid LN invoice
+        if cls.is_buyer(order, user) and is_valid_invoice:
+            order.buyer_invoice, created = LNPayment.objects.update_or_create(
+                receiver= user, 
+                concept = LNPayment.Concepts.PAYBUYER, 
+                type = LNPayment.Types.NORM, 
+                sender = User.objects.get(username=ESCROW_USERNAME),
+                 # if there is a LNPayment matching these above, it updates that with defaults below.
+                defaults={
+                    'invoice' : invoice,
+                    'status' : LNPayment.Status.VALIDI,
+                    'num_satoshis' : num_satoshis,
+                    'description' :  description,
+                    'payment_hash' : payment_hash,
+                    'expires_at' : expires_at}
+                )
+
+            #If the order status was Payment Failed. Move foward to invoice Updated.
+            if order.status == Order.Status.FAI:
+                    order.status = Order.Status.UPI
+            order.save()
+            return True
+
+        return False

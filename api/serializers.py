@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Order
+from .models import Order, LNPayment
 
 class ListOrderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,3 +15,8 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ('id','buyer_invoice')
+
+class UpdateInvoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LNPayment
+        fields = ['invoice']
