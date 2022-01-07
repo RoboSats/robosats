@@ -7,17 +7,13 @@ from django.utils.html import mark_safe
 
 from decouple import config
 from pathlib import Path
+from .utils import get_exchange_rate
 
-#############################
-# TODO
-# Load hparams from .env file
 
 MIN_TRADE = int(config('MIN_TRADE'))
 MAX_TRADE = int(config('MAX_TRADE'))
 FEE = float(config('FEE'))
 BOND_SIZE = float(config('BOND_SIZE'))
-
-
 
 class LNPayment(models.Model):
 
@@ -191,4 +187,49 @@ class Profile(models.Model):
     # method to create a fake table field in read only mode
     def avatar_tag(self):
         return mark_safe('<img src="%s" width="50" height="50" />' % self.get_avatar())
+
+class MarketTick(models.Model):
+    ''' 
+    Records tick by tick Non-KYC Bitcoin price. 
+    Data to be aggregated and offered via public API.
+
+    It is checked against current cex prices for nice
+    insight on the historical premium of Non-KYC BTC
+
+    Price is set when both taker bond is locked. Both 
+    maker and taker are commited with bonds (contract 
+    is finished and cancellation has a cost)
+    '''
+
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=None, null=True, validators=[MinValueValidator(0)])
+    volume = models.DecimalField(max_digits=8, decimal_places=8, default=None, null=True, validators=[MinValueValidator(0)])
+    premium = models.DecimalField(max_digits=5, decimal_places=2, default=None, null=True, validators=[MinValueValidator(-100), MaxValueValidator(999)], blank=True)
+    currency = models.PositiveSmallIntegerField(choices=Order.Currencies.choices, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    # Relevant to keep record of the historical fee, so the insight on the premium can be better analyzed
+    fee = models.DecimalField(max_digits=4, decimal_places=4, default=FEE, validators=[MinValueValidator(0), MaxValueValidator(1)])
+
+    def log_a_tick(order):
+        '''
+        Adds a new tick
+        '''
+        if not order.taker_bond:
+            return None
+
+        elif order.taker_bond.status == LNPayment.Status.LOCKED:
+            volume = order.last_satoshis / 100000000
+            price = float(order.amount) / volume  # Amount Fiat / Amount BTC
+            premium = 100 * (price / get_exchange_rate(Order.Currencies(order.currency).label) - 1)
+
+            tick = MarketTick.objects.create(
+                price=price, 
+                volume=volume, 
+                premium=premium, 
+                currency=order.currency)
+            tick.save()
+
+    def __str__(self):
+        return f'Tick: {self.id}'
+
 

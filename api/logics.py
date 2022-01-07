@@ -1,10 +1,10 @@
 from datetime import timedelta
 from django.utils import timezone
-import requests
 from .lightning import LNNode
 
-from .models import Order, LNPayment, User
+from .models import Order, LNPayment, MarketTick, User
 from decouple import config
+from .utils import get_exchange_rate
 
 FEE = float(config('FEE'))
 BOND_SIZE = float(config('BOND_SIZE'))
@@ -61,11 +61,9 @@ class Logics():
         if order.is_explicit:
             satoshis_now = order.satoshis
         else:
-            # TODO Add fallback Public APIs and error handling
-            # Think about polling price data in a different way (e.g. store locally every t seconds)
-            market_prices = requests.get(MARKET_PRICE_API).json()
-            exchange_rate = float(market_prices[Order.Currencies(order.currency).label]['last'])
-            satoshis_now = ((float(order.amount) * 1+float(order.premium)) / exchange_rate) * 100*1000*1000
+            exchange_rate = get_exchange_rate(Order.Currencies(order.currency).label)
+            premium_rate = exchange_rate * (1+float(order.premium)/100)
+            satoshis_now = (float(order.amount) / premium_rate) * 100*1000*1000
 
         return int(satoshis_now)
     
@@ -306,7 +304,7 @@ class Logics():
 
         order.save()
         return True, {'escrow_invoice':invoice,'escrow_satoshis': escrow_satoshis}
-
+    
     def settle_escrow(order):
         ''' Settles the trade escrow HTLC'''
         # TODO ERROR HANDLING

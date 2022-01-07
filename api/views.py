@@ -322,23 +322,27 @@ class UserView(APIView):
                 # It is unlikely, but maybe the nickname is taken (1 in 20 Billion change)
                 context['found'] = 'Bad luck, this nickname is taken'
                 context['bad_request'] = 'Enter a different token'
-                return Response(context, status=status.HTTP_403_FORBIDDEN)
+                return Response(context, status.HTTP_403_FORBIDDEN)
 
     def delete(self,request):
-        user = User.objects.get(id = request.user.id)
+        ''' Pressing "give me another" deletes the logged in user '''
+        user = request.user
+        if not user:
+            return Response(status.HTTP_403_FORBIDDEN)
 
-        # TO DO. Pressing "give me another" deletes the logged in user
-        # However it might be a long time recovered user
-        # Only delete if user live is < 5 minutes
+        # Only delete if user life is shorter than 30 minutes. Helps deleting users by mistake
+        if user.date_joined < (timezone.now() - timedelta(minutes=30)):
+            return Response(status.HTTP_400_BAD_REQUEST)
 
-        # TODO check if user exists AND it is not a maker or taker!
-        if user is not None:
-            logout(request)
-            user.delete()
+        # Check if it is not a maker or taker!
+        if not Logics.validate_already_maker_or_taker(user):
+            return Response({'bad_request':'User cannot be deleted while he is part of an order'}, status.HTTP_400_BAD_REQUEST)
 
-            return Response({'user_deleted':'User deleted permanently'},status=status.HTTP_302_FOUND)
+        logout(request)
+        user.delete()
+        return Response({'user_deleted':'User deleted permanently'}, status.HTTP_301_MOVED_PERMANENTLY)
 
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        
 
 class BookView(ListAPIView):
     serializer_class = ListOrderSerializer
@@ -367,14 +371,16 @@ class BookView(ListAPIView):
 
 class InfoView(ListAPIView):
 
-    def get(self, request, format = None):
+    def get(self):
         context = {}
+
         context['num_public_buy_orders'] = len(Order.objects.filter(type=Order.Types.BUY, status=Order.Status.PUB))
         context['num_public_sell_orders'] = len(Order.objects.filter(type=Order.Types.BUY, status=Order.Status.PUB))
-        context['num_active_robots'] = None # Todo
+        context['last_day_avg_btc_premium'] = None # Todo
+        context['num_active_robots'] = None 
         context['total_volume'] = None
 
-        return Response(context, status.HTTP_200_ok)
+        return Response(context, status.HTTP_200_OK)
         
 
         
