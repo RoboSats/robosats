@@ -177,7 +177,8 @@ export default class MakerPage extends Component {
                             type="text" 
                             require={true}  
                             inputProps={{
-                                style: {textAlign:"center"}
+                                style: {textAlign:"center"},
+                                maxLength: 50
                             }}
                             onChange={this.handlePaymentMethodChange}
                         />

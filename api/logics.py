@@ -23,8 +23,6 @@ ESCROW_EXPIRY = int(config('ESCROW_EXPIRY'))
 
 class Logics():
 
-    # escrow_user = User.objects.get(username=ESCROW_USERNAME)
-
     def validate_already_maker_or_taker(user):
         '''Checks if the user is already partipant of an order'''
         queryset = Order.objects.filter(maker=user)
@@ -130,16 +128,23 @@ class Logics():
 
     @classmethod
     def rate_counterparty(cls, order, user, rating):
-        # if maker, rates taker
-        if order.maker == user:
-            order.taker.profile.total_ratings = order.taker.profile.total_ratings + 1
-            last_ratings = list(order.taker.profile.last_ratings).append(rating)
-            order.taker.profile.total_ratings = sum(last_ratings) / len(last_ratings)
-        # if taker, rates maker
-        if order.taker == user:
-            order.maker.profile.total_ratings = order.maker.profile.total_ratings + 1
-            last_ratings = list(order.maker.profile.last_ratings).append(rating)
-            order.maker.profile.total_ratings = sum(last_ratings) / len(last_ratings)
+
+        # If the trade is finished
+        if order.status > Order.Status.PAY:
+
+            # if maker, rates taker
+            if order.maker == user:
+                order.taker.profile.total_ratings = order.taker.profile.total_ratings + 1
+                last_ratings = list(order.taker.profile.last_ratings).append(rating)
+                order.taker.profile.total_ratings = sum(last_ratings) / len(last_ratings)
+
+            # if taker, rates maker
+            if order.taker == user:
+                order.maker.profile.total_ratings = order.maker.profile.total_ratings + 1
+                last_ratings = list(order.maker.profile.last_ratings).append(rating)
+                order.maker.profile.total_ratings = sum(last_ratings) / len(last_ratings)
+        else:
+            return False, {'bad_request':'You cannot rate your counterparty yet.'}
 
         order.save()
         return True, None
@@ -292,3 +297,48 @@ class Logics():
 
         order.save()
         return True, {'escrow_invoice':invoice,'escrow_satoshis': escrow_satoshis}
+
+    def settle_escrow(order):
+        ''' Settles the trade escrow HTLC'''
+        # TODO ERROR HANDLING
+
+        valid = LNNode.settle_hodl_htlcs(order.trade_escrow.payment_hash)
+        return valid
+
+    def pay_buyer_invoice(order):
+        ''' Settles the trade escrow HTLC'''
+        # TODO ERROR HANDLING
+
+        valid = LNNode.pay_invoice(order.buyer_invoice.payment_hash)
+        return valid
+
+    @classmethod
+    def confirm_fiat(cls, order, user):
+        ''' If Order is in the CHAT states:
+        If user is buyer: mark the FIAT SENT andettle escrow!
+        If User is the seller and FIAT was already sent: Pay buyer invoice!'''
+
+        if order.status == Order.Status.CHA or order.status == Order.Status.FSE: # TODO Alternatively, if all collateral is locked? test out
+            
+            # If buyer, settle escrow and mark fiat sent
+            if cls.is_buyer(order, user):
+                if cls.settle_escrow(order):          # KEY LINE - SETTLES THE TRADE ESCROW !!
+                    order.trade_escrow.status = LNPayment.Status.SETLED
+                    order.status = Order.Status.FSE
+                    order.is_fiat_sent = True
+
+            # If seller and fiat sent, pay buyer invoice
+            elif cls.is_seller(order, user):
+                if not order.is_fiat_sent:
+                    return False, {'bad_request':'You cannot confirm to have received the fiat before it is confirmed to be sent by the buyer.'}
+                
+                # Double check the escrow is settled.
+                if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
+                    if cls.pay_buyer_invoice(order):   # KEY LINE - PAYS THE BUYER !!
+                        order.status = Order.Status.PAY
+                        order.buyer_invoice.status = LNPayment.Status.PAYING
+        else:
+            return False, {'bad_request':'You cannot confirm the fiat payment at this stage'}
+
+        order.save()
+        return True, None
