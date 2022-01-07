@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from django.utils.html import mark_safe
 
 from pathlib import Path
+import json
 
 #############################
 # TODO
@@ -65,11 +66,6 @@ class Order(models.Model):
         BUY  = 0, 'BUY'
         SELL = 1, 'SELL'
 
-    class Currencies(models.IntegerChoices):
-        USD = 1, 'USD'
-        EUR = 2, 'EUR'
-        ETH = 3, 'ETH'
-
     class Status(models.IntegerChoices):
         WFB = 0, 'Waiting for bond'
         PUB = 1, 'Published in order book'
@@ -92,6 +88,9 @@ class Order(models.Model):
         TLD = 18, 'Taker lost dispute'
         EXP = 19, 'Expired'
 
+    currency_dict = json.load(open('./api/currencies.json'))
+    currency_choices = [(int(val), label) for val, label in list(currency_dict.items())]
+    print(currency_choices)
     # order info
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.WFB)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -99,7 +98,7 @@ class Order(models.Model):
 
     # order details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False)
-    currency = models.PositiveSmallIntegerField(choices=Currencies.choices, null=False)
+    currency = models.PositiveSmallIntegerField(choices=currency_choices, null=False)
     amount = models.DecimalField(max_digits=9, decimal_places=4, validators=[MinValueValidator(0.00001)])
     payment_method = models.CharField(max_length=30, null=False, default="not specified", blank=True)
 
