@@ -128,13 +128,13 @@ class OrderView(viewsets.ViewSet):
 
         # If both bonds are locked, participants can see the trade in sats is also final.
         if order.taker_bond:
-            if order.maker_bond.status == order.taker_bond.status == order.trade_escrow.status == LNPayment.Status.LOCKED:
+            if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
                 # Seller sees the amount he pays
                 if data['is_seller']:
                     data['trade_satoshis'] = order.last_satoshis
                 # Buyer sees the amount he receives
                 elif data['is_buyer']:
-                    data['trade_satoshis'] = order.last_satoshis * (1-FEE)
+                    data['trade_satoshis'] = Logics.buyer_invoice_amount(order, request.user)[1]['invoice_amount']
 
         # 5) If status is 'waiting for maker bond' and user is MAKER, reply with a MAKER HODL invoice.
         if order.status == Order.Status.WFB and data['is_maker']:

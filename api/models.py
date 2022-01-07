@@ -137,7 +137,7 @@ class Order(models.Model):
 
     def __str__(self):
         # Make relational back to ORDER
-        return (f'Order {self.id}: {self.Types(self.type).label} BTC for {self.amount} {self.Currencies(self.currency).label}')
+        return (f'Order {self.id}: {self.Types(self.type).label} BTC for {float(self.amount)} {self.Currencies(self.currency).label}')
 
 @receiver(pre_delete, sender=Order)
 def delelete_HTLCs_at_order_deletion(sender, instance, **kwargs):

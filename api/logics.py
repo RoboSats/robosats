@@ -87,10 +87,19 @@ class Logics():
 
     @classmethod
     def update_invoice(cls, order, user, invoice):
-        is_valid_invoice, num_satoshis, description, payment_hash, expires_at = LNNode.validate_ln_invoice(invoice)
-        # only user is the buyer and a valid LN invoice
-        if not (cls.is_buyer(order, user) or is_valid_invoice):
-            return False, {'bad_request':'Invalid Lightning Network Invoice. It starts by LNTB...'}
+        
+        # only the buyer can post a buyer invoice
+        if not cls.is_buyer(order, user):
+            return False, {'bad_request':'Only the buyer of this order can provide a buyer invoice.'}
+        if not order.taker_bond:
+            return False, {'bad_request':'Wait for your order to be taken.'}
+        if not (order.taker_bond.status == order.maker_bond.status == LNPayment.Status.LOCKED):
+            return False, {'bad_request':'You cannot a invoice while bonds are not posted.'}
+
+        num_satoshis = cls.buyer_invoice_amount(order, user)[1]['invoice_amount']
+        valid, context, description, payment_hash, expires_at = LNNode.validate_ln_invoice(invoice, num_satoshis)
+        if not valid:
+            return False, context
 
         order.buyer_invoice, _ = LNPayment.objects.update_or_create(
             concept = LNPayment.Concepts.PAYBUYER, 
@@ -150,7 +159,7 @@ class Logics():
         return True, None
 
     @classmethod
-    def cancel_order(cls, order, user, state):
+    def cancel_order(cls, order, user, state=None):
 
         # 1) When maker cancels before bond
         '''The order never shows up on the book and order 
@@ -315,8 +324,8 @@ class Logics():
     @classmethod
     def confirm_fiat(cls, order, user):
         ''' If Order is in the CHAT states:
-        If user is buyer: mark the FIAT SENT andettle escrow!
-        If User is the seller and FIAT was already sent: Pay buyer invoice!'''
+        If user is buyer: mark FIAT SENT and settle escrow!
+        If User is the seller and FIAT is SENT: Pay buyer invoice!'''
 
         if order.status == Order.Status.CHA or order.status == Order.Status.FSE: # TODO Alternatively, if all collateral is locked? test out
             
@@ -334,7 +343,13 @@ class Logics():
                 
                 # Double check the escrow is settled.
                 if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
-                    if cls.pay_buyer_invoice(order):   # KEY LINE - PAYS THE BUYER !!
+
+                    # Make sure the trade escrow is at least as big as the buyer invoice 
+                    if order.trade_escrow.num_satoshis <= order.buyer_invoice.num_satoshis:
+                        return False, {'bad_request':'Woah, something broke badly. Report in the public channels, or open a Github Issue.'}
+                    
+                    # Double check the trade escrow is settled
+                    elif cls.pay_buyer_invoice(order):   # KEY LINE - PAYS THE BUYER !!
                         order.status = Order.Status.PAY
                         order.buyer_invoice.status = LNPayment.Status.PAYING
         else:
