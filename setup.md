@@ -4,7 +4,10 @@
 `sudo apt install python3 python3 pip`
 
 ### Install virtual environments
-`pip install virtualenvwrapper`
+```
+pip install virtualenvwrapper
+pip install python-decouple
+```
 
 ### Add to .bashrc
 
@@ -27,6 +30,9 @@ source /usr/local/bin/virtualenvwrapper.sh
 
 ### Install Django and Restframework
 `pip3 install django djangorestframework`
+
+## Install Django admin relational links
+`pip install django-admin-relation-links`
 
 *Django 4.0 at the time of writting*
 

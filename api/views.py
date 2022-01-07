@@ -1,12 +1,14 @@
-from rest_framework import serializers, status
+from rest_framework import status, viewsets
+from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.conf.urls.static import static
 
-from .serializers import OrderSerializer, MakeOrderSerializer
-from .models import Order
+from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
+from .models import LNPayment, Order
+from .logics import Logics
 
 from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
@@ -17,94 +19,212 @@ import hashlib
 from pathlib import Path
 from datetime import timedelta
 from django.utils import timezone
+from decouple import config
 
-# .env
-expiration_time = 8
+EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
 
 avatar_path = Path('frontend/static/assets/avatars')
 avatar_path.mkdir(parents=True, exist_ok=True)
 
 # Create your views here.
 
-class MakeOrder(APIView):
+class OrderMakerView(CreateAPIView):
     serializer_class  = MakeOrderSerializer
 
     def post(self,request):
         serializer = self.serializer_class(data=request.data)
 
-        if serializer.is_valid():
-            otype = serializer.data.get('type')
-            currency = serializer.data.get('currency')
-            amount = serializer.data.get('amount')
-            payment_method = serializer.data.get('payment_method')
-            premium = serializer.data.get('premium')
-            satoshis = serializer.data.get('satoshis')
-            is_explicit = serializer.data.get('is_explicit')
+        if not serializer.is_valid(): return Response(status=status.HTTP_400_BAD_REQUEST)
 
-            # query if the user is already a maker or taker, return error
-            queryset = Order.objects.filter(maker=request.user.id)
-            if queryset.exists():
-                return Response({'Bad Request':'You are already maker of an order'},status=status.HTTP_400_BAD_REQUEST)
-            queryset = Order.objects.filter(taker=request.user.id)
-            if queryset.exists():
-                return Response({'Bad Request':'You are already taker of an order'},status=status.HTTP_400_BAD_REQUEST) 
+        type = serializer.data.get('type')
+        currency = serializer.data.get('currency')
+        amount = serializer.data.get('amount')
+        payment_method = serializer.data.get('payment_method')
+        premium = serializer.data.get('premium')
+        satoshis = serializer.data.get('satoshis')
+        is_explicit = serializer.data.get('is_explicit')
 
-            # Creates a new order in db
-            order = Order(
-                type=otype,
-                currency=currency,
-                amount=amount,
-                payment_method=payment_method,
-                premium=premium,
-                satoshis=satoshis,
-                is_explicit=is_explicit,
-                expires_at= timezone.now()+timedelta(hours=expiration_time),
-                maker=request.user)
-            order.save()
+        valid, context = Logics.validate_already_maker_or_taker(request.user)
+        if not valid: return Response(context, status.HTTP_409_CONFLICT)
 
-        if not serializer.is_valid():
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-            
-        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+        # Creates a new order
+        order = Order(
+            type=type,
+            currency=currency,
+            amount=amount,
+            payment_method=payment_method,
+            premium=premium,
+            satoshis=satoshis,
+            is_explicit=is_explicit,
+            expires_at=timezone.now()+timedelta(minutes=EXP_MAKER_BOND_INVOICE), # TODO Move to class method
+            maker=request.user)
+        
+        # TODO move to Order class method when new instance is created!
+        order.last_satoshis = order.t0_satoshis = Logics.satoshis_now(order)
+
+        valid, context = Logics.validate_order_size(order)
+        if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
+        
+        order.save()
+        return Response(ListOrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
 
-class OrderView(APIView):
-    serializer_class = OrderSerializer
+class OrderView(viewsets.ViewSet):
+    serializer_class = UpdateOrderSerializer
     lookup_url_kwarg = 'order_id'
 
     def get(self, request, format=None):
+        '''
+        Full trade pipeline takes place while looking/refreshing the order page.
+        '''
         order_id = request.GET.get(self.lookup_url_kwarg)
 
-        if order_id != None:
-            order = Order.objects.filter(id=order_id)
+        if order_id == None:
+            return Response({'bad_request':'Order ID parameter not found in request'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        order = Order.objects.filter(id=order_id)
 
-            # check if exactly one order is found in the db
-            if len(order) == 1 :
-                order = order[0]
-                data = self.serializer_class(order).data
-                nickname = request.user.username
+        # check if exactly one order is found in the db
+        if len(order) != 1 :
+            return Response({'bad_request':'Invalid Order Id'}, status.HTTP_404_NOT_FOUND)
+        
+        # This is our order.
+        order = order[0]
 
-                # Check if requester is participant in the order and add boolean to response
-                data['is_participant'] = (str(order.maker) == nickname or str(order.taker) == nickname)
-                
-                #To do fix: data['status_message'] = Order.Status.get(order.status).label
-                data['status_message'] = Order.Status.WFB.label # Hardcoded WFB, should use order.status value.
+        # 1) If order expired
+        if order.status == Order.Status.EXP:
+            return Response({'bad_request':'This order has expired'},status.HTTP_400_BAD_REQUEST)
 
-                data['maker_nick'] = str(order.maker)
-                data['taker_nick'] = str(order.taker)
+        # 2) If order cancelled
+        if order.status == Order.Status.UCA:
+            return Response({'bad_request':'This order has been cancelled by the maker'},status.HTTP_400_BAD_REQUEST)
+        if order.status == Order.Status.CCA:
+            return Response({'bad_request':'This order has been cancelled collaborativelly'},status.HTTP_400_BAD_REQUEST)
 
-                if data['is_participant']:
-                    return Response(data, status=status.HTTP_200_OK)
-                else:
-                    # Non participants should not see the status or who is the taker
-                    data.pop('status','status_message','taker','taker_nick')
-                    return Response(data, status=status.HTTP_200_OK)
+        data = ListOrderSerializer(order).data
 
-            return Response({'Order Not Found':'Invalid Order Id'},status=status.HTTP_404_NOT_FOUND)
+        # Add booleans if user is maker, taker, partipant, buyer or seller
+        data['is_maker'] = order.maker == request.user
+        data['is_taker'] = order.taker == request.user
+        data['is_participant'] = data['is_maker'] or data['is_taker']
+        
+        # 3) If not a participant and order is not public, forbid.
+        if not data['is_participant'] and order.status != Order.Status.PUB:
+            return Response({'bad_request':'You are not allowed to see this order'},status.HTTP_403_FORBIDDEN)
+        
+        # 4) Non participants can view details (but only if PUB)
+        elif not data['is_participant'] and order.status != Order.Status.PUB:
+            return Response(data, status=status.HTTP_200_OK) 
 
-        return Response({'Bad Request':'Order ID parameter not found in request'}, status=status.HTTP_400_BAD_REQUEST)
+        # For participants add position side, nicks and status as message
+        data['is_buyer'] = Logics.is_buyer(order,request.user)
+        data['is_seller'] = Logics.is_seller(order,request.user)
+        data['maker_nick'] = str(order.maker)
+        data['taker_nick'] = str(order.taker)
+        data['status_message'] = Order.Status(order.status).label 
 
-class UserGenerator(APIView):
+        # 5) If status is 'waiting for maker bond' and user is MAKER, reply with a MAKER HODL invoice.
+        if order.status == Order.Status.WFB and data['is_maker']:
+            valid, context = Logics.gen_maker_hodl_invoice(order, request.user)
+            if valid:
+                data = {**data, **context}
+            else:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+        
+        # 6)  If status is 'waiting for taker bond' and user is TAKER, reply with a TAKER HODL invoice.
+        elif order.status == Order.Status.TAK and data['is_taker']:
+            valid, context = Logics.gen_taker_hodl_invoice(order, request.user)
+            if valid:
+                data = {**data, **context}
+            else:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+        
+        # 7) If status is 'WF2'or'WTC' 
+        elif (order.status == Order.Status.WF2 or order.status == Order.Status.WFE):
+
+            # If the two bonds are locked
+            if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
+
+                # 7.a) And if user is Seller, reply with an ESCROW HODL invoice.
+                if data['is_seller']:
+                    valid, context = Logics.gen_escrow_hodl_invoice(order, request.user)
+                    if valid:
+                        data = {**data, **context}
+                    else:
+                        return Response(context, status.HTTP_400_BAD_REQUEST)
+
+                # 7.b) If user is Buyer, reply with an AMOUNT so he can send the buyer invoice.
+                elif data['is_buyer']:
+                    valid, context = Logics.buyer_invoice_amount(order, request.user)
+                    if valid:
+                        data = {**data, **context}
+                    else:
+                        return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        # 8) If status is 'CHA'or '' or '' and all HTLCS are in LOCKED
+        elif order.status == Order.Status.CHA: # TODO Add the other status
+            if order.maker_bond.status == order.taker_bond.status == order.trade_escrow.status == LNPayment.Status.LOCKED:
+                # add whether a collaborative cancel is pending
+                data['pending_cancel'] = order.is_pending_cancel
+
+        return Response(data, status.HTTP_200_OK)
+
+    def take_update_confirm_dispute_cancel(self, request, format=None):
+        '''
+        Here take place all of the user updates to the order object.
+        That is: take, confim, cancel, dispute, update_invoice or rate.
+        '''
+        order_id = request.GET.get(self.lookup_url_kwarg)
+
+        serializer = UpdateOrderSerializer(data=request.data)
+        if not serializer.is_valid(): return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        order = Order.objects.get(id=order_id)
+
+        # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice' 6)'rate' (counterparty)
+        action = serializer.data.get('action') 
+        invoice = serializer.data.get('invoice')
+        rating = serializer.data.get('rating')
+
+        # 1) If action is take, it is be taker request!
+        if action == 'take':
+            if order.status == Order.Status.PUB: 
+                valid, context = Logics.validate_already_maker_or_taker(request.user)
+                if not valid: return Response(context, status=status.HTTP_409_CONFLICT)
+
+                Logics.take(order, request.user)
+            else: Response({'bad_request':'This order is not public anymore.'}, status.HTTP_400_BAD_REQUEST)
+
+        # 2) If action is update (invoice)
+        elif action == 'update_invoice' and invoice:
+            valid, context = Logics.update_invoice(order,request.user,invoice)
+            if not valid: return Response(context,status.HTTP_400_BAD_REQUEST)
+        
+        # 3) If action is cancel
+        elif action == 'cancel':
+            valid, context = Logics.cancel_order(order,request.user)
+            if not valid: return Response(context,status.HTTP_400_BAD_REQUEST)
+
+        # 4) If action is confirm
+        elif action == 'confirm':
+            pass
+
+        # 5) If action is dispute
+        elif action == 'dispute':
+            pass
+
+        # 6) If action is dispute
+        elif action == 'rate' and rating:
+            valid, context = Logics.rate_counterparty(order,request.user, rating)
+            if not valid: return Response(context,status.HTTP_400_BAD_REQUEST)
+
+        # If nothing... something else is going on. Probably not allowed!
+        else:
+            return Response({'bad_request':'The Robotic Satoshis working in the warehouse did not understand you'})
+
+        return self.get(request)
+
+class UserView(APIView):
     lookup_url_kwarg = 'token'
     NickGen = NickGenerator(
         lang='English', 
@@ -113,6 +233,7 @@ class UserGenerator(APIView):
         use_noun=True, 
         max_num=999)
 
+    # Probably should be turned into a post method
     def get(self,request, format=None):
         '''
         Get a new user derived from a high entropy token
@@ -128,8 +249,7 @@ class UserGenerator(APIView):
         value, counts = np.unique(list(token), return_counts=True)
         shannon_entropy = entropy(counts, base=62)
         bits_entropy = log2(len(value)**len(token))
-
-        # Start preparing payload
+        # Payload
         context = {'token_shannon_entropy': shannon_entropy, 'token_bits_entropy': bits_entropy}
 
         # Deny user gen if entropy below 128 bits or 0.7 shannon heterogeneity
@@ -140,11 +260,11 @@ class UserGenerator(APIView):
         # Hashes the token, only 1 iteration. Maybe more is better.
         hash = hashlib.sha256(str.encode(token)).hexdigest() 
 
-        # generate nickname
+        # Generate nickname
         nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0] 
         context['nickname'] = nickname
 
-        # generate avatar
+        # Generate avatar
         rh = Robohash(hash)
         rh.assemble(roboset='set1', bgset='any')# for backgrounds ON
 
@@ -155,7 +275,7 @@ class UserGenerator(APIView):
             with open(image_path, "wb") as f:
                 rh.img.save(f, format="png")
 
-        # Create new credentials and logsin if nickname is new
+        # Create new credentials and log in if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname, password=token, is_staff=False)
             user = authenticate(request, username=nickname, password=token)
@@ -180,40 +300,40 @@ class UserGenerator(APIView):
     def delete(self,request):
         user = User.objects.get(id = request.user.id)
 
-        # TO DO. Pressing give me another will delete the logged in user
+        # TO DO. Pressing "give me another" deletes the logged in user
         # However it might be a long time recovered user
         # Only delete if user live is < 5 minutes
 
         # TODO check if user exists AND it is not a maker or taker!
         if user is not None:
-            avatar_file = avatar_path.joinpath(str(request.user)+".png")
-            avatar_file.unlink() # Unsafe if avatar does not exist.
             logout(request)
             user.delete()
 
-            return Response({'user_deleted':'User deleted permanently'},status=status.HTTP_301_MOVED_PERMANENTLY)
+            return Response({'user_deleted':'User deleted permanently'},status=status.HTTP_302_FOUND)
 
         return Response(status=status.HTTP_403_FORBIDDEN)
 
-class BookView(APIView):
-    serializer_class = OrderSerializer
+class BookView(ListAPIView):
+    serializer_class = ListOrderSerializer
 
     def get(self,request, format=None):
         currency = request.GET.get('currency')
         type = request.GET.get('type') 
-        queryset = Order.objects.filter(currency=currency, type=type, status=0) # TODO status = 1 for orders that are Public
+        queryset = Order.objects.filter(currency=currency, type=type, status=int(Order.Status.PUB)) 
         if len(queryset)== 0:
             return Response({'not_found':'No orders found, be the first to make one'}, status=status.HTTP_404_NOT_FOUND)
 
         queryset = queryset.order_by('created_at')
         book_data = []
         for order in queryset:
-            data = OrderSerializer(order).data
+            data = ListOrderSerializer(order).data
             user = User.objects.filter(id=data['maker'])
             if len(user) == 1:
                 data['maker_nick'] = user[0].username
-            # TODO avoid sending status and takers for book views
-            #data.pop('status','taker')
+            
+            # Non participants should not see the status or who is the taker
+            for key in ('status','taker'):
+                del data[key]
             book_data.append(data)
         
         return Response(book_data, status=status.HTTP_200_OK)

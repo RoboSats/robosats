@@ -58,7 +58,7 @@ export default class UserGenPage extends Component {
   delGeneratedUser() {
     const requestOptions = {
       method: 'DELETE',
-      headers: {'Content-Type':'application/json', 'X-CSRFToken': csrftoken},
+      headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
     };
     fetch("/api/usergen", requestOptions)
       .then((response) => response.json())
@@ -74,7 +74,7 @@ export default class UserGenPage extends Component {
     this.setState({
       token: this.genBase62Token(32),
     })
-    this.getGeneratedUser();
+    this.reload_for_csrf_to_work();
   }
 
   handleChangeToken=(e)=>{

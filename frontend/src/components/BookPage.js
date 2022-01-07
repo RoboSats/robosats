@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import { Paper, Button , Divider, Card, CardActionArea, CardContent, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, Link, RouterLink, ListItemAvatar} from "@material-ui/core"
+import { Button , Divider, Card, CardActionArea, CardContent, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@material-ui/core"
+import { Link } from 'react-router-dom'
 
 export default class BookPage extends Component {
   constructor(props) {
@@ -13,18 +14,20 @@ export default class BookPage extends Component {
     this.state.currencyCode = this.getCurrencyCode(this.state.currency)
   }
 
-  // Fix needed to handle HTTP 404 error when no order is found
   // Show message to be the first one to make an order
   getOrderDetails() {
     fetch('/api/book' + '?currency=' + this.state.currency + "&type=" + this.state.type)
       .then((response) => response.json())
       .then((data) => //console.log(data));
-      this.setState({orders: data}));
+      this.setState({
+        orders: data,
+        not_found: data.not_found,
+      }));
   }
 
   handleCardClick=(e)=>{
-    console.log(e.target)
-    this.props.history.push('/order/' + e.target);
+    console.log(e)
+    this.props.history.push('/order/' + e);
   }
 
   // Make these two functions sequential. getOrderDetails needs setState to be finish beforehand.
@@ -51,6 +54,63 @@ export default class BookPage extends Component {
   // pretty numbers
   pn(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  bookCards=()=>{
+    return (this.state.orders.map((order) =>
+    <Grid container item sm={4}>
+      <Card elevation={6} sx={{ width: 945 }}>
+
+        <CardActionArea value={order.id} onClick={() => this.handleCardClick(order.id)}>
+          <CardContent>
+
+            <List dense="true">
+              <ListItem >
+              <ListItemAvatar >
+                  <Avatar
+                      alt={order.maker_nick}
+                      src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
+                      />
+                </ListItemAvatar>
+                <ListItemText>
+                  <Typography gutterBottom variant="h6">
+                    {order.maker_nick}
+                  </Typography>
+                </ListItemText>
+              </ListItem>
+
+              {/* CARD PARAGRAPH CONTENT */}
+              <ListItemText>
+                <Typography variant="subtitle1" color="text.secondary">
+                ◑{order.type == 0 ? <b> Buys </b>: <b> Sells </b>} 
+                  <b>{parseFloat(parseFloat(order.amount).toFixed(4))}
+                  {" " +this.getCurrencyCode(order.currency)}</b> <a> worth of bitcoin</a> 
+                </Typography>
+
+                <Typography variant="subtitle1" color="text.secondary">
+                ◑ Payment via <b>{order.payment_method}</b>
+                </Typography>
+{/* 
+                <Typography variant="subtitle1" color="text.secondary">
+                ◑ Priced {order.is_explicit ? 
+                  " explicitly at " + this.pn(order.satoshis) + " Sats" : (
+                  " at " + 
+                  parseFloat(parseFloat(order.premium).toFixed(4)) + "% over the market"                     
+                  )}
+                </Typography> */}
+
+                <Typography variant="subtitle1" color="text.secondary">
+                ◑ <b>{" 42,354 "}{this.getCurrencyCode(order.currency)}/BTC</b>  (Binance API)
+                </Typography>
+              </ListItemText>
+
+            </List>
+
+          </CardContent>
+        </CardActionArea>
+      </Card>
+      </Grid>
+    ));
   }
 
   render() {
@@ -102,66 +162,30 @@ export default class BookPage extends Component {
               </Select>
             </FormControl>
           </Grid>
-          {this.state.orders.map((order) =>
-          <Grid container item sm={4}>
-            <Card elevation={6} sx={{ width: 945 }}>
-
-              {/* To fix! does not pass order.id to handleCardCLick. Instead passes the clicked </>*/}
-              <CardActionArea value={order.id} onClick={this.handleCardClick}>
-                <CardContent>
-
-                  <List dense="true">
-                    <ListItem >
-                    <ListItemAvatar >
-                        <Avatar
-                            alt={order.maker_nick}
-                            src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
-                            />
-                      </ListItemAvatar>
-                      <ListItemText>
-                        <Typography gutterBottom variant="h6">
-                          {order.maker_nick}
-                        </Typography>
-                      </ListItemText>
-                    </ListItem>
-
-                    {/* CARD PARAGRAPH CONTENT */}
-                    <ListItemText>
-                      <Typography variant="subtitle1" color="text.secondary">
-                      ◑{order.type == 0 ? <b> Buys </b>: <b> Sells </b>} 
-                        <b>{parseFloat(parseFloat(order.amount).toFixed(4))}
-                        {" " +this.getCurrencyCode(order.currency)}</b> <a> worth of bitcoin</a> 
-                      </Typography>
-
-                      <Typography variant="subtitle1" color="text.secondary">
-                      ◑ Payment via <b>{order.payment_method}</b>
-                      </Typography>
-
-                      <Typography variant="subtitle1" color="text.secondary">
-                      ◑ Priced {order.is_explicit ? 
-                        " explicitly at " + this.pn(order.satoshis) + " Sats" : (
-                        " at " + 
-                        parseFloat(parseFloat(order.premium).toFixed(4)) + "% over the market"                     
-                        )}
-                      </Typography>
-
-                      <Typography variant="subtitle1" color="text.secondary">
-                      ◑ <b>{" 42,354 "}{this.getCurrencyCode(order.currency)}/BTC</b>  (Binance API)
-                      </Typography>
-                    </ListItemText>
-
-                  </List>
-
-                </CardContent>
-              </CardActionArea>
-            </Card>
-            </Grid>
-          )}
+        { this.state.not_found ? "" :
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
               You are {this.state.type == 0 ? " selling " : " buying "} BTC for {this.state.currencyCode}
             </Typography>
           </Grid>
+          }
+
+        { this.state.not_found ?
+          (<Grid item xs={12} align="center">
+            <Grid item xs={12} align="center">
+              <Typography component="h5" variant="h5">
+                No orders found to {this.state.type == 0 ? ' sell ' :' buy ' } BTC for {this.state.currencyCode}
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Button variant="contained" color='primary' to='/make/' component={Link}>Make Order</Button>
+            </Grid>
+              <Typography component="body1" variant="body1">
+                Be the first one to create an order
+              </Typography>
+          </Grid>)
+          : this.bookCards()
+          }
           <Grid item xs={12} align="center">
               <Button color="secondary" variant="contained" to="/" component={Link}>
                   Back
