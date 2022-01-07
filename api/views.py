@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
-from .models import Order
+from .models import LNPayment, Order
 from .logics import Logics
 
 from .nick_generator.nick_generator import NickGenerator
@@ -74,75 +74,100 @@ class OrderView(viewsets.ViewSet):
     lookup_url_kwarg = 'order_id'
 
     def get(self, request, format=None):
+        '''
+        Full trade pipeline takes place while looking/refreshing the order page.
+        '''
         order_id = request.GET.get(self.lookup_url_kwarg)
 
         if order_id == None:
-            return Response({'Bad Request':'Order ID parameter not found in request'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'bad_request':'Order ID parameter not found in request'}, status=status.HTTP_400_BAD_REQUEST)
         
         order = Order.objects.filter(id=order_id)
 
         # check if exactly one order is found in the db
-        if len(order) == 1 :
-            order = order[0]
+        if len(order) != 1 :
+            return Response({'bad_request':'Invalid Order Id'}, status.HTTP_404_NOT_FOUND)
+        
+        # This is our order.
+        order = order[0]
 
-            # 1) If order expired
-            if order.status == Order.Status.EXP:
-                return Response({'bad_request':'This order has expired'},status.HTTP_400_BAD_REQUEST)
+        # 1) If order expired
+        if order.status == Order.Status.EXP:
+            return Response({'bad_request':'This order has expired'},status.HTTP_400_BAD_REQUEST)
 
-            # 2) If order cancelled
-            if order.status == Order.Status.UCA:
-                return Response({'bad_request':'This order has been cancelled by the maker'},status.HTTP_400_BAD_REQUEST)
-            if order.status == Order.Status.CCA:
-                return Response({'bad_request':'This order has been cancelled collaborativelly'},status.HTTP_400_BAD_REQUEST)
+        # 2) If order cancelled
+        if order.status == Order.Status.UCA:
+            return Response({'bad_request':'This order has been cancelled by the maker'},status.HTTP_400_BAD_REQUEST)
+        if order.status == Order.Status.CCA:
+            return Response({'bad_request':'This order has been cancelled collaborativelly'},status.HTTP_400_BAD_REQUEST)
 
-            data = ListOrderSerializer(order).data
+        data = ListOrderSerializer(order).data
 
-            # Add booleans if user is maker, taker, partipant, buyer or seller
-            data['is_maker'] = order.maker == request.user
-            data['is_taker'] = order.taker == request.user
-            data['is_participant'] = data['is_maker'] or data['is_taker']
-            
-            # 3) If not a participant and order is not public, forbid.
-            if not data['is_participant'] and order.status != Order.Status.PUB:
-                return Response({'bad_request':'Not allowed to see this order'},status.HTTP_403_FORBIDDEN)
-            
-            # 4) Non participants can view details (but only if PUB)
-            elif not data['is_participant'] and order.status != Order.Status.PUB:
-                return Response(data, status=status.HTTP_200_OK) 
+        # Add booleans if user is maker, taker, partipant, buyer or seller
+        data['is_maker'] = order.maker == request.user
+        data['is_taker'] = order.taker == request.user
+        data['is_participant'] = data['is_maker'] or data['is_taker']
+        
+        # 3) If not a participant and order is not public, forbid.
+        if not data['is_participant'] and order.status != Order.Status.PUB:
+            return Response({'bad_request':'You are not allowed to see this order'},status.HTTP_403_FORBIDDEN)
+        
+        # 4) Non participants can view details (but only if PUB)
+        elif not data['is_participant'] and order.status != Order.Status.PUB:
+            return Response(data, status=status.HTTP_200_OK) 
 
-            # For participants add position side, nicks and status as message
-            data['is_buyer'] = Logics.is_buyer(order,request.user)
-            data['is_seller'] = Logics.is_seller(order,request.user)
-            data['maker_nick'] = str(order.maker)
-            data['taker_nick'] = str(order.taker)
-            data['status_message'] = Order.Status(order.status).label 
+        # For participants add position side, nicks and status as message
+        data['is_buyer'] = Logics.is_buyer(order,request.user)
+        data['is_seller'] = Logics.is_seller(order,request.user)
+        data['maker_nick'] = str(order.maker)
+        data['taker_nick'] = str(order.taker)
+        data['status_message'] = Order.Status(order.status).label 
 
-            # 5) If status is 'waiting for maker bond' and user is MAKER, reply with a MAKER HODL invoice.
-            if order.status == Order.Status.WFB and data['is_maker']:
-                valid, context = Logics.gen_maker_hodl_invoice(order, request.user)
-                if valid:
-                    data = {**data, **context}
-                else:
-                    return Response(context, status.HTTP_400_BAD_REQUEST)
-            
-            # 6)  If status is 'waiting for taker bond' and user is TAKER, reply with a TAKER HODL invoice.
-            elif order.status == Order.Status.TAK and data['is_taker']:
-                valid, context = Logics.gen_taker_hodl_invoice(order, request.user)
-                if valid:
-                    data = {**data, **context}
-                else:
-                    return Response(context, status.HTTP_400_BAD_REQUEST)
-            
-            # 7) If status is 'WF2'or'WTC' and user is Seller, reply with an ESCROW HODL invoice.
-            elif (order.status == Order.Status.WF2 or order.status == Order.Status.WFE) and data['is_seller']:
-                valid, context = Logics.gen_seller_hodl_invoice(order, request.user)
-                if valid:
-                    data = {**data, **context}
-                else:
-                    return Response(context, status.HTTP_400_BAD_REQUEST)
+        # 5) If status is 'waiting for maker bond' and user is MAKER, reply with a MAKER HODL invoice.
+        if order.status == Order.Status.WFB and data['is_maker']:
+            valid, context = Logics.gen_maker_hodl_invoice(order, request.user)
+            if valid:
+                data = {**data, **context}
+            else:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+        
+        # 6)  If status is 'waiting for taker bond' and user is TAKER, reply with a TAKER HODL invoice.
+        elif order.status == Order.Status.TAK and data['is_taker']:
+            valid, context = Logics.gen_taker_hodl_invoice(order, request.user)
+            if valid:
+                data = {**data, **context}
+            else:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+        
+        # 7) If status is 'WF2'or'WTC' 
+        elif (order.status == Order.Status.WF2 or order.status == Order.Status.WFE):
 
-            return Response(data, status.HTTP_200_OK)
-        return Response({'Order Not Found':'Invalid Order Id'}, status.HTTP_404_NOT_FOUND)
+            # If the two bonds are locked
+            if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
+
+                # 7.a) And if user is Seller, reply with an ESCROW HODL invoice.
+                if data['is_seller']:
+                    valid, context = Logics.gen_escrow_hodl_invoice(order, request.user)
+                    if valid:
+                        data = {**data, **context}
+                    else:
+                        return Response(context, status.HTTP_400_BAD_REQUEST)
+
+                # 7.b) If user is Buyer, reply with an AMOUNT so he can send the buyer invoice.
+                elif data['is_buyer']:
+                    valid, context = Logics.buyer_invoice_amount(order, request.user)
+                    if valid:
+                        data = {**data, **context}
+                    else:
+                        return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        # 8) If status is 'CHA'or '' or '' and all HTLCS are in LOCKED
+        elif order.status == Order.Status.CHA: # TODO Add the other status
+            if order.maker_bond.status == order.taker_bond.status == order.trade_escrow.status == LNPayment.Status.LOCKED:
+                # add whether a collaborative cancel is pending
+                data['pending_cancel'] = order.is_pending_cancel
+
+        return Response(data, status.HTTP_200_OK)
 
     def take_update_confirm_dispute_cancel(self, request, format=None):
         '''
@@ -177,7 +202,7 @@ class OrderView(viewsets.ViewSet):
         
         # 3) If action is cancel
         elif action == 'cancel':
-            valid, context = Logics.cancel_order(order,request.user,invoice)
+            valid, context = Logics.cancel_order(order,request.user)
             if not valid: return Response(context,status.HTTP_400_BAD_REQUEST)
 
         # 4) If action is confirm
@@ -190,11 +215,12 @@ class OrderView(viewsets.ViewSet):
 
         # 6) If action is dispute
         elif action == 'rate' and rating:
-            pass
+            valid, context = Logics.rate_counterparty(order,request.user, rating)
+            if not valid: return Response(context,status.HTTP_400_BAD_REQUEST)
 
         # If nothing... something else is going on. Probably not allowed!
         else:
-            return Response({'bad_request':'Not allowed'})
+            return Response({'bad_request':'The Robotic Satoshis working in the warehouse did not understand you'})
 
         return self.get(request)
 

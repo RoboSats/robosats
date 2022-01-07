@@ -68,6 +68,7 @@ export default class OrderPage extends Component {
             isBuyer:data.buyer,
             isSeller:data.seller,
             expiresAt:data.expires_at,
+            badRequest:data.bad_request,
         });
       });
   }

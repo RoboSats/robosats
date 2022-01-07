@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, Menu} from "@material-ui/core"
+import { Paper, Alert, AlertTitle, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, Menu} from "@material-ui/core"
 import { Link } from 'react-router-dom'
 
 function getCookie(name) {
@@ -104,7 +104,8 @@ export default class MakerPage extends Component {
         };
         fetch("/api/make/",requestOptions)
         .then((response) => response.json())
-        .then((data) => (console.log(data) & this.props.history.push('/order/' + data.id)));
+        .then((data) => (this.setState({badRequest:data.bad_request})
+             & (data.id ? this.props.history.push('/order/' + data.id) :"")));
     }
 
   render() {
@@ -242,6 +243,13 @@ export default class MakerPage extends Component {
                 <Button color="primary" variant="contained" onClick={this.handleCreateOfferButtonPressed} >
                     Create Order
                 </Button>
+            </Grid>
+            <Grid item xs={12} align="center">
+                {this.state.badRequest ?
+                <Typography component="subtitle2" variant="subtitle2" color="secondary">
+                    {this.state.badRequest} <br/>
+                </Typography>
+                : ""}
                 <Typography component="subtitle2" variant="subtitle2">
                     <div align='center'>
                         Create a BTC {this.state.type==0 ? "buy":"sell"} order for {this.state.amount} {this.state.currencyCode} 

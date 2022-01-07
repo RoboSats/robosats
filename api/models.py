@@ -27,18 +27,18 @@ class LNPayment(models.Model):
 
     class Concepts(models.IntegerChoices):
         MAKEBOND = 0, 'Maker bond'
-        TAKEBOND = 1, 'Taker-buyer bond'
+        TAKEBOND = 1, 'Taker bond'
         TRESCROW = 2, 'Trade escrow'
         PAYBUYER = 3, 'Payment to buyer'
 
     class Status(models.IntegerChoices):
-        INVGEN = 0, 'Hodl invoice was generated'
-        LOCKED = 1, 'Hodl invoice has HTLCs locked'
-        SETLED = 2, 'Invoice settled'
-        RETNED = 3, 'Hodl invoice was returned'
-        MISSNG = 4, 'Buyer invoice is missing'
-        VALIDI = 5, 'Buyer invoice is valid'
-        INFAIL = 6, 'Buyer invoice routing failed'
+        INVGEN = 0, 'Generated'
+        LOCKED = 1, 'Locked'
+        SETLED = 2, 'Settled'
+        RETNED = 3, 'Returned'
+        MISSNG = 4, 'Missing'
+        VALIDI = 5, 'Valid'
+        INFAIL = 6, 'Failed routing'
 
     # payment use details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HODL)
@@ -59,8 +59,7 @@ class LNPayment(models.Model):
     receiver = models.ForeignKey(User, related_name='receiver', on_delete=models.CASCADE, null=True, default=None)
 
     def __str__(self):
-        # Make relational back to ORDER
-        return (f'HTLC {self.id}: {self.Concepts(self.concept).label}')
+        return (f'HTLC {self.id}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}')
 
 class Order(models.Model):
     
@@ -74,16 +73,16 @@ class Order(models.Model):
         ETH = 3, 'ETH'
 
     class Status(models.IntegerChoices):
-        WFB = 0, 'Waiting for maker bond'
-        PUB = 1, 'Public'
-        DEL = 2, 'Deleted'
-        TAK = 3, 'Waiting for taker bond'
-        UCA = 4, 'Cancelled'
-        WF2 = 5, 'Waiting for trade collateral and buyer invoice'
-        WFE = 6, 'Waiting only for seller trade collateral'
-        WFI = 7, 'Waiting only for buyer invoice'
-        CHA = 8, 'Sending fiat - In chatroom'
-        CCA = 9, 'Collaboratively cancelled'
+        WFB = 0,  'Waiting for maker bond'
+        PUB = 1,  'Public'
+        DEL = 2,  'Deleted'
+        TAK = 3,  'Waiting for taker bond'
+        UCA = 4,  'Cancelled'
+        WF2 = 5,  'Waiting for trade collateral and buyer invoice'
+        WFE = 6,  'Waiting only for seller trade collateral'
+        WFI = 7,  'Waiting only for buyer invoice'
+        CHA = 8,  'Sending fiat - In chatroom'
+        CCA = 9,  'Collaboratively cancelled'
         FSE = 10, 'Fiat sent - In chatroom'
         FCO = 11, 'Fiat confirmed'
         SUC = 12, 'Sucessfully settled'
@@ -130,7 +129,7 @@ class Order(models.Model):
 
     def __str__(self):
         # Make relational back to ORDER
-        return (f'Order {self.id}: {self.Types(self.type).label} {"{:,}".format(self.t0_satoshis)} Sats for {self.Currencies(self.currency).label}')
+        return (f'Order {self.id}: {self.Types(self.type).label} BTC for {self.amount} {self.Currencies(self.currency).label}')
 
 @receiver(pre_delete, sender=Order)
 def delelete_HTLCs_at_order_deletion(sender, instance, **kwargs):
