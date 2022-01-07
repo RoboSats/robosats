@@ -47,7 +47,7 @@ pip install robohash
 ### Install npm
 `sudo apt install npm`
 
-No need to repeat, this is the list of npm packages we use
+npm packages we use
 ```
 cd frontend
 npm init -y
@@ -59,6 +59,7 @@ npm install @babel/plugin-proposal-class-properties
 npm install react-router-dom@5.2.0
 npm install @material-ui/icons
 npm install material-ui-image
+npm install @mui/system @emotion/react @emotion/styled
 ```
 
 ### Launch the React render

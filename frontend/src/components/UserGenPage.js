@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, Menu} from "@material-ui/core"
+import { Button , Grid, Typography, TextField, ButtonGroup} from "@material-ui/core"
 import { Link } from 'react-router-dom'
 import Image from 'material-ui-image'
 
@@ -85,9 +85,39 @@ export default class UserGenPage extends Component {
     this.getGeneratedUser();
   }
 
+  // TO FIX CSRF TOKEN IS NOT UPDATED UNTIL WINDOW IS RELOADED
+  reload_for_csrf_to_work=()=>{
+    window.location.reload()
+  }
+
   render() {
     return (
       <Grid container spacing={1}>
+          <Grid item xs={12} align="center">
+            <Typography component="h5" variant="h5">
+            <b>{this.state.nickname ? "⚡"+this.state.nickname+"⚡" : ""}</b>
+            </Typography>
+          </Grid>
+          <Grid item xs={12} align="center">
+            <div style={{ maxWidth: 200, maxHeight: 200 }}>
+              <Image className='newAvatar'
+                disableError='true'
+                cover='true'
+                color='null'
+                src={this.state.avatar_url}
+              />
+            </div><br/>
+          </Grid>
+          {
+            this.state.found ?
+              <Grid item xs={12} align="center">
+                <Typography component="subtitle2" variant="subtitle2" color='primary'>
+                  {this.state.found}<br/>
+                </Typography>
+              </Grid>
+             :
+             ""
+          }
           <Grid item xs={12} align="center">
             <TextField
               error={this.state.bad_request}
@@ -102,36 +132,19 @@ export default class UserGenPage extends Component {
             />
           </Grid>
           <Grid item xs={12} align="center">
-            <div style={{ maxWidth: 200, maxHeight: 200 }}>
-              <Image className='newAvatar'
-                disableError='true'
-                cover='true'
-                color='null'
-                src={this.state.avatar_url}
-              />
-            </div>
+              <Button onClick={this.handleAnotherButtonPressed}>Generate Another Robosat</Button>
+          </Grid>
+          <Grid item xs={12} align="center">
+            <ButtonGroup variant="contained" aria-label="outlined primary button group">
+              <Button color='primary' to='/make/' component={Link}>Make Order</Button>
+              <Button to='/home' component={Link}>INFO</Button>
+              <Button color='secondary' to='/book/' component={Link}>View Book</Button>
+            </ButtonGroup>
           </Grid>
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
-            <b>{this.state.nickname ? "⚡"+this.state.nickname+"⚡" : ""}</b>
-            </Typography>
-          </Grid>
-          {
-            this.state.found ?
-              <Grid item xs={12} align="center">
-                <Typography component="subtitle2" variant="subtitle2" color='primary'>
-                  {this.state.found}<br/>
-                </Typography>
-                <Button variant='contained' color='primary' to='/home' component={Link}>Cool!</Button>
-              </Grid>
-             :
-             <Grid item xs={12} align="center">
-              <Button variant='contained' color='primary' to='/home' component={Link}>Take This Robosat!</Button>
-            </Grid>
-          }
-          
-          <Grid item xs={12} align="center">
-            <Button variant='contained' to='/' component={Link} onClick={this.handleAnotherButtonPressed}>Give Me Another</Button>
+            Easy and Private Lightning peer-to-peer Exchange
+          </Typography>
           </Grid>
       </Grid>
     );

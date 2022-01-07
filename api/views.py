@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.conf.urls.static import static
 
 from .serializers import OrderSerializer, MakeOrderSerializer
 from .models import Order
@@ -16,6 +17,12 @@ import hashlib
 from pathlib import Path
 from datetime import timedelta
 from django.utils import timezone
+
+# .env
+expiration_time = 8
+
+avatar_path = Path('frontend/static/assets/avatars')
+avatar_path.mkdir(parents=True, exist_ok=True)
 
 # Create your views here.
 
@@ -51,6 +58,7 @@ class MakeOrder(APIView):
                 premium=premium,
                 satoshis=satoshis,
                 is_explicit=is_explicit,
+                expires_at= timezone.now()+timedelta(hours=expiration_time),
                 maker=request.user)
             order.save()
 
@@ -81,7 +89,7 @@ class OrderView(APIView):
                 
                 #To do fix: data['status_message'] = Order.Status.get(order.status).label
                 data['status_message'] = Order.Status.WFB.label # Hardcoded WFB, should use order.status value.
-                
+
                 data['maker_nick'] = str(order.maker)
                 data['taker_nick'] = str(order.taker)
 
@@ -96,7 +104,6 @@ class OrderView(APIView):
 
         return Response({'Bad Request':'Order ID parameter not found in request'}, status=status.HTTP_400_BAD_REQUEST)
 
-
 class UserGenerator(APIView):
     lookup_url_kwarg = 'token'
     NickGen = NickGenerator(
@@ -106,7 +113,7 @@ class UserGenerator(APIView):
         use_noun=True, 
         max_num=999)
 
-    def get(self,request):
+    def get(self,request, format=None):
         '''
         Get a new user derived from a high entropy token
         
@@ -139,18 +146,20 @@ class UserGenerator(APIView):
 
         # generate avatar
         rh = Robohash(hash)
-        rh.assemble(roboset='set1') # bgset='any' for backgrounds ON
+        rh.assemble(roboset='set1', bgset='any')# for backgrounds ON
 
-        avatars_path = Path('frontend/static/assets/avatars')
-        avatars_path.mkdir(parents=True, exist_ok=True)
-    
-        with open(avatars_path.joinpath(nickname+".png"), "wb") as f:
-            rh.img.save(f, format="png")
+        # Does not replace image if existing (avoid re-avatar in case of nick collusion)
 
-        # Create new credentials if nickname is new
+        image_path = avatar_path.joinpath(nickname+".png")
+        if not image_path.exists():
+            with open(image_path, "wb") as f:
+                rh.img.save(f, format="png")
+
+        # Create new credentials and logsin if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname, password=token, is_staff=False)
             user = authenticate(request, username=nickname, password=token)
+            user.profile.avatar = str(image_path)[9:] # removes frontend/ from url (ugly, to be fixed) 
             login(request, user)
             return Response(context, status=status.HTTP_201_CREATED)
 
@@ -159,16 +168,14 @@ class UserGenerator(APIView):
             if user is not None:
                 login(request, user)
                 # Sends the welcome back message, only if created +30 mins ago
-                if request.user.date_joined < (timezone.now()-timedelta(minutes=1)):
+                if request.user.date_joined < (timezone.now()-timedelta(minutes=30)):
                     context['found'] = 'We found your Robosat. Welcome back!'
                 return Response(context, status=status.HTTP_202_ACCEPTED)
             else:
-                # It is unlikely (1/20 Billions) but maybe the nickname is taken
+                # It is unlikely, but maybe the nickname is taken (1 in 20 Billion change)
                 context['found'] = 'Bad luck, this nickname is taken'
                 context['bad_request'] = 'Enter a different token'
                 return Response(context, status=status.HTTP_403_FORBIDDEN)
-
-        
 
     def delete(self,request):
         user = User.objects.get(id = request.user.id)
@@ -177,10 +184,40 @@ class UserGenerator(APIView):
         # However it might be a long time recovered user
         # Only delete if user live is < 5 minutes
 
+        # TODO check if user exists AND it is not a maker or taker!
         if user is not None:
+            avatar_file = avatar_path.joinpath(str(request.user)+".png")
+            avatar_file.unlink() # Unsafe if avatar does not exist.
             logout(request)
             user.delete()
-            return Response(status=status.HTTP_301_MOVED_PERMANENTLY)
+
+            return Response({'user_deleted':'User deleted permanently'},status=status.HTTP_301_MOVED_PERMANENTLY)
 
         return Response(status=status.HTTP_403_FORBIDDEN)
+
+class BookView(APIView):
+    serializer_class = OrderSerializer
+
+    def get(self,request, format=None):
+        currency = request.GET.get('currency')
+        type = request.GET.get('type') 
+        queryset = Order.objects.filter(currency=currency, type=type, status=0) # TODO status = 1 for orders that are Public
+        if len(queryset)== 0:
+            return Response({'not_found':'No orders found, be the first to make one'}, status=status.HTTP_404_NOT_FOUND)
+
+        queryset = queryset.order_by('created_at')
+        book_data = []
+        for order in queryset:
+            data = OrderSerializer(order).data
+            user = User.objects.filter(id=data['maker'])
+            if len(user) == 1:
+                data['maker_nick'] = user[0].username
+            # TODO avoid sending status and takers for book views
+            #data.pop('status','taker')
+            book_data.append(data)
+        
+        return Response(book_data, status=status.HTTP_200_OK)
+        
+
+        
 

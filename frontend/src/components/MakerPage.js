@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, Menu} from "@material-ui/core"
+import { Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, Menu} from "@material-ui/core"
 import { Link } from 'react-router-dom'
 
 function getCookie(name) {
@@ -79,7 +79,7 @@ export default class MakerPage extends Component {
             premium: 0,     
         });
     }
-    handleClickisExplicit=(e)=>{
+    handleClickExplicit=(e)=>{
         this.setState({
             isExplicit: true,
             satoshis: 10000, 
@@ -104,130 +104,116 @@ export default class MakerPage extends Component {
         };
         fetch("/api/make/",requestOptions)
         .then((response) => response.json())
-        .then((data) => this.props.history.push('/order/' + data.id));
+        .then((data) => (console.log(data) & this.props.history.push('/order/' + data.id)));
     }
 
   render() {
     return (
         <Grid container spacing={1}>
             <Grid item xs={12} align="center">
-                <Typography component="h4" variant="h4">
-                    Make an Order
-                </Typography>
-            </Grid>
-            <Grid item xs={12} align="center">
-                <FormControl component="fieldset">
-                    <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
-                        <FormControlLabel 
-                            value="0" 
+                <Grid item xs={12} align="center">
+                    <Typography component="h4" variant="h4">
+                        Make an Order
+                    </Typography>
+                </Grid>
+                <Paper elevation={12} style={{ padding: 8,}}>
+                <Grid item xs={12} align="center">
+                    <FormControl component="fieldset">
+                    <FormHelperText>
+                        <div align='center'>
+                        Choose Buy or Sell Bitcoin
+                        </div>
+                    </FormHelperText>
+                        <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
+                            <FormControlLabel 
+                                value="0" 
+                                control={<Radio color="primary"/>}
+                                label="Buy"
+                                labelPlacement="Top"
+                            />
+                            <FormControlLabel 
+                                value="1" 
+                                control={<Radio color="secondary"/>}
+                                label="Sell"
+                                labelPlacement="Top"
+                            />
+                        </RadioGroup>
+                    </FormControl>
+                </Grid>
+                <Grid item xs={12} align="center">
+                    <FormControl >
+                        <TextField 
+                            label="Amount of Fiat to Trade"
+                            type="number" 
+                            required="true"
+                            defaultValue={this.defaultAmount} 
+                            inputProps={{
+                                min:0 , 
+                                style: {textAlign:"center"}
+                            }}
+                            onChange={this.handleAmountChange}
+                        />
+                        <Select
+                            label="Select Payment Currency"
+                            required="true" 
+                            defaultValue={this.defaultCurrency} 
+                            inputProps={{
+                                style: {textAlign:"center"}
+                            }}
+                            onChange={this.handleCurrencyChange}
+                        >
+                            <MenuItem value={1}>USD</MenuItem>
+                            <MenuItem value={2}>EUR</MenuItem>
+                            <MenuItem value={3}>ETH</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+
+                <Grid item xs={12} align="center">
+                    <FormControl >
+                        <TextField 
+                            label="Payment Method(s)"
+                            type="text" 
+                            require={true}  
+                            inputProps={{
+                                style: {textAlign:"center"}
+                            }}
+                            onChange={this.handlePaymentMethodChange}
+                        />
+                    </FormControl>
+                </Grid>
+                <Grid item xs={12} align="center">
+                    <FormControl component="fieldset">
+                        <RadioGroup row defaultValue="relative">
+                            <FormControlLabel 
+                            value="relative" 
                             control={<Radio color="primary"/>}
-                            label="Buy"
+                            label="Relative"
                             labelPlacement="Top"
-                        />
-                        <FormControlLabel 
-                            value="1" 
+                            onClick={this.handleClickRelative}
+                            />
+                            <FormControlLabel 
+                            value="explicit" 
                             control={<Radio color="secondary"/>}
-                            label="Sell"
+                            label="Explicit"
                             labelPlacement="Top"
-                        />
-                    </RadioGroup>
-                    <FormHelperText>
-                        <div align='center'>
-                            Choose Buy or Sell Bitcoin
-                        </div>
-                    </FormHelperText>
-                </FormControl>
-            </Grid>
-            <Grid item xs={12} align="center">
-                <FormControl >
-                    <Select
-                        require={true} 
-                        defaultValue={this.defaultCurrency} 
-                        inputProps={{
-                            style: {textAlign:"center"}
-                        }}
-                        onChange={this.handleCurrencyChange}
-                    >
-                        <MenuItem value={1}>USD</MenuItem>
-                        <MenuItem value={2}>EUR</MenuItem>
-                        <MenuItem value={3}>ETH</MenuItem>
-                    </Select>
-                    <FormHelperText>
-                        <div align='center'>
-                            Select Payment Currency
-                        </div>
-                    </FormHelperText>
-                </FormControl>
-            </Grid>
-            <Grid item xs={12} align="center">
-                <FormControl >
-                    <TextField 
-                        type="number" 
-                        require={true} 
-                        defaultValue={this.defaultAmount} 
-                        inputProps={{
-                            min:0 , 
-                            style: {textAlign:"center"}
-                        }}
-                        onChange={this.handleAmountChange}
-                    />
-                </FormControl>
-                <FormHelperText>
-                        <div align='center'>
-                            Amount of Fiat to Trade
-                        </div>
-                </FormHelperText>
-            </Grid>
-            <Grid item xs={12} align="center">
-                <FormControl >
-                    <TextField 
-                        type="text" 
-                        require={true}  
-                        inputProps={{
-                            style: {textAlign:"center"}
-                        }}
-                        onChange={this.handlePaymentMethodChange}
-                    />
-                    <FormHelperText>
-                        <div align='center'>
-                            Enter the Payment Method(s)
-                        </div>
-                    </FormHelperText>
-                </FormControl>
-            </Grid>
-            <Grid item xs={12} align="center">
-                <FormControl component="fieldset">
-                    <RadioGroup row defaultValue="relative">
-                        <FormControlLabel 
-                        value="relative" 
-                        control={<Radio color="primary"/>}
-                        label="Relative"
-                        labelPlacement="Top"
-                        onClick={this.handleClickRelative}
-                        />
-                        <FormControlLabel 
-                        value="explicit" 
-                        control={<Radio color="secondary"/>}
-                        label="Explicit"
-                        labelPlacement="Top"
-                        onClick={this.handleClickisExplicit}
-                        onShow="false"
-                        />
-                    </RadioGroup>
-                    <FormHelperText >
-                        <div align='center'>
-                            Choose a Pricing Method
-                        </div>
-                    </FormHelperText>
-                </FormControl>
-            </Grid>
-{/* conditional shows either Premium % field or Satoshis field based on pricing method */}
-            { this.state.isExplicit 
-                    ? <Grid item xs={12} align="center">
-                            <FormControl >
-                                <TextField 
+                            onClick={this.handleClickExplicit}
+                            />
+                        </RadioGroup>
+                        <FormHelperText >
+                            <div align='center'>
+                                Choose a Pricing Method
+                            </div>
+                        </FormHelperText>
+                    </FormControl>
+                </Grid>
+    {/* conditional shows either Premium % field or Satoshis field based on pricing method */}
+                { this.state.isExplicit 
+                        ? <Grid item xs={12} align="center">
+                            <TextField 
+                                    label="Explicit Amount in Satoshis"
                                     type="number" 
-                                    require={true} 
+                                    required="true" 
                                     inputProps={{
                                         // TODO read these from .env file
                                         min:10000 , 
@@ -235,36 +221,25 @@ export default class MakerPage extends Component {
                                         style: {textAlign:"center"}
                                     }}
                                     onChange={this.handleSatoshisChange}
-                                    defaultValue={this.defaultSatoshis} 
+                                    // defaultValue={this.defaultSatoshis} 
                                 />
-                                <FormHelperText>
-                                    <div align='center'>
-                                        Explicit Amount in Satoshis
-                                    </div>
-                                </FormHelperText>
-                            </FormControl>
-                        </Grid>
-                    :   <Grid item xs={12} align="center">
-                            <FormControl >
+                            </Grid>
+                        :   <Grid item xs={12} align="center">
                                 <TextField 
+                                    label="Premium over Market (%)"
                                     type="number" 
-                                    require={true} 
-                                    defaultValue={this.defaultPremium} 
+                                    // defaultValue={this.defaultPremium} 
                                     inputProps={{
                                         style: {textAlign:"center"}
                                     }}
                                     onChange={this.handlePremiumChange}
                                 />
-                                <FormHelperText>
-                                    <div align='center'>
-                                        Premium Relative to Market Price (%)
-                                    </div>
-                                </FormHelperText>
-                            </FormControl>
-                        </Grid>
-                }
+                            </Grid>
+                    }
+                </Paper>
+            </Grid>
             <Grid item xs={12} align="center">
-                <Button color="primary" variant="contained" onClick={this.handleCreateOfferButtonPressed}>
+                <Button color="primary" variant="contained" onClick={this.handleCreateOfferButtonPressed} >
                     Create Order
                 </Button>
                 <Typography component="subtitle2" variant="subtitle2">
@@ -277,14 +252,13 @@ export default class MakerPage extends Component {
                         }
                     </div>
                 </Typography>
-            </Grid>
-            <Grid item xs={12} align="center">
-                <Button color="secondary" variant="contained" to="/" component={Link}>
-                    Back
-                </Button>
+                <Grid item xs={12} align="center">
+                    <Button color="secondary" variant="contained" to="/" component={Link}>
+                        Back
+                    </Button>
+                </Grid>
             </Grid>
         </Grid>
-      
     );
   }
 }
