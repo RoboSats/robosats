@@ -193,7 +193,7 @@ class MarketTick(models.Model):
     Records tick by tick Non-KYC Bitcoin price. 
     Data to be aggregated and offered via public API.
 
-    It is checked against current cex prices for nice
+    It is checked against current CEX price for useful
     insight on the historical premium of Non-KYC BTC
 
     Price is set when both taker bond is locked. Both 

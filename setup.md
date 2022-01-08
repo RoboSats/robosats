@@ -66,6 +66,7 @@ npm install react-router-dom@5.2.0
 npm install @material-ui/icons
 npm install material-ui-image
 npm install @mui/system @emotion/react @emotion/styled
+npm install qrcodejs
 ```
 
 ### Launch the React render

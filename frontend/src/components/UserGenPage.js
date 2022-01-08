@@ -41,7 +41,7 @@ export default class UserGenPage extends Component {
   }
 
   getGeneratedUser() {
-    fetch('/api/usergen' + '?token=' + this.state.token)
+    fetch('/api/user' + '?token=' + this.state.token)
       .then((response) => response.json())
       .then((data) => {
         this.setState({

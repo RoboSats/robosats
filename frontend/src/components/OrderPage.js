@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Paper, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider} from "@material-ui/core"
 import { Link } from 'react-router-dom'
+import TradeBox from "./TradeBox";
 
 function msToTime(duration) {
   var seconds = Math.floor((duration / 1000) % 60),
@@ -65,10 +66,15 @@ export default class OrderPage extends Component {
             makerNick: data.maker_nick,
             takerId: data.taker,
             takerNick: data.taker_nick,
-            isBuyer:data.buyer,
-            isSeller:data.seller,
-            expiresAt:data.expires_at,
-            badRequest:data.bad_request,
+            isMaker: data.is_maker,
+            isTaker: data.is_taker,
+            isBuyer: data.is_buyer,
+            isSeller: data.is_seller,
+            expiresAt: data.expires_at,
+            badRequest: data.bad_request,
+            bondInvoice: data.bond_invoice,
+            bondSatoshis: data.bond_satoshis,
+            badRequest: data.bad_request,
         });
       });
   }
@@ -98,10 +104,8 @@ export default class OrderPage extends Component {
       .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
   }
 
-  
-
-  render (){
-    return (
+  orderBox=()=>{
+    return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="h5" variant="h5">
@@ -173,16 +177,47 @@ export default class OrderPage extends Component {
             </List>
 
           </Paper>
-
-          <Grid item xs={12} align="center">
-          {this.state.isParticipant ? "" : <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>}
-          </Grid>
-          <Grid item xs={12} align="center">
-            <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
-          </Grid>
-
         </Grid>
-      </Grid>
+
+        {/* Participants cannot see the Back or Take Order buttons */}
+        {this.state.isParticipant ? "" :
+          <>
+            <Grid item xs={12} align="center">
+              <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>
+            </Grid>
+            <Grid item xs={12} align="center">
+              <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
+            </Grid>
+          </>
+          }
+        </Grid>
+    )
+  }
+  
+
+  render (){
+    return ( 
+      this.state.badRequest ?
+        <div align='center'>
+          <Typography component="subtitle2" variant="subtitle2" color="secondary" >
+            {this.state.badRequest}<br/>
+          </Typography>
+          <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
+        </div>
+        :
+        (this.state.isParticipant ? 
+          <Grid container xs={12} align="center" spacing={2}>
+            <Grid item xs={6} align="left">
+              {this.orderBox()}
+            </Grid>
+            <Grid item xs={6} align="left">
+              <TradeBox data={this.state}/>
+            </Grid>
+          </Grid>
+          :
+          <Grid item xs={12} align="center">
+            {this.orderBox()}
+          </Grid>)
     );
   }
 }
