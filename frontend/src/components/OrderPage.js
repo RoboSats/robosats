@@ -100,6 +100,8 @@ export default class OrderPage extends Component {
             badRequest: data.bad_request,
             bondInvoice: data.bond_invoice,
             bondSatoshis: data.bond_satoshis,
+            escrowInvoice: data.escrow_invoice,
+            escrowSatoshis: data.escrow_satoshis,
             badRequest: data.bad_request,
         });
       });
@@ -211,7 +213,7 @@ export default class OrderPage extends Component {
             </ListItem>
             <Divider />
             <ListItem>
-              <ListItemText primary={msToTime( new Date(this.state.expiresAt) - Date.now())} secondary="Expires in "/>
+              <ListItemText primary={msToTime( new Date(this.state.expiresAt) - Date.now())} secondary="Expires"/>
             </ListItem>
             <LinearDeterminate />
             </List>

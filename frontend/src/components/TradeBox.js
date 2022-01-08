@@ -45,6 +45,32 @@ export default class TradeBox extends Component {
       </Grid>
     );
   }
+  showEscrowInvoice=()=>{
+    return (
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="subtitle1" variant="subtitle1">
+            <b>Deposit {this.data.escrowSatoshis} Sats as trade collateral </b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <QRCode value={this.data.escrowInvoice} size={305}/>
+        </Grid> 
+        <Grid item xs={12} align="center">
+          <TextField 
+            hiddenLabel
+            variant="filled" 
+            size="small"
+            defaultValue={this.data.escrowInvoice} 
+            disabled="true"
+            helperText="This is a HODL LN invoice. It will be charged once you confirm you have received the fiat."
+            color = "secondary"
+          />
+        </Grid>
+      </Grid>
+    );
+  }
+
   showMakerWait=()=>{
     return (
       <Grid container spacing={1}>
@@ -98,6 +124,7 @@ export default class TradeBox extends Component {
           <Paper elevation={12} style={{ padding: 8,}}>
               {this.data.bondInvoice ? this.showInvoice() : ""}
               {this.data.isMaker & this.data.statusCode == 1 ? this.showMakerWait() : ""}
+              {this.data.isSeller & this.data.escrowInvoice != null ? this.showEscrowInvoice() : ""}
           </Paper>
         </Grid>
       </Grid>

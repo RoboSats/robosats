@@ -152,27 +152,27 @@ class OrderView(viewsets.ViewSet):
             else:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
         
-        # 7) If status is 'WF2'or'WTC' 
-        elif (order.status == Order.Status.WF2 or order.status == Order.Status.WFE):
+        # 7 a. ) If seller and status is 'WF2' or 'WFE' 
+        elif data['is_seller'] and (order.status == Order.Status.WF2 or order.status == Order.Status.WFE):
 
-            # If the two bonds are locked
+            # If the two bonds are locked, reply with an ESCROW HODL invoice.
             if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
+                valid, context = Logics.gen_escrow_hodl_invoice(order, request.user)
+                if valid:
+                    data = {**data, **context}
+                else:
+                    return Response(context, status.HTTP_400_BAD_REQUEST)
 
-                # 7.a) And if user is Seller, reply with an ESCROW HODL invoice.
-                if data['is_seller']:
-                    valid, context = Logics.gen_escrow_hodl_invoice(order, request.user)
-                    if valid:
-                        data = {**data, **context}
-                    else:
-                        return Response(context, status.HTTP_400_BAD_REQUEST)
+        # 7.b) If user is Buyer and status is 'WF2' or 'WFI' 
+        elif data['is_buyer'] and (order.status == Order.Status.WF2 or order.status == Order.Status.WFI):
 
-                # 7.b) If user is Buyer, reply with an AMOUNT so he can send the buyer invoice.
-                elif data['is_buyer']:
-                    valid, context = Logics.buyer_invoice_amount(order, request.user)
-                    if valid:
-                        data = {**data, **context}
-                    else:
-                        return Response(context, status.HTTP_400_BAD_REQUEST)
+            # If the two bonds are locked, reply with an AMOUNT so he can send the buyer invoice.
+            if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
+                valid, context = Logics.buyer_invoice_amount(order, request.user)
+                if valid:
+                    data = {**data, **context}
+                else:
+                    return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 8) If status is 'CHA'or '' or '' and all HTLCS are in LOCKED
         elif order.status == Order.Status.CHA: # TODO Add the other status
@@ -365,6 +365,7 @@ class BookView(ListAPIView):
             # Non participants should not see the status or who is the taker
             for key in ('status','taker'):
                 del data[key]
+            
             book_data.append(data)
         
         return Response(book_data, status=status.HTTP_200_OK)

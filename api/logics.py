@@ -260,22 +260,26 @@ class Logics():
             payment_hash = payment_hash,
             expires_at = expires_at)
 
+        # Extend expiry time to allow for escrow deposit
+        ## Not here, on func for confirming taker collar. order.expires_at = timezone.now() + timedelta(minutes=EXP_TRADE_ESCR_INVOICE)
+        
         order.save()
         return True, {'bond_invoice':invoice,'bond_satoshis': bond_satoshis}
 
     @classmethod
     def gen_escrow_hodl_invoice(cls, order, user):
-
         # Do not generate and cancel if an invoice is there and older than X minutes and unpaid still
+        print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
         if order.trade_escrow:
             # Check if status is INVGEN and still not expired
-            if order.taker_bond.status == LNPayment.Status.INVGEN:
-                if order.taker_bond.created_at > (timezone.now()+timedelta(minutes=EXP_TRADE_ESCR_INVOICE)): # Expired
+            if order.trade_escrow.status == LNPayment.Status.INVGEN:
+                print('CCCCCCCCCCCCCCCCCCC')
+                if order.trade_escrow.created_at > (timezone.now()+timedelta(minutes=EXP_TRADE_ESCR_INVOICE)): # Expired
                     cls.cancel_order(order, user, 4) # State 4, cancel order before trade escrow locked
                     return False, {'bad_request':'Invoice expired. You did not lock the trade escrow in time.'}
                 # Return the previous invoice there was with INVGEN status
                 else:
-                    return True, {'escrow_invoice':order.trade_escrow.invoice,'escrow_satoshis':order.trade_escrow.num_satoshis}
+                    return True, {'escrow_invoice': order.trade_escrow.invoice, 'escrow_satoshis':order.trade_escrow.num_satoshis}
             # Invoice exists, but was already locked or settled
             else:
                 return False, None # Does not return any context of a healthy locked escrow
@@ -286,7 +290,7 @@ class Logics():
         # Gen HODL Invoice
         invoice, payment_hash, expires_at = LNNode.gen_hodl_invoice(escrow_satoshis, description, ESCROW_EXPIRY*3600)
         
-        order.taker_bond = LNPayment.objects.create(
+        order.trade_escrow = LNPayment.objects.create(
             concept = LNPayment.Concepts.TRESCROW, 
             type = LNPayment.Types.HODL, 
             sender = user,
@@ -325,7 +329,7 @@ class Logics():
             
             # If buyer, settle escrow and mark fiat sent
             if cls.is_buyer(order, user):
-                if cls.settle_escrow(order):          # KEY LINE - SETTLES THE TRADE ESCROW !!
+                if cls.settle_escrow(order): ##### !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
                     order.trade_escrow.status = LNPayment.Status.SETLED
                     order.status = Order.Status.FSE
                     order.is_fiat_sent = True
@@ -335,15 +339,13 @@ class Logics():
                 if not order.is_fiat_sent:
                     return False, {'bad_request':'You cannot confirm to have received the fiat before it is confirmed to be sent by the buyer.'}
                 
+                # Make sure the trade escrow is at least as big as the buyer invoice 
+                if order.trade_escrow.num_satoshis <= order.buyer_invoice.num_satoshis:
+                    return False, {'bad_request':'Woah, something broke badly. Report in the public channels, or open a Github Issue.'}
+                
                 # Double check the escrow is settled.
                 if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
-
-                    # Make sure the trade escrow is at least as big as the buyer invoice 
-                    if order.trade_escrow.num_satoshis <= order.buyer_invoice.num_satoshis:
-                        return False, {'bad_request':'Woah, something broke badly. Report in the public channels, or open a Github Issue.'}
-                    
-                    # Double check the trade escrow is settled
-                    elif cls.pay_buyer_invoice(order):   # KEY LINE - PAYS THE BUYER !!
+                    if cls.pay_buyer_invoice(order): ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
                         order.status = Order.Status.PAY
                         order.buyer_invoice.status = LNPayment.Status.PAYING
         else:
