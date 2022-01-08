@@ -126,10 +126,6 @@ class Logics():
             else:
                 order.status = Order.Status.WFE
 
-        # If the order status was Payment Failed. Move forward to invoice Updated.
-        if order.status == Order.Status.FAI:
-            order.status = Order.Status.UPI
-
         order.save()
         return True, None
 

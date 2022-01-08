@@ -98,6 +98,8 @@ export default class OrderPage extends Component {
       .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
   }
 
+  
+
   render (){
     return (
       <Grid container spacing={1}>
