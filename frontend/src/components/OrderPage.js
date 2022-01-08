@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import { Paper, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider} from "@material-ui/core"
-import { Link } from 'react-router-dom'
+import { Paper, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@material-ui/core"
 import TradeBox from "./TradeBox";
 
 function msToTime(duration) {
@@ -12,6 +11,33 @@ function msToTime(duration) {
   seconds = (seconds < 10) ? "0" + seconds : seconds;
 
   return hours + "h " + minutes + "m " + seconds + "s";
+}
+
+// TO DO fix Progress bar to go from 100 to 0, from total_expiration time, showing time_left
+function LinearDeterminate() {
+  const [progress, setProgress] = React.useState(0);
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((oldProgress) => {
+        if (oldProgress === 0) {
+          return 100;
+        }
+        const diff = 1;
+        return Math.max(oldProgress - diff, 0);
+      });
+    }, 500);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  return (
+    <Box sx={{ width: '100%' }}>
+      <LinearProgress variant="determinate" value={progress} />
+    </Box>
+  );
 }
 
 function getCookie(name) {
@@ -104,6 +130,20 @@ export default class OrderPage extends Component {
       .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
   }
 
+  handleClickCancelOrderButton=()=>{
+    console.log(this.state)
+      const requestOptions = {
+          method: 'POST',
+          headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+          body: JSON.stringify({
+            'action':'cancel',
+          }),
+      };
+      fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+      .then((response) => response.json())
+      .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
+  }
+
   orderBox=()=>{
     return(
       <Grid container spacing={1}>
@@ -150,7 +190,7 @@ export default class OrderPage extends Component {
             }
             
             <ListItem>
-              <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))+" "+this.state.currencyCode} secondary="Amount and currency requested"/>
+              <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))+" "+this.state.currencyCode} secondary="Amount"/>
             </ListItem>
             <Divider />
             <ListItem>
@@ -170,10 +210,10 @@ export default class OrderPage extends Component {
               <ListItemText primary={'#'+this.orderId} secondary="Order ID"/>
             </ListItem>
             <Divider />
-
             <ListItem>
               <ListItemText primary={msToTime( new Date(this.state.expiresAt) - Date.now())} secondary="Expires in "/>
             </ListItem>
+            <LinearDeterminate />
             </List>
 
           </Paper>
@@ -190,6 +230,21 @@ export default class OrderPage extends Component {
             </Grid>
           </>
           }
+
+        {/* Makers can cancel before commiting the bond  (status 0)*/}
+        {this.state.isMaker & this.state.statusCode == 0 ?
+        <Grid item xs={12} align="center">
+          <Button variant='contained' color='secondary' onClick={this.handleClickCancelOrderButton}>Cancel</Button>
+        </Grid>
+        :""}
+
+        {/* Takers can cancel before commiting the bond (status 3)*/}
+        {this.state.isTaker & this.state.statusCode == 3 ?
+        <Grid item xs={12} align="center">
+          <Button variant='contained' color='secondary' onClick={this.handleClickCancelOrderButton}>Cancel</Button>
+        </Grid>
+        :""}
+
         </Grid>
     )
   }
