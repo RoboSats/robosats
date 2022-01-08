@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, Menu} from "@material-ui/core"
+import { Paper, Alert, AlertTitle, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, Menu} from "@material-ui/core"
 import { Link } from 'react-router-dom'
 
 function getCookie(name) {
@@ -37,7 +37,9 @@ export default class MakerPage extends Component {
         payment_method: this.defaultPaymentMethod,
         premium: 0,
         satoshis: null,
+        currencies_dict: {"1":"USD"}
     }
+    this.getCurrencyDict()
   }
 
   handleTypeChange=(e)=>{
@@ -46,10 +48,9 @@ export default class MakerPage extends Component {
       });
   }
   handleCurrencyChange=(e)=>{
-    var code = (e.target.value == 1 ) ? "USD": ((e.target.value == 2 ) ? "EUR":"ETH")
     this.setState({
         currency: e.target.value,
-        currencyCode: code,
+        currencyCode: this.getCurrencyCode(e.target.value),
     });
 }
     handleAmountChange=(e)=>{
@@ -104,7 +105,22 @@ export default class MakerPage extends Component {
         };
         fetch("/api/make/",requestOptions)
         .then((response) => response.json())
-        .then((data) => (console.log(data) & this.props.history.push('/order/' + data.id)));
+        .then((data) => (this.setState({badRequest:data.bad_request})
+             & (data.id ? this.props.history.push('/order/' + data.id) :"")));
+    }
+
+    getCurrencyDict() {
+        fetch('/api/currencies')
+          .then((response) => response.json())
+          .then((data) => 
+          this.setState({
+            currencies_dict: data
+          }));
+    
+      }
+
+    getCurrencyCode(val){
+        return this.state.currencies_dict[val.toString()]
     }
 
   render() {
@@ -242,6 +258,13 @@ export default class MakerPage extends Component {
                 <Button color="primary" variant="contained" onClick={this.handleCreateOfferButtonPressed} >
                     Create Order
                 </Button>
+            </Grid>
+            <Grid item xs={12} align="center">
+                {this.state.badRequest ?
+                <Typography component="subtitle2" variant="subtitle2" color="secondary">
+                    {this.state.badRequest} <br/>
+                </Typography>
+                : ""}
                 <Typography component="subtitle2" variant="subtitle2">
                     <div align='center'>
                         Create a BTC {this.state.type==0 ? "buy":"sell"} order for {this.state.amount} {this.state.currencyCode} 

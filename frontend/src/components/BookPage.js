@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import { Button , Divider, Card, CardActionArea, CardContent, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, Link, RouterLink, ListItemAvatar} from "@material-ui/core"
+import { Button , Divider, Card, CardActionArea, CardContent, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@material-ui/core"
+import { Link } from 'react-router-dom'
 
 export default class BookPage extends Component {
   constructor(props) {
@@ -15,7 +16,6 @@ export default class BookPage extends Component {
     this.state.currencyCode = this.getCurrencyCode(this.state.currency)
   }
 
-  // Fix needed to handle HTTP 404 error when no order is found
   // Show message to be the first one to make an order
   getOrderDetails() {
     fetch('/api/book' + '?currency=' + this.state.currency + "&type=" + this.state.type)
@@ -25,15 +25,6 @@ export default class BookPage extends Component {
         orders: data,
         not_found: data.not_found,
       }));
-  }
-  getCurrencyDict() {
-    fetch('/api/currencies')
-      .then((response) => response.json())
-      .then((data) => 
-      this.setState({
-        currencies_dict: data
-      }));
-
   }
 
   handleCardClick=(e)=>{
@@ -55,7 +46,15 @@ export default class BookPage extends Component {
     })
     this.getOrderDetails();
   }
-
+  
+  getCurrencyDict() {
+    fetch('/api/currencies')
+      .then((response) => response.json())
+      .then((data) => 
+      this.setState({
+        currencies_dict: data
+      }));
+  }
   // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
   // Improve this function so currencies are read from json
   getCurrencyCode(val){
@@ -101,14 +100,14 @@ export default class BookPage extends Component {
                 <Typography variant="subtitle1" color="text.secondary">
                 ◑ Payment via <b>{order.payment_method}</b>
                 </Typography>
-
+{/* 
                 <Typography variant="subtitle1" color="text.secondary">
                 ◑ Priced {order.is_explicit ? 
                   " explicitly at " + this.pn(order.satoshis) + " Sats" : (
                   " at " + 
                   parseFloat(parseFloat(order.premium).toFixed(4)) + "% over the market"                     
                   )}
-                </Typography>
+                </Typography> */}
 
                 <Typography variant="subtitle1" color="text.secondary">
                 ◑ <b>{" 42,354 "}{this.getCurrencyCode(order.currency)}/BTC</b>  (Binance API)
@@ -188,13 +187,13 @@ export default class BookPage extends Component {
               <Typography component="h5" variant="h5">
                 No orders found to {this.state.type == 0 ? ' sell ' :' buy ' } BTC for {this.state.currencyCode}
               </Typography>
+            </Grid>
+            <Grid item>
+              <Button variant="contained" color='primary' to='/make/' component={Link}>Make Order</Button>
+            </Grid>
               <Typography component="body1" variant="body1">
                 Be the first one to create an order
               </Typography>
-            </Grid>
-            <Grid item>
-            <Button variant="contained" color='primary' to='/make/' component={Link}>Make Order</Button>
-            </Grid>
           </Grid>)
           : this.bookCards()
           }

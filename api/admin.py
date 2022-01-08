@@ -24,13 +24,13 @@ class EUserAdmin(UserAdmin):
 
 @admin.register(Order)
 class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
-    list_display = ('id','type','maker_link','taker_link','status','amount','currency','created_at','expires_at', 'buyer_invoice_link','maker_bond_link','taker_bond_link','trade_escrow_link')
+    list_display = ('id','type','maker_link','taker_link','status','amount','currency','t0_satoshis','created_at','expires_at', 'buyer_invoice_link','maker_bond_link','taker_bond_link','trade_escrow_link')
     list_display_links = ('id','type')
     change_links = ('maker','taker','buyer_invoice','maker_bond','taker_invoice','taker_bond','trade_escrow')
 
 @admin.register(LNPayment)
 class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
-    list_display = ('id','concept','status','amount','type','invoice','secret','expires_at','sender_link','receiver_link')
+    list_display = ('id','concept','status','num_satoshis','type','invoice','expires_at','sender_link','receiver_link')
     list_display_links = ('id','concept')
     change_links = ('sender','receiver')
 

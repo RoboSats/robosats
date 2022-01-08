@@ -68,6 +68,7 @@ export default class OrderPage extends Component {
             isBuyer:data.buyer,
             isSeller:data.seller,
             expiresAt:data.expires_at,
+            badRequest:data.bad_request,
         });
       });
   }
@@ -87,8 +88,10 @@ export default class OrderPage extends Component {
     console.log(this.state)
       const requestOptions = {
           method: 'POST',
-          headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
-          body: JSON.stringify({}),
+          headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+          body: JSON.stringify({
+            'action':'take',
+          }),
       };
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())

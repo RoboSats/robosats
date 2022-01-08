@@ -3,9 +3,9 @@ from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator, validate_comma_separated_integer_list
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
-
 from django.utils.html import mark_safe
 
+from decouple import config
 from pathlib import Path
 import json
 
@@ -13,10 +13,11 @@ import json
 # TODO
 # Load hparams from .env file
 
-MIN_TRADE = 10*1000  #In sats
-MAX_TRADE = 500*1000
-FEE = 0.002 # Trade fee in %
-BOND_SIZE = 0.01 # Bond in %
+MIN_TRADE = int(config('MIN_TRADE'))
+MAX_TRADE = int(config('MAX_TRADE'))
+FEE = float(config('FEE'))
+BOND_SIZE = float(config('BOND_SIZE'))
+
 
 
 class LNPayment(models.Model):
@@ -27,38 +28,39 @@ class LNPayment(models.Model):
 
     class Concepts(models.IntegerChoices):
         MAKEBOND = 0, 'Maker bond'
-        TAKEBOND = 1, 'Taker-buyer bond'
+        TAKEBOND = 1, 'Taker bond'
         TRESCROW = 2, 'Trade escrow'
         PAYBUYER = 3, 'Payment to buyer'
 
     class Status(models.IntegerChoices):
-        INVGEN = 0, 'Hodl invoice was generated'
-        LOCKED = 1, 'Hodl invoice has HTLCs locked'
-        CHRGED = 2, 'Hodl invoice was charged'
-        RETNED = 3, 'Hodl invoice was returned'
-        MISSNG = 4, 'Buyer invoice is missing'
-        IVALID = 5, 'Buyer invoice is valid'
-        INPAID = 6, 'Buyer invoice was paid'
-        INFAIL = 7, 'Buyer invoice routing failed'
+        INVGEN = 0, 'Generated'
+        LOCKED = 1, 'Locked'
+        SETLED = 2, 'Settled'
+        RETNED = 3, 'Returned'
+        MISSNG = 4, 'Missing'
+        VALIDI = 5, 'Valid'
+        INFAIL = 6, 'Failed routing'
 
-    # payment use case
+    # payment use details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HODL)
     concept = models.PositiveSmallIntegerField(choices=Concepts.choices, null=False, default=Concepts.MAKEBOND)
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.INVGEN)
+    routing_retries = models.PositiveSmallIntegerField(null=False, default=0)
     
-    # payment details
+    # payment info
     invoice = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
-    secret = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
+    payment_hash = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
+    description = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
-    amount = models.PositiveBigIntegerField(validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
+    num_satoshis = models.PositiveBigIntegerField(validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
     
-    # payment relationals
+    # involved parties
     sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE, null=True, default=None)
     receiver = models.ForeignKey(User, related_name='receiver', on_delete=models.CASCADE, null=True, default=None)
 
     def __str__(self):
-        # Make relational back to ORDER
-        return (f'HTLC {self.id}: {self.Concepts(self.concept).label}')
+        return (f'HTLC {self.id}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}')
 
 class Order(models.Model):
     
@@ -67,26 +69,25 @@ class Order(models.Model):
         SELL = 1, 'SELL'
 
     class Status(models.IntegerChoices):
-        WFB = 0, 'Waiting for bond'
-        PUB = 1, 'Published in order book'
-        DEL = 2, 'Deleted from order book'
-        TAK = 3, 'Taken'
-        UCA = 4, 'Unilaterally cancelled'
-        RET = 5, 'Returned to order book' # Probably same as 1 in most cases.
-        WF2 = 6, 'Waiting for trade collateral and buyer invoice'
-        WTC = 7, 'Waiting only for trade collateral'
-        WBI = 8, 'Waiting only for buyer invoice'
-        EXF = 9, 'Exchanging fiat / In chat'
-        CCA = 10, 'Collaboratively cancelled'
-        FSE = 11, 'Fiat sent'
-        FCO = 12, 'Fiat confirmed'
-        SUC = 13, 'Sucessfully settled'
-        FAI = 14, 'Failed lightning network routing'
-        UPI = 15, 'Updated invoice'
-        DIS = 16, 'In dispute'
-        MLD = 17, 'Maker lost dispute'
-        TLD = 18, 'Taker lost dispute'
-        EXP = 19, 'Expired'
+        WFB = 0,  'Waiting for maker bond'
+        PUB = 1,  'Public'
+        DEL = 2,  'Deleted'
+        TAK = 3,  'Waiting for taker bond'
+        UCA = 4,  'Cancelled'
+        WF2 = 5,  'Waiting for trade collateral and buyer invoice'
+        WFE = 6,  'Waiting only for seller trade collateral'
+        WFI = 7,  'Waiting only for buyer invoice'
+        CHA = 8,  'Sending fiat - In chatroom'
+        CCA = 9,  'Collaboratively cancelled'
+        FSE = 10, 'Fiat sent - In chatroom'
+        FCO = 11, 'Fiat confirmed'
+        SUC = 12, 'Sucessfully settled'
+        FAI = 13, 'Failed lightning network routing'
+        UPI = 14, 'Updated invoice'
+        DIS = 15, 'In dispute'
+        MLD = 16, 'Maker lost dispute'
+        TLD = 17, 'Taker lost dispute'
+        EXP = 18, 'Expired'
 
     currency_dict = json.load(open('./api/currencies.json'))
     currency_choices = [(int(val), label) for val, label in list(currency_dict.items())]
@@ -104,16 +105,19 @@ class Order(models.Model):
 
     # order pricing method. A explicit amount of sats, or a relative premium above/below market.
     is_explicit = models.BooleanField(default=False, null=False)
-    # marked to marked
+    # marked to market
     premium = models.DecimalField(max_digits=5, decimal_places=2, default=0, null=True, validators=[MinValueValidator(-100), MaxValueValidator(999)], blank=True)
-    t0_market_satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)], blank=True)
     # explicit
     satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)], blank=True)
+    # how many sats at creation and at last check (relevant for marked to market)
+    t0_satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)], blank=True) # sats at creation
+    last_satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(0), MaxValueValidator(MAX_TRADE*2)], blank=True) # sats last time checked. Weird if 2* trade max...
     
     # order participants
     maker = models.ForeignKey(User, related_name='maker', on_delete=models.CASCADE, null=True, default=None)  # unique = True, a maker can only make one order
     taker = models.ForeignKey(User, related_name='taker', on_delete=models.SET_NULL, null=True, default=None, blank=True)  # unique = True, a taker can only take one order
-    
+    is_pending_cancel = models.BooleanField(default=False, null=False) # When collaborative cancel is needed and one partner has cancelled.
+
     # order collateral
     maker_bond = models.ForeignKey(LNPayment, related_name='maker_bond', on_delete=models.SET_NULL, null=True, default=None, blank=True)
     taker_bond = models.ForeignKey(LNPayment, related_name='taker_bond', on_delete=models.SET_NULL, null=True, default=None, blank=True)
@@ -122,6 +126,19 @@ class Order(models.Model):
     # buyer payment LN invoice
     buyer_invoice = models.ForeignKey(LNPayment, related_name='buyer_invoice', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
+    def __str__(self):
+        # Make relational back to ORDER
+        return (f'Order {self.id}: {self.Types(self.type).label} BTC for {self.amount} {self.Currencies(self.currency).label}')
+
+@receiver(pre_delete, sender=Order)
+def delelete_HTLCs_at_order_deletion(sender, instance, **kwargs):
+    to_delete = (instance.maker_bond, instance.buyer_invoice, instance.taker_bond, instance.trade_escrow)
+
+    for htlc in to_delete:
+        try:
+            htlc.delete()
+        except:
+            pass
 
 class Profile(models.Model):
 
@@ -165,3 +182,4 @@ class Profile(models.Model):
     # method to create a fake table field in read only mode
     def avatar_tag(self):
         return mark_safe('<img src="%s" width="50" height="50" />' % self.get_avatar())
+
