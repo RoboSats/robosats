@@ -143,7 +143,7 @@ export default class UserGenPage extends Component {
           </Grid>
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
-            Easy and Private Lightning peer-to-peer Exchange
+            Simple and Private Lightning peer-to-peer Exchange
           </Typography>
           </Grid>
       </Grid>

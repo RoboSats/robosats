@@ -269,11 +269,9 @@ class Logics():
     @classmethod
     def gen_escrow_hodl_invoice(cls, order, user):
         # Do not generate and cancel if an invoice is there and older than X minutes and unpaid still
-        print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
         if order.trade_escrow:
             # Check if status is INVGEN and still not expired
             if order.trade_escrow.status == LNPayment.Status.INVGEN:
-                print('CCCCCCCCCCCCCCCCCCC')
                 if order.trade_escrow.created_at > (timezone.now()+timedelta(minutes=EXP_TRADE_ESCR_INVOICE)): # Expired
                     cls.cancel_order(order, user, 4) # State 4, cancel order before trade escrow locked
                     return False, {'bad_request':'Invoice expired. You did not lock the trade escrow in time.'}

@@ -151,7 +151,7 @@ export default class OrderPage extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="h5" variant="h5">
-          BTC {this.state.type ? " Sell " : " Buy "} Order
+          {this.state.type ? "Sell " : "Buy "} Order Details
           </Typography>
           <Paper elevation={12} style={{ padding: 8,}}>
           <List dense="true">
