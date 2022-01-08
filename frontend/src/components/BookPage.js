@@ -11,8 +11,8 @@ export default class BookPage extends Component {
       type: 1,
       currencies_dict: {"1":"USD"}
     };
-    this.getOrderDetails()
     this.getCurrencyDict()
+    this.getOrderDetails()
     this.state.currencyCode = this.getCurrencyCode(this.state.currency)
   }
 

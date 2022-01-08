@@ -178,9 +178,10 @@ export default class MakerPage extends Component {
                             }}
                             onChange={this.handleCurrencyChange}
                         >
-                            <MenuItem value={1}>USD</MenuItem>
-                            <MenuItem value={2}>EUR</MenuItem>
-                            <MenuItem value={3}>ETH</MenuItem>
+                            {
+                            Object.entries(this.state.currencies_dict)
+                            .map( ([key, value]) => <MenuItem value={parseInt(key)}>{value}</MenuItem> )
+                            }
                         </Select>
                     </FormControl>
                 </Grid>

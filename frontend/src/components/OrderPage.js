@@ -40,8 +40,10 @@ export default class OrderPage extends Component {
     super(props);
     this.state = {
         isExplicit: false,
+        currencies_dict: {"1":"USD"}
     };
     this.orderId = this.props.match.params.orderId;
+    this.getCurrencyDict();
     this.getOrderDetails();
   }
 
@@ -49,6 +51,7 @@ export default class OrderPage extends Component {
     fetch('/api/order' + '?order_id=' + this.orderId)
       .then((response) => response.json())
       .then((data) => {
+        console.log(data)
         this.setState({
             statusCode: data.status,
             statusText: data.status_message,
@@ -73,12 +76,6 @@ export default class OrderPage extends Component {
       });
   }
 
-  // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
-  // Improve this function so currencies are read from json
-  getCurrencyCode(val){
-    return (val == 1 ) ? "USD": ((val == 2 ) ? "EUR":"ETH")
-  }
-
   // Fix to use proper react props
   handleClickBackButton=()=>{
     window.history.back();
@@ -96,6 +93,21 @@ export default class OrderPage extends Component {
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())
       .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
+  }
+  getCurrencyDict() {
+    fetch('/api/currencies')
+      .then((response) => response.json())
+      .then((data) => 
+      this.setState({
+        currencies_dict: data
+      }));
+  }
+  // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
+  // Improve this function so currencies are read from json
+  getCurrencyCode(val){
+    console.log("---------------------------------")
+    console.log(val)
+    return this.state.currencies_dict[val.toString()]
   }
 
   render (){
