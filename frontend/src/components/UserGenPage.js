@@ -26,7 +26,7 @@ export default class UserGenPage extends Component {
     this.state = {
       token: this.genBase62Token(32),
     };
-    this.getGeneratedUser();
+    this.getGeneratedUser(this.state.token);
   }
 
   // sort of cryptographically strong function to generate Base62 token client-side
@@ -40,8 +40,8 @@ export default class UserGenPage extends Component {
           .substring(0, length);
   }
 
-  getGeneratedUser() {
-    fetch('/api/user' + '?token=' + this.state.token)
+  getGeneratedUser(token) {
+    fetch('/api/user' + '?token=' + token)
       .then((response) => response.json())
       .then((data) => {
         this.setState({
@@ -82,7 +82,7 @@ export default class UserGenPage extends Component {
     this.setState({
       token: e.target.value,
     })
-    this.getGeneratedUser();
+    this.getGeneratedUser(e.target.value);
   }
 
   // TO FIX CSRF TOKEN IS NOT UPDATED UNTIL WINDOW IS RELOADED
