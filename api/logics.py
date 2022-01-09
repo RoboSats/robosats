@@ -1,10 +1,10 @@
 from datetime import timedelta
 from django.utils import timezone
-import requests
 from .lightning import LNNode
 
-from .models import Order, LNPayment, User
+from .models import Order, LNPayment, MarketTick, User
 from decouple import config
+from .utils import get_exchange_rate
 
 FEE = float(config('FEE'))
 BOND_SIZE = float(config('BOND_SIZE'))
@@ -22,8 +22,6 @@ BOND_EXPIRY = int(config('BOND_EXPIRY'))
 ESCROW_EXPIRY = int(config('ESCROW_EXPIRY'))
 
 class Logics():
-
-    # escrow_user = User.objects.get(username=ESCROW_USERNAME)
 
     def validate_already_maker_or_taker(user):
         '''Checks if the user is already partipant of an order'''
@@ -63,11 +61,9 @@ class Logics():
         if order.is_explicit:
             satoshis_now = order.satoshis
         else:
-            # TODO Add fallback Public APIs and error handling
-            # Think about polling price data in a different way (e.g. store locally every t seconds)
-            market_prices = requests.get(MARKET_PRICE_API).json()
-            exchange_rate = float(market_prices[Order.currency_dict[str(order.currency)]]['last'])
-            satoshis_now = ((float(order.amount) * 1+float(order.premium)) / exchange_rate) * 100*1000*1000
+            exchange_rate = get_exchange_rate(Order.currency_dict[str(order.currency)])
+            premium_rate = exchange_rate * (1+float(order.premium)/100)
+            satoshis_now = (float(order.amount) / premium_rate) * 100*1000*1000
 
         return int(satoshis_now)
     
@@ -89,10 +85,19 @@ class Logics():
 
     @classmethod
     def update_invoice(cls, order, user, invoice):
-        is_valid_invoice, num_satoshis, description, payment_hash, expires_at = LNNode.validate_ln_invoice(invoice)
-        # only user is the buyer and a valid LN invoice
-        if not (cls.is_buyer(order, user) or is_valid_invoice):
-            return False, {'bad_request':'Invalid Lightning Network Invoice. It starts by LNTB...'}
+        
+        # only the buyer can post a buyer invoice
+        if not cls.is_buyer(order, user):
+            return False, {'bad_request':'Only the buyer of this order can provide a buyer invoice.'}
+        if not order.taker_bond:
+            return False, {'bad_request':'Wait for your order to be taken.'}
+        if not (order.taker_bond.status == order.maker_bond.status == LNPayment.Status.LOCKED):
+            return False, {'bad_request':'You cannot a invoice while bonds are not posted.'}
+
+        num_satoshis = cls.buyer_invoice_amount(order, user)[1]['invoice_amount']
+        valid, context, description, payment_hash, expires_at = LNNode.validate_ln_invoice(invoice, num_satoshis)
+        if not valid:
+            return False, context
 
         order.buyer_invoice, _ = LNPayment.objects.update_or_create(
             concept = LNPayment.Concepts.PAYBUYER, 
@@ -130,22 +135,29 @@ class Logics():
 
     @classmethod
     def rate_counterparty(cls, order, user, rating):
-        # if maker, rates taker
-        if order.maker == user:
-            order.taker.profile.total_ratings = order.taker.profile.total_ratings + 1
-            last_ratings = list(order.taker.profile.last_ratings).append(rating)
-            order.taker.profile.total_ratings = sum(last_ratings) / len(last_ratings)
-        # if taker, rates maker
-        if order.taker == user:
-            order.maker.profile.total_ratings = order.maker.profile.total_ratings + 1
-            last_ratings = list(order.maker.profile.last_ratings).append(rating)
-            order.maker.profile.total_ratings = sum(last_ratings) / len(last_ratings)
+
+        # If the trade is finished
+        if order.status > Order.Status.PAY:
+
+            # if maker, rates taker
+            if order.maker == user:
+                order.taker.profile.total_ratings = order.taker.profile.total_ratings + 1
+                last_ratings = list(order.taker.profile.last_ratings).append(rating)
+                order.taker.profile.total_ratings = sum(last_ratings) / len(last_ratings)
+
+            # if taker, rates maker
+            if order.taker == user:
+                order.maker.profile.total_ratings = order.maker.profile.total_ratings + 1
+                last_ratings = list(order.maker.profile.last_ratings).append(rating)
+                order.maker.profile.total_ratings = sum(last_ratings) / len(last_ratings)
+        else:
+            return False, {'bad_request':'You cannot rate your counterparty yet.'}
 
         order.save()
         return True, None
 
     @classmethod
-    def cancel_order(cls, order, user, state):
+    def cancel_order(cls, order, user, state=None):
 
         # 1) When maker cancels before bond
         '''The order never shows up on the book and order 
@@ -292,3 +304,54 @@ class Logics():
 
         order.save()
         return True, {'escrow_invoice':invoice,'escrow_satoshis': escrow_satoshis}
+    
+    def settle_escrow(order):
+        ''' Settles the trade escrow HTLC'''
+        # TODO ERROR HANDLING
+
+        valid = LNNode.settle_hodl_htlcs(order.trade_escrow.payment_hash)
+        return valid
+
+    def pay_buyer_invoice(order):
+        ''' Settles the trade escrow HTLC'''
+        # TODO ERROR HANDLING
+
+        valid = LNNode.pay_invoice(order.buyer_invoice.payment_hash)
+        return valid
+
+    @classmethod
+    def confirm_fiat(cls, order, user):
+        ''' If Order is in the CHAT states:
+        If user is buyer: mark FIAT SENT and settle escrow!
+        If User is the seller and FIAT is SENT: Pay buyer invoice!'''
+
+        if order.status == Order.Status.CHA or order.status == Order.Status.FSE: # TODO Alternatively, if all collateral is locked? test out
+            
+            # If buyer, settle escrow and mark fiat sent
+            if cls.is_buyer(order, user):
+                if cls.settle_escrow(order):          # KEY LINE - SETTLES THE TRADE ESCROW !!
+                    order.trade_escrow.status = LNPayment.Status.SETLED
+                    order.status = Order.Status.FSE
+                    order.is_fiat_sent = True
+
+            # If seller and fiat sent, pay buyer invoice
+            elif cls.is_seller(order, user):
+                if not order.is_fiat_sent:
+                    return False, {'bad_request':'You cannot confirm to have received the fiat before it is confirmed to be sent by the buyer.'}
+                
+                # Double check the escrow is settled.
+                if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
+
+                    # Make sure the trade escrow is at least as big as the buyer invoice 
+                    if order.trade_escrow.num_satoshis <= order.buyer_invoice.num_satoshis:
+                        return False, {'bad_request':'Woah, something broke badly. Report in the public channels, or open a Github Issue.'}
+                    
+                    # Double check the trade escrow is settled
+                    elif cls.pay_buyer_invoice(order):   # KEY LINE - PAYS THE BUYER !!
+                        order.status = Order.Status.PAY
+                        order.buyer_invoice.status = LNPayment.Status.PAYING
+        else:
+            return False, {'bad_request':'You cannot confirm the fiat payment at this stage'}
+
+        order.save()
+        return True, None

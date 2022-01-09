@@ -25,13 +25,14 @@ import json
 from django.http import HttpResponse
 
 EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
+FEE = float(config('FEE'))
 
 avatar_path = Path('frontend/static/assets/avatars')
 avatar_path.mkdir(parents=True, exist_ok=True)
 
 # Create your views here.
 
-class OrderMakerView(CreateAPIView):
+class MakerView(CreateAPIView):
     serializer_class  = MakeOrderSerializer
 
     def post(self,request):
@@ -124,7 +125,19 @@ class OrderView(viewsets.ViewSet):
         data['is_seller'] = Logics.is_seller(order,request.user)
         data['maker_nick'] = str(order.maker)
         data['taker_nick'] = str(order.taker)
-        data['status_message'] = Order.Status(order.status).label 
+        data['status_message'] = Order.Status(order.status).label
+        data['is_fiat_sent'] = order.is_fiat_sent
+        data['is_disputed'] = order.is_disputed
+
+        # If both bonds are locked, participants can see the trade in sats is also final.
+        if order.taker_bond:
+            if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
+                # Seller sees the amount he pays
+                if data['is_seller']:
+                    data['trade_satoshis'] = order.last_satoshis
+                # Buyer sees the amount he receives
+                elif data['is_buyer']:
+                    data['trade_satoshis'] = Logics.buyer_invoice_amount(order, request.user)[1]['invoice_amount']
 
         # 5) If status is 'waiting for maker bond' and user is MAKER, reply with a MAKER HODL invoice.
         if order.status == Order.Status.WFB and data['is_maker']:
@@ -169,7 +182,11 @@ class OrderView(viewsets.ViewSet):
             if order.maker_bond.status == order.taker_bond.status == order.trade_escrow.status == LNPayment.Status.LOCKED:
                 # add whether a collaborative cancel is pending
                 data['pending_cancel'] = order.is_pending_cancel
-
+        
+        # 9) if buyer confirmed FIAT SENT
+        elif order.status == Order.Status.FSE:
+                data['buyer_confirmed']
+        
         return Response(data, status.HTTP_200_OK)
 
     def take_update_confirm_dispute_cancel(self, request, format=None):
@@ -198,32 +215,42 @@ class OrderView(viewsets.ViewSet):
                 Logics.take(order, request.user)
             else: Response({'bad_request':'This order is not public anymore.'}, status.HTTP_400_BAD_REQUEST)
 
-        # 2) If action is update (invoice)
-        elif action == 'update_invoice' and invoice:
+        # Any other action is only allowed if the user is a participant
+        if not (order.maker == request.user or order.taker == request.user):
+            return Response({'bad_request':'You are not a participant in this order'}, status.HTTP_403_FORBIDDEN)
+
+        # 2) If action is 'update invoice'
+        if action == 'update_invoice' and invoice:
             valid, context = Logics.update_invoice(order,request.user,invoice)
-            if not valid: return Response(context,status.HTTP_400_BAD_REQUEST)
+            if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
         
         # 3) If action is cancel
         elif action == 'cancel':
             valid, context = Logics.cancel_order(order,request.user)
-            if not valid: return Response(context,status.HTTP_400_BAD_REQUEST)
+            if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 4) If action is confirm
         elif action == 'confirm':
-            pass
+            valid, context = Logics.confirm_fiat(order,request.user)
+            if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 5) If action is dispute
         elif action == 'dispute':
-            pass
+            valid, context = Logics.open_dispute(order,request.user, rating)
+            if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 6) If action is dispute
+        # 6) If action is rate
         elif action == 'rate' and rating:
             valid, context = Logics.rate_counterparty(order,request.user, rating)
-            if not valid: return Response(context,status.HTTP_400_BAD_REQUEST)
+            if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # If nothing... something else is going on. Probably not allowed!
+        # If nothing of the above... something else is going on. Probably not allowed!
         else:
-            return Response({'bad_request':'The Robotic Satoshis working in the warehouse did not understand you'})
+            return Response(
+                {'bad_request':
+                'The Robotic Satoshis working in the warehouse did not understand you. ' + 
+                'Please, fill a Bug Issue in Github https://github.com/Reckless-Satoshi/robosats/issues'},
+                status.HTTP_501_NOT_IMPLEMENTED)
 
         return self.get(request)
 
@@ -298,23 +325,27 @@ class UserView(APIView):
                 # It is unlikely, but maybe the nickname is taken (1 in 20 Billion change)
                 context['found'] = 'Bad luck, this nickname is taken'
                 context['bad_request'] = 'Enter a different token'
-                return Response(context, status=status.HTTP_403_FORBIDDEN)
+                return Response(context, status.HTTP_403_FORBIDDEN)
 
     def delete(self,request):
-        user = User.objects.get(id = request.user.id)
+        ''' Pressing "give me another" deletes the logged in user '''
+        user = request.user
+        if not user:
+            return Response(status.HTTP_403_FORBIDDEN)
 
-        # TO DO. Pressing "give me another" deletes the logged in user
-        # However it might be a long time recovered user
-        # Only delete if user live is < 5 minutes
+        # Only delete if user life is shorter than 30 minutes. Helps deleting users by mistake
+        if user.date_joined < (timezone.now() - timedelta(minutes=30)):
+            return Response(status.HTTP_400_BAD_REQUEST)
 
-        # TODO check if user exists AND it is not a maker or taker!
-        if user is not None:
-            logout(request)
-            user.delete()
+        # Check if it is not a maker or taker!
+        if not Logics.validate_already_maker_or_taker(user):
+            return Response({'bad_request':'User cannot be deleted while he is part of an order'}, status.HTTP_400_BAD_REQUEST)
 
-            return Response({'user_deleted':'User deleted permanently'},status=status.HTTP_302_FOUND)
+        logout(request)
+        user.delete()
+        return Response({'user_deleted':'User deleted permanently'}, status.HTTP_301_MOVED_PERMANENTLY)
 
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        
 
 class BookView(ListAPIView):
     serializer_class = ListOrderSerializer
@@ -341,6 +372,19 @@ class BookView(ListAPIView):
             book_data.append(data)
         
         return Response(book_data, status=status.HTTP_200_OK)
+
+class InfoView(ListAPIView):
+
+    def get(self):
+        context = {}
+
+        context['num_public_buy_orders'] = len(Order.objects.filter(type=Order.Types.BUY, status=Order.Status.PUB))
+        context['num_public_sell_orders'] = len(Order.objects.filter(type=Order.Types.BUY, status=Order.Status.PUB))
+        context['last_day_avg_btc_premium'] = None # Todo
+        context['num_active_robots'] = None 
+        context['total_volume'] = None
+
+        return Response(context, status.HTTP_200_OK)
 
 def get_currencies_json(request):
     currency_dict = json.load(open('./api/currencies.json'))

@@ -22,30 +22,34 @@ class LNNode():
 
         return invoice, payment_hash, expires_at 
 
-    def validate_hodl_invoice_locked():
+    def validate_hodl_invoice_locked(payment_hash):
         '''Generates hodl invoice to publish an order'''
         return True
 
-    def validate_ln_invoice(invoice): # num_satoshis
+    def validate_ln_invoice(invoice, num_satoshis): # num_satoshis
         '''Checks if the submited LN invoice is as expected'''
         valid = True
-        num_satoshis = 50000 # TODO decrypt and confirm sats are as expected
+        context = None
         description = 'Placeholder desc' # TODO decrypt from LN invoice
-        payment_hash = '567126' # TODO decrypt
+        payment_hash = '567&*GIHU126' # TODO decrypt
         expires_at = timezone.now() # TODO decrypt
 
-        return valid, num_satoshis, description, payment_hash, expires_at
+        return valid, context, description, payment_hash, expires_at
 
-    def pay_buyer_invoice(invoice):
-        '''Sends sats to buyer'''
+    def pay_invoice(invoice):
+        '''Sends sats to buyer, or cancelinvoices'''
         return True
 
-    def charge_hodl_htlcs(invoice):
+    def settle_hodl_htlcs(payment_hash):
         '''Charges a LN hodl invoice'''
         return True
 
-    def free_hodl_htlcs(invoice):
+    def return_hodl_htlcs(payment_hash):
         '''Returns sats'''
+        return True
+
+    def double_check_htlc_is_settled(payment_hash):
+        ''' Just as it sounds. Better safe than sorry!'''
         return True
 
     
