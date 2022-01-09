@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button , Divider, Card, CardActionArea, CardContent, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@material-ui/core"
+import { Button , Divider, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@mui/material";
 import { Link } from 'react-router-dom'
 
 export default class BookPage extends Component {
@@ -63,62 +63,71 @@ export default class BookPage extends Component {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
-  bookCards=()=>{
+  bookListItems=()=>{
     return (this.state.orders.map((order) =>
-    <Grid container item sm={4}>
-      <Card elevation={6} sx={{ width: 945 }}>
-
-        <CardActionArea value={order.id} onClick={() => this.handleCardClick(order.id)}>
-          <CardContent>
-
-            <List dense="true">
-              <ListItem >
-              <ListItemAvatar >
-                  <Avatar
-                      alt={order.maker_nick}
-                      src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
-                      />
-                </ListItemAvatar>
-                <ListItemText>
-                  <Typography gutterBottom variant="h6">
-                    {order.maker_nick}
-                  </Typography>
-                </ListItemText>
-              </ListItem>
-
-              {/* CARD PARAGRAPH CONTENT */}
-              <ListItemText>
-                <Typography variant="subtitle1" color="text.secondary">
-                ◑{order.type == 0 ? <b> Buys </b>: <b> Sells </b>} 
-                  <b>{parseFloat(parseFloat(order.amount).toFixed(4))}
-                  {" " +this.getCurrencyCode(order.currency)}</b> <a> worth of bitcoin</a> 
-                </Typography>
-
-                <Typography variant="subtitle1" color="text.secondary">
-                ◑ Payment via <b>{order.payment_method}</b>
-                </Typography>
-{/* 
-                <Typography variant="subtitle1" color="text.secondary">
-                ◑ Priced {order.is_explicit ? 
-                  " explicitly at " + this.pn(order.satoshis) + " Sats" : (
-                  " at " + 
-                  parseFloat(parseFloat(order.premium).toFixed(4)) + "% over the market"                     
-                  )}
-                </Typography> */}
-
-                <Typography variant="subtitle1" color="text.secondary">
-                ◑ <b>{" 42,354 "}{this.getCurrencyCode(order.currency)}/BTC</b>  (Binance API)
-                </Typography>
-              </ListItemText>
-
-            </List>
-
-          </CardContent>
-        </CardActionArea>
-      </Card>
-      </Grid>
+      <ListItemButton>
+        <ListItemAvatar >
+          <Avatar
+              alt={order.maker_nick}
+              src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
+              />
+        </ListItemAvatar>
+      </ListItemButton>
     ));
   }
+
+//     <Grid container item sm={4}>
+//       <Card elevation={6} sx={{ width: 945 }}>
+
+//         <CardActionArea value={order.id} onClick={() => this.handleCardClick(order.id)}>
+//           <CardContent>
+
+//             <List dense="true">
+//               <ListItem >
+//               <ListItemAvatar >
+//                   <Avatar
+//                       alt={order.maker_nick}
+//                       src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
+//                       />
+//                 </ListItemAvatar>
+//                 <ListItemText>
+//                   <Typography gutterBottom variant="h6">
+//                     {order.maker_nick}
+//                   </Typography>
+//                 </ListItemText>
+//               </ListItem>
+
+//               {/* CARD PARAGRAPH CONTENT */}
+//               <ListItemText>
+//                 <Typography variant="subtitle1" color="text.secondary">
+//                 ◑{order.type == 0 ? <b> Buys </b>: <b> Sells </b>} 
+//                   <b>{parseFloat(parseFloat(order.amount).toFixed(4))}
+//                   {" " +this.getCurrencyCode(order.currency)}</b> <a> worth of bitcoin</a> 
+//                 </Typography>
+
+//                 <Typography variant="subtitle1" color="text.secondary">
+//                 ◑ Payment via <b>{order.payment_method}</b>
+//                 </Typography>
+// {/* 
+//                 <Typography variant="subtitle1" color="text.secondary">
+//                 ◑ Priced {order.is_explicit ? 
+//                   " explicitly at " + this.pn(order.satoshis) + " Sats" : (
+//                   " at " + 
+//                   parseFloat(parseFloat(order.premium).toFixed(4)) + "% over the market"                     
+//                   )}
+//                 </Typography> */}
+
+//                 <Typography variant="subtitle1" color="text.secondary">
+//                 ◑ <b>{" 42,354 "}{this.getCurrencyCode(order.currency)}/BTC</b>  (Binance API)
+//                 </Typography>
+//               </ListItemText>
+
+//             </List>
+
+//           </CardContent>
+//         </CardActionArea>
+//       </Card>
+//       </Grid>
 
   render() {
       return (
@@ -192,7 +201,12 @@ export default class BookPage extends Component {
                 Be the first one to create an order
               </Typography>
           </Grid>)
-          : this.bookCards()
+          : 
+          <Grid item>
+            <List>
+            {this.bookListItems()}
+            </List>
+          </Grid>
           }
           <Grid item xs={12} align="center">
               <Button color="secondary" variant="contained" to="/" component={Link}>

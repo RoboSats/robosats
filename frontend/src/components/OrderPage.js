@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Paper, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@material-ui/core"
+import { Paper, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@mui/material"
 import TradeBox from "./TradeBox";
 
 function msToTime(duration) {

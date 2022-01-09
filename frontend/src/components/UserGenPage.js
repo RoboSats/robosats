@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button , Grid, Typography, TextField, ButtonGroup} from "@material-ui/core"
+import { Button , Grid, Typography, TextField, ButtonGroup} from "@mui/material"
 import { Link } from 'react-router-dom'
 import Image from 'material-ui-image'
 
@@ -137,7 +137,7 @@ export default class UserGenPage extends Component {
           <Grid item xs={12} align="center">
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
               <Button color='primary' to='/make/' component={Link}>Make Order</Button>
-              <Button to='/home' component={Link}>INFO</Button>
+              <Button color='inherit' to='/home' component={Link}>INFO</Button>
               <Button color='secondary' to='/book/' component={Link}>View Book</Button>
             </ButtonGroup>
           </Grid>

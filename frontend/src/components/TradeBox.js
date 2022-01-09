@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Paper, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider} from "@material-ui/core"
+import { Paper, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider} from "@mui/material"
 import QRCode from "react-qr-code";
 
 function getCookie(name) {

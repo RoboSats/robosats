@@ -69,7 +69,9 @@ npm install @mui/system @emotion/react @emotion/styled
 npm install react-native
 npm install react-native-svg
 npm install react-qr-code
+npm install @mui/material
 ```
+Note we are using mostly MaterialUI V5, but Image loading from V4 extentions (so both V4 and V5 are needed)
 
 ### Launch the React render
 from frontend/ directory
