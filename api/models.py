@@ -86,7 +86,6 @@ class Order(models.Model):
     
     currency_dict = json.load(open('./api/currencies.json'))
     currency_choices = [(int(val), label) for val, label in list(currency_dict.items())]
-    print(currency_choices)
 
     # order info
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.WFB)

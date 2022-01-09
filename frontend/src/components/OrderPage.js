@@ -67,7 +67,7 @@ export default class OrderPage extends Component {
     super(props);
     this.state = {
         isExplicit: false,
-        delay: 5000, // Refresh every 5 seconds
+        delay: 10000, // Refresh every 10 seconds
         currencies_dict: {"1":"USD"}
     };
     this.orderId = this.props.match.params.orderId;
@@ -79,8 +79,9 @@ export default class OrderPage extends Component {
     this.setState(null)
     fetch('/api/order' + '?order_id=' + this.orderId)
       .then((response) => response.json())
-      .then((data) => {
+      .then((data) => {console.log(data) &
         this.setState({
+            id: data.id,
             statusCode: data.status,
             statusText: data.status_message,
             type: data.type,
@@ -203,7 +204,7 @@ export default class OrderPage extends Component {
                   src={window.location.origin +'/static/assets/avatars/' + this.state.makerNick + '.png'} 
                   />
               </ListItemAvatar>
-              <ListItemText primary={this.state.makerNick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order maker" align="right"/>
+              <ListItemText primary={this.state.makerNick + (this.state.type ? " (Seller)" : " (Buyer)")} secondary="Order maker" align="right"/>
             </ListItem>
             <Divider />
 
@@ -212,7 +213,7 @@ export default class OrderPage extends Component {
                 {this.state.takerNick!='None' ?
                   <>
                     <ListItem align="left">
-                      <ListItemText primary={this.state.takerNick + (this.state.type ? " (Seller)" : " (Buyer)")} secondary="Order taker"/>
+                      <ListItemText primary={this.state.takerNick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order taker"/>
                       <ListItemAvatar > 
                         <Avatar
                           alt={this.state.makerNick} 
