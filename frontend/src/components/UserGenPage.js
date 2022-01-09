@@ -60,7 +60,7 @@ export default class UserGenPage extends Component {
       method: 'DELETE',
       headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
     };
-    fetch("/api/usergen", requestOptions)
+    fetch("/api/user", requestOptions)
       .then((response) => response.json())
       .then((data) => console.log(data));
   }
