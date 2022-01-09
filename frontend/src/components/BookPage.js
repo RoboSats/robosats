@@ -7,9 +7,9 @@ export default class BookPage extends Component {
     super(props);
     this.state = {
       orders: new Array(),
-      currency: 1,
-      type: 1,
-      currencies_dict: {"1":"USD"}
+      currency: 0,
+      type: 2,
+      currencies_dict: {"0":"ANY"}
     };
     this.getCurrencyDict()
     this.getOrderDetails(this.state.type,this.state.currency)
@@ -142,7 +142,7 @@ export default class BookPage extends Component {
                       style: {textAlign:"center"}
                   }}
                   onChange={this.handleTypeChange}
-              >
+              >   <MenuItem value={2}>ANY</MenuItem>
                   <MenuItem value={1}>BUY</MenuItem>
                   <MenuItem value={0}>SELL</MenuItem>
               </Select>
@@ -162,7 +162,7 @@ export default class BookPage extends Component {
                       style: {textAlign:"center"}
                   }}
                   onChange={this.handleCurrencyChange}
-              >
+              >     <MenuItem value={0}>ANY</MenuItem>
                     {
                       Object.entries(this.state.currencies_dict)
                       .map( ([key, value]) => <MenuItem value={parseInt(key)}>{value}</MenuItem> )

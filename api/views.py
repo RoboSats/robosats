@@ -179,7 +179,7 @@ class OrderView(viewsets.ViewSet):
             if order.maker_bond.status == order.taker_bond.status == order.trade_escrow.status == LNPayment.Status.LOCKED:
                 # add whether a collaborative cancel is pending
                 data['pending_cancel'] = order.is_pending_cancel
-                
+
         
         return Response(data, status.HTTP_200_OK)
 
@@ -343,25 +343,27 @@ class UserView(APIView):
 
 class BookView(ListAPIView):
     serializer_class = ListOrderSerializer
+    queryset = Order.objects.filter(status=Order.Status.PUB) 
 
     def get(self,request, format=None):
         currency = request.GET.get('currency')
-        print("currency:", currency)
-        type = request.GET.get('type') 
-        queryset = Order.objects.filter(currency=currency, type=type, status=int(Order.Status.PUB)) 
+        type = request.GET.get('type')
+        
+        queryset = Order.objects.filter(status=Order.Status.PUB) 
+        # Currency 0 and type 2 are special cases treated as "ANY". They are not possible choices.
+        if not (int(currency) == 0 and int(type) == 2): 
+            queryset = Order.objects.filter(currency=currency, type=type, status=Order.Status.PUB) 
+
         if len(queryset)== 0:
             return Response({'not_found':'No orders found, be the first to make one'}, status=status.HTTP_404_NOT_FOUND)
 
-        queryset = queryset.order_by('created_at')
+        # queryset = queryset.order_by('created_at')
         book_data = []
         for order in queryset:
             data = ListOrderSerializer(order).data
-            user = User.objects.filter(id=data['maker'])
-            if len(user) == 1:
-                data['maker_nick'] = user[0].username
+            data['maker_nick'] = str(order.maker)
             
-            # Non participants should not see the status or who is the taker
-            for key in ('status','taker'):
+            for key in ('status','taker'): # Non participants should not see the status or who is the taker
                 del data[key]
             
             book_data.append(data)

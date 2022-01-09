@@ -84,6 +84,13 @@ class LNNode():
         '''Sends sats to buyer, or cancelinvoices'''
         return True
 
+    def check_if_hold_invoice_is_locked(payment_hash):
+        '''Every hodl invoice that is in state INVGEN
+        Has to be checked for payment received until
+        the window expires'''
+        
+        return True
+
     def settle_hold_htlcs(payment_hash):
         '''Charges a LN hold invoice'''
         return True
