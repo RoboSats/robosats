@@ -61,7 +61,7 @@ class Logics():
         if order.is_explicit:
             satoshis_now = order.satoshis
         else:
-            exchange_rate = get_exchange_rate(Order.Currencies(order.currency).label)
+            exchange_rate = get_exchange_rate(Order.currency_dict[str(order.currency)])
             premium_rate = exchange_rate * (1+float(order.premium)/100)
             satoshis_now = (float(order.amount) / premium_rate) * 100*1000*1000
 

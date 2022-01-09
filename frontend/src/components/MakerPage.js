@@ -37,7 +37,9 @@ export default class MakerPage extends Component {
         payment_method: this.defaultPaymentMethod,
         premium: 0,
         satoshis: null,
+        currencies_dict: {"1":"USD"}
     }
+    this.getCurrencyDict()
   }
 
   handleTypeChange=(e)=>{
@@ -46,10 +48,9 @@ export default class MakerPage extends Component {
       });
   }
   handleCurrencyChange=(e)=>{
-    var code = (e.target.value == 1 ) ? "USD": ((e.target.value == 2 ) ? "EUR":"ETH")
     this.setState({
         currency: e.target.value,
-        currencyCode: code,
+        currencyCode: this.getCurrencyCode(e.target.value),
     });
 }
     handleAmountChange=(e)=>{
@@ -108,6 +109,20 @@ export default class MakerPage extends Component {
              & (data.id ? this.props.history.push('/order/' + data.id) :"")));
     }
 
+    getCurrencyDict() {
+        fetch('/api/currencies')
+          .then((response) => response.json())
+          .then((data) => 
+          this.setState({
+            currencies_dict: data
+          }));
+    
+      }
+
+    getCurrencyCode(val){
+        return this.state.currencies_dict[val.toString()]
+    }
+
   render() {
     return (
         <Grid container spacing={1}>
@@ -163,9 +178,10 @@ export default class MakerPage extends Component {
                             }}
                             onChange={this.handleCurrencyChange}
                         >
-                            <MenuItem value={1}>USD</MenuItem>
-                            <MenuItem value={2}>EUR</MenuItem>
-                            <MenuItem value={3}>ETH</MenuItem>
+                            {
+                            Object.entries(this.state.currencies_dict)
+                            .map( ([key, value]) => <MenuItem value={parseInt(key)}>{value}</MenuItem> )
+                            }
                         </Select>
                     </FormControl>
                 </Grid>

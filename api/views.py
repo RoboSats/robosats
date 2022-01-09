@@ -21,6 +21,9 @@ from datetime import timedelta
 from django.utils import timezone
 from decouple import config
 
+import json
+from django.http import HttpResponse
+
 EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
 FEE = float(config('FEE'))
 
@@ -349,6 +352,7 @@ class BookView(ListAPIView):
 
     def get(self,request, format=None):
         currency = request.GET.get('currency')
+        print("currency:", currency)
         type = request.GET.get('type') 
         queryset = Order.objects.filter(currency=currency, type=type, status=int(Order.Status.PUB)) 
         if len(queryset)== 0:
@@ -382,7 +386,10 @@ class InfoView(ListAPIView):
         context['total_volume'] = None
 
         return Response(context, status.HTTP_200_OK)
-        
+
+def get_currencies_json(request):
+    currency_dict = json.load(open('./api/currencies.json'))
+    return HttpResponse(json.dumps(currency_dict),content_type="application/json")
 
         
 

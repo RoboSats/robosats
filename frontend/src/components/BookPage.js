@@ -9,7 +9,9 @@ export default class BookPage extends Component {
       orders: new Array(),
       currency: 1,
       type: 1,
+      currencies_dict: {"1":"USD"}
     };
+    this.getCurrencyDict()
     this.getOrderDetails()
     this.state.currencyCode = this.getCurrencyCode(this.state.currency)
   }
@@ -44,11 +46,19 @@ export default class BookPage extends Component {
     })
     this.getOrderDetails();
   }
-
+  
+  getCurrencyDict() {
+    fetch('/api/currencies')
+      .then((response) => response.json())
+      .then((data) => 
+      this.setState({
+        currencies_dict: data
+      }));
+  }
   // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
   // Improve this function so currencies are read from json
   getCurrencyCode(val){
-    return (val == 1 ) ? "USD": ((val == 2 ) ? "EUR":"ETH")
+    return this.state.currencies_dict[val.toString()]
   }
 
   // pretty numbers
@@ -156,9 +166,10 @@ export default class BookPage extends Component {
                   }}
                   onChange={this.handleCurrencyChange}
               >
-                  <MenuItem value={1}>USD</MenuItem>
-                  <MenuItem value={2}>EUR</MenuItem>
-                  <MenuItem value={3}>ETH</MenuItem>
+                    {
+                      Object.entries(this.state.currencies_dict)
+                      .map( ([key, value]) => <MenuItem value={parseInt(key)}>{value}</MenuItem> )
+                    }
               </Select>
             </FormControl>
           </Grid>

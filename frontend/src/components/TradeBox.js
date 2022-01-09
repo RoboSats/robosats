@@ -160,31 +160,31 @@ export default class TradeBox extends Component {
     )
   }
 
-  showInputInvoice(){
+  // showInputInvoice(){
 
-  }
+  // }
 
-  showWaitingForEscrow(){
+  // showWaitingForEscrow(){
 
-  }
-  showWaitingForBuyerInvoice({
+  // }
+  // showWaitingForBuyerInvoice({
 
-  })
+  // })
 
-  showFiatSentButton(){
+  // showFiatSentButton(){
 
-  }
-  showFiatReceivedButton(){
+  // }
+  // showFiatReceivedButton(){
 
-  }
+  // }
 
-  showOpenDisputeButton(){
+  // showOpenDisputeButton(){
 
-  }
+  // }
 
-  showRateSelect(){
+  // showRateSelect(){
 
-  }
+  // }
 
 
   render() {
@@ -220,7 +220,7 @@ export default class TradeBox extends Component {
               {/*  */}
               {/*  */}
 
-              
+
           </Paper>
         </Grid>
       </Grid>

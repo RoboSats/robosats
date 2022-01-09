@@ -68,8 +68,10 @@ export default class OrderPage extends Component {
     this.state = {
         isExplicit: false,
         delay: 5000, // Refresh every 5 seconds
+        currencies_dict: {"1":"USD"}
     };
     this.orderId = this.props.match.params.orderId;
+    this.getCurrencyDict();
     this.getOrderDetails();
   }
 
@@ -78,7 +80,6 @@ export default class OrderPage extends Component {
     fetch('/api/order' + '?order_id=' + this.orderId)
       .then((response) => response.json())
       .then((data) => {
-        console.log(data) &
         this.setState({
             statusCode: data.status,
             statusText: data.status_message,
@@ -111,7 +112,6 @@ export default class OrderPage extends Component {
       });
   }
 
-
   // These are used to refresh the data
   componentDidMount() {
     this.interval = setInterval(this.tick, this.state.delay);
@@ -131,8 +131,6 @@ export default class OrderPage extends Component {
   handleDelayChange = (e) => {
     this.setState({ delay: Number(e.target.value) });
   }
-
-
 
   // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
   // Improve this function so currencies are read from json
@@ -157,6 +155,22 @@ export default class OrderPage extends Component {
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())
       .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
+  }
+  getCurrencyDict() {
+    fetch('/api/currencies')
+      .then((response) => response.json())
+      .then((data) => 
+      this.setState({
+        currencies_dict: data
+      }));
+  }
+  
+  // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
+  // Improve this function so currencies are read from json
+  getCurrencyCode(val){
+    console.log("---------------------------------")
+    console.log(val)
+    return this.state.currencies_dict[val.toString()]
   }
 
   handleClickCancelOrderButton=()=>{

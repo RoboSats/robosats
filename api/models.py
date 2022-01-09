@@ -8,7 +8,7 @@ from django.utils.html import mark_safe
 from decouple import config
 from pathlib import Path
 from .utils import get_exchange_rate
-
+import json
 
 MIN_TRADE = int(config('MIN_TRADE'))
 MAX_TRADE = int(config('MAX_TRADE'))
@@ -64,11 +64,6 @@ class Order(models.Model):
         BUY  = 0, 'BUY'
         SELL = 1, 'SELL'
 
-    class Currencies(models.IntegerChoices):
-        USD = 1, 'USD'
-        EUR = 2, 'EUR'
-        ETH = 3, 'ETH'
-
     class Status(models.IntegerChoices):
         WFB = 0,  'Waiting for maker bond'
         PUB = 1,  'Public'
@@ -88,7 +83,10 @@ class Order(models.Model):
         FAI = 15, 'Failed lightning network routing'
         MLD = 16, 'Maker lost dispute'
         TLD = 17, 'Taker lost dispute'
-        
+    
+    currency_dict = json.load(open('./api/currencies.json'))
+    currency_choices = [(int(val), label) for val, label in list(currency_dict.items())]
+    print(currency_choices)
 
     # order info
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.WFB)
@@ -97,7 +95,7 @@ class Order(models.Model):
 
     # order details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False)
-    currency = models.PositiveSmallIntegerField(choices=Currencies.choices, null=False)
+    currency = models.PositiveSmallIntegerField(choices=currency_choices, null=False)
     amount = models.DecimalField(max_digits=9, decimal_places=4, validators=[MinValueValidator(0.00001)])
     payment_method = models.CharField(max_length=35, null=False, default="not specified", blank=True)
 
@@ -133,7 +131,7 @@ class Order(models.Model):
 
     def __str__(self):
         # Make relational back to ORDER
-        return (f'Order {self.id}: {self.Types(self.type).label} BTC for {float(self.amount)} {self.Currencies(self.currency).label}')
+        return (f'Order {self.id}: {self.Types(self.type).label} BTC for {float(self.amount)} {self.currency_dict[str(self.currency)]}')
 
 @receiver(pre_delete, sender=Order)
 def delelete_HTLCs_at_order_deletion(sender, instance, **kwargs):
@@ -204,7 +202,7 @@ class MarketTick(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=None, null=True, validators=[MinValueValidator(0)])
     volume = models.DecimalField(max_digits=8, decimal_places=8, default=None, null=True, validators=[MinValueValidator(0)])
     premium = models.DecimalField(max_digits=5, decimal_places=2, default=None, null=True, validators=[MinValueValidator(-100), MaxValueValidator(999)], blank=True)
-    currency = models.PositiveSmallIntegerField(choices=Order.Currencies.choices, null=True)
+    currency = models.PositiveSmallIntegerField(choices=Order.currency_choices, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     
     # Relevant to keep record of the historical fee, so the insight on the premium can be better analyzed
@@ -221,7 +219,7 @@ class MarketTick(models.Model):
         elif order.taker_bond.status == LNPayment.Status.LOCKED:
             volume = order.last_satoshis / 100000000
             price = float(order.amount) / volume  # Amount Fiat / Amount BTC
-            premium = 100 * (price / get_exchange_rate(Order.Currencies(order.currency).label) - 1)
+            premium = 100 * (price / get_exchange_rate(Order.currency_dict[str(order.currency)]) - 1)
 
             tick = MarketTick.objects.create(
                 price=price, 
