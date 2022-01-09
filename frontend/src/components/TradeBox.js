@@ -1,36 +1,32 @@
 import React, { Component } from "react";
-import { Paper, FormControl , Grid, Typography, FormHelperText, TextField, List, ListItem, ListItemText, Divider} from "@material-ui/core"
+import { Paper, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider} from "@material-ui/core"
 import QRCode from "react-qr-code";
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+          }
+      }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+// pretty numbers
+function pn(x) {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
 
 export default class TradeBox extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      delay: 100, // checks for new state in OrderPage ever 100 ms
-    };
-    this.data = this.props.data
-  }
-
-  // These are used to refresh the data
-  componentDidMount() {
-    this.interval = setInterval(this.tick, this.state.delay);
-  }
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.delay !== this.state.delay) {
-      clearInterval(this.interval);
-      this.interval = setInterval(this.tick, this.state.delay);
-    }
-  }
-  componentWillUnmount() {
-    clearInterval(this.interval);
-  }
-
-
-  handleDelayChange = (e) => {
-    this.setState({ delay: Number(e.target.value) });
-  }
-  tick = () => {
-    this.data = this.props.data;
   }
   
   showQRInvoice=()=>{
@@ -42,25 +38,25 @@ export default class TradeBox extends Component {
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          {this.data.isMaker ?
+          {this.props.data.isMaker ?
           <Typography component="subtitle1" variant="subtitle1">
-            <b>Lock {this.data.bondSatoshis} Sats to PUBLISH order </b>
+            <b>Lock {pn(this.props.data.bondSatoshis)} Sats to PUBLISH order </b>
           </Typography>
           : 
           <Typography component="subtitle1" variant="subtitle1">
-            <b>Lock {this.data.bondSatoshis} Sats to TAKE the order </b>
+            <b>Lock {pn(this.props.data.bondSatoshis)} Sats to TAKE the order </b>
           </Typography>
           }
         </Grid>
         <Grid item xs={12} align="center">
-          <QRCode value={this.data.bondInvoice} size={305}/>
+          <QRCode value={this.props.data.bondInvoice} size={305}/>
         </Grid> 
         <Grid item xs={12} align="center">
           <TextField 
             hiddenLabel
             variant="filled" 
             size="small"
-            defaultValue={this.data.bondInvoice} 
+            defaultValue={this.props.data.bondInvoice} 
             disabled="true"
             helperText="This is a HODL LN invoice. It will not be charged if the order succeeds or expires.
             It will be charged if the order is cancelled or you lose a dispute."
@@ -75,18 +71,18 @@ export default class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>Deposit {this.data.escrowSatoshis} Sats as trade collateral </b>
+            <b>Deposit {pn(this.props.data.escrowSatoshis)} Sats as trade collateral </b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          <QRCode value={this.data.escrowInvoice} size={305}/>
+          <QRCode value={this.props.data.escrowInvoice} size={305}/>
         </Grid> 
         <Grid item xs={12} align="center">
           <TextField 
             hiddenLabel
             variant="filled" 
             size="small"
-            defaultValue={this.data.escrowInvoice} 
+            defaultValue={this.props.data.escrowInvoice} 
             disabled="true"
             helperText="This is a HODL LN invoice. It will be charged once the buyer confirms he sent the fiat."
             color = "secondary"
@@ -98,7 +94,7 @@ export default class TradeBox extends Component {
 
   showTakerFound=()=>{
 
-    // Make some sound here! The maker might have been waiting for long
+    // TODO Make some sound here! The maker might have been waiting for long
  
     return (
       <Grid container spacing={1}>
@@ -109,7 +105,7 @@ export default class TradeBox extends Component {
         </Grid>
         <Divider/>
         <Grid item xs={12} align="center">
-          <Typography component="body2" variant="body">
+          <Typography component="body2" variant="body2">
             Please wait for the taker to confirm his commitment by locking a bond.
           </Typography>
         </Grid>
@@ -147,7 +143,7 @@ export default class TradeBox extends Component {
 
             <Divider/>
               <ListItem>
-                <ListItemText primary={999} secondary={"Active orders for" + this.data.currencyCode}/>
+                <ListItemText primary={999} secondary={"Active orders for " + this.props.data.currencyCode}/>
               </ListItem>
               
             <Divider/>
@@ -160,20 +156,132 @@ export default class TradeBox extends Component {
     )
   }
 
-  // showInputInvoice(){
+  handleInputInvoiceChanged=(e)=>{
+    this.setState({
+        invoice: e.target.value,     
+    });
+  }
 
-  // }
+  // Fix this, clunky because it takes time. this.props.data does not refresh until next refresh of OrderPage.
 
-  // showWaitingForEscrow(){
+  handleClickSubmitInvoiceButton=()=>{
+      const requestOptions = {
+          method: 'POST',
+          headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+          body: JSON.stringify({
+            'action':'update_invoice',
+            'invoice': this.state.invoice,
+          }),
+      };
+      fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+      .then((response) => response.json())
+      .then((data) => (this.props.data = data));
+  }
 
-  // }
-  // showWaitingForBuyerInvoice({
+  showInputInvoice(){
+    return (
 
-  // })
+      // TODO Camera option to read QR
 
-  // showFiatSentButton(){
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="subtitle1" variant="subtitle1">
+            <b> Submit a LN invoice for {pn(this.props.data.invoiceAmount)} Sats </b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="left">
+          <Typography component="body2" variant="body2">
+            The taker is committed! Before letting you send {" "+ parseFloat(parseFloat(this.props.data.amount).toFixed(4))+
+            " "+ this.props.data.currencyCode}, we want to make sure you are able to receive the BTC. Please provide a 
+            valid invoice for {pn(this.props.data.invoiceAmount)} Satoshis.
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <TextField 
+              label={"Payout Lightning Invoice"}
+              required
+              inputProps={{
+                  style: {textAlign:"center"}
+              }}
+              multiline
+              onChange={this.handleInputInvoiceChanged}
+          />
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Button variant='contained' color='primary' onClick={this.handleClickSubmitInvoiceButton}>Submit</Button>
+        </Grid>
+      </Grid>
+    )
+  }
 
-  // }
+  showWaitingForEscrow(){
+
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="subtitle1" variant="subtitle1">
+            <b>Your invoice looks good!</b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body2" align="left">
+            <p>We are waiting for the seller to deposit the full trade BTC amount
+              into the escrow.</p>
+              <p> Just hang on for a moment. If the seller does not deposit, 
+                you will get your bond back automatically.</p>
+          </Typography>
+        </Grid>
+      </Grid>
+    )
+  }
+
+  showWaitingForBuyerInvoice(){
+
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="subtitle1" variant="subtitle1">
+            <b>The trade collateral is locked! :D </b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body2" align="left">
+            <p> We are waiting for the buyer to post a lightning invoice. Once
+              he does, you will be able to directly communicate the fiat payment
+              details. </p>
+            <p> Just hang on for a moment. If the buyer does not cooperate, 
+                you will get back the trade collateral and your bond automatically.</p>
+          </Typography>
+        </Grid>
+      </Grid>
+    )
+  }
+
+  handleClickFiatConfirmButton=()=>{
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+        body: JSON.stringify({
+          'action':'confirm',
+          'invoice': this.state.invoice,
+        }),
+    };
+    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+    .then((response) => response.json())
+    .then((data) => (this.props.data = data));
+}
+
+
+  showFiatSentButton(){
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Button variant='contained' color='primary' onClick={this.handleClickFiatConfirmButton}>Confirm {this.props.data.currencyCode} was sent. </Button>
+        </Grid>
+      </Grid>
+    )
+  }
+
   // showFiatReceivedButton(){
 
   // }
@@ -196,26 +304,26 @@ export default class TradeBox extends Component {
           </Typography>
           <Paper elevation={12} style={{ padding: 8,}}>
             {/* Maker and taker Bond request */}
-              {this.data.bondInvoice ? this.showQRInvoice() : ""}
+              {this.props.data.bondInvoice ? this.showQRInvoice() : ""}
 
             {/* Waiting for taker and taker bond request */}
-              {this.data.isMaker & this.data.statusCode == 1 ? this.showMakerWait() : ""}
-              {this.data.isMaker & this.data.statusCode == 3 ? this.showTakerFound() : ""}
+              {this.props.data.isMaker & this.props.data.statusCode == 1 ? this.showMakerWait() : ""}
+              {this.props.data.isMaker & this.props.data.statusCode == 3 ? this.showTakerFound() : ""}
 
             {/* Send Invoice (buyer) and deposit collateral (seller) */}
-              {this.data.isSeller & this.data.escrowInvoice != null ? this.showEscrowQRInvoice() : ""}
-              {this.data.isBuyer & this.data.invoiceAmount != null ? this.showInputInvoice() : ""}
-              {this.data.isBuyer & this.data.statusCode == 7 ? this.showWaitingForEscrow() : ""}
-              {this.data.isSeller & this.data.statusCode == 8 ? this.showWaitingForBuyerInvoice() : ""}
+              {this.props.data.isSeller & this.props.data.escrowInvoice != null ? this.showEscrowQRInvoice() : ""}
+              {this.props.data.isBuyer & this.props.data.invoiceAmount != null ? this.showInputInvoice() : ""}
+              {this.props.data.isBuyer & this.props.data.statusCode == 7 ? this.showWaitingForEscrow() : ""}
+              {this.props.data.isSeller & this.props.data.statusCode == 8 ? this.showWaitingForBuyerInvoice() : ""}
 
             {/* In Chatroom */}
-              {this.data.isBuyer & this.data.statusCode == 9 ? this.showChat() & this.showFiatSentButton() : ""}
-              {this.data.isSeller & this.data.statusCode ==9 ? this.showChat()  : ""}
-              {this.data.isBuyer & this.data.statusCode == 10 ? this.showChat() & this.showOpenDisputeButton() : ""}
-              {this.data.isSeller & this.data.statusCode == 10 ? this.showChat() & this.showFiatReceivedButton() & this.showOpenDisputeButton(): ""}
+              {this.props.data.isBuyer & this.props.data.statusCode == 9 ? this.showChat() & this.showFiatSentButton() : ""}
+              {this.props.data.isSeller & this.props.data.statusCode ==9 ? this.showChat()  : ""}
+              {this.props.data.isBuyer & this.props.data.statusCode == 10 ? this.showChat() & this.showOpenDisputeButton() : ""}
+              {this.props.data.isSeller & this.props.data.statusCode == 10 ? this.showChat() & this.showFiatReceivedButton() & this.showOpenDisputeButton(): ""}
 
             {/* Trade Finished */}
-              {this.data.isSeller & this.data.statusCode > 12 & this.data.statusCode < 15 ? this.showRateSelect()  : ""}
+              {this.props.data.isSeller & this.props.data.statusCode > 12 & this.props.data.statusCode < 15 ? this.showRateSelect()  : ""}
               {/* TODO */}
               {/*  */}
               {/*  */}
