@@ -8,7 +8,7 @@ export default class BookPage extends Component {
     this.state = {
       orders: new Array(),
       currency: 0,
-      type: 2,
+      type: 1,
       currencies_dict: {"0":"ANY"}
     };
     this.getCurrencyDict()

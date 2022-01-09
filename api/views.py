@@ -1,3 +1,4 @@
+from re import T
 from rest_framework import status, viewsets
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
@@ -349,9 +350,14 @@ class BookView(ListAPIView):
         currency = request.GET.get('currency')
         type = request.GET.get('type')
         
-        queryset = Order.objects.filter(status=Order.Status.PUB) 
-        # Currency 0 and type 2 are special cases treated as "ANY". They are not possible choices.
-        if not (int(currency) == 0 and int(type) == 2): 
+        queryset = Order.objects.filter(status=Order.Status.PUB)
+
+        # Currency 0 and type 2 are special cases treated as "ANY". (These are not really possible choices)
+        if int(currency) == 0 and int(type) != 2:
+            queryset = Order.objects.filter(type=type, status=Order.Status.PUB) 
+        elif int(type) == 2 and int(currency) != 0:
+            queryset = Order.objects.filter(currency=currency, status=Order.Status.PUB) 
+        elif not (int(currency) == 0 and int(type) == 2):
             queryset = Order.objects.filter(currency=currency, type=type, status=Order.Status.PUB) 
 
         if len(queryset)== 0:
