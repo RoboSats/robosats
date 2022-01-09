@@ -1,13 +1,38 @@
 import React, { Component } from "react";
 import { Paper, FormControl , Grid, Typography, FormHelperText, TextField, List, ListItem, ListItemText, Divider} from "@material-ui/core"
-import QRCode from "react-qr-code"
+import QRCode from "react-qr-code";
 
 export default class TradeBox extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      delay: 5000, // Refresh every 5 seconds
+    };
     this.data = this.props.data
   }
 
+  // These are used to refresh the data
+  componentDidMount() {
+    this.interval = setInterval(this.tick, this.state.delay);
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.delay !== this.state.delay) {
+      clearInterval(this.interval);
+      this.interval = setInterval(this.tick, this.state.delay);
+    }
+  }
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
+
+
+  handleDelayChange = (e) => {
+    this.setState({ delay: Number(e.target.value) });
+  }
+  tick = () => {
+    this.data = this.props.data;
+  }
+  
   showInvoice=()=>{
     return (
       <Grid container spacing={1}>
@@ -71,6 +96,27 @@ export default class TradeBox extends Component {
     );
   }
 
+  showTakerFound=()=>{
+
+    // Make some sound here! The maker might have been waiting for long
+ 
+    return (
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="subtitle1" variant="subtitle1">
+            <b>A taker has been found! </b>
+          </Typography>
+        </Grid>
+        <Divider/>
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body">
+            Please wait for the taker to confirm his commitment by locking a bond.
+          </Typography>
+        </Grid>
+      </Grid>
+    );
+  }
+
   showMakerWait=()=>{
     return (
       <Grid container spacing={1}>
@@ -124,6 +170,7 @@ export default class TradeBox extends Component {
           <Paper elevation={12} style={{ padding: 8,}}>
               {this.data.bondInvoice ? this.showInvoice() : ""}
               {this.data.isMaker & this.data.statusCode == 1 ? this.showMakerWait() : ""}
+              {this.data.isMaker & this.data.statusCode == 3 ? this.showTakerFound() : ""}
               {this.data.isSeller & this.data.escrowInvoice != null ? this.showEscrowInvoice() : ""}
           </Paper>
         </Grid>

@@ -67,15 +67,18 @@ export default class OrderPage extends Component {
     super(props);
     this.state = {
         isExplicit: false,
+        delay: 5000, // Refresh every 5 seconds
     };
     this.orderId = this.props.match.params.orderId;
     this.getOrderDetails();
   }
 
   getOrderDetails() {
+    this.setState(null)
     fetch('/api/order' + '?order_id=' + this.orderId)
       .then((response) => response.json())
       .then((data) => {
+        console.log(data) &
         this.setState({
             statusCode: data.status,
             statusText: data.status_message,
@@ -106,6 +109,29 @@ export default class OrderPage extends Component {
         });
       });
   }
+
+
+  // These are used to refresh the data
+  componentDidMount() {
+    this.interval = setInterval(this.tick, this.state.delay);
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.delay !== this.state.delay) {
+      clearInterval(this.interval);
+      this.interval = setInterval(this.tick, this.state.delay);
+    }
+  }
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
+  tick = () => {
+    this.getOrderDetails();
+  }
+  handleDelayChange = (e) => {
+    this.setState({ delay: Number(e.target.value) });
+  }
+
+
 
   // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
   // Improve this function so currencies are read from json
@@ -162,7 +188,7 @@ export default class OrderPage extends Component {
                   src={window.location.origin +'/static/assets/avatars/' + this.state.makerNick + '.png'} 
                   />
               </ListItemAvatar>
-              <ListItemText primary={this.state.makerNick} secondary="Order maker" align="right"/>
+              <ListItemText primary={this.state.makerNick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order maker" align="right"/>
             </ListItem>
             <Divider />
 
@@ -171,7 +197,7 @@ export default class OrderPage extends Component {
                 {this.state.takerNick!='None' ?
                   <>
                     <ListItem align="left">
-                      <ListItemText primary={this.state.takerNick} secondary="Order taker"/>
+                      <ListItemText primary={this.state.takerNick + (this.state.type ? " (Seller)" : " (Buyer)")} secondary="Order taker"/>
                       <ListItemAvatar > 
                         <Avatar
                           alt={this.state.makerNick} 

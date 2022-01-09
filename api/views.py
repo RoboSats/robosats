@@ -372,7 +372,7 @@ class BookView(ListAPIView):
 
 class InfoView(ListAPIView):
 
-    def get(self):
+    def get(self, request):
         context = {}
 
         context['num_public_buy_orders'] = len(Order.objects.filter(type=Order.Types.BUY, status=Order.Status.PUB))
