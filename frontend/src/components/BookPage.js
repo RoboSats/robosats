@@ -173,7 +173,7 @@ export default class BookPage extends Component {
         { this.state.not_found ? "" :
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
-              You are {this.state.type == 0 ? " selling " : " buying "} BTC for {this.state.currencyCode}
+              You are {this.state.type == 0 ? " buying " : (this.state.type == 1 ? " selling ":" checking ")} BTC for {this.state.currencyCode}
             </Typography>
           </Grid>
           }
