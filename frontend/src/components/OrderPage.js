@@ -132,12 +132,6 @@ export default class OrderPage extends Component {
     this.setState({ delay: Number(e.target.value) });
   }
 
-  // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
-  // Improve this function so currencies are read from json
-  getCurrencyCode(val){
-    return (val == 1 ) ? "USD": ((val == 2 ) ? "EUR":"ETH")
-  }
-
   // Fix to use proper react props
   handleClickBackButton=()=>{
     window.history.back();
@@ -157,7 +151,7 @@ export default class OrderPage extends Component {
       .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
   }
   getCurrencyDict() {
-    fetch('/api/currencies')
+    fetch('/static/assets/currencies.json')
       .then((response) => response.json())
       .then((data) => 
       this.setState({
@@ -165,11 +159,7 @@ export default class OrderPage extends Component {
       }));
   }
   
-  // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
-  // Improve this function so currencies are read from json
   getCurrencyCode(val){
-    console.log("---------------------------------")
-    console.log(val)
     return this.state.currencies_dict[val.toString()]
   }
 

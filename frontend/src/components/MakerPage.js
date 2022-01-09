@@ -110,7 +110,7 @@ export default class MakerPage extends Component {
     }
 
     getCurrencyDict() {
-        fetch('/api/currencies')
+        fetch('/static/assets/currencies.json')
           .then((response) => response.json())
           .then((data) => 
           this.setState({

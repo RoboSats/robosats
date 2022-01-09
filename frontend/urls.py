@@ -9,5 +9,4 @@ urlpatterns = [
     path('book/', index),
     path('order/<int:orderId>', index),
     path('wait/', index),
-    path('currencies/',index)    
 ]

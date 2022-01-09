@@ -84,7 +84,7 @@ class Order(models.Model):
         MLD = 16, 'Maker lost dispute'
         TLD = 17, 'Taker lost dispute'
     
-    currency_dict = json.load(open('./api/currencies.json'))
+    currency_dict = json.load(open('./frontend/static/assets/currencies.json'))
     currency_choices = [(int(val), label) for val, label in list(currency_dict.items())]
     print(currency_choices)
 

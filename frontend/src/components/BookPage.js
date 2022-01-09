@@ -12,15 +12,15 @@ export default class BookPage extends Component {
       currencies_dict: {"1":"USD"}
     };
     this.getCurrencyDict()
-    this.getOrderDetails()
+    this.getOrderDetails(this.state.type,this.state.currency)
     this.state.currencyCode = this.getCurrencyCode(this.state.currency)
   }
 
   // Show message to be the first one to make an order
-  getOrderDetails() {
-    fetch('/api/book' + '?currency=' + this.state.currency + "&type=" + this.state.type)
+  getOrderDetails(type,currency) {
+    fetch('/api/book' + '?currency=' + currency + "&type=" + type)
       .then((response) => response.json())
-      .then((data) => //console.log(data));
+      .then((data) =>
       this.setState({
         orders: data,
         not_found: data.not_found,
@@ -32,31 +32,29 @@ export default class BookPage extends Component {
     this.props.history.push('/order/' + e);
   }
 
-  // Make these two functions sequential. getOrderDetails needs setState to be finish beforehand.
   handleTypeChange=(e)=>{
     this.setState({
         type: e.target.value,     
     });
-    this.getOrderDetails();
+    this.getOrderDetails(e.target.value,this.state.currency);
   }
   handleCurrencyChange=(e)=>{
     this.setState({
         currency: e.target.value,
         currencyCode: this.getCurrencyCode(e.target.value),
     })
-    this.getOrderDetails();
+    this.getOrderDetails(this.state.type, e.target.value);
   }
   
   getCurrencyDict() {
-    fetch('/api/currencies')
+    fetch('/static/assets/currencies.json')
       .then((response) => response.json())
       .then((data) => 
       this.setState({
         currencies_dict: data
       }));
   }
-  // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
-  // Improve this function so currencies are read from json
+
   getCurrencyCode(val){
     return this.state.currencies_dict[val.toString()]
   }
