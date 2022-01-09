@@ -105,7 +105,7 @@ export default class TradeBox extends Component {
         </Grid>
         <Divider/>
         <Grid item xs={12} align="center">
-          <Typography component="body2" variant="body">
+          <Typography component="body2" variant="body2">
             Please wait for the taker to confirm his commitment by locking a bond.
           </Typography>
         </Grid>
@@ -162,8 +162,9 @@ export default class TradeBox extends Component {
     });
   }
 
+  // Fix this, clunky because it takes time. this.props.data does not refresh until next refresh of OrderPage.
+
   handleClickSubmitInvoiceButton=()=>{
-    console.log(this.state)
       const requestOptions = {
           method: 'POST',
           headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
@@ -215,14 +216,72 @@ export default class TradeBox extends Component {
 
   showWaitingForEscrow(){
 
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="subtitle1" variant="subtitle1">
+            <b>Your invoice looks good!</b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body2" align="left">
+            <p>We are waiting for the seller to deposit the full trade BTC amount
+              into the escrow.</p>
+              <p> Just hang on for a moment. If the seller does not deposit, 
+                you will get your bond back automatically.</p>
+          </Typography>
+        </Grid>
+      </Grid>
+    )
   }
-  // showWaitingForBuyerInvoice({
 
-  // })
+  showWaitingForBuyerInvoice(){
 
-  // showFiatSentButton(){
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="subtitle1" variant="subtitle1">
+            <b>The trade collateral is locked! :D </b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body2" align="left">
+            <p> We are waiting for the buyer to post a lightning invoice. Once
+              he does, you will be able to directly communicate the fiat payment
+              details. </p>
+            <p> Just hang on for a moment. If the buyer does not cooperate, 
+                you will get back the trade collateral and your bond automatically.</p>
+          </Typography>
+        </Grid>
+      </Grid>
+    )
+  }
 
-  // }
+  handleClickFiatConfirmButton=()=>{
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+        body: JSON.stringify({
+          'action':'confirm',
+          'invoice': this.state.invoice,
+        }),
+    };
+    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+    .then((response) => response.json())
+    .then((data) => (this.props.data = data));
+}
+
+
+  showFiatSentButton(){
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Button variant='contained' color='primary' onClick={this.handleClickFiatConfirmButton}>Confirm {this.props.data.currencyCode} was sent. </Button>
+        </Grid>
+      </Grid>
+    )
+  }
+
   // showFiatReceivedButton(){
 
   // }

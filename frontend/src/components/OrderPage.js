@@ -108,7 +108,6 @@ export default class OrderPage extends Component {
             escrowInvoice: data.escrow_invoice,
             escrowSatoshis: data.escrow_satoshis,
             invoiceAmount: data.invoice_amount,
-            badRequest: data.bad_request,
         });
       });
   }
@@ -131,12 +130,6 @@ export default class OrderPage extends Component {
   }
   handleDelayChange = (e) => {
     this.setState({ delay: Number(e.target.value) });
-  }
-
-  // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
-  // Improve this function so currencies are read from json
-  getCurrencyCode(val){
-    return (val == 1 ) ? "USD": ((val == 2 ) ? "EUR":"ETH")
   }
 
   // Fix to use proper react props
@@ -169,9 +162,8 @@ export default class OrderPage extends Component {
   // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
   // Improve this function so currencies are read from json
   getCurrencyCode(val){
-    console.log("---------------------------------")
-    console.log(val)
-    return this.state.currencies_dict[val.toString()]
+    let code = val ? this.state.currencies_dict[val.toString()] : "" 
+    return code
   }
 
   handleClickCancelOrderButton=()=>{
