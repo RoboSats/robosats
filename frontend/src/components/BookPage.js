@@ -16,7 +16,6 @@ export default class BookPage extends Component {
     this.state.currencyCode = this.getCurrencyCode(this.state.currency)
   }
 
-  // Show message to be the first one to make an order
   getOrderDetails(type,currency) {
     fetch('/api/book' + '?currency=' + currency + "&type=" + type)
       .then((response) => response.json())

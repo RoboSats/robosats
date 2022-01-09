@@ -18,8 +18,8 @@ BOND_SIZE = float(config('BOND_SIZE'))
 class LNPayment(models.Model):
 
     class Types(models.IntegerChoices):
-        NORM = 0, 'Regular invoice' # Only outgoing HTLCs will be regular invoices (Non-hodl)
-        HODL = 1, 'Hodl invoice'
+        NORM = 0, 'Regular invoice' # Only outgoing HTLCs will be regular invoices (Non-hold)
+        hold = 1, 'hold invoice'
 
     class Concepts(models.IntegerChoices):
         MAKEBOND = 0, 'Maker bond'
@@ -38,7 +38,7 @@ class LNPayment(models.Model):
         FAILRO = 7, 'Failed routing'
 
     # payment use details
-    type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HODL)
+    type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.hold)
     concept = models.PositiveSmallIntegerField(choices=Concepts.choices, null=False, default=Concepts.MAKEBOND)
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.INVGEN)
     routing_retries = models.PositiveSmallIntegerField(null=False, default=0)
@@ -133,7 +133,7 @@ class Order(models.Model):
         return (f'Order {self.id}: {self.Types(self.type).label} BTC for {float(self.amount)} {self.currency_dict[str(self.currency)]}')
 
 @receiver(pre_delete, sender=Order)
-def delelete_HTLCs_at_order_deletion(sender, instance, **kwargs):
+def delete_HTLCs_at_order_deletion(sender, instance, **kwargs):
     to_delete = (instance.maker_bond, instance.buyer_invoice, instance.taker_bond, instance.trade_escrow)
 
     for htlc in to_delete:
@@ -193,7 +193,7 @@ class MarketTick(models.Model):
     It is checked against current CEX price for useful
     insight on the historical premium of Non-KYC BTC
 
-    Price is set when both taker bond is locked. Both 
+    Price is set when taker bond is locked. Both 
     maker and taker are commited with bonds (contract 
     is finished and cancellation has a cost)
     '''

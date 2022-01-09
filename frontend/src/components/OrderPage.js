@@ -283,9 +283,8 @@ export default class OrderPage extends Component {
     )
   }
   
-
-  render (){
-    return ( 
+  orderDetailsPage (){
+    return(
       this.state.badRequest ?
         <div align='center'>
           <Typography component="subtitle2" variant="subtitle2" color="secondary" >
@@ -307,6 +306,13 @@ export default class OrderPage extends Component {
           <Grid item xs={12} align="center">
             {this.orderBox()}
           </Grid>)
+    )
+  }
+
+  render (){
+    return ( 
+      // Only so nothing shows while requesting the first batch of data
+      (this.state.statusCode == null & this.state.badRequest == null) ? "" : this.orderDetailsPage()
     );
   }
 }

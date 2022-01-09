@@ -188,7 +188,7 @@ class Logics():
             return False, {'bad_request':'You cannot cancel this order'}
 
     @classmethod
-    def gen_maker_hodl_invoice(cls, order, user):
+    def gen_maker_hold_invoice(cls, order, user):
 
         # Do not gen and cancel if order is more than 5 minutes old
         if order.expires_at < timezone.now():
@@ -206,12 +206,12 @@ class Logics():
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
         description = f'RoboSats - Publishing {str(order)} - This bond will return to you if you do not cheat.'
 
-        # Gen HODL Invoice
-        invoice, payment_hash, expires_at = LNNode.gen_hodl_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
+        # Gen hold Invoice
+        invoice, payment_hash, expires_at = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
         
         order.maker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.MAKEBOND, 
-            type = LNPayment.Types.HODL, 
+            type = LNPayment.Types.hold, 
             sender = user,
             receiver = User.objects.get(username=ESCROW_USERNAME),
             invoice = invoice,
@@ -225,7 +225,7 @@ class Logics():
         return True, {'bond_invoice':invoice,'bond_satoshis':bond_satoshis}
 
     @classmethod
-    def gen_taker_hodl_invoice(cls, order, user):
+    def gen_taker_hold_invoice(cls, order, user):
 
         # Do not gen and cancel if a taker invoice is there and older than X minutes and unpaid still
         if order.taker_bond:
@@ -245,12 +245,12 @@ class Logics():
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
         description = f'RoboSats - Taking {str(order)} - This bond will return to you if you do not cheat.'
 
-        # Gen HODL Invoice
-        invoice, payment_hash, expires_at = LNNode.gen_hodl_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
+        # Gen hold Invoice
+        invoice, payment_hash, expires_at = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
         
         order.taker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.TAKEBOND, 
-            type = LNPayment.Types.HODL, 
+            type = LNPayment.Types.hold, 
             sender = user,
             receiver = User.objects.get(username=ESCROW_USERNAME),
             invoice = invoice,
@@ -267,7 +267,7 @@ class Logics():
         return True, {'bond_invoice':invoice,'bond_satoshis': bond_satoshis}
 
     @classmethod
-    def gen_escrow_hodl_invoice(cls, order, user):
+    def gen_escrow_hold_invoice(cls, order, user):
         # Do not generate and cancel if an invoice is there and older than X minutes and unpaid still
         if order.trade_escrow:
             # Check if status is INVGEN and still not expired
@@ -285,12 +285,12 @@ class Logics():
         escrow_satoshis = order.last_satoshis # Trade sats amount was fixed at the time of taker bond generation (order.last_satoshis)
         description = f'RoboSats - Escrow amount for {str(order)} - This escrow will be released to the buyer once you confirm you received the fiat.'
 
-        # Gen HODL Invoice
-        invoice, payment_hash, expires_at = LNNode.gen_hodl_invoice(escrow_satoshis, description, ESCROW_EXPIRY*3600)
+        # Gen hold Invoice
+        invoice, payment_hash, expires_at = LNNode.gen_hold_invoice(escrow_satoshis, description, ESCROW_EXPIRY*3600)
         
         order.trade_escrow = LNPayment.objects.create(
             concept = LNPayment.Concepts.TRESCROW, 
-            type = LNPayment.Types.HODL, 
+            type = LNPayment.Types.hold, 
             sender = user,
             receiver = User.objects.get(username=ESCROW_USERNAME),
             invoice = invoice,
@@ -307,7 +307,7 @@ class Logics():
         ''' Settles the trade escrow HTLC'''
         # TODO ERROR HANDLING
 
-        valid = LNNode.settle_hodl_htlcs(order.trade_escrow.payment_hash)
+        valid = LNNode.settle_hold_htlcs(order.trade_escrow.payment_hash)
         return valid
 
     def pay_buyer_invoice(order):
@@ -338,7 +338,7 @@ class Logics():
                     return False, {'bad_request':'You cannot confirm to have received the fiat before it is confirmed to be sent by the buyer.'}
                 
                 # Make sure the trade escrow is at least as big as the buyer invoice 
-                if order.trade_escrow.num_satoshis <= order.buyer_invoice.num_satoshis:
+                if order.trade_escrow.num_satoshis > order.buyer_invoice.num_satoshis:
                     return False, {'bad_request':'Woah, something broke badly. Report in the public channels, or open a Github Issue.'}
                 
                 # Double check the escrow is settled.

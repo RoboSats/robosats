@@ -136,17 +136,17 @@ class OrderView(viewsets.ViewSet):
                 elif data['is_buyer']:
                     data['trade_satoshis'] = Logics.buyer_invoice_amount(order, request.user)[1]['invoice_amount']
 
-        # 5) If status is 'waiting for maker bond' and user is MAKER, reply with a MAKER HODL invoice.
+        # 5) If status is 'waiting for maker bond' and user is MAKER, reply with a MAKER hold invoice.
         if order.status == Order.Status.WFB and data['is_maker']:
-            valid, context = Logics.gen_maker_hodl_invoice(order, request.user)
+            valid, context = Logics.gen_maker_hold_invoice(order, request.user)
             if valid:
                 data = {**data, **context}
             else:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
         
-        # 6)  If status is 'waiting for taker bond' and user is TAKER, reply with a TAKER HODL invoice.
+        # 6)  If status is 'waiting for taker bond' and user is TAKER, reply with a TAKER hold invoice.
         elif order.status == Order.Status.TAK and data['is_taker']:
-            valid, context = Logics.gen_taker_hodl_invoice(order, request.user)
+            valid, context = Logics.gen_taker_hold_invoice(order, request.user)
             if valid:
                 data = {**data, **context}
             else:
@@ -155,9 +155,9 @@ class OrderView(viewsets.ViewSet):
         # 7 a. ) If seller and status is 'WF2' or 'WFE' 
         elif data['is_seller'] and (order.status == Order.Status.WF2 or order.status == Order.Status.WFE):
 
-            # If the two bonds are locked, reply with an ESCROW HODL invoice.
+            # If the two bonds are locked, reply with an ESCROW hold invoice.
             if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
-                valid, context = Logics.gen_escrow_hodl_invoice(order, request.user)
+                valid, context = Logics.gen_escrow_hold_invoice(order, request.user)
                 if valid:
                     data = {**data, **context}
                 else:
@@ -179,10 +179,7 @@ class OrderView(viewsets.ViewSet):
             if order.maker_bond.status == order.taker_bond.status == order.trade_escrow.status == LNPayment.Status.LOCKED:
                 # add whether a collaborative cancel is pending
                 data['pending_cancel'] = order.is_pending_cancel
-        
-        # 9) if buyer confirmed FIAT SENT
-        elif order.status == Order.Status.FSE:
-                data['buyer_confirmed']
+                
         
         return Response(data, status.HTTP_200_OK)
 

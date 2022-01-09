@@ -58,7 +58,7 @@ export default class TradeBox extends Component {
             size="small"
             defaultValue={this.props.data.bondInvoice} 
             disabled="true"
-            helperText="This is a HODL LN invoice. It will not be charged if the order succeeds or expires.
+            helperText="This is a hold invoice. It will not be charged if the order succeeds or expires.
             It will be charged if the order is cancelled or you lose a dispute."
             color = "secondary"
           />
@@ -66,6 +66,7 @@ export default class TradeBox extends Component {
       </Grid>
     );
   }
+
   showEscrowQRInvoice=()=>{
     return (
       <Grid container spacing={1}>
@@ -84,7 +85,7 @@ export default class TradeBox extends Component {
             size="small"
             defaultValue={this.props.data.escrowInvoice} 
             disabled="true"
-            helperText="This is a HODL LN invoice. It will be charged once the buyer confirms he sent the fiat."
+            helperText="This is a hold LN invoice. It will be charged once the buyer confirms he sent the fiat."
             color = "secondary"
           />
         </Grid>
@@ -162,7 +163,7 @@ export default class TradeBox extends Component {
     });
   }
 
-  // Fix this, clunky because it takes time. this.props.data does not refresh until next refresh of OrderPage.
+  // Fix this. It's clunky because it takes time. this.props.data does not refresh until next refresh of OrderPage.
 
   handleClickSubmitInvoiceButton=()=>{
       const requestOptions = {
@@ -215,7 +216,6 @@ export default class TradeBox extends Component {
   }
 
   showWaitingForEscrow(){
-
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
@@ -236,7 +236,6 @@ export default class TradeBox extends Component {
   }
 
   showWaitingForBuyerInvoice(){
-
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
@@ -257,26 +256,90 @@ export default class TradeBox extends Component {
     )
   }
 
-  handleClickFiatConfirmButton=()=>{
+  handleClickConfirmButton=()=>{
     const requestOptions = {
         method: 'POST',
         headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
         body: JSON.stringify({
-          'action':'confirm',
-          'invoice': this.state.invoice,
+          'action': "confirm",
         }),
     };
     fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
     .then((response) => response.json())
     .then((data) => (this.props.data = data));
 }
-
+handleClickOpenDisputeButton=()=>{
+  const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+      body: JSON.stringify({
+        'action': "dispute",
+      }),
+  };
+  fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+  .then((response) => response.json())
+  .then((data) => (this.props.data = data));
+}
 
   showFiatSentButton(){
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Button variant='contained' color='primary' onClick={this.handleClickFiatConfirmButton}>Confirm {this.props.data.currencyCode} was sent. </Button>
+          <Button defaultValue="confirm" variant='contained' color='primary' onClick={this.handleClickConfirmButton}>Confirm {this.props.data.currencyCode} sent</Button>
+        </Grid>
+      </Grid>
+    )
+  }
+
+  showFiatReceivedButton(){
+    // TODO, show alert and ask for double confirmation (Have you check you received the fiat? Confirming fiat received settles the trade.)
+    // Ask for double confirmation.
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Button defaultValue="confirm" variant='contained' color='primary' onClick={this.handleClickConfirmButton}>Confirm {this.props.data.currencyCode} received</Button>
+        </Grid>
+      </Grid>
+    )
+  }
+
+  showOpenDisputeButton(){
+    // TODO, show alert about how opening a dispute might involve giving away personal data and might mean losing the bond. Ask for double confirmation.
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Button defaultValue="dispute" variant='contained' onClick={this.handleClickOpenDisputeButton}>Open Dispute</Button>
+        </Grid>
+      </Grid>
+    )
+  }
+
+  showChat(sendFiatButton, receivedFiatButton, openDisputeButton){
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="subtitle1" variant="subtitle1">
+            <b>Chatting with {this.props.data.isMaker ? this.props.data.takerNick : this.props.data.makerNick}</b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="left">
+          {this.props.data.isSeller ? 
+          <Typography component="body2" variant="body2">
+            Say hi to your peer robot! Be helpful and concise. Let him know how to send you {this.props.data.currencyCode}. 
+          </Typography>
+          :
+          <Typography component="body2" variant="body2">
+            Say hi to your peer robot! Ask for payment details and click 'Confirm {this.props.data.currencyCode} sent' as soon as you send the payment.
+          </Typography>
+          }
+        </Grid>
+        <Grid item xs={12} style={{ width:330, height:360}}>
+           CHAT PLACEHOLDER
+        </Grid>
+        <Grid item xs={12} align="center">
+           {sendFiatButton ? this.showFiatSentButton() : ""}
+           {receivedFiatButton ? this.showFiatReceivedButton() : ""}
+           {openDisputeButton ? this.showOpenDisputeButton() : ""}
         </Grid>
       </Grid>
     )
@@ -316,11 +379,11 @@ export default class TradeBox extends Component {
               {this.props.data.isBuyer & this.props.data.statusCode == 7 ? this.showWaitingForEscrow() : ""}
               {this.props.data.isSeller & this.props.data.statusCode == 8 ? this.showWaitingForBuyerInvoice() : ""}
 
-            {/* In Chatroom */}
-              {this.props.data.isBuyer & this.props.data.statusCode == 9 ? this.showChat() & this.showFiatSentButton() : ""}
-              {this.props.data.isSeller & this.props.data.statusCode ==9 ? this.showChat()  : ""}
-              {this.props.data.isBuyer & this.props.data.statusCode == 10 ? this.showChat() & this.showOpenDisputeButton() : ""}
-              {this.props.data.isSeller & this.props.data.statusCode == 10 ? this.showChat() & this.showFiatReceivedButton() & this.showOpenDisputeButton(): ""}
+            {/* In Chatroom - showChat(showSendButton, showReveiceButton, showDisputeButton) */}
+              {this.props.data.isBuyer & this.props.data.statusCode == 9 ? this.showChat(true,false,true) : ""} 
+              {this.props.data.isSeller & this.props.data.statusCode == 9 ? this.showChat(false,false,true)  : ""}
+              {this.props.data.isBuyer & this.props.data.statusCode == 10 ? this.showChat(false,false,true) : ""}
+              {this.props.data.isSeller & this.props.data.statusCode == 10 ? this.showChat(false,true,true) : ""}
 
             {/* Trade Finished */}
               {this.props.data.isSeller & this.props.data.statusCode > 12 & this.props.data.statusCode < 15 ? this.showRateSelect()  : ""}
