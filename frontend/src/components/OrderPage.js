@@ -105,6 +105,7 @@ export default class OrderPage extends Component {
             bondSatoshis: data.bond_satoshis,
             escrowInvoice: data.escrow_invoice,
             escrowSatoshis: data.escrow_satoshis,
+            invoiceAmount: data.invoice_amount,
             badRequest: data.bad_request,
         });
       });

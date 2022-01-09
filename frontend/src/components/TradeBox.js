@@ -6,7 +6,7 @@ export default class TradeBox extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      delay: 5000, // Refresh every 5 seconds
+      delay: 100, // checks for new state in OrderPage ever 100 ms
     };
     this.data = this.props.data
   }
@@ -33,7 +33,7 @@ export default class TradeBox extends Component {
     this.data = this.props.data;
   }
   
-  showInvoice=()=>{
+  showQRInvoice=()=>{
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
@@ -70,7 +70,7 @@ export default class TradeBox extends Component {
       </Grid>
     );
   }
-  showEscrowInvoice=()=>{
+  showEscrowQRInvoice=()=>{
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
@@ -88,7 +88,7 @@ export default class TradeBox extends Component {
             size="small"
             defaultValue={this.data.escrowInvoice} 
             disabled="true"
-            helperText="This is a HODL LN invoice. It will be charged once you confirm you have received the fiat."
+            helperText="This is a HODL LN invoice. It will be charged once the buyer confirms he sent the fiat."
             color = "secondary"
           />
         </Grid>
@@ -160,6 +160,33 @@ export default class TradeBox extends Component {
     )
   }
 
+  showInputInvoice(){
+
+  }
+
+  showWaitingForEscrow(){
+
+  }
+  showWaitingForBuyerInvoice({
+
+  })
+
+  showFiatSentButton(){
+
+  }
+  showFiatReceivedButton(){
+
+  }
+
+  showOpenDisputeButton(){
+
+  }
+
+  showRateSelect(){
+
+  }
+
+
   render() {
     return (
       <Grid container spacing={1} style={{ width:330}}>
@@ -168,10 +195,32 @@ export default class TradeBox extends Component {
             TradeBox
           </Typography>
           <Paper elevation={12} style={{ padding: 8,}}>
-              {this.data.bondInvoice ? this.showInvoice() : ""}
+            {/* Maker and taker Bond request */}
+              {this.data.bondInvoice ? this.showQRInvoice() : ""}
+
+            {/* Waiting for taker and taker bond request */}
               {this.data.isMaker & this.data.statusCode == 1 ? this.showMakerWait() : ""}
               {this.data.isMaker & this.data.statusCode == 3 ? this.showTakerFound() : ""}
-              {this.data.isSeller & this.data.escrowInvoice != null ? this.showEscrowInvoice() : ""}
+
+            {/* Send Invoice (buyer) and deposit collateral (seller) */}
+              {this.data.isSeller & this.data.escrowInvoice != null ? this.showEscrowQRInvoice() : ""}
+              {this.data.isBuyer & this.data.invoiceAmount != null ? this.showInputInvoice() : ""}
+              {this.data.isBuyer & this.data.statusCode == 7 ? this.showWaitingForEscrow() : ""}
+              {this.data.isSeller & this.data.statusCode == 8 ? this.showWaitingForBuyerInvoice() : ""}
+
+            {/* In Chatroom */}
+              {this.data.isBuyer & this.data.statusCode == 9 ? this.showChat() & this.showFiatSentButton() : ""}
+              {this.data.isSeller & this.data.statusCode ==9 ? this.showChat()  : ""}
+              {this.data.isBuyer & this.data.statusCode == 10 ? this.showChat() & this.showOpenDisputeButton() : ""}
+              {this.data.isSeller & this.data.statusCode == 10 ? this.showChat() & this.showFiatReceivedButton() & this.showOpenDisputeButton(): ""}
+
+            {/* Trade Finished */}
+              {this.data.isSeller & this.data.statusCode > 12 & this.data.statusCode < 15 ? this.showRateSelect()  : ""}
+              {/* TODO */}
+              {/*  */}
+              {/*  */}
+
+              
           </Paper>
         </Grid>
       </Grid>
