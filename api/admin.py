@@ -2,7 +2,7 @@ from django.contrib import admin
 from django_admin_relation_links import AdminChangeLinksMixin
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.admin import UserAdmin
-from .models import Order, LNPayment, Profile
+from .models import Order, LNPayment, Profile, MarketTick
 
 admin.site.unregister(Group)
 admin.site.unregister(User)
@@ -17,22 +17,24 @@ class ProfileInline(admin.StackedInline):
 @admin.register(User)
 class EUserAdmin(UserAdmin):
     inlines = [ProfileInline]
-    list_display = ('avatar_tag',) + UserAdmin.list_display
-    list_display_links = ['username']
+    list_display = ('avatar_tag','id','username','last_login','date_joined','is_staff')
+    list_display_links = ('id','username')
     def avatar_tag(self, obj):
         return obj.profile.avatar_tag()
 
 @admin.register(Order)
 class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
-    list_display = ('id','type','maker_link','taker_link','status','amount','currency','t0_satoshis','created_at','expires_at', 'buyer_invoice_link','maker_bond_link','taker_bond_link','trade_escrow_link')
+    list_display = ('id','type','maker_link','taker_link','status','amount','currency','t0_satoshis','is_disputed','is_fiat_sent','created_at','expires_at', 'buyer_invoice_link','maker_bond_link','taker_bond_link','trade_escrow_link')
     list_display_links = ('id','type')
     change_links = ('maker','taker','buyer_invoice','maker_bond','taker_invoice','taker_bond','trade_escrow')
+    list_filter = ('is_disputed','is_fiat_sent','type','currency','status')
 
 @admin.register(LNPayment)
 class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     list_display = ('id','concept','status','num_satoshis','type','invoice','expires_at','sender_link','receiver_link')
     list_display_links = ('id','concept')
     change_links = ('sender','receiver')
+    list_filter = ('type','concept','status')
 
 @admin.register(Profile)
 class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
@@ -40,3 +42,9 @@ class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     list_display_links = ('avatar_tag','id')
     change_links =['user']
     readonly_fields = ['avatar_tag']
+
+@admin.register(MarketTick)
+class MarketTickAdmin(admin.ModelAdmin):
+    list_display = ('timestamp','price','volume','premium','currency','fee')
+    readonly_fields = ('timestamp','price','volume','premium','currency','fee')
+    list_filter = ['currency']

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button , Divider, Card, CardActionArea, CardContent, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@material-ui/core"
+import { Paper, Button , Divider, CircularProgress, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@mui/material";
 import { Link } from 'react-router-dom'
 
 export default class BookPage extends Component {
@@ -7,21 +7,24 @@ export default class BookPage extends Component {
     super(props);
     this.state = {
       orders: new Array(),
-      currency: 1,
+      currency: 0,
       type: 1,
+      currencies_dict: {"0":"ANY"},
+      loading: true,
     };
-    this.getOrderDetails()
+    this.getCurrencyDict()
+    this.getOrderDetails(this.state.type,this.state.currency)
     this.state.currencyCode = this.getCurrencyCode(this.state.currency)
   }
 
-  // Show message to be the first one to make an order
-  getOrderDetails() {
-    fetch('/api/book' + '?currency=' + this.state.currency + "&type=" + this.state.type)
+  getOrderDetails(type,currency) {
+    fetch('/api/book' + '?currency=' + currency + "&type=" + type)
       .then((response) => response.json())
-      .then((data) => //console.log(data));
+      .then((data) =>
       this.setState({
         orders: data,
         not_found: data.not_found,
+        loading: false,
       }));
   }
 
@@ -30,25 +33,33 @@ export default class BookPage extends Component {
     this.props.history.push('/order/' + e);
   }
 
-  // Make these two functions sequential. getOrderDetails needs setState to be finish beforehand.
   handleTypeChange=(e)=>{
     this.setState({
-        type: e.target.value,     
+        type: e.target.value,
+        loading: true,     
     });
-    this.getOrderDetails();
+    this.getOrderDetails(e.target.value,this.state.currency);
   }
   handleCurrencyChange=(e)=>{
     this.setState({
         currency: e.target.value,
         currencyCode: this.getCurrencyCode(e.target.value),
+        loading: true,
     })
-    this.getOrderDetails();
+    this.getOrderDetails(this.state.type, e.target.value);
+  }
+  
+  getCurrencyDict() {
+    fetch('/static/assets/currencies.json')
+      .then((response) => response.json())
+      .then((data) => 
+      this.setState({
+        currencies_dict: data
+      }));
   }
 
-  // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
-  // Improve this function so currencies are read from json
   getCurrencyCode(val){
-    return (val == 1 ) ? "USD": ((val == 2 ) ? "EUR":"ETH")
+    return this.state.currencies_dict[val.toString()]
   }
 
   // pretty numbers
@@ -56,60 +67,53 @@ export default class BookPage extends Component {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
-  bookCards=()=>{
+  bookListItems=()=>{
     return (this.state.orders.map((order) =>
-    <Grid container item sm={4}>
-      <Card elevation={6} sx={{ width: 945 }}>
+      <>
+        <ListItemButton value={order.id} onClick={() => this.handleCardClick(order.id)}>
 
-        <CardActionArea value={order.id} onClick={() => this.handleCardClick(order.id)}>
-          <CardContent>
+          <ListItemAvatar >
+            <Avatar
+                alt={order.maker_nick}
+                src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
+                />
+          </ListItemAvatar>
+          
+          <ListItemText>
+            <Typography  variant="h6">
+              {order.maker_nick+" "}    
+            </Typography>
+          </ListItemText>
+          
+          <ListItemText align='left'>
+            <Typography  variant="subtitle1">
+              <b>{order.type ? " Sells ": " Buys "} BTC </b> for {parseFloat(
+                parseFloat(order.amount).toFixed(4))+" "+ this.getCurrencyCode(order.currency)+" "}
+            </Typography>
+          </ListItemText>
 
-            <List dense="true">
-              <ListItem >
-              <ListItemAvatar >
-                  <Avatar
-                      alt={order.maker_nick}
-                      src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
-                      />
-                </ListItemAvatar>
-                <ListItemText>
-                  <Typography gutterBottom variant="h6">
-                    {order.maker_nick}
-                  </Typography>
-                </ListItemText>
-              </ListItem>
+          <ListItemText align='left'>
+            <Typography  variant="subtitle1">
+              via <b>{order.payment_method}</b>
+            </Typography>
+          </ListItemText>
 
-              {/* CARD PARAGRAPH CONTENT */}
-              <ListItemText>
-                <Typography variant="subtitle1" color="text.secondary">
-                ◑{order.type == 0 ? <b> Buys </b>: <b> Sells </b>} 
-                  <b>{parseFloat(parseFloat(order.amount).toFixed(4))}
-                  {" " +this.getCurrencyCode(order.currency)}</b> <a> worth of bitcoin</a> 
-                </Typography>
+          <ListItemText align='right'>
+            <Typography  variant="subtitle1">
+              at <b>{this.pn(order.price) + " " + this.getCurrencyCode(order.currency)}/BTC</b>
+            </Typography>
+          </ListItemText>
 
-                <Typography variant="subtitle1" color="text.secondary">
-                ◑ Payment via <b>{order.payment_method}</b>
-                </Typography>
-{/* 
-                <Typography variant="subtitle1" color="text.secondary">
-                ◑ Priced {order.is_explicit ? 
-                  " explicitly at " + this.pn(order.satoshis) + " Sats" : (
-                  " at " + 
-                  parseFloat(parseFloat(order.premium).toFixed(4)) + "% over the market"                     
-                  )}
-                </Typography> */}
+          <ListItemText align='right'>
+            <Typography  variant="subtitle1">
+              {order.premium > 1 ? "🔴" : "🔵" } <b>{parseFloat(parseFloat(order.premium).toFixed(4))}%</b>
+            </Typography>
+          </ListItemText>
 
-                <Typography variant="subtitle1" color="text.secondary">
-                ◑ <b>{" 42,354 "}{this.getCurrencyCode(order.currency)}/BTC</b>  (Binance API)
-                </Typography>
-              </ListItemText>
-
-            </List>
-
-          </CardContent>
-        </CardActionArea>
-      </Card>
-      </Grid>
+        </ListItemButton>
+      
+        <Divider/>
+      </>
     ));
   }
 
@@ -117,7 +121,7 @@ export default class BookPage extends Component {
       return (
         <Grid className='orderBook' container spacing={1}>
           <Grid item xs={12} align="center">
-            <Typography component="h4" variant="h4">
+            <Typography component="h2" variant="h2">
               Order Book
             </Typography>
           </Grid>
@@ -135,7 +139,7 @@ export default class BookPage extends Component {
                       style: {textAlign:"center"}
                   }}
                   onChange={this.handleTypeChange}
-              >
+              >   <MenuItem value={2}>ANY</MenuItem>
                   <MenuItem value={1}>BUY</MenuItem>
                   <MenuItem value={0}>SELL</MenuItem>
               </Select>
@@ -155,20 +159,26 @@ export default class BookPage extends Component {
                       style: {textAlign:"center"}
                   }}
                   onChange={this.handleCurrencyChange}
-              >
-                  <MenuItem value={1}>USD</MenuItem>
-                  <MenuItem value={2}>EUR</MenuItem>
-                  <MenuItem value={3}>ETH</MenuItem>
+              >     <MenuItem value={0}>ANY</MenuItem>
+                    {
+                      Object.entries(this.state.currencies_dict)
+                      .map( ([key, value]) => <MenuItem value={parseInt(key)}>{value}</MenuItem> )
+                    }
               </Select>
             </FormControl>
           </Grid>
         { this.state.not_found ? "" :
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
-              You are {this.state.type == 0 ? " selling " : " buying "} BTC for {this.state.currencyCode}
+              You are {this.state.type == 0 ? <b> selling </b> : (this.state.type == 1 ? <b> buying </b> :" looking at all ")} BTC for {this.state.currencyCode}
             </Typography>
           </Grid>
           }
+          {/* If loading, show circular progressbar */}
+          {this.state.loading ?
+          <Grid item xs={12} align="center">
+            <CircularProgress />
+          </Grid> : ""}
 
         { this.state.not_found ?
           (<Grid item xs={12} align="center">
@@ -184,7 +194,14 @@ export default class BookPage extends Component {
                 Be the first one to create an order
               </Typography>
           </Grid>)
-          : this.bookCards()
+          : 
+          <Grid item xs={12} align="center">
+            <Paper elevation={0} style={{width: 1100, maxHeight: 600, overflow: 'auto'}}>
+              <List >
+                {this.bookListItems()}
+              </List>
+            </Paper>
+           </Grid>
           }
           <Grid item xs={12} align="center">
               <Button color="secondary" variant="contained" to="/" component={Link}>

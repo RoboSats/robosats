@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button , Grid, Typography, TextField, ButtonGroup} from "@material-ui/core"
+import { Button , Grid, Typography, TextField, ButtonGroup} from "@mui/material"
 import { Link } from 'react-router-dom'
 import Image from 'material-ui-image'
 
@@ -24,9 +24,9 @@ export default class UserGenPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      token: this.genBase62Token(32),
+      token: this.genBase62Token(34),
     };
-    this.getGeneratedUser();
+    this.getGeneratedUser(this.state.token);
   }
 
   // sort of cryptographically strong function to generate Base62 token client-side
@@ -40,8 +40,8 @@ export default class UserGenPage extends Component {
           .substring(0, length);
   }
 
-  getGeneratedUser() {
-    fetch('/api/usergen' + '?token=' + this.state.token)
+  getGeneratedUser(token) {
+    fetch('/api/user' + '?token=' + token)
       .then((response) => response.json())
       .then((data) => {
         this.setState({
@@ -60,7 +60,7 @@ export default class UserGenPage extends Component {
       method: 'DELETE',
       headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
     };
-    fetch("/api/usergen", requestOptions)
+    fetch("/api/user", requestOptions)
       .then((response) => response.json())
       .then((data) => console.log(data));
   }
@@ -72,7 +72,7 @@ export default class UserGenPage extends Component {
   handleAnotherButtonPressed=(e)=>{
     this.delGeneratedUser()
     this.setState({
-      token: this.genBase62Token(32),
+      token: this.genBase62Token(34),
     })
     this.reload_for_csrf_to_work();
   }
@@ -82,7 +82,7 @@ export default class UserGenPage extends Component {
     this.setState({
       token: e.target.value,
     })
-    this.getGeneratedUser();
+    this.getGeneratedUser(e.target.value);
   }
 
   // TO FIX CSRF TOKEN IS NOT UPDATED UNTIL WINDOW IS RELOADED
@@ -137,13 +137,13 @@ export default class UserGenPage extends Component {
           <Grid item xs={12} align="center">
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
               <Button color='primary' to='/make/' component={Link}>Make Order</Button>
-              <Button to='/home' component={Link}>INFO</Button>
+              <Button color='inherit' to='/home' component={Link}>INFO</Button>
               <Button color='secondary' to='/book/' component={Link}>View Book</Button>
             </ButtonGroup>
           </Grid>
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
-            Easy and Private Lightning peer-to-peer Exchange
+            Simple and Private Lightning peer-to-peer Exchange
           </Typography>
           </Grid>
       </Grid>

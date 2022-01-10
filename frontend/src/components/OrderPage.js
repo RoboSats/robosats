@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { Paper, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider} from "@material-ui/core"
-import { Link } from 'react-router-dom'
+import { Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@mui/material"
+import TradeBox from "./TradeBox";
 
 function msToTime(duration) {
   var seconds = Math.floor((duration / 1000) % 60),
@@ -11,6 +11,33 @@ function msToTime(duration) {
   seconds = (seconds < 10) ? "0" + seconds : seconds;
 
   return hours + "h " + minutes + "m " + seconds + "s";
+}
+
+// TO DO fix Progress bar to go from 100 to 0, from total_expiration time, showing time_left
+function LinearDeterminate() {
+  const [progress, setProgress] = React.useState(0);
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((oldProgress) => {
+        if (oldProgress === 0) {
+          return 100;
+        }
+        const diff = 1;
+        return Math.max(oldProgress - diff, 0);
+      });
+    }, 500);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  return (
+    <Box sx={{ width: '100%' }}>
+      <LinearProgress variant="determinate" value={progress} />
+    </Box>
+  );
 }
 
 function getCookie(name) {
@@ -40,16 +67,21 @@ export default class OrderPage extends Component {
     super(props);
     this.state = {
         isExplicit: false,
+        delay: 10000, // Refresh every 10 seconds
+        currencies_dict: {"1":"USD"}
     };
     this.orderId = this.props.match.params.orderId;
+    this.getCurrencyDict();
     this.getOrderDetails();
   }
 
   getOrderDetails() {
+    this.setState(null)
     fetch('/api/order' + '?order_id=' + this.orderId)
       .then((response) => response.json())
-      .then((data) => {
+      .then((data) => {console.log(data) &
         this.setState({
+            id: data.id,
             statusCode: data.status,
             statusText: data.status_message,
             type: data.type,
@@ -65,18 +97,40 @@ export default class OrderPage extends Component {
             makerNick: data.maker_nick,
             takerId: data.taker,
             takerNick: data.taker_nick,
-            isBuyer:data.buyer,
-            isSeller:data.seller,
-            expiresAt:data.expires_at,
-            badRequest:data.bad_request,
+            isMaker: data.is_maker,
+            isTaker: data.is_taker,
+            isBuyer: data.is_buyer,
+            isSeller: data.is_seller,
+            penalty: data.penalty,
+            expiresAt: data.expires_at,
+            badRequest: data.bad_request,
+            bondInvoice: data.bond_invoice,
+            bondSatoshis: data.bond_satoshis,
+            escrowInvoice: data.escrow_invoice,
+            escrowSatoshis: data.escrow_satoshis,
+            invoiceAmount: data.invoice_amount,
         });
       });
   }
 
-  // Gets currency code (3 letters) from numeric (e.g., 1 -> USD)
-  // Improve this function so currencies are read from json
-  getCurrencyCode(val){
-    return (val == 1 ) ? "USD": ((val == 2 ) ? "EUR":"ETH")
+  // These are used to refresh the data
+  componentDidMount() {
+    this.interval = setInterval(this.tick, this.state.delay);
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.delay !== this.state.delay) {
+      clearInterval(this.interval);
+      this.interval = setInterval(this.tick, this.state.delay);
+    }
+  }
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
+  tick = () => {
+    this.getOrderDetails();
+  }
+  handleDelayChange = (e) => {
+    this.setState({ delay: Number(e.target.value) });
   }
 
   // Fix to use proper react props
@@ -97,13 +151,40 @@ export default class OrderPage extends Component {
       .then((response) => response.json())
       .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
   }
+  getCurrencyDict() {
+    fetch('/static/assets/currencies.json')
+      .then((response) => response.json())
+      .then((data) => 
+      this.setState({
+        currencies_dict: data
+      }));
+  }
+  
+  getCurrencyCode(val){
+    let code = val ? this.state.currencies_dict[val.toString()] : "" 
+    return code
+  }
 
-  render (){
-    return (
+  handleClickCancelOrderButton=()=>{
+    console.log(this.state)
+      const requestOptions = {
+          method: 'POST',
+          headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+          body: JSON.stringify({
+            'action':'cancel',
+          }),
+      };
+      fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+      .then((response) => response.json())
+      .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
+  }
+
+  orderBox=()=>{
+    return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="h5" variant="h5">
-          BTC {this.state.type ? " Sell " : " Buy "} Order
+          {this.state.type ? "Sell " : "Buy "} Order Details
           </Typography>
           <Paper elevation={12} style={{ padding: 8,}}>
           <List dense="true">
@@ -114,7 +195,7 @@ export default class OrderPage extends Component {
                   src={window.location.origin +'/static/assets/avatars/' + this.state.makerNick + '.png'} 
                   />
               </ListItemAvatar>
-              <ListItemText primary={this.state.makerNick} secondary="Order maker" align="right"/>
+              <ListItemText primary={this.state.makerNick + (this.state.type ? " (Seller)" : " (Buyer)")} secondary="Order maker" align="right"/>
             </ListItem>
             <Divider />
 
@@ -123,7 +204,7 @@ export default class OrderPage extends Component {
                 {this.state.takerNick!='None' ?
                   <>
                     <ListItem align="left">
-                      <ListItemText primary={this.state.takerNick} secondary="Order taker"/>
+                      <ListItemText primary={this.state.takerNick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order taker"/>
                       <ListItemAvatar > 
                         <Avatar
                           alt={this.state.makerNick} 
@@ -144,7 +225,7 @@ export default class OrderPage extends Component {
             }
             
             <ListItem>
-              <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))+" "+this.state.currencyCode} secondary="Amount and currency requested"/>
+              <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))+" "+this.state.currencyCode} secondary="Amount"/>
             </ListItem>
             <Divider />
             <ListItem>
@@ -164,23 +245,87 @@ export default class OrderPage extends Component {
               <ListItemText primary={'#'+this.orderId} secondary="Order ID"/>
             </ListItem>
             <Divider />
-
             <ListItem>
-              <ListItemText primary={msToTime( new Date(this.state.expiresAt) - Date.now())} secondary="Expires in "/>
+              <ListItemText primary={msToTime( new Date(this.state.expiresAt) - Date.now())} secondary="Expires"/>
             </ListItem>
+            <LinearDeterminate />
             </List>
+            
+            {/* If the user has a penalty/limit */}
+            {this.state.penalty ? 
+            <>
+              <Divider />
+              <Grid item xs={12} align="center">
+                <Alert severity="warning" sx={{maxWidth:360}}>
+                  You cannot take an order yet! Wait {this.state.penalty} seconds 
+                </Alert>  
+              </Grid>
+            </>
+            : null} 
 
           </Paper>
+        </Grid>
 
-          <Grid item xs={12} align="center">
-          {this.state.isParticipant ? "" : <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>}
-          </Grid>
-          <Grid item xs={12} align="center">
-            <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
-          </Grid>
+        {/* Participants cannot see the Back or Take Order buttons */}
+        {this.state.isParticipant ? "" :
+          <>
+            <Grid item xs={12} align="center">
+              <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>
+            </Grid>
+            <Grid item xs={12} align="center">
+              <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
+            </Grid>
+          </>
+          }
+
+        {/* Makers can cancel before commiting the bond  (status 0)*/}
+        {this.state.isMaker & this.state.statusCode == 0 ?
+        <Grid item xs={12} align="center">
+          <Button variant='contained' color='secondary' onClick={this.handleClickCancelOrderButton}>Cancel</Button>
+        </Grid>
+        :""}
+
+        {/* Takers can cancel before commiting the bond (status 3)*/}
+        {this.state.isTaker & this.state.statusCode == 3 ?
+        <Grid item xs={12} align="center">
+          <Button variant='contained' color='secondary' onClick={this.handleClickCancelOrderButton}>Cancel</Button>
+        </Grid>
+        :""}
 
         </Grid>
-      </Grid>
+    )
+  }
+  
+  orderDetailsPage (){
+    return(
+      this.state.badRequest ?
+        <div align='center'>
+          <Typography component="subtitle2" variant="subtitle2" color="secondary" >
+            {this.state.badRequest}<br/>
+          </Typography>
+          <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
+        </div>
+        :
+        (this.state.isParticipant ? 
+          <Grid container xs={12} align="center" spacing={2}>
+            <Grid item xs={6} align="left">
+              {this.orderBox()}
+            </Grid>
+            <Grid item xs={6} align="left">
+              <TradeBox data={this.state}/>
+            </Grid>
+          </Grid>
+          :
+          <Grid item xs={12} align="center">
+            {this.orderBox()}
+          </Grid>)
+    )
+  }
+
+  render (){
+    return ( 
+      // Only so nothing shows while requesting the first batch of data
+      (this.state.statusCode == null & this.state.badRequest == null) ? <CircularProgress /> : this.orderDetailsPage()
     );
   }
 }

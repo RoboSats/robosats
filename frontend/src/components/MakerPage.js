@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Paper, Alert, AlertTitle, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, Menu} from "@material-ui/core"
+import { Paper, Alert, AlertTitle, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, Menu} from "@mui/material"
 import { Link } from 'react-router-dom'
 
 function getCookie(name) {
@@ -19,12 +19,18 @@ function getCookie(name) {
 }
 const csrftoken = getCookie('csrftoken');
 
+// pretty numbers
+function pn(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
 export default class MakerPage extends Component {
   defaultCurrency = 1;
   defaultCurrencyCode = 'USD';
-  defaultAmount = 0 ;
-  defaultPaymentMethod = "Not specified";
+  defaultPaymentMethod = "not specified";
   defaultPremium = 0;
+  minTradeSats = 10000;
+  maxTradeSats = 500000;
 
   constructor(props) {
     super(props);
@@ -33,11 +39,12 @@ export default class MakerPage extends Component {
         type: 0,
         currency: this.defaultCurrency,
         currencyCode: this.defaultCurrencyCode,
-        amount: this.defaultAmount,
         payment_method: this.defaultPaymentMethod,
         premium: 0,
         satoshis: null,
+        currencies_dict: {"1":"USD"}
     }
+    this.getCurrencyDict()
   }
 
   handleTypeChange=(e)=>{
@@ -46,10 +53,9 @@ export default class MakerPage extends Component {
       });
   }
   handleCurrencyChange=(e)=>{
-    var code = (e.target.value == 1 ) ? "USD": ((e.target.value == 2 ) ? "EUR":"ETH")
     this.setState({
         currency: e.target.value,
-        currencyCode: code,
+        currencyCode: this.getCurrencyCode(e.target.value),
     });
 }
     handleAmountChange=(e)=>{
@@ -68,9 +74,16 @@ export default class MakerPage extends Component {
         });
     }
     handleSatoshisChange=(e)=>{
+        var bad_sats = e.target.value > this.maxTradeSats ? 
+            ("Must be less than "+pn(this.maxTradeSats)): 
+            (e.target.value < this.minTradeSats ? 
+            ("Must be more than "+pn(this.minTradeSats)): null)
+
         this.setState({
-            satoshis: e.target.value,     
-        });
+            satoshis: e.target.value,
+            badSatoshis: bad_sats,      
+        })
+        ;
     }
     handleClickRelative=(e)=>{
         this.setState({
@@ -82,12 +95,13 @@ export default class MakerPage extends Component {
     handleClickExplicit=(e)=>{
         this.setState({
             isExplicit: true,
-            satoshis: 10000, 
             premium: null,     
         });
     }
 
     handleCreateOfferButtonPressed=()=>{
+        this.state.amount == null ? this.setState({amount: 0}) : null;
+
         console.log(this.state)
         const requestOptions = {
             method: 'POST',
@@ -108,23 +122,35 @@ export default class MakerPage extends Component {
              & (data.id ? this.props.history.push('/order/' + data.id) :"")));
     }
 
+    getCurrencyDict() {
+        fetch('/static/assets/currencies.json')
+          .then((response) => response.json())
+          .then((data) => 
+          this.setState({
+            currencies_dict: data
+          }));
+    
+      }
+
+    getCurrencyCode(val){
+        return this.state.currencies_dict[val.toString()]
+    }
+
   render() {
     return (
-        <Grid container spacing={1}>
-            <Grid item xs={12} align="center">
+            <Grid container xs={12} align="center" spacing={1}>
                 <Grid item xs={12} align="center">
-                    <Typography component="h4" variant="h4">
-                        Make an Order
+                    <Typography component="h2" variant="h2">
+                        Order Maker
                     </Typography>
                 </Grid>
-                <Paper elevation={12} style={{ padding: 8,}}>
-                <Grid item xs={12} align="center">
+                <Grid item xs={12} align="center" spacing={1}>
+                <Paper elevation={12} style={{ padding: 8, width:350, align:'center'}}>
+                    <Grid item xs={12} align="center" spacing={1}>
                     <FormControl component="fieldset">
-                    <FormHelperText>
-                        <div align='center'>
-                        Choose Buy or Sell Bitcoin
-                        </div>
-                    </FormHelperText>
+                        <FormHelperText>
+                            Buy or Sell Bitcoin?
+                        </FormHelperText>
                         <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
                             <FormControlLabel 
                                 value="0" 
@@ -141,35 +167,36 @@ export default class MakerPage extends Component {
                         </RadioGroup>
                     </FormControl>
                 </Grid>
-                <Grid item xs={12} align="center">
-                    <FormControl >
-                        <TextField 
-                            label="Amount of Fiat to Trade"
-                            type="number" 
-                            required="true"
-                            defaultValue={this.defaultAmount} 
-                            inputProps={{
-                                min:0 , 
-                                style: {textAlign:"center"}
-                            }}
-                            onChange={this.handleAmountChange}
-                        />
-                        <Select
-                            label="Select Payment Currency"
-                            required="true" 
-                            defaultValue={this.defaultCurrency} 
-                            inputProps={{
-                                style: {textAlign:"center"}
-                            }}
-                            onChange={this.handleCurrencyChange}
-                        >
-                            <MenuItem value={1}>USD</MenuItem>
-                            <MenuItem value={2}>EUR</MenuItem>
-                            <MenuItem value={3}>ETH</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Grid>
+                <Grid container xs={11} align="center">
+                            <TextField
+                                error={this.state.amount == 0} 
+                                helperText={this.state.amount == 0 ? 'Must be more than 0' : null}
+                                label="Amount"
+                                type="number" 
+                                required="true"
+                                inputProps={{
+                                    min:0 , 
+                                    style: {textAlign:"center"}
+                                }}
+                                onChange={this.handleAmountChange}
+                            />
+                            <Select
+                                label="Select Payment Currency"
+                                required="true" 
+                                defaultValue={this.defaultCurrency} 
+                                inputProps={{
+                                    style: {textAlign:"center"}
+                                }}
+                                onChange={this.handleCurrencyChange}
+                            >
+                                {
+                                Object.entries(this.state.currencies_dict)
+                                .map( ([key, value]) => <MenuItem value={parseInt(key)}>{value}</MenuItem> )
+                                }
+                            </Select>
 
+                </Grid>
+                <br/>
                 <Grid item xs={12} align="center">
                     <FormControl >
                         <TextField 
@@ -177,14 +204,21 @@ export default class MakerPage extends Component {
                             type="text" 
                             require={true}  
                             inputProps={{
-                                style: {textAlign:"center"}
+                                style: {textAlign:"center"},
+                                maxLength: 35
                             }}
                             onChange={this.handlePaymentMethodChange}
                         />
                     </FormControl>
                 </Grid>
+
                 <Grid item xs={12} align="center">
                     <FormControl component="fieldset">
+                        <FormHelperText >
+                            <div align='center'>
+                                Choose a Pricing Method
+                            </div>
+                        </FormHelperText>
                         <RadioGroup row defaultValue="relative">
                             <FormControlLabel 
                             value="relative" 
@@ -201,24 +235,21 @@ export default class MakerPage extends Component {
                             onClick={this.handleClickExplicit}
                             />
                         </RadioGroup>
-                        <FormHelperText >
-                            <div align='center'>
-                                Choose a Pricing Method
-                            </div>
-                        </FormHelperText>
                     </FormControl>
                 </Grid>
     {/* conditional shows either Premium % field or Satoshis field based on pricing method */}
                 { this.state.isExplicit 
                         ? <Grid item xs={12} align="center">
                             <TextField 
-                                    label="Explicit Amount in Satoshis"
+                                    label="Satoshis"
+                                    error={this.state.badSatoshis}
+                                    helperText={this.state.badSatoshis}
                                     type="number" 
                                     required="true" 
                                     inputProps={{
                                         // TODO read these from .env file
-                                        min:10000 , 
-                                        max:500000 , 
+                                        min:this.minTradeSats , 
+                                        max:this.maxTradeSats , 
                                         style: {textAlign:"center"}
                                     }}
                                     onChange={this.handleSatoshisChange}
@@ -238,7 +269,7 @@ export default class MakerPage extends Component {
                             </Grid>
                     }
                 </Paper>
-            </Grid>
+                </Grid>
             <Grid item xs={12} align="center">
                 <Button color="primary" variant="contained" onClick={this.handleCreateOfferButtonPressed} >
                     Create Order
