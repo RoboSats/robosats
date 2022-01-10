@@ -85,9 +85,9 @@ class Logics():
             exchange_rate = get_exchange_rate(Order.currency_dict[str(order.currency)])
             order_rate = float(order.amount) / (float(order.satoshis) / 100000000)
             premium = order_rate / exchange_rate - 1
+            premium = int(premium*100)  # 2 decimals left
             price = order_rate
-
-        premium = int(premium*100)  # 2 decimals left
+        
         return price, premium
 
     def order_expires(order):
