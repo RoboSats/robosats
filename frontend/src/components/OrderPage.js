@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Paper, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@mui/material"
+import { Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@mui/material"
 import TradeBox from "./TradeBox";
 
 function msToTime(duration) {
@@ -312,7 +312,7 @@ export default class OrderPage extends Component {
   render (){
     return ( 
       // Only so nothing shows while requesting the first batch of data
-      (this.state.statusCode == null & this.state.badRequest == null) ? "" : this.orderDetailsPage()
+      (this.state.statusCode == null & this.state.badRequest == null) ? <CircularProgress /> : this.orderDetailsPage()
     );
   }
 }

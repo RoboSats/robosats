@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Box, Button , Divider, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@mui/material";
+import { Box, Button , Divider, CircularProgress, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@mui/material";
 import { Link } from 'react-router-dom'
 
 export default class BookPage extends Component {
@@ -9,7 +9,8 @@ export default class BookPage extends Component {
       orders: new Array(),
       currency: 0,
       type: 1,
-      currencies_dict: {"0":"ANY"}
+      currencies_dict: {"0":"ANY"},
+      loading: true,
     };
     this.getCurrencyDict()
     this.getOrderDetails(this.state.type,this.state.currency)
@@ -23,6 +24,7 @@ export default class BookPage extends Component {
       this.setState({
         orders: data,
         not_found: data.not_found,
+        loading: false,
       }));
   }
 
@@ -33,7 +35,8 @@ export default class BookPage extends Component {
 
   handleTypeChange=(e)=>{
     this.setState({
-        type: e.target.value,     
+        type: e.target.value,
+        loading: true,     
     });
     this.getOrderDetails(e.target.value,this.state.currency);
   }
@@ -41,6 +44,7 @@ export default class BookPage extends Component {
     this.setState({
         currency: e.target.value,
         currencyCode: this.getCurrencyCode(e.target.value),
+        loading: true,
     })
     this.getOrderDetails(this.state.type, e.target.value);
   }
@@ -223,6 +227,11 @@ export default class BookPage extends Component {
             </Typography>
           </Grid>
           }
+          {/* If loading, show circular progressbar */}
+          {this.state.loading ?
+          <Grid item xs={12} align="center">
+            <CircularProgress />
+          </Grid> : ""}
 
         { this.state.not_found ?
           (<Grid item xs={12} align="center">

@@ -19,6 +19,11 @@ function getCookie(name) {
 }
 const csrftoken = getCookie('csrftoken');
 
+// pretty numbers
+function pn(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
 export default class MakerPage extends Component {
   defaultCurrency = 1;
   defaultCurrencyCode = 'USD';
@@ -72,9 +77,9 @@ export default class MakerPage extends Component {
     }
     handleSatoshisChange=(e)=>{
         var bad_sats = e.target.value > this.maxTradeSats ? 
-            ("Must be less than "+this.maxTradeSats): 
+            ("Must be less than "+pn(this.maxTradeSats)): 
             (e.target.value < this.minTradeSats ? 
-            ("Must be more than "+this.minTradeSats): null)
+            ("Must be more than "+pn(this.minTradeSats)): null)
 
         this.setState({
             satoshis: e.target.value,
@@ -92,7 +97,6 @@ export default class MakerPage extends Component {
     handleClickExplicit=(e)=>{
         this.setState({
             isExplicit: true,
-            satoshis: 10000, 
             premium: null,     
         });
     }
@@ -238,6 +242,7 @@ export default class MakerPage extends Component {
                             <TextField 
                                     label="Satoshis"
                                     error={this.state.badSatoshis}
+                                    helperText={this.state.badSatoshis}
                                     type="number" 
                                     required="true" 
                                     inputProps={{
