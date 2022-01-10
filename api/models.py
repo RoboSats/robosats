@@ -46,6 +46,7 @@ class LNPayment(models.Model):
     # payment info
     invoice = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
     payment_hash = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
+    preimage = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
     description = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()

@@ -254,7 +254,7 @@ class Logics():
         description = f'RoboSats - Publishing {str(order)} - This bond will return to you if you do not cheat.'
 
         # Gen hold Invoice
-        invoice, payment_hash, expires_at = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
+        invoice, preimage, payment_hash, expires_at = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
         
         order.maker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.MAKEBOND, 
@@ -262,6 +262,7 @@ class Logics():
             sender = user,
             receiver = User.objects.get(username=ESCROW_USERNAME),
             invoice = invoice,
+            preimage = preimage,
             status = LNPayment.Status.INVGEN,
             num_satoshis = bond_satoshis,
             description =  description,
