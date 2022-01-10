@@ -27,7 +27,6 @@ function pn(x) {
 export default class MakerPage extends Component {
   defaultCurrency = 1;
   defaultCurrencyCode = 'USD';
-  defaultAmount = 0 ;
   defaultPaymentMethod = "not specified";
   defaultPremium = 0;
   minTradeSats = 10000;
@@ -40,7 +39,6 @@ export default class MakerPage extends Component {
         type: 0,
         currency: this.defaultCurrency,
         currencyCode: this.defaultCurrencyCode,
-        amount: this.defaultAmount,
         payment_method: this.defaultPaymentMethod,
         premium: 0,
         satoshis: null,
@@ -168,11 +166,12 @@ export default class MakerPage extends Component {
                     </FormControl>
                 </Grid>
                 <Grid container xs={11} align="center">
-                            <TextField 
+                            <TextField
+                                error={this.state.amount == 0} 
+                                helperText={this.state.amount == 0 ? 'Must be more than 0' : null}
                                 label="Amount"
                                 type="number" 
                                 required="true"
-                                defaultValue={this.defaultAmount} 
                                 inputProps={{
                                     min:0 , 
                                     style: {textAlign:"center"}
