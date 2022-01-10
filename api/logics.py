@@ -1,6 +1,6 @@
 from datetime import timedelta
 from django.utils import timezone
-from .lightning import LNNode
+from .lightning.node import LNNode
 
 from .models import Order, LNPayment, MarketTick, User
 from decouple import config

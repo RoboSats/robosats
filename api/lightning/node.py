@@ -1,5 +1,6 @@
-# import codecs, grpc, os
-# import lightning_pb2 as lnrpc, lightning_pb2_grpc as lightningstub
+import codecs, grpc, os
+from . import lightning_pb2 as ln
+from . import lightning_pb2_grpc as lnrpc
 
 from datetime import timedelta
 from django.utils import timezone

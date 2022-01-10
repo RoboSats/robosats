@@ -22,6 +22,8 @@ from datetime import timedelta
 from django.utils import timezone
 from decouple import config
 
+import ring
+
 EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
 FEE = float(config('FEE'))
 
@@ -388,6 +390,9 @@ class BookView(ListAPIView):
 
 class InfoView(ListAPIView):
 
+    storage = {}
+
+    @ring.dict(storage, expire=60)  # keeps in cache for 60 seconds
     def get(self, request):
         context = {}
 

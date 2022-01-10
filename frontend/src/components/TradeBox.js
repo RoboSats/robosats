@@ -34,16 +34,16 @@ export default class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2">
-            Robots around here usually show commitment
+            Robosats show commitment to their peers
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           {this.props.data.isMaker ?
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography color="primary" component="subtitle1" variant="subtitle1">
             <b>Lock {pn(this.props.data.bondSatoshis)} Sats to PUBLISH order </b>
           </Typography>
           : 
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography color="primary" component="subtitle1" variant="subtitle1">
             <b>Lock {pn(this.props.data.bondSatoshis)} Sats to TAKE the order </b>
           </Typography>
           }
@@ -71,7 +71,7 @@ export default class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography color="primary" component="subtitle1" variant="subtitle1">
             <b>Deposit {pn(this.props.data.escrowSatoshis)} Sats as trade collateral </b>
           </Typography>
         </Grid>
@@ -119,7 +119,7 @@ export default class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b> Your order is public, wait for a taker. </b>
+            <b> Your order is public. Wait for a taker. </b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -135,7 +135,12 @@ export default class TradeBox extends Component {
                   return to you (no action needed).</p> 
               </Typography>
             </ListItem>
-
+            <Divider/>
+            <ListItem color="info" align="center"> 
+              <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
+              🔒 Your maker bond is safely locked
+              </Typography>
+            </ListItem>
             {/* TODO API sends data for a more confortable wait */}
             <Divider/>
               <ListItem>
@@ -186,7 +191,7 @@ export default class TradeBox extends Component {
 
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography color="primary" component="subtitle1" variant="subtitle1">
             <b> Submit a LN invoice for {pn(this.props.data.invoiceAmount)} Sats </b>
           </Typography>
         </Grid>

@@ -6,8 +6,6 @@
 ### Install virtual environments
 ```
 pip install virtualenvwrapper
-pip install python-decouple
-pip install ring
 ```
 
 ### Add to .bashrc
@@ -45,9 +43,20 @@ python3 manage.py migrate
 python3 manage.py runserver
 ```
 
-### Install python dependencies
+### Install other python dependencies
 ```
 pip install robohash
+pip install python-decouple
+pip install ring
+```
+
+### Install LND python dependencies
+```
+cd api/lightning
+pip install grpcio grpcio-tools googleapis-common-protos
+git clone https://github.com/googleapis/googleapis.git
+curl -o lightning.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/lightning.proto
+python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. lightning.proto
 ```
 
 ## React development environment
