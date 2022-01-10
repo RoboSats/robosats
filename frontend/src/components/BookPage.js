@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Box, Button , Divider, CircularProgress, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@mui/material";
+import { Paper, Button , Divider, CircularProgress, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@mui/material";
 import { Link } from 'react-router-dom'
 
 export default class BookPage extends Component {
@@ -117,59 +117,6 @@ export default class BookPage extends Component {
     ));
   }
 
-//     <Grid container item sm={4}>
-//       <Card elevation={6} sx={{ width: 945 }}>
-
-//         <CardActionArea value={order.id} onClick={() => this.handleCardClick(order.id)}>
-//           <CardContent>
-
-//             <List dense="true">
-//               <ListItem >
-//               <ListItemAvatar >
-//                   <Avatar
-//                       alt={order.maker_nick}
-//                       src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
-//                       />
-//                 </ListItemAvatar>
-//                 <ListItemText>
-//                   <Typography gutterBottom variant="h6">
-//                     {order.maker_nick}
-//                   </Typography>
-//                 </ListItemText>
-//               </ListItem>
-
-//               {/* CARD PARAGRAPH CONTENT */}
-//               <ListItemText>
-//                 <Typography variant="subtitle1" color="text.secondary">
-//                 ◑{order.type == 0 ? <b> Buys </b>: <b> Sells </b>} 
-//                   <b>{parseFloat(parseFloat(order.amount).toFixed(4))}
-//                   {" " +this.getCurrencyCode(order.currency)}</b> <a> worth of bitcoin</a> 
-//                 </Typography>
-
-//                 <Typography variant="subtitle1" color="text.secondary">
-//                 ◑ Payment via <b>{order.payment_method}</b>
-//                 </Typography>
-// {/* 
-//                 <Typography variant="subtitle1" color="text.secondary">
-//                 ◑ Priced {order.is_explicit ? 
-//                   " explicitly at " + this.pn(order.satoshis) + " Sats" : (
-//                   " at " + 
-//                   parseFloat(parseFloat(order.premium).toFixed(4)) + "% over the market"                     
-//                   )}
-//                 </Typography> */}
-
-//                 <Typography variant="subtitle1" color="text.secondary">
-//                 ◑ <b>{" 42,354 "}{this.getCurrencyCode(order.currency)}/BTC</b>  (Binance API)
-//                 </Typography>
-//               </ListItemText>
-
-//             </List>
-
-//           </CardContent>
-//         </CardActionArea>
-//       </Card>
-//       </Grid>
-
   render() {
       return (
         <Grid className='orderBook' container spacing={1}>
@@ -248,9 +195,13 @@ export default class BookPage extends Component {
               </Typography>
           </Grid>)
           : 
-            <List sx={{ width: '120%', overflow: 'auto',}} >
-              {this.bookListItems()}
-            </List>
+          <Grid item xs={12} align="center">
+            <Paper elevation={0} style={{width: 1100, maxHeight: 600, overflow: 'auto'}}>
+              <List >
+                {this.bookListItems()}
+              </List>
+            </Paper>
+           </Grid>
           }
           <Grid item xs={12} align="center">
               <Button color="secondary" variant="contained" to="/" component={Link}>
