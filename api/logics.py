@@ -36,9 +36,9 @@ class Logics():
     def validate_order_size(order):
         '''Checks if order is withing limits at t0'''
         if order.t0_satoshis > MAX_TRADE:
-            return False, {'bad_request': f'Your order is too big. It is worth {order.t0_satoshis} now. But maximum is {MAX_TRADE}'}
+            return False, {'bad_request': 'Your order is too big. It is worth '+'{:,}'.format(order.t0_satoshis)+' Sats now. But limit is '+'{:,}'.format(MAX_TRADE)+ ' Sats'}
         if order.t0_satoshis < MIN_TRADE:
-            return False, {'bad_request': f'Your order is too small. It is worth {order.t0_satoshis} now. But minimum is {MIN_TRADE}'}
+            return False, {'bad_request': 'Your order is too small. It is worth '+'{:,}'.format(order.t0_satoshis)+' Sats now. But limit is '+'{:,}'.format(MIN_TRADE)+ ' Sats'}
         return True, None
         
     def take(order, user):
@@ -66,7 +66,22 @@ class Logics():
             satoshis_now = (float(order.amount) / premium_rate) * 100*1000*1000
 
         return int(satoshis_now)
-    
+
+    def price_and_premium_now(order):
+        ''' computes order premium live '''
+        exchange_rate = get_exchange_rate(Order.currency_dict[str(order.currency)])
+        if not order.is_explicit:
+            premium = order.premium
+            price = exchange_rate
+        else:
+            exchange_rate = get_exchange_rate(Order.currency_dict[str(order.currency)])
+            order_rate = float(order.amount) / (float(order.satoshis) / 100000000)
+            premium = order_rate / exchange_rate - 1
+            price = order_rate
+
+        premium = int(premium*100)  # 2 decimals left
+        return price, premium
+
     def order_expires(order):
         order.status = Order.Status.EXP
         order.maker = None

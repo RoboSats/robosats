@@ -24,7 +24,7 @@ export default class UserGenPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      token: this.genBase62Token(32),
+      token: this.genBase62Token(34),
     };
     this.getGeneratedUser(this.state.token);
   }
@@ -72,7 +72,7 @@ export default class UserGenPage extends Component {
   handleAnotherButtonPressed=(e)=>{
     this.delGeneratedUser()
     this.setState({
-      token: this.genBase62Token(32),
+      token: this.genBase62Token(34),
     })
     this.reload_for_csrf_to_work();
   }

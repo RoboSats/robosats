@@ -369,6 +369,9 @@ class BookView(ListAPIView):
             data = ListOrderSerializer(order).data
             data['maker_nick'] = str(order.maker)
             
+            # Compute current premium for those orders that are explicitly priced.
+            data['price'], data['premium'] = Logics.price_and_premium_now(order)
+                
             for key in ('status','taker'): # Non participants should not see the status or who is the taker
                 del data[key]
             

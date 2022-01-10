@@ -7,6 +7,7 @@
 ```
 pip install virtualenvwrapper
 pip install python-decouple
+pip install ring
 ```
 
 ### Add to .bashrc

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button , Divider, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@mui/material";
+import { Box, Button , Divider, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@mui/material";
 import { Link } from 'react-router-dom'
 
 export default class BookPage extends Component {
@@ -65,14 +65,51 @@ export default class BookPage extends Component {
 
   bookListItems=()=>{
     return (this.state.orders.map((order) =>
-      <ListItemButton>
-        <ListItemAvatar >
-          <Avatar
-              alt={order.maker_nick}
-              src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
-              />
-        </ListItemAvatar>
-      </ListItemButton>
+      <>
+        <ListItemButton value={order.id} onClick={() => this.handleCardClick(order.id)}>
+
+          <ListItemAvatar >
+            <Avatar
+                alt={order.maker_nick}
+                src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
+                />
+          </ListItemAvatar>
+          
+          <ListItemText>
+            <Typography  variant="h6">
+              {order.maker_nick+" "}    
+            </Typography>
+          </ListItemText>
+          
+          <ListItemText align='left'>
+            <Typography  variant="subtitle1">
+              <b>{order.type ? " Sells ": " Buys "} BTC </b> for {parseFloat(
+                parseFloat(order.amount).toFixed(4))+" "+ this.getCurrencyCode(order.currency)+" "}
+            </Typography>
+          </ListItemText>
+
+          <ListItemText align='left'>
+            <Typography  variant="subtitle1">
+              via <b>{order.payment_method}</b>
+            </Typography>
+          </ListItemText>
+
+          <ListItemText align='right'>
+            <Typography  variant="subtitle1">
+              at <b>{this.pn(order.price) + " " + this.getCurrencyCode(order.currency)}/BTC</b>
+            </Typography>
+          </ListItemText>
+
+          <ListItemText align='right'>
+            <Typography  variant="subtitle1">
+              {order.premium > 1 ? "🔴" : "🔵" } <b>{parseFloat(parseFloat(order.premium).toFixed(4))}%</b>
+            </Typography>
+          </ListItemText>
+
+        </ListItemButton>
+      
+        <Divider/>
+      </>
     ));
   }
 
@@ -133,7 +170,7 @@ export default class BookPage extends Component {
       return (
         <Grid className='orderBook' container spacing={1}>
           <Grid item xs={12} align="center">
-            <Typography component="h4" variant="h4">
+            <Typography component="h2" variant="h2">
               Order Book
             </Typography>
           </Grid>
@@ -202,11 +239,9 @@ export default class BookPage extends Component {
               </Typography>
           </Grid>)
           : 
-          <Grid item>
-            <List>
-            {this.bookListItems()}
+            <List sx={{ width: '120%', overflow: 'auto',}} >
+              {this.bookListItems()}
             </List>
-          </Grid>
           }
           <Grid item xs={12} align="center">
               <Button color="secondary" variant="contained" to="/" component={Link}>
