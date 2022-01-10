@@ -158,6 +158,9 @@ class Profile(models.Model):
     # RoboHash
     avatar = models.ImageField(default="static/assets/misc/unknown_avatar.png", verbose_name='Avatar', blank=True)
 
+    # Penalty expiration (only used then taking/cancelling repeatedly orders in the book before comitting bond)
+    penalty_expiration = models.DateTimeField(null=True)
+
     @receiver(post_save, sender=User)
     def create_user_profile(sender, instance, created, **kwargs):
         if created:

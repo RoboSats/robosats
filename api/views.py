@@ -105,6 +105,11 @@ class OrderView(viewsets.ViewSet):
 
         data = ListOrderSerializer(order).data
 
+        # if user is under a limit (penalty), inform him
+        is_penalized, time_out = Logics.is_penalized(request.user)
+        if is_penalized:
+            data['penalty'] = time_out
+
         # Add booleans if user is maker, taker, partipant, buyer or seller
         data['is_maker'] = order.maker == request.user
         data['is_taker'] = order.taker == request.user
@@ -207,7 +212,9 @@ class OrderView(viewsets.ViewSet):
                 valid, context = Logics.validate_already_maker_or_taker(request.user)
                 if not valid: return Response(context, status=status.HTTP_409_CONFLICT)
 
-                Logics.take(order, request.user)
+                valid, context = Logics.take(order, request.user)
+                if not valid: return Response(context, status=status.HTTP_403_FORBIDDEN)
+
             else: Response({'bad_request':'This order is not public anymore.'}, status.HTTP_400_BAD_REQUEST)
 
         # Any other action is only allowed if the user is a participant

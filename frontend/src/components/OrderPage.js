@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@mui/material"
+import { Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@mui/material"
 import TradeBox from "./TradeBox";
 
 function msToTime(duration) {
@@ -101,6 +101,7 @@ export default class OrderPage extends Component {
             isTaker: data.is_taker,
             isBuyer: data.is_buyer,
             isSeller: data.is_seller,
+            penalty: data.penalty,
             expiresAt: data.expires_at,
             badRequest: data.bad_request,
             bondInvoice: data.bond_invoice,
@@ -249,6 +250,18 @@ export default class OrderPage extends Component {
             </ListItem>
             <LinearDeterminate />
             </List>
+            
+            {/* If the user has a penalty/limit */}
+            {this.state.penalty ? 
+            <>
+              <Divider />
+              <Grid item xs={12} align="center">
+                <Alert severity="warning" sx={{maxWidth:360}}>
+                  You cannot take an order yet! Wait {this.state.penalty} seconds 
+                </Alert>  
+              </Grid>
+            </>
+            : null} 
 
           </Paper>
         </Grid>

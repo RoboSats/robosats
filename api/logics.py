@@ -10,6 +10,7 @@ FEE = float(config('FEE'))
 BOND_SIZE = float(config('BOND_SIZE'))
 MARKET_PRICE_API = config('MARKET_PRICE_API')
 ESCROW_USERNAME = config('ESCROW_USERNAME')
+PENALTY_TIMEOUT = int(config('PENALTY_TIMEOUT'))
 
 MIN_TRADE = int(config('MIN_TRADE'))
 MAX_TRADE = int(config('MAX_TRADE'))
@@ -20,6 +21,7 @@ EXP_TRADE_ESCR_INVOICE = int(config('EXP_TRADE_ESCR_INVOICE'))
 
 BOND_EXPIRY = int(config('BOND_EXPIRY'))
 ESCROW_EXPIRY = int(config('ESCROW_EXPIRY'))
+
 
 class Logics():
 
@@ -40,11 +42,17 @@ class Logics():
         if order.t0_satoshis < MIN_TRADE:
             return False, {'bad_request': 'Your order is too small. It is worth '+'{:,}'.format(order.t0_satoshis)+' Sats now. But limit is '+'{:,}'.format(MIN_TRADE)+ ' Sats'}
         return True, None
-        
-    def take(order, user):
-        order.taker = user
-        order.status = Order.Status.TAK
-        order.save()
+
+    @classmethod    
+    def take(cls, order, user):
+        is_penalized, time_out = cls.is_penalized(user)
+        if is_penalized:
+            return False, {'bad_request',f'You need to wait {time_out} seconds to take an order'}
+        else:
+            order.taker = user
+            order.status = Order.Status.TAK
+            order.save()
+            return True, None
 
     def is_buyer(order, user):
         is_maker = order.maker == user
@@ -167,6 +175,18 @@ class Logics():
         order.save()
         return True, None
 
+    def is_penalized(user):
+        ''' Checks if a user that is not participant of orders
+        has a limit on taking or making a order'''
+        
+        if user.profile.penalty_expiration:
+            if user.profile.penalty_expiration > timezone.now():
+                time_out = (user.profile.penalty_expiration - timezone.now()).seconds
+                return True, time_out
+
+        return False, None
+
+
     @classmethod
     def cancel_order(cls, order, user, state=None):
 
@@ -181,12 +201,24 @@ class Logics():
 
         # 2) When maker cancels after bond
             '''The order dissapears from book and goes to cancelled. 
-            Maker is charged a small amount of sats, to prevent DDOS 
-            on the LN node and order book'''
+            Maker is charged the bond to prevent DDOS 
+            on the LN node and order book. TODO Only charge a small part 
+            of the bond (requires maker submitting an invoice)'''
+        
 
         # 3) When taker cancels before bond
             ''' The order goes back to the book as public.
             LNPayment "order.taker_bond" is deleted() '''
+        elif order.status == Order.Status.TAK and order.taker == user:
+            # adds a timeout penalty
+            user.profile.penalty_expiration = timezone.now() + timedelta(seconds=PENALTY_TIMEOUT)
+            user.save()
+
+            order.taker = None
+            order.status = Order.Status.PUB
+            order.save()
+
+            return True, None
 
         # 4) When taker or maker cancel after bond (before escrow)
             '''The order goes into cancelled status if maker cancels.
