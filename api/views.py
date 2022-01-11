@@ -1,4 +1,5 @@
 from re import T
+from django.db.models import query
 from rest_framework import status, viewsets
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
@@ -8,7 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
-from .models import LNPayment, Order
+from .models import LNPayment, MarketTick, Order
 from .logics import Logics
 
 from .nick_generator.nick_generator import NickGenerator
@@ -18,11 +19,9 @@ from math import log2
 import numpy as np
 import hashlib
 from pathlib import Path
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.utils import timezone
 from decouple import config
-
-import ring
 
 EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
 FEE = float(config('FEE'))
@@ -390,17 +389,34 @@ class BookView(ListAPIView):
 
 class InfoView(ListAPIView):
 
-    storage = {}
-
-    @ring.dict(storage, expire=60)  # keeps in cache for 60 seconds
     def get(self, request):
         context = {}
 
         context['num_public_buy_orders'] = len(Order.objects.filter(type=Order.Types.BUY, status=Order.Status.PUB))
         context['num_public_sell_orders'] = len(Order.objects.filter(type=Order.Types.BUY, status=Order.Status.PUB))
-        context['last_day_avg_btc_premium'] = None # Todo
-        context['num_active_robots'] = None 
-        context['total_volume'] = None
+        
+        # Number of active users (logged in in last 30 minutes)
+        active_user_time_range = (timezone.now() - timedelta(minutes=30), timezone.now())
+        context['num_active_robotsats'] = len(User.objects.filter(last_login__range=active_user_time_range))
+
+        # Compute average premium and volume of today
+        today = datetime.today()
+
+        queryset = MarketTick.objects.filter(timestamp__day=today.day)
+        if not len(queryset) == 0:
+            premiums = []
+            volumes = []
+            for tick in queryset:
+                premiums.append(tick.premium)
+                volumes.append(tick.volume)
+            avg_premium = sum(premiums) / len(premiums)
+            total_volume = sum(volumes)
+        else:
+            avg_premium = None
+            total_volume = None
+
+        context['last_day_avg_btc_premium'] = avg_premium
+        context['total_volume_today'] = total_volume
 
         return Response(context, status.HTTP_200_OK)
         
