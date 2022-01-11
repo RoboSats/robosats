@@ -63,6 +63,16 @@ We also use the *Invoices* subservice for invoice validation.
 curl -o invoices.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/invoicesrpc/invoices.proto
 python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. invoices.proto
 ```
+Relative imports are not working at the moment, so some editing is needed in
+`api/lightning` files `lightning_pb2_grpc.py`, `invoices_pb2_grpc.py` and `invoices_pb2.py`. 
+
+Example, change line :
+
+`import lightning_pb2 as lightning__pb2`
+
+to
+
+`from . import lightning_pb2 as lightning__pb2`
 
 ## React development environment
 ### Install npm

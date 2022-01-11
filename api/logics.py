@@ -118,7 +118,8 @@ class Logics():
             return False, {'bad_request':'You cannot a invoice while bonds are not posted.'}
 
         num_satoshis = cls.buyer_invoice_amount(order, user)[1]['invoice_amount']
-        valid, context, description, payment_hash, expires_at = LNNode.validate_ln_invoice(invoice, num_satoshis)
+        valid, context, description, payment_hash, created_at, expires_at = LNNode.validate_ln_invoice(invoice, num_satoshis)
+ 
         if not valid:
             return False, context
 
@@ -134,13 +135,14 @@ class Logics():
                 'num_satoshis' : num_satoshis,
                 'description' :  description,
                 'payment_hash' : payment_hash,
+                'created_at' : created_at,
                 'expires_at' : expires_at}
             )
 
-        # If the order status is 'Waiting for invoice'. Move forward to 'waiting for invoice'
+        # If the order status is 'Waiting for escrow'. Move forward to 'chat'
         if order.status == Order.Status.WFE: order.status = Order.Status.CHA
 
-        # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow' or to 'chat'
+        # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow'
         if order.status == Order.Status.WF2:
             print(order.trade_escrow)
             if order.trade_escrow:
@@ -251,10 +253,10 @@ class Logics():
 
         order.last_satoshis = cls.satoshis_now(order)
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
-        description = f'RoboSats - Publishing {str(order)} - This bond will return to you if you do not cheat.'
+        description = f'RoboSats - Publishing {str(order)} - This bond will return to you if you do not cheat or unilaterally cancel'
 
         # Gen hold Invoice
-        invoice, preimage, payment_hash, expires_at = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
+        invoice, preimage, payment_hash, created_at, expires_at = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
         
         order.maker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.MAKEBOND, 
@@ -267,6 +269,7 @@ class Logics():
             num_satoshis = bond_satoshis,
             description =  description,
             payment_hash = payment_hash,
+            created_at = created_at,
             expires_at = expires_at)
 
         order.save()
@@ -291,7 +294,7 @@ class Logics():
 
         order.last_satoshis = cls.satoshis_now(order)  # LOCKS THE AMOUNT OF SATOSHIS FOR THE TRADE
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
-        description = f'RoboSats - Taking {str(order)} - This bond will return to you if you do not cheat.'
+        description = f'RoboSats - Taking {str(order)} - This bond will return to you if you do not cheat or unilaterally cancel'
 
         # Gen hold Invoice
         invoice, payment_hash, expires_at = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)

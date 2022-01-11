@@ -44,13 +44,13 @@ class LNPayment(models.Model):
     routing_retries = models.PositiveSmallIntegerField(null=False, default=0)
     
     # payment info
-    invoice = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
-    payment_hash = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
-    preimage = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
-    description = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
+    invoice = models.CharField(max_length=500, unique=True, null=True, default=None, blank=True)
+    payment_hash = models.CharField(max_length=100, unique=True, null=True, default=None, blank=True)
+    preimage = models.CharField(max_length=64, unique=True, null=True, default=None, blank=True)
+    description = models.CharField(max_length=150, unique=False, null=True, default=None, blank=True)
     num_satoshis = models.PositiveBigIntegerField(validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
+    created_at = models.DateTimeField()
+    expires_at = models.DateTimeField()
     
     # involved parties
     sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE, null=True, default=None)

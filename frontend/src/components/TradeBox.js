@@ -27,6 +27,9 @@ function pn(x) {
 export default class TradeBox extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      badInvoice: false,
+    }
   }
   
   showQRInvoice=()=>{
@@ -164,13 +167,16 @@ export default class TradeBox extends Component {
 
   handleInputInvoiceChanged=(e)=>{
     this.setState({
-        invoice: e.target.value,     
+        invoice: e.target.value,
+        badInvoice: false,     
     });
   }
 
   // Fix this. It's clunky because it takes time. this.props.data does not refresh until next refresh of OrderPage.
 
   handleClickSubmitInvoiceButton=()=>{
+      this.setState({badInvoice:false});
+
       const requestOptions = {
           method: 'POST',
           headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
@@ -181,7 +187,8 @@ export default class TradeBox extends Component {
       };
       fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
       .then((response) => response.json())
-      .then((data) => (this.props.data = data));
+      .then((data) => this.setState({badInvoice:data.bad_invoice})
+      & console.log(data));
   }
 
   showInputInvoice(){
@@ -204,6 +211,8 @@ export default class TradeBox extends Component {
         </Grid>
         <Grid item xs={12} align="center">
           <TextField 
+              error={this.state.badInvoice}
+              helperText={this.state.badInvoice ? this.state.badInvoice : "" }
               label={"Payout Lightning Invoice"}
               required
               inputProps={{
