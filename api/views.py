@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
 from .models import LNPayment, MarketTick, Order
 from .logics import Logics
+from .utils import get_lnd_version, get_commit_robosats
 
 from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
@@ -415,8 +416,10 @@ class InfoView(ListAPIView):
             avg_premium = None
             total_volume = None
 
-        context['last_day_avg_btc_premium'] = avg_premium
-        context['total_volume_today'] = total_volume
+        context['today_avg_nonkyc_btc_premium'] = avg_premium
+        context['today_total_volume'] = total_volume
+        context['lnd_version'] = get_lnd_version()
+        context['robosats_running_commit_hash'] = get_commit_robosats()
 
         return Response(context, status.HTTP_200_OK)
         

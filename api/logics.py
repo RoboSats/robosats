@@ -6,6 +6,8 @@ from .models import Order, LNPayment, MarketTick, User
 from decouple import config
 from .utils import get_exchange_rate
 
+import math
+
 FEE = float(config('FEE'))
 BOND_SIZE = float(config('BOND_SIZE'))
 MARKET_PRICE_API = config('MARKET_PRICE_API')
@@ -80,13 +82,16 @@ class Logics():
         exchange_rate = get_exchange_rate(Order.currency_dict[str(order.currency)])
         if not order.is_explicit:
             premium = order.premium
-            price = exchange_rate
+            price = exchange_rate * (1+float(premium)/100)
         else:
             exchange_rate = get_exchange_rate(Order.currency_dict[str(order.currency)])
             order_rate = float(order.amount) / (float(order.satoshis) / 100000000)
             premium = order_rate / exchange_rate - 1
             premium = int(premium*100)  # 2 decimals left
             price = order_rate
+
+        significant_digits = 6
+        price = round(price, significant_digits - int(math.floor(math.log10(abs(price)))) - 1)
         
         return price, premium
 
@@ -118,10 +123,10 @@ class Logics():
             return False, {'bad_request':'You cannot a invoice while bonds are not posted.'}
 
         num_satoshis = cls.buyer_invoice_amount(order, user)[1]['invoice_amount']
-        valid, context, description, payment_hash, created_at, expires_at = LNNode.validate_ln_invoice(invoice, num_satoshis)
+        buyer_invoice = LNNode.validate_ln_invoice(invoice, num_satoshis)
  
-        if not valid:
-            return False, context
+        if not buyer_invoice['valid']:
+            return False, buyer_invoice['context']
 
         order.buyer_invoice, _ = LNPayment.objects.update_or_create(
             concept = LNPayment.Concepts.PAYBUYER, 
@@ -133,10 +138,10 @@ class Logics():
                 'invoice' : invoice,
                 'status' : LNPayment.Status.VALIDI,
                 'num_satoshis' : num_satoshis,
-                'description' :  description,
-                'payment_hash' : payment_hash,
-                'created_at' : created_at,
-                'expires_at' : expires_at}
+                'description' :  buyer_invoice['description'],
+                'payment_hash' : buyer_invoice['payment_hash'],
+                'created_at' : buyer_invoice['created_at'],
+                'expires_at' : buyer_invoice['expires_at']}
             )
 
         # If the order status is 'Waiting for escrow'. Move forward to 'chat'
@@ -206,7 +211,14 @@ class Logics():
             Maker is charged the bond to prevent DDOS 
             on the LN node and order book. TODO Only charge a small part 
             of the bond (requires maker submitting an invoice)'''
-        
+        elif order.status == Order.Status.PUB and order.maker == user:
+            #Settle the maker bond (Maker loses the bond for a public order)
+            valid = cls.settle_maker_bond(order)
+            if valid:
+                order.maker = None
+                order.status = Order.Status.UCA
+                order.save()
+                return True, None
 
         # 3) When taker cancels before bond
             ''' The order goes back to the book as public.
@@ -226,6 +238,29 @@ class Logics():
             '''The order goes into cancelled status if maker cancels.
             The order goes into the public book if taker cancels.
             In both cases there is a small fee.'''
+
+        # 4.a) When maker cancel after bond (before escrow)
+            '''The order into cancelled status if maker cancels.'''
+        elif order.status > Order.Status.PUB and order.status < Order.Status.CHA and order.maker == user:
+            #Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
+            valid = cls.settle_maker_bond(order)
+            if valid:
+                order.maker = None
+                order.status = Order.Status.UCA
+                order.save()
+                return True, None
+
+        # 4.b) When taker cancel after bond (before escrow)
+            '''The order into cancelled status if maker cancels.'''
+        elif order.status > Order.Status.TAK and order.status < Order.Status.CHA and order.taker == user:
+            #Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
+            valid = cls.settle_taker_bond(order)
+            if valid:
+                order.taker = None
+                order.status = Order.Status.PUB
+                # order.taker_bond = None # TODO fix this, it overrides the information about the settled taker bond. Might make admin tasks hard.
+                order.save()
+                return True, None
 
         # 5) When trade collateral has been posted (after escrow)
             '''Always goes to cancelled status. Collaboration  is needed.
@@ -253,27 +288,28 @@ class Logics():
 
         order.last_satoshis = cls.satoshis_now(order)
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
-        description = f'RoboSats - Publishing {str(order)} - This bond will return to you if you do not cheat or unilaterally cancel'
+
+        description = f"RoboSats - Publishing '{str(order)}' - This is a maker bond. It will automatically return if you do not cancel or cheat"
 
         # Gen hold Invoice
-        invoice, preimage, payment_hash, created_at, expires_at = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
+        hold_payment = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
         
         order.maker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.MAKEBOND, 
-            type = LNPayment.Types.hold, 
+            type = LNPayment.Types.HOLD, 
             sender = user,
             receiver = User.objects.get(username=ESCROW_USERNAME),
-            invoice = invoice,
-            preimage = preimage,
+            invoice = hold_payment['invoice'],
+            preimage = hold_payment['preimage'],
             status = LNPayment.Status.INVGEN,
             num_satoshis = bond_satoshis,
             description =  description,
-            payment_hash = payment_hash,
-            created_at = created_at,
-            expires_at = expires_at)
+            payment_hash = hold_payment['payment_hash'],
+            created_at = hold_payment['created_at'],
+            expires_at = hold_payment['expires_at'])
 
         order.save()
-        return True, {'bond_invoice':invoice,'bond_satoshis':bond_satoshis}
+        return True, {'bond_invoice':hold_payment['invoice'], 'bond_satoshis':bond_satoshis}
 
     @classmethod
     def gen_taker_hold_invoice(cls, order, user):
@@ -294,28 +330,30 @@ class Logics():
 
         order.last_satoshis = cls.satoshis_now(order)  # LOCKS THE AMOUNT OF SATOSHIS FOR THE TRADE
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
-        description = f'RoboSats - Taking {str(order)} - This bond will return to you if you do not cheat or unilaterally cancel'
+        description = f"RoboSats - Taking '{str(order)}' - This is a taker bond. It will automatically return if you do not cancel or cheat"
 
         # Gen hold Invoice
-        invoice, payment_hash, expires_at = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
+        hold_payment = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
         
         order.taker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.TAKEBOND, 
-            type = LNPayment.Types.hold, 
+            type = LNPayment.Types.HOLD, 
             sender = user,
             receiver = User.objects.get(username=ESCROW_USERNAME),
-            invoice = invoice,
+            invoice = hold_payment['invoice'],
+            preimage = hold_payment['preimage'],
             status = LNPayment.Status.INVGEN,
             num_satoshis = bond_satoshis,
             description =  description,
-            payment_hash = payment_hash,
-            expires_at = expires_at)
+            payment_hash = hold_payment['payment_hash'],
+            created_at = hold_payment['created_at'],
+            expires_at = hold_payment['expires_at'])
 
         # Extend expiry time to allow for escrow deposit
         ## Not here, on func for confirming taker collar. order.expires_at = timezone.now() + timedelta(minutes=EXP_TRADE_ESCR_INVOICE)
         
         order.save()
-        return True, {'bond_invoice':invoice,'bond_satoshis': bond_satoshis}
+        return True, {'bond_invoice': hold_payment['invoice'], 'bond_satoshis': bond_satoshis}
 
     @classmethod
     def gen_escrow_hold_invoice(cls, order, user):
@@ -334,38 +372,63 @@ class Logics():
                 return False, None # Does not return any context of a healthy locked escrow
 
         escrow_satoshis = order.last_satoshis # Trade sats amount was fixed at the time of taker bond generation (order.last_satoshis)
-        description = f'RoboSats - Escrow amount for {str(order)} - This escrow will be released to the buyer once you confirm you received the fiat.'
+        description = f"RoboSats - Escrow amount for '{str(order)}' - The escrow will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not pay."
 
         # Gen hold Invoice
-        invoice, payment_hash, expires_at = LNNode.gen_hold_invoice(escrow_satoshis, description, ESCROW_EXPIRY*3600)
+        hold_payment = LNNode.gen_hold_invoice(escrow_satoshis, description, ESCROW_EXPIRY*3600)
         
         order.trade_escrow = LNPayment.objects.create(
             concept = LNPayment.Concepts.TRESCROW, 
-            type = LNPayment.Types.hold, 
+            type = LNPayment.Types.HOLD, 
             sender = user,
             receiver = User.objects.get(username=ESCROW_USERNAME),
-            invoice = invoice,
+            invoice = hold_payment['invoice'],
+            preimage = hold_payment['preimage'],
             status = LNPayment.Status.INVGEN,
             num_satoshis = escrow_satoshis,
             description =  description,
-            payment_hash = payment_hash,
-            expires_at = expires_at)
+            payment_hash = hold_payment['payment_hash'],
+            created_at = hold_payment['created_at'],
+            expires_at = hold_payment['expires_at'])
 
         order.save()
-        return True, {'escrow_invoice':invoice,'escrow_satoshis': escrow_satoshis}
+        return True, {'escrow_invoice':hold_payment['invoice'],'escrow_satoshis': escrow_satoshis}
     
     def settle_escrow(order):
-        ''' Settles the trade escrow HTLC'''
+        ''' Settles the trade escrow hold invoice'''
         # TODO ERROR HANDLING
+        valid = LNNode.settle_hold_invoice(order.trade_escrow.preimage)
+        if valid:
+            order.trade_escrow.status = LNPayment.Status.SETLED
+            order.save()
 
-        valid = LNNode.settle_hold_htlcs(order.trade_escrow.payment_hash)
+        return valid
+
+    def settle_maker_bond(order):
+        ''' Settles the maker bond hold invoice'''
+        # TODO ERROR HANDLING
+        valid = LNNode.settle_hold_invoice(order.maker_bond.preimage)
+        if valid:
+            order.maker_bond.status = LNPayment.Status.SETLED
+            order.save()
+
+        return valid
+
+    def settle_taker_bond(order):
+        ''' Settles the taker bond hold invoice'''
+        # TODO ERROR HANDLING
+        valid = LNNode.settle_hold_invoice(order.taker_bond.preimage)
+        if valid:
+            order.taker_bond.status = LNPayment.Status.SETLED
+            order.save()
+
         return valid
 
     def pay_buyer_invoice(order):
-        ''' Settles the trade escrow HTLC'''
+        ''' Pay buyer invoice'''
         # TODO ERROR HANDLING
 
-        valid = LNNode.pay_invoice(order.buyer_invoice.payment_hash)
+        valid = LNNode.pay_invoice(order.buyer_invoice.invoice)
         return valid
 
     @classmethod

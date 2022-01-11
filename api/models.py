@@ -18,8 +18,8 @@ BOND_SIZE = float(config('BOND_SIZE'))
 class LNPayment(models.Model):
 
     class Types(models.IntegerChoices):
-        NORM = 0, 'Regular invoice' # Only outgoing HTLCs will be regular invoices (Non-hold)
-        hold = 1, 'hold invoice'
+        NORM = 0, 'Regular invoice' # Only outgoing buyer payment will be a regular invoice (Non-hold)
+        HOLD = 1, 'hold invoice'
 
     class Concepts(models.IntegerChoices):
         MAKEBOND = 0, 'Maker bond'
@@ -38,7 +38,7 @@ class LNPayment(models.Model):
         FAILRO = 7, 'Failed routing'
 
     # payment use details
-    type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.hold)
+    type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HOLD)
     concept = models.PositiveSmallIntegerField(choices=Concepts.choices, null=False, default=Concepts.MAKEBOND)
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.INVGEN)
     routing_retries = models.PositiveSmallIntegerField(null=False, default=0)

@@ -45,7 +45,7 @@ class LNNode():
 
     @classmethod
     def settle_hold_invoice(cls, preimage):
-        # SETTLING A HODL INVOICE
+        '''settles a hold invoice'''
         request = invoicesrpc.SettleInvoiceMsg(preimage=preimage)
         response = invoicesstub.SettleInvoice(request, metadata=[('macaroon', MACAROON.hex())])
         # Fix this: tricky because settling sucessfully an invoice has no response. TODO
@@ -58,88 +58,111 @@ class LNNode():
     def gen_hold_invoice(cls, num_satoshis, description, expiry):
         '''Generates hold invoice'''
 
+        hold_payment = {}
         # The preimage is a random hash of 256 bits entropy
         preimage =  hashlib.sha256(secrets.token_bytes(nbytes=32)).digest() 
 
         # Its hash is used to generate the hold invoice
-        preimage_hash = hashlib.sha256(preimage).digest()
+        r_hash = hashlib.sha256(preimage).digest()
 
         request = invoicesrpc.AddHoldInvoiceRequest(
                 memo=description,
                 value=num_satoshis,
-                hash=preimage_hash,
+                hash=r_hash,
                 expiry=expiry)
         response = cls.invoicesstub.AddHoldInvoice(request, metadata=[('macaroon', MACAROON.hex())])
 
-        invoice = response.payment_request
-        payreq_decoded = cls.decode_payreq(invoice)
-        
-        preimage = preimage.hex()
-        payment_hash = payreq_decoded.payment_hash
-        created_at = timezone.make_aware(datetime.fromtimestamp(payreq_decoded.timestamp))
-        expires_at = created_at + timedelta(seconds=payreq_decoded.expiry)
+        hold_payment['invoice'] = response.payment_request
+        payreq_decoded = cls.decode_payreq(hold_payment['invoice'])
+        hold_payment['preimage'] = preimage.hex()
+        hold_payment['payment_hash'] = payreq_decoded.payment_hash
+        hold_payment['created_at'] = timezone.make_aware(datetime.fromtimestamp(payreq_decoded.timestamp))
+        hold_payment['expires_at'] = hold_payment['created_at'] + timedelta(seconds=payreq_decoded.expiry)
 
-        return invoice, preimage, payment_hash, created_at, expires_at 
+        return hold_payment
 
     @classmethod
     def validate_hold_invoice_locked(cls, payment_hash):
-        '''Checks if hodl invoice is locked'''
+        '''Checks if hold invoice is locked'''
 
-        return True
+        request = invoicesrpc.LookupInvoiceMsg(payment_hash=payment_hash)
+        response = invoicesstub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
+        
+        # What is the state for locked ???
+        if response.state == 'OPEN' or response.state == 'SETTLED':
+            return False
+        else:
+            return True
+
 
     @classmethod
     def check_until_invoice_locked(cls, payment_hash, expiration):
-        '''Checks until hodl invoice is locked'''
+        '''Checks until hold invoice is locked.
+        When invoice is locked, returns true. 
+        If time expires, return False.'''
+         
+        request = invoicesrpc.SubscribeSingleInvoiceRequest(r_hash=payment_hash)
+        for invoice in invoicesstub.SubscribeSingleInvoice(request):
+            if timezone.now > expiration:
+                break
+            if invoice.state == 'LOCKED':
+                return True
 
-        # request = ln.InvoiceSubscription()
-        # When invoice is settled, return true. If time expires, return False.
-        # for invoice in stub.SubscribeInvoices(request):
-        #     print(invoice)
-
-        return True
+        return False
 
     @classmethod
     def validate_ln_invoice(cls, invoice, num_satoshis):
         '''Checks if the submited LN invoice comforms to expectations'''
 
+        buyer_invoice = {
+                'valid': False,
+                'context': None,
+                'description': None,
+                'payment_hash': None,
+                'created_at': None,
+                'expires_at': None,
+            }
+
         try:
             payreq_decoded = cls.decode_payreq(invoice)
         except:
-            return False, {'bad_invoice':'Does not look like a valid lightning invoice'}, None, None, None, None
+            buyer_invoice['context'] = {'bad_invoice':'Does not look like a valid lightning invoice'}
+            return buyer_invoice
 
         if not payreq_decoded.num_satoshis == num_satoshis:
-            context = {'bad_invoice':'The invoice provided is not for '+'{:,}'.format(num_satoshis)+ ' Sats'}
-            return False, context, None, None, None, None
+            buyer_invoice['context'] = {'bad_invoice':'The invoice provided is not for '+'{:,}'.format(num_satoshis)+ ' Sats'}
+            return buyer_invoice
 
-        created_at = timezone.make_aware(datetime.fromtimestamp(payreq_decoded.timestamp))
-        expires_at = created_at + timedelta(seconds=payreq_decoded.expiry)
+        buyer_invoice['created_at'] = timezone.make_aware(datetime.fromtimestamp(payreq_decoded.timestamp))
+        buyer_invoice['expires_at'] = buyer_invoice['created_at'] + timedelta(seconds=payreq_decoded.expiry)
 
-        if expires_at < timezone.now():
-            context = {'bad_invoice':f'The invoice provided has already expired'}
-            return False, context, None, None, None, None
+        if buyer_invoice['expires_at'] < timezone.now():
+            buyer_invoice['context'] = {'bad_invoice':f'The invoice provided has already expired'}
+            return buyer_invoice
 
-        description = payreq_decoded.description
-        payment_hash = payreq_decoded.payment_hash
+        buyer_invoice['valid'] = True
+        buyer_invoice['description'] = payreq_decoded.description
+        buyer_invoice['payment_hash'] = payreq_decoded.payment_hash
 
-        return True, None, description, payment_hash, created_at, expires_at
+        return buyer_invoice
 
     @classmethod
     def pay_invoice(cls, invoice):
-        '''Sends sats to buyer, or cancelinvoices'''
-        return True
+        '''Sends sats to buyer'''
 
-    @classmethod
-    def check_if_hold_invoice_is_locked(cls, payment_hash):
-        '''Every hodl invoice that is in state INVGEN
-        Has to be checked for payment received until
-        the window expires'''
-        
+
         return True
 
     @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):
         ''' Just as it sounds. Better safe than sorry!'''
-        return True
+        request = invoicesrpc.LookupInvoiceMsg(payment_hash=payment_hash)
+        response = invoicesstub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
+
+        if response.state == 'SETTLED':
+            return True
+        else:
+            return False
 
     
     
