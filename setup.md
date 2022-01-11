@@ -58,21 +58,25 @@ git clone https://github.com/googleapis/googleapis.git
 curl -o lightning.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/lightning.proto
 python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. lightning.proto
 ```
-We also use the *Invoices* subservice for invoice validation.
+We also use the *Invoices* and *Router* subservices for invoice validation and payment routing.
 ```
 curl -o invoices.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/invoicesrpc/invoices.proto
 python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. invoices.proto
+curl -o router.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/routerrpc/router.proto
+python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. router.proto
 ```
 Relative imports are not working at the moment, so some editing is needed in
-`api/lightning` files `lightning_pb2_grpc.py`, `invoices_pb2_grpc.py` and `invoices_pb2.py`. 
+`api/lightning` files `lightning_pb2_grpc.py`, `invoices_pb2_grpc.py`, `invoices_pb2.py`, `router_pb2_grpc.py` and `router_pb2.py`. 
 
-Example, change line :
+For example in `lightning_pb2_grpc.py` , add "from . " :
 
 `import lightning_pb2 as lightning__pb2`
 
 to
 
 `from . import lightning_pb2 as lightning__pb2`
+
+Same for every other file
 
 ## React development environment
 ### Install npm
@@ -96,7 +100,7 @@ npm install react-native-svg
 npm install react-qr-code
 npm install @mui/material
 ```
-Note we are using mostly MaterialUI V5, but Image loading from V4 extentions (so both V4 and V5 are needed)
+Note we are using mostly MaterialUI V5 (@mui/material) but Image loading from V4 (@material-ui/core) extentions (so both V4 and V5 are needed)
 
 ### Launch the React render
 from frontend/ directory

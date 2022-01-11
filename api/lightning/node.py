@@ -1,6 +1,7 @@
 import grpc, os, hashlib, secrets, json
 from . import lightning_pb2 as lnrpc, lightning_pb2_grpc as lightningstub
 from . import invoices_pb2 as invoicesrpc, invoices_pb2_grpc as invoicesstub
+from . import router_pb2 as routerrpc, router_pb2_grpc as routerstub
 
 from decouple import config
 from base64 import b64decode
@@ -19,10 +20,13 @@ LND_GRPC_HOST = config('LND_GRPC_HOST')
 class LNNode():
 
     os.environ["GRPC_SSL_CIPHER_SUITES"] = 'HIGH+ECDSA'
+
     creds = grpc.ssl_channel_credentials(CERT)
     channel = grpc.secure_channel(LND_GRPC_HOST, creds)
+
     lightningstub = lightningstub.LightningStub(channel)
     invoicesstub = invoicesstub.InvoicesStub(channel)
+    routerstub = routerstub.RouterStub(channel)
 
     @classmethod
     def decode_payreq(cls, invoice):
@@ -46,8 +50,8 @@ class LNNode():
     @classmethod
     def settle_hold_invoice(cls, preimage):
         '''settles a hold invoice'''
-        request = invoicesrpc.SettleInvoiceMsg(preimage=preimage)
-        response = invoicesstub.SettleInvoice(request, metadata=[('macaroon', MACAROON.hex())])
+        request = invoicesrpc.SettleInvoiceMsg(preimage=bytes.fromhex(preimage))
+        response = cls.invoicesstub.SettleInvoice(request, metadata=[('macaroon', MACAROON.hex())])
         # Fix this: tricky because settling sucessfully an invoice has no response. TODO
         if response == None:
             return True
@@ -84,31 +88,29 @@ class LNNode():
     @classmethod
     def validate_hold_invoice_locked(cls, payment_hash):
         '''Checks if hold invoice is locked'''
-
-        request = invoicesrpc.LookupInvoiceMsg(payment_hash=payment_hash)
-        response = invoicesstub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
-        
-        # What is the state for locked ???
-        if response.state == 'OPEN' or response.state == 'SETTLED':
-            return False
-        else:
-            return True
-
+        request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
+        response = cls.invoicesstub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
+        print('status here')
+        print(response.state) # LND states: 0 OPEN, 1 SETTLED, 3 ACCEPTED, GRPC_ERROR status 5 when cancelled
+        return response.state == 3 # True if hold invoice is accepted.
 
     @classmethod
     def check_until_invoice_locked(cls, payment_hash, expiration):
         '''Checks until hold invoice is locked.
         When invoice is locked, returns true. 
         If time expires, return False.'''
-         
-        request = invoicesrpc.SubscribeSingleInvoiceRequest(r_hash=payment_hash)
-        for invoice in invoicesstub.SubscribeSingleInvoice(request):
+        # Experimental, needs asyncio
+        # Maybe best to pass LNpayment object and change status live.
+
+        request = cls.invoicesrpc.SubscribeSingleInvoiceRequest(r_hash=payment_hash)
+        for invoice in cls.invoicesstub.SubscribeSingleInvoice(request):
+            print(invoice)
             if timezone.now > expiration:
                 break
-            if invoice.state == 'LOCKED':
+            if invoice.state == 'ACCEPTED':
                 return True
-
         return False
+
 
     @classmethod
     def validate_ln_invoice(cls, invoice, num_satoshis):
@@ -125,8 +127,13 @@ class LNNode():
 
         try:
             payreq_decoded = cls.decode_payreq(invoice)
+            print(payreq_decoded)
         except:
             buyer_invoice['context'] = {'bad_invoice':'Does not look like a valid lightning invoice'}
+            return buyer_invoice
+
+        if payreq_decoded.num_satoshis == 0:
+            buyer_invoice['context'] = {'bad_invoice':'The invoice provided has no explicit amount'}
             return buyer_invoice
 
         if not payreq_decoded.num_satoshis == num_satoshis:
@@ -147,11 +154,28 @@ class LNNode():
         return buyer_invoice
 
     @classmethod
-    def pay_invoice(cls, invoice):
+    def pay_invoice(cls, invoice, num_satoshis):
         '''Sends sats to buyer'''
+        # Needs router subservice
+        # Maybe best to pass order and change status live.
 
+        fee_limit_sat = max(num_satoshis * 0.0002, 10) # 200 ppm or 10 sats 
 
-        return True
+        request = routerrpc.SendPaymentRequest(
+            payment_request=invoice,
+            amt_msat=num_satoshis,
+            fee_limit_sat=fee_limit_sat,
+            timeout_seconds=60,
+            )
+
+        for response in routerstub.SendPaymentV2(request, metadata=[('macaroon', MACAROON.hex())]):
+            print(response)
+            print(response.status)
+
+            if response.status == True:
+                return True
+
+        return False
 
     @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):

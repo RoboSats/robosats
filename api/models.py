@@ -34,8 +34,8 @@ class LNPayment(models.Model):
         RETNED = 3, 'Returned'
         MISSNG = 4, 'Missing'
         VALIDI = 5, 'Valid'
-        PAYING = 6, 'Paying ongoing'
-        FAILRO = 7, 'Failed routing'
+        FLIGHT = 6, 'On flight'
+        FAILRO = 7, 'Routing failed'
 
     # payment use details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HOLD)

@@ -643,4 +643,5 @@ frontend/static/frontend/main*
 frontend/static/assets/avatars*
 api/lightning/lightning*
 api/lightning/invoices*
+api/lightning/router*
 api/lightning/googleapis*

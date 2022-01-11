@@ -149,7 +149,6 @@ class Logics():
 
         # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow'
         if order.status == Order.Status.WF2:
-            print(order.trade_escrow)
             if order.trade_escrow:
                 if order.trade_escrow.status == LNPayment.Status.LOCKED:
                     order.status = Order.Status.CHA
@@ -159,27 +158,36 @@ class Logics():
         order.save()
         return True, None
 
+    def add_profile_rating(profile, rating):
+        ''' adds a new rating to a user profile'''
+
+        profile.total_ratings = profile.total_ratings + 1
+        latest_ratings = profile.latest_ratings
+        if len(latest_ratings) <= 1:
+            profile.latest_ratings = [rating]
+            profile.avg_rating = rating
+
+        else:
+            latest_ratings = list(latest_ratings).append(rating)
+            profile.latest_ratings = latest_ratings
+            profile.avg_rating = sum(latest_ratings) / len(latest_ratings)
+
+        profile.save()
+
     @classmethod
     def rate_counterparty(cls, order, user, rating):
 
         # If the trade is finished
         if order.status > Order.Status.PAY:
-
             # if maker, rates taker
             if order.maker == user:
-                order.taker.profile.total_ratings = order.taker.profile.total_ratings + 1
-                last_ratings = list(order.taker.profile.last_ratings).append(rating)
-                order.taker.profile.total_ratings = sum(last_ratings) / len(last_ratings)
-
+                cls.add_profile_rating(order.taker.profile, rating)
             # if taker, rates maker
             if order.taker == user:
-                order.maker.profile.total_ratings = order.maker.profile.total_ratings + 1
-                last_ratings = list(order.maker.profile.last_ratings).append(rating)
-                order.maker.profile.total_ratings = sum(last_ratings) / len(last_ratings)
+                cls.add_profile_rating(order.maker.profile, rating)
         else:
             return False, {'bad_request':'You cannot rate your counterparty yet.'}
 
-        order.save()
         return True, None
 
     def is_penalized(user):
@@ -204,7 +212,7 @@ class Logics():
             order.maker = None
             order.status = Order.Status.UCA
             order.save()
-            return True, None
+            return True, {}
 
         # 2) When maker cancels after bond
             '''The order dissapears from book and goes to cancelled. 
@@ -213,12 +221,14 @@ class Logics():
             of the bond (requires maker submitting an invoice)'''
         elif order.status == Order.Status.PUB and order.maker == user:
             #Settle the maker bond (Maker loses the bond for a public order)
-            valid = cls.settle_maker_bond(order)
-            if valid:
+            if cls.settle_maker_bond(order):
+                order.maker_bond.status = LNPayment.Status.SETLED
+                order.maker_bond.save()
+
                 order.maker = None
                 order.status = Order.Status.UCA
                 order.save()
-                return True, None
+                return True, {}
 
         # 3) When taker cancels before bond
             ''' The order goes back to the book as public.
@@ -226,13 +236,13 @@ class Logics():
         elif order.status == Order.Status.TAK and order.taker == user:
             # adds a timeout penalty
             user.profile.penalty_expiration = timezone.now() + timedelta(seconds=PENALTY_TIMEOUT)
-            user.save()
+            user.profile.save()
 
             order.taker = None
             order.status = Order.Status.PUB
             order.save()
 
-            return True, None
+            return True, {}
 
         # 4) When taker or maker cancel after bond (before escrow)
             '''The order goes into cancelled status if maker cancels.
@@ -248,19 +258,19 @@ class Logics():
                 order.maker = None
                 order.status = Order.Status.UCA
                 order.save()
-                return True, None
+                return True, {}
 
         # 4.b) When taker cancel after bond (before escrow)
             '''The order into cancelled status if maker cancels.'''
         elif order.status > Order.Status.TAK and order.status < Order.Status.CHA and order.taker == user:
-            #Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
+            # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_taker_bond(order)
             if valid:
                 order.taker = None
                 order.status = Order.Status.PUB
                 # order.taker_bond = None # TODO fix this, it overrides the information about the settled taker bond. Might make admin tasks hard.
                 order.save()
-                return True, None
+                return True, {}
 
         # 5) When trade collateral has been posted (after escrow)
             '''Always goes to cancelled status. Collaboration  is needed.
@@ -281,6 +291,7 @@ class Logics():
 
         # Return the previous invoice if there was one and is still unpaid
         if order.maker_bond:
+            cls.check_maker_bond_locked(order)
             if order.maker_bond.status == LNPayment.Status.INVGEN:
                 return True, {'bond_invoice':order.maker_bond.invoice,'bond_satoshis':order.maker_bond.num_satoshis}
             else:
@@ -289,7 +300,7 @@ class Logics():
         order.last_satoshis = cls.satoshis_now(order)
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
 
-        description = f"RoboSats - Publishing '{str(order)}' - This is a maker bond. It will automatically return if you do not cancel or cheat"
+        description = f"RoboSats - Publishing '{str(order)}' - This is a maker bond, it will freeze in your wallet. It automatically returns. It will be charged if you cheat or cancel."
 
         # Gen hold Invoice
         hold_payment = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
@@ -312,6 +323,29 @@ class Logics():
         return True, {'bond_invoice':hold_payment['invoice'], 'bond_satoshis':bond_satoshis}
 
     @classmethod
+    def check_until_maker_bond_locked(cls, order):
+        expiration = order.maker_bond.created_at + timedelta(seconds=EXP_MAKER_BOND_INVOICE)
+        is_locked = LNNode.check_until_invoice_locked(order.payment_hash, expiration)
+        
+        if is_locked:
+            order.maker_bond.status = LNPayment.Status.LOCKED
+            order.maker_bond.save()
+            order.status = Order.Status.PUB
+
+        order.save()
+        return is_locked
+
+    @classmethod
+    def check_maker_bond_locked(cls, order):
+        if LNNode.validate_hold_invoice_locked(order.maker_bond.payment_hash):
+            order.maker_bond.status = LNPayment.Status.LOCKED
+            order.maker_bond.save()
+            order.status = Order.Status.PUB
+            order.save()
+            return True
+        return False
+
+    @classmethod
     def gen_taker_hold_invoice(cls, order, user):
 
         # Do not gen and cancel if a taker invoice is there and older than X minutes and unpaid still
@@ -330,7 +364,7 @@ class Logics():
 
         order.last_satoshis = cls.satoshis_now(order)  # LOCKS THE AMOUNT OF SATOSHIS FOR THE TRADE
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
-        description = f"RoboSats - Taking '{str(order)}' - This is a taker bond. It will automatically return if you do not cancel or cheat"
+        description = f"RoboSats - Taking '{str(order)}' - This is a taker bond, it will freeze in your wallet. It automatically returns. It will be charged if you cheat or cancel."
 
         # Gen hold Invoice
         hold_payment = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
@@ -407,12 +441,10 @@ class Logics():
     def settle_maker_bond(order):
         ''' Settles the maker bond hold invoice'''
         # TODO ERROR HANDLING
-        valid = LNNode.settle_hold_invoice(order.maker_bond.preimage)
-        if valid:
+        if LNNode.settle_hold_invoice(order.maker_bond.preimage):
             order.maker_bond.status = LNPayment.Status.SETLED
             order.save()
-
-        return valid
+            return True
 
     def settle_taker_bond(order):
         ''' Settles the taker bond hold invoice'''

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Paper, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider} from "@mui/material"
+import { Link, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider} from "@mui/material"
 import QRCode from "react-qr-code";
 
 function getCookie(name) {
@@ -294,6 +294,19 @@ handleClickOpenDisputeButton=()=>{
   .then((response) => response.json())
   .then((data) => (this.props.data = data));
 }
+handleRatingChange=(e)=>{
+  const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+      body: JSON.stringify({
+        'action': "rate",
+        'rating': e.target.value,
+      }),
+  };
+  fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+  .then((response) => response.json())
+  .then((data) => (this.props.data = data));
+}
 
   showFiatSentButton(){
     return(
@@ -359,6 +372,7 @@ handleClickOpenDisputeButton=()=>{
     )
   }
 
+
   // showFiatReceivedButton(){
 
   // }
@@ -367,9 +381,28 @@ handleClickOpenDisputeButton=()=>{
 
   // }
 
-  // showRateSelect(){
-
-  // }
+  showRateSelect(){
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="h6" variant="h6">
+            🎉Trade finished!🥳
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body2" align="center">
+            What do you think of <b>{this.props.data.isMaker ? this.props.data.takerNick : this.props.data.makerNick}</b>?
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Rating name="size-large" defaultValue={2} size="large" onChange={this.handleRatingChange} />
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Button color='primary' to='/' component={Link}>Start Again</Button>
+        </Grid>
+      </Grid>
+    )
+  }
 
 
   render() {
@@ -393,14 +426,25 @@ handleClickOpenDisputeButton=()=>{
               {this.props.data.isBuyer & this.props.data.statusCode == 7 ? this.showWaitingForEscrow() : ""}
               {this.props.data.isSeller & this.props.data.statusCode == 8 ? this.showWaitingForBuyerInvoice() : ""}
 
-            {/* In Chatroom - showChat(showSendButton, showReveiceButton, showDisputeButton) */}
+            {/* In Chatroom - No fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton) */}
               {this.props.data.isBuyer & this.props.data.statusCode == 9 ? this.showChat(true,false,true) : ""} 
               {this.props.data.isSeller & this.props.data.statusCode == 9 ? this.showChat(false,false,true)  : ""}
+            
+            {/* In Chatroom - Fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton) */}
               {this.props.data.isBuyer & this.props.data.statusCode == 10 ? this.showChat(false,false,true) : ""}
               {this.props.data.isSeller & this.props.data.statusCode == 10 ? this.showChat(false,true,true) : ""}
 
             {/* Trade Finished */}
               {this.props.data.isSeller & this.props.data.statusCode > 12 & this.props.data.statusCode < 15 ? this.showRateSelect()  : ""}
+              {this.props.data.isBuyer & this.props.data.statusCode == 14 ? this.showRateSelect()  : ""}
+
+            {/* Trade Finished - Payment Routing Failed */}
+              {this.props.data.isBuyer & this.props.data.statusCode == 15 ? this.showUpdateInvoice()  : ""}
+
+            {/* Trade Finished - Payment Routing Failed - TODO Needs more planning */}
+            {this.props.data.statusCode == 11 ? this.showInDispute() : ""}
+            
+
               {/* TODO */}
               {/*  */}
               {/*  */}

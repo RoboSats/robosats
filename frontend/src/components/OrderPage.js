@@ -67,7 +67,7 @@ export default class OrderPage extends Component {
     super(props);
     this.state = {
         isExplicit: false,
-        delay: 10000, // Refresh every 10 seconds
+        delay: 2000, // Refresh every 2 seconds by default
         currencies_dict: {"1":"USD"}
     };
     this.orderId = this.props.match.params.orderId;
@@ -109,7 +109,7 @@ export default class OrderPage extends Component {
             escrowInvoice: data.escrow_invoice,
             escrowSatoshis: data.escrow_satoshis,
             invoiceAmount: data.invoice_amount,
-        });
+        })
       });
   }
 
@@ -129,9 +129,6 @@ export default class OrderPage extends Component {
   tick = () => {
     this.getOrderDetails();
   }
-  handleDelayChange = (e) => {
-    this.setState({ delay: Number(e.target.value) });
-  }
 
   // Fix to use proper react props
   handleClickBackButton=()=>{
@@ -149,7 +146,9 @@ export default class OrderPage extends Component {
       };
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())
-      .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
+      .then((data) => (this.setState({badRequest:data.bad_request}) 
+      & console.log(data)
+      & this.getOrderDetails(data.id)));
   }
   getCurrencyDict() {
     fetch('/static/assets/currencies.json')
@@ -278,8 +277,9 @@ export default class OrderPage extends Component {
           </>
           }
 
-        {/* Makers can cancel before commiting the bond  (status 0)*/}
-        {this.state.isMaker & this.state.statusCode == 0 ?
+        {/* Makers can cancel before trade escrow deposited  (status <9)*/}
+        {/* Only free cancel before bond locked (status 0)*/}
+        {this.state.isMaker & this.state.statusCode < 9 ?
         <Grid item xs={12} align="center">
           <Button variant='contained' color='secondary' onClick={this.handleClickCancelOrderButton}>Cancel</Button>
         </Grid>
