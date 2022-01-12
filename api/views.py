@@ -227,7 +227,6 @@ class OrderView(viewsets.ViewSet):
 
         # 2) If action is 'update invoice'
         if action == 'update_invoice' and invoice:
-            print('AAAAAAAAAAAAAAAAAAAAAAAAAAAA')
             valid, context = Logics.update_invoice(order,request.user,invoice)
             if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
         
@@ -407,7 +406,7 @@ class InfoView(ListAPIView):
         context = {}
 
         context['num_public_buy_orders'] = len(Order.objects.filter(type=Order.Types.BUY, status=Order.Status.PUB))
-        context['num_public_sell_orders'] = len(Order.objects.filter(type=Order.Types.BUY, status=Order.Status.PUB))
+        context['num_public_sell_orders'] = len(Order.objects.filter(type=Order.Types.SELL, status=Order.Status.PUB))
         
         # Number of active users (logged in in last 30 minutes)
         active_user_time_range = (timezone.now() - timedelta(minutes=30), timezone.now())

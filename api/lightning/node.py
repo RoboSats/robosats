@@ -28,6 +28,14 @@ class LNNode():
     invoicesstub = invoicesstub.InvoicesStub(channel)
     routerstub = routerstub.RouterStub(channel)
 
+    payment_failure_context = {
+        0:	"Payment isn't failed (yet)",
+        1:	"There are more routes to try, but the payment timeout was exceeded.",
+        2:	"All possible routes were tried and failed permanently. Or were no routes to the destination at all.",
+        3:	"A non-recoverable error has occured.",
+        4:	"Payment details incorrect (unknown hash, invalid amt or invalid final cltv delta)",
+        5:	"Insufficient local balance."}
+
     @classmethod
     def decode_payreq(cls, invoice):
         '''Decodes a lightning payment request (invoice)'''
@@ -85,7 +93,18 @@ class LNNode():
         response = cls.invoicesstub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
         print('status here')
         print(response.state)
-        return response.state == 3 # True if hold invoice is accepted.
+
+        # TODO ERROR HANDLING
+        if response.state == 0: # OPEN
+            print('STATUS: OPEN')
+            pass
+        if response.state == 1: # SETTLED
+            pass
+        if response.state == 2: # CANCELLED
+            pass
+        if response.state == 3: # ACCEPTED (LOCKED)
+            print('STATUS: ACCEPTED')
+            return True
 
     @classmethod
     def check_until_invoice_locked(cls, payment_hash, expiration):
@@ -100,7 +119,7 @@ class LNNode():
             print(invoice)
             if timezone.now > expiration:
                 break
-            if invoice.state == 'ACCEPTED':
+            if invoice.state == 3: #  True if hold invoice is accepted.
                 return True
         return False
 
@@ -160,13 +179,26 @@ class LNNode():
         for response in cls.routerstub.SendPaymentV2(request, metadata=[('macaroon', MACAROON.hex())]):
             print(response)
             print(response.status)
-            print(response.grpc_status)
+
+            # TODO ERROR HANDLING
+            if response.status == 0 : # Status 0 'UNKNOWN'
+                pass 
             if response.status == 1 : # Status 1 'IN_FLIGHT'
-                pass # LIVE UPDATE THE order.lnpayment.status
-            if response.status == 'FAILED':
-                pass # LIVE UPDATE THE order.lnpayment.status
+                pass 
+            if response.status == 3 : # 4 'FAILED' ??
+                '''0	Payment isn't failed (yet).
+                   1	There are more routes to try, but the payment timeout was exceeded.
+                   2	All possible routes were tried and failed permanently. Or were no routes to the destination at all.
+                   3	A non-recoverable error has occured.
+                   4	Payment details incorrect (unknown hash, invalid amt or invalid final cltv delta)
+                   5	Insufficient local balance.
+                '''
+                context = cls.payment_failure_context[response.failure_reason]
+                pass 
             if response.status == 2 : # STATUS 'SUCCEEDED'
                 return True
+
+
             # How to catch the errors like:"grpc_message":"invoice is already paid","grpc_status":6}
             # These are not in the response only printed to commandline
 

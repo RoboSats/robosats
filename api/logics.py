@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import time, timedelta
 from django.utils import timezone
 from .lightning.node import LNNode
 
@@ -345,6 +345,10 @@ class Logics():
             order.last_satoshis = cls.satoshis_now(order)
             order.taker_bond.status = LNPayment.Status.LOCKED
             order.taker_bond.save()
+
+            # Log a market tick
+            MarketTick.log_a_tick(order) 
+
             # With the bond confirmation the order is extended 'public_order_duration' hours
             order.expires_at = timezone.now() + timedelta(minutes=INVOICE_AND_ESCROW_DURATION)
             order.status = Order.Status.WF2
@@ -512,13 +516,19 @@ class Logics():
                 
                 # Double check the escrow is settled.
                 if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
-                    if cls.pay_buyer_invoice(order): ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
-                        order.status = Order.Status.PAY
-                        order.buyer_invoice.status = LNPayment.Status.SETLED
+                    is_payed, context = cls.pay_buyer_invoice(order) ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
+                    if is_payed:
+                        order.status = Order.Status.SUC
+                        order.buyer_invoice.status = LNPayment.Status.SUCCED
+                        order.expires_at = timezone.now() + timedelta(days=1) # One day to rate / see this order.
+                        order.save()
 
                         # RETURN THE BONDS
                         cls.return_bond(order.taker_bond)
                         cls.return_bond(order.maker_bond)
+                    else:
+                        # error handling here
+                        pass
         else:
             return False, {'bad_request':'You cannot confirm the fiat payment at this stage'}
 

@@ -435,8 +435,8 @@ handleRatingChange=(e)=>{
               {this.props.data.isSeller & this.props.data.statusCode == 10 ? this.showChat(false,true,true) : ""}
 
             {/* Trade Finished */}
-              {this.props.data.isSeller & this.props.data.statusCode > 12 & this.props.data.statusCode < 15 ? this.showRateSelect()  : ""}
-              {this.props.data.isBuyer & this.props.data.statusCode == 14 ? this.showRateSelect()  : ""}
+              {(this.props.data.isSeller & this.props.data.statusCode > 12 & this.props.data.statusCode < 15) ? this.showRateSelect()  : ""}
+              {(this.props.data.isBuyer & this.props.data.statusCode == 14) ? this.showRateSelect()  : ""}
 
             {/* Trade Finished - Payment Routing Failed */}
               {this.props.data.isBuyer & this.props.data.statusCode == 15 ? this.showUpdateInvoice()  : ""}
