@@ -40,23 +40,16 @@ class LNNode():
         '''Cancels or returns a hold invoice'''
         request = invoicesrpc.CancelInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
         response = cls.invoicesstub.CancelInvoice(request, metadata=[('macaroon', MACAROON.hex())])
-
         # Fix this: tricky because canceling sucessfully an invoice has no response. TODO
-        if response == None:
-            return True
-        else:
-            return False
+        return str(response) == "" # True if no response, false otherwise.
 
     @classmethod
     def settle_hold_invoice(cls, preimage):
         '''settles a hold invoice'''
         request = invoicesrpc.SettleInvoiceMsg(preimage=bytes.fromhex(preimage))
         response = cls.invoicesstub.SettleInvoice(request, metadata=[('macaroon', MACAROON.hex())])
-        # Fix this: tricky because settling sucessfully an invoice has no response. TODO
-        if response == None:
-            return True
-        else:
-            return False
+        # Fix this: tricky because settling sucessfully an invoice has None response. TODO
+        return str(response)=="" # True if no response, false otherwise.
 
     @classmethod
     def gen_hold_invoice(cls, num_satoshis, description, expiry):
@@ -90,8 +83,6 @@ class LNNode():
         '''Checks if hold invoice is locked'''
         request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
         response = cls.invoicesstub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
-        print('status here')
-        print(response.state) # LND states: 0 OPEN, 1 SETTLED, 3 ACCEPTED, GRPC_ERROR status 5 when cancelled
         return response.state == 3 # True if hold invoice is accepted.
 
     @classmethod
@@ -99,10 +90,10 @@ class LNNode():
         '''Checks until hold invoice is locked.
         When invoice is locked, returns true. 
         If time expires, return False.'''
-        # Experimental, needs asyncio
+        # Experimental, might need asyncio. Best if subscribing all invoices and running a background task
         # Maybe best to pass LNpayment object and change status live.
 
-        request = cls.invoicesrpc.SubscribeSingleInvoiceRequest(r_hash=payment_hash)
+        request = invoicesrpc.SubscribeSingleInvoiceRequest(r_hash=payment_hash)
         for invoice in cls.invoicesstub.SubscribeSingleInvoice(request):
             print(invoice)
             if timezone.now > expiration:
@@ -165,13 +156,9 @@ class LNNode():
             payment_request=invoice,
             amt_msat=num_satoshis,
             fee_limit_sat=fee_limit_sat,
-            timeout_seconds=60,
-            )
+            timeout_seconds=60)
 
-        for response in routerstub.SendPaymentV2(request, metadata=[('macaroon', MACAROON.hex())]):
-            print(response)
-            print(response.status)
-
+        for response in cls.routerstub.SendPaymentV2(request, metadata=[('macaroon', MACAROON.hex())]):
             if response.status == True:
                 return True
 
@@ -181,12 +168,10 @@ class LNNode():
     def double_check_htlc_is_settled(cls, payment_hash):
         ''' Just as it sounds. Better safe than sorry!'''
         request = invoicesrpc.LookupInvoiceMsg(payment_hash=payment_hash)
-        response = invoicesstub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
+        response = cls.invoicesstub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
 
-        if response.state == 'SETTLED':
-            return True
-        else:
-            return False
+        return response.state == 1 # LND states: 0 OPEN, 1 SETTLED, 3 ACCEPTED, GRPC_ERROR status 5 when cancelled/returned
+
 
     
     

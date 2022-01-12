@@ -32,7 +32,7 @@ class LNPayment(models.Model):
         LOCKED = 1, 'Locked'
         SETLED = 2, 'Settled'
         RETNED = 3, 'Returned'
-        MISSNG = 4, 'Missing'
+        EXPIRE = 4, 'Expired'
         VALIDI = 5, 'Valid'
         FLIGHT = 6, 'On flight'
         FAILRO = 7, 'Routing failed'
@@ -44,10 +44,10 @@ class LNPayment(models.Model):
     routing_retries = models.PositiveSmallIntegerField(null=False, default=0)
     
     # payment info
-    invoice = models.CharField(max_length=500, unique=True, null=True, default=None, blank=True)
+    invoice = models.CharField(max_length=1000, unique=True, null=True, default=None, blank=True)
     payment_hash = models.CharField(max_length=100, unique=True, null=True, default=None, blank=True)
     preimage = models.CharField(max_length=64, unique=True, null=True, default=None, blank=True)
-    description = models.CharField(max_length=150, unique=False, null=True, default=None, blank=True)
+    description = models.CharField(max_length=200, unique=False, null=True, default=None, blank=True)
     num_satoshis = models.PositiveBigIntegerField(validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField()
@@ -80,7 +80,7 @@ class Order(models.Model):
         DIS = 11, 'In dispute'
         CCA = 12, 'Collaboratively cancelled'
         PAY = 13, 'Sending satoshis to buyer'
-        SUC = 14, 'Sucessfully settled'
+        SUC = 14, 'Sucessful trade'
         FAI = 15, 'Failed lightning network routing'
         MLD = 16, 'Maker lost dispute'
         TLD = 17, 'Taker lost dispute'
