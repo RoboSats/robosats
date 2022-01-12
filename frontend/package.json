@@ -29,6 +29,7 @@
     "@mui/material": "^5.2.7",
     "@mui/system": "^5.2.6",
     "material-ui-image": "^3.3.2",
+    "react-markdown": "^7.1.2",
     "react-native": "^0.66.4",
     "react-native-svg": "^12.1.1",
     "react-qr-code": "^2.0.3",

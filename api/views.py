@@ -432,6 +432,8 @@ class InfoView(ListAPIView):
         context['today_total_volume'] = total_volume
         context['lnd_version'] = get_lnd_version()
         context['robosats_running_commit_hash'] = get_commit_robosats()
+        context['fee'] = FEE
+        context['bond_size'] = float(config('BOND_SIZE'))
 
         return Response(context, status.HTTP_200_OK)
         

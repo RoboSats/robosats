@@ -184,7 +184,7 @@ class LNNode():
             if response.status == 0 : # Status 0 'UNKNOWN'
                 pass 
             if response.status == 1 : # Status 1 'IN_FLIGHT'
-                pass 
+                return True, 'In flight'
             if response.status == 3 : # 4 'FAILED' ??
                 '''0	Payment isn't failed (yet).
                    1	There are more routes to try, but the payment timeout was exceeded.
@@ -194,9 +194,9 @@ class LNNode():
                    5	Insufficient local balance.
                 '''
                 context = cls.payment_failure_context[response.failure_reason]
-                pass 
+                return False, context
             if response.status == 2 : # STATUS 'SUCCEEDED'
-                return True
+                return True, None
 
 
             # How to catch the errors like:"grpc_message":"invoice is already paid","grpc_status":6}

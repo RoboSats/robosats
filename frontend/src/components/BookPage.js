@@ -196,7 +196,7 @@ export default class BookPage extends Component {
           </Grid>)
           : 
           <Grid item xs={12} align="center">
-            <Paper elevation={0} style={{width: 1100, maxHeight: 600, overflow: 'auto'}}>
+            <Paper elevation={0} style={{width: 900, maxHeight: 500, overflow: 'auto'}}>
               <List >
                 {this.bookListItems()}
               </List>
