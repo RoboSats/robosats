@@ -34,8 +34,10 @@ class LNPayment(models.Model):
         RETNED = 3, 'Returned'
         EXPIRE = 4, 'Expired'
         VALIDI = 5, 'Valid'
-        FLIGHT = 6, 'On flight'
-        FAILRO = 7, 'Routing failed'
+        FLIGHT = 6, 'In flight'
+        SUCCED = 7, 'Succeeded'
+        FAILRO = 8, 'Routing failed'
+        
 
     # payment use details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HOLD)
@@ -44,10 +46,10 @@ class LNPayment(models.Model):
     routing_retries = models.PositiveSmallIntegerField(null=False, default=0)
     
     # payment info
-    invoice = models.CharField(max_length=1000, unique=True, null=True, default=None, blank=True)
+    invoice = models.CharField(max_length=1200, unique=True, null=True, default=None, blank=True) # Some invoices with lots of routing hints might be long
     payment_hash = models.CharField(max_length=100, unique=True, null=True, default=None, blank=True)
     preimage = models.CharField(max_length=64, unique=True, null=True, default=None, blank=True)
-    description = models.CharField(max_length=200, unique=False, null=True, default=None, blank=True)
+    description = models.CharField(max_length=500, unique=False, null=True, default=None, blank=True)
     num_satoshis = models.PositiveBigIntegerField(validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField()

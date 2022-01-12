@@ -70,6 +70,16 @@ export default class TradeBox extends Component {
     );
   }
 
+  showBondIsLocked=()=>{
+    return (
+        <Grid item xs={12} align="center">
+          <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
+            🔒 Your {this.props.data.isMaker ? 'maker' : 'taker'} bond is safely locked
+          </Typography>
+        </Grid>
+    );
+  }
+
   showEscrowQRInvoice=()=>{
     return (
       <Grid container spacing={1}>
@@ -92,6 +102,7 @@ export default class TradeBox extends Component {
             color = "secondary"
           />
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     );
   }
@@ -113,6 +124,7 @@ export default class TradeBox extends Component {
             Please wait for the taker to confirm his commitment by locking a bond.
           </Typography>
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     );
   }
@@ -138,12 +150,6 @@ export default class TradeBox extends Component {
                   return to you (no action needed).</p> 
               </Typography>
             </ListItem>
-            <Divider/>
-            <ListItem color="info" align="center"> 
-              <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
-              🔒 Your maker bond is safely locked
-              </Typography>
-            </ListItem>
             {/* TODO API sends data for a more confortable wait */}
             <Divider/>
               <ListItem>
@@ -159,8 +165,11 @@ export default class TradeBox extends Component {
               <ListItem>
                 <ListItemText primary="33%" secondary="Premium percentile" />
               </ListItem>
+            <Divider/>
+
           </List>
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     )
   }
@@ -225,6 +234,7 @@ export default class TradeBox extends Component {
         <Grid item xs={12} align="center">
           <Button variant='contained' color='primary' onClick={this.handleClickSubmitInvoiceButton}>Submit</Button>
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     )
   }
@@ -245,6 +255,7 @@ export default class TradeBox extends Component {
                 you will get your bond back automatically.</p>
           </Typography>
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     )
   }
@@ -266,6 +277,7 @@ export default class TradeBox extends Component {
                 you will get back the trade collateral and your bond automatically.</p>
           </Typography>
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     )
   }
@@ -322,22 +334,18 @@ handleRatingChange=(e)=>{
     // TODO, show alert and ask for double confirmation (Have you check you received the fiat? Confirming fiat received settles the trade.)
     // Ask for double confirmation.
     return(
-      <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Button defaultValue="confirm" variant='contained' color='primary' onClick={this.handleClickConfirmButton}>Confirm {this.props.data.currencyCode} received</Button>
         </Grid>
-      </Grid>
     )
   }
 
   showOpenDisputeButton(){
     // TODO, show alert about how opening a dispute might involve giving away personal data and might mean losing the bond. Ask for double confirmation.
     return(
-      <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Button defaultValue="dispute" variant='contained' onClick={this.handleClickOpenDisputeButton}>Open Dispute</Button>
+          <Button color="inherit" onClick={this.handleClickOpenDisputeButton}>Open Dispute</Button>
         </Grid>
-      </Grid>
     )
   }
 
@@ -368,18 +376,10 @@ handleRatingChange=(e)=>{
            {receivedFiatButton ? this.showFiatReceivedButton() : ""}
            {openDisputeButton ? this.showOpenDisputeButton() : ""}
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     )
   }
-
-
-  // showFiatReceivedButton(){
-
-  // }
-
-  // showOpenDisputeButton(){
-
-  // }
 
   showRateSelect(){
     return(

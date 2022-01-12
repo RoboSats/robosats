@@ -284,7 +284,12 @@ export default class OrderPage extends Component {
           <Button variant='contained' color='secondary' onClick={this.handleClickCancelOrderButton}>Cancel</Button>
         </Grid>
         :""}
-
+        {this.state.isMaker & this.state.statusCode > 0 & this.state.statusCode < 9 ?
+        <Grid item xs={12} align="center">
+          <Typography color="secondary" variant="subtitle2" component="subtitle2">Cancelling now forfeits the maker bond</Typography>
+        </Grid>
+        :""}
+        
         {/* Takers can cancel before commiting the bond (status 3)*/}
         {this.state.isTaker & this.state.statusCode == 3 ?
         <Grid item xs={12} align="center">

@@ -12,6 +12,6 @@ class MakeOrderSerializer(serializers.ModelSerializer):
         fields = ('type','currency','amount','payment_method','is_explicit','premium','satoshis')
 
 class UpdateOrderSerializer(serializers.Serializer):
-    invoice = serializers.CharField(max_length=300, allow_null=True, allow_blank=True, default=None)
+    invoice = serializers.CharField(max_length=2000, allow_null=True, allow_blank=True, default=None)
     action = serializers.ChoiceField(choices=('take','update_invoice','dispute','cancel','confirm','rate'), allow_null=False)
     rating = serializers.ChoiceField(choices=('1','2','3','4','5'), allow_null=True, allow_blank=True, default=None)

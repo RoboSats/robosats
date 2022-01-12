@@ -137,7 +137,7 @@ class OrderView(viewsets.ViewSet):
         # If both bonds are locked, participants can see the final trade amount in sats.
         if order.taker_bond:
             if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
-                # Seller sees the amount he pays
+                # Seller sees the amount he sends
                 if data['is_seller']:
                     data['trade_satoshis'] = order.last_satoshis
                 # Buyer sees the amount he receives
@@ -227,6 +227,7 @@ class OrderView(viewsets.ViewSet):
 
         # 2) If action is 'update invoice'
         if action == 'update_invoice' and invoice:
+            print('AAAAAAAAAAAAAAAAAAAAAAAAAAAA')
             valid, context = Logics.update_invoice(order,request.user,invoice)
             if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
         

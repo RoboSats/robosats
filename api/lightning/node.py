@@ -83,6 +83,8 @@ class LNNode():
         '''Checks if hold invoice is locked'''
         request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
         response = cls.invoicesstub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
+        print('status here')
+        print(response.state)
         return response.state == 3 # True if hold invoice is accepted.
 
     @classmethod
@@ -142,32 +144,38 @@ class LNNode():
         buyer_invoice['description'] = payreq_decoded.description
         buyer_invoice['payment_hash'] = payreq_decoded.payment_hash
 
+        
         return buyer_invoice
 
     @classmethod
     def pay_invoice(cls, invoice, num_satoshis):
         '''Sends sats to buyer'''
-        # Needs router subservice
-        # Maybe best to pass order and change status live.
 
         fee_limit_sat = max(num_satoshis * 0.0002, 10) # 200 ppm or 10 sats 
-
         request = routerrpc.SendPaymentRequest(
             payment_request=invoice,
-            amt_msat=num_satoshis,
             fee_limit_sat=fee_limit_sat,
             timeout_seconds=60)
 
         for response in cls.routerstub.SendPaymentV2(request, metadata=[('macaroon', MACAROON.hex())]):
-            if response.status == True:
+            print(response)
+            print(response.status)
+            print(response.grpc_status)
+            if response.status == 1 : # Status 1 'IN_FLIGHT'
+                pass # LIVE UPDATE THE order.lnpayment.status
+            if response.status == 'FAILED':
+                pass # LIVE UPDATE THE order.lnpayment.status
+            if response.status == 2 : # STATUS 'SUCCEEDED'
                 return True
+            # How to catch the errors like:"grpc_message":"invoice is already paid","grpc_status":6}
+            # These are not in the response only printed to commandline
 
         return False
 
     @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):
         ''' Just as it sounds. Better safe than sorry!'''
-        request = invoicesrpc.LookupInvoiceMsg(payment_hash=payment_hash)
+        request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
         response = cls.invoicesstub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
 
         return response.state == 1 # LND states: 0 OPEN, 1 SETTLED, 3 ACCEPTED, GRPC_ERROR status 5 when cancelled/returned

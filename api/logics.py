@@ -166,13 +166,16 @@ class Logics():
             )
 
         # If the order status is 'Waiting for invoice'. Move forward to 'chat'
-        if order.status == Order.Status.WFI: order.status = Order.Status.CHA
+        if order.status == Order.Status.WFI: 
+            order.status = Order.Status.CHA
+            order.expires_at = timezone.now() + timedelta(hours=FIAT_EXCHANGE_DURATION)
 
         # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow'
         if order.status == Order.Status.WF2:
-            if order.trade_escrow:
-                if order.trade_escrow.status == LNPayment.Status.LOCKED:
-                    order.status = Order.Status.CHA
+            # If the escrow is lock move to Chat.
+            if order.trade_escrow.status == LNPayment.Status.LOCKED:
+                order.status = Order.Status.CHA
+                order.expires_at = timezone.now() + timedelta(hours=FIAT_EXCHANGE_DURATION)
             else:
                 order.status = Order.Status.WFE
 
@@ -312,7 +315,7 @@ class Logics():
         order.last_satoshis = cls.satoshis_now(order)
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
 
-        description = f"RoboSats - Publishing '{str(order)}' - This is a maker bond, it will freeze in your wallet. It automatically returns. It will be charged if you cheat or cancel."
+        description = f"RoboSats - Publishing '{str(order)}' - This is a maker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel."
 
         # Gen hold Invoice
         hold_payment = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
@@ -368,7 +371,7 @@ class Logics():
         # If there was no taker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
-        description = f"RoboSats - Taking '{str(order)}' - This is a taker bond, it will freeze in your wallet. It automatically returns. It will be charged if you cheat or cancel."
+        description = f"RoboSats - Taking '{str(order)}' - This is a taker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel."
 
         # Gen hold Invoice
         hold_payment = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
@@ -400,7 +403,7 @@ class Logics():
             if order.status == Order.Status.WF2:
                 order.status = Order.Status.WFI
             # If status is 'Waiting for invoice' move to Chat
-            elif order.status == Order.Status.WFI:
+            elif order.status == Order.Status.WFE:
                 order.status = Order.Status.CHA
                 order.expires_at = timezone.now() + timedelta(hours=FIAT_EXCHANGE_DURATION)
             order.save()
@@ -470,11 +473,17 @@ class Logics():
             order.taker_bond.status = LNPayment.Status.SETLED
             order.taker_bond.save()
             return True
+    
+    def return_bond(bond):
+        '''returns a bond'''
+        if LNNode.cancel_return_hold_invoice(bond.payment_hash):
+            bond.status = LNPayment.Status.RETNED
+            return True
 
     def pay_buyer_invoice(order):
         ''' Pay buyer invoice'''
         # TODO ERROR HANDLING
-        if LNNode.pay_invoice(order.buyer_invoice.invoice):
+        if LNNode.pay_invoice(order.buyer_invoice.invoice, order.buyer_invoice.num_satoshis):
             return True
 
     @classmethod
@@ -498,18 +507,18 @@ class Logics():
                     return False, {'bad_request':'You cannot confirm to have received the fiat before it is confirmed to be sent by the buyer.'}
                 
                 # Make sure the trade escrow is at least as big as the buyer invoice 
-                if order.trade_escrow.num_satoshis > order.buyer_invoice.num_satoshis:
+                if order.trade_escrow.num_satoshis <= order.buyer_invoice.num_satoshis:
                     return False, {'bad_request':'Woah, something broke badly. Report in the public channels, or open a Github Issue.'}
                 
                 # Double check the escrow is settled.
                 if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
                     if cls.pay_buyer_invoice(order): ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
                         order.status = Order.Status.PAY
-                        order.buyer_invoice.status = LNPayment.Status.PAYING
+                        order.buyer_invoice.status = LNPayment.Status.SETLED
 
                         # RETURN THE BONDS
-                        LNNode.cancel_return_hold_invoice(order.taker_bond.payment_hash)
-                        LNNode.cancel_return_hold_invoice(order.maker_bond.payment_hash)
+                        cls.return_bond(order.taker_bond)
+                        cls.return_bond(order.maker_bond)
         else:
             return False, {'bad_request':'You cannot confirm the fiat payment at this stage'}
 
