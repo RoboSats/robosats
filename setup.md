@@ -33,6 +33,19 @@ source /usr/local/bin/virtualenvwrapper.sh
 ## Install Django admin relational links
 `pip install django-admin-relation-links`
 
+## Install dependencies for websockets
+Install Redis
+`apt-get install redis-server`
+Test redis-server
+`redis-cli ping`
+
+Install python dependencies
+```
+pip install channels
+pip install django-redis
+pip install channels-redis
+```
+
 *Django 4.0 at the time of writting*
 
 ### Launch the local development node
@@ -100,6 +113,7 @@ npm install react-native-svg
 npm install react-qr-code
 npm install @mui/material
 npm install react-markdown
+npm install websocket
 ```
 Note we are using mostly MaterialUI V5 (@mui/material) but Image loading from V4 (@material-ui/core) extentions (so both V4 and V5 are needed)
 

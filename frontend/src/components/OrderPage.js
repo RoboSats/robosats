@@ -94,6 +94,7 @@ export default class OrderPage extends Component {
             satoshis: data.satoshis,
             makerId: data.maker, 
             isParticipant: data.is_participant,
+            urNick: data.ur_nick,
             makerNick: data.maker_nick,
             takerId: data.taker,
             takerNick: data.taker_nick,

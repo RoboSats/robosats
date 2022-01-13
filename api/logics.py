@@ -375,7 +375,8 @@ class Logics():
         # If there was no taker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
-        description = f"RoboSats - Taking '{str(order)}' - This is a taker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel."
+        pos_text = 'Buying' if cls.is_buyer(order, user) else 'Selling'
+        description = f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {order.amount} - This is a taker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel."
 
         # Gen hold Invoice
         hold_payment = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
