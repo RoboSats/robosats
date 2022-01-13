@@ -33,6 +33,9 @@ source /usr/local/bin/virtualenvwrapper.sh
 ## Install Django admin relational links
 `pip install django-admin-relation-links`
 
+## Install Django channels for websockets
+`pip install channels`
+
 *Django 4.0 at the time of writting*
 
 ### Launch the local development node
