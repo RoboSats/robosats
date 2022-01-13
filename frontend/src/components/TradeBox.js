@@ -55,17 +55,19 @@ export default class TradeBox extends Component {
         </Grid>
         <Grid item xs={12} align="center">
           <QRCode value={this.props.data.bondInvoice} size={305}/>
+          <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.bondInvoice)}} align="center"> 📋Copy to clipboard</Button>
         </Grid> 
         <Grid item xs={12} align="center">
-          <TextField 
+        <TextField 
             hiddenLabel
             variant="filled" 
             size="small"
             defaultValue={this.props.data.bondInvoice} 
             disabled="true"
-            helperText="This is a hold invoice. It will not be charged if the order succeeds or expires.
-            It will be charged if the order is cancelled or you lose a dispute."
+            helperText="This is a hold invoice. It will simply freeze in your wallet.
+            It will be charged only if you cancel the order or lose a dispute."
             color = "secondary"
+            onClick = {this.copyCodeToClipboard}
           />
         </Grid>
       </Grid>
@@ -92,6 +94,7 @@ export default class TradeBox extends Component {
         </Grid>
         <Grid item xs={12} align="center">
           <QRCode value={this.props.data.escrowInvoice} size={305}/>
+          <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.escrowInvoice)}} align="center"> 📋Copy to clipboard</Button>
         </Grid> 
         <Grid item xs={12} align="center">
           <TextField 
@@ -100,7 +103,7 @@ export default class TradeBox extends Component {
             size="small"
             defaultValue={this.props.data.escrowInvoice} 
             disabled="true"
-            helperText="This is a hold LN invoice. It will be charged once the buyer confirms he sent the fiat."
+            helperText="This is a hold invoice. It will simply freeze in your wallet. It will be charged once the buyer confirms he sent the fiat."
             color = "secondary"
           />
         </Grid>
@@ -220,22 +223,24 @@ export default class TradeBox extends Component {
             valid invoice for {pn(this.props.data.invoiceAmount)} Satoshis.
           </Typography>
         </Grid>
-        <Grid item xs={12} align="center">
-          <TextField 
-              error={this.state.badInvoice}
-              helperText={this.state.badInvoice ? this.state.badInvoice : "" }
-              label={"Payout Lightning Invoice"}
-              required
-              inputProps={{
-                  style: {textAlign:"center"}
-              }}
-              multiline
-              onChange={this.handleInputInvoiceChanged}
-          />
-        </Grid>
-        <Grid item xs={12} align="center">
-          <Button variant='contained' color='primary' onClick={this.handleClickSubmitInvoiceButton}>Submit</Button>
-        </Grid>
+        <form noValidate onSubmit={this.handleClickSubmitInvoiceButton}>
+          <Grid item xs={12} align="center">
+            <TextField 
+                error={this.state.badInvoice}
+                helperText={this.state.badInvoice ? this.state.badInvoice : "" }
+                label={"Payout Lightning Invoice"}
+                required
+                inputProps={{
+                    style: {textAlign:"center"}
+                }}
+                multiline
+                onChange={this.handleInputInvoiceChanged}
+            />
+          </Grid>
+          <Grid item xs={12} align="center">
+            <Button variant='contained' color='primary'>Submit</Button>
+          </Grid>
+        </form>
         {this.showBondIsLocked()}
       </Grid>
     )
@@ -359,16 +364,17 @@ handleRatingChange=(e)=>{
             <b>Chatting with {this.props.data.isMaker ? this.props.data.takerNick : this.props.data.makerNick}</b>
           </Typography>
         </Grid>
-        <Grid item xs={12} align="left">
+        <Grid item xs={12} align="center">
           {this.props.data.isSeller ? 
-          <Typography component="body2" variant="body2">
-            Say hi to your peer robot! Be helpful and concise. Let him know how to send you {this.props.data.currencyCode}. 
+          <Typography component="body2" variant="body2"  align="center">
+            Say hi! Be helpful and concise. Let him know how to send you {this.props.data.currencyCode}. 
           </Typography>
           :
-          <Typography component="body2" variant="body2">
-            Say hi to your peer robot! Ask for payment details and click 'Confirm {this.props.data.currencyCode} sent' as soon as you send the payment.
+          <Typography component="body2" variant="body2" align="center">
+            Say hi! Ask for payment details and click "Confirm Sent" as soon as the payment is sent.
           </Typography>
           }
+          <Divider/>
         </Grid>
 
         <Chat data={this.props.data}/>

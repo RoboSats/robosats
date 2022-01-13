@@ -58,18 +58,32 @@ export default class Chat extends Component {
       <Container component="main" maxWidth="xs">
             <Paper style={{ height: 300, maxHeight: 300, overflow: 'auto', boxShadow: 'none', }}>
               {this.state.messages.map(message => <>
-              {/* {message.userNick == this.props.data.urNick ? align='right' : align='left'}  */}
-                <Card align="left">
+              <Card elevation={5} align="left" >
+              {/* If message sender is not our nick, gray color, if it is our nick, green color */}
+              {message.userNick == this.props.data.urNick ? 
                   <CardHeader
-                    avatar={
-                      <Avatar
-                        alt={message.userNick}
-                        src={window.location.origin +'/static/assets/avatars/' + message.userNick + '.png'} 
-                        />
-                    }
-                    title={message.userNick}
-                    subheader={message.msg}
-                  />
+                  avatar={
+                    <Avatar
+                      alt={message.userNick}
+                      src={window.location.origin +'/static/assets/avatars/' + message.userNick + '.png'} 
+                      />
+                  }
+                  style={{backgroundColor: '#e8ffe6'}}
+                  title={message.userNick}
+                  subheader={message.msg}
+                />
+                :
+                <CardHeader
+                        avatar={
+                          <Avatar
+                            alt={message.userNick}
+                            src={window.location.origin +'/static/assets/avatars/' + message.userNick + '.png'} 
+                            />
+                        }
+                        style={{backgroundColor: '#fcfcfc'}}
+                        title={message.userNick}
+                        subheader={message.msg}
+                      />} 
                 </Card>
               </>)}
             </Paper>
