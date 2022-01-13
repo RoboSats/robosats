@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import { Link, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider} from "@mui/material"
 import QRCode from "react-qr-code";
 
+import Chat from "./Chat"
+
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -324,7 +326,7 @@ handleRatingChange=(e)=>{
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Button defaultValue="confirm" variant='contained' color='primary' onClick={this.handleClickConfirmButton}>Confirm {this.props.data.currencyCode} sent</Button>
+          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickConfirmButton}>Confirm {this.props.data.currencyCode} sent</Button>
         </Grid>
       </Grid>
     )
@@ -335,7 +337,7 @@ handleRatingChange=(e)=>{
     // Ask for double confirmation.
     return(
         <Grid item xs={12} align="center">
-          <Button defaultValue="confirm" variant='contained' color='primary' onClick={this.handleClickConfirmButton}>Confirm {this.props.data.currencyCode} received</Button>
+          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickConfirmButton}>Confirm {this.props.data.currencyCode} received</Button>
         </Grid>
     )
   }
@@ -368,13 +370,13 @@ handleRatingChange=(e)=>{
           </Typography>
           }
         </Grid>
-        <Grid item xs={12} style={{ width:330, height:360}}>
-           CHAT PLACEHOLDER
-        </Grid>
+
+        <Chat data={this.props.data}/>
+
         <Grid item xs={12} align="center">
-           {sendFiatButton ? this.showFiatSentButton() : ""}
-           {receivedFiatButton ? this.showFiatReceivedButton() : ""}
-           {openDisputeButton ? this.showOpenDisputeButton() : ""}
+          {openDisputeButton ? this.showOpenDisputeButton() : ""}
+          {sendFiatButton ? this.showFiatSentButton() : ""}
+          {receivedFiatButton ? this.showFiatReceivedButton() : ""}
         </Grid>
         {this.showBondIsLocked()}
       </Grid>

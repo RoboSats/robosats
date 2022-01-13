@@ -116,6 +116,7 @@ class OrderView(viewsets.ViewSet):
         data['is_maker'] = order.maker == request.user
         data['is_taker'] = order.taker == request.user
         data['is_participant'] = data['is_maker'] or data['is_taker']
+        data['ur_nick'] = request.user.username
         
         # 3) If not a participant and order is not public, forbid.
         if not data['is_participant'] and order.status != Order.Status.PUB:

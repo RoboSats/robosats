@@ -167,7 +167,7 @@ export default class MakerPage extends Component {
                         </RadioGroup>
                     </FormControl>
                 </Grid>
-                <Grid container xs={11} align="center">
+                <Grid containter xs={8} alignItems="stretch" style={{ display: "flex" }}>
                             <TextField
                                 error={this.state.amount == 0} 
                                 helperText={this.state.amount == 0 ? 'Must be more than 0' : null}

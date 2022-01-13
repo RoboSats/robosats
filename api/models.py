@@ -4,6 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator, validat
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.utils.html import mark_safe
+import uuid
 
 from decouple import config
 from pathlib import Path
@@ -40,6 +41,7 @@ class LNPayment(models.Model):
         
 
     # payment use details
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HOLD)
     concept = models.PositiveSmallIntegerField(choices=Concepts.choices, null=False, default=Concepts.MAKEBOND)
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.INVGEN)
@@ -59,7 +61,7 @@ class LNPayment(models.Model):
     receiver = models.ForeignKey(User, related_name='receiver', on_delete=models.CASCADE, null=True, default=None)
 
     def __str__(self):
-        return (f'HTLC {self.id}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}')
+        return (f'LN-{str(self.id)[:8]}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}')
 
 class Order(models.Model):
     
@@ -203,7 +205,7 @@ class MarketTick(models.Model):
     maker and taker are commited with bonds (contract 
     is finished and cancellation has a cost)
     '''
-
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=None, null=True, validators=[MinValueValidator(0)])
     volume = models.DecimalField(max_digits=8, decimal_places=8, default=None, null=True, validators=[MinValueValidator(0)])
     premium = models.DecimalField(max_digits=5, decimal_places=2, default=None, null=True, validators=[MinValueValidator(-100), MaxValueValidator(999)], blank=True)
@@ -235,6 +237,6 @@ class MarketTick(models.Model):
             tick.save()
 
     def __str__(self):
-        return f'Tick: {self.id}'
+        return f'Tick: {str(self.id)[:8]}'
 
 
