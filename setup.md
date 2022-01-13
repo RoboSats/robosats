@@ -33,8 +33,18 @@ source /usr/local/bin/virtualenvwrapper.sh
 ## Install Django admin relational links
 `pip install django-admin-relation-links`
 
-## Install Django channels for websockets
-`pip install channels`
+## Install dependencies for websockets
+Install Redis
+`apt-get install redis-server`
+Test redis-server
+`redis-cli ping`
+
+Install python dependencies
+```
+pip install channels
+pip install django-redis
+pip install channels-redis
+```
 
 *Django 4.0 at the time of writting*
 
