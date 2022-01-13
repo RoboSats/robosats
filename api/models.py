@@ -18,8 +18,8 @@ BOND_SIZE = float(config('BOND_SIZE'))
 class LNPayment(models.Model):
 
     class Types(models.IntegerChoices):
-        NORM = 0, 'Regular invoice' # Only outgoing HTLCs will be regular invoices (Non-hold)
-        hold = 1, 'hold invoice'
+        NORM = 0, 'Regular invoice' # Only outgoing buyer payment will be a regular invoice (Non-hold)
+        HOLD = 1, 'hold invoice'
 
     class Concepts(models.IntegerChoices):
         MAKEBOND = 0, 'Maker bond'
@@ -32,24 +32,27 @@ class LNPayment(models.Model):
         LOCKED = 1, 'Locked'
         SETLED = 2, 'Settled'
         RETNED = 3, 'Returned'
-        MISSNG = 4, 'Missing'
+        EXPIRE = 4, 'Expired'
         VALIDI = 5, 'Valid'
-        PAYING = 6, 'Paying ongoing'
-        FAILRO = 7, 'Failed routing'
+        FLIGHT = 6, 'In flight'
+        SUCCED = 7, 'Succeeded'
+        FAILRO = 8, 'Routing failed'
+        
 
     # payment use details
-    type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.hold)
+    type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HOLD)
     concept = models.PositiveSmallIntegerField(choices=Concepts.choices, null=False, default=Concepts.MAKEBOND)
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.INVGEN)
     routing_retries = models.PositiveSmallIntegerField(null=False, default=0)
     
     # payment info
-    invoice = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
-    payment_hash = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
-    description = models.CharField(max_length=300, unique=False, null=True, default=None, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
+    invoice = models.CharField(max_length=1200, unique=True, null=True, default=None, blank=True) # Some invoices with lots of routing hints might be long
+    payment_hash = models.CharField(max_length=100, unique=True, null=True, default=None, blank=True)
+    preimage = models.CharField(max_length=64, unique=True, null=True, default=None, blank=True)
+    description = models.CharField(max_length=500, unique=False, null=True, default=None, blank=True)
     num_satoshis = models.PositiveBigIntegerField(validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
+    created_at = models.DateTimeField()
+    expires_at = models.DateTimeField()
     
     # involved parties
     sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE, null=True, default=None)
@@ -79,7 +82,7 @@ class Order(models.Model):
         DIS = 11, 'In dispute'
         CCA = 12, 'Collaboratively cancelled'
         PAY = 13, 'Sending satoshis to buyer'
-        SUC = 14, 'Sucessfully settled'
+        SUC = 14, 'Sucessful trade'
         FAI = 15, 'Failed lightning network routing'
         MLD = 16, 'Maker lost dispute'
         TLD = 17, 'Taker lost dispute'

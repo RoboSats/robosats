@@ -181,7 +181,6 @@ export default class MakerPage extends Component {
                                 onChange={this.handleAmountChange}
                             />
                             <Select
-                                label="Select Payment Currency"
                                 required="true" 
                                 defaultValue={this.defaultCurrency} 
                                 inputProps={{

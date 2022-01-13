@@ -641,3 +641,7 @@ frontend/static/frontend/main*
 
 # robosats
 frontend/static/assets/avatars*
+api/lightning/lightning*
+api/lightning/invoices*
+api/lightning/router*
+api/lightning/googleapis*

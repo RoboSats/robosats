@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Paper, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider} from "@mui/material"
+import { Link, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider} from "@mui/material"
 import QRCode from "react-qr-code";
 
 function getCookie(name) {
@@ -27,6 +27,9 @@ function pn(x) {
 export default class TradeBox extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      badInvoice: false,
+    }
   }
   
   showQRInvoice=()=>{
@@ -34,16 +37,16 @@ export default class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2">
-            Robots around here usually show commitment
+            Robosats show commitment to their peers
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           {this.props.data.isMaker ?
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography color="primary" component="subtitle1" variant="subtitle1">
             <b>Lock {pn(this.props.data.bondSatoshis)} Sats to PUBLISH order </b>
           </Typography>
           : 
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography color="primary" component="subtitle1" variant="subtitle1">
             <b>Lock {pn(this.props.data.bondSatoshis)} Sats to TAKE the order </b>
           </Typography>
           }
@@ -67,11 +70,21 @@ export default class TradeBox extends Component {
     );
   }
 
+  showBondIsLocked=()=>{
+    return (
+        <Grid item xs={12} align="center">
+          <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
+            🔒 Your {this.props.data.isMaker ? 'maker' : 'taker'} bond is safely locked
+          </Typography>
+        </Grid>
+    );
+  }
+
   showEscrowQRInvoice=()=>{
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography color="primary" component="subtitle1" variant="subtitle1">
             <b>Deposit {pn(this.props.data.escrowSatoshis)} Sats as trade collateral </b>
           </Typography>
         </Grid>
@@ -89,6 +102,7 @@ export default class TradeBox extends Component {
             color = "secondary"
           />
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     );
   }
@@ -110,6 +124,7 @@ export default class TradeBox extends Component {
             Please wait for the taker to confirm his commitment by locking a bond.
           </Typography>
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     );
   }
@@ -119,7 +134,7 @@ export default class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b> Your order is public, wait for a taker. </b>
+            <b> Your order is public. Wait for a taker. </b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -135,7 +150,6 @@ export default class TradeBox extends Component {
                   return to you (no action needed).</p> 
               </Typography>
             </ListItem>
-
             {/* TODO API sends data for a more confortable wait */}
             <Divider/>
               <ListItem>
@@ -151,21 +165,27 @@ export default class TradeBox extends Component {
               <ListItem>
                 <ListItemText primary="33%" secondary="Premium percentile" />
               </ListItem>
+            <Divider/>
+
           </List>
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     )
   }
 
   handleInputInvoiceChanged=(e)=>{
     this.setState({
-        invoice: e.target.value,     
+        invoice: e.target.value,
+        badInvoice: false,     
     });
   }
 
   // Fix this. It's clunky because it takes time. this.props.data does not refresh until next refresh of OrderPage.
 
   handleClickSubmitInvoiceButton=()=>{
+      this.setState({badInvoice:false});
+
       const requestOptions = {
           method: 'POST',
           headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
@@ -176,7 +196,8 @@ export default class TradeBox extends Component {
       };
       fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
       .then((response) => response.json())
-      .then((data) => (this.props.data = data));
+      .then((data) => this.setState({badInvoice:data.bad_invoice})
+      & console.log(data));
   }
 
   showInputInvoice(){
@@ -186,7 +207,7 @@ export default class TradeBox extends Component {
 
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography color="primary" component="subtitle1" variant="subtitle1">
             <b> Submit a LN invoice for {pn(this.props.data.invoiceAmount)} Sats </b>
           </Typography>
         </Grid>
@@ -199,6 +220,8 @@ export default class TradeBox extends Component {
         </Grid>
         <Grid item xs={12} align="center">
           <TextField 
+              error={this.state.badInvoice}
+              helperText={this.state.badInvoice ? this.state.badInvoice : "" }
               label={"Payout Lightning Invoice"}
               required
               inputProps={{
@@ -211,6 +234,7 @@ export default class TradeBox extends Component {
         <Grid item xs={12} align="center">
           <Button variant='contained' color='primary' onClick={this.handleClickSubmitInvoiceButton}>Submit</Button>
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     )
   }
@@ -231,6 +255,7 @@ export default class TradeBox extends Component {
                 you will get your bond back automatically.</p>
           </Typography>
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     )
   }
@@ -252,6 +277,7 @@ export default class TradeBox extends Component {
                 you will get back the trade collateral and your bond automatically.</p>
           </Typography>
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     )
   }
@@ -280,6 +306,19 @@ handleClickOpenDisputeButton=()=>{
   .then((response) => response.json())
   .then((data) => (this.props.data = data));
 }
+handleRatingChange=(e)=>{
+  const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+      body: JSON.stringify({
+        'action': "rate",
+        'rating': e.target.value,
+      }),
+  };
+  fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+  .then((response) => response.json())
+  .then((data) => (this.props.data = data));
+}
 
   showFiatSentButton(){
     return(
@@ -295,22 +334,18 @@ handleClickOpenDisputeButton=()=>{
     // TODO, show alert and ask for double confirmation (Have you check you received the fiat? Confirming fiat received settles the trade.)
     // Ask for double confirmation.
     return(
-      <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Button defaultValue="confirm" variant='contained' color='primary' onClick={this.handleClickConfirmButton}>Confirm {this.props.data.currencyCode} received</Button>
         </Grid>
-      </Grid>
     )
   }
 
   showOpenDisputeButton(){
     // TODO, show alert about how opening a dispute might involve giving away personal data and might mean losing the bond. Ask for double confirmation.
     return(
-      <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Button defaultValue="dispute" variant='contained' onClick={this.handleClickOpenDisputeButton}>Open Dispute</Button>
+          <Button color="inherit" onClick={this.handleClickOpenDisputeButton}>Open Dispute</Button>
         </Grid>
-      </Grid>
     )
   }
 
@@ -341,21 +376,33 @@ handleClickOpenDisputeButton=()=>{
            {receivedFiatButton ? this.showFiatReceivedButton() : ""}
            {openDisputeButton ? this.showOpenDisputeButton() : ""}
         </Grid>
+        {this.showBondIsLocked()}
       </Grid>
     )
   }
 
-  // showFiatReceivedButton(){
-
-  // }
-
-  // showOpenDisputeButton(){
-
-  // }
-
-  // showRateSelect(){
-
-  // }
+  showRateSelect(){
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="h6" variant="h6">
+            🎉Trade finished!🥳
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body2" align="center">
+            What do you think of <b>{this.props.data.isMaker ? this.props.data.takerNick : this.props.data.makerNick}</b>?
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Rating name="size-large" defaultValue={2} size="large" onChange={this.handleRatingChange} />
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Button color='primary' to='/' component={Link}>Start Again</Button>
+        </Grid>
+      </Grid>
+    )
+  }
 
 
   render() {
@@ -379,14 +426,25 @@ handleClickOpenDisputeButton=()=>{
               {this.props.data.isBuyer & this.props.data.statusCode == 7 ? this.showWaitingForEscrow() : ""}
               {this.props.data.isSeller & this.props.data.statusCode == 8 ? this.showWaitingForBuyerInvoice() : ""}
 
-            {/* In Chatroom - showChat(showSendButton, showReveiceButton, showDisputeButton) */}
+            {/* In Chatroom - No fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton) */}
               {this.props.data.isBuyer & this.props.data.statusCode == 9 ? this.showChat(true,false,true) : ""} 
               {this.props.data.isSeller & this.props.data.statusCode == 9 ? this.showChat(false,false,true)  : ""}
+            
+            {/* In Chatroom - Fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton) */}
               {this.props.data.isBuyer & this.props.data.statusCode == 10 ? this.showChat(false,false,true) : ""}
               {this.props.data.isSeller & this.props.data.statusCode == 10 ? this.showChat(false,true,true) : ""}
 
             {/* Trade Finished */}
-              {this.props.data.isSeller & this.props.data.statusCode > 12 & this.props.data.statusCode < 15 ? this.showRateSelect()  : ""}
+              {(this.props.data.isSeller & this.props.data.statusCode > 12 & this.props.data.statusCode < 15) ? this.showRateSelect()  : ""}
+              {(this.props.data.isBuyer & this.props.data.statusCode == 14) ? this.showRateSelect()  : ""}
+
+            {/* Trade Finished - Payment Routing Failed */}
+              {this.props.data.isBuyer & this.props.data.statusCode == 15 ? this.showUpdateInvoice()  : ""}
+
+            {/* Trade Finished - Payment Routing Failed - TODO Needs more planning */}
+            {this.props.data.statusCode == 11 ? this.showInDispute() : ""}
+            
+
               {/* TODO */}
               {/*  */}
               {/*  */}

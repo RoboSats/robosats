@@ -137,7 +137,7 @@ export default class UserGenPage extends Component {
           <Grid item xs={12} align="center">
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
               <Button color='primary' to='/make/' component={Link}>Make Order</Button>
-              <Button color='inherit' to='/home' component={Link}>INFO</Button>
+              <Button color='inherit' to='/info' component={Link}>INFO</Button>
               <Button color='secondary' to='/book/' component={Link}>View Book</Button>
             </ButtonGroup>
           </Grid>

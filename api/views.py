@@ -1,4 +1,5 @@
 from re import T
+from django.db.models import query
 from rest_framework import status, viewsets
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
@@ -8,8 +9,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
-from .models import LNPayment, Order
+from .models import LNPayment, MarketTick, Order
 from .logics import Logics
+from .utils import get_lnd_version, get_commit_robosats
 
 from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
@@ -18,7 +20,7 @@ from math import log2
 import numpy as np
 import hashlib
 from pathlib import Path
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.utils import timezone
 from decouple import config
 
@@ -58,7 +60,7 @@ class MakerView(CreateAPIView):
             premium=premium,
             satoshis=satoshis,
             is_explicit=is_explicit,
-            expires_at=timezone.now()+timedelta(minutes=EXP_MAKER_BOND_INVOICE), # TODO Move to class method
+            expires_at=timezone.now()+timedelta(seconds=EXP_MAKER_BOND_INVOICE), # TODO Move to class method
             maker=request.user)
         
         # TODO move to Order class method when new instance is created!
@@ -93,11 +95,11 @@ class OrderView(viewsets.ViewSet):
         # This is our order.
         order = order[0]
 
-        # 1) If order expired
+        # 1) If order has expired
         if order.status == Order.Status.EXP:
             return Response({'bad_request':'This order has expired'},status.HTTP_400_BAD_REQUEST)
 
-        # 2) If order cancelled
+        # 2) If order has been cancelled
         if order.status == Order.Status.UCA:
             return Response({'bad_request':'This order has been cancelled by the maker'},status.HTTP_400_BAD_REQUEST)
         if order.status == Order.Status.CCA:
@@ -105,7 +107,7 @@ class OrderView(viewsets.ViewSet):
 
         data = ListOrderSerializer(order).data
 
-        # if user is under a limit (penalty), inform him
+        # if user is under a limit (penalty), inform him.
         is_penalized, time_out = Logics.is_penalized(request.user)
         if is_penalized:
             data['penalty'] = time_out
@@ -123,7 +125,7 @@ class OrderView(viewsets.ViewSet):
         elif not data['is_participant'] and order.status != Order.Status.PUB:
             return Response(data, status=status.HTTP_200_OK) 
 
-        # For participants add position side, nicks and status as message
+        # For participants add positions, nicks and status as a message
         data['is_buyer'] = Logics.is_buyer(order,request.user)
         data['is_seller'] = Logics.is_seller(order,request.user)
         data['maker_nick'] = str(order.maker)
@@ -132,10 +134,10 @@ class OrderView(viewsets.ViewSet):
         data['is_fiat_sent'] = order.is_fiat_sent
         data['is_disputed'] = order.is_disputed
 
-        # If both bonds are locked, participants can see the trade in sats is also final.
+        # If both bonds are locked, participants can see the final trade amount in sats.
         if order.taker_bond:
             if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
-                # Seller sees the amount he pays
+                # Seller sees the amount he sends
                 if data['is_seller']:
                     data['trade_satoshis'] = order.last_satoshis
                 # Buyer sees the amount he receives
@@ -180,8 +182,10 @@ class OrderView(viewsets.ViewSet):
                 else:
                     return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 8) If status is 'CHA'or '' or '' and all HTLCS are in LOCKED
-        elif order.status == Order.Status.CHA: # TODO Add the other status
+        # 8) If status is 'CHA' or 'FSE' and all HTLCS are in LOCKED
+        elif order.status == Order.Status.CHA or order.status == Order.Status.FSE: # TODO Add the other status
+
+            # If all bonds are locked.
             if order.maker_bond.status == order.taker_bond.status == order.trade_escrow.status == LNPayment.Status.LOCKED:
                 # add whether a collaborative cancel is pending
                 data['pending_cancel'] = order.is_pending_cancel
@@ -191,7 +195,7 @@ class OrderView(viewsets.ViewSet):
 
     def take_update_confirm_dispute_cancel(self, request, format=None):
         '''
-        Here take place all of the user updates to the order object.
+        Here takes place all of updatesto the order object.
         That is: take, confim, cancel, dispute, update_invoice or rate.
         '''
         order_id = request.GET.get(self.lookup_url_kwarg)
@@ -206,7 +210,7 @@ class OrderView(viewsets.ViewSet):
         invoice = serializer.data.get('invoice')
         rating = serializer.data.get('rating')
 
-        # 1) If action is take, it is be taker request!
+        # 1) If action is take, it is a taker request!
         if action == 'take':
             if order.status == Order.Status.PUB: 
                 valid, context = Logics.validate_already_maker_or_taker(request.user)
@@ -251,7 +255,7 @@ class OrderView(viewsets.ViewSet):
             return Response(
                 {'bad_request':
                 'The Robotic Satoshis working in the warehouse did not understand you. ' + 
-                'Please, fill a Bug Issue in Github https://github.com/Reckless-Satoshi/robosats/issues'},
+                'Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues'},
                 status.HTTP_501_NOT_IMPLEMENTED)
 
         return self.get(request)
@@ -275,6 +279,16 @@ class UserView(APIView):
         - Creates login credentials (new User object)
         Response with Avatar and Nickname.
         '''
+
+        # if request.user.id:
+        #     context = {}
+        #     context['nickname'] = request.user.username
+        #     participant = not Logics.validate_already_maker_or_taker(request.user)
+        #     context['bad_request'] = f'You are already logged in as {request.user}'
+        #     if participant:
+        #         context['bad_request'] = f'You are already logged in as as {request.user} and have an active order'
+        #     return Response(context,status.HTTP_200_OK)
+
         token = request.GET.get(self.lookup_url_kwarg)
 
         # Compute token entropy
@@ -392,10 +406,34 @@ class InfoView(ListAPIView):
         context = {}
 
         context['num_public_buy_orders'] = len(Order.objects.filter(type=Order.Types.BUY, status=Order.Status.PUB))
-        context['num_public_sell_orders'] = len(Order.objects.filter(type=Order.Types.BUY, status=Order.Status.PUB))
-        context['last_day_avg_btc_premium'] = None # Todo
-        context['num_active_robots'] = None 
-        context['total_volume'] = None
+        context['num_public_sell_orders'] = len(Order.objects.filter(type=Order.Types.SELL, status=Order.Status.PUB))
+        
+        # Number of active users (logged in in last 30 minutes)
+        active_user_time_range = (timezone.now() - timedelta(minutes=30), timezone.now())
+        context['num_active_robotsats'] = len(User.objects.filter(last_login__range=active_user_time_range))
+
+        # Compute average premium and volume of today
+        today = datetime.today()
+
+        queryset = MarketTick.objects.filter(timestamp__day=today.day)
+        if not len(queryset) == 0:
+            premiums = []
+            volumes = []
+            for tick in queryset:
+                premiums.append(tick.premium)
+                volumes.append(tick.volume)
+            avg_premium = sum(premiums) / len(premiums)
+            total_volume = sum(volumes)
+        else:
+            avg_premium = None
+            total_volume = None
+
+        context['today_avg_nonkyc_btc_premium'] = avg_premium
+        context['today_total_volume'] = total_volume
+        context['lnd_version'] = get_lnd_version()
+        context['robosats_running_commit_hash'] = get_commit_robosats()
+        context['fee'] = FEE
+        context['bond_size'] = float(config('BOND_SIZE'))
 
         return Response(context, status.HTTP_200_OK)
         

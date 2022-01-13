@@ -26,7 +26,7 @@ class EUserAdmin(UserAdmin):
 class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     list_display = ('id','type','maker_link','taker_link','status','amount','currency','t0_satoshis','is_disputed','is_fiat_sent','created_at','expires_at', 'buyer_invoice_link','maker_bond_link','taker_bond_link','trade_escrow_link')
     list_display_links = ('id','type')
-    change_links = ('maker','taker','buyer_invoice','maker_bond','taker_invoice','taker_bond','trade_escrow')
+    change_links = ('maker','taker','buyer_invoice','maker_bond','taker_bond','trade_escrow')
     list_filter = ('is_disputed','is_fiat_sent','type','currency','status')
 
 @admin.register(LNPayment)

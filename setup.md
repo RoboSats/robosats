@@ -6,8 +6,6 @@
 ### Install virtual environments
 ```
 pip install virtualenvwrapper
-pip install python-decouple
-pip install ring
 ```
 
 ### Add to .bashrc
@@ -45,10 +43,40 @@ python3 manage.py migrate
 python3 manage.py runserver
 ```
 
-### Install python dependencies
+### Install other python dependencies
 ```
 pip install robohash
+pip install python-decouple
+pip install ring
 ```
+
+### Install LND python dependencies
+```
+cd api/lightning
+pip install grpcio grpcio-tools googleapis-common-protos
+git clone https://github.com/googleapis/googleapis.git
+curl -o lightning.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/lightning.proto
+python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. lightning.proto
+```
+We also use the *Invoices* and *Router* subservices for invoice validation and payment routing.
+```
+curl -o invoices.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/invoicesrpc/invoices.proto
+python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. invoices.proto
+curl -o router.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/routerrpc/router.proto
+python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. router.proto
+```
+Relative imports are not working at the moment, so some editing is needed in
+`api/lightning` files `lightning_pb2_grpc.py`, `invoices_pb2_grpc.py`, `invoices_pb2.py`, `router_pb2_grpc.py` and `router_pb2.py`. 
+
+For example in `lightning_pb2_grpc.py` , add "from . " :
+
+`import lightning_pb2 as lightning__pb2`
+
+to
+
+`from . import lightning_pb2 as lightning__pb2`
+
+Same for every other file
 
 ## React development environment
 ### Install npm
@@ -71,8 +99,9 @@ npm install react-native
 npm install react-native-svg
 npm install react-qr-code
 npm install @mui/material
+npm install react-markdown
 ```
-Note we are using mostly MaterialUI V5, but Image loading from V4 extentions (so both V4 and V5 are needed)
+Note we are using mostly MaterialUI V5 (@mui/material) but Image loading from V4 (@material-ui/core) extentions (so both V4 and V5 are needed)
 
 ### Launch the React render
 from frontend/ directory
