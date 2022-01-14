@@ -1,8 +1,15 @@
 import React, { Component } from "react";
-import { Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@mui/material"
+import { Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import TradeBox from "./TradeBox";
 
+// icons
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import NumbersIcon from '@mui/icons-material/Numbers';
+import PriceChangeIcon from '@mui/icons-material/PriceChange';
+import PaymentsIcon from '@mui/icons-material/Payments';
+import MoneyIcon from '@mui/icons-material/Money';
+import ArticleIcon from '@mui/icons-material/Article';
 
 function getCookie(name) {
   let cookieValue = null;
@@ -75,6 +82,13 @@ export default class OrderPage extends Component {
             escrowInvoice: data.escrow_invoice,
             escrowSatoshis: data.escrow_satoshis,
             invoiceAmount: data.invoice_amount,
+            total_secs_expiry: data.total_secs_exp,
+            numSimilarOrders: data.num_similar_orders,
+            priceNow: data.price_now,
+            premiumNow: data.premium_now,
+            robotsInBook: data.robots_in_book,
+            premiumPercentile: data.premium_percentile,
+            numSimilarOrders: data.num_similar_orders
         })
       });
   }
@@ -106,15 +120,15 @@ export default class OrderPage extends Component {
   if (completed) {
     // Render a completed state
     this.getOrderDetails();
+    return null;
   } else {
     var col = 'black'
     var fraction_left = (total/1000) / this.state.total_secs_expiry
-    console.log(fraction_left)
-    // Make orange at -25% of time left
+    // Make orange at 25% of time left
     if (fraction_left < 0.25){col = 'orange'}
     // Make red at 10% of time left
     if (fraction_left < 0.1){col = 'red'}
-    // Render a countdown
+    // Render a countdown, bold when less than 25%
     return (
       fraction_left < 0.25 ? <b><span style={{color:col}}>{hours}h {zeroPad(minutes)}m {zeroPad(seconds)}s </span></b>
       :<span style={{color:col}}>{hours}h {zeroPad(minutes)}m {zeroPad(seconds)}s </span>
@@ -226,6 +240,9 @@ export default class OrderPage extends Component {
                   ""
                   }
                   <ListItem>
+                    <ListItemIcon>
+                      <ArticleIcon/>
+                    </ListItemIcon>
                     <ListItemText primary={this.state.statusText} secondary="Order status"/>
                   </ListItem>
                   <Divider />
@@ -234,28 +251,49 @@ export default class OrderPage extends Component {
             }
             
             <ListItem>
+              <ListItemIcon>
+                <MoneyIcon/>
+              </ListItemIcon>
               <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))+" "+this.state.currencyCode} secondary="Amount"/>
             </ListItem>
             <Divider />
             <ListItem>
+              <ListItemIcon>
+                <PaymentsIcon/>
+              </ListItemIcon>
               <ListItemText primary={this.state.paymentMethod} secondary="Accepted payment methods"/>
             </ListItem>
             <Divider />
+
+            {/* If there is live Price and Premium data, show it. Otherwise show the order maker settings */}
             <ListItem>
-            {this.state.isExplicit ? 
-              <ListItemText primary={pn(this.state.satoshis)} secondary="Amount of Satoshis"/>
-              :
-              <ListItemText primary={parseFloat(parseFloat(this.state.premium).toFixed(2))+"%"} secondary="Premium over market price"/>
-            }
+              <ListItemIcon>
+                <PriceChangeIcon/>
+              </ListItemIcon>
+            {this.state.priceNow? 
+                <ListItemText primary={pn(this.state.priceNow)+" "+this.state.currencyCode+"/BTC - Premium: "+this.state.premiumNow+"%"} secondary="Price and Premium"/>
+            :
+              (this.state.isExplicit ? 
+                <ListItemText primary={pn(this.state.satoshis)} secondary="Amount of Satoshis"/>
+                :
+                <ListItemText primary={parseFloat(parseFloat(this.state.premium).toFixed(2))+"%"} secondary="Premium over market price"/>
+              )
+            } 
             </ListItem>
             <Divider />
 
             <ListItem>
-              <ListItemText primary={'#'+this.orderId} secondary="Order ID"/>
+              <ListItemIcon>
+                <NumbersIcon/>
+              </ListItemIcon>
+              <ListItemText primary={this.orderId} secondary="Order ID"/>
             </ListItem>
             <Divider />
             <ListItem>
-              <ListItemText secondary="Expires">
+              <ListItemIcon>
+                <AccessTimeIcon/>
+              </ListItemIcon>
+              <ListItemText secondary="Expires in">
                 <Countdown onTick={console.log(this.seconds)} date={new Date(this.state.expiresAt)} renderer={this.countdownRenderer} />
               </ListItemText>
             </ListItem>

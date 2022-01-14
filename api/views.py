@@ -106,6 +106,7 @@ class OrderView(viewsets.ViewSet):
             return Response({'bad_request':'This order has been cancelled collaborativelly'},status.HTTP_400_BAD_REQUEST)
 
         data = ListOrderSerializer(order).data
+        data['total_secs_exp'] = Order.total_time_to_expire[order.status]
 
         # if user is under a limit (penalty), inform him.
         is_penalized, time_out = Logics.is_penalized(request.user)
@@ -116,11 +117,20 @@ class OrderView(viewsets.ViewSet):
         data['is_maker'] = order.maker == request.user
         data['is_taker'] = order.taker == request.user
         data['is_participant'] = data['is_maker'] or data['is_taker']
-        data['ur_nick'] = request.user.username
         
-        # 3) If not a participant and order is not public, forbid.
+        # 3.a) If not a participant and order is not public, forbid.
         if not data['is_participant'] and order.status != Order.Status.PUB:
             return Response({'bad_request':'You are not allowed to see this order'},status.HTTP_403_FORBIDDEN)
+        
+        # 3.b If public
+        if order.status == Order.Status.PUB:
+            data['price_now'], data['premium_now'] = Logics.price_and_premium_now(order)
+
+             # 3. c) If maker and Public, add num robots in book, premium percentile and num similar orders.
+            if data['is_maker']:
+                data['robots_in_book'] = None       # TODO
+                data['premium_percentile'] = None   # TODO
+                data['num_similar_orders'] = len(Order.objects.filter(currency=order.currency, status=Order.Status.PUB))
         
         # 4) Non participants can view details (but only if PUB)
         elif not data['is_participant'] and order.status != Order.Status.PUB:
@@ -134,6 +144,7 @@ class OrderView(viewsets.ViewSet):
         data['status_message'] = Order.Status(order.status).label
         data['is_fiat_sent'] = order.is_fiat_sent
         data['is_disputed'] = order.is_disputed
+        data['ur_nick'] = request.user.username
 
         # If both bonds are locked, participants can see the final trade amount in sats.
         if order.taker_bond:
@@ -281,14 +292,14 @@ class UserView(APIView):
         Response with Avatar and Nickname.
         '''
 
-        # if request.user.id:
-        #     context = {}
-        #     context['nickname'] = request.user.username
-        #     participant = not Logics.validate_already_maker_or_taker(request.user)
-        #     context['bad_request'] = f'You are already logged in as {request.user}'
-        #     if participant:
-        #         context['bad_request'] = f'You are already logged in as as {request.user} and have an active order'
-        #     return Response(context,status.HTTP_200_OK)
+        if request.user.id:
+            context = {}
+            context['nickname'] = request.user.username
+            participant = not Logics.validate_already_maker_or_taker(request.user)
+            context['bad_request'] = f'You are already logged in as {request.user}'
+            if participant:
+                context['bad_request'] = f'You are already logged in as as {request.user} and have an active order'
+            return Response(context,status.HTTP_200_OK)
 
         token = request.GET.get(self.lookup_url_kwarg)
 

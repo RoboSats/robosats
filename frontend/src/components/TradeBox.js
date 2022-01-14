@@ -163,7 +163,7 @@ export default class TradeBox extends Component {
 
             <Divider/>
               <ListItem>
-                <ListItemText primary={999} secondary={"Active orders for " + this.props.data.currencyCode}/>
+                <ListItemText primary={this.props.data.numSimilarOrders} secondary={"Public orders for " + this.props.data.currencyCode}/>
               </ListItem>
               
             <Divider/>

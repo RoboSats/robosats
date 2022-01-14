@@ -115,6 +115,7 @@ npm install @mui/material
 npm install react-markdown
 npm install websocket
 npm install react-countdown
+npm install @mui/icons-material
 ```
 Note we are using mostly MaterialUI V5 (@mui/material) but Image loading from V4 (@material-ui/core) extentions (so both V4 and V5 are needed)
 

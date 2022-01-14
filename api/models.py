@@ -133,6 +133,27 @@ class Order(models.Model):
     maker_cancel = models.ForeignKey(LNPayment, related_name='maker_cancel', on_delete=models.SET_NULL, null=True, default=None, blank=True)
     taker_cancel = models.ForeignKey(LNPayment, related_name='taker_cancel', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
+    total_time_to_expire = {
+        0  : int(config('EXP_MAKER_BOND_INVOICE')) ,         # 'Waiting for maker bond'
+        1  : 60*60*int(config('PUBLIC_ORDER_DURATION')),     # 'Public'
+        2  : 0,                                              # 'Deleted'
+        3  : int(config('EXP_TAKER_BOND_INVOICE')),          # 'Waiting for taker bond'
+        4  : 0,                                              # 'Cancelled'
+        5  : 0,                                              # 'Expired'
+        6  : 60*int(config('INVOICE_AND_ESCROW_DURATION')),  # 'Waiting for trade collateral and buyer invoice'
+        7  : 60*int(config('INVOICE_AND_ESCROW_DURATION')),  # 'Waiting only for seller trade collateral'
+        8  : 60*int(config('INVOICE_AND_ESCROW_DURATION')),  # 'Waiting only for buyer invoice'
+        9  : 60*60*int(config('FIAT_EXCHANGE_DURATION')),    # 'Sending fiat - In chatroom'
+        10 : 60*60*int(config('FIAT_EXCHANGE_DURATION')),    # 'Fiat sent - In chatroom'
+        11 : 24*60*60,                                       # 'In dispute'
+        12 : 0,                                              # 'Collaboratively cancelled'
+        13 : 24*60*60,                                       # 'Sending satoshis to buyer'
+        14 : 24*60*60,                                       # 'Sucessful trade'
+        15 : 24*60*60,                                       # 'Failed lightning network routing'
+        16 : 24*60*60,                                       # 'Maker lost dispute'
+        17 : 24*60*60,                                       # 'Taker lost dispute'
+        }
+
     def __str__(self):
         # Make relational back to ORDER
         return (f'Order {self.id}: {self.Types(self.type).label} BTC for {float(self.amount)} {self.currency_dict[str(self.currency)]}')
