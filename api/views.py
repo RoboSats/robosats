@@ -438,8 +438,8 @@ class InfoView(ListAPIView):
             avg_premium = sum(premiums) / len(premiums)
             total_volume = sum(volumes)
         else:
-            avg_premium = None
-            total_volume = None
+            avg_premium = 0
+            total_volume = 0
 
         context['today_avg_nonkyc_btc_premium'] = avg_premium
         context['today_total_volume'] = total_volume

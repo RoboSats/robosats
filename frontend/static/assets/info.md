@@ -1,4 +1,4 @@
-# Buy and sell non-KYC Bitcoin using the lightning network.
+# Simple and Private P2P Bitcoin Exchanging in the Lightning Network.
 
 ## What is this?
 

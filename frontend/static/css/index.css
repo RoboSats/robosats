@@ -25,6 +25,18 @@ body {
   transform: translate(-50%,-50%);
 }
 
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 40px;
+}
+
+.bottomItem {
+  margin: 0;
+  top: -14px;
+}
+
 .newAvatar {
   background-color:white; 
   border-radius: 50%; 
