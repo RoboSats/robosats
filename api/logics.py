@@ -92,7 +92,7 @@ class Logics():
             premium = int(premium*100)  # 2 decimals left
             price = order_rate
 
-        significant_digits = 6
+        significant_digits = 5
         price = round(price, significant_digits - int(math.floor(math.log10(abs(price)))) - 1)
         
         return price, premium

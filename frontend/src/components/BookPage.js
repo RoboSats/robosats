@@ -1,26 +1,27 @@
 import React, { Component } from "react";
-import { Paper, Button , Divider, CircularProgress, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@mui/material";
+import { Paper, Button , CircularProgress, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@mui/material";
 import { Link } from 'react-router-dom'
+import { DataGrid } from '@mui/x-data-grid';
 
 export default class BookPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      orders: new Array(),
+      orders: new Array({id:0,}),
       currency: 0,
       type: 1,
       currencies_dict: {"0":"ANY"},
       loading: true,
     };
     this.getCurrencyDict()
-    this.getOrderDetails(this.state.type,this.state.currency)
+    this.getOrderDetails(this.state.type, this.state.currency)
     this.state.currencyCode = this.getCurrencyCode(this.state.currency)
   }
 
-  getOrderDetails(type,currency) {
+  getOrderDetails(type, currency) {
     fetch('/api/book' + '?currency=' + currency + "&type=" + type)
       .then((response) => response.json())
-      .then((data) =>
+      .then((data) => console.log(data) &
       this.setState({
         orders: data,
         not_found: data.not_found,
@@ -28,7 +29,7 @@ export default class BookPage extends Component {
       }));
   }
 
-  handleCardClick=(e)=>{
+  handleRowClick=(e)=>{
     console.log(e)
     this.props.history.push('/order/' + e);
   }
@@ -67,54 +68,56 @@ export default class BookPage extends Component {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
-  bookListItems=()=>{
-    return (this.state.orders.map((order) =>
-      <>
-        <ListItemButton value={order.id} onClick={() => this.handleCardClick(order.id)}>
+  bookListTable=()=>{
+    return (
+      <div style={{ height: 475, width: '100%' }}>
+      <DataGrid
+        rows={
+            this.state.orders.map((order) =>
+            ({id: order.id,
+              avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
+              robosat: order.maker_nick, 
+              type: order.type ? "Sell": "Buy",
+              amount: parseFloat(parseFloat(order.amount).toFixed(4)),
+              currency: this.getCurrencyCode(order.currency),
+              payment_method: order.payment_method,
+              price: order.price,
+              premium: order.premium,
+            })
+          )}
 
-          <ListItemAvatar >
-            <Avatar
-                alt={order.maker_nick}
-                src={window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png'} 
-                />
-          </ListItemAvatar>
-          
-          <ListItemText>
-            <Typography  variant="h6">
-              {order.maker_nick+" "}    
-            </Typography>
-          </ListItemText>
-          
-          <ListItemText align='left'>
-            <Typography  variant="subtitle1">
-              <b>{order.type ? " Sells ": " Buys "} BTC </b> for {parseFloat(
-                parseFloat(order.amount).toFixed(4))+" "+ this.getCurrencyCode(order.currency)+" "}
-            </Typography>
-          </ListItemText>
+        columns={[
+          // { field: 'id', headerName: 'ID', width: 40 },
+          { field: 'robosat', headerName: 'RoboSat', width: 240, 
+            renderCell: (params) => {return (
+              <ListItemButton style={{ cursor: "pointer" }}>
+                <ListItemAvatar>
+                  <Avatar alt={params.row.robosat} src={params.row.avatar} />
+                </ListItemAvatar>
+                <ListItemText primary={params.row.robosat}/>
+              </ListItemButton>
+            );
+          } },
+          { field: 'type', headerName: 'Type', width: 60 },
+          { field: 'amount', headerName: 'Amount', type: 'number', width: 80 },
+          { field: 'currency', headerName: 'Currency', width: 100 },
+          { field: 'payment_method', headerName: 'Payment Method', width: 180 },
+          { field: 'price', headerName: 'Price', type: 'number', width: 140,
+          renderCell: (params) => {return (
+            <div style={{ cursor: "pointer" }}>{this.pn(params.row.price) + " " +params.row.currency+ "/BTC" }</div>
+          )} },
+          { field: 'premium', headerName: 'Premium', type: 'number', width: 100,
+            renderCell: (params) => {return (
+              <div style={{ cursor: "pointer" }}>{parseFloat(parseFloat(params.row.premium).toFixed(4))+"%" }</div>
+            )} },
+          ]}
 
-          <ListItemText align='left'>
-            <Typography  variant="subtitle1">
-              via <b>{order.payment_method}</b>
-            </Typography>
-          </ListItemText>
-
-          <ListItemText align='right'>
-            <Typography  variant="subtitle1">
-              at <b>{this.pn(order.price) + " " + this.getCurrencyCode(order.currency)}/BTC</b>
-            </Typography>
-          </ListItemText>
-
-          <ListItemText align='right'>
-            <Typography  variant="subtitle1">
-              {order.premium > 1 ? "🔴" : "🔵" } <b>{parseFloat(parseFloat(order.premium).toFixed(4))}%</b>
-            </Typography>
-          </ListItemText>
-
-        </ListItemButton>
-      
-        <Divider/>
-      </>
-    ));
+        pageSize={7}
+        onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
+        rowsPerPageOptions={[7]}
+      />
+    </div>
+    );
   }
 
   render() {
@@ -196,10 +199,10 @@ export default class BookPage extends Component {
           </Grid>)
           : 
           <Grid item xs={12} align="center">
-            <Paper elevation={0} style={{width: 900, maxHeight: 500, overflow: 'auto'}}>
-              <List >
-                {this.bookListItems()}
-              </List>
+            <Paper elevation={0} style={{width: 910, maxHeight: 500, overflow: 'auto'}}>
+
+                {this.state.loading ? null : this.bookListTable()}
+
             </Paper>
            </Grid>
           }

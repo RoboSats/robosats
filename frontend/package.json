@@ -29,6 +29,7 @@
     "@mui/icons-material": "^5.2.5",
     "@mui/material": "^5.2.7",
     "@mui/system": "^5.2.6",
+    "@mui/x-data-grid": "^5.2.2",
     "material-ui-image": "^3.3.2",
     "react-countdown": "^2.3.2",
     "react-markdown": "^7.1.2",
