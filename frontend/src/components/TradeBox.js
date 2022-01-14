@@ -1,8 +1,16 @@
 import React, { Component } from "react";
-import { Link, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider} from "@mui/material"
+import { Link, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon} from "@mui/material"
 import QRCode from "react-qr-code";
 
 import Chat from "./Chat"
+
+// Icons
+import LockIcon from '@mui/icons-material/Lock';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+import PercentIcon from '@mui/icons-material/Percent';
+import BookIcon from '@mui/icons-material/Book';
+
+
 
 function getCookie(name) {
   let cookieValue = null;
@@ -77,9 +85,16 @@ export default class TradeBox extends Component {
   showBondIsLocked=()=>{
     return (
         <Grid item xs={12} align="center">
-          <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
-            🔒 Your {this.props.data.isMaker ? 'maker' : 'taker'} bond is safely locked
-          </Typography>
+          <ListItem>
+            <ListItemIcon>
+              <LockIcon/>
+            </ListItemIcon>
+            <ListItemText>
+              <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
+                Your {this.props.data.isMaker ? 'maker' : 'taker'} bond is locked
+              </Typography>
+            </ListItemText>
+          </ListItem>
         </Grid>
     );
   }
@@ -158,16 +173,25 @@ export default class TradeBox extends Component {
             {/* TODO API sends data for a more confortable wait */}
             <Divider/>
               <ListItem>
+                <ListItemIcon>
+                  <SmartToyIcon/>
+                </ListItemIcon>
                 <ListItemText primary={999} secondary="Robots looking at the book"/>
               </ListItem>
 
             <Divider/>
               <ListItem>
+              <ListItemIcon>
+                <BookIcon/>
+              </ListItemIcon>
                 <ListItemText primary={this.props.data.numSimilarOrders} secondary={"Public orders for " + this.props.data.currencyCode}/>
               </ListItem>
               
             <Divider/>
               <ListItem>
+              <ListItemIcon>
+                <PercentIcon/>
+              </ListItemIcon>
                 <ListItemText primary="33%" secondary="Premium percentile" />
               </ListItem>
             <Divider/>
