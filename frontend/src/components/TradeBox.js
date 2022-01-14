@@ -377,7 +377,7 @@ handleRatingChange=(e)=>{
           <Divider/>
         </Grid>
 
-        <Chat data={this.props.data}/>
+        <Chat orderId={this.props.data.id} urNick={this.props.data.urNick}/>
 
         <Grid item xs={12} align="center">
           {openDisputeButton ? this.showOpenDisputeButton() : ""}

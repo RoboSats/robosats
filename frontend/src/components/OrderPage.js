@@ -1,44 +1,8 @@
 import React, { Component } from "react";
 import { Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@mui/material"
+import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import TradeBox from "./TradeBox";
 
-function msToTime(duration) {
-  var seconds = Math.floor((duration / 1000) % 60),
-    minutes = Math.floor((duration / (1000 * 60)) % 60),
-    hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-
-  minutes = (minutes < 10) ? "0" + minutes : minutes;
-  seconds = (seconds < 10) ? "0" + seconds : seconds;
-
-  return hours + "h " + minutes + "m " + seconds + "s";
-}
-
-// TO DO fix Progress bar to go from 100 to 0, from total_expiration time, showing time_left
-function LinearDeterminate() {
-  const [progress, setProgress] = React.useState(0);
-
-  React.useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((oldProgress) => {
-        if (oldProgress === 0) {
-          return 100;
-        }
-        const diff = 1;
-        return Math.max(oldProgress - diff, 0);
-      });
-    }, 500);
-
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
-
-  return (
-    <Box sx={{ width: '100%' }}>
-      <LinearProgress variant="determinate" value={progress} />
-    </Box>
-  );
-}
 
 function getCookie(name) {
   let cookieValue = null;
@@ -67,8 +31,9 @@ export default class OrderPage extends Component {
     super(props);
     this.state = {
         isExplicit: false,
-        delay: 2000, // Refresh every 2 seconds by default
-        currencies_dict: {"1":"USD"}
+        delay: 60000, // Refresh every 60 seconds by default
+        currencies_dict: {"1":"USD"},
+        total_secs_expiry: 300,
     };
     this.orderId = this.props.match.params.orderId;
     this.getCurrencyDict();
@@ -134,6 +99,50 @@ export default class OrderPage extends Component {
   // Fix to use proper react props
   handleClickBackButton=()=>{
     window.history.back();
+  }
+
+  // Countdown Renderer callback with condition 
+  countdownRenderer = ({ total, hours, minutes, seconds, completed }) => {
+  if (completed) {
+    // Render a completed state
+    this.getOrderDetails();
+  } else {
+    var col = 'black'
+    var fraction_left = (total/1000) / this.state.total_secs_expiry
+    console.log(fraction_left)
+    // Make orange at -25% of time left
+    if (fraction_left < 0.25){col = 'orange'}
+    // Make red at 10% of time left
+    if (fraction_left < 0.1){col = 'red'}
+    // Render a countdown
+    return (
+      fraction_left < 0.25 ? <b><span style={{color:col}}>{hours}h {zeroPad(minutes)}m {zeroPad(seconds)}s </span></b>
+      :<span style={{color:col}}>{hours}h {zeroPad(minutes)}m {zeroPad(seconds)}s </span>
+    );
+  }
+  };
+
+  LinearDeterminate =()=> {
+    const [progress, setProgress] = React.useState(0);
+  
+    React.useEffect(() => {
+      const timer = setInterval(() => {
+        setProgress((oldProgress) => {
+          var left = calcTimeDelta( new Date(this.state.expiresAt)).total /1000;
+          return (left / this.state.total_secs_expiry) * 100;
+        });
+      }, 1000);
+  
+      return () => {
+        clearInterval(timer);
+      };
+    }, []);
+  
+    return (
+      <Box sx={{ width: '100%' }}>
+        <LinearProgress variant="determinate" value={progress} />
+      </Box>
+    );
   }
 
   handleClickTakeOrderButton=()=>{
@@ -246,9 +255,11 @@ export default class OrderPage extends Component {
             </ListItem>
             <Divider />
             <ListItem>
-              <ListItemText primary={msToTime( new Date(this.state.expiresAt) - Date.now())} secondary="Expires"/>
+              <ListItemText secondary="Expires">
+                <Countdown onTick={console.log(this.seconds)} date={new Date(this.state.expiresAt)} renderer={this.countdownRenderer} />
+              </ListItemText>
             </ListItem>
-            <LinearDeterminate />
+            <this.LinearDeterminate />
             </List>
             
             {/* If the user has a penalty/limit */}

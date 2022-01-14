@@ -56,8 +56,16 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         message = event['message']
         nick = event['nick']
 
+        # Insert a white space in words longer than 22 characters.
+        # Helps when messages overflow in a single line.
+        words = message.split(' ')
+        fix_message = ''
+        for word in words:
+            word = ' '.join(word[i:i+22] for i in range(0, len(word), 22))
+            fix_message = fix_message +' '+ word
+
         await self.send(text_data=json.dumps({
-            'message': message,
+            'message': fix_message,
             'user_nick': nick,
         }))
 
