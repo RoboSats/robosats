@@ -122,12 +122,12 @@ class OrderView(viewsets.ViewSet):
         if not data['is_participant'] and order.status != Order.Status.PUB:
             return Response({'bad_request':'You are not allowed to see this order'},status.HTTP_403_FORBIDDEN)
         
-        # 3.b If public
-        if order.status == Order.Status.PUB:
+        # 3.b If order is between public and WF2
+        if order.status >= Order.Status.PUB and order.status > Order.Status.WFB:
             data['price_now'], data['premium_now'] = Logics.price_and_premium_now(order)
 
              # 3. c) If maker and Public, add num robots in book, premium percentile and num similar orders.
-            if data['is_maker']:
+            if data['is_maker'] and order.status == Order.Status.PUB:
                 data['robots_in_book'] = None       # TODO
                 data['premium_percentile'] = None   # TODO
                 data['num_similar_orders'] = len(Order.objects.filter(currency=order.currency, status=Order.Status.PUB))
@@ -227,9 +227,10 @@ class OrderView(viewsets.ViewSet):
             if order.status == Order.Status.PUB: 
                 valid, context = Logics.validate_already_maker_or_taker(request.user)
                 if not valid: return Response(context, status=status.HTTP_409_CONFLICT)
-
                 valid, context = Logics.take(order, request.user)
                 if not valid: return Response(context, status=status.HTTP_403_FORBIDDEN)
+
+                return self.get(request)
 
             else: Response({'bad_request':'This order is not public anymore.'}, status.HTTP_400_BAD_REQUEST)
 

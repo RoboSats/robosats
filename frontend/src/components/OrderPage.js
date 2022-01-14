@@ -41,6 +41,7 @@ export default class OrderPage extends Component {
         delay: 60000, // Refresh every 60 seconds by default
         currencies_dict: {"1":"USD"},
         total_secs_expiry: 300,
+        loading: true,
     };
     this.orderId = this.props.match.params.orderId;
     this.getCurrencyDict();
@@ -53,6 +54,7 @@ export default class OrderPage extends Component {
       .then((response) => response.json())
       .then((data) => {console.log(data) &
         this.setState({
+            loading: false,
             id: data.id,
             statusCode: data.status,
             statusText: data.status_message,
@@ -294,7 +296,7 @@ export default class OrderPage extends Component {
                 <AccessTimeIcon/>
               </ListItemIcon>
               <ListItemText secondary="Expires in">
-                <Countdown onTick={console.log(this.seconds)} date={new Date(this.state.expiresAt)} renderer={this.countdownRenderer} />
+                <Countdown date={new Date(this.state.expiresAt)} renderer={this.countdownRenderer} />
               </ListItemText>
             </ListItem>
             <this.LinearDeterminate />
@@ -380,7 +382,7 @@ export default class OrderPage extends Component {
   render (){
     return ( 
       // Only so nothing shows while requesting the first batch of data
-      (this.state.statusCode == null & this.state.badRequest == null) ? <CircularProgress /> : this.orderDetailsPage()
+      this.state.loading ? <CircularProgress /> : this.orderDetailsPage()
     );
   }
 }

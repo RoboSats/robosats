@@ -68,14 +68,12 @@ export default class TradeBox extends Component {
         <Grid item xs={12} align="center">
         <TextField 
             hiddenLabel
-            variant="filled" 
+            variant="standard" 
             size="small"
             defaultValue={this.props.data.bondInvoice} 
             disabled="true"
-            helperText="This is a hold invoice. It will simply freeze in your wallet.
-            It will be charged only if you cancel the order or lose a dispute."
+            helperText="This is a hold invoice. It will be charged only if you cancel or lose a dispute."
             color = "secondary"
-            onClick = {this.copyCodeToClipboard}
           />
         </Grid>
       </Grid>
@@ -85,16 +83,9 @@ export default class TradeBox extends Component {
   showBondIsLocked=()=>{
     return (
         <Grid item xs={12} align="center">
-          <ListItem>
-            <ListItemIcon>
-              <LockIcon/>
-            </ListItemIcon>
-            <ListItemText>
-              <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
-                Your {this.props.data.isMaker ? 'maker' : 'taker'} bond is locked
-              </Typography>
-            </ListItemText>
-          </ListItem>
+          <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
+            🔒 Your {this.props.data.isMaker ? 'maker' : 'taker'} bond is locked
+          </Typography>
         </Grid>
     );
   }
@@ -118,7 +109,7 @@ export default class TradeBox extends Component {
             size="small"
             defaultValue={this.props.data.escrowInvoice} 
             disabled="true"
-            helperText="This is a hold invoice. It will simply freeze in your wallet. It will be charged once the buyer confirms he sent the fiat."
+            helperText="This is a hold invoice. It will be charged once the buyer confirms he sent the fiat."
             color = "secondary"
           />
         </Grid>

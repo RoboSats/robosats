@@ -238,13 +238,7 @@ class Logics():
             LNPayment "order.taker_bond" is deleted() '''
         elif order.status == Order.Status.TAK and order.taker == user:
             # adds a timeout penalty
-            user.profile.penalty_expiration = timezone.now() + timedelta(seconds=PENALTY_TIMEOUT)
-            user.profile.save()
-
-            order.taker = None
-            order.status = Order.Status.PUB
-            order.save()
-
+            cls.kick_taker(order)
             return True, None
 
         # 4) When taker or maker cancel after bond (before escrow)
@@ -395,6 +389,7 @@ class Logics():
             created_at = hold_payment['created_at'],
             expires_at = hold_payment['expires_at'])
 
+        order.expires_at = timezone.now() + timedelta(seconds=EXP_TAKER_BOND_INVOICE)
         order.save()
         return True, {'bond_invoice': hold_payment['invoice'], 'bond_satoshis': bond_satoshis}
 
