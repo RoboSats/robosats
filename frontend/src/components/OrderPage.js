@@ -38,7 +38,7 @@ export default class OrderPage extends Component {
     super(props);
     this.state = {
         isExplicit: false,
-        delay: 60000, // Refresh every 60 seconds by default
+        delay: 3000, // Refresh every 3 seconds by default
         currencies_dict: {"1":"USD"},
         total_secs_expiry: 300,
         loading: true,

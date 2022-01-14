@@ -293,14 +293,14 @@ class UserView(APIView):
         Response with Avatar and Nickname.
         '''
 
-        if request.user.id:
-            context = {}
-            context['nickname'] = request.user.username
-            participant = not Logics.validate_already_maker_or_taker(request.user)
-            context['bad_request'] = f'You are already logged in as {request.user}'
-            if participant:
-                context['bad_request'] = f'You are already logged in as as {request.user} and have an active order'
-            return Response(context,status.HTTP_200_OK)
+        # if request.user.id:
+        #     context = {}
+        #     context['nickname'] = request.user.username
+        #     participant = not Logics.validate_already_maker_or_taker(request.user)
+        #     context['bad_request'] = f'You are already logged in as {request.user}'
+        #     if participant:
+        #         context['bad_request'] = f'You are already logged in as as {request.user} and have an active order'
+        #     return Response(context,status.HTTP_200_OK)
 
         token = request.GET.get(self.lookup_url_kwarg)
 
