@@ -1,18 +1,32 @@
 
 import requests, ring, os
 from decouple import config
-
+from statistics import median
 market_cache = {}
 
 @ring.dict(market_cache, expire=30) #keeps in cache for 30 seconds
 def get_exchange_rate(currency):
-    # TODO Add fallback Public APIs and error handling
-    # Think about polling price data in a different way (e.g. store locally every t seconds)
+    '''
+    Checks for exchange rates in several public APIs.
+    Returns the median price.
+    '''
+    
+    APIS = config('MARKET_PRICE_APIS', cast=lambda v: [s.strip() for s in v.split(',')])
+    exchange_rates = []
 
-    market_prices = requests.get(config('MARKET_PRICE_API')).json()
-    exchange_rate = float(market_prices[currency]['last'])
+    for api_url in APIS:
+        print(api_url)
+        try:
+            if 'blockchain.info' in api_url:
+                blockchain_prices = requests.get(api_url).json()
+                exchange_rates.append(float(blockchain_prices[currency]['last']))
+            elif 'yadio.io' in api_url:
+                yadio_prices = requests.get(api_url).json()
+                exchange_rates.append(float(yadio_prices['BTC'][currency]))
+        except:
+            pass
 
-    return exchange_rate
+    return median(exchange_rates)
 
 lnd_v_cache = {}
 

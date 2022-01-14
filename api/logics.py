@@ -10,7 +10,6 @@ import math
 
 FEE = float(config('FEE'))
 BOND_SIZE = float(config('BOND_SIZE'))
-MARKET_PRICE_API = config('MARKET_PRICE_API')
 ESCROW_USERNAME = config('ESCROW_USERNAME')
 PENALTY_TIMEOUT = int(config('PENALTY_TIMEOUT'))
 
