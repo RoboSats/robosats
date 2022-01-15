@@ -19,11 +19,11 @@ export default class InfoDialog extends Component {
           
           <Typography component="h5" variant="h5">How does it work?</Typography>
           <Typography component="body2" variant="body2">
-            <p>AdequateAlice01 wants to sell bitcoin, so she posts a sell order. 
+            <p>AdequateAlice01 wants to sell bitcoin. She posts a sell order. 
               BafflingBob02 wants to buy bitcoin and he takes Alice's order. 
               Both have to post a small bond using lightning to prove they are real 
               robots. Then, Alice posts the trade collateral also using a lightning 
-              hold invoice. RobotSats locks the invoice until Bob confirms he sent 
+              hold invoice. <i>RoboSats</i> locks the invoice until Bob confirms he sent 
               the fiat to Alice. Once Alice confirms she received the fiat, she 
               tells <i>RoboSats</i> to release the satoshis to Bob. Enjoy your satoshis, 
               Bob!</p>
@@ -43,7 +43,7 @@ export default class InfoDialog extends Component {
 
           <Typography component="h5" variant="h5">Are there trade limits?</Typography>
           <Typography component="body2" variant="body2">
-            <p>Maximum single trade size is 500,000 Satoshis to minimize lightninh
+            <p>Maximum single trade size is 500,000 Satoshis to minimize lightning
               routing failures. This limit will be raised as the Lightning Network 
               matures. There is no limits to the number of trades per day
               or number of simultaneous Robots you can use. </p>
@@ -94,8 +94,8 @@ export default class InfoDialog extends Component {
             <p> Your sats will most likely return to you. Any hold invoice that is not 
               settled would be automatically returned even if <i>RoboSats</i> goes down 
               forever. This is true for both, locked bonds and trading escrows. However, 
-              in the window between the buyer confirms FIAT SENT and the moment the moment
-              the seller releases the satoshis, the fund could be lost.
+              in the window between the buyer confirms FIAT SENT and the moment the
+              seller releases the satoshis, the fund could be lost.
             </p>
           </Typography>
 

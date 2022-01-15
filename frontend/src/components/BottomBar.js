@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
-import {Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, Divider, Dialog, DialogContent} from "@mui/material";
+import {Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 
 // Icons
 import SettingsIcon from '@mui/icons-material/Settings';
-import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import PeopleIcon from '@mui/icons-material/People';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import SellIcon from '@mui/icons-material/Sell';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -12,12 +12,14 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import BoltIcon from '@mui/icons-material/Bolt';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
+import SendIcon from '@mui/icons-material/Send';
 
 export default class BottomBar extends Component {
     constructor(props) {
         super(props);
         this.state = {
             openStatsForNerds: false,
+            openCommuniy: false,
             num_public_buy_orders: null,
             num_active_robotsats: null,
             num_public_sell_orders: null,
@@ -42,11 +44,10 @@ export default class BottomBar extends Component {
       }
 
     handleClickOpenStatsForNerds = () => {
-    this.setState({openStatsForNerds: true});
+        this.setState({openStatsForNerds: true});
     };
-
     handleClickCloseStatsForNerds = () => {
-    this.setState({openStatsForNerds: false});
+        this.setState({openStatsForNerds: false});
     };
 
     StatsDialog =() =>{
@@ -85,10 +86,66 @@ export default class BottomBar extends Component {
     )
     }
 
+    handleClickOpenCommunity = () => {
+        this.setState({openCommuniy: true});
+    };
+    handleClickCloseCommunity = () => {
+        this.setState({openCommuniy: false});
+    };
+
+    CommunityDialog =() =>{
+        return(
+        <Dialog
+        open={this.state.openCommuniy}
+        onClose={this.handleClickCloseCommunity}
+        aria-labelledby="community-dialog-title"
+        aria-describedby="community-description"
+        >
+        <DialogContent>
+            <Typography component="h5" variant="h5">Community</Typography>
+            <Typography component="body2" variant="body2">
+                <p> Support is only offered via public channels.
+                    For questions and hanging out with other robots
+                    join the Telegram Groups. If you find a bug
+                    or want to see new features, use the Github
+                    Issues page.
+                </p>
+            </Typography>
+            <List> 
+                <Divider/>
+
+                <ListItemButton component="a" href="https://t.me/robosats">
+                    <ListItemIcon><SendIcon/></ListItemIcon>
+                    <ListItemText primary="Join the RoboSats group"
+                    secondary="Telegram (English / Main)"/>
+                </ListItemButton>
+                <Divider/>
+
+                <ListItemButton component="a" href="https://t.me/robosats_es">
+                    <ListItemIcon><SendIcon/></ListItemIcon>
+                    <ListItemText primary="Unase al grupo RoboSats"
+                    secondary="Telegram (Español)"/>
+                </ListItemButton>
+                <Divider/>
+
+                <ListItemButton component="a" href="https://github.com/Reckless-Satoshi/robosats/issues">
+                    <ListItemIcon><GitHubIcon/></ListItemIcon>
+                    <ListItemText primary="Tell us about a new feature or a bug" 
+                    secondary="Github Issues - The Robotic Satoshis Open Source Project"/>
+                </ListItemButton>
+
+            </List>
+            </DialogContent>
+        </Dialog>
+    )
+    }
+
+
     render() {
         return (
             <Paper elevation={6} style={{height:40}}>
                 <this.StatsDialog/>
+                <this.CommunityDialog/>
                 <Grid container xs={12}>
 
                     <Grid item xs={1}>
@@ -177,8 +234,11 @@ export default class BottomBar extends Component {
                             </Select>
                         </Grid>
                         <Grid item xs={4}>
-                            <IconButton color="primary" aria-label="Telegram" onClick={this.handleClickSuppport}>
-                                <SupportAgentIcon />
+                            <IconButton 
+                            color="primary" 
+                            aria-label="Telegram" 
+                            onClick={this.handleClickOpenCommunity} >
+                                <PeopleIcon />
                             </IconButton>
                         </Grid>
 
