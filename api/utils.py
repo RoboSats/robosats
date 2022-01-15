@@ -2,6 +2,7 @@
 import requests, ring, os
 from decouple import config
 from statistics import median
+
 market_cache = {}
 
 @ring.dict(market_cache, expire=30) #keeps in cache for 30 seconds

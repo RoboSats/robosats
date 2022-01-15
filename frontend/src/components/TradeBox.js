@@ -5,7 +5,6 @@ import QRCode from "react-qr-code";
 import Chat from "./Chat"
 
 // Icons
-import LockIcon from '@mui/icons-material/Lock';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PercentIcon from '@mui/icons-material/Percent';
 import BookIcon from '@mui/icons-material/Book';
@@ -238,24 +237,24 @@ export default class TradeBox extends Component {
             valid invoice for {pn(this.props.data.invoiceAmount)} Satoshis.
           </Typography>
         </Grid>
-        <form noValidate onSubmit={this.handleClickSubmitInvoiceButton}>
-          <Grid item xs={12} align="center">
-            <TextField 
-                error={this.state.badInvoice}
-                helperText={this.state.badInvoice ? this.state.badInvoice : "" }
-                label={"Payout Lightning Invoice"}
-                required
-                inputProps={{
-                    style: {textAlign:"center"}
-                }}
-                multiline
-                onChange={this.handleInputInvoiceChanged}
-            />
-          </Grid>
-          <Grid item xs={12} align="center">
-            <Button variant='contained' color='primary'>Submit</Button>
-          </Grid>
-        </form>
+
+        <Grid item xs={12} align="center">
+          <TextField 
+              error={this.state.badInvoice}
+              helperText={this.state.badInvoice ? this.state.badInvoice : "" }
+              label={"Payout Lightning Invoice"}
+              required
+              inputProps={{
+                  style: {textAlign:"center"}
+              }}
+              multiline
+              onChange={this.handleInputInvoiceChanged}
+          />
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>Submit</Button>
+        </Grid>
+
         {this.showBondIsLocked()}
       </Grid>
     )

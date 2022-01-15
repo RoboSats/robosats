@@ -369,7 +369,8 @@ class Logics():
         order.last_satoshis = cls.satoshis_now(order)
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
         pos_text = 'Buying' if cls.is_buyer(order, user) else 'Selling'
-        description = f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {order.amount} - This is a taker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel."
+        description = (f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {float(order.amount) + Order.currency_dict[str(order.currency)]}"
+            + " - This is a taker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel.")
 
         # Gen hold Invoice
         hold_payment = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
@@ -482,8 +483,8 @@ class Logics():
     def pay_buyer_invoice(order):
         ''' Pay buyer invoice'''
         # TODO ERROR HANDLING
-        if LNNode.pay_invoice(order.buyer_invoice.invoice, order.buyer_invoice.num_satoshis):
-            return True
+        suceeded, context = LNNode.pay_invoice(order.buyer_invoice.invoice, order.buyer_invoice.num_satoshis)
+        return suceeded, context
 
     @classmethod
     def confirm_fiat(cls, order, user):

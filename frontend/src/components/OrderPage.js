@@ -38,7 +38,7 @@ export default class OrderPage extends Component {
     super(props);
     this.state = {
         isExplicit: false,
-        delay: 3000, // Refresh every 3 seconds by default
+        delay: 60000, // Refresh every 60 seconds by default
         currencies_dict: {"1":"USD"},
         total_secs_expiry: 300,
         loading: true,
@@ -46,6 +46,28 @@ export default class OrderPage extends Component {
     this.orderId = this.props.match.params.orderId;
     this.getCurrencyDict();
     this.getOrderDetails();
+
+    // Change refresh delay according to Order status
+    this.statusToDelay = {
+      "0": 3000,    //'Waiting for maker bond'
+      "1": 30000,   //'Public'
+      "2": 999999,  //'Deleted'
+      "3": 3000,    //'Waiting for taker bond'
+      "4": 999999,  //'Cancelled'
+      "5": 999999,  //'Expired'
+      "6": 3000,    //'Waiting for trade collateral and buyer invoice'
+      "7": 3000,    //'Waiting only for seller trade collateral'
+      "8": 10000,   //'Waiting only for buyer invoice'
+      "9": 10000,   //'Sending fiat - In chatroom'
+      "10": 15000,  //'Fiat sent - In chatroom'
+      "11": 300000, //'In dispute'
+      "12": 999999, //'Collaboratively cancelled'
+      "13": 120000, //'Sending satoshis to buyer'
+      "14": 999999, //'Sucessful trade'
+      "15": 15000,  //'Failed lightning network routing'
+      "16": 999999, //'Maker lost dispute'
+      "17": 999999, //'Taker lost dispute'
+  }
   }
 
   getOrderDetails() {
@@ -55,6 +77,7 @@ export default class OrderPage extends Component {
       .then((data) => {console.log(data) &
         this.setState({
             loading: false,
+            delay: this.statusToDelay[data.status.toString()],
             id: data.id,
             statusCode: data.status,
             statusText: data.status_message,
@@ -99,12 +122,11 @@ export default class OrderPage extends Component {
   componentDidMount() {
     this.interval = setInterval(this.tick, this.state.delay);
   }
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.delay !== this.state.delay) {
-      clearInterval(this.interval);
+  componentDidUpdate() {
+    clearInterval(this.interval);
       this.interval = setInterval(this.tick, this.state.delay);
-    }
   }
+
   componentWillUnmount() {
     clearInterval(this.interval);
   }

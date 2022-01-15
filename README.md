@@ -1,4 +1,4 @@
-# RoboSats: Buy and sell non-KYC Satoshis.
+# RoboSats: Buy and sell Satoshis Privately.
 ## What is RoboSats?
 
 RoboSats is a simple and private way to exchange bitcoin for national currencies. Robosats aims to simplify the peer-to-peer experience and uses lightning hodl invoices to minimize the trust needed to trade. In addition, your Robotic Satoshi will help you stick to best privacy practices. 
@@ -15,11 +15,11 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 - Url: testnet.robosats.com (Registered - Not active)
 - Commit height: v0.0.0 Latest commit.
 
-*Use [Tor Browser](https://www.torproject.org/download/) and .onion for best anonymity.*
+*Always use [Tor Browser](https://www.torproject.org/download/) and .onion for best anonymity.*
 
 ## Contribute to the Robotic Satoshis Open Source Project
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## License
 
-RoboSats is released under the terms of the AGPL3.0 license. See [LICENSE](LICENSE) for more details.
+The Robotic Satoshis Open Source Project is released under the terms of the AGPL3.0 license. See [LICENSE](LICENSE) for more details.
