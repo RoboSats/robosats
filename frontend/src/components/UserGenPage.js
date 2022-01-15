@@ -71,7 +71,8 @@ export default class UserGenPage extends Component {
     this.delGeneratedUser()
     this.setState({
       token: this.genBase62Token(34),
-    })
+    });
+    this.getGeneratedUser(this.state.token);
   }
 
   handleChangeToken=(e)=>{

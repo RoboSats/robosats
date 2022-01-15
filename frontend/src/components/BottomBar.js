@@ -13,6 +13,7 @@ import BoltIcon from '@mui/icons-material/Bolt';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 import SendIcon from '@mui/icons-material/Send';
+import PublicIcon from '@mui/icons-material/Public';
 
 export default class BottomBar extends Component {
     constructor(props) {
@@ -66,6 +67,7 @@ export default class BottomBar extends Component {
                     <ListItemIcon><BoltIcon/></ListItemIcon>
                     <ListItemText primary={this.state.lnd_version} secondary="LND version"/>
                 </ListItem>
+
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><GitHubIcon/></ListItemIcon>
@@ -75,12 +77,20 @@ export default class BottomBar extends Component {
                         </a>
                     </ListItemText>
                 </ListItem>
+
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><EqualizerIcon/></ListItemIcon>
                     <ListItemText primary={this.state.today_total_volume+" BTC"} secondary="Today traded volume"/>
                 </ListItem>
+
+                <Divider/>
+                <ListItem>
+                    <ListItemIcon><PublicIcon/></ListItemIcon>
+                    <ListItemText primary="Made with ❤️ and ⚡" secondary="... somewhere on Earth!"/>
+                </ListItem>
             </List>
+
             </DialogContent>
         </Dialog>
     )
@@ -105,10 +115,10 @@ export default class BottomBar extends Component {
             <Typography component="h5" variant="h5">Community</Typography>
             <Typography component="body2" variant="body2">
                 <p> Support is only offered via public channels.
-                    For questions and hanging out with other robots
-                    join the Telegram Groups. If you find a bug
-                    or want to see new features, use the Github
-                    Issues page.
+                    Writte us on our Telegram community if you have
+                    questions or want to hang out with other cool robots.
+                    If you find a bug or want to see new features, use 
+                    the Github Issues page.
                 </p>
             </Typography>
             <List> 

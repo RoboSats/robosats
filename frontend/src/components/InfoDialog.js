@@ -44,9 +44,9 @@ export default class InfoDialog extends Component {
           <Typography component="h5" variant="h5">Are there trade limits?</Typography>
           <Typography component="body2" variant="body2">
             <p>Maximum single trade size is 500,000 Satoshis to minimize lightning
-              routing failures. This limit will be raised as the Lightning Network 
-              matures. There is no limits to the number of trades per day
-              or number of simultaneous Robots you can use. </p>
+              routing. There is no limits to the number of trades per day. A robot
+              can only have one order at a time. However, you can use multiple
+              Robots simultatenously in different browsers (remember to back up the tokens!). </p>
           </Typography>
 
           <Typography component="h5" variant="h5">Is <i>RoboSats</i> private?</Typography>
@@ -99,7 +99,7 @@ export default class InfoDialog extends Component {
             </p>
           </Typography>
 
-          <Typography component="h5" variant="h5">It <i>RoboSats</i> legal in my country?</Typography>
+          <Typography component="h5" variant="h5">Is <i>RoboSats</i> legal in my country?</Typography>
           <Typography component="body2" variant="body2">
             <p> In many countries using <i>RoboSats</i> is no different than using Ebay 
               or Craiglist. Your regulation may vary. It is your responsibility
@@ -112,12 +112,11 @@ export default class InfoDialog extends Component {
             <p> This lightning application is provided as is. It is in active 
               development: trade with the utmost caution. There is no private 
               support. Support is only offered via public channels <a href='https://t.me/robosats'>
-              (Telegram)</a>. <i>RoboSats</i> will never contact you.
-              <i>RoboSats</i> will definitely never ask for your user token.
+              (Telegram)</a>. <i>RoboSats</i> will never contact you. <i>
+              RoboSats</i> will definitely never ask for your robot token.
             </p>
           </Typography>
 
-      
         </DialogContent>
 
       </div>
