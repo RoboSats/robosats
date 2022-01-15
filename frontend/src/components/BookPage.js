@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Paper, Button , CircularProgress, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@mui/material";
 import { Link } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid';
+import getFlags from './getFlags'
 
 export default class BookPage extends Component {
   constructor(props) {
@@ -100,7 +101,10 @@ export default class BookPage extends Component {
           } },
           { field: 'type', headerName: 'Type', width: 60 },
           { field: 'amount', headerName: 'Amount', type: 'number', width: 80 },
-          { field: 'currency', headerName: 'Currency', width: 100 },
+          { field: 'currency', headerName: 'Currency', width: 100, 
+          renderCell: (params) => {return (
+            <div style={{ cursor: "pointer" }}>{params.row.currency + " " + getFlags(params.row.currency)}</div>
+          )} },
           { field: 'payment_method', headerName: 'Payment Method', width: 180 },
           { field: 'price', headerName: 'Price', type: 'number', width: 140,
           renderCell: (params) => {return (

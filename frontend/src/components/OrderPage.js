@@ -47,7 +47,7 @@ export default class OrderPage extends Component {
     this.getCurrencyDict();
     this.getOrderDetails();
 
-    // Change refresh delay according to Order status
+    // Refresh delais according to Order status
     this.statusToDelay = {
       "0": 3000,    //'Waiting for maker bond'
       "1": 30000,   //'Public'
@@ -207,9 +207,9 @@ export default class OrderPage extends Component {
       }));
   }
   
-  // set delay to the one matching the order status. If no order status, set delay to 9999999
-  setDelay(val){
-    return val ? this.statusToDelay[val.toString()] : 99999999;
+  // set delay to the one matching the order status. If null order status, delay goes to 9999999.
+  setDelay = (status)=>{
+    return status >= 0 ? this.statusToDelay[status.toString()] : 99999999;
   }
 
   getCurrencyCode(val){
