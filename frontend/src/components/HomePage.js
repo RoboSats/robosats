@@ -5,7 +5,7 @@ import UserGenPage from "./UserGenPage";
 import MakerPage from "./MakerPage";
 import BookPage from "./BookPage";
 import OrderPage from "./OrderPage";
-import InfoPage from "./InfoPage";
+import InfoPage from "./InfoPageMd";
 
 export default class HomePage extends Component {
     constructor(props) {

@@ -28,9 +28,6 @@ export default class InfoPage extends Component {
                 <ReactMarkdown children={this.state.info} />
             </Paper>
             <Grid item xs={12} align="center">
-              <Button color="secondary" variant="contained" to="/" component={Link}>
-                  Back
-              </Button>
           </Grid>
           </Grid>
         )

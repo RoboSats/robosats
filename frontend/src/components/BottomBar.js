@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {Paper, Grid, IconButton, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon} from "@mui/material";
+import {Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, Divider, Dialog, DialogContent} from "@mui/material";
 
 // Icons
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -9,11 +9,15 @@ import SellIcon from '@mui/icons-material/Sell';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PercentIcon from '@mui/icons-material/Percent';
 import PriceChangeIcon from '@mui/icons-material/PriceChange';
+import BoltIcon from '@mui/icons-material/Bolt';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import EqualizerIcon from '@mui/icons-material/Equalizer';
 
 export default class BottomBar extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            openStatsForNerds: false,
             num_public_buy_orders: null,
             num_active_robotsats: null,
             num_public_sell_orders: null,
@@ -37,13 +41,60 @@ export default class BottomBar extends Component {
           });
       }
 
+    handleClickOpenStatsForNerds = () => {
+    this.setState({openStatsForNerds: true});
+    };
+
+    handleClickCloseStatsForNerds = () => {
+    this.setState({openStatsForNerds: false});
+    };
+
+    StatsDialog =() =>{
+    return(
+        <Dialog
+        open={this.state.openStatsForNerds}
+        onClose={this.handleClickCloseStatsForNerds}
+        aria-labelledby="stats-for-nerds-dialog-title"
+        aria-describedby="stats-for-nerds-description"
+        >
+        <DialogContent>
+            <Typography component="h5" variant="h5">Stats For Nerds</Typography>
+            <List>
+                <Divider/>
+                <ListItem>
+                    <ListItemIcon><BoltIcon/></ListItemIcon>
+                    <ListItemText primary={this.state.lnd_version} secondary="LND version"/>
+                </ListItem>
+                <Divider/>
+                <ListItem>
+                    <ListItemIcon><GitHubIcon/></ListItemIcon>
+                    <ListItemText secondary="Currently running commit height">
+                        <a href={"https://github.com/Reckless-Satoshi/robosats/tree/" 
+                        + this.state.robosats_running_commit_hash}>{this.state.robosats_running_commit_hash}
+                        </a>
+                    </ListItemText>
+                </ListItem>
+                <Divider/>
+                <ListItem>
+                    <ListItemIcon><EqualizerIcon/></ListItemIcon>
+                    <ListItemText primary={this.state.today_volume} secondary="Today traded volume"/>
+                </ListItem>
+            </List>
+            </DialogContent>
+        </Dialog>
+    )
+    }
+
     render() {
         return (
             <Paper elevation={6} style={{height:40}}>
+                <this.StatsDialog/>
                 <Grid container xs={12}>
 
                     <Grid item xs={1}>
-                        <IconButton color="primary" aria-label="Stats for Nerds" component="span">
+                        <IconButton color="primary" 
+                            aria-label="Stats for Nerds" 
+                            onClick={this.handleClickOpenStatsForNerds} >
                             <SettingsIcon />
                         </IconButton>
                     </Grid>

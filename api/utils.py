@@ -10,12 +10,11 @@ def get_exchange_rate(currency):
     Checks for exchange rates in several public APIs.
     Returns the median price.
     '''
-    
+
     APIS = config('MARKET_PRICE_APIS', cast=lambda v: [s.strip() for s in v.split(',')])
     exchange_rates = []
 
     for api_url in APIS:
-        print(api_url)
         try:
             if 'blockchain.info' in api_url:
                 blockchain_prices = requests.get(api_url).json()

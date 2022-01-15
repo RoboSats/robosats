@@ -1,7 +1,8 @@
 import React, { Component } from "react";
-import { Button , Grid, Typography, TextField, ButtonGroup} from "@mui/material"
+import { Button , Dialog, Grid, Typography, TextField, ButtonGroup} from "@mui/material"
 import { Link } from 'react-router-dom'
 import Image from 'material-ui-image'
+import InfoDialog from './InfoDialog'
 
 function getCookie(name) {
   let cookieValue = null;
@@ -25,6 +26,7 @@ export default class UserGenPage extends Component {
     super(props);
     this.state = {
       token: this.genBase62Token(34),
+      openInfo: false,
     };
     this.getGeneratedUser(this.state.token);
   }
@@ -65,16 +67,11 @@ export default class UserGenPage extends Component {
       .then((data) => console.log(data));
   }
 
-  // Fix next two handler functions so they work sequentially
-  // at the moment they make the request generate a new user in parallel
-  // to updating the token in the state. So the it works a bit weird.
-
   handleAnotherButtonPressed=(e)=>{
     this.delGeneratedUser()
     this.setState({
       token: this.genBase62Token(34),
     })
-    this.reload_for_csrf_to_work();
   }
 
   handleChangeToken=(e)=>{
@@ -85,10 +82,28 @@ export default class UserGenPage extends Component {
     this.getGeneratedUser(e.target.value);
   }
 
-  // TO FIX CSRF TOKEN IS NOT UPDATED UNTIL WINDOW IS RELOADED
-  reload_for_csrf_to_work=()=>{
-    window.location.reload()
+  handleClickOpenInfo = () => {
+    this.setState({openInfo: true});
+  };
+
+  handleCloseInfo = () => {
+    this.setState({openInfo: false});
+  };
+
+  InfoDialog =() =>{
+    return(
+      <Dialog
+        open={this.state.openInfo}
+        onClose={this.handleCloseInfo}
+        aria-labelledby="info-dialog-title"
+        aria-describedby="info-dialog-description"
+        scroll="paper"
+      >
+        <InfoDialog/>
+      </Dialog>
+    )
   }
+
 
   render() {
     return (
@@ -137,7 +152,8 @@ export default class UserGenPage extends Component {
           <Grid item xs={12} align="center">
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
               <Button color='primary' to='/make/' component={Link}>Make Order</Button>
-              <Button color='inherit' to='/info' component={Link}>INFO</Button>
+              <Button color='inherit' onClick={this.handleClickOpenInfo}>Info</Button>
+              <this.InfoDialog/>
               <Button color='secondary' to='/book/' component={Link}>View Book</Button>
             </ButtonGroup>
           </Grid>
