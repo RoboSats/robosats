@@ -369,7 +369,7 @@ class Logics():
         order.last_satoshis = cls.satoshis_now(order)
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
         pos_text = 'Buying' if cls.is_buyer(order, user) else 'Selling'
-        description = (f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {float(order.amount) + Order.currency_dict[str(order.currency)]}"
+        description = (f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + Order.currency_dict[str(order.currency)]}"
             + " - This is a taker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel.")
 
         # Gen hold Invoice

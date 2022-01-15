@@ -207,7 +207,7 @@ class OrderView(viewsets.ViewSet):
 
     def take_update_confirm_dispute_cancel(self, request, format=None):
         '''
-        Here takes place all of updatesto the order object.
+        Here takes place all of the updates to the order object.
         That is: take, confim, cancel, dispute, update_invoice or rate.
         '''
         order_id = request.GET.get(self.lookup_url_kwarg)
@@ -430,18 +430,20 @@ class InfoView(ListAPIView):
 
         queryset = MarketTick.objects.filter(timestamp__day=today.day)
         if not len(queryset) == 0:
-            premiums = []
+            weighted_premiums = []
             volumes = []
             for tick in queryset:
-                premiums.append(tick.premium)
+                weighted_premiums.append(tick.premium*tick.volume)
                 volumes.append(tick.volume)
-            avg_premium = sum(premiums) / len(premiums)
+            
             total_volume = sum(volumes)
+            # Avg_premium is the weighted average of the premiums by volume
+            avg_premium = sum(weighted_premiums) / total_volume
         else:
             avg_premium = 0
             total_volume = 0
 
-        context['today_avg_nonkyc_btc_premium'] = avg_premium
+        context['today_avg_nonkyc_btc_premium'] = round(avg_premium,2)
         context['today_total_volume'] = total_volume
         context['lnd_version'] = get_lnd_version()
         context['robosats_running_commit_hash'] = get_commit_robosats()

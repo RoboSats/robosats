@@ -25,7 +25,7 @@ export default class BottomBar extends Component {
             num_public_sell_orders: null,
             fee: null,
             today_avg_nonkyc_btc_premium: null,
-            today_volume: null,
+            today_total_volume: null,
         };
         this.getInfo();
       }
@@ -78,7 +78,7 @@ export default class BottomBar extends Component {
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><EqualizerIcon/></ListItemIcon>
-                    <ListItemText primary={this.state.today_volume} secondary="Today traded volume"/>
+                    <ListItemText primary={this.state.today_total_volume+" BTC"} secondary="Today traded volume"/>
                 </ListItem>
             </List>
             </DialogContent>
@@ -203,8 +203,8 @@ export default class BottomBar extends Component {
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
-                                primary={this.state.today_avg_nonkyc_btc_premium} 
-                                secondary="Today Avg Premium" />
+                                primary={this.state.today_avg_nonkyc_btc_premium+"%"} 
+                                secondary="Today Non-KYC Avg Premium" />
                         </ListItem>
                     </Grid>
 

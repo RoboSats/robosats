@@ -51,9 +51,9 @@ export default class OrderPage extends Component {
     this.statusToDelay = {
       "0": 3000,    //'Waiting for maker bond'
       "1": 30000,   //'Public'
-      "2": 999999,  //'Deleted'
+      "2": 9999999, //'Deleted'
       "3": 3000,    //'Waiting for taker bond'
-      "4": 999999,  //'Cancelled'
+      "4": 9999999, //'Cancelled'
       "5": 999999,  //'Expired'
       "6": 3000,    //'Waiting for trade collateral and buyer invoice'
       "7": 3000,    //'Waiting only for seller trade collateral'
@@ -61,13 +61,13 @@ export default class OrderPage extends Component {
       "9": 10000,   //'Sending fiat - In chatroom'
       "10": 15000,  //'Fiat sent - In chatroom'
       "11": 300000, //'In dispute'
-      "12": 999999, //'Collaboratively cancelled'
+      "12": 9999999,//'Collaboratively cancelled'
       "13": 120000, //'Sending satoshis to buyer'
-      "14": 999999, //'Sucessful trade'
-      "15": 15000,  //'Failed lightning network routing'
-      "16": 999999, //'Maker lost dispute'
-      "17": 999999, //'Taker lost dispute'
-  }
+      "14": 9999999,//'Sucessful trade'
+      "15": 10000,  //'Failed lightning network routing'
+      "16": 9999999,//'Maker lost dispute'
+      "17": 9999999,//'Taker lost dispute'
+    }
   }
 
   getOrderDetails() {
@@ -77,7 +77,7 @@ export default class OrderPage extends Component {
       .then((data) => {console.log(data) &
         this.setState({
             loading: false,
-            delay: this.statusToDelay[data.status.toString()],
+            delay: this.setDelay(data.status),
             id: data.id,
             statusCode: data.status,
             statusText: data.status_message,
@@ -207,6 +207,11 @@ export default class OrderPage extends Component {
       }));
   }
   
+  // set delay to the one matching the order status. If no order status, set delay to 9999999
+  setDelay(val){
+    return val ? this.statusToDelay[val.toString()] : 99999999;
+  }
+
   getCurrencyCode(val){
     let code = val ? this.state.currencies_dict[val.toString()] : "" 
     return code

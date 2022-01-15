@@ -89,7 +89,7 @@ export default class InfoDialog extends Component {
               inspecting the source code </a> </p>
           </Typography>
 
-          <Typography component="h5" variant="h5">What happens if <i>RoboSats</i> suddently disapears?</Typography>
+          <Typography component="h5" variant="h5">What happens if <i>RoboSats</i> suddenly disapears?</Typography>
           <Typography component="body2" variant="body2">
             <p> Your sats will most likely return to you. Any hold invoice that is not 
               settled would be automatically returned even if <i>RoboSats</i> goes down 
