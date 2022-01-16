@@ -2,7 +2,7 @@ from celery import shared_task
 
 from .lightning.node import LNNode
 from django.contrib.auth.models import User
-from .models import LNPayment, Order, CachedExchangeRate
+from .models import LNPayment, Order, Currency
 from .logics import Logics
 from .utils import get_exchange_rates
 
@@ -55,14 +55,15 @@ def query_all_lnd_invoices():
 
 @shared_task(name="cache_market", ignore_result=True)
 def cache_market():
-    exchange_rates = get_exchange_rates(list(Order.currency_dict.values()))
+    exchange_rates = get_exchange_rates(list(Currency.currency_dict.values()))
     results = {}
-    for val in Order.currency_dict:
+    for val in Currency.currency_dict:
         rate = exchange_rates[int(val)-1] # currecies are indexed starting at 1 (USD)
-        results[val] = {Order.currency_dict[val], rate}
+        results[val] = {Currency.currency_dict[val], rate}
 
         # Create / Update database cached prices
-        CachedExchangeRate.objects.update_or_create(
+        Currency.objects.update_or_create(
+            id = int(val),
             currency = int(val),
             # if there is a Cached Exchange rate matching that value, it updates it with defaults below
             defaults = {

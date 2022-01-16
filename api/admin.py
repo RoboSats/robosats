@@ -2,7 +2,7 @@ from django.contrib import admin
 from django_admin_relation_links import AdminChangeLinksMixin
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.admin import UserAdmin
-from .models import Order, LNPayment, Profile, MarketTick, CachedExchangeRate
+from .models import Order, LNPayment, Profile, MarketTick, Currency
 
 admin.site.unregister(Group)
 admin.site.unregister(User)
@@ -24,9 +24,9 @@ class EUserAdmin(UserAdmin):
 
 @admin.register(Order)
 class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
-    list_display = ('id','type','maker_link','taker_link','status','amount','currency','t0_satoshis','is_disputed','is_fiat_sent','created_at','expires_at', 'buyer_invoice_link','maker_bond_link','taker_bond_link','trade_escrow_link')
+    list_display = ('id','type','maker_link','taker_link','status','amount','currency_link','t0_satoshis','is_disputed','is_fiat_sent','created_at','expires_at', 'buyer_invoice_link','maker_bond_link','taker_bond_link','trade_escrow_link')
     list_display_links = ('id','type')
-    change_links = ('maker','taker','buyer_invoice','maker_bond','taker_bond','trade_escrow')
+    change_links = ('maker','taker','currency','buyer_invoice','maker_bond','taker_bond','trade_escrow')
     list_filter = ('is_disputed','is_fiat_sent','type','currency','status')
 
 @admin.register(LNPayment)
@@ -43,8 +43,8 @@ class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     change_links =['user']
     readonly_fields = ['avatar_tag']
 
-@admin.register(CachedExchangeRate)
-class CachedExchangeRateAdmin(admin.ModelAdmin):
+@admin.register(Currency)
+class CurrencieAdmin(admin.ModelAdmin):
     list_display = ('currency','exchange_rate','timestamp')
     readonly_fields = ('currency','exchange_rate','timestamp')
 

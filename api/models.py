@@ -15,6 +15,24 @@ MAX_TRADE = int(config('MAX_TRADE'))
 FEE = float(config('FEE'))
 BOND_SIZE = float(config('BOND_SIZE'))
 
+
+class Currency(models.Model):
+
+    currency_dict = json.load(open('./frontend/static/assets/currencies.json'))
+    currency_choices = [(int(val), label) for val, label in list(currency_dict.items())]
+
+    currency = models.PositiveSmallIntegerField(choices=currency_choices, null=False, unique=True)
+    exchange_rate = models.DecimalField(max_digits=10, decimal_places=2, default=None, null=True, validators=[MinValueValidator(0)])
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        # returns currency label ( 3 letters code)
+        return self.currency_dict[str(self.currency)]
+
+    class Meta:
+        verbose_name = 'Cached market currency'
+        verbose_name_plural = 'Currencies'
+
 class LNPayment(models.Model):
 
     class Types(models.IntegerChoices):
@@ -62,6 +80,10 @@ class LNPayment(models.Model):
     def __str__(self):
         return (f'LN-{str(self.id)[:8]}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}')
 
+    class Meta:
+        verbose_name = 'Lightning payment'
+        verbose_name_plural = 'Lightning payments'
+
 class Order(models.Model):
     
     class Types(models.IntegerChoices):
@@ -87,9 +109,6 @@ class Order(models.Model):
         FAI = 15, 'Failed lightning network routing'
         MLD = 16, 'Maker lost dispute'
         TLD = 17, 'Taker lost dispute'
-    
-    currency_dict = json.load(open('./frontend/static/assets/currencies.json'))
-    currency_choices = [(int(val), label) for val, label in list(currency_dict.items())]
 
     # order info
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.WFB)
@@ -98,7 +117,7 @@ class Order(models.Model):
 
     # order details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False)
-    currency = models.PositiveSmallIntegerField(choices=currency_choices, null=False)
+    currency = models.ForeignKey(Currency, null=True, on_delete=models.SET_NULL)
     amount = models.DecimalField(max_digits=9, decimal_places=4, validators=[MinValueValidator(0.00001)])
     payment_method = models.CharField(max_length=35, null=False, default="not specified", blank=True)
 
@@ -155,7 +174,7 @@ class Order(models.Model):
 
     def __str__(self):
         # Make relational back to ORDER
-        return (f'Order {self.id}: {self.Types(self.type).label} BTC for {float(self.amount)} {self.currency_dict[str(self.currency)]}')
+        return (f'Order {self.id}: {self.Types(self.type).label} BTC for {float(self.amount)} {self.currency}')
 
 @receiver(pre_delete, sender=Order)
 def delete_lnpayment_at_order_deletion(sender, instance, **kwargs):
@@ -219,13 +238,6 @@ class Profile(models.Model):
     def avatar_tag(self):
         return mark_safe('<img src="%s" width="50" height="50" />' % self.get_avatar())
 
-class CachedExchangeRate(models.Model):
-
-    currency = models.PositiveSmallIntegerField(choices=Order.currency_choices, null=False, unique=True)
-    exchange_rate = models.DecimalField(max_digits=10, decimal_places=2, default=None, null=True, validators=[MinValueValidator(0)])
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-
 class MarketTick(models.Model):
     ''' 
     Records tick by tick Non-KYC Bitcoin price. 
@@ -242,7 +254,7 @@ class MarketTick(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=None, null=True, validators=[MinValueValidator(0)])
     volume = models.DecimalField(max_digits=8, decimal_places=8, default=None, null=True, validators=[MinValueValidator(0)])
     premium = models.DecimalField(max_digits=5, decimal_places=2, default=None, null=True, validators=[MinValueValidator(-100), MaxValueValidator(999)], blank=True)
-    currency = models.PositiveSmallIntegerField(choices=Order.currency_choices, null=True)
+    currency = models.PositiveSmallIntegerField(choices=Currency.currency_choices, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     
     # Relevant to keep record of the historical fee, so the insight on the premium can be better analyzed
@@ -259,7 +271,7 @@ class MarketTick(models.Model):
         elif order.taker_bond.status == LNPayment.Status.LOCKED:
             volume = order.last_satoshis / 100000000
             price = float(order.amount) / volume  # Amount Fiat / Amount BTC
-            market_exchange_rate = float(CachedExchangeRate.objects.get(currency=order.currency).exchange_rate)
+            market_exchange_rate = float(order.currency.exchange_rate)
             premium = 100 * (price / market_exchange_rate - 1)
 
             tick = MarketTick.objects.create(
@@ -273,4 +285,7 @@ class MarketTick(models.Model):
     def __str__(self):
         return f'Tick: {str(self.id)[:8]}'
 
+    class Meta:
+        verbose_name = 'Market tick'
+        verbose_name_plural = 'Market ticks'
 

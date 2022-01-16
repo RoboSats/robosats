@@ -2,7 +2,7 @@ from datetime import time, timedelta
 from django.utils import timezone
 from .lightning.node import LNNode
 
-from .models import Order, LNPayment, MarketTick, User, CachedExchangeRate
+from .models import Order, LNPayment, MarketTick, User, Currency
 from decouple import config
 
 import math
@@ -72,7 +72,7 @@ class Logics():
         if order.is_explicit:
             satoshis_now = order.satoshis
         else:
-            exchange_rate = float(CachedExchangeRate.objects.get(currency=order.currency).exchange_rate)
+            exchange_rate = float(order.currency.exchange_rate)
             premium_rate = exchange_rate * (1+float(order.premium)/100)
             satoshis_now = (float(order.amount) / premium_rate) * 100*1000*1000
 
@@ -80,7 +80,7 @@ class Logics():
 
     def price_and_premium_now(order):
         ''' computes order premium live '''
-        exchange_rate = float(CachedExchangeRate.objects.get(currency=order.currency).exchange_rate)
+        exchange_rate = float(order.currency.exchange_rate)
         if not order.is_explicit:
             premium = order.premium
             price = exchange_rate * (1+float(premium)/100)
@@ -373,7 +373,7 @@ class Logics():
         order.last_satoshis = cls.satoshis_now(order)
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
         pos_text = 'Buying' if cls.is_buyer(order, user) else 'Selling'
-        description = (f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + Order.currency_dict[str(order.currency)]}"
+        description = (f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + str(order.currency)}"# Order.currency_dict[str(order.currency)]}"
             + " - This is a taker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel.")
 
         # Gen hold Invoice

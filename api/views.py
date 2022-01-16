@@ -9,7 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
-from .models import LNPayment, MarketTick, Order
+from .models import LNPayment, MarketTick, Order, Currency
 from .logics import Logics
 from .utils import get_lnd_version, get_commit_robosats
 
@@ -54,7 +54,7 @@ class MakerView(CreateAPIView):
         # Creates a new order
         order = Order(
             type=type,
-            currency=currency,
+            currency=Currency.objects.get(id=currency),
             amount=amount,
             payment_method=payment_method,
             premium=premium,
