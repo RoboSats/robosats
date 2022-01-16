@@ -10,7 +10,6 @@ from django.db.models import Q
 from datetime import timedelta
 from django.utils import timezone
 
-from decouple import config
 import time
 
 @shared_task(name="users_cleansing")
@@ -21,12 +20,11 @@ def users_cleansing():
     # Users who's last login has not been in the last 12 hours
     active_time_range = (timezone.now() - timedelta(hours=12), timezone.now())
     queryset = User.objects.filter(~Q(last_login__range=active_time_range))
+    queryset = queryset(is_staff=False) # Do not delete staff users
     
     # And do not have an active trade or any pass finished trade.
     deleted_users = []
     for user in queryset:
-        if user.username == str(config('ESCROW_USERNAME')): # Do not delete admin user by mistake
-            continue
         if not user.profile.total_contracts == 0:
             continue
         valid, _ = Logics.validate_already_maker_or_taker(user)
@@ -94,6 +92,7 @@ def cache_market():
     for val in Currency.currency_dict:
         rate = exchange_rates[int(val)-1] # currecies are indexed starting at 1 (USD)
         results[val] = {Currency.currency_dict[val], rate}
+        if str(rate) == 'nan': continue # Do not update if no new rate was found
 
         # Create / Update database cached prices
         Currency.objects.update_or_create(
@@ -101,7 +100,7 @@ def cache_market():
             currency = int(val),
             # if there is a Cached market prices matching that id, it updates it with defaults below
             defaults = {
-                'exchange_rate': rate,
+                'exchange_rate': float(rate),
                 'timestamp': timezone.now(),
             })
 
