@@ -8,7 +8,6 @@ import uuid
 
 from decouple import config
 from pathlib import Path
-from .utils import get_exchange_rate
 import json
 
 MIN_TRADE = int(config('MIN_TRADE'))
@@ -220,6 +219,13 @@ class Profile(models.Model):
     def avatar_tag(self):
         return mark_safe('<img src="%s" width="50" height="50" />' % self.get_avatar())
 
+class CachedExchangeRate(models.Model):
+
+    currency = models.PositiveSmallIntegerField(choices=Order.currency_choices, null=False, unique=True)
+    exchange_rate = models.DecimalField(max_digits=10, decimal_places=2, default=None, null=True, validators=[MinValueValidator(0)])
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+
 class MarketTick(models.Model):
     ''' 
     Records tick by tick Non-KYC Bitcoin price. 
@@ -253,7 +259,8 @@ class MarketTick(models.Model):
         elif order.taker_bond.status == LNPayment.Status.LOCKED:
             volume = order.last_satoshis / 100000000
             price = float(order.amount) / volume  # Amount Fiat / Amount BTC
-            premium = 100 * (price / get_exchange_rate(Order.currency_dict[str(order.currency)]) - 1)
+            market_exchange_rate = float(CachedExchangeRate.objects.get(currency=order.currency).exchange_rate)
+            premium = 100 * (price / market_exchange_rate - 1)
 
             tick = MarketTick.objects.create(
                 price=price, 

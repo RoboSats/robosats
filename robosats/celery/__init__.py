@@ -4,6 +4,8 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 
+from datetime import timedelta
+
 # You can use rabbitmq instead here.
 BASE_REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
@@ -27,11 +29,18 @@ app.conf.broker_url = BASE_REDIS_URL
 app.conf.beat_scheduler = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 
-## Configure the periodic tasks
+# Configure the periodic tasks
 app.conf.beat_schedule = {
-    'users-cleasing-every-hour': {
+    # User cleansing every 6 hours
+    'users-cleansing': {
         'task': 'users_cleansing',
-        'schedule': 60*60,
+        'schedule': timedelta(hours=6),
+    },
+
+    'cache-market-rates': {
+        'task': 'cache_market',
+        'schedule': timedelta(seconds=60), # Cache market prices every minutes for now.
     },
 }
+
 app.conf.timezone = 'UTC'

@@ -2,9 +2,8 @@ from datetime import time, timedelta
 from django.utils import timezone
 from .lightning.node import LNNode
 
-from .models import Order, LNPayment, MarketTick, User
+from .models import Order, LNPayment, MarketTick, User, CachedExchangeRate
 from decouple import config
-from .utils import get_exchange_rate
 
 import math
 
@@ -73,7 +72,7 @@ class Logics():
         if order.is_explicit:
             satoshis_now = order.satoshis
         else:
-            exchange_rate = get_exchange_rate(Order.currency_dict[str(order.currency)])
+            exchange_rate = float(CachedExchangeRate.objects.get(currency=order.currency).exchange_rate)
             premium_rate = exchange_rate * (1+float(order.premium)/100)
             satoshis_now = (float(order.amount) / premium_rate) * 100*1000*1000
 
@@ -81,12 +80,11 @@ class Logics():
 
     def price_and_premium_now(order):
         ''' computes order premium live '''
-        exchange_rate = get_exchange_rate(Order.currency_dict[str(order.currency)])
+        exchange_rate = float(CachedExchangeRate.objects.get(currency=order.currency).exchange_rate)
         if not order.is_explicit:
             premium = order.premium
             price = exchange_rate * (1+float(premium)/100)
         else:
-            exchange_rate = get_exchange_rate(Order.currency_dict[str(order.currency)])
             order_rate = float(order.amount) / (float(order.satoshis) / 100000000)
             premium = order_rate / exchange_rate - 1
             premium = int(premium*10000)/100  # 2 decimals left
@@ -339,7 +337,7 @@ class Logics():
             order.taker_bond.status = LNPayment.Status.LOCKED
             order.taker_bond.save()
 
-            # Both users profile have one more contract done
+            # Both users profiles are added one more contract
             order.maker.profile.total_contracts = order.maker.profile.total_contracts + 1
             order.taker.profile.total_contracts = order.taker.profile.total_contracts + 1
             order.maker.profile.save()

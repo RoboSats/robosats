@@ -2,10 +2,11 @@ from celery import shared_task
 
 from .lightning.node import LNNode
 from django.contrib.auth.models import User
-from .models import LNPayment, Order
+from .models import LNPayment, Order, CachedExchangeRate
 from .logics import Logics
-from django.db.models import Q
+from .utils import get_exchange_rates
 
+from django.db.models import Q
 from datetime import timedelta
 from django.utils import timezone
 
@@ -40,7 +41,7 @@ def users_cleansing():
     return results
 
 
-@shared_task
+@shared_task(name="orders_expire")
 def orders_expire():
     pass
 
@@ -52,6 +53,21 @@ def follow_lnd_payment():
 def query_all_lnd_invoices():
     pass
 
-@shared_task
+@shared_task(name="cache_market", ignore_result=True)
 def cache_market():
-    pass
+    exchange_rates = get_exchange_rates(list(Order.currency_dict.values()))
+    results = {}
+    for val in Order.currency_dict:
+        rate = exchange_rates[int(val)-1] # currecies are indexed starting at 1 (USD)
+        results[val] = {Order.currency_dict[val], rate}
+
+        # Create / Update database cached prices
+        CachedExchangeRate.objects.update_or_create(
+            currency = int(val),
+            # if there is a Cached Exchange rate matching that value, it updates it with defaults below
+            defaults = {
+                'exchange_rate': rate,
+                'timestamp': timezone.now(),
+            })
+
+    return results

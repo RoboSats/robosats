@@ -7,7 +7,7 @@ export default function getFlags(code){
     if(code == 'CLP') return '🇨🇱';
     if(code == 'CNY') return '🇨🇳';
     if(code == 'EUR') return '🇪🇺';
-    if(code == 'HKR') return '🇨🇷';
+    if(code == 'HRK') return '🇨🇷';
     if(code == 'CZK') return '🇨🇿';
     if(code == 'DKK') return '🇩🇰';
     if(code == 'GBP') return '🇬🇧';

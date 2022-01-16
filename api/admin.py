@@ -2,7 +2,7 @@ from django.contrib import admin
 from django_admin_relation_links import AdminChangeLinksMixin
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.admin import UserAdmin
-from .models import Order, LNPayment, Profile, MarketTick
+from .models import Order, LNPayment, Profile, MarketTick, CachedExchangeRate
 
 admin.site.unregister(Group)
 admin.site.unregister(User)
@@ -31,7 +31,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
 
 @admin.register(LNPayment)
 class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
-    list_display = ('id','concept','status','num_satoshis','type','invoice','expires_at','sender_link','receiver_link')
+    list_display = ('id','concept','status','num_satoshis','type','expires_at','sender_link','receiver_link')
     list_display_links = ('id','concept')
     change_links = ('sender','receiver')
     list_filter = ('type','concept','status')
@@ -42,6 +42,11 @@ class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     list_display_links = ('avatar_tag','id')
     change_links =['user']
     readonly_fields = ['avatar_tag']
+
+@admin.register(CachedExchangeRate)
+class CachedExchangeRateAdmin(admin.ModelAdmin):
+    list_display = ('currency','exchange_rate','timestamp')
+    readonly_fields = ('currency','exchange_rate','timestamp')
 
 @admin.register(MarketTick)
 class MarketTickAdmin(admin.ModelAdmin):

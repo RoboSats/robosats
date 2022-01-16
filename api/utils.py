@@ -1,32 +1,52 @@
 
 import requests, ring, os
 from decouple import config
-from statistics import median
+import numpy as np
 
 market_cache = {}
 
-@ring.dict(market_cache, expire=30) #keeps in cache for 30 seconds
-def get_exchange_rate(currency):
+# @ring.dict(market_cache, expire=30) #keeps in cache for 30 seconds
+def get_exchange_rates(currencies):
     '''
+    Params: list of currency codes.
     Checks for exchange rates in several public APIs.
-    Returns the median price.
+    Returns the median price list.
     '''
 
     APIS = config('MARKET_PRICE_APIS', cast=lambda v: [s.strip() for s in v.split(',')])
-    exchange_rates = []
 
+    api_rates = []
     for api_url in APIS:
-        try:
+        try: # If one API is unavailable pass
             if 'blockchain.info' in api_url:
                 blockchain_prices = requests.get(api_url).json()
-                exchange_rates.append(float(blockchain_prices[currency]['last']))
+                blockchain_rates = []
+                for currency in currencies:
+                    try: # If a currency is missing place a None
+                        blockchain_rates.append(float(blockchain_prices[currency]['last']))
+                    except:
+                        blockchain_rates.append(np.nan)
+                api_rates.append(blockchain_rates)
+
             elif 'yadio.io' in api_url:
                 yadio_prices = requests.get(api_url).json()
-                exchange_rates.append(float(yadio_prices['BTC'][currency]))
+                yadio_rates = []
+                for currency in currencies:
+                    try:
+                        yadio_rates.append(float(yadio_prices['BTC'][currency]))
+                    except:
+                        yadio_rates.append(np.nan)
+                api_rates.append(yadio_rates)
         except:
             pass
 
-    return median(exchange_rates)
+    if len(api_rates) == 0:
+        return None # Wops there is not API available!
+
+    exchange_rates = np.array(api_rates)
+    median_rates = np.nanmedian(exchange_rates, axis=0)
+
+    return median_rates.tolist()
 
 lnd_v_cache = {}
 
