@@ -11,6 +11,7 @@ from datetime import timedelta
 from django.utils import timezone
 
 from decouple import config
+import time
 
 @shared_task(name="users_cleansing")
 def users_cleansing():
@@ -42,18 +43,51 @@ def users_cleansing():
 
 
 @shared_task(name="orders_expire")
-def orders_expire():
-    pass
+def orders_expire(rest_secs):
+    '''
+    Continuously checks order expiration times for 1 hour.
+    If order is expires, it handles the actions.
+    '''
+    now = timezone.now()
+    end_time = now + timedelta(hours=1)
+    context = []
+
+    while now < end_time:
+        queryset = Order.objects.exclude(status=Order.Status.EXP).exclude(status=Order.Status.UCA).exclude(status= Order.Status.CCA)
+        queryset = queryset.filter(expires_at__lt=now) # expires at lower than now        
+
+        for order in queryset:
+            context.append(str(order)+ " was "+ Order.Status(order.status).label)
+            Logics.order_expires(order)
+
+        # Allow for some thread rest.
+        time.sleep(rest_secs)
+
+        # Update 'now' for a new loop
+        now = timezone.now()
+
+    results = {
+        'num_expired': len(context),
+        'expired_orders_context': context,
+        'rest_param': rest_secs,
+    }
+
+    return results
 
 @shared_task
 def follow_lnd_payment():
+    ''' Makes a payment and follows it.
+    Updates the LNpayment object, and retries
+    until payment is done'''
     pass
 
 @shared_task
-def query_all_lnd_invoices():
+def follow_lnd_hold_invoice():
+    ''' Follows and updates LNpayment object
+    until settled or canceled'''
     pass
 
-@shared_task(name="cache_market", ignore_result=True)
+@shared_task(name="cache_external_market_prices", ignore_result=True)
 def cache_market():
     exchange_rates = get_exchange_rates(list(Currency.currency_dict.values()))
     results = {}
@@ -65,7 +99,7 @@ def cache_market():
         Currency.objects.update_or_create(
             id = int(val),
             currency = int(val),
-            # if there is a Cached Exchange rate matching that value, it updates it with defaults below
+            # if there is a Cached market prices matching that id, it updates it with defaults below
             defaults = {
                 'exchange_rate': rate,
                 'timestamp': timezone.now(),

@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { Paper, Alert, AlertTitle, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, Menu} from "@mui/material"
 import { Link } from 'react-router-dom'
 
+import getFlags from './getFlags'
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -190,7 +192,9 @@ export default class MakerPage extends Component {
                             >
                                 {
                                 Object.entries(this.state.currencies_dict)
-                                .map( ([key, value]) => <MenuItem value={parseInt(key)}>{value}</MenuItem> )
+                                .map( ([key, value]) => <MenuItem value={parseInt(key)}>
+                                    {getFlags(value) + " " + value}
+                                    </MenuItem> )
                                 }
                             </Select>
 

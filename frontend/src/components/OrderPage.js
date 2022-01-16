@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import TradeBox from "./TradeBox";
+import getFlags from './getFlags'
 
 // icons
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -281,9 +282,10 @@ export default class OrderPage extends Component {
             
             <ListItem>
               <ListItemIcon>
-                <MoneyIcon/>
+               {getFlags(this.state.currencyCode)}
               </ListItemIcon>
-              <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))+" "+this.state.currencyCode} secondary="Amount"/>
+              <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))
+                +" "+this.state.currencyCode} secondary="Amount"/>
             </ListItem>
             <Divider />
             <ListItem>

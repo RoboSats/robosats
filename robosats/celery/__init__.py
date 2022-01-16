@@ -32,14 +32,18 @@ app.conf.beat_scheduler = 'django_celery_beat.schedulers:DatabaseScheduler'
 # Configure the periodic tasks
 app.conf.beat_schedule = {
     # User cleansing every 6 hours
-    'users-cleansing': {
+    'users-cleansing': {                    # Cleans abandoned users every 6 hours
         'task': 'users_cleansing',
-        'schedule': timedelta(hours=6),
+        'schedule': timedelta(hours=6),     
     },
-
-    'cache-market-rates': {
-        'task': 'cache_market',
-        'schedule': timedelta(seconds=60), # Cache market prices every minutes for now.
+    'cache-market-prices': {                 # Cache market prices every minutes for now.
+        'task': 'cache_external_market_prices',
+        'schedule': timedelta(seconds=60),  
+    },
+    'orders_expire': {                      # Continuous order expire removal (1 hour long process, every hour reports results)
+        'task': 'orders_expire',
+        'schedule': timedelta(hours=1),    
+        'args': [5], # Rest between checks (secs)
     },
 }
 

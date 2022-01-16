@@ -95,13 +95,23 @@ class Logics():
         
         return price, premium
 
-    def order_expires(order):
+    @classmethod
+    def order_expires(cls, order):
         ''' General case when time runs out. Only 
         used when the maker does not lock a publishing bond'''
-        order.status = Order.Status.EXP
-        order.maker = None
-        order.taker = None
-        order.save()
+
+        if order.status == Order.Status.WFB:
+            order.status = Order.Status.EXP
+            order.maker = None
+            order.taker = None
+            order.save()
+        
+        if order.status == Order.Status.PUB:
+            cls.return_bond(order.maker_bond)
+            order.status = Order.Status.EXP
+            order.maker = None
+            order.taker = None
+            order.save()
 
     def kick_taker(order):
         ''' The taker did not lock the taker_bond. Now he has to go'''

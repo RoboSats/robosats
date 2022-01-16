@@ -45,7 +45,8 @@ class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
 
 @admin.register(Currency)
 class CurrencieAdmin(admin.ModelAdmin):
-    list_display = ('currency','exchange_rate','timestamp')
+    list_display = ('id','currency','exchange_rate','timestamp')
+    list_display_links = ('id','currency')
     readonly_fields = ('currency','exchange_rate','timestamp')
 
 @admin.register(MarketTick)
