@@ -107,8 +107,9 @@ class Order(models.Model):
         PAY = 13, 'Sending satoshis to buyer'
         SUC = 14, 'Sucessful trade'
         FAI = 15, 'Failed lightning network routing'
-        MLD = 16, 'Maker lost dispute'
-        TLD = 17, 'Taker lost dispute'
+        WFR = 16, 'Wait for dispute resolution'
+        MLD = 17, 'Maker lost dispute'
+        TLD = 18, 'Taker lost dispute'
 
     # order info
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.WFB)
@@ -135,10 +136,14 @@ class Order(models.Model):
     maker = models.ForeignKey(User, related_name='maker', on_delete=models.CASCADE, null=True, default=None)  # unique = True, a maker can only make one order
     taker = models.ForeignKey(User, related_name='taker', on_delete=models.SET_NULL, null=True, default=None, blank=True)  # unique = True, a taker can only take one order
     is_pending_cancel = models.BooleanField(default=False, null=False) # When collaborative cancel is needed and one partner has cancelled.
-    is_disputed = models.BooleanField(default=False, null=False)
     is_fiat_sent = models.BooleanField(default=False, null=False)
 
-    # HTLCs
+    # in dispute
+    is_disputed = models.BooleanField(default=False, null=False)
+    maker_statement = models.TextField(max_length=5000, unique=True, null=True, default=None, blank=True)
+    taker_statement = models.TextField(max_length=5000, unique=True, null=True, default=None, blank=True)
+
+    # LNpayments
     # Order collateral
     maker_bond = models.ForeignKey(LNPayment, related_name='maker_bond', on_delete=models.SET_NULL, null=True, default=None, blank=True)
     taker_bond = models.ForeignKey(LNPayment, related_name='taker_bond', on_delete=models.SET_NULL, null=True, default=None, blank=True)
@@ -147,11 +152,11 @@ class Order(models.Model):
     # buyer payment LN invoice
     buyer_invoice = models.ForeignKey(LNPayment, related_name='buyer_invoice', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
-    # cancel LN invoice // these are only needed to charge lower-than-bond amounts. E.g., a taken order has a small cost if cancelled, to avoid DDOSing.
-    maker_cancel = models.ForeignKey(LNPayment, related_name='maker_cancel', on_delete=models.SET_NULL, null=True, default=None, blank=True)
-    taker_cancel = models.ForeignKey(LNPayment, related_name='taker_cancel', on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    # Unused so far. Cancel LN invoices // these are only needed to charge lower-than-bond amounts. E.g., a taken order has a small cost if cancelled, to avoid DDOSing.
+    # maker_cancel = models.ForeignKey(LNPayment, related_name='maker_cancel', on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    # taker_cancel = models.ForeignKey(LNPayment, related_name='taker_cancel', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
-    total_time_to_expire = {
+    t_to_expire = {
         0  : int(config('EXP_MAKER_BOND_INVOICE')) ,         # 'Waiting for maker bond'
         1  : 60*60*int(config('PUBLIC_ORDER_DURATION')),     # 'Public'
         2  : 0,                                              # 'Deleted'
@@ -163,13 +168,14 @@ class Order(models.Model):
         8  : 60*int(config('INVOICE_AND_ESCROW_DURATION')),  # 'Waiting only for buyer invoice'
         9  : 60*60*int(config('FIAT_EXCHANGE_DURATION')),    # 'Sending fiat - In chatroom'
         10 : 60*60*int(config('FIAT_EXCHANGE_DURATION')),    # 'Fiat sent - In chatroom'
-        11 : 24*60*60,                                       # 'In dispute'
+        11 : 10*24*60*60,                                    # 'In dispute'
         12 : 0,                                              # 'Collaboratively cancelled'
         13 : 24*60*60,                                       # 'Sending satoshis to buyer'
         14 : 24*60*60,                                       # 'Sucessful trade'
         15 : 24*60*60,                                       # 'Failed lightning network routing'
-        16 : 24*60*60,                                       # 'Maker lost dispute'
-        17 : 24*60*60,                                       # 'Taker lost dispute'
+        16 : 24*60*60,                                       # 'Wait for dispute resolution'
+        17 : 24*60*60,                                       # 'Maker lost dispute'
+        18 : 24*60*60,                                       # 'Taker lost dispute'
         }
 
     def __str__(self):
@@ -201,6 +207,8 @@ class Profile(models.Model):
     # Disputes
     num_disputes = models.PositiveIntegerField(null=False, default=0)
     lost_disputes = models.PositiveIntegerField(null=False, default=0)
+    num_disputes_started = models.PositiveIntegerField(null=False, default=0)
+    orders_disputes_started = models.CharField(max_length=999, null=True, default=None, validators=[validate_comma_separated_integer_list], blank=True) # Will only store ID of orders
 
     # RoboHash
     avatar = models.ImageField(default="static/assets/misc/unknown_avatar.png", verbose_name='Avatar', blank=True)
@@ -254,7 +262,7 @@ class MarketTick(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=None, null=True, validators=[MinValueValidator(0)])
     volume = models.DecimalField(max_digits=8, decimal_places=8, default=None, null=True, validators=[MinValueValidator(0)])
     premium = models.DecimalField(max_digits=5, decimal_places=2, default=None, null=True, validators=[MinValueValidator(-100), MaxValueValidator(999)], blank=True)
-    currency = models.PositiveSmallIntegerField(choices=Currency.currency_choices, null=True)
+    currency = models.ForeignKey(Currency, null=True, on_delete=models.SET_NULL)
     timestamp = models.DateTimeField(auto_now_add=True)
     
     # Relevant to keep record of the historical fee, so the insight on the premium can be better analyzed

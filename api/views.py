@@ -106,7 +106,7 @@ class OrderView(viewsets.ViewSet):
             return Response({'bad_request':'This order has been cancelled collaborativelly'},status.HTTP_400_BAD_REQUEST)
 
         data = ListOrderSerializer(order).data
-        data['total_secs_exp'] = Order.total_time_to_expire[order.status]
+        data['total_secs_exp'] = Order.t_to_expire[order.status]
 
         # if user is under a limit (penalty), inform him.
         is_penalized, time_out = Logics.is_penalized(request.user)
@@ -217,10 +217,13 @@ class OrderView(viewsets.ViewSet):
         
         order = Order.objects.get(id=order_id)
 
-        # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice' 6)'rate' (counterparty)
+        # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice' 
+        # 6)'submit_statement' (in dispute), 7)'rate' (counterparty)
         action = serializer.data.get('action') 
         invoice = serializer.data.get('invoice')
+        statement = serializer.data.get('statement')
         rating = serializer.data.get('rating')
+        
 
         # 1) If action is take, it is a taker request!
         if action == 'take':
@@ -255,7 +258,11 @@ class OrderView(viewsets.ViewSet):
 
         # 5) If action is dispute
         elif action == 'dispute':
-            valid, context = Logics.open_dispute(order,request.user, rating)
+            valid, context = Logics.open_dispute(order,request.user)
+            if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        elif action == 'submit_statement':
+            valid, context = Logics.dispute_statement(order,request.user, statement)
             if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 6) If action is rate

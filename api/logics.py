@@ -97,21 +97,104 @@ class Logics():
 
     @classmethod
     def order_expires(cls, order):
-        ''' General case when time runs out. Only 
-        used when the maker does not lock a publishing bond'''
+        ''' General cases when time runs out.'''
 
-        if order.status == Order.Status.WFB:
+        # Do not change order status if an order in any with
+        # any of these status is sent to expire here
+        do_nothing = [Order.Status.DEL, Order.Status.UCA,
+                    Order.Status.EXP, Order.Status.FSE,
+                    Order.Status.DIS, Order.Status.CCA,
+                    Order.Status.PAY, Order.Status.SUC,
+                    Order.Status.FAI, Order.Status.MLD,
+                    Order.Status.TLD]
+
+        if order.status in do_nothing:
+            return False
+
+        elif order.status == Order.Status.WFB:
             order.status = Order.Status.EXP
             order.maker = None
             order.taker = None
             order.save()
+            return True
         
-        if order.status == Order.Status.PUB:
+        elif order.status == Order.Status.PUB:
             cls.return_bond(order.maker_bond)
             order.status = Order.Status.EXP
             order.maker = None
             order.taker = None
             order.save()
+            return True
+
+        elif order.status == Order.Status.TAK:
+            cls.kick_taker(order)
+            return True
+
+        elif order.status == Order.Status.WF2:
+            '''Weird case where an order expires and both participants
+            did not proceed with the contract. Likely the site was
+            down or there was a bug. Still bonds must be charged
+            to avoid service DDOS. '''
+
+            cls.settle_bond(order.maker_bond)
+            cls.settle_bond(order.taker_bond)
+            order.status = Order.Status.EXP
+            order.maker = None
+            order.taker = None
+            order.save()
+            return True
+
+        elif order.status == Order.Status.WFE:
+            maker_is_seller = cls.is_seller(order, order.maker)
+            # If maker is seller, settle the bond and order goes to expired
+            if maker_is_seller:
+                cls.settle_bond(order.maker_bond)
+                order.status = Order.Status.EXP
+                order.maker = None
+                order.taker = None
+                order.save()
+                return True
+
+            # If maker is buyer, settle the taker's bond order goes back to public
+            else:
+                cls.settle_bond(order.taker_bond)
+                order.status = Order.Status.PUB
+                order.taker = None
+                order.taker_bond = None
+                order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
+                order.save()
+                return True
+
+        elif order.status == Order.Status.WFI:
+            # The trade could happen without a buyer invoice. However, this user
+            # is most likely AFK since he did not submit an invoice; will most
+            # likely desert the contract as well.
+            maker_is_buyer = cls.is_buyer(order, order.maker)
+            # If maker is buyer, settle the bond and order goes to expired
+            if maker_is_buyer:
+                cls.settle_bond(order.maker_bond)
+                order.status = Order.Status.EXP
+                order.maker = None
+                order.taker = None
+                order.save()
+                return True
+
+            # If maker is seller, settle the taker's bond order goes back to public
+            else:
+                cls.settle_bond(order.taker_bond)
+                order.status = Order.Status.PUB
+                order.taker = None
+                order.taker_bond = None
+                order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
+                order.save()
+                return True
+        
+        elif order.status == Order.Status.CHA:
+            # Another weird case. The time to confirm 'fiat sent' expired. Yet no dispute
+            # was opened. A seller-scammer could persuade a buyer to not click "fiat sent" 
+            # as of now, we assume this is a dispute case by default.
+            cls.open_dispute(order)
+            return True
 
     def kick_taker(order):
         ''' The taker did not lock the taker_bond. Now he has to go'''
@@ -125,9 +208,47 @@ class Logics():
             order.status = Order.Status.PUB
             order.taker = None
             order.taker_bond = None
-            order.expires_at = timezone.now() + timedelta(hours=PUBLIC_ORDER_DURATION) ## TO FIX. Restore the remaining order durantion, not all of it!
+            order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
             order.save()
             return True
+
+    @classmethod
+    def open_dispute(cls, order, user=None):
+
+        # Always settle the escrow during a dispute (same as with 'Fiat Sent')
+        if not order.trade_escrow.status == LNPayment.Status.SETLED:
+            cls.settle_escrow(order)     
+        
+        order.is_disputed = True
+        order.status = Order.Status.DIS
+        order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.DIS])
+        order.save()
+
+        # User could be None if a dispute is open automatically due to weird expiration.
+        if not user == None:
+            profile = user.profile
+            profile.num_disputes = profile.num_disputes + 1
+            profile.orders_disputes_started = list(profile.orders_disputes_started).append(str(order.id))
+            profile.save()
+
+        return True, None
+    def dispute_statement(order, user, statement):
+        ''' Updates the dispute statements in DB'''
+
+        if len(statement) > 5000:
+            return False, {'bad_statement':'The statement is longer than 5000 characters'}
+        if order.maker == user:
+            order.maker_statement = statement
+        else:
+            order.taker_statement = statement
+        
+        # If both statements are in, move to wait for dispute resolution
+        if order.maker_statement != None and order.taker_statement != None:
+            order.status = Order.Status.WFR
+            order.expires_at = timezone.now() + Order.t_to_expire[Order.Status.WFR]
+
+        order.save()
+        return True, None
 
     @classmethod
     def buyer_invoice_amount(cls, order, user):
@@ -234,7 +355,7 @@ class Logics():
             on the LN node and order book. TODO Only charge a small part of the bond (requires maker submitting an invoice)'''
         elif order.status == Order.Status.PUB and order.maker == user:
             #Settle the maker bond (Maker loses the bond for cancelling public order)
-            if cls.settle_maker_bond(order):
+            if cls.settle_bond(order.maker_bond):
                 order.maker = None
                 order.status = Order.Status.UCA
                 order.save()
@@ -257,7 +378,7 @@ class Logics():
             '''The order into cancelled status if maker cancels.'''
         elif order.status > Order.Status.PUB and order.status < Order.Status.CHA and order.maker == user:
             #Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
-            valid = cls.settle_maker_bond(order)
+            valid = cls.settle_bond(order.maker_bond)
             if valid:
                 order.maker = None
                 order.status = Order.Status.UCA
@@ -268,7 +389,7 @@ class Logics():
             '''The order into cancelled status if maker cancels.'''
         elif order.status > Order.Status.TAK and order.status < Order.Status.CHA and order.taker == user:
             # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
-            valid = cls.settle_taker_bond(order)
+            valid = cls.settle_bond(order.taker_bond)
             if valid:
                 order.taker = None
                 order.status = Order.Status.PUB
@@ -277,7 +398,7 @@ class Logics():
                 return True, None
 
         # 5) When trade collateral has been posted (after escrow)
-            '''Always goes to cancelled status. Collaboration  is needed.
+            '''Always goes to cancelled status. Collaboration is needed.
             When a user asks for cancel, 'order.is_pending_cancel' goes True.
             When the second user asks for cancel. Order is totally cancelled.
             Has a small cost for both parties to prevent node DDOS.'''
@@ -383,7 +504,7 @@ class Logics():
         order.last_satoshis = cls.satoshis_now(order)
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
         pos_text = 'Buying' if cls.is_buyer(order, user) else 'Selling'
-        description = (f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + str(order.currency)}"# Order.currency_dict[str(order.currency)]}"
+        description = (f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
             + " - This is a taker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel.")
 
         # Gen hold Invoice
@@ -472,22 +593,20 @@ class Logics():
             order.trade_escrow.save()
             return True
 
-    def settle_maker_bond(order):
-        ''' Settles the maker bond hold invoice'''
+    def settle_bond(bond):
+        ''' Settles the bond hold invoice'''
         # TODO ERROR HANDLING
-        if LNNode.settle_hold_invoice(order.maker_bond.preimage):
-            order.maker_bond.status = LNPayment.Status.SETLED
-            order.maker_bond.save()
+        if LNNode.settle_hold_invoice(bond.preimage):
+            bond.status = LNPayment.Status.SETLED
+            bond.save()
             return True
 
-    def settle_taker_bond(order):
-        ''' Settles the taker bond hold invoice'''
-        # TODO ERROR HANDLING
-        if LNNode.settle_hold_invoice(order.taker_bond.preimage):
-            order.taker_bond.status = LNPayment.Status.SETLED
-            order.taker_bond.save()
+    def return_escrow(order):
+        '''returns the trade escrow'''
+        if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
+            order.trade_escrow.status = LNPayment.Status.RETNED
             return True
-    
+
     def return_bond(bond):
         '''returns a bond'''
         if LNNode.cancel_return_hold_invoice(bond.payment_hash):

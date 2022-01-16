@@ -43,8 +43,8 @@ def users_cleansing():
 @shared_task(name="orders_expire")
 def orders_expire(rest_secs):
     '''
-    Continuously checks order expiration times for 1 hour.
-    If order is expires, it handles the actions.
+    Continuously checks order expiration times for 1 hour. If order
+    has expires, it calls the logics module for expiration handling.
     '''
     now = timezone.now()
     end_time = now + timedelta(hours=1)
@@ -55,8 +55,8 @@ def orders_expire(rest_secs):
         queryset = queryset.filter(expires_at__lt=now) # expires at lower than now        
 
         for order in queryset:
-            context.append(str(order)+ " was "+ Order.Status(order.status).label)
-            Logics.order_expires(order)
+            if Logics.order_expires(order): # Order send to expire here
+                context.append(str(order)+ " was "+ Order.Status(order.status).label)
 
         # Allow for some thread rest.
         time.sleep(rest_secs)
@@ -77,12 +77,14 @@ def follow_lnd_payment():
     ''' Makes a payment and follows it.
     Updates the LNpayment object, and retries
     until payment is done'''
+
     pass
 
 @shared_task
 def follow_lnd_hold_invoice():
     ''' Follows and updates LNpayment object
     until settled or canceled'''
+
     pass
 
 @shared_task(name="cache_external_market_prices", ignore_result=True)

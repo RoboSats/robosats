@@ -38,6 +38,7 @@ export default class TradeBox extends Component {
     super(props);
     this.state = {
       badInvoice: false,
+      badStatement: false,
     }
   }
   
@@ -200,8 +201,6 @@ export default class TradeBox extends Component {
     });
   }
 
-  // Fix this. It's clunky because it takes time. this.props.data does not refresh until next refresh of OrderPage.
-
   handleClickSubmitInvoiceButton=()=>{
       this.setState({badInvoice:false});
 
@@ -219,10 +218,34 @@ export default class TradeBox extends Component {
       & console.log(data));
   }
 
+  handleInputDisputeChanged=(e)=>{
+    this.setState({
+        statement: e.target.value,
+        badStatement: false,     
+    });
+  }
+
+  handleClickSubmitStatementButton=()=>{
+    this.setState({badInvoice:false});
+
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+        body: JSON.stringify({
+          'action':'submit_statement',
+          'statement': this.state.statement,
+        }),
+    };
+    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+    .then((response) => response.json())
+    .then((data) => this.setState({badStatement:data.bad_statement})
+    & console.log(data));
+}
+
   showInputInvoice(){
     return (
 
-      // TODO Camera option to read QR
+      // TODO Option to upload files and images
 
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
@@ -252,7 +275,51 @@ export default class TradeBox extends Component {
           />
         </Grid>
         <Grid item xs={12} align="center">
-          <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>Submit</Button>
+          <Button onClick={this.handleClickSubmitStatementButton} variant='contained' color='primary'>Submit</Button>
+        </Grid>
+
+        {this.showBondIsLocked()}
+      </Grid>
+    )
+  }
+
+  // Asks the user for a dispute statement.
+  showInDisputeStatement(){
+    return (
+
+      // TODO Option to upload files
+
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography color="primary" component="subtitle1" variant="subtitle1">
+            <b> A dispute has been opened </b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="left">
+          <Typography component="body2" variant="body2">
+            Please, submit your statement. Be clear and specific about what happened and provide the necessary 
+            evidence. It is best to provide a burner email, XMPP or telegram username to follow up with the staff.
+            Disputes are solved at the discretion of real robots <i>(aka humans)</i>, so be as helpful 
+            as possible to ensure a fair outcome. Max 5000 chars.
+          </Typography>
+        </Grid>
+
+        <Grid item xs={12} align="center">
+          <TextField 
+              error={this.state.badStatement}
+              helperText={this.state.badStatement ? this.state.badStatement : "" }
+              label={"Submit dispute statement"}
+              required
+              inputProps={{
+                  style: {textAlign:"center"}
+              }}
+              multiline
+              rows={4}
+              onChange={this.handleInputDisputeChanged}
+          />
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Button onClick={this.handleClickSubmitStatementButton} variant='contained' color='primary'>Submit</Button>
         </Grid>
 
         {this.showBondIsLocked()}
@@ -463,8 +530,8 @@ handleRatingChange=(e)=>{
             {/* Trade Finished - Payment Routing Failed */}
               {this.props.data.isBuyer & this.props.data.statusCode == 15 ? this.showUpdateInvoice()  : ""}
 
-            {/* Trade Finished - Payment Routing Failed - TODO Needs more planning */}
-            {this.props.data.statusCode == 11 ? this.showInDispute() : ""}
+            {/* Trade Finished - TODO Needs more planning */}
+            {this.props.data.statusCode == 11 ? this.showInDisputeStatement() : ""}
             
 
               {/* TODO */}

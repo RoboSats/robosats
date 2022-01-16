@@ -21,10 +21,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         # if not (Logics.is_buyer(order[0], self.user) or Logics.is_seller(order[0], self.user)):
         #     print ("Outta this chat")
         #     return False
-
-        print(self.user_nick)
-        print(self.order_id)
-
+        
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
