@@ -40,10 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'channels',
+    'django_celery_beat',
+    'django_celery_results',
     'api',
     'chat',
     'frontend.apps.FrontendConfig',
 ]
+from .celery.conf import *
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

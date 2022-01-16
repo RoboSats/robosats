@@ -422,7 +422,7 @@ class InfoView(ListAPIView):
         context['num_public_sell_orders'] = len(Order.objects.filter(type=Order.Types.SELL, status=Order.Status.PUB))
         
         # Number of active users (logged in in last 30 minutes)
-        active_user_time_range = (timezone.now() - timedelta(minutes=30), timezone.now())
+        active_user_time_range = (timezone.now() - timedelta(minutes=120), timezone.now())
         context['num_active_robotsats'] = len(User.objects.filter(last_login__range=active_user_time_range))
 
         # Compute average premium and volume of today

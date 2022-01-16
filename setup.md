@@ -45,8 +45,18 @@ pip install channels
 pip install django-redis
 pip install channels-redis
 ```
+## Install Celery for Django tasks
+```
+pip install celery
+pip install django-celery-beat
+pip install django-celery-results
+```
 
-*Django 4.0 at the time of writting*
+Start up celery worker
+`celery -A robosats worker --beat -l info -S django`
+
+*Django 3.2.11 at the time of writting*
+*Celery 5.2.3*
 
 ### Launch the local development node
 

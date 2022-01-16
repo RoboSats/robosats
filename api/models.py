@@ -159,18 +159,21 @@ class Order(models.Model):
         return (f'Order {self.id}: {self.Types(self.type).label} BTC for {float(self.amount)} {self.currency_dict[str(self.currency)]}')
 
 @receiver(pre_delete, sender=Order)
-def delete_HTLCs_at_order_deletion(sender, instance, **kwargs):
+def delete_lnpayment_at_order_deletion(sender, instance, **kwargs):
     to_delete = (instance.maker_bond, instance.buyer_invoice, instance.taker_bond, instance.trade_escrow)
 
-    for htlc in to_delete:
+    for lnpayment in to_delete:
         try:
-            htlc.delete()
+            lnpayment.delete()
         except:
             pass
 
 class Profile(models.Model):
 
     user = models.OneToOneField(User,on_delete=models.CASCADE)
+
+    # Total trades
+    total_contracts = models.PositiveIntegerField(null=False, default=0) 
 
     # Ratings stored as a comma separated integer list
     total_ratings = models.PositiveIntegerField(null=False, default=0) 
@@ -198,8 +201,11 @@ class Profile(models.Model):
 
     @receiver(pre_delete, sender=User)
     def del_avatar_from_disk(sender, instance, **kwargs):
-        avatar_file=Path('frontend/' + instance.profile.avatar.url)
-        avatar_file.unlink() # FIX deleting user fails if avatar is not found
+        try:
+            avatar_file=Path('frontend/' + instance.profile.avatar.url)
+            avatar_file.unlink()
+        except:
+            pass
 
     def __str__(self):
         return self.user.username

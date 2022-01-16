@@ -339,6 +339,12 @@ class Logics():
             order.taker_bond.status = LNPayment.Status.LOCKED
             order.taker_bond.save()
 
+            # Both users profile have one more contract done
+            order.maker.profile.total_contracts = order.maker.profile.total_contracts + 1
+            order.taker.profile.total_contracts = order.taker.profile.total_contracts + 1
+            order.maker.profile.save()
+            order.taker.profile.save()
+
             # Log a market tick
             MarketTick.log_a_tick(order) 
 
