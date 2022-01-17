@@ -499,7 +499,7 @@ handleRatingChange=(e)=>{
       <Grid container spacing={1} style={{ width:330}}>
         <Grid item xs={12} align="center">
           <Typography component="h5" variant="h5">
-            TradeBox
+            Contract Box
           </Typography>
           <Paper elevation={12} style={{ padding: 8,}}>
             {/* Maker and taker Bond request */}

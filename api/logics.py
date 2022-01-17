@@ -53,7 +53,7 @@ class Logics():
         else:
             order.taker = user
             order.status = Order.Status.TAK
-            order.expires_at = timezone.now() + timedelta(minutes=EXP_TAKER_BOND_INVOICE)
+            order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.TAK])
             order.save()
             return True, None
 
@@ -234,18 +234,21 @@ class Logics():
         return True, None
     def dispute_statement(order, user, statement):
         ''' Updates the dispute statements in DB'''
+        if not order.status == Order.Status.DIS:
+            return False, {'bad_request':'Only orders in dispute accept a dispute statements'}
 
         if len(statement) > 5000:
             return False, {'bad_statement':'The statement is longer than 5000 characters'}
+
         if order.maker == user:
             order.maker_statement = statement
         else:
             order.taker_statement = statement
         
-        # If both statements are in, move to wait for dispute resolution
+        # If both statements are in, move status to wait for dispute resolution
         if order.maker_statement != None and order.taker_statement != None:
             order.status = Order.Status.WFR
-            order.expires_at = timezone.now() + Order.t_to_expire[Order.Status.WFR]
+            order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.WFR])
 
         order.save()
         return True, None
@@ -296,14 +299,14 @@ class Logics():
         # If the order status is 'Waiting for invoice'. Move forward to 'chat'
         if order.status == Order.Status.WFI: 
             order.status = Order.Status.CHA
-            order.expires_at = timezone.now() + timedelta(hours=FIAT_EXCHANGE_DURATION)
+            order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.CHA])
 
         # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow'
         if order.status == Order.Status.WF2:
             # If the escrow is lock move to Chat.
             if order.trade_escrow.status == LNPayment.Status.LOCKED:
                 order.status = Order.Status.CHA
-                order.expires_at = timezone.now() + timedelta(hours=FIAT_EXCHANGE_DURATION)
+                order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.CHA])
             else:
                 order.status = Order.Status.WFE
 
@@ -413,7 +416,7 @@ class Logics():
             order.maker_bond.save()
             order.status = Order.Status.PUB
             # With the bond confirmation the order is extended 'public_order_duration' hours
-            order.expires_at = timezone.now() + timedelta(hours=PUBLIC_ORDER_DURATION)
+            order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
             order.save()
             return True
         return False
@@ -461,6 +464,9 @@ class Logics():
 
     @classmethod
     def is_taker_bond_locked(cls, order):
+        if order.taker_bond.status == LNPayment.Status.LOCKED:
+            return True
+
         if LNNode.validate_hold_invoice_locked(order.taker_bond.payment_hash):
             # THE TRADE AMOUNT IS FINAL WITH THE CONFIRMATION OF THE TAKER BOND! 
             # (This is the last update to "last_satoshis", it becomes the escrow amount next!)
@@ -468,9 +474,9 @@ class Logics():
             order.taker_bond.status = LNPayment.Status.LOCKED
             order.taker_bond.save()
 
-            # Both users profiles are added one more contract
-            order.maker.profile.total_contracts = order.maker.profile.total_contracts + 1
-            order.taker.profile.total_contracts = order.taker.profile.total_contracts + 1
+            # Both users profiles are added one more contract // Unsafe can add more than once.
+            order.maker.profile.total_contracts += 1
+            order.taker.profile.total_contracts += 1
             order.maker.profile.save()
             order.taker.profile.save()
 
@@ -478,7 +484,7 @@ class Logics():
             MarketTick.log_a_tick(order) 
 
             # With the bond confirmation the order is extended 'public_order_duration' hours
-            order.expires_at = timezone.now() + timedelta(minutes=INVOICE_AND_ESCROW_DURATION)
+            order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.WF2])
             order.status = Order.Status.WF2
             order.save()
             return True
@@ -524,7 +530,7 @@ class Logics():
             created_at = hold_payment['created_at'],
             expires_at = hold_payment['expires_at'])
 
-        order.expires_at = timezone.now() + timedelta(seconds=EXP_TAKER_BOND_INVOICE)
+        order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.TAK])
         order.save()
         return True, {'bond_invoice': hold_payment['invoice'], 'bond_satoshis': bond_satoshis}
 
@@ -540,7 +546,7 @@ class Logics():
             # If status is 'Waiting for invoice' move to Chat
             elif order.status == Order.Status.WFE:
                 order.status = Order.Status.CHA
-                order.expires_at = timezone.now() + timedelta(hours=FIAT_EXCHANGE_DURATION)
+                order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.CHA])
             order.save()
             return True
         return False
@@ -649,7 +655,7 @@ class Logics():
                     if is_payed:
                         order.status = Order.Status.SUC
                         order.buyer_invoice.status = LNPayment.Status.SUCCED
-                        order.expires_at = timezone.now() + timedelta(days=1) # One day to rate / see this order.
+                        order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.SUC])
                         order.save()
 
                         # RETURN THE BONDS

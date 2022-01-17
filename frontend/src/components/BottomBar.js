@@ -115,10 +115,10 @@ export default class BottomBar extends Component {
             <Typography component="h5" variant="h5">Community</Typography>
             <Typography component="body2" variant="body2">
                 <p> Support is only offered via public channels.
-                    Writte us on our Telegram community if you have
+                    Join our Telegram community if you have
                     questions or want to hang out with other cool robots.
-                    If you find a bug or want to see new features, use 
-                    the Github Issues page.
+                    Please, use our Github Issues if you find a bug or want 
+                    to see new features!
                 </p>
             </Typography>
             <List> 

@@ -50,11 +50,12 @@ class LNPayment(models.Model):
         LOCKED = 1, 'Locked'
         SETLED = 2, 'Settled'
         RETNED = 3, 'Returned'
-        EXPIRE = 4, 'Expired'
-        VALIDI = 5, 'Valid'
-        FLIGHT = 6, 'In flight'
-        SUCCED = 7, 'Succeeded'
-        FAILRO = 8, 'Routing failed'
+        CANCEL = 4, 'Cancelled'
+        EXPIRE = 5, 'Expired'
+        VALIDI = 6, 'Valid'
+        FLIGHT = 7, 'In flight'
+        SUCCED = 8, 'Succeeded'
+        FAILRO = 9, 'Routing failed'
         
 
     # payment use details

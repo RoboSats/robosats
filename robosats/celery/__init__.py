@@ -31,7 +31,6 @@ app.conf.beat_scheduler = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 # Configure the periodic tasks
 app.conf.beat_schedule = {
-    # User cleansing every 6 hours
     'users-cleansing': {                    # Cleans abandoned users every 6 hours
         'task': 'users_cleansing',
         'schedule': timedelta(hours=6),     
