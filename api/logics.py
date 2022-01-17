@@ -1,11 +1,14 @@
-from datetime import time, timedelta
+from datetime import timedelta
 from django.utils import timezone
-from .lightning.node import LNNode
+from api.lightning.node import LNNode
 
-from .models import Order, LNPayment, MarketTick, User, Currency
+from api.models import Order, LNPayment, MarketTick, User, Currency
 from decouple import config
 
+from api.tasks import follow_send_payment
+
 import math
+import ast
 
 FEE = float(config('FEE'))
 BOND_SIZE = float(config('BOND_SIZE'))
@@ -140,6 +143,7 @@ class Logics():
 
             cls.settle_bond(order.maker_bond)
             cls.settle_bond(order.taker_bond)
+            cls.cancel_escrow(order)
             order.status = Order.Status.EXP
             order.maker = None
             order.taker = None
@@ -152,6 +156,7 @@ class Logics():
             if maker_is_seller:
                 cls.settle_bond(order.maker_bond)
                 cls.return_bond(order.taker_bond)
+                cls.cancel_escrow(order)
                 order.status = Order.Status.EXP
                 order.maker = None
                 order.taker = None
@@ -161,22 +166,25 @@ class Logics():
             # If maker is buyer, settle the taker's bond order goes back to public
             else:
                 cls.settle_bond(order.taker_bond)
+                cls.cancel_escrow(order)
                 order.status = Order.Status.PUB
                 order.taker = None
                 order.taker_bond = None
+                order.trade_escrow = None
                 order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
                 order.save()
                 return True
 
         elif order.status == Order.Status.WFI:
             # The trade could happen without a buyer invoice. However, this user
-            # is likely AFK since he did not submit an invoice; will probably
-            # desert the contract as well.
+            # is likely AFK; will probably desert the contract as well.
+
             maker_is_buyer = cls.is_buyer(order, order.maker)
             # If maker is buyer, settle the bond and order goes to expired
             if maker_is_buyer:
                 cls.settle_bond(order.maker_bond)
                 cls.return_bond(order.taker_bond)
+                cls.return_escrow(order)
                 order.status = Order.Status.EXP
                 order.maker = None
                 order.taker = None
@@ -186,17 +194,19 @@ class Logics():
             # If maker is seller settle the taker's bond, order goes back to public
             else:
                 cls.settle_bond(order.taker_bond)
+                cls.return_escrow(order)
                 order.status = Order.Status.PUB
                 order.taker = None
                 order.taker_bond = None
+                order.trade_escrow = None
                 order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
                 order.save()
                 return True
         
         elif order.status == Order.Status.CHA:
             # Another weird case. The time to confirm 'fiat sent' expired. Yet no dispute
-            # was opened. A seller-scammer could persuade a buyer to not click "fiat sent" 
-            # as of now, we assume this is a dispute case by default.
+            # was opened. Hint: a seller-scammer could persuade a buyer to not click "fiat  
+            # sent", we assume this is a dispute case by default.
             cls.open_dispute(order)
             return True
 
@@ -219,12 +229,14 @@ class Logics():
     def open_dispute(cls, order, user=None):
 
         # Always settle the escrow during a dispute (same as with 'Fiat Sent')
+        # Dispute winner will have to submit a new invoice.
+
         if not order.trade_escrow.status == LNPayment.Status.SETLED:
             cls.settle_escrow(order)     
         
         order.is_disputed = True
         order.status = Order.Status.DIS
-        order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.DIS])
+        order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.DIS])
         order.save()
 
         # User could be None if a dispute is open automatically due to weird expiration.
@@ -235,6 +247,7 @@ class Logics():
             profile.save()
 
         return True, None
+
     def dispute_statement(order, user, statement):
         ''' Updates the dispute statements in DB'''
         if not order.status == Order.Status.DIS:
@@ -319,16 +332,18 @@ class Logics():
     def add_profile_rating(profile, rating):
         ''' adds a new rating to a user profile'''
 
+        # TODO Unsafe, does not update ratings, it adds more ratings everytime a new rating is clicked.
         profile.total_ratings = profile.total_ratings + 1
         latest_ratings = profile.latest_ratings
-        if len(latest_ratings) <= 1:
+        if latest_ratings == None:
             profile.latest_ratings = [rating]
             profile.avg_rating = rating
 
         else:
-            latest_ratings = list(latest_ratings).append(rating)
+            latest_ratings = ast.literal_eval(latest_ratings)
+            latest_ratings.append(rating)
             profile.latest_ratings = latest_ratings
-            profile.avg_rating = sum(latest_ratings) / len(latest_ratings)
+            profile.avg_rating = sum(list(map(int, latest_ratings))) / len(latest_ratings)  # Just an average, but it is a list of strings. Has to be converted to int.
 
         profile.save()
 
@@ -413,15 +428,20 @@ class Logics():
         else:
             return False, {'bad_request':'You cannot cancel this order'}
 
+    def publish_order(order):
+        if order.status == Order.Status.WFB:
+            order.status = Order.Status.PUB
+            # With the bond confirmation the order is extended 'public_order_duration' hours
+            order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
+            order.save()
+            return
+
     @classmethod
     def is_maker_bond_locked(cls, order):
         if LNNode.validate_hold_invoice_locked(order.maker_bond.payment_hash):
             order.maker_bond.status = LNPayment.Status.LOCKED
             order.maker_bond.save()
-            order.status = Order.Status.PUB
-            # With the bond confirmation the order is extended 'public_order_duration' hours
-            order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
-            order.save()
+            cls.publish_order(order)
             return True
         return False
 
@@ -467,13 +487,12 @@ class Logics():
         return True, {'bond_invoice':hold_payment['invoice'], 'bond_satoshis':bond_satoshis}
 
     @classmethod
-    def is_taker_bond_locked(cls, order):
-        if order.taker_bond.status == LNPayment.Status.LOCKED:
-            return True
+    def finalize_contract(cls, order):
+            ''' When the taker locks the taker_bond
+            the contract is final '''
 
-        if LNNode.validate_hold_invoice_locked(order.taker_bond.payment_hash):
             # THE TRADE AMOUNT IS FINAL WITH THE CONFIRMATION OF THE TAKER BOND! 
-            # (This is the last update to "last_satoshis", it becomes the escrow amount next!)
+            # (This is the last update to "last_satoshis", it becomes the escrow amount next)
             order.last_satoshis = cls.satoshis_now(order)
             order.taker_bond.status = LNPayment.Status.LOCKED
             order.taker_bond.save()
@@ -491,6 +510,14 @@ class Logics():
             order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.WF2])
             order.status = Order.Status.WF2
             order.save()
+            return True
+
+    @classmethod
+    def is_taker_bond_locked(cls, order):
+        if order.taker_bond.status == LNPayment.Status.LOCKED:
+            return True
+        if LNNode.validate_hold_invoice_locked(order.taker_bond.payment_hash):
+            cls.finalize_contract(order)
             return True
         return False
 
@@ -618,11 +645,17 @@ class Logics():
             order.trade_escrow.status = LNPayment.Status.RETNED
             return True
 
+    def cancel_escrow(order):
+        '''returns the trade escrow'''
+        # Same as return escrow, but used when the invoice was never LOCKED
+        if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
+            order.trade_escrow.status = LNPayment.Status.CANCEL
+            return True
+
     def return_bond(bond):
         '''returns a bond'''
         if bond == None:
             return
-
         try:
             LNNode.cancel_return_hold_invoice(bond.payment_hash)
             bond.status = LNPayment.Status.RETNED
@@ -631,10 +664,12 @@ class Logics():
             if 'invoice already settled' in str(e):
                 bond.status = LNPayment.Status.SETLED
                 return True
+            else:
+                raise e
 
     def cancel_bond(bond):
         '''cancel a bond'''
-        # Same as return bond, but used when the invoice was never accepted
+        # Same as return bond, but used when the invoice was never LOCKED
         if bond == None:
             return True
         try:
@@ -645,11 +680,12 @@ class Logics():
             if 'invoice already settled' in str(e):
                 bond.status = LNPayment.Status.SETLED
                 return True
+            else:
+                raise e
 
     def pay_buyer_invoice(order):
         ''' Pay buyer invoice'''
-        # TODO ERROR HANDLING
-        suceeded, context = LNNode.pay_invoice(order.buyer_invoice.invoice, order.buyer_invoice.num_satoshis)
+        suceeded, context = follow_send_payment(order.buyer_invoice)
         return suceeded, context
 
     @classmethod
@@ -703,11 +739,15 @@ class Logics():
         # If the trade is finished
         if order.status > Order.Status.PAY:
             # if maker, rates taker
-            if order.maker == user:
+            if order.maker == user and order.maker_rated == False:
                 cls.add_profile_rating(order.taker.profile, rating)
+                order.maker_rated = True
+                order.save()
             # if taker, rates maker
-            if order.taker == user:
+            if order.taker == user and order.taker_rated == False:
                 cls.add_profile_rating(order.maker.profile, rating)
+                order.taker_rated = True
+                order.save()
         else:
             return False, {'bad_request':'You cannot rate your counterparty yet.'}
 

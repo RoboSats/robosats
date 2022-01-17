@@ -146,16 +146,16 @@ class Order(models.Model):
 
     # LNpayments
     # Order collateral
-    maker_bond = models.ForeignKey(LNPayment, related_name='maker_bond', on_delete=models.SET_NULL, null=True, default=None, blank=True)
-    taker_bond = models.ForeignKey(LNPayment, related_name='taker_bond', on_delete=models.SET_NULL, null=True, default=None, blank=True)
-    trade_escrow = models.ForeignKey(LNPayment, related_name='trade_escrow', on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    maker_bond = models.OneToOneField(LNPayment, related_name='order_made', on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    taker_bond = models.OneToOneField(LNPayment, related_name='order_taken', on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    trade_escrow = models.OneToOneField(LNPayment, related_name='order_escrow', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
     # buyer payment LN invoice
     buyer_invoice = models.ForeignKey(LNPayment, related_name='buyer_invoice', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
-    # Unused so far. Cancel LN invoices // these are only needed to charge lower-than-bond amounts. E.g., a taken order has a small cost if cancelled, to avoid DDOSing.
-    # maker_cancel = models.ForeignKey(LNPayment, related_name='maker_cancel', on_delete=models.SET_NULL, null=True, default=None, blank=True)
-    # taker_cancel = models.ForeignKey(LNPayment, related_name='taker_cancel', on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    # ratings
+    maker_rated = models.BooleanField(default=False, null=False)
+    taker_rated = models.BooleanField(default=False, null=False)
 
     t_to_expire = {
         0  : int(config('EXP_MAKER_BOND_INVOICE')) ,         # 'Waiting for maker bond'
@@ -182,6 +182,7 @@ class Order(models.Model):
     def __str__(self):
         # Make relational back to ORDER
         return (f'Order {self.id}: {self.Types(self.type).label} BTC for {float(self.amount)} {self.currency}')
+       
 
 @receiver(pre_delete, sender=Order)
 def delete_lnpayment_at_order_deletion(sender, instance, **kwargs):

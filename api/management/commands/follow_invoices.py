@@ -1,21 +1,25 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from django.utils import timezone
 from api.lightning.node import LNNode
+from api.models import LNPayment, Order
+from api.logics import Logics
+
+from django.utils import timezone
+from datetime import timedelta
 from decouple import config
 from base64 import b64decode
-from api.models import LNPayment
 import time
 
 MACAROON = b64decode(config('LND_MACAROON_BASE64'))
 
 class Command(BaseCommand):
     '''
-    Background: SubscribeInvoices stub iterator would be great to use here
-    however it only sends updates when the invoice is OPEN (new) or SETTLED.
+    Background: SubscribeInvoices stub iterator would be great to use here.
+    However, it only sends updates when the invoice is OPEN (new) or SETTLED.
     We are very interested on the other two states (CANCELLED and ACCEPTED).
     Therefore, this thread (follow_invoices) will iterate over all LNpayment
-    objects and do InvoiceLookupV2 to update their state 'live' '''
+    objects and do InvoiceLookupV2 every X seconds to update their state 'live' 
+    '''
 
     help = 'Follows all active hold invoices'
 
@@ -27,10 +31,10 @@ class Command(BaseCommand):
         until settled or canceled'''
 
         lnd_state_to_lnpayment_status = {
-                0: LNPayment.Status.INVGEN,
-                1: LNPayment.Status.SETLED,
-                2: LNPayment.Status.CANCEL,
-                3: LNPayment.Status.LOCKED
+                0: LNPayment.Status.INVGEN, # OPEN
+                1: LNPayment.Status.SETLED, # SETTLED
+                2: LNPayment.Status.CANCEL, # CANCELLED
+                3: LNPayment.Status.LOCKED  # ACCEPTED
             }
 
         stub = LNNode.invoicesstub
@@ -45,6 +49,7 @@ class Command(BaseCommand):
             debug = {}
             debug['num_active_invoices'] = len(queryset)
             debug['invoices'] = []
+            at_least_one_changed = False
 
             for idx, hold_lnpayment in enumerate(queryset):
                 old_status = LNPayment.Status(hold_lnpayment.status).label
@@ -56,29 +61,55 @@ class Command(BaseCommand):
 
                 # If it fails at finding the invoice it has been canceled.
                 # On RoboSats DB we make a distinction between cancelled and returned (LND does not)
-                except:
-                    hold_lnpayment.status = LNPayment.Status.CANCEL
-                    continue
+                except Exception as e:
+                    if 'unable to locate invoice' in str(e):
+                        hold_lnpayment.status = LNPayment.Status.CANCEL
+                    else:
+                        self.stdout.write(str(e))
                 
                 new_status = LNPayment.Status(hold_lnpayment.status).label
 
                 # Only save the hold_payments that change (otherwise this function does not scale)
                 changed = not old_status==new_status
                 if changed:
+                    # self.handle_status_change(hold_lnpayment, old_status)
                     hold_lnpayment.save()
+                    self.update_order_status(hold_lnpayment)
 
-                # Report for debugging
-                new_status = LNPayment.Status(hold_lnpayment.status).label
-                debug['invoices'].append({idx:{
-                    'payment_hash': str(hold_lnpayment.payment_hash),
-                    'status_changed': not old_status==new_status,
-                    'old_status': old_status,
-                    'new_status': new_status,
-                }})
+                    # Report for debugging
+                    new_status = LNPayment.Status(hold_lnpayment.status).label
+                    debug['invoices'].append({idx:{
+                        'payment_hash': str(hold_lnpayment.payment_hash),
+                        'old_status': old_status,
+                        'new_status': new_status,
+                    }})
 
-                debug['time']=time.time()-t0
-                
-            self.stdout.write(str(timezone.now())+str(debug))
-
-
+                at_least_one_changed = at_least_one_changed or changed
             
+            debug['time']=time.time()-t0
+
+            if at_least_one_changed:
+                self.stdout.write(str(timezone.now()))
+                self.stdout.write(str(debug))
+
+
+    def update_order_status(self, lnpayment):
+        ''' Background process following LND hold invoices
+        might catch LNpayments changing status. If they do,
+        the order status might have to change status too.'''
+
+        # If the LNPayment goes to LOCKED (ACCEPTED)
+        if lnpayment.status == LNPayment.Status.LOCKED:
+
+            # It is a maker bond => Publish order.
+            order = lnpayment.order_made
+            if not order == None:
+                Logics.publish_order(order)
+                return
+
+            # It is a taker bond => close contract.
+            order = lnpayment.order_taken
+            if not order == None:
+                if order.status == Order.Status.TAK:
+                    Logics.finalize_contract(order)
+                    return

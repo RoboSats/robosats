@@ -61,7 +61,7 @@ export default class OrderPage extends Component {
       "8": 10000,   //'Waiting only for buyer invoice'
       "9": 10000,   //'Sending fiat - In chatroom'
       "10": 15000,  //'Fiat sent - In chatroom'
-      "11": 300000, //'In dispute'
+      "11": 60000,  //'In dispute'
       "12": 9999999,//'Collaboratively cancelled'
       "13": 120000, //'Sending satoshis to buyer'
       "14": 9999999,//'Sucessful trade'

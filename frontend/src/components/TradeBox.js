@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Link, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon} from "@mui/material"
+import { Link, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
 
 import Chat from "./Chat"
@@ -37,11 +37,100 @@ export default class TradeBox extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      openConfirmFiatReceived: false,
+      openConfirmDispute: false,
       badInvoice: false,
       badStatement: false,
     }
   }
-  
+
+  handleClickOpenConfirmDispute = () => {
+    this.setState({openConfirmDispute: true});
+  };
+  handleClickCloseConfirmDispute = () => {
+      this.setState({openConfirmDispute: false});
+  };
+
+  handleClickAgreeDisputeButton=()=>{
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+        body: JSON.stringify({
+          'action': "dispute",
+        }),
+    };
+    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+    .then((response) => response.json())
+    .then((data) => (this.props.data = data));
+    this.handleClickCloseConfirmDispute();
+  }
+
+  ConfirmDisputeDialog =() =>{
+  return(
+      <Dialog
+      open={this.state.openConfirmDispute}
+      onClose={this.handleClickCloseConfirmDispute}
+      aria-labelledby="open-dispute-dialog-title"
+      aria-describedby="open-dispute-dialog-description"
+      >
+        <DialogTitle id="open-dispute-dialog-title">
+          {"Do you want to open a dispute?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            The RoboSats staff will examine the statements and evidence provided by the participants.
+            It is best if you provide a burner contact method on your statement for the staff to contact you.
+            The satoshis in the trade escrow will be sent to the dispute winner, while the dispute 
+            loser will lose the bond. 
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClickCloseConfirmDispute} autoFocus>Disagree</Button>
+          <Button onClick={this.handleClickAgreeDisputeButton}> Agree </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
+  handleClickOpenConfirmFiatReceived = () => {
+    this.setState({openConfirmFiatReceived: true});
+  };
+  handleClickCloseConfirmFiatReceived = () => {
+      this.setState({openConfirmFiatReceived: false});
+  };
+
+  handleClickTotallyConfirmFiatReceived = () =>{
+    this.handleClickConfirmButton();
+    this.handleClickCloseConfirmFiatReceived();
+  };
+
+  ConfirmFiatReceivedDialog =() =>{
+  return(
+      <Dialog
+      open={this.state.openConfirmFiatReceived}
+      onClose={this.handleClickCloseConfirmFiatReceived}
+      aria-labelledby="fiat-received-dialog-title"
+      aria-describedby="fiat-received-dialog-description"
+      >
+        <DialogTitle id="open-dispute-dialog-title">
+          {"Confirm you received " +this.props.data.currencyCode+ "?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Confirming that you received the fiat will finalize the trade. The satoshis
+            in the escrow will be released to the buyer. Only confirm after the {this.props.data.currencyCode+ " "} 
+            has arrived to your account. In addition, if you have received {this.props.data.currencyCode+ " "} 
+            and do not confirm the receipt, you risk losing your bond.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClickCloseConfirmFiatReceived} autoFocus>Go back</Button>
+          <Button onClick={this.handleClickTotallyConfirmFiatReceived}> Confirm </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
   showQRInvoice=()=>{
     return (
       <Grid container spacing={1}>
@@ -275,7 +364,7 @@ export default class TradeBox extends Component {
           />
         </Grid>
         <Grid item xs={12} align="center">
-          <Button onClick={this.handleClickSubmitStatementButton} variant='contained' color='primary'>Submit</Button>
+          <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>Submit</Button>
         </Grid>
 
         {this.showBondIsLocked()}
@@ -382,18 +471,7 @@ export default class TradeBox extends Component {
     .then((response) => response.json())
     .then((data) => (this.props.data = data));
 }
-handleClickOpenDisputeButton=()=>{
-  const requestOptions = {
-      method: 'POST',
-      headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
-      body: JSON.stringify({
-        'action': "dispute",
-      }),
-  };
-  fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
-  .then((response) => response.json())
-  .then((data) => (this.props.data = data));
-}
+
 handleRatingChange=(e)=>{
   const requestOptions = {
       method: 'POST',
@@ -419,11 +497,9 @@ handleRatingChange=(e)=>{
   }
 
   showFiatReceivedButton(){
-    // TODO, show alert and ask for double confirmation (Have you check you received the fiat? Confirming fiat received settles the trade.)
-    // Ask for double confirmation.
     return(
         <Grid item xs={12} align="center">
-          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickConfirmButton}>Confirm {this.props.data.currencyCode} received</Button>
+          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickOpenConfirmFiatReceived}>Confirm {this.props.data.currencyCode} received</Button>
         </Grid>
     )
   }
@@ -432,7 +508,7 @@ handleRatingChange=(e)=>{
     // TODO, show alert about how opening a dispute might involve giving away personal data and might mean losing the bond. Ask for double confirmation.
     return(
         <Grid item xs={12} align="center">
-          <Button color="inherit" onClick={this.handleClickOpenDisputeButton}>Open Dispute</Button>
+          <Button color="inherit" onClick={this.handleClickOpenConfirmDispute}>Open Dispute</Button>
         </Grid>
     )
   }
@@ -487,7 +563,7 @@ handleRatingChange=(e)=>{
           <Rating name="size-large" defaultValue={2} size="large" onChange={this.handleRatingChange} />
         </Grid>
         <Grid item xs={12} align="center">
-          <Button color='primary' to='/' component={Link}>Start Again</Button>
+          <Button color='primary' href='/' component="a">Start Again</Button> 
         </Grid>
       </Grid>
     )
@@ -497,6 +573,8 @@ handleRatingChange=(e)=>{
   render() {
     return (
       <Grid container spacing={1} style={{ width:330}}>
+        <this.ConfirmDisputeDialog/>
+        <this.ConfirmFiatReceivedDialog/>
         <Grid item xs={12} align="center">
           <Typography component="h5" variant="h5">
             Contract Box

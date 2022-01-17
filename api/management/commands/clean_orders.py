@@ -36,6 +36,7 @@ class Command(BaseCommand):
                 context = str(order)+ " was "+ Order.Status(order.status).label
                 if Logics.order_expires(order): # Order send to expire here
                     debug['expired_orders'].append({idx:context})
-                
-            self.stdout.write(str(timezone.now()))
-            self.stdout.write(str(debug))
+
+            if debug['num_expired_orders'] > 0:    
+                self.stdout.write(str(timezone.now()))
+                self.stdout.write(str(debug))
