@@ -31,17 +31,25 @@ FIAT_EXCHANGE_DURATION = int(config('FIAT_EXCHANGE_DURATION'))
 class Logics():
 
     def validate_already_maker_or_taker(user):
-        '''Checks if the user is already partipant of an order'''
-        queryset = Order.objects.filter(maker=user)
+        '''Validates if a use is already not part of an active order'''
+
+        active_order_status = [Order.Status.WFB, Order.Status.PUB, Order.Status.TAK,
+                                Order.Status.WF2, Order.Status.WFE, Order.Status.WFI,
+                                Order.Status.CHA, Order.Status.FSE, Order.Status.DIS,
+                                Order.Status.WFR]
+        '''Checks if the user is already partipant of an active order'''
+        queryset = Order.objects.filter(maker=user, status__in=active_order_status)
         if queryset.exists():
-            return False, {'bad_request':'You are already maker of an order'}
-        queryset = Order.objects.filter(taker=user)
+            return False, {'bad_request':'You are already maker of an active order'}
+
+        queryset = Order.objects.filter(taker=user, status__in=active_order_status)
         if queryset.exists():
-            return False, {'bad_request':'You are already taker of an order'}
+            return False, {'bad_request':'You are already taker of an active order'}
+
         return True, None
 
     def validate_order_size(order):
-        '''Checks if order is withing limits at t0'''
+        '''Validates if order is withing limits in satoshis at t0'''
         if order.t0_satoshis > MAX_TRADE:
             return False, {'bad_request': 'Your order is too big. It is worth '+'{:,}'.format(order.t0_satoshis)+' Sats now. But limit is '+'{:,}'.format(MAX_TRADE)+ ' Sats'}
         if order.t0_satoshis < MIN_TRADE:
