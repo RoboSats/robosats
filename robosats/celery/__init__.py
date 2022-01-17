@@ -39,11 +39,6 @@ app.conf.beat_schedule = {
         'task': 'cache_external_market_prices',
         'schedule': timedelta(seconds=60),  
     },
-    'orders_expire': {                      # Continuous order expire removal (1 hour long process, every hour reports results)
-        'task': 'orders_expire',
-        'schedule': timedelta(hours=1),    
-        'args': [5], # Rest between checks (secs)
-    },
 }
 
 app.conf.timezone = 'UTC'

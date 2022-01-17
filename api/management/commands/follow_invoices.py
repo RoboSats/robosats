@@ -1,7 +1,6 @@
-from distutils.log import debug
-from re import L
-from xmlrpc.client import boolean
 from django.core.management.base import BaseCommand, CommandError
+
+from django.utils import timezone
 from api.lightning.node import LNNode
 from decouple import config
 from base64 import b64decode
@@ -53,9 +52,9 @@ class Command(BaseCommand):
                 try:
                     request = LNNode.invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(hold_lnpayment.payment_hash))
                     response = stub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
-                    
                     hold_lnpayment.status = lnd_state_to_lnpayment_status[response.state]
-                # If it fails at finding the invoice it has definetely been canceled.
+
+                # If it fails at finding the invoice it has been canceled.
                 # On RoboSats DB we make a distinction between cancelled and returned (LND does not)
                 except:
                     hold_lnpayment.status = LNPayment.Status.CANCEL
@@ -76,9 +75,10 @@ class Command(BaseCommand):
                     'old_status': old_status,
                     'new_status': new_status,
                 }})
+
                 debug['time']=time.time()-t0
                 
-            self.stdout.write(str(debug))
+            self.stdout.write(str(timezone.now())+str(debug))
 
 
             

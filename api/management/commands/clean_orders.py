@@ -1,0 +1,41 @@
+from django.core.management.base import BaseCommand, CommandError
+
+import time
+from api.models import Order
+from api.logics import Logics
+from django.utils import timezone
+
+class Command(BaseCommand):
+    help = 'Follows all active hold invoices'
+
+    # def add_arguments(self, parser):
+    #     parser.add_argument('debug', nargs='+', type=boolean)
+
+    def handle(self, *args, **options):
+        ''' Continuously checks order expiration times for 1 hour. If order
+        has expires, it calls the logics module for expiration handling.'''
+
+        do_nothing = [Order.Status.DEL, Order.Status.UCA,
+                    Order.Status.EXP, Order.Status.FSE,
+                    Order.Status.DIS, Order.Status.CCA,
+                    Order.Status.PAY, Order.Status.SUC,
+                    Order.Status.FAI, Order.Status.MLD,
+                    Order.Status.TLD]
+
+        while True:
+            time.sleep(5)
+
+            queryset = Order.objects.exclude(status__in=do_nothing)
+            queryset = queryset.filter(expires_at__lt=timezone.now()) # expires at lower than now
+
+            debug = {}
+            debug['num_expired_orders'] = len(queryset)
+            debug['expired_orders'] = []
+
+            for idx, order in enumerate(queryset):
+                context = str(order)+ " was "+ Order.Status(order.status).label
+                if Logics.order_expires(order): # Order send to expire here
+                    debug['expired_orders'].append({idx:context})
+                
+            self.stdout.write(str(timezone.now()))
+            self.stdout.write(str(debug))

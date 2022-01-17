@@ -113,6 +113,7 @@ class Logics():
 
         elif order.status == Order.Status.WFB:
             order.status = Order.Status.EXP
+            cls.cancel_bond(order.maker_bond)
             order.maker = None
             order.taker = None
             order.save()
@@ -127,6 +128,7 @@ class Logics():
             return True
 
         elif order.status == Order.Status.TAK:
+            cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
             return True
 
@@ -149,6 +151,7 @@ class Logics():
             # If maker is seller, settle the bond and order goes to expired
             if maker_is_seller:
                 cls.settle_bond(order.maker_bond)
+                cls.return_bond(order.taker_bond)
                 order.status = Order.Status.EXP
                 order.maker = None
                 order.taker = None
@@ -167,19 +170,20 @@ class Logics():
 
         elif order.status == Order.Status.WFI:
             # The trade could happen without a buyer invoice. However, this user
-            # is most likely AFK since he did not submit an invoice; will most
-            # likely desert the contract as well.
+            # is likely AFK since he did not submit an invoice; will probably
+            # desert the contract as well.
             maker_is_buyer = cls.is_buyer(order, order.maker)
             # If maker is buyer, settle the bond and order goes to expired
             if maker_is_buyer:
                 cls.settle_bond(order.maker_bond)
+                cls.return_bond(order.taker_bond)
                 order.status = Order.Status.EXP
                 order.maker = None
                 order.taker = None
                 order.save()
                 return True
 
-            # If maker is seller, settle the taker's bond order goes back to public
+            # If maker is seller settle the taker's bond, order goes back to public
             else:
                 cls.settle_bond(order.taker_bond)
                 order.status = Order.Status.PUB
@@ -203,14 +207,13 @@ class Logics():
         profile.penalty_expiration = timezone.now() + timedelta(seconds=PENALTY_TIMEOUT)
         profile.save()
 
-        # Delete the taker_bond payment request, and make order public again
-        if LNNode.cancel_return_hold_invoice(order.taker_bond.payment_hash):
-            order.status = Order.Status.PUB
-            order.taker = None
-            order.taker_bond = None
-            order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
-            order.save()
-            return True
+        # Make order public again
+        order.status = Order.Status.PUB
+        order.taker = None
+        order.taker_bond = None
+        order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
+        order.save()
+        return True
 
     @classmethod
     def open_dispute(cls, order, user=None):
@@ -369,6 +372,7 @@ class Logics():
             LNPayment "order.taker_bond" is deleted() '''
         elif order.status == Order.Status.TAK and order.taker == user:
             # adds a timeout penalty
+            cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
             return True, None
 
@@ -495,6 +499,7 @@ class Logics():
 
         # Do not gen and kick out the taker if order is older than expiry time
         if order.expires_at < timezone.now():
+            cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
             return False, {'bad_request':'Invoice expired. You did not confirm taking the order in time.'}
 
@@ -615,9 +620,31 @@ class Logics():
 
     def return_bond(bond):
         '''returns a bond'''
-        if LNNode.cancel_return_hold_invoice(bond.payment_hash):
+        if bond == None:
+            return
+
+        try:
+            LNNode.cancel_return_hold_invoice(bond.payment_hash)
             bond.status = LNPayment.Status.RETNED
             return True
+        except Exception as e:
+            if 'invoice already settled' in str(e):
+                bond.status = LNPayment.Status.SETLED
+                return True
+
+    def cancel_bond(bond):
+        '''cancel a bond'''
+        # Same as return bond, but used when the invoice was never accepted
+        if bond == None:
+            return True
+        try:
+            LNNode.cancel_return_hold_invoice(bond.payment_hash)
+            bond.status = LNPayment.Status.CANCEL
+            return True
+        except Exception as e:
+            if 'invoice already settled' in str(e):
+                bond.status = LNPayment.Status.SETLED
+                return True
 
     def pay_buyer_invoice(order):
         ''' Pay buyer invoice'''

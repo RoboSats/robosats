@@ -30,50 +30,6 @@ def users_cleansing():
         'num_deleted': len(deleted_users),
         'deleted_users': deleted_users,
     }
-
-    return results
-
-
-@shared_task(name="orders_expire")
-def orders_expire(rest_secs):
-    '''
-    Continuously checks order expiration times for 1 hour. If order
-    has expires, it calls the logics module for expiration handling.
-    '''
-    import time
-    from .models import Order
-    from .logics import Logics
-    from datetime import timedelta
-    from django.utils import timezone
-
-    now = timezone.now()
-    end_time = now + timedelta(minutes=60)
-    context = []
-
-    while now < end_time:
-        queryset = Order.objects.exclude(status=Order.Status.EXP).exclude(status=Order.Status.UCA).exclude(status= Order.Status.CCA)
-        queryset = queryset.filter(expires_at__lt=now) # expires at lower than now        
-
-        for order in queryset:
-            try:    # TODO Fix, it might fail if returning an already returned bond.
-                info = str(order)+ " was "+ Order.Status(order.status).label
-                if Logics.order_expires(order): # Order send to expire here
-                    context.append(info)
-            except:
-                pass
-
-        # Allow for some thread rest.
-        time.sleep(rest_secs)
-
-        # Update 'now' for a new loop
-        now = timezone.now()
-
-    results = {
-        'num_expired': len(context),
-        'expired_orders_context': context,
-        'rest_param': rest_secs,
-    }
-
     return results
 
 @shared_task(name='follow_send_payment')
