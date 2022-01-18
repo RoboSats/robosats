@@ -20,6 +20,9 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 ## Contribute to the Robotic Satoshis Open Source Project
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
+## Original idea
+A simple, custody-minimized, lightning exchange using hold invoices is heavily inspired by [P2PLNBOT](https://github.com/grunch/p2plnbot) by @grunch
+
 ## License
 
 The Robotic Satoshis Open Source Project is released under the terms of the AGPL3.0 license. See [LICENSE](LICENSE) for more details.

@@ -315,14 +315,21 @@ class UserView(APIView):
         Response with Avatar and Nickname.
         '''
 
-        # if request.user.id:
-        #     context = {}
-        #     context['nickname'] = request.user.username
-        #     participant = not Logics.validate_already_maker_or_taker(request.user)
-        #     context['bad_request'] = f'You are already logged in as {request.user}'
-        #     if participant:
-        #         context['bad_request'] = f'You are already logged in as as {request.user} and have an active order'
-        #     return Response(context,status.HTTP_200_OK)
+        # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
+        if request.user.is_authenticated:
+            context = {'nickname': request.user.username}
+            not_participant, _ = Logics.validate_already_maker_or_taker(request.user)
+
+            # Does not allow this 'mistake' if an active order
+            if not not_participant:
+                context['bad_request'] = f'You are already logged in as {request.user} and have an active order'
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+            
+            # Does not allow this 'mistake' if the last login was sometime ago (5 minutes)
+            if request.user.last_login < timezone.now() - timedelta(minutes=5):
+                context['bad_request'] = f'You are already logged in as {request.user}'
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+            
 
         token = request.GET.get(self.lookup_url_kwarg)
 
