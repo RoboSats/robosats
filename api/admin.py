@@ -22,6 +22,7 @@ class EUserAdmin(UserAdmin):
     def avatar_tag(self, obj):
         return obj.profile.avatar_tag()
 
+
 @admin.register(Order)
 class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     list_display = ('id','type','maker_link','taker_link','status','amount','currency_link','t0_satoshis','is_disputed','is_fiat_sent','created_at','expires_at', 'buyer_invoice_link','maker_bond_link','taker_bond_link','trade_escrow_link')
@@ -31,8 +32,8 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
 
 @admin.register(LNPayment)
 class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
-    list_display = ('id','concept','status','num_satoshis','type','expires_at','sender_link','receiver_link','order_made','order_taken','order_escrow','order_paid')
-    list_display_links = ('id','concept','order_made','order_taken','order_escrow','order_paid')
+    list_display = ('hash','concept','status','num_satoshis','type','expires_at','sender_link','receiver_link','order_made','order_taken','order_escrow','order_paid')
+    list_display_links = ('hash','concept','order_made','order_taken','order_escrow','order_paid')
     change_links = ('sender','receiver')
     list_filter = ('type','concept','status')
 

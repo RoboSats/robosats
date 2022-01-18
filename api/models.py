@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator, validate_comma_separated_integer_list
 from django.db.models.signals import post_save, pre_delete
+from django.template.defaultfilters import truncatechars
 from django.dispatch import receiver
 from django.utils.html import mark_safe
 import uuid
@@ -59,15 +60,14 @@ class LNPayment(models.Model):
         
 
     # payment use details
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HOLD)
     concept = models.PositiveSmallIntegerField(choices=Concepts.choices, null=False, default=Concepts.MAKEBOND)
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.INVGEN)
     routing_retries = models.PositiveSmallIntegerField(null=False, default=0)
     
     # payment info
+    payment_hash = models.CharField(max_length=100, unique=True, default=None, blank=True, primary_key=True)
     invoice = models.CharField(max_length=1200, unique=True, null=True, default=None, blank=True) # Some invoices with lots of routing hints might be long
-    payment_hash = models.CharField(max_length=100, unique=True, null=True, default=None, blank=True)
     preimage = models.CharField(max_length=64, unique=True, null=True, default=None, blank=True)
     description = models.CharField(max_length=500, unique=False, null=True, default=None, blank=True)
     num_satoshis = models.PositiveBigIntegerField(validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
@@ -79,11 +79,18 @@ class LNPayment(models.Model):
     receiver = models.ForeignKey(User, related_name='receiver', on_delete=models.CASCADE, null=True, default=None)
 
     def __str__(self):
-        return (f'LN-{str(self.id)[:8]}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}')
+        return (f'LN-{str(self.payment_hash)[:8]}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}')
 
     class Meta:
         verbose_name = 'Lightning payment'
         verbose_name_plural = 'Lightning payments'
+
+    @property
+    def hash(self):
+        # Payment hash is the primary key of LNpayments
+        # However it is too long for the admin panel.
+        # We created a truncated property for display 'hash'
+        return truncatechars(self.payment_hash, 10)
 
 class Order(models.Model):
     
@@ -141,8 +148,8 @@ class Order(models.Model):
 
     # in dispute
     is_disputed = models.BooleanField(default=False, null=False)
-    maker_statement = models.TextField(max_length=5000, unique=True, null=True, default=None, blank=True)
-    taker_statement = models.TextField(max_length=5000, unique=True, null=True, default=None, blank=True)
+    maker_statement = models.TextField(max_length=5000, null=True, default=None, blank=True)
+    taker_statement = models.TextField(max_length=5000, null=True, default=None, blank=True)
 
     # LNpayments
     # Order collateral
