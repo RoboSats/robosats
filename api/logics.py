@@ -125,7 +125,7 @@ class Logics():
         elif order.status == Order.Status.WFB:
             order.status = Order.Status.EXP
             cls.cancel_bond(order.maker_bond)
-            order.maker = None
+            order.maker = None # TODO with the new validate_already_maker_taker there is no need to kick out participants on expired orders.
             order.taker = None
             order.save()
             return True
@@ -175,12 +175,10 @@ class Logics():
             else:
                 cls.settle_bond(order.taker_bond)
                 cls.cancel_escrow(order)
-                order.status = Order.Status.PUB
                 order.taker = None
                 order.taker_bond = None
                 order.trade_escrow = None
-                order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
-                order.save()
+                cls.publish_order(order)
                 return True
 
         elif order.status == Order.Status.WFI:
@@ -203,12 +201,10 @@ class Logics():
             else:
                 cls.settle_bond(order.taker_bond)
                 cls.return_escrow(order)
-                order.status = Order.Status.PUB
                 order.taker = None
                 order.taker_bond = None
                 order.trade_escrow = None
-                order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
-                order.save()
+                cls.publish_order(order)
                 return True
         
         elif order.status == Order.Status.CHA:
@@ -218,7 +214,8 @@ class Logics():
             cls.open_dispute(order)
             return True
 
-    def kick_taker(order):
+    @classmethod
+    def kick_taker(cls, order):
         ''' The taker did not lock the taker_bond. Now he has to go'''
         # Add a time out to the taker
         profile = order.taker.profile
@@ -226,11 +223,9 @@ class Logics():
         profile.save()
 
         # Make order public again
-        order.status = Order.Status.PUB
         order.taker = None
         order.taker_bond = None
-        order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
-        order.save()
+        cls.publish_order(order)
         return True
 
     @classmethod
@@ -417,14 +412,12 @@ class Logics():
 
         # 4.b) When taker cancel after bond (before escrow)
             '''The order into cancelled status if maker cancels.'''
-        elif order.status > Order.Status.TAK and order.status < Order.Status.CHA and order.taker == user:
+        elif order.status in [Order.Status.WF2, Order.Status.WFE] and order.taker == user:
             # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.taker_bond)
             if valid:
                 order.taker = None
-                order.status = Order.Status.PUB
-                # order.taker_bond = None # TODO fix this, it overrides the information about the settled taker bond. Might make admin tasks hard.
-                order.save()
+                cls.publish_order(order)
                 return True, None
 
         # 5) When trade collateral has been posted (after escrow)
@@ -437,12 +430,10 @@ class Logics():
             return False, {'bad_request':'You cannot cancel this order'}
 
     def publish_order(order):
-        if order.status == Order.Status.WFB:
-            order.status = Order.Status.PUB
-            # With the bond confirmation the order is extended 'public_order_duration' hours
-            order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
-            order.save()
-            return
+        order.status = Order.Status.PUB
+        order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
+        order.save()
+        return
 
     @classmethod
     def is_maker_bond_locked(cls, order):

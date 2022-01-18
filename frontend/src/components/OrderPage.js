@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@mui/material"
+import { Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import TradeBox from "./TradeBox";
 import getFlags from './getFlags'
@@ -11,6 +11,7 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import MoneyIcon from '@mui/icons-material/Money';
 import ArticleIcon from '@mui/icons-material/Article';
+import ContentCopy from "@mui/icons-material/ContentCopy";
 
 function getCookie(name) {
   let cookieValue = null;
@@ -43,6 +44,7 @@ export default class OrderPage extends Component {
         currencies_dict: {"1":"USD"},
         total_secs_expiry: 300,
         loading: true,
+        openCancel: false,
     };
     this.orderId = this.props.match.params.orderId;
     this.getCurrencyDict();
@@ -144,8 +146,8 @@ export default class OrderPage extends Component {
   countdownRenderer = ({ total, hours, minutes, seconds, completed }) => {
   if (completed) {
     // Render a completed state
-    this.getOrderDetails();
-    return null;
+    return (<span> The order has expired</span>);
+
   } else {
     var col = 'black'
     var fraction_left = (total/1000) / this.state.total_secs_expiry
@@ -218,7 +220,7 @@ export default class OrderPage extends Component {
     return code
   }
 
-  handleClickCancelOrderButton=()=>{
+  handleClickConfirmCancelButton=()=>{
     console.log(this.state)
       const requestOptions = {
           method: 'POST',
@@ -230,6 +232,64 @@ export default class OrderPage extends Component {
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())
       .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
+    this.handleClickCloseConfirmCancelDialog();
+  }
+
+  handleClickOpenConfirmCancelDialog = () => {
+    this.setState({openCancel: true});
+  };
+  handleClickCloseConfirmCancelDialog = () => {
+      this.setState({openCancel: false});
+  };
+
+  CancelDialog =() =>{
+  return(
+      <Dialog
+      open={this.state.openCancel}
+      onClose={this.handleClickCloseConfirmCancelDialog}
+      aria-labelledby="cancel-dialog-title"
+      aria-describedby="cancel-dialog-description"
+      >
+        <DialogTitle id="cancel-dialog-title">
+          {"Cancel the order?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="cancel-dialog-description">
+            If the order is cancelled now you will lose your bond.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClickCloseConfirmCancelDialog} autoFocus>Go back</Button>
+          <Button onClick={this.handleClickConfirmCancelButton}> Confirm Cancel </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
+  CancelButton = () => {
+
+    // If maker and Waiting for Bond. Or if taker and Waiting for bond.
+    // Simply allow to cancel without showing the cancel dialog. 
+    if ((this.state.isMaker & this.state.statusCode == 0) || this.state.isTaker & this.state.statusCode == 3){
+      return(
+        <Grid item xs={12} align="center">
+          <Button variant='contained' color='secondary' onClick={this.handleClickConfirmCancelButton}>Cancel</Button>
+        </Grid>
+      )}
+    // If the order does not yet have an escrow deposited. Show dialog
+    // to confirm forfeiting the bond
+    if (this.state.statusCode < 8){
+      return(
+        <Grid item xs={12} align="center">
+          <this.CancelDialog/>
+          <Button variant='contained' color='secondary' onClick={this.handleClickOpenConfirmCancelDialog}>Cancel</Button>
+        </Grid>
+      )}
+    
+    // TODO If the escrow is Locked, show the collaborative cancel button.
+    
+    // If none of the above do not return a cancel button.
+    return(null)
   }
 
   orderBox=()=>{
@@ -346,8 +406,10 @@ export default class OrderPage extends Component {
           </Paper>
         </Grid>
 
-        {/* Participants cannot see the Back or Take Order buttons */}
-        {this.state.isParticipant ? "" :
+        {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}
+        {this.state.isParticipant ? 
+          <this.CancelButton/>
+         :
           <>
             <Grid item xs={12} align="center">
               <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>
@@ -358,27 +420,7 @@ export default class OrderPage extends Component {
           </>
           }
 
-        {/* Makers can cancel before trade escrow deposited  (status <9)*/}
-        {/* Only free cancel before bond locked (status 0)*/}
-        {this.state.isMaker & this.state.statusCode < 9 ?
-        <Grid item xs={12} align="center">
-          <Button variant='contained' color='secondary' onClick={this.handleClickCancelOrderButton}>Cancel</Button>
-        </Grid>
-        :""}
-        {this.state.isMaker & this.state.statusCode > 0 & this.state.statusCode < 9 ?
-        <Grid item xs={12} align="center">
-          <Typography color="secondary" variant="subtitle2" component="subtitle2">Cancelling now forfeits the maker bond</Typography>
-        </Grid>
-        :""}
-        
-        {/* Takers can cancel before commiting the bond (status 3)*/}
-        {this.state.isTaker & this.state.statusCode == 3 ?
-        <Grid item xs={12} align="center">
-          <Button variant='contained' color='secondary' onClick={this.handleClickCancelOrderButton}>Cancel</Button>
-        </Grid>
-        :""}
-
-        </Grid>
+      </Grid>
     )
   }
   

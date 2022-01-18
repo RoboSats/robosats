@@ -150,15 +150,15 @@ export default class UserGenPage extends Component {
           <Grid container align="center">
             <Grid item xs={12} align="center">
               <IconButton onClick= {()=>navigator.clipboard.writeText(this.state.token)}>
-                <ContentCopy color='secondary'/>
+                <ContentCopy/>
               </IconButton>
               <TextField
                 //sx={{ input: { color: 'purple' } }}
                 InputLabelProps={{
-                  style: { color: 'purple' },
+                  style: { color: 'green' },
                 }}
                 error={this.state.bad_request}
-                label='Token - Store safely'
+                label='Store your token safely'
                 required='true'
                 value={this.state.token}
                 variant='standard'

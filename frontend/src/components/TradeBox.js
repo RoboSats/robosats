@@ -183,7 +183,7 @@ export default class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Typography color="primary" component="subtitle1" variant="subtitle1">
+          <Typography color="green" component="subtitle1" variant="subtitle1">
             <b>Deposit {pn(this.props.data.escrowSatoshis)} Sats as trade collateral </b>
           </Typography>
         </Grid>
@@ -568,7 +568,6 @@ handleRatingChange=(e)=>{
       </Grid>
     )
   }
-
 
   render() {
     return (

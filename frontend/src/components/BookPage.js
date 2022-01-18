@@ -166,10 +166,10 @@ export default class BookPage extends Component {
                       style: {textAlign:"center"}
                   }}
                   onChange={this.handleCurrencyChange}
-              >     <MenuItem value={0}>ANY</MenuItem>
+              >     <MenuItem value={0}>🌍 ANY</MenuItem>
                     {
                       Object.entries(this.state.currencies_dict)
-                      .map( ([key, value]) => <MenuItem value={parseInt(key)}>{value}</MenuItem> )
+                      .map( ([key, value]) => <MenuItem value={parseInt(key)}>{getFlags(value) + " " + value}</MenuItem> )
                     }
               </Select>
             </FormControl>
