@@ -5,7 +5,7 @@ import numpy as np
 
 market_cache = {}
 
-@ring.dict(market_cache, expire=5) #keeps in cache for 5 seconds
+@ring.dict(market_cache, expire=3) #keeps in cache for 3 seconds
 def get_exchange_rates(currencies):
     '''
     Params: list of currency codes.

@@ -1,8 +1,10 @@
 import React, { Component } from "react";
-import { Button , Dialog, Grid, Typography, TextField, ButtonGroup} from "@mui/material"
+import { Button , Dialog, Grid, Typography, TextField, ButtonGroup, CircularProgress, IconButton} from "@mui/material"
 import { Link } from 'react-router-dom'
 import Image from 'material-ui-image'
 import InfoDialog from './InfoDialog'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ContentCopy from "@mui/icons-material/ContentCopy";
 
 function getCookie(name) {
   let cookieValue = null;
@@ -27,6 +29,7 @@ export default class UserGenPage extends Component {
     this.state = {
       token: this.genBase62Token(34),
       openInfo: false,
+      showRobosat: true,
     };
     this.getGeneratedUser(this.state.token);
   }
@@ -53,6 +56,7 @@ export default class UserGenPage extends Component {
             shannon_entropy: data.token_shannon_entropy,
             bad_request: data.bad_request,
             found: data.found,
+            showRobosat:true,
         });
       });
   }
@@ -69,10 +73,12 @@ export default class UserGenPage extends Component {
 
   handleAnotherButtonPressed=(e)=>{
     this.delGeneratedUser()
-    this.setState({
-      token: this.genBase62Token(34),
-    });
-    this.getGeneratedUser(this.state.token);
+    // this.setState({
+    //   showRobosat: false,
+    //   token: this.genBase62Token(34),
+    // });
+    // this.getGeneratedUser(this.state.token);
+    window.location.reload();
   }
 
   handleChangeToken=(e)=>{
@@ -81,6 +87,7 @@ export default class UserGenPage extends Component {
       token: e.target.value,
     })
     this.getGeneratedUser(e.target.value);
+    this.setState({showRobosat: false})
   }
 
   handleClickOpenInfo = () => {
@@ -109,20 +116,26 @@ export default class UserGenPage extends Component {
   render() {
     return (
       <Grid container spacing={1}>
-          <Grid item xs={12} align="center">
-            <Typography component="h5" variant="h5">
-            <b>{this.state.nickname ? "⚡"+this.state.nickname+"⚡" : ""}</b>
-            </Typography>
-          </Grid>
-          <Grid item xs={12} align="center">
-            <div style={{ maxWidth: 200, maxHeight: 200 }}>
-              <Image className='newAvatar'
-                disableError='true'
-                cover='true'
-                color='null'
-                src={this.state.avatar_url}
-              />
-            </div><br/>
+        <Grid item xs={12} align="center">
+          {this.state.showRobosat ?
+            <div>
+              <Grid item xs={12} align="center">
+                <Typography component="h5" variant="h5">
+                <b>{this.state.nickname ? "⚡"+this.state.nickname+"⚡" : ""}</b>
+                </Typography>
+              </Grid>
+              <Grid item xs={12} align="center">
+                <div style={{ maxWidth: 200, maxHeight: 200 }}>
+                  <Image className='newAvatar'
+                    disableError='true'
+                    cover='true'
+                    color='null'
+                    src={this.state.avatar_url}
+                  />
+                </div><br/>
+              </Grid>
+            </div>
+            : <CircularProgress />}
           </Grid>
           {
             this.state.found ?
@@ -134,21 +147,30 @@ export default class UserGenPage extends Component {
              :
              ""
           }
-          <Grid item xs={12} align="center">
-            <TextField
-              error={this.state.bad_request}
-              label='Token - Store safely'
-              required='true'
-              value={this.state.token}
-              variant='standard'
-              helperText={this.state.bad_request}
-              size='small'
-              // multiline = {true}
-              onChange={this.handleChangeToken}
-            />
+          <Grid container align="center">
+            <Grid item xs={12} align="center">
+              <IconButton onClick= {()=>navigator.clipboard.writeText(this.state.token)}>
+                <ContentCopy color='secondary'/>
+              </IconButton>
+              <TextField
+                //sx={{ input: { color: 'purple' } }}
+                InputLabelProps={{
+                  style: { color: 'purple' },
+                }}
+                error={this.state.bad_request}
+                label='Token - Store safely'
+                required='true'
+                value={this.state.token}
+                variant='standard'
+                helperText={this.state.bad_request}
+                size='small'
+                // multiline = {true}
+                onChange={this.handleChangeToken}
+              />
+            </Grid>
           </Grid>
           <Grid item xs={12} align="center">
-              <Button onClick={this.handleAnotherButtonPressed}>Generate Another Robosat</Button>
+              <Button size='small'  onClick={this.handleAnotherButtonPressed}>Generate Another Robosat</Button>
           </Grid>
           <Grid item xs={12} align="center">
             <ButtonGroup variant="contained" aria-label="outlined primary button group">

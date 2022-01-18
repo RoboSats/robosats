@@ -446,7 +446,9 @@ class Logics():
 
     @classmethod
     def is_maker_bond_locked(cls, order):
-        if LNNode.validate_hold_invoice_locked(order.maker_bond.payment_hash):
+        if order.maker_bond.status == LNPayment.Status.LOCKED:
+            return True
+        elif LNNode.validate_hold_invoice_locked(order.maker_bond.payment_hash):
             order.maker_bond.status = LNPayment.Status.LOCKED
             order.maker_bond.save()
             cls.publish_order(order)
@@ -524,7 +526,7 @@ class Logics():
     def is_taker_bond_locked(cls, order):
         if order.taker_bond.status == LNPayment.Status.LOCKED:
             return True
-        if LNNode.validate_hold_invoice_locked(order.taker_bond.payment_hash):
+        elif LNNode.validate_hold_invoice_locked(order.taker_bond.payment_hash):
             cls.finalize_contract(order)
             return True
         return False
@@ -574,20 +576,25 @@ class Logics():
         order.save()
         return True, {'bond_invoice': hold_payment['invoice'], 'bond_satoshis': bond_satoshis}
 
+    def trade_escrow_received(order):
+        ''' Moves the order forward'''
+        # If status is 'Waiting for both' move to Waiting for invoice
+        if order.status == Order.Status.WF2:
+            order.status = Order.Status.WFI
+        # If status is 'Waiting for invoice' move to Chat
+        elif order.status == Order.Status.WFE:
+            order.status = Order.Status.CHA
+            order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.CHA])
+        order.save()
 
     @classmethod
     def is_trade_escrow_locked(cls, order):
-        if LNNode.validate_hold_invoice_locked(order.trade_escrow.payment_hash):
+        if order.trade_escrow.status == LNPayment.Status.LOCKED:
+            return True
+        elif LNNode.validate_hold_invoice_locked(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.LOCKED
             order.trade_escrow.save()
-            # If status is 'Waiting for both' move to Waiting for invoice
-            if order.status == Order.Status.WF2:
-                order.status = Order.Status.WFI
-            # If status is 'Waiting for invoice' move to Chat
-            elif order.status == Order.Status.WFE:
-                order.status = Order.Status.CHA
-                order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.CHA])
-            order.save()
+            cls.trade_escrow_received(order)
             return True
         return False
 
@@ -607,7 +614,7 @@ class Logics():
             elif order.trade_escrow.status == LNPayment.Status.INVGEN:
                 return True, {'escrow_invoice':order.trade_escrow.invoice, 'escrow_satoshis':order.trade_escrow.num_satoshis}
 
-        # If there was no taker_bond object yet, generates one
+        # If there was no taker_bond object yet, generate one
         escrow_satoshis = order.last_satoshis # Amount was fixed when taker bond was locked
         description = f"RoboSats - Escrow amount for '{str(order)}' - The escrow will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
 

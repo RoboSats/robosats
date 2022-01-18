@@ -22,6 +22,7 @@ class Command(BaseCommand):
     '''
 
     help = 'Follows all active hold invoices'
+    rest = 5 # seconds between consecutive checks for invoice updates
 
     # def add_arguments(self, parser):
     #     parser.add_argument('debug', nargs='+', type=boolean)
@@ -40,7 +41,7 @@ class Command(BaseCommand):
         stub = LNNode.invoicesstub
 
         while True:
-            time.sleep(5)
+            time.sleep(self.rest)
 
             # time it for debugging
             t0 = time.time()
@@ -95,21 +96,24 @@ class Command(BaseCommand):
 
     def update_order_status(self, lnpayment):
         ''' Background process following LND hold invoices
-        might catch LNpayments changing status. If they do,
+        can catch LNpayments changing status. If they do,
         the order status might have to change status too.'''
 
         # If the LNPayment goes to LOCKED (ACCEPTED)
         if lnpayment.status == LNPayment.Status.LOCKED:
 
             # It is a maker bond => Publish order.
-            order = lnpayment.order_made
-            if not order == None:
-                Logics.publish_order(order)
+            if not lnpayment.order_made == None:
+                Logics.publish_order(lnpayment.order_made)
                 return
 
             # It is a taker bond => close contract.
-            order = lnpayment.order_taken
-            if not order == None:
-                if order.status == Order.Status.TAK:
-                    Logics.finalize_contract(order)
+            elif not lnpayment.order_taken == None:
+                if lnpayment.order_taken.status == Order.Status.TAK:
+                    Logics.finalize_contract(lnpayment.order_taken)
                     return
+
+            # It is a trade escrow => move foward order status.
+            elif not lnpayment.order_escrow == None:
+                Logics.trade_escrow_received(lnpayment.order_escrow)
+                return

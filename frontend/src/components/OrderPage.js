@@ -63,7 +63,7 @@ export default class OrderPage extends Component {
       "10": 15000,  //'Fiat sent - In chatroom'
       "11": 60000,  //'In dispute'
       "12": 9999999,//'Collaboratively cancelled'
-      "13": 120000, //'Sending satoshis to buyer'
+      "13": 3000,   //'Sending satoshis to buyer'
       "14": 9999999,//'Sucessful trade'
       "15": 10000,  //'Failed lightning network routing'
       "16": 9999999,//'Maker lost dispute'

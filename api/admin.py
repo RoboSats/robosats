@@ -31,8 +31,8 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
 
 @admin.register(LNPayment)
 class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
-    list_display = ('id','concept','status','num_satoshis','type','expires_at','sender_link','receiver_link')
-    list_display_links = ('id','concept')
+    list_display = ('id','concept','status','num_satoshis','type','expires_at','sender_link','receiver_link','order_made','order_taken','order_escrow','order_paid')
+    list_display_links = ('id','concept','order_made','order_taken','order_escrow','order_paid')
     change_links = ('sender','receiver')
     list_filter = ('type','concept','status')
 

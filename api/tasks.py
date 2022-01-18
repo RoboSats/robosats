@@ -40,7 +40,7 @@ def follow_send_payment(lnpayment):
     from base64 import b64decode
 
     from api.lightning.node import LNNode
-    from api.models import LNPayment
+    from api.models import LNPayment, Order
 
     MACAROON = b64decode(config('LND_MACAROON_BASE64'))
 
@@ -48,25 +48,37 @@ def follow_send_payment(lnpayment):
     request = LNNode.routerrpc.SendPaymentRequest(
         payment_request=lnpayment.invoice,
         fee_limit_sat=fee_limit_sat,
-        timeout_seconds=60)
+        timeout_seconds=60) # time out payment in 60 seconds
 
+    order = lnpayment.order_paid
     for response in LNNode.routerstub.SendPaymentV2(request, metadata=[('macaroon', MACAROON.hex())]):
         if response.status == 0 :               # Status 0 'UNKNOWN'
+            # Not sure when this status happens
             pass 
 
         if response.status == 1 :               # Status 1 'IN_FLIGHT'
+            print('IN_FLIGHT')
             lnpayment.status = LNPayment.Status.FLIGHT
             lnpayment.save()
+            order.status = Order.Status.PAY
+            order.save()
 
         if response.status == 3 :               # Status 3 'FAILED'
+            print('FAILED')
             lnpayment.status = LNPayment.Status.FAILRO
             lnpayment.save()
+            order.status = Order.Status.FAI
+            order.save()
             context = LNNode.payment_failure_context[response.failure_reason]
+            # Call for a retry here
             return False, context
 
         if response.status == 2 :               # Status 2 'SUCCEEDED'
+            print('SUCCEEDED')
             lnpayment.status = LNPayment.Status.SUCCED
             lnpayment.save()
+            order.status = Order.Status.SUC
+            order.save()
             return True, None
 
 @shared_task(name="cache_external_market_prices", ignore_result=True)

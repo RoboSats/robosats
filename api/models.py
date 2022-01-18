@@ -151,7 +151,7 @@ class Order(models.Model):
     trade_escrow = models.OneToOneField(LNPayment, related_name='order_escrow', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
     # buyer payment LN invoice
-    buyer_invoice = models.ForeignKey(LNPayment, related_name='buyer_invoice', on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    buyer_invoice = models.OneToOneField(LNPayment, related_name='order_paid', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
     # ratings
     maker_rated = models.BooleanField(default=False, null=False)
@@ -180,9 +180,8 @@ class Order(models.Model):
         }
 
     def __str__(self):
-        # Make relational back to ORDER
         return (f'Order {self.id}: {self.Types(self.type).label} BTC for {float(self.amount)} {self.currency}')
-       
+      
 
 @receiver(pre_delete, sender=Order)
 def delete_lnpayment_at_order_deletion(sender, instance, **kwargs):
