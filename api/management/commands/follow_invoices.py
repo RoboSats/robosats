@@ -59,7 +59,7 @@ class Command(BaseCommand):
                     request = LNNode.invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(hold_lnpayment.payment_hash))
                     response = stub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
                     hold_lnpayment.status = lnd_state_to_lnpayment_status[response.state]
-                    
+
                 except Exception as e:
                     # If it fails at finding the invoice it has been canceled.
                     # On RoboSats DB we make a distinction between cancelled and returned (LND does not)
@@ -105,21 +105,20 @@ class Command(BaseCommand):
 
         # If the LNPayment goes to LOCKED (ACCEPTED)
         if lnpayment.status == LNPayment.Status.LOCKED:
-
             try:
                 # It is a maker bond => Publish order.
-                if not lnpayment.order_made == None:
+                if hasattr(lnpayment, 'order_made' ):
                     Logics.publish_order(lnpayment.order_made)
                     return
 
                 # It is a taker bond => close contract.
-                elif not lnpayment.order_taken == None:
+                elif hasattr(lnpayment, 'order_taken' ):
                     if lnpayment.order_taken.status == Order.Status.TAK:
                         Logics.finalize_contract(lnpayment.order_taken)
                         return
 
                 # It is a trade escrow => move foward order status.
-                elif not lnpayment.order_escrow == None:
+                elif hasattr(lnpayment, 'order_escrow' ):
                     Logics.trade_escrow_received(lnpayment.order_escrow)
                     return
             except Exception as e:

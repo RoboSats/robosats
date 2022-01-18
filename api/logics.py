@@ -520,7 +520,6 @@ class Logics():
 
         # Do not gen if a taker invoice exist. Do not return if it is already locked. Return the old one if still waiting.
         if order.taker_bond:
-            # Check if status is INVGEN and still not expired
             if cls.is_taker_bond_locked(order):
                 return False, None
             elif order.taker_bond.status == LNPayment.Status.INVGEN:
