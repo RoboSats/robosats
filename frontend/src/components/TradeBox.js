@@ -256,7 +256,7 @@ export default class TradeBox extends Component {
                 <ListItemIcon>
                   <SmartToyIcon/>
                 </ListItemIcon>
-                <ListItemText primary={999} secondary="Robots looking at the book"/>
+                <ListItemText primary={'000 coming soon'} secondary="Robots looking at the book"/>
               </ListItem>
 
             <Divider/>
@@ -272,7 +272,8 @@ export default class TradeBox extends Component {
               <ListItemIcon>
                 <PercentIcon/>
               </ListItemIcon>
-                <ListItemText primary="33%" secondary="Premium percentile" />
+                <ListItemText primary={"Premium rank " + this.props.data.premiumPercentile*100+"%"} 
+                  secondary={"Among public " + this.props.data.currencyCode + " orders (higher is cheaper)"} />
               </ListItem>
             <Divider/>
 

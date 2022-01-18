@@ -3,6 +3,8 @@ import requests, ring, os
 from decouple import config
 import numpy as np
 
+from api.models import Order
+
 market_cache = {}
 
 @ring.dict(market_cache, expire=3) #keeps in cache for 3 seconds
@@ -49,7 +51,6 @@ def get_exchange_rates(currencies):
     return median_rates.tolist()
 
 lnd_v_cache = {}
-
 @ring.dict(lnd_v_cache, expire=3600) #keeps in cache for 3600 seconds
 def get_lnd_version():
 
@@ -59,7 +60,6 @@ def get_lnd_version():
     return lnd_version
 
 robosats_commit_cache = {}
-
 @ring.dict(robosats_commit_cache, expire=3600)
 def get_commit_robosats():
 
@@ -67,4 +67,22 @@ def get_commit_robosats():
     lnd_version = stream.read()
 
     return lnd_version
+
+premium_percentile = {}
+@ring.dict(premium_percentile, expire=300)
+def compute_premium_percentile(order):
+
+    queryset = Order.objects.filter(currency=order.currency, status=Order.Status.PUB)
+
+    print(len(queryset))
+    if len(queryset) <= 1:
+        return 0.5
+
+    order_rate = float(order.last_satoshis) / float(order.amount)
+    rates = []
+    for similar_order in queryset:
+        rates.append(float(similar_order.last_satoshis) / float(similar_order.amount))
+    
+    rates = np.array(rates)
+    return round(np.sum(rates < order_rate) / len(rates),2)
     

@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
 from .models import LNPayment, MarketTick, Order, Currency
 from .logics import Logics
-from .utils import get_lnd_version, get_commit_robosats
+from .utils import get_lnd_version, get_commit_robosats, compute_premium_percentile
 
 from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
@@ -125,7 +125,7 @@ class OrderView(viewsets.ViewSet):
              # 3. c) If maker and Public, add num robots in book, premium percentile and num similar orders.
             if data['is_maker'] and order.status == Order.Status.PUB:
                 data['robots_in_book'] = None       # TODO
-                data['premium_percentile'] = None   # TODO
+                data['premium_percentile'] = compute_premium_percentile(order)
                 data['num_similar_orders'] = len(Order.objects.filter(currency=order.currency, status=Order.Status.PUB))
         
         # 4) Non participants can view details (but only if PUB)
@@ -326,9 +326,9 @@ class UserView(APIView):
                 return Response(context, status.HTTP_400_BAD_REQUEST)
             
             # Does not allow this 'mistake' if the last login was sometime ago (5 minutes)
-            if request.user.last_login < timezone.now() - timedelta(minutes=5):
-                context['bad_request'] = f'You are already logged in as {request.user}'
-                return Response(context, status.HTTP_400_BAD_REQUEST)
+            # if request.user.last_login < timezone.now() - timedelta(minutes=5):
+            #     context['bad_request'] = f'You are already logged in as {request.user}'
+            #     return Response(context, status.HTTP_400_BAD_REQUEST)
 
         token = request.GET.get(self.lookup_url_kwarg)
 
