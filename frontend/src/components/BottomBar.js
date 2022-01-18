@@ -21,12 +21,12 @@ export default class BottomBar extends Component {
         this.state = {
             openStatsForNerds: false,
             openCommuniy: false,
-            num_public_buy_orders: null,
-            num_active_robotsats: null,
-            num_public_sell_orders: null,
-            fee: null,
-            today_avg_nonkyc_btc_premium: null,
-            today_total_volume: null,
+            num_public_buy_orders: 0,
+            num_public_sell_orders: 0,
+            active_robots_today: 0,
+            fee: 0,
+            today_avg_nonkyc_btc_premium: 0,
+            today_total_volume: 0,
         };
         this.getInfo();
       }
@@ -200,8 +200,8 @@ export default class BottomBar extends Component {
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
-                                primary={this.state.num_active_robotsats} 
-                                secondary="Num Active RoboSats" />
+                                primary={this.state.active_robots_today} 
+                                secondary="Today Active Robots" />
                         </ListItem>
                     </Grid>
 

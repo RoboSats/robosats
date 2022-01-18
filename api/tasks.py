@@ -11,12 +11,12 @@ def users_cleansing():
     from datetime import timedelta
     from django.utils import timezone
 
-    # Users who's last login has not been in the last 12 hours
-    active_time_range = (timezone.now() - timedelta(hours=12), timezone.now())
+    # Users who's last login has not been in the last 6 hours
+    active_time_range = (timezone.now() - timedelta(hours=6), timezone.now())
     queryset = User.objects.filter(~Q(last_login__range=active_time_range))
     queryset = queryset.filter(is_staff=False) # Do not delete staff users
     
-    # And do not have an active trade or any pass finished trade.
+    # And do not have an active trade or any past contract.
     deleted_users = []
     for user in queryset:
         if not user.profile.total_contracts == 0:

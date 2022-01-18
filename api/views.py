@@ -329,7 +329,6 @@ class UserView(APIView):
             if request.user.last_login < timezone.now() - timedelta(minutes=5):
                 context['bad_request'] = f'You are already logged in as {request.user}'
                 return Response(context, status.HTTP_400_BAD_REQUEST)
-            
 
         token = request.GET.get(self.lookup_url_kwarg)
 
@@ -345,10 +344,10 @@ class UserView(APIView):
             context['bad_request'] = 'The token does not have enough entropy'
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
-        # Hashes the token, only 1 iteration. Maybe more is better.
+        # Hash the token, only 1 iteration.
         hash = hashlib.sha256(str.encode(token)).hexdigest() 
 
-        # Generate nickname
+        # Generate nickname deterministically
         nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0] 
         context['nickname'] = nickname
 
@@ -357,13 +356,12 @@ class UserView(APIView):
         rh.assemble(roboset='set1', bgset='any')# for backgrounds ON
 
         # Does not replace image if existing (avoid re-avatar in case of nick collusion)
-
         image_path = avatar_path.joinpath(nickname+".png")
         if not image_path.exists():
             with open(image_path, "wb") as f:
                 rh.img.save(f, format="png")
 
-        # Create new credentials and log in if nickname is new
+        # Create new credentials and login if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname, password=token, is_staff=False)
             user = authenticate(request, username=nickname, password=token)
@@ -451,12 +449,10 @@ class InfoView(ListAPIView):
         context['num_public_sell_orders'] = len(Order.objects.filter(type=Order.Types.SELL, status=Order.Status.PUB))
         
         # Number of active users (logged in in last 30 minutes)
-        active_user_time_range = (timezone.now() - timedelta(minutes=120), timezone.now())
-        context['num_active_robotsats'] = len(User.objects.filter(last_login__range=active_user_time_range))
+        today = datetime.today()
+        context['active_robots_today'] = len(User.objects.filter(last_login__day=today.day))
 
         # Compute average premium and volume of today
-        today = datetime.today()
-
         queryset = MarketTick.objects.filter(timestamp__day=today.day)
         if not len(queryset) == 0:
             weighted_premiums = []
