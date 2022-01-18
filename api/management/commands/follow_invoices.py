@@ -59,12 +59,16 @@ class Command(BaseCommand):
                     request = LNNode.invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(hold_lnpayment.payment_hash))
                     response = stub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
                     hold_lnpayment.status = lnd_state_to_lnpayment_status[response.state]
-
-                # If it fails at finding the invoice it has been canceled.
-                # On RoboSats DB we make a distinction between cancelled and returned (LND does not)
+                    
                 except Exception as e:
+                    # If it fails at finding the invoice it has been canceled.
+                    # On RoboSats DB we make a distinction between cancelled and returned (LND does not)
                     if 'unable to locate invoice' in str(e):
                         hold_lnpayment.status = LNPayment.Status.CANCEL
+                    # LND restarted.
+                    if 'wallet locked, unlock it to enable full RPC access' in str(e):
+                        self.stdout.write(str(timezone.now())+':: Wallet Locked')
+                    # Other write to logs
                     else:
                         self.stdout.write(str(e))
                 
@@ -121,7 +125,7 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stdout.write(str(e))
 
-        # TODO If an lnpayment goes from LOCKED to INVGED. Totally weird
+        # TODO If a lnpayment goes from LOCKED to INVGED. Totally weird
         # halt the order
         if lnpayment.status == LNPayment.Status.LOCKED:
             pass

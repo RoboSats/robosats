@@ -41,13 +41,14 @@ class NickGenerator:
         else:
             raise ValueError("Language not implemented.")
 
-        print(
-            f"{lang} SHA256 Nick Generator initialized with:"
-            + f"\nUp to {len(adverbs)} adverbs."
-            + f"\nUp to {len(adjectives)} adjectives."
-            + f"\nUp to {len(nouns)} nouns."
-            + f"\nUp to {max_num+1} numerics.\n"
-        )
+        if verbose:
+            print(
+                f"{lang} SHA256 Nick Generator initialized with:"
+                + f"\nUp to {len(adverbs)} adverbs."
+                + f"\nUp to {len(adjectives)} adjectives."
+                + f"\nUp to {len(nouns)} nouns."
+                + f"\nUp to {max_num+1} numerics.\n"
+            )
 
         self.use_adv = use_adv
         self.use_adj = use_adj
