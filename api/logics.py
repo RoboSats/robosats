@@ -45,7 +45,6 @@ class Logics():
         queryset = Order.objects.filter(taker=user, status__in=active_order_status)
         if queryset.exists():
             return False, {'bad_request':'You are already taker of an active order'}
-
         return True, None
 
     def validate_order_size(order):
@@ -208,9 +207,10 @@ class Logics():
     def kick_taker(cls, order):
         ''' The taker did not lock the taker_bond. Now he has to go'''
         # Add a time out to the taker
-        profile = order.taker.profile
-        profile.penalty_expiration = timezone.now() + timedelta(seconds=PENALTY_TIMEOUT)
-        profile.save()
+        if order.taker:
+            profile = order.taker.profile
+            profile.penalty_expiration = timezone.now() + timedelta(seconds=PENALTY_TIMEOUT)
+            profile.save()
 
         # Make order public again
         order.taker = None
