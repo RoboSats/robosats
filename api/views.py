@@ -123,7 +123,7 @@ class OrderView(viewsets.ViewSet):
             return Response({'bad_request':'You are not allowed to see this order'},status.HTTP_403_FORBIDDEN)
         
         # 3.b If order is between public and WF2
-        if order.status >= Order.Status.PUB and order.status > Order.Status.WFB:
+        if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
             data['price_now'], data['premium_now'] = Logics.price_and_premium_now(order)
 
              # 3. c) If maker and Public, add num robots in book, premium percentile and num similar orders.
@@ -136,7 +136,7 @@ class OrderView(viewsets.ViewSet):
         elif not data['is_participant'] and order.status != Order.Status.PUB:
             return Response(data, status=status.HTTP_200_OK) 
 
-        # For participants add positions, nicks and status as a message
+        # For participants add positions, nicks and status as a message and hold invoices status
         data['is_buyer'] = Logics.is_buyer(order,request.user)
         data['is_seller'] = Logics.is_seller(order,request.user)
         data['maker_nick'] = str(order.maker)
@@ -145,6 +145,25 @@ class OrderView(viewsets.ViewSet):
         data['is_fiat_sent'] = order.is_fiat_sent
         data['is_disputed'] = order.is_disputed
         data['ur_nick'] = request.user.username
+
+        # Add whether hold invoices are LOCKED (ACCEPTED)
+        # Is there a maker bond? If so, True if locked, False otherwise
+        if order.maker_bond:
+            data['maker_locked'] = order.maker_bond.status == LNPayment.Status.LOCKED
+        else:
+            data['maker_locked'] = False
+
+        # Is there a taker bond? If so, True if locked, False otherwise
+        if order.taker_bond:
+            data['taker_locked'] = order.taker_bond.status == LNPayment.Status.LOCKED
+        else:
+            data['taker_locked'] = False
+
+        # Is there an escrow? If so, True if locked, False otherwise
+        if order.trade_escrow:
+            data['escrow_locked'] = order.trade_escrow.status == LNPayment.Status.LOCKED
+        else:
+            data['escrow_locked'] = False
 
         # If both bonds are locked, participants can see the final trade amount in sats.
         if order.taker_bond:
