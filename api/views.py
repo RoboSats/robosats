@@ -95,10 +95,6 @@ class OrderView(viewsets.ViewSet):
         # This is our order.
         order = order[0]
 
-        # 1) If order has expired
-        if order.status == Order.Status.EXP:
-            return Response({'bad_request':'This order has expired'},status.HTTP_400_BAD_REQUEST)
-
         # 2) If order has been cancelled
         if order.status == Order.Status.UCA:
             return Response({'bad_request':'This order has been cancelled by the maker'},status.HTTP_400_BAD_REQUEST)
@@ -166,14 +162,14 @@ class OrderView(viewsets.ViewSet):
             data['escrow_locked'] = False
 
         # If both bonds are locked, participants can see the final trade amount in sats.
-        # if order.taker_bond:
-        #     if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
-        #         # Seller sees the amount he sends
-        #         if data['is_seller']:
-        #             data['trade_satoshis'] = order.last_satoshis
-        #         # Buyer sees the amount he receives
-        #         elif data['is_buyer']:
-        #             data['trade_satoshis'] = Logics.buyer_invoice_amount(order, request.user)[1]['invoice_amount']
+        if order.taker_bond:
+            if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
+                # Seller sees the amount he sends
+                if data['is_seller']:
+                    data['trade_satoshis'] = order.last_satoshis
+                # Buyer sees the amount he receives
+                elif data['is_buyer']:
+                    data['trade_satoshis'] = Logics.buyer_invoice_amount(order, request.user)[1]['invoice_amount']
 
         # 5) If status is 'waiting for maker bond' and user is MAKER, reply with a MAKER hold invoice.
         if order.status == Order.Status.WFB and data['is_maker']:

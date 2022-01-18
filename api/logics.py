@@ -125,16 +125,12 @@ class Logics():
         elif order.status == Order.Status.WFB:
             order.status = Order.Status.EXP
             cls.cancel_bond(order.maker_bond)
-            order.maker = None # TODO with the new validate_already_maker_taker there is no need to kick out participants on expired orders.
-            order.taker = None
             order.save()
             return True
         
         elif order.status == Order.Status.PUB:
             cls.return_bond(order.maker_bond)
             order.status = Order.Status.EXP
-            order.maker = None
-            order.taker = None
             order.save()
             return True
 
@@ -153,8 +149,6 @@ class Logics():
             cls.settle_bond(order.taker_bond)
             cls.cancel_escrow(order)
             order.status = Order.Status.EXP
-            order.maker = None
-            order.taker = None
             order.save()
             return True
 
@@ -166,8 +160,6 @@ class Logics():
                 cls.return_bond(order.taker_bond)
                 cls.cancel_escrow(order)
                 order.status = Order.Status.EXP
-                order.maker = None
-                order.taker = None
                 order.save()
                 return True
 
@@ -192,8 +184,6 @@ class Logics():
                 cls.return_bond(order.taker_bond)
                 cls.return_escrow(order)
                 order.status = Order.Status.EXP
-                order.maker = None
-                order.taker = None
                 order.save()
                 return True
 
@@ -369,7 +359,6 @@ class Logics():
         '''The order never shows up on the book and order 
         status becomes "cancelled". That's it.'''
         if order.status == Order.Status.WFB and order.maker == user:
-            order.maker = None
             order.status = Order.Status.UCA
             order.save()
             return True, None
@@ -380,7 +369,6 @@ class Logics():
         elif order.status == Order.Status.PUB and order.maker == user:
             #Settle the maker bond (Maker loses the bond for cancelling public order)
             if cls.settle_bond(order.maker_bond):
-                order.maker = None
                 order.status = Order.Status.UCA
                 order.save()
                 return True, None
@@ -405,7 +393,6 @@ class Logics():
             #Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.maker_bond)
             if valid:
-                order.maker = None
                 order.status = Order.Status.UCA
                 order.save()
                 return True, None

@@ -513,6 +513,18 @@ handleRatingChange=(e)=>{
     )
   }
 
+  showOrderExpired(){
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="subtitle1" variant="subtitle1">
+            <b>The order has expired</b>
+          </Typography>
+        </Grid>
+      </Grid>
+    )
+  }
+
   showChat(sendFiatButton, receivedFiatButton, openDisputeButton){
     return(
       <Grid container spacing={1}>
@@ -610,7 +622,8 @@ handleRatingChange=(e)=>{
             {/* Trade Finished - TODO Needs more planning */}
             {this.props.data.statusCode == 11 ? this.showInDisputeStatement() : ""}
             
-
+            {/* Order has expired */}
+            {this.props.data.statusCode == 5 ? this.showOrderExpired() : ""}
               {/* TODO */}
               {/*  */}
               {/*  */}
