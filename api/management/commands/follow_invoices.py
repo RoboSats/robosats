@@ -63,10 +63,10 @@ class Command(BaseCommand):
                 except Exception as e:
                     # If it fails at finding the invoice it has been canceled.
                     # On RoboSats DB we make a distinction between cancelled and returned (LND does not)
-                    if 'unable to locate invoice' in str(e):
+                    if 'unable to locate invoice' in str(e): 
                         hold_lnpayment.status = LNPayment.Status.CANCEL
                     # LND restarted.
-                    if 'wallet locked, unlock it to enable full RPC access' in str(e):
+                    if 'wallet locked, unlock it' in str(e):
                         self.stdout.write(str(timezone.now())+':: Wallet Locked')
                     # Other write to logs
                     else:

@@ -422,7 +422,7 @@ export default class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>Your invoice looks good!</b>
+            <b>Your invoice looks good!🎉</b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -443,7 +443,7 @@ export default class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>The trade collateral is locked! :D </b>
+            <b>The trade collateral is locked! 🎉 </b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -537,7 +537,7 @@ handleRatingChange=(e)=>{
         <Grid item xs={12} align="center">
           {this.props.data.isSeller ? 
           <Typography component="body2" variant="body2"  align="center">
-            Say hi! Be helpful and concise. Let him know how to send you {this.props.data.currencyCode}. 
+            Say hi! Be helpful and concise. Let them know how to send you {this.props.data.currencyCode}. 
           </Typography>
           :
           <Typography component="body2" variant="body2" align="center">

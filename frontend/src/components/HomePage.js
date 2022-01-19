@@ -5,8 +5,6 @@ import UserGenPage from "./UserGenPage";
 import MakerPage from "./MakerPage";
 import BookPage from "./BookPage";
 import OrderPage from "./OrderPage";
-import InfoPage from "./InfoPageMd";
-
 export default class HomePage extends Component {
     constructor(props) {
       super(props);
@@ -18,7 +16,6 @@ export default class HomePage extends Component {
                   <Switch>
                       <Route exact path='/' component={UserGenPage}/>
                       <Route path='/home'><p>You are at the start page</p></Route>
-                      <Route path='/info' component={InfoPage}/>
                       <Route path='/make' component={MakerPage}/>
                       <Route path='/book' component={BookPage}/>
                       <Route path="/order/:orderId" component={OrderPage}/>

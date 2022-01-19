@@ -44,9 +44,9 @@ export default class InfoDialog extends Component {
           <Typography component="h5" variant="h5">Are there trade limits?</Typography>
           <Typography component="body2" variant="body2">
             <p>Maximum single trade size is 500,000 Satoshis to minimize lightning
-              routing. There is no limits to the number of trades per day. A robot
+              routing failure. There is no limits to the number of trades per day. A robot
               can only have one order at a time. However, you can use multiple
-              Robots simultatenously in different browsers (remember to back up the tokens!). </p>
+              robots simultatenously in different browsers (remember to back up your robot tokens!). </p>
           </Typography>
 
           <Typography component="h5" variant="h5">Is <i>RoboSats</i> private?</Typography>
@@ -67,14 +67,14 @@ export default class InfoDialog extends Component {
 
             <p>The seller faces the same chargeback risk as with any 
               other peer-to-peer service. Paypal or credit cards are 
-              not adviced.</p>
+              not recommened.</p>
           </Typography>
 
           <Typography component="h5" variant="h5">What is the trust model?</Typography>
           <Typography component="body2" variant="body2">
             <p> The buyer and the seller never have to trust each other. 
               Some trust on <i>RoboSats</i> staff is needed since linking 
-              the seller's hold invoice and buyer payment is not atomic. 
+              the seller's hold invoice and buyer payment is not atomic (yet). 
               In addition, disputes are solved by the <i>RoboSats</i> staff.
             </p> 
 
@@ -94,8 +94,8 @@ export default class InfoDialog extends Component {
             <p> Your sats will most likely return to you. Any hold invoice that is not 
               settled would be automatically returned even if <i>RoboSats</i> goes down 
               forever. This is true for both, locked bonds and trading escrows. However, 
-              in the window between the buyer confirms FIAT SENT and the moment the
-              seller releases the satoshis, the fund could be lost.
+              there is a small window between the buyer confirms FIAT SENT and the moment 
+              the seller releases the satoshis when the funds could be lost.
             </p>
           </Typography>
 
