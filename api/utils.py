@@ -72,7 +72,7 @@ premium_percentile = {}
 @ring.dict(premium_percentile, expire=300)
 def compute_premium_percentile(order):
 
-    queryset = Order.objects.filter(currency=order.currency, status=Order.Status.PUB)
+    queryset = Order.objects.filter(currency=order.currency, status=Order.Status.PUB).exclude(id=order.id)
 
     print(len(queryset))
     if len(queryset) <= 1:
@@ -84,5 +84,8 @@ def compute_premium_percentile(order):
         rates.append(float(similar_order.last_satoshis) / float(similar_order.amount))
     
     rates = np.array(rates)
+    print(rates)
+    print(order_rate)
+    print(np.sum(rates < order_rate))
     return round(np.sum(rates < order_rate) / len(rates),2)
     

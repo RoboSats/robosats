@@ -112,11 +112,10 @@ class Logics():
         # Do not change order status if an order in any with
         # any of these status is sent to expire here
         do_nothing = [Order.Status.DEL, Order.Status.UCA,
-                    Order.Status.EXP, Order.Status.FSE,
+                    Order.Status.EXP, Order.Status.TLD,
                     Order.Status.DIS, Order.Status.CCA,
                     Order.Status.PAY, Order.Status.SUC,
-                    Order.Status.FAI, Order.Status.MLD,
-                    Order.Status.TLD]
+                    Order.Status.FAI, Order.Status.MLD]
 
         if order.status in do_nothing:
             return False
@@ -196,8 +195,8 @@ class Logics():
                 cls.publish_order(order)
                 return True
         
-        elif order.status == Order.Status.CHA:
-            # Another weird case. The time to confirm 'fiat sent' expired. Yet no dispute
+        elif order.status in [Order.Status.CHA, Order.Status.FSE]:
+            # Another weird case. The time to confirm 'fiat sent or received' expired. Yet no dispute
             # was opened. Hint: a seller-scammer could persuade a buyer to not click "fiat  
             # sent", we assume this is a dispute case by default.
             cls.open_dispute(order)
@@ -674,16 +673,11 @@ class Logics():
             else:
                 raise e
 
-    def pay_buyer_invoice(order):
-        ''' Pay buyer invoice'''
-        suceeded, context = follow_send_payment(order.buyer_invoice)
-        return suceeded, context
-
     @classmethod
     def confirm_fiat(cls, order, user):
         ''' If Order is in the CHAT states:
-        If user is buyer: mark FIAT SENT and settle escrow!
-        If User is the seller and FIAT is SENT: Pay buyer invoice!'''
+        If user is buyer: mark FIAT SENT!
+        If User is the seller and FIAT is SENT: Settle escrow and pay buyer invoice!'''
 
         if order.status == Order.Status.CHA or order.status == Order.Status.FSE: # TODO Alternatively, if all collateral is locked? test out
             
@@ -692,7 +686,7 @@ class Logics():
                 order.status = Order.Status.FSE
                 order.is_fiat_sent = True
 
-            # If seller and fiat was sent, SETTLE ESCRO AND PAY BUYER INVOICE
+            # If seller and fiat was sent, SETTLE ESCROw AND PAY BUYER INVOICE
             elif cls.is_seller(order, user):
                 if not order.is_fiat_sent:
                     return False, {'bad_request':'You cannot confirm to have received the fiat before it is confirmed to be sent by the buyer.'}
@@ -706,7 +700,7 @@ class Logics():
                 
                 # Double check the escrow is settled.
                 if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
-                    is_payed, context = cls.pay_buyer_invoice(order) ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
+                    is_payed, context = follow_send_payment(order.buyer_invoice) ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
                     if is_payed:
                         order.status = Order.Status.SUC
                         order.buyer_invoice.status = LNPayment.Status.SUCCED
@@ -716,9 +710,10 @@ class Logics():
                         # RETURN THE BONDS
                         cls.return_bond(order.taker_bond)
                         cls.return_bond(order.maker_bond)
+                        return True, context
                     else:
                         # error handling here
-                        pass
+                        return False, context
         else:
             return False, {'bad_request':'You cannot confirm the fiat payment at this stage'}
 

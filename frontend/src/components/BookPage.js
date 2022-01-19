@@ -10,7 +10,7 @@ export default class BookPage extends Component {
     this.state = {
       orders: new Array({id:0,}),
       currency: 0,
-      type: 1,
+      type: 2,
       currencies_dict: {"0":"ANY"},
       loading: true,
     };
