@@ -3633,7 +3633,7 @@ nouns = [
     "Fever",
     "Few",
     "Fiance",
-    "Fiancé",
+    "Fiance",
     "Fiasco",
     "Fiat",
     "Fiber",

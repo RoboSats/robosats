@@ -639,6 +639,9 @@ FodyWeavers.xsd
 *migrations*
 frontend/static/frontend/main*
 
+# Celery
+django
+
 # robosats
 frontend/static/assets/avatars*
 api/lightning/lightning*

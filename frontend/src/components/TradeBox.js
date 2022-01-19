@@ -1,8 +1,15 @@
 import React, { Component } from "react";
-import { Link, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider} from "@mui/material"
+import { Link, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
 
 import Chat from "./Chat"
+
+// Icons
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+import PercentIcon from '@mui/icons-material/Percent';
+import BookIcon from '@mui/icons-material/Book';
+
+
 
 function getCookie(name) {
   let cookieValue = null;
@@ -30,10 +37,100 @@ export default class TradeBox extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      openConfirmFiatReceived: false,
+      openConfirmDispute: false,
       badInvoice: false,
+      badStatement: false,
     }
   }
-  
+
+  handleClickOpenConfirmDispute = () => {
+    this.setState({openConfirmDispute: true});
+  };
+  handleClickCloseConfirmDispute = () => {
+      this.setState({openConfirmDispute: false});
+  };
+
+  handleClickAgreeDisputeButton=()=>{
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+        body: JSON.stringify({
+          'action': "dispute",
+        }),
+    };
+    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+    .then((response) => response.json())
+    .then((data) => (this.props.data = data));
+    this.handleClickCloseConfirmDispute();
+  }
+
+  ConfirmDisputeDialog =() =>{
+  return(
+      <Dialog
+      open={this.state.openConfirmDispute}
+      onClose={this.handleClickCloseConfirmDispute}
+      aria-labelledby="open-dispute-dialog-title"
+      aria-describedby="open-dispute-dialog-description"
+      >
+        <DialogTitle id="open-dispute-dialog-title">
+          {"Do you want to open a dispute?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            The RoboSats staff will examine the statements and evidence provided by the participants.
+            It is best if you provide a burner contact method on your statement for the staff to contact you.
+            The satoshis in the trade escrow will be sent to the dispute winner, while the dispute 
+            loser will lose the bond. 
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClickCloseConfirmDispute} autoFocus>Disagree</Button>
+          <Button onClick={this.handleClickAgreeDisputeButton}> Agree </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
+  handleClickOpenConfirmFiatReceived = () => {
+    this.setState({openConfirmFiatReceived: true});
+  };
+  handleClickCloseConfirmFiatReceived = () => {
+      this.setState({openConfirmFiatReceived: false});
+  };
+
+  handleClickTotallyConfirmFiatReceived = () =>{
+    this.handleClickConfirmButton();
+    this.handleClickCloseConfirmFiatReceived();
+  };
+
+  ConfirmFiatReceivedDialog =() =>{
+  return(
+      <Dialog
+      open={this.state.openConfirmFiatReceived}
+      onClose={this.handleClickCloseConfirmFiatReceived}
+      aria-labelledby="fiat-received-dialog-title"
+      aria-describedby="fiat-received-dialog-description"
+      >
+        <DialogTitle id="open-dispute-dialog-title">
+          {"Confirm you received " +this.props.data.currencyCode+ "?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Confirming that you received the fiat will finalize the trade. The satoshis
+            in the escrow will be released to the buyer. Only confirm after the {this.props.data.currencyCode+ " "} 
+            has arrived to your account. In addition, if you have received {this.props.data.currencyCode+ " "} 
+            and do not confirm the receipt, you risk losing your bond.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClickCloseConfirmFiatReceived} autoFocus>Go back</Button>
+          <Button onClick={this.handleClickTotallyConfirmFiatReceived}> Confirm </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
   showQRInvoice=()=>{
     return (
       <Grid container spacing={1}>
@@ -60,14 +157,12 @@ export default class TradeBox extends Component {
         <Grid item xs={12} align="center">
         <TextField 
             hiddenLabel
-            variant="filled" 
+            variant="standard" 
             size="small"
             defaultValue={this.props.data.bondInvoice} 
             disabled="true"
-            helperText="This is a hold invoice. It will simply freeze in your wallet.
-            It will be charged only if you cancel the order or lose a dispute."
+            helperText="This is a hold invoice. It will be charged only if you cancel or lose a dispute."
             color = "secondary"
-            onClick = {this.copyCodeToClipboard}
           />
         </Grid>
       </Grid>
@@ -78,7 +173,7 @@ export default class TradeBox extends Component {
     return (
         <Grid item xs={12} align="center">
           <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
-            🔒 Your {this.props.data.isMaker ? 'maker' : 'taker'} bond is safely locked
+            🔒 Your {this.props.data.isMaker ? 'maker' : 'taker'} bond is locked
           </Typography>
         </Grid>
     );
@@ -88,7 +183,7 @@ export default class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Typography color="primary" component="subtitle1" variant="subtitle1">
+          <Typography color="green" component="subtitle1" variant="subtitle1">
             <b>Deposit {pn(this.props.data.escrowSatoshis)} Sats as trade collateral </b>
           </Typography>
         </Grid>
@@ -103,7 +198,7 @@ export default class TradeBox extends Component {
             size="small"
             defaultValue={this.props.data.escrowInvoice} 
             disabled="true"
-            helperText="This is a hold invoice. It will simply freeze in your wallet. It will be charged once the buyer confirms he sent the fiat."
+            helperText="This is a hold invoice. It will be charged once the buyer confirms he sent the fiat."
             color = "secondary"
           />
         </Grid>
@@ -158,17 +253,27 @@ export default class TradeBox extends Component {
             {/* TODO API sends data for a more confortable wait */}
             <Divider/>
               <ListItem>
-                <ListItemText primary={999} secondary="Robots looking at the book"/>
+                <ListItemIcon>
+                  <SmartToyIcon/>
+                </ListItemIcon>
+                <ListItemText primary={'000 coming soon'} secondary="Robots looking at the book"/>
               </ListItem>
 
             <Divider/>
               <ListItem>
-                <ListItemText primary={999} secondary={"Active orders for " + this.props.data.currencyCode}/>
+              <ListItemIcon>
+                <BookIcon/>
+              </ListItemIcon>
+                <ListItemText primary={this.props.data.numSimilarOrders} secondary={"Public orders for " + this.props.data.currencyCode}/>
               </ListItem>
               
             <Divider/>
               <ListItem>
-                <ListItemText primary="33%" secondary="Premium percentile" />
+              <ListItemIcon>
+                <PercentIcon/>
+              </ListItemIcon>
+                <ListItemText primary={"Premium rank " + this.props.data.premiumPercentile*100+"%"} 
+                  secondary={"Among public " + this.props.data.currencyCode + " orders (higher is cheaper)"} />
               </ListItem>
             <Divider/>
 
@@ -185,8 +290,6 @@ export default class TradeBox extends Component {
         badInvoice: false,     
     });
   }
-
-  // Fix this. It's clunky because it takes time. this.props.data does not refresh until next refresh of OrderPage.
 
   handleClickSubmitInvoiceButton=()=>{
       this.setState({badInvoice:false});
@@ -205,10 +308,34 @@ export default class TradeBox extends Component {
       & console.log(data));
   }
 
+  handleInputDisputeChanged=(e)=>{
+    this.setState({
+        statement: e.target.value,
+        badStatement: false,     
+    });
+  }
+
+  handleClickSubmitStatementButton=()=>{
+    this.setState({badInvoice:false});
+
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+        body: JSON.stringify({
+          'action':'submit_statement',
+          'statement': this.state.statement,
+        }),
+    };
+    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+    .then((response) => response.json())
+    .then((data) => this.setState({badStatement:data.bad_statement})
+    & console.log(data));
+}
+
   showInputInvoice(){
     return (
 
-      // TODO Camera option to read QR
+      // TODO Option to upload files and images
 
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
@@ -223,24 +350,68 @@ export default class TradeBox extends Component {
             valid invoice for {pn(this.props.data.invoiceAmount)} Satoshis.
           </Typography>
         </Grid>
-        <form noValidate onSubmit={this.handleClickSubmitInvoiceButton}>
-          <Grid item xs={12} align="center">
-            <TextField 
-                error={this.state.badInvoice}
-                helperText={this.state.badInvoice ? this.state.badInvoice : "" }
-                label={"Payout Lightning Invoice"}
-                required
-                inputProps={{
-                    style: {textAlign:"center"}
-                }}
-                multiline
-                onChange={this.handleInputInvoiceChanged}
-            />
-          </Grid>
-          <Grid item xs={12} align="center">
-            <Button variant='contained' color='primary'>Submit</Button>
-          </Grid>
-        </form>
+
+        <Grid item xs={12} align="center">
+          <TextField 
+              error={this.state.badInvoice}
+              helperText={this.state.badInvoice ? this.state.badInvoice : "" }
+              label={"Payout Lightning Invoice"}
+              required
+              inputProps={{
+                  style: {textAlign:"center"}
+              }}
+              multiline
+              onChange={this.handleInputInvoiceChanged}
+          />
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>Submit</Button>
+        </Grid>
+
+        {this.showBondIsLocked()}
+      </Grid>
+    )
+  }
+
+  // Asks the user for a dispute statement.
+  showInDisputeStatement(){
+    return (
+
+      // TODO Option to upload files
+
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography color="primary" component="subtitle1" variant="subtitle1">
+            <b> A dispute has been opened </b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="left">
+          <Typography component="body2" variant="body2">
+            Please, submit your statement. Be clear and specific about what happened and provide the necessary 
+            evidence. It is best to provide a burner email, XMPP or telegram username to follow up with the staff.
+            Disputes are solved at the discretion of real robots <i>(aka humans)</i>, so be as helpful 
+            as possible to ensure a fair outcome. Max 5000 chars.
+          </Typography>
+        </Grid>
+
+        <Grid item xs={12} align="center">
+          <TextField 
+              error={this.state.badStatement}
+              helperText={this.state.badStatement ? this.state.badStatement : "" }
+              label={"Submit dispute statement"}
+              required
+              inputProps={{
+                  style: {textAlign:"center"}
+              }}
+              multiline
+              rows={4}
+              onChange={this.handleInputDisputeChanged}
+          />
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Button onClick={this.handleClickSubmitStatementButton} variant='contained' color='primary'>Submit</Button>
+        </Grid>
+
         {this.showBondIsLocked()}
       </Grid>
     )
@@ -251,7 +422,7 @@ export default class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>Your invoice looks good!</b>
+            <b>Your invoice looks good!🎉</b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -272,7 +443,7 @@ export default class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>The trade collateral is locked! :D </b>
+            <b>The trade collateral is locked! 🎉 </b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -301,18 +472,7 @@ export default class TradeBox extends Component {
     .then((response) => response.json())
     .then((data) => (this.props.data = data));
 }
-handleClickOpenDisputeButton=()=>{
-  const requestOptions = {
-      method: 'POST',
-      headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
-      body: JSON.stringify({
-        'action': "dispute",
-      }),
-  };
-  fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
-  .then((response) => response.json())
-  .then((data) => (this.props.data = data));
-}
+
 handleRatingChange=(e)=>{
   const requestOptions = {
       method: 'POST',
@@ -338,11 +498,9 @@ handleRatingChange=(e)=>{
   }
 
   showFiatReceivedButton(){
-    // TODO, show alert and ask for double confirmation (Have you check you received the fiat? Confirming fiat received settles the trade.)
-    // Ask for double confirmation.
     return(
         <Grid item xs={12} align="center">
-          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickConfirmButton}>Confirm {this.props.data.currencyCode} received</Button>
+          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickOpenConfirmFiatReceived}>Confirm {this.props.data.currencyCode} received</Button>
         </Grid>
     )
   }
@@ -351,8 +509,20 @@ handleRatingChange=(e)=>{
     // TODO, show alert about how opening a dispute might involve giving away personal data and might mean losing the bond. Ask for double confirmation.
     return(
         <Grid item xs={12} align="center">
-          <Button color="inherit" onClick={this.handleClickOpenDisputeButton}>Open Dispute</Button>
+          <Button color="inherit" onClick={this.handleClickOpenConfirmDispute}>Open Dispute</Button>
         </Grid>
+    )
+  }
+
+  showOrderExpired(){
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="subtitle1" variant="subtitle1">
+            <b>The order has expired</b>
+          </Typography>
+        </Grid>
+      </Grid>
     )
   }
 
@@ -367,7 +537,7 @@ handleRatingChange=(e)=>{
         <Grid item xs={12} align="center">
           {this.props.data.isSeller ? 
           <Typography component="body2" variant="body2"  align="center">
-            Say hi! Be helpful and concise. Let him know how to send you {this.props.data.currencyCode}. 
+            Say hi! Be helpful and concise. Let them know how to send you {this.props.data.currencyCode}. 
           </Typography>
           :
           <Typography component="body2" variant="body2" align="center">
@@ -377,7 +547,7 @@ handleRatingChange=(e)=>{
           <Divider/>
         </Grid>
 
-        <Chat data={this.props.data}/>
+        <Chat orderId={this.props.data.id} urNick={this.props.data.urNick}/>
 
         <Grid item xs={12} align="center">
           {openDisputeButton ? this.showOpenDisputeButton() : ""}
@@ -406,19 +576,20 @@ handleRatingChange=(e)=>{
           <Rating name="size-large" defaultValue={2} size="large" onChange={this.handleRatingChange} />
         </Grid>
         <Grid item xs={12} align="center">
-          <Button color='primary' to='/' component={Link}>Start Again</Button>
+          <Button color='primary' href='/' component="a">Start Again</Button> 
         </Grid>
       </Grid>
     )
   }
 
-
   render() {
     return (
       <Grid container spacing={1} style={{ width:330}}>
+        <this.ConfirmDisputeDialog/>
+        <this.ConfirmFiatReceivedDialog/>
         <Grid item xs={12} align="center">
           <Typography component="h5" variant="h5">
-            TradeBox
+            Contract Box
           </Typography>
           <Paper elevation={12} style={{ padding: 8,}}>
             {/* Maker and taker Bond request */}
@@ -449,10 +620,11 @@ handleRatingChange=(e)=>{
             {/* Trade Finished - Payment Routing Failed */}
               {this.props.data.isBuyer & this.props.data.statusCode == 15 ? this.showUpdateInvoice()  : ""}
 
-            {/* Trade Finished - Payment Routing Failed - TODO Needs more planning */}
-            {this.props.data.statusCode == 11 ? this.showInDispute() : ""}
+            {/* Trade Finished - TODO Needs more planning */}
+            {this.props.data.statusCode == 11 ? this.showInDisputeStatement() : ""}
             
-
+            {/* Order has expired */}
+            {this.props.data.statusCode == 5 ? this.showOrderExpired() : ""}
               {/* TODO */}
               {/*  */}
               {/*  */}

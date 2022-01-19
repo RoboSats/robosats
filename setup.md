@@ -45,8 +45,18 @@ pip install channels
 pip install django-redis
 pip install channels-redis
 ```
+## Install Celery for Django tasks
+```
+pip install celery
+pip install django-celery-beat
+pip install django-celery-results
+```
 
-*Django 4.0 at the time of writting*
+Start up celery worker
+`celery -A robosats worker --beat -l info -S django`
+
+*Django 3.2.11 at the time of writting*
+*Celery 5.2.3*
 
 ### Launch the local development node
 
@@ -112,8 +122,10 @@ npm install react-native
 npm install react-native-svg
 npm install react-qr-code
 npm install @mui/material
-npm install react-markdown
 npm install websocket
+npm install react-countdown
+npm install @mui/icons-material
+npm install @mui/x-data-grid
 ```
 Note we are using mostly MaterialUI V5 (@mui/material) but Image loading from V4 (@material-ui/core) extentions (so both V4 and V5 are needed)
 

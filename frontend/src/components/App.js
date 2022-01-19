@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { render } from "react-dom";
 
 import HomePage from "./HomePage";
+import BottomBar from "./BottomBar";
 
 export default class App extends Component {
   constructor(props) {
@@ -10,9 +11,14 @@ export default class App extends Component {
 
   render() {
     return (
-      <div className='appCenter'>
-        <HomePage />
-      </div>
+      <>
+        <div className='appCenter'>
+          <HomePage />
+        </div>
+        <div className='bottomBar'>
+          <BottomBar />
+        </div>
+      </>
     );
   }
 }

@@ -9,9 +9,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
-from .models import LNPayment, MarketTick, Order
+from .models import LNPayment, MarketTick, Order, Currency
 from .logics import Logics
-from .utils import get_lnd_version, get_commit_robosats
+from .utils import get_lnd_version, get_commit_robosats, compute_premium_percentile
 
 from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
@@ -54,7 +54,7 @@ class MakerView(CreateAPIView):
         # Creates a new order
         order = Order(
             type=type,
-            currency=currency,
+            currency=Currency.objects.get(id=currency),
             amount=amount,
             payment_method=payment_method,
             premium=premium,
@@ -95,10 +95,6 @@ class OrderView(viewsets.ViewSet):
         # This is our order.
         order = order[0]
 
-        # 1) If order has expired
-        if order.status == Order.Status.EXP:
-            return Response({'bad_request':'This order has expired'},status.HTTP_400_BAD_REQUEST)
-
         # 2) If order has been cancelled
         if order.status == Order.Status.UCA:
             return Response({'bad_request':'This order has been cancelled by the maker'},status.HTTP_400_BAD_REQUEST)
@@ -106,6 +102,7 @@ class OrderView(viewsets.ViewSet):
             return Response({'bad_request':'This order has been cancelled collaborativelly'},status.HTTP_400_BAD_REQUEST)
 
         data = ListOrderSerializer(order).data
+        data['total_secs_exp'] = Order.t_to_expire[order.status]
 
         # if user is under a limit (penalty), inform him.
         is_penalized, time_out = Logics.is_penalized(request.user)
@@ -116,17 +113,26 @@ class OrderView(viewsets.ViewSet):
         data['is_maker'] = order.maker == request.user
         data['is_taker'] = order.taker == request.user
         data['is_participant'] = data['is_maker'] or data['is_taker']
-        data['ur_nick'] = request.user.username
         
-        # 3) If not a participant and order is not public, forbid.
+        # 3.a) If not a participant and order is not public, forbid.
         if not data['is_participant'] and order.status != Order.Status.PUB:
             return Response({'bad_request':'You are not allowed to see this order'},status.HTTP_403_FORBIDDEN)
+        
+        # 3.b If order is between public and WF2
+        if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
+            data['price_now'], data['premium_now'] = Logics.price_and_premium_now(order)
+
+             # 3. c) If maker and Public, add num robots in book, premium percentile and num similar orders.
+            if data['is_maker'] and order.status == Order.Status.PUB:
+                data['robots_in_book'] = None       # TODO
+                data['premium_percentile'] = compute_premium_percentile(order)
+                data['num_similar_orders'] = len(Order.objects.filter(currency=order.currency, status=Order.Status.PUB))
         
         # 4) Non participants can view details (but only if PUB)
         elif not data['is_participant'] and order.status != Order.Status.PUB:
             return Response(data, status=status.HTTP_200_OK) 
 
-        # For participants add positions, nicks and status as a message
+        # For participants add positions, nicks and status as a message and hold invoices status
         data['is_buyer'] = Logics.is_buyer(order,request.user)
         data['is_seller'] = Logics.is_seller(order,request.user)
         data['maker_nick'] = str(order.maker)
@@ -134,6 +140,26 @@ class OrderView(viewsets.ViewSet):
         data['status_message'] = Order.Status(order.status).label
         data['is_fiat_sent'] = order.is_fiat_sent
         data['is_disputed'] = order.is_disputed
+        data['ur_nick'] = request.user.username
+
+        # Add whether hold invoices are LOCKED (ACCEPTED)
+        # Is there a maker bond? If so, True if locked, False otherwise
+        if order.maker_bond:
+            data['maker_locked'] = order.maker_bond.status == LNPayment.Status.LOCKED
+        else:
+            data['maker_locked'] = False
+
+        # Is there a taker bond? If so, True if locked, False otherwise
+        if order.taker_bond:
+            data['taker_locked'] = order.taker_bond.status == LNPayment.Status.LOCKED
+        else:
+            data['taker_locked'] = False
+
+        # Is there an escrow? If so, True if locked, False otherwise
+        if order.trade_escrow:
+            data['escrow_locked'] = order.trade_escrow.status == LNPayment.Status.LOCKED
+        else:
+            data['escrow_locked'] = False
 
         # If both bonds are locked, participants can see the final trade amount in sats.
         if order.taker_bond:
@@ -196,7 +222,7 @@ class OrderView(viewsets.ViewSet):
 
     def take_update_confirm_dispute_cancel(self, request, format=None):
         '''
-        Here takes place all of updatesto the order object.
+        Here takes place all of the updates to the order object.
         That is: take, confim, cancel, dispute, update_invoice or rate.
         '''
         order_id = request.GET.get(self.lookup_url_kwarg)
@@ -206,19 +232,23 @@ class OrderView(viewsets.ViewSet):
         
         order = Order.objects.get(id=order_id)
 
-        # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice' 6)'rate' (counterparty)
+        # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice' 
+        # 6)'submit_statement' (in dispute), 7)'rate' (counterparty)
         action = serializer.data.get('action') 
         invoice = serializer.data.get('invoice')
+        statement = serializer.data.get('statement')
         rating = serializer.data.get('rating')
+        
 
         # 1) If action is take, it is a taker request!
         if action == 'take':
             if order.status == Order.Status.PUB: 
                 valid, context = Logics.validate_already_maker_or_taker(request.user)
                 if not valid: return Response(context, status=status.HTTP_409_CONFLICT)
-
                 valid, context = Logics.take(order, request.user)
                 if not valid: return Response(context, status=status.HTTP_403_FORBIDDEN)
+
+                return self.get(request)
 
             else: Response({'bad_request':'This order is not public anymore.'}, status.HTTP_400_BAD_REQUEST)
 
@@ -243,7 +273,11 @@ class OrderView(viewsets.ViewSet):
 
         # 5) If action is dispute
         elif action == 'dispute':
-            valid, context = Logics.open_dispute(order,request.user, rating)
+            valid, context = Logics.open_dispute(order,request.user)
+            if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        elif action == 'submit_statement':
+            valid, context = Logics.dispute_statement(order,request.user, statement)
             if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 6) If action is rate
@@ -281,14 +315,20 @@ class UserView(APIView):
         Response with Avatar and Nickname.
         '''
 
-        # if request.user.id:
-        #     context = {}
-        #     context['nickname'] = request.user.username
-        #     participant = not Logics.validate_already_maker_or_taker(request.user)
-        #     context['bad_request'] = f'You are already logged in as {request.user}'
-        #     if participant:
-        #         context['bad_request'] = f'You are already logged in as as {request.user} and have an active order'
-        #     return Response(context,status.HTTP_200_OK)
+        # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
+        if request.user.is_authenticated:
+            context = {'nickname': request.user.username}
+            not_participant, _ = Logics.validate_already_maker_or_taker(request.user)
+
+            # Does not allow this 'mistake' if an active order
+            if not not_participant:
+                context['bad_request'] = f'You are already logged in as {request.user} and have an active order'
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+            
+            # Does not allow this 'mistake' if the last login was sometime ago (5 minutes)
+            # if request.user.last_login < timezone.now() - timedelta(minutes=5):
+            #     context['bad_request'] = f'You are already logged in as {request.user}'
+            #     return Response(context, status.HTTP_400_BAD_REQUEST)
 
         token = request.GET.get(self.lookup_url_kwarg)
 
@@ -304,10 +344,10 @@ class UserView(APIView):
             context['bad_request'] = 'The token does not have enough entropy'
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
-        # Hashes the token, only 1 iteration. Maybe more is better.
+        # Hash the token, only 1 iteration.
         hash = hashlib.sha256(str.encode(token)).hexdigest() 
 
-        # Generate nickname
+        # Generate nickname deterministically
         nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0] 
         context['nickname'] = nickname
 
@@ -316,13 +356,12 @@ class UserView(APIView):
         rh.assemble(roboset='set1', bgset='any')# for backgrounds ON
 
         # Does not replace image if existing (avoid re-avatar in case of nick collusion)
-
         image_path = avatar_path.joinpath(nickname+".png")
         if not image_path.exists():
             with open(image_path, "wb") as f:
                 rh.img.save(f, format="png")
 
-        # Create new credentials and log in if nickname is new
+        # Create new credentials and login if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname, password=token, is_staff=False)
             user = authenticate(request, username=nickname, password=token)
@@ -410,26 +449,26 @@ class InfoView(ListAPIView):
         context['num_public_sell_orders'] = len(Order.objects.filter(type=Order.Types.SELL, status=Order.Status.PUB))
         
         # Number of active users (logged in in last 30 minutes)
-        active_user_time_range = (timezone.now() - timedelta(minutes=30), timezone.now())
-        context['num_active_robotsats'] = len(User.objects.filter(last_login__range=active_user_time_range))
+        today = datetime.today()
+        context['active_robots_today'] = len(User.objects.filter(last_login__day=today.day))
 
         # Compute average premium and volume of today
-        today = datetime.today()
-
         queryset = MarketTick.objects.filter(timestamp__day=today.day)
         if not len(queryset) == 0:
-            premiums = []
+            weighted_premiums = []
             volumes = []
             for tick in queryset:
-                premiums.append(tick.premium)
+                weighted_premiums.append(tick.premium*tick.volume)
                 volumes.append(tick.volume)
-            avg_premium = sum(premiums) / len(premiums)
+            
             total_volume = sum(volumes)
+            # Avg_premium is the weighted average of the premiums by volume
+            avg_premium = sum(weighted_premiums) / total_volume
         else:
-            avg_premium = None
-            total_volume = None
+            avg_premium = 0
+            total_volume = 0
 
-        context['today_avg_nonkyc_btc_premium'] = avg_premium
+        context['today_avg_nonkyc_btc_premium'] = round(avg_premium,2)
         context['today_total_volume'] = total_volume
         context['lnd_version'] = get_lnd_version()
         context['robosats_running_commit_hash'] = get_commit_robosats()

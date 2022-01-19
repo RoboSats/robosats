@@ -1,44 +1,17 @@
 import React, { Component } from "react";
-import { Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress} from "@mui/material"
+import { Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import TradeBox from "./TradeBox";
+import getFlags from './getFlags'
 
-function msToTime(duration) {
-  var seconds = Math.floor((duration / 1000) % 60),
-    minutes = Math.floor((duration / (1000 * 60)) % 60),
-    hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-
-  minutes = (minutes < 10) ? "0" + minutes : minutes;
-  seconds = (seconds < 10) ? "0" + seconds : seconds;
-
-  return hours + "h " + minutes + "m " + seconds + "s";
-}
-
-// TO DO fix Progress bar to go from 100 to 0, from total_expiration time, showing time_left
-function LinearDeterminate() {
-  const [progress, setProgress] = React.useState(0);
-
-  React.useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((oldProgress) => {
-        if (oldProgress === 0) {
-          return 100;
-        }
-        const diff = 1;
-        return Math.max(oldProgress - diff, 0);
-      });
-    }, 500);
-
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
-
-  return (
-    <Box sx={{ width: '100%' }}>
-      <LinearProgress variant="determinate" value={progress} />
-    </Box>
-  );
-}
+// icons
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import NumbersIcon from '@mui/icons-material/Numbers';
+import PriceChangeIcon from '@mui/icons-material/PriceChange';
+import PaymentsIcon from '@mui/icons-material/Payments';
+import MoneyIcon from '@mui/icons-material/Money';
+import ArticleIcon from '@mui/icons-material/Article';
+import ContentCopy from "@mui/icons-material/ContentCopy";
 
 function getCookie(name) {
   let cookieValue = null;
@@ -67,12 +40,37 @@ export default class OrderPage extends Component {
     super(props);
     this.state = {
         isExplicit: false,
-        delay: 2000, // Refresh every 2 seconds by default
-        currencies_dict: {"1":"USD"}
+        delay: 60000, // Refresh every 60 seconds by default
+        currencies_dict: {"1":"USD"},
+        total_secs_expiry: 300,
+        loading: true,
+        openCancel: false,
     };
     this.orderId = this.props.match.params.orderId;
     this.getCurrencyDict();
     this.getOrderDetails();
+
+    // Refresh delais according to Order status
+    this.statusToDelay = {
+      "0": 3000,    //'Waiting for maker bond'
+      "1": 30000,   //'Public'
+      "2": 9999999, //'Deleted'
+      "3": 3000,    //'Waiting for taker bond'
+      "4": 9999999, //'Cancelled'
+      "5": 999999,  //'Expired'
+      "6": 3000,    //'Waiting for trade collateral and buyer invoice'
+      "7": 3000,    //'Waiting only for seller trade collateral'
+      "8": 10000,   //'Waiting only for buyer invoice'
+      "9": 10000,   //'Sending fiat - In chatroom'
+      "10": 15000,  //'Fiat sent - In chatroom'
+      "11": 60000,  //'In dispute'
+      "12": 9999999,//'Collaboratively cancelled'
+      "13": 3000,   //'Sending satoshis to buyer'
+      "14": 9999999,//'Sucessful trade'
+      "15": 10000,  //'Failed lightning network routing'
+      "16": 9999999,//'Maker lost dispute'
+      "17": 9999999,//'Taker lost dispute'
+    }
   }
 
   getOrderDetails() {
@@ -81,6 +79,8 @@ export default class OrderPage extends Component {
       .then((response) => response.json())
       .then((data) => {console.log(data) &
         this.setState({
+            loading: false,
+            delay: this.setDelay(data.status),
             id: data.id,
             statusCode: data.status,
             statusText: data.status_message,
@@ -110,6 +110,13 @@ export default class OrderPage extends Component {
             escrowInvoice: data.escrow_invoice,
             escrowSatoshis: data.escrow_satoshis,
             invoiceAmount: data.invoice_amount,
+            total_secs_expiry: data.total_secs_exp,
+            numSimilarOrders: data.num_similar_orders,
+            priceNow: data.price_now,
+            premiumNow: data.premium_now,
+            robotsInBook: data.robots_in_book,
+            premiumPercentile: data.premium_percentile,
+            numSimilarOrders: data.num_similar_orders
         })
       });
   }
@@ -118,12 +125,11 @@ export default class OrderPage extends Component {
   componentDidMount() {
     this.interval = setInterval(this.tick, this.state.delay);
   }
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.delay !== this.state.delay) {
-      clearInterval(this.interval);
+  componentDidUpdate() {
+    clearInterval(this.interval);
       this.interval = setInterval(this.tick, this.state.delay);
-    }
   }
+
   componentWillUnmount() {
     clearInterval(this.interval);
   }
@@ -134,6 +140,50 @@ export default class OrderPage extends Component {
   // Fix to use proper react props
   handleClickBackButton=()=>{
     window.history.back();
+  }
+
+  // Countdown Renderer callback with condition 
+  countdownRenderer = ({ total, hours, minutes, seconds, completed }) => {
+  if (completed) {
+    // Render a completed state
+    return (<span> The order has expired</span>);
+
+  } else {
+    var col = 'black'
+    var fraction_left = (total/1000) / this.state.total_secs_expiry
+    // Make orange at 25% of time left
+    if (fraction_left < 0.25){col = 'orange'}
+    // Make red at 10% of time left
+    if (fraction_left < 0.1){col = 'red'}
+    // Render a countdown, bold when less than 25%
+    return (
+      fraction_left < 0.25 ? <b><span style={{color:col}}>{hours}h {zeroPad(minutes)}m {zeroPad(seconds)}s </span></b>
+      :<span style={{color:col}}>{hours}h {zeroPad(minutes)}m {zeroPad(seconds)}s </span>
+    );
+  }
+  };
+
+  LinearDeterminate =()=> {
+    const [progress, setProgress] = React.useState(0);
+  
+    React.useEffect(() => {
+      const timer = setInterval(() => {
+        setProgress((oldProgress) => {
+          var left = calcTimeDelta( new Date(this.state.expiresAt)).total /1000;
+          return (left / this.state.total_secs_expiry) * 100;
+        });
+      }, 1000);
+  
+      return () => {
+        clearInterval(timer);
+      };
+    }, []);
+  
+    return (
+      <Box sx={{ width: '100%' }}>
+        <LinearProgress variant="determinate" value={progress} />
+      </Box>
+    );
   }
 
   handleClickTakeOrderButton=()=>{
@@ -160,12 +210,17 @@ export default class OrderPage extends Component {
       }));
   }
   
+  // set delay to the one matching the order status. If null order status, delay goes to 9999999.
+  setDelay = (status)=>{
+    return status >= 0 ? this.statusToDelay[status.toString()] : 99999999;
+  }
+
   getCurrencyCode(val){
     let code = val ? this.state.currencies_dict[val.toString()] : "" 
     return code
   }
 
-  handleClickCancelOrderButton=()=>{
+  handleClickConfirmCancelButton=()=>{
     console.log(this.state)
       const requestOptions = {
           method: 'POST',
@@ -177,6 +232,64 @@ export default class OrderPage extends Component {
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())
       .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
+    this.handleClickCloseConfirmCancelDialog();
+  }
+
+  handleClickOpenConfirmCancelDialog = () => {
+    this.setState({openCancel: true});
+  };
+  handleClickCloseConfirmCancelDialog = () => {
+      this.setState({openCancel: false});
+  };
+
+  CancelDialog =() =>{
+  return(
+      <Dialog
+      open={this.state.openCancel}
+      onClose={this.handleClickCloseConfirmCancelDialog}
+      aria-labelledby="cancel-dialog-title"
+      aria-describedby="cancel-dialog-description"
+      >
+        <DialogTitle id="cancel-dialog-title">
+          {"Cancel the order?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="cancel-dialog-description">
+            If the order is cancelled now you will lose your bond.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClickCloseConfirmCancelDialog} autoFocus>Go back</Button>
+          <Button onClick={this.handleClickConfirmCancelButton}> Confirm Cancel </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
+  CancelButton = () => {
+
+    // If maker and Waiting for Bond. Or if taker and Waiting for bond.
+    // Simply allow to cancel without showing the cancel dialog. 
+    if ((this.state.isMaker & this.state.statusCode == 0) || this.state.isTaker & this.state.statusCode == 3){
+      return(
+        <Grid item xs={12} align="center">
+          <Button variant='contained' color='secondary' onClick={this.handleClickConfirmCancelButton}>Cancel</Button>
+        </Grid>
+      )}
+    // If the order does not yet have an escrow deposited. Show dialog
+    // to confirm forfeiting the bond
+    if (this.state.statusCode < 8){
+      return(
+        <Grid item xs={12} align="center">
+          <this.CancelDialog/>
+          <Button variant='contained' color='secondary' onClick={this.handleClickOpenConfirmCancelDialog}>Cancel</Button>
+        </Grid>
+      )}
+    
+    // TODO If the escrow is Locked, show the collaborative cancel button.
+    
+    // If none of the above do not return a cancel button.
+    return(null)
   }
 
   orderBox=()=>{
@@ -184,7 +297,7 @@ export default class OrderPage extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="h5" variant="h5">
-          {this.state.type ? "Sell " : "Buy "} Order Details
+          Order Details
           </Typography>
           <Paper elevation={12} style={{ padding: 8,}}>
           <List dense="true">
@@ -217,6 +330,9 @@ export default class OrderPage extends Component {
                   ""
                   }
                   <ListItem>
+                    <ListItemIcon>
+                      <ArticleIcon/>
+                    </ListItemIcon>
                     <ListItemText primary={this.state.statusText} secondary="Order status"/>
                   </ListItem>
                   <Divider />
@@ -225,30 +341,54 @@ export default class OrderPage extends Component {
             }
             
             <ListItem>
-              <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))+" "+this.state.currencyCode} secondary="Amount"/>
+              <ListItemIcon>
+               {getFlags(this.state.currencyCode)}
+              </ListItemIcon>
+              <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))
+                +" "+this.state.currencyCode} secondary="Amount"/>
             </ListItem>
             <Divider />
             <ListItem>
+              <ListItemIcon>
+                <PaymentsIcon/>
+              </ListItemIcon>
               <ListItemText primary={this.state.paymentMethod} secondary="Accepted payment methods"/>
             </ListItem>
             <Divider />
+
+            {/* If there is live Price and Premium data, show it. Otherwise show the order maker settings */}
             <ListItem>
-            {this.state.isExplicit ? 
-              <ListItemText primary={pn(this.state.satoshis)} secondary="Amount of Satoshis"/>
-              :
-              <ListItemText primary={parseFloat(parseFloat(this.state.premium).toFixed(2))+"%"} secondary="Premium over market price"/>
-            }
+              <ListItemIcon>
+                <PriceChangeIcon/>
+              </ListItemIcon>
+            {this.state.priceNow? 
+                <ListItemText primary={pn(this.state.priceNow)+" "+this.state.currencyCode+"/BTC - Premium: "+this.state.premiumNow+"%"} secondary="Price and Premium"/>
+            :
+              (this.state.isExplicit ? 
+                <ListItemText primary={pn(this.state.satoshis)} secondary="Amount of Satoshis"/>
+                :
+                <ListItemText primary={parseFloat(parseFloat(this.state.premium).toFixed(2))+"%"} secondary="Premium over market price"/>
+              )
+            } 
             </ListItem>
             <Divider />
 
             <ListItem>
-              <ListItemText primary={'#'+this.orderId} secondary="Order ID"/>
+              <ListItemIcon>
+                <NumbersIcon/>
+              </ListItemIcon>
+              <ListItemText primary={this.orderId} secondary="Order ID"/>
             </ListItem>
             <Divider />
             <ListItem>
-              <ListItemText primary={msToTime( new Date(this.state.expiresAt) - Date.now())} secondary="Expires"/>
+              <ListItemIcon>
+                <AccessTimeIcon/>
+              </ListItemIcon>
+              <ListItemText secondary="Expires in">
+                <Countdown date={new Date(this.state.expiresAt)} renderer={this.countdownRenderer} />
+              </ListItemText>
             </ListItem>
-            <LinearDeterminate />
+            <this.LinearDeterminate />
             </List>
             
             {/* If the user has a penalty/limit */}
@@ -266,8 +406,10 @@ export default class OrderPage extends Component {
           </Paper>
         </Grid>
 
-        {/* Participants cannot see the Back or Take Order buttons */}
-        {this.state.isParticipant ? "" :
+        {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}
+        {this.state.isParticipant ? 
+          <this.CancelButton/>
+         :
           <>
             <Grid item xs={12} align="center">
               <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>
@@ -278,27 +420,7 @@ export default class OrderPage extends Component {
           </>
           }
 
-        {/* Makers can cancel before trade escrow deposited  (status <9)*/}
-        {/* Only free cancel before bond locked (status 0)*/}
-        {this.state.isMaker & this.state.statusCode < 9 ?
-        <Grid item xs={12} align="center">
-          <Button variant='contained' color='secondary' onClick={this.handleClickCancelOrderButton}>Cancel</Button>
-        </Grid>
-        :""}
-        {this.state.isMaker & this.state.statusCode > 0 & this.state.statusCode < 9 ?
-        <Grid item xs={12} align="center">
-          <Typography color="secondary" variant="subtitle2" component="subtitle2">Cancelling now forfeits the maker bond</Typography>
-        </Grid>
-        :""}
-        
-        {/* Takers can cancel before commiting the bond (status 3)*/}
-        {this.state.isTaker & this.state.statusCode == 3 ?
-        <Grid item xs={12} align="center">
-          <Button variant='contained' color='secondary' onClick={this.handleClickCancelOrderButton}>Cancel</Button>
-        </Grid>
-        :""}
-
-        </Grid>
+      </Grid>
     )
   }
   
@@ -331,7 +453,7 @@ export default class OrderPage extends Component {
   render (){
     return ( 
       // Only so nothing shows while requesting the first batch of data
-      (this.state.statusCode == null & this.state.badRequest == null) ? <CircularProgress /> : this.orderDetailsPage()
+      this.state.loading ? <CircularProgress /> : this.orderDetailsPage()
     );
   }
 }

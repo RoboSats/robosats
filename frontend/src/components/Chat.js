@@ -13,15 +13,13 @@ export default class Chat extends Component {
   state = {
     messages: [],
     value:'',
-    orderId: 2,
   };
 
-  client = new W3CWebSocket('ws://' + window.location.host + '/ws/chat/' + this.props.data.orderId + '/');
+  client = new W3CWebSocket('ws://' + window.location.host + '/ws/chat/' + this.props.orderId + '/');
 
   componentDidMount() {
     this.client.onopen = () => {
       console.log('WebSocket Client Connected')
-      console.log(this.props.data)
     }
     this.client.onmessage = (message) => {
       const dataFromServer = JSON.parse(message.data);
@@ -43,11 +41,19 @@ export default class Chat extends Component {
     }
   }
 
+  componentDidUpdate() {
+    this.scrollToBottom();
+  }
+
+  scrollToBottom = () => {
+    this.messagesEnd.scrollIntoView({ behavior: "smooth" });
+  }
+
   onButtonClicked = (e) => {
     this.client.send(JSON.stringify({
       type: "message",
       message: this.state.value,
-      nick: this.props.data.urNick,
+      nick: this.props.urNick,
     }));
     this.state.value = ''
     e.preventDefault();
@@ -60,7 +66,7 @@ export default class Chat extends Component {
               {this.state.messages.map(message => <>
               <Card elevation={5} align="left" >
               {/* If message sender is not our nick, gray color, if it is our nick, green color */}
-              {message.userNick == this.props.data.urNick ? 
+              {message.userNick == this.props.urNick ? 
                   <CardHeader
                   avatar={
                     <Avatar
@@ -86,6 +92,7 @@ export default class Chat extends Component {
                       />} 
                 </Card>
               </>)}
+              <div style={{ float:"left", clear: "both" }} ref={(el) => { this.messagesEnd = el; }}></div>
             </Paper>
             <form noValidate onSubmit={this.onButtonClicked}>
               <Grid containter alignItems="stretch" style={{ display: "flex" }}>

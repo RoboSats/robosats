@@ -28,6 +28,10 @@ class LNNode():
     invoicesstub = invoicesstub.InvoicesStub(channel)
     routerstub = routerstub.RouterStub(channel)
 
+    lnrpc = lnrpc
+    invoicesrpc = invoicesrpc
+    routerrpc = routerrpc
+
     payment_failure_context = {
         0:	"Payment isn't failed (yet)",
         1:	"There are more routes to try, but the payment timeout was exceeded.",
