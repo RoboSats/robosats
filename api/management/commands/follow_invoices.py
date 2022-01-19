@@ -31,6 +31,8 @@ class Command(BaseCommand):
         ''' Follows and updates LNpayment objects
         until settled or canceled'''
 
+        # TODO handle 'database is locked'
+        
         lnd_state_to_lnpayment_status = {
                 0: LNPayment.Status.INVGEN, # OPEN
                 1: LNPayment.Status.SETLED, # SETTLED
@@ -64,6 +66,7 @@ class Command(BaseCommand):
                     # If it fails at finding the invoice it has been canceled.
                     # On RoboSats DB we make a distinction between cancelled and returned (LND does not)
                     if 'unable to locate invoice' in str(e): 
+                        self.stdout.write('unable to locate invoice')
                         hold_lnpayment.status = LNPayment.Status.CANCEL
                     # LND restarted.
                     if 'wallet locked, unlock it' in str(e):

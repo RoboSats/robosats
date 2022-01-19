@@ -70,7 +70,7 @@ def follow_send_payment(lnpayment):
             order.status = Order.Status.FAI
             order.save()
             context = LNNode.payment_failure_context[response.failure_reason]
-            # Call for a retry here
+            # Call a retry here?
             return False, context
 
         if response.status == 2 :               # Status 2 'SUCCEEDED'

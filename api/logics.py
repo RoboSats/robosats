@@ -514,8 +514,7 @@ class Logics():
 
         # Do not gen and kick out the taker if order is older than expiry time
         if order.expires_at < timezone.now():
-            cls.cancel_bond(order.taker_bond)
-            cls.kick_taker(order)
+            cls.order_expires(order)
             return False, {'bad_request':'Invoice expired. You did not confirm taking the order in time.'}
 
         # Do not gen if a taker invoice exist. Do not return if it is already locked. Return the old one if still waiting.
@@ -580,7 +579,7 @@ class Logics():
 
         # Do not generate if escrow deposit time has expired
         if order.expires_at < timezone.now():
-            cls.cancel_order(order,user)
+            cls.order_expires(order)
             return False, {'bad_request':'Invoice expired. You did not send the escrow in time.'}
 
         # Do not gen if an escrow invoice exist. Do not return if it is already locked. Return the old one if still waiting.
@@ -690,12 +689,10 @@ class Logics():
             
             # If buyer, settle escrow and mark fiat sent
             if cls.is_buyer(order, user):
-                if cls.settle_escrow(order): ##### !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
-                    order.trade_escrow.status = LNPayment.Status.SETLED
-                    order.status = Order.Status.FSE
-                    order.is_fiat_sent = True
+                order.status = Order.Status.FSE
+                order.is_fiat_sent = True
 
-            # If seller and fiat sent, pay buyer invoice
+            # If seller and fiat was sent, SETTLE ESCRO AND PAY BUYER INVOICE
             elif cls.is_seller(order, user):
                 if not order.is_fiat_sent:
                     return False, {'bad_request':'You cannot confirm to have received the fiat before it is confirmed to be sent by the buyer.'}
@@ -703,6 +700,9 @@ class Logics():
                 # Make sure the trade escrow is at least as big as the buyer invoice 
                 if order.trade_escrow.num_satoshis <= order.buyer_invoice.num_satoshis:
                     return False, {'bad_request':'Woah, something broke badly. Report in the public channels, or open a Github Issue.'}
+
+                if cls.settle_escrow(order): ##### !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
+                    order.trade_escrow.status = LNPayment.Status.SETLED
                 
                 # Double check the escrow is settled.
                 if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 

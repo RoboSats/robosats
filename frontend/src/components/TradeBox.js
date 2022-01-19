@@ -161,7 +161,7 @@ export default class TradeBox extends Component {
             size="small"
             defaultValue={this.props.data.bondInvoice} 
             disabled="true"
-            helperText="This is a hold invoice. It will be charged only if you cancel or lose a dispute."
+            helperText="This is a hold invoice, it will freeze in your wallet. It will be charged only if you cancel or lose a dispute."
             color = "secondary"
           />
         </Grid>
@@ -198,7 +198,7 @@ export default class TradeBox extends Component {
             size="small"
             defaultValue={this.props.data.escrowInvoice} 
             disabled="true"
-            helperText="This is a hold invoice. It will be charged once the buyer confirms he sent the fiat."
+            helperText={"This is a hold invoice, it will freeze in your wallet. It will be released to the buyer once you confirm to have received the "+this.props.data.currencyCode+"."}
             color = "secondary"
           />
         </Grid>

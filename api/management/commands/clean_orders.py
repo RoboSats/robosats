@@ -15,6 +15,8 @@ class Command(BaseCommand):
         ''' Continuously checks order expiration times for 1 hour. If order
         has expires, it calls the logics module for expiration handling.'''
 
+        # TODO handle 'database is locked'
+        
         do_nothing = [Order.Status.DEL, Order.Status.UCA,
                     Order.Status.EXP, Order.Status.FSE,
                     Order.Status.DIS, Order.Status.CCA,
@@ -34,8 +36,17 @@ class Command(BaseCommand):
 
             for idx, order in enumerate(queryset):
                 context = str(order)+ " was "+ Order.Status(order.status).label
-                if Logics.order_expires(order): # Order send to expire here
-                    debug['expired_orders'].append({idx:context})
+                try:
+                    if Logics.order_expires(order): # Order send to expire here
+                        debug['expired_orders'].append({idx:context})
+                
+                # If it cannot locate the hold invoice, make it expire anywway
+                except Exception as e:
+                    if 'unable to locate invoice' in str(e): 
+                        self.stdout.write(str(e))
+                        order.status = Order.Status.EXP
+                        debug['expired_orders'].append({idx:context})
+                    
 
             if debug['num_expired_orders'] > 0:    
                 self.stdout.write(str(timezone.now()))
