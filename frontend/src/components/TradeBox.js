@@ -256,7 +256,7 @@ export default class TradeBox extends Component {
                 <ListItemIcon>
                   <SmartToyIcon/>
                 </ListItemIcon>
-                <ListItemText primary={'000 coming soon'} secondary="Robots looking at the book"/>
+                <ListItemText primary={'coming soon'} secondary="Robots looking at the book"/>
               </ListItem>
 
             <Divider/>
@@ -526,7 +526,31 @@ handleRatingChange=(e)=>{
     )
   }
 
-  showChat(sendFiatButton, receivedFiatButton, openDisputeButton){
+  showChat=()=>{
+    //In Chatroom - No fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton)
+      if(this.props.data.isBuyer & this.props.data.statusCode == 9){
+        var showSendButton=true;
+        var showReveiceButton=false;
+        var showDisputeButton=true;
+      }
+      if(this.props.data.isSeller & this.props.data.statusCode == 9){
+        var showSendButton=false;
+        var showReveiceButton=false;
+        var showDisputeButton=true;
+      }
+          
+    //In Chatroom - Fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton)
+      if(this.props.data.isBuyer & this.props.data.statusCode == 10){
+        var showSendButton=false;
+        var showReveiceButton=false;
+        var showDisputeButton=true;
+      }
+      if(this.props.data.isSeller & this.props.data.statusCode == 10){
+        var showSendButton=false;
+        var showReveiceButton=true;
+        var showDisputeButton=true;
+      }            
+  
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
@@ -548,11 +572,10 @@ handleRatingChange=(e)=>{
         </Grid>
 
         <Chat orderId={this.props.data.id} urNick={this.props.data.urNick}/>
-
         <Grid item xs={12} align="center">
-          {openDisputeButton ? this.showOpenDisputeButton() : ""}
-          {sendFiatButton ? this.showFiatSentButton() : ""}
-          {receivedFiatButton ? this.showFiatReceivedButton() : ""}
+          {showDisputeButton ? this.showOpenDisputeButton() : ""}
+          {showSendButton ? this.showFiatSentButton() : ""}
+          {showReveiceButton ? this.showFiatReceivedButton() : ""}
         </Grid>
         {this.showBondIsLocked()}
       </Grid>
@@ -605,13 +628,8 @@ handleRatingChange=(e)=>{
               {this.props.data.isBuyer & this.props.data.statusCode == 7 ? this.showWaitingForEscrow() : ""}
               {this.props.data.isSeller & this.props.data.statusCode == 8 ? this.showWaitingForBuyerInvoice() : ""}
 
-            {/* In Chatroom - No fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton) */}
-              {this.props.data.isBuyer & this.props.data.statusCode == 9 ? this.showChat(true,false,true) : ""} 
-              {this.props.data.isSeller & this.props.data.statusCode == 9 ? this.showChat(false,false,true)  : ""}
-            
-            {/* In Chatroom - Fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton) */}
-              {this.props.data.isBuyer & this.props.data.statusCode == 10 ? this.showChat(false,false,true) : ""}
-              {this.props.data.isSeller & this.props.data.statusCode == 10 ? this.showChat(false,true,true) : ""}
+            {/* In Chatroom  */}
+              {this.props.data.statusCode == 9 || this.props.data.statusCode == 10 ? this.showChat(): ""}
 
             {/* Trade Finished */}
               {(this.props.data.isSeller & this.props.data.statusCode > 12 & this.props.data.statusCode < 15) ? this.showRateSelect()  : ""}

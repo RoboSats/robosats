@@ -73,52 +73,55 @@ export default class OrderPage extends Component {
     }
   }
 
+  // Unneeded for the most part. Let's keep variable names as they come from the API
+  // Will need some renaming everywhere, but will decrease the mess.
+  setStateCool=(data)=>{
+    this.setState({
+      loading: false,
+      delay: this.setDelay(data.status),
+      id: data.id,
+      statusCode: data.status,
+      statusText: data.status_message,
+      type: data.type,
+      currency: data.currency,
+      currencyCode: this.getCurrencyCode(data.currency),
+      amount: data.amount,
+      paymentMethod: data.payment_method,
+      isExplicit: data.is_explicit,
+      premium: data.premium,
+      satoshis: data.satoshis,
+      makerId: data.maker, 
+      isParticipant: data.is_participant,
+      urNick: data.ur_nick,
+      makerNick: data.maker_nick,
+      takerId: data.taker,
+      takerNick: data.taker_nick,
+      isMaker: data.is_maker,
+      isTaker: data.is_taker,
+      isBuyer: data.is_buyer,
+      isSeller: data.is_seller,
+      penalty: data.penalty,
+      expiresAt: data.expires_at,
+      badRequest: data.bad_request,
+      bondInvoice: data.bond_invoice,
+      bondSatoshis: data.bond_satoshis,
+      escrowInvoice: data.escrow_invoice,
+      escrowSatoshis: data.escrow_satoshis,
+      invoiceAmount: data.invoice_amount,
+      total_secs_expiry: data.total_secs_exp,
+      numSimilarOrders: data.num_similar_orders,
+      priceNow: data.price_now,
+      premiumNow: data.premium_now,
+      robotsInBook: data.robots_in_book,
+      premiumPercentile: data.premium_percentile,
+      numSimilarOrders: data.num_similar_orders
+  })
+  }
   getOrderDetails() {
     this.setState(null)
     fetch('/api/order' + '?order_id=' + this.orderId)
       .then((response) => response.json())
-      .then((data) => {console.log(data) &
-        this.setState({
-            loading: false,
-            delay: this.setDelay(data.status),
-            id: data.id,
-            statusCode: data.status,
-            statusText: data.status_message,
-            type: data.type,
-            currency: data.currency,
-            currencyCode: this.getCurrencyCode(data.currency),
-            amount: data.amount,
-            paymentMethod: data.payment_method,
-            isExplicit: data.is_explicit,
-            premium: data.premium,
-            satoshis: data.satoshis,
-            makerId: data.maker, 
-            isParticipant: data.is_participant,
-            urNick: data.ur_nick,
-            makerNick: data.maker_nick,
-            takerId: data.taker,
-            takerNick: data.taker_nick,
-            isMaker: data.is_maker,
-            isTaker: data.is_taker,
-            isBuyer: data.is_buyer,
-            isSeller: data.is_seller,
-            penalty: data.penalty,
-            expiresAt: data.expires_at,
-            badRequest: data.bad_request,
-            bondInvoice: data.bond_invoice,
-            bondSatoshis: data.bond_satoshis,
-            escrowInvoice: data.escrow_invoice,
-            escrowSatoshis: data.escrow_satoshis,
-            invoiceAmount: data.invoice_amount,
-            total_secs_expiry: data.total_secs_exp,
-            numSimilarOrders: data.num_similar_orders,
-            priceNow: data.price_now,
-            premiumNow: data.premium_now,
-            robotsInBook: data.robots_in_book,
-            premiumPercentile: data.premium_percentile,
-            numSimilarOrders: data.num_similar_orders
-        })
-      });
+      .then((data) => this.setStateCool(data));
   }
 
   // These are used to refresh the data
@@ -197,9 +200,7 @@ export default class OrderPage extends Component {
       };
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())
-      .then((data) => (this.setState({badRequest:data.bad_request}) 
-      & console.log(data)
-      & this.getOrderDetails(data.id)));
+      .then((data) => this.setStateCool(data));
   }
   getCurrencyDict() {
     fetch('/static/assets/currencies.json')
