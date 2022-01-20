@@ -40,11 +40,13 @@ class Command(BaseCommand):
                     if Logics.order_expires(order): # Order send to expire here
                         debug['expired_orders'].append({idx:context})
                 
-                # If it cannot locate the hold invoice, make it expire anywway
+                # It should not happen, but if it cannot locate the hold invoice 
+                # it probably was cancelled by another thread, make it expire anyway.
                 except Exception as e:
                     if 'unable to locate invoice' in str(e): 
                         self.stdout.write(str(e))
                         order.status = Order.Status.EXP
+                        order.save()
                         debug['expired_orders'].append({idx:context})
                     
 

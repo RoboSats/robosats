@@ -57,7 +57,6 @@ class LNPayment(models.Model):
         FLIGHT = 7, 'In flight'
         SUCCED = 8, 'Succeeded'
         FAILRO = 9, 'Routing failed'
-        
 
     # payment use details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HOLD)
@@ -141,7 +140,7 @@ class Order(models.Model):
     last_satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(0), MaxValueValidator(MAX_TRADE*2)], blank=True) # sats last time checked. Weird if 2* trade max...
     
     # order participants
-    maker = models.ForeignKey(User, related_name='maker', on_delete=models.CASCADE, null=True, default=None)  # unique = True, a maker can only make one order
+    maker = models.ForeignKey(User, related_name='maker', on_delete=models.SET_NULL, null=True, default=None)  # unique = True, a maker can only make one order
     taker = models.ForeignKey(User, related_name='taker', on_delete=models.SET_NULL, null=True, default=None, blank=True)  # unique = True, a taker can only take one order
     is_pending_cancel = models.BooleanField(default=False, null=False) # When collaborative cancel is needed and one partner has cancelled.
     is_fiat_sent = models.BooleanField(default=False, null=False)

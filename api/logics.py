@@ -220,7 +220,7 @@ class Logics():
     @classmethod
     def open_dispute(cls, order, user=None):
 
-        # Always settle the escrow during a dispute (same as with 'Fiat Sent')
+        # Always settle the escrow during a dispute
         # Dispute winner will have to submit a new invoice.
 
         if not order.trade_escrow.status == LNPayment.Status.SETLED:
@@ -235,7 +235,10 @@ class Logics():
         if not user == None:
             profile = user.profile
             profile.num_disputes = profile.num_disputes + 1
-            profile.orders_disputes_started = list(profile.orders_disputes_started).append(str(order.id))
+            if profile.orders_disputes_started == None:
+                profile.orders_disputes_started = [str(order.id)]
+            else:
+                profile.orders_disputes_started = list(profile.orders_disputes_started).append(str(order.id))
             profile.save()
 
         return True, None
@@ -325,7 +328,7 @@ class Logics():
         ''' adds a new rating to a user profile'''
 
         # TODO Unsafe, does not update ratings, it adds more ratings everytime a new rating is clicked.
-        profile.total_ratings = profile.total_ratings + 1
+        profile.total_ratings += 1
         latest_ratings = profile.latest_ratings
         if latest_ratings == None:
             profile.latest_ratings = [rating]
@@ -633,6 +636,7 @@ class Logics():
         '''returns the trade escrow'''
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.RETNED
+            order.trade_escrow.save()
             return True
 
     def cancel_escrow(order):
@@ -640,6 +644,7 @@ class Logics():
         # Same as return escrow, but used when the invoice was never LOCKED
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.CANCEL
+            order.trade_escrow.save()
             return True
 
     def return_bond(bond):
@@ -649,10 +654,12 @@ class Logics():
         try:
             LNNode.cancel_return_hold_invoice(bond.payment_hash)
             bond.status = LNPayment.Status.RETNED
+            bond.save()
             return True
         except Exception as e:
             if 'invoice already settled' in str(e):
                 bond.status = LNPayment.Status.SETLED
+                bond.save()
                 return True
             else:
                 raise e
@@ -665,10 +672,12 @@ class Logics():
         try:
             LNNode.cancel_return_hold_invoice(bond.payment_hash)
             bond.status = LNPayment.Status.CANCEL
+            bond.save()
             return True
         except Exception as e:
             if 'invoice already settled' in str(e):
                 bond.status = LNPayment.Status.SETLED
+                bond.save()
                 return True
             else:
                 raise e
@@ -705,11 +714,11 @@ class Logics():
                         order.status = Order.Status.SUC
                         order.buyer_invoice.status = LNPayment.Status.SUCCED
                         order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.SUC])
-                        order.save()
-
                         # RETURN THE BONDS
                         cls.return_bond(order.taker_bond)
                         cls.return_bond(order.maker_bond)
+                        order.save()
+
                         return True, context
                     else:
                         # error handling here
