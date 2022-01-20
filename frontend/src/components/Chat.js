@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import {Button, TextField, Link, Grid, Typography, Container, Card, CardHeader, Paper, Avatar} from "@mui/material";
-import { withStyles } from "@mui/material";
-
+import {Button, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, FormHelperText} from "@mui/material";
 
 
 export default class Chat extends Component {
@@ -113,6 +111,7 @@ export default class Chat extends Component {
                 </Grid>
               </Grid>
             </form>
+            <FormHelperText>This chat has no memory. If you reload the page messages are lost.</FormHelperText>
       </Container>
     )
   }

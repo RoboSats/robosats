@@ -10,7 +10,7 @@ export default class InfoDialog extends Component {
           <Typography component="h5" variant="h5">What is <i>RoboSats</i>?</Typography>
           <Typography component="body2" variant="body2">
             <p>It is a BTC/FIAT peer-to-peer exchange over lightning. It simplifies 
-              matchmaking and minimizes the trust needed to trade with a peer.</p>
+              matchmaking and minimizes the need of trust. RoboSats focuses in privacy and speed.</p>
             
             <p>RoboSats is an open source project <a 
               href='https://github.com/reckless-satoshi/robosats'>(GitHub).</a>
@@ -19,18 +19,18 @@ export default class InfoDialog extends Component {
           
           <Typography component="h5" variant="h5">How does it work?</Typography>
           <Typography component="body2" variant="body2">
-            <p>Anonymous AdequateAlice01 wants to sell bitcoin. She posts a sell order. 
+            <p> AnonymousAlice01 wants to sell bitcoin. She posts a sell order. 
               BafflingBob02 wants to buy bitcoin and he takes Alice's order. 
               Both have to post a small bond using lightning to prove they are real 
               robots. Then, Alice posts the trade collateral also using a lightning 
-              hold invoice. <i>RoboSats</i> locks the invoice until Bob confirms he sent 
-              the fiat to Alice. Once Alice confirms she received the fiat, she 
-              tells <i>RoboSats</i> to release the satoshis to Bob. Enjoy your satoshis, 
+              hold invoice. <i>RoboSats</i> locks the invoice until Alice confirms she 
+              received the fiat. Then the satoshis to Bob. Enjoy your satoshis, 
               Bob!</p>
 
             <p>At no point, AdequateAlice01 and BafflingBob02 have to trust the 
               bitcoin to each other. In case they have a conflict, <i>RoboSats</i> staff 
-              will help resolving the dispute.</p>
+              will help resolving the dispute. You can find an step-by-step 
+              description of the trade pipeline on our GitHub <a href='https://github.com/reckless-satoshi/robosats'>Readme</a></p>
           </Typography>
 
           <Typography component="h5" variant="h5">What payment methods are accepted?</Typography>

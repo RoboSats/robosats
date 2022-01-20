@@ -27,7 +27,7 @@ class Command(BaseCommand):
     # def add_arguments(self, parser):
     #     parser.add_argument('debug', nargs='+', type=boolean)
 
-    def handle(self, *args, **options):
+    def follow_invoices(self, *args, **options):
         ''' Follows and updates LNpayment objects
         until settled or canceled'''
 
@@ -66,7 +66,7 @@ class Command(BaseCommand):
                     # If it fails at finding the invoice it has been canceled.
                     # On RoboSats DB we make a distinction between cancelled and returned (LND does not)
                     if 'unable to locate invoice' in str(e): 
-                        self.stdout.write('unable to locate invoice')
+                        self.stdout.write(str(e))
                         hold_lnpayment.status = LNPayment.Status.CANCEL
                     # LND restarted.
                     if 'wallet locked, unlock it' in str(e):
@@ -131,3 +131,14 @@ class Command(BaseCommand):
         # halt the order
         if lnpayment.status == LNPayment.Status.LOCKED:
             pass
+
+    def handle(self, *args, **options):
+        ''' Never mind database locked error, keep going, print them out'''
+        
+        try:
+            self.follow_invoices()
+        except Exception as e:
+            if 'database is locked' in str(e):
+                self.stdout.write('database is locked')
+            
+            self.stdout.write(e)

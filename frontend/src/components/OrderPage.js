@@ -279,7 +279,7 @@ export default class OrderPage extends Component {
       )}
     // If the order does not yet have an escrow deposited. Show dialog
     // to confirm forfeiting the bond
-    if (this.state.statusCode < 8){
+    if (this.state.statusCode in [0,1,3,6,7]){
       return(
         <Grid item xs={12} align="center">
           <this.CancelDialog/>

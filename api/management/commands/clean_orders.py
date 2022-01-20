@@ -11,7 +11,7 @@ class Command(BaseCommand):
     # def add_arguments(self, parser):
     #     parser.add_argument('debug', nargs='+', type=boolean)
 
-    def handle(self, *args, **options):
+    def clean_orders(self, *args, **options):
         ''' Continuously checks order expiration times for 1 hour. If order
         has expires, it calls the logics module for expiration handling.'''
 
@@ -53,3 +53,13 @@ class Command(BaseCommand):
             if debug['num_expired_orders'] > 0:    
                 self.stdout.write(str(timezone.now()))
                 self.stdout.write(str(debug))
+    
+    def handle(self, *args, **options):
+        ''' Never mind database locked error, keep going, print them out'''
+        try:
+            self.clean_orders()
+        except Exception as e:
+            if 'database is locked' in str(e):
+                self.stdout.write('database is locked')
+            
+            self.stdout.write(e)

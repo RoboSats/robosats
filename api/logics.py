@@ -111,13 +111,13 @@ class Logics():
 
         # Do not change order status if an order in any with
         # any of these status is sent to expire here
-        do_nothing = [Order.Status.DEL, Order.Status.UCA,
+        does_not_expire = [Order.Status.DEL, Order.Status.UCA,
                     Order.Status.EXP, Order.Status.TLD,
                     Order.Status.DIS, Order.Status.CCA,
                     Order.Status.PAY, Order.Status.SUC,
                     Order.Status.FAI, Order.Status.MLD]
 
-        if order.status in do_nothing:
+        if order.status in does_not_expire:
             return False
 
         elif order.status == Order.Status.WFB:
@@ -283,7 +283,7 @@ class Logics():
         if not order.taker_bond:
             return False, {'bad_request':'Wait for your order to be taken.'}
         if not (order.taker_bond.status == order.maker_bond.status == LNPayment.Status.LOCKED):
-            return False, {'bad_request':'You cannot a invoice while bonds are not posted.'}
+            return False, {'bad_request':'You cannot submit a invoice while bonds are not locked.'}
 
         num_satoshis = cls.buyer_invoice_amount(order, user)[1]['invoice_amount']
         buyer_invoice = LNNode.validate_ln_invoice(invoice, num_satoshis)
@@ -356,6 +356,17 @@ class Logics():
 
     @classmethod
     def cancel_order(cls, order, user, state=None):
+
+        # Do not change order status if an order in any with
+        # any of these status is sent to expire here
+        do_not_cancel = [Order.Status.DEL, Order.Status.UCA,
+                    Order.Status.EXP, Order.Status.TLD,
+                    Order.Status.DIS, Order.Status.CCA,
+                    Order.Status.PAY, Order.Status.SUC,
+                    Order.Status.FAI, Order.Status.MLD]
+
+        if order.status in do_not_cancel:
+            return False, {'bad_request':'You cannot cancel this order'}
 
         # 1) When maker cancels before bond
         '''The order never shows up on the book and order 
@@ -685,8 +696,8 @@ class Logics():
     @classmethod
     def confirm_fiat(cls, order, user):
         ''' If Order is in the CHAT states:
-        If user is buyer: mark FIAT SENT!
-        If User is the seller and FIAT is SENT: Settle escrow and pay buyer invoice!'''
+        If user is buyer: fiat_sent goes to true.
+        If User is tseller and fiat_sent is true: settle the escrow and pay buyer invoice!'''
 
         if order.status == Order.Status.CHA or order.status == Order.Status.FSE: # TODO Alternatively, if all collateral is locked? test out
             
@@ -695,7 +706,7 @@ class Logics():
                 order.status = Order.Status.FSE
                 order.is_fiat_sent = True
 
-            # If seller and fiat was sent, SETTLE ESCROw AND PAY BUYER INVOICE
+            # If seller and fiat was sent, SETTLE ESCROW AND PAY BUYER INVOICE
             elif cls.is_seller(order, user):
                 if not order.is_fiat_sent:
                     return False, {'bad_request':'You cannot confirm to have received the fiat before it is confirmed to be sent by the buyer.'}
