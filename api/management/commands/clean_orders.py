@@ -22,7 +22,7 @@ class Command(BaseCommand):
                     Order.Status.DIS, Order.Status.CCA,
                     Order.Status.PAY, Order.Status.SUC,
                     Order.Status.FAI, Order.Status.MLD,
-                    Order.Status.TLD]
+                    Order.Status.TLD, Order.Status.WFR]
 
         while True:
             time.sleep(5)

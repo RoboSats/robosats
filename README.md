@@ -39,7 +39,7 @@ Alice wants to buy satoshis privately:
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Original idea
-The concept of a simple custody-minimized lightning exchange using hold invoices is heavily inspired by [P2PLNBOT](https://github.com/grunch/p2plnbot) by @grunch
+The concept of a simple custody-minimized lightning exchange using hold invoices is heavily inspired in [P2PLNBOT](https://github.com/grunch/p2plnbot) by @grunch
 
 ## License
 

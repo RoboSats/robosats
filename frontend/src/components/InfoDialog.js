@@ -24,13 +24,13 @@ export default class InfoDialog extends Component {
               Both have to post a small bond using lightning to prove they are real 
               robots. Then, Alice posts the trade collateral also using a lightning 
               hold invoice. <i>RoboSats</i> locks the invoice until Alice confirms she 
-              received the fiat. Then the satoshis to Bob. Enjoy your satoshis, 
+              received the fiat, then the satoshis are released to Bob. Enjoy your satoshis, 
               Bob!</p>
 
             <p>At no point, AdequateAlice01 and BafflingBob02 have to trust the 
               bitcoin to each other. In case they have a conflict, <i>RoboSats</i> staff 
-              will help resolving the dispute. You can find an step-by-step 
-              description of the trade pipeline on our GitHub <a href='https://github.com/reckless-satoshi/robosats'>Readme</a></p>
+              will help resolving the dispute. You can find a step-by-step 
+              description of the trade pipeline in <a href='https://github.com/Reckless-Satoshi/robosats/blob/main/README.md#how-it-works'>'How it works'</a></p>
           </Typography>
 
           <Typography component="h5" variant="h5">What payment methods are accepted?</Typography>
@@ -79,10 +79,10 @@ export default class InfoDialog extends Component {
               In addition, disputes are solved by the <i>RoboSats</i> staff.
             </p> 
 
-            <p> Trust requirements are minimized, however there is still one way
-               <i>RoboSats</i> could run away with your satoshis, by not releasing 
-               the satoshis to the buyer. It could be argued that such move is not on 
-               <i>RoboSats</i> interest as it would damage thereputation for a small payout. 
+            <p> Trust requirements are minimal, however there is still one way <i>RoboSats</i>
+                could run away with your satoshis: by not releasing 
+               the satoshis to the buyer. It could be argued that such move is not on <i>RoboSats</i> 
+               interest as it would damage the reputation for a small payout. 
               However, you should hesitate and only trade small quantities at a 
               time. For large amounts use an onchain escrow service such as <i>Bisq</i>
             </p> 
