@@ -194,11 +194,14 @@ export default class BookPage extends Component {
                 No orders found to {this.state.type == 0 ? ' sell ' :' buy ' } BTC for {this.state.currencyCode}
               </Typography>
             </Grid>
+            <br/>
             <Grid item>
               <Button variant="contained" color='primary' to='/make/' component={Link}>Make Order</Button>
             </Grid>
               <Typography component="body1" variant="body1">
                 Be the first one to create an order
+                <br/>
+                <br/>
               </Typography>
           </Grid>)
           : 

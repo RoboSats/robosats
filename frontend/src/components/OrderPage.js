@@ -42,7 +42,7 @@ export default class OrderPage extends Component {
         isExplicit: false,
         delay: 60000, // Refresh every 60 seconds by default
         currencies_dict: {"1":"USD"},
-        total_secs_expiry: 300,
+        total_secs_exp: 300,
         loading: true,
         openCancel: false,
     };
@@ -75,53 +75,63 @@ export default class OrderPage extends Component {
 
   // Unneeded for the most part. Let's keep variable names as they come from the API
   // Will need some renaming everywhere, but will decrease the mess.
-  setStateCool=(data)=>{
-    this.setState({
+  completeSetState=(newStateVars)=>{
+    console.log(newStateVars)
+    var otherStateVars = {
       loading: false,
-      delay: this.setDelay(data.status),
-      id: data.id,
-      statusCode: data.status,
-      statusText: data.status_message,
-      type: data.type,
-      currency: data.currency,
-      currencyCode: this.getCurrencyCode(data.currency),
-      amount: data.amount,
-      paymentMethod: data.payment_method,
-      isExplicit: data.is_explicit,
-      premium: data.premium,
-      satoshis: data.satoshis,
-      makerId: data.maker, 
-      isParticipant: data.is_participant,
-      urNick: data.ur_nick,
-      makerNick: data.maker_nick,
-      takerId: data.taker,
-      takerNick: data.taker_nick,
-      isMaker: data.is_maker,
-      isTaker: data.is_taker,
-      isBuyer: data.is_buyer,
-      isSeller: data.is_seller,
-      penalty: data.penalty,
-      expiresAt: data.expires_at,
-      badRequest: data.bad_request,
-      bondInvoice: data.bond_invoice,
-      bondSatoshis: data.bond_satoshis,
-      escrowInvoice: data.escrow_invoice,
-      escrowSatoshis: data.escrow_satoshis,
-      invoiceAmount: data.invoice_amount,
-      total_secs_expiry: data.total_secs_exp,
-      numSimilarOrders: data.num_similar_orders,
-      priceNow: data.price_now,
-      premiumNow: data.premium_now,
-      robotsInBook: data.robots_in_book,
-      premiumPercentile: data.premium_percentile,
-      numSimilarOrders: data.num_similar_orders
-  })
+      delay: this.setDelay(newStateVars.status),
+      currencyCode: this.getCurrencyCode(newStateVars.currency),
+    };
+    console.log(otherStateVars)
+    var completeStateVars = Object.assign({}, newStateVars, otherStateVars);
+    console.log(completeStateVars)
+    this.setState(completeStateVars);
+  //   {
+  //     loading: false,
+  //     delay: this.setDelay(data.status),
+  //     id: data.id,
+  //     status: data.status,
+  //     status_message: data.status_message,
+  //     type: data.type,
+  //     currency: data.currency,
+  //     currencyCode: this.getCurrencyCode(data.currency),
+  //     amount: data.amount,
+  //     payment_method: data.payment_method,
+  //     isExplicit: data.is_explicit,
+  //     premium: data.premium,
+  //     satoshis: data.satoshis,
+  //     makerId: data.maker, 
+  //     is_participant: data.is_participant,
+  //     urNick: data.ur_nick,
+  //     maker_nick: data.maker_nick,
+  //     takerId: data.taker,
+  //     taker_nick: data.taker_nick,
+  //     is_maker: data.is_maker,
+  //     is_taker: data.is_taker,
+  //     is_buyer: data.is_buyer,
+  //     is_seller: data.is_seller,
+  //     penalty: data.penalty,
+  //     expires_at: data.expires_at,
+  //     bad_request: data.bad_request,
+  //     bond_invoice: data.bond_invoice,
+  //     bondSatoshis: data.bond_satoshis,
+  //     escrow_invoice: data.escrow_invoice,
+  //     escrowSatoshis: data.escrow_satoshis,
+  //     invoice_amount: data.invoice_amount,
+  //     total_secs_exp: data.total_secs_exp,
+  //     num_similar_orders: data.num_similar_orders,
+  //     price_now: data.price_now,
+  //     premium_now: data.premium_now,
+  //     probots_in_book: data.robots_in_book,
+  //     premium_percentile: data.premium_percentile,
+  //     num_similar_orders: data.num_similar_orders
+  // })
   }
   getOrderDetails() {
     this.setState(null)
     fetch('/api/order' + '?order_id=' + this.orderId)
       .then((response) => response.json())
-      .then((data) => this.setStateCool(data));
+      .then((data) => this.completeSetState(data));
   }
 
   // These are used to refresh the data
@@ -153,7 +163,7 @@ export default class OrderPage extends Component {
 
   } else {
     var col = 'black'
-    var fraction_left = (total/1000) / this.state.total_secs_expiry
+    var fraction_left = (total/1000) / this.state.total_secs_exp
     // Make orange at 25% of time left
     if (fraction_left < 0.25){col = 'orange'}
     // Make red at 10% of time left
@@ -172,8 +182,8 @@ export default class OrderPage extends Component {
     React.useEffect(() => {
       const timer = setInterval(() => {
         setProgress((oldProgress) => {
-          var left = calcTimeDelta( new Date(this.state.expiresAt)).total /1000;
-          return (left / this.state.total_secs_expiry) * 100;
+          var left = calcTimeDelta( new Date(this.state.expires_at)).total /1000;
+          return (left / this.state.total_secs_exp) * 100;
         });
       }, 1000);
   
@@ -200,7 +210,7 @@ export default class OrderPage extends Component {
       };
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())
-      .then((data) => this.setStateCool(data));
+      .then((data) => this.completeSetState(data));
   }
   getCurrencyDict() {
     fetch('/static/assets/currencies.json')
@@ -271,7 +281,7 @@ export default class OrderPage extends Component {
 
     // If maker and Waiting for Bond. Or if taker and Waiting for bond.
     // Simply allow to cancel without showing the cancel dialog. 
-    if ((this.state.isMaker & this.state.statusCode == 0) || this.state.isTaker & this.state.statusCode == 3){
+    if ((this.state.is_maker & this.state.status == 0) || this.state.is_taker & this.state.status == 3){
       return(
         <Grid item xs={12} align="center">
           <Button variant='contained' color='secondary' onClick={this.handleClickConfirmCancelButton}>Cancel</Button>
@@ -279,7 +289,7 @@ export default class OrderPage extends Component {
       )}
     // If the order does not yet have an escrow deposited. Show dialog
     // to confirm forfeiting the bond
-    if (this.state.statusCode in [0,1,3,6,7]){
+    if (this.state.status in [0,1,3,6,7]){
       return(
         <Grid item xs={12} align="center">
           <this.CancelDialog/>
@@ -305,24 +315,24 @@ export default class OrderPage extends Component {
             <ListItem >
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
                 <Avatar 
-                  alt={this.state.makerNick} 
-                  src={window.location.origin +'/static/assets/avatars/' + this.state.makerNick + '.png'} 
+                  alt={this.state.maker_nick} 
+                  src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'} 
                   />
               </ListItemAvatar>
-              <ListItemText primary={this.state.makerNick + (this.state.type ? " (Seller)" : " (Buyer)")} secondary="Order maker" align="right"/>
+              <ListItemText primary={this.state.maker_nick + (this.state.type ? " (Seller)" : " (Buyer)")} secondary="Order maker" align="right"/>
             </ListItem>
             <Divider />
 
-            {this.state.isParticipant ?
+            {this.state.is_participant ?
               <>
-                {this.state.takerNick!='None' ?
+                {this.state.taker_nick!='None' ?
                   <>
                     <ListItem align="left">
-                      <ListItemText primary={this.state.takerNick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order taker"/>
+                      <ListItemText primary={this.state.taker_nick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order taker"/>
                       <ListItemAvatar > 
                         <Avatar
-                          alt={this.state.makerNick} 
-                          src={window.location.origin +'/static/assets/avatars/' + this.state.takerNick + '.png'}
+                          alt={this.state.maker_nick} 
+                          src={window.location.origin +'/static/assets/avatars/' + this.state.taker_nick + '.png'}
                           />
                       </ListItemAvatar>
                     </ListItem>
@@ -334,7 +344,7 @@ export default class OrderPage extends Component {
                     <ListItemIcon>
                       <ArticleIcon/>
                     </ListItemIcon>
-                    <ListItemText primary={this.state.statusText} secondary="Order status"/>
+                    <ListItemText primary={this.state.status_message} secondary="Order status"/>
                   </ListItem>
                   <Divider />
               </>
@@ -353,7 +363,7 @@ export default class OrderPage extends Component {
               <ListItemIcon>
                 <PaymentsIcon/>
               </ListItemIcon>
-              <ListItemText primary={this.state.paymentMethod} secondary="Accepted payment methods"/>
+              <ListItemText primary={this.state.payment_method} secondary="Accepted payment methods"/>
             </ListItem>
             <Divider />
 
@@ -362,8 +372,8 @@ export default class OrderPage extends Component {
               <ListItemIcon>
                 <PriceChangeIcon/>
               </ListItemIcon>
-            {this.state.priceNow? 
-                <ListItemText primary={pn(this.state.priceNow)+" "+this.state.currencyCode+"/BTC - Premium: "+this.state.premiumNow+"%"} secondary="Price and Premium"/>
+            {this.state.price_now? 
+                <ListItemText primary={pn(this.state.price_now)+" "+this.state.currencyCode+"/BTC - Premium: "+this.state.premium_now+"%"} secondary="Price and Premium"/>
             :
               (this.state.isExplicit ? 
                 <ListItemText primary={pn(this.state.satoshis)} secondary="Amount of Satoshis"/>
@@ -386,7 +396,7 @@ export default class OrderPage extends Component {
                 <AccessTimeIcon/>
               </ListItemIcon>
               <ListItemText secondary="Expires in">
-                <Countdown date={new Date(this.state.expiresAt)} renderer={this.countdownRenderer} />
+                <Countdown date={new Date(this.state.expires_at)} renderer={this.countdownRenderer} />
               </ListItemText>
             </ListItem>
             <this.LinearDeterminate />
@@ -408,7 +418,7 @@ export default class OrderPage extends Component {
         </Grid>
 
         {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}
-        {this.state.isParticipant ? 
+        {this.state.is_participant ? 
           <this.CancelButton/>
          :
           <>
@@ -427,21 +437,21 @@ export default class OrderPage extends Component {
   
   orderDetailsPage (){
     return(
-      this.state.badRequest ?
+      this.state.bad_request ?
         <div align='center'>
           <Typography component="subtitle2" variant="subtitle2" color="secondary" >
-            {this.state.badRequest}<br/>
+            {this.state.bad_request}<br/>
           </Typography>
           <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
         </div>
         :
-        (this.state.isParticipant ? 
+        (this.state.is_participant ? 
           <Grid container xs={12} align="center" spacing={2}>
             <Grid item xs={6} align="left">
               {this.orderBox()}
             </Grid>
             <Grid item xs={6} align="left">
-              <TradeBox data={this.state}/>
+              <TradeBox data={this.state} completeSetState={this.completeSetState} />
             </Grid>
           </Grid>
           :

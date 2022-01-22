@@ -217,6 +217,14 @@ class OrderView(viewsets.ViewSet):
                 # add whether a collaborative cancel is pending
                 data['pending_cancel'] = order.is_pending_cancel
 
+        # 9) If status is 'DIS' and all HTLCS are in LOCKED
+        elif order.status == Order.Status.DIS:# TODO Add the other status
+
+            # add whether the dispute statement has been received
+            if data['is_maker']:
+                data['statement_submitted'] = (order.maker_statement != None and order.maker_statement != "")
+            elif data['is_taker']:
+                data['statement_submitted'] = (order.taker_statement != None and order.maker_statement != "")
         
         return Response(data, status.HTTP_200_OK)
 
