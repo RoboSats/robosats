@@ -210,10 +210,8 @@ class OrderView(viewsets.ViewSet):
 
         # 8) If status is 'CHA' or 'FSE' and all HTLCS are in LOCKED
         elif order.status in [Order.Status.WFI, Order.Status.CHA, Order.Status.FSE]:
-            print('CCCAAABBAAAAAAAAAAAAAAAA')
             # If all bonds are locked.
             if order.maker_bond.status == order.taker_bond.status == order.trade_escrow.status == LNPayment.Status.LOCKED:
-                print('AAABBAAAAAAAAAAAAAAAA')
                 # add whether a collaborative cancel is pending or has been asked
                 if (data['is_maker'] and order.taker_asked_cancel) or (data['is_taker'] and order.maker_asked_cancel):
                     print('PENDING')

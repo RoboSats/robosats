@@ -51,18 +51,18 @@ export default class OrderPage extends Component {
 
     // Refresh delays according to Order status
     this.statusToDelay = {
-      "0": 3000,     //'Waiting for maker bond'
-      "1": 30000,    //'Public'
+      "0": 2000,     //'Waiting for maker bond'
+      "1": 15000,    //'Public'
       "2": 9999999,  //'Deleted'
-      "3": 3000,     //'Waiting for taker bond'
+      "3": 2000,     //'Waiting for taker bond'
       "4": 9999999,  //'Cancelled'
       "5": 999999,   //'Expired'
       "6": 3000,     //'Waiting for trade collateral and buyer invoice'
       "7": 3000,     //'Waiting only for seller trade collateral'
-      "8": 10000,    //'Waiting only for buyer invoice'
+      "8": 8000,    //'Waiting only for buyer invoice'
       "9": 10000,    //'Sending fiat - In chatroom'
-      "10": 15000,   //'Fiat sent - In chatroom'
-      "11": 60000,   //'In dispute'
+      "10": 10000,   //'Fiat sent - In chatroom'
+      "11": 30000,   //'In dispute'
       "12": 9999999, //'Collaboratively cancelled'
       "13": 3000,    //'Sending satoshis to buyer'
       "14": 9999999, //'Sucessful trade'
@@ -73,11 +73,21 @@ export default class OrderPage extends Component {
   }
 
   completeSetState=(newStateVars)=>{
+
+    // In case the reply only has "bad_request"
+    // Do not substitute these two for "undefined" as
+    // otherStateVars will fail to assign values
+    if (newStateVars.currency == null){
+      newStateVars.currency = this.state.currency
+      newStateVars.status = this.state.status
+    }
+
     var otherStateVars = {
       loading: false,
       delay: this.setDelay(newStateVars.status),
       currencyCode: this.getCurrencyCode(newStateVars.currency),
     };
+    
     var completeStateVars = Object.assign({}, newStateVars, otherStateVars);
     this.setState(completeStateVars);
   }

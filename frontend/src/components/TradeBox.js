@@ -461,10 +461,9 @@ export default class TradeBox extends Component {
         </Grid>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="left">
-            <p>We are waiting for the seller to deposit the full trade BTC amount
-              into the escrow.</p>
-              <p> Just hang on for a moment. If the seller does not deposit, 
-                you will get your bond back automatically.</p>
+            <p>We are waiting for the seller lock the trade amount. </p>
+            <p> Just hang on for a moment. If the seller does not deposit, 
+              you will get your bond back automatically.</p>
           </Typography>
         </Grid>
         {this.showBondIsLocked()}
