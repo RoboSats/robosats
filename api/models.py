@@ -37,7 +37,7 @@ class Currency(models.Model):
 class LNPayment(models.Model):
 
     class Types(models.IntegerChoices):
-        NORM = 0, 'Regular invoice' # Only outgoing buyer payment will be a regular invoice (Non-hold)
+        NORM = 0, 'Regular invoice'
         HOLD = 1, 'hold invoice'
 
     class Concepts(models.IntegerChoices):
@@ -62,7 +62,6 @@ class LNPayment(models.Model):
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HOLD)
     concept = models.PositiveSmallIntegerField(choices=Concepts.choices, null=False, default=Concepts.MAKEBOND)
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.INVGEN)
-    routing_retries = models.PositiveSmallIntegerField(null=False, default=0)
     
     # payment info
     payment_hash = models.CharField(max_length=100, unique=True, default=None, blank=True, primary_key=True)
@@ -73,6 +72,10 @@ class LNPayment(models.Model):
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField()
     
+    # routing
+    routing_attempts = models.PositiveSmallIntegerField(null=False, default=0)
+    last_routing_time = models.DateTimeField(null=True, default=None, blank=True)
+
     # involved parties
     sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE, null=True, default=None)
     receiver = models.ForeignKey(User, related_name='receiver', on_delete=models.CASCADE, null=True, default=None)
@@ -156,7 +159,6 @@ class Order(models.Model):
     maker_bond = models.OneToOneField(LNPayment, related_name='order_made', on_delete=models.SET_NULL, null=True, default=None, blank=True)
     taker_bond = models.OneToOneField(LNPayment, related_name='order_taken', on_delete=models.SET_NULL, null=True, default=None, blank=True)
     trade_escrow = models.OneToOneField(LNPayment, related_name='order_escrow', on_delete=models.SET_NULL, null=True, default=None, blank=True)
-
     # buyer payment LN invoice
     buyer_invoice = models.OneToOneField(LNPayment, related_name='order_paid', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 

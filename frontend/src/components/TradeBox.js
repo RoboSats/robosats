@@ -644,6 +644,51 @@ handleRatingChange=(e)=>{
     )
   }
 
+  showSendingPayment(){
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="h6" variant="h6">
+            Attempting Lightning Payment
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body2" align="center">
+            RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must
+            be online in order to receive payments.
+          </Typography>
+        </Grid>
+      </Grid>
+    )
+  }
+
+  showRoutingFailed(){
+
+    // TODO If it has failed 3 times, ask for a new invoice.
+    
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="h6" variant="h6">
+            Lightning Routing Failed
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body2" align="center">
+            RoboSats will retry pay your invoice 3 times every 5 minutes. If it keeps failing, you
+            will be able to submit a new invoice. Check whether you have enough inboud liquidity.
+            Remember that lightning nodes must be online in order to receive payments.
+          </Typography>
+          <List>
+            <ListItemText secondary="Next attempt in">
+              <Countdown date={new Date(this.props.data.next_retry_time)} renderer={this.countdownRenderer} />
+            </ListItemText>
+          </List>
+        </Grid>
+      </Grid>
+    )
+  }
+
   render() {
     return (
       <Grid container spacing={1} style={{ width:330}}>
@@ -672,11 +717,14 @@ handleRatingChange=(e)=>{
               {this.props.data.status == 9 || this.props.data.status == 10 ? this.showChat(): ""}
 
             {/* Trade Finished */}
-              {(this.props.data.is_seller & this.props.data.status > 12 & this.props.data.status < 15) ? this.showRateSelect()  : ""}
+              {(this.props.data.is_seller & [13,14,15].includes(this.props.data.status)) ? this.showRateSelect()  : ""}
               {(this.props.data.is_buyer & this.props.data.status == 14) ? this.showRateSelect()  : ""}
 
             {/* Trade Finished - Payment Routing Failed */}
-              {this.props.data.is_buyer & this.props.data.status == 15 ? this.showUpdateInvoice()  : ""}
+              {this.props.data.is_buyer & this.props.data.status == 13 ? this.showSendingPayment()  : ""}
+
+            {/* Trade Finished - Payment Routing Failed */}
+            {this.props.data.is_buyer & this.props.data.status == 15 ? this.showRoutingFailed()  : ""}
 
             {/* Trade Finished - TODO Needs more planning */}
             {this.props.data.status == 11 ? this.showInDisputeStatement() : ""}
