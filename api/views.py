@@ -26,6 +26,7 @@ from decouple import config
 
 EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
 FEE = float(config('FEE'))
+RETRY_TIME = int(config('RETRY_TIME'))
 
 avatar_path = Path('frontend/static/assets/avatars')
 avatar_path.mkdir(parents=True, exist_ok=True)
@@ -230,6 +231,11 @@ class OrderView(viewsets.ViewSet):
                 data['statement_submitted'] = (order.maker_statement != None and order.maker_statement != "")
             elif data['is_taker']:
                 data['statement_submitted'] = (order.taker_statement != None and order.maker_statement != "")
+
+        # 9) If status is 'Failed routing', reply with retry amounts, time of next retry and ask for invoice at third.
+        elif order.status == Order.Status.FAI:
+            data['retries'] = order.buyer_invoice.routing_attempts
+            data['next_retry_time'] = order.buyer_invoice.last_routing_time + timedelta(minutes=RETRY_TIME)
         
         return Response(data, status.HTTP_200_OK)
 
