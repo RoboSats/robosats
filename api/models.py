@@ -142,7 +142,8 @@ class Order(models.Model):
     # order participants
     maker = models.ForeignKey(User, related_name='maker', on_delete=models.SET_NULL, null=True, default=None)  # unique = True, a maker can only make one order
     taker = models.ForeignKey(User, related_name='taker', on_delete=models.SET_NULL, null=True, default=None, blank=True)  # unique = True, a taker can only take one order
-    is_pending_cancel = models.BooleanField(default=False, null=False) # When collaborative cancel is needed and one partner has cancelled.
+    maker_asked_cancel = models.BooleanField(default=False, null=False) # When collaborative cancel is needed and one partner has cancelled.
+    taker_asked_cancel = models.BooleanField(default=False, null=False) # When collaborative cancel is needed and one partner has cancelled.
     is_fiat_sent = models.BooleanField(default=False, null=False)
 
     # in dispute

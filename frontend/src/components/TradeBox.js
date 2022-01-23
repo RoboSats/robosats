@@ -89,15 +89,15 @@ export default class TradeBox extends Component {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            The RoboSats staff will examine the statements and evidence provided by the participants.
-            It is best if you provide a burner contact method on your statement for the staff to contact you.
-            The satoshis in the trade escrow will be sent to the dispute winner, while the dispute 
-            loser will lose the bond. 
+            The RoboSats staff will examine the statements and evidence provided. You need to build
+            a complete case, as the staff cannot read the chat. It is best to provide a burner contact 
+            method with your statement. The satoshis in the trade escrow will be sent to the dispute winner, 
+            while the dispute loser will lose the bond. 
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={this.handleClickCloseConfirmDispute} autoFocus>Disagree</Button>
-          <Button onClick={this.handleClickAgreeDisputeButton}> Agree </Button>
+          <Button onClick={this.handleClickAgreeDisputeButton}> Agree and open dispute </Button>
         </DialogActions>
       </Dialog>
     )

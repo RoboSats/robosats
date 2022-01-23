@@ -189,7 +189,6 @@ class OrderView(viewsets.ViewSet):
         
         # 7 a. ) If seller and status is 'WF2' or 'WFE' 
         elif data['is_seller'] and (order.status == Order.Status.WF2 or order.status == Order.Status.WFE):
-
             # If the two bonds are locked, reply with an ESCROW hold invoice.
             if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
                 valid, context = Logics.gen_escrow_hold_invoice(order, request.user)
@@ -210,15 +209,23 @@ class OrderView(viewsets.ViewSet):
                     return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 8) If status is 'CHA' or 'FSE' and all HTLCS are in LOCKED
-        elif order.status == Order.Status.CHA or order.status == Order.Status.FSE: # TODO Add the other status
-
+        elif order.status in [Order.Status.WFI, Order.Status.CHA, Order.Status.FSE]:
+            print('CCCAAABBAAAAAAAAAAAAAAAA')
             # If all bonds are locked.
             if order.maker_bond.status == order.taker_bond.status == order.trade_escrow.status == LNPayment.Status.LOCKED:
-                # add whether a collaborative cancel is pending
-                data['pending_cancel'] = order.is_pending_cancel
+                print('AAABBAAAAAAAAAAAAAAAA')
+                # add whether a collaborative cancel is pending or has been asked
+                if (data['is_maker'] and order.taker_asked_cancel) or (data['is_taker'] and order.maker_asked_cancel):
+                    print('PENDING')
+                    data['pending_cancel'] = True
+                elif (data['is_maker'] and order.maker_asked_cancel) or (data['is_taker'] and order.taker_asked_cancel):
+                    print('ASKED')
+                    data['asked_for_cancel'] = True
+                else:
+                    data['asked_for_cancel'] = False
 
         # 9) If status is 'DIS' and all HTLCS are in LOCKED
-        elif order.status == Order.Status.DIS:# TODO Add the other status
+        elif order.status == Order.Status.DIS:
 
             # add whether the dispute statement has been received
             if data['is_maker']:

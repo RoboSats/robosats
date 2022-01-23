@@ -421,13 +421,45 @@ class Logics():
                 return True, None
 
         # 5) When trade collateral has been posted (after escrow)
-            '''Always goes to cancelled status. Collaboration is needed.
-            When a user asks for cancel, 'order.is_pending_cancel' goes True.
+            '''Always goes to CCA status. Collaboration is needed.
+            When a user asks for cancel, 'order.m/t/aker_asked_cancel' goes True.
             When the second user asks for cancel. Order is totally cancelled.
-            Has a small cost for both parties to prevent node DDOS.'''
-        
+            Must have a small cost for both parties to prevent node DDOS.'''
+        elif order.status in [Order.Status.WFI, Order.Status.CHA, Order.Status.FSE]:
+            
+            # if the maker had asked, and now the taker does: cancel order, return everything
+            if order.maker_asked_cancel and user == order.taker:
+                cls.collaborative_cancel(order)
+                return True, None
+            
+            # if the taker had asked, and now the maker does: cancel order, return everything
+            elif order.taker_asked_cancel and user == order.maker:
+                cls.collaborative_cancel(order)
+                return True, None
+
+            # Otherwise just make true the asked for cancel flags
+            elif user == order.taker:
+                order.taker_asked_cancel = True
+                order.save()
+                return True, None
+            
+            elif user == order.maker:
+                order.maker_asked_cancel = True
+                order.save()
+                return True, None
+            
+
         else:
             return False, {'bad_request':'You cannot cancel this order'}
+
+    @classmethod
+    def collaborative_cancel(cls, order):
+        cls.return_bond(order.maker_bond)
+        cls.return_bond(order.taker_bond)
+        cls.return_escrow(order)
+        order.status = Order.Status.CCA
+        order.save()
+        return
 
     def publish_order(order):
         order.status = Order.Status.PUB

@@ -9,9 +9,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import NumbersIcon from '@mui/icons-material/Numbers';
 import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import PaymentsIcon from '@mui/icons-material/Payments';
-import MoneyIcon from '@mui/icons-material/Money';
 import ArticleIcon from '@mui/icons-material/Article';
-import ContentCopy from "@mui/icons-material/ContentCopy";
 
 function getCookie(name) {
   let cookieValue = null;
@@ -45,88 +43,45 @@ export default class OrderPage extends Component {
         total_secs_exp: 300,
         loading: true,
         openCancel: false,
+        openCollaborativeCancel: false,
     };
     this.orderId = this.props.match.params.orderId;
     this.getCurrencyDict();
     this.getOrderDetails();
 
-    // Refresh delais according to Order status
+    // Refresh delays according to Order status
     this.statusToDelay = {
-      "0": 3000,    //'Waiting for maker bond'
-      "1": 30000,   //'Public'
-      "2": 9999999, //'Deleted'
-      "3": 3000,    //'Waiting for taker bond'
-      "4": 9999999, //'Cancelled'
-      "5": 999999,  //'Expired'
-      "6": 3000,    //'Waiting for trade collateral and buyer invoice'
-      "7": 3000,    //'Waiting only for seller trade collateral'
-      "8": 10000,   //'Waiting only for buyer invoice'
-      "9": 10000,   //'Sending fiat - In chatroom'
-      "10": 15000,  //'Fiat sent - In chatroom'
-      "11": 60000,  //'In dispute'
-      "12": 9999999,//'Collaboratively cancelled'
-      "13": 3000,   //'Sending satoshis to buyer'
-      "14": 9999999,//'Sucessful trade'
-      "15": 10000,  //'Failed lightning network routing'
-      "16": 9999999,//'Maker lost dispute'
-      "17": 9999999,//'Taker lost dispute'
+      "0": 3000,     //'Waiting for maker bond'
+      "1": 30000,    //'Public'
+      "2": 9999999,  //'Deleted'
+      "3": 3000,     //'Waiting for taker bond'
+      "4": 9999999,  //'Cancelled'
+      "5": 999999,   //'Expired'
+      "6": 3000,     //'Waiting for trade collateral and buyer invoice'
+      "7": 3000,     //'Waiting only for seller trade collateral'
+      "8": 10000,    //'Waiting only for buyer invoice'
+      "9": 10000,    //'Sending fiat - In chatroom'
+      "10": 15000,   //'Fiat sent - In chatroom'
+      "11": 60000,   //'In dispute'
+      "12": 9999999, //'Collaboratively cancelled'
+      "13": 3000,    //'Sending satoshis to buyer'
+      "14": 9999999, //'Sucessful trade'
+      "15": 10000,   //'Failed lightning network routing'
+      "16": 9999999, //'Maker lost dispute'
+      "17": 9999999, //'Taker lost dispute'
     }
   }
 
-  // Unneeded for the most part. Let's keep variable names as they come from the API
-  // Will need some renaming everywhere, but will decrease the mess.
   completeSetState=(newStateVars)=>{
-    console.log(newStateVars)
     var otherStateVars = {
       loading: false,
       delay: this.setDelay(newStateVars.status),
       currencyCode: this.getCurrencyCode(newStateVars.currency),
     };
-    console.log(otherStateVars)
     var completeStateVars = Object.assign({}, newStateVars, otherStateVars);
-    console.log(completeStateVars)
     this.setState(completeStateVars);
-  //   {
-  //     loading: false,
-  //     delay: this.setDelay(data.status),
-  //     id: data.id,
-  //     status: data.status,
-  //     status_message: data.status_message,
-  //     type: data.type,
-  //     currency: data.currency,
-  //     currencyCode: this.getCurrencyCode(data.currency),
-  //     amount: data.amount,
-  //     payment_method: data.payment_method,
-  //     isExplicit: data.is_explicit,
-  //     premium: data.premium,
-  //     satoshis: data.satoshis,
-  //     makerId: data.maker, 
-  //     is_participant: data.is_participant,
-  //     urNick: data.ur_nick,
-  //     maker_nick: data.maker_nick,
-  //     takerId: data.taker,
-  //     taker_nick: data.taker_nick,
-  //     is_maker: data.is_maker,
-  //     is_taker: data.is_taker,
-  //     is_buyer: data.is_buyer,
-  //     is_seller: data.is_seller,
-  //     penalty: data.penalty,
-  //     expires_at: data.expires_at,
-  //     bad_request: data.bad_request,
-  //     bond_invoice: data.bond_invoice,
-  //     bondSatoshis: data.bond_satoshis,
-  //     escrow_invoice: data.escrow_invoice,
-  //     escrowSatoshis: data.escrow_satoshis,
-  //     invoice_amount: data.invoice_amount,
-  //     total_secs_exp: data.total_secs_exp,
-  //     num_similar_orders: data.num_similar_orders,
-  //     price_now: data.price_now,
-  //     premium_now: data.premium_now,
-  //     probots_in_book: data.robots_in_book,
-  //     premium_percentile: data.premium_percentile,
-  //     num_similar_orders: data.num_similar_orders
-  // })
   }
+
   getOrderDetails() {
     this.setState(null)
     fetch('/api/order' + '?order_id=' + this.orderId)
@@ -277,6 +232,53 @@ export default class OrderPage extends Component {
     )
   }
 
+  handleClickConfirmCollaborativeCancelButton=()=>{
+    console.log(this.state)
+      const requestOptions = {
+          method: 'POST',
+          headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+          body: JSON.stringify({
+            'action':'cancel',
+          }),
+      };
+      fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+      .then((response) => response.json())
+      .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
+    this.handleClickCloseCollaborativeCancelDialog();
+  }
+
+  handleClickOpenCollaborativeCancelDialog = () => {
+    this.setState({openCollaborativeCancel: true});
+  };
+  handleClickCloseCollaborativeCancelDialog = () => {
+      this.setState({openCollaborativeCancel: false});
+  };
+
+  CollaborativeCancelDialog =() =>{
+  return(
+      <Dialog
+      open={this.state.openCollaborativeCancel}
+      onClose={this.handleClickCloseCollaborativeCancelDialog}
+      aria-labelledby="collaborative-cancel-dialog-title"
+      aria-describedby="collaborative-cancel-dialog-description"
+      >
+        <DialogTitle id="cancel-dialog-title">
+          {"Collaborative cancel the order?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="cancel-dialog-description">
+            The trade escrow has been posted. The order can be cancelled only if both, maker and 
+            taker, agree to cancel. 
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClickCloseCollaborativeCancelDialog} autoFocus>Go back</Button>
+          <Button onClick={this.handleClickConfirmCollaborativeCancelButton}> Collaborative Cancel </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
   CancelButton = () => {
 
     // If maker and Waiting for Bond. Or if taker and Waiting for bond.
@@ -289,16 +291,26 @@ export default class OrderPage extends Component {
       )}
     // If the order does not yet have an escrow deposited. Show dialog
     // to confirm forfeiting the bond
-    if (this.state.status in [0,1,3,6,7]){
+    if ([1,3,6,7].includes(this.state.status)){
       return(
-        <Grid item xs={12} align="center">
-          <this.CancelDialog/>
-          <Button variant='contained' color='secondary' onClick={this.handleClickOpenConfirmCancelDialog}>Cancel</Button>
-        </Grid>
+        <div id="openDialogCancelButton">
+          <Grid item xs={12} align="center">
+            <this.CancelDialog/>
+            <Button variant='contained' color='secondary' onClick={this.handleClickOpenConfirmCancelDialog}>Cancel</Button>
+          </Grid>
+        </div>
       )}
     
-    // TODO If the escrow is Locked, show the collaborative cancel button.
-    
+    // If the escrow is Locked, show the collaborative cancel button.
+  
+    if ([8,9].includes(this.state.status)){
+      return(
+        <Grid item xs={12} align="center">
+          <this.CollaborativeCancelDialog/>
+          <Button variant='contained' color='secondary' onClick={this.handleClickOpenCollaborativeCancelDialog}>Collaborative Cancel</Button>
+        </Grid>
+      )}
+
     // If none of the above do not return a cancel button.
     return(null)
   }
@@ -413,24 +425,49 @@ export default class OrderPage extends Component {
               </Grid>
             </>
             : null} 
+            
+            {/* If the counterparty asked for collaborative cancel */}
+            {this.state.pending_cancel ? 
+            <>
+              <Divider />
+              <Grid item xs={12} align="center">
+                <Alert severity="warning" sx={{maxWidth:360}}>
+                  {this.state.is_maker ? this.state.taker_nick : this.state.maker_nick} is asking for a collaborative cancel
+                </Alert>  
+              </Grid>
+            </>
+            : null} 
+
+            {/* If the user has asked for a collaborative cancel */}
+            {this.state.asked_for_cancel ? 
+            <>
+              <Divider />
+              <Grid item xs={12} align="center">
+                <Alert severity="warning" sx={{maxWidth:360}}>
+                  You asked for a collaborative cancellation
+                </Alert>  
+              </Grid>
+            </>
+            : null} 
 
           </Paper>
         </Grid>
-
-        {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}
-        {this.state.is_participant ? 
-          <this.CancelButton/>
-         :
-          <>
-            <Grid item xs={12} align="center">
-              <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>
+        
+        <Grid item xs={12} align="center">
+          {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}
+          {this.state.is_participant ? 
+            <this.CancelButton/>
+          :
+            <Grid container spacing={1}>
+              <Grid item xs={12} align="center">
+                <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>
+              </Grid>
+              <Grid item xs={12} align="center">
+                <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
+              </Grid>
             </Grid>
-            <Grid item xs={12} align="center">
-              <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
-            </Grid>
-          </>
-          }
-
+            }
+        </Grid>
       </Grid>
     )
   }
