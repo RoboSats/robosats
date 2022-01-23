@@ -5,7 +5,6 @@ from api.models import LNPayment, Order
 from api.logics import Logics
 
 from django.utils import timezone
-from datetime import timedelta
 from decouple import config
 from base64 import b64decode
 import time

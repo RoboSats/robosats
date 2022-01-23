@@ -44,6 +44,17 @@ export default class TradeBox extends Component {
     }
   }
 
+  Sound = ({soundFileName}) => (
+    // Four filenames: "locked-invoice", "taker-found", "open-chat", "sucessful"
+    <audio autoPlay src={`/static/assets/sounds/${soundFileName}.mp3`} />
+  )
+
+  togglePlay = () => {
+    this.setState({ playSound: !this.state.playSound }, () => {
+      this.state.playSound ? this.audio.play() : this.audio.pause();
+    });
+  }
+
   handleClickOpenConfirmDispute = () => {
     this.setState({openConfirmDispute: true});
   };
@@ -182,6 +193,8 @@ export default class TradeBox extends Component {
   showEscrowQRInvoice=()=>{
     return (
       <Grid container spacing={1}>
+        {/* Make confirmation sound for HTLC received. */}
+        <this.Sound soundFileName="locked-invoice"/>
         <Grid item xs={12} align="center">
           <Typography color="green" component="subtitle1" variant="subtitle1">
             <b>Deposit {pn(this.props.data.escrow_satoshis)} Sats as trade collateral </b>
@@ -208,11 +221,10 @@ export default class TradeBox extends Component {
   }
 
   showTakerFound=()=>{
-
-    // TODO Make some sound here! The maker might have been waiting for long
- 
     return (
       <Grid container spacing={1}>
+        {/* Make bell sound when taker is found */}
+        <this.Sound soundFileName="taker-found"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
             <b>A taker has been found! </b>
@@ -232,6 +244,8 @@ export default class TradeBox extends Component {
   showMakerWait=()=>{
     return (
       <Grid container spacing={1}>
+        {/* Make confirmation sound for HTLC received. */}
+        <this.Sound soundFileName="locked-invoice"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
             <b> Your order is public. Wait for a taker. </b>
@@ -338,6 +352,8 @@ export default class TradeBox extends Component {
       // TODO Option to upload files and images
 
       <Grid container spacing={1}>
+        {/* In case the taker was very fast to scan the bond, make the taker found alarm sound again */}
+        <this.Sound soundFileName="taker-found"/>
         <Grid item xs={12} align="center">
           <Typography color="primary" component="subtitle1" variant="subtitle1">
             <b> Submit a LN invoice for {pn(this.props.data.invoice_amount)} Sats </b>
@@ -459,6 +475,8 @@ export default class TradeBox extends Component {
   showWaitingForBuyerInvoice(){
     return(
       <Grid container spacing={1}>
+        {/* Make confirmation sound for HTLC received. */}
+        <this.Sound soundFileName="locked-invoice"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
             <b>The trade collateral is locked! 🎉 </b>
@@ -571,6 +589,8 @@ handleRatingChange=(e)=>{
   
     return(
       <Grid container spacing={1}>
+        {/* Make confirmation sound for Chat Open. */}
+        <this.Sound soundFileName="chat-open"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
             <b>Chatting with {this.props.data.is_maker ? this.props.data.taker_nick : this.props.data.maker_nick}</b>
@@ -603,6 +623,8 @@ handleRatingChange=(e)=>{
   showRateSelect(){
     return(
       <Grid container spacing={1}>
+        {/* Make confirmation sound for Chat Open. */}
+        <this.Sound soundFileName="successful"/>
         <Grid item xs={12} align="center">
           <Typography component="h6" variant="h6">
             🎉Trade finished!🥳

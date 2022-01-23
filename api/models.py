@@ -19,7 +19,7 @@ BOND_SIZE = float(config('BOND_SIZE'))
 
 class Currency(models.Model):
 
-    currency_dict = json.load(open('./frontend/static/assets/currencies.json'))
+    currency_dict = json.load(open('frontend/static/assets/currencies.json'))
     currency_choices = [(int(val), label) for val, label in list(currency_dict.items())]
 
     currency = models.PositiveSmallIntegerField(choices=currency_choices, null=False, unique=True)
@@ -175,7 +175,7 @@ class Order(models.Model):
         8  : 60*int(config('INVOICE_AND_ESCROW_DURATION')),  # 'Waiting only for buyer invoice'
         9  : 60*60*int(config('FIAT_EXCHANGE_DURATION')),    # 'Sending fiat - In chatroom'
         10 : 60*60*int(config('FIAT_EXCHANGE_DURATION')),    # 'Fiat sent - In chatroom'
-        11 : 1*24*60*60,                                    # 'In dispute'
+        11 : 1*24*60*60,                                     # 'In dispute'
         12 : 0,                                              # 'Collaboratively cancelled'
         13 : 24*60*60,                                       # 'Sending satoshis to buyer'
         14 : 24*60*60,                                       # 'Sucessful trade'
