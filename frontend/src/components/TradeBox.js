@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { Link, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
-
+import Countdown from 'react-countdown';
 import Chat from "./Chat"
 
 // Icons
@@ -349,7 +349,7 @@ export default class TradeBox extends Component {
   showInputInvoice(){
     return (
 
-      // TODO Option to upload files and images
+      // TODO Option to upload using QR from camera
 
       <Grid container spacing={1}>
         {/* In case the taker was very fast to scan the bond, make the taker found alarm sound again */}
@@ -662,10 +662,45 @@ handleRatingChange=(e)=>{
     )
   }
 
-  showRoutingFailed(){
-
+  showRoutingFailed=()=>{
     // TODO If it has failed 3 times, ask for a new invoice.
-
+    if(this.props.data.invoice_expired){
+      return(
+        <Grid container spacing={1}>
+          <Grid item xs={12} align="center">
+            <Typography component="h6" variant="h6">
+              Lightning Routing Failed
+            </Typography>
+          </Grid>
+          <Grid item xs={12} align="center">
+            <Typography component="body2" variant="body2" align="center">
+              Your invoice has expires or more than 3 payments have been attempted.
+            </Typography>
+          </Grid>
+          <Grid item xs={12} align="center">
+            <Typography color="primary" component="subtitle1" variant="subtitle1">
+              <b> Submit a LN invoice for {pn(this.props.data.invoice_amount)} Sats </b>
+            </Typography>
+          </Grid>
+          <Grid item xs={12} align="center">
+            <TextField 
+                error={this.state.badInvoice}
+                helperText={this.state.badInvoice ? this.state.badInvoice : "" }
+                label={"Payout Lightning Invoice"}
+                required
+                inputProps={{
+                    style: {textAlign:"center"}
+                }}
+                multiline
+                onChange={this.handleInputInvoiceChanged}
+            />
+          </Grid>
+          <Grid item xs={12} align="center">
+            <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>Submit</Button>
+          </Grid>
+        </Grid>
+      )
+    }else{
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
@@ -675,18 +710,19 @@ handleRatingChange=(e)=>{
         </Grid>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
-            RoboSats will retry pay your invoice 3 times every 5 minutes. If it keeps failing, you
+            RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you
             will be able to submit a new invoice. Check whether you have enough inboud liquidity.
             Remember that lightning nodes must be online in order to receive payments.
           </Typography>
           <List>
+            <Divider/>
             <ListItemText secondary="Next attempt in">
               <Countdown date={new Date(this.props.data.next_retry_time)} renderer={this.countdownRenderer} />
             </ListItemText>
           </List>
         </Grid>
       </Grid>
-    )
+    )}
   }
 
   render() {

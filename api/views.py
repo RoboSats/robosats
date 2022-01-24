@@ -236,6 +236,11 @@ class OrderView(viewsets.ViewSet):
         elif order.status == Order.Status.FAI:
             data['retries'] = order.buyer_invoice.routing_attempts
             data['next_retry_time'] = order.buyer_invoice.last_routing_time + timedelta(minutes=RETRY_TIME)
+
+            if order.buyer_invoice.status == LNPayment.Status.EXPIRE:
+                data['invoice_expired'] = True
+                # Add invoice amount once again if invoice was expired.
+                data['invoice_amount'] = int(order.last_satoshis * (1-FEE))
         
         return Response(data, status.HTTP_200_OK)
 

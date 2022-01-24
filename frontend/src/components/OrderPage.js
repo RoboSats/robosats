@@ -87,6 +87,7 @@ export default class OrderPage extends Component {
       delay: this.setDelay(newStateVars.status),
       currencyCode: this.getCurrencyCode(newStateVars.currency),
       penalty: newStateVars.penalty, // in case penalty time has finished, it goes back to null
+      invoice_expired: newStateVars.invoice_expired  // in case invoice had expired, it goes back to null when it is valid again
     };
 
     var completeStateVars = Object.assign({}, newStateVars, otherStateVars);

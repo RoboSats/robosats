@@ -295,6 +295,7 @@ class Logics():
             concept = LNPayment.Concepts.PAYBUYER, 
             type = LNPayment.Types.NORM, 
             sender = User.objects.get(username=ESCROW_USERNAME),
+            order_paid = order,  # In case this user has other buyer_invoices, update the one related to this order.
             receiver= user, 
             # if there is a LNPayment matching these above, it updates that one with defaults below.
             defaults={
@@ -320,6 +321,10 @@ class Logics():
                 order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.CHA])
             else:
                 order.status = Order.Status.WFE
+        
+        # If the order status is 'Failed Routing'. Retry payment.
+        if order.status == Order.Status.FAI: 
+            follow_send_payment(order.buyer_invoice)
 
         order.save()
         return True, None
@@ -766,10 +771,7 @@ class Logics():
                 if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
                     is_payed, context = follow_send_payment(order.buyer_invoice) ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
                     if is_payed:
-                        order.status = Order.Status.SUC
-                        order.buyer_invoice.status = LNPayment.Status.SUCCED
-                        order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.SUC])
-                        # RETURN THE BONDS
+                        # RETURN THE BONDS // Probably best also do it even if payment failed
                         cls.return_bond(order.taker_bond)
                         cls.return_bond(order.maker_bond)
                         order.save()
