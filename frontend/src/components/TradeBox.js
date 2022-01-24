@@ -147,7 +147,7 @@ export default class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2">
-            Robosats show commitment to their peers
+            Robots show commitment to their peers
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -665,7 +665,7 @@ handleRatingChange=(e)=>{
   showRoutingFailed(){
 
     // TODO If it has failed 3 times, ask for a new invoice.
-    
+
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">

@@ -52,7 +52,7 @@ export default class OrderPage extends Component {
     // Refresh delays according to Order status
     this.statusToDelay = {
       "0": 2000,     //'Waiting for maker bond'
-      "1": 15000,    //'Public'
+      "1": 45000,    //'Public'
       "2": 9999999,  //'Deleted'
       "3": 2000,     //'Waiting for taker bond'
       "4": 9999999,  //'Cancelled'
@@ -87,7 +87,7 @@ export default class OrderPage extends Component {
       delay: this.setDelay(newStateVars.status),
       currencyCode: this.getCurrencyCode(newStateVars.currency),
     };
-    
+
     var completeStateVars = Object.assign({}, newStateVars, otherStateVars);
     this.setState(completeStateVars);
   }

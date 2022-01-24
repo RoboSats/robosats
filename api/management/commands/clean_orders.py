@@ -62,4 +62,4 @@ class Command(BaseCommand):
             if 'database is locked' in str(e):
                 self.stdout.write('database is locked')
             
-            self.stdout.write(e)
+            self.stdout.write(str(e))

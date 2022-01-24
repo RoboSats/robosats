@@ -500,7 +500,10 @@ class Logics():
         description = f"RoboSats - Publishing '{str(order)}' - This is a maker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel."
 
         # Gen hold Invoice
-        hold_payment = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
+        hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
+                                            description, 
+                                            invoice_expiry=Order.t_to_expire[Order.Status.WFB], 
+                                            cltv_expiry_secs=BOND_EXPIRY*3600)
         
         order.maker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.MAKEBOND, 
@@ -577,7 +580,10 @@ class Logics():
             + " - This is a taker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel.")
 
         # Gen hold Invoice
-        hold_payment = LNNode.gen_hold_invoice(bond_satoshis, description, BOND_EXPIRY*3600)
+        hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
+                                                description,
+                                                invoice_expiry=Order.t_to_expire[Order.Status.TAK], 
+                                                cltv_expiry_secs=BOND_EXPIRY*3600)
         
         order.taker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.TAKEBOND, 
@@ -640,7 +646,10 @@ class Logics():
         description = f"RoboSats - Escrow amount for '{str(order)}' - The escrow will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
 
         # Gen hold Invoice
-        hold_payment = LNNode.gen_hold_invoice(escrow_satoshis, description, ESCROW_EXPIRY*3600)
+        hold_payment = LNNode.gen_hold_invoice(escrow_satoshis, 
+                                                description,
+                                                invoice_expiry=Order.t_to_expire[Order.Status.WF2], 
+                                                cltv_expiry_secs=ESCROW_EXPIRY*3600)
         
         order.trade_escrow = LNPayment.objects.create(
             concept = LNPayment.Concepts.TRESCROW, 

@@ -62,8 +62,8 @@ class Command(BaseCommand):
                     hold_lnpayment.status = lnd_state_to_lnpayment_status[response.state]
 
                 except Exception as e:
-                    # If it fails at finding the invoice it has been canceled.
-                    # On RoboSats DB we make a distinction between cancelled and returned (LND does not)
+                    # If it fails at finding the invoice: it has been canceled.
+                    # In RoboSats DB we make a distinction between cancelled and returned (LND does not)
                     if 'unable to locate invoice' in str(e): 
                         self.stdout.write(str(e))
                         hold_lnpayment.status = LNPayment.Status.CANCEL
@@ -140,4 +140,4 @@ class Command(BaseCommand):
             if 'database is locked' in str(e):
                 self.stdout.write('database is locked')
             
-            self.stdout.write(e)
+            self.stdout.write(str(e))

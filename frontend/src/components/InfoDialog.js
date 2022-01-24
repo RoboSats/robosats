@@ -79,10 +79,10 @@ export default class InfoDialog extends Component {
               In addition, disputes are solved by the <i>RoboSats</i> staff.
             </p> 
 
-            <p> Trust requirements are minimal, however there is still one way <i>RoboSats</i>
-                could run away with your satoshis: by not releasing 
-               the satoshis to the buyer. It could be argued that such move is not on <i>RoboSats</i> 
-               interest as it would damage the reputation for a small payout. 
+            <p> To be totally clear. Trust requirements are minimized. However, there is still 
+            one way <i>RoboSats </i> could run away with your satoshis: by not releasing 
+               the satoshis to the buyer. It could be argued that such move is not in <i>RoboSats' </i> 
+                as it would damage the reputation for a small payout. 
               However, you should hesitate and only trade small quantities at a 
               time. For large amounts use an onchain escrow service such as <i>Bisq</i>
             </p> 
@@ -98,7 +98,7 @@ export default class InfoDialog extends Component {
               forever. This is true for both, locked bonds and trading escrows. However, 
               there is a small window between the seller confirms FIAT RECEIVED and the moment 
               the buyer receives the satoshis when the funds could be permanentely lost if
-              <i>RoboSats</i> disappears. This window is about 1 second long. Make sure to have enough
+              <i> RoboSats</i> disappears. This window is about 1 second long. Make sure to have enough
               inbound liquidity to avoid routing failures. If you have any problem, reach out
               trough the <i>RoboSats</i> public channels.
             </p>
