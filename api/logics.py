@@ -517,7 +517,8 @@ class Logics():
             description =  description,
             payment_hash = hold_payment['payment_hash'],
             created_at = hold_payment['created_at'],
-            expires_at = hold_payment['expires_at'])
+            expires_at = hold_payment['expires_at'],
+            cltv_expiry = hold_payment['cltv_expiry'])
 
         order.save()
         return True, {'bond_invoice':hold_payment['invoice'], 'bond_satoshis':bond_satoshis}
@@ -597,7 +598,8 @@ class Logics():
             description =  description,
             payment_hash = hold_payment['payment_hash'],
             created_at = hold_payment['created_at'],
-            expires_at = hold_payment['expires_at'])
+            expires_at = hold_payment['expires_at'],
+            cltv_expiry = hold_payment['cltv_expiry'])
 
         order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.TAK])
         order.save()
@@ -663,7 +665,8 @@ class Logics():
             description =  description,
             payment_hash = hold_payment['payment_hash'],
             created_at = hold_payment['created_at'],
-            expires_at = hold_payment['expires_at'])
+            expires_at = hold_payment['expires_at'],
+            cltv_expiry = hold_payment['cltv_expiry'])
 
         order.save()
         return True, {'escrow_invoice':hold_payment['invoice'],'escrow_satoshis': escrow_satoshis}

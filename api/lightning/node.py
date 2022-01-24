@@ -80,7 +80,7 @@ class LNNode():
                 memo=description,
                 value=num_satoshis,
                 hash=r_hash,
-                expiry=invoice_expiry,
+                expiry=int(invoice_expiry*1.15), # actual expiry is padded by 15%
                 cltv_expiry=cltv_expiry_blocks,
                 )
         response = cls.invoicesstub.AddHoldInvoice(request, metadata=[('macaroon', MACAROON.hex())])
@@ -91,6 +91,7 @@ class LNNode():
         hold_payment['payment_hash'] = payreq_decoded.payment_hash
         hold_payment['created_at'] = timezone.make_aware(datetime.fromtimestamp(payreq_decoded.timestamp))
         hold_payment['expires_at'] = hold_payment['created_at'] + timedelta(seconds=payreq_decoded.expiry)
+        hold_payment['cltv_expiry'] = cltv_expiry_blocks
 
         return hold_payment
 
@@ -103,6 +104,9 @@ class LNNode():
         print(response.state)
 
         # TODO ERROR HANDLING
+        # Will fail if 'unable to locate invoice'. Happens if invoice expiry 
+        # time has passed (but these are 15% padded at the moment). Should catch it
+        # and report back that the invoice has expired (better robustness)
         if response.state == 0: # OPEN
             print('STATUS: OPEN')
             pass

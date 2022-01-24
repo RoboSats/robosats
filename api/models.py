@@ -71,6 +71,7 @@ class LNPayment(models.Model):
     num_satoshis = models.PositiveBigIntegerField(validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField()
+    cltv_expiry = models.PositiveSmallIntegerField(null=True, default=None, blank=True)
     
     # routing
     routing_attempts = models.PositiveSmallIntegerField(null=False, default=0)
@@ -183,7 +184,7 @@ class Order(models.Model):
         13 : 24*60*60,                                       # 'Sending satoshis to buyer'
         14 : 24*60*60,                                       # 'Sucessful trade'
         15 : 24*60*60,                                       # 'Failed lightning network routing'
-        16 : 10*24*60*60,                                       # 'Wait for dispute resolution'
+        16 : 10*24*60*60,                                    # 'Wait for dispute resolution'
         17 : 24*60*60,                                       # 'Maker lost dispute'
         18 : 24*60*60,                                       # 'Taker lost dispute'
         }
