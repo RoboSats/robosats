@@ -65,12 +65,18 @@ class Command(BaseCommand):
 
         for idx, hold_lnpayment in enumerate(queryset):
             old_status = LNPayment.Status(hold_lnpayment.status).label
-            
-            try:
+            try:    
+                # this is similar to LNNnode.validate_hold_invoice_locked
                 request = LNNode.invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(hold_lnpayment.payment_hash))
                 response = stub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
                 hold_lnpayment.status = lnd_state_to_lnpayment_status[response.state]
-                hold_lnpayment.expiry_height = response.htlcs[0].expiry_height
+
+                # try saving expiry height
+                if hasattr(response, 'htlcs' ):
+                    try:
+                        hold_lnpayment.expiry_height = response.htlcs[0].expiry_height
+                    except:
+                        pass
 
             except Exception as e:
                 # If it fails at finding the invoice: it has been canceled.
@@ -78,9 +84,10 @@ class Command(BaseCommand):
                 if 'unable to locate invoice' in str(e): 
                     self.stdout.write(str(e))
                     hold_lnpayment.status = LNPayment.Status.CANCEL
+                    
                 # LND restarted.
                 if 'wallet locked, unlock it' in str(e):
-                    self.stdout.write(str(timezone.now())+':: Wallet Locked')
+                    self.stdout.write(str(timezone.now())+' :: Wallet Locked')
                 # Other write to logs
                 else:
                     self.stdout.write(str(e))

@@ -9,6 +9,7 @@ from base64 import b64decode
 from datetime import timedelta, datetime
 from django.utils import timezone
 
+from api.models import LNPayment
 #######
 # Should work with LND (c-lightning in the future if there are features that deserve the work)
 #######
@@ -117,6 +118,7 @@ class LNNode():
         if response.state == 3: # ACCEPTED (LOCKED)
             print('STATUS: ACCEPTED')
             lnpayment.expiry_height = response.htlcs[0].expiry_height
+            lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save()
             return True
 

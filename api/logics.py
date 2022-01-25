@@ -479,8 +479,6 @@ class Logics():
         if order.maker_bond.status == LNPayment.Status.LOCKED:
             return True
         elif LNNode.validate_hold_invoice_locked(order.maker_bond):
-            order.maker_bond.status = LNPayment.Status.LOCKED
-            order.maker_bond.save()
             cls.publish_order(order)
             return True
         return False
@@ -628,8 +626,6 @@ class Logics():
         if order.trade_escrow.status == LNPayment.Status.LOCKED:
             return True
         elif LNNode.validate_hold_invoice_locked(order.trade_escrow):
-            order.trade_escrow.status = LNPayment.Status.LOCKED
-            order.trade_escrow.save()
             cls.trade_escrow_received(order)
             return True
         return False
