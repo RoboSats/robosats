@@ -96,9 +96,9 @@ class LNNode():
         return hold_payment
 
     @classmethod
-    def validate_hold_invoice_locked(cls, payment_hash):
+    def validate_hold_invoice_locked(cls, lnpayment):
         '''Checks if hold invoice is locked'''
-        request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
+        request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(lnpayment.payment_hash))
         response = cls.invoicesstub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
         print('status here')
         print(response.state)
@@ -116,6 +116,8 @@ class LNNode():
             pass
         if response.state == 3: # ACCEPTED (LOCKED)
             print('STATUS: ACCEPTED')
+            lnpayment.expiry_height = response.htlcs[0].expiry_height
+            lnpayment.save()
             return True
 
     @classmethod
@@ -140,7 +142,7 @@ class LNNode():
     def validate_ln_invoice(cls, invoice, num_satoshis):
         '''Checks if the submited LN invoice comforms to expectations'''
 
-        buyer_invoice = {
+        payout = {
                 'valid': False,
                 'context': None,
                 'description': None,
@@ -153,30 +155,30 @@ class LNNode():
             payreq_decoded = cls.decode_payreq(invoice)
             print(payreq_decoded)
         except:
-            buyer_invoice['context'] = {'bad_invoice':'Does not look like a valid lightning invoice'}
-            return buyer_invoice
+            payout['context'] = {'bad_invoice':'Does not look like a valid lightning invoice'}
+            return payout
 
         if payreq_decoded.num_satoshis == 0:
-            buyer_invoice['context'] = {'bad_invoice':'The invoice provided has no explicit amount'}
-            return buyer_invoice
+            payout['context'] = {'bad_invoice':'The invoice provided has no explicit amount'}
+            return payout
 
         if not payreq_decoded.num_satoshis == num_satoshis:
-            buyer_invoice['context'] = {'bad_invoice':'The invoice provided is not for '+'{:,}'.format(num_satoshis)+ ' Sats'}
-            return buyer_invoice
+            payout['context'] = {'bad_invoice':'The invoice provided is not for '+'{:,}'.format(num_satoshis)+ ' Sats'}
+            return payout
 
-        buyer_invoice['created_at'] = timezone.make_aware(datetime.fromtimestamp(payreq_decoded.timestamp))
-        buyer_invoice['expires_at'] = buyer_invoice['created_at'] + timedelta(seconds=payreq_decoded.expiry)
+        payout['created_at'] = timezone.make_aware(datetime.fromtimestamp(payreq_decoded.timestamp))
+        payout['expires_at'] = payout['created_at'] + timedelta(seconds=payreq_decoded.expiry)
 
-        if buyer_invoice['expires_at'] < timezone.now():
-            buyer_invoice['context'] = {'bad_invoice':f'The invoice provided has already expired'}
-            return buyer_invoice
+        if payout['expires_at'] < timezone.now():
+            payout['context'] = {'bad_invoice':f'The invoice provided has already expired'}
+            return payout
 
-        buyer_invoice['valid'] = True
-        buyer_invoice['description'] = payreq_decoded.description
-        buyer_invoice['payment_hash'] = payreq_decoded.payment_hash
+        payout['valid'] = True
+        payout['description'] = payreq_decoded.description
+        payout['payment_hash'] = payreq_decoded.payment_hash
 
         
-        return buyer_invoice
+        return payout
 
     @classmethod
     def pay_invoice(cls, invoice, num_satoshis):

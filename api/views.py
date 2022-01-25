@@ -170,7 +170,7 @@ class OrderView(viewsets.ViewSet):
                     data['trade_satoshis'] = order.last_satoshis
                 # Buyer sees the amount he receives
                 elif data['is_buyer']:
-                    data['trade_satoshis'] = Logics.buyer_invoice_amount(order, request.user)[1]['invoice_amount']
+                    data['trade_satoshis'] = Logics.payout_amount(order, request.user)[1]['invoice_amount']
 
         # 5) If status is 'waiting for maker bond' and user is MAKER, reply with a MAKER hold invoice.
         if order.status == Order.Status.WFB and data['is_maker']:
@@ -203,7 +203,7 @@ class OrderView(viewsets.ViewSet):
 
             # If the two bonds are locked, reply with an AMOUNT so he can send the buyer invoice.
             if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
-                valid, context = Logics.buyer_invoice_amount(order, request.user)
+                valid, context = Logics.payout_amount(order, request.user)
                 if valid:
                     data = {**data, **context}
                 else:
@@ -233,11 +233,11 @@ class OrderView(viewsets.ViewSet):
                 data['statement_submitted'] = (order.taker_statement != None and order.maker_statement != "")
 
         # 9) If status is 'Failed routing', reply with retry amounts, time of next retry and ask for invoice at third.
-        elif order.status == Order.Status.FAI:
-            data['retries'] = order.buyer_invoice.routing_attempts
-            data['next_retry_time'] = order.buyer_invoice.last_routing_time + timedelta(minutes=RETRY_TIME)
+        elif order.status == Order.Status.FAI and order.payout.receiver == request.user:  # might not be the buyer if after a dispute where winner wins
+            data['retries'] = order.payout.routing_attempts
+            data['next_retry_time'] = order.payout.last_routing_time + timedelta(minutes=RETRY_TIME)
 
-            if order.buyer_invoice.status == LNPayment.Status.EXPIRE:
+            if order.payout.status == LNPayment.Status.EXPIRE:
                 data['invoice_expired'] = True
                 # Add invoice amount once again if invoice was expired.
                 data['invoice_amount'] = int(order.last_satoshis * (1-FEE))

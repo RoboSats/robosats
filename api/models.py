@@ -72,6 +72,7 @@ class LNPayment(models.Model):
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField()
     cltv_expiry = models.PositiveSmallIntegerField(null=True, default=None, blank=True)
+    expiry_height = models.PositiveBigIntegerField(null=True, default=None, blank=True)
     
     # routing
     routing_attempts = models.PositiveSmallIntegerField(null=False, default=0)
@@ -161,7 +162,7 @@ class Order(models.Model):
     taker_bond = models.OneToOneField(LNPayment, related_name='order_taken', on_delete=models.SET_NULL, null=True, default=None, blank=True)
     trade_escrow = models.OneToOneField(LNPayment, related_name='order_escrow', on_delete=models.SET_NULL, null=True, default=None, blank=True)
     # buyer payment LN invoice
-    buyer_invoice = models.OneToOneField(LNPayment, related_name='order_paid', on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    payout = models.OneToOneField(LNPayment, related_name='order_paid', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
     # ratings
     maker_rated = models.BooleanField(default=False, null=False)
@@ -195,7 +196,7 @@ class Order(models.Model):
 
 @receiver(pre_delete, sender=Order)
 def delete_lnpayment_at_order_deletion(sender, instance, **kwargs):
-    to_delete = (instance.maker_bond, instance.buyer_invoice, instance.taker_bond, instance.trade_escrow)
+    to_delete = (instance.maker_bond, instance.payout, instance.taker_bond, instance.trade_escrow)
 
     for lnpayment in to_delete:
         try:

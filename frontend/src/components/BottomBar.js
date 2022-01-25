@@ -71,7 +71,7 @@ export default class BottomBar extends Component {
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><GitHubIcon/></ListItemIcon>
-                    <ListItemText secondary="Currently running commit height">
+                    <ListItemText secondary="Currently running commit hash">
                         <a href={"https://github.com/Reckless-Satoshi/robosats/tree/" 
                         + this.state.robosats_running_commit_hash}>{this.state.robosats_running_commit_hash}
                         </a>

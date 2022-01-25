@@ -285,7 +285,7 @@ export default class OrderPage extends Component {
         </DialogContent>
         <DialogActions>
           <Button onClick={this.handleClickCloseCollaborativeCancelDialog} autoFocus>Go back</Button>
-          <Button onClick={this.handleClickConfirmCollaborativeCancelButton}> Collaborative Cancel </Button>
+          <Button onClick={this.handleClickConfirmCollaborativeCancelButton}> Proceed and Ask for Cancel </Button>
         </DialogActions>
       </Dialog>
     )

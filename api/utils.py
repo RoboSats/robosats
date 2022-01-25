@@ -84,8 +84,5 @@ def compute_premium_percentile(order):
         rates.append(float(similar_order.last_satoshis) / float(similar_order.amount))
     
     rates = np.array(rates)
-    print(rates)
-    print(order_rate)
-    print(np.sum(rates < order_rate))
     return round(np.sum(rates < order_rate) / len(rates),2)
     

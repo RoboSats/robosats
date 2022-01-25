@@ -265,7 +265,7 @@ class Logics():
         return True, None
 
     @classmethod
-    def buyer_invoice_amount(cls, order, user):
+    def payout_amount(cls, order, user):
         ''' Computes buyer invoice amount. Uses order.last_satoshis, 
         that is the final trade amount set at Taker Bond time'''
 
@@ -285,27 +285,27 @@ class Logics():
         if not (order.taker_bond.status == order.maker_bond.status == LNPayment.Status.LOCKED):
             return False, {'bad_request':'You cannot submit a invoice while bonds are not locked.'}
 
-        num_satoshis = cls.buyer_invoice_amount(order, user)[1]['invoice_amount']
-        buyer_invoice = LNNode.validate_ln_invoice(invoice, num_satoshis)
+        num_satoshis = cls.payout_amount(order, user)[1]['invoice_amount']
+        payout = LNNode.validate_ln_invoice(invoice, num_satoshis)
 
-        if not buyer_invoice['valid']:
-            return False, buyer_invoice['context']
+        if not payout['valid']:
+            return False, payout['context']
 
-        order.buyer_invoice, _ = LNPayment.objects.update_or_create(
+        order.payout, _ = LNPayment.objects.update_or_create(
             concept = LNPayment.Concepts.PAYBUYER, 
             type = LNPayment.Types.NORM, 
             sender = User.objects.get(username=ESCROW_USERNAME),
-            order_paid = order,  # In case this user has other buyer_invoices, update the one related to this order.
+            order_paid = order,  # In case this user has other payouts, update the one related to this order.
             receiver= user, 
             # if there is a LNPayment matching these above, it updates that one with defaults below.
             defaults={
                 'invoice' : invoice,
                 'status' : LNPayment.Status.VALIDI,
                 'num_satoshis' : num_satoshis,
-                'description' :  buyer_invoice['description'],
-                'payment_hash' : buyer_invoice['payment_hash'],
-                'created_at' : buyer_invoice['created_at'],
-                'expires_at' : buyer_invoice['expires_at']}
+                'description' :  payout['description'],
+                'payment_hash' : payout['payment_hash'],
+                'created_at' : payout['created_at'],
+                'expires_at' : payout['expires_at']}
             )
 
         # If the order status is 'Waiting for invoice'. Move forward to 'chat'
@@ -323,8 +323,10 @@ class Logics():
                 order.status = Order.Status.WFE
         
         # If the order status is 'Failed Routing'. Retry payment.
-        if order.status == Order.Status.FAI: 
-            follow_send_payment(order.buyer_invoice)
+        if order.status == Order.Status.FAI:
+            # Double check the escrow is settled.
+            if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
+                follow_send_payment(order.payout)
 
         order.save()
         return True, None
@@ -476,7 +478,7 @@ class Logics():
     def is_maker_bond_locked(cls, order):
         if order.maker_bond.status == LNPayment.Status.LOCKED:
             return True
-        elif LNNode.validate_hold_invoice_locked(order.maker_bond.payment_hash):
+        elif LNNode.validate_hold_invoice_locked(order.maker_bond):
             order.maker_bond.status = LNPayment.Status.LOCKED
             order.maker_bond.save()
             cls.publish_order(order)
@@ -558,7 +560,7 @@ class Logics():
     def is_taker_bond_locked(cls, order):
         if order.taker_bond.status == LNPayment.Status.LOCKED:
             return True
-        elif LNNode.validate_hold_invoice_locked(order.taker_bond.payment_hash):
+        elif LNNode.validate_hold_invoice_locked(order.taker_bond):
             cls.finalize_contract(order)
             return True
         return False
@@ -625,7 +627,7 @@ class Logics():
     def is_trade_escrow_locked(cls, order):
         if order.trade_escrow.status == LNPayment.Status.LOCKED:
             return True
-        elif LNNode.validate_hold_invoice_locked(order.trade_escrow.payment_hash):
+        elif LNNode.validate_hold_invoice_locked(order.trade_escrow):
             order.trade_escrow.status = LNPayment.Status.LOCKED
             order.trade_escrow.save()
             cls.trade_escrow_received(order)
@@ -761,7 +763,7 @@ class Logics():
                     return False, {'bad_request':'You cannot confirm to have received the fiat before it is confirmed to be sent by the buyer.'}
                 
                 # Make sure the trade escrow is at least as big as the buyer invoice 
-                if order.trade_escrow.num_satoshis <= order.buyer_invoice.num_satoshis:
+                if order.trade_escrow.num_satoshis <= order.payout.num_satoshis:
                     return False, {'bad_request':'Woah, something broke badly. Report in the public channels, or open a Github Issue.'}
 
                 if cls.settle_escrow(order): ##### !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
@@ -769,7 +771,7 @@ class Logics():
                 
                 # Double check the escrow is settled.
                 if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
-                    is_payed, context = follow_send_payment(order.buyer_invoice) ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
+                    is_payed, context = follow_send_payment(order.payout) ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
                     if is_payed:
                         # RETURN THE BONDS // Probably best also do it even if payment failed
                         cls.return_bond(order.taker_bond)

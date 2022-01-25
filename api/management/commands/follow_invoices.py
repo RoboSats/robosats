@@ -70,6 +70,7 @@ class Command(BaseCommand):
                 request = LNNode.invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(hold_lnpayment.payment_hash))
                 response = stub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
                 hold_lnpayment.status = lnd_state_to_lnpayment_status[response.state]
+                hold_lnpayment.expiry_height = response.htlcs[0].expiry_height
 
             except Exception as e:
                 # If it fails at finding the invoice: it has been canceled.

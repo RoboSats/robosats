@@ -451,6 +451,25 @@ export default class TradeBox extends Component {
       )}
   }
 
+  showWaitForDisputeResolution=()=>{
+    return (
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography color="primary" component="subtitle1" variant="subtitle1">
+            <b> We have the statements </b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="left">
+          <Typography component="body2" variant="body2">
+            Wait for the staff to resolve the dispute. The dispute winner
+            will be asked to submit a LN invoice.
+          </Typography>
+        </Grid>
+        {this.showBondIsLocked()}
+      </Grid>
+    )
+  }
+
   showWaitingForEscrow(){
     return(
       <Grid container spacing={1}>
@@ -764,6 +783,7 @@ handleRatingChange=(e)=>{
 
             {/* Trade Finished - TODO Needs more planning */}
             {this.props.data.status == 11 ? this.showInDisputeStatement() : ""}
+            {this.props.data.status == 16 ? this.showWaitForDisputeResolution() : ""}
             
             {/* Order has expired */}
             {this.props.data.status == 5 ? this.showOrderExpired() : ""}
