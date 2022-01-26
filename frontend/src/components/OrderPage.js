@@ -147,11 +147,11 @@ export default class OrderPage extends Component {
   countdownPenaltyRenderer = ({ minutes, seconds, completed }) => {
     if (completed) {
       // Render a completed state
-      return (<span> nothing. Good to go!</span>);
+      return (<span> Penalty lifted, good to go!</span>);
   
     } else {
       return (
-        <span>{zeroPad(minutes)}m {zeroPad(seconds)}s </span>
+        <span> Wait {zeroPad(minutes)}m {zeroPad(seconds)}s </span>
       );
     }
     };
@@ -445,7 +445,7 @@ export default class OrderPage extends Component {
               <Divider />
               <Grid item xs={12} align="center">
                 <Alert severity="warning" sx={{maxWidth:360}}>
-                  You cannot take an order yet! Wait <Countdown date={new Date(this.state.penalty)} renderer={this.countdownPenaltyRenderer} />
+                  You cannot take an order yet! <Countdown date={new Date(this.state.penalty)} renderer={this.countdownPenaltyRenderer} />
                 </Alert>  
               </Grid>
             </>

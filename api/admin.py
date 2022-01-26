@@ -19,6 +19,7 @@ class EUserAdmin(UserAdmin):
     inlines = [ProfileInline]
     list_display = ('avatar_tag','id','username','last_login','date_joined','is_staff')
     list_display_links = ('id','username')
+    ordering = ('-id',)
     def avatar_tag(self, obj):
         return obj.profile.avatar_tag()
 
@@ -36,6 +37,7 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     list_display_links = ('hash','concept')
     change_links = ('sender','receiver','order_made','order_taken','order_escrow','order_paid')
     list_filter = ('type','concept','status')
+    ordering = ('-expires_at',)
 
 @admin.register(Profile)
 class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
@@ -49,9 +51,11 @@ class CurrencieAdmin(admin.ModelAdmin):
     list_display = ('id','currency','exchange_rate','timestamp')
     list_display_links = ('id','currency')
     readonly_fields = ('currency','exchange_rate','timestamp')
+    ordering = ('id',)
 
 @admin.register(MarketTick)
 class MarketTickAdmin(admin.ModelAdmin):
     list_display = ('timestamp','price','volume','premium','currency','fee')
     readonly_fields = ('timestamp','price','volume','premium','currency','fee')
     list_filter = ['currency']
+    ordering = ('-timestamp',)

@@ -492,8 +492,18 @@ class InfoView(ListAPIView):
             avg_premium = 0
             total_volume = 0
 
+        queryset = MarketTick.objects.all()
+        if not len(queryset) == 0:
+            volume_settled = []
+            for tick in queryset:
+                volume_settled.append(tick.volume)
+            lifetime_volume_settled = int(sum(volume_settled)*100000000)
+        else:
+            lifetime_volume_settled = 0
+
         context['today_avg_nonkyc_btc_premium'] = round(avg_premium,2)
         context['today_total_volume'] = total_volume
+        context['lifetime_satoshis_settled'] = lifetime_volume_settled
         context['lnd_version'] = get_lnd_version()
         context['robosats_running_commit_hash'] = get_commit_robosats()
         context['fee'] = FEE

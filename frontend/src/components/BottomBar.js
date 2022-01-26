@@ -15,6 +15,11 @@ import EqualizerIcon from '@mui/icons-material/Equalizer';
 import SendIcon from '@mui/icons-material/Send';
 import PublicIcon from '@mui/icons-material/Public';
 
+// pretty numbers
+function pn(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
 export default class BottomBar extends Component {
     constructor(props) {
         super(props);
@@ -27,6 +32,7 @@ export default class BottomBar extends Component {
             fee: 0,
             today_avg_nonkyc_btc_premium: 0,
             today_total_volume: 0,
+            lifetime_satoshis_settled: 0,
         };
         this.getInfo();
       }
@@ -61,7 +67,7 @@ export default class BottomBar extends Component {
         >
         <DialogContent>
             <Typography component="h5" variant="h5">Stats For Nerds</Typography>
-            <List>
+            <List dense>
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><BoltIcon/></ListItemIcon>
@@ -82,6 +88,12 @@ export default class BottomBar extends Component {
                 <ListItem>
                     <ListItemIcon><EqualizerIcon/></ListItemIcon>
                     <ListItemText primary={this.state.today_total_volume+" BTC"} secondary="Today traded volume"/>
+                </ListItem>
+
+                <Divider/>
+                <ListItem>
+                    <ListItemIcon><EqualizerIcon/></ListItemIcon>
+                    <ListItemText primary={pn(this.state.lifetime_satoshis_settled)+" Sats"} secondary="Lifetime settled volume"/>
                 </ListItem>
 
                 <Divider/>
