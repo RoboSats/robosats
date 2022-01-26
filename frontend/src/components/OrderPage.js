@@ -143,6 +143,19 @@ export default class OrderPage extends Component {
   }
   };
 
+  // Countdown Renderer callback with condition 
+  countdownPenaltyRenderer = ({ minutes, seconds, completed }) => {
+    if (completed) {
+      // Render a completed state
+      return (<span> nothing. Good to go!</span>);
+  
+    } else {
+      return (
+        <span>{zeroPad(minutes)}m {zeroPad(seconds)}s </span>
+      );
+    }
+    };
+
   LinearDeterminate =()=> {
     const [progress, setProgress] = React.useState(0);
   
@@ -432,7 +445,7 @@ export default class OrderPage extends Component {
               <Divider />
               <Grid item xs={12} align="center">
                 <Alert severity="warning" sx={{maxWidth:360}}>
-                  You cannot take an order yet! Wait {this.state.penalty} seconds 
+                  You cannot take an order yet! Wait <Countdown date={new Date(this.state.penalty)} renderer={this.countdownPenaltyRenderer} />
                 </Alert>  
               </Grid>
             </>

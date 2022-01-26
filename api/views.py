@@ -108,7 +108,7 @@ class OrderView(viewsets.ViewSet):
         # if user is under a limit (penalty), inform him.
         is_penalized, time_out = Logics.is_penalized(request.user)
         if is_penalized:
-            data['penalty'] = time_out
+            data['penalty'] = request.user.profile.penalty_expiration
 
         # Add booleans if user is maker, taker, partipant, buyer or seller
         data['is_maker'] = order.maker == request.user

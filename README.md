@@ -1,4 +1,4 @@
-## RoboSats - Buy and sell Satoshis Privately.
+## RoboSats - Buy and sell Satoshis Privately
 [![release](https://img.shields.io/badge/release-v0.1.0%20MVP-orange)](https://github.com/Reckless-Satoshi/robosats/releases)
 [![AGPL-3.0 license](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/Reckless-Satoshi/robosats/blob/main/LICENSE)
 [![Telegram](https://img.shields.io/badge/chat-telegram-brightgreen)](https://t.me/robosats)
@@ -15,7 +15,7 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 **Bitcoin testnet:**
 - Tor: robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion (Active - On Dev Node)
 - Url: testnet.robosats.com (Coming soon)
-- Commit height: Latest commit.
+- Latest commit.
 
 *Always use [Tor Browser](https://www.torproject.org/download/) and .onion for best anonymity.*
 

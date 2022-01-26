@@ -409,7 +409,7 @@ class Logics():
 
         # 4.a) When maker cancel after bond (before escrow)
             '''The order into cancelled status if maker cancels.'''
-        elif order.status > Order.Status.PUB and order.status < Order.Status.CHA and order.maker == user:
+        elif order.status in [Order.Status.PUB, Order.Status.TAK, Order.Status.WF2, Order.Status.WFE] and order.maker == user:
             #Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.maker_bond)
             if valid:
