@@ -1,6 +1,9 @@
 import React, { Component } from "react";
-import { Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import PropTypes from 'prop-types';
+import { Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
+import MediaQuery from 'react-responsive'
+
 import TradeBox from "./TradeBox";
 import getFlags from './getFlags'
 
@@ -32,6 +35,39 @@ const csrftoken = getCookie('csrftoken');
 function pn(x) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
+
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired,
+};
+
+function a11yProps(index) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+}
+
 
 export default class OrderPage extends Component {
   constructor(props) {
@@ -342,11 +378,13 @@ export default class OrderPage extends Component {
 
   orderBox=()=>{
     return(
-      <Grid container spacing={1}>
+      <Grid container spacing={1} >
         <Grid item xs={12} align="center">
-          <Typography component="h5" variant="h5">
-          Order Details
-          </Typography>
+          <MediaQuery minWidth={920}>
+            <Typography component="h5" variant="h5">
+              Order Details
+            </Typography>
+          </MediaQuery>
           <Paper elevation={12} style={{ padding: 8,}}>
           <List dense="true">
             <ListItem >
@@ -497,6 +535,47 @@ export default class OrderPage extends Component {
     )
   }
   
+  doubleOrderPageDesktop=()=>{
+    return(
+      <Grid container xs={12} align="center" spacing={2} >
+        <Grid item xs={6} align="left" style={{ width:330}} >
+            {this.orderBox()}
+        </Grid>
+        <Grid item xs={6} align="left">
+          <TradeBox data={this.state} completeSetState={this.completeSetState} />
+        </Grid>
+      </Grid>
+    )
+  }
+  
+  doubleOrderPagePhone=()=>{
+
+    const [value, setValue] = React.useState(1);
+
+    const handleChange = (event, newValue) => {
+      setValue(newValue);
+    };
+
+    return(
+      <Box sx={{ width: '100%' }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={value} onChange={handleChange} aria-label="basic tabs" variant="fullWidth">
+            <Tab label="Order Details" {...a11yProps(0)} />
+            <Tab label="Contract Box" {...a11yProps(1)} />
+          </Tabs>
+        </Box>
+        <TabPanel value={value} index={0}>
+          <Grid container style={{ width:330}}>
+            {this.orderBox()}
+          </Grid>
+        </TabPanel>
+        <TabPanel value={value} index={1}>
+          <TradeBox data={this.state} completeSetState={this.completeSetState} />
+        </TabPanel>
+      </Box>
+  );
+  }
+
   orderDetailsPage (){
     return(
       this.state.bad_request ?
@@ -508,16 +587,19 @@ export default class OrderPage extends Component {
         </div>
         :
         (this.state.is_participant ? 
-          <Grid container xs={12} align="center" spacing={2}>
-            <Grid item xs={6} align="left">
-              {this.orderBox()}
-            </Grid>
-            <Grid item xs={6} align="left">
-              <TradeBox data={this.state} completeSetState={this.completeSetState} />
-            </Grid>
-          </Grid>
+          <>
+            {/* Desktop View */}
+            <MediaQuery minWidth={920}>
+              <this.doubleOrderPageDesktop/>
+            </MediaQuery>
+
+            {/* SmarPhone View */}
+            <MediaQuery maxWidth={919}>
+              <this.doubleOrderPagePhone/>
+            </MediaQuery>
+          </>
           :
-          <Grid item xs={12} align="center">
+          <Grid item xs={12} align="center" style={{ width:330}}>
             {this.orderBox()}
           </Grid>)
     )

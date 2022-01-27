@@ -3,13 +3,11 @@ import { Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, Lis
 import QRCode from "react-qr-code";
 import Countdown from 'react-countdown';
 import Chat from "./Chat"
+import MediaQuery from 'react-responsive'
 
 // Icons
-import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PercentIcon from '@mui/icons-material/Percent';
 import BookIcon from '@mui/icons-material/Book';
-
-
 
 function getCookie(name) {
   let cookieValue = null;
@@ -267,14 +265,6 @@ export default class TradeBox extends Component {
             {/* TODO API sends data for a more confortable wait */}
             <Divider/>
               <ListItem>
-                <ListItemIcon>
-                  <SmartToyIcon/>
-                </ListItemIcon>
-                <ListItemText primary={'coming soon'} secondary="Robots looking at the book"/>
-              </ListItem>
-
-            <Divider/>
-              <ListItem>
               <ListItemIcon>
                 <BookIcon/>
               </ListItemIcon>
@@ -374,9 +364,12 @@ export default class TradeBox extends Component {
               label={"Payout Lightning Invoice"}
               required
               inputProps={{
-                  style: {textAlign:"center"}
+                  style: {textAlign:"center"},
+                  maxHeight: 200,
               }}
               multiline
+              minRows={4}
+              maxRows={12}
               onChange={this.handleInputInvoiceChanged}
           />
         </Grid>
@@ -750,9 +743,11 @@ handleRatingChange=(e)=>{
         <this.ConfirmDisputeDialog/>
         <this.ConfirmFiatReceivedDialog/>
         <Grid item xs={12} align="center">
-          <Typography component="h5" variant="h5">
-            Contract Box
-          </Typography>
+          <MediaQuery minWidth={920}>
+            <Typography component="h5" variant="h5">
+              Contract Box
+            </Typography>
+          </MediaQuery>
           <Paper elevation={12} style={{ padding: 8,}}>
             {/* Maker and taker Bond request */}
               {this.props.data.is_maker & this.props.data.status == 0 ? this.showQRInvoice() : ""}

@@ -33,6 +33,7 @@ export default class BottomBar extends Component {
             today_avg_nonkyc_btc_premium: 0,
             today_total_volume: 0,
             lifetime_satoshis_settled: 0,
+            robosats_running_commit_hash: '000000000000000',
         };
         this.getInfo();
       }
@@ -45,14 +46,13 @@ export default class BottomBar extends Component {
         this.setState(null)
         fetch('/api/info/')
           .then((response) => response.json())
-          .then((data) => {console.log(data) &
-            this.setState(data)
-          });
+          .then((data) => this.setState(data));
       }
 
     handleClickOpenStatsForNerds = () => {
         this.setState({openStatsForNerds: true});
     };
+
     handleClickCloseStatsForNerds = () => {
         this.setState({openStatsForNerds: false});
     };
@@ -79,7 +79,7 @@ export default class BottomBar extends Component {
                     <ListItemIcon><GitHubIcon/></ListItemIcon>
                     <ListItemText secondary="Currently running commit hash">
                         <a href={"https://github.com/Reckless-Satoshi/robosats/tree/" 
-                        + this.state.robosats_running_commit_hash}>{this.state.robosats_running_commit_hash}
+                        + this.state.robosats_running_commit_hash}>{this.state.robosats_running_commit_hash.slice(0, 12)+"..."}
                         </a>
                     </ListItemText>
                 </ListItem>

@@ -111,7 +111,7 @@ export default class Chat extends Component {
                 </Grid>
               </Grid>
             </form>
-            <FormHelperText>This chat has no memory. If you reload the page messages are lost.</FormHelperText>
+            <FormHelperText>This chat has no memory. If you leave and come back the messages are lost.</FormHelperText>
       </Container>
     )
   }
