@@ -82,7 +82,7 @@ export default class InfoDialog extends Component {
             <p> To be totally clear. Trust requirements are minimized. However, there is still 
             one way <i>RoboSats </i> could run away with your satoshis: by not releasing 
                the satoshis to the buyer. It could be argued that such move is not in <i>RoboSats' </i> 
-                as it would damage the reputation for a small payout. 
+              interest as it would damage the reputation for a small payout. 
               However, you should hesitate and only trade small quantities at a 
               time. For large amounts use an onchain escrow service such as <i>Bisq</i>
             </p> 

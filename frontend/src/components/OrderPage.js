@@ -37,7 +37,7 @@ export default class OrderPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-        isExplicit: false,
+        is_explicit: false,
         delay: 60000, // Refresh every 60 seconds by default
         currencies_dict: {"1":"USD"},
         total_secs_exp: 300,
@@ -412,7 +412,7 @@ export default class OrderPage extends Component {
             {this.state.price_now? 
                 <ListItemText primary={pn(this.state.price_now)+" "+this.state.currencyCode+"/BTC - Premium: "+this.state.premium_now+"%"} secondary="Price and Premium"/>
             :
-              (this.state.isExplicit ? 
+              (this.state.is_explicit ? 
                 <ListItemText primary={pn(this.state.satoshis)} secondary="Amount of Satoshis"/>
                 :
                 <ListItemText primary={parseFloat(parseFloat(this.state.premium).toFixed(2))+"%"} secondary="Premium over market price"/>
