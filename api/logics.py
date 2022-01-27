@@ -89,7 +89,7 @@ class Logics():
         return int(satoshis_now)
 
     def price_and_premium_now(order):
-        ''' computes order premium live '''
+        ''' computes order price and premium with current rates '''
         exchange_rate = float(order.currency.exchange_rate)
         if not order.is_explicit:
             premium = order.premium
@@ -244,7 +244,8 @@ class Logics():
         return True, None
 
     def dispute_statement(order, user, statement):
-        ''' Updates the dispute statements in DB'''
+        ''' Updates the dispute statements'''
+
         if not order.status == Order.Status.DIS:
             return False, {'bad_request':'Only orders in dispute accept a dispute statements'}
 
@@ -278,6 +279,7 @@ class Logics():
     def update_invoice(cls, order, user, invoice):
         
         # only the buyer can post a buyer invoice
+
         if not cls.is_buyer(order, user):
             return False, {'bad_request':'Only the buyer of this order can provide a buyer invoice.'}
         if not order.taker_bond:
@@ -364,8 +366,8 @@ class Logics():
     @classmethod
     def cancel_order(cls, order, user, state=None):
 
-        # Do not change order status if an order in any with
-        # any of these status is sent to expire here
+        # Do not change order status if an is in order
+        # any of these status
         do_not_cancel = [Order.Status.DEL, Order.Status.UCA,
                     Order.Status.EXP, Order.Status.TLD,
                     Order.Status.DIS, Order.Status.CCA,
@@ -377,7 +379,7 @@ class Logics():
 
         # 1) When maker cancels before bond
         '''The order never shows up on the book and order 
-        status becomes "cancelled". That's it.'''
+        status becomes "cancelled" '''
         if order.status == Order.Status.WFB and order.maker == user:
             order.status = Order.Status.UCA
             order.save()
@@ -744,7 +746,7 @@ class Logics():
     def confirm_fiat(cls, order, user):
         ''' If Order is in the CHAT states:
         If user is buyer: fiat_sent goes to true.
-        If User is tseller and fiat_sent is true: settle the escrow and pay buyer invoice!'''
+        If User is seller and fiat_sent is true: settle the escrow and pay buyer invoice!'''
 
         if order.status == Order.Status.CHA or order.status == Order.Status.FSE: # TODO Alternatively, if all collateral is locked? test out
             
@@ -786,9 +788,11 @@ class Logics():
 
     @classmethod
     def rate_counterparty(cls, order, user, rating):
+        
+        rating_allowed_status = [Order.Status.PAY, Order.Status.SUC, Order.Status.FAI, Order.Status.MLD, Order.Status.TLD]
 
         # If the trade is finished
-        if order.status > Order.Status.PAY:
+        if order.status in rating_allowed_status:
             # if maker, rates taker
             if order.maker == user and order.maker_rated == False:
                 cls.add_profile_rating(order.taker.profile, rating)
