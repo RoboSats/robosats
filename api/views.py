@@ -84,6 +84,9 @@ class OrderView(viewsets.ViewSet):
         '''
         order_id = request.GET.get(self.lookup_url_kwarg)
 
+        if not request.user.is_authenticated:
+            return Response({'bad_request':'You must have a robot avatar to see the order details'}, status=status.HTTP_400_BAD_REQUEST)
+
         if order_id == None:
             return Response({'bad_request':'Order ID parameter not found in request'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -424,8 +427,6 @@ class UserView(APIView):
         logout(request)
         user.delete()
         return Response({'user_deleted':'User deleted permanently'}, status.HTTP_301_MOVED_PERMANENTLY)
-
-        
 
 class BookView(ListAPIView):
     serializer_class = ListOrderSerializer

@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import {Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import {Badge, Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import MediaQuery from 'react-responsive'
 
 // Icons
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -26,6 +27,7 @@ export default class BottomBar extends Component {
         this.state = {
             openStatsForNerds: false,
             openCommuniy: false,
+            openExchangeSummary:false,
             num_public_buy_orders: 0,
             num_public_sell_orders: 0,
             active_robots_today: 0,
@@ -58,6 +60,7 @@ export default class BottomBar extends Component {
     };
 
     StatsDialog =() =>{
+
     return(
         <Dialog
         open={this.state.openStatsForNerds}
@@ -116,6 +119,7 @@ export default class BottomBar extends Component {
     };
 
     CommunityDialog =() =>{
+
         return(
         <Dialog
         open={this.state.openCommuniy}
@@ -163,9 +167,9 @@ export default class BottomBar extends Component {
     }
 
 
-    render() {
-        return (
-            <Paper elevation={6} style={{height:40}}>
+bottomBarDesktop =()=>{
+    return(
+        <Paper elevation={6} style={{height:40}}>
                 <this.StatsDialog/>
                 <this.CommunityDialog/>
                 <Grid container xs={12}>
@@ -226,7 +230,7 @@ export default class BottomBar extends Component {
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
                                 primary={this.state.today_avg_nonkyc_btc_premium+"%"} 
-                                secondary="Today Non-KYC Avg Premium" />
+                                secondary="Today Avg Premium" />
                         </ListItem>
                     </Grid>
 
@@ -244,8 +248,7 @@ export default class BottomBar extends Component {
                     </Grid>
 
                     <Grid container item xs={1}>
-                        <Grid item xs={2}/>
-                        <Grid item xs={6}>
+                        <Grid item xs={4}>
                             <Select 
                             size = 'small'
                             defaultValue={1}
@@ -255,6 +258,7 @@ export default class BottomBar extends Component {
                                 <MenuItem value={1}>EN</MenuItem>
                             </Select>
                         </Grid>
+                        <Grid item xs={4}/>
                         <Grid item xs={4}>
                             <IconButton 
                             color="primary" 
@@ -267,6 +271,179 @@ export default class BottomBar extends Component {
                     </Grid>
                 </Grid>
             </Paper>
+    )
+}
+
+    handleClickOpenExchangeSummary = () => {
+        this.setState({openExchangeSummary: true});
+    };
+    handleClickCloseExchangeSummary = () => {
+        this.setState({openExchangeSummary: false});
+    };
+
+    phoneExchangeSummaryDialog =() =>{
+        return(
+        <Dialog
+        open={this.state.openExchangeSummary}
+        onClose={this.handleClickCloseExchangeSummary}
+        aria-labelledby="exchange-summary-title"
+        aria-describedby="exchange-summary-description"
+        >
+        <DialogContent>
+            <Typography component="h5" variant="h5">Exchange Summary</Typography>
+            <List dense>
+                <ListItem >
+                    <ListItemIcon size="small">
+                        <InventoryIcon/>
+                    </ListItemIcon>
+                    <ListItemText 
+                        primaryTypographyProps={{fontSize: '14px'}} 
+                        secondaryTypographyProps={{fontSize: '12px'}} 
+                        primary={this.state.num_public_buy_orders} 
+                        secondary="Public buy orders" />
+                </ListItem>
+                <Divider/>
+
+                <ListItem >
+                    <ListItemIcon size="small">
+                        <SellIcon/>
+                    </ListItemIcon>
+                    <ListItemText 
+                        primaryTypographyProps={{fontSize: '14px'}} 
+                        secondaryTypographyProps={{fontSize: '12px'}} 
+                        primary={this.state.num_public_sell_orders} 
+                        secondary="Public sell orders" />
+                </ListItem>
+                <Divider/>
+
+                <ListItem >
+                    <ListItemIcon size="small">
+                        <SmartToyIcon/>
+                    </ListItemIcon>
+                    <ListItemText 
+                        primaryTypographyProps={{fontSize: '14px'}} 
+                        secondaryTypographyProps={{fontSize: '12px'}} 
+                        primary={this.state.active_robots_today} 
+                        secondary="Today active robots" />
+                </ListItem>
+                <Divider/>
+
+                <ListItem >
+                    <ListItemIcon size="small">
+                        <PriceChangeIcon/>
+                    </ListItemIcon>
+                    <ListItemText 
+                        primaryTypographyProps={{fontSize: '14px'}} 
+                        secondaryTypographyProps={{fontSize: '12px'}} 
+                        primary={this.state.today_avg_nonkyc_btc_premium+"%"} 
+                        secondary="Today non-KYC average premium" />
+                </ListItem>
+                <Divider/>
+
+                <ListItem >
+                    <ListItemIcon size="small">
+                        <PercentIcon/>
+                    </ListItemIcon>
+                    <ListItemText 
+                        primaryTypographyProps={{fontSize: '14px'}} 
+                        secondaryTypographyProps={{fontSize: '12px'}} 
+                        primary={this.state.fee*100+"%"} 
+                        secondary="Trading fee" />
+                </ListItem>
+                </List>
+                
+            </DialogContent>
+        </Dialog>
+    )
+    }
+
+
+bottomBarPhone =()=>{
+    return(
+        <Paper elevation={6} style={{height:40}}>
+                <this.StatsDialog/>
+                <this.CommunityDialog/>
+                <this.phoneExchangeSummaryDialog/>
+                <Grid container xs={12}>
+
+                    <Grid item xs={1}>
+                        <IconButton color="primary" 
+                            aria-label="Stats for Nerds" 
+                            onClick={this.handleClickOpenStatsForNerds} >
+                            <SettingsIcon />
+                        </IconButton>
+                    </Grid>
+
+                    <Grid item xs={2} align="center">
+                        <IconButton onClick={this.handleClickOpenExchangeSummary} >
+                        <Badge badgeContent={this.state.num_public_buy_orders}  color="action">
+                            <InventoryIcon />
+                        </Badge>
+                        </IconButton>
+                    </Grid>
+
+                    <Grid item xs={2} align="center">
+                        <IconButton onClick={this.handleClickOpenExchangeSummary} >
+                        <Badge badgeContent={this.state.num_public_sell_orders}  color="action">
+                            <SellIcon />
+                        </Badge>
+                        </IconButton>
+                    </Grid>
+
+                    <Grid item xs={2} align="center">
+                        <IconButton onClick={this.handleClickOpenExchangeSummary} >
+                        <Badge badgeContent={this.state.active_robots_today}  color="action">
+                            <SmartToyIcon />
+                        </Badge>
+                        </IconButton>
+                    </Grid>
+
+                    <Grid item xs={2} align="center">
+                        <IconButton onClick={this.handleClickOpenExchangeSummary} >
+                        <Badge badgeContent={this.state.today_avg_nonkyc_btc_premium+"%"}  color="action">
+                            <PriceChangeIcon />
+                        </Badge>
+                        </IconButton>
+                    </Grid>
+
+                    <Grid container item xs={3}>
+                        <Grid item xs={4}>
+                            <Select 
+                            size = 'small'
+                            defaultValue={1}
+                            inputProps={{
+                                style: {textAlign:"center"}
+                            }}>
+                                <MenuItem value={1}>EN</MenuItem>
+                            </Select>
+                        </Grid>
+                        <Grid item xs={4}/>
+                        <Grid item xs={4}>
+                            <IconButton 
+                            color="primary" 
+                            aria-label="Telegram" 
+                            onClick={this.handleClickOpenCommunity} >
+                                <PeopleIcon />
+                            </IconButton>
+                        </Grid>
+
+                    </Grid>
+                </Grid>
+            </Paper>
+    )
+}
+
+    render() {
+        return (
+            <div>
+                <MediaQuery minWidth={1200}>
+                    <this.bottomBarDesktop/>
+                </MediaQuery>
+
+                <MediaQuery maxWidth={1199}>
+                    <this.bottomBarPhone/>
+                </MediaQuery>
+            </div>
         )
     }
 }
