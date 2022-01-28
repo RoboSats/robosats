@@ -116,7 +116,7 @@ export default class UserGenPage extends Component {
   render() {
     return (
       <Grid container spacing={1}>
-        <Grid item xs={12} align="center">
+        <Grid item xs={12} align="center" sx={{width:380}}>
           {this.state.showRobosat ?
             <div>
               <Grid item xs={12} align="center">
