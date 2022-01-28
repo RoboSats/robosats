@@ -1,13 +1,15 @@
 import React, { Component } from "react";
-import { Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { IconButton, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
 import Countdown from 'react-countdown';
 import Chat from "./Chat"
 import MediaQuery from 'react-responsive'
+import QrReader from 'react-qr-reader'
 
 // Icons
 import PercentIcon from '@mui/icons-material/Percent';
 import BookIcon from '@mui/icons-material/Book';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 
 function getCookie(name) {
   let cookieValue = null;
@@ -39,6 +41,7 @@ export default class TradeBox extends Component {
       openConfirmDispute: false,
       badInvoice: false,
       badStatement: false,
+      qrscanner: false,
     }
   }
 
@@ -231,7 +234,9 @@ export default class TradeBox extends Component {
         <Divider/>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2">
-            Please wait for the taker to confirm his commitment by locking a bond.
+            Please wait for the taker to confirm by locking a bond. 
+            If the taker does not lock a bond in time the orer will be made
+            public again.
           </Typography>
         </Grid>
         {this.showBondIsLocked()}
@@ -334,12 +339,25 @@ export default class TradeBox extends Component {
     .then((response) => response.json())
     .then((data) => this.setState({badStatement:data.bad_statement})
     & this.props.completeSetState(data));
-}
+  }
+
+  handleScan = data => {
+    if (data) {
+      this.setState({
+        invoice: data
+      })
+    }
+  }
+  handleError = err => {
+    console.error(err)
+  }
+
+  handleQRbutton = () => {
+    this.setState({qrscanner: !this.state.qrscanner});
+  }
 
   showInputInvoice(){
     return (
-
-      // TODO Option to upload using QR from camera
 
       <Grid container spacing={1}>
         {/* In case the taker was very fast to scan the bond, make the taker found alarm sound again */}
@@ -363,17 +381,29 @@ export default class TradeBox extends Component {
               helperText={this.state.badInvoice ? this.state.badInvoice : "" }
               label={"Payout Lightning Invoice"}
               required
+              value={this.state.invoice}
               inputProps={{
                   style: {textAlign:"center"},
                   maxHeight: 200,
               }}
               multiline
-              minRows={4}
-              maxRows={12}
+              minRows={5}
+              maxRows={this.state.qrscanner ? 5 : 14}
               onChange={this.handleInputInvoiceChanged}
           />
         </Grid>
+        {this.state.qrscanner ?
         <Grid item xs={12} align="center">
+          <QrReader
+              delay={300}
+              onError={this.handleError}
+              onScan={this.handleScan}
+              style={{ width: '75%' }}
+            />
+          </Grid>
+          : null }
+        <Grid item xs={12} align="center">
+          <IconButton><QrCodeScannerIcon onClick={this.handleQRbutton}/></IconButton>
           <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>Submit</Button>
         </Grid>
 

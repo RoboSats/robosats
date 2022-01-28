@@ -127,6 +127,7 @@ npm install react-countdown
 npm install @mui/icons-material
 npm install @mui/x-data-grid
 npm install react-responsive
+npm install react-qr-reader
 ```
 Note we are using mostly MaterialUI V5 (@mui/material) but Image loading from V4 (@material-ui/core) extentions (so both V4 and V5 are needed)
 
