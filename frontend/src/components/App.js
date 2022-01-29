@@ -7,16 +7,23 @@ import BottomBar from "./BottomBar";
 export default class App extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      nickname: null,
+    }
+  }
+
+  setAppState=(newState)=>{
+    this.setState(newState)
   }
 
   render() {
     return (
       <>
         <div className='appCenter'>
-          <HomePage />
+          <HomePage setAppState={this.setAppState}/>
         </div>
         <div className='bottomBar'>
-          <BottomBar />
+          <BottomBar nickname={this.state.nickname} setAppState={this.setAppState} />
         </div>
       </>
     );

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {Badge, Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import {Badge, ListItemAvatar, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
 
 // Icons
@@ -15,6 +15,7 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 import SendIcon from '@mui/icons-material/Send';
 import PublicIcon from '@mui/icons-material/Public';
+import NumbersIcon from '@mui/icons-material/Numbers';
 
 // pretty numbers
 function pn(x) {
@@ -36,10 +37,12 @@ export default class BottomBar extends Component {
             today_total_volume: 0,
             lifetime_satoshis_settled: 0,
             robosats_running_commit_hash: '000000000000000',
+            openProfile: false,
+            profileShown: false,
         };
         this.getInfo();
       }
-    
+
     handleClickSuppport = () => {
         window.open("https://t.me/robosats");
     };
@@ -48,7 +51,8 @@ export default class BottomBar extends Component {
         this.setState(null)
         fetch('/api/info/')
           .then((response) => response.json())
-          .then((data) => this.setState(data));
+          .then((data) => this.setState(data) &
+          this.props.setAppState({nickname:data.nickname}));
       }
 
     handleClickOpenStatsForNerds = () => {
@@ -166,20 +170,82 @@ export default class BottomBar extends Component {
     )
     }
 
+    handleClickOpenProfile = () => {
+        this.getInfo();
+        this.setState({openProfile: true, profileShown: true});
+    };
+    handleClickCloseProfile = () => {
+        this.setState({openProfile: false});
+    };
+
+    dialogProfile =() =>{
+        return(
+        <Dialog
+        open={this.state.openProfile}
+        onClose={this.handleClickCloseProfile}
+        aria-labelledby="profile-title"
+        aria-describedby="profile-description"
+        >
+            <DialogContent>
+            <Typography component="h5" variant="h5">Your Profile</Typography>
+            <List>
+                <Divider/>
+                <ListItem className="profileNickname">
+                    <ListItemText secondary="Your robot pseudonymous">
+                    <Typography component="h6" variant="h6">
+                    {this.props.nickname ? "⚡"+this.props.nickname+"⚡" : ""}
+                    </Typography>
+                    </ListItemText>
+                    <ListItemAvatar>
+                    <Avatar className='avatar' 
+                        sx={{ width: 65, height:65 }}
+                        alt={this.props.nickname} 
+                        src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
+                        />
+                    </ListItemAvatar>
+                </ListItem>
+                <Divider/>
+                {this.state.active_order_id ? 
+                // TODO Link to router and do this.props.history.push
+                <ListItemButton component="a" href={window.location.origin +'/order/'+this.state.active_order_id}>
+                    <ListItemIcon>
+                        <NumbersIcon color="primary"/>
+                    </ListItemIcon>
+                    <ListItemText color="primary" primary={'One active order #'+this.state.active_order_id} secondary="Your current order"/>
+                </ListItemButton>
+                :
+                <ListItem>
+                    <ListItemIcon><NumbersIcon/></ListItemIcon>
+                    <ListItemText primary="No active orders" secondary="Your current order"/>
+                </ListItem>
+                }
+            </List>
+            </DialogContent>
+            
+        </Dialog>
+    )
+    }
 
 bottomBarDesktop =()=>{
     return(
         <Paper elevation={6} style={{height:40}}>
                 <this.StatsDialog/>
                 <this.CommunityDialog/>
+                <this.dialogProfile/>
                 <Grid container xs={12}>
 
-                    <Grid item xs={1}>
-                        <IconButton color="primary" 
-                            aria-label="Stats for Nerds" 
-                            onClick={this.handleClickOpenStatsForNerds} >
-                            <SettingsIcon />
-                        </IconButton>
+                    <Grid item xs={2}>
+                        <ListItemButton onClick={this.handleClickOpenProfile} >
+                                <ListItemAvatar sx={{ width: 30, height: 30 }} >
+                                    <Badge badgeContent={(this.state.active_order_id > 0 & !this.state.profileShown) ? "1": null} color="primary">
+                                    <Avatar className='rotatedAvatar' sx={{margin: 0, top: -13}}
+                                    alt={this.props.nickname} 
+                                    src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
+                                    />
+                                    </Badge>
+                                </ListItemAvatar>
+                                <ListItemText primary={this.props.nickname}/>
+                            </ListItemButton>
                     </Grid>
 
                     <Grid item xs={2}>
@@ -234,7 +300,7 @@ bottomBarDesktop =()=>{
                         </ListItem>
                     </Grid>
 
-                    <Grid item xs={2}>
+                    <Grid item xs={1}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
                                 <PercentIcon/>
@@ -243,12 +309,12 @@ bottomBarDesktop =()=>{
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
                                 primary={this.state.fee*100} 
-                                secondary="Trading Fee" />
+                                secondary="Trade Fee" />
                         </ListItem>
                     </Grid>
 
                     <Grid container item xs={1}>
-                        <Grid item xs={4}>
+                        <Grid item xs={6}>
                             <Select 
                             size = 'small'
                             defaultValue={1}
@@ -258,13 +324,19 @@ bottomBarDesktop =()=>{
                                 <MenuItem value={1}>EN</MenuItem>
                             </Select>
                         </Grid>
-                        <Grid item xs={4}/>
-                        <Grid item xs={4}>
+                        <Grid item xs={3}>
                             <IconButton 
                             color="primary" 
-                            aria-label="Telegram" 
+                            aria-label="Community" 
                             onClick={this.handleClickOpenCommunity} >
                                 <PeopleIcon />
+                            </IconButton>
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <IconButton color="primary" 
+                                aria-label="Stats for Nerds" 
+                                onClick={this.handleClickOpenStatsForNerds} >
+                                <SettingsIcon />
                             </IconButton>
                         </Grid>
 
@@ -275,13 +347,14 @@ bottomBarDesktop =()=>{
 }
 
     handleClickOpenExchangeSummary = () => {
+        this.getInfo();
         this.setState({openExchangeSummary: true});
     };
     handleClickCloseExchangeSummary = () => {
         this.setState({openExchangeSummary: false});
     };
 
-    phoneExchangeSummaryDialog =() =>{
+    exchangeSummaryDialogPhone =() =>{
         return(
         <Dialog
         open={this.state.openExchangeSummary}
@@ -357,24 +430,27 @@ bottomBarDesktop =()=>{
     )
     }
 
-
 bottomBarPhone =()=>{
     return(
         <Paper elevation={6} style={{height:40}}>
                 <this.StatsDialog/>
                 <this.CommunityDialog/>
-                <this.phoneExchangeSummaryDialog/>
+                <this.exchangeSummaryDialogPhone/>
+                <this.dialogProfile/>
                 <Grid container xs={12}>
 
-                    <Grid item xs={1}>
-                        <IconButton color="primary" 
-                            aria-label="Stats for Nerds" 
-                            onClick={this.handleClickOpenStatsForNerds} >
-                            <SettingsIcon />
-                        </IconButton>
+                    <Grid item xs={1.6}>
+                    <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, top: -13, }} >
+                        <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "1": null} color="primary">
+                            <Avatar className='rotatedAvatar' 
+                            alt={this.props.nickname} 
+                            src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
+                            />
+                        </Badge>
+                    </IconButton>
                     </Grid>
 
-                    <Grid item xs={2} align="center">
+                    <Grid item xs={1.6} align="center">
                         <IconButton onClick={this.handleClickOpenExchangeSummary} >
                         <Badge badgeContent={this.state.num_public_buy_orders}  color="action">
                             <InventoryIcon />
@@ -382,7 +458,7 @@ bottomBarPhone =()=>{
                         </IconButton>
                     </Grid>
 
-                    <Grid item xs={2} align="center">
+                    <Grid item xs={1.6} align="center">
                         <IconButton onClick={this.handleClickOpenExchangeSummary} >
                         <Badge badgeContent={this.state.num_public_sell_orders}  color="action">
                             <SellIcon />
@@ -390,7 +466,7 @@ bottomBarPhone =()=>{
                         </IconButton>
                     </Grid>
 
-                    <Grid item xs={2} align="center">
+                    <Grid item xs={1.6} align="center">
                         <IconButton onClick={this.handleClickOpenExchangeSummary} >
                         <Badge badgeContent={this.state.active_robots_today}  color="action">
                             <SmartToyIcon />
@@ -398,7 +474,7 @@ bottomBarPhone =()=>{
                         </IconButton>
                     </Grid>
 
-                    <Grid item xs={2} align="center">
+                    <Grid item xs={1.8} align="center">
                         <IconButton onClick={this.handleClickOpenExchangeSummary} >
                         <Badge badgeContent={this.state.today_avg_nonkyc_btc_premium+"%"}  color="action">
                             <PriceChangeIcon />
@@ -406,8 +482,8 @@ bottomBarPhone =()=>{
                         </IconButton>
                     </Grid>
 
-                    <Grid container item xs={3}>
-                        <Grid item xs={4}>
+                    <Grid container item xs={3.8}>
+                        <Grid item xs={6}>
                             <Select 
                             size = 'small'
                             defaultValue={1}
@@ -417,11 +493,17 @@ bottomBarPhone =()=>{
                                 <MenuItem value={1}>EN</MenuItem>
                             </Select>
                         </Grid>
-                        <Grid item xs={4}/>
-                        <Grid item xs={4}>
+                        <Grid item xs={3}>
+                        <IconButton color="primary" 
+                            aria-label="Stats for Nerds" 
+                            onClick={this.handleClickOpenStatsForNerds} >
+                            <SettingsIcon />
+                        </IconButton>
+                        </Grid>
+                        <Grid item xs={3}>
                             <IconButton 
                             color="primary" 
-                            aria-label="Telegram" 
+                            aria-label="Community" 
                             onClick={this.handleClickOpenCommunity} >
                                 <PeopleIcon />
                             </IconButton>

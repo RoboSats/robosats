@@ -14,8 +14,7 @@ export default class HomePage extends Component {
         return (
               <Router >
                   <Switch>
-                      <Route exact path='/' component={UserGenPage}/>
-                      <Route path='/home'><p>You are at the start page</p></Route>
+                      <Route exact path='/' render={(props) => <UserGenPage setAppState={this.props.setAppState}/>}/>
                       <Route path='/make' component={MakerPage}/>
                       <Route path='/book' component={BookPage}/>
                       <Route path="/order/:orderId" component={OrderPage}/>

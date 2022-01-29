@@ -49,7 +49,7 @@ class MakerView(CreateAPIView):
         satoshis = serializer.data.get('satoshis')
         is_explicit = serializer.data.get('is_explicit')
 
-        valid, context = Logics.validate_already_maker_or_taker(request.user)
+        valid, context, _ = Logics.validate_already_maker_or_taker(request.user)
         if not valid: return Response(context, status.HTTP_409_CONFLICT)
 
         # Creates a new order
@@ -270,7 +270,7 @@ class OrderView(viewsets.ViewSet):
         # 1) If action is take, it is a taker request!
         if action == 'take':
             if order.status == Order.Status.PUB: 
-                valid, context = Logics.validate_already_maker_or_taker(request.user)
+                valid, context, _ = Logics.validate_already_maker_or_taker(request.user)
                 if not valid: return Response(context, status=status.HTTP_409_CONFLICT)
                 valid, context = Logics.take(order, request.user)
                 if not valid: return Response(context, status=status.HTTP_403_FORBIDDEN)
@@ -345,7 +345,7 @@ class UserView(APIView):
         # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
         if request.user.is_authenticated:
             context = {'nickname': request.user.username}
-            not_participant, _ = Logics.validate_already_maker_or_taker(request.user)
+            not_participant, _, _ = Logics.validate_already_maker_or_taker(request.user)
 
             # Does not allow this 'mistake' if an active order
             if not not_participant:
@@ -449,7 +449,6 @@ class BookView(ListAPIView):
         if len(queryset)== 0:
             return Response({'not_found':'No orders found, be the first to make one'}, status=status.HTTP_404_NOT_FOUND)
 
-        # queryset = queryset.order_by('created_at')
         book_data = []
         for order in queryset:
             data = ListOrderSerializer(order).data
@@ -509,6 +508,11 @@ class InfoView(ListAPIView):
         context['robosats_running_commit_hash'] = get_commit_robosats()
         context['fee'] = FEE
         context['bond_size'] = float(config('BOND_SIZE'))
+        if request.user.is_authenticated:
+            context['nickname'] = request.user.username
+            has_no_active_order, _, order = Logics.validate_already_maker_or_taker(request.user)
+            if not has_no_active_order:
+                context['active_order_id'] = order.id
 
         return Response(context, status.HTTP_200_OK)
         

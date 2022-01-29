@@ -40,12 +40,12 @@ class Logics():
         '''Checks if the user is already partipant of an active order'''
         queryset = Order.objects.filter(maker=user, status__in=active_order_status)
         if queryset.exists():
-            return False, {'bad_request':'You are already maker of an active order'}
+            return False, {'bad_request':'You are already maker of an active order'}, queryset[0]
 
         queryset = Order.objects.filter(taker=user, status__in=active_order_status)
         if queryset.exists():
-            return False, {'bad_request':'You are already taker of an active order'}
-        return True, None
+            return False, {'bad_request':'You are already taker of an active order'}, queryset[0]
+        return True, None, None
 
     def validate_order_size(order):
         '''Validates if order is withing limits in satoshis at t0'''
@@ -769,13 +769,12 @@ class Logics():
                 
                 # Double check the escrow is settled.
                 if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
+                    # RETURN THE BONDS // Probably best also do it even if payment failed
+                    cls.return_bond(order.taker_bond)
+                    cls.return_bond(order.maker_bond)
                     is_payed, context = follow_send_payment(order.payout) ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
                     if is_payed:
-                        # RETURN THE BONDS // Probably best also do it even if payment failed
-                        cls.return_bond(order.taker_bond)
-                        cls.return_bond(order.maker_bond)
                         order.save()
-
                         return True, context
                     else:
                         # error handling here

@@ -27,10 +27,10 @@ export default class InfoDialog extends Component {
               received the fiat, then the satoshis are released to Bob. Enjoy your satoshis, 
               Bob!</p>
 
-            <p>At no point, AdequateAlice01 and BafflingBob02 have to trust the 
-              bitcoin to each other. In case they have a conflict, <i>RoboSats</i> staff 
+            <p>At no point, AnonymousAlice01 and BafflingBob02 have to trust the 
+              bitcoin funds to each other. In case they have a conflict, <i>RoboSats</i> staff 
               will help resolving the dispute. You can find a step-by-step 
-              description of the trade pipeline in <a href='https://github.com/Reckless-Satoshi/robosats/blob/main/README.md#how-it-works'>'How it works'</a></p>
+              description of the trade pipeline in <a href='https://github.com/Reckless-Satoshi/robosats/blob/main/README.md#how-it-works'>How it works</a></p>
           </Typography>
 
           <Typography component="h5" variant="h5">What payment methods are accepted?</Typography>

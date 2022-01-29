@@ -45,7 +45,7 @@ export default class UserGenPage extends Component {
           .substring(0, length);
   }
 
-  getGeneratedUser(token) {
+  getGeneratedUser=(token)=>{
     fetch('/api/user' + '?token=' + token)
       .then((response) => response.json())
       .then((data) => {
@@ -57,7 +57,11 @@ export default class UserGenPage extends Component {
             bad_request: data.bad_request,
             found: data.found,
             showRobosat:true,
-        });
+        })
+        &
+        this.props.setAppState({
+          nickname: data.nickname,
+      });
       });
   }
 
@@ -112,11 +116,10 @@ export default class UserGenPage extends Component {
     )
   }
 
-
   render() {
     return (
       <Grid container spacing={1}>
-        <Grid item xs={12} align="center" sx={{width:380}}>
+        <Grid item xs={12} align="center" sx={{width:370}}>
           {this.state.showRobosat ?
             <div>
               <Grid item xs={12} align="center">
