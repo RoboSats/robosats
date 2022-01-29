@@ -217,14 +217,14 @@ export default class BottomBar extends Component {
                 :
                 <ListItem>
                     <ListItemIcon><NumbersIcon/></ListItemIcon>
-                    <ListItemText secondary="Your current order"/>
+                    <ListItemText primary="No active orders" secondary="Your current order"/>
                 </ListItem>
                 }
                 <ListItem>
                     <ListItemIcon>
                         <PasswordIcon/>
                     </ListItemIcon>
-                    <ListItemText secondary="Last generated token.">
+                    <ListItemText secondary="Your token.">
                     {this.props.token ?  
                     <TextField
                         disabled

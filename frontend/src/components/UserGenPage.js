@@ -59,10 +59,15 @@ export default class UserGenPage extends Component {
             showRobosat:true,
         })
         &
+        // Add nick and token to App state (token only if not a bad request)
+        (data.bad_request ? this.props.setAppState({
+          nickname: data.nickname,
+        })
+        :
         this.props.setAppState({
           nickname: data.nickname,
           token: this.state.token,
-      });
+      }));
       });
   }
 
