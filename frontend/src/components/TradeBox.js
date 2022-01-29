@@ -360,8 +360,6 @@ export default class TradeBox extends Component {
     return (
 
       <Grid container spacing={1}>
-        {/* In case the taker was very fast to scan the bond, make the taker found alarm sound again */}
-        <this.Sound soundFileName="taker-found"/>
         <Grid item xs={12} align="center">
           <Typography color="primary" component="subtitle1" variant="subtitle1">
             <b> Submit a LN invoice for {pn(this.props.data.invoice_amount)} Sats </b>
@@ -769,7 +767,7 @@ handleRatingChange=(e)=>{
 
   render() {
     return (
-      <Grid container spacing={1} style={{ width:330}}>
+      <Grid container spacing={1} style={{ width:this.props.width}}>
         <this.ConfirmDisputeDialog/>
         <this.ConfirmFiatReceivedDialog/>
         <Grid item xs={12} align="center">

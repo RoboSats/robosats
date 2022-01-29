@@ -36,39 +36,6 @@ function pn(x) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
-
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.number.isRequired,
-  value: PropTypes.number.isRequired,
-};
-
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
-
-
 export default class OrderPage extends Component {
   constructor(props) {
     super(props);
@@ -80,6 +47,7 @@ export default class OrderPage extends Component {
         loading: true,
         openCancel: false,
         openCollaborativeCancel: false,
+        showContractBox: 1,
     };
     this.orderId = this.props.match.params.orderId;
     this.getCurrencyDict();
@@ -334,7 +302,7 @@ export default class OrderPage extends Component {
         </DialogContent>
         <DialogActions>
           <Button onClick={this.handleClickCloseCollaborativeCancelDialog} autoFocus>Go back</Button>
-          <Button onClick={this.handleClickConfirmCollaborativeCancelButton}> Proceed and Ask for Cancel </Button>
+          <Button onClick={this.handleClickConfirmCollaborativeCancelButton}> Ask for Cancel </Button>
         </DialogActions>
       </Dialog>
     )
@@ -542,36 +510,46 @@ export default class OrderPage extends Component {
             {this.orderBox()}
         </Grid>
         <Grid item xs={6} align="left">
-          <TradeBox data={this.state} completeSetState={this.completeSetState} />
+          <TradeBox width={330} data={this.state} completeSetState={this.completeSetState} />
         </Grid>
       </Grid>
     )
   }
   
+  a11yProps(index) {
+    return {
+      id: `simple-tab-${index}`,
+      'aria-controls': `simple-tabpanel-${index}`,
+    };
+  }
+
   doubleOrderPagePhone=()=>{
 
-    const [value, setValue] = React.useState(1);
+    const [value, setValue] = React.useState(this.state.showContractBox);
 
     const handleChange = (event, newValue) => {
+      this.setState({showContractBox:newValue})
       setValue(newValue);
     };
 
     return(
       <Box sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={value} onChange={handleChange} aria-label="basic tabs" variant="fullWidth">
-            <Tab label="Order Details" {...a11yProps(0)} />
-            <Tab label="Contract Box" {...a11yProps(1)} />
+          <Tabs value={value} onChange={handleChange} variant="fullWidth" >
+            <Tab label="Order Details" {...this.a11yProps(0)} />
+            <Tab label="Contract Box" {...this.a11yProps(1)} />
           </Tabs>
         </Box>
-        <TabPanel value={value} index={0}>
-          <Grid container style={{ width:330}}>
-            {this.orderBox()}
+        <Grid container spacing={2}>
+          <Grid item >
+            <div style={{ width:330, display: this.state.showContractBox == 0 ? '':'none'}}>
+                {this.orderBox()}
+            </div>
+            <div style={{display: this.state.showContractBox == 1 ? '':'none'}}>
+              <TradeBox width={330} data={this.state} completeSetState={this.completeSetState} />
+            </div>
           </Grid>
-        </TabPanel>
-        <TabPanel value={value} index={1}>
-          <TradeBox data={this.state} completeSetState={this.completeSetState} />
-        </TabPanel>
+        </Grid>
       </Box>
   );
   }
