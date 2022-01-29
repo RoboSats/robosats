@@ -61,6 +61,7 @@ export default class UserGenPage extends Component {
         &
         this.props.setAppState({
           nickname: data.nickname,
+          token: this.state.token,
       });
       });
   }

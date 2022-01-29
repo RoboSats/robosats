@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {Badge, ListItemAvatar, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import {Badge, TextField, ListItemAvatar, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
 
 // Icons
@@ -16,6 +16,7 @@ import EqualizerIcon from '@mui/icons-material/Equalizer';
 import SendIcon from '@mui/icons-material/Send';
 import PublicIcon from '@mui/icons-material/Public';
 import NumbersIcon from '@mui/icons-material/Numbers';
+import PasswordIcon from '@mui/icons-material/Password';
 
 // pretty numbers
 function pn(x) {
@@ -191,7 +192,7 @@ export default class BottomBar extends Component {
             <List>
                 <Divider/>
                 <ListItem className="profileNickname">
-                    <ListItemText secondary="Your robot pseudonymous">
+                    <ListItemText secondary="Your robot">
                     <Typography component="h6" variant="h6">
                     {this.props.nickname ? "⚡"+this.props.nickname+"⚡" : ""}
                     </Typography>
@@ -211,14 +212,31 @@ export default class BottomBar extends Component {
                     <ListItemIcon>
                         <NumbersIcon color="primary"/>
                     </ListItemIcon>
-                    <ListItemText color="primary" primary={'One active order #'+this.state.active_order_id} secondary="Your current order"/>
+                    <ListItemText primary={'One active order #'+this.state.active_order_id} secondary="Your current order"/>
                 </ListItemButton>
                 :
                 <ListItem>
                     <ListItemIcon><NumbersIcon/></ListItemIcon>
-                    <ListItemText primary="No active orders" secondary="Your current order"/>
+                    <ListItemText secondary="Your current order"/>
                 </ListItem>
                 }
+                <ListItem>
+                    <ListItemIcon>
+                        <PasswordIcon/>
+                    </ListItemIcon>
+                    <ListItemText secondary="Last generated token.">
+                    {this.props.token ?  
+                    <TextField
+                        disabled
+                        label='Store safely'
+                        value={this.props.token }
+                        variant='filled'
+                        size='small'/>
+                    : 
+                    'Cannot remember'}
+              </ListItemText>
+                </ListItem>
+
             </List>
             </DialogContent>
             

@@ -9,6 +9,7 @@ export default class App extends Component {
     super(props);
     this.state = {
       nickname: null,
+      token: null,
     }
   }
 
@@ -23,7 +24,7 @@ export default class App extends Component {
           <HomePage setAppState={this.setAppState}/>
         </div>
         <div className='bottomBar'>
-          <BottomBar nickname={this.state.nickname} setAppState={this.setAppState} />
+          <BottomBar {...this.state} setAppState={this.setAppState} />
         </div>
       </>
     );
