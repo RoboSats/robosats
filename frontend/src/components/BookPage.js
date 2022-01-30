@@ -93,7 +93,7 @@ export default class BookPage extends Component {
             renderCell: (params) => {return (
               <ListItemButton style={{ cursor: "pointer" }}>
                 <ListItemAvatar>
-                  <Avatar alt={params.row.robosat} src={params.row.avatar} />
+                  <Avatar className="flippedSmallAvatar" alt={params.row.robosat} src={params.row.avatar} />
                 </ListItemAvatar>
                 <ListItemText primary={params.row.robosat}/>
               </ListItemButton>
@@ -147,7 +147,7 @@ export default class BookPage extends Component {
           { field: 'robosat', headerName: 'Robot', width: 80, 
             renderCell: (params) => {return (
               <ListItemButton style={{ cursor: "pointer" }}>
-                <Avatar alt={params.row.robosat} src={params.row.avatar} />
+                <Avatar className="flippedSmallAvatar" alt={params.row.robosat} src={params.row.avatar} />
               </ListItemButton>
             );
           } },

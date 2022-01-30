@@ -17,6 +17,7 @@ import SendIcon from '@mui/icons-material/Send';
 import PublicIcon from '@mui/icons-material/Public';
 import NumbersIcon from '@mui/icons-material/Numbers';
 import PasswordIcon from '@mui/icons-material/Password';
+import ContentCopy from "@mui/icons-material/ContentCopy";
 
 // pretty numbers
 function pn(x) {
@@ -198,7 +199,7 @@ export default class BottomBar extends Component {
                     </Typography>
                     </ListItemText>
                     <ListItemAvatar>
-                    <Avatar className='avatar' 
+                    <Avatar className='profileAvatar' 
                         sx={{ width: 65, height:65 }}
                         alt={this.props.nickname} 
                         src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
@@ -226,14 +227,21 @@ export default class BottomBar extends Component {
                     <ListItemIcon>
                         <PasswordIcon/>
                     </ListItemIcon>
-                    <ListItemText secondary="Your token.">
+                    <ListItemText secondary="Your token">
                     {this.props.token ?  
                     <TextField
                         disabled
                         label='Store safely'
                         value={this.props.token }
                         variant='filled'
-                        size='small'/>
+                        size='small'
+                        InputProps={{
+                            endAdornment:
+                            <IconButton onClick= {()=>navigator.clipboard.writeText(this.props.token)}>
+                                <ContentCopy />
+                            </IconButton>,
+                            }}
+                        />
                     : 
                     'Cannot remember'}
               </ListItemText>
@@ -258,7 +266,7 @@ bottomBarDesktop =()=>{
                         <ListItemButton onClick={this.handleClickOpenProfile} >
                                 <ListItemAvatar sx={{ width: 30, height: 30 }} >
                                     <Badge badgeContent={(this.state.active_order_id > 0 & !this.state.profileShown) ? "": null} color="primary">
-                                    <Avatar className='rotatedAvatar' sx={{margin: 0, top: -13}}
+                                    <Avatar className='flippedSmallAvatar' sx={{margin: 0, top: -13}}
                                     alt={this.props.nickname} 
                                     src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
                                     />
@@ -462,7 +470,7 @@ bottomBarPhone =()=>{
                     <Grid item xs={1.6}>
                     <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, top: -13, }} >
                         <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "1": null} color="primary">
-                            <Avatar className='rotatedAvatar' 
+                            <Avatar className='flippedSmallAvatar' 
                             alt={this.props.nickname} 
                             src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
                             />

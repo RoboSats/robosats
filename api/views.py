@@ -39,6 +39,9 @@ class MakerView(CreateAPIView):
     def post(self,request):
         serializer = self.serializer_class(data=request.data)
 
+        if not request.user.is_authenticated:
+            return Response({'bad_request':'Woops! It seems you do not have a robot avatar'}, status.HTTP_400_BAD_REQUEST)
+
         if not serializer.is_valid(): return Response(status=status.HTTP_400_BAD_REQUEST)
 
         type = serializer.data.get('type')
@@ -413,15 +416,16 @@ class UserView(APIView):
     def delete(self,request):
         ''' Pressing "give me another" deletes the logged in user '''
         user = request.user
-        if not user:
+        if not user.is_authenticated:
             return Response(status.HTTP_403_FORBIDDEN)
 
-        # Only delete if user life is shorter than 30 minutes. Helps deleting users by mistake
+        # Only delete if user life is shorter than 30 minutes. Helps to avoid deleting users by mistake
         if user.date_joined < (timezone.now() - timedelta(minutes=30)):
             return Response(status.HTTP_400_BAD_REQUEST)
 
         # Check if it is not a maker or taker!
-        if not Logics.validate_already_maker_or_taker(user):
+        not_participant, _, _ = Logics.validate_already_maker_or_taker(user)
+        if not not_participant:
             return Response({'bad_request':'User cannot be deleted while he is part of an order'}, status.HTTP_400_BAD_REQUEST)
 
         logout(request)

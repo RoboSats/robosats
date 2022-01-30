@@ -122,22 +122,22 @@ class LNNode():
             lnpayment.save()
             return True
 
-    @classmethod
-    def check_until_invoice_locked(cls, payment_hash, expiration):
-        '''Checks until hold invoice is locked.
-        When invoice is locked, returns true. 
-        If time expires, return False.'''
-        # Experimental, might need asyncio. Best if subscribing all invoices and running a background task
-        # Maybe best to pass LNpayment object and change status live.
+    # @classmethod
+    # def check_until_invoice_locked(cls, payment_hash, expiration):
+    #     '''Checks until hold invoice is locked.
+    #     When invoice is locked, returns true. 
+    #     If time expires, return False.'''
+    #     # Experimental, might need asyncio. Best if subscribing all invoices and running a background task
+    #     # Maybe best to pass LNpayment object and change status live.
 
-        request = invoicesrpc.SubscribeSingleInvoiceRequest(r_hash=payment_hash)
-        for invoice in cls.invoicesstub.SubscribeSingleInvoice(request):
-            print(invoice)
-            if timezone.now > expiration:
-                break
-            if invoice.state == 3: #  True if hold invoice is accepted.
-                return True
-        return False
+    #     request = invoicesrpc.SubscribeSingleInvoiceRequest(r_hash=payment_hash)
+    #     for invoice in cls.invoicesstub.SubscribeSingleInvoice(request):
+    #         print(invoice)
+    #         if timezone.now > expiration:
+    #             break
+    #         if invoice.state == 3: #  True if hold invoice is accepted.
+    #             return True
+    #     return False
 
 
     @classmethod

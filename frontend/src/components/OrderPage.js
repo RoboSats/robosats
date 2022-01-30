@@ -309,7 +309,7 @@ export default class OrderPage extends Component {
 
     // If maker and Waiting for Bond. Or if taker and Waiting for bond.
     // Simply allow to cancel without showing the cancel dialog. 
-    if ((this.state.is_maker & this.state.status == 0) || this.state.is_taker & this.state.status == 3){
+    if ((this.state.is_maker & [0,1].includes(this.state.status)) || this.state.is_taker & this.state.status == 3){
       return(
         <Grid item xs={12} align="center">
           <Button variant='contained' color='secondary' onClick={this.handleClickConfirmCancelButton}>Cancel</Button>
@@ -317,7 +317,7 @@ export default class OrderPage extends Component {
       )}
     // If the order does not yet have an escrow deposited. Show dialog
     // to confirm forfeiting the bond
-    if ([1,3,6,7].includes(this.state.status)){
+    if ([3,6,7].includes(this.state.status)){
       return(
         <div id="openDialogCancelButton">
           <Grid item xs={12} align="center">
@@ -354,7 +354,7 @@ export default class OrderPage extends Component {
           <List dense="true">
             <ListItem >
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
-                <Avatar 
+                <Avatar className="flippedSmallAvatar"
                   alt={this.state.maker_nick} 
                   src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'} 
                   />
@@ -370,7 +370,7 @@ export default class OrderPage extends Component {
                     <ListItem align="left">
                       <ListItemText primary={this.state.taker_nick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order taker"/>
                       <ListItemAvatar > 
-                        <Avatar
+                        <Avatar className="smallAvatar"
                           alt={this.state.maker_nick} 
                           src={window.location.origin +'/static/assets/avatars/' + this.state.taker_nick + '.png'}
                           />

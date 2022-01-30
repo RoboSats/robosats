@@ -50,9 +50,9 @@ class Logics():
     def validate_order_size(order):
         '''Validates if order is withing limits in satoshis at t0'''
         if order.t0_satoshis > MAX_TRADE:
-            return False, {'bad_request': 'Your order is too big. It is worth '+'{:,}'.format(order.t0_satoshis)+' Sats now. But limit is '+'{:,}'.format(MAX_TRADE)+ ' Sats'}
+            return False, {'bad_request': 'Your order is too big. It is worth '+'{:,}'.format(order.t0_satoshis)+' Sats now, but the limit is '+'{:,}'.format(MAX_TRADE)+ ' Sats'}
         if order.t0_satoshis < MIN_TRADE:
-            return False, {'bad_request': 'Your order is too small. It is worth '+'{:,}'.format(order.t0_satoshis)+' Sats now. But limit is '+'{:,}'.format(MIN_TRADE)+ ' Sats'}
+            return False, {'bad_request': 'Your order is too small. It is worth '+'{:,}'.format(order.t0_satoshis)+' Sats now, but the limit is '+'{:,}'.format(MIN_TRADE)+ ' Sats'}
         return True, None
 
     @classmethod    
@@ -386,11 +386,12 @@ class Logics():
             return True, None
 
         # 2) When maker cancels after bond
-            '''The order dissapears from book and goes to cancelled. Maker is charged the bond to prevent DDOS 
-            on the LN node and order book. TODO Only charge a small part of the bond (requires maker submitting an invoice)'''
+            '''The order dissapears from book and goes to cancelled. If strict, maker is charged the bond 
+            to prevent DDOS on the LN node and order book. If not strict, maker is returned
+            the bond (more user friendly).'''
         elif order.status == Order.Status.PUB and order.maker == user:
             #Settle the maker bond (Maker loses the bond for cancelling public order)
-            if cls.settle_bond(order.maker_bond):
+            if cls.return_bond(order.maker_bond): # strict: cls.settle_bond(order.maker_bond):
                 order.status = Order.Status.UCA
                 order.save()
                 return True, None

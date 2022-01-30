@@ -3,7 +3,7 @@ import { Button , Dialog, Grid, Typography, TextField, ButtonGroup, CircularProg
 import { Link } from 'react-router-dom'
 import Image from 'material-ui-image'
 import InfoDialog from './InfoDialog'
-import PublishIcon from '@mui/icons-material/Publish';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CasinoIcon from '@mui/icons-material/Casino';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 
@@ -161,14 +161,11 @@ export default class UserGenPage extends Component {
           }
           <Grid container align="center">
             <Grid item xs={12} align="center">
-              <IconButton sx={{top:6}} onClick= {()=>navigator.clipboard.writeText(this.state.token)}>
-                <ContentCopy sx={{width:18, height:18}} />
-              </IconButton>
-              <TextField
+              <TextField sx={{maxWidth: 280}}
                 //sx={{ input: { color: 'purple' } }}
-                InputLabelProps={{
-                  style: { color: 'green' },
-                }}
+                // InputLabelProps={{
+                //   style: { color: 'green' },
+                // }}
                 error={this.state.bad_request}
                 label='Store your token safely'
                 required='true'
@@ -183,16 +180,21 @@ export default class UserGenPage extends Component {
                     this.handleClickSubmitToken();
                   }
                 }}
+                InputProps={{
+                  startAdornment:
+                  <IconButton onClick= {()=>navigator.clipboard.writeText(this.state.token)}>
+                    <ContentCopy color={this.state.tokenHasChanged ? 'inherit' : 'primary' } sx={{width:18, height:18}} />
+                  </IconButton>,
+                  endAdornment:
+                  <IconButton onClick={this.handleClickNewRandomToken}><CasinoIcon/></IconButton>,
+                  }}
               />
-              <IconButton sx={{top:8}} onClick={this.handleClickNewRandomToken}>
-                <CasinoIcon />
-              </IconButton>
             </Grid>
           </Grid>
           <Grid item xs={12} align="center">
               <Button disabled={!this.state.tokenHasChanged} type="submit" size='small'  onClick= {this.handleClickSubmitToken}>
-                <PublishIcon />
-                <span> Generate Robot</span>
+                <SmartToyIcon sx={{width:18, height:18}} />
+                <span>  Generate Robot</span>
               </Button>
           </Grid>
           <Grid item xs={12} align="center">
