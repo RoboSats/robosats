@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import PropTypes from 'prop-types';
-import { Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import MediaQuery from 'react-responsive'
 
@@ -341,6 +340,18 @@ export default class OrderPage extends Component {
     return(null)
   }
 
+  // Colors for the status badges
+  statusBadgeColor(status){
+    if(status=='active'){
+      return("success")
+    }
+    if(status=='seen_recently'){
+      return("warning")
+    }
+    if(status=='inactive'){
+      return('error')
+    }
+  }
   orderBox=()=>{
     return(
       <Grid container spacing={1} >
@@ -354,10 +365,12 @@ export default class OrderPage extends Component {
           <List dense="true">
             <ListItem >
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
-                <Avatar className="flippedSmallAvatar"
-                  alt={this.state.maker_nick} 
-                  src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'} 
-                  />
+                <Badge variant="dot" badgeContent="" color={this.statusBadgeColor(this.state.maker_status)}>
+                  <Avatar className="flippedSmallAvatar"
+                    alt={this.state.maker_nick} 
+                    src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'} 
+                    />
+                </Badge>
               </ListItemAvatar>
               <ListItemText primary={this.state.maker_nick + (this.state.type ? " (Seller)" : " (Buyer)")} secondary="Order maker" align="right"/>
             </ListItem>
@@ -370,10 +383,12 @@ export default class OrderPage extends Component {
                     <ListItem align="left">
                       <ListItemText primary={this.state.taker_nick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order taker"/>
                       <ListItemAvatar > 
-                        <Avatar className="smallAvatar"
-                          alt={this.state.maker_nick} 
-                          src={window.location.origin +'/static/assets/avatars/' + this.state.taker_nick + '.png'}
-                          />
+                        <Badge variant="dot" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
+                          <Avatar className="smallAvatar"
+                            alt={this.state.taker_nick} 
+                            src={window.location.origin +'/static/assets/avatars/' + this.state.taker_nick + '.png'}
+                            />
+                        </Badge>
                       </ListItemAvatar>
                     </ListItem>
                     <Divider />               

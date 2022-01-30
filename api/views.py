@@ -125,6 +125,32 @@ class OrderView(viewsets.ViewSet):
         if not data['is_participant'] and order.status != Order.Status.PUB:
             return Response({'bad_request':'You are not allowed to see this order'},status.HTTP_403_FORBIDDEN)
         
+        # WRITE Update last_seen for maker and taker.
+        # Note down that the taker/maker was here recently, so counterpart knows if the user is paying attention.
+        if order.maker == request.user:
+            order.maker_last_seen = timezone.now()
+            order.save()
+        if order.taker == request.user:
+            order.taker_last_seen = timezone.now()
+            order.save()
+
+        # Add activity status of participants based on last_seen
+        if order.taker_last_seen != None:
+            if order.taker_last_seen > (timezone.now() - timedelta(minutes=2)):
+                data['taker_status'] = 'active'
+            elif order.taker_last_seen > (timezone.now() - timedelta(minutes=10)):
+                data['taker_status'] = 'seen_recently'
+            else:
+                data['taker_status'] = 'inactive'
+
+        if order.maker_last_seen != None:
+            if order.maker_last_seen > (timezone.now() - timedelta(minutes=2)):
+                data['maker_status'] = 'active'
+            elif order.maker_last_seen > (timezone.now() - timedelta(minutes=10)):
+                data['maker_status'] = 'seen_recently'
+            else:
+                data['maker_status'] = 'inactive'
+
         # 3.b If order is between public and WF2
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
             data['price_now'], data['premium_now'] = Logics.price_and_premium_now(order)
@@ -221,10 +247,8 @@ class OrderView(viewsets.ViewSet):
             if order.maker_bond.status == order.taker_bond.status == order.trade_escrow.status == LNPayment.Status.LOCKED:
                 # add whether a collaborative cancel is pending or has been asked
                 if (data['is_maker'] and order.taker_asked_cancel) or (data['is_taker'] and order.maker_asked_cancel):
-                    print('PENDING')
                     data['pending_cancel'] = True
                 elif (data['is_maker'] and order.maker_asked_cancel) or (data['is_taker'] and order.taker_asked_cancel):
-                    print('ASKED')
                     data['asked_for_cancel'] = True
                 else:
                     data['asked_for_cancel'] = False
