@@ -210,7 +210,9 @@ export default class BottomBar extends Component {
                 // TODO Link to router and do this.props.history.push
                 <ListItemButton component="a" href={window.location.origin +'/order/'+this.state.active_order_id}>
                     <ListItemIcon>
-                        <NumbersIcon color="primary"/>
+                        <Badge badgeContent="" color="primary"> 
+                            <NumbersIcon color="primary"/>
+                        </Badge>
                     </ListItemIcon>
                     <ListItemText primary={'One active order #'+this.state.active_order_id} secondary="Your current order"/>
                 </ListItemButton>
@@ -255,7 +257,7 @@ bottomBarDesktop =()=>{
                     <Grid item xs={2}>
                         <ListItemButton onClick={this.handleClickOpenProfile} >
                                 <ListItemAvatar sx={{ width: 30, height: 30 }} >
-                                    <Badge badgeContent={(this.state.active_order_id > 0 & !this.state.profileShown) ? "1": null} color="primary">
+                                    <Badge badgeContent={(this.state.active_order_id > 0 & !this.state.profileShown) ? "": null} color="primary">
                                     <Avatar className='rotatedAvatar' sx={{margin: 0, top: -13}}
                                     alt={this.props.nickname} 
                                     src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 

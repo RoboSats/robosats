@@ -186,7 +186,7 @@ class LNNode():
     def pay_invoice(cls, invoice, num_satoshis):
         '''Sends sats to buyer'''
 
-        fee_limit_sat = int(max(num_satoshis * 0.0002, 10)) # 200 ppm or 10 sats 
+        fee_limit_sat = int(max(num_satoshis * float(config('PROPORTIONAL_ROUTING_FEE_LIMIT')), float(config('MIN_FLAT_ROUTING_FEE_LIMIT')))) # 200 ppm or 10 sats 
         request = routerrpc.SendPaymentRequest(
             payment_request=invoice,
             fee_limit_sat=fee_limit_sat,

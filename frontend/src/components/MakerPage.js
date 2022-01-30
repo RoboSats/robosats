@@ -103,7 +103,6 @@ export default class MakerPage extends Component {
     handleCreateOfferButtonPressed=()=>{
         this.state.amount == null ? this.setState({amount: 0}) : null;
 
-        console.log(this.state)
         const requestOptions = {
             method: 'POST',
             headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},

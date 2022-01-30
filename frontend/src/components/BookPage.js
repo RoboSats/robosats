@@ -24,8 +24,7 @@ export default class BookPage extends Component {
   getOrderDetails(type, currency) {
     fetch('/api/book' + '?currency=' + currency + "&type=" + type)
       .then((response) => response.json())
-      .then((data) => console.log(data) &
-      this.setState({
+      .then((data) => this.setState({
         orders: data,
         not_found: data.not_found,
         loading: false,
@@ -33,7 +32,6 @@ export default class BookPage extends Component {
   }
 
   handleRowClick=(e)=>{
-    console.log(e)
     this.props.history.push('/order/' + e);
   }
 

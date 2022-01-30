@@ -3,7 +3,8 @@ import { Button , Dialog, Grid, Typography, TextField, ButtonGroup, CircularProg
 import { Link } from 'react-router-dom'
 import Image from 'material-ui-image'
 import InfoDialog from './InfoDialog'
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import PublishIcon from '@mui/icons-material/Publish';
+import CasinoIcon from '@mui/icons-material/Casino';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 
 function getCookie(name) {
@@ -29,7 +30,8 @@ export default class UserGenPage extends Component {
     this.state = {
       token: this.genBase62Token(34),
       openInfo: false,
-      showRobosat: true,
+      loadingRobot: true,
+      tokenHasChanged: false,
     };
     this.getGeneratedUser(this.state.token);
   }
@@ -56,7 +58,7 @@ export default class UserGenPage extends Component {
             shannon_entropy: data.token_shannon_entropy,
             bad_request: data.bad_request,
             found: data.found,
-            showRobosat:true,
+            loadingRobot:false,
         })
         &
         // Add nick and token to App state (token only if not a bad request)
@@ -81,23 +83,24 @@ export default class UserGenPage extends Component {
       .then((data) => console.log(data));
   }
 
-  handleAnotherButtonPressed=(e)=>{
-    this.delGeneratedUser()
-    // this.setState({
-    //   showRobosat: false,
-    //   token: this.genBase62Token(34),
-    // });
-    // this.getGeneratedUser(this.state.token);
-    window.location.reload();
+  handleClickNewRandomToken=()=>{
+    this.setState({
+      token: this.genBase62Token(34),
+      tokenHasChanged: true,
+    });
   }
 
   handleChangeToken=(e)=>{
-    this.delGeneratedUser()
     this.setState({
       token: e.target.value,
+      tokenHasChanged: true,
     })
-    this.getGeneratedUser(e.target.value);
-    this.setState({showRobosat: false})
+  }
+
+  handleClickSubmitToken=()=>{
+    this.delGeneratedUser()
+    this.getGeneratedUser(this.state.token);
+    this.setState({loadingRobot: true, tokenHasChanged: false})
   }
 
   handleClickOpenInfo = () => {
@@ -125,8 +128,8 @@ export default class UserGenPage extends Component {
   render() {
     return (
       <Grid container spacing={1}>
-        <Grid item xs={12} align="center" sx={{width:370}}>
-          {this.state.showRobosat ?
+        <Grid item xs={12} align="center" sx={{width:370, height:260}}>
+          {!this.state.loadingRobot ?
             <div>
               <Grid item xs={12} align="center">
                 <Typography component="h5" variant="h5">
@@ -144,7 +147,7 @@ export default class UserGenPage extends Component {
                 </div><br/>
               </Grid>
             </div>
-            : <CircularProgress />}
+            : <CircularProgress sx={{position: 'relative', top: 100, }}/>}
           </Grid>
           {
             this.state.found ?
@@ -158,8 +161,8 @@ export default class UserGenPage extends Component {
           }
           <Grid container align="center">
             <Grid item xs={12} align="center">
-              <IconButton onClick= {()=>navigator.clipboard.writeText(this.state.token)}>
-                <ContentCopy/>
+              <IconButton sx={{top:6}} onClick= {()=>navigator.clipboard.writeText(this.state.token)}>
+                <ContentCopy sx={{width:18, height:18}} />
               </IconButton>
               <TextField
                 //sx={{ input: { color: 'purple' } }}
@@ -175,15 +178,26 @@ export default class UserGenPage extends Component {
                 size='small'
                 // multiline = {true}
                 onChange={this.handleChangeToken}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    this.handleClickSubmitToken();
+                  }
+                }}
               />
+              <IconButton sx={{top:8}} onClick={this.handleClickNewRandomToken}>
+                <CasinoIcon />
+              </IconButton>
             </Grid>
           </Grid>
           <Grid item xs={12} align="center">
-              <Button size='small'  onClick={this.handleAnotherButtonPressed}>Generate Another Robosat</Button>
+              <Button disabled={!this.state.tokenHasChanged} type="submit" size='small'  onClick= {this.handleClickSubmitToken}>
+                <PublishIcon />
+                <span> Generate Robot</span>
+              </Button>
           </Grid>
           <Grid item xs={12} align="center">
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
-              <Button color='primary' to='/make/' component={Link}>Make Order</Button>
+              <Button disabled={this.state.loadingRobot} color='primary' to='/make/' component={Link}>Make Order</Button>
               <Button color='inherit' onClick={this.handleClickOpenInfo}>Info</Button>
               <this.InfoDialog/>
               <Button color='secondary' to='/book/' component={Link}>View Book</Button>

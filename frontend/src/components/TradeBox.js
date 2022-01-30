@@ -412,7 +412,6 @@ export default class TradeBox extends Component {
 
   // Asks the user for a dispute statement.
   showInDisputeStatement=()=>{
-    console.log(this.props.data.statement_submitted)
     if(this.props.data.statement_submitted){
       return (
         <Grid container spacing={1}>

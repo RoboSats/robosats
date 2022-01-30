@@ -184,7 +184,6 @@ export default class OrderPage extends Component {
   }
 
   handleClickTakeOrderButton=()=>{
-    console.log(this.state)
       const requestOptions = {
           method: 'POST',
           headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
@@ -216,7 +215,6 @@ export default class OrderPage extends Component {
   }
 
   handleClickConfirmCancelButton=()=>{
-    console.log(this.state)
       const requestOptions = {
           method: 'POST',
           headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
@@ -226,7 +224,7 @@ export default class OrderPage extends Component {
       };
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())
-      .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
+      .then((data) => this.getOrderDetails(data.id));
     this.handleClickCloseConfirmCancelDialog();
   }
 
@@ -262,7 +260,6 @@ export default class OrderPage extends Component {
   }
 
   handleClickConfirmCollaborativeCancelButton=()=>{
-    console.log(this.state)
       const requestOptions = {
           method: 'POST',
           headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
@@ -272,7 +269,7 @@ export default class OrderPage extends Component {
       };
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())
-      .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
+      .then((data) => this.getOrderDetails(data.id));
     this.handleClickCloseCollaborativeCancelDialog();
   }
 
