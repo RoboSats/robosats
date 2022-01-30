@@ -1,5 +1,5 @@
 
-import {Typography, DialogTitle,  DialogContent, DialogContentText, Button } from "@mui/material"
+import {Typography, DialogActions,  DialogContent, Button } from "@mui/material"
 import React, { Component } from 'react'
 
 export default class InfoDialog extends Component {
@@ -121,6 +121,9 @@ export default class InfoDialog extends Component {
               RoboSats</i> will definitely never ask for your robot token.
             </p>
           </Typography>
+          <DialogActions>
+            <Button onClick={this.props.handleCloseInfo}>Close</Button>
+          </DialogActions>
         </DialogContent>
       </div>
     )

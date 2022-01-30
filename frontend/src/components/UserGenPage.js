@@ -120,7 +120,7 @@ export default class UserGenPage extends Component {
         aria-describedby="info-dialog-description"
         scroll="paper"
       >
-        <InfoDialog/>
+        <InfoDialog handleCloseInfo = {this.handleCloseInfo}/>
       </Dialog>
     )
   }
