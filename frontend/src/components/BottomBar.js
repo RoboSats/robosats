@@ -469,7 +469,7 @@ bottomBarPhone =()=>{
 
                     <Grid item xs={1.6}>
                     <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, top: -13, }} >
-                        <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "1": null} color="primary">
+                        <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "": null} color="primary">
                             <Avatar className='flippedSmallAvatar' 
                             alt={this.props.nickname} 
                             src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 

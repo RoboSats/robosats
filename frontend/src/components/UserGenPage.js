@@ -202,7 +202,7 @@ export default class UserGenPage extends Component {
               <Button disabled={this.state.loadingRobot} color='primary' to='/make/' component={Link}>Make Order</Button>
               <Button color='inherit' onClick={this.handleClickOpenInfo}>Info</Button>
               <this.InfoDialog/>
-              <Button color='secondary' to='/book/' component={Link}>View Book</Button>
+              <Button disabled={this.state.loadingRobot} color='secondary' to='/book/' component={Link}>View Book</Button>
             </ButtonGroup>
           </Grid>
           <Grid item xs={12} align="center">
