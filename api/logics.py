@@ -317,8 +317,11 @@ class Logics():
 
         # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow'
         if order.status == Order.Status.WF2:
-            # If the escrow is lock move to Chat.
-            if order.trade_escrow.status == LNPayment.Status.LOCKED:
+            # If the escrow does not exist, or is not locked move to WFE.
+            if order.trade_escrow == None:
+                order.status = Order.Status.WFE
+            # If the escrow is locked move to Chat.
+            elif order.trade_escrow.status == LNPayment.Status.LOCKED:
                 order.status = Order.Status.CHA
                 order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.CHA])
             else:
