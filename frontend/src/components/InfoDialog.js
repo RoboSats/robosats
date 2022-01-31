@@ -1,22 +1,60 @@
 
-import {Typography, DialogActions,  DialogContent, Button } from "@mui/material"
+import {Typography, DialogActions,  DialogContent, Button, Grid} from "@mui/material"
 import React, { Component } from 'react'
+import Image from 'material-ui-image'
+import MediaQuery from 'react-responsive'
+import { maxWidth, minWidth } from "@mui/system"
 
 export default class InfoDialog extends Component {
   render() {
     return (
       <div>
         <DialogContent>
-          <Typography component="h5" variant="h5">What is <i>RoboSats</i>?</Typography>
+
+          <MediaQuery minWidth={475}>
+          <Grid container xs={12}>
+            <Grid item xs={8}>
+              <Typography component="h4" variant="h4">What is <i>RoboSats</i>?</Typography>
+              <Typography component="body2" variant="body2">
+                <p>It is a BTC/FIAT peer-to-peer exchange over lightning. <br/> It simplifies 
+                  matchmaking and minimizes the need of trust. RoboSats focuses in privacy and speed.</p>
+                
+                <p>RoboSats is an open source project <a 
+                  href='https://github.com/reckless-satoshi/robosats'>(GitHub).</a>
+                </p>
+              </Typography>
+            </Grid>
+            <Grid item xs={4} align="center">
+              <Image className='newAvatar'
+                disableError='true'
+                cover='true'
+                color='null'
+                src={window.location.origin +'/static/assets/images/robosats_0.1.0.png'}
+              />
+            </Grid>
+          </Grid>
+          </MediaQuery>
+
+          <MediaQuery maxWidth={474}>
+          <Typography component="h4" variant="h4">What is <i>RoboSats</i>?</Typography>
           <Typography component="body2" variant="body2">
             <p>It is a BTC/FIAT peer-to-peer exchange over lightning. It simplifies 
               matchmaking and minimizes the need of trust. RoboSats focuses in privacy and speed.</p>
-            
+              <Grid align="center"><div style={{maxWidth:'75%', maxHeight:'75%'}}>
+              <Image
+                className='newAvatar'
+                disableError='true'
+                cover='true'
+                color='null'
+                src={window.location.origin +'/static/assets/images/robosats_0.1.0.png'}
+              />
+              </div></Grid>
             <p>RoboSats is an open source project <a 
               href='https://github.com/reckless-satoshi/robosats'>(GitHub).</a>
             </p>
           </Typography>
-          
+          </MediaQuery>
+
           <Typography component="h5" variant="h5">How does it work?</Typography>
           <Typography component="body2" variant="body2">
             <p> AnonymousAlice01 wants to sell bitcoin. She posts a sell order. 
