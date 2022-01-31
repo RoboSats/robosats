@@ -46,7 +46,7 @@ def follow_send_payment(lnpayment):
 
     MACAROON = b64decode(config('LND_MACAROON_BASE64'))
 
-    fee_limit_sat = max(lnpayment.num_satoshis * 0.0002, 10) # 200 ppm or 10 sats max
+    fee_limit_sat = int(max(lnpayment.num_satoshis * float(config('PROPORTIONAL_ROUTING_FEE_LIMIT')), float(config('MIN_FLAT_ROUTING_FEE_LIMIT')))) # 200 ppm or 10 sats 
     request = LNNode.routerrpc.SendPaymentRequest(
         payment_request=lnpayment.invoice,
         fee_limit_sat=fee_limit_sat,

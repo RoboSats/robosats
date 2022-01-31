@@ -89,15 +89,15 @@ export default class MakerPage extends Component {
     handleClickRelative=(e)=>{
         this.setState({
             is_explicit: false, 
-            satoshis: null,
-            premium: 0,     
         });
+        this.handlePremiumChange();
     }
+    
     handleClickExplicit=(e)=>{
         this.setState({
-            is_explicit: true,
-            premium: null,     
+            is_explicit: true,   
         });
+        this.handleSatoshisChange();
     }
 
     handleCreateOfferButtonPressed=()=>{
@@ -239,26 +239,27 @@ export default class MakerPage extends Component {
                     </FormControl>
                 </Grid>
     {/* conditional shows either Premium % field or Satoshis field based on pricing method */}
-                { this.state.is_explicit 
-                        ? <Grid item xs={12} align="center">
+                    <Grid item xs={12} align="center">
+                        <div style={{display: this.state.is_explicit ? '':'none'}}>
+                        <TextField 
+                                label="Satoshis"
+                                error={this.state.badSatoshis}
+                                helperText={this.state.badSatoshis}
+                                type="number" 
+                                required="true"
+                                value={this.state.satoshis} 
+                                inputProps={{
+                                    // TODO read these from .env file
+                                    min:this.minTradeSats , 
+                                    max:this.maxTradeSats , 
+                                    style: {textAlign:"center"}
+                                }}
+                                onChange={this.handleSatoshisChange}
+                                // defaultValue={this.defaultSatoshis} 
+                            />
+                        </div>
+                        <div style={{display: this.state.is_explicit ? 'none':''}}>
                             <TextField 
-                                    label="Satoshis"
-                                    error={this.state.badSatoshis}
-                                    helperText={this.state.badSatoshis}
-                                    type="number" 
-                                    required="true" 
-                                    inputProps={{
-                                        // TODO read these from .env file
-                                        min:this.minTradeSats , 
-                                        max:this.maxTradeSats , 
-                                        style: {textAlign:"center"}
-                                    }}
-                                    onChange={this.handleSatoshisChange}
-                                    // defaultValue={this.defaultSatoshis} 
-                                />
-                            </Grid>
-                        :   <Grid item xs={12} align="center">
-                                <TextField 
                                     label="Premium over Market (%)"
                                     type="number" 
                                     // defaultValue={this.defaultPremium} 
@@ -267,8 +268,8 @@ export default class MakerPage extends Component {
                                     }}
                                     onChange={this.handlePremiumChange}
                                 />
-                            </Grid>
-                    }
+                        </div>
+                    </Grid>
                 </Paper>
                 </Grid>
             <Grid item xs={12} align="center">

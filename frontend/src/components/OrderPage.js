@@ -517,7 +517,7 @@ export default class OrderPage extends Component {
             {this.orderBox()}
         </Grid>
         <Grid item xs={6} align="left">
-          <TradeBox width={330} data={this.state} completeSetState={this.completeSetState} />
+          <TradeBox push={this.props.history.push} width={330} data={this.state} completeSetState={this.completeSetState} />
         </Grid>
       </Grid>
     )
@@ -553,7 +553,7 @@ export default class OrderPage extends Component {
                 {this.orderBox()}
             </div>
             <div style={{display: this.state.showContractBox == 1 ? '':'none'}}>
-              <TradeBox width={330} data={this.state} completeSetState={this.completeSetState} />
+              <TradeBox push={this.props.history.push} width={330} data={this.state} completeSetState={this.completeSetState} />
             </div>
           </Grid>
         </Grid>
