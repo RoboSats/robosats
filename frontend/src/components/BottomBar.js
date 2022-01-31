@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import {Badge, TextField, ListItemAvatar, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
+import { Link } from 'react-router-dom'
 
 // Icons
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -209,7 +210,7 @@ export default class BottomBar extends Component {
                 <Divider/>
                 {this.state.active_order_id ? 
                 // TODO Link to router and do this.props.history.push
-                <ListItemButton component="a" href={window.location.origin +'/order/'+this.state.active_order_id}>
+                <ListItemButton onClick={this.handleClickCloseProfile} to={'/order/'+this.state.active_order_id} component={Link}>
                     <ListItemIcon>
                         <Badge badgeContent="" color="primary"> 
                             <NumbersIcon color="primary"/>

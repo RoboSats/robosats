@@ -120,11 +120,6 @@ export default class OrderPage extends Component {
     this.getOrderDetails();
   }
 
-  // Fix to use proper react props
-  handleClickBackButton=()=>{
-    window.history.back();
-  }
-
   // Countdown Renderer callback with condition 
   countdownRenderer = ({ total, hours, minutes, seconds, completed }) => {
   if (completed) {
@@ -506,7 +501,7 @@ export default class OrderPage extends Component {
                 <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>
               </Grid>
               <Grid item xs={12} align="center">
-                <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
+                <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>Back</Button>
               </Grid>
             </Grid>
             }
@@ -573,7 +568,7 @@ export default class OrderPage extends Component {
           <Typography component="subtitle2" variant="subtitle2" color="secondary" >
             {this.state.bad_request}<br/>
           </Typography>
-          <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
+          <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>Back</Button>
         </div>
         :
         (this.state.is_participant ? 

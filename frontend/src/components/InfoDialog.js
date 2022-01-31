@@ -40,15 +40,10 @@ export default class InfoDialog extends Component {
           <Typography component="body2" variant="body2">
             <p>It is a BTC/FIAT peer-to-peer exchange over lightning. It simplifies 
               matchmaking and minimizes the need of trust. RoboSats focuses in privacy and speed.</p>
-              <Grid align="center"><div style={{maxWidth:'75%', maxHeight:'75%'}}>
-              <Image
-                className='newAvatar'
-                disableError='true'
-                cover='true'
-                color='null'
-                src={window.location.origin +'/static/assets/images/robosats_0.1.0.png'}
+              <img
+                width='100%'
+                src={window.location.origin +'/static/assets/images/robosats_0.1.0_banner.png'}
               />
-              </div></Grid>
             <p>RoboSats is an open source project <a 
               href='https://github.com/reckless-satoshi/robosats'>(GitHub).</a>
             </p>

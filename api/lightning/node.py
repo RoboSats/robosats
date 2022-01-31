@@ -81,7 +81,7 @@ class LNNode():
                 memo=description,
                 value=num_satoshis,
                 hash=r_hash,
-                expiry=int(invoice_expiry*1.15), # actual expiry is padded by 15%
+                expiry=int(invoice_expiry*1.5), # actual expiry is padded by 50%, if tight, wrong client system clock will say invoice is expired.
                 cltv_expiry=cltv_expiry_blocks,
                 )
         response = cls.invoicesstub.AddHoldInvoice(request, metadata=[('macaroon', MACAROON.hex())])

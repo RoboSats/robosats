@@ -21,7 +21,7 @@ def users_cleansing():
     for user in queryset:
         if not user.profile.total_contracts == 0:
             continue
-        valid, _ = Logics.validate_already_maker_or_taker(user)
+        valid, _, _ = Logics.validate_already_maker_or_taker(user)
         if valid:
             deleted_users.append(str(user))
             user.delete()

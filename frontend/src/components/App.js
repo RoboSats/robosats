@@ -20,12 +20,7 @@ export default class App extends Component {
   render() {
     return (
       <>
-        <div className='appCenter'>
           <HomePage setAppState={this.setAppState}/>
-        </div>
-        <div className='bottomBar'>
-          <BottomBar {...this.state} setAppState={this.setAppState} />
-        </div>
       </>
     );
   }
