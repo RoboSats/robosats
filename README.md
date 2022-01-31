@@ -7,7 +7,7 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 
 ## Try it out
 <div align="center">
-  <img width="75%" src="https://raw.githubusercontent.com/Reckless-Satoshi/robosats/frontend/static/assets/images/robosats_0.1.0_banner.png">
+  <img width="75%" src="https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats_0.1.0_banner.png">
 </div>
 
 **Bitcoin mainnet:**
