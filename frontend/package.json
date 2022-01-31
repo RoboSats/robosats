@@ -35,6 +35,8 @@
     "react-native": "^0.66.4",
     "react-native-svg": "^12.1.1",
     "react-qr-code": "^2.0.3",
+    "react-qr-reader": "^2.2.1",
+    "react-responsive": "^9.0.0-beta.6",
     "react-router-dom": "^5.2.0",
     "websocket": "^1.0.34"
   }

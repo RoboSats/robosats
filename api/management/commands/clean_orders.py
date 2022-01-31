@@ -11,16 +11,18 @@ class Command(BaseCommand):
     # def add_arguments(self, parser):
     #     parser.add_argument('debug', nargs='+', type=boolean)
 
-    def handle(self, *args, **options):
+    def clean_orders(self, *args, **options):
         ''' Continuously checks order expiration times for 1 hour. If order
         has expires, it calls the logics module for expiration handling.'''
 
+        # TODO handle 'database is locked'
+        
         do_nothing = [Order.Status.DEL, Order.Status.UCA,
                     Order.Status.EXP, Order.Status.FSE,
                     Order.Status.DIS, Order.Status.CCA,
                     Order.Status.PAY, Order.Status.SUC,
                     Order.Status.FAI, Order.Status.MLD,
-                    Order.Status.TLD]
+                    Order.Status.TLD, Order.Status.WFR]
 
         while True:
             time.sleep(5)
@@ -34,9 +36,30 @@ class Command(BaseCommand):
 
             for idx, order in enumerate(queryset):
                 context = str(order)+ " was "+ Order.Status(order.status).label
-                if Logics.order_expires(order): # Order send to expire here
-                    debug['expired_orders'].append({idx:context})
+                try:
+                    if Logics.order_expires(order): # Order send to expire here
+                        debug['expired_orders'].append({idx:context})
+                
+                # It should not happen, but if it cannot locate the hold invoice 
+                # it probably was cancelled by another thread, make it expire anyway.
+                except Exception as e:
+                    if 'unable to locate invoice' in str(e): 
+                        self.stdout.write(str(e))
+                        order.status = Order.Status.EXP
+                        order.save()
+                        debug['expired_orders'].append({idx:context})
+                    
 
             if debug['num_expired_orders'] > 0:    
                 self.stdout.write(str(timezone.now()))
                 self.stdout.write(str(debug))
+    
+    def handle(self, *args, **options):
+        ''' Never mind database locked error, keep going, print them out'''
+        try:
+            self.clean_orders()
+        except Exception as e:
+            if 'database is locked' in str(e):
+                self.stdout.write('database is locked')
+            
+            self.stdout.write(str(e))

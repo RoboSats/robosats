@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-import { Paper, Alert, AlertTitle, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, Menu} from "@mui/material"
+import { Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
 import { Link } from 'react-router-dom'
-
 import getFlags from './getFlags'
 
 function getCookie(name) {
@@ -37,7 +36,7 @@ export default class MakerPage extends Component {
   constructor(props) {
     super(props);
     this.state={
-        isExplicit: false, 
+        is_explicit: false, 
         type: 0,
         currency: this.defaultCurrency,
         currencyCode: this.defaultCurrencyCode,
@@ -89,14 +88,14 @@ export default class MakerPage extends Component {
     }
     handleClickRelative=(e)=>{
         this.setState({
-            isExplicit: false, 
+            is_explicit: false, 
             satoshis: null,
             premium: 0,     
         });
     }
     handleClickExplicit=(e)=>{
         this.setState({
-            isExplicit: true,
+            is_explicit: true,
             premium: null,     
         });
     }
@@ -104,7 +103,6 @@ export default class MakerPage extends Component {
     handleCreateOfferButtonPressed=()=>{
         this.state.amount == null ? this.setState({amount: 0}) : null;
 
-        console.log(this.state)
         const requestOptions = {
             method: 'POST',
             headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
@@ -113,7 +111,7 @@ export default class MakerPage extends Component {
                 currency: this.state.currency,
                 amount: this.state.amount,
                 payment_method: this.state.payment_method,
-                is_explicit: this.state.isExplicit,
+                is_explicit: this.state.is_explicit,
                 premium: this.state.premium,
                 satoshis: this.state.satoshis,
             }),
@@ -241,7 +239,7 @@ export default class MakerPage extends Component {
                     </FormControl>
                 </Grid>
     {/* conditional shows either Premium % field or Satoshis field based on pricing method */}
-                { this.state.isExplicit 
+                { this.state.is_explicit 
                         ? <Grid item xs={12} align="center">
                             <TextField 
                                     label="Satoshis"
@@ -287,7 +285,7 @@ export default class MakerPage extends Component {
                 <Typography component="subtitle2" variant="subtitle2">
                     <div align='center'>
                         Create a BTC {this.state.type==0 ? "buy":"sell"} order for {this.state.amount} {this.state.currencyCode} 
-                        {this.state.isExplicit ? " of " + this.state.satoshis + " Satoshis" : 
+                        {this.state.is_explicit ? " of " + this.state.satoshis + " Satoshis" : 
                             (this.state.premium == 0 ? " at market price" : 
                                 (this.state.premium > 0 ? " at a " + this.state.premium + "% premium":" at a " + -this.state.premium + "% discount")
                             )

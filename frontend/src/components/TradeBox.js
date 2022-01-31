@@ -1,15 +1,15 @@
 import React, { Component } from "react";
-import { Link, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { IconButton, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
-
+import Countdown from 'react-countdown';
 import Chat from "./Chat"
+import MediaQuery from 'react-responsive'
+import QrReader from 'react-qr-reader'
 
 // Icons
-import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PercentIcon from '@mui/icons-material/Percent';
 import BookIcon from '@mui/icons-material/Book';
-
-
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 
 function getCookie(name) {
   let cookieValue = null;
@@ -41,7 +41,19 @@ export default class TradeBox extends Component {
       openConfirmDispute: false,
       badInvoice: false,
       badStatement: false,
+      qrscanner: false,
     }
+  }
+
+  Sound = ({soundFileName}) => (
+    // Four filenames: "locked-invoice", "taker-found", "open-chat", "sucessful"
+    <audio autoPlay src={`/static/assets/sounds/${soundFileName}.mp3`} />
+  )
+
+  togglePlay = () => {
+    this.setState({ playSound: !this.state.playSound }, () => {
+      this.state.playSound ? this.audio.play() : this.audio.pause();
+    });
   }
 
   handleClickOpenConfirmDispute = () => {
@@ -61,7 +73,7 @@ export default class TradeBox extends Component {
     };
     fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
     .then((response) => response.json())
-    .then((data) => (this.props.data = data));
+    .then((data) => this.props.completeSetState(data));
     this.handleClickCloseConfirmDispute();
   }
 
@@ -78,15 +90,15 @@ export default class TradeBox extends Component {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            The RoboSats staff will examine the statements and evidence provided by the participants.
-            It is best if you provide a burner contact method on your statement for the staff to contact you.
-            The satoshis in the trade escrow will be sent to the dispute winner, while the dispute 
-            loser will lose the bond. 
+            The RoboSats staff will examine the statements and evidence provided. You need to build
+            a complete case, as the staff cannot read the chat. It is best to provide a burner contact 
+            method with your statement. The satoshis in the trade escrow will be sent to the dispute winner, 
+            while the dispute loser will lose the bond. 
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={this.handleClickCloseConfirmDispute} autoFocus>Disagree</Button>
-          <Button onClick={this.handleClickAgreeDisputeButton}> Agree </Button>
+          <Button onClick={this.handleClickAgreeDisputeButton}> Agree and open dispute </Button>
         </DialogActions>
       </Dialog>
     )
@@ -136,32 +148,32 @@ export default class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2">
-            Robosats show commitment to their peers
+            Robots show commitment to their peers
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          {this.props.data.isMaker ?
+          {this.props.data.is_maker ?
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b>Lock {pn(this.props.data.bondSatoshis)} Sats to PUBLISH order </b>
+            <b>Lock {pn(this.props.data.bond_satoshis)} Sats to PUBLISH order </b>
           </Typography>
           : 
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b>Lock {pn(this.props.data.bondSatoshis)} Sats to TAKE the order </b>
+            <b>Lock {pn(this.props.data.bond_satoshis)} Sats to TAKE the order </b>
           </Typography>
           }
         </Grid>
         <Grid item xs={12} align="center">
-          <QRCode value={this.props.data.bondInvoice} size={305}/>
-          <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.bondInvoice)}} align="center"> 📋Copy to clipboard</Button>
+          <QRCode value={this.props.data.bond_invoice} size={305}/>
+          <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.bond_invoice)}} align="center"> 📋Copy to clipboard</Button>
         </Grid> 
         <Grid item xs={12} align="center">
         <TextField 
             hiddenLabel
             variant="standard" 
             size="small"
-            defaultValue={this.props.data.bondInvoice} 
+            defaultValue={this.props.data.bond_invoice} 
             disabled="true"
-            helperText="This is a hold invoice. It will be charged only if you cancel or lose a dispute."
+            helperText="This is a hold invoice, it will freeze in your wallet. It will be charged only if you cancel or lose a dispute."
             color = "secondary"
           />
         </Grid>
@@ -173,7 +185,7 @@ export default class TradeBox extends Component {
     return (
         <Grid item xs={12} align="center">
           <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
-            🔒 Your {this.props.data.isMaker ? 'maker' : 'taker'} bond is locked
+            🔒 Your {this.props.data.is_maker ? 'maker' : 'taker'} bond is locked
           </Typography>
         </Grid>
     );
@@ -182,23 +194,25 @@ export default class TradeBox extends Component {
   showEscrowQRInvoice=()=>{
     return (
       <Grid container spacing={1}>
+        {/* Make confirmation sound for HTLC received. */}
+        <this.Sound soundFileName="locked-invoice"/>
         <Grid item xs={12} align="center">
           <Typography color="green" component="subtitle1" variant="subtitle1">
-            <b>Deposit {pn(this.props.data.escrowSatoshis)} Sats as trade collateral </b>
+            <b>Deposit {pn(this.props.data.escrow_satoshis)} Sats as trade collateral </b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          <QRCode value={this.props.data.escrowInvoice} size={305}/>
-          <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.escrowInvoice)}} align="center"> 📋Copy to clipboard</Button>
+          <QRCode value={this.props.data.escrow_invoice} size={305}/>
+          <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.escrow_invoice)}} align="center"> 📋Copy to clipboard</Button>
         </Grid> 
         <Grid item xs={12} align="center">
           <TextField 
             hiddenLabel
             variant="filled" 
             size="small"
-            defaultValue={this.props.data.escrowInvoice} 
+            defaultValue={this.props.data.escrow_invoice} 
             disabled="true"
-            helperText="This is a hold invoice. It will be charged once the buyer confirms he sent the fiat."
+            helperText={"This is a hold invoice, it will freeze in your wallet. It will be released to the buyer once you confirm to have received the "+this.props.data.currencyCode+"."}
             color = "secondary"
           />
         </Grid>
@@ -208,11 +222,10 @@ export default class TradeBox extends Component {
   }
 
   showTakerFound=()=>{
-
-    // TODO Make some sound here! The maker might have been waiting for long
- 
     return (
       <Grid container spacing={1}>
+        {/* Make bell sound when taker is found */}
+        <this.Sound soundFileName="taker-found"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
             <b>A taker has been found! </b>
@@ -221,7 +234,9 @@ export default class TradeBox extends Component {
         <Divider/>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2">
-            Please wait for the taker to confirm his commitment by locking a bond.
+            Please wait for the taker to confirm by locking a bond. 
+            If the taker does not lock a bond in time the orer will be made
+            public again.
           </Typography>
         </Grid>
         {this.showBondIsLocked()}
@@ -232,6 +247,8 @@ export default class TradeBox extends Component {
   showMakerWait=()=>{
     return (
       <Grid container spacing={1}>
+        {/* Make confirmation sound for HTLC received. */}
+        <this.Sound soundFileName="locked-invoice"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
             <b> Your order is public. Wait for a taker. </b>
@@ -253,18 +270,10 @@ export default class TradeBox extends Component {
             {/* TODO API sends data for a more confortable wait */}
             <Divider/>
               <ListItem>
-                <ListItemIcon>
-                  <SmartToyIcon/>
-                </ListItemIcon>
-                <ListItemText primary={'000 coming soon'} secondary="Robots looking at the book"/>
-              </ListItem>
-
-            <Divider/>
-              <ListItem>
               <ListItemIcon>
                 <BookIcon/>
               </ListItemIcon>
-                <ListItemText primary={this.props.data.numSimilarOrders} secondary={"Public orders for " + this.props.data.currencyCode}/>
+                <ListItemText primary={this.props.data.num_similar_orders} secondary={"Public orders for " + this.props.data.currencyCode}/>
               </ListItem>
               
             <Divider/>
@@ -272,7 +281,7 @@ export default class TradeBox extends Component {
               <ListItemIcon>
                 <PercentIcon/>
               </ListItemIcon>
-                <ListItemText primary={"Premium rank " + this.props.data.premiumPercentile*100+"%"} 
+                <ListItemText primary={"Premium rank " + this.props.data.premium_percentile*100+"%"} 
                   secondary={"Among public " + this.props.data.currencyCode + " orders (higher is cheaper)"} />
               </ListItem>
             <Divider/>
@@ -305,7 +314,7 @@ export default class TradeBox extends Component {
       fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
       .then((response) => response.json())
       .then((data) => this.setState({badInvoice:data.bad_invoice})
-      & console.log(data));
+      & this.props.completeSetState(data));
   }
 
   handleInputDisputeChanged=(e)=>{
@@ -329,25 +338,38 @@ export default class TradeBox extends Component {
     fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
     .then((response) => response.json())
     .then((data) => this.setState({badStatement:data.bad_statement})
-    & console.log(data));
-}
+    & this.props.completeSetState(data));
+  }
+
+  handleScan = data => {
+    if (data) {
+      this.setState({
+        invoice: data
+      })
+    }
+  }
+  handleError = err => {
+    console.error(err)
+  }
+
+  handleQRbutton = () => {
+    this.setState({qrscanner: !this.state.qrscanner});
+  }
 
   showInputInvoice(){
     return (
 
-      // TODO Option to upload files and images
-
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b> Submit a LN invoice for {pn(this.props.data.invoiceAmount)} Sats </b>
+            <b> Submit a LN invoice for {pn(this.props.data.invoice_amount)} Sats </b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="left">
           <Typography component="body2" variant="body2">
             The taker is committed! Before letting you send {" "+ parseFloat(parseFloat(this.props.data.amount).toFixed(4))+
             " "+ this.props.data.currencyCode}, we want to make sure you are able to receive the BTC. Please provide a 
-            valid invoice for {pn(this.props.data.invoiceAmount)} Satoshis.
+            valid invoice for {pn(this.props.data.invoice_amount)} Satoshis.
           </Typography>
         </Grid>
 
@@ -357,14 +379,29 @@ export default class TradeBox extends Component {
               helperText={this.state.badInvoice ? this.state.badInvoice : "" }
               label={"Payout Lightning Invoice"}
               required
+              value={this.state.invoice}
               inputProps={{
-                  style: {textAlign:"center"}
+                  style: {textAlign:"center"},
+                  maxHeight: 200,
               }}
               multiline
+              minRows={5}
+              maxRows={this.state.qrscanner ? 5 : 14}
               onChange={this.handleInputInvoiceChanged}
           />
         </Grid>
+        {this.state.qrscanner ?
         <Grid item xs={12} align="center">
+          <QrReader
+              delay={300}
+              onError={this.handleError}
+              onScan={this.handleScan}
+              style={{ width: '75%' }}
+            />
+          </Grid>
+          : null }
+        <Grid item xs={12} align="center">
+          <IconButton><QrCodeScannerIcon onClick={this.handleQRbutton}/></IconButton>
           <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>Submit</Button>
         </Grid>
 
@@ -374,44 +411,80 @@ export default class TradeBox extends Component {
   }
 
   // Asks the user for a dispute statement.
-  showInDisputeStatement(){
+  showInDisputeStatement=()=>{
+    if(this.props.data.statement_submitted){
+      return (
+        <Grid container spacing={1}>
+          <Grid item xs={12} align="center">
+            <Typography color="primary" component="subtitle1" variant="subtitle1">
+              <b> We have received your statement </b>
+            </Typography>
+          </Grid>
+          <Grid item xs={12} align="left">
+            <Typography component="body2" variant="body2">
+              We are waiting for your trade counterparty statement.
+            </Typography>
+          </Grid>
+          {this.showBondIsLocked()}
+        </Grid>
+      )
+    }else{
+      return (
+  
+        // TODO Option to upload files
+  
+        <Grid container spacing={1}>
+          <Grid item xs={12} align="center">
+            <Typography color="primary" component="subtitle1" variant="subtitle1">
+              <b> A dispute has been opened </b>
+            </Typography>
+          </Grid>
+          <Grid item xs={12} align="left">
+            <Typography component="body2" variant="body2">
+              Please, submit your statement. Be clear and specific about what happened and provide the necessary 
+              evidence. It is best to provide a burner email, XMPP or telegram username to follow up with the staff.
+              Disputes are solved at the discretion of real robots <i>(aka humans)</i>, so be as helpful 
+              as possible to ensure a fair outcome. Max 5000 chars.
+            </Typography>
+          </Grid>
+  
+          <Grid item xs={12} align="center">
+            <TextField 
+                error={this.state.badStatement}
+                helperText={this.state.badStatement ? this.state.badStatement : "" }
+                label={"Submit dispute statement"}
+                required
+                inputProps={{
+                    style: {textAlign:"center"}
+                }}
+                multiline
+                rows={4}
+                onChange={this.handleInputDisputeChanged}
+            />
+          </Grid>
+          <Grid item xs={12} align="center">
+            <Button onClick={this.handleClickSubmitStatementButton} variant='contained' color='primary'>Submit</Button>
+          </Grid>
+  
+          {this.showBondIsLocked()}
+        </Grid>
+      )}
+  }
+
+  showWaitForDisputeResolution=()=>{
     return (
-
-      // TODO Option to upload files
-
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b> A dispute has been opened </b>
+            <b> We have the statements </b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="left">
           <Typography component="body2" variant="body2">
-            Please, submit your statement. Be clear and specific about what happened and provide the necessary 
-            evidence. It is best to provide a burner email, XMPP or telegram username to follow up with the staff.
-            Disputes are solved at the discretion of real robots <i>(aka humans)</i>, so be as helpful 
-            as possible to ensure a fair outcome. Max 5000 chars.
+            Wait for the staff to resolve the dispute. The dispute winner
+            will be asked to submit a LN invoice.
           </Typography>
         </Grid>
-
-        <Grid item xs={12} align="center">
-          <TextField 
-              error={this.state.badStatement}
-              helperText={this.state.badStatement ? this.state.badStatement : "" }
-              label={"Submit dispute statement"}
-              required
-              inputProps={{
-                  style: {textAlign:"center"}
-              }}
-              multiline
-              rows={4}
-              onChange={this.handleInputDisputeChanged}
-          />
-        </Grid>
-        <Grid item xs={12} align="center">
-          <Button onClick={this.handleClickSubmitStatementButton} variant='contained' color='primary'>Submit</Button>
-        </Grid>
-
         {this.showBondIsLocked()}
       </Grid>
     )
@@ -427,10 +500,9 @@ export default class TradeBox extends Component {
         </Grid>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="left">
-            <p>We are waiting for the seller to deposit the full trade BTC amount
-              into the escrow.</p>
-              <p> Just hang on for a moment. If the seller does not deposit, 
-                you will get your bond back automatically.</p>
+            <p>We are waiting for the seller lock the trade amount. </p>
+            <p> Just hang on for a moment. If the seller does not deposit, 
+              you will get your bond back automatically.</p>
           </Typography>
         </Grid>
         {this.showBondIsLocked()}
@@ -441,6 +513,8 @@ export default class TradeBox extends Component {
   showWaitingForBuyerInvoice(){
     return(
       <Grid container spacing={1}>
+        {/* Make confirmation sound for HTLC received. */}
+        <this.Sound soundFileName="locked-invoice"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
             <b>The trade collateral is locked! 🎉 </b>
@@ -470,7 +544,7 @@ export default class TradeBox extends Component {
     };
     fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
     .then((response) => response.json())
-    .then((data) => (this.props.data = data));
+    .then((data) => this.props.completeSetState(data));
 }
 
 handleRatingChange=(e)=>{
@@ -484,7 +558,7 @@ handleRatingChange=(e)=>{
   };
   fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
   .then((response) => response.json())
-  .then((data) => (this.props.data = data));
+  .then((data) => this.props.completeSetState(data));
 }
 
   showFiatSentButton(){
@@ -526,16 +600,42 @@ handleRatingChange=(e)=>{
     )
   }
 
-  showChat(sendFiatButton, receivedFiatButton, openDisputeButton){
+  showChat=()=>{
+    //In Chatroom - No fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton)
+      if(this.props.data.is_buyer & this.props.data.status == 9){
+        var showSendButton=true;
+        var showReveiceButton=false;
+        var showDisputeButton=true;
+      }
+      if(this.props.data.is_seller & this.props.data.status == 9){
+        var showSendButton=false;
+        var showReveiceButton=false;
+        var showDisputeButton=true;
+      }
+          
+    //In Chatroom - Fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton)
+      if(this.props.data.is_buyer & this.props.data.status == 10){
+        var showSendButton=false;
+        var showReveiceButton=false;
+        var showDisputeButton=true;
+      }
+      if(this.props.data.is_seller & this.props.data.status == 10){
+        var showSendButton=false;
+        var showReveiceButton=true;
+        var showDisputeButton=true;
+      }            
+  
     return(
       <Grid container spacing={1}>
+        {/* Make confirmation sound for Chat Open. */}
+        <this.Sound soundFileName="chat-open"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>Chatting with {this.props.data.isMaker ? this.props.data.takerNick : this.props.data.makerNick}</b>
+            <b>Chatting with {this.props.data.is_maker ? this.props.data.taker_nick : this.props.data.maker_nick}</b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          {this.props.data.isSeller ? 
+          {this.props.data.is_seller ? 
           <Typography component="body2" variant="body2"  align="center">
             Say hi! Be helpful and concise. Let them know how to send you {this.props.data.currencyCode}. 
           </Typography>
@@ -547,12 +647,11 @@ handleRatingChange=(e)=>{
           <Divider/>
         </Grid>
 
-        <Chat orderId={this.props.data.id} urNick={this.props.data.urNick}/>
-
+        <Chat orderId={this.props.data.id} ur_nick={this.props.data.ur_nick}/>
         <Grid item xs={12} align="center">
-          {openDisputeButton ? this.showOpenDisputeButton() : ""}
-          {sendFiatButton ? this.showFiatSentButton() : ""}
-          {receivedFiatButton ? this.showFiatReceivedButton() : ""}
+          {showDisputeButton ? this.showOpenDisputeButton() : ""}
+          {showSendButton ? this.showFiatSentButton() : ""}
+          {showReveiceButton ? this.showFiatReceivedButton() : ""}
         </Grid>
         {this.showBondIsLocked()}
       </Grid>
@@ -562,6 +661,8 @@ handleRatingChange=(e)=>{
   showRateSelect(){
     return(
       <Grid container spacing={1}>
+        {/* Make confirmation sound for Chat Open. */}
+        <this.Sound soundFileName="successful"/>
         <Grid item xs={12} align="center">
           <Typography component="h6" variant="h6">
             🎉Trade finished!🥳
@@ -569,7 +670,7 @@ handleRatingChange=(e)=>{
         </Grid>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
-            What do you think of <b>{this.props.data.isMaker ? this.props.data.takerNick : this.props.data.makerNick}</b>?
+            What do you think of <b>{this.props.data.is_maker ? this.props.data.taker_nick : this.props.data.maker_nick}</b>?
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -582,49 +683,132 @@ handleRatingChange=(e)=>{
     )
   }
 
+  showSendingPayment(){
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="h6" variant="h6">
+            Attempting Lightning Payment
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body2" align="center">
+            RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must
+            be online in order to receive payments.
+          </Typography>
+        </Grid>
+      </Grid>
+    )
+  }
+
+  showRoutingFailed=()=>{
+    // TODO If it has failed 3 times, ask for a new invoice.
+    if(this.props.data.invoice_expired){
+      return(
+        <Grid container spacing={1}>
+          <Grid item xs={12} align="center">
+            <Typography component="h6" variant="h6">
+              Lightning Routing Failed
+            </Typography>
+          </Grid>
+          <Grid item xs={12} align="center">
+            <Typography component="body2" variant="body2" align="center">
+              Your invoice has expires or more than 3 payments have been attempted.
+            </Typography>
+          </Grid>
+          <Grid item xs={12} align="center">
+            <Typography color="primary" component="subtitle1" variant="subtitle1">
+              <b> Submit a LN invoice for {pn(this.props.data.invoice_amount)} Sats </b>
+            </Typography>
+          </Grid>
+          <Grid item xs={12} align="center">
+            <TextField 
+                error={this.state.badInvoice}
+                helperText={this.state.badInvoice ? this.state.badInvoice : "" }
+                label={"Payout Lightning Invoice"}
+                required
+                inputProps={{
+                    style: {textAlign:"center"}
+                }}
+                multiline
+                onChange={this.handleInputInvoiceChanged}
+            />
+          </Grid>
+          <Grid item xs={12} align="center">
+            <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>Submit</Button>
+          </Grid>
+        </Grid>
+      )
+    }else{
+    return(
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography component="h6" variant="h6">
+            Lightning Routing Failed
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body2" align="center">
+            RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you
+            will be able to submit a new invoice. Check whether you have enough inboud liquidity.
+            Remember that lightning nodes must be online in order to receive payments.
+          </Typography>
+          <List>
+            <Divider/>
+            <ListItemText secondary="Next attempt in">
+              <Countdown date={new Date(this.props.data.next_retry_time)} renderer={this.countdownRenderer} />
+            </ListItemText>
+          </List>
+        </Grid>
+      </Grid>
+    )}
+  }
+
   render() {
     return (
-      <Grid container spacing={1} style={{ width:330}}>
+      <Grid container spacing={1} style={{ width:this.props.width}}>
         <this.ConfirmDisputeDialog/>
         <this.ConfirmFiatReceivedDialog/>
         <Grid item xs={12} align="center">
-          <Typography component="h5" variant="h5">
-            Contract Box
-          </Typography>
+          <MediaQuery minWidth={920}>
+            <Typography component="h5" variant="h5">
+              Contract Box
+            </Typography>
+          </MediaQuery>
           <Paper elevation={12} style={{ padding: 8,}}>
             {/* Maker and taker Bond request */}
-              {this.props.data.bondInvoice ? this.showQRInvoice() : ""}
+              {this.props.data.is_maker & this.props.data.status == 0 ? this.showQRInvoice() : ""}
+              {this.props.data.is_taker & this.props.data.status == 3 ? this.showQRInvoice() : ""}
 
             {/* Waiting for taker and taker bond request */}
-              {this.props.data.isMaker & this.props.data.statusCode == 1 ? this.showMakerWait() : ""}
-              {this.props.data.isMaker & this.props.data.statusCode == 3 ? this.showTakerFound() : ""}
+              {this.props.data.is_maker & this.props.data.status == 1 ? this.showMakerWait() : ""}
+              {this.props.data.is_maker & this.props.data.status == 3 ? this.showTakerFound() : ""}
 
             {/* Send Invoice (buyer) and deposit collateral (seller) */}
-              {this.props.data.isSeller & this.props.data.escrowInvoice != null ? this.showEscrowQRInvoice() : ""}
-              {this.props.data.isBuyer & this.props.data.invoiceAmount != null ? this.showInputInvoice() : ""}
-              {this.props.data.isBuyer & this.props.data.statusCode == 7 ? this.showWaitingForEscrow() : ""}
-              {this.props.data.isSeller & this.props.data.statusCode == 8 ? this.showWaitingForBuyerInvoice() : ""}
+              {this.props.data.is_seller & (this.props.data.status == 6 || this.props.data.status == 7 ) ? this.showEscrowQRInvoice() : ""}
+              {this.props.data.is_buyer & (this.props.data.status == 6 || this.props.data.status == 8 )? this.showInputInvoice() : ""}
+              {this.props.data.is_buyer & this.props.data.status == 7 ? this.showWaitingForEscrow() : ""}
+              {this.props.data.is_seller & this.props.data.status == 8 ? this.showWaitingForBuyerInvoice() : ""}
 
-            {/* In Chatroom - No fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton) */}
-              {this.props.data.isBuyer & this.props.data.statusCode == 9 ? this.showChat(true,false,true) : ""} 
-              {this.props.data.isSeller & this.props.data.statusCode == 9 ? this.showChat(false,false,true)  : ""}
-            
-            {/* In Chatroom - Fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton) */}
-              {this.props.data.isBuyer & this.props.data.statusCode == 10 ? this.showChat(false,false,true) : ""}
-              {this.props.data.isSeller & this.props.data.statusCode == 10 ? this.showChat(false,true,true) : ""}
+            {/* In Chatroom  */}
+              {this.props.data.status == 9 || this.props.data.status == 10 ? this.showChat(): ""}
 
             {/* Trade Finished */}
-              {(this.props.data.isSeller & this.props.data.statusCode > 12 & this.props.data.statusCode < 15) ? this.showRateSelect()  : ""}
-              {(this.props.data.isBuyer & this.props.data.statusCode == 14) ? this.showRateSelect()  : ""}
+              {(this.props.data.is_seller & [13,14,15].includes(this.props.data.status)) ? this.showRateSelect()  : ""}
+              {(this.props.data.is_buyer & this.props.data.status == 14) ? this.showRateSelect()  : ""}
 
             {/* Trade Finished - Payment Routing Failed */}
-              {this.props.data.isBuyer & this.props.data.statusCode == 15 ? this.showUpdateInvoice()  : ""}
+              {this.props.data.is_buyer & this.props.data.status == 13 ? this.showSendingPayment()  : ""}
+
+            {/* Trade Finished - Payment Routing Failed */}
+            {this.props.data.is_buyer & this.props.data.status == 15 ? this.showRoutingFailed()  : ""}
 
             {/* Trade Finished - TODO Needs more planning */}
-            {this.props.data.statusCode == 11 ? this.showInDisputeStatement() : ""}
+            {this.props.data.status == 11 ? this.showInDisputeStatement() : ""}
+            {this.props.data.status == 16 ? this.showWaitForDisputeResolution() : ""}
             
             {/* Order has expired */}
-            {this.props.data.statusCode == 5 ? this.showOrderExpired() : ""}
+            {this.props.data.status == 5 ? this.showOrderExpired() : ""}
               {/* TODO */}
               {/*  */}
               {/*  */}

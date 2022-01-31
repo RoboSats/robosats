@@ -9,6 +9,7 @@ from base64 import b64decode
 from datetime import timedelta, datetime
 from django.utils import timezone
 
+from api.models import LNPayment
 #######
 # Should work with LND (c-lightning in the future if there are features that deserve the work)
 #######
@@ -64,7 +65,7 @@ class LNNode():
         return str(response)=="" # True if no response, false otherwise.
 
     @classmethod
-    def gen_hold_invoice(cls, num_satoshis, description, expiry):
+    def gen_hold_invoice(cls, num_satoshis, description, invoice_expiry, cltv_expiry_secs):
         '''Generates hold invoice'''
 
         hold_payment = {}
@@ -73,12 +74,16 @@ class LNNode():
 
         # Its hash is used to generate the hold invoice
         r_hash = hashlib.sha256(preimage).digest()
-
+        
+        # timelock expiry for the last hop, computed based on a 10 minutes block with 30% padding (~7 min block)
+        cltv_expiry_blocks = int(cltv_expiry_secs / (7*60))
         request = invoicesrpc.AddHoldInvoiceRequest(
                 memo=description,
                 value=num_satoshis,
                 hash=r_hash,
-                expiry=expiry)
+                expiry=int(invoice_expiry*1.5), # actual expiry is padded by 50%, if tight, wrong client system clock will say invoice is expired.
+                cltv_expiry=cltv_expiry_blocks,
+                )
         response = cls.invoicesstub.AddHoldInvoice(request, metadata=[('macaroon', MACAROON.hex())])
 
         hold_payment['invoice'] = response.payment_request
@@ -87,18 +92,22 @@ class LNNode():
         hold_payment['payment_hash'] = payreq_decoded.payment_hash
         hold_payment['created_at'] = timezone.make_aware(datetime.fromtimestamp(payreq_decoded.timestamp))
         hold_payment['expires_at'] = hold_payment['created_at'] + timedelta(seconds=payreq_decoded.expiry)
+        hold_payment['cltv_expiry'] = cltv_expiry_blocks
 
         return hold_payment
 
     @classmethod
-    def validate_hold_invoice_locked(cls, payment_hash):
+    def validate_hold_invoice_locked(cls, lnpayment):
         '''Checks if hold invoice is locked'''
-        request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
+        request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(lnpayment.payment_hash))
         response = cls.invoicesstub.LookupInvoiceV2(request, metadata=[('macaroon', MACAROON.hex())])
         print('status here')
         print(response.state)
 
         # TODO ERROR HANDLING
+        # Will fail if 'unable to locate invoice'. Happens if invoice expiry 
+        # time has passed (but these are 15% padded at the moment). Should catch it
+        # and report back that the invoice has expired (better robustness)
         if response.state == 0: # OPEN
             print('STATUS: OPEN')
             pass
@@ -108,31 +117,34 @@ class LNNode():
             pass
         if response.state == 3: # ACCEPTED (LOCKED)
             print('STATUS: ACCEPTED')
+            lnpayment.expiry_height = response.htlcs[0].expiry_height
+            lnpayment.status = LNPayment.Status.LOCKED
+            lnpayment.save()
             return True
 
-    @classmethod
-    def check_until_invoice_locked(cls, payment_hash, expiration):
-        '''Checks until hold invoice is locked.
-        When invoice is locked, returns true. 
-        If time expires, return False.'''
-        # Experimental, might need asyncio. Best if subscribing all invoices and running a background task
-        # Maybe best to pass LNpayment object and change status live.
+    # @classmethod
+    # def check_until_invoice_locked(cls, payment_hash, expiration):
+    #     '''Checks until hold invoice is locked.
+    #     When invoice is locked, returns true. 
+    #     If time expires, return False.'''
+    #     # Experimental, might need asyncio. Best if subscribing all invoices and running a background task
+    #     # Maybe best to pass LNpayment object and change status live.
 
-        request = invoicesrpc.SubscribeSingleInvoiceRequest(r_hash=payment_hash)
-        for invoice in cls.invoicesstub.SubscribeSingleInvoice(request):
-            print(invoice)
-            if timezone.now > expiration:
-                break
-            if invoice.state == 3: #  True if hold invoice is accepted.
-                return True
-        return False
+    #     request = invoicesrpc.SubscribeSingleInvoiceRequest(r_hash=payment_hash)
+    #     for invoice in cls.invoicesstub.SubscribeSingleInvoice(request):
+    #         print(invoice)
+    #         if timezone.now > expiration:
+    #             break
+    #         if invoice.state == 3: #  True if hold invoice is accepted.
+    #             return True
+    #     return False
 
 
     @classmethod
     def validate_ln_invoice(cls, invoice, num_satoshis):
         '''Checks if the submited LN invoice comforms to expectations'''
 
-        buyer_invoice = {
+        payout = {
                 'valid': False,
                 'context': None,
                 'description': None,
@@ -145,36 +157,36 @@ class LNNode():
             payreq_decoded = cls.decode_payreq(invoice)
             print(payreq_decoded)
         except:
-            buyer_invoice['context'] = {'bad_invoice':'Does not look like a valid lightning invoice'}
-            return buyer_invoice
+            payout['context'] = {'bad_invoice':'Does not look like a valid lightning invoice'}
+            return payout
 
         if payreq_decoded.num_satoshis == 0:
-            buyer_invoice['context'] = {'bad_invoice':'The invoice provided has no explicit amount'}
-            return buyer_invoice
+            payout['context'] = {'bad_invoice':'The invoice provided has no explicit amount'}
+            return payout
 
         if not payreq_decoded.num_satoshis == num_satoshis:
-            buyer_invoice['context'] = {'bad_invoice':'The invoice provided is not for '+'{:,}'.format(num_satoshis)+ ' Sats'}
-            return buyer_invoice
+            payout['context'] = {'bad_invoice':'The invoice provided is not for '+'{:,}'.format(num_satoshis)+ ' Sats'}
+            return payout
 
-        buyer_invoice['created_at'] = timezone.make_aware(datetime.fromtimestamp(payreq_decoded.timestamp))
-        buyer_invoice['expires_at'] = buyer_invoice['created_at'] + timedelta(seconds=payreq_decoded.expiry)
+        payout['created_at'] = timezone.make_aware(datetime.fromtimestamp(payreq_decoded.timestamp))
+        payout['expires_at'] = payout['created_at'] + timedelta(seconds=payreq_decoded.expiry)
 
-        if buyer_invoice['expires_at'] < timezone.now():
-            buyer_invoice['context'] = {'bad_invoice':f'The invoice provided has already expired'}
-            return buyer_invoice
+        if payout['expires_at'] < timezone.now():
+            payout['context'] = {'bad_invoice':f'The invoice provided has already expired'}
+            return payout
 
-        buyer_invoice['valid'] = True
-        buyer_invoice['description'] = payreq_decoded.description
-        buyer_invoice['payment_hash'] = payreq_decoded.payment_hash
+        payout['valid'] = True
+        payout['description'] = payreq_decoded.description
+        payout['payment_hash'] = payreq_decoded.payment_hash
 
         
-        return buyer_invoice
+        return payout
 
     @classmethod
     def pay_invoice(cls, invoice, num_satoshis):
         '''Sends sats to buyer'''
 
-        fee_limit_sat = max(num_satoshis * 0.0002, 10) # 200 ppm or 10 sats 
+        fee_limit_sat = int(max(num_satoshis * float(config('PROPORTIONAL_ROUTING_FEE_LIMIT')), float(config('MIN_FLAT_ROUTING_FEE_LIMIT')))) # 200 ppm or 10 sats 
         request = routerrpc.SendPaymentRequest(
             payment_request=invoice,
             fee_limit_sat=fee_limit_sat,

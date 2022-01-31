@@ -4773,6 +4773,7 @@ adjectives = [
     "Compound",
     "Important",
     "Robotic",
+    "Satoshi",
     "Alltoocommon",
     "Informative",
     "Anxious",

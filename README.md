@@ -1,11 +1,14 @@
-## RoboSats - Buy and sell Satoshis Privately.
-[![release](https://img.shields.io/badge/release-v0.1.0%20MVP-orange)](https://github.com/Reckless-Satoshi/robosats/releases)
+## RoboSats - Buy and sell Satoshis Privately
+[![release](https://img.shields.io/badge/release-v0.1.0%20MVP-red)](https://github.com/Reckless-Satoshi/robosats/releases)
 [![AGPL-3.0 license](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/Reckless-Satoshi/robosats/blob/main/LICENSE)
 [![Telegram](https://img.shields.io/badge/chat-telegram-brightgreen)](https://t.me/robosats)
 
 RoboSats is a simple and private way to exchange bitcoin for national currencies. Robosats simplifies the peer-to-peer user experience and uses lightning hold invoices to minimize custody and trust requirements. The deterministically generated avatars help users stick to best privacy practices. 
 
 ## Try it out
+<div align="center">
+  <img width="75%" src="https://raw.githubusercontent.com/Reckless-Satoshi/robosats/frontend/static/assets/images/robosats_0.1.0_banner.png">
+</div>
 
 **Bitcoin mainnet:**
 - Tor: robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion (Coming soon)
@@ -15,7 +18,7 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 **Bitcoin testnet:**
 - Tor: robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion (Active - On Dev Node)
 - Url: testnet.robosats.com (Coming soon)
-- Commit height: Latest commit.
+- Latest commit.
 
 *Always use [Tor Browser](https://www.torproject.org/download/) and .onion for best anonymity.*
 
@@ -39,7 +42,7 @@ Alice wants to buy satoshis privately:
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Original idea
-The concept of a simple custody-minimized lightning exchange using hold invoices is heavily inspired by [P2PLNBOT](https://github.com/grunch/p2plnbot) by @grunch
+The concept of a simple custody-minimized lightning exchange using hold invoices is heavily inspired in [P2PLNBOT](https://github.com/grunch/p2plnbot) by @grunch
 
 ## License
 

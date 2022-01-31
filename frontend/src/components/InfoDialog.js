@@ -1,36 +1,69 @@
 
-import {Typography, DialogTitle,  DialogContent, DialogContentText, Button } from "@mui/material"
+import {Typography, DialogActions,  DialogContent, Button, Grid} from "@mui/material"
 import React, { Component } from 'react'
+import Image from 'material-ui-image'
+import MediaQuery from 'react-responsive'
+import { maxWidth, minWidth } from "@mui/system"
 
 export default class InfoDialog extends Component {
   render() {
     return (
       <div>
         <DialogContent>
-          <Typography component="h5" variant="h5">What is <i>RoboSats</i>?</Typography>
+
+          <MediaQuery minWidth={475}>
+          <Grid container xs={12}>
+            <Grid item xs={8}>
+              <Typography component="h4" variant="h4">What is <i>RoboSats</i>?</Typography>
+              <Typography component="body2" variant="body2">
+                <p>It is a BTC/FIAT peer-to-peer exchange over lightning. <br/> It simplifies 
+                  matchmaking and minimizes the need of trust. RoboSats focuses in privacy and speed.</p>
+                
+                <p>RoboSats is an open source project <a 
+                  href='https://github.com/reckless-satoshi/robosats'>(GitHub).</a>
+                </p>
+              </Typography>
+            </Grid>
+            <Grid item xs={4} align="center">
+              <Image className='newAvatar'
+                disableError='true'
+                cover='true'
+                color='null'
+                src={window.location.origin +'/static/assets/images/robosats_0.1.0.png'}
+              />
+            </Grid>
+          </Grid>
+          </MediaQuery>
+
+          <MediaQuery maxWidth={474}>
+          <Typography component="h4" variant="h4">What is <i>RoboSats</i>?</Typography>
           <Typography component="body2" variant="body2">
             <p>It is a BTC/FIAT peer-to-peer exchange over lightning. It simplifies 
-              matchmaking and minimizes the trust needed to trade with a peer.</p>
-            
+              matchmaking and minimizes the need of trust. RoboSats focuses in privacy and speed.</p>
+              <img
+                width='100%'
+                src={window.location.origin +'/static/assets/images/robosats_0.1.0_banner.png'}
+              />
             <p>RoboSats is an open source project <a 
               href='https://github.com/reckless-satoshi/robosats'>(GitHub).</a>
             </p>
           </Typography>
-          
+          </MediaQuery>
+
           <Typography component="h5" variant="h5">How does it work?</Typography>
           <Typography component="body2" variant="body2">
-            <p>AdequateAlice01 wants to sell bitcoin. She posts a sell order. 
+            <p> AnonymousAlice01 wants to sell bitcoin. She posts a sell order. 
               BafflingBob02 wants to buy bitcoin and he takes Alice's order. 
               Both have to post a small bond using lightning to prove they are real 
               robots. Then, Alice posts the trade collateral also using a lightning 
-              hold invoice. <i>RoboSats</i> locks the invoice until Bob confirms he sent 
-              the fiat to Alice. Once Alice confirms she received the fiat, she 
-              tells <i>RoboSats</i> to release the satoshis to Bob. Enjoy your satoshis, 
+              hold invoice. <i>RoboSats</i> locks the invoice until Alice confirms she 
+              received the fiat, then the satoshis are released to Bob. Enjoy your satoshis, 
               Bob!</p>
 
-            <p>At no point, AdequateAlice01 and BafflingBob02 have to trust the 
-              bitcoin to each other. In case they have a conflict, <i>RoboSats</i> staff 
-              will help resolving the dispute.</p>
+            <p>At no point, AnonymousAlice01 and BafflingBob02 have to trust the 
+              bitcoin funds to each other. In case they have a conflict, <i>RoboSats</i> staff 
+              will help resolving the dispute. You can find a step-by-step 
+              description of the trade pipeline in <a href='https://github.com/Reckless-Satoshi/robosats/blob/main/README.md#how-it-works'>How it works</a></p>
           </Typography>
 
           <Typography component="h5" variant="h5">What payment methods are accepted?</Typography>
@@ -51,8 +84,9 @@ export default class InfoDialog extends Component {
 
           <Typography component="h5" variant="h5">Is <i>RoboSats</i> private?</Typography>
           <Typography component="body2" variant="body2">
-            <p> RoboSats will never ask you for your name, country or ID. For 
-              best anonymity use Tor Browser and access the .onion hidden service. </p>
+            <p> RoboSats will never ask you for your name, country or ID. RoboSats does
+              not custody your funds, and doesn't care who you are. For best anonymity
+              use Tor Browser and access the .onion hidden service. </p>
 
             <p>Your trading peer is the only one who can potentially guess 
               anything about you. Keep your chat short and concise. Avoid 
@@ -73,29 +107,33 @@ export default class InfoDialog extends Component {
           <Typography component="h5" variant="h5">What is the trust model?</Typography>
           <Typography component="body2" variant="body2">
             <p> The buyer and the seller never have to trust each other. 
-              Some trust on <i>RoboSats</i> staff is needed since linking 
-              the seller's hold invoice and buyer payment is not atomic (yet). 
+              Some trust on <i>RoboSats</i> is needed since linking the
+              seller's hold invoice and buyer payment is not atomic (yet). 
               In addition, disputes are solved by the <i>RoboSats</i> staff.
             </p> 
 
-            <p> While trust requirements are minimized, <i>RoboSats</i> could 
-              run away with your satoshis. It could be argued that it is not 
-              worth it, as it would instantly destroy <i>RoboSats</i> reputation. 
+            <p> To be totally clear. Trust requirements are minimized. However, there is still 
+            one way <i>RoboSats </i> could run away with your satoshis: by not releasing 
+               the satoshis to the buyer. It could be argued that such move is not in <i>RoboSats' </i> 
+              interest as it would damage the reputation for a small payout. 
               However, you should hesitate and only trade small quantities at a 
               time. For large amounts use an onchain escrow service such as <i>Bisq</i>
             </p> 
 
             <p> You can build more trust on <i>RoboSats</i> by <a href='https://github.com/reckless-satoshi/robosats'>
-              inspecting the source code </a> </p>
+              inspecting the source code. </a> </p>
           </Typography>
 
           <Typography component="h5" variant="h5">What happens if <i>RoboSats</i> suddenly disapears?</Typography>
           <Typography component="body2" variant="body2">
-            <p> Your sats will most likely return to you. Any hold invoice that is not 
+            <p> Your sats will return to you. Any hold invoice that is not 
               settled would be automatically returned even if <i>RoboSats</i> goes down 
               forever. This is true for both, locked bonds and trading escrows. However, 
-              there is a small window between the buyer confirms FIAT SENT and the moment 
-              the seller releases the satoshis when the funds could be lost.
+              there is a small window between the seller confirms FIAT RECEIVED and the moment 
+              the buyer receives the satoshis when the funds could be permanentely lost if
+              <i> RoboSats</i> disappears. This window is about 1 second long. Make sure to have enough
+              inbound liquidity to avoid routing failures. If you have any problem, reach out
+              trough the <i>RoboSats</i> public channels.
             </p>
           </Typography>
 
@@ -116,9 +154,10 @@ export default class InfoDialog extends Component {
               RoboSats</i> will definitely never ask for your robot token.
             </p>
           </Typography>
-
+          <DialogActions>
+            <Button onClick={this.props.handleCloseInfo}>Close</Button>
+          </DialogActions>
         </DialogContent>
-
       </div>
     )
   }

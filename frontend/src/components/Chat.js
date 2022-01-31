@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import {Button, TextField, Link, Grid, Typography, Container, Card, CardHeader, Paper, Avatar} from "@mui/material";
-import { withStyles } from "@mui/material";
-
+import {Button, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, FormHelperText} from "@mui/material";
 
 
 export default class Chat extends Component {
@@ -53,7 +51,7 @@ export default class Chat extends Component {
     this.client.send(JSON.stringify({
       type: "message",
       message: this.state.value,
-      nick: this.props.urNick,
+      nick: this.props.ur_nick,
     }));
     this.state.value = ''
     e.preventDefault();
@@ -66,7 +64,7 @@ export default class Chat extends Component {
               {this.state.messages.map(message => <>
               <Card elevation={5} align="left" >
               {/* If message sender is not our nick, gray color, if it is our nick, green color */}
-              {message.userNick == this.props.urNick ? 
+              {message.userNick == this.props.ur_nick ? 
                   <CardHeader
                   avatar={
                     <Avatar
@@ -113,6 +111,7 @@ export default class Chat extends Component {
                 </Grid>
               </Grid>
             </form>
+            <FormHelperText>This chat has no memory. If you leave and come back the messages are lost.</FormHelperText>
       </Container>
     )
   }

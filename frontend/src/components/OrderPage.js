@@ -1,6 +1,8 @@
 import React, { Component } from "react";
-import { Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
+import MediaQuery from 'react-responsive'
+
 import TradeBox from "./TradeBox";
 import getFlags from './getFlags'
 
@@ -9,9 +11,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import NumbersIcon from '@mui/icons-material/Numbers';
 import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import PaymentsIcon from '@mui/icons-material/Payments';
-import MoneyIcon from '@mui/icons-material/Money';
 import ArticleIcon from '@mui/icons-material/Article';
-import ContentCopy from "@mui/icons-material/ContentCopy";
 
 function getCookie(name) {
   let cookieValue = null;
@@ -39,86 +39,69 @@ export default class OrderPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-        isExplicit: false,
+        is_explicit: false,
         delay: 60000, // Refresh every 60 seconds by default
         currencies_dict: {"1":"USD"},
-        total_secs_expiry: 300,
+        total_secs_exp: 300,
         loading: true,
         openCancel: false,
+        openCollaborativeCancel: false,
+        showContractBox: 1,
     };
     this.orderId = this.props.match.params.orderId;
     this.getCurrencyDict();
     this.getOrderDetails();
 
-    // Refresh delais according to Order status
+    // Refresh delays according to Order status
     this.statusToDelay = {
-      "0": 3000,    //'Waiting for maker bond'
-      "1": 30000,   //'Public'
-      "2": 9999999, //'Deleted'
-      "3": 3000,    //'Waiting for taker bond'
-      "4": 9999999, //'Cancelled'
-      "5": 999999,  //'Expired'
-      "6": 3000,    //'Waiting for trade collateral and buyer invoice'
-      "7": 3000,    //'Waiting only for seller trade collateral'
-      "8": 10000,   //'Waiting only for buyer invoice'
-      "9": 10000,   //'Sending fiat - In chatroom'
-      "10": 15000,  //'Fiat sent - In chatroom'
-      "11": 60000,  //'In dispute'
-      "12": 9999999,//'Collaboratively cancelled'
-      "13": 3000,   //'Sending satoshis to buyer'
-      "14": 9999999,//'Sucessful trade'
-      "15": 10000,  //'Failed lightning network routing'
-      "16": 9999999,//'Maker lost dispute'
-      "17": 9999999,//'Taker lost dispute'
+      "0": 2000,     //'Waiting for maker bond'
+      "1": 25000,    //'Public'
+      "2": 9999999,  //'Deleted'
+      "3": 2000,     //'Waiting for taker bond'
+      "4": 9999999,  //'Cancelled'
+      "5": 999999,   //'Expired'
+      "6": 3000,     //'Waiting for trade collateral and buyer invoice'
+      "7": 3000,     //'Waiting only for seller trade collateral'
+      "8": 8000,    //'Waiting only for buyer invoice'
+      "9": 10000,    //'Sending fiat - In chatroom'
+      "10": 10000,   //'Fiat sent - In chatroom'
+      "11": 30000,   //'In dispute'
+      "12": 9999999, //'Collaboratively cancelled'
+      "13": 3000,    //'Sending satoshis to buyer'
+      "14": 9999999, //'Sucessful trade'
+      "15": 10000,   //'Failed lightning network routing'
+      "16": 9999999, //'Maker lost dispute'
+      "17": 9999999, //'Taker lost dispute'
     }
+  }
+
+  completeSetState=(newStateVars)=>{
+
+    // In case the reply only has "bad_request"
+    // Do not substitute these two for "undefined" as
+    // otherStateVars will fail to assign values
+    if (newStateVars.currency == null){
+      newStateVars.currency = this.state.currency
+      newStateVars.status = this.state.status
+    }
+
+    var otherStateVars = {
+      loading: false,
+      delay: this.setDelay(newStateVars.status),
+      currencyCode: this.getCurrencyCode(newStateVars.currency),
+      penalty: newStateVars.penalty, // in case penalty time has finished, it goes back to null
+      invoice_expired: newStateVars.invoice_expired  // in case invoice had expired, it goes back to null when it is valid again
+    };
+
+    var completeStateVars = Object.assign({}, newStateVars, otherStateVars);
+    this.setState(completeStateVars);
   }
 
   getOrderDetails() {
     this.setState(null)
     fetch('/api/order' + '?order_id=' + this.orderId)
       .then((response) => response.json())
-      .then((data) => {console.log(data) &
-        this.setState({
-            loading: false,
-            delay: this.setDelay(data.status),
-            id: data.id,
-            statusCode: data.status,
-            statusText: data.status_message,
-            type: data.type,
-            currency: data.currency,
-            currencyCode: this.getCurrencyCode(data.currency),
-            amount: data.amount,
-            paymentMethod: data.payment_method,
-            isExplicit: data.is_explicit,
-            premium: data.premium,
-            satoshis: data.satoshis,
-            makerId: data.maker, 
-            isParticipant: data.is_participant,
-            urNick: data.ur_nick,
-            makerNick: data.maker_nick,
-            takerId: data.taker,
-            takerNick: data.taker_nick,
-            isMaker: data.is_maker,
-            isTaker: data.is_taker,
-            isBuyer: data.is_buyer,
-            isSeller: data.is_seller,
-            penalty: data.penalty,
-            expiresAt: data.expires_at,
-            badRequest: data.bad_request,
-            bondInvoice: data.bond_invoice,
-            bondSatoshis: data.bond_satoshis,
-            escrowInvoice: data.escrow_invoice,
-            escrowSatoshis: data.escrow_satoshis,
-            invoiceAmount: data.invoice_amount,
-            total_secs_expiry: data.total_secs_exp,
-            numSimilarOrders: data.num_similar_orders,
-            priceNow: data.price_now,
-            premiumNow: data.premium_now,
-            robotsInBook: data.robots_in_book,
-            premiumPercentile: data.premium_percentile,
-            numSimilarOrders: data.num_similar_orders
-        })
-      });
+      .then((data) => this.completeSetState(data));
   }
 
   // These are used to refresh the data
@@ -137,11 +120,6 @@ export default class OrderPage extends Component {
     this.getOrderDetails();
   }
 
-  // Fix to use proper react props
-  handleClickBackButton=()=>{
-    window.history.back();
-  }
-
   // Countdown Renderer callback with condition 
   countdownRenderer = ({ total, hours, minutes, seconds, completed }) => {
   if (completed) {
@@ -150,7 +128,7 @@ export default class OrderPage extends Component {
 
   } else {
     var col = 'black'
-    var fraction_left = (total/1000) / this.state.total_secs_expiry
+    var fraction_left = (total/1000) / this.state.total_secs_exp
     // Make orange at 25% of time left
     if (fraction_left < 0.25){col = 'orange'}
     // Make red at 10% of time left
@@ -163,14 +141,27 @@ export default class OrderPage extends Component {
   }
   };
 
+  // Countdown Renderer callback with condition 
+  countdownPenaltyRenderer = ({ minutes, seconds, completed }) => {
+    if (completed) {
+      // Render a completed state
+      return (<span> Penalty lifted, good to go!</span>);
+  
+    } else {
+      return (
+        <span> Wait {zeroPad(minutes)}m {zeroPad(seconds)}s </span>
+      );
+    }
+    };
+
   LinearDeterminate =()=> {
     const [progress, setProgress] = React.useState(0);
   
     React.useEffect(() => {
       const timer = setInterval(() => {
         setProgress((oldProgress) => {
-          var left = calcTimeDelta( new Date(this.state.expiresAt)).total /1000;
-          return (left / this.state.total_secs_expiry) * 100;
+          var left = calcTimeDelta( new Date(this.state.expires_at)).total /1000;
+          return (left / this.state.total_secs_exp) * 100;
         });
       }, 1000);
   
@@ -187,7 +178,6 @@ export default class OrderPage extends Component {
   }
 
   handleClickTakeOrderButton=()=>{
-    console.log(this.state)
       const requestOptions = {
           method: 'POST',
           headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
@@ -197,9 +187,7 @@ export default class OrderPage extends Component {
       };
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())
-      .then((data) => (this.setState({badRequest:data.bad_request}) 
-      & console.log(data)
-      & this.getOrderDetails(data.id)));
+      .then((data) => this.completeSetState(data));
   }
   getCurrencyDict() {
     fetch('/static/assets/currencies.json')
@@ -221,7 +209,6 @@ export default class OrderPage extends Component {
   }
 
   handleClickConfirmCancelButton=()=>{
-    console.log(this.state)
       const requestOptions = {
           method: 'POST',
           headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
@@ -231,7 +218,7 @@ export default class OrderPage extends Component {
       };
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())
-      .then((data) => (console.log(data) & this.getOrderDetails(data.id)));
+      .then((data) => this.getOrderDetails(data.id));
     this.handleClickCloseConfirmCancelDialog();
   }
 
@@ -266,11 +253,57 @@ export default class OrderPage extends Component {
     )
   }
 
+  handleClickConfirmCollaborativeCancelButton=()=>{
+      const requestOptions = {
+          method: 'POST',
+          headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+          body: JSON.stringify({
+            'action':'cancel',
+          }),
+      };
+      fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+      .then((response) => response.json())
+      .then((data) => this.getOrderDetails(data.id));
+    this.handleClickCloseCollaborativeCancelDialog();
+  }
+
+  handleClickOpenCollaborativeCancelDialog = () => {
+    this.setState({openCollaborativeCancel: true});
+  };
+  handleClickCloseCollaborativeCancelDialog = () => {
+      this.setState({openCollaborativeCancel: false});
+  };
+
+  CollaborativeCancelDialog =() =>{
+  return(
+      <Dialog
+      open={this.state.openCollaborativeCancel}
+      onClose={this.handleClickCloseCollaborativeCancelDialog}
+      aria-labelledby="collaborative-cancel-dialog-title"
+      aria-describedby="collaborative-cancel-dialog-description"
+      >
+        <DialogTitle id="cancel-dialog-title">
+          {"Collaborative cancel the order?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="cancel-dialog-description">
+            The trade escrow has been posted. The order can be cancelled only if both, maker and 
+            taker, agree to cancel. 
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClickCloseCollaborativeCancelDialog} autoFocus>Go back</Button>
+          <Button onClick={this.handleClickConfirmCollaborativeCancelButton}> Ask for Cancel </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
   CancelButton = () => {
 
     // If maker and Waiting for Bond. Or if taker and Waiting for bond.
     // Simply allow to cancel without showing the cancel dialog. 
-    if ((this.state.isMaker & this.state.statusCode == 0) || this.state.isTaker & this.state.statusCode == 3){
+    if ((this.state.is_maker & [0,1].includes(this.state.status)) || this.state.is_taker & this.state.status == 3){
       return(
         <Grid item xs={12} align="center">
           <Button variant='contained' color='secondary' onClick={this.handleClickConfirmCancelButton}>Cancel</Button>
@@ -278,51 +311,79 @@ export default class OrderPage extends Component {
       )}
     // If the order does not yet have an escrow deposited. Show dialog
     // to confirm forfeiting the bond
-    if (this.state.statusCode < 8){
+    if ([3,6,7].includes(this.state.status)){
       return(
-        <Grid item xs={12} align="center">
-          <this.CancelDialog/>
-          <Button variant='contained' color='secondary' onClick={this.handleClickOpenConfirmCancelDialog}>Cancel</Button>
-        </Grid>
+        <div id="openDialogCancelButton">
+          <Grid item xs={12} align="center">
+            <this.CancelDialog/>
+            <Button variant='contained' color='secondary' onClick={this.handleClickOpenConfirmCancelDialog}>Cancel</Button>
+          </Grid>
+        </div>
       )}
     
-    // TODO If the escrow is Locked, show the collaborative cancel button.
-    
+    // If the escrow is Locked, show the collaborative cancel button.
+  
+    if ([8,9].includes(this.state.status)){
+      return(
+        <Grid item xs={12} align="center">
+          <this.CollaborativeCancelDialog/>
+          <Button variant='contained' color='secondary' onClick={this.handleClickOpenCollaborativeCancelDialog}>Collaborative Cancel</Button>
+        </Grid>
+      )}
+
     // If none of the above do not return a cancel button.
     return(null)
   }
 
+  // Colors for the status badges
+  statusBadgeColor(status){
+    if(status=='active'){
+      return("success")
+    }
+    if(status=='seen_recently'){
+      return("warning")
+    }
+    if(status=='inactive'){
+      return('error')
+    }
+  }
   orderBox=()=>{
     return(
-      <Grid container spacing={1}>
+      <Grid container spacing={1} >
         <Grid item xs={12} align="center">
-          <Typography component="h5" variant="h5">
-          Order Details
-          </Typography>
+          <MediaQuery minWidth={920}>
+            <Typography component="h5" variant="h5">
+              Order Details
+            </Typography>
+          </MediaQuery>
           <Paper elevation={12} style={{ padding: 8,}}>
           <List dense="true">
             <ListItem >
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
-                <Avatar 
-                  alt={this.state.makerNick} 
-                  src={window.location.origin +'/static/assets/avatars/' + this.state.makerNick + '.png'} 
-                  />
+                <Badge variant="dot" badgeContent="" color={this.statusBadgeColor(this.state.maker_status)}>
+                  <Avatar className="flippedSmallAvatar"
+                    alt={this.state.maker_nick} 
+                    src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'} 
+                    />
+                </Badge>
               </ListItemAvatar>
-              <ListItemText primary={this.state.makerNick + (this.state.type ? " (Seller)" : " (Buyer)")} secondary="Order maker" align="right"/>
+              <ListItemText primary={this.state.maker_nick + (this.state.type ? " (Seller)" : " (Buyer)")} secondary="Order maker" align="right"/>
             </ListItem>
             <Divider />
 
-            {this.state.isParticipant ?
+            {this.state.is_participant ?
               <>
-                {this.state.takerNick!='None' ?
+                {this.state.taker_nick!='None' ?
                   <>
                     <ListItem align="left">
-                      <ListItemText primary={this.state.takerNick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order taker"/>
+                      <ListItemText primary={this.state.taker_nick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order taker"/>
                       <ListItemAvatar > 
-                        <Avatar
-                          alt={this.state.makerNick} 
-                          src={window.location.origin +'/static/assets/avatars/' + this.state.takerNick + '.png'}
-                          />
+                        <Badge variant="dot" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
+                          <Avatar className="smallAvatar"
+                            alt={this.state.taker_nick} 
+                            src={window.location.origin +'/static/assets/avatars/' + this.state.taker_nick + '.png'}
+                            />
+                        </Badge>
                       </ListItemAvatar>
                     </ListItem>
                     <Divider />               
@@ -333,7 +394,7 @@ export default class OrderPage extends Component {
                     <ListItemIcon>
                       <ArticleIcon/>
                     </ListItemIcon>
-                    <ListItemText primary={this.state.statusText} secondary="Order status"/>
+                    <ListItemText primary={this.state.status_message} secondary="Order status"/>
                   </ListItem>
                   <Divider />
               </>
@@ -352,7 +413,7 @@ export default class OrderPage extends Component {
               <ListItemIcon>
                 <PaymentsIcon/>
               </ListItemIcon>
-              <ListItemText primary={this.state.paymentMethod} secondary="Accepted payment methods"/>
+              <ListItemText primary={this.state.payment_method} secondary="Accepted payment methods"/>
             </ListItem>
             <Divider />
 
@@ -361,10 +422,10 @@ export default class OrderPage extends Component {
               <ListItemIcon>
                 <PriceChangeIcon/>
               </ListItemIcon>
-            {this.state.priceNow? 
-                <ListItemText primary={pn(this.state.priceNow)+" "+this.state.currencyCode+"/BTC - Premium: "+this.state.premiumNow+"%"} secondary="Price and Premium"/>
+            {this.state.price_now? 
+                <ListItemText primary={pn(this.state.price_now)+" "+this.state.currencyCode+"/BTC - Premium: "+this.state.premium_now+"%"} secondary="Price and Premium"/>
             :
-              (this.state.isExplicit ? 
+              (this.state.is_explicit ? 
                 <ListItemText primary={pn(this.state.satoshis)} secondary="Amount of Satoshis"/>
                 :
                 <ListItemText primary={parseFloat(parseFloat(this.state.premium).toFixed(2))+"%"} secondary="Premium over market price"/>
@@ -385,7 +446,7 @@ export default class OrderPage extends Component {
                 <AccessTimeIcon/>
               </ListItemIcon>
               <ListItemText secondary="Expires in">
-                <Countdown date={new Date(this.state.expiresAt)} renderer={this.countdownRenderer} />
+                <Countdown date={new Date(this.state.expires_at)} renderer={this.countdownRenderer} />
               </ListItemText>
             </ListItem>
             <this.LinearDeterminate />
@@ -397,7 +458,31 @@ export default class OrderPage extends Component {
               <Divider />
               <Grid item xs={12} align="center">
                 <Alert severity="warning" sx={{maxWidth:360}}>
-                  You cannot take an order yet! Wait {this.state.penalty} seconds 
+                  You cannot take an order yet! <Countdown date={new Date(this.state.penalty)} renderer={this.countdownPenaltyRenderer} />
+                </Alert>  
+              </Grid>
+            </>
+            : null} 
+            
+            {/* If the counterparty asked for collaborative cancel */}
+            {this.state.pending_cancel ? 
+            <>
+              <Divider />
+              <Grid item xs={12} align="center">
+                <Alert severity="warning" sx={{maxWidth:360}}>
+                  {this.state.is_maker ? this.state.taker_nick : this.state.maker_nick} is asking for a collaborative cancel
+                </Alert>  
+              </Grid>
+            </>
+            : null} 
+
+            {/* If the user has asked for a collaborative cancel */}
+            {this.state.asked_for_cancel ? 
+            <>
+              <Divider />
+              <Grid item xs={12} align="center">
+                <Alert severity="warning" sx={{maxWidth:360}}>
+                  You asked for a collaborative cancellation
                 </Alert>  
               </Grid>
             </>
@@ -405,46 +490,101 @@ export default class OrderPage extends Component {
 
           </Paper>
         </Grid>
-
-        {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}
-        {this.state.isParticipant ? 
-          <this.CancelButton/>
-         :
-          <>
-            <Grid item xs={12} align="center">
-              <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>
+        
+        <Grid item xs={12} align="center">
+          {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}
+          {this.state.is_participant ? 
+            <this.CancelButton/>
+          :
+            <Grid container spacing={1}>
+              <Grid item xs={12} align="center">
+                <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>
+              </Grid>
+              <Grid item xs={12} align="center">
+                <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>Back</Button>
+              </Grid>
             </Grid>
-            <Grid item xs={12} align="center">
-              <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
-            </Grid>
-          </>
-          }
-
+            }
+        </Grid>
       </Grid>
     )
   }
   
+  doubleOrderPageDesktop=()=>{
+    return(
+      <Grid container xs={12} align="center" spacing={2} >
+        <Grid item xs={6} align="left" style={{ width:330}} >
+            {this.orderBox()}
+        </Grid>
+        <Grid item xs={6} align="left">
+          <TradeBox width={330} data={this.state} completeSetState={this.completeSetState} />
+        </Grid>
+      </Grid>
+    )
+  }
+  
+  a11yProps(index) {
+    return {
+      id: `simple-tab-${index}`,
+      'aria-controls': `simple-tabpanel-${index}`,
+    };
+  }
+
+  doubleOrderPagePhone=()=>{
+
+    const [value, setValue] = React.useState(this.state.showContractBox);
+
+    const handleChange = (event, newValue) => {
+      this.setState({showContractBox:newValue})
+      setValue(newValue);
+    };
+
+    return(
+      <Box sx={{ width: '100%' }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={value} onChange={handleChange} variant="fullWidth" >
+            <Tab label="Order Details" {...this.a11yProps(0)} />
+            <Tab label="Contract Box" {...this.a11yProps(1)} />
+          </Tabs>
+        </Box>
+        <Grid container spacing={2}>
+          <Grid item >
+            <div style={{ width:330, display: this.state.showContractBox == 0 ? '':'none'}}>
+                {this.orderBox()}
+            </div>
+            <div style={{display: this.state.showContractBox == 1 ? '':'none'}}>
+              <TradeBox width={330} data={this.state} completeSetState={this.completeSetState} />
+            </div>
+          </Grid>
+        </Grid>
+      </Box>
+  );
+  }
+
   orderDetailsPage (){
     return(
-      this.state.badRequest ?
+      this.state.bad_request ?
         <div align='center'>
           <Typography component="subtitle2" variant="subtitle2" color="secondary" >
-            {this.state.badRequest}<br/>
+            {this.state.bad_request}<br/>
           </Typography>
-          <Button variant='contained' color='secondary' onClick={this.handleClickBackButton}>Back</Button>
+          <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>Back</Button>
         </div>
         :
-        (this.state.isParticipant ? 
-          <Grid container xs={12} align="center" spacing={2}>
-            <Grid item xs={6} align="left">
-              {this.orderBox()}
-            </Grid>
-            <Grid item xs={6} align="left">
-              <TradeBox data={this.state}/>
-            </Grid>
-          </Grid>
+        (this.state.is_participant ? 
+          <>
+            {/* Desktop View */}
+            <MediaQuery minWidth={920}>
+              <this.doubleOrderPageDesktop/>
+            </MediaQuery>
+
+            {/* SmarPhone View */}
+            <MediaQuery maxWidth={919}>
+              <this.doubleOrderPagePhone/>
+            </MediaQuery>
+          </>
           :
-          <Grid item xs={12} align="center">
+          <Grid item xs={12} align="center" style={{ width:330}}>
             {this.orderBox()}
           </Grid>)
     )

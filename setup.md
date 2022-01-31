@@ -126,9 +126,86 @@ npm install websocket
 npm install react-countdown
 npm install @mui/icons-material
 npm install @mui/x-data-grid
+npm install react-responsive
+npm install react-qr-reader
 ```
 Note we are using mostly MaterialUI V5 (@mui/material) but Image loading from V4 (@material-ui/core) extentions (so both V4 and V5 are needed)
 
 ### Launch the React render
 from frontend/ directory
 `npm run dev`
+
+## Robosats background threads.
+
+There is 3 processes that run asynchronously: two admin commands and a celery beat scheduler.
+The celery worker will run the task of caching external API market prices and cleaning(deleting) the generated robots that were never used.
+`celery -A robosats worker --beat -l debug -S django`
+
+The admin commands are used to keep an eye on the state of LND hold invoices and check whether orders have expired
+```
+python3 manage.py follow_invoices
+python3 manage.py clean_order
+```
+
+It might be best to set up system services to continuously run these background processes.
+
+### Follow invoices admin command as system service
+
+Create `/etc/systemd/system/follow_invoices.service` and edit with:
+
+```
+[Unit]
+Description=RoboSats Follow LND Invoices
+After=lnd.service
+StartLimitIntervalSec=0
+
+[Service]
+WorkingDirectory=/home/<USER>/robosats/
+StandardOutput=file:/home/<USER>/robosats/follow_invoices.log
+StandardError=file:/home/<USER>/robosats/follow_invoices.log
+Type=simple
+Restart=always
+RestartSec=1
+User=<USER>
+ExecStart=python3 manage.py follow_invoices
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then launch it with
+
+```
+systemctl start follow_invoices
+systemctl enable follow_invoices
+```
+### Clean orders admin command as system service
+
+Create `/etc/systemd/system/clean_orders.service` and edit with (replace <USER> for your username):
+
+```
+[Unit]
+Description=RoboSats Clean Orders
+After=lnd.service
+StartLimitIntervalSec=0
+
+[Service]
+WorkingDirectory=/home/<USER>/robosats/
+StandardOutput=file:/home/<USER>/robosats/clean_orders.log
+StandardError=file:/home/<USER>/robosats/clean_orders.log
+Type=simple
+Restart=always
+RestartSec=1
+User=<USER>
+ExecStart=python3 manage.py clean_orders
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then launch it with
+
+```
+systemctl start clean_orders
+systemctl enable clean_orders
+```

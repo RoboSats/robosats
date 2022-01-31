@@ -21,7 +21,7 @@ def users_cleansing():
     for user in queryset:
         if not user.profile.total_contracts == 0:
             continue
-        valid, _ = Logics.validate_already_maker_or_taker(user)
+        valid, _, _ = Logics.validate_already_maker_or_taker(user)
         if valid:
             deleted_users.append(str(user))
             user.delete()
@@ -38,6 +38,8 @@ def follow_send_payment(lnpayment):
 
     from decouple import config
     from base64 import b64decode
+    from django.utils import timezone
+    from datetime import timedelta
 
     from api.lightning.node import LNNode
     from api.models import LNPayment, Order
@@ -51,35 +53,53 @@ def follow_send_payment(lnpayment):
         timeout_seconds=60) # time out payment in 60 seconds
 
     order = lnpayment.order_paid
-    for response in LNNode.routerstub.SendPaymentV2(request, metadata=[('macaroon', MACAROON.hex())]):
-        if response.status == 0 :               # Status 0 'UNKNOWN'
-            # Not sure when this status happens
-            pass 
+    try:
+        for response in LNNode.routerstub.SendPaymentV2(request, metadata=[('macaroon', MACAROON.hex())]):
+            if response.status == 0 :               # Status 0 'UNKNOWN'
+                # Not sure when this status happens
+                pass 
 
-        if response.status == 1 :               # Status 1 'IN_FLIGHT'
-            print('IN_FLIGHT')
-            lnpayment.status = LNPayment.Status.FLIGHT
-            lnpayment.save()
-            order.status = Order.Status.PAY
-            order.save()
+            if response.status == 1 :               # Status 1 'IN_FLIGHT'
+                print('IN_FLIGHT')
+                lnpayment.status = LNPayment.Status.FLIGHT
+                lnpayment.save()
+                order.status = Order.Status.PAY
+                order.save()
 
-        if response.status == 3 :               # Status 3 'FAILED'
-            print('FAILED')
-            lnpayment.status = LNPayment.Status.FAILRO
+            if response.status == 3 :               # Status 3 'FAILED'
+                print('FAILED')
+                lnpayment.status = LNPayment.Status.FAILRO
+                lnpayment.last_routing_time = timezone.now()
+                lnpayment.routing_attempts += 1
+                lnpayment.save()
+                order.status = Order.Status.FAI
+                order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.FAI])
+                order.save()
+                context = {'routing_failed': LNNode.payment_failure_context[response.failure_reason]}
+                print(context)
+                # Call a retry in 5 mins here?
+                return False, context
+
+            if response.status == 2 :               # Status 2 'SUCCEEDED'
+                print('SUCCEEDED')
+                lnpayment.status = LNPayment.Status.SUCCED
+                lnpayment.save()
+                order.status = Order.Status.SUC
+                order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.SUC])
+                order.save()
+                return True, None
+
+    except Exception as e:
+        if "invoice expired" in str(e):
+            print('INVOICE EXPIRED')
+            lnpayment.status = LNPayment.Status.EXPIRE
+            lnpayment.last_routing_time = timezone.now()
             lnpayment.save()
             order.status = Order.Status.FAI
+            order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.FAI])
             order.save()
-            context = LNNode.payment_failure_context[response.failure_reason]
-            # Call for a retry here
+            context = {'routing_failed':'The payout invoice has expired'}
             return False, context
-
-        if response.status == 2 :               # Status 2 'SUCCEEDED'
-            print('SUCCEEDED')
-            lnpayment.status = LNPayment.Status.SUCCED
-            lnpayment.save()
-            order.status = Order.Status.SUC
-            order.save()
-            return True, None
 
 @shared_task(name="cache_external_market_prices", ignore_result=True)
 def cache_market():

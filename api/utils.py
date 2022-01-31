@@ -72,7 +72,7 @@ premium_percentile = {}
 @ring.dict(premium_percentile, expire=300)
 def compute_premium_percentile(order):
 
-    queryset = Order.objects.filter(currency=order.currency, status=Order.Status.PUB)
+    queryset = Order.objects.filter(currency=order.currency, status=Order.Status.PUB).exclude(id=order.id)
 
     print(len(queryset))
     if len(queryset) <= 1:

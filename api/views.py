@@ -26,6 +26,7 @@ from decouple import config
 
 EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
 FEE = float(config('FEE'))
+RETRY_TIME = int(config('RETRY_TIME'))
 
 avatar_path = Path('frontend/static/assets/avatars')
 avatar_path.mkdir(parents=True, exist_ok=True)
@@ -38,6 +39,9 @@ class MakerView(CreateAPIView):
     def post(self,request):
         serializer = self.serializer_class(data=request.data)
 
+        if not request.user.is_authenticated:
+            return Response({'bad_request':'Woops! It seems you do not have a robot avatar'}, status.HTTP_400_BAD_REQUEST)
+
         if not serializer.is_valid(): return Response(status=status.HTTP_400_BAD_REQUEST)
 
         type = serializer.data.get('type')
@@ -48,7 +52,7 @@ class MakerView(CreateAPIView):
         satoshis = serializer.data.get('satoshis')
         is_explicit = serializer.data.get('is_explicit')
 
-        valid, context = Logics.validate_already_maker_or_taker(request.user)
+        valid, context, _ = Logics.validate_already_maker_or_taker(request.user)
         if not valid: return Response(context, status.HTTP_409_CONFLICT)
 
         # Creates a new order
@@ -83,6 +87,9 @@ class OrderView(viewsets.ViewSet):
         '''
         order_id = request.GET.get(self.lookup_url_kwarg)
 
+        if not request.user.is_authenticated:
+            return Response({'bad_request':'You must have a robot avatar to see the order details'}, status=status.HTTP_400_BAD_REQUEST)
+
         if order_id == None:
             return Response({'bad_request':'Order ID parameter not found in request'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -107,7 +114,7 @@ class OrderView(viewsets.ViewSet):
         # if user is under a limit (penalty), inform him.
         is_penalized, time_out = Logics.is_penalized(request.user)
         if is_penalized:
-            data['penalty'] = time_out
+            data['penalty'] = request.user.profile.penalty_expiration
 
         # Add booleans if user is maker, taker, partipant, buyer or seller
         data['is_maker'] = order.maker == request.user
@@ -118,6 +125,32 @@ class OrderView(viewsets.ViewSet):
         if not data['is_participant'] and order.status != Order.Status.PUB:
             return Response({'bad_request':'You are not allowed to see this order'},status.HTTP_403_FORBIDDEN)
         
+        # WRITE Update last_seen for maker and taker.
+        # Note down that the taker/maker was here recently, so counterpart knows if the user is paying attention.
+        if order.maker == request.user:
+            order.maker_last_seen = timezone.now()
+            order.save()
+        if order.taker == request.user:
+            order.taker_last_seen = timezone.now()
+            order.save()
+
+        # Add activity status of participants based on last_seen
+        if order.taker_last_seen != None:
+            if order.taker_last_seen > (timezone.now() - timedelta(minutes=2)):
+                data['taker_status'] = 'active'
+            elif order.taker_last_seen > (timezone.now() - timedelta(minutes=10)):
+                data['taker_status'] = 'seen_recently'
+            else:
+                data['taker_status'] = 'inactive'
+
+        if order.maker_last_seen != None:
+            if order.maker_last_seen > (timezone.now() - timedelta(minutes=2)):
+                data['maker_status'] = 'active'
+            elif order.maker_last_seen > (timezone.now() - timedelta(minutes=10)):
+                data['maker_status'] = 'seen_recently'
+            else:
+                data['maker_status'] = 'inactive'
+
         # 3.b If order is between public and WF2
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
             data['price_now'], data['premium_now'] = Logics.price_and_premium_now(order)
@@ -169,7 +202,7 @@ class OrderView(viewsets.ViewSet):
                     data['trade_satoshis'] = order.last_satoshis
                 # Buyer sees the amount he receives
                 elif data['is_buyer']:
-                    data['trade_satoshis'] = Logics.buyer_invoice_amount(order, request.user)[1]['invoice_amount']
+                    data['trade_satoshis'] = Logics.payout_amount(order, request.user)[1]['invoice_amount']
 
         # 5) If status is 'waiting for maker bond' and user is MAKER, reply with a MAKER hold invoice.
         if order.status == Order.Status.WFB and data['is_maker']:
@@ -189,7 +222,6 @@ class OrderView(viewsets.ViewSet):
         
         # 7 a. ) If seller and status is 'WF2' or 'WFE' 
         elif data['is_seller'] and (order.status == Order.Status.WF2 or order.status == Order.Status.WFE):
-
             # If the two bonds are locked, reply with an ESCROW hold invoice.
             if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
                 valid, context = Logics.gen_escrow_hold_invoice(order, request.user)
@@ -203,20 +235,42 @@ class OrderView(viewsets.ViewSet):
 
             # If the two bonds are locked, reply with an AMOUNT so he can send the buyer invoice.
             if order.maker_bond.status == order.taker_bond.status == LNPayment.Status.LOCKED:
-                valid, context = Logics.buyer_invoice_amount(order, request.user)
+                valid, context = Logics.payout_amount(order, request.user)
                 if valid:
                     data = {**data, **context}
                 else:
                     return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 8) If status is 'CHA' or 'FSE' and all HTLCS are in LOCKED
-        elif order.status == Order.Status.CHA or order.status == Order.Status.FSE: # TODO Add the other status
-
+        elif order.status in [Order.Status.WFI, Order.Status.CHA, Order.Status.FSE]:
             # If all bonds are locked.
             if order.maker_bond.status == order.taker_bond.status == order.trade_escrow.status == LNPayment.Status.LOCKED:
-                # add whether a collaborative cancel is pending
-                data['pending_cancel'] = order.is_pending_cancel
+                # add whether a collaborative cancel is pending or has been asked
+                if (data['is_maker'] and order.taker_asked_cancel) or (data['is_taker'] and order.maker_asked_cancel):
+                    data['pending_cancel'] = True
+                elif (data['is_maker'] and order.maker_asked_cancel) or (data['is_taker'] and order.taker_asked_cancel):
+                    data['asked_for_cancel'] = True
+                else:
+                    data['asked_for_cancel'] = False
 
+        # 9) If status is 'DIS' and all HTLCS are in LOCKED
+        elif order.status == Order.Status.DIS:
+
+            # add whether the dispute statement has been received
+            if data['is_maker']:
+                data['statement_submitted'] = (order.maker_statement != None and order.maker_statement != "")
+            elif data['is_taker']:
+                data['statement_submitted'] = (order.taker_statement != None and order.maker_statement != "")
+
+        # 9) If status is 'Failed routing', reply with retry amounts, time of next retry and ask for invoice at third.
+        elif order.status == Order.Status.FAI and order.payout.receiver == request.user:  # might not be the buyer if after a dispute where winner wins
+            data['retries'] = order.payout.routing_attempts
+            data['next_retry_time'] = order.payout.last_routing_time + timedelta(minutes=RETRY_TIME)
+
+            if order.payout.status == LNPayment.Status.EXPIRE:
+                data['invoice_expired'] = True
+                # Add invoice amount once again if invoice was expired.
+                data['invoice_amount'] = int(order.last_satoshis * (1-FEE))
         
         return Response(data, status.HTTP_200_OK)
 
@@ -243,7 +297,7 @@ class OrderView(viewsets.ViewSet):
         # 1) If action is take, it is a taker request!
         if action == 'take':
             if order.status == Order.Status.PUB: 
-                valid, context = Logics.validate_already_maker_or_taker(request.user)
+                valid, context, _ = Logics.validate_already_maker_or_taker(request.user)
                 if not valid: return Response(context, status=status.HTTP_409_CONFLICT)
                 valid, context = Logics.take(order, request.user)
                 if not valid: return Response(context, status=status.HTTP_403_FORBIDDEN)
@@ -318,7 +372,7 @@ class UserView(APIView):
         # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
         if request.user.is_authenticated:
             context = {'nickname': request.user.username}
-            not_participant, _ = Logics.validate_already_maker_or_taker(request.user)
+            not_participant, _, _ = Logics.validate_already_maker_or_taker(request.user)
 
             # Does not allow this 'mistake' if an active order
             if not not_participant:
@@ -386,22 +440,21 @@ class UserView(APIView):
     def delete(self,request):
         ''' Pressing "give me another" deletes the logged in user '''
         user = request.user
-        if not user:
+        if not user.is_authenticated:
             return Response(status.HTTP_403_FORBIDDEN)
 
-        # Only delete if user life is shorter than 30 minutes. Helps deleting users by mistake
+        # Only delete if user life is shorter than 30 minutes. Helps to avoid deleting users by mistake
         if user.date_joined < (timezone.now() - timedelta(minutes=30)):
             return Response(status.HTTP_400_BAD_REQUEST)
 
         # Check if it is not a maker or taker!
-        if not Logics.validate_already_maker_or_taker(user):
+        not_participant, _, _ = Logics.validate_already_maker_or_taker(user)
+        if not not_participant:
             return Response({'bad_request':'User cannot be deleted while he is part of an order'}, status.HTTP_400_BAD_REQUEST)
 
         logout(request)
         user.delete()
         return Response({'user_deleted':'User deleted permanently'}, status.HTTP_301_MOVED_PERMANENTLY)
-
-        
 
 class BookView(ListAPIView):
     serializer_class = ListOrderSerializer
@@ -424,7 +477,6 @@ class BookView(ListAPIView):
         if len(queryset)== 0:
             return Response({'not_found':'No orders found, be the first to make one'}, status=status.HTTP_404_NOT_FOUND)
 
-        # queryset = queryset.order_by('created_at')
         book_data = []
         for order in queryset:
             data = ListOrderSerializer(order).data
@@ -468,12 +520,27 @@ class InfoView(ListAPIView):
             avg_premium = 0
             total_volume = 0
 
+        queryset = MarketTick.objects.all()
+        if not len(queryset) == 0:
+            volume_settled = []
+            for tick in queryset:
+                volume_settled.append(tick.volume)
+            lifetime_volume_settled = int(sum(volume_settled)*100000000)
+        else:
+            lifetime_volume_settled = 0
+
         context['today_avg_nonkyc_btc_premium'] = round(avg_premium,2)
         context['today_total_volume'] = total_volume
+        context['lifetime_satoshis_settled'] = lifetime_volume_settled
         context['lnd_version'] = get_lnd_version()
         context['robosats_running_commit_hash'] = get_commit_robosats()
         context['fee'] = FEE
         context['bond_size'] = float(config('BOND_SIZE'))
+        if request.user.is_authenticated:
+            context['nickname'] = request.user.username
+            has_no_active_order, _, order = Logics.validate_already_maker_or_taker(request.user)
+            if not has_no_active_order:
+                context['active_order_id'] = order.id
 
         return Response(context, status.HTTP_200_OK)
         

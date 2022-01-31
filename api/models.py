@@ -19,7 +19,7 @@ BOND_SIZE = float(config('BOND_SIZE'))
 
 class Currency(models.Model):
 
-    currency_dict = json.load(open('./frontend/static/assets/currencies.json'))
+    currency_dict = json.load(open('frontend/static/assets/currencies.json'))
     currency_choices = [(int(val), label) for val, label in list(currency_dict.items())]
 
     currency = models.PositiveSmallIntegerField(choices=currency_choices, null=False, unique=True)
@@ -37,7 +37,7 @@ class Currency(models.Model):
 class LNPayment(models.Model):
 
     class Types(models.IntegerChoices):
-        NORM = 0, 'Regular invoice' # Only outgoing buyer payment will be a regular invoice (Non-hold)
+        NORM = 0, 'Regular invoice'
         HOLD = 1, 'hold invoice'
 
     class Concepts(models.IntegerChoices):
@@ -57,13 +57,11 @@ class LNPayment(models.Model):
         FLIGHT = 7, 'In flight'
         SUCCED = 8, 'Succeeded'
         FAILRO = 9, 'Routing failed'
-        
 
     # payment use details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False, default=Types.HOLD)
     concept = models.PositiveSmallIntegerField(choices=Concepts.choices, null=False, default=Concepts.MAKEBOND)
     status = models.PositiveSmallIntegerField(choices=Status.choices, null=False, default=Status.INVGEN)
-    routing_retries = models.PositiveSmallIntegerField(null=False, default=0)
     
     # payment info
     payment_hash = models.CharField(max_length=100, unique=True, default=None, blank=True, primary_key=True)
@@ -73,7 +71,13 @@ class LNPayment(models.Model):
     num_satoshis = models.PositiveBigIntegerField(validators=[MinValueValidator(MIN_TRADE*BOND_SIZE), MaxValueValidator(MAX_TRADE*(1+BOND_SIZE+FEE))])
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField()
+    cltv_expiry = models.PositiveSmallIntegerField(null=True, default=None, blank=True)
+    expiry_height = models.PositiveBigIntegerField(null=True, default=None, blank=True)
     
+    # routing
+    routing_attempts = models.PositiveSmallIntegerField(null=False, default=0)
+    last_routing_time = models.DateTimeField(null=True, default=None, blank=True)
+
     # involved parties
     sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE, null=True, default=None)
     receiver = models.ForeignKey(User, related_name='receiver', on_delete=models.CASCADE, null=True, default=None)
@@ -141,9 +145,12 @@ class Order(models.Model):
     last_satoshis = models.PositiveBigIntegerField(null=True, validators=[MinValueValidator(0), MaxValueValidator(MAX_TRADE*2)], blank=True) # sats last time checked. Weird if 2* trade max...
     
     # order participants
-    maker = models.ForeignKey(User, related_name='maker', on_delete=models.CASCADE, null=True, default=None)  # unique = True, a maker can only make one order
+    maker = models.ForeignKey(User, related_name='maker', on_delete=models.SET_NULL, null=True, default=None)  # unique = True, a maker can only make one order
     taker = models.ForeignKey(User, related_name='taker', on_delete=models.SET_NULL, null=True, default=None, blank=True)  # unique = True, a taker can only take one order
-    is_pending_cancel = models.BooleanField(default=False, null=False) # When collaborative cancel is needed and one partner has cancelled.
+    maker_last_seen = models.DateTimeField(null=True,default=None, blank=True)
+    taker_last_seen = models.DateTimeField(null=True,default=None, blank=True)
+    maker_asked_cancel = models.BooleanField(default=False, null=False) # When collaborative cancel is needed and one partner has cancelled.
+    taker_asked_cancel = models.BooleanField(default=False, null=False) # When collaborative cancel is needed and one partner has cancelled.
     is_fiat_sent = models.BooleanField(default=False, null=False)
 
     # in dispute
@@ -156,9 +163,8 @@ class Order(models.Model):
     maker_bond = models.OneToOneField(LNPayment, related_name='order_made', on_delete=models.SET_NULL, null=True, default=None, blank=True)
     taker_bond = models.OneToOneField(LNPayment, related_name='order_taken', on_delete=models.SET_NULL, null=True, default=None, blank=True)
     trade_escrow = models.OneToOneField(LNPayment, related_name='order_escrow', on_delete=models.SET_NULL, null=True, default=None, blank=True)
-
     # buyer payment LN invoice
-    buyer_invoice = models.OneToOneField(LNPayment, related_name='order_paid', on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    payout = models.OneToOneField(LNPayment, related_name='order_paid', on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
     # ratings
     maker_rated = models.BooleanField(default=False, null=False)
@@ -176,12 +182,12 @@ class Order(models.Model):
         8  : 60*int(config('INVOICE_AND_ESCROW_DURATION')),  # 'Waiting only for buyer invoice'
         9  : 60*60*int(config('FIAT_EXCHANGE_DURATION')),    # 'Sending fiat - In chatroom'
         10 : 60*60*int(config('FIAT_EXCHANGE_DURATION')),    # 'Fiat sent - In chatroom'
-        11 : 10*24*60*60,                                    # 'In dispute'
+        11 : 1*24*60*60,                                     # 'In dispute'
         12 : 0,                                              # 'Collaboratively cancelled'
         13 : 24*60*60,                                       # 'Sending satoshis to buyer'
         14 : 24*60*60,                                       # 'Sucessful trade'
         15 : 24*60*60,                                       # 'Failed lightning network routing'
-        16 : 24*60*60,                                       # 'Wait for dispute resolution'
+        16 : 10*24*60*60,                                    # 'Wait for dispute resolution'
         17 : 24*60*60,                                       # 'Maker lost dispute'
         18 : 24*60*60,                                       # 'Taker lost dispute'
         }
@@ -192,7 +198,7 @@ class Order(models.Model):
 
 @receiver(pre_delete, sender=Order)
 def delete_lnpayment_at_order_deletion(sender, instance, **kwargs):
-    to_delete = (instance.maker_bond, instance.buyer_invoice, instance.taker_bond, instance.trade_escrow)
+    to_delete = (instance.maker_bond, instance.payout, instance.taker_bond, instance.trade_escrow)
 
     for lnpayment in to_delete:
         try:
@@ -222,7 +228,7 @@ class Profile(models.Model):
     avatar = models.ImageField(default="static/assets/misc/unknown_avatar.png", verbose_name='Avatar', blank=True)
 
     # Penalty expiration (only used then taking/cancelling repeatedly orders in the book before comitting bond)
-    penalty_expiration = models.DateTimeField(null=True)
+    penalty_expiration = models.DateTimeField(null=True,default=None, blank=True)
 
     @receiver(post_save, sender=User)
     def create_user_profile(sender, instance, created, **kwargs):
