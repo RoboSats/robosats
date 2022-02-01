@@ -76,7 +76,6 @@ export default class OrderPage extends Component {
   }
 
   completeSetState=(newStateVars)=>{
-
     // In case the reply only has "bad_request"
     // Do not substitute these two for "undefined" as
     // otherStateVars will fail to assign values
@@ -149,10 +148,22 @@ export default class OrderPage extends Component {
   
     } else {
       return (
-        <span> Wait {zeroPad(minutes)}m {zeroPad(seconds)}s </span>
+        <span> You cannot take an order yet! Wait {zeroPad(minutes)}m {zeroPad(seconds)}s </span>
       );
     }
     };
+  
+  countdownTakeOrderRenderer = ({ seconds, completed }) => {
+    if(isNaN(seconds)){
+      return (<Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>)
+    }
+    if (completed) {
+      // Render a completed state
+      return (<Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>);
+    } else{
+      return(<Button disabled={true} variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>)
+    }
+  };
 
   LinearDeterminate =()=> {
     const [progress, setProgress] = React.useState(0);
@@ -178,17 +189,20 @@ export default class OrderPage extends Component {
   }
 
   handleClickTakeOrderButton=()=>{
-      const requestOptions = {
-          method: 'POST',
-          headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
-          body: JSON.stringify({
-            'action':'take',
-          }),
+    this.setState({loading:true})
+
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+        body: JSON.stringify({
+          'action':'take',
+        }),
       };
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())
       .then((data) => this.completeSetState(data));
   }
+
   getCurrencyDict() {
     fetch('/static/assets/currencies.json')
       .then((response) => response.json())
@@ -209,16 +223,17 @@ export default class OrderPage extends Component {
   }
 
   handleClickConfirmCancelButton=()=>{
-      const requestOptions = {
-          method: 'POST',
-          headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
-          body: JSON.stringify({
-            'action':'cancel',
-          }),
-      };
-      fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
-      .then((response) => response.json())
-      .then((data) => this.getOrderDetails(data.id));
+    this.setState({loading:true})
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+        body: JSON.stringify({
+          'action':'cancel',
+        }),
+    };
+    fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+    .then((response) => response.json())
+    .then((data) => this.getOrderDetails(data.id));
     this.handleClickCloseConfirmCancelDialog();
   }
 
@@ -347,6 +362,7 @@ export default class OrderPage extends Component {
       return('error')
     }
   }
+
   orderBox=()=>{
     return(
       <Grid container spacing={1} >
@@ -458,7 +474,7 @@ export default class OrderPage extends Component {
               <Divider />
               <Grid item xs={12} align="center">
                 <Alert severity="warning" sx={{maxWidth:360}}>
-                  You cannot take an order yet! <Countdown date={new Date(this.state.penalty)} renderer={this.countdownPenaltyRenderer} />
+                   <Countdown date={new Date(this.state.penalty)} renderer={this.countdownPenaltyRenderer} />
                 </Alert>  
               </Grid>
             </>
@@ -498,7 +514,7 @@ export default class OrderPage extends Component {
           :
             <Grid container spacing={1}>
               <Grid item xs={12} align="center">
-                <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>
+                <Countdown date={new Date(this.state.penalty)} renderer={this.countdownTakeOrderRenderer} />
               </Grid>
               <Grid item xs={12} align="center">
                 <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>Back</Button>
