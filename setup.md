@@ -131,7 +131,7 @@ npm install react-qr-reader
 ```
 Note we are using mostly MaterialUI V5 (@mui/material) but Image loading from V4 (@material-ui/core) extentions (so both V4 and V5 are needed)
 
-### Launch the React render
+### Launch
 from frontend/ directory
 `npm run dev`
 

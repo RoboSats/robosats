@@ -55,7 +55,7 @@ export default class BottomBar extends Component {
         fetch('/api/info/')
           .then((response) => response.json())
           .then((data) => this.setState(data) &
-          this.props.setAppState({nickname:data.nickname}));
+          this.props.setAppState({nickname:data.nickname, loading:false}));
       }
 
     handleClickOpenStatsForNerds = () => {
@@ -202,7 +202,7 @@ export default class BottomBar extends Component {
                     <ListItemAvatar>
                     <Avatar className='profileAvatar' 
                         sx={{ width: 65, height:65 }}
-                        alt={this.props.nickname} 
+                        alt={this.props.nickname}
                         src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
                         />
                     </ListItemAvatar>
@@ -469,14 +469,20 @@ bottomBarPhone =()=>{
                 <Grid container xs={12}>
 
                     <Grid item xs={1.6}>
-                    <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, top: -13, }} >
+                    <div style={{display: this.props.avatarLoaded ? '':'none'}}>
+                    <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, bottom: 22, right: 8}} >
                         <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "": null} color="primary">
-                            <Avatar className='flippedSmallAvatar' 
+                            <Avatar className='phoneFlippedSmallAvatar'
+                            sx={{ width: 65, height:65 }} 
                             alt={this.props.nickname} 
+                            imgProps={{
+                                onLoad:() => this.props.setAppState({avatarLoaded: true}),
+                            }} 
                             src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
                             />
                         </Badge>
                     </IconButton>
+                    </div>
                     </Grid>
 
                     <Grid item xs={1.6} align="center">

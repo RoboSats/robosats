@@ -13,6 +13,7 @@ export default class HomePage extends Component {
       this.state = {
         nickname: null,
         token: null,
+        avatarLoaded: false,
       }
     }
   

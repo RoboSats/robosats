@@ -3,6 +3,7 @@ import { Paper, Button , CircularProgress, ListItemButton, Typography, Grid, Sel
 import { Link } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid';
 import MediaQuery from 'react-responsive'
+import Image from 'material-ui-image'
 
 import getFlags from './getFlags'
 
@@ -93,7 +94,15 @@ export default class BookPage extends Component {
             renderCell: (params) => {return (
               <ListItemButton style={{ cursor: "pointer" }}>
                 <ListItemAvatar>
-                  <Avatar className="flippedSmallAvatar" alt={params.row.robosat} src={params.row.avatar} />
+                  <div style={{ width: 48, height: 48 }}>
+                    <Image className='bookAvatar' 
+                        disableError='true'
+                        disableSpinner='true'
+                        color='null'
+                        alt={params.row.robosat}
+                        src={params.row.avatar}
+                    />
+                  </div>
                 </ListItemAvatar>
                 <ListItemText primary={params.row.robosat}/>
               </ListItemButton>
@@ -147,7 +156,17 @@ export default class BookPage extends Component {
           { field: 'robosat', headerName: 'Robot', width: 80, 
             renderCell: (params) => {return (
               <ListItemButton style={{ cursor: "pointer" }}>
-                <Avatar className="flippedSmallAvatar" alt={params.row.robosat} src={params.row.avatar} />
+                <ListItemAvatar>
+                  <div style={{ width: 48, height: 48 }}>
+                    <Image className='bookAvatar' 
+                        disableError='true'
+                        disableSpinner='true'
+                        color='null'
+                        alt={params.row.robosat}
+                        src={params.row.avatar}
+                    />
+                  </div>
+                </ListItemAvatar>
               </ListItemButton>
             );
           } },

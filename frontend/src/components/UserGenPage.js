@@ -33,6 +33,7 @@ export default class UserGenPage extends Component {
       loadingRobot: true,
       tokenHasChanged: false,
     };
+    this.props.setAppState({avatarLoaded: false, nickname: null, token: null});
     this.getGeneratedUser(this.state.token);
   }
 
@@ -64,11 +65,13 @@ export default class UserGenPage extends Component {
         // Add nick and token to App state (token only if not a bad request)
         (data.bad_request ? this.props.setAppState({
           nickname: data.nickname,
+          avatarLoaded: false,
         })
         :
         this.props.setAppState({
           nickname: data.nickname,
           token: this.state.token,
+          avatarLoaded: false,
       }));
       });
   }
@@ -98,9 +101,10 @@ export default class UserGenPage extends Component {
   }
 
   handleClickSubmitToken=()=>{
-    this.delGeneratedUser()
+    this.delGeneratedUser();
     this.getGeneratedUser(this.state.token);
-    this.setState({loadingRobot: true, tokenHasChanged: false})
+    this.setState({loadingRobot: true, tokenHasChanged: false});
+    this.props.setAppState({avatarLoaded: false, nickname: null, token: null});
   }
 
   handleClickOpenInfo = () => {
