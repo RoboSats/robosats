@@ -68,12 +68,9 @@ body {
 }
 
 .phoneFlippedSmallAvatar {
-  transform: translate(-20, -20);
-  bottom: 50;
-  right: 50;
   transform: scaleX(-1);
-  border: 0.8px solid #555; 
-  filter: drop-shadow(0.5px 0.5px 0.5px #000000);
+  border: 1.3px solid #555; 
+  filter: drop-shadow(0.7px 0.7px 0.7px #000000);
 }
 
 .bookAvatar {

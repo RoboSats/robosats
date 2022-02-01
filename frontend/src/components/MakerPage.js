@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, dividerClasses} from "@mui/material"
+import { Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, dividerClasses} from "@mui/material"
 import { Link } from 'react-router-dom'
 import getFlags from './getFlags'
 
@@ -184,6 +184,7 @@ export default class MakerPage extends Component {
                 </Grid>
                 <Grid containter xs={12} alignItems="stretch" style={{ display: "flex" }}>
                         <div style={{maxWidth:140}}>
+                        <Tooltip enterTouchDelay="0" title="Amount of fiat to exchange for bitcoin">
                             <TextField
                                 error={this.state.amount <= 0} 
                                 helperText={this.state.amount <= 0 ? 'Invalid' : null}
@@ -195,7 +196,9 @@ export default class MakerPage extends Component {
                                     style: {textAlign:"center"}
                                 }}
                                 onChange={this.handleAmountChange}
-                            /></div>
+                            />
+                        </Tooltip>
+                            </div>
                             <div >
                                 <Select
                                     required="true" 
@@ -214,7 +217,7 @@ export default class MakerPage extends Component {
                 </Grid>
                 <br/>
                 <Grid item xs={12} align="center">
-                    <FormControl >
+                    <Tooltip enterTouchDelay="0" title="Input your prefered payment methods">
                         <TextField 
                             sx={{width:240}}
                             label="Payment Method(s)"
@@ -228,7 +231,7 @@ export default class MakerPage extends Component {
                             }}
                             onChange={this.handlePaymentMethodChange}
                         />
-                    </FormControl>
+                    </Tooltip>
                 </Grid>
 
                 <Grid item xs={12} align="center">
@@ -239,6 +242,7 @@ export default class MakerPage extends Component {
                             </div>
                         </FormHelperText>
                         <RadioGroup row defaultValue="relative">
+                        <Tooltip enterTouchDelay="0" title="Let the price move with the market">
                             <FormControlLabel 
                             value="relative" 
                             control={<Radio color="primary"/>}
@@ -246,6 +250,8 @@ export default class MakerPage extends Component {
                             labelPlacement="Top"
                             onClick={this.handleClickRelative}
                             />
+                        </Tooltip>
+                        <Tooltip enterTouchDelay="0" title="Set a fix amount of satoshis">
                             <FormControlLabel 
                             value="explicit" 
                             control={<Radio color="secondary"/>}
@@ -253,6 +259,7 @@ export default class MakerPage extends Component {
                             labelPlacement="Top"
                             onClick={this.handleClickExplicit}
                             />
+                        </Tooltip>
                         </RadioGroup>
                     </FormControl>
                 </Grid>
@@ -297,7 +304,8 @@ export default class MakerPage extends Component {
                 </Paper>
                 </Grid>
             <Grid item xs={12} align="center">
-                <Button disabled={this.state.amount == null || 
+                <Tooltip enterTouchDelay="0" title="You must fill the form correctly">
+                <div><Button disabled={this.state.amount == null || 
                                 this.state.amount <= 0 || 
                                 (this.state.is_explicit & (this.state.badSatoshis != null || this.state.satoshis == null)) || 
                                 (!this.state.is_explicit & this.state.badPremium != null) 
@@ -306,7 +314,8 @@ export default class MakerPage extends Component {
                     variant="contained" 
                     onClick={this.handleCreateOfferButtonPressed} >
                     Create Order
-                </Button>
+                </Button></div>
+                </Tooltip>
             </Grid>
             <Grid item xs={12} align="center">
                 {this.state.badRequest ?
