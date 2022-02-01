@@ -677,7 +677,7 @@ handleRatingChange=(e)=>{
           <Rating name="size-large" defaultValue={2} size="large" onChange={this.handleRatingChange} />
         </Grid>
         <Grid item xs={12} align="center">
-          <Button color='primary' onClick={this.props.push('/')}>Start Again</Button> 
+          <Button color='primary' onClick={() => {this.props.push('/')}}>Start Again</Button> 
         </Grid>
       </Grid>
     )
