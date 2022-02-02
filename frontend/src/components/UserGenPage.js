@@ -6,8 +6,6 @@ import InfoDialog from './InfoDialog'
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CasinoIcon from '@mui/icons-material/Casino';
 import ContentCopy from "@mui/icons-material/ContentCopy";
-import InfoIcon from '@mui/icons-material/Info';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 function getCookie(name) {
   let cookieValue = null;
@@ -212,11 +210,13 @@ export default class UserGenPage extends Component {
             </Button>
             :
             <Tooltip enterTouchDelay="0" title="You must enter a new token first">
+              <div>
               <Button disabled={true} type="submit" size='small' >
                 <SmartToyIcon sx={{width:18, height:18}} />
                 <span>  Generate Robot</span>
               </Button>
-              </Tooltip>
+              </div>
+            </Tooltip>
             }
           </Grid>
           <Grid item xs={12} align="center">

@@ -112,8 +112,8 @@ export default class BookPage extends Component {
           { field: 'amount', headerName: 'Amount', type: 'number', width: 80 },
           { field: 'currency', headerName: 'Currency', width: 100, 
           renderCell: (params) => {return (
-            <div style={{ cursor: "pointer" }}>{params.row.currency + " " + getFlags(params.row.currency)}</div>
-          )} },
+            <div style={{ cursor: "pointer" }}>{params.row.currency+" "+getFlags(params.row.currency)}</div>)
+          }},
           { field: 'payment_method', headerName: 'Payment Method', width: 180 },
           { field: 'price', headerName: 'Price', type: 'number', width: 140,
           renderCell: (params) => {return (
@@ -173,7 +173,14 @@ export default class BookPage extends Component {
           { field: 'currency', headerName: 'Currency', width: 100, 
           renderCell: (params) => {return (
             <Tooltip placement="left" enterTouchDelay="0" title={params.row.payment_method}>
-            <div style={{ cursor: "pointer" }}>{params.row.currency + " " + getFlags(params.row.currency)}</div>
+                <Grid container xs={12} aling="center">
+                  <Grid item xs={6} aling="center">
+                    <span>{params.row.currency}</span> 
+                  </Grid>
+                  <Grid item xs={6} aling="center">
+                    <Typography>{getFlags(params.row.currency)}</Typography> 
+                  </Grid>
+                </Grid>
             </Tooltip>
           )} },
           { field: 'payment_method', headerName: 'Payment Method', width: 180, hide:'true'},
