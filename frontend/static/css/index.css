@@ -73,6 +73,13 @@ body {
   filter: drop-shadow(0.7px 0.7px 0.7px #000000);
 }
 
+.phoneFlippedSmallAvatar:after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  box-shadow: inset 0px 0px 35px rgb(255, 255, 255);
+}
+
 .bookAvatar {
   border-radius: 50%; 
   transform: scaleX(-1);

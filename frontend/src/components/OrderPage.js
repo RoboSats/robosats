@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { Chip, Tooltip, Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import MediaQuery from 'react-responsive'
 
@@ -161,7 +161,10 @@ export default class OrderPage extends Component {
       // Render a completed state
       return (<Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>);
     } else{
-      return(<Button disabled={true} variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>)
+      return(
+      <Tooltip enterTouchDelay="0" title="Wait until you can take an order"><div>
+      <Button disabled={true} variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>
+      </div></Tooltip>)
     }
   };
 
@@ -352,15 +355,16 @@ export default class OrderPage extends Component {
 
   // Colors for the status badges
   statusBadgeColor(status){
-    if(status=='active'){
-      return("success")
-    }
-    if(status=='seen_recently'){
-      return("warning")
-    }
-    if(status=='inactive'){
-      return('error')
-    }
+    if(status=='active'){return("success")}
+    if(status=='seen_recently'){return("warning")}
+    if(status=='inactive'){return('error')}
+  }
+
+  // Colors for the status badges
+  statusTooltip(status){
+    if(status=='active'){return("Active")}
+    if(status=='seen_recently'){return("Seen recently")}
+    if(status=='inactive'){return('Inactive')}
   }
 
   orderBox=()=>{
@@ -369,52 +373,56 @@ export default class OrderPage extends Component {
         <Grid item xs={12} align="center">
           <MediaQuery minWidth={920}>
             <Typography component="h5" variant="h5">
-              Order Details
+              Order Box
             </Typography>
           </MediaQuery>
           <Paper elevation={12} style={{ padding: 8,}}>
           <List dense="true">
             <ListItem >
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
+              <Tooltip placement="top" enterTouchDelay="0" title={this.statusTooltip(this.state.maker_status)} >
                 <Badge variant="dot" badgeContent="" color={this.statusBadgeColor(this.state.maker_status)}>
                   <Avatar className="flippedSmallAvatar"
                     alt={this.state.maker_nick} 
                     src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'} 
                     />
                 </Badge>
+              </Tooltip>
               </ListItemAvatar>
               <ListItemText primary={this.state.maker_nick + (this.state.type ? " (Seller)" : " (Buyer)")} secondary="Order maker" align="right"/>
             </ListItem>
-            <Divider />
 
             {this.state.is_participant ?
               <>
                 {this.state.taker_nick!='None' ?
                   <>
+                    <Divider />
                     <ListItem align="left">
                       <ListItemText primary={this.state.taker_nick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order taker"/>
                       <ListItemAvatar > 
+                      <Tooltip enterTouchDelay="0" title={this.statusTooltip(this.state.taker_status)} >
                         <Badge variant="dot" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
                           <Avatar className="smallAvatar"
                             alt={this.state.taker_nick} 
                             src={window.location.origin +'/static/assets/avatars/' + this.state.taker_nick + '.png'}
                             />
                         </Badge>
+                        </Tooltip>
                       </ListItemAvatar>
-                    </ListItem>
-                    <Divider />               
+                    </ListItem>           
                   </>: 
                   ""
                   }
+                  <Divider><Chip label='Order Details'/></Divider>
                   <ListItem>
                     <ListItemIcon>
                       <ArticleIcon/>
                     </ListItemIcon>
                     <ListItemText primary={this.state.status_message} secondary="Order status"/>
                   </ListItem>
-                  <Divider />
+                  <Divider/>
               </>
-            :""
+            :<Divider><Chip label='Order Details'/></Divider>
             }
             
             <ListItem>
@@ -559,8 +567,8 @@ export default class OrderPage extends Component {
       <Box sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={value} onChange={handleChange} variant="fullWidth" >
-            <Tab label="Order Details" {...this.a11yProps(0)} />
-            <Tab label="Contract Box" {...this.a11yProps(1)} />
+            <Tab label="Order" {...this.a11yProps(0)} />
+            <Tab label="Contract" {...this.a11yProps(1)} />
           </Tabs>
         </Box>
         <Grid container spacing={2}>

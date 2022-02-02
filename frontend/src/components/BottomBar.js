@@ -484,10 +484,10 @@ bottomBarPhone =()=>{
                     <div style={{display: this.props.avatarLoaded ? '':'none'}}>
                     <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
                         title="You have an active order">
-                        <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, bottom: 22, right: 8}} >
+                        <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, bottom: 17, right: 8}} >
                             <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "": null} color="primary">
                                 <Avatar className='phoneFlippedSmallAvatar'
-                                sx={{ width: 65, height:65 }} 
+                                sx={{ width: 55, height:55 }} 
                                 alt={this.props.nickname} 
                                 imgProps={{
                                     onLoad:() => this.props.setAppState({avatarLoaded: true}),

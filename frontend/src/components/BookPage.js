@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Paper, Button , CircularProgress, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar} from "@mui/material";
+import { Tooltip, Paper, Button , CircularProgress, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar, IconButton} from "@mui/material";
 import { Link } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid';
 import MediaQuery from 'react-responsive'
@@ -79,7 +79,7 @@ export default class BookPage extends Component {
             ({id: order.id,
               avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
               robosat: order.maker_nick, 
-              type: order.type ? "Sell": "Buy",
+              type: order.type ? "Seller": "Buyer",
               amount: parseFloat(parseFloat(order.amount).toFixed(4)),
               currency: this.getCurrencyCode(order.currency),
               payment_method: order.payment_method,
@@ -108,7 +108,7 @@ export default class BookPage extends Component {
               </ListItemButton>
             );
           } },
-          { field: 'type', headerName: 'Type', width: 60 },
+          { field: 'type', headerName: 'Is', width: 60 },
           { field: 'amount', headerName: 'Amount', type: 'number', width: 80 },
           { field: 'currency', headerName: 'Currency', width: 100, 
           renderCell: (params) => {return (
@@ -135,14 +135,14 @@ export default class BookPage extends Component {
 
   bookListTablePhone=()=>{
     return (
-      <div style={{ height: 425, width: '100%' }}>
+      <div style={{ height: 422, width: '100%' }}>
       <DataGrid
         rows={
             this.state.orders.map((order) =>
             ({id: order.id,
               avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
               robosat: order.maker_nick, 
-              type: order.type ? "Sell": "Buy",
+              type: order.type ? "Seller": "Buyer",
               amount: parseFloat(parseFloat(order.amount).toFixed(4)),
               currency: this.getCurrencyCode(order.currency),
               payment_method: order.payment_method,
@@ -155,9 +155,8 @@ export default class BookPage extends Component {
           // { field: 'id', headerName: 'ID', width: 40 },
           { field: 'robosat', headerName: 'Robot', width: 80, 
             renderCell: (params) => {return (
-              <ListItemButton style={{ cursor: "pointer" }}>
-                <ListItemAvatar>
-                  <div style={{ width: 48, height: 48 }}>
+              <Tooltip placement="right" enterTouchDelay="0" title={params.row.robosat+" ("+params.row.type+")"}>
+                  <div style={{ width: 45, height: 45 }}>
                     <Image className='bookAvatar' 
                         disableError='true'
                         disableSpinner='true'
@@ -166,15 +165,16 @@ export default class BookPage extends Component {
                         src={params.row.avatar}
                     />
                   </div>
-                </ListItemAvatar>
-              </ListItemButton>
+              </Tooltip>
             );
           } },
-          { field: 'type', headerName: 'Type', width: 60, hide:'true'},
+          { field: 'type', headerName: 'Is', width: 60, hide:'true'},
           { field: 'amount', headerName: 'Amount', type: 'number', width: 80 },
           { field: 'currency', headerName: 'Currency', width: 100, 
           renderCell: (params) => {return (
+            <Tooltip placement="left" enterTouchDelay="0" title={params.row.payment_method}>
             <div style={{ cursor: "pointer" }}>{params.row.currency + " " + getFlags(params.row.currency)}</div>
+            </Tooltip>
           )} },
           { field: 'payment_method', headerName: 'Payment Method', width: 180, hide:'true'},
           { field: 'price', headerName: 'Price', type: 'number', width: 140, hide:'true',
@@ -183,7 +183,9 @@ export default class BookPage extends Component {
           )} },
           { field: 'premium', headerName: 'Premium', type: 'number', width: 85,
             renderCell: (params) => {return (
+              <Tooltip placement="left" enterTouchDelay="0" title={this.pn(params.row.price) + " " +params.row.currency+ "/BTC" }>
               <div style={{ cursor: "pointer" }}>{parseFloat(parseFloat(params.row.premium).toFixed(4))+"%" }</div>
+              </Tooltip>
             )} },
           ]}
 

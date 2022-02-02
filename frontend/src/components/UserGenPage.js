@@ -92,6 +92,7 @@ export default class UserGenPage extends Component {
     this.setState({
       token: this.genBase62Token(34),
       tokenHasChanged: true,
+      copied: true,
     });
   }
 
@@ -192,7 +193,7 @@ export default class UserGenPage extends Component {
                   startAdornment:
                   <Tooltip disableHoverListener open={this.state.copied} enterTouchDelay="0" title="Copied!">
                     <IconButton  onClick= {()=> (navigator.clipboard.writeText(this.state.token) & this.setState({copied:true}))}>
-                      <ContentCopy color={this.props.avatarLoaded & !this.state.copied & !this.state.bad_request ? 'success' : 'inherit' } sx={{width:18, height:18}}/>
+                      <ContentCopy color={this.props.avatarLoaded & !this.state.copied & !this.state.bad_request ? 'primary' : 'inherit' } sx={{width:18, height:18}}/>
                     </IconButton>
                   </Tooltip>,
                   endAdornment:
@@ -204,10 +205,19 @@ export default class UserGenPage extends Component {
             </Grid>
           </Grid>
           <Grid item xs={12} align="center">
-              <Button disabled={!this.state.tokenHasChanged} type="submit" size='small'  onClick= {this.handleClickSubmitToken}>
+            {this.state.tokenHasChanged ?
+            <Button type="submit" size='small'  onClick= {this.handleClickSubmitToken}>
+              <SmartToyIcon sx={{width:18, height:18}} />
+              <span>  Generate Robot</span>
+            </Button>
+            :
+            <Tooltip enterTouchDelay="0" title="You must enter a new token first">
+              <Button disabled={true} type="submit" size='small' >
                 <SmartToyIcon sx={{width:18, height:18}} />
                 <span>  Generate Robot</span>
               </Button>
+              </Tooltip>
+            }
           </Grid>
           <Grid item xs={12} align="center">
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
