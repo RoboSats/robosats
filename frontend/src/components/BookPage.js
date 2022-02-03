@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Tooltip, Paper, Button , CircularProgress, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar, IconButton} from "@mui/material";
+import { Badge, Tooltip, Paper, Button , CircularProgress, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar, IconButton} from "@mui/material";
 import { Link } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid';
 import MediaQuery from 'react-responsive'
@@ -70,6 +70,13 @@ export default class BookPage extends Component {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
   
+  // Colors for the status badges
+  statusBadgeColor(status){
+    if(status=='Active'){return("success")}
+    if(status=='Seen recently'){return("warning")}
+    if(status=='Inactive'){return('error')}
+  }
+
   bookListTableDesktop=()=>{
     return (
       <div style={{ height: 475, width: '100%' }}>
@@ -78,7 +85,8 @@ export default class BookPage extends Component {
             this.state.orders.map((order) =>
             ({id: order.id,
               avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
-              robosat: order.maker_nick, 
+              robot: order.maker_nick, 
+              robot_status: order.maker_status,
               type: order.type ? "Seller": "Buyer",
               amount: parseFloat(parseFloat(order.amount).toFixed(4)),
               currency: this.getCurrencyCode(order.currency),
@@ -90,21 +98,25 @@ export default class BookPage extends Component {
 
         columns={[
           // { field: 'id', headerName: 'ID', width: 40 },
-          { field: 'robosat', headerName: 'RoboSat', width: 240, 
+          { field: 'robot', headerName: 'Robot', width: 240, 
             renderCell: (params) => {return (
               <ListItemButton style={{ cursor: "pointer" }}>
                 <ListItemAvatar>
-                  <div style={{ width: 48, height: 48 }}>
-                    <Image className='bookAvatar' 
-                        disableError='true'
-                        disableSpinner='true'
-                        color='null'
-                        alt={params.row.robosat}
-                        src={params.row.avatar}
-                    />
-                  </div>
+                <Tooltip placement="right" enterTouchDelay="0" title={params.row.robot_status}>
+                  <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(params.row.robot_status)}>
+                    <div style={{ width: 45, height: 45 }}>
+                      <Image className='bookAvatar' 
+                          disableError='true'
+                          disableSpinner='true'
+                          color='null'
+                          alt={params.row.robot}
+                          src={params.row.avatar}
+                      />
+                    </div>
+                  </Badge>
+                </Tooltip>
                 </ListItemAvatar>
-                <ListItemText primary={params.row.robosat}/>
+                <ListItemText primary={params.row.robot}/>
               </ListItemButton>
             );
           } },
@@ -141,7 +153,8 @@ export default class BookPage extends Component {
             this.state.orders.map((order) =>
             ({id: order.id,
               avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
-              robosat: order.maker_nick, 
+              robot: order.maker_nick, 
+              robot_status: order.maker_status,
               type: order.type ? "Seller": "Buyer",
               amount: parseFloat(parseFloat(order.amount).toFixed(4)),
               currency: this.getCurrencyCode(order.currency),
@@ -153,23 +166,30 @@ export default class BookPage extends Component {
 
         columns={[
           // { field: 'id', headerName: 'ID', width: 40 },
-          { field: 'robosat', headerName: 'Robot', width: 80, 
+          { field: 'robot', headerName: 'Robot', width: 80, 
             renderCell: (params) => {return (
-              <Tooltip placement="right" enterTouchDelay="0" title={params.row.robosat+" ("+params.row.type+")"}>
+              <Tooltip placement="right" enterTouchDelay="0" title={params.row.robot+" ("+params.row.robot_status+")"}>
+                <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(params.row.robot_status)}>
                   <div style={{ width: 45, height: 45 }}>
                     <Image className='bookAvatar' 
                         disableError='true'
                         disableSpinner='true'
                         color='null'
-                        alt={params.row.robosat}
+                        alt={params.row.robot}
                         src={params.row.avatar}
                     />
                   </div>
+                </Badge>
               </Tooltip>
             );
           } },
           { field: 'type', headerName: 'Is', width: 60, hide:'true'},
-          { field: 'amount', headerName: 'Amount', type: 'number', width: 80 },
+          { field: 'amount', headerName: 'Amount', type: 'number', width: 80, 
+          renderCell: (params) => {return (
+            <Tooltip placement="right" enterTouchDelay="0" title={params.row.type}>
+              <div style={{ cursor: "pointer" }}>{this.pn(params.row.amount)}</div>
+            </Tooltip>
+          )} },
           { field: 'currency', headerName: 'Currency', width: 100, 
           renderCell: (params) => {return (
             <Tooltip placement="left" enterTouchDelay="0" title={params.row.payment_method}>

@@ -55,6 +55,14 @@ class Logics():
             return False, {'bad_request': 'Your order is too small. It is worth '+'{:,}'.format(order.t0_satoshis)+' Sats now, but the limit is '+'{:,}'.format(MIN_TRADE)+ ' Sats'}
         return True, None
 
+    def user_activity_status(last_seen):
+        if last_seen > (timezone.now() - timedelta(minutes=2)):
+            return 'Active'
+        elif last_seen > (timezone.now() - timedelta(minutes=10)):
+            return 'Seen recently'
+        else:
+            return 'Inactive'
+
     @classmethod    
     def take(cls, order, user):
         is_penalized, time_out = cls.is_penalized(user)

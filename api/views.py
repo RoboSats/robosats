@@ -136,20 +136,9 @@ class OrderView(viewsets.ViewSet):
 
         # Add activity status of participants based on last_seen
         if order.taker_last_seen != None:
-            if order.taker_last_seen > (timezone.now() - timedelta(minutes=2)):
-                data['taker_status'] = 'active'
-            elif order.taker_last_seen > (timezone.now() - timedelta(minutes=10)):
-                data['taker_status'] = 'seen_recently'
-            else:
-                data['taker_status'] = 'inactive'
-
+            data['taker_status'] = Logics.user_activity_status(order.taker_last_seen)
         if order.maker_last_seen != None:
-            if order.maker_last_seen > (timezone.now() - timedelta(minutes=2)):
-                data['maker_status'] = 'active'
-            elif order.maker_last_seen > (timezone.now() - timedelta(minutes=10)):
-                data['maker_status'] = 'seen_recently'
-            else:
-                data['maker_status'] = 'inactive'
+            data['maker_status'] = Logics.user_activity_status(order.maker_last_seen)
 
         # 3.b If order is between public and WF2
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
@@ -157,7 +146,6 @@ class OrderView(viewsets.ViewSet):
 
              # 3. c) If maker and Public, add num robots in book, premium percentile and num similar orders.
             if data['is_maker'] and order.status == Order.Status.PUB:
-                data['robots_in_book'] = None       # TODO
                 data['premium_percentile'] = compute_premium_percentile(order)
                 data['num_similar_orders'] = len(Order.objects.filter(currency=order.currency, status=Order.Status.PUB))
         
@@ -484,7 +472,7 @@ class BookView(ListAPIView):
             
             # Compute current premium for those orders that are explicitly priced.
             data['price'], data['premium'] = Logics.price_and_premium_now(order)
-                
+            data['maker_status'] = Logics.user_activity_status(order.maker_last_seen)
             for key in ('status','taker'): # Non participants should not see the status or who is the taker
                 del data[key]
             

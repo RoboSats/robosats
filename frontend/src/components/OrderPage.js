@@ -355,16 +355,9 @@ export default class OrderPage extends Component {
 
   // Colors for the status badges
   statusBadgeColor(status){
-    if(status=='active'){return("success")}
-    if(status=='seen_recently'){return("warning")}
-    if(status=='inactive'){return('error')}
-  }
-
-  // Colors for the status badges
-  statusTooltip(status){
-    if(status=='active'){return("Active")}
-    if(status=='seen_recently'){return("Seen recently")}
-    if(status=='inactive'){return('Inactive')}
+    if(status=='Active'){return("success")}
+    if(status=='Seen recently'){return("warning")}
+    if(status=='Inactive'){return('error')}
   }
 
   orderBox=()=>{
@@ -380,8 +373,8 @@ export default class OrderPage extends Component {
           <List dense="true">
             <ListItem >
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
-              <Tooltip placement="top" enterTouchDelay="0" title={this.statusTooltip(this.state.maker_status)} >
-                <Badge variant="dot" badgeContent="" color={this.statusBadgeColor(this.state.maker_status)}>
+              <Tooltip placement="top" enterTouchDelay="0" title={this.state.maker_status} >
+                <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.maker_status)}>
                   <Avatar className="flippedSmallAvatar"
                     alt={this.state.maker_nick} 
                     src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'} 
@@ -401,7 +394,7 @@ export default class OrderPage extends Component {
                       <ListItemText primary={this.state.taker_nick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order taker"/>
                       <ListItemAvatar > 
                       <Tooltip enterTouchDelay="0" title={this.statusTooltip(this.state.taker_status)} >
-                        <Badge variant="dot" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
+                        <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
                           <Avatar className="smallAvatar"
                             alt={this.state.taker_nick} 
                             src={window.location.origin +'/static/assets/avatars/' + this.state.taker_nick + '.png'}
