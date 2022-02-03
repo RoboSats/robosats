@@ -303,12 +303,11 @@ export default class OrderPage extends Component {
       aria-describedby="inactive-maker-description"
       >
         <DialogTitle id="inactive-maker-dialog-title">
-          {"The maker is inactive"}
+          {"The maker is away"}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="cancel-dialog-description">
-            The maker seems to be away. You risk
-            wasting your time.
+            By taking this order you risk wasting your time.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

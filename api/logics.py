@@ -1,6 +1,7 @@
 from datetime import timedelta
 from django.utils import timezone
 from api.lightning.node import LNNode
+from django.db.models import Q
 
 from api.models import Order, LNPayment, MarketTick, User, Currency
 from decouple import config
@@ -30,7 +31,8 @@ FIAT_EXCHANGE_DURATION = int(config('FIAT_EXCHANGE_DURATION'))
 
 class Logics():
 
-    def validate_already_maker_or_taker(user):
+    @classmethod
+    def validate_already_maker_or_taker(cls, user):
         '''Validates if a use is already not part of an active order'''
 
         active_order_status = [Order.Status.WFB, Order.Status.PUB, Order.Status.TAK,
@@ -45,6 +47,14 @@ class Logics():
         queryset = Order.objects.filter(taker=user, status__in=active_order_status)
         if queryset.exists():
             return False, {'bad_request':'You are already taker of an active order'}, queryset[0]
+        
+        # Edge case when the user is in an order that is failing payment and he is the buyer
+        queryset = Order.objects.filter( Q(maker=user) | Q(taker=user), status__in=Order.Status.FAI)
+        if queryset.exists():
+            order = queryset[0]
+            if cls.is_buyer(order, user):
+                return False, {'bad_request':'You are still pending a payment from a recent order'}, order
+
         return True, None, None
 
     def validate_order_size(order):

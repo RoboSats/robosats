@@ -361,6 +361,8 @@ export default class TradeBox extends Component {
 
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
+          {/* Make confirmation sound for HTLC received. */}
+          <this.Sound soundFileName="locked-invoice"/>
           <Typography color="primary" component="subtitle1" variant="subtitle1">
             <b> Submit a LN invoice for {pn(this.props.data.invoice_amount)} Sats </b>
           </Typography>
