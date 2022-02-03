@@ -46,6 +46,7 @@ export default class OrderPage extends Component {
         loading: true,
         openCancel: false,
         openCollaborativeCancel: false,
+        openInactiveMaker: false,
         showContractBox: 1,
     };
     this.orderId = this.props.match.params.orderId;
@@ -155,15 +156,30 @@ export default class OrderPage extends Component {
   
   countdownTakeOrderRenderer = ({ seconds, completed }) => {
     if(isNaN(seconds)){
-      return (<Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>)
+      return (
+      <>
+        <this.InactiveMakerDialog/>
+        <Button variant='contained' color='primary' 
+            onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}>
+            Take Order
+          </Button>
+      </>)
     }
     if (completed) {
       // Render a completed state
-      return (<Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>);
+      return (
+        <>
+          <this.InactiveMakerDialog/>
+          <Button variant='contained' color='primary' 
+            onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}>
+            Take Order
+          </Button>
+        </>
+      );
     } else{
       return(
       <Tooltip enterTouchDelay="0" title="Wait until you can take an order"><div>
-      <Button disabled={true} variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>
+      <Button disabled={true} variant='contained' color='primary' onClick={this.takeOrder}>Take Order</Button>
       </div></Tooltip>)
     }
   };
@@ -191,7 +207,7 @@ export default class OrderPage extends Component {
     );
   }
 
-  handleClickTakeOrderButton=()=>{
+  takeOrder=()=>{
     this.setState({loading:true})
 
     const requestOptions = {
@@ -271,6 +287,37 @@ export default class OrderPage extends Component {
     )
   }
 
+  handleClickOpenInactiveMakerDialog = () => {
+    this.setState({openInactiveMaker: true});
+  };
+  handleClickCloseInactiveMakerDialog = () => {
+      this.setState({openInactiveMaker: false});
+  };
+
+  InactiveMakerDialog =() =>{
+  return(
+      <Dialog
+      open={this.state.openInactiveMaker}
+      onClose={this.handleClickCloseInactiveMakerDialog}
+      aria-labelledby="inactive-maker-dialog-title"
+      aria-describedby="inactive-maker-description"
+      >
+        <DialogTitle id="inactive-maker-dialog-title">
+          {"The maker is inactive"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="cancel-dialog-description">
+            The maker seems to be away. You risk
+            wasting your time.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClickCloseInactiveMakerDialog} autoFocus>Go back</Button>
+          <Button onClick={this.takeOrder}> Take Order </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
   handleClickConfirmCollaborativeCancelButton=()=>{
       const requestOptions = {
           method: 'POST',
@@ -393,7 +440,7 @@ export default class OrderPage extends Component {
                     <ListItem align="left">
                       <ListItemText primary={this.state.taker_nick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order taker"/>
                       <ListItemAvatar > 
-                      <Tooltip enterTouchDelay="0" title={this.statusTooltip(this.state.taker_status)} >
+                      <Tooltip enterTouchDelay="0" title={this.state.taker_status} >
                         <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
                           <Avatar className="smallAvatar"
                             alt={this.state.taker_nick} 
