@@ -302,7 +302,7 @@ class Logics():
             return False, {'bad_request':'Only the buyer of this order can provide a buyer invoice.'}
         if not order.taker_bond:
             return False, {'bad_request':'Wait for your order to be taken.'}
-        if not (order.taker_bond.status == order.maker_bond.status == LNPayment.Status.LOCKED):
+        if not (order.taker_bond.status == order.maker_bond.status == LNPayment.Status.LOCKED) and not order.status == Order.Status.FAI:
             return False, {'bad_request':'You cannot submit a invoice while bonds are not locked.'}
 
         num_satoshis = cls.payout_amount(order, user)[1]['invoice_amount']
@@ -347,9 +347,12 @@ class Logics():
         
         # If the order status is 'Failed Routing'. Retry payment.
         if order.status == Order.Status.FAI:
-            # Double check the escrow is settled.
             if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
-                follow_send_payment(order.payout)
+                order.status = Order.Status.PAY
+                order.payout.status = LNPayment.Status.FLIGHT
+                order.payout.routing_attempts = 0
+                order.payout.save()
+                order.save()
 
         order.save()
         return True, None
@@ -526,7 +529,7 @@ class Logics():
         order.last_satoshis = cls.satoshis_now(order)
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
 
-        description = f"RoboSats - Publishing '{str(order)}' - This is a maker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel."
+        description = f"RoboSats - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally."
 
         # Gen hold Invoice
         hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
@@ -607,7 +610,7 @@ class Logics():
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
         pos_text = 'Buying' if cls.is_buyer(order, user) else 'Selling'
         description = (f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
-            + " - This is a taker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel.")
+            + " - Taker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally.")
 
         # Gen hold Invoice
         hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
@@ -672,7 +675,7 @@ class Logics():
 
         # If there was no taker_bond object yet, generate one
         escrow_satoshis = order.last_satoshis # Amount was fixed when taker bond was locked
-        description = f"RoboSats - Escrow amount for '{str(order)}' - The escrow will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
+        description = f"RoboSats - Escrow amount for '{str(order)}' - It WILL FREEZE IN YOUR WALLET. It will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
 
         # Gen hold Invoice
         hold_payment = LNNode.gen_hold_invoice(escrow_satoshis, 
@@ -834,4 +837,10 @@ class Logics():
         else:
             return False, {'bad_request':'You cannot rate your counterparty yet.'}
 
+        return True, None
+
+    @classmethod
+    def rate_platform(cls, user, rating):
+        user.profile.platform_rating = rating
+        user.profile.save()
         return True, None

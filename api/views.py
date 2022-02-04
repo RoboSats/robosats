@@ -275,7 +275,7 @@ class OrderView(viewsets.ViewSet):
         order = Order.objects.get(id=order_id)
 
         # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice' 
-        # 6)'submit_statement' (in dispute), 7)'rate' (counterparty)
+        # 6)'submit_statement' (in dispute), 7)'rate_user' , 'rate_platform'
         action = serializer.data.get('action') 
         invoice = serializer.data.get('invoice')
         statement = serializer.data.get('statement')
@@ -323,8 +323,13 @@ class OrderView(viewsets.ViewSet):
             if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 6) If action is rate
-        elif action == 'rate' and rating:
+        elif action == 'rate_user' and rating:
             valid, context = Logics.rate_counterparty(order,request.user, rating)
+            if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        # 6) If action is rate_platform
+        elif action == 'rate_platform' and rating:
+            valid, context = Logics.rate_platform(request.user, rating)
             if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # If nothing of the above... something else is going on. Probably not allowed!

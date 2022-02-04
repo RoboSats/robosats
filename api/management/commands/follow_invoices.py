@@ -137,6 +137,10 @@ class Command(BaseCommand):
         for lnpayment in queryset:
             success, _ = follow_send_payment(lnpayment) # Do follow_send_payment.delay() for further concurrency.
 
+            # If failed, reset mision control. (This won't scale well, just a temporary fix)
+            if not success:
+                LNNode.resetmc()
+
             # If already 3 attempts and last failed. Make it expire (ask for a new invoice) an reset attempts.
             if not success and lnpayment.routing_attempts == 3:
                 lnpayment.status = LNPayment.Status.EXPIRE

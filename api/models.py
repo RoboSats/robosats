@@ -169,6 +169,8 @@ class Order(models.Model):
     # ratings
     maker_rated = models.BooleanField(default=False, null=False)
     taker_rated = models.BooleanField(default=False, null=False)
+    maker_platform_rated = models.BooleanField(default=False, null=False)
+    taker_platform_rated = models.BooleanField(default=False, null=False)
 
     t_to_expire = {
         0  : int(config('EXP_MAKER_BOND_INVOICE')) ,         # 'Waiting for maker bond'
@@ -229,6 +231,9 @@ class Profile(models.Model):
 
     # Penalty expiration (only used then taking/cancelling repeatedly orders in the book before comitting bond)
     penalty_expiration = models.DateTimeField(null=True,default=None, blank=True)
+
+    # Platform rate
+    platform_rating = models.PositiveIntegerField(null=True, default=None, blank=True)
 
     @receiver(post_save, sender=User)
     def create_user_profile(sender, instance, created, **kwargs):
