@@ -49,7 +49,7 @@ class Logics():
             return False, {'bad_request':'You are already taker of an active order'}, queryset[0]
         
         # Edge case when the user is in an order that is failing payment and he is the buyer
-        queryset = Order.objects.filter( Q(maker=user) | Q(taker=user), status__in=Order.Status.FAI)
+        queryset = Order.objects.filter( Q(maker=user) | Q(taker=user), status=Order.Status.FAI)
         if queryset.exists():
             order = queryset[0]
             if cls.is_buyer(order, user):
@@ -794,13 +794,20 @@ class Logics():
                     # RETURN THE BONDS // Probably best also do it even if payment failed
                     cls.return_bond(order.taker_bond)
                     cls.return_bond(order.maker_bond)
-                    is_payed, context = follow_send_payment(order.payout) ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
-                    if is_payed:
-                        order.save()
-                        return True, context
-                    else:
-                        # error handling here
-                        return False, context
+                    ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
+                    ##### Backgroun process "follow_invoices" will try to pay this invoice until success
+                    order.status = Order.Status.PAY
+                    order.payout.status = LNPayment.Status.FLIGHT
+                    order.payout.save()
+                    order.save()
+                    return True, None
+                    # is_payed, context = follow_send_payment(order.payout) ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
+                    # if is_payed:
+                    #     order.save()
+                    #     return True, context
+                    # else:
+                    #     # error handling here
+                    #     return False, context
         else:
             return False, {'bad_request':'You cannot confirm the fiat payment at this stage'}
 

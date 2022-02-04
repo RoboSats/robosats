@@ -153,12 +153,12 @@ export default class MakerPage extends Component {
 
   render() {
     return (
-            <Grid container xs={12} align="center" spacing={1}>
-                <Grid item xs={12} align="center" sx={{minWidth:380}}>
-                    <Typography component="h2" variant="h2">
-                        Order Maker
+            <Grid container xs={12} align="center" spacing={1} sx={{minWidth:380}}>
+                {/* <Grid item xs={12} align="center" sx={{minWidth:380}}>
+                    <Typography component="h4" variant="h4">
+                        ORDER MAKER
                     </Typography>
-                </Grid>
+                </Grid> */}
                 <Grid item xs={12} align="center" spacing={1}>
                 <Paper elevation={12} style={{ padding: 8, width:240, align:'center'}}>
                     <Grid item xs={12} align="center" spacing={1}>

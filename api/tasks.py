@@ -77,7 +77,6 @@ def follow_send_payment(lnpayment):
                 order.save()
                 context = {'routing_failed': LNNode.payment_failure_context[response.failure_reason]}
                 print(context)
-                # Call a retry in 5 mins here?
                 return False, context
 
             if response.status == 2 :               # Status 2 'SUCCEEDED'

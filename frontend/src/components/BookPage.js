@@ -227,11 +227,9 @@ export default class BookPage extends Component {
   render() {
       return (
         <Grid className='orderBook' container spacing={1} sx={{minWidth:400}}>
-          <Grid item xs={12} align="center">
-            <Typography component="h2" variant="h2">
-              Order Book
-            </Typography>
-          </Grid>
+          {/* <Grid item xs={12} align="center">
+            <Typography component="h4" variant="h4">ORDER BOOK</Typography>
+          </Grid> */}
 
           <Grid item xs={6} align="right">
             <FormControl >
