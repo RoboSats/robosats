@@ -99,7 +99,16 @@ to
 
 `from . import lightning_pb2 as lightning__pb2`
 
-Same for every other file
+Same for every other file.
+
+Generated files can be automatically patched like this:
+```
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/router_pb2.py
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/invoices_pb2.py
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/router_pb2_grpc.py
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/lightning_pb2_grpc.py
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/invoices_pb2_grpc.py
+```
 
 ## React development environment
 ### Install npm
