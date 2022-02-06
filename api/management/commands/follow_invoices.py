@@ -129,7 +129,7 @@ class Command(BaseCommand):
 
         queryset_retries = LNPayment.objects.filter(type=LNPayment.Types.NORM,
                                             status__in=[LNPayment.Status.VALIDI, LNPayment.Status.FAILRO], 
-                                            routing_attempts__lt=4,
+                                            routing_attempts__lt=5,
                                             last_routing_time__lt=(timezone.now()-timedelta(minutes=int(config('RETRY_TIME')))))
         
         queryset = queryset.union(queryset_retries)
@@ -142,7 +142,7 @@ class Command(BaseCommand):
                 LNNode.resetmc()
 
             # If already 3 attempts and last failed. Make it expire (ask for a new invoice) an reset attempts.
-            if not success and lnpayment.routing_attempts == 3:
+            if not success and lnpayment.routing_attempts > 2:
                 lnpayment.status = LNPayment.Status.EXPIRE
                 lnpayment.routing_attempts = 0
                 lnpayment.save()

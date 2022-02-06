@@ -775,7 +775,7 @@ handleRatingRobosatsChange=(e)=>{
           </Grid>
           <Grid item xs={12} align="center">
             <Typography component="body2" variant="body2" align="center">
-              Your invoice has expires or more than 3 payments have been attempted.
+              Your invoice has expires or more than 3 payments attempts have been made.
             </Typography>
           </Grid>
           <Grid item xs={12} align="center">
