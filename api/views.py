@@ -1,3 +1,4 @@
+import os
 from re import T
 from django.db.models import query
 from rest_framework import status, viewsets
@@ -7,7 +8,6 @@ from rest_framework.response import Response
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.conf import settings as conf_settings
 
 from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
 from .models import LNPayment, MarketTick, Order, Currency
@@ -29,8 +29,11 @@ EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
 FEE = float(config('FEE'))
 RETRY_TIME = int(config('RETRY_TIME'))
 
-avatar_path = Path(conf_settings.STATIC_ROOT,'/assets/avatars')
-print(str(avatar_path))
+
+avatar_path = Path('/usr/src/static/assets/avatars')
+if os.environ.get('DEVELOPMENT'):
+    avatar_path = Path('frontend/static/assets/avatars')
+
 avatar_path.mkdir(parents=True, exist_ok=True)
 
 # Create your views here.

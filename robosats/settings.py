@@ -18,7 +18,6 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'frontend/static/')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -28,7 +27,7 @@ SECRET_KEY = 'django-insecure-6^&6uw$b5^en%(cu2kc7_o)(mgpazx#j_znwlym0vxfamn2uo-
 
 DEBUG = False
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join('/usr/src/static/')
+STATIC_ROOT ='/usr/src/static/'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if os.environ.get('DEVELOPMENT'):

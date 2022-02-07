@@ -9,7 +9,7 @@ services:
     networks:
       - redis_network
 
-  robosats:
+  backend:
     build: .
     container_name: rs-dev
     restart: always
@@ -25,8 +25,10 @@ services:
       - nginx_network
       - redis_network
     command: python3 manage.py runserver
+    ports:
+      - 8000:8000
 
-  npm:
+  frontend:
     build: ./frontend
     container_name: npm-dev
     restart: always
@@ -36,7 +38,7 @@ services:
       - nginx_network
       - redis_network
 
-  clean-orders-testnet:
+  clean-orders:
     build: ./robosats
     restart: always
     container_name: clord-dev
@@ -44,7 +46,7 @@ services:
     volumes:
       - ./robosats/:/usr/src/robosats
 
-  follow-invoices-testnet:
+  follow-invoices:
     build: ./robosats
     container_name: invo-dev
     restart: always
@@ -53,9 +55,9 @@ services:
     #   - lnd-testnet
     command: python3 manage.py follow_invoices
     volumes:
-      - /mnt/database:/usr/src/database
+      - /mnt/dev/database:/usr/src/database
 
-  celery-beat-testnet:
+  celery:
     build: ./robosats
     container_name: cbeat-dev
     restart: always
@@ -63,7 +65,7 @@ services:
     environment:
       REDIS_URL: redis://redis:6379
     volumes:
-      - /mnt/database:/usr/src/database
+      - /mnt/dev/database:/usr/src/database
     depends_on:
       - redis
     networks:
@@ -71,7 +73,6 @@ services:
 
 volumes:
   redisdata:
-  static-content:
 
 networks:
   nginx_network:
