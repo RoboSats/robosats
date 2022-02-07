@@ -648,3 +648,5 @@ api/lightning/lightning*
 api/lightning/invoices*
 api/lightning/router*
 api/lightning/googleapis*
+frontend/static/admin*
+frontend/static/rest_framework*
