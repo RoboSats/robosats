@@ -2,7 +2,8 @@ FROM python:3.9
 
 RUN mkdir -p /usr/src/robosats
 
-WORKDIR /usr/src/robosats  # specifying the working dir inside the container
+# specifying the working dir inside the container
+WORKDIR /usr/src/robosats
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt

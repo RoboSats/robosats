@@ -637,7 +637,6 @@ FodyWeavers.xsd
 
 # Django
 *migrations*
-frontend/static/frontend/main*
 
 # Celery
 django

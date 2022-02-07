@@ -26,11 +26,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'frontend/static/')
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-6^&6uw$b5^en%(cu2kc7_o)(mgpazx#j_znwlym0vxfamn2uo-'
 
+DEBUG = False
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join('/usr/src/static/')
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if os.environ.get('DEVELOPMENT'):
+    DEBUG = True
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'frontend/static/')
 
 ALLOWED_HOSTS = [config('HOST_NAME'),'127.0.0.1']
-
 
 # Application definition
 
@@ -85,15 +91,27 @@ WSGI_APPLICATION = 'robosats.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'OPTIONS': {
-            'timeout': 20,  # in seconds
-            }
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': '/usr/src/database/db.sqlite3',
+            'OPTIONS': {
+                'timeout': 20,  # in seconds
+                }
+        }
     }
-}
+
+if os.environ.get('DEVELOPMENT'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+            'OPTIONS': {
+                'timeout': 20,  # in seconds
+                }
+        }
+    }
 
 
 # Password validation

@@ -1,0 +1,80 @@
+version: '3.9'
+services:
+  redis:
+    image: sickp/alpine-redis:3.2.2
+    container_name: redis
+    restart: always
+    volumes:
+      - redisdata:/data
+    networks:
+      - redis_network
+
+  robosats:
+    build: .
+    container_name: rs-dev
+    restart: always
+    depends_on:
+    #   - bitcoind-dev
+    #   - lnd-dev
+      - redis
+    environment:
+      DEVELOPMENT: True
+    volumes:
+      - ./robosats/:/usr/src/robosats
+    networks:
+      - nginx_network
+      - redis_network
+    command: python3 manage.py runserver
+
+  npm:
+    build: ./frontend
+    container_name: npm-dev
+    restart: always
+    volumes:
+      - ./robosats/:/usr/src/robosats
+    networks:
+      - nginx_network
+      - redis_network
+
+  clean-orders-testnet:
+    build: ./robosats
+    restart: always
+    container_name: clord-dev
+    command: python3 manage.py clean-orders-testnet
+    volumes:
+      - ./robosats/:/usr/src/robosats
+
+  follow-invoices-testnet:
+    build: ./robosats
+    container_name: invo-dev
+    restart: always
+    # depends_on:
+    #   - bitcoind-testnet
+    #   - lnd-testnet
+    command: python3 manage.py follow_invoices
+    volumes:
+      - /mnt/database:/usr/src/database
+
+  celery-beat-testnet:
+    build: ./robosats
+    container_name: cbeat-dev
+    restart: always
+    command: celery -A robosats worker --beat -l info -S django
+    environment:
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - /mnt/database:/usr/src/database
+    depends_on:
+      - redis
+    networks:
+      - redis_network
+
+volumes:
+  redisdata:
+  static-content:
+
+networks:
+  nginx_network:
+    driver: bridge
+  redis_network:
+    driver: bridge
