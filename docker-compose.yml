@@ -34,7 +34,7 @@ services:
     container_name: npm-dev
     restart: always
     volumes:
-      - .:/usr/src/robosats
+      - ./frontend:/usr/src/frontend
     networks:
       - nginx_network
       - redis_network

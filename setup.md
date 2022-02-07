@@ -223,8 +223,14 @@ systemctl enable clean_orders
 ```
 docker-compose build --no-cache
 docker-compose up
-sudo docker exec -it rs-dev python3 manage.py makemigrations
-sudo docker exec -it rs-dev python3 manage.py migrate
-sudo docker exec -it rs-dev python3 manage.py createsuperuser
+sudo docker exec -it django-dev python3 manage.py makemigrations
+sudo docker exec -it django-dev python3 manage.py migrate
+sudo docker exec -it django-dev python3 manage.py createsuperuser
 docker-compose restart
 ```
+
+Monitor Django dev server
+`docker attach robosats_django-dev`
+
+Monitor npm
+`docker attach robosats_npm-dev`
