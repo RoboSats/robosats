@@ -11,20 +11,21 @@ services:
 
   backend:
     build: .
-    container_name: rs-dev
+    container_name: django-dev
     restart: always
     depends_on:
     #   - bitcoind-dev
     #   - lnd-dev
       - redis
     environment:
-      DEVELOPMENT: True
+      DEVELOPMENT: 1
     volumes:
-      - ./robosats/:/usr/src/robosats
+      - .:/usr/src/robosats
+      - /mnt/development/database:/usr/src/database
     networks:
       - nginx_network
       - redis_network
-    command: python3 manage.py runserver
+    command: python3 manage.py runserver 0.0.0.0:8000
     ports:
       - 8000:8000
 
@@ -33,21 +34,22 @@ services:
     container_name: npm-dev
     restart: always
     volumes:
-      - ./robosats/:/usr/src/robosats
+      - .:/usr/src/robosats
     networks:
       - nginx_network
       - redis_network
 
   clean-orders:
-    build: ./robosats
+    build: .
     restart: always
     container_name: clord-dev
-    command: python3 manage.py clean-orders-testnet
+    command: python3 manage.py clean_orders
     volumes:
-      - ./robosats/:/usr/src/robosats
+      - .:/usr/src/robosats
+      - /mnt/development/database:/usr/src/database
 
   follow-invoices:
-    build: ./robosats
+    build: .
     container_name: invo-dev
     restart: always
     # depends_on:
@@ -55,17 +57,19 @@ services:
     #   - lnd-testnet
     command: python3 manage.py follow_invoices
     volumes:
-      - /mnt/dev/database:/usr/src/database
+      - .:/usr/src/robosats
+      - /mnt/development/database:/usr/src/database
 
   celery:
-    build: ./robosats
+    build: .
     container_name: cbeat-dev
     restart: always
     command: celery -A robosats worker --beat -l info -S django
     environment:
       REDIS_URL: redis://redis:6379
     volumes:
-      - /mnt/dev/database:/usr/src/database
+      - .:/usr/src/robosats
+      - /mnt/development/database:/usr/src/database
     depends_on:
       - redis
     networks:

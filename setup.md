@@ -218,3 +218,13 @@ Then launch it with
 systemctl start clean_orders
 systemctl enable clean_orders
 ```
+
+# Docker set up for development, example for testnet (-dev containers)
+```
+docker-compose build --no-cache
+docker-compose up
+sudo docker exec -it rs-dev python3 manage.py makemigrations
+sudo docker exec -it rs-dev python3 manage.py migrate
+sudo docker exec -it rs-dev python3 manage.py createsuperuser
+docker-compose restart
+```
