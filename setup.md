@@ -220,17 +220,39 @@ systemctl enable clean_orders
 ```
 
 # Docker set up for development, example for testnet (-dev containers)
+First time
 ```
 docker-compose build --no-cache
-docker-compose up
+docker-compose up -d
 sudo docker exec -it django-dev python3 manage.py makemigrations
 sudo docker exec -it django-dev python3 manage.py migrate
 sudo docker exec -it django-dev python3 manage.py createsuperuser
 docker-compose restart
 ```
 
-Monitor Django dev server
-`docker attach robosats_django-dev`
+Any other time:
+`docker-compose up -d`
 
-Monitor npm
-`docker attach robosats_npm-dev`
+Monitor Django dev docker service
+`docker attach django-dev`
+
+Monitor NPM dev docker service
+`docker attach npm-dev`
+
+
+## If needed; how to clean-restart the docker instance
+
+
+Stop the container(s) using the following command:
+
+`docker-compose --env-file config/.env.tn down`
+Delete all containers using the following command:
+`docker rm -f $(docker ps -a -q)`
+Delete all volumes using the following command:
+`docker volume rm $(docker volume ls -q)`
+Restart the containers using the following command:
+`docker-compose --env-file config/.env.tn up`
+
+
+Delete <None> images
+`docker rmi $(docker images -f 'dangling=true' -q)`
