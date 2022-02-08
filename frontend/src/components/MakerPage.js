@@ -184,7 +184,7 @@ export default class MakerPage extends Component {
                 </Grid>
                 <Grid containter xs={12} alignItems="stretch" style={{ display: "flex" }}>
                         <div style={{maxWidth:140}}>
-                        <Tooltip placement="top" enterTouchDelay="0" title="Amount of fiat to exchange for bitcoin">
+                        <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Amount of fiat to exchange for bitcoin">
                             <TextField
                                 error={this.state.amount <= 0} 
                                 helperText={this.state.amount <= 0 ? 'Invalid' : null}
@@ -217,7 +217,7 @@ export default class MakerPage extends Component {
                 </Grid>
                 <br/>
                 <Grid item xs={12} align="center">
-                    <Tooltip placement="top" enterTouchDelay="0" title="Enter your prefered payment methods">
+                    <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Enter your prefered payment methods">
                         <TextField 
                             sx={{width:240}}
                             label="Payment Method(s)"
@@ -242,7 +242,7 @@ export default class MakerPage extends Component {
                             </div>
                         </FormHelperText>
                         <RadioGroup row defaultValue="relative">
-                        <Tooltip placement="top" enterTouchDelay="0" title="Let the price move with the market">
+                        <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title="Let the price move with the market">
                             <FormControlLabel 
                             value="relative" 
                             control={<Radio color="primary"/>}
@@ -251,7 +251,7 @@ export default class MakerPage extends Component {
                             onClick={this.handleClickRelative}
                             />
                         </Tooltip>
-                        <Tooltip placement="top" enterTouchDelay="0" title="Set a fix amount of satoshis">
+                        <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title="Set a fix amount of satoshis">
                             <FormControlLabel 
                             value="explicit" 
                             control={<Radio color="secondary"/>}

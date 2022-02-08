@@ -63,10 +63,10 @@ robosats_commit_cache = {}
 @ring.dict(robosats_commit_cache, expire=3600)
 def get_commit_robosats():
 
-    stream = os.popen('git log -n 1 --pretty=format:"%H"')
-    lnd_version = stream.read()
+    commit = os.popen('git log -n 1 --pretty=format:"%H"')
+    commit_hash = commit.read()
 
-    return lnd_version
+    return commit_hash
 
 premium_percentile = {}
 @ring.dict(premium_percentile, expire=300)

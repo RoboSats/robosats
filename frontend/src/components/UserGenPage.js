@@ -28,7 +28,7 @@ export default class UserGenPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      token: this.genBase62Token(34),
+      token: this.genBase62Token(36),
       openInfo: false,
       loadingRobot: true,
       tokenHasChanged: false,
@@ -88,7 +88,7 @@ export default class UserGenPage extends Component {
 
   handleClickNewRandomToken=()=>{
     this.setState({
-      token: this.genBase62Token(34),
+      token: this.genBase62Token(36),
       tokenHasChanged: true,
       copied: true,
     });
@@ -209,7 +209,7 @@ export default class UserGenPage extends Component {
               <span>  Generate Robot</span>
             </Button>
             :
-            <Tooltip enterTouchDelay="0" title="You must enter a new token first">
+            <Tooltip enterTouchDelay="0" enterDelay="500" enterNextDelay="2000" title="You must enter a new token first">
               <div>
               <Button disabled={true} type="submit" size='small' >
                 <SmartToyIcon sx={{width:18, height:18}} />
