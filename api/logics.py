@@ -532,10 +532,14 @@ class Logics():
         description = f"RoboSats - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally."
 
         # Gen hold Invoice
-        hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
-                                            description, 
-                                            invoice_expiry=Order.t_to_expire[Order.Status.WFB], 
-                                            cltv_expiry_secs=BOND_EXPIRY*3600)
+        try:
+            hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
+                                                description, 
+                                                invoice_expiry=Order.t_to_expire[Order.Status.WFB], 
+                                                cltv_expiry_secs=BOND_EXPIRY*3600)
+        except Exception as e:
+            if 'status = StatusCode.UNAVAILABLE' in str(e):
+                return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure staff is aware.'}
         
         order.maker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.MAKEBOND, 
@@ -613,10 +617,15 @@ class Logics():
             + " - Taker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally.")
 
         # Gen hold Invoice
-        hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
-                                                description,
-                                                invoice_expiry=Order.t_to_expire[Order.Status.TAK], 
-                                                cltv_expiry_secs=BOND_EXPIRY*3600)
+        try:
+            hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
+                                                    description,
+                                                    invoice_expiry=Order.t_to_expire[Order.Status.TAK], 
+                                                    cltv_expiry_secs=BOND_EXPIRY*3600)
+        
+        except Exception as e:
+            if 'status = StatusCode.UNAVAILABLE' in str(e):
+                return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure staff is aware.'}
         
         order.taker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.TAKEBOND, 
@@ -678,11 +687,17 @@ class Logics():
         description = f"RoboSats - Escrow amount for '{str(order)}' - It WILL FREEZE IN YOUR WALLET. It will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
 
         # Gen hold Invoice
-        hold_payment = LNNode.gen_hold_invoice(escrow_satoshis, 
-                                                description,
-                                                invoice_expiry=Order.t_to_expire[Order.Status.WF2], 
-                                                cltv_expiry_secs=ESCROW_EXPIRY*3600)
+        try:
+            hold_payment = LNNode.gen_hold_invoice(escrow_satoshis, 
+                                                    description,
+                                                    invoice_expiry=Order.t_to_expire[Order.Status.WF2], 
+                                                    cltv_expiry_secs=ESCROW_EXPIRY*3600)
         
+        except Exception as e:
+            if 'status = StatusCode.UNAVAILABLE' in str(e):
+                return False, {'bad_request':'The Lightning Network Daemon (LND). Write in the Telegram group to make sure staff is aware.'}
+        
+
         order.trade_escrow = LNPayment.objects.create(
             concept = LNPayment.Concepts.TRESCROW, 
             type = LNPayment.Types.HOLD, 
