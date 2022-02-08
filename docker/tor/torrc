@@ -1,0 +1,12 @@
+Log notice file /var/log/tor/notices.log
+
+## The directory for keeping all the keys/etc. By default, we store
+## things in $HOME/.tor on Unix, and in Application Data\tor on Windows.
+DataDirectory /var/lib/tor
+DataDirectoryGroupReadable 1
+
+## Enable ControlPort
+ControlPort 9051
+CookieAuthentication 1
+CookieAuthFileGroupReadable 1
+CookieAuthFile /var/lib/tor/control_auth_cookie

@@ -1,4 +1,28 @@
 # Set up
+# The easy way
+## With Docker (-dev containers running on testnet)
+Spinning up docker for the first time
+```
+docker-compose build --no-cache
+docker-compose up -d
+sudo docker exec -it django-dev python3 manage.py makemigrations
+sudo docker exec -it django-dev python3 manage.py migrate
+sudo docker exec -it django-dev python3 manage.py createsuperuser
+docker-compose restart
+```
+
+Spinning up any other time:
+`docker-compose up -d`
+
+Then monitor in a terminal the Django dev docker service
+`docker attach django-dev`
+
+And the NPM dev docker service
+`docker attach npm-dev`
+
+Ready to roll!
+
+# The harder way
 ## Django development environment
 ### Install Python and pip
 `sudo apt install python3 python3 pip`
@@ -218,41 +242,3 @@ Then launch it with
 systemctl start clean_orders
 systemctl enable clean_orders
 ```
-
-# Docker set up for development, example for testnet (-dev containers)
-First time
-```
-docker-compose build --no-cache
-docker-compose up -d
-sudo docker exec -it django-dev python3 manage.py makemigrations
-sudo docker exec -it django-dev python3 manage.py migrate
-sudo docker exec -it django-dev python3 manage.py createsuperuser
-docker-compose restart
-```
-
-Any other time:
-`docker-compose up -d`
-
-Monitor Django dev docker service
-`docker attach django-dev`
-
-Monitor NPM dev docker service
-`docker attach npm-dev`
-
-
-## If needed; how to clean-restart the docker instance
-
-
-Stop the container(s) using the following command:
-
-`docker-compose --env-file config/.env.tn down`
-Delete all containers using the following command:
-`docker rm -f $(docker ps -a -q)`
-Delete all volumes using the following command:
-`docker volume rm $(docker volume ls -q)`
-Restart the containers using the following command:
-`docker-compose --env-file config/.env.tn up`
-
-
-Delete <None> images
-`docker rmi $(docker images -f 'dangling=true' -q)`

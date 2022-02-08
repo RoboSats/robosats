@@ -14,7 +14,7 @@ services:
     container_name: django-dev
     restart: always
     depends_on:
-    #   - bitcoind-dev
+      - bitcoind
     #   - lnd-dev
       - redis
     environment:
@@ -52,8 +52,8 @@ services:
     build: .
     container_name: invo-dev
     restart: always
-    # depends_on:
-    #   - bitcoind-testnet
+    depends_on:
+      - bitcoind
     #   - lnd-testnet
     command: python3 manage.py follow_invoices
     volumes:
@@ -74,6 +74,32 @@ services:
       - redis
     networks:
       - redis_network
+
+  tor:
+    build: ./docker/tor
+    container_name: tor-dev
+    restart: always
+    environment:
+      LOCAL_USER_ID: 1000
+      LOCAL_GROUP_ID: 1000
+    volumes:
+      - /mnt/development/tor/data:/var/lib/tor
+      - /mnt/development/tor/config:/etc/tor
+
+  bitcoind:
+    build: ./docker/bitcoind
+    container_name: btc-dev
+    restart: always
+    environment:
+      LOCAL_USER_ID: 1000
+      LOCAL_GROUP_ID: 1000
+    depends_on:
+      - tor
+    network_mode: service:tor
+    volumes:
+      - /mnt/development/tor/data:/var/lib/tor:ro
+      - /mnt/development/tor/config:/etc/tor:ro
+      - /mnt/development/bitcoin:/home/bitcoin/.bitcoin
 
 volumes:
   redisdata:
