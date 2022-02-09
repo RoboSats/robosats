@@ -52,6 +52,7 @@ services:
     volumes:
       - .:/usr/src/robosats
       - /mnt/development/database:/usr/src/database
+      - /mnt/development/lnd:/lnd
     network_mode: service:tor
 
   celery:
@@ -98,7 +99,7 @@ services:
       LOCAL_GROUP_ID: 1000
       LND_RPC_PORT: 10009
       LND_REST_PORT: 8080
-      # AUTO_UNLOCK_PWD: ${AUTO_UNLOCK_PWD}
+      AUTO_UNLOCK_PWD: ${AUTO_UNLOCK_PWD}
 
   bitcoind:
     build: ./docker/bitcoind
