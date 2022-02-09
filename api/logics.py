@@ -538,8 +538,11 @@ class Logics():
                                                 invoice_expiry=Order.t_to_expire[Order.Status.WFB], 
                                                 cltv_expiry_secs=BOND_EXPIRY*3600)
         except Exception as e:
-            if 'status = StatusCode.UNAVAILABLE' in str(e):
+            print(str(e))
+            if 'failed to connect to all addresses' in str(e):
                 return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware.'}
+            if 'wallet locked' in str(e):
+                return False, {'bad_request':"This is weird, RoboSats' lightning wallet is locked. Check in the Telegram group, maybe the staff has died."}
         
         order.maker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.MAKEBOND, 

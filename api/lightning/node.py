@@ -1,4 +1,4 @@
-import grpc, os, hashlib, secrets, json
+import grpc, os, hashlib, secrets
 from . import lightning_pb2 as lnrpc, lightning_pb2_grpc as lightningstub
 from . import invoices_pb2 as invoicesrpc, invoices_pb2_grpc as invoicesstub
 from . import router_pb2 as routerrpc, router_pb2_grpc as routerstub
@@ -14,8 +14,18 @@ from api.models import LNPayment
 # Should work with LND (c-lightning in the future if there are features that deserve the work)
 #######
 
-CERT = b64decode(config('LND_CERT_BASE64'))
-MACAROON = b64decode(config('LND_MACAROON_BASE64'))
+# Read tls.cert from file or .env variable string encoded as base64
+try:
+    CERT = open(os.path.join(config('LND_DIR'),'tls.cert'), 'rb').read()
+except:
+    CERT = b64decode(config('LND_CERT_BASE64'))
+
+# Read macaroon from file or .env variable string encoded as base64
+try:
+    MACAROON = open(os.path.join(config('LND_DIR'), config('MACAROON_path')), 'rb').read()
+except:
+    MACAROON = b64decode(config('LND_MACAROON_BASE64'))
+
 LND_GRPC_HOST = config('LND_GRPC_HOST')
 
 class LNNode():

@@ -5,9 +5,9 @@ Spinning up docker for the first time
 ```
 docker-compose build --no-cache
 docker-compose up -d
-sudo docker exec -it django-dev python3 manage.py makemigrations
-sudo docker exec -it django-dev python3 manage.py migrate
-sudo docker exec -it django-dev python3 manage.py createsuperuser
+docker exec -it django-dev python3 manage.py makemigrations
+docker exec -it django-dev python3 manage.py migrate
+docker exec -it django-dev python3 manage.py createsuperuser
 docker-compose restart
 ```
 
@@ -20,7 +20,22 @@ Then monitor in a terminal the Django dev docker service
 And the NPM dev docker service
 `docker attach npm-dev`
 
-Ready to roll!
+Ready to roll! But maybe you also are interested on these:
+
+Unlock or 'create' the lnd node
+`docker exec -it lnd-dev lncli unlock`
+
+Create p2wkh addresses
+`docker exec -it lnd-dev lncli --network=testnet newaddress p2wkh`
+
+Wallet balance
+`docker exec -it lnd-dev lncli --network=testnet walletbalance`
+
+Connect
+`docker exec -it lnd-dev lncli --network=testnet connect node_id@ip:9735`
+
+Open channel
+`docker exec -it lnd-dev lncli --network=testnet openchannel node_id --local_amt LOCAL_AMT --push_amt PUSH_AMT`
 
 # The harder way
 ## Django development environment
