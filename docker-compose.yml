@@ -85,6 +85,29 @@ services:
     volumes:
       - /mnt/development/tor/data:/var/lib/tor
       - /mnt/development/tor/config:/etc/tor
+    ports:
+      - '10009'
+      - '8080'
+
+  lnd:
+    build: ./docker/lnd
+    restart: always
+    network_mode: service:tor
+    container_name: lnd-dev
+    depends_on:
+      - tor
+      - bitcoind
+    volumes:
+      - /mnt/development/tor/data:/var/lib/tor
+      - /mnt/development/tor/config:/etc/tor
+      - /mnt/development/lnd:/home/lnd/.lnd
+      - /mnt/development/lnd:/root/.lnd
+    command: lnd
+    environment:
+      LOCAL_USER_ID: 1000
+      LOCAL_GROUP_ID: 1000
+      LND_RPC_PORT: 10009
+      LND_REST_PORT: 8080
 
   bitcoind:
     build: ./docker/bitcoind

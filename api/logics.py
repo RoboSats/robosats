@@ -539,7 +539,7 @@ class Logics():
                                                 cltv_expiry_secs=BOND_EXPIRY*3600)
         except Exception as e:
             if 'status = StatusCode.UNAVAILABLE' in str(e):
-                return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure staff is aware.'}
+                return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware.'}
         
         order.maker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.MAKEBOND, 
@@ -625,7 +625,7 @@ class Logics():
         
         except Exception as e:
             if 'status = StatusCode.UNAVAILABLE' in str(e):
-                return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure staff is aware.'}
+                return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware.'}
         
         order.taker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.TAKEBOND, 
@@ -695,7 +695,7 @@ class Logics():
         
         except Exception as e:
             if 'status = StatusCode.UNAVAILABLE' in str(e):
-                return False, {'bad_request':'The Lightning Network Daemon (LND). Write in the Telegram group to make sure staff is aware.'}
+                return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware.'}
         
 
         order.trade_escrow = LNPayment.objects.create(
