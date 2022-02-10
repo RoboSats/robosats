@@ -30,4 +30,4 @@ RUN sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/invoices_pb2_grpc.py
 
 EXPOSE 8000
 
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000]
+CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
