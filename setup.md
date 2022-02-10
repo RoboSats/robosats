@@ -20,6 +20,9 @@ Then monitor in a terminal the Django dev docker service
 And the NPM dev docker service
 `docker attach npm-dev`
 
+You could also just check all services logs
+`docker-compose logs -f`
+
 Ready to roll! But maybe you also are interested on these:
 
 Unlock or 'create' the lnd node
