@@ -508,7 +508,7 @@ class InfoView(ListAPIView):
             for tick in queryset:
                 weighted_premiums.append(tick.premium*tick.volume)
                 volumes.append(tick.volume)
-            
+           
             total_volume = sum(volumes)
             # Avg_premium is the weighted average of the premiums by volume
             avg_premium = sum(weighted_premiums) / total_volume
