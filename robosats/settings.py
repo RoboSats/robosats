@@ -26,14 +26,15 @@ STATIC_URL = '/static/'
 SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = False
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATIC_ROOT ='/usr/src/static/'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if os.environ.get('DEVELOPMENT'):
     DEBUG = True
-    STATIC_URL = '/static/'
-    STATIC_ROOT = os.path.join(BASE_DIR, 'frontend/static/')
+    STATIC_ROOT = 'frontend/static/'
+    
+AVATAR_ROOT = STATIC_ROOT + 'assets/avatars/'
 
 ALLOWED_HOSTS = [config('HOST_NAME'),'127.0.0.1']
 

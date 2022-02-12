@@ -23,6 +23,7 @@ import hashlib
 from pathlib import Path
 from datetime import timedelta, datetime
 from django.utils import timezone
+from django.conf import settings
 from decouple import config
 
 EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
@@ -30,10 +31,7 @@ FEE = float(config('FEE'))
 RETRY_TIME = int(config('RETRY_TIME'))
 
 
-avatar_path = Path('/usr/src/static/assets/avatars')
-if os.environ.get('DEVELOPMENT'):
-    avatar_path = Path('frontend/static/assets/avatars')
-
+avatar_path = Path(settings.AVATAR_ROOT)
 avatar_path.mkdir(parents=True, exist_ok=True)
 
 # Create your views here.
@@ -417,7 +415,7 @@ class UserView(APIView):
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname, password=token, is_staff=False)
             user = authenticate(request, username=nickname, password=token)
-            user.profile.avatar = str(image_path)[9:] # removes frontend/ from url (ugly, to be fixed) 
+            user.profile.avatar = nickname + '.png'
             login(request, user)
             return Response(context, status=status.HTTP_201_CREATED)
 

@@ -93,13 +93,13 @@ export default class BottomBar extends Component {
                     <ListItemIcon><DnsIcon/></ListItemIcon>
                     {this.state.network == 'testnet'? 
                     <ListItemText secondary={this.state.node_alias}>
-                         <a href={"https://1ml.com/testnet/node/" 
+                         <a target="_blank" href={"https://1ml.com/testnet/node/" 
                         + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (1ML)"}
                         </a>
                     </ListItemText>
                     :
                     <ListItemText secondary={this.state.node_alias}>
-                         <a href={"https://1ml.com/node/" 
+                         <a target="_blank" href={"https://1ml.com/node/" 
                         + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (1ML)"}
                         </a>
                     </ListItemText>
@@ -110,7 +110,7 @@ export default class BottomBar extends Component {
                 <ListItem>
                     <ListItemIcon><WebIcon/></ListItemIcon>
                     <ListItemText secondary={this.state.alternative_name}>
-                        <a href={"https://"+this.alternative_site}>{this.state.alternative_site.slice(0, 12)+"...onion"}
+                        <a target="_blank" href={"https://"+this.alternative_site}>{this.state.alternative_site.slice(0, 12)+"...onion"}
                         </a>
                     </ListItemText>
                 </ListItem>
@@ -119,7 +119,7 @@ export default class BottomBar extends Component {
                 <ListItem>
                     <ListItemIcon><GitHubIcon/></ListItemIcon>
                     <ListItemText secondary="Currently running commit hash">
-                        <a href={"https://github.com/Reckless-Satoshi/robosats/tree/" 
+                        <a target="_blank" href={"https://github.com/Reckless-Satoshi/robosats/tree/" 
                         + this.state.robosats_running_commit_hash}>{this.state.robosats_running_commit_hash.slice(0, 12)+"..."}
                         </a>
                     </ListItemText>
