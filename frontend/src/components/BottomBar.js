@@ -110,7 +110,7 @@ export default class BottomBar extends Component {
                 <ListItem>
                     <ListItemIcon><WebIcon/></ListItemIcon>
                     <ListItemText secondary={this.state.alternative_name}>
-                        <a target="_blank" href={"https://"+this.alternative_site}>{this.state.alternative_site.slice(0, 12)+"...onion"}
+                        <a target="_blank" href={"http://"+this.state.alternative_site}>{this.state.alternative_site.slice(0, 12)+"...onion"}
                         </a>
                     </ListItemText>
                 </ListItem>
