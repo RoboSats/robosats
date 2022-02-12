@@ -19,6 +19,8 @@ import PublicIcon from '@mui/icons-material/Public';
 import NumbersIcon from '@mui/icons-material/Numbers';
 import PasswordIcon from '@mui/icons-material/Password';
 import ContentCopy from "@mui/icons-material/ContentCopy";
+import DnsIcon from '@mui/icons-material/Dns';
+import WebIcon from '@mui/icons-material/Web';
 
 // pretty numbers
 function pn(x) {
@@ -42,6 +44,8 @@ export default class BottomBar extends Component {
             robosats_running_commit_hash: '000000000000000',
             openProfile: false,
             profileShown: false,
+            alternative_site: 'robosats...',
+            node_id: '00000000',
         };
         this.getInfo();
       }
@@ -82,6 +86,33 @@ export default class BottomBar extends Component {
                 <ListItem>
                     <ListItemIcon><BoltIcon/></ListItemIcon>
                     <ListItemText primary={this.state.lnd_version} secondary="LND version"/>
+                </ListItem>
+
+                <Divider/>
+                <ListItem>
+                    <ListItemIcon><DnsIcon/></ListItemIcon>
+                    {this.state.network == 'testnet'? 
+                    <ListItemText secondary={this.state.node_alias}>
+                         <a href={"https://1ml.com/testnet/node/" 
+                        + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (1ML)"}
+                        </a>
+                    </ListItemText>
+                    :
+                    <ListItemText secondary={this.state.node_alias}>
+                         <a href={"https://1ml.com/node/" 
+                        + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (1ML)"}
+                        </a>
+                    </ListItemText>
+                    }
+                </ListItem>
+
+                <Divider/>
+                <ListItem>
+                    <ListItemIcon><WebIcon/></ListItemIcon>
+                    <ListItemText secondary={this.state.alternative_name}>
+                        <a href={"https://"+this.alternative_site}>{this.state.alternative_site.slice(0, 12)+"...onion"}
+                        </a>
+                    </ListItemText>
                 </ListItem>
 
                 <Divider/>

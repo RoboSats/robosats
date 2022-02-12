@@ -54,8 +54,18 @@ lnd_v_cache = {}
 @ring.dict(lnd_v_cache, expire=3600) #keeps in cache for 3600 seconds
 def get_lnd_version():
 
+    # Reads lnd version from CLI
     stream = os.popen('lnd --version')
     lnd_version = stream.read()[:-1]
+
+    # If dockerized, the command above will fail. 
+    # Instead, return LND_VERSION envvar used for docker image.
+    # Otherwise it would require LND's version.grpc libraries...
+    if lnd_version == '':
+        try:
+            lnd_version = config('LND_VERSION')
+        except:
+            pass
 
     return lnd_version
 

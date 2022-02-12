@@ -27,11 +27,11 @@ class Command(BaseCommand):
 
             try:
                 self.follow_hold_invoices()
+            except Exception as e:
+                self.stdout.write(str(e))
+            try:
                 self.send_payments()
             except Exception as e:
-                if 'database is locked' in str(e):
-                    self.stdout.write('database is locked')
-                
                 self.stdout.write(str(e))
 
     def follow_hold_invoices(self):

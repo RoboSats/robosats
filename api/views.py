@@ -532,6 +532,11 @@ class InfoView(ListAPIView):
         context['lifetime_satoshis_settled'] = lifetime_volume_settled
         context['lnd_version'] = get_lnd_version()
         context['robosats_running_commit_hash'] = get_commit_robosats()
+        context['alternative_site'] = config('ALTERNATIVE_SITE')
+        context['alternative_name'] = config('ALTERNATIVE_NAME')
+        context['node_alias'] = config('NODE_ALIAS')
+        context['node_id'] = config('NODE_ID')
+        context['network'] = config('NETWORK')
         context['fee'] = FEE
         context['bond_size'] = float(config('BOND_SIZE'))
         if request.user.is_authenticated:
