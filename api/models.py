@@ -6,6 +6,7 @@ from django.template.defaultfilters import truncatechars
 from django.dispatch import receiver
 from django.utils.html import mark_safe
 import uuid
+from django.conf import settings
 
 from decouple import config
 from pathlib import Path
@@ -169,6 +170,8 @@ class Order(models.Model):
     # ratings
     maker_rated = models.BooleanField(default=False, null=False)
     taker_rated = models.BooleanField(default=False, null=False)
+    maker_platform_rated = models.BooleanField(default=False, null=False)
+    taker_platform_rated = models.BooleanField(default=False, null=False)
 
     t_to_expire = {
         0  : int(config('EXP_MAKER_BOND_INVOICE')) ,         # 'Waiting for maker bond'
@@ -207,7 +210,6 @@ def delete_lnpayment_at_order_deletion(sender, instance, **kwargs):
             pass
 
 class Profile(models.Model):
-
     user = models.OneToOneField(User,on_delete=models.CASCADE)
 
     # Total trades
@@ -225,10 +227,13 @@ class Profile(models.Model):
     orders_disputes_started = models.CharField(max_length=999, null=True, default=None, validators=[validate_comma_separated_integer_list], blank=True) # Will only store ID of orders
 
     # RoboHash
-    avatar = models.ImageField(default="static/assets/misc/unknown_avatar.png", verbose_name='Avatar', blank=True)
+    avatar = models.ImageField(default=(settings.STATIC_ROOT+"unknown_avatar.png"), verbose_name='Avatar', blank=True)
 
     # Penalty expiration (only used then taking/cancelling repeatedly orders in the book before comitting bond)
     penalty_expiration = models.DateTimeField(null=True,default=None, blank=True)
+
+    # Platform rate
+    platform_rating = models.PositiveIntegerField(null=True, default=None, blank=True)
 
     @receiver(post_save, sender=User)
     def create_user_profile(sender, instance, created, **kwargs):
@@ -242,7 +247,7 @@ class Profile(models.Model):
     @receiver(pre_delete, sender=User)
     def del_avatar_from_disk(sender, instance, **kwargs):
         try:
-            avatar_file=Path('frontend/' + instance.profile.avatar.url)
+            avatar_file=Path(settings.AVATAR_ROOT + instance.profile.avatar.url)
             avatar_file.unlink()
         except:
             pass
@@ -253,7 +258,7 @@ class Profile(models.Model):
     # to display avatars in admin panel
     def get_avatar(self):
         if not self.avatar:
-            return 'static/assets/misc/unknown_avatar.png'
+            return settings.STATIC_ROOT + 'unknown_avatar.png'
         return self.avatar.url
 
     # method to create a fake table field in read only mode

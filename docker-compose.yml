@@ -1,0 +1,119 @@
+version: '3.9'
+services:
+  redis:
+    image: redis:6.2.6
+    container_name: redis
+    restart: always
+    volumes:
+      - redisdata:/data
+    network_mode: service:tor
+
+  backend:
+    build: .
+    container_name: django-dev
+    restart: always
+    depends_on:
+      - bitcoind
+      - lnd
+      - redis
+    environment:
+      DEVELOPMENT: 1
+    volumes:
+      - .:/usr/src/robosats
+      - /mnt/development/database:/usr/src/database
+      - /mnt/development/lnd:/lnd
+    network_mode: service:tor
+
+  frontend:
+    build: ./frontend
+    container_name: npm-dev
+    restart: always
+    volumes:
+      - ./frontend:/usr/src/frontend
+
+  clean-orders:
+    build: .
+    restart: always
+    container_name: clord-dev
+    command: python3 manage.py clean_orders
+    volumes:
+      - .:/usr/src/robosats
+      - /mnt/development/database:/usr/src/database
+
+  follow-invoices:
+    build: .
+    container_name: invo-dev
+    restart: always
+    depends_on:
+      - bitcoind
+      - lnd
+    command: python3 manage.py follow_invoices
+    volumes:
+      - .:/usr/src/robosats
+      - /mnt/development/database:/usr/src/database
+      - /mnt/development/lnd:/lnd
+    network_mode: service:tor
+
+  celery:
+    build: .
+    container_name: cele-dev
+    restart: always
+    command: celery -A robosats worker --beat -l info -S django
+    environment:
+      REDIS_URL: redis://localhost:6379
+    volumes:
+      - .:/usr/src/robosats
+      - /mnt/development/database:/usr/src/database
+    network_mode: service:tor
+
+  tor:
+    build: ./docker/tor
+    container_name: tor-dev
+    restart: always
+    environment:
+      LOCAL_USER_ID: 1000
+      LOCAL_GROUP_ID: 1000
+    volumes:
+      - /mnt/development/tor/data:/var/lib/tor
+      - /mnt/development/tor/config:/etc/tor
+    ports:
+      - 8000:8000
+
+  lnd:
+    build: ./docker/lnd
+    restart: always
+    network_mode: service:tor
+    container_name: lnd-dev
+    depends_on:
+      - tor
+      - bitcoind
+    volumes:
+      - /mnt/development/tor/data:/var/lib/tor
+      - /mnt/development/tor/config:/etc/tor
+      - /mnt/development/lnd:/home/lnd/.lnd
+      - /mnt/development/lnd:/root/.lnd
+    command: lnd
+    environment:
+      LOCAL_USER_ID: 1000
+      LOCAL_GROUP_ID: 1000
+      LND_RPC_PORT: 10009
+      LND_REST_PORT: 8080
+      AUTO_UNLOCK_PWD: ${AUTO_UNLOCK_PWD}
+
+  bitcoind:
+    build: ./docker/bitcoind
+    container_name: btc-dev
+    restart: always
+    environment:
+      LOCAL_USER_ID: 1000
+      LOCAL_GROUP_ID: 1000
+    depends_on:
+      - tor
+    network_mode: service:tor
+    volumes:
+      - /mnt/development/tor/data:/var/lib/tor:ro
+      - /mnt/development/tor/config:/etc/tor:ro
+      - /mnt/development/bitcoin:/home/bitcoin/.bitcoin
+
+volumes:
+  redisdata:

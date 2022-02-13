@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
+import { Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup, dividerClasses} from "@mui/material"
 import { Link } from 'react-router-dom'
 import getFlags from './getFlags'
 
@@ -22,6 +22,9 @@ const csrftoken = getCookie('csrftoken');
 
 // pretty numbers
 function pn(x) {
+    if(x==null){
+        return(null)
+    }
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
@@ -66,38 +69,49 @@ export default class MakerPage extends Component {
     }
     handlePaymentMethodChange=(e)=>{
         this.setState({
-            payment_method: e.target.value,     
+            payment_method: e.target.value,
+            badPaymentMethod: e.target.value.length > 35,    
         });
     }
     handlePremiumChange=(e)=>{
+        if(e.target.value > 999){
+            var bad_premium = "Must be less than 999%"
+        }
+        if(e.target.value < -100){
+            var bad_premium = "Must be more than -100%"
+        }
+
         this.setState({
-            premium: e.target.value,     
+            premium: e.target.value,
+            badPremium: bad_premium,     
         });
     }
+
     handleSatoshisChange=(e)=>{
-        var bad_sats = e.target.value > this.maxTradeSats ? 
-            ("Must be less than "+pn(this.maxTradeSats)): 
-            (e.target.value < this.minTradeSats ? 
-            ("Must be more than "+pn(this.minTradeSats)): null)
+        if(e.target.value > this.maxTradeSats){
+            var bad_sats = "Must be less than " + pn(this.maxTradeSats)
+        }
+        if(e.target.value < this.minTradeSats){
+            var bad_sats = "Must be more than "+pn(this.minTradeSats)
+        }
 
         this.setState({
             satoshis: e.target.value,
             badSatoshis: bad_sats,      
-        })
-        ;
+        });
     }
     handleClickRelative=(e)=>{
         this.setState({
             is_explicit: false, 
-            satoshis: null,
-            premium: 0,     
         });
+        this.handlePremiumChange();
     }
+    
     handleClickExplicit=(e)=>{
         this.setState({
-            is_explicit: true,
-            premium: null,     
+            is_explicit: true,   
         });
+        this.handleSatoshisChange();
     }
 
     handleCreateOfferButtonPressed=()=>{
@@ -112,8 +126,8 @@ export default class MakerPage extends Component {
                 amount: this.state.amount,
                 payment_method: this.state.payment_method,
                 is_explicit: this.state.is_explicit,
-                premium: this.state.premium,
-                satoshis: this.state.satoshis,
+                premium: this.state.is_explicit ? null: this.state.premium,
+                satoshis: this.state.is_explicit ? this.state.satoshis: null,
             }),
         };
         fetch("/api/make/",requestOptions)
@@ -136,16 +150,17 @@ export default class MakerPage extends Component {
         return this.state.currencies_dict[val.toString()]
     }
 
+
   render() {
     return (
-            <Grid container xs={12} align="center" spacing={1}>
-                <Grid item xs={12} align="center">
-                    <Typography component="h2" variant="h2">
-                        Order Maker
+            <Grid container xs={12} align="center" spacing={1} sx={{minWidth:380}}>
+                {/* <Grid item xs={12} align="center" sx={{minWidth:380}}>
+                    <Typography component="h4" variant="h4">
+                        ORDER MAKER
                     </Typography>
-                </Grid>
+                </Grid> */}
                 <Grid item xs={12} align="center" spacing={1}>
-                <Paper elevation={12} style={{ padding: 8, width:350, align:'center'}}>
+                <Paper elevation={12} style={{ padding: 8, width:240, align:'center'}}>
                     <Grid item xs={12} align="center" spacing={1}>
                     <FormControl component="fieldset">
                         <FormHelperText>
@@ -167,10 +182,12 @@ export default class MakerPage extends Component {
                         </RadioGroup>
                     </FormControl>
                 </Grid>
-                <Grid containter xs={8} alignItems="stretch" style={{ display: "flex" }}>
+                <Grid containter xs={12} alignItems="stretch" style={{ display: "flex" }}>
+                        <div style={{maxWidth:140}}>
+                        <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Amount of fiat to exchange for bitcoin">
                             <TextField
-                                error={this.state.amount == 0} 
-                                helperText={this.state.amount == 0 ? 'Must be more than 0' : null}
+                                error={this.state.amount <= 0} 
+                                helperText={this.state.amount <= 0 ? 'Invalid' : null}
                                 label="Amount"
                                 type="number" 
                                 required="true"
@@ -180,28 +197,32 @@ export default class MakerPage extends Component {
                                 }}
                                 onChange={this.handleAmountChange}
                             />
-                            <Select
-                                required="true" 
-                                defaultValue={this.defaultCurrency} 
-                                inputProps={{
-                                    style: {textAlign:"center"}
-                                }}
-                                onChange={this.handleCurrencyChange}
-                            >
-                                {
-                                Object.entries(this.state.currencies_dict)
-                                .map( ([key, value]) => <MenuItem value={parseInt(key)}>
-                                    {getFlags(value) + " " + value}
-                                    </MenuItem> )
-                                }
-                            </Select>
+                        </Tooltip>
+                            </div>
+                            <div >
+                                <Select
+                                    required="true" 
+                                    defaultValue={this.defaultCurrency} 
+                                    inputProps={{
+                                        style: {textAlign:"center"}
+                                    }}
+                                    onChange={this.handleCurrencyChange}>
+                                        {Object.entries(this.state.currencies_dict)
+                                        .map( ([key, value]) => <MenuItem value={parseInt(key)}>
+                                            {getFlags(value) + " " + value}
+                                            </MenuItem> )}
+                                </Select>
+                            </div>
 
                 </Grid>
                 <br/>
                 <Grid item xs={12} align="center">
-                    <FormControl >
+                    <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Enter your prefered payment methods">
                         <TextField 
+                            sx={{width:240}}
                             label="Payment Method(s)"
+                            error={this.state.badPaymentMethod}
+                            helperText={this.state.badPaymentMethod ? "Must be shorter than 35 characters":""}
                             type="text" 
                             require={true}  
                             inputProps={{
@@ -210,7 +231,7 @@ export default class MakerPage extends Component {
                             }}
                             onChange={this.handlePaymentMethodChange}
                         />
-                    </FormControl>
+                    </Tooltip>
                 </Grid>
 
                 <Grid item xs={12} align="center">
@@ -221,6 +242,7 @@ export default class MakerPage extends Component {
                             </div>
                         </FormHelperText>
                         <RadioGroup row defaultValue="relative">
+                        <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title="Let the price move with the market">
                             <FormControlLabel 
                             value="relative" 
                             control={<Radio color="primary"/>}
@@ -228,6 +250,8 @@ export default class MakerPage extends Component {
                             labelPlacement="Top"
                             onClick={this.handleClickRelative}
                             />
+                        </Tooltip>
+                        <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title="Set a fix amount of satoshis">
                             <FormControlLabel 
                             value="explicit" 
                             control={<Radio color="secondary"/>}
@@ -235,46 +259,64 @@ export default class MakerPage extends Component {
                             labelPlacement="Top"
                             onClick={this.handleClickExplicit}
                             />
+                        </Tooltip>
                         </RadioGroup>
                     </FormControl>
                 </Grid>
     {/* conditional shows either Premium % field or Satoshis field based on pricing method */}
-                { this.state.is_explicit 
-                        ? <Grid item xs={12} align="center">
+                    <Grid item xs={12} align="center">
+                        <div style={{display: this.state.is_explicit ? '':'none'}}>
+                        <TextField
+                                sx={{width:240}}
+                                label="Satoshis"
+                                error={this.state.badSatoshis}
+                                helperText={this.state.badSatoshis}
+                                type="number" 
+                                required="true"
+                                value={this.state.satoshis} 
+                                inputProps={{
+                                    // TODO read these from .env file
+                                    min:this.minTradeSats , 
+                                    max:this.maxTradeSats , 
+                                    style: {textAlign:"center"}
+                                }}
+                                onChange={this.handleSatoshisChange}
+                                // defaultValue={this.defaultSatoshis} 
+                            />
+                        </div>
+                        <div style={{display: this.state.is_explicit ? 'none':''}}>
                             <TextField 
-                                    label="Satoshis"
-                                    error={this.state.badSatoshis}
-                                    helperText={this.state.badSatoshis}
-                                    type="number" 
-                                    required="true" 
-                                    inputProps={{
-                                        // TODO read these from .env file
-                                        min:this.minTradeSats , 
-                                        max:this.maxTradeSats , 
-                                        style: {textAlign:"center"}
-                                    }}
-                                    onChange={this.handleSatoshisChange}
-                                    // defaultValue={this.defaultSatoshis} 
-                                />
-                            </Grid>
-                        :   <Grid item xs={12} align="center">
-                                <TextField 
+                                    sx={{width:240}}
+                                    error={this.state.badPremium}
+                                    helperText={this.state.badPremium}
                                     label="Premium over Market (%)"
                                     type="number" 
                                     // defaultValue={this.defaultPremium} 
                                     inputProps={{
+                                        min: -100, 
+                                        max: 999, 
                                         style: {textAlign:"center"}
                                     }}
                                     onChange={this.handlePremiumChange}
                                 />
-                            </Grid>
-                    }
+                        </div>
+                    </Grid>
                 </Paper>
                 </Grid>
             <Grid item xs={12} align="center">
-                <Button color="primary" variant="contained" onClick={this.handleCreateOfferButtonPressed} >
-                    Create Order
-                </Button>
+                {/* conditions to disable the make button */}
+                {(this.state.amount == null || 
+                    this.state.amount <= 0 || 
+                    (this.state.is_explicit & (this.state.badSatoshis != null || this.state.satoshis == null)) || 
+                    (!this.state.is_explicit & this.state.badPremium != null))
+                    ?
+                    <Tooltip enterTouchDelay="0" title="You must fill the form correctly">
+                        <div><Button disabled color="primary" variant="contained" onClick={this.handleCreateOfferButtonPressed} >Create Order</Button></div>
+                    </Tooltip>
+                    :
+                    <Button color="primary" variant="contained" onClick={this.handleCreateOfferButtonPressed} >Create Order</Button>
+                    } 
+                
             </Grid>
             <Grid item xs={12} align="center">
                 {this.state.badRequest ?
@@ -284,8 +326,8 @@ export default class MakerPage extends Component {
                 : ""}
                 <Typography component="subtitle2" variant="subtitle2">
                     <div align='center'>
-                        Create a BTC {this.state.type==0 ? "buy":"sell"} order for {this.state.amount} {this.state.currencyCode} 
-                        {this.state.is_explicit ? " of " + this.state.satoshis + " Satoshis" : 
+                        Create a BTC {this.state.type==0 ? "buy":"sell"} order for {pn(this.state.amount)} {this.state.currencyCode} 
+                        {this.state.is_explicit ? " of " + pn(this.state.satoshis) + " Satoshis" : 
                             (this.state.premium == 0 ? " at market price" : 
                                 (this.state.premium > 0 ? " at a " + this.state.premium + "% premium":" at a " + -this.state.premium + "% discount")
                             )

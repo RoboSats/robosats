@@ -1,3 +1,4 @@
+import os
 from re import T
 from django.db.models import query
 from rest_framework import status, viewsets
@@ -22,13 +23,15 @@ import hashlib
 from pathlib import Path
 from datetime import timedelta, datetime
 from django.utils import timezone
+from django.conf import settings
 from decouple import config
 
 EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
 FEE = float(config('FEE'))
 RETRY_TIME = int(config('RETRY_TIME'))
 
-avatar_path = Path('frontend/static/assets/avatars')
+
+avatar_path = Path(settings.AVATAR_ROOT)
 avatar_path.mkdir(parents=True, exist_ok=True)
 
 # Create your views here.
@@ -136,20 +139,9 @@ class OrderView(viewsets.ViewSet):
 
         # Add activity status of participants based on last_seen
         if order.taker_last_seen != None:
-            if order.taker_last_seen > (timezone.now() - timedelta(minutes=2)):
-                data['taker_status'] = 'active'
-            elif order.taker_last_seen > (timezone.now() - timedelta(minutes=10)):
-                data['taker_status'] = 'seen_recently'
-            else:
-                data['taker_status'] = 'inactive'
-
+            data['taker_status'] = Logics.user_activity_status(order.taker_last_seen)
         if order.maker_last_seen != None:
-            if order.maker_last_seen > (timezone.now() - timedelta(minutes=2)):
-                data['maker_status'] = 'active'
-            elif order.maker_last_seen > (timezone.now() - timedelta(minutes=10)):
-                data['maker_status'] = 'seen_recently'
-            else:
-                data['maker_status'] = 'inactive'
+            data['maker_status'] = Logics.user_activity_status(order.maker_last_seen)
 
         # 3.b If order is between public and WF2
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
@@ -157,7 +149,6 @@ class OrderView(viewsets.ViewSet):
 
              # 3. c) If maker and Public, add num robots in book, premium percentile and num similar orders.
             if data['is_maker'] and order.status == Order.Status.PUB:
-                data['robots_in_book'] = None       # TODO
                 data['premium_percentile'] = compute_premium_percentile(order)
                 data['num_similar_orders'] = len(Order.objects.filter(currency=order.currency, status=Order.Status.PUB))
         
@@ -287,7 +278,7 @@ class OrderView(viewsets.ViewSet):
         order = Order.objects.get(id=order_id)
 
         # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice' 
-        # 6)'submit_statement' (in dispute), 7)'rate' (counterparty)
+        # 6)'submit_statement' (in dispute), 7)'rate_user' , 'rate_platform'
         action = serializer.data.get('action') 
         invoice = serializer.data.get('invoice')
         statement = serializer.data.get('statement')
@@ -335,8 +326,13 @@ class OrderView(viewsets.ViewSet):
             if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # 6) If action is rate
-        elif action == 'rate' and rating:
+        elif action == 'rate_user' and rating:
             valid, context = Logics.rate_counterparty(order,request.user, rating)
+            if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        # 6) If action is rate_platform
+        elif action == 'rate_platform' and rating:
+            valid, context = Logics.rate_platform(request.user, rating)
             if not valid: return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # If nothing of the above... something else is going on. Probably not allowed!
@@ -419,7 +415,7 @@ class UserView(APIView):
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname, password=token, is_staff=False)
             user = authenticate(request, username=nickname, password=token)
-            user.profile.avatar = str(image_path)[9:] # removes frontend/ from url (ugly, to be fixed) 
+            user.profile.avatar = nickname + '.png'
             login(request, user)
             return Response(context, status=status.HTTP_201_CREATED)
 
@@ -427,9 +423,9 @@ class UserView(APIView):
             user = authenticate(request, username=nickname, password=token)
             if user is not None:
                 login(request, user)
-                # Sends the welcome back message, only if created +30 mins ago
-                if request.user.date_joined < (timezone.now()-timedelta(minutes=30)):
-                    context['found'] = 'We found your Robosat. Welcome back!'
+                # Sends the welcome back message, only if created +3 mins ago
+                if request.user.date_joined < (timezone.now()-timedelta(minutes=3)):
+                    context['found'] = 'We found your Robot avatar. Welcome back!'
                 return Response(context, status=status.HTTP_202_ACCEPTED)
             else:
                 # It is unlikely, but maybe the nickname is taken (1 in 20 Billion change)
@@ -484,7 +480,7 @@ class BookView(ListAPIView):
             
             # Compute current premium for those orders that are explicitly priced.
             data['price'], data['premium'] = Logics.price_and_premium_now(order)
-                
+            data['maker_status'] = Logics.user_activity_status(order.maker_last_seen)
             for key in ('status','taker'): # Non participants should not see the status or who is the taker
                 del data[key]
             
@@ -512,7 +508,7 @@ class InfoView(ListAPIView):
             for tick in queryset:
                 weighted_premiums.append(tick.premium*tick.volume)
                 volumes.append(tick.volume)
-            
+           
             total_volume = sum(volumes)
             # Avg_premium is the weighted average of the premiums by volume
             avg_premium = sum(weighted_premiums) / total_volume
@@ -534,6 +530,11 @@ class InfoView(ListAPIView):
         context['lifetime_satoshis_settled'] = lifetime_volume_settled
         context['lnd_version'] = get_lnd_version()
         context['robosats_running_commit_hash'] = get_commit_robosats()
+        context['alternative_site'] = config('ALTERNATIVE_SITE')
+        context['alternative_name'] = config('ALTERNATIVE_NAME')
+        context['node_alias'] = config('NODE_ALIAS')
+        context['node_id'] = config('NODE_ID')
+        context['network'] = config('NETWORK')
         context['fee'] = FEE
         context['bond_size'] = float(config('BOND_SIZE'))
         if request.user.is_authenticated:

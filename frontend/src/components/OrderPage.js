@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { Chip, Tooltip, Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import MediaQuery from 'react-responsive'
 
@@ -46,6 +46,7 @@ export default class OrderPage extends Component {
         loading: true,
         openCancel: false,
         openCollaborativeCancel: false,
+        openInactiveMaker: false,
         showContractBox: 1,
     };
     this.orderId = this.props.match.params.orderId;
@@ -54,29 +55,29 @@ export default class OrderPage extends Component {
 
     // Refresh delays according to Order status
     this.statusToDelay = {
-      "0": 2000,     //'Waiting for maker bond'
-      "1": 25000,    //'Public'
-      "2": 9999999,  //'Deleted'
-      "3": 2000,     //'Waiting for taker bond'
-      "4": 9999999,  //'Cancelled'
-      "5": 999999,   //'Expired'
-      "6": 3000,     //'Waiting for trade collateral and buyer invoice'
-      "7": 3000,     //'Waiting only for seller trade collateral'
+      "0": 2000,    //'Waiting for maker bond'
+      "1": 25000,   //'Public'
+      "2": 999999,  //'Deleted'
+      "3": 2000,    //'Waiting for taker bond'
+      "4": 999999,  //'Cancelled'
+      "5": 999999,  //'Expired'
+      "6": 3000,    //'Waiting for trade collateral and buyer invoice'
+      "7": 3000,    //'Waiting only for seller trade collateral'
       "8": 8000,    //'Waiting only for buyer invoice'
-      "9": 10000,    //'Sending fiat - In chatroom'
-      "10": 10000,   //'Fiat sent - In chatroom'
-      "11": 30000,   //'In dispute'
-      "12": 9999999, //'Collaboratively cancelled'
-      "13": 3000,    //'Sending satoshis to buyer'
-      "14": 9999999, //'Sucessful trade'
-      "15": 10000,   //'Failed lightning network routing'
-      "16": 9999999, //'Maker lost dispute'
-      "17": 9999999, //'Taker lost dispute'
+      "9": 10000,   //'Sending fiat - In chatroom'
+      "10": 10000,  //'Fiat sent - In chatroom'
+      "11": 30000,  //'In dispute'
+      "12": 999999, //'Collaboratively cancelled'
+      "13": 3000,   //'Sending satoshis to buyer'
+      "14": 999999, //'Sucessful trade'
+      "15": 10000,  //'Failed lightning network routing'
+      "16": 180000, //'Wait for dispute resolution'
+      "17": 180000, //'Maker lost dispute'
+      "18": 180000, //'Taker lost dispute'
     }
   }
 
   completeSetState=(newStateVars)=>{
-
     // In case the reply only has "bad_request"
     // Do not substitute these two for "undefined" as
     // otherStateVars will fail to assign values
@@ -149,10 +150,40 @@ export default class OrderPage extends Component {
   
     } else {
       return (
-        <span> Wait {zeroPad(minutes)}m {zeroPad(seconds)}s </span>
+        <span> You cannot take an order yet! Wait {zeroPad(minutes)}m {zeroPad(seconds)}s </span>
       );
     }
     };
+  
+  countdownTakeOrderRenderer = ({ seconds, completed }) => {
+    if(isNaN(seconds)){
+      return (
+      <>
+        <this.InactiveMakerDialog/>
+        <Button variant='contained' color='primary' 
+            onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}>
+            Take Order
+          </Button>
+      </>)
+    }
+    if (completed) {
+      // Render a completed state
+      return (
+        <>
+          <this.InactiveMakerDialog/>
+          <Button variant='contained' color='primary' 
+            onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}>
+            Take Order
+          </Button>
+        </>
+      );
+    } else{
+      return(
+      <Tooltip enterTouchDelay="0" title="Wait until you can take an order"><div>
+      <Button disabled={true} variant='contained' color='primary' onClick={this.takeOrder}>Take Order</Button>
+      </div></Tooltip>)
+    }
+  };
 
   LinearDeterminate =()=> {
     const [progress, setProgress] = React.useState(0);
@@ -177,18 +208,21 @@ export default class OrderPage extends Component {
     );
   }
 
-  handleClickTakeOrderButton=()=>{
-      const requestOptions = {
-          method: 'POST',
-          headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
-          body: JSON.stringify({
-            'action':'take',
-          }),
+  takeOrder=()=>{
+    this.setState({loading:true})
+
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+        body: JSON.stringify({
+          'action':'take',
+        }),
       };
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
       .then((response) => response.json())
       .then((data) => this.completeSetState(data));
   }
+
   getCurrencyDict() {
     fetch('/static/assets/currencies.json')
       .then((response) => response.json())
@@ -209,16 +243,17 @@ export default class OrderPage extends Component {
   }
 
   handleClickConfirmCancelButton=()=>{
-      const requestOptions = {
-          method: 'POST',
-          headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
-          body: JSON.stringify({
-            'action':'cancel',
-          }),
-      };
-      fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
-      .then((response) => response.json())
-      .then((data) => this.getOrderDetails(data.id));
+    this.setState({loading:true})
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+        body: JSON.stringify({
+          'action':'cancel',
+        }),
+    };
+    fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+    .then((response) => response.json())
+    .then((data) => this.getOrderDetails(data.id));
     this.handleClickCloseConfirmCancelDialog();
   }
 
@@ -253,6 +288,36 @@ export default class OrderPage extends Component {
     )
   }
 
+  handleClickOpenInactiveMakerDialog = () => {
+    this.setState({openInactiveMaker: true});
+  };
+  handleClickCloseInactiveMakerDialog = () => {
+      this.setState({openInactiveMaker: false});
+  };
+
+  InactiveMakerDialog =() =>{
+  return(
+      <Dialog
+      open={this.state.openInactiveMaker}
+      onClose={this.handleClickCloseInactiveMakerDialog}
+      aria-labelledby="inactive-maker-dialog-title"
+      aria-describedby="inactive-maker-description"
+      >
+        <DialogTitle id="inactive-maker-dialog-title">
+          {"The maker is away"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="cancel-dialog-description">
+            By taking this order you risk wasting your time.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClickCloseInactiveMakerDialog} autoFocus>Go back</Button>
+          <Button onClick={this.takeOrder}> Take Order </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
   handleClickConfirmCollaborativeCancelButton=()=>{
       const requestOptions = {
           method: 'POST',
@@ -337,68 +402,67 @@ export default class OrderPage extends Component {
 
   // Colors for the status badges
   statusBadgeColor(status){
-    if(status=='active'){
-      return("success")
-    }
-    if(status=='seen_recently'){
-      return("warning")
-    }
-    if(status=='inactive'){
-      return('error')
-    }
+    if(status=='Active'){return("success")}
+    if(status=='Seen recently'){return("warning")}
+    if(status=='Inactive'){return('error')}
   }
+
   orderBox=()=>{
     return(
       <Grid container spacing={1} >
         <Grid item xs={12} align="center">
           <MediaQuery minWidth={920}>
             <Typography component="h5" variant="h5">
-              Order Details
+              Order Box
             </Typography>
           </MediaQuery>
           <Paper elevation={12} style={{ padding: 8,}}>
           <List dense="true">
             <ListItem >
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
-                <Badge variant="dot" badgeContent="" color={this.statusBadgeColor(this.state.maker_status)}>
+              <Tooltip placement="top" enterTouchDelay="0" title={this.state.maker_status} >
+                <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.maker_status)}>
                   <Avatar className="flippedSmallAvatar"
                     alt={this.state.maker_nick} 
                     src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'} 
                     />
                 </Badge>
+              </Tooltip>
               </ListItemAvatar>
               <ListItemText primary={this.state.maker_nick + (this.state.type ? " (Seller)" : " (Buyer)")} secondary="Order maker" align="right"/>
             </ListItem>
-            <Divider />
 
             {this.state.is_participant ?
               <>
                 {this.state.taker_nick!='None' ?
                   <>
+                    <Divider />
                     <ListItem align="left">
                       <ListItemText primary={this.state.taker_nick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order taker"/>
                       <ListItemAvatar > 
-                        <Badge variant="dot" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
+                      <Tooltip enterTouchDelay="0" title={this.state.taker_status} >
+                        <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
                           <Avatar className="smallAvatar"
                             alt={this.state.taker_nick} 
                             src={window.location.origin +'/static/assets/avatars/' + this.state.taker_nick + '.png'}
                             />
                         </Badge>
+                        </Tooltip>
                       </ListItemAvatar>
-                    </ListItem>
-                    <Divider />               
+                    </ListItem>           
                   </>: 
                   ""
                   }
+                  <Divider><Chip label='Order Details'/></Divider>
                   <ListItem>
                     <ListItemIcon>
                       <ArticleIcon/>
                     </ListItemIcon>
                     <ListItemText primary={this.state.status_message} secondary="Order status"/>
                   </ListItem>
-                  <Divider />
+                  <Divider/>
               </>
-            :""
+            :<Divider><Chip label='Order Details'/></Divider>
             }
             
             <ListItem>
@@ -458,7 +522,7 @@ export default class OrderPage extends Component {
               <Divider />
               <Grid item xs={12} align="center">
                 <Alert severity="warning" sx={{maxWidth:360}}>
-                  You cannot take an order yet! <Countdown date={new Date(this.state.penalty)} renderer={this.countdownPenaltyRenderer} />
+                   <Countdown date={new Date(this.state.penalty)} renderer={this.countdownPenaltyRenderer} />
                 </Alert>  
               </Grid>
             </>
@@ -498,7 +562,7 @@ export default class OrderPage extends Component {
           :
             <Grid container spacing={1}>
               <Grid item xs={12} align="center">
-                <Button variant='contained' color='primary' onClick={this.handleClickTakeOrderButton}>Take Order</Button>
+                <Countdown date={new Date(this.state.penalty)} renderer={this.countdownTakeOrderRenderer} />
               </Grid>
               <Grid item xs={12} align="center">
                 <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>Back</Button>
@@ -517,7 +581,7 @@ export default class OrderPage extends Component {
             {this.orderBox()}
         </Grid>
         <Grid item xs={6} align="left">
-          <TradeBox width={330} data={this.state} completeSetState={this.completeSetState} />
+          <TradeBox push={this.props.history.push} width={330} data={this.state} completeSetState={this.completeSetState} />
         </Grid>
       </Grid>
     )
@@ -543,8 +607,8 @@ export default class OrderPage extends Component {
       <Box sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={value} onChange={handleChange} variant="fullWidth" >
-            <Tab label="Order Details" {...this.a11yProps(0)} />
-            <Tab label="Contract Box" {...this.a11yProps(1)} />
+            <Tab label="Order" {...this.a11yProps(0)} />
+            <Tab label="Contract" {...this.a11yProps(1)} />
           </Tabs>
         </Box>
         <Grid container spacing={2}>
@@ -553,7 +617,7 @@ export default class OrderPage extends Component {
                 {this.orderBox()}
             </div>
             <div style={{display: this.state.showContractBox == 1 ? '':'none'}}>
-              <TradeBox width={330} data={this.state} completeSetState={this.completeSetState} />
+              <TradeBox push={this.props.history.push} width={330} data={this.state} completeSetState={this.completeSetState} />
             </div>
           </Grid>
         </Grid>

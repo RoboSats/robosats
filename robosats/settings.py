@@ -10,24 +10,33 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+STATIC_URL = '/static/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6^&6uw$b5^en%(cu2kc7_o)(mgpazx#j_znwlym0vxfamn2uo-'
+SECRET_KEY = config('SECRET_KEY')
+
+DEBUG = False
+STATIC_URL = 'static/'
+STATIC_ROOT ='/usr/src/static/'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if os.environ.get('DEVELOPMENT'):
+    DEBUG = True
+    STATIC_ROOT = 'frontend/static/'
+    
+AVATAR_ROOT = STATIC_ROOT + 'assets/avatars/'
 
-ALLOWED_HOSTS = [config('HOST_NAME'),'127.0.0.1']
-
+ALLOWED_HOSTS = [config('HOST_NAME'),config('HOST_NAME2'),config('LOCAL_ALIAS'),'127.0.0.1']
 
 # Application definition
 
@@ -82,13 +91,16 @@ WSGI_APPLICATION = 'robosats.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 
+DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': '/usr/src/database/db.sqlite3',
+            'OPTIONS': {
+                'timeout': 20,  # in seconds
+                }
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

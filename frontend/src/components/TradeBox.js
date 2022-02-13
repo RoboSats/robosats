@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { IconButton, Paper, Rating, Button, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { IconButton, Paper, Rating, Button, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
-import Countdown from 'react-countdown';
+import Countdown, { zeroPad} from 'react-countdown';
 import Chat from "./Chat"
 import MediaQuery from 'react-responsive'
 import QrReader from 'react-qr-reader'
@@ -234,8 +234,8 @@ export default class TradeBox extends Component {
         <Divider/>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2">
-            Please wait for the taker to confirm by locking a bond. 
-            If the taker does not lock a bond in time the orer will be made
+            Please wait for the taker to lock a bond. 
+            If the taker does not lock a bond in time, the order will be made
             public again.
           </Typography>
         </Grid>
@@ -361,6 +361,8 @@ export default class TradeBox extends Component {
 
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
+          {/* Make confirmation sound for HTLC received. */}
+          <this.Sound soundFileName="locked-invoice"/>
           <Typography color="primary" component="subtitle1" variant="subtitle1">
             <b> Submit a LN invoice for {pn(this.props.data.invoice_amount)} Sats </b>
           </Typography>
@@ -547,12 +549,31 @@ export default class TradeBox extends Component {
     .then((data) => this.props.completeSetState(data));
 }
 
-handleRatingChange=(e)=>{
+handleRatingUserChange=(e)=>{
   const requestOptions = {
       method: 'POST',
       headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
       body: JSON.stringify({
-        'action': "rate",
+        'action': "rate_user",
+        'rating': e.target.value,
+      }),
+  };
+  fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+  .then((response) => response.json())
+  .then((data) => this.props.completeSetState(data));
+}
+
+handleRatingRobosatsChange=(e)=>{
+  if (this.state.rating_platform != null){
+    return null
+  }
+  this.setState({rating_platform:e.target.value});
+
+  const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+      body: JSON.stringify({
+        'action': "rate_platform",
         'rating': e.target.value,
       }),
   };
@@ -670,14 +691,38 @@ handleRatingChange=(e)=>{
         </Grid>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
-            What do you think of <b>{this.props.data.is_maker ? this.props.data.taker_nick : this.props.data.maker_nick}</b>?
+            What do you think of ⚡<b>{this.props.data.is_maker ? this.props.data.taker_nick : this.props.data.maker_nick}</b>⚡?
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          <Rating name="size-large" defaultValue={2} size="large" onChange={this.handleRatingChange} />
+          <Rating name="size-large" defaultValue={0} size="large" onChange={this.handleRatingUserChange} />
         </Grid>
         <Grid item xs={12} align="center">
-          <Button color='primary' href='/' component="a">Start Again</Button> 
+          <Typography component="body2" variant="body2" align="center">
+            What do you think of 🤖<b>RoboSats</b>🤖?
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Rating name="size-large" defaultValue={0} size="large" onChange={this.handleRatingRobosatsChange} />
+        </Grid>
+        {this.state.rating_platform==5 ?
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body2" align="center">
+            <p>Thank you! RoboSats loves you too ❤️</p>
+            <p>RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!</p>
+          </Typography>
+        </Grid>
+        : null}
+        {this.state.rating_platform!=5 & this.state.rating_platform!=null ?
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body2" align="center">
+            Thank you for using Robosats! Let us know what you did not like and how the platform could improve 
+            (<a href="https://t.me/robosats">Telegram</a> / <a href="https://github.com/Reckless-Satoshi/robosats/issues">Github</a>)
+          </Typography>
+        </Grid>
+        : null}
+        <Grid item xs={12} align="center">
+          <Button color='primary' onClick={() => {this.props.push('/')}}>Start Again</Button> 
         </Grid>
       </Grid>
     )
@@ -696,10 +741,27 @@ handleRatingChange=(e)=>{
             RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must
             be online in order to receive payments.
           </Typography>
+        <br/>
+        <Grid item xs={12} align="center">
+          <CircularProgress/>
+        </Grid>
         </Grid>
       </Grid>
     )
   }
+
+  // Countdown Renderer callback with condition 
+  countdownRenderer = ({ minutes, seconds, completed }) => {
+    if (completed) {
+      // Render a completed state
+      return (<div align="center"><span> Retrying! </span><br/><CircularProgress/></div> );
+  
+    } else {
+      return (
+        <span>{zeroPad(minutes)}m {zeroPad(seconds)}s </span>
+      );
+    }
+    };
 
   showRoutingFailed=()=>{
     // TODO If it has failed 3 times, ask for a new invoice.
@@ -713,7 +775,7 @@ handleRatingChange=(e)=>{
           </Grid>
           <Grid item xs={12} align="center">
             <Typography component="body2" variant="body2" align="center">
-              Your invoice has expires or more than 3 payments have been attempted.
+              Your invoice has expires or more than 3 payments attempts have been made.
             </Typography>
           </Grid>
           <Grid item xs={12} align="center">

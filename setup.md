@@ -1,4 +1,46 @@
 # Set up
+# The easy way
+## With Docker (-dev containers running on testnet)
+Spinning up docker for the first time
+```
+docker-compose build --no-cache
+docker-compose up -d
+docker exec -it django-dev python3 manage.py makemigrations
+docker exec -it django-dev python3 manage.py migrate
+docker exec -it django-dev python3 manage.py createsuperuser
+docker-compose restart
+```
+
+Spinning up any other time:
+`docker-compose up -d`
+
+Then monitor in a terminal the Django dev docker service
+`docker attach django-dev`
+
+And the NPM dev docker service
+`docker attach npm-dev`
+
+You could also just check all services logs
+`docker-compose logs -f`
+
+Ready to roll! But maybe you also are interested on these:
+
+Unlock or 'create' the lnd node
+`docker exec -it lnd-dev lncli unlock`
+
+Create p2wkh addresses
+`docker exec -it lnd-dev lncli --network=testnet newaddress p2wkh`
+
+Wallet balance
+`docker exec -it lnd-dev lncli --network=testnet walletbalance`
+
+Connect
+`docker exec -it lnd-dev lncli --network=testnet connect node_id@ip:9735`
+
+Open channel
+`docker exec -it lnd-dev lncli --network=testnet openchannel node_id --local_amt LOCAL_AMT --push_amt PUSH_AMT`
+
+# The harder way
 ## Django development environment
 ### Install Python and pip
 `sudo apt install python3 python3 pip`
@@ -99,7 +141,16 @@ to
 
 `from . import lightning_pb2 as lightning__pb2`
 
-Same for every other file
+Same for every other file.
+
+Generated files can be automatically patched like this:
+```
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/router_pb2.py
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/invoices_pb2.py
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/router_pb2_grpc.py
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/lightning_pb2_grpc.py
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/invoices_pb2_grpc.py
+```
 
 ## React development environment
 ### Install npm
@@ -131,7 +182,7 @@ npm install react-qr-reader
 ```
 Note we are using mostly MaterialUI V5 (@mui/material) but Image loading from V4 (@material-ui/core) extentions (so both V4 and V5 are needed)
 
-### Launch the React render
+### Launch
 from frontend/ directory
 `npm run dev`
 

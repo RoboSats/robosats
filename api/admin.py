@@ -41,7 +41,7 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
 
 @admin.register(Profile)
 class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
-    list_display = ('avatar_tag','id','user_link','total_contracts','total_ratings','avg_rating','num_disputes','lost_disputes')
+    list_display = ('avatar_tag','id','user_link','total_contracts','platform_rating','total_ratings','avg_rating','num_disputes','lost_disputes')
     list_display_links = ('avatar_tag','id')
     change_links =['user']
     readonly_fields = ['avatar_tag']

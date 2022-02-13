@@ -1,6 +1,7 @@
 from datetime import timedelta
 from django.utils import timezone
 from api.lightning.node import LNNode
+from django.db.models import Q
 
 from api.models import Order, LNPayment, MarketTick, User, Currency
 from decouple import config
@@ -30,7 +31,8 @@ FIAT_EXCHANGE_DURATION = int(config('FIAT_EXCHANGE_DURATION'))
 
 class Logics():
 
-    def validate_already_maker_or_taker(user):
+    @classmethod
+    def validate_already_maker_or_taker(cls, user):
         '''Validates if a use is already not part of an active order'''
 
         active_order_status = [Order.Status.WFB, Order.Status.PUB, Order.Status.TAK,
@@ -45,6 +47,14 @@ class Logics():
         queryset = Order.objects.filter(taker=user, status__in=active_order_status)
         if queryset.exists():
             return False, {'bad_request':'You are already taker of an active order'}, queryset[0]
+        
+        # Edge case when the user is in an order that is failing payment and he is the buyer
+        queryset = Order.objects.filter( Q(maker=user) | Q(taker=user), status=Order.Status.FAI)
+        if queryset.exists():
+            order = queryset[0]
+            if cls.is_buyer(order, user):
+                return False, {'bad_request':'You are still pending a payment from a recent order'}, order
+
         return True, None, None
 
     def validate_order_size(order):
@@ -54,6 +64,14 @@ class Logics():
         if order.t0_satoshis < MIN_TRADE:
             return False, {'bad_request': 'Your order is too small. It is worth '+'{:,}'.format(order.t0_satoshis)+' Sats now, but the limit is '+'{:,}'.format(MIN_TRADE)+ ' Sats'}
         return True, None
+
+    def user_activity_status(last_seen):
+        if last_seen > (timezone.now() - timedelta(minutes=2)):
+            return 'Active'
+        elif last_seen > (timezone.now() - timedelta(minutes=10)):
+            return 'Seen recently'
+        else:
+            return 'Inactive'
 
     @classmethod    
     def take(cls, order, user):
@@ -284,7 +302,7 @@ class Logics():
             return False, {'bad_request':'Only the buyer of this order can provide a buyer invoice.'}
         if not order.taker_bond:
             return False, {'bad_request':'Wait for your order to be taken.'}
-        if not (order.taker_bond.status == order.maker_bond.status == LNPayment.Status.LOCKED):
+        if not (order.taker_bond.status == order.maker_bond.status == LNPayment.Status.LOCKED) and not order.status == Order.Status.FAI:
             return False, {'bad_request':'You cannot submit a invoice while bonds are not locked.'}
 
         num_satoshis = cls.payout_amount(order, user)[1]['invoice_amount']
@@ -329,9 +347,12 @@ class Logics():
         
         # If the order status is 'Failed Routing'. Retry payment.
         if order.status == Order.Status.FAI:
-            # Double check the escrow is settled.
             if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
-                follow_send_payment(order.payout)
+                order.status = Order.Status.PAY
+                order.payout.status = LNPayment.Status.FLIGHT
+                order.payout.routing_attempts = 0
+                order.payout.save()
+                order.save()
 
         order.save()
         return True, None
@@ -418,6 +439,7 @@ class Logics():
         elif order.status in [Order.Status.PUB, Order.Status.TAK, Order.Status.WF2, Order.Status.WFE] and order.maker == user:
             #Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.maker_bond)
+            cls.return_bond(order.taker_bond) # returns taker bond
             if valid:
                 order.status = Order.Status.UCA
                 order.save()
@@ -508,13 +530,20 @@ class Logics():
         order.last_satoshis = cls.satoshis_now(order)
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
 
-        description = f"RoboSats - Publishing '{str(order)}' - This is a maker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel."
+        description = f"RoboSats - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally."
 
         # Gen hold Invoice
-        hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
-                                            description, 
-                                            invoice_expiry=Order.t_to_expire[Order.Status.WFB], 
-                                            cltv_expiry_secs=BOND_EXPIRY*3600)
+        try:
+            hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
+                                                description, 
+                                                invoice_expiry=Order.t_to_expire[Order.Status.WFB], 
+                                                cltv_expiry_secs=BOND_EXPIRY*3600)
+        except Exception as e:
+            print(str(e))
+            if 'failed to connect to all addresses' in str(e):
+                return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware.'}
+            if 'wallet locked' in str(e):
+                return False, {'bad_request':"This is weird, RoboSats' lightning wallet is locked. Check in the Telegram group, maybe the staff has died."}
         
         order.maker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.MAKEBOND, 
@@ -589,13 +618,18 @@ class Logics():
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
         pos_text = 'Buying' if cls.is_buyer(order, user) else 'Selling'
         description = (f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
-            + " - This is a taker bond, it will freeze in your wallet temporarily and automatically return. It will be charged if you cheat or cancel.")
+            + " - Taker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally.")
 
         # Gen hold Invoice
-        hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
-                                                description,
-                                                invoice_expiry=Order.t_to_expire[Order.Status.TAK], 
-                                                cltv_expiry_secs=BOND_EXPIRY*3600)
+        try:
+            hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
+                                                    description,
+                                                    invoice_expiry=Order.t_to_expire[Order.Status.TAK], 
+                                                    cltv_expiry_secs=BOND_EXPIRY*3600)
+        
+        except Exception as e:
+            if 'status = StatusCode.UNAVAILABLE' in str(e):
+                return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware.'}
         
         order.taker_bond = LNPayment.objects.create(
             concept = LNPayment.Concepts.TAKEBOND, 
@@ -654,14 +688,20 @@ class Logics():
 
         # If there was no taker_bond object yet, generate one
         escrow_satoshis = order.last_satoshis # Amount was fixed when taker bond was locked
-        description = f"RoboSats - Escrow amount for '{str(order)}' - The escrow will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
+        description = f"RoboSats - Escrow amount for '{str(order)}' - It WILL FREEZE IN YOUR WALLET. It will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
 
         # Gen hold Invoice
-        hold_payment = LNNode.gen_hold_invoice(escrow_satoshis, 
-                                                description,
-                                                invoice_expiry=Order.t_to_expire[Order.Status.WF2], 
-                                                cltv_expiry_secs=ESCROW_EXPIRY*3600)
+        try:
+            hold_payment = LNNode.gen_hold_invoice(escrow_satoshis, 
+                                                    description,
+                                                    invoice_expiry=Order.t_to_expire[Order.Status.WF2], 
+                                                    cltv_expiry_secs=ESCROW_EXPIRY*3600)
         
+        except Exception as e:
+            if 'status = StatusCode.UNAVAILABLE' in str(e):
+                return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware.'}
+        
+
         order.trade_escrow = LNPayment.objects.create(
             concept = LNPayment.Concepts.TRESCROW, 
             type = LNPayment.Types.HOLD, 
@@ -776,13 +816,20 @@ class Logics():
                     # RETURN THE BONDS // Probably best also do it even if payment failed
                     cls.return_bond(order.taker_bond)
                     cls.return_bond(order.maker_bond)
-                    is_payed, context = follow_send_payment(order.payout) ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
-                    if is_payed:
-                        order.save()
-                        return True, context
-                    else:
-                        # error handling here
-                        return False, context
+                    ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
+                    ##### Backgroun process "follow_invoices" will try to pay this invoice until success
+                    order.status = Order.Status.PAY
+                    order.payout.status = LNPayment.Status.FLIGHT
+                    order.payout.save()
+                    order.save()
+                    return True, None
+                    # is_payed, context = follow_send_payment(order.payout) ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
+                    # if is_payed:
+                    #     order.save()
+                    #     return True, context
+                    # else:
+                    #     # error handling here
+                    #     return False, context
         else:
             return False, {'bad_request':'You cannot confirm the fiat payment at this stage'}
 
@@ -809,4 +856,10 @@ class Logics():
         else:
             return False, {'bad_request':'You cannot rate your counterparty yet.'}
 
+        return True, None
+
+    @classmethod
+    def rate_platform(cls, user, rating):
+        user.profile.platform_rating = rating
+        user.profile.save()
         return True, None

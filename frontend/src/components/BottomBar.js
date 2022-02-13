@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {Badge, TextField, ListItemAvatar, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import {Badge, Tooltip, TextField, ListItemAvatar, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
 import { Link } from 'react-router-dom'
 
@@ -19,6 +19,8 @@ import PublicIcon from '@mui/icons-material/Public';
 import NumbersIcon from '@mui/icons-material/Numbers';
 import PasswordIcon from '@mui/icons-material/Password';
 import ContentCopy from "@mui/icons-material/ContentCopy";
+import DnsIcon from '@mui/icons-material/Dns';
+import WebIcon from '@mui/icons-material/Web';
 
 // pretty numbers
 function pn(x) {
@@ -42,6 +44,8 @@ export default class BottomBar extends Component {
             robosats_running_commit_hash: '000000000000000',
             openProfile: false,
             profileShown: false,
+            alternative_site: 'robosats...',
+            node_id: '00000000',
         };
         this.getInfo();
       }
@@ -55,7 +59,7 @@ export default class BottomBar extends Component {
         fetch('/api/info/')
           .then((response) => response.json())
           .then((data) => this.setState(data) &
-          this.props.setAppState({nickname:data.nickname}));
+          this.props.setAppState({nickname:data.nickname, loading:false}));
       }
 
     handleClickOpenStatsForNerds = () => {
@@ -86,9 +90,36 @@ export default class BottomBar extends Component {
 
                 <Divider/>
                 <ListItem>
+                    <ListItemIcon><DnsIcon/></ListItemIcon>
+                    {this.state.network == 'testnet'? 
+                    <ListItemText secondary={this.state.node_alias}>
+                         <a target="_blank" href={"https://1ml.com/testnet/node/" 
+                        + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (1ML)"}
+                        </a>
+                    </ListItemText>
+                    :
+                    <ListItemText secondary={this.state.node_alias}>
+                         <a target="_blank" href={"https://1ml.com/node/" 
+                        + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (1ML)"}
+                        </a>
+                    </ListItemText>
+                    }
+                </ListItem>
+
+                <Divider/>
+                <ListItem>
+                    <ListItemIcon><WebIcon/></ListItemIcon>
+                    <ListItemText secondary={this.state.alternative_name}>
+                        <a target="_blank" href={"http://"+this.state.alternative_site}>{this.state.alternative_site.slice(0, 12)+"...onion"}
+                        </a>
+                    </ListItemText>
+                </ListItem>
+
+                <Divider/>
+                <ListItem>
                     <ListItemIcon><GitHubIcon/></ListItemIcon>
                     <ListItemText secondary="Currently running commit hash">
-                        <a href={"https://github.com/Reckless-Satoshi/robosats/tree/" 
+                        <a target="_blank" href={"https://github.com/Reckless-Satoshi/robosats/tree/" 
                         + this.state.robosats_running_commit_hash}>{this.state.robosats_running_commit_hash.slice(0, 12)+"..."}
                         </a>
                     </ListItemText>
@@ -202,7 +233,7 @@ export default class BottomBar extends Component {
                     <ListItemAvatar>
                     <Avatar className='profileAvatar' 
                         sx={{ width: 65, height:65 }}
-                        alt={this.props.nickname} 
+                        alt={this.props.nickname}
                         src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
                         />
                     </ListItemAvatar>
@@ -264,17 +295,25 @@ bottomBarDesktop =()=>{
                 <Grid container xs={12}>
 
                     <Grid item xs={2}>
+                        <div style={{display: this.props.avatarLoaded ? '':'none'}}>                     
                         <ListItemButton onClick={this.handleClickOpenProfile} >
+                            <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
+                                        title="You have an active order">
                                 <ListItemAvatar sx={{ width: 30, height: 30 }} >
                                     <Badge badgeContent={(this.state.active_order_id > 0 & !this.state.profileShown) ? "": null} color="primary">
                                     <Avatar className='flippedSmallAvatar' sx={{margin: 0, top: -13}}
                                     alt={this.props.nickname} 
-                                    src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
+                                    imgProps={{
+                                        onLoad:() => this.props.setAppState({avatarLoaded: true}),
+                                    }} 
+                                    src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null}
                                     />
                                     </Badge>
                                 </ListItemAvatar>
-                                <ListItemText primary={this.props.nickname}/>
-                            </ListItemButton>
+                            </Tooltip>
+                            <ListItemText primary={this.props.nickname}/>
+                        </ListItemButton>
+                        </div>
                     </Grid>
 
                     <Grid item xs={2}>
@@ -354,19 +393,23 @@ bottomBarDesktop =()=>{
                             </Select>
                         </Grid>
                         <Grid item xs={3}>
+                        <Tooltip enterTouchDelay="250" title="Show community and support links">
                             <IconButton 
                             color="primary" 
                             aria-label="Community" 
                             onClick={this.handleClickOpenCommunity} >
                                 <PeopleIcon />
                             </IconButton>
+                        </Tooltip>
                         </Grid>
                         <Grid item xs={3}> 
-                            <IconButton color="primary" 
-                                aria-label="Stats for Nerds" 
-                                onClick={this.handleClickOpenStatsForNerds} >
-                                <SettingsIcon />
-                            </IconButton>
+                            <Tooltip enterTouchDelay="250" title="Show stats for nerds">
+                                <IconButton color="primary" 
+                                    aria-label="Stats for Nerds" 
+                                    onClick={this.handleClickOpenStatsForNerds} >
+                                    <SettingsIcon />
+                                </IconButton>
+                            </Tooltip>
                         </Grid>
 
                     </Grid>
@@ -469,46 +512,63 @@ bottomBarPhone =()=>{
                 <Grid container xs={12}>
 
                     <Grid item xs={1.6}>
-                    <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, top: -13, }} >
-                        <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "": null} color="primary">
-                            <Avatar className='flippedSmallAvatar' 
-                            alt={this.props.nickname} 
-                            src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
-                            />
-                        </Badge>
-                    </IconButton>
+                    <div style={{display: this.props.avatarLoaded ? '':'none'}}>
+                    <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
+                        title="You have an active order">
+                        <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, bottom: 17, right: 8}} >
+                            <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "": null} color="primary">
+                                <Avatar className='phoneFlippedSmallAvatar'
+                                sx={{ width: 55, height:55 }} 
+                                alt={this.props.nickname} 
+                                imgProps={{
+                                    onLoad:() => this.props.setAppState({avatarLoaded: true}),
+                                }} 
+                                src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
+                                />
+                            </Badge>
+                        </IconButton>
+                    </Tooltip>
+                    </div>
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
-                        <IconButton onClick={this.handleClickOpenExchangeSummary} >
-                        <Badge badgeContent={this.state.num_public_buy_orders}  color="action">
-                            <InventoryIcon />
-                        </Badge>
-                        </IconButton>
+                        <Tooltip enterTouchDelay="300" title="Number of public BUY orders"> 
+                            <IconButton onClick={this.handleClickOpenExchangeSummary} >
+                            <Badge badgeContent={this.state.num_public_buy_orders}  color="action">
+                                <InventoryIcon />
+                            </Badge>
+                            </IconButton>
+                        </Tooltip> 
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
-                        <IconButton onClick={this.handleClickOpenExchangeSummary} >
-                        <Badge badgeContent={this.state.num_public_sell_orders}  color="action">
-                            <SellIcon />
-                        </Badge>
-                        </IconButton>
+                        <Tooltip enterTouchDelay="300" title="Number of public SELL orders">
+                            <IconButton onClick={this.handleClickOpenExchangeSummary} >
+                            <Badge badgeContent={this.state.num_public_sell_orders}  color="action">
+                                <SellIcon />
+                            </Badge>
+                            </IconButton>
+                        </Tooltip>
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
-                        <IconButton onClick={this.handleClickOpenExchangeSummary} >
-                        <Badge badgeContent={this.state.active_robots_today}  color="action">
-                            <SmartToyIcon />
-                        </Badge>
-                        </IconButton>
+                        <Tooltip enterTouchDelay="300" title="Today active robots">
+                            <IconButton onClick={this.handleClickOpenExchangeSummary} >
+                            <Badge badgeContent={this.state.active_robots_today}  color="action">
+                                <SmartToyIcon />
+                            </Badge>
+                            </IconButton>
+                        </Tooltip>
                     </Grid>
 
                     <Grid item xs={1.8} align="center">
-                        <IconButton onClick={this.handleClickOpenExchangeSummary} >
-                        <Badge badgeContent={this.state.today_avg_nonkyc_btc_premium+"%"}  color="action">
-                            <PriceChangeIcon />
-                        </Badge>
-                        </IconButton>
+                        <Tooltip enterTouchDelay="300" title="Today non-KYC bitcoin premium"> 
+                            <IconButton onClick={this.handleClickOpenExchangeSummary} >
+                            <Badge badgeContent={this.state.today_avg_nonkyc_btc_premium+"%"}  color="action">
+                                <PriceChangeIcon />
+                            </Badge>
+                            </IconButton>
+                        </Tooltip>
                     </Grid>
 
                     <Grid container item xs={3.8}>
@@ -523,19 +583,23 @@ bottomBarPhone =()=>{
                             </Select>
                         </Grid>
                         <Grid item xs={3}>
-                        <IconButton color="primary" 
-                            aria-label="Stats for Nerds" 
-                            onClick={this.handleClickOpenStatsForNerds} >
-                            <SettingsIcon />
-                        </IconButton>
-                        </Grid>
-                        <Grid item xs={3}>
+                        <Tooltip enterTouchDelay="250" title="Show community and support links">
                             <IconButton 
                             color="primary" 
                             aria-label="Community" 
                             onClick={this.handleClickOpenCommunity} >
                                 <PeopleIcon />
                             </IconButton>
+                        </Tooltip>
+                        </Grid>
+                        <Grid item xs={3}>
+                        <Tooltip enterTouchDelay="250" title="Show stats for nerds">
+                            <IconButton color="primary" 
+                                aria-label="Stats for Nerds" 
+                                onClick={this.handleClickOpenStatsForNerds} >
+                                <SettingsIcon />
+                            </IconButton>
+                        </Tooltip>
                         </Grid>
 
                     </Grid>

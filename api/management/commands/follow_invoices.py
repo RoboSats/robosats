@@ -27,11 +27,11 @@ class Command(BaseCommand):
 
             try:
                 self.follow_hold_invoices()
-                self.retry_payments()
             except Exception as e:
-                if 'database is locked' in str(e):
-                    self.stdout.write('database is locked')
-                
+                self.stdout.write(str(e))
+            try:
+                self.send_payments()
+            except Exception as e:
                 self.stdout.write(str(e))
 
     def follow_hold_invoices(self):
@@ -117,18 +117,32 @@ class Command(BaseCommand):
             self.stdout.write(str(timezone.now()))
             self.stdout.write(str(debug))
 
-    def retry_payments(self):
-        ''' Checks if any payment is due for retry, and tries to pay it'''
+    def send_payments(self):
+        ''' 
+        Checks for invoices that are due to pay; i.e., INFLIGHT status and 0 routing_attempts.
+        Checks if any payment is due for retry, and tries to pay it.
+        '''
 
         queryset = LNPayment.objects.filter(type=LNPayment.Types.NORM,
+                                            status=LNPayment.Status.FLIGHT, 
+                                            routing_attempts=0)
+
+        queryset_retries = LNPayment.objects.filter(type=LNPayment.Types.NORM,
                                             status__in=[LNPayment.Status.VALIDI, LNPayment.Status.FAILRO], 
-                                            routing_attempts__lt=4,
+                                            routing_attempts__lt=5,
                                             last_routing_time__lt=(timezone.now()-timedelta(minutes=int(config('RETRY_TIME')))))
+        
+        queryset = queryset.union(queryset_retries)
+        
         for lnpayment in queryset:
-            success, _ = follow_send_payment(lnpayment)
+            success, _ = follow_send_payment(lnpayment) # Do follow_send_payment.delay() for further concurrency.
+
+            # If failed, reset mision control. (This won't scale well, just a temporary fix)
+            if not success:
+                LNNode.resetmc()
 
             # If already 3 attempts and last failed. Make it expire (ask for a new invoice) an reset attempts.
-            if not success and lnpayment.routing_attempts == 3:
+            if not success and lnpayment.routing_attempts > 2:
                 lnpayment.status = LNPayment.Status.EXPIRE
                 lnpayment.routing_attempts = 0
                 lnpayment.save()

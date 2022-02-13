@@ -41,12 +41,10 @@ def follow_send_payment(lnpayment):
     from django.utils import timezone
     from datetime import timedelta
 
-    from api.lightning.node import LNNode
+    from api.lightning.node import LNNode, MACAROON
     from api.models import LNPayment, Order
 
-    MACAROON = b64decode(config('LND_MACAROON_BASE64'))
-
-    fee_limit_sat = max(lnpayment.num_satoshis * 0.0002, 10) # 200 ppm or 10 sats max
+    fee_limit_sat = int(max(lnpayment.num_satoshis * float(config('PROPORTIONAL_ROUTING_FEE_LIMIT')), float(config('MIN_FLAT_ROUTING_FEE_LIMIT')))) # 200 ppm or 10 sats 
     request = LNNode.routerrpc.SendPaymentRequest(
         payment_request=lnpayment.invoice,
         fee_limit_sat=fee_limit_sat,
@@ -77,7 +75,6 @@ def follow_send_payment(lnpayment):
                 order.save()
                 context = {'routing_failed': LNNode.payment_failure_context[response.failure_reason]}
                 print(context)
-                # Call a retry in 5 mins here?
                 return False, context
 
             if response.status == 2 :               # Status 2 'SUCCEEDED'

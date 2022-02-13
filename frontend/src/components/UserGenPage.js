@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button , Dialog, Grid, Typography, TextField, ButtonGroup, CircularProgress, IconButton} from "@mui/material"
+import { Button , Tooltip, Dialog, Grid, Typography, TextField, ButtonGroup, CircularProgress, IconButton} from "@mui/material"
 import { Link } from 'react-router-dom'
 import Image from 'material-ui-image'
 import InfoDialog from './InfoDialog'
@@ -28,11 +28,12 @@ export default class UserGenPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      token: this.genBase62Token(34),
+      token: this.genBase62Token(36),
       openInfo: false,
       loadingRobot: true,
       tokenHasChanged: false,
     };
+    this.props.setAppState({avatarLoaded: false, nickname: null, token: null});
     this.getGeneratedUser(this.state.token);
   }
 
@@ -64,11 +65,13 @@ export default class UserGenPage extends Component {
         // Add nick and token to App state (token only if not a bad request)
         (data.bad_request ? this.props.setAppState({
           nickname: data.nickname,
+          avatarLoaded: false,
         })
         :
         this.props.setAppState({
           nickname: data.nickname,
           token: this.state.token,
+          avatarLoaded: false,
       }));
       });
   }
@@ -85,8 +88,9 @@ export default class UserGenPage extends Component {
 
   handleClickNewRandomToken=()=>{
     this.setState({
-      token: this.genBase62Token(34),
+      token: this.genBase62Token(36),
       tokenHasChanged: true,
+      copied: true,
     });
   }
 
@@ -98,9 +102,10 @@ export default class UserGenPage extends Component {
   }
 
   handleClickSubmitToken=()=>{
-    this.delGeneratedUser()
+    this.delGeneratedUser();
     this.getGeneratedUser(this.state.token);
-    this.setState({loadingRobot: true, tokenHasChanged: false})
+    this.setState({loadingRobot: true, tokenHasChanged: false, copied: false});
+    this.props.setAppState({avatarLoaded: false, nickname: null, token: null});
   }
 
   handleClickOpenInfo = () => {
@@ -137,6 +142,7 @@ export default class UserGenPage extends Component {
                 </Typography>
               </Grid>
               <Grid item xs={12} align="center">
+              <Tooltip enterTouchDelay="0" title="This is your trading avatar">
                 <div style={{ maxWidth: 200, maxHeight: 200 }}>
                   <Image className='newAvatar'
                     disableError='true'
@@ -144,7 +150,8 @@ export default class UserGenPage extends Component {
                     color='null'
                     src={this.state.avatar_url}
                   />
-                </div><br/>
+                </div>
+                </Tooltip><br/>
               </Grid>
             </div>
             : <CircularProgress sx={{position: 'relative', top: 100, }}/>}
@@ -167,7 +174,7 @@ export default class UserGenPage extends Component {
                 //   style: { color: 'green' },
                 // }}
                 error={this.state.bad_request}
-                label='Store your token safely'
+                label={"Store your token safely"}
                 required='true'
                 value={this.state.token}
                 variant='standard'
@@ -182,20 +189,35 @@ export default class UserGenPage extends Component {
                 }}
                 InputProps={{
                   startAdornment:
-                  <IconButton onClick= {()=>navigator.clipboard.writeText(this.state.token)}>
-                    <ContentCopy color={this.state.tokenHasChanged ? 'inherit' : 'primary' } sx={{width:18, height:18}} />
-                  </IconButton>,
+                  <Tooltip disableHoverListener open={this.state.copied} enterTouchDelay="0" title="Copied!">
+                    <IconButton  onClick= {()=> (navigator.clipboard.writeText(this.state.token) & this.setState({copied:true}))}>
+                      <ContentCopy color={this.props.avatarLoaded & !this.state.copied & !this.state.bad_request ? 'primary' : 'inherit' } sx={{width:18, height:18}}/>
+                    </IconButton>
+                  </Tooltip>,
                   endAdornment:
-                  <IconButton onClick={this.handleClickNewRandomToken}><CasinoIcon/></IconButton>,
+                  <Tooltip enterTouchDelay="250" title="Generate a new token">
+                    <IconButton onClick={this.handleClickNewRandomToken}><CasinoIcon/></IconButton>
+                  </Tooltip>,
                   }}
               />
             </Grid>
           </Grid>
           <Grid item xs={12} align="center">
-              <Button disabled={!this.state.tokenHasChanged} type="submit" size='small'  onClick= {this.handleClickSubmitToken}>
+            {this.state.tokenHasChanged ?
+            <Button type="submit" size='small'  onClick= {this.handleClickSubmitToken}>
+              <SmartToyIcon sx={{width:18, height:18}} />
+              <span>  Generate Robot</span>
+            </Button>
+            :
+            <Tooltip enterTouchDelay="0" enterDelay="500" enterNextDelay="2000" title="You must enter a new token first">
+              <div>
+              <Button disabled={true} type="submit" size='small' >
                 <SmartToyIcon sx={{width:18, height:18}} />
                 <span>  Generate Robot</span>
               </Button>
+              </div>
+            </Tooltip>
+            }
           </Grid>
           <Grid item xs={12} align="center">
             <ButtonGroup variant="contained" aria-label="outlined primary button group">

@@ -1,4 +1,4 @@
-import grpc, os, hashlib, secrets, json
+import grpc, os, hashlib, secrets
 from . import lightning_pb2 as lnrpc, lightning_pb2_grpc as lightningstub
 from . import invoices_pb2 as invoicesrpc, invoices_pb2_grpc as invoicesstub
 from . import router_pb2 as routerrpc, router_pb2_grpc as routerstub
@@ -14,8 +14,18 @@ from api.models import LNPayment
 # Should work with LND (c-lightning in the future if there are features that deserve the work)
 #######
 
-CERT = b64decode(config('LND_CERT_BASE64'))
-MACAROON = b64decode(config('LND_MACAROON_BASE64'))
+# Read tls.cert from file or .env variable string encoded as base64
+try:
+    CERT = open(os.path.join(config('LND_DIR'),'tls.cert'), 'rb').read()
+except:
+    CERT = b64decode(config('LND_CERT_BASE64'))
+
+# Read macaroon from file or .env variable string encoded as base64
+try:
+    MACAROON = open(os.path.join(config('LND_DIR'), config('MACAROON_path')), 'rb').read()
+except:
+    MACAROON = b64decode(config('LND_MACAROON_BASE64'))
+
 LND_GRPC_HOST = config('LND_GRPC_HOST')
 
 class LNNode():
@@ -122,22 +132,11 @@ class LNNode():
             lnpayment.save()
             return True
 
-    # @classmethod
-    # def check_until_invoice_locked(cls, payment_hash, expiration):
-    #     '''Checks until hold invoice is locked.
-    #     When invoice is locked, returns true. 
-    #     If time expires, return False.'''
-    #     # Experimental, might need asyncio. Best if subscribing all invoices and running a background task
-    #     # Maybe best to pass LNpayment object and change status live.
-
-    #     request = invoicesrpc.SubscribeSingleInvoiceRequest(r_hash=payment_hash)
-    #     for invoice in cls.invoicesstub.SubscribeSingleInvoice(request):
-    #         print(invoice)
-    #         if timezone.now > expiration:
-    #             break
-    #         if invoice.state == 3: #  True if hold invoice is accepted.
-    #             return True
-    #     return False
+    @classmethod
+    def resetmc(cls):
+        request = routerrpc.ResetMissionControlRequest()
+        response = cls.routerstub.ResetMissionControl(request, metadata=[('macaroon', MACAROON.hex())])
+        return True
 
 
     @classmethod
