@@ -439,6 +439,7 @@ class Logics():
         elif order.status in [Order.Status.PUB, Order.Status.TAK, Order.Status.WF2, Order.Status.WFE] and order.maker == user:
             #Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.maker_bond)
+            cls.return_bond(order.taker_bond) # returns taker bond
             if valid:
                 order.status = Order.Status.UCA
                 order.save()

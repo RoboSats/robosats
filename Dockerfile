@@ -1,9 +1,11 @@
-FROM python:3.9
+FROM python:3.10.2-bullseye
 
 RUN mkdir -p /usr/src/robosats
 
 # specifying the working dir inside the container
 WORKDIR /usr/src/robosats
+
+RUN python -m pip install --upgrade pip
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt

@@ -36,7 +36,7 @@ if os.environ.get('DEVELOPMENT'):
     
 AVATAR_ROOT = STATIC_ROOT + 'assets/avatars/'
 
-ALLOWED_HOSTS = [config('HOST_NAME'),config('LOCAL_ALIAS'),'127.0.0.1']
+ALLOWED_HOSTS = [config('HOST_NAME'),config('HOST_NAME2'),config('LOCAL_ALIAS'),'127.0.0.1']
 
 # Application definition
 
