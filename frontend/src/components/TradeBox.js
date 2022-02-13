@@ -234,8 +234,8 @@ export default class TradeBox extends Component {
         <Divider/>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2">
-            Please wait for the taker to confirm by locking a bond. 
-            If the taker does not lock a bond in time the orer will be made
+            Please wait for the taker to lock a bond. 
+            If the taker does not lock a bond in time, the order will be made
             public again.
           </Typography>
         </Grid>
