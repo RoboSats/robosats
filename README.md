@@ -11,12 +11,12 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 </div>
 
 **Bitcoin mainnet:**
-- Tor: robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion (Coming soon)
+- Tor: robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion
 - Url: robosats.com (Coming soon)
-- Version: v0.0.0 (Last stable)
+- Version: v0.1.0-mvp
 
 **Bitcoin testnet:**
-- Tor: robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion (Active - On Dev Node)
+- Tor: robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion
 - Url: testnet.robosats.com (Coming soon)
 - Latest commit.
 
