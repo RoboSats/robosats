@@ -1,6 +1,6 @@
 # How to use RoboSats (v0.1.0)
 
-RoboSats is focused on user friendliness. The platform is totally self-explanatory, so one could say a tutorial is really not necessary. However, it really helps to feel comfortable when trading if you already know what are the next steps to come and nothing surprises you. After all, bitcoin p2p exchanges are very intimidating! Fear no more, RoboSats keeps it really simple and you simply cannot do things wrong! :D
+RoboSats is focused on user friendliness. The platform is totally self-explanatory, so one could say a tutorial is really not necessary. However, it really helps to feel comfortable when trading if you already know what are the next steps to come so nothing surprises you. After all, bitcoin p2p exchanges are very intimidating! Fear no more, RoboSats keeps it really simple and you simply cannot do things wrong! :D
 
 This document has two complete walkthroughs: 1) as a buyer that takes an order and; 2) as a seller that makes an order. Given that the platform explains to the user exactly everything in the menus, we are going to dedicate some lines to some tricks and give tips for safe trading in between.
 
@@ -14,7 +14,7 @@ RoboSats welcomes you right away with your unique robot avatar. The robot is det
 
 The tokens are generated in your own browser. However, if you do not trust your machine randomness, you can also input your own entropy token. *Note that low entropy tokens are not valid.*
 
-I was really not happy of being "HomelessCash"! :D So I just click on the dice icon to generate a new token and tap `Generate avatar` to get a new one
+I was really not happy of being "HomelessCash"! :D So I just click on the dice icon to generate a new token and tap "Generate avatar" to get a new one
  
 <div align="center">
 <img src="images/how-to-use/homepage-2.png"  width="370" />
