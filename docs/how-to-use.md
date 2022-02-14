@@ -1,4 +1,4 @@
-# How to use RoboSats with step by step walktrough (v0.1.0-mvp)
+# How to use RoboSats (v0.1.0)
 
 RoboSats is focused on user friendliness. The platform is totally self-explanatory, so one could say a tutorial is really not necessary. However, it really helps to feel comfortable when trading if you already know what are the next steps to come and nothing surprises you. After all, bitcoin p2p exchanges are very intimidating! Fear no more, RoboSats keeps it really simple and you simply cannot do things wrong! :D
 
