@@ -4,7 +4,7 @@ Uno de los puntos en los que se centra RoboSats es la facilidad de uso. La plata
 
 Este documento contiene dos compraventas completas: 1) como comprador y tomador de una order; 2) como vendedor y creador de la orden. Ya que la plataforma explica todo en los menus, voy a dedicar algunas lineas por todo el documento para dar trucos y consejos para que te mantengas seguro y anónimo.
 
-## Generaciónde avatar en Home Page
+## Generación de avatar en la página principal
 RoboSats ayuda a los usuarios a preservar su privacidad generando una nueva identidad (avatar) para cada compraventa. ¡Generar una identidad es muy fácil!
 <div align="center">
 <img src="images/how-to-use/homepage-1.png" width="370" />
