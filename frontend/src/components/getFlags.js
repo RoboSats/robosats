@@ -30,5 +30,9 @@ export default function getFlags(code){
     if(code == 'USD') return '🇺🇸';
     if(code == 'ZAR') return '🇿🇦';
     if(code == 'COP') return '🇨🇴';
+    if(code == 'PEN') return '🇵🇪';
+    if(code == 'UYU') return '🇺🇾';
+    if(code == 'PYG') return '🇵🇾';
+    if(code == 'BOB') return '🇧🇴';
     return '🏳';
 };
