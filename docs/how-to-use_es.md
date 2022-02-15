@@ -95,103 +95,104 @@ Escanea o copia el recibo lightning con tu wallet. Puede que te muestre que el p
 <img src="images/how-to-use/contract-box-2.png"  width="370" />
 </div>
 
-Tan pronto como tu deposito haya sido bloqueado, la aplication te pedirá que envies el recibo al que enviar los satoshis que estás comprando. Genera un recibo en tu wallet con la candiad exacta y dale a "submit".
+Tan pronto como tu deposito haya sido bloqueado, la aplicación te pedirá que envies el recibo al que enviar los satoshis que estás comprando. Genera un recibo en tu wallet con la candiad exacta y dale a "submit".
 
 <div align="center">
 <img src="images/how-to-use/contract-box-3.png"  width="370" />
 </div>
 
-** ESTA TRADUCCIÓN ESTÁ INCOMPLETA **
+Mientras envías tu factura de pago, se le pide al vendedor que bloquee la factura del depósito de garantía. Si eres más rápido que él, tendrás que esperar. De lo contrario, ya podrías chatear con él.
 
-While you are submitting your payout invoice, the seller is asked to lock the trade escrow hold invoice. If you are faster than him, you would have to wait. Otherwise, you would already be able to chat with him. 
-
-There is a time limit of 30 minutes to submit the invoice (buyer) and lock the trade escrow (seller). If the time runs out, the order will expire and the robot who did not follow with the contract obligations will lose the bond. This is a mechanism that helps prevent fake order spamming, wasting time of counterparts and DDOSing the order book.
+Hay un límite de tiempo de 30 minutos para enviar la factura (comprador) y bloquear el depósito de garantía (vendedor). Si se agota el tiempo, la orden caducará y el robot (la parte) que no cumplió con las obligaciones del contrato perderá la fianza. Este mecanismo ayuda a evitar que se haga spam con pedidos falsos así como la pérdida de tiempo de las contrapartes y ataques DDOS en el libro de pedidos.
 
 <div align="center">
 <img src="images/how-to-use/contract-box-4.png"  width="370" />
 </div>
 
-As soon as the seller locks the satoshis, it is safe to send the fiat currency! As a buyer, you will have to ask the seller for the details to send fiat. Remember to only share the information needed about yourself to not compromise your privacy. Remember, in RoboSats v0.1.0 this chat is memoryless, so the conversation will be lost if you refresh the browser.
+Tan pronto como el vendedor bloquea los satoshis, es seguro enviar el pago en fiat (EUR, ARS, VES, USD, …).
+Como comprador, tendrás que pedirle al vendedor los detalles para enviar el pago fiat. Recuerda compartir únicamente la información necesaria para no comprometer tu privacidad. Ten en cuenta que en la versión 0.1.0 de RoboSats este chat no tiene memoria, por lo que la conversación se perderá si actualiza el navegador.
  
 <div align="center">
 <img src="images/how-to-use/contract-box-5.png"  width="370" />
 </div>
 
-As soon as you have sent the fiat, you should tap on "Confirm fiat sent" button! After that, the seller will have to confirm the fiat was received. As soon as he confirms the trade is finished and you will be paid out to your lightning wallet. You might see that it is "sending satoshis to buyer" but usually it is so fast you will simply see this screen. Enjoy your sats!
+¡En cuanto hayas enviado el pago fiat, debes clicar el botón "Confirm fiat sent"! Después de eso, el vendedor deberá confirmar que recibió tu pago. Tan pronto como lo confirme, la operación habrá finalizado y recibirás los sats en tu billetera Lightning. Es posible que veas el mensaje “"sending satoshis to buyer" (enviando satoshis al comprador), pero generalmente es tan rápido que simplemente verás esta pantalla (“Trade finished!”). ¡Disfruta de tus sats!
 
 <div align="center">
 <img src="images/how-to-use/contract-box-6.png"  width="370" />
 </div>
 
-Rating the platform and leaving tips for improvement in our Telegram group or Github Issues is super appreciated!
+¡Se agradece mucho si calificas la plataforma y/o dejas comentarios o sugerencias en nuestro grupo de Telegram o Github Issues!
 
-### Walktrough-2: Making an order as a seller
+### Walktrough-2: Crear una orden como vendedor
 
-It might happen that there are no active orders for the positioning and currency you want. In this case, there is no orders to SELL bitcoin for GBP.
+Puede ocurrir que no haya órdenes activas para compra o venta en la moneda que deseas. En el ejemplo del pantallazo de abajo, no hay órdenes para VENDER bitcoin por GBP.
  
 <div align="center">
 <img src="images/how-to-use/book-no-orders.png"  width="370" />
 </div>
 
-We can create the order exactly has we want it. But mind that you need to publish an order that others want to take too! 
+Puedes crear una orden que se adapte a tus condiciones. ¡Pero ten en cuenta que es preferible publicar una orden que otros estén dispuestos tomar! 
  
 <div align="center">
 <img src="images/how-to-use/maker-page.png"  width="370" />
 </div>
 
-In the maker page you are only required to enter the currency, order type (buy/sell) and amount. However, it is best practice to specify the payment methods you allow. It might be also helpful to set a premium/discount for your order to be taken faster. Remember that as a seller you can incentivze buyers to take your order by lowering the premium. If there are too many buyers, however, you can increase the premium to have a trading profit. Alternatively, you can set a fixed amount of Satoshis.
+Al crear una orden, solo se te pide especificar la moneda, el tipo de orden (compra/venta) y el monto. Sin embargo, es una buena práctica especificar los métodos de pago que permites. También puede ser útil establecer una prima/descuento para que tu pedido se tome más rápido. Recuerda que, como vendedor, puedes incentivar a los compradores a tomar tu orden al reducir la prima. Sin embargo, si hay demasiados compradores, puedes aumentar la prima para obtener un mayor margen de beneficio. Como alternativa, puedes establecer una cantidad fija de Satoshis.
 
-*Limits: in Robosats v0.1.0 an order cannot be smaller than 10.000 Satoshis. It cannot be larger than 500.000 Satoshis in order to avoid lightning routing failures. This limit will be increased in the future.*
+*Límites: en la versión 0.1.0 de Robosats una orden no puede ser inferior a 10.000 Satoshis. Para evitar fallos de enrutamiento no puede ser mayor a 500.000 Satoshis. Este límite se incrementará en el futuro.*
 
 <div align="center">
 <img src="images/how-to-use/contract-box-7.png"  width="370" />
 </div>
 
-You have to copy or scan the invoice with your lightning wallet in order to lock your fidelity maker bond. By locking this bond, the takers know you can be trusted and are committed to follow with this trade. In your wallet it might show as a payment that is on transit, freeze or even seemingly break your wallet. You should always check on the RoboSats website whether the bond has been locked (your wallet will probably not tell you! Check [wallet compatibility list](https://github.com/Reckless-Satoshi/robosats/issues/44))
+Debes copiar o escanear la factura con tu billetera Lightning para bloquear tu fianza de fidelidad como creador. Al bloquear esta fianza, los compradores perciben que eres de fiar y se comprometen a seguir con el intercambio. En tu billetera puede mostrarse como un pago en tránsito, congelarse o incluso aparentemente romper tu billetera. Siempre debes verificar en la web de RoboSats si el depósito ha sido bloqueado (¡tu billetera probablemente no te lo dirá! Comprueba la [lista de compatibilidad de billeteras](https://github.com/Reckless-Satoshi/robosats/issues/44))
 
 <div align="center">
 <img src="images/how-to-use/contract-box-8.png"  width="370" />
 </div>
 
-Your order will be public for 6 hours. You can check the time left to expiration by checking the "Order" tab. It can be canceled at any time without penalty before it is taken by another robot. Keep the contract tab open to be notified [with this sound](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3). It might be best to do this on a desktop computer and turn on the volume, so you do not miss when your order is taken. It might take long! Maybe you even forget! *Note: If you forget your order and a robot takes it and locks his fidelity bond, you risk losing your own fidelity bond by not fulfilling the next contract steps.*
+Tu orden permanecerá publicada durante 6 horas. Puedes comprobar cuánto tiempo le queda consultando la pestaña "Order". Se puede cancelar en cualquier momento sin penalización antes de que otro robot tome tu orden. Mantén abierta la pestaña del contrato para recibir notificaciones [con este sonido](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3). Es aconsejable hacer esto en un ordenador o portátil con el volumen encendido para enterarte cuando alguien tome tu orden porque puede transcurrir bastante tiempo. ¡Quizás incluso olvides que tienes publicada una orden!  *Nota: Si no estás pendiente de tu orden y un robot la toma y bloquea su fianza de fidelidad, corres el riesgo de perder la fianza de fidelidad que depositaste por no cumplir con los siguientes pasos del contrato.*
 
-In the contract tab you can also see how many other orders are public for the same currency. You can also see how well does your premium ranks among all other orders for the same currency.
+En la pestaña del contrato también puedes ver cuántas órdenes hay publicadas para la misma moneda. También puedes en qué posición (en porcentaje) se sitúa la prima de tu oferta con respecto a las demás publicadas con la misma moneda.
 
 <div align="center">
 <img src="images/how-to-use/contract-box-9.png"  width="370" />
 </div>
 
-Hurray, someone took the order! They have 4 minutes to lock a taker fidelity bond, if they do not proceed, your order will be made public again automatically.
+¡Viva, alguien tomó tu orden! El comprador tiene 4 minutos para bloquear una fianza de fidelidad. Si no lo hace tu orden se publicará de nuevo automáticamente.
 
 <div align="center">
 <img src="images/how-to-use/contract-box-10.png"  width="370" />
 </div>
 
-As soon as the taker locks the bond, you will have to lock the trade escrow. This is a lightning hold invoice and will also freeze in your wallet. It will be released only when you confirm you received the fiat payment or if there is a dispute between you and the taker.
+En cuanto el comprador bloquee su fianza tendrás que bloquear un depósito como garantía. Esta es una “lightning hold invoice” que quedará congelada en tu billetera. Se liberará una vez confirmes que has recibido el pago en fiat o si hay una disputa con el comprador.
 
 <div align="center">
 <img src="images/how-to-use/contract-box-11.png"  width="370" />
 </div>
 
-Once you lock the trade escrow and the buyer submit the payout invoice it is safe to send fiat! Share with the buyer the minimal information needed to send you fiat. Remember, in RoboSats v0.1.0 this chat is memoryless, so the conversation will be lost if you refresh the browser.
+Una vez que bloquees el depósito de garantía y el comprador envíe la factura de pago será seguro enviar el pago fiat. Comparte con el comprador la información mínima necesaria para recibir el pago. Recuerda que en la versión 0.1.0 de RoboSats este chat no tiene memoria, por lo que la conversación se perderá si actualiza el navegador.
 
 <div align="center">
 <img src="images/how-to-use/contract-box-12.png"  width="370" />
 </div>
 
-The buyer has just confirmed he did his part! Now check until the fiat is in your account.
+¡El comprador acaba de confirmar que hizo su parte! Te toca verificar que has recibido el fiat en tu cuenta.
 
 <div align="center">
 <img src="images/how-to-use/contract-box-13.png"  width="370" />
 </div>
 
-By confirming that you received the fiat, the escrow will be charged and sent to the buyer. So only do this once you are 100% sure the fiat is with you!
+Al confirmar que recibiste el pago, se cobrará el depósito y se enviará al comprador. Por favor, ¡asegúrate al 100% de que has recibido el pago!
 
 <div align="center">
 <img src="images/how-to-use/contract-box-14.png"  width="370" />
 </div>
 
-All done!! :D
+¡¡Terminado!! :D
+
+** ESTA TRADUCCIÓN ESTÁ INCOMPLETA **
 
 ## Collaborative cancellation
 
