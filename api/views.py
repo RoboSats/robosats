@@ -415,7 +415,7 @@ class UserView(APIView):
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname, password=token, is_staff=False)
             user = authenticate(request, username=nickname, password=token)
-            user.profile.avatar = nickname + '.png'
+            user.profile.avatar = "static/assets/avatars/" + nickname + '.png'
             login(request, user)
             return Response(context, status=status.HTTP_201_CREATED)
 

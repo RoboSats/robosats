@@ -227,7 +227,7 @@ class Profile(models.Model):
     orders_disputes_started = models.CharField(max_length=999, null=True, default=None, validators=[validate_comma_separated_integer_list], blank=True) # Will only store ID of orders
 
     # RoboHash
-    avatar = models.ImageField(default=(settings.STATIC_ROOT+"unknown_avatar.png"), verbose_name='Avatar', blank=True)
+    avatar = models.ImageField(default=("static/assets/avatars/"+"unknown_avatar.png"), verbose_name='Avatar', blank=True)
 
     # Penalty expiration (only used then taking/cancelling repeatedly orders in the book before comitting bond)
     penalty_expiration = models.DateTimeField(null=True,default=None, blank=True)
@@ -247,7 +247,7 @@ class Profile(models.Model):
     @receiver(pre_delete, sender=User)
     def del_avatar_from_disk(sender, instance, **kwargs):
         try:
-            avatar_file=Path(settings.AVATAR_ROOT + instance.profile.avatar.url)
+            avatar_file=Path(settings.AVATAR_ROOT + instance.profile.avatar.url.split('/')[-1])
             avatar_file.unlink()
         except:
             pass
