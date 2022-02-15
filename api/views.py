@@ -446,7 +446,10 @@ class UserView(APIView):
         # Check if it is not a maker or taker!
         not_participant, _, _ = Logics.validate_already_maker_or_taker(user)
         if not not_participant:
-            return Response({'bad_request':'User cannot be deleted while he is part of an order'}, status.HTTP_400_BAD_REQUEST)
+            return Response({'bad_request':'Maybe a mistake? User cannot be deleted while he is part of an order'}, status.HTTP_400_BAD_REQUEST)
+        # Check if has already a profile with
+        if user.profile.total_contracts > 0:
+            return Response({'bad_request':'Maybe a mistake? User cannot be deleted as it has completed trades'}, status.HTTP_400_BAD_REQUEST)
 
         logout(request)
         user.delete()

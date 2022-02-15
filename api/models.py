@@ -24,7 +24,7 @@ class Currency(models.Model):
     currency_choices = [(int(val), label) for val, label in list(currency_dict.items())]
 
     currency = models.PositiveSmallIntegerField(choices=currency_choices, null=False, unique=True)
-    exchange_rate = models.DecimalField(max_digits=10, decimal_places=2, default=None, null=True, validators=[MinValueValidator(0)])
+    exchange_rate = models.DecimalField(max_digits=16, decimal_places=5, default=None, null=True, validators=[MinValueValidator(0)])
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

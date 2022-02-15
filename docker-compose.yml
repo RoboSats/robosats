@@ -39,6 +39,7 @@ services:
     volumes:
       - .:/usr/src/robosats
       - /mnt/development/database:/usr/src/database
+    network_mode: service:tor
 
   follow-invoices:
     build: .

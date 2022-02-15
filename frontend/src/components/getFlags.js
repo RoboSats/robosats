@@ -29,5 +29,6 @@ export default function getFlags(code){
     if(code == 'TRY') return '🇹🇷';
     if(code == 'USD') return '🇺🇸';
     if(code == 'ZAR') return '🇿🇦';
+    if(code == 'COP') return '🇨🇴';
     return '🏳';
 };
