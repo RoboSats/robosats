@@ -34,5 +34,6 @@ export default function getFlags(code){
     if(code == 'UYU') return '🇺🇾';
     if(code == 'PYG') return '🇵🇾';
     if(code == 'BOB') return '🇧🇴';
+    if(code == 'BTC') return '₿';
     return '🏳';
 };

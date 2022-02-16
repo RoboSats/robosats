@@ -10,6 +10,7 @@ docker exec -it django-dev python3 manage.py migrate
 docker exec -it django-dev python3 manage.py createsuperuser
 docker-compose restart
 ```
+Copy the `.env-sample` file into `.env` and check the settings are of your liking.
 
 Spinning up any other time:
 `docker-compose up -d`

@@ -106,17 +106,23 @@ def cache_market():
 
     from django.utils import timezone
 
-    exchange_rates = get_exchange_rates(list(Currency.currency_dict.values()))
+    currency_codes = list(Currency.currency_dict.values())
+    exchange_rates = get_exchange_rates(currency_codes)
+
     results = {}
-    for val in Currency.currency_dict:
-        rate = exchange_rates[int(val)-1] # currecies are indexed starting at 1 (USD)
-        results[val] = {Currency.currency_dict[val], rate}
-        if str(rate) == 'nan': continue # Do not update if no new rate was found
+    for i in range(len(Currency.currency_dict.values())): # currecies are indexed starting at 1 (USD)
+
+        rate = exchange_rates[i] 
+        results[i] = {currency_codes[i], rate}
+
+        # Do not update if no new rate was found
+        if str(rate) == 'nan': continue 
 
         # Create / Update database cached prices
+        currency_key = list(Currency.currency_dict.keys())[i]
         Currency.objects.update_or_create(
-            id = int(val),
-            currency = int(val),
+            id = int(currency_key),
+            currency = int(currency_key),
             # if there is a Cached market prices matching that id, it updates it with defaults below
             defaults = {
                 'exchange_rate': float(rate),

@@ -60,7 +60,7 @@ def get_lnd_version():
     except:
         pass
 
-    # If not dockerized, and LND is local, read from CLI
+    # If not dockerized and LND is local, read from CLI
     try:
         stream = os.popen('lnd --version')
         lnd_version = stream.read()[:-1]
