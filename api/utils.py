@@ -1,4 +1,3 @@
-
 import requests, ring, os
 from decouple import config
 import numpy as np
@@ -7,35 +6,39 @@ from api.models import Order
 
 market_cache = {}
 
-@ring.dict(market_cache, expire=3) #keeps in cache for 3 seconds
+
+@ring.dict(market_cache, expire=3)  # keeps in cache for 3 seconds
 def get_exchange_rates(currencies):
-    '''
+    """
     Params: list of currency codes.
     Checks for exchange rates in several public APIs.
     Returns the median price list.
-    '''
+    """
 
-    APIS = config('MARKET_PRICE_APIS', cast=lambda v: [s.strip() for s in v.split(',')])
+    APIS = config("MARKET_PRICE_APIS",
+                  cast=lambda v: [s.strip() for s in v.split(",")])
 
     api_rates = []
     for api_url in APIS:
-        try: # If one API is unavailable pass
-            if 'blockchain.info' in api_url:
+        try:  # If one API is unavailable pass
+            if "blockchain.info" in api_url:
                 blockchain_prices = requests.get(api_url).json()
                 blockchain_rates = []
                 for currency in currencies:
-                    try: # If a currency is missing place a None
-                        blockchain_rates.append(float(blockchain_prices[currency]['last']))
+                    try:  # If a currency is missing place a None
+                        blockchain_rates.append(
+                            float(blockchain_prices[currency]["last"]))
                     except:
                         blockchain_rates.append(np.nan)
                 api_rates.append(blockchain_rates)
 
-            elif 'yadio.io' in api_url:
+            elif "yadio.io" in api_url:
                 yadio_prices = requests.get(api_url).json()
                 yadio_rates = []
                 for currency in currencies:
                     try:
-                        yadio_rates.append(float(yadio_prices['BTC'][currency]))
+                        yadio_rates.append(float(
+                            yadio_prices["BTC"][currency]))
                     except:
                         yadio_rates.append(np.nan)
                 api_rates.append(yadio_rates)
@@ -43,32 +46,36 @@ def get_exchange_rates(currencies):
             pass
 
     if len(api_rates) == 0:
-        return None # Wops there is not API available!
+        return None  # Wops there is not API available!
 
     exchange_rates = np.array(api_rates)
     median_rates = np.nanmedian(exchange_rates, axis=0)
 
     return median_rates.tolist()
 
+
 def get_lnd_version():
 
     # If dockerized, return LND_VERSION envvar used for docker image.
     # Otherwise it would require LND's version.grpc libraries...
     try:
-        lnd_version = config('LND_VERSION')
+        lnd_version = config("LND_VERSION")
         return lnd_version
     except:
         pass
 
     # If not dockerized and LND is local, read from CLI
     try:
-        stream = os.popen('lnd --version')
+        stream = os.popen("lnd --version")
         lnd_version = stream.read()[:-1]
         return lnd_version
     except:
-        return ''
+        return ""
+
 
 robosats_commit_cache = {}
+
+
 @ring.dict(robosats_commit_cache, expire=3600)
 def get_commit_robosats():
 
@@ -77,11 +84,15 @@ def get_commit_robosats():
 
     return commit_hash
 
+
 premium_percentile = {}
+
+
 @ring.dict(premium_percentile, expire=300)
 def compute_premium_percentile(order):
 
-    queryset = Order.objects.filter(currency=order.currency, status=Order.Status.PUB).exclude(id=order.id)
+    queryset = Order.objects.filter(
+        currency=order.currency, status=Order.Status.PUB).exclude(id=order.id)
 
     print(len(queryset))
     if len(queryset) <= 1:
@@ -90,8 +101,8 @@ def compute_premium_percentile(order):
     order_rate = float(order.last_satoshis) / float(order.amount)
     rates = []
     for similar_order in queryset:
-        rates.append(float(similar_order.last_satoshis) / float(similar_order.amount))
-    
+        rates.append(
+            float(similar_order.last_satoshis) / float(similar_order.amount))
+
     rates = np.array(rates)
-    return round(np.sum(rates < order_rate) / len(rates),2)
-    
+    return round(np.sum(rates < order_rate) / len(rates), 2)

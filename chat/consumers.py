@@ -4,12 +4,12 @@ from api.models import Order
 
 import json
 
+
 class ChatRoomConsumer(AsyncWebsocketConsumer):
-    
 
     async def connect(self):
-        self.order_id = self.scope['url_route']['kwargs']['order_id']
-        self.room_group_name = f'chat_order_{self.order_id}'
+        self.order_id = self.scope["url_route"]["kwargs"]["order_id"]
+        self.room_group_name = f"chat_order_{self.order_id}"
         self.user = self.scope["user"]
         self.user_nick = str(self.user)
 
@@ -21,49 +21,45 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         # if not (Logics.is_buyer(order[0], self.user) or Logics.is_seller(order[0], self.user)):
         #     print ("Outta this chat")
         #     return False
-        
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
+
+        await self.channel_layer.group_add(self.room_group_name,
+                                           self.channel_name)
 
         await self.accept()
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        await self.channel_layer.group_discard(self.room_group_name,
+                                               self.channel_name)
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-        nick = text_data_json['nick']
+        message = text_data_json["message"]
+        nick = text_data_json["nick"]
 
         await self.channel_layer.group_send(
             self.room_group_name,
             {
-                'type': 'chatroom_message',
-                'message': message,
-                'nick': nick,
-            }
+                "type": "chatroom_message",
+                "message": message,
+                "nick": nick,
+            },
         )
 
     async def chatroom_message(self, event):
-        message = event['message']
-        nick = event['nick']
+        message = event["message"]
+        nick = event["nick"]
 
         # Insert a white space in words longer than 22 characters.
         # Helps when messages overflow in a single line.
-        words = message.split(' ')
-        fix_message = ''
+        words = message.split(" ")
+        fix_message = ""
         for word in words:
-            word = ' '.join(word[i:i+22] for i in range(0, len(word), 22))
-            fix_message = fix_message +' '+ word
+            word = " ".join(word[i:i + 22] for i in range(0, len(word), 22))
+            fix_message = fix_message + " " + word
 
         await self.send(text_data=json.dumps({
-            'message': fix_message,
-            'user_nick': nick,
+            "message": fix_message,
+            "user_nick": nick,
         }))
 
     pass
