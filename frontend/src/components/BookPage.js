@@ -67,7 +67,9 @@ export default class BookPage extends Component {
 
   // pretty numbers
   pn(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      var parts = x.toString().split(".");
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return parts.join(".");
   }
   
   // Colors for the status badges
@@ -88,7 +90,7 @@ export default class BookPage extends Component {
               robot: order.maker_nick, 
               robot_status: order.maker_status,
               type: order.type ? "Seller": "Buyer",
-              amount: parseFloat(parseFloat(order.amount).toFixed(4)),
+              amount: parseFloat(parseFloat(order.amount).toFixed(5)),
               currency: this.getCurrencyCode(order.currency),
               payment_method: order.payment_method,
               price: order.price,
@@ -121,10 +123,13 @@ export default class BookPage extends Component {
             );
           } },
           { field: 'type', headerName: 'Is', width: 60 },
-          { field: 'amount', headerName: 'Amount', type: 'number', width: 80 },
+          { field: 'amount', headerName: 'Amount', type: 'number', width: 80,
+          renderCell: (params) => {return (
+            <div style={{ cursor: "pointer" }}>{this.pn(params.row.amount)}</div>
+          )}},
           { field: 'currency', headerName: 'Currency', width: 100, 
           renderCell: (params) => {return (
-            <div style={{ cursor: "pointer" }}>{params.row.currency+" "+getFlags(params.row.currency)}</div>)
+            <div style={{ cursor: "pointer" }}>{params.row.currency+" "}{getFlags(params.row.currency)}</div>)
           }},
           { field: 'payment_method', headerName: 'Payment Method', width: 180 },
           { field: 'price', headerName: 'Price', type: 'number', width: 140,
@@ -232,8 +237,8 @@ export default class BookPage extends Component {
           </Grid> */}
 
           <Grid item xs={6} align="right">
-            <FormControl >
-              <FormHelperText>
+            <FormControl align="center">
+              <FormHelperText align="center">
                 I want to 
               </FormHelperText>
               <Select
@@ -252,9 +257,9 @@ export default class BookPage extends Component {
           </Grid>
 
           <Grid item xs={6} align="left">
-            <FormControl >
-              <FormHelperText>
-                And pay with 
+            <FormControl align="center">
+              <FormHelperText align="center">
+                and {this.state.type == 0 ? ' receive' : (this.state.type == 1 ? ' pay with' : ' use' )} 
               </FormHelperText>
               <Select
                   label="Select Payment Currency"
@@ -267,7 +272,7 @@ export default class BookPage extends Component {
               >     <MenuItem value={0}>🌍 ANY</MenuItem>
                     {
                       Object.entries(this.state.currencies_dict)
-                      .map( ([key, value]) => <MenuItem value={parseInt(key)}>{getFlags(value) + " " + value}</MenuItem> )
+                      .map( ([key, value]) => <MenuItem value={parseInt(key)}>{getFlags(value)} {" " + value}</MenuItem> )
                     }
               </Select>
             </FormControl>

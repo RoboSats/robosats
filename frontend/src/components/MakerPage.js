@@ -25,7 +25,9 @@ function pn(x) {
     if(x==null){
         return(null)
     }
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    var parts = x.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");  
   }
 
 export default class MakerPage extends Component {
@@ -209,7 +211,7 @@ export default class MakerPage extends Component {
                                     onChange={this.handleCurrencyChange}>
                                         {Object.entries(this.state.currencies_dict)
                                         .map( ([key, value]) => <MenuItem value={parseInt(key)}>
-                                            {getFlags(value) + " " + value}
+                                            {getFlags(value)}{" " + value}
                                             </MenuItem> )}
                                 </Select>
                             </div>

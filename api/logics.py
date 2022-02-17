@@ -405,6 +405,7 @@ class Logics():
         '''The order never shows up on the book and order 
         status becomes "cancelled" '''
         if order.status == Order.Status.WFB and order.maker == user:
+            cls.cancel_bond(order.maker_bond)
             order.status = Order.Status.UCA
             order.save()
             return True, None

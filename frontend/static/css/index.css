@@ -89,3 +89,8 @@ body {
   border: 0.3px solid #555; 
   filter: drop-shadow(0.5px 0.5px 0.5px #000000);
 }
+
+.svg-icon {
+  position: relative;
+  top: 4px;
+}
