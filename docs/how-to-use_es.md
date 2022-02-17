@@ -21,7 +21,7 @@ La verdad es que no estoy muy contento con mi avatar "HomelessCash" :D Así que 
 </div>
 
 Ah, "JoyfulPain", este es mucho mejor! :)
-Tu navegador recodará el token durante un tiempo, así que si te olvida copiarlo, puedes abrir tu perfil abajo a la izquierda y copiar el token. Pero si refrescas la web o cierras el navegador, ¡el token se pierde de la memoria para siempre!
+Tu navegador recordará el token durante un tiempo, así que si se te olvida copiarlo, puedes abrir tu perfil abajo a la izquierda y copiar el token. Pero si refrescas la web o cierras el navegador, ¡el token se pierde de la memoria para siempre!
 
 <div align="center">
 <img src="images/how-to-use/homepage-3.png" width="370" />
@@ -29,11 +29,11 @@ Tu navegador recodará el token durante un tiempo, así que si te olvida copiarl
 
 Lo más seguro es escribirlo en papel... pero es bastante trabajo. Basta con copiarlo al portapapeles y pegarlo en otro sitio seguro. **Si tu navegador se congela, la batería de tu teléfono se acaba, si pierdes la conexión mientras compras-vendes... ¡Vas a necesitar el token para autentificarte otra vez y continuar!**
 
-## Trade
+## Intercambio
 
-En RoboSats puedes crear tus propias órdenes o tomar las órdenes creadas por otros. Para crear tu orden, solo pulsa en "Create Order". Para tomar una orden existente, pulsa en View Book¨ así puedes explorar todas las órdenes que ya existen.
+En RoboSats puedes crear tus propias órdenes o tomar las órdenes creadas por otros. Para crear tu orden, solo pulsa en "Create Order". Para tomar una orden existente, pulsa en "View Book" así puedes explorar todas las órdenes que ya existen.
 
-### Exploring the Order Book
+### Explorando el libro de órdenes
 
 Pulsamos en "View book" para echar un vistazo a las órdenes que ya existen en el libro.
 
@@ -83,19 +83,19 @@ Todas las órdenes públicas tienen un tiempo de expiración. Por defecto, en Ro
 
 Cuando hayas decidido que orden tomar, simplemente dale al botón "Take Order". Vas a ver por primera vez la caja del contrato. Todo lo que hay que hacer a partir de ahora es seguir las órdenes de esta pestaña hasta que hayas completado la compraventa.
 
-Lo primero será bloquear una pequeña fianza de fidelidad, así el vendedor sabrá que eres de confiar y estás comprometido. Los satoshis de este depósito se van a quedar congelados en tu billetera. Si intentas estafar o cancelas unilateralmente, penderás los satoshis de este depósito. Si sigues las normas, estos satoshis se desbloquearán en tu billetera en cuanto termines.
+Lo primero será bloquear una pequeña fianza de fidelidad, así el vendedor sabrá que eres de confiar y estás comprometido. Los satoshis de este depósito se van a quedar congelados en tu billetera. Si intentas estafar o cancelas unilateralmente, perderás los satoshis de este depósito. Si sigues las normas, estos satoshis se desbloquearán en tu billetera en cuanto termines.
 
 <div align="center">
 <img src="images/how-to-use/contract-box-1.png" width="370" />
 </div>
 
-Escanea o copia la factura lightning con tu billetera. Puede que te muestre que el pago está en tránsito, puede que se congele, o incluso puede que parezca que tu billetera no responde. La única forma de saber si tu fianza se ha bloqueado es confirmar en la web de RoboSats (tu billetera casi seguro no te lo va a decir! Puedes mirar esta [lista de compatibilidad de billeteras](https://github.com/Reckless-Satoshi/robosats/issues/44) para más detalles)
+Escanea o copia la factura lightning con tu billetera. Puede que te muestre que el pago está en tránsito, puede que se congele, o incluso puede que parezca que tu billetera no responde. La única forma de saber si tu fianza se ha bloqueado es confirmar en la web de RoboSats (¡Tu billetera casi seguro no te lo va a decir! Puedes mirar esta [lista de compatibilidad de billeteras](https://github.com/Reckless-Satoshi/robosats/issues/44) para más detalles)
 
 <div align="center">
 <img src="images/how-to-use/contract-box-2.png" width="370" />
 </div>
 
-Tan pronto como tu fianza haya sido bloqueado, la aplicación te pedirá que envíes la factura a la que enviar los satoshis que estás comprando. Genera una factura en tu billetera con la candiad exacta y dale a "submit".
+Tan pronto como tu fianza haya sido bloqueada, la aplicación te pedirá que envíes la factura a la que enviar los satoshis que estás comprando. Genera una factura en tu billetera con la candiad exacta y dale a "submit".
 
 <div align="center">
 <img src="images/how-to-use/contract-box-3.png" width="370" />
@@ -200,9 +200,9 @@ Después de que el depósito de garantía haya sido bloqueado y antes de que el 
 <img src="images/how-to-use/contract-box-15.png" width="370" />
 </div>
 
-Si el comprador ya ha pulsado "Fiat sent", no es posible cancelar la orden. La única forma de pararla es abriendo una disputa e involucrando a la personal de RoboSats. Esto está totalmente desaconsejado porque uno se los puede perder el depósito de garantía.
+Si el comprador ya ha pulsado "Fiat sent", no es posible cancelar la orden. La única forma de pararla es abriendo una disputa e involucrando al personal de RoboSats. Esto está totalmente desaconsejado porque uno de los dos puede perder el depósito de garantía.
 
-## Disputes
+## Disputas
 
 Los malentendidos, como hemos visto arriba, pueden ocurrir. Pero ten en cuenta, que quizá no sea un simple malentendido, quizá al otro lado haya una persona que trata de estafarte. En este caso,*MakeshiftSource875* se cree que puede quedarse con todo (el dinero fiat y el bitcoin) si no confirma que ha recibido el pago.
 
