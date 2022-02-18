@@ -22,6 +22,12 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 
 *Always use [Tor Browser](https://www.torproject.org/download/) and .onion for best anonymity.*
 
+## How to use it
+
+- **[Full Walkthrough how to use RoboSats (English)](https://github.com/Reckless-Satoshi/robosats/blob/main/docs/how-to-use.md)**
+
+- **[Guia completa de como usar RoboSats (Español)](https://github.com/Reckless-Satoshi/robosats/blob/main/docs/how-to-use.md)**
+
 ## How it works
 
 Alice wants to buy satoshis privately:
