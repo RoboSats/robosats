@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import SvgIcon from '@mui/material/SvgIcon';
+import SwapCallsIcon from '@mui/icons-material/SwapCalls';
 
 export default function getFlags(code){
     if(code == 'AUD') return '🇦🇺';
@@ -37,6 +38,6 @@ export default function getFlags(code){
     if(code == 'UYU') return '🇺🇾';
     if(code == 'PYG') return '🇵🇾';
     if(code == 'BOB') return '🇧🇴';
-    if(code == 'BTC') return <SvgIcon className='svg-icon' xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 48 48" width="96px" height="96px"><path fill="#f5bc00" d="M24,44L24,44c11.045,0,20-8.955,20-20l0,0c0-11.045-8.955-20-20-20l0,0C12.955,4,4,12.955,4,24l0,0 C4,35.047,12.953,44,24,44z"/><path fill="#fae56b" d="M33,20c0-2.608-1.672-4.831-4-5.657V11h-4v3h-3v-3h-4v3h-3v4h3v12h-3v4h3v3h4v-3h3v3h4v-3.343	c2.328-0.825,4-3.049,4-5.657c0-1.535-0.58-2.938-1.532-4C32.42,22.938,33,21.535,33,20z M22,18h5c1.103,0,2,0.897,2,2s-0.897,2-2,2	h-5V18z M27,30h-5v-4h5c1.103,0,2,0.897,2,2S28.103,30,27,30z"/><rect width="4" height="4" x="18" y="14" fill="#fff3b8"/><rect width="4" height="4" x="18" y="30" fill="#fff3b8"/></SvgIcon>;
+    if(code == 'BTC') return <SwapCallsIcon className='svg-icon' color="primary" />;
     return '🏳';
 };

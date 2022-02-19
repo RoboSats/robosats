@@ -479,7 +479,7 @@ export default class OrderPage extends Component {
               <ListItemIcon>
                 <PaymentsIcon/>
               </ListItemIcon>
-              <ListItemText primary={this.state.payment_method} secondary="Accepted payment methods"/>
+              <ListItemText primary={this.state.payment_method} secondary={this.state.currency==1000 ? "Swap destination":"Accepted payment methods"}/>
             </ListItem>
             <Divider />
 

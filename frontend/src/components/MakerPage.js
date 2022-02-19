@@ -222,7 +222,7 @@ export default class MakerPage extends Component {
                     <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Enter your prefered payment methods">
                         <TextField 
                             sx={{width:240}}
-                            label="Payment Method(s)"
+                            label={this.state.currency==1000 ? "Swap Destination (e.g. rBTC)":"Payment Method(s)"}
                             error={this.state.badPaymentMethod}
                             helperText={this.state.badPaymentMethod ? "Must be shorter than 35 characters":""}
                             type="text" 
