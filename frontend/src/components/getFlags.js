@@ -38,6 +38,6 @@ export default function getFlags(code){
     if(code == 'UYU') return '🇺🇾';
     if(code == 'PYG') return '🇵🇾';
     if(code == 'BOB') return '🇧🇴';
-    if(code == 'BTC') return <SwapCallsIcon className='svg-icon' color="primary" />;
+    if(code == 'BTC') return <SwapCallsIcon color="primary"/>;
     return '🏳';
 };

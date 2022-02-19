@@ -211,7 +211,7 @@ export default class MakerPage extends Component {
                                     onChange={this.handleCurrencyChange}>
                                         {Object.entries(this.state.currencies_dict)
                                         .map( ([key, value]) => <MenuItem value={parseInt(key)}>
-                                            {getFlags(value)}{" " + value}
+                                            <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div>
                                             </MenuItem> )}
                                 </Select>
                             </div>

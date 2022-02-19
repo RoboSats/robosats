@@ -129,7 +129,7 @@ export default class BookPage extends Component {
           )}},
           { field: 'currency', headerName: 'Currency', width: 100, 
           renderCell: (params) => {return (
-            <div style={{ cursor: "pointer" }}>{params.row.currency+" "}{getFlags(params.row.currency)}</div>)
+            <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>{params.row.currency+" "}{getFlags(params.row.currency)}</div>)
           }},
           { field: 'payment_method', headerName: 'Payment Method', width: 180 },
           { field: 'price', headerName: 'Price', type: 'number', width: 140,
@@ -198,14 +198,7 @@ export default class BookPage extends Component {
           { field: 'currency', headerName: 'Currency', width: 100, 
           renderCell: (params) => {return (
             <Tooltip placement="left" enterTouchDelay="0" title={params.row.payment_method}>
-                <Grid container xs={12} aling="center">
-                  <Grid item xs={6} aling="center">
-                    <span>{params.row.currency}</span> 
-                  </Grid>
-                  <Grid item xs={6} aling="center">
-                    <Typography>{getFlags(params.row.currency)}</Typography> 
-                  </Grid>
-                </Grid>
+              <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>{params.row.currency+" "}{getFlags(params.row.currency)}</div>
             </Tooltip>
           )} },
           { field: 'payment_method', headerName: 'Payment Method', width: 180, hide:'true'},
@@ -272,7 +265,7 @@ export default class BookPage extends Component {
               >     <MenuItem value={0}>🌍 ANY</MenuItem>
                     {
                       Object.entries(this.state.currencies_dict)
-                      .map( ([key, value]) => <MenuItem value={parseInt(key)}>{getFlags(value)} {" " + value}</MenuItem> )
+                      .map( ([key, value]) => <MenuItem value={parseInt(key)}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div></MenuItem> )
                     }
               </Select>
             </FormControl>
