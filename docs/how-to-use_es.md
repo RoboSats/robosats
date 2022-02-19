@@ -103,7 +103,7 @@ Tan pronto como tu fianza haya sido bloqueada, la aplicación te pedirá que env
 
 Mientras envías tu factura de pago, se le pide al vendedor que bloquee el depósito de garantía. Si eres más rápido que él, tendrás que esperar. Si él es más rápido, saltaras directamente al chat con él.
 
-Hay un límite de tiempo de 30 minutos para enviar la factura (comprador) y bloquear el depósito de garantía (vendedor). Si se agota el tiempo, la orden caducará y el robot (la parte) que no cumplió con las obligaciones del contrato perderá la fianza. Este mecanismo ayuda a evitar que se haga spam con órdenes falsas, que te hagan perder el tiempo y que atacantes bloqueen el libro de órdenes mediante DDOS.
+Hay un límite de tiempo de 3 horas para enviar la factura (comprador) y bloquear el depósito de garantía (vendedor). Si se agota el tiempo, la orden caducará y el robot (la parte) que no cumplió con las obligaciones del contrato perderá la fianza. Este mecanismo ayuda a evitar que se haga spam con órdenes falsas, que te hagan perder el tiempo y que atacantes bloqueen el libro de órdenes mediante DDOS.
 
 <div align="center">
 <img src="images/how-to-use/contract-box-4.png" width="370" />
@@ -115,6 +115,8 @@ Como comprador, tendrás que pedirle al vendedor los detalles para enviar el pag
 <div align="center">
 <img src="images/how-to-use/contract-box-5.png" width="370" />
 </div>
+
+Hay un limite de tiempo de 4 horas para completar el intercambio de fiat. Si el tiempo se acaba, la orden expirará y se abrirá una disputa automáticamente. Para evitar que la orden expire, **usa siempre metodos de pago fiat instantáneos**. Por ejemplo, enviar dinero por correo ordinario es tan lento que siempre desencadenará una disputa en la versión 0.1.0, en versiones futuras un tiempo de expiración mayor será posible.
 
 ¡En cuanto hayas enviado el pago fiat, debes clicar el botón "Confirm fiat sent"! Después de eso, el vendedor deberá confirmar que recibió tu pago. Tan pronto como lo confirme, la operación habrá finalizado y recibirás los sats en tu billetera lightning. Es posible que veas el mensaje "sending satoshis to buyer" (enviando satoshis al comprador), pero generalmente es tan rápido que simplemente verás esta pantalla (“Trade finished!”). ¡Disfruta de tus sats!
 

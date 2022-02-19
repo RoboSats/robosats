@@ -88,7 +88,7 @@ First thing is to lock a fidelity bond, so the seller knows you can be trusted. 
 <img src="images/how-to-use/contract-box-1.png"  width="370" />
 </div>
 
-Scan or copy the invoice into your lightning wallet. It might show as a payment that is on transit, freeze or even seemenly break your wallet. You should always check on the RoboSats website whether the bond has been locked (your wallet will probably not tell you! Check [wallet compatibility list](https://github.com/Reckless-Satoshi/robosats/issues/44))
+Scan or copy the invoice into your lightning wallet. It might show as a payment that is on transit, freeze or even seemingly break your wallet. You should always check on the RoboSats website whether the bond has been locked (your wallet will probably not tell you! Check [wallet compatibility list](https://github.com/Reckless-Satoshi/robosats/issues/44))
 
 <div align="center">
 <img src="images/how-to-use/contract-box-2.png"  width="370" />
@@ -102,19 +102,21 @@ As soon as our bond is locked, RoboSats will ask you to provide a lightning invo
 
 While you are submitting your payout invoice, the seller is asked to lock the trade escrow hold invoice. If you are faster than him, you would have to wait. Otherwise, you would already be able to chat with him. 
 
-There is a time limit of 30 minutes to submit the invoice (buyer) and lock the trade escrow (seller). If the time runs out, the order will expire and the robot who did not follow with the contract obligations will lose the bond. This is a mechanism that helps prevent fake order spamming, wasting time of counterparts and DDOSing the order book.
+There is a time limit of 3 hours to submit the invoice (buyer) and lock the trade escrow (seller). If the time runs out, the order will expire and the robot who did not follow with the contract obligations will lose the bond. This is a mechanism that helps prevent fake order spamming, wasting time of counterparts and DDOSing the order book.
 
 <div align="center">
 <img src="images/how-to-use/contract-box-4.png"  width="370" />
 </div>
 
-As soon as the seller locks the satoshis, it is safe to send the fiat currency! As a buyer, you will have to ask the seller for the details to send fiat. Remember to only share the information needed about yourself to not compromise your privacy. Remember, in RoboSats v0.1.0 this chat is memoryless, so the conversation will be lost if you refresh the browser.
+As soon as the seller locks the satoshis, it is safe to send the fiat currency! As a buyer, you will have to ask the seller for the details to send fiat. Only share the strictly needed information about yourself to not compromise your privacy. Remember, in RoboSats v0.1.0 this chat is memoryless, so the conversation will be lost if you refresh the browser.
  
 <div align="center">
 <img src="images/how-to-use/contract-box-5.png"  width="370" />
 </div>
 
-As soon as you have sent the fiat, you should tap on "Confirm fiat sent" button! After that, the seller will have to confirm the fiat was received. As soon as he confirms the trade is finished and you will be paid out to your lightning wallet. You might see that it is "sending satoshis to buyer" but usually it is so fast you will simply see this screen. Enjoy your sats!
+There is a time limit of 4 hours to complete the fiat exchange. If the time runs out, the order will expire and a dispute will be opened automatically. To avoid order expiration, **use always instant fiat payment methods**. For example, sending cash by ordinary mail is slow and will always trigger a dispute in v0.1.0. In the future longer expiry times will be possible.
+
+As soon as you have sent the fiat, you should tap on "Confirm fiat sent" button. After that, the seller will have to confirm the fiat was received. As soon as he confirms the trade is finished and you will be paid out to your lightning wallet. You might see that it is "sending satoshis to buyer" but usually it is so fast you will simply see this screen. Enjoy your sats!
 
 <div align="center">
 <img src="images/how-to-use/contract-box-6.png"  width="370" />
