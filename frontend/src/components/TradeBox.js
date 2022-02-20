@@ -93,7 +93,7 @@ export default class TradeBox extends Component {
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             The RoboSats staff will examine the statements and evidence provided. You need to build
-            a complete case, as the staff cannot read the chat. It is best to provide a burner contact 
+            a complete case, as the staff cannot read the chat. You MUST provide a burner contact 
             method with your statement. The satoshis in the trade escrow will be sent to the dispute winner, 
             while the dispute loser will lose the bond. 
           </DialogContentText>
@@ -446,7 +446,7 @@ export default class TradeBox extends Component {
           <Grid item xs={12} align="left">
             <Typography component="body2" variant="body2">
               Please, submit your statement. Be clear and specific about what happened and provide the necessary 
-              evidence. It is best to provide a burner email, XMPP or telegram username to follow up with the staff.
+              evidence. You MUST provide a burner email, XMPP or telegram username to follow up with the staff.
               Disputes are solved at the discretion of real robots <i>(aka humans)</i>, so be as helpful 
               as possible to ensure a fair outcome. Max 5000 chars.
             </Typography>

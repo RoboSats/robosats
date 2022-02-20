@@ -68,10 +68,10 @@ export default class InfoDialog extends Component {
 
           <Typography component="h5" variant="h5">What payment methods are accepted?</Typography>
           <Typography component="body2" variant="body2">
-            <p>Basically all of them. You can write down your preferred payment 
-              method(s). You will have to match with a peer who also accepts 
-              that method. Lightning is fast, so we highly recommend using instant 
-              fiat payment rails. </p>
+            <p>Basically all of them as long as they are fast. You can write down your preferred payment 
+              method(s). You will have to match with a peer who also accepts that method. The step to 
+              exchange fiat has a expiry time of 24 hours before a dispute is automatically 
+              open. We highly recommend using instant fiat payment rails. </p>
           </Typography>
 
           <Typography component="h5" variant="h5">Are there trade limits?</Typography>
