@@ -299,11 +299,15 @@ class Logics:
     @classmethod
     def open_dispute(cls, order, user=None):
 
-        # Always settle the escrow during a dispute
-        # Dispute winner will have to submit a new invoice.
+        # Always settle escro and bonds during a dispute. Disputes 
+        # can take long to resolve, it might trigger force closure 
+        # for unresolve HTLCs) Dispute winner will have to submit a 
+        # new invoice for value of escrow + bond.
 
         if not order.trade_escrow.status == LNPayment.Status.SETLED:
             cls.settle_escrow(order)
+            cls.settle_bond(order.maker_bond)
+            cls.settle_bond(order.taker_bond)
 
         order.is_disputed = True
         order.status = Order.Status.DIS
