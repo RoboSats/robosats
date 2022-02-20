@@ -234,7 +234,10 @@ class Logics:
             if maker_is_seller:
                 cls.settle_bond(order.maker_bond)
                 cls.return_bond(order.taker_bond)
-                cls.cancel_escrow(order)
+                try: # If seller is offline the escrow LNpayment does not even exist
+                    cls.cancel_escrow(order)
+                except:
+                    pass
                 order.status = Order.Status.EXP
                 order.save()
                 return True
@@ -242,7 +245,10 @@ class Logics:
             # If maker is buyer, settle the taker's bond order goes back to public
             else:
                 cls.settle_bond(order.taker_bond)
-                cls.cancel_escrow(order)
+                try: # If seller is offline the escrow LNpayment does not even exist
+                    cls.cancel_escrow(order)
+                except:
+                    pass
                 order.taker = None
                 order.taker_bond = None
                 order.trade_escrow = None

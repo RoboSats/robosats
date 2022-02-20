@@ -43,6 +43,8 @@ class Command(BaseCommand):
             debug = {}
             debug["num_expired_orders"] = len(queryset)
             debug["expired_orders"] = []
+            debug["failed_order_expiry"] = []
+            debug["reason_failure"] = []
 
             for idx, order in enumerate(queryset):
                 context = str(order) + " was " + Order.Status(
@@ -55,6 +57,9 @@ class Command(BaseCommand):
                 # It should not happen, but if it cannot locate the hold invoice
                 # it probably was cancelled by another thread, make it expire anyway.
                 except Exception as e:
+                    debug["failed_order_expiry"].append({idx: context})
+                    debug["reason_failure"].append({idx: str(e)})
+                    
                     if "unable to locate invoice" in str(e):
                         self.stdout.write(str(e))
                         order.status = Order.Status.EXP
