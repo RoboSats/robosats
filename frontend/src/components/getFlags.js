@@ -1,3 +1,7 @@
+import React, { Component } from 'react';
+import SvgIcon from '@mui/material/SvgIcon';
+import SwapCallsIcon from '@mui/icons-material/SwapCalls';
+
 export default function getFlags(code){
     if(code == 'AUD') return '🇦🇺';
     if(code == 'ARS') return '🇦🇷';
@@ -29,5 +33,11 @@ export default function getFlags(code){
     if(code == 'TRY') return '🇹🇷';
     if(code == 'USD') return '🇺🇸';
     if(code == 'ZAR') return '🇿🇦';
+    if(code == 'COP') return '🇨🇴';
+    if(code == 'PEN') return '🇵🇪';
+    if(code == 'UYU') return '🇺🇾';
+    if(code == 'PYG') return '🇵🇾';
+    if(code == 'BOB') return '🇧🇴';
+    if(code == 'BTC') return <SwapCallsIcon color="primary"/>;
     return '🏳';
 };

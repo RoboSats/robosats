@@ -1,4 +1,5 @@
 # Set up
+*Attention: to use RoboSats you do not need to run the stack, simply visit the webapp. This setup guide is intended for developer cotributors and platform operators.*
 # The easy way
 ## With Docker (-dev containers running on testnet)
 Spinning up docker for the first time
@@ -10,6 +11,34 @@ docker exec -it django-dev python3 manage.py migrate
 docker exec -it django-dev python3 manage.py createsuperuser
 docker-compose restart
 ```
+Copy the `.env-sample` file into `.env` and check the settings are of your liking.
+
+### (optional, if error) Install LND python dependencies
+Depending on your setup your environment is good to go. But it might happen that mounting when "." into "/src/usr/robosats" in the docker-compose.yml, it deletes the lnd grpc files that where generated during the docker build. If that is the case, run the following:
+```
+cd api/lightning
+pip install grpcio grpcio-tools googleapis-common-protos
+git clone https://github.com/googleapis/googleapis.git
+curl -o lightning.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/lightning.proto
+python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. lightning.proto
+```
+We also use the *Invoices* and *Router* subservices for invoice validation and payment routing.
+```
+curl -o invoices.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/invoicesrpc/invoices.proto
+python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. invoices.proto
+curl -o router.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/routerrpc/router.proto
+python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. router.proto
+```
+Generated files can be automatically patched for relative imports like this:
+```
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/router_pb2.py
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/invoices_pb2.py
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/router_pb2_grpc.py
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/lightning_pb2_grpc.py
+sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/invoices_pb2_grpc.py
+```
+
+All set!
 
 Spinning up any other time:
 `docker-compose up -d`
@@ -40,6 +69,7 @@ Connect
 Open channel
 `docker exec -it lnd-dev lncli --network=testnet openchannel node_id --local_amt LOCAL_AMT --push_amt PUSH_AMT`
 
+RoboSats webapp should be accessible on localhost:8000
 # The harder way
 ## Django development environment
 ### Install Python and pip

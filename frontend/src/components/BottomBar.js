@@ -24,8 +24,10 @@ import WebIcon from '@mui/icons-material/Web';
 
 // pretty numbers
 function pn(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  }
+    var parts = x.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+}
 
 export default class BottomBar extends Component {
     constructor(props) {
@@ -39,8 +41,8 @@ export default class BottomBar extends Component {
             active_robots_today: 0,
             fee: 0,
             today_avg_nonkyc_btc_premium: 0,
-            today_total_volume: 0,
-            lifetime_satoshis_settled: 0,
+            today_volume: 0,
+            lifetime_volume: 0,
             robosats_running_commit_hash: '000000000000000',
             openProfile: false,
             profileShown: false,
@@ -128,13 +130,13 @@ export default class BottomBar extends Component {
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><EqualizerIcon/></ListItemIcon>
-                    <ListItemText primary={this.state.today_total_volume+" BTC"} secondary="Today traded volume"/>
+                    <ListItemText primary={pn(this.state.today_volume)+" Sats"} secondary="Today contracted volume"/>
                 </ListItem>
 
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><EqualizerIcon/></ListItemIcon>
-                    <ListItemText primary={pn(this.state.lifetime_satoshis_settled)+" Sats"} secondary="Lifetime settled volume"/>
+                    <ListItemText primary={pn(this.state.lifetime_volume)+" BTC"} secondary="Lifetime contracted volume"/>
                 </ListItem>
 
                 <Divider/>

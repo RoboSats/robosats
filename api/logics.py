@@ -11,129 +11,189 @@ from api.tasks import follow_send_payment
 import math
 import ast
 
-FEE = float(config('FEE'))
-BOND_SIZE = float(config('BOND_SIZE'))
-ESCROW_USERNAME = config('ESCROW_USERNAME')
-PENALTY_TIMEOUT = int(config('PENALTY_TIMEOUT'))
+FEE = float(config("FEE"))
+BOND_SIZE = float(config("BOND_SIZE"))
+ESCROW_USERNAME = config("ESCROW_USERNAME")
+PENALTY_TIMEOUT = int(config("PENALTY_TIMEOUT"))
 
-MIN_TRADE = int(config('MIN_TRADE'))
-MAX_TRADE = int(config('MAX_TRADE'))
+MIN_TRADE = int(config("MIN_TRADE"))
+MAX_TRADE = int(config("MAX_TRADE"))
 
-EXP_MAKER_BOND_INVOICE = int(config('EXP_MAKER_BOND_INVOICE'))
-EXP_TAKER_BOND_INVOICE = int(config('EXP_TAKER_BOND_INVOICE'))
+EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
+EXP_TAKER_BOND_INVOICE = int(config("EXP_TAKER_BOND_INVOICE"))
 
-BOND_EXPIRY = int(config('BOND_EXPIRY'))
-ESCROW_EXPIRY = int(config('ESCROW_EXPIRY'))
+BOND_EXPIRY = int(config("BOND_EXPIRY"))
+ESCROW_EXPIRY = int(config("ESCROW_EXPIRY"))
 
-PUBLIC_ORDER_DURATION = int(config('PUBLIC_ORDER_DURATION'))
-INVOICE_AND_ESCROW_DURATION = int(config('INVOICE_AND_ESCROW_DURATION'))
-FIAT_EXCHANGE_DURATION = int(config('FIAT_EXCHANGE_DURATION'))
+PUBLIC_ORDER_DURATION = int(config("PUBLIC_ORDER_DURATION"))
+INVOICE_AND_ESCROW_DURATION = int(config("INVOICE_AND_ESCROW_DURATION"))
+FIAT_EXCHANGE_DURATION = int(config("FIAT_EXCHANGE_DURATION"))
 
-class Logics():
+
+class Logics:
 
     @classmethod
     def validate_already_maker_or_taker(cls, user):
-        '''Validates if a use is already not part of an active order'''
+        """Validates if a use is already not part of an active order"""
 
-        active_order_status = [Order.Status.WFB, Order.Status.PUB, Order.Status.TAK,
-                                Order.Status.WF2, Order.Status.WFE, Order.Status.WFI,
-                                Order.Status.CHA, Order.Status.FSE, Order.Status.DIS,
-                                Order.Status.WFR]
-        '''Checks if the user is already partipant of an active order'''
-        queryset = Order.objects.filter(maker=user, status__in=active_order_status)
+        active_order_status = [
+            Order.Status.WFB,
+            Order.Status.PUB,
+            Order.Status.TAK,
+            Order.Status.WF2,
+            Order.Status.WFE,
+            Order.Status.WFI,
+            Order.Status.CHA,
+            Order.Status.FSE,
+            Order.Status.DIS,
+            Order.Status.WFR,
+        ]
+        """Checks if the user is already partipant of an active order"""
+        queryset = Order.objects.filter(maker=user,
+                                        status__in=active_order_status)
         if queryset.exists():
-            return False, {'bad_request':'You are already maker of an active order'}, queryset[0]
+            return (
+                False,
+                {
+                    "bad_request": "You are already maker of an active order"
+                },
+                queryset[0],
+            )
 
-        queryset = Order.objects.filter(taker=user, status__in=active_order_status)
+        queryset = Order.objects.filter(taker=user,
+                                        status__in=active_order_status)
         if queryset.exists():
-            return False, {'bad_request':'You are already taker of an active order'}, queryset[0]
-        
+            return (
+                False,
+                {
+                    "bad_request": "You are already taker of an active order"
+                },
+                queryset[0],
+            )
+
         # Edge case when the user is in an order that is failing payment and he is the buyer
-        queryset = Order.objects.filter( Q(maker=user) | Q(taker=user), status=Order.Status.FAI)
+        queryset = Order.objects.filter(Q(maker=user) | Q(taker=user),
+                                        status=Order.Status.FAI)
         if queryset.exists():
             order = queryset[0]
             if cls.is_buyer(order, user):
-                return False, {'bad_request':'You are still pending a payment from a recent order'}, order
+                return (
+                    False,
+                    {
+                        "bad_request":
+                        "You are still pending a payment from a recent order"
+                    },
+                    order,
+                )
 
         return True, None, None
 
     def validate_order_size(order):
-        '''Validates if order is withing limits in satoshis at t0'''
+        """Validates if order is withing limits in satoshis at t0"""
         if order.t0_satoshis > MAX_TRADE:
-            return False, {'bad_request': 'Your order is too big. It is worth '+'{:,}'.format(order.t0_satoshis)+' Sats now, but the limit is '+'{:,}'.format(MAX_TRADE)+ ' Sats'}
+            return False, {
+                "bad_request":
+                "Your order is too big. It is worth " +
+                "{:,}".format(order.t0_satoshis) +
+                " Sats now, but the limit is " + "{:,}".format(MAX_TRADE) +
+                " Sats"
+            }
         if order.t0_satoshis < MIN_TRADE:
-            return False, {'bad_request': 'Your order is too small. It is worth '+'{:,}'.format(order.t0_satoshis)+' Sats now, but the limit is '+'{:,}'.format(MIN_TRADE)+ ' Sats'}
+            return False, {
+                "bad_request":
+                "Your order is too small. It is worth " +
+                "{:,}".format(order.t0_satoshis) +
+                " Sats now, but the limit is " + "{:,}".format(MIN_TRADE) +
+                " Sats"
+            }
         return True, None
 
     def user_activity_status(last_seen):
         if last_seen > (timezone.now() - timedelta(minutes=2)):
-            return 'Active'
+            return "Active"
         elif last_seen > (timezone.now() - timedelta(minutes=10)):
-            return 'Seen recently'
+            return "Seen recently"
         else:
-            return 'Inactive'
+            return "Inactive"
 
-    @classmethod    
+    @classmethod
     def take(cls, order, user):
         is_penalized, time_out = cls.is_penalized(user)
         if is_penalized:
-            return False, {'bad_request',f'You need to wait {time_out} seconds to take an order'}
+            return False, {
+                "bad_request",
+                f"You need to wait {time_out} seconds to take an order",
+            }
         else:
             order.taker = user
             order.status = Order.Status.TAK
-            order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.TAK])
+            order.expires_at = timezone.now() + timedelta(
+                seconds=Order.t_to_expire[Order.Status.TAK])
             order.save()
             return True, None
 
     def is_buyer(order, user):
         is_maker = order.maker == user
         is_taker = order.taker == user
-        return (is_maker and order.type == Order.Types.BUY) or (is_taker and order.type == Order.Types.SELL)
+        return (is_maker and order.type == Order.Types.BUY) or (
+            is_taker and order.type == Order.Types.SELL)
 
     def is_seller(order, user):
         is_maker = order.maker == user
         is_taker = order.taker == user
-        return (is_maker and order.type == Order.Types.SELL) or (is_taker and order.type == Order.Types.BUY)
-    
+        return (is_maker and order.type == Order.Types.SELL) or (
+            is_taker and order.type == Order.Types.BUY)
+
     def satoshis_now(order):
-        ''' checks trade amount in sats '''
+        """checks trade amount in sats"""
         if order.is_explicit:
             satoshis_now = order.satoshis
         else:
             exchange_rate = float(order.currency.exchange_rate)
-            premium_rate = exchange_rate * (1+float(order.premium)/100)
-            satoshis_now = (float(order.amount) / premium_rate) * 100*1000*1000
+            premium_rate = exchange_rate * (1 + float(order.premium) / 100)
+            satoshis_now = (float(order.amount) /
+                            premium_rate) * 100 * 1000 * 1000
 
         return int(satoshis_now)
 
     def price_and_premium_now(order):
-        ''' computes order price and premium with current rates '''
+        """computes order price and premium with current rates"""
         exchange_rate = float(order.currency.exchange_rate)
         if not order.is_explicit:
             premium = order.premium
-            price = exchange_rate * (1+float(premium)/100)
+            price = exchange_rate * (1 + float(premium) / 100)
         else:
-            order_rate = float(order.amount) / (float(order.satoshis) / 100000000)
+            order_rate = float(
+                order.amount) / (float(order.satoshis) / 100000000)
             premium = order_rate / exchange_rate - 1
-            premium = int(premium*10000)/100  # 2 decimals left
+            premium = int(premium * 10000) / 100  # 2 decimals left
             price = order_rate
 
         significant_digits = 5
-        price = round(price, significant_digits - int(math.floor(math.log10(abs(price)))) - 1)
-        
+        price = round(
+            price,
+            significant_digits - int(math.floor(math.log10(abs(price)))) - 1)
+
         return price, premium
 
     @classmethod
     def order_expires(cls, order):
-        ''' General cases when time runs out.'''
+        """General cases when time runs out."""
 
         # Do not change order status if an order in any with
         # any of these status is sent to expire here
-        does_not_expire = [Order.Status.DEL, Order.Status.UCA,
-                    Order.Status.EXP, Order.Status.TLD,
-                    Order.Status.DIS, Order.Status.CCA,
-                    Order.Status.PAY, Order.Status.SUC,
-                    Order.Status.FAI, Order.Status.MLD]
+        does_not_expire = [
+            Order.Status.DEL,
+            Order.Status.UCA,
+            Order.Status.EXP,
+            Order.Status.TLD,
+            Order.Status.DIS,
+            Order.Status.CCA,
+            Order.Status.PAY,
+            Order.Status.SUC,
+            Order.Status.FAI,
+            Order.Status.MLD,
+        ]
 
         if order.status in does_not_expire:
             return False
@@ -143,7 +203,7 @@ class Logics():
             cls.cancel_bond(order.maker_bond)
             order.save()
             return True
-        
+
         elif order.status == Order.Status.PUB:
             cls.return_bond(order.maker_bond)
             order.status = Order.Status.EXP
@@ -156,10 +216,10 @@ class Logics():
             return True
 
         elif order.status == Order.Status.WF2:
-            '''Weird case where an order expires and both participants
+            """Weird case where an order expires and both participants
             did not proceed with the contract. Likely the site was
             down or there was a bug. Still bonds must be charged
-            to avoid service DDOS. '''
+            to avoid service DDOS."""
 
             cls.settle_bond(order.maker_bond)
             cls.settle_bond(order.taker_bond)
@@ -212,21 +272,22 @@ class Logics():
                 order.trade_escrow = None
                 cls.publish_order(order)
                 return True
-        
+
         elif order.status in [Order.Status.CHA, Order.Status.FSE]:
             # Another weird case. The time to confirm 'fiat sent or received' expired. Yet no dispute
-            # was opened. Hint: a seller-scammer could persuade a buyer to not click "fiat  
+            # was opened. Hint: a seller-scammer could persuade a buyer to not click "fiat
             # sent", we assume this is a dispute case by default.
             cls.open_dispute(order)
             return True
 
     @classmethod
     def kick_taker(cls, order):
-        ''' The taker did not lock the taker_bond. Now he has to go'''
+        """The taker did not lock the taker_bond. Now he has to go"""
         # Add a time out to the taker
         if order.taker:
             profile = order.taker.profile
-            profile.penalty_expiration = timezone.now() + timedelta(seconds=PENALTY_TIMEOUT)
+            profile.penalty_expiration = timezone.now() + timedelta(
+                seconds=PENALTY_TIMEOUT)
             profile.save()
 
         # Make order public again
@@ -242,11 +303,12 @@ class Logics():
         # Dispute winner will have to submit a new invoice.
 
         if not order.trade_escrow.status == LNPayment.Status.SETLED:
-            cls.settle_escrow(order)     
-        
+            cls.settle_escrow(order)
+
         order.is_disputed = True
         order.status = Order.Status.DIS
-        order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.DIS])
+        order.expires_at = timezone.now() + timedelta(
+            seconds=Order.t_to_expire[Order.Status.DIS])
         order.save()
 
         # User could be None if a dispute is open automatically due to weird expiration.
@@ -256,82 +318,101 @@ class Logics():
             if profile.orders_disputes_started == None:
                 profile.orders_disputes_started = [str(order.id)]
             else:
-                profile.orders_disputes_started = list(profile.orders_disputes_started).append(str(order.id))
+                profile.orders_disputes_started = list(
+                    profile.orders_disputes_started).append(str(order.id))
             profile.save()
 
         return True, None
 
     def dispute_statement(order, user, statement):
-        ''' Updates the dispute statements'''
+        """Updates the dispute statements"""
 
         if not order.status == Order.Status.DIS:
-            return False, {'bad_request':'Only orders in dispute accept a dispute statements'}
+            return False, {
+                "bad_request":
+                "Only orders in dispute accept a dispute statements"
+            }
 
         if len(statement) > 5000:
-            return False, {'bad_statement':'The statement is longer than 5000 characters'}
+            return False, {
+                "bad_statement": "The statement is longer than 5000 characters"
+            }
 
         if order.maker == user:
             order.maker_statement = statement
         else:
             order.taker_statement = statement
-        
+
         # If both statements are in, move status to wait for dispute resolution
         if order.maker_statement != None and order.taker_statement != None:
             order.status = Order.Status.WFR
-            order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.WFR])
+            order.expires_at = timezone.now() + timedelta(
+                seconds=Order.t_to_expire[Order.Status.WFR])
 
         order.save()
         return True, None
 
     @classmethod
     def payout_amount(cls, order, user):
-        ''' Computes buyer invoice amount. Uses order.last_satoshis, 
-        that is the final trade amount set at Taker Bond time'''
+        """Computes buyer invoice amount. Uses order.last_satoshis,
+        that is the final trade amount set at Taker Bond time"""
 
         if cls.is_buyer(order, user):
-            invoice_amount = int(order.last_satoshis * (1-FEE)) # Trading FEE is charged here.
+            invoice_amount = int(order.last_satoshis *
+                                 (1 - FEE))  # Trading FEE is charged here.
 
-        return True, {'invoice_amount': invoice_amount}
+        return True, {"invoice_amount": invoice_amount}
 
     @classmethod
     def update_invoice(cls, order, user, invoice):
-        
+
         # only the buyer can post a buyer invoice
 
         if not cls.is_buyer(order, user):
-            return False, {'bad_request':'Only the buyer of this order can provide a buyer invoice.'}
+            return False, {
+                "bad_request":
+                "Only the buyer of this order can provide a buyer invoice."
+            }
         if not order.taker_bond:
-            return False, {'bad_request':'Wait for your order to be taken.'}
-        if not (order.taker_bond.status == order.maker_bond.status == LNPayment.Status.LOCKED) and not order.status == Order.Status.FAI:
-            return False, {'bad_request':'You cannot submit a invoice while bonds are not locked.'}
+            return False, {"bad_request": "Wait for your order to be taken."}
+        if (not (order.taker_bond.status == order.maker_bond.status ==
+                 LNPayment.Status.LOCKED)
+                and not order.status == Order.Status.FAI):
+            return False, {
+                "bad_request":
+                "You cannot submit a invoice while bonds are not locked."
+            }
 
-        num_satoshis = cls.payout_amount(order, user)[1]['invoice_amount']
+        num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
         payout = LNNode.validate_ln_invoice(invoice, num_satoshis)
 
-        if not payout['valid']:
-            return False, payout['context']
+        if not payout["valid"]:
+            return False, payout["context"]
 
         order.payout, _ = LNPayment.objects.update_or_create(
-            concept = LNPayment.Concepts.PAYBUYER, 
-            type = LNPayment.Types.NORM, 
-            sender = User.objects.get(username=ESCROW_USERNAME),
-            order_paid = order,  # In case this user has other payouts, update the one related to this order.
-            receiver= user, 
+            concept=LNPayment.Concepts.PAYBUYER,
+            type=LNPayment.Types.NORM,
+            sender=User.objects.get(username=ESCROW_USERNAME),
+            order_paid=
+            order,  # In case this user has other payouts, update the one related to this order.
+            receiver=user,
             # if there is a LNPayment matching these above, it updates that one with defaults below.
             defaults={
-                'invoice' : invoice,
-                'status' : LNPayment.Status.VALIDI,
-                'num_satoshis' : num_satoshis,
-                'description' :  payout['description'],
-                'payment_hash' : payout['payment_hash'],
-                'created_at' : payout['created_at'],
-                'expires_at' : payout['expires_at']}
-            )
+                "invoice": invoice,
+                "status": LNPayment.Status.VALIDI,
+                "num_satoshis": num_satoshis,
+                "description": payout["description"],
+                "payment_hash": payout["payment_hash"],
+                "created_at": payout["created_at"],
+                "expires_at": payout["expires_at"],
+            },
+        )
 
         # If the order status is 'Waiting for invoice'. Move forward to 'chat'
-        if order.status == Order.Status.WFI: 
+        if order.status == Order.Status.WFI:
             order.status = Order.Status.CHA
-            order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.CHA])
+            order.expires_at = timezone.now() + timedelta(
+                seconds=Order.t_to_expire[Order.Status.CHA])
 
         # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow'
         if order.status == Order.Status.WF2:
@@ -341,13 +422,15 @@ class Logics():
             # If the escrow is locked move to Chat.
             elif order.trade_escrow.status == LNPayment.Status.LOCKED:
                 order.status = Order.Status.CHA
-                order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.CHA])
+                order.expires_at = timezone.now() + timedelta(
+                    seconds=Order.t_to_expire[Order.Status.CHA])
             else:
                 order.status = Order.Status.WFE
-        
+
         # If the order status is 'Failed Routing'. Retry payment.
         if order.status == Order.Status.FAI:
-            if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
+            if LNNode.double_check_htlc_is_settled(
+                    order.trade_escrow.payment_hash):
                 order.status = Order.Status.PAY
                 order.payout.status = LNPayment.Status.FLIGHT
                 order.payout.routing_attempts = 0
@@ -358,7 +441,7 @@ class Logics():
         return True, None
 
     def add_profile_rating(profile, rating):
-        ''' adds a new rating to a user profile'''
+        """adds a new rating to a user profile"""
 
         # TODO Unsafe, does not update ratings, it adds more ratings everytime a new rating is clicked.
         profile.total_ratings += 1
@@ -371,83 +454,98 @@ class Logics():
             latest_ratings = ast.literal_eval(latest_ratings)
             latest_ratings.append(rating)
             profile.latest_ratings = latest_ratings
-            profile.avg_rating = sum(list(map(int, latest_ratings))) / len(latest_ratings)  # Just an average, but it is a list of strings. Has to be converted to int.
+            profile.avg_rating = sum(list(map(int, latest_ratings))) / len(
+                latest_ratings
+            )  # Just an average, but it is a list of strings. Has to be converted to int.
 
         profile.save()
 
     def is_penalized(user):
-        ''' Checks if a user that is not participant of orders
-        has a limit on taking or making a order'''
-        
+        """Checks if a user that is not participant of orders
+        has a limit on taking or making a order"""
+
         if user.profile.penalty_expiration:
             if user.profile.penalty_expiration > timezone.now():
-                time_out = (user.profile.penalty_expiration - timezone.now()).seconds
+                time_out = (user.profile.penalty_expiration -
+                            timezone.now()).seconds
                 return True, time_out
 
         return False, None
-
 
     @classmethod
     def cancel_order(cls, order, user, state=None):
 
         # Do not change order status if an is in order
         # any of these status
-        do_not_cancel = [Order.Status.DEL, Order.Status.UCA,
-                    Order.Status.EXP, Order.Status.TLD,
-                    Order.Status.DIS, Order.Status.CCA,
-                    Order.Status.PAY, Order.Status.SUC,
-                    Order.Status.FAI, Order.Status.MLD]
+        do_not_cancel = [
+            Order.Status.DEL,
+            Order.Status.UCA,
+            Order.Status.EXP,
+            Order.Status.TLD,
+            Order.Status.DIS,
+            Order.Status.CCA,
+            Order.Status.PAY,
+            Order.Status.SUC,
+            Order.Status.FAI,
+            Order.Status.MLD,
+        ]
 
         if order.status in do_not_cancel:
-            return False, {'bad_request':'You cannot cancel this order'}
+            return False, {"bad_request": "You cannot cancel this order"}
 
         # 1) When maker cancels before bond
-        '''The order never shows up on the book and order 
-        status becomes "cancelled" '''
+        """The order never shows up on the book and order 
+        status becomes "cancelled" """
         if order.status == Order.Status.WFB and order.maker == user:
+            cls.cancel_bond(order.maker_bond)
             order.status = Order.Status.UCA
             order.save()
             return True, None
 
-        # 2) When maker cancels after bond
-            '''The order dissapears from book and goes to cancelled. If strict, maker is charged the bond 
+            # 2) When maker cancels after bond
+            """The order dissapears from book and goes to cancelled. If strict, maker is charged the bond 
             to prevent DDOS on the LN node and order book. If not strict, maker is returned
-            the bond (more user friendly).'''
+            the bond (more user friendly)."""
         elif order.status == Order.Status.PUB and order.maker == user:
-            #Settle the maker bond (Maker loses the bond for cancelling public order)
-            if cls.return_bond(order.maker_bond): # strict: cls.settle_bond(order.maker_bond):
+            # Settle the maker bond (Maker loses the bond for cancelling public order)
+            if cls.return_bond(order.maker_bond
+                               ):  # strict: cls.settle_bond(order.maker_bond):
                 order.status = Order.Status.UCA
                 order.save()
                 return True, None
 
-        # 3) When taker cancels before bond
-            ''' The order goes back to the book as public.
-            LNPayment "order.taker_bond" is deleted() '''
+            # 3) When taker cancels before bond
+            """ The order goes back to the book as public.
+            LNPayment "order.taker_bond" is deleted() """
         elif order.status == Order.Status.TAK and order.taker == user:
             # adds a timeout penalty
             cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
             return True, None
 
-        # 4) When taker or maker cancel after bond (before escrow)
-            '''The order goes into cancelled status if maker cancels.
+            # 4) When taker or maker cancel after bond (before escrow)
+            """The order goes into cancelled status if maker cancels.
             The order goes into the public book if taker cancels.
-            In both cases there is a small fee.'''
+            In both cases there is a small fee."""
 
-        # 4.a) When maker cancel after bond (before escrow)
-            '''The order into cancelled status if maker cancels.'''
-        elif order.status in [Order.Status.PUB, Order.Status.TAK, Order.Status.WF2, Order.Status.WFE] and order.maker == user:
-            #Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
+            # 4.a) When maker cancel after bond (before escrow)
+            """The order into cancelled status if maker cancels."""
+        elif (order.status in [
+                Order.Status.PUB, Order.Status.TAK, Order.Status.WF2,
+                Order.Status.WFE
+        ] and order.maker == user):
+            # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.maker_bond)
-            cls.return_bond(order.taker_bond) # returns taker bond
+            cls.return_bond(order.taker_bond)  # returns taker bond
             if valid:
                 order.status = Order.Status.UCA
                 order.save()
                 return True, None
 
-        # 4.b) When taker cancel after bond (before escrow)
-            '''The order into cancelled status if maker cancels.'''
-        elif order.status in [Order.Status.WF2, Order.Status.WFE] and order.taker == user:
+            # 4.b) When taker cancel after bond (before escrow)
+            """The order into cancelled status if maker cancels."""
+        elif (order.status in [Order.Status.WF2, Order.Status.WFE]
+              and order.taker == user):
             # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.taker_bond)
             if valid:
@@ -455,18 +553,20 @@ class Logics():
                 cls.publish_order(order)
                 return True, None
 
-        # 5) When trade collateral has been posted (after escrow)
-            '''Always goes to CCA status. Collaboration is needed.
+            # 5) When trade collateral has been posted (after escrow)
+            """Always goes to CCA status. Collaboration is needed.
             When a user asks for cancel, 'order.m/t/aker_asked_cancel' goes True.
             When the second user asks for cancel. Order is totally cancelled.
-            Must have a small cost for both parties to prevent node DDOS.'''
-        elif order.status in [Order.Status.WFI, Order.Status.CHA, Order.Status.FSE]:
-            
+            Must have a small cost for both parties to prevent node DDOS."""
+        elif order.status in [
+                Order.Status.WFI, Order.Status.CHA, Order.Status.FSE
+        ]:
+
             # if the maker had asked, and now the taker does: cancel order, return everything
             if order.maker_asked_cancel and user == order.taker:
                 cls.collaborative_cancel(order)
                 return True, None
-            
+
             # if the taker had asked, and now the maker does: cancel order, return everything
             elif order.taker_asked_cancel and user == order.maker:
                 cls.collaborative_cancel(order)
@@ -477,15 +577,14 @@ class Logics():
                 order.taker_asked_cancel = True
                 order.save()
                 return True, None
-            
+
             elif user == order.maker:
                 order.maker_asked_cancel = True
                 order.save()
                 return True, None
-            
 
         else:
-            return False, {'bad_request':'You cannot cancel this order'}
+            return False, {"bad_request": "You cannot cancel this order"}
 
     @classmethod
     def collaborative_cancel(cls, order):
@@ -498,7 +597,8 @@ class Logics():
 
     def publish_order(order):
         order.status = Order.Status.PUB
-        order.expires_at = order.created_at + timedelta(seconds=Order.t_to_expire[Order.Status.PUB])
+        order.expires_at = order.created_at + timedelta(
+            seconds=Order.t_to_expire[Order.Status.PUB])
         order.save()
         return
 
@@ -517,14 +617,20 @@ class Logics():
         # Do not gen and cancel if order is older than expiry time
         if order.expires_at < timezone.now():
             cls.order_expires(order)
-            return False, {'bad_request':'Invoice expired. You did not confirm publishing the order in time. Make a new order.'}
+            return False, {
+                "bad_request":
+                "Invoice expired. You did not confirm publishing the order in time. Make a new order."
+            }
 
         # Return the previous invoice if there was one and is still unpaid
         if order.maker_bond:
             if cls.is_maker_bond_locked(order):
                 return False, None
             elif order.maker_bond.status == LNPayment.Status.INVGEN:
-                return True, {'bond_invoice':order.maker_bond.invoice,'bond_satoshis':order.maker_bond.num_satoshis}
+                return True, {
+                    "bond_invoice": order.maker_bond.invoice,
+                    "bond_satoshis": order.maker_bond.num_satoshis,
+                }
 
         # If there was no maker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
@@ -534,60 +640,73 @@ class Logics():
 
         # Gen hold Invoice
         try:
-            hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
-                                                description, 
-                                                invoice_expiry=Order.t_to_expire[Order.Status.WFB], 
-                                                cltv_expiry_secs=BOND_EXPIRY*3600)
+            hold_payment = LNNode.gen_hold_invoice(
+                bond_satoshis,
+                description,
+                invoice_expiry=Order.t_to_expire[Order.Status.WFB],
+                cltv_expiry_secs=BOND_EXPIRY * 3600,
+            )
         except Exception as e:
             print(str(e))
-            if 'failed to connect to all addresses' in str(e):
-                return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware.'}
-            if 'wallet locked' in str(e):
-                return False, {'bad_request':"This is weird, RoboSats' lightning wallet is locked. Check in the Telegram group, maybe the staff has died."}
-        
+            if "failed to connect to all addresses" in str(e):
+                return False, {
+                    "bad_request":
+                    "The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware."
+                }
+            if "wallet locked" in str(e):
+                return False, {
+                    "bad_request":
+                    "This is weird, RoboSats' lightning wallet is locked. Check in the Telegram group, maybe the staff has died."
+                }
+
         order.maker_bond = LNPayment.objects.create(
-            concept = LNPayment.Concepts.MAKEBOND, 
-            type = LNPayment.Types.HOLD, 
-            sender = user,
-            receiver = User.objects.get(username=ESCROW_USERNAME),
-            invoice = hold_payment['invoice'],
-            preimage = hold_payment['preimage'],
-            status = LNPayment.Status.INVGEN,
-            num_satoshis = bond_satoshis,
-            description =  description,
-            payment_hash = hold_payment['payment_hash'],
-            created_at = hold_payment['created_at'],
-            expires_at = hold_payment['expires_at'],
-            cltv_expiry = hold_payment['cltv_expiry'])
+            concept=LNPayment.Concepts.MAKEBOND,
+            type=LNPayment.Types.HOLD,
+            sender=user,
+            receiver=User.objects.get(username=ESCROW_USERNAME),
+            invoice=hold_payment["invoice"],
+            preimage=hold_payment["preimage"],
+            status=LNPayment.Status.INVGEN,
+            num_satoshis=bond_satoshis,
+            description=description,
+            payment_hash=hold_payment["payment_hash"],
+            created_at=hold_payment["created_at"],
+            expires_at=hold_payment["expires_at"],
+            cltv_expiry=hold_payment["cltv_expiry"],
+        )
 
         order.save()
-        return True, {'bond_invoice':hold_payment['invoice'], 'bond_satoshis':bond_satoshis}
+        return True, {
+            "bond_invoice": hold_payment["invoice"],
+            "bond_satoshis": bond_satoshis,
+        }
 
     @classmethod
     def finalize_contract(cls, order):
-            ''' When the taker locks the taker_bond
-            the contract is final '''
+        """When the taker locks the taker_bond
+        the contract is final"""
 
-            # THE TRADE AMOUNT IS FINAL WITH THE CONFIRMATION OF THE TAKER BOND! 
-            # (This is the last update to "last_satoshis", it becomes the escrow amount next)
-            order.last_satoshis = cls.satoshis_now(order)
-            order.taker_bond.status = LNPayment.Status.LOCKED
-            order.taker_bond.save()
+        # THE TRADE AMOUNT IS FINAL WITH THE CONFIRMATION OF THE TAKER BOND!
+        # (This is the last update to "last_satoshis", it becomes the escrow amount next)
+        order.last_satoshis = cls.satoshis_now(order)
+        order.taker_bond.status = LNPayment.Status.LOCKED
+        order.taker_bond.save()
 
-            # Both users profiles are added one more contract // Unsafe can add more than once.
-            order.maker.profile.total_contracts += 1
-            order.taker.profile.total_contracts += 1
-            order.maker.profile.save()
-            order.taker.profile.save()
+        # Both users profiles are added one more contract // Unsafe can add more than once.
+        order.maker.profile.total_contracts += 1
+        order.taker.profile.total_contracts += 1
+        order.maker.profile.save()
+        order.taker.profile.save()
 
-            # Log a market tick
-            MarketTick.log_a_tick(order) 
+        # Log a market tick
+        MarketTick.log_a_tick(order)
 
-            # With the bond confirmation the order is extended 'public_order_duration' hours
-            order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.WF2])
-            order.status = Order.Status.WF2
-            order.save()
-            return True
+        # With the bond confirmation the order is extended 'public_order_duration' hours
+        order.expires_at = timezone.now() + timedelta(
+            seconds=Order.t_to_expire[Order.Status.WF2])
+        order.status = Order.Status.WF2
+        order.save()
+        return True
 
     @classmethod
     def is_taker_bond_locked(cls, order):
@@ -604,61 +723,81 @@ class Logics():
         # Do not gen and kick out the taker if order is older than expiry time
         if order.expires_at < timezone.now():
             cls.order_expires(order)
-            return False, {'bad_request':'Invoice expired. You did not confirm taking the order in time.'}
+            return False, {
+                "bad_request":
+                "Invoice expired. You did not confirm taking the order in time."
+            }
 
         # Do not gen if a taker invoice exist. Do not return if it is already locked. Return the old one if still waiting.
         if order.taker_bond:
             if cls.is_taker_bond_locked(order):
                 return False, None
             elif order.taker_bond.status == LNPayment.Status.INVGEN:
-                return True, {'bond_invoice':order.taker_bond.invoice,'bond_satoshis':order.taker_bond.num_satoshis}
+                return True, {
+                    "bond_invoice": order.taker_bond.invoice,
+                    "bond_satoshis": order.taker_bond.num_satoshis,
+                }
 
         # If there was no taker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
         bond_satoshis = int(order.last_satoshis * BOND_SIZE)
-        pos_text = 'Buying' if cls.is_buyer(order, user) else 'Selling'
-        description = (f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
-            + " - Taker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally.")
+        pos_text = "Buying" if cls.is_buyer(order, user) else "Selling"
+        description = (
+            f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
+            +
+            " - Taker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally."
+        )
 
         # Gen hold Invoice
         try:
-            hold_payment = LNNode.gen_hold_invoice(bond_satoshis, 
-                                                    description,
-                                                    invoice_expiry=Order.t_to_expire[Order.Status.TAK], 
-                                                    cltv_expiry_secs=BOND_EXPIRY*3600)
-        
-        except Exception as e:
-            if 'status = StatusCode.UNAVAILABLE' in str(e):
-                return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware.'}
-        
-        order.taker_bond = LNPayment.objects.create(
-            concept = LNPayment.Concepts.TAKEBOND, 
-            type = LNPayment.Types.HOLD, 
-            sender = user,
-            receiver = User.objects.get(username=ESCROW_USERNAME),
-            invoice = hold_payment['invoice'],
-            preimage = hold_payment['preimage'],
-            status = LNPayment.Status.INVGEN,
-            num_satoshis = bond_satoshis,
-            description =  description,
-            payment_hash = hold_payment['payment_hash'],
-            created_at = hold_payment['created_at'],
-            expires_at = hold_payment['expires_at'],
-            cltv_expiry = hold_payment['cltv_expiry'])
+            hold_payment = LNNode.gen_hold_invoice(
+                bond_satoshis,
+                description,
+                invoice_expiry=Order.t_to_expire[Order.Status.TAK],
+                cltv_expiry_secs=BOND_EXPIRY * 3600,
+            )
 
-        order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.TAK])
+        except Exception as e:
+            if "status = StatusCode.UNAVAILABLE" in str(e):
+                return False, {
+                    "bad_request":
+                    "The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware."
+                }
+
+        order.taker_bond = LNPayment.objects.create(
+            concept=LNPayment.Concepts.TAKEBOND,
+            type=LNPayment.Types.HOLD,
+            sender=user,
+            receiver=User.objects.get(username=ESCROW_USERNAME),
+            invoice=hold_payment["invoice"],
+            preimage=hold_payment["preimage"],
+            status=LNPayment.Status.INVGEN,
+            num_satoshis=bond_satoshis,
+            description=description,
+            payment_hash=hold_payment["payment_hash"],
+            created_at=hold_payment["created_at"],
+            expires_at=hold_payment["expires_at"],
+            cltv_expiry=hold_payment["cltv_expiry"],
+        )
+
+        order.expires_at = timezone.now() + timedelta(
+            seconds=Order.t_to_expire[Order.Status.TAK])
         order.save()
-        return True, {'bond_invoice': hold_payment['invoice'], 'bond_satoshis': bond_satoshis}
+        return True, {
+            "bond_invoice": hold_payment["invoice"],
+            "bond_satoshis": bond_satoshis,
+        }
 
     def trade_escrow_received(order):
-        ''' Moves the order forward'''
+        """Moves the order forward"""
         # If status is 'Waiting for both' move to Waiting for invoice
         if order.status == Order.Status.WF2:
             order.status = Order.Status.WFI
         # If status is 'Waiting for invoice' move to Chat
         elif order.status == Order.Status.WFE:
             order.status = Order.Status.CHA
-            order.expires_at = timezone.now() + timedelta(seconds=Order.t_to_expire[Order.Status.CHA])
+            order.expires_at = timezone.now() + timedelta(
+                seconds=Order.t_to_expire[Order.Status.CHA])
         order.save()
 
     @classmethod
@@ -676,7 +815,10 @@ class Logics():
         # Do not generate if escrow deposit time has expired
         if order.expires_at < timezone.now():
             cls.order_expires(order)
-            return False, {'bad_request':'Invoice expired. You did not send the escrow in time.'}
+            return False, {
+                "bad_request":
+                "Invoice expired. You did not send the escrow in time."
+            }
 
         # Do not gen if an escrow invoice exist. Do not return if it is already locked. Return the old one if still waiting.
         if order.trade_escrow:
@@ -684,44 +826,56 @@ class Logics():
             if cls.is_trade_escrow_locked(order):
                 return False, None
             elif order.trade_escrow.status == LNPayment.Status.INVGEN:
-                return True, {'escrow_invoice':order.trade_escrow.invoice, 'escrow_satoshis':order.trade_escrow.num_satoshis}
+                return True, {
+                    "escrow_invoice": order.trade_escrow.invoice,
+                    "escrow_satoshis": order.trade_escrow.num_satoshis,
+                }
 
         # If there was no taker_bond object yet, generate one
-        escrow_satoshis = order.last_satoshis # Amount was fixed when taker bond was locked
+        escrow_satoshis = (order.last_satoshis
+                           )  # Amount was fixed when taker bond was locked
         description = f"RoboSats - Escrow amount for '{str(order)}' - It WILL FREEZE IN YOUR WALLET. It will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
 
         # Gen hold Invoice
         try:
-            hold_payment = LNNode.gen_hold_invoice(escrow_satoshis, 
-                                                    description,
-                                                    invoice_expiry=Order.t_to_expire[Order.Status.WF2], 
-                                                    cltv_expiry_secs=ESCROW_EXPIRY*3600)
-        
+            hold_payment = LNNode.gen_hold_invoice(
+                escrow_satoshis,
+                description,
+                invoice_expiry=Order.t_to_expire[Order.Status.WF2],
+                cltv_expiry_secs=ESCROW_EXPIRY * 3600,
+            )
+
         except Exception as e:
-            if 'status = StatusCode.UNAVAILABLE' in str(e):
-                return False, {'bad_request':'The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware.'}
-        
+            if "status = StatusCode.UNAVAILABLE" in str(e):
+                return False, {
+                    "bad_request":
+                    "The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware."
+                }
 
         order.trade_escrow = LNPayment.objects.create(
-            concept = LNPayment.Concepts.TRESCROW, 
-            type = LNPayment.Types.HOLD, 
-            sender = user,
-            receiver = User.objects.get(username=ESCROW_USERNAME),
-            invoice = hold_payment['invoice'],
-            preimage = hold_payment['preimage'],
-            status = LNPayment.Status.INVGEN,
-            num_satoshis = escrow_satoshis,
-            description =  description,
-            payment_hash = hold_payment['payment_hash'],
-            created_at = hold_payment['created_at'],
-            expires_at = hold_payment['expires_at'],
-            cltv_expiry = hold_payment['cltv_expiry'])
+            concept=LNPayment.Concepts.TRESCROW,
+            type=LNPayment.Types.HOLD,
+            sender=user,
+            receiver=User.objects.get(username=ESCROW_USERNAME),
+            invoice=hold_payment["invoice"],
+            preimage=hold_payment["preimage"],
+            status=LNPayment.Status.INVGEN,
+            num_satoshis=escrow_satoshis,
+            description=description,
+            payment_hash=hold_payment["payment_hash"],
+            created_at=hold_payment["created_at"],
+            expires_at=hold_payment["expires_at"],
+            cltv_expiry=hold_payment["cltv_expiry"],
+        )
 
         order.save()
-        return True, {'escrow_invoice':hold_payment['invoice'],'escrow_satoshis': escrow_satoshis}
-    
+        return True, {
+            "escrow_invoice": hold_payment["invoice"],
+            "escrow_satoshis": escrow_satoshis,
+        }
+
     def settle_escrow(order):
-        ''' Settles the trade escrow hold invoice'''
+        """Settles the trade escrow hold invoice"""
         # TODO ERROR HANDLING
         if LNNode.settle_hold_invoice(order.trade_escrow.preimage):
             order.trade_escrow.status = LNPayment.Status.SETLED
@@ -729,7 +883,7 @@ class Logics():
             return True
 
     def settle_bond(bond):
-        ''' Settles the bond hold invoice'''
+        """Settles the bond hold invoice"""
         # TODO ERROR HANDLING
         if LNNode.settle_hold_invoice(bond.preimage):
             bond.status = LNPayment.Status.SETLED
@@ -737,14 +891,14 @@ class Logics():
             return True
 
     def return_escrow(order):
-        '''returns the trade escrow'''
+        """returns the trade escrow"""
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.RETNED
             order.trade_escrow.save()
             return True
 
     def cancel_escrow(order):
-        '''returns the trade escrow'''
+        """returns the trade escrow"""
         # Same as return escrow, but used when the invoice was never LOCKED
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.CANCEL
@@ -752,7 +906,7 @@ class Logics():
             return True
 
     def return_bond(bond):
-        '''returns a bond'''
+        """returns a bond"""
         if bond == None:
             return
         try:
@@ -761,7 +915,7 @@ class Logics():
             bond.save()
             return True
         except Exception as e:
-            if 'invoice already settled' in str(e):
+            if "invoice already settled" in str(e):
                 bond.status = LNPayment.Status.SETLED
                 bond.save()
                 return True
@@ -769,7 +923,7 @@ class Logics():
                 raise e
 
     def cancel_bond(bond):
-        '''cancel a bond'''
+        """cancel a bond"""
         # Same as return bond, but used when the invoice was never LOCKED
         if bond == None:
             return True
@@ -779,7 +933,7 @@ class Logics():
             bond.save()
             return True
         except Exception as e:
-            if 'invoice already settled' in str(e):
+            if "invoice already settled" in str(e):
                 bond.status = LNPayment.Status.SETLED
                 bond.save()
                 return True
@@ -788,12 +942,14 @@ class Logics():
 
     @classmethod
     def confirm_fiat(cls, order, user):
-        ''' If Order is in the CHAT states:
+        """If Order is in the CHAT states:
         If user is buyer: fiat_sent goes to true.
-        If User is seller and fiat_sent is true: settle the escrow and pay buyer invoice!'''
+        If User is seller and fiat_sent is true: settle the escrow and pay buyer invoice!"""
 
-        if order.status == Order.Status.CHA or order.status == Order.Status.FSE: # TODO Alternatively, if all collateral is locked? test out
-            
+        if (order.status == Order.Status.CHA
+                or order.status == Order.Status.FSE
+            ):  # TODO Alternatively, if all collateral is locked? test out
+
             # If buyer, settle escrow and mark fiat sent
             if cls.is_buyer(order, user):
                 order.status = Order.Status.FSE
@@ -802,17 +958,26 @@ class Logics():
             # If seller and fiat was sent, SETTLE ESCROW AND PAY BUYER INVOICE
             elif cls.is_seller(order, user):
                 if not order.is_fiat_sent:
-                    return False, {'bad_request':'You cannot confirm to have received the fiat before it is confirmed to be sent by the buyer.'}
-                
-                # Make sure the trade escrow is at least as big as the buyer invoice 
-                if order.trade_escrow.num_satoshis <= order.payout.num_satoshis:
-                    return False, {'bad_request':'Woah, something broke badly. Report in the public channels, or open a Github Issue.'}
+                    return False, {
+                        "bad_request":
+                        "You cannot confirm to have received the fiat before it is confirmed to be sent by the buyer."
+                    }
 
-                if cls.settle_escrow(order): ##### !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
+                # Make sure the trade escrow is at least as big as the buyer invoice
+                if order.trade_escrow.num_satoshis <= order.payout.num_satoshis:
+                    return False, {
+                        "bad_request":
+                        "Woah, something broke badly. Report in the public channels, or open a Github Issue."
+                    }
+
+                if cls.settle_escrow(
+                        order
+                ):  ##### !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
                     order.trade_escrow.status = LNPayment.Status.SETLED
-                
+
                 # Double check the escrow is settled.
-                if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash): 
+                if LNNode.double_check_htlc_is_settled(
+                        order.trade_escrow.payment_hash):
                     # RETURN THE BONDS // Probably best also do it even if payment failed
                     cls.return_bond(order.taker_bond)
                     cls.return_bond(order.maker_bond)
@@ -831,15 +996,24 @@ class Logics():
                     #     # error handling here
                     #     return False, context
         else:
-            return False, {'bad_request':'You cannot confirm the fiat payment at this stage'}
+            return False, {
+                "bad_request":
+                "You cannot confirm the fiat payment at this stage"
+            }
 
         order.save()
         return True, None
 
     @classmethod
     def rate_counterparty(cls, order, user, rating):
-        
-        rating_allowed_status = [Order.Status.PAY, Order.Status.SUC, Order.Status.FAI, Order.Status.MLD, Order.Status.TLD]
+
+        rating_allowed_status = [
+            Order.Status.PAY,
+            Order.Status.SUC,
+            Order.Status.FAI,
+            Order.Status.MLD,
+            Order.Status.TLD,
+        ]
 
         # If the trade is finished
         if order.status in rating_allowed_status:
@@ -854,7 +1028,9 @@ class Logics():
                 order.taker_rated = True
                 order.save()
         else:
-            return False, {'bad_request':'You cannot rate your counterparty yet.'}
+            return False, {
+                "bad_request": "You cannot rate your counterparty yet."
+            }
 
         return True, None
 

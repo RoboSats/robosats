@@ -39,6 +39,7 @@ services:
     volumes:
       - .:/usr/src/robosats
       - /mnt/development/database:/usr/src/database
+    network_mode: service:tor
 
   follow-invoices:
     build: .
@@ -114,6 +115,16 @@ services:
       - /mnt/development/tor/data:/var/lib/tor:ro
       - /mnt/development/tor/config:/etc/tor:ro
       - /mnt/development/bitcoin:/home/bitcoin/.bitcoin
+  
+  postgres:
+    image: postgres:14.2-alpine
+    container_name: sql-dev
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+    network_mode: service:tor
+    volumes:
+      - ./db:/var/lib/postgresql/data
 
 volumes:
   redisdata:

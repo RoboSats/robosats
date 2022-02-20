@@ -32,7 +32,9 @@ const csrftoken = getCookie('csrftoken');
 
 // pretty numbers
 function pn(x) {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  var parts = x.toString().split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return parts.join(".");
 }
 
 export default class OrderPage extends Component {
@@ -477,7 +479,7 @@ export default class OrderPage extends Component {
               <ListItemIcon>
                 <PaymentsIcon/>
               </ListItemIcon>
-              <ListItemText primary={this.state.payment_method} secondary="Accepted payment methods"/>
+              <ListItemText primary={this.state.payment_method} secondary={this.state.currency==1000 ? "Swap destination":"Accepted payment methods"}/>
             </ListItem>
             <Divider />
 

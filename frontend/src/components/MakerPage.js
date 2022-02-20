@@ -25,7 +25,9 @@ function pn(x) {
     if(x==null){
         return(null)
     }
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    var parts = x.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");  
   }
 
 export default class MakerPage extends Component {
@@ -209,7 +211,7 @@ export default class MakerPage extends Component {
                                     onChange={this.handleCurrencyChange}>
                                         {Object.entries(this.state.currencies_dict)
                                         .map( ([key, value]) => <MenuItem value={parseInt(key)}>
-                                            {getFlags(value) + " " + value}
+                                            <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div>
                                             </MenuItem> )}
                                 </Select>
                             </div>
@@ -220,7 +222,7 @@ export default class MakerPage extends Component {
                     <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Enter your prefered payment methods">
                         <TextField 
                             sx={{width:240}}
-                            label="Payment Method(s)"
+                            label={this.state.currency==1000 ? "Swap Destination (e.g. rBTC)":"Payment Method(s)"}
                             error={this.state.badPaymentMethod}
                             helperText={this.state.badPaymentMethod ? "Must be shorter than 35 characters":""}
                             type="text" 
