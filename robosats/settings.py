@@ -97,11 +97,12 @@ WSGI_APPLICATION = "robosats.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "/usr/src/database/db.sqlite3",
-        "OPTIONS": {
-            "timeout": 20,  # in seconds
-        },
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "postgres",
+        "USER": "postgres",
+        "PASSWORD": "example",
+        'HOST': '127.0.0.1',
+        "PORT": "5432",
     }
 }
 
