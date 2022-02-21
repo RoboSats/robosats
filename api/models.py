@@ -250,12 +250,11 @@ class Order(models.Model):
     )  # unique = True, a taker can only take one order
     maker_last_seen = models.DateTimeField(null=True, default=None, blank=True)
     taker_last_seen = models.DateTimeField(null=True, default=None, blank=True)
-    maker_asked_cancel = models.BooleanField(
-        default=False, null=False
-    )  # When collaborative cancel is needed and one partner has cancelled.
-    taker_asked_cancel = models.BooleanField(
-        default=False, null=False
-    )  # When collaborative cancel is needed and one partner has cancelled.
+
+    # When collaborative cancel is needed and one partner has cancelled.
+    maker_asked_cancel = models.BooleanField(default=False, null=False)  
+    taker_asked_cancel = models.BooleanField(default=False, null=False)
+
     is_fiat_sent = models.BooleanField(default=False, null=False)
 
     # in dispute
@@ -372,7 +371,7 @@ class Profile(models.Model):
         default=None,
         validators=[validate_comma_separated_integer_list],
         blank=True,
-    )  # Will only store latest ratings
+    )  # Will only store latest rating
     avg_rating = models.DecimalField(
         max_digits=4,
         decimal_places=1,
@@ -382,7 +381,30 @@ class Profile(models.Model):
                     MaxValueValidator(100)],
         blank=True,
     )
-
+    # Used to deep link telegram chat in case telegram notifications are enabled
+    telegram_token = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True
+    )
+    telegram_chat_id = models.BigIntegerField(
+        null=True,
+        default=None,
+        blank=True
+    )
+    telegram_enabled = models.BooleanField(
+        default=False, 
+        null=False
+    )
+    telegram_lang_code = models.CharField(
+        max_length=4,
+        null=True,
+        blank=True
+    )
+    telegram_welcomed = models.BooleanField(
+        default=False, 
+        null=False
+    )
     # Disputes
     num_disputes = models.PositiveIntegerField(null=False, default=0)
     lost_disputes = models.PositiveIntegerField(null=False, default=0)

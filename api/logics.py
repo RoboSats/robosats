@@ -4,6 +4,7 @@ from api.lightning.node import LNNode
 from django.db.models import Q
 
 from api.models import Order, LNPayment, MarketTick, User, Currency
+from api.messages import Telegram
 from decouple import config
 
 from api.tasks import follow_send_payment
@@ -130,6 +131,7 @@ class Logics:
             order.expires_at = timezone.now() + timedelta(
                 seconds=Order.t_to_expire[Order.Status.TAK])
             order.save()
+            Telegram.order_taken(order)
             return True, None
 
     def is_buyer(order, user):
@@ -1051,3 +1053,4 @@ class Logics:
         user.profile.platform_rating = rating
         user.profile.save()
         return True, None
+

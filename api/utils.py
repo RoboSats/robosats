@@ -3,6 +3,7 @@ from decouple import config
 import numpy as np
 
 from api.models import Order
+from secrets import token_urlsafe
 
 market_cache = {}
 
@@ -86,8 +87,6 @@ def get_commit_robosats():
 
 
 premium_percentile = {}
-
-
 @ring.dict(premium_percentile, expire=300)
 def compute_premium_percentile(order):
 
@@ -106,3 +105,28 @@ def compute_premium_percentile(order):
 
     rates = np.array(rates)
     return round(np.sum(rates < order_rate) / len(rates), 2)
+
+
+def get_telegram_context(user):
+        """returns context needed to enable TG notifications"""
+        context = {}
+        if user.profile.telegram_enabled :
+            context['tg_enabled'] = True
+        else:
+            context['tg_enabled'] = False
+        
+        if user.profile.telegram_token == None:
+            user.profile.telegram_token = token_urlsafe(15)
+
+        context['tg_token'] = user.profile.telegram_token
+        context['tg_bot_name'] = config("TELEGRAM_BOT_NAME")
+
+        return context
+
+def send_telegram_notification(user, text):
+    bot_token=config('TELEGRAM_TOKEN')
+    chat_id = user.profile.telegram_chat_id
+    message_url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={chat_id}&text={text}'
+    response = requests.get(message_url).json()
+    print(response)
+    return

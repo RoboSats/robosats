@@ -9,10 +9,11 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
-from .serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
-from .models import LNPayment, MarketTick, Order, Currency
-from .logics import Logics
-from .utils import get_lnd_version, get_commit_robosats, compute_premium_percentile
+from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
+from api.models import LNPayment, MarketTick, Order, Currency
+from api.logics import Logics
+from api.messages import Telegram
+from api.utils import get_lnd_version, get_commit_robosats, compute_premium_percentile
 
 from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
@@ -182,15 +183,17 @@ class OrderView(viewsets.ViewSet):
 
         # 3.b If order is between public and WF2
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
-            data["price_now"], data[
-                "premium_now"] = Logics.price_and_premium_now(order)
+            data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
 
-            # 3. c) If maker and Public, add num robots in book, premium percentile and num similar orders.
+            # 3. c) If maker and Public, add num robots in book, premium percentile 
+            # num similar orders, and maker information to enable telegram notifications.
             if data["is_maker"] and order.status == Order.Status.PUB:
                 data["premium_percentile"] = compute_premium_percentile(order)
                 data["num_similar_orders"] = len(
                     Order.objects.filter(currency=order.currency,
                                          status=Order.Status.PUB))
+                # Adds/generate telegram token and whether it is enabled
+                data = {**data,**Telegram.get_context(request.user)}
 
         # 4) Non participants can view details (but only if PUB)
         elif not data["is_participant"] and order.status != Order.Status.PUB:
@@ -518,8 +521,7 @@ class UserView(APIView):
                 # Sends the welcome back message, only if created +3 mins ago
                 if request.user.date_joined < (timezone.now() -
                                                timedelta(minutes=3)):
-                    context[
-                        "found"] = "We found your Robot avatar. Welcome back!"
+                    context["found"] = "We found your Robot avatar. Welcome back!"
                 return Response(context, status=status.HTTP_202_ACCEPTED)
             else:
                 # It is unlikely, but maybe the nickname is taken (1 in 20 Billion change)
@@ -611,7 +613,6 @@ class BookView(ListAPIView):
             book_data.append(data)
 
         return Response(book_data, status=status.HTTP_200_OK)
-
 
 class InfoView(ListAPIView):
 
