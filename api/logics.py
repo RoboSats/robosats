@@ -234,7 +234,8 @@ class Logics:
             if maker_is_seller:
                 cls.settle_bond(order.maker_bond)
                 cls.return_bond(order.taker_bond)
-                try: # If seller is offline the escrow LNpayment does not even exist
+                # If seller is offline the escrow LNpayment does not exist
+                try: 
                     cls.cancel_escrow(order)
                 except:
                     pass
@@ -245,7 +246,8 @@ class Logics:
             # If maker is buyer, settle the taker's bond order goes back to public
             else:
                 cls.settle_bond(order.taker_bond)
-                try: # If seller is offline the escrow LNpayment does not even exist
+                # If seller is offline the escrow LNpayment does not even exist
+                try: 
                     cls.cancel_escrow(order)
                 except:
                     pass
@@ -569,7 +571,7 @@ class Logics:
             When the second user asks for cancel. Order is totally cancelled.
             Must have a small cost for both parties to prevent node DDOS."""
         elif order.status in [
-                Order.Status.WFI, Order.Status.CHA, Order.Status.FSE
+                Order.Status.WFI, Order.Status.CHA
         ]:
 
             # if the maker had asked, and now the taker does: cancel order, return everything

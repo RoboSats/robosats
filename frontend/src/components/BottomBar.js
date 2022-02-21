@@ -180,21 +180,21 @@ export default class BottomBar extends Component {
             <List> 
                 <Divider/>
 
-                <ListItemButton component="a" href="https://t.me/robosats">
+                <ListItemButton component="a" target="_blank" href="https://t.me/robosats">
                     <ListItemIcon><SendIcon/></ListItemIcon>
                     <ListItemText primary="Join the RoboSats group"
                     secondary="Telegram (English / Main)"/>
                 </ListItemButton>
                 <Divider/>
 
-                <ListItemButton component="a" href="https://t.me/robosats_es">
+                <ListItemButton component="a" target="_blank" href="https://t.me/robosats_es">
                     <ListItemIcon><SendIcon/></ListItemIcon>
                     <ListItemText primary="Unase al grupo RoboSats"
                     secondary="Telegram (Español)"/>
                 </ListItemButton>
                 <Divider/>
 
-                <ListItemButton component="a" href="https://github.com/Reckless-Satoshi/robosats/issues">
+                <ListItemButton component="a" target="_blank" href="https://github.com/Reckless-Satoshi/robosats/issues">
                     <ListItemIcon><GitHubIcon/></ListItemIcon>
                     <ListItemText primary="Tell us about a new feature or a bug" 
                     secondary="Github Issues - The Robotic Satoshis Open Source Project"/>
