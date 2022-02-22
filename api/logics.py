@@ -7,8 +7,6 @@ from api.models import Order, LNPayment, MarketTick, User, Currency
 from api.messages import Telegram
 from decouple import config
 
-from api.tasks import follow_send_payment
-
 import math
 import ast
 

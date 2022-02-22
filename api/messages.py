@@ -1,10 +1,12 @@
 from decouple import config
 from secrets import token_urlsafe
 from api.models import Order
-import requests
+from api.utils import get_tor_session
 
 class Telegram():
     ''' Simple telegram messages by requesting to API'''
+
+    session = get_tor_session()
 
     def get_context(user):
         """returns context needed to enable TG notifications"""
@@ -23,7 +25,7 @@ class Telegram():
 
         return context
 
-    def send_message(user, text):
+    def send_message(self, user, text):
         """ sends a message to a user with telegram notifications enabled"""
 
         bot_token=config('TELEGRAM_TOKEN')
@@ -31,7 +33,7 @@ class Telegram():
         chat_id = user.profile.telegram_chat_id
         message_url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={chat_id}&text={text}'
         
-        response = requests.get(message_url).json()
+        response = self.session.get(message_url).json()
         print(response)
 
         return
@@ -51,6 +53,9 @@ class Telegram():
     @classmethod
     def order_taken(cls, order):
         user = order.maker
+        if not user.profile.telegram_enabled:
+            return
+            
         lang = user.profile.telegram_lang_code
         taker_nick = order.taker.username
         site = config('HOST_NAME')
