@@ -207,6 +207,7 @@ class Logics:
         elif order.status == Order.Status.PUB:
             cls.return_bond(order.maker_bond)
             order.status = Order.Status.EXP
+            cls.telegram.order_expired_untaken(order)
             order.save()
             return True
 
@@ -999,14 +1000,9 @@ class Logics:
                     order.payout.status = LNPayment.Status.FLIGHT
                     order.payout.save()
                     order.save()
+                    cls.telegram.trade_successful(order)
                     return True, None
-                    # is_payed, context = follow_send_payment(order.payout) ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
-                    # if is_payed:
-                    #     order.save()
-                    #     return True, context
-                    # else:
-                    #     # error handling here
-                    #     return False, context
+
         else:
             return False, {
                 "bad_request":

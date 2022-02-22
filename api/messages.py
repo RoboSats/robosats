@@ -33,8 +33,12 @@ class Telegram():
         chat_id = user.profile.telegram_chat_id
         message_url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={chat_id}&text={text}'
         
-        response = self.session.get(message_url).json()
-        print(response)
+        # telegram messaging is atm inserted dangerously in the logics module
+        # if it fails, it should just keep going
+        try:
+            self.session.get(message_url).json()
+        except:
+            pass
 
         return
 
@@ -43,12 +47,11 @@ class Telegram():
         order = Order.objects.get(maker=user)
         print(str(order.id))
         if lang == 'es':
-            text = f'Hola ⚡{user.username}⚡, Te enviaré un mensaje cuando tu orden con ID {str(order.id)} haya sido tomada.'
+            text = f'Hola {user.username}, te enviaré un mensaje cuando tu orden con ID {str(order.id)} haya sido tomada.'
         else:
-            text = f"Hey ⚡{user.username}⚡, I will send you a message when someone takes your order with ID {str(order.id)}."
+            text = f"Hey {user.username}, I will send you a message when someone takes your order with ID {str(order.id)}."
         self.send_message(user, text)
         return
-
 
     def order_taken(self, order):
         user = order.maker
@@ -59,9 +62,39 @@ class Telegram():
         taker_nick = order.taker.username
         site = config('HOST_NAME')
         if lang == 'es':
-            text = f'Tu orden con ID {order.id} ha sido tomada por {taker_nick}!🥳   Visita http://{site}/order/{order.id} para continuar.'
+            text = f'¡Tu orden con ID {order.id} ha sido tomada por {taker_nick}!🥳   Visita http://{site}/order/{order.id} para continuar.'
         else:
             text = f'Your order with ID {order.id} was taken by {taker_nick}!🥳   Visit http://{site}/order/{order.id} to proceed with the trade.'
+        
+        self.send_message(user, text)
+        return
+    
+    def order_expired_untaken(self, order):
+        user = order.maker
+        if not user.profile.telegram_enabled:
+            return
+
+        lang = user.profile.telegram_lang_code
+        site = config('HOST_NAME')
+        if lang == 'es':
+            text = f'Tu orden con ID {order.id} ha expirado sin ser tomada por ningún robot. Visita http://{site} para crear una nueva.'
+        else:
+            text = f'Your order with ID {order.id} has expired untaken. Visit http://{site} to create a new one.'
+        
+        self.send_message(user, text)
+        return
+
+    def trade_successful(self, order):
+        user = order.maker
+        if not user.profile.telegram_enabled:
+            return
+
+        lang = user.profile.telegram_lang_code
+        site = config('HOST_NAME')
+        if lang == 'es':
+            text = f'¡Tu orden con ID ha finalizado exitosamente!⚡ Unase a @robosats_es y ayudanos a mejorar.'
+        else:
+            text = f'Your order with ID has finished successfully!⚡ Join us @robosats and help us improve.'
         
         self.send_message(user, text)
         return
