@@ -30,7 +30,7 @@ FIAT_EXCHANGE_DURATION = int(config("FIAT_EXCHANGE_DURATION"))
 
 
 class Logics:
-
+    telegram = Telegram()
     @classmethod
     def validate_already_maker_or_taker(cls, user):
         """Validates if a use is already not part of an active order"""
@@ -129,7 +129,7 @@ class Logics:
             order.expires_at = timezone.now() + timedelta(
                 seconds=Order.t_to_expire[Order.Status.TAK])
             order.save()
-            Telegram.order_taken(order)
+            cls.telegram.order_taken(order)
             return True, None
 
     def is_buyer(order, user):

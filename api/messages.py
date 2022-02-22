@@ -46,7 +46,7 @@ class Telegram():
             text = f'Hola ⚡{user.username}⚡, Te enviaré un mensaje cuando tu orden con ID {str(order.id)} haya sido tomada.'
         else:
             text = f"Hey ⚡{user.username}⚡, I will send you a message when someone takes your order with ID {str(order.id)}."
-        self.send_message(user=user, text=text)
+        self.send_message(user, text)
         return
 
 
@@ -63,5 +63,5 @@ class Telegram():
         else:
             text = f'Your order with ID {order.id} was taken by {taker_nick}!🥳   Visit http://{site}/order/{order.id} to proceed with the trade.'
         
-        self.send_message(user=user, text=text)
+        self.send_message(user, text)
         return

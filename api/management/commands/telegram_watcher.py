@@ -16,7 +16,7 @@ class Command(BaseCommand):
     updates_url = f'https://api.telegram.org/bot{bot_token}/getUpdates'
 
     session = get_tor_session()
-
+    telegram = Telegram()
     def handle(self, *args, **options):
         """Infinite loop to check for telegram updates.
         If it finds a new user (/start), enables it's taker found
@@ -42,7 +42,7 @@ class Command(BaseCommand):
                         continue
                     profile.telegram_chat_id = result['message']['from']['id']
                     profile.telegram_lang_code = result['message']['from']['language_code']
-                    Telegram.welcome(profile.user)
+                    self.telegram.welcome(profile.user)
                     profile.telegram_enabled = True
                     profile.save()
 
