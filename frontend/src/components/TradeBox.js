@@ -10,6 +10,7 @@ import QrReader from 'react-qr-reader'
 import PercentIcon from '@mui/icons-material/Percent';
 import BookIcon from '@mui/icons-material/Book';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+import SendIcon from '@mui/icons-material/Send';
 
 function getCookie(name) {
   let cookieValue = null;
@@ -93,7 +94,7 @@ export default class TradeBox extends Component {
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             The RoboSats staff will examine the statements and evidence provided. You need to build
-            a complete case, as the staff cannot read the chat. You MUST provide a burner contact 
+            a complete case, as the staff cannot read the chat. It is best to provide a burner contact 
             method with your statement. The satoshis in the trade escrow will be sent to the dispute winner, 
             while the dispute loser will lose the bond. 
           </DialogContentText>
@@ -264,11 +265,20 @@ export default class TradeBox extends Component {
               <Typography component="body2" variant="body2" align="left">
                 <p>Be patient while robots check the book. 
                 It might take some time. This box will ring 🔊 once a robot takes your order. </p>
-                <p>Please note that if your premium is too high, or if your currency or payment
+                <p>Please note that if your premium is excessive, or your currency or payment
                   methods are not popular, your order might expire untaken. Your bond will
                   return to you (no action needed).</p> 
               </Typography>
             </ListItem>
+            <Grid item xs={12} align="center">
+              {this.props.data.tg_enabled ?
+              <Typography color='primary' component="h6" variant="h6" align="center"> Telegram enabled</Typography>
+              :
+              <Button color="primary" component="a" target="_blank" href={"https://t.me/"+this.props.data.tg_bot_name+'?start='+this.props.data.tg_token}>
+                <SendIcon/>Enable Telegram Notifications
+              </Button>
+              }
+            </Grid>
             {/* TODO API sends data for a more confortable wait */}
             <Divider/>
               <ListItem>
@@ -446,7 +456,7 @@ export default class TradeBox extends Component {
           <Grid item xs={12} align="left">
             <Typography component="body2" variant="body2">
               Please, submit your statement. Be clear and specific about what happened and provide the necessary 
-              evidence. You MUST provide a burner email, XMPP or telegram username to follow up with the staff.
+              evidence. It is best to provide a burner email, XMPP or telegram username to follow up with the staff.
               Disputes are solved at the discretion of real robots <i>(aka humans)</i>, so be as helpful 
               as possible to ensure a fair outcome. Max 5000 chars.
             </Typography>

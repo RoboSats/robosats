@@ -1,13 +1,18 @@
 import requests, ring, os
 from decouple import config
 import numpy as np
+import requests
 
 from api.models import Order
-from secrets import token_urlsafe
+
+def get_tor_session():
+    session = requests.session()
+    # Tor uses the 9050 port as the default socks port
+    session.proxies = {'http':  'socks5://127.0.0.1:9050',
+                       'https': 'socks5://127.0.0.1:9050'}
+    return session
 
 market_cache = {}
-
-
 @ring.dict(market_cache, expire=3)  # keeps in cache for 3 seconds
 def get_exchange_rates(currencies):
     """
@@ -16,6 +21,8 @@ def get_exchange_rates(currencies):
     Returns the median price list.
     """
 
+    session = get_tor_session()
+
     APIS = config("MARKET_PRICE_APIS",
                   cast=lambda v: [s.strip() for s in v.split(",")])
 
@@ -23,7 +30,7 @@ def get_exchange_rates(currencies):
     for api_url in APIS:
         try:  # If one API is unavailable pass
             if "blockchain.info" in api_url:
-                blockchain_prices = requests.get(api_url).json()
+                blockchain_prices = session.get(api_url).json()
                 blockchain_rates = []
                 for currency in currencies:
                     try:  # If a currency is missing place a None
@@ -34,7 +41,7 @@ def get_exchange_rates(currencies):
                 api_rates.append(blockchain_rates)
 
             elif "yadio.io" in api_url:
-                yadio_prices = requests.get(api_url).json()
+                yadio_prices = session.get(api_url).json()
                 yadio_rates = []
                 for currency in currencies:
                     try:
@@ -75,8 +82,6 @@ def get_lnd_version():
 
 
 robosats_commit_cache = {}
-
-
 @ring.dict(robosats_commit_cache, expire=3600)
 def get_commit_robosats():
 
@@ -84,7 +89,6 @@ def get_commit_robosats():
     commit_hash = commit.read()
 
     return commit_hash
-
 
 premium_percentile = {}
 @ring.dict(premium_percentile, expire=300)
@@ -105,28 +109,3 @@ def compute_premium_percentile(order):
 
     rates = np.array(rates)
     return round(np.sum(rates < order_rate) / len(rates), 2)
-
-
-def get_telegram_context(user):
-        """returns context needed to enable TG notifications"""
-        context = {}
-        if user.profile.telegram_enabled :
-            context['tg_enabled'] = True
-        else:
-            context['tg_enabled'] = False
-        
-        if user.profile.telegram_token == None:
-            user.profile.telegram_token = token_urlsafe(15)
-
-        context['tg_token'] = user.profile.telegram_token
-        context['tg_bot_name'] = config("TELEGRAM_BOT_NAME")
-
-        return context
-
-def send_telegram_notification(user, text):
-    bot_token=config('TELEGRAM_TOKEN')
-    chat_id = user.profile.telegram_chat_id
-    message_url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={chat_id}&text={text}'
-    response = requests.get(message_url).json()
-    print(response)
-    return

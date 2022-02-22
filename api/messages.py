@@ -42,9 +42,9 @@ class Telegram():
         order = Order.objects.get(maker=user)
         print(str(order.id))
         if lang == 'es':
-            text = f'Hola {user.username}, te enviaré un mensaje cuando tu orden con ID {str(order.id)} haya sido tomada.'
+            text = f'Hola ⚡{user.username}⚡, Te enviaré un mensaje cuando tu orden con ID {str(order.id)} haya sido tomada.'
         else:
-            text = f"Hey {user.username}, I will send you a message when someone takes your order with ID {str(order.id)}."
+            text = f"Hey ⚡{user.username}⚡, I will send you a message when someone takes your order with ID {str(order.id)}."
         cls.send_message(user, text)
         return
 
@@ -55,9 +55,9 @@ class Telegram():
         taker_nick = order.taker.username
         site = config('HOST_NAME')
         if lang == 'es':
-            text = f'Tu orden con ID {order.id} ha sido tomada por {taker_nick}!🎉   Visita http://{site}/order/{order.id} para continuar.'
+            text = f'Tu orden con ID {order.id} ha sido tomada por {taker_nick}!🥳   Visita http://{site}/order/{order.id} para continuar.'
         else:
-            text = f'Your order with ID {order.id} was taken by {taker_nick}!🎉   Visit http://{site}/order/{order.id} to proceed with the trade.'
+            text = f'Your order with ID {order.id} was taken by {taker_nick}!🥳   Visit http://{site}/order/{order.id} to proceed with the trade.'
         
         cls.send_message(user, text)
         return

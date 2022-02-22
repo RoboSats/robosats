@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from api.models import Profile
 from api.messages import Telegram
+from api.utils import get_tor_session
 from decouple import config
 import requests
 import time
@@ -14,6 +15,8 @@ class Command(BaseCommand):
     bot_token = config('TELEGRAM_TOKEN')
     updates_url = f'https://api.telegram.org/bot{bot_token}/getUpdates'
 
+    session = get_tor_session()
+
     def handle(self, *args, **options):
         """Infinite loop to check for telegram updates.
         If it finds a new user (/start), enables it's taker found
@@ -25,7 +28,7 @@ class Command(BaseCommand):
 
             params = {'offset' : offset + 1 , 'timeout' : 5}
             print(params)
-            response = requests.get(self.updates_url, params=params).json()
+            response = self.session.get(self.updates_url, params=params).json()
             if len(list(response['result'])) == 0:
                 continue
             for result in response['result']:
