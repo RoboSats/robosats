@@ -42,6 +42,7 @@ export default class TradeBox extends Component {
     this.state = {
       openConfirmFiatReceived: false,
       openConfirmDispute: false,
+      openEnableTelegram: false,
       badInvoice: false,
       badStatement: false,
       qrscanner: false,
@@ -247,11 +248,50 @@ export default class TradeBox extends Component {
     );
   }
 
+  handleClickOpenTelegramDialog = () => {
+    this.setState({openEnableTelegram: true});
+  };
+  handleClickCloseEnableTelegramDialog = () => {
+      this.setState({openEnableTelegram: false});
+  };
+
+  handleClickEnableTelegram = () =>{
+    window.open("https://t.me/"+this.props.data.tg_bot_name+'?start='+this.props.data.tg_token, '_blank').focus()
+    this.handleClickCloseEnableTelegramDialog();
+  };
+
+  EnableTelegramDialog =() =>{
+  return(
+      <Dialog
+      open={this.state.openEnableTelegram}
+      onClose={this.handleClickCloseEnableTelegramDialog}
+      aria-labelledby="enable-telegram-dialog-title"
+      aria-describedby="enable-telegram-dialog-description"
+      >
+        <DialogTitle id="open-dispute-dialog-title">
+          Enable TG Notifications
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            You will be taken to a conversation with RoboSats telegram bot.
+            Simply open the chat and press "Start". Note that by enabling
+            telegram notifications you might lower your level of anonimity.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClickCloseEnableTelegramDialog}>Go back</Button>
+          <Button onClick={this.handleClickEnableTelegram} autoFocus> Enable </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
   showMakerWait=()=>{
     return (
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
         <this.Sound soundFileName="locked-invoice"/>
+        <this.EnableTelegramDialog/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
             <b> Your order is public. Wait for a taker. </b>
@@ -274,7 +314,7 @@ export default class TradeBox extends Component {
               {this.props.data.tg_enabled ?
               <Typography color='primary' component="h6" variant="h6" align="center"> Telegram enabled</Typography>
               :
-              <Button color="primary" component="a" target="_blank" href={"https://t.me/"+this.props.data.tg_bot_name+'?start='+this.props.data.tg_token}>
+              <Button color="primary" onClick={this.handleClickOpenTelegramDialog}>
                 <SendIcon/>Enable Telegram Notifications
               </Button>
               }
