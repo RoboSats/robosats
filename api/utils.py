@@ -1,12 +1,18 @@
 import requests, ring, os
 from decouple import config
 import numpy as np
+import requests
 
 from api.models import Order
 
+def get_tor_session():
+    session = requests.session()
+    # Tor uses the 9050 port as the default socks port
+    session.proxies = {'http':  'socks5://127.0.0.1:9050',
+                       'https': 'socks5://127.0.0.1:9050'}
+    return session
+
 market_cache = {}
-
-
 @ring.dict(market_cache, expire=3)  # keeps in cache for 3 seconds
 def get_exchange_rates(currencies):
     """
@@ -15,6 +21,8 @@ def get_exchange_rates(currencies):
     Returns the median price list.
     """
 
+    session = get_tor_session()
+
     APIS = config("MARKET_PRICE_APIS",
                   cast=lambda v: [s.strip() for s in v.split(",")])
 
@@ -22,7 +30,7 @@ def get_exchange_rates(currencies):
     for api_url in APIS:
         try:  # If one API is unavailable pass
             if "blockchain.info" in api_url:
-                blockchain_prices = requests.get(api_url).json()
+                blockchain_prices = session.get(api_url).json()
                 blockchain_rates = []
                 for currency in currencies:
                     try:  # If a currency is missing place a None
@@ -33,7 +41,7 @@ def get_exchange_rates(currencies):
                 api_rates.append(blockchain_rates)
 
             elif "yadio.io" in api_url:
-                yadio_prices = requests.get(api_url).json()
+                yadio_prices = session.get(api_url).json()
                 yadio_rates = []
                 for currency in currencies:
                     try:
@@ -74,8 +82,6 @@ def get_lnd_version():
 
 
 robosats_commit_cache = {}
-
-
 @ring.dict(robosats_commit_cache, expire=3600)
 def get_commit_robosats():
 
@@ -84,10 +90,7 @@ def get_commit_robosats():
 
     return commit_hash
 
-
 premium_percentile = {}
-
-
 @ring.dict(premium_percentile, expire=300)
 def compute_premium_percentile(order):
 

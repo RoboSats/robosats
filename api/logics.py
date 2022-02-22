@@ -4,9 +4,8 @@ from api.lightning.node import LNNode
 from django.db.models import Q
 
 from api.models import Order, LNPayment, MarketTick, User, Currency
+from api.messages import Telegram
 from decouple import config
-
-from api.tasks import follow_send_payment
 
 import math
 import ast
@@ -31,7 +30,7 @@ FIAT_EXCHANGE_DURATION = int(config("FIAT_EXCHANGE_DURATION"))
 
 
 class Logics:
-
+    telegram = Telegram()
     @classmethod
     def validate_already_maker_or_taker(cls, user):
         """Validates if a use is already not part of an active order"""
@@ -130,6 +129,7 @@ class Logics:
             order.expires_at = timezone.now() + timedelta(
                 seconds=Order.t_to_expire[Order.Status.TAK])
             order.save()
+            cls.telegram.order_taken(order)
             return True, None
 
     def is_buyer(order, user):
@@ -234,7 +234,8 @@ class Logics:
             if maker_is_seller:
                 cls.settle_bond(order.maker_bond)
                 cls.return_bond(order.taker_bond)
-                try: # If seller is offline the escrow LNpayment does not even exist
+                # If seller is offline the escrow LNpayment does not exist
+                try: 
                     cls.cancel_escrow(order)
                 except:
                     pass
@@ -245,7 +246,8 @@ class Logics:
             # If maker is buyer, settle the taker's bond order goes back to public
             else:
                 cls.settle_bond(order.taker_bond)
-                try: # If seller is offline the escrow LNpayment does not even exist
+                # If seller is offline the escrow LNpayment does not even exist
+                try: 
                     cls.cancel_escrow(order)
                 except:
                     pass
@@ -569,7 +571,7 @@ class Logics:
             When the second user asks for cancel. Order is totally cancelled.
             Must have a small cost for both parties to prevent node DDOS."""
         elif order.status in [
-                Order.Status.WFI, Order.Status.CHA, Order.Status.FSE
+                Order.Status.WFI, Order.Status.CHA
         ]:
 
             # if the maker had asked, and now the taker does: cancel order, return everything
@@ -1049,3 +1051,4 @@ class Logics:
         user.profile.platform_rating = rating
         user.profile.save()
         return True, None
+

@@ -28,13 +28,29 @@ export default class UserGenPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      token: this.genBase62Token(36),
       openInfo: false,
-      loadingRobot: true,
       tokenHasChanged: false,
     };
-    this.props.setAppState({avatarLoaded: false, nickname: null, token: null});
-    this.getGeneratedUser(this.state.token);
+
+    //this.props.setAppState({avatarLoaded: false, nickname: null, token: null});
+
+    // Checks in parent HomePage if there is already a nick and token
+    // Displays the existing one
+    if (this.props.nickname != null){
+      this.state = {
+        nickname: this.props.nickname,
+        token: this.props.token? this.props.token : null,
+        avatar_url: 'static/assets/avatars/' + this.props.nickname + '.png',
+        loadingRobot: false
+      }
+    }
+    else{
+      var newToken = this.genBase62Token(36)
+      this.state = {
+        token: newToken
+      }
+      this.getGeneratedUser(newToken);
+    }
   }
 
   // sort of cryptographically strong function to generate Base62 token client-side
