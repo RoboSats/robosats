@@ -27,7 +27,6 @@ class Command(BaseCommand):
             time.sleep(self.rest)
 
             params = {'offset' : offset + 1 , 'timeout' : 5}
-            print(params)
             response = self.session.get(self.updates_url, params=params).json()
             if len(list(response['result'])) == 0:
                 continue
@@ -36,7 +35,6 @@ class Command(BaseCommand):
                 splitted_text = text.split(' ')
                 if splitted_text[0] == '/start':
                     token = splitted_text[-1]
-                    print(token)
                     try :
                         profile = Profile.objects.get(telegram_token=token)
                     except:

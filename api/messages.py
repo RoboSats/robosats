@@ -38,8 +38,7 @@ class Telegram():
 
         return
 
-    @classmethod
-    def welcome(cls, user):
+    def welcome(self, user):
         lang = user.profile.telegram_lang_code
         order = Order.objects.get(maker=user)
         print(str(order.id))
@@ -47,15 +46,15 @@ class Telegram():
             text = f'Hola ⚡{user.username}⚡, Te enviaré un mensaje cuando tu orden con ID {str(order.id)} haya sido tomada.'
         else:
             text = f"Hey ⚡{user.username}⚡, I will send you a message when someone takes your order with ID {str(order.id)}."
-        cls.send_message(user, text)
+        self.send_message(user=user, text=text)
         return
 
-    @classmethod
-    def order_taken(cls, order):
+
+    def order_taken(self, order):
         user = order.maker
         if not user.profile.telegram_enabled:
             return
-            
+
         lang = user.profile.telegram_lang_code
         taker_nick = order.taker.username
         site = config('HOST_NAME')
@@ -64,5 +63,5 @@ class Telegram():
         else:
             text = f'Your order with ID {order.id} was taken by {taker_nick}!🥳   Visit http://{site}/order/{order.id} to proceed with the trade.'
         
-        cls.send_message(user, text)
+        self.send_message(user=user, text=text)
         return
