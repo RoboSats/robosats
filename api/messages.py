@@ -90,11 +90,52 @@ class Telegram():
             return
 
         lang = user.profile.telegram_lang_code
-        site = config('HOST_NAME')
         if lang == 'es':
-            text = f'¡Tu orden con ID ha finalizado exitosamente!⚡ Unase a @robosats_es y ayudanos a mejorar.'
+            text = f'¡Tu orden con ID {order.id} ha finalizado exitosamente!⚡ Unase a @robosats_es y ayudanos a mejorar.'
         else:
-            text = f'Your order with ID has finished successfully!⚡ Join us @robosats and help us improve.'
+            text = f'Your order with ID {order.id} has finished successfully!⚡ Join us @robosats and help us improve.'
+        
+        self.send_message(user, text)
+        return
+
+    def public_order_cancelled(self, order):
+        user = order.maker
+        if not user.profile.telegram_enabled:
+            return
+
+        lang = user.profile.telegram_lang_code
+        if lang == 'es':
+            text = f'Has cancelado tu orden pública con ID {order.id}.'
+        else:
+            text = f'You have cancelled your public order with ID {order.id}.'
+        
+        self.send_message(user, text)
+        return
+
+    def taker_canceled_b4bond(self, order):
+        user = order.maker
+        if not user.profile.telegram_enabled:
+            return
+
+        lang = user.profile.telegram_lang_code
+        if lang == 'es':
+            text = f'El tomador ha cancelado antes de bloquear su fianza. Tu orden con ID {order.id} vuelve a ser pública.'
+        else:
+            text = f'The taker has canceled before locking the bond. Your order with ID {order.id} is once again public in the order book.'
+        
+        self.send_message(user, text)
+        return
+
+    def taker_expired_b4bond(self, order):
+        user = order.maker
+        if not user.profile.telegram_enabled:
+            return
+
+        lang = user.profile.telegram_lang_code
+        if lang == 'es':
+            text = f'El tomador no ha bloqueado la fianza a tiempo. Tu orden con ID {order.id} vuelve a ser pública.'
+        else:
+            text = f'The taker has not locked the bond in time. Your order with ID {order.id} is once again public in the order book.'
         
         self.send_message(user, text)
         return

@@ -152,3 +152,34 @@ def cache_market():
         )
 
     return results
+
+@shared_task(name="send_message", ignore_result=True)
+def send_message(order_id, message):
+
+    from api.models import Order
+    order = Order.objects.get(id=order_id)
+    if not order.maker.profile.telegram_enabled:
+        return
+
+    from api.messages import Telegram
+    telegram = Telegram()
+
+    if message == 'order_taken':
+        telegram.order_taken(order)
+        
+    elif message == 'order_expired_untaken':
+        telegram.order_expired_untaken(order)
+
+    elif message == 'trade_successful':
+        telegram.trade_successful(order)
+
+    elif message == 'public_order_cancelled':
+        telegram.public_order_cancelled(order)
+
+    elif message == 'taker_expired_b4bond':
+        telegram.taker_expired_b4bond(order)
+
+    elif message == 'taker_canceled_b4bond':
+        telegram.taker_canceled_b4bond(order)
+        
+    return

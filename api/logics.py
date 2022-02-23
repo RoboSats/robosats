@@ -4,7 +4,7 @@ from api.lightning.node import LNNode
 from django.db.models import Q
 
 from api.models import Order, LNPayment, MarketTick, User, Currency
-from api.messages import Telegram
+from api.tasks import send_message
 from decouple import config
 
 import math
@@ -30,7 +30,6 @@ FIAT_EXCHANGE_DURATION = int(config("FIAT_EXCHANGE_DURATION"))
 
 
 class Logics:
-    telegram = Telegram()
     @classmethod
     def validate_already_maker_or_taker(cls, user):
         """Validates if a use is already not part of an active order"""
@@ -129,7 +128,7 @@ class Logics:
             order.expires_at = timezone.now() + timedelta(
                 seconds=Order.t_to_expire[Order.Status.TAK])
             order.save()
-            cls.telegram.order_taken(order)
+            send_message.delay(order.id,'order_taken')
             return True, None
 
     def is_buyer(order, user):
@@ -207,13 +206,14 @@ class Logics:
         elif order.status == Order.Status.PUB:
             cls.return_bond(order.maker_bond)
             order.status = Order.Status.EXP
-            cls.telegram.order_expired_untaken(order)
             order.save()
+            send_message.delay(order.id,'order_expired_untaken')
             return True
 
         elif order.status == Order.Status.TAK:
             cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
+            send_message.delay(order.id,'taker_expired_b4bond')
             return True
 
         elif order.status == Order.Status.WF2:
@@ -520,11 +520,11 @@ class Logics:
             to prevent DDOS on the LN node and order book. If not strict, maker is returned
             the bond (more user friendly)."""
         elif order.status == Order.Status.PUB and order.maker == user:
-            # Settle the maker bond (Maker loses the bond for cancelling public order)
-            if cls.return_bond(order.maker_bond
-                               ):  # strict: cls.settle_bond(order.maker_bond):
+            # Return the maker bond (Maker gets returned the bond for cancelling public order)
+            if cls.return_bond(order.maker_bond):  # strict cancellation: cls.settle_bond(order.maker_bond):
                 order.status = Order.Status.UCA
                 order.save()
+                send_message.delay(order.id,'public_order_cancelled')
                 return True, None
 
             # 3) When taker cancels before bond
@@ -534,6 +534,7 @@ class Logics:
             # adds a timeout penalty
             cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
+            send_message.delay(order.id,'taker_canceled_b4bond')
             return True, None
 
             # 4) When taker or maker cancel after bond (before escrow)
@@ -1000,7 +1001,7 @@ class Logics:
                     order.payout.status = LNPayment.Status.FLIGHT
                     order.payout.save()
                     order.save()
-                    cls.telegram.trade_successful(order)
+                    send_message.delay(order.id,'trade_successful')
                     return True, None
 
         else:
