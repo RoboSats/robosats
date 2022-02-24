@@ -44,13 +44,15 @@ class Telegram():
 
     def welcome(self, user):
         lang = user.profile.telegram_lang_code
-        order = Order.objects.get(maker=user)
+        order = Order.objects.get(maker=user, status=Order.Status.PUB)
         print(str(order.id))
         if lang == 'es':
             text = f'Hola {user.username}, te enviaré un mensaje cuando tu orden con ID {str(order.id)} haya sido tomada.'
         else:
             text = f"Hey {user.username}, I will send you a message when someone takes your order with ID {str(order.id)}."
         self.send_message(user, text)
+        user.profile.telegram_welcomed = True
+        user.profile.save()
         return
 
     def order_taken(self, order):
