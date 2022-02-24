@@ -343,12 +343,17 @@ class Logics:
         if not order.status == Order.Status.DIS:
             return False, {
                 "bad_request":
-                "Only orders in dispute accept a dispute statements"
+                "Only orders in dispute accept dispute statements"
             }
 
         if len(statement) > 5000:
             return False, {
                 "bad_statement": "The statement is longer than 5000 characters"
+            }
+        
+        if len(statement) < 100:
+            return False, {
+                "bad_statement": "The statement is too short. Make sure to be thorough."
             }
 
         if order.maker == user:
@@ -357,7 +362,7 @@ class Logics:
             order.taker_statement = statement
 
         # If both statements are in, move status to wait for dispute resolution
-        if order.maker_statement != None and order.taker_statement != None:
+        if order.maker_statement not in [None,""] or order.taker_statement not in [None,""]:
             order.status = Order.Status.WFR
             order.expires_at = timezone.now() + timedelta(
                 seconds=Order.t_to_expire[Order.Status.WFR])

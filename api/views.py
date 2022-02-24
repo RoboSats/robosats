@@ -311,7 +311,7 @@ class OrderView(viewsets.ViewSet):
                                                and order.maker_statement != "")
             elif data["is_taker"]:
                 data["statement_submitted"] = (order.taker_statement != None
-                                               and order.maker_statement != "")
+                                               and order.taker_statement != "")
 
         # 9) If status is 'Failed routing', reply with retry amounts, time of next retry and ask for invoice at third.
         elif (order.status == Order.Status.FAI
