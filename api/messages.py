@@ -44,7 +44,12 @@ class Telegram():
 
     def welcome(self, user):
         lang = user.profile.telegram_lang_code
-        order = Order.objects.get(maker=user, status=Order.Status.PUB)
+
+        # In weird cases the order cannot be found (e.g. it is cancelled)
+
+        queryset = Order.objects.filter(maker=user)
+        order = queryset.last()
+
         print(str(order.id))
         if lang == 'es':
             text = f'Hola {user.username}, te enviaré un mensaje cuando tu orden con ID {str(order.id)} haya sido tomada.'

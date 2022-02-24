@@ -362,7 +362,7 @@ class Logics:
             order.taker_statement = statement
 
         # If both statements are in, move status to wait for dispute resolution
-        if order.maker_statement not in [None,""] or order.taker_statement not in [None,""]:
+        if order.maker_statement not in [None,""] and order.taker_statement not in [None,""]:
             order.status = Order.Status.WFR
             order.expires_at = timezone.now() + timedelta(
                 seconds=Order.t_to_expire[Order.Status.WFR])
