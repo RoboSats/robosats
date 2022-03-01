@@ -35,13 +35,13 @@ class Telegram():
         message_url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={chat_id}&text={text}'
         
         # telegram messaging is atm inserted dangerously in the logics module
-        # if it fails, it should just keep going
-        try:
-            self.session.get(message_url).json()
-        except:
-            pass
-
-        return
+        # if it fails, it should keep trying
+        while True:
+            try:
+                self.session.get(message_url).json()
+                return
+            except:
+                pass
 
     def welcome(self, user):
         lang = user.profile.telegram_lang_code
@@ -151,7 +151,7 @@ class Telegram():
     def order_published(self, order):
 
         time.sleep(1) # Just so this message always arrives after the previous two
-        
+
         user = order.maker
         lang = user.profile.telegram_lang_code
 
