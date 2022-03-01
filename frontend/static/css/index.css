@@ -89,10 +89,3 @@ body {
   border: 0.3px solid #555; 
   filter: drop-shadow(0.5px 0.5px 0.5px #000000);
 }
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: normal;
-  src: local('Roboto Regular'), url(/static/css/fonts/roboto-regular.woff) format('woff');
-}
