@@ -31,7 +31,12 @@ class Command(BaseCommand):
             if len(list(response['result'])) == 0:
                 continue
             for result in response['result']:
-                text = result['message']['text']
+
+                try: # if there is no key message, skips this result.
+                    text = result['message']['text']
+                except:
+                    continue
+                
                 splitted_text = text.split(' ')
                 if splitted_text[0] == '/start':
                     token = splitted_text[-1]
