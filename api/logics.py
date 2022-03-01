@@ -619,6 +619,7 @@ class Logics:
         order.expires_at = order.created_at + timedelta(
             seconds=Order.t_to_expire[Order.Status.PUB])
         order.save()
+        send_message.delay(order.id,'order_published')
         return
 
     @classmethod

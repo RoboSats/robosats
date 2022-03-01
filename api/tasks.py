@@ -181,5 +181,8 @@ def send_message(order_id, message):
 
     elif message == 'taker_canceled_b4bond':
         telegram.taker_canceled_b4bond(order)
+
+    elif message == 'order_published':
+        telegram.order_published(order)
         
     return

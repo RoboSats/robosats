@@ -2,6 +2,7 @@ from decouple import config
 from secrets import token_urlsafe
 from api.models import Order
 from api.utils import get_tor_session
+import time
 
 class Telegram():
     ''' Simple telegram messages by requesting to API'''
@@ -126,9 +127,9 @@ class Telegram():
 
         lang = user.profile.telegram_lang_code
         if lang == 'es':
-            text = f'El tomador ha cancelado antes de bloquear su fianza. Tu orden con ID {order.id} vuelve a ser pública.'
+            text = f'El tomador ha cancelado antes de bloquear su fianza.'
         else:
-            text = f'The taker has canceled before locking the bond. Your order with ID {order.id} is once again public in the order book.'
+            text = f'The taker has canceled before locking the bond.'
         
         self.send_message(user, text)
         return
@@ -140,9 +141,31 @@ class Telegram():
 
         lang = user.profile.telegram_lang_code
         if lang == 'es':
-            text = f'El tomador no ha bloqueado la fianza a tiempo. Tu orden con ID {order.id} vuelve a ser pública.'
+            text = f'El tomador no ha bloqueado la fianza a tiempo.'
         else:
-            text = f'The taker has not locked the bond in time. Your order with ID {order.id} is once again public in the order book.'
+            text = f'The taker has not locked the bond in time.'
         
         self.send_message(user, text)
+        return
+
+    def order_published(self, order):
+
+        time.sleep(1) # Just so this message always arrives after the previous two
+        
+        user = order.maker
+        lang = user.profile.telegram_lang_code
+
+        # In weird cases the order cannot be found (e.g. it is cancelled)
+
+        queryset = Order.objects.filter(maker=user)
+        order = queryset.last()
+
+        print(str(order.id))
+        if lang == 'es':
+            text = f'Tu orden con ID {str(order.id)} es pública en el libro de ordenes.'
+        else:
+            text = f"Your order with ID {str(order.id)} is public in the order book."
+        self.send_message(user, text)
+        user.profile.telegram_welcomed = True
+        user.profile.save()
         return
