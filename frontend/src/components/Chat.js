@@ -67,7 +67,7 @@ export default class Chat extends Component {
               <Card elevation={5} align="left" >
               {/* If message sender is not our nick, gray color, if it is our nick, green color */}
               {message.userNick == this.props.ur_nick ? 
-                  <CardHeader
+                <CardHeader
                   avatar={
                     <Avatar
                       alt={message.userNick}
@@ -77,19 +77,21 @@ export default class Chat extends Component {
                   style={{backgroundColor: '#e8ffe6'}}
                   title={message.userNick}
                   subheader={message.msg}
+                  subheaderTypographyProps={{sx: {wordWrap: "break-word", width: 200}}}
                 />
                 :
                 <CardHeader
-                        avatar={
-                          <Avatar
-                            alt={message.userNick}
-                            src={window.location.origin +'/static/assets/avatars/' + message.userNick + '.png'} 
-                            />
-                        }
-                        style={{backgroundColor: '#fcfcfc'}}
-                        title={message.userNick}
-                        subheader={message.msg}
-                      />} 
+                  avatar={
+                    <Avatar
+                      alt={message.userNick}
+                      src={window.location.origin +'/static/assets/avatars/' + message.userNick + '.png'} 
+                      />
+                  }
+                  style={{backgroundColor: '#fcfcfc'}}
+                  title={message.userNick}
+                  subheader={message.msg}
+                  subheaderTypographyProps={{sx: {wordWrap: "break-word", width: 200}}}
+                />} 
                 </Card>
               </>)}
               <div style={{ float:"left", clear: "both" }} ref={(el) => { this.messagesEnd = el; }}></div>
