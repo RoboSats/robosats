@@ -26,7 +26,7 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 
 - **[Full Walkthrough how to use RoboSats (English)](https://github.com/Reckless-Satoshi/robosats/blob/main/docs/how-to-use.md)**
 
-- **[Guia completa de como usar RoboSats (Español)](https://github.com/Reckless-Satoshi/robosats/blob/main/docs/how-to-use.md)**
+- **[Guia completa de como usar RoboSats (Español)](https://github.com/Reckless-Satoshi/robosats/blob/main/docs/how-to-use_es.md)**
 
 ## How it works
 
