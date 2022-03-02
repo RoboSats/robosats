@@ -48,12 +48,14 @@ export default class Chat extends Component {
   }
 
   onButtonClicked = (e) => {
-    this.client.send(JSON.stringify({
-      type: "message",
-      message: this.state.value,
-      nick: this.props.ur_nick,
-    }));
-    this.state.value = ''
+    if(this.state.value!=''){
+      this.client.send(JSON.stringify({
+        type: "message",
+        message: this.state.value,
+        nick: this.props.ur_nick,
+      }));
+      this.state.value = ''
+    }
     e.preventDefault();
   }
 
@@ -65,7 +67,7 @@ export default class Chat extends Component {
               <Card elevation={5} align="left" >
               {/* If message sender is not our nick, gray color, if it is our nick, green color */}
               {message.userNick == this.props.ur_nick ? 
-                  <CardHeader
+                <CardHeader
                   avatar={
                     <Avatar
                       alt={message.userNick}
@@ -75,19 +77,21 @@ export default class Chat extends Component {
                   style={{backgroundColor: '#e8ffe6'}}
                   title={message.userNick}
                   subheader={message.msg}
+                  subheaderTypographyProps={{sx: {wordWrap: "break-word", width: 200}}}
                 />
                 :
                 <CardHeader
-                        avatar={
-                          <Avatar
-                            alt={message.userNick}
-                            src={window.location.origin +'/static/assets/avatars/' + message.userNick + '.png'} 
-                            />
-                        }
-                        style={{backgroundColor: '#fcfcfc'}}
-                        title={message.userNick}
-                        subheader={message.msg}
-                      />} 
+                  avatar={
+                    <Avatar
+                      alt={message.userNick}
+                      src={window.location.origin +'/static/assets/avatars/' + message.userNick + '.png'} 
+                      />
+                  }
+                  style={{backgroundColor: '#fcfcfc'}}
+                  title={message.userNick}
+                  subheader={message.msg}
+                  subheaderTypographyProps={{sx: {wordWrap: "break-word", width: 200}}}
+                />} 
                 </Card>
               </>)}
               <div style={{ float:"left", clear: "both" }} ref={(el) => { this.messagesEnd = el; }}></div>
@@ -111,7 +115,9 @@ export default class Chat extends Component {
                 </Grid>
               </Grid>
             </form>
-            <FormHelperText>This chat has no memory. If you leave and come back the messages are lost.</FormHelperText>
+            <FormHelperText>
+              The chat has no memory: if you leave, messages are lost. <a target="_blank" href="https://diverter.hostyourown.tools/as-easy-as-pgp/"> Learn easy PGP encryption.</a>
+            </FormHelperText>
       </Container>
     )
   }
