@@ -48,12 +48,14 @@ export default class Chat extends Component {
   }
 
   onButtonClicked = (e) => {
-    this.client.send(JSON.stringify({
-      type: "message",
-      message: this.state.value,
-      nick: this.props.ur_nick,
-    }));
-    this.state.value = ''
+    if(this.state.value!=''){
+      this.client.send(JSON.stringify({
+        type: "message",
+        message: this.state.value,
+        nick: this.props.ur_nick,
+      }));
+      this.state.value = ''
+    }
     e.preventDefault();
   }
 
