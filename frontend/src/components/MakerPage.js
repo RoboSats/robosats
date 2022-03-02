@@ -219,10 +219,10 @@ export default class MakerPage extends Component {
                 </Grid>
                 <br/>
                 <Grid item xs={12} align="center">
-                    <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Enter your prefered payment methods">
+                    <Tooltip placement="top" enterTouchDelay="300" enterDelay="700" enterNextDelay="2000" title="Enter your prefered fiat payment methods (instant recommended)">
                         <TextField 
                             sx={{width:240}}
-                            label={this.state.currency==1000 ? "Swap Destination (e.g. rBTC)":"Instant Payment Method(s)"}
+                            label={this.state.currency==1000 ? "Swap Destination (e.g. rBTC)":"Fiat Payment Method(s)"}
                             error={this.state.badPaymentMethod}
                             helperText={this.state.badPaymentMethod ? "Must be shorter than 35 characters":""}
                             type="text" 

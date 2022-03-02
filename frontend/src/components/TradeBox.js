@@ -195,6 +195,26 @@ export default class TradeBox extends Component {
     );
   }
 
+  showBondIsSettled=()=>{
+    return (
+        <Grid item xs={12} align="center">
+          <Typography color="error" component="subtitle1" variant="subtitle1" align="center">
+            ⚖️ Your {this.props.data.is_maker ? 'maker' : 'taker'} bond was settled
+          </Typography>
+        </Grid>
+    );
+  }
+
+  showBondIsReturned=()=>{
+    return (
+        <Grid item xs={12} align="center">
+          <Typography color="green" component="subtitle1" variant="subtitle1" align="center">
+            🔓 Your {this.props.data.is_maker ? 'maker' : 'taker'} bond was unlocked
+          </Typography>
+        </Grid>
+    );
+  }
+
   showEscrowQRInvoice=()=>{
     return (
       <Grid container spacing={1}>
@@ -476,10 +496,16 @@ export default class TradeBox extends Component {
           </Grid>
           <Grid item xs={12} align="left">
             <Typography component="body2" variant="body2">
-              We are waiting for your trade counterparty statement.
+              <p>We are waiting for your trade counterparty statement. If you are hesitant about
+              the state of the dispute or want to add more information, contact robosats@protonmail.com.</p>
+
+              <p>Please, save the information needed to identificate your order and your payments: order ID;
+              payment hashes of the bonds or escrow (check on your lightning wallet); exact amount of
+              satoshis; and robot nickname. You will have to identify yourself as the user involved
+              in this trade via email (or other contact methods).</p>
             </Typography>
           </Grid>
-          {this.showBondIsLocked()}
+          {this.showBondIsSettled()}
         </Grid>
       )
     }else{
@@ -496,7 +522,7 @@ export default class TradeBox extends Component {
           <Grid item xs={12} align="left">
             <Typography component="body2" variant="body2">
               Please, submit your statement. Be clear and specific about what happened and provide the necessary 
-              evidence. It is best to provide a burner email, XMPP or telegram username to follow up with the staff.
+              evidence. You MUST provide a contact method: burner email, XMPP or telegram username to follow up with the staff.
               Disputes are solved at the discretion of real robots <i>(aka humans)</i>, so be as helpful 
               as possible to ensure a fair outcome. Max 5000 chars.
             </Typography>
@@ -519,9 +545,8 @@ export default class TradeBox extends Component {
           <Grid item xs={12} align="center">
             <Button onClick={this.handleClickSubmitStatementButton} variant='contained' color='primary'>Submit</Button>
           </Grid>
-  
-          {this.showBondIsLocked()}
-        </Grid>
+        {this.showBondIsSettled()}
+      </Grid>
       )}
   }
 
@@ -535,11 +560,60 @@ export default class TradeBox extends Component {
         </Grid>
         <Grid item xs={12} align="left">
           <Typography component="body2" variant="body2">
-            Wait for the staff to resolve the dispute. The dispute winner
-            will be asked to submit a LN invoice.
+            <p>Both statements have been received, wait for the staff to resolve the dispute. 
+            The dispute winner will be asked to submit a LN invoice via the contact methods provided.
+            If you are hesitant about the state of the dispute or want to add more information, 
+            contact robosats@protonmail.com. If you did not provide a contact method, write us inmediately. </p>
+            
+            <p>Please, save the information needed to identificate your order and your payments: order ID;
+            payment hashes of the bonds or escrow (check on your lightning wallet); exact amount of
+            satoshis; and robot nickname. You will have to identify yourself as the user involved
+            in this trade via email (or other contact methods).</p>
           </Typography>
         </Grid>
-        {this.showBondIsLocked()}
+        {this.showBondIsSettled()}
+      </Grid>
+    )
+  }
+
+  showDisputeWinner=()=>{
+    return (
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography color="primary" component="subtitle1" variant="subtitle1">
+            <b> You have won the dispute </b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="left">
+          <Typography component="body2" variant="body2">
+            You will be sent the satoshis of the escrow and your fidelity bond. 
+            This is not an automatic process, instead it will be sent manually by the staff.
+            Please coordinate with the staff by writing to robosats@protonmail.com (or via your provided
+            burner contact method). You will be asked to submit a new invoice together with identificative
+            information about this order (bond payment hash, robot nicknames, exact amount in satoshis and order ID).
+          </Typography>
+        </Grid>
+        {this.showBondIsSettled()}
+      </Grid>
+    )
+  }
+
+  showDisputeLoser=()=>{
+    return (
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography color="error" component="subtitle1" variant="subtitle1">
+            <b> You have lost the dispute </b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="left">
+          <Typography component="body2" variant="body2">
+            Unfortunately you have lost the dispute. If you think this is a mistake 
+            you can ask to re-open the case via email to robosats@protonmail.com. However,
+            chances of it being investigated again are low.
+          </Typography>
+        </Grid>
+        {this.showBondIsSettled()}
       </Grid>
     )
   }
@@ -776,7 +850,8 @@ handleRatingRobosatsChange=(e)=>{
         <Grid item xs={12} align="center">
           <Button color='primary' onClick={() => {this.props.push('/')}}>Start Again</Button> 
         </Grid>
-      </Grid>
+      {this.showBondIsReturned()}
+    </Grid>
     )
   }
 
@@ -851,7 +926,8 @@ handleRatingRobosatsChange=(e)=>{
           <Grid item xs={12} align="center">
             <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>Submit</Button>
           </Grid>
-        </Grid>
+        {this.showBondIsReturned()}
+      </Grid>
       )
     }else{
     return(
@@ -874,7 +950,8 @@ handleRatingRobosatsChange=(e)=>{
             </ListItemText>
           </List>
         </Grid>
-      </Grid>
+      {this.showBondIsReturned()}
+    </Grid>
     )}
   }
 
@@ -920,7 +997,9 @@ handleRatingRobosatsChange=(e)=>{
             {/* Trade Finished - TODO Needs more planning */}
             {this.props.data.status == 11 ? this.showInDisputeStatement() : ""}
             {this.props.data.status == 16 ? this.showWaitForDisputeResolution() : ""}
-            
+            {(this.props.data.status == 17 & this.props.data.is_taker) || (this.props.data.status == 18 & this.props.data.is_maker) ? this.showDisputeWinner() : ""}
+            {(this.props.data.status == 18 & this.props.data.is_taker) || (this.props.data.status == 17 & this.props.data.is_maker) ? this.showDisputeLoser() : ""}
+
             {/* Order has expired */}
             {this.props.data.status == 5 ? this.showOrderExpired() : ""}
               {/* TODO */}

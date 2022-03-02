@@ -4,7 +4,7 @@ from api.lightning.node import LNNode
 from django.db.models import Q
 
 from api.models import Order, LNPayment, MarketTick, User, Currency
-from api.messages import Telegram
+from api.tasks import send_message
 from decouple import config
 
 import math
@@ -30,7 +30,6 @@ FIAT_EXCHANGE_DURATION = int(config("FIAT_EXCHANGE_DURATION"))
 
 
 class Logics:
-    telegram = Telegram()
     @classmethod
     def validate_already_maker_or_taker(cls, user):
         """Validates if a use is already not part of an active order"""
@@ -129,7 +128,7 @@ class Logics:
             order.expires_at = timezone.now() + timedelta(
                 seconds=Order.t_to_expire[Order.Status.TAK])
             order.save()
-            cls.telegram.order_taken(order)
+            send_message.delay(order.id,'order_taken')
             return True, None
 
     def is_buyer(order, user):
@@ -208,11 +207,13 @@ class Logics:
             cls.return_bond(order.maker_bond)
             order.status = Order.Status.EXP
             order.save()
+            send_message.delay(order.id,'order_expired_untaken')
             return True
 
         elif order.status == Order.Status.TAK:
             cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
+            send_message.delay(order.id,'taker_expired_b4bond')
             return True
 
         elif order.status == Order.Status.WF2:
@@ -342,12 +343,17 @@ class Logics:
         if not order.status == Order.Status.DIS:
             return False, {
                 "bad_request":
-                "Only orders in dispute accept a dispute statements"
+                "Only orders in dispute accept dispute statements"
             }
 
         if len(statement) > 5000:
             return False, {
                 "bad_statement": "The statement is longer than 5000 characters"
+            }
+        
+        if len(statement) < 100:
+            return False, {
+                "bad_statement": "The statement is too short. Make sure to be thorough."
             }
 
         if order.maker == user:
@@ -356,7 +362,7 @@ class Logics:
             order.taker_statement = statement
 
         # If both statements are in, move status to wait for dispute resolution
-        if order.maker_statement != None and order.taker_statement != None:
+        if order.maker_statement not in [None,""] and order.taker_statement not in [None,""]:
             order.status = Order.Status.WFR
             order.expires_at = timezone.now() + timedelta(
                 seconds=Order.t_to_expire[Order.Status.WFR])
@@ -519,11 +525,11 @@ class Logics:
             to prevent DDOS on the LN node and order book. If not strict, maker is returned
             the bond (more user friendly)."""
         elif order.status == Order.Status.PUB and order.maker == user:
-            # Settle the maker bond (Maker loses the bond for cancelling public order)
-            if cls.return_bond(order.maker_bond
-                               ):  # strict: cls.settle_bond(order.maker_bond):
+            # Return the maker bond (Maker gets returned the bond for cancelling public order)
+            if cls.return_bond(order.maker_bond):  # strict cancellation: cls.settle_bond(order.maker_bond):
                 order.status = Order.Status.UCA
                 order.save()
+                send_message.delay(order.id,'public_order_cancelled')
                 return True, None
 
             # 3) When taker cancels before bond
@@ -533,6 +539,7 @@ class Logics:
             # adds a timeout penalty
             cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
+            send_message.delay(order.id,'taker_canceled_b4bond')
             return True, None
 
             # 4) When taker or maker cancel after bond (before escrow)
@@ -612,6 +619,7 @@ class Logics:
         order.expires_at = order.created_at + timedelta(
             seconds=Order.t_to_expire[Order.Status.PUB])
         order.save()
+        send_message.delay(order.id,'order_published')
         return
 
     @classmethod
@@ -999,14 +1007,9 @@ class Logics:
                     order.payout.status = LNPayment.Status.FLIGHT
                     order.payout.save()
                     order.save()
+                    send_message.delay(order.id,'trade_successful')
                     return True, None
-                    # is_payed, context = follow_send_payment(order.payout) ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
-                    # if is_payed:
-                    #     order.save()
-                    #     return True, context
-                    # else:
-                    #     # error handling here
-                    #     return False, context
+
         else:
             return False, {
                 "bad_request":

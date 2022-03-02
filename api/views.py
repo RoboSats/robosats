@@ -55,6 +55,16 @@ class MakerView(CreateAPIView):
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+        # In case it gets overwhelming. Limit the number of public orders.
+        if Order.objects.filter(status=Order.Status.PUB).count() >= int(config("MAX_PUBLIC_ORDERS")):
+            return Response(
+                {
+                    "bad_request":
+                    "Woah! RoboSats' book is at full capacity! Try again later"
+                },
+                status.HTTP_400_BAD_REQUEST,
+            )
+
         type = serializer.data.get("type")
         currency = serializer.data.get("currency")
         amount = serializer.data.get("amount")
@@ -311,7 +321,7 @@ class OrderView(viewsets.ViewSet):
                                                and order.maker_statement != "")
             elif data["is_taker"]:
                 data["statement_submitted"] = (order.taker_statement != None
-                                               and order.maker_statement != "")
+                                               and order.taker_statement != "")
 
         # 9) If status is 'Failed routing', reply with retry amounts, time of next retry and ask for invoice at third.
         elif (order.status == Order.Status.FAI
