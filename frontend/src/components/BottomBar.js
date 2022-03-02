@@ -296,7 +296,7 @@ bottomBarDesktop =()=>{
                 <this.dialogProfile/>
                 <Grid container xs={12}>
 
-                    <Grid item xs={2}>
+                    <Grid item xs={1.9}>
                         <div style={{display: this.props.avatarLoaded ? '':'none'}}>                     
                         <ListItemButton onClick={this.handleClickOpenProfile} >
                             <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
@@ -318,7 +318,7 @@ bottomBarDesktop =()=>{
                         </div>
                     </Grid>
 
-                    <Grid item xs={2}>
+                    <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
                                 <InventoryIcon/>
@@ -331,7 +331,7 @@ bottomBarDesktop =()=>{
                         </ListItem>
                     </Grid>
 
-                    <Grid item xs={2}>
+                    <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
                                 <SellIcon/>
@@ -344,7 +344,7 @@ bottomBarDesktop =()=>{
                         </ListItem>
                     </Grid>
 
-                    <Grid item xs={2}>
+                    <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
                                 <SmartToyIcon/>
@@ -357,7 +357,7 @@ bottomBarDesktop =()=>{
                         </ListItem>
                     </Grid>
 
-                    <Grid item xs={2}>
+                    <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
                                 <PriceChangeIcon/>
@@ -370,7 +370,7 @@ bottomBarDesktop =()=>{
                         </ListItem>
                     </Grid>
 
-                    <Grid item xs={1}>
+                    <Grid item xs={1.5}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
                                 <PercentIcon/>
@@ -378,7 +378,7 @@ bottomBarDesktop =()=>{
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
-                                primary={this.state.fee*100} 
+                                primary={this.state.fee*100+"% (buyer)"} 
                                 secondary="Trade Fee" />
                         </ListItem>
                     </Grid>
@@ -494,8 +494,9 @@ bottomBarDesktop =()=>{
                     <ListItemText 
                         primaryTypographyProps={{fontSize: '14px'}} 
                         secondaryTypographyProps={{fontSize: '12px'}} 
-                        primary={this.state.fee*100+"%"} 
-                        secondary="Trading fee" />
+                        secondary="Trading fees">
+                        {this.state.fee*100}% <small>(buyer)</small> | 0.0% <small>(seller)</small>
+                    </ListItemText>
                 </ListItem>
                 </List>
                 
