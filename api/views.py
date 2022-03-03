@@ -246,7 +246,8 @@ class OrderView(viewsets.ViewSet):
                     LNPayment.Status.LOCKED):
                 # Seller sees the amount he sends
                 if data["is_seller"]:
-                    data["trade_satoshis"] = order.last_satoshis
+                    data["trade_satoshis"] = Logics.escrow_amount(
+                        order, request.user)[1]["escrow_amount"]
                 # Buyer sees the amount he receives
                 elif data["is_buyer"]:
                     data["trade_satoshis"] = Logics.payout_amount(
@@ -334,7 +335,7 @@ class OrderView(viewsets.ViewSet):
             if order.payout.status == LNPayment.Status.EXPIRE:
                 data["invoice_expired"] = True
                 # Add invoice amount once again if invoice was expired.
-                data["invoice_amount"] = int(order.last_satoshis * (1 - float(config('FEE'))))
+                data["invoice_amount"] = Logics.payout_amount(order,request.user)[1]["invoice_amount"]
 
         return Response(data, status.HTTP_200_OK)
 

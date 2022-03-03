@@ -295,6 +295,7 @@ bottomBarDesktop =()=>{
                 <this.StatsDialog/>
                 <this.CommunityDialog/>
                 <this.dialogProfile/>
+                <this.exchangeSummaryDialog/>
                 <Grid container xs={12}>
 
                     <Grid item xs={1.9}>
@@ -322,7 +323,7 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <InventoryIcon/>
+                                <IconButton onClick={this.handleClickOpenExchangeSummary}><InventoryIcon/></IconButton>
                             </ListItemIcon>
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
@@ -335,7 +336,7 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <SellIcon/>
+                            <IconButton onClick={this.handleClickOpenExchangeSummary}><SellIcon/></IconButton>
                             </ListItemIcon>
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
@@ -348,7 +349,7 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <SmartToyIcon/>
+                            <IconButton onClick={this.handleClickOpenExchangeSummary}><SmartToyIcon/></IconButton>
                             </ListItemIcon>
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
@@ -361,7 +362,7 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <PriceChangeIcon/>
+                                <IconButton onClick={this.handleClickOpenExchangeSummary}><PriceChangeIcon/></IconButton>
                             </ListItemIcon>
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
@@ -374,7 +375,7 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.5}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <PercentIcon/>
+                            <   IconButton onClick={this.handleClickOpenExchangeSummary}><PercentIcon/></IconButton>
                             </ListItemIcon>
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
@@ -429,7 +430,7 @@ bottomBarDesktop =()=>{
         this.setState({openExchangeSummary: false});
     };
 
-    exchangeSummaryDialogPhone =() =>{
+    exchangeSummaryDialog =() =>{
         return(
         <Dialog
         open={this.state.openExchangeSummary}
@@ -511,7 +512,7 @@ bottomBarPhone =()=>{
         <Paper elevation={6} style={{height:40}}>
                 <this.StatsDialog/>
                 <this.CommunityDialog/>
-                <this.exchangeSummaryDialogPhone/>
+                <this.exchangeSummaryDialog/>
                 <this.dialogProfile/>
                 <Grid container xs={12}>
 

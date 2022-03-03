@@ -11,6 +11,8 @@ import math
 import ast
 
 FEE = float(config("FEE"))
+MAKER_FEE_SPLIT = float(config("MAKER_FEE_SPLIT"))
+
 BOND_SIZE = float(config("BOND_SIZE"))
 ESCROW_USERNAME = config("ESCROW_USERNAME")
 PENALTY_TIMEOUT = int(config("PENALTY_TIMEOUT"))
@@ -375,11 +377,34 @@ class Logics:
         """Computes buyer invoice amount. Uses order.last_satoshis,
         that is the final trade amount set at Taker Bond time"""
 
+        if user == order.maker:
+            fee_fraction = FEE * MAKER_FEE_SPLIT
+        elif user == order.taker:
+            fee_fraction = FEE * (1 - MAKER_FEE_SPLIT)
+
+        fee_sats = order.last_satoshis * fee_fraction
+
         if cls.is_buyer(order, user):
-            invoice_amount = int(order.last_satoshis *
-                                 (1 - FEE))  # Trading FEE is charged here.
+            invoice_amount = int(order.last_satoshis - fee_sats)  # Trading fee to buyer is charged here.
 
         return True, {"invoice_amount": invoice_amount}
+
+    @classmethod
+    def escrow_amount(cls, order, user):
+        """Computes escrow invoice amount. Uses order.last_satoshis,
+        that is the final trade amount set at Taker Bond time"""    
+
+        if user == order.maker:
+            fee_fraction = FEE * MAKER_FEE_SPLIT
+        elif user == order.taker:
+            fee_fraction = FEE * (1 - MAKER_FEE_SPLIT)
+
+        fee_sats = order.last_satoshis * fee_fraction
+
+        if cls.is_seller(order, user):
+            escrow_amount = int(order.last_satoshis + fee_sats)  # Trading fee to seller is charged here.
+
+        return True, {"escrow_amount": escrow_amount}
 
     @classmethod
     def update_invoice(cls, order, user, invoice):
@@ -852,8 +877,7 @@ class Logics:
                 }
 
         # If there was no taker_bond object yet, generate one
-        escrow_satoshis = (order.last_satoshis
-                           )  # Amount was fixed when taker bond was locked
+        escrow_satoshis = cls.escrow_amount(order, user)[1]["escrow_amount"] # Amount was fixed when taker bond was locked, fee applied here
         description = f"RoboSats - Escrow amount for '{str(order)}' - It WILL FREEZE IN YOUR WALLET. It will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
 
         # Gen hold Invoice
