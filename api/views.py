@@ -28,7 +28,6 @@ from django.conf import settings
 from decouple import config
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
-FEE = float(config("FEE"))
 RETRY_TIME = int(config("RETRY_TIME"))
 
 avatar_path = Path(settings.AVATAR_ROOT)
@@ -335,7 +334,7 @@ class OrderView(viewsets.ViewSet):
             if order.payout.status == LNPayment.Status.EXPIRE:
                 data["invoice_expired"] = True
                 # Add invoice amount once again if invoice was expired.
-                data["invoice_amount"] = int(order.last_satoshis * (1 - FEE))
+                data["invoice_amount"] = int(order.last_satoshis * (1 - float(config('FEE'))))
 
         return Response(data, status.HTTP_200_OK)
 
@@ -676,7 +675,8 @@ class InfoView(ListAPIView):
         context["node_alias"] = config("NODE_ALIAS")
         context["node_id"] = config("NODE_ID")
         context["network"] = config("NETWORK")
-        context["fee"] = FEE
+        context["maker_fee"] = float(config("FEE"))*float(config("MAKER_FEE_SPLIT"))
+        context["taker_fee"] = float(config("FEE"))*(1 - float(config("MAKER_FEE_SPLIT")))
         context["bond_size"] = float(config("BOND_SIZE"))
         if request.user.is_authenticated:
             context["nickname"] = request.user.username

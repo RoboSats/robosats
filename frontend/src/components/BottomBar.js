@@ -39,7 +39,8 @@ export default class BottomBar extends Component {
             num_public_buy_orders: 0,
             num_public_sell_orders: 0,
             active_robots_today: 0,
-            fee: 0,
+            maker_fee: 0,
+            taker_fee: 0,
             today_avg_nonkyc_btc_premium: 0,
             today_volume: 0,
             lifetime_volume: 0,
@@ -378,7 +379,7 @@ bottomBarDesktop =()=>{
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
-                                primary={this.state.fee*100+"% (buyer)"} 
+                                primary={(this.state.maker_fee + this.state.taker_fee)*100} 
                                 secondary="Trade Fee" />
                         </ListItem>
                     </Grid>
@@ -495,7 +496,7 @@ bottomBarDesktop =()=>{
                         primaryTypographyProps={{fontSize: '14px'}} 
                         secondaryTypographyProps={{fontSize: '12px'}} 
                         secondary="Trading fees">
-                        {this.state.fee*100}% <small>(buyer)</small> | 0.0% <small>(seller)</small>
+                        {(this.state.maker_fee*100).toFixed(3)}% <small>(maker)</small> | {(this.state.taker_fee*100).toFixed(3)}% <small>(taker)</small>
                     </ListItemText>
                 </ListItem>
                 </List>
