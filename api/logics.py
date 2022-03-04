@@ -385,7 +385,7 @@ class Logics:
         fee_sats = order.last_satoshis * fee_fraction
 
         if cls.is_buyer(order, user):
-            invoice_amount = int(order.last_satoshis - fee_sats)  # Trading fee to buyer is charged here.
+            invoice_amount = round(order.last_satoshis - fee_sats)  # Trading fee to buyer is charged here.
 
         return True, {"invoice_amount": invoice_amount}
 
@@ -402,7 +402,7 @@ class Logics:
         fee_sats = order.last_satoshis * fee_fraction
 
         if cls.is_seller(order, user):
-            escrow_amount = int(order.last_satoshis + fee_sats)  # Trading fee to seller is charged here.
+            escrow_amount = round(order.last_satoshis + fee_sats)  # Trading fee to seller is charged here.
 
         return True, {"escrow_amount": escrow_amount}
 
