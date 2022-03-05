@@ -32,7 +32,7 @@ export default class UserGenPage extends Component {
       tokenHasChanged: false,
     };
 
-    //this.props.setAppState({avatarLoaded: false, nickname: null, token: null});
+    this.refCode = this.props.match.params.refCode;
 
     // Checks in parent HomePage if there is already a nick and token
     // Displays the existing one
@@ -40,7 +40,7 @@ export default class UserGenPage extends Component {
       this.state = {
         nickname: this.props.nickname,
         token: this.props.token? this.props.token : null,
-        avatar_url: 'static/assets/avatars/' + this.props.nickname + '.png',
+        avatar_url: '/static/assets/avatars/' + this.props.nickname + '.png',
         loadingRobot: false
       }
     }
@@ -56,6 +56,7 @@ export default class UserGenPage extends Component {
   // sort of cryptographically strong function to generate Base62 token client-side
   genBase62Token(length)
   {   
+    console.log(this.refCode)
       return window.btoa(Array.from(
         window.crypto.getRandomValues(
           new Uint8Array(length * 2)))
@@ -71,7 +72,7 @@ export default class UserGenPage extends Component {
         this.setState({
             nickname: data.nickname,
             bit_entropy: data.token_bits_entropy,
-            avatar_url: 'static/assets/avatars/' + data.nickname + '.png',
+            avatar_url: '/static/assets/avatars/' + data.nickname + '.png',
             shannon_entropy: data.token_shannon_entropy,
             bad_request: data.bad_request,
             found: data.found,

@@ -405,6 +405,24 @@ class Profile(models.Model):
         default=False, 
         null=False
     )
+
+    # Referral program
+    is_referred = models.BooleanField(
+        default=False, 
+        null=False
+    )
+    referral_code = models.CharField(
+        max_length=15,
+        null=True,
+        blank=True
+    )
+    # Recent rewards from referred trades that will be "earned" at a later point to difficult spionage.
+    pending_rewards = models.PositiveIntegerField(null=False, default=0)
+    # Claimable rewards
+    earned_rewards = models.PositiveIntegerField(null=False, default=0)
+    # Total claimed rewards
+    claimed_rewarded = models.PositiveIntegerField(null=False, default=0)
+
     # Disputes
     num_disputes = models.PositiveIntegerField(null=False, default=0)
     lost_disputes = models.PositiveIntegerField(null=False, default=0)

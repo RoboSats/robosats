@@ -30,7 +30,8 @@ export default class HomePage extends Component {
               <Router >
                   <div className='appCenter'>
                     <Switch>
-                        <Route exact path='/' render={(props) => <UserGenPage {...this.state} setAppState={this.setAppState}/>}/>
+                        <Route exact path='/' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
+                        <Route path='/ref/:refCode' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
                         <Route path='/make' component={MakerPage}/>
                         <Route path='/book' component={BookPage}/>
                         <Route path="/order/:orderId" component={OrderPage}/>

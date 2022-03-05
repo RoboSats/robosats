@@ -13,6 +13,7 @@ from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrde
 from api.models import LNPayment, MarketTick, Order, Currency
 from api.logics import Logics
 from api.messages import Telegram
+from secrets import token_urlsafe
 from api.utils import get_lnd_version, get_commit_robosats, compute_premium_percentile
 
 from .nick_generator.nick_generator import NickGenerator
@@ -521,6 +522,7 @@ class UserView(APIView):
                                      is_staff=False)
             user = authenticate(request, username=nickname, password=token)
             user.profile.avatar = "static/assets/avatars/" + nickname + ".png"
+            #user.profile.referral_code = token_urlsafe(8)
             login(request, user)
             return Response(context, status=status.HTTP_201_CREATED)
 
@@ -637,7 +639,7 @@ class InfoView(ListAPIView):
                                  status=Order.Status.PUB))
         context["book_liquidity"] = Order.objects.filter(status=Order.Status.PUB).aggregate(Sum('last_satoshis'))['last_satoshis__sum']
         context["book_liquidity"] = 0 if context["book_liquidity"] == None else context["book_liquidity"]
-        
+
         # Number of active users (logged in in last 30 minutes)
         today = datetime.today()
         context["active_robots_today"] = len(

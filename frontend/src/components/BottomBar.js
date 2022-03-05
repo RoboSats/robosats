@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {Badge, Tooltip, TextField, ListItemAvatar, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import {Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
 import { Link } from 'react-router-dom'
 
@@ -23,6 +23,7 @@ import DnsIcon from '@mui/icons-material/Dns';
 import WebIcon from '@mui/icons-material/Web';
 import BookIcon from '@mui/icons-material/Book';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
 // pretty numbers
 function pn(x) {
@@ -56,6 +57,8 @@ export default class BottomBar extends Component {
             profileShown: false,
             alternative_site: 'robosats...',
             node_id: '00000000',
+            referral_link: 'No referral link',
+            earned_rewards: 0,
         };
         this.getInfo();
       }
@@ -275,13 +278,13 @@ export default class BottomBar extends Component {
                     {this.props.token ?  
                     <TextField
                         disabled
-                        label='Store safely'
+                        label='Store Safely'
                         value={this.props.token }
                         variant='filled'
                         size='small'
                         InputProps={{
                             endAdornment:
-                            <Tooltip disableHoverListener open={this.state.copied} enterTouchDelay="0" title="Copied!">
+                            <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
                                 <IconButton onClick= {()=>navigator.clipboard.writeText(this.props.token)}>
                                     <ContentCopy />
                                 </IconButton>
@@ -300,20 +303,37 @@ export default class BottomBar extends Component {
                     </ListItemIcon>
                     <ListItemText secondary="Your referral link">
                     <TextField
-                        label='Share to earn satoshis'
-                        // value={this.props.referral_link}
-                        value={'LINKKKKKKK732hcd23j98j2iuwh78c2i3jd9cy2hiudn8723ihdcniu2hdci23923jiuxjw'}
+                        label='Share to Earn Satoshis'
+                        value={this.state.referral_link}
                         // variant='filled'
                         size='small'
                         InputProps={{
                             endAdornment:
-                            <Tooltip disableHoverListener open={this.state.copied} enterTouchDelay="0" title="Copied!">
-                                <IconButton onClick= {()=>navigator.clipboard.writeText('LINKKKKKKK732hcd23j98j2iuwh78c2i3jd9cy2hiudn8723ihdcniu2hdci23923jiuxjw')}>
+                            <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
+                                <IconButton onClick= {()=>navigator.clipboard.writeText(this.state.referral_link)}>
                                     <ContentCopy />
                                 </IconButton>
                             </Tooltip>,
                             }}
                         />
+                </ListItemText>
+                </ListItem>
+                <ListItem>
+                    <ListItemIcon>
+                        <EmojiEventsIcon/>
+                    </ListItemIcon>
+                    <ListItemText secondary="Your earned rewards">
+                    <Grid container xs={12}>
+                        <Grid item xs={9}>
+                            <Typography>{this.state.earned_rewards+" Sats"}</Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                            {/* WIP: BUTTON ALWAYS DISABLED <Button disabled={this.state.earned_rewards==0? true : false} variant="contained" size="small">Claim</Button> */}
+                            <Button disabled={this.state.earned_rewards==0? true : true} variant="contained" size="small">Claim</Button>
+                        </Grid>
+
+                    </Grid>
+
                 </ListItemText>
                 </ListItem>
 
