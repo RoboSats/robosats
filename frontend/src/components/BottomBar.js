@@ -22,6 +22,7 @@ import ContentCopy from "@mui/icons-material/ContentCopy";
 import DnsIcon from '@mui/icons-material/Dns';
 import WebIcon from '@mui/icons-material/Web';
 import BookIcon from '@mui/icons-material/Book';
+import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 
 // pretty numbers
 function pn(x) {
@@ -247,6 +248,7 @@ export default class BottomBar extends Component {
                         />
                     </ListItemAvatar>
                 </ListItem>
+
                 <Divider/>
                 {this.state.active_order_id ? 
                 // TODO Link to router and do this.props.history.push
@@ -264,6 +266,7 @@ export default class BottomBar extends Component {
                     <ListItemText primary="No active orders" secondary="Your current order"/>
                 </ListItem>
                 }
+                
                 <ListItem>
                     <ListItemIcon>
                         <PasswordIcon/>
@@ -278,14 +281,40 @@ export default class BottomBar extends Component {
                         size='small'
                         InputProps={{
                             endAdornment:
-                            <IconButton onClick= {()=>navigator.clipboard.writeText(this.props.token)}>
-                                <ContentCopy />
-                            </IconButton>,
+                            <Tooltip disableHoverListener open={this.state.copied} enterTouchDelay="0" title="Copied!">
+                                <IconButton onClick= {()=>navigator.clipboard.writeText(this.props.token)}>
+                                    <ContentCopy />
+                                </IconButton>
+                            </Tooltip>,
                             }}
                         />
                     : 
                     'Cannot remember'}
-              </ListItemText>
+                </ListItemText>
+                </ListItem>
+                
+                <Divider/>
+                <ListItem>
+                    <ListItemIcon>
+                        <PersonAddAltIcon/>
+                    </ListItemIcon>
+                    <ListItemText secondary="Your referral link">
+                    <TextField
+                        label='Share to earn satoshis'
+                        // value={this.props.referral_link}
+                        value={'LINKKKKKKK732hcd23j98j2iuwh78c2i3jd9cy2hiudn8723ihdcniu2hdci23923jiuxjw'}
+                        // variant='filled'
+                        size='small'
+                        InputProps={{
+                            endAdornment:
+                            <Tooltip disableHoverListener open={this.state.copied} enterTouchDelay="0" title="Copied!">
+                                <IconButton onClick= {()=>navigator.clipboard.writeText('LINKKKKKKK732hcd23j98j2iuwh78c2i3jd9cy2hiudn8723ihdcniu2hdci23923jiuxjw')}>
+                                    <ContentCopy />
+                                </IconButton>
+                            </Tooltip>,
+                            }}
+                        />
+                </ListItemText>
                 </ListItem>
 
             </List>
