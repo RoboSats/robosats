@@ -35,6 +35,28 @@ def users_cleansing():
     }
     return results
 
+@shared_task(name="give_rewards")
+def users_cleansing():
+    """
+    Referral rewards go from pending to earned.
+    Happens asynchronously so the referral program cannot be easily used to spy.
+    """
+    from api.models import Profile
+
+    # Users who's last login has not been in the last 6 hours
+    queryset = Profile.objects.filter(pending_rewards__gt=0)
+
+    # And do not have an active trade, any past contract or any reward.
+    results = {}
+    for profile in queryset:
+        given_reward = profile.pending_rewards
+        profile.earned_rewards += given_reward
+        profile.pending_rewards = 0
+        profile.save()
+
+        results[profile.user.username] = {'given_reward':given_reward,'earned_rewards':profile.earned_rewards}
+
+    return results
 
 @shared_task(name="follow_send_payment")
 def follow_send_payment(lnpayment):

@@ -384,8 +384,10 @@ class Logics:
 
         fee_sats = order.last_satoshis * fee_fraction
 
+        reward_tip = int(config('REWARD_TIP')) if user.profile.is_referred else 0
+
         if cls.is_buyer(order, user):
-            invoice_amount = round(order.last_satoshis - fee_sats)  # Trading fee to buyer is charged here.
+            invoice_amount = round(order.last_satoshis - fee_sats - reward_tip)  # Trading fee to buyer is charged here.
 
         return True, {"invoice_amount": invoice_amount}
 
@@ -399,10 +401,12 @@ class Logics:
         elif user == order.taker:
             fee_fraction = FEE * (1 - MAKER_FEE_SPLIT)
 
-        fee_sats = order.last_satoshis * fee_fraction
+        fee_sats = order.last_satoshis * fee_fraction 
+
+        reward_tip = int(config('REWARD_TIP')) if user.profile.is_referred else 0
 
         if cls.is_seller(order, user):
-            escrow_amount = round(order.last_satoshis + fee_sats)  # Trading fee to seller is charged here.
+            escrow_amount = round(order.last_satoshis + fee_sats + reward_tip)  # Trading fee to seller is charged here.
 
         return True, {"escrow_amount": escrow_amount}
 
@@ -1092,14 +1096,19 @@ class Logics:
     @classmethod
     def add_rewards(cls, order):
         '''
-        This order is called after a trade is finished. 
-        If order participants were referred, we add the reward to the referees.
+        This function is called when a trade is finished. 
+        If participants of the order were referred, the reward is given to the referees.
         '''
-        
+
         if order.maker.profile.is_referred:
-            order.maker.profile.referred_by.pending_rewards += int(config('REWARD_TIP'))
+            profile = order.maker.profile.referred_by
+            profile.pending_rewards += int(config('REWARD_TIP'))
+            profile.save()
+            
         if order.taker.profile.is_referred:
-            order.taker.profile.referred_by.pending_rewards += int(config('REWARD_TIP'))
+            profile = order.taker.profile.referred_by
+            profile.pending_rewards += int(config('REWARD_TIP'))
+            profile.save()
 
         return
 
