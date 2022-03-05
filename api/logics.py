@@ -743,14 +743,16 @@ class Logics:
         order.maker.profile.save()
         order.taker.profile.save()
 
-        # Log a market tick
-        MarketTick.log_a_tick(order)
-
         # With the bond confirmation the order is extended 'public_order_duration' hours
         order.expires_at = timezone.now() + timedelta(
             seconds=Order.t_to_expire[Order.Status.WF2])
         order.status = Order.Status.WF2
         order.save()
+        # Log a market tick
+        try:
+            MarketTick.log_a_tick(order)
+        except:
+            pass
         return True
 
     @classmethod
