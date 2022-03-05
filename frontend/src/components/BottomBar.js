@@ -21,12 +21,17 @@ import PasswordIcon from '@mui/icons-material/Password';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import DnsIcon from '@mui/icons-material/Dns';
 import WebIcon from '@mui/icons-material/Web';
+import BookIcon from '@mui/icons-material/Book';
 
 // pretty numbers
 function pn(x) {
-    var parts = x.toString().split(".");
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    return parts.join(".");
+    if(x == null){
+        return 'null'
+    }else{
+        var parts = x.toString().split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join(".");
+    }
 }
 
 export default class BottomBar extends Component {
@@ -38,6 +43,7 @@ export default class BottomBar extends Component {
             openExchangeSummary:false,
             num_public_buy_orders: 0,
             num_public_sell_orders: 0,
+            book_liquidity: 0,
             active_robots_today: 0,
             maker_fee: 0,
             taker_fee: 0,
@@ -462,6 +468,18 @@ bottomBarDesktop =()=>{
                         secondaryTypographyProps={{fontSize: '12px'}} 
                         primary={this.state.num_public_sell_orders} 
                         secondary="Public sell orders" />
+                </ListItem>
+                <Divider/>
+
+                <ListItem >
+                    <ListItemIcon size="small">
+                        <BookIcon/>
+                    </ListItemIcon>
+                    <ListItemText 
+                        primaryTypographyProps={{fontSize: '14px'}} 
+                        secondaryTypographyProps={{fontSize: '12px'}} 
+                        primary={pn(this.state.book_liquidity)+" Sats"} 
+                        secondary="Book liquidity" />
                 </ListItem>
                 <Divider/>
 
