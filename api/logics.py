@@ -737,17 +737,18 @@ class Logics:
         order.taker_bond.status = LNPayment.Status.LOCKED
         order.taker_bond.save()
 
+         # With the bond confirmation the order is extended 'public_order_duration' hours
+        order.expires_at = timezone.now() + timedelta(
+        seconds=Order.t_to_expire[Order.Status.WF2])
+        order.status = Order.Status.WF2
+        order.save()
+
         # Both users profiles are added one more contract // Unsafe can add more than once.
         order.maker.profile.total_contracts += 1
         order.taker.profile.total_contracts += 1
         order.maker.profile.save()
         order.taker.profile.save()
-
-        # With the bond confirmation the order is extended 'public_order_duration' hours
-        order.expires_at = timezone.now() + timedelta(
-            seconds=Order.t_to_expire[Order.Status.WF2])
-        order.status = Order.Status.WF2
-        order.save()
+       
         # Log a market tick
         try:
             MarketTick.log_a_tick(order)
