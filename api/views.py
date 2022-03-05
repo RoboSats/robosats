@@ -10,7 +10,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
-from api.models import LNPayment, MarketTick, Order, Currency
+from api.models import LNPayment, MarketTick, Order, Currency, Profile
 from api.logics import Logics
 from api.messages import Telegram
 from secrets import token_urlsafe
@@ -446,7 +446,6 @@ class OrderView(viewsets.ViewSet):
 
 
 class UserView(APIView):
-    lookup_url_kwarg = "token"
     NickGen = NickGenerator(lang="English",
                             use_adv=False,
                             use_adj=True,
@@ -476,12 +475,8 @@ class UserView(APIView):
                     "bad_request"] = f"You are already logged in as {request.user} and have an active order"
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-            # Does not allow this 'mistake' if the last login was sometime ago (5 minutes)
-            # if request.user.last_login < timezone.now() - timedelta(minutes=5):
-            #     context['bad_request'] = f'You are already logged in as {request.user}'
-            #     return Response(context, status.HTTP_400_BAD_REQUEST)
-
-        token = request.GET.get(self.lookup_url_kwarg)
+        token = request.GET.get("token")
+        ref_code = request.GET.get("ref_code")
 
         # Compute token entropy
         value, counts = np.unique(list(token), return_counts=True)
@@ -515,15 +510,26 @@ class UserView(APIView):
             with open(image_path, "wb") as f:
                 rh.img.save(f, format="png")
 
+        
+
         # Create new credentials and login if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname,
                                      password=token,
                                      is_staff=False)
             user = authenticate(request, username=nickname, password=token)
-            user.profile.avatar = "static/assets/avatars/" + nickname + ".png"
-            #user.profile.referral_code = token_urlsafe(8)
             login(request, user)
+
+            context['referral_code'] = token_urlsafe(8)
+            user.profile.referral_code = context['referral_code']
+            user.profile.avatar = "static/assets/avatars/" + nickname + ".png"
+
+            # If the ref_code is not none this is a new referred robot
+            if ref_code != None and ref_code !='undefined':
+                user.profile.is_referred = True
+                user.profile.referred_by = Profile.objects.get(referral_code=ref_code)
+            
+            user.profile.save()
             return Response(context, status=status.HTTP_201_CREATED)
 
         else:
@@ -686,6 +692,8 @@ class InfoView(ListAPIView):
 
         if request.user.is_authenticated:
             context["nickname"] = request.user.username
+            context["referral_link"] = str(config('HOST_NAME'))+'/ref/'+str(request.user.profile.referral_code)
+            context["earned_rewards"] = request.user.profile.earned_rewards
             has_no_active_order, _, order = Logics.validate_already_maker_or_taker(
                 request.user)
             if not has_no_active_order:

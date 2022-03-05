@@ -103,6 +103,7 @@ class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "avatar_tag",
         "id",
         "user_link",
+        "is_referred",
         "telegram_enabled",
         "total_contracts",
         "platform_rating",

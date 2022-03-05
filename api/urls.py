@@ -3,9 +3,7 @@ from .views import MakerView, OrderView, UserView, BookView, InfoView
 
 urlpatterns = [
     path("make/", MakerView.as_view()),
-    path(
-        "order/",
-        OrderView.as_view({
+    path("order/",OrderView.as_view({
             "get": "get",
             "post": "take_update_confirm_dispute_cancel"
         }),

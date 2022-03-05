@@ -56,7 +56,6 @@ export default class UserGenPage extends Component {
   // sort of cryptographically strong function to generate Base62 token client-side
   genBase62Token(length)
   {   
-    console.log(this.refCode)
       return window.btoa(Array.from(
         window.crypto.getRandomValues(
           new Uint8Array(length * 2)))
@@ -66,7 +65,7 @@ export default class UserGenPage extends Component {
   }
 
   getGeneratedUser=(token)=>{
-    fetch('/api/user' + '?token=' + token)
+    fetch('/api/user' + '?token=' + token + '&ref_code=' + this.refCode)
       .then((response) => response.json())
       .then((data) => {
         this.setState({

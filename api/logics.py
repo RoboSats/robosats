@@ -1029,12 +1029,19 @@ class Logics:
                     cls.return_bond(order.taker_bond)
                     cls.return_bond(order.maker_bond)
                     ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
-                    ##### Backgroun process "follow_invoices" will try to pay this invoice until success
+                    ##### Background process "follow_invoices" will try to pay this invoice until success
                     order.status = Order.Status.PAY
                     order.payout.status = LNPayment.Status.FLIGHT
                     order.payout.save()
                     order.save()
                     send_message.delay(order.id,'trade_successful')
+
+                    # Add referral rewards (safe)
+                    try:
+                        Logics.add_rewards(order)
+                    except:
+                        pass
+
                     return True, None
 
         else:
@@ -1081,4 +1088,18 @@ class Logics:
         user.profile.platform_rating = rating
         user.profile.save()
         return True, None
+
+    @classmethod
+    def add_rewards(cls, order):
+        '''
+        This order is called after a trade is finished. 
+        If order participants were referred, we add the reward to the referees.
+        '''
+        
+        if order.maker.profile.is_referred:
+            order.maker.profile.referred_by.pending_rewards += int(config('REWARD_TIP'))
+        if order.taker.profile.is_referred:
+            order.taker.profile.referred_by.pending_rewards += int(config('REWARD_TIP'))
+
+        return
 

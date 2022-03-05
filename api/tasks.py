@@ -17,9 +17,11 @@ def users_cleansing():
     queryset = User.objects.filter(~Q(last_login__range=active_time_range))
     queryset = queryset.filter(is_staff=False)  # Do not delete staff users
 
-    # And do not have an active trade or any past contract.
+    # And do not have an active trade, any past contract or any reward.
     deleted_users = []
     for user in queryset:
+        if user.profile.pending_rewards > 0 or user.profile.earned_rewards > 0 or user.profile.claimed_rewards > 0:
+            continue
         if not user.profile.total_contracts == 0:
             continue
         valid, _, _ = Logics.validate_already_maker_or_taker(user)
@@ -45,6 +47,7 @@ def follow_send_payment(lnpayment):
 
     from api.lightning.node import LNNode, MACAROON
     from api.models import LNPayment, Order
+    from api.logics import Logics
 
     fee_limit_sat = int(
         max(

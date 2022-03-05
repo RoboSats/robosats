@@ -411,6 +411,14 @@ class Profile(models.Model):
         default=False, 
         null=False
     )
+    referred_by = models.ForeignKey(
+        'self',
+        related_name="referee",
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None,
+        blank=True,
+    )
     referral_code = models.CharField(
         max_length=15,
         null=True,
@@ -421,7 +429,7 @@ class Profile(models.Model):
     # Claimable rewards
     earned_rewards = models.PositiveIntegerField(null=False, default=0)
     # Total claimed rewards
-    claimed_rewarded = models.PositiveIntegerField(null=False, default=0)
+    claimed_rewards = models.PositiveIntegerField(null=False, default=0)
 
     # Disputes
     num_disputes = models.PositiveIntegerField(null=False, default=0)
