@@ -1,6 +1,6 @@
 import os
 from re import T
-from django.db.models import query
+from django.db.models import Sum
 from rest_framework import status, viewsets
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
@@ -635,7 +635,9 @@ class InfoView(ListAPIView):
         context["num_public_sell_orders"] = len(
             Order.objects.filter(type=Order.Types.SELL,
                                  status=Order.Status.PUB))
-
+        context["book_liquidity"] = Order.objects.filter(status=Order.Status.PUB).aggregate(Sum('last_satoshis'))['last_satoshis__sum']
+        context["book_liquidity"] = 0 if context["book_liquidity"] == None else context["book_liquidity"]
+        
         # Number of active users (logged in in last 30 minutes)
         today = datetime.today()
         context["active_robots_today"] = len(
@@ -679,6 +681,7 @@ class InfoView(ListAPIView):
         context["maker_fee"] = float(config("FEE"))*float(config("MAKER_FEE_SPLIT"))
         context["taker_fee"] = float(config("FEE"))*(1 - float(config("MAKER_FEE_SPLIT")))
         context["bond_size"] = float(config("BOND_SIZE"))
+
         if request.user.is_authenticated:
             context["nickname"] = request.user.username
             has_no_active_order, _, order = Logics.validate_already_maker_or_taker(
