@@ -920,6 +920,8 @@ handleRatingRobosatsChange=(e)=>{
                     style: {textAlign:"center"}
                 }}
                 multiline
+                minRows={4}
+                maxRows={8}
                 onChange={this.handleInputInvoiceChanged}
             />
           </Grid>

@@ -39,7 +39,8 @@ export default class BottomBar extends Component {
             num_public_buy_orders: 0,
             num_public_sell_orders: 0,
             active_robots_today: 0,
-            fee: 0,
+            maker_fee: 0,
+            taker_fee: 0,
             today_avg_nonkyc_btc_premium: 0,
             today_volume: 0,
             lifetime_volume: 0,
@@ -294,6 +295,7 @@ bottomBarDesktop =()=>{
                 <this.StatsDialog/>
                 <this.CommunityDialog/>
                 <this.dialogProfile/>
+                <this.exchangeSummaryDialog/>
                 <Grid container xs={12}>
 
                     <Grid item xs={1.9}>
@@ -321,7 +323,7 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <InventoryIcon/>
+                                <IconButton onClick={this.handleClickOpenExchangeSummary}><InventoryIcon/></IconButton>
                             </ListItemIcon>
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
@@ -334,7 +336,7 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <SellIcon/>
+                            <IconButton onClick={this.handleClickOpenExchangeSummary}><SellIcon/></IconButton>
                             </ListItemIcon>
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
@@ -347,7 +349,7 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <SmartToyIcon/>
+                            <IconButton onClick={this.handleClickOpenExchangeSummary}><SmartToyIcon/></IconButton>
                             </ListItemIcon>
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
@@ -360,7 +362,7 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <PriceChangeIcon/>
+                                <IconButton onClick={this.handleClickOpenExchangeSummary}><PriceChangeIcon/></IconButton>
                             </ListItemIcon>
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
@@ -373,12 +375,12 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.5}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <PercentIcon/>
+                            <   IconButton onClick={this.handleClickOpenExchangeSummary}><PercentIcon/></IconButton>
                             </ListItemIcon>
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
-                                primary={this.state.fee*100+"% (buyer)"} 
+                                primary={(this.state.maker_fee + this.state.taker_fee)*100} 
                                 secondary="Trade Fee" />
                         </ListItem>
                     </Grid>
@@ -428,7 +430,7 @@ bottomBarDesktop =()=>{
         this.setState({openExchangeSummary: false});
     };
 
-    exchangeSummaryDialogPhone =() =>{
+    exchangeSummaryDialog =() =>{
         return(
         <Dialog
         open={this.state.openExchangeSummary}
@@ -495,7 +497,7 @@ bottomBarDesktop =()=>{
                         primaryTypographyProps={{fontSize: '14px'}} 
                         secondaryTypographyProps={{fontSize: '12px'}} 
                         secondary="Trading fees">
-                        {this.state.fee*100}% <small>(buyer)</small> | 0.0% <small>(seller)</small>
+                        {(this.state.maker_fee*100).toFixed(3)}% <small>(maker)</small> | {(this.state.taker_fee*100).toFixed(3)}% <small>(taker)</small>
                     </ListItemText>
                 </ListItem>
                 </List>
@@ -510,7 +512,7 @@ bottomBarPhone =()=>{
         <Paper elevation={6} style={{height:40}}>
                 <this.StatsDialog/>
                 <this.CommunityDialog/>
-                <this.exchangeSummaryDialogPhone/>
+                <this.exchangeSummaryDialog/>
                 <this.dialogProfile/>
                 <Grid container xs={12}>
 
