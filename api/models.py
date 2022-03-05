@@ -482,7 +482,7 @@ class MarketTick(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     price = models.DecimalField(
-        max_digits=10,
+        max_digits=16,
         decimal_places=2,
         default=None,
         null=True,
