@@ -17,9 +17,11 @@ def users_cleansing():
     queryset = User.objects.filter(~Q(last_login__range=active_time_range))
     queryset = queryset.filter(is_staff=False)  # Do not delete staff users
 
-    # And do not have an active trade or any past contract.
+    # And do not have an active trade, any past contract or any reward.
     deleted_users = []
     for user in queryset:
+        if user.profile.pending_rewards > 0 or user.profile.earned_rewards > 0 or user.profile.claimed_rewards > 0:
+            continue
         if not user.profile.total_contracts == 0:
             continue
         valid, _, _ = Logics.validate_already_maker_or_taker(user)
@@ -33,6 +35,28 @@ def users_cleansing():
     }
     return results
 
+@shared_task(name="give_rewards")
+def users_cleansing():
+    """
+    Referral rewards go from pending to earned.
+    Happens asynchronously so the referral program cannot be easily used to spy.
+    """
+    from api.models import Profile
+
+    # Users who's last login has not been in the last 6 hours
+    queryset = Profile.objects.filter(pending_rewards__gt=0)
+
+    # And do not have an active trade, any past contract or any reward.
+    results = {}
+    for profile in queryset:
+        given_reward = profile.pending_rewards
+        profile.earned_rewards += given_reward
+        profile.pending_rewards = 0
+        profile.save()
+
+        results[profile.user.username] = {'given_reward':given_reward,'earned_rewards':profile.earned_rewards}
+
+    return results
 
 @shared_task(name="follow_send_payment")
 def follow_send_payment(lnpayment):
@@ -45,6 +69,7 @@ def follow_send_payment(lnpayment):
 
     from api.lightning.node import LNNode, MACAROON
     from api.models import LNPayment, Order
+    from api.logics import Logics
 
     fee_limit_sat = int(
         max(

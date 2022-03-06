@@ -384,8 +384,10 @@ class Logics:
 
         fee_sats = order.last_satoshis * fee_fraction
 
+        reward_tip = int(config('REWARD_TIP')) if user.profile.is_referred else 0
+
         if cls.is_buyer(order, user):
-            invoice_amount = round(order.last_satoshis - fee_sats)  # Trading fee to buyer is charged here.
+            invoice_amount = round(order.last_satoshis - fee_sats - reward_tip)  # Trading fee to buyer is charged here.
 
         return True, {"invoice_amount": invoice_amount}
 
@@ -399,10 +401,12 @@ class Logics:
         elif user == order.taker:
             fee_fraction = FEE * (1 - MAKER_FEE_SPLIT)
 
-        fee_sats = order.last_satoshis * fee_fraction
+        fee_sats = order.last_satoshis * fee_fraction 
+
+        reward_tip = int(config('REWARD_TIP')) if user.profile.is_referred else 0
 
         if cls.is_seller(order, user):
-            escrow_amount = round(order.last_satoshis + fee_sats)  # Trading fee to seller is charged here.
+            escrow_amount = round(order.last_satoshis + fee_sats + reward_tip)  # Trading fee to seller is charged here.
 
         return True, {"escrow_amount": escrow_amount}
 
@@ -1029,12 +1033,19 @@ class Logics:
                     cls.return_bond(order.taker_bond)
                     cls.return_bond(order.maker_bond)
                     ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
-                    ##### Backgroun process "follow_invoices" will try to pay this invoice until success
+                    ##### Background process "follow_invoices" will try to pay this invoice until success
                     order.status = Order.Status.PAY
                     order.payout.status = LNPayment.Status.FLIGHT
                     order.payout.save()
                     order.save()
                     send_message.delay(order.id,'trade_successful')
+
+                    # Add referral rewards (safe)
+                    try:
+                        Logics.add_rewards(order)
+                    except:
+                        pass
+
                     return True, None
 
         else:
@@ -1080,5 +1091,59 @@ class Logics:
     def rate_platform(cls, user, rating):
         user.profile.platform_rating = rating
         user.profile.save()
+        return True, None
+
+    @classmethod
+    def add_rewards(cls, order):
+        '''
+        This function is called when a trade is finished. 
+        If participants of the order were referred, the reward is given to the referees.
+        '''
+
+        if order.maker.profile.is_referred:
+            profile = order.maker.profile.referred_by
+            profile.pending_rewards += int(config('REWARD_TIP'))
+            profile.save()
+            
+        if order.taker.profile.is_referred:
+            profile = order.taker.profile.referred_by
+            profile.pending_rewards += int(config('REWARD_TIP'))
+            profile.save()
+
+        return
+
+    @classmethod
+    def withdraw_rewards(cls, user, invoice):
+
+        # only a user with positive withdraw balance can use this
+
+        if user.profile.earned_rewards < 1:
+            return False, {"bad_invoice": "You have not earned rewards"}
+
+        num_satoshis = user.profile.earned_rewards
+        reward_payout = LNNode.validate_ln_invoice(invoice, num_satoshis)
+
+        if not reward_payout["valid"]:
+            return False, reward_payout["context"]
+
+        lnpayment = LNPayment.objects.create(
+            concept= LNPayment.Concepts.WITHREWA,
+            type= LNPayment.Types.NORM,
+            sender= User.objects.get(username=ESCROW_USERNAME),
+            status= LNPayment.Status.VALIDI,
+            receiver=user,
+            invoice= invoice,
+            num_satoshis= num_satoshis,
+            description= reward_payout["description"],
+            payment_hash= reward_payout["payment_hash"],
+            created_at= reward_payout["created_at"],
+            expires_at= reward_payout["expires_at"],
+        )
+
+        if LNNode.pay_invoice(lnpayment):
+            user.profile.earned_rewards = 0
+            user.profile.claimed_rewards += num_satoshis
+            user.profile.save()
+
         return True, None
 

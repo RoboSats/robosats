@@ -222,15 +222,15 @@ class LNNode:
         return payout
 
     @classmethod
-    def pay_invoice(cls, invoice, num_satoshis):
-        """Sends sats to buyer"""
+    def pay_invoice(cls, lnpayment):
+        """Sends sats. Used for rewards payouts"""
 
         fee_limit_sat = int(
             max(
-                num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
-                float(config("MIN_FLAT_ROUTING_FEE_LIMIT")),
+                lnpayment.num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
+                float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
             ))  # 200 ppm or 10 sats
-        request = routerrpc.SendPaymentRequest(payment_request=invoice,
+        request = routerrpc.SendPaymentRequest(payment_request=lnpayment.invoice,
                                                fee_limit_sat=fee_limit_sat,
                                                timeout_seconds=60)
 
@@ -238,15 +238,15 @@ class LNNode:
                                                      metadata=[("macaroon",
                                                                 MACAROON.hex())
                                                                ]):
-            print(response)
-            print(response.status)
 
-            # TODO ERROR HANDLING
             if response.status == 0:  # Status 0 'UNKNOWN'
+                # Not sure when this status happens
                 pass
+
             if response.status == 1:  # Status 1 'IN_FLIGHT'
                 return True, "In flight"
-            if response.status == 3:  # 4 'FAILED' ??
+
+            if response.status == 3:  # Status 3 'FAILED'
                 """0	Payment isn't failed (yet).
                 1	There are more routes to try, but the payment timeout was exceeded.
                 2	All possible routes were tried and failed permanently. Or were no routes to the destination at all.
@@ -256,11 +256,9 @@ class LNNode:
                 """
                 context = cls.payment_failure_context[response.failure_reason]
                 return False, context
+
             if response.status == 2:  # STATUS 'SUCCEEDED'
                 return True, None
-
-            # How to catch the errors like:"grpc_message":"invoice is already paid","grpc_status":6}
-            # These are not in the response only printed to commandline
 
         return False
 

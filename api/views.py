@@ -1,6 +1,6 @@
 import os
 from re import T
-from django.db.models import query
+from django.db.models import Sum
 from rest_framework import status, viewsets
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
@@ -9,10 +9,11 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
-from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
-from api.models import LNPayment, MarketTick, Order, Currency
+from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer
+from api.models import LNPayment, MarketTick, Order, Currency, Profile
 from api.logics import Logics
 from api.messages import Telegram
+from secrets import token_urlsafe
 from api.utils import get_lnd_version, get_commit_robosats, compute_premium_percentile
 
 from .nick_generator.nick_generator import NickGenerator
@@ -445,7 +446,6 @@ class OrderView(viewsets.ViewSet):
 
 
 class UserView(APIView):
-    lookup_url_kwarg = "token"
     NickGen = NickGenerator(lang="English",
                             use_adv=False,
                             use_adj=True,
@@ -475,12 +475,8 @@ class UserView(APIView):
                     "bad_request"] = f"You are already logged in as {request.user} and have an active order"
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-            # Does not allow this 'mistake' if the last login was sometime ago (5 minutes)
-            # if request.user.last_login < timezone.now() - timedelta(minutes=5):
-            #     context['bad_request'] = f'You are already logged in as {request.user}'
-            #     return Response(context, status.HTTP_400_BAD_REQUEST)
-
-        token = request.GET.get(self.lookup_url_kwarg)
+        token = request.GET.get("token")
+        ref_code = request.GET.get("ref_code")
 
         # Compute token entropy
         value, counts = np.unique(list(token), return_counts=True)
@@ -514,14 +510,27 @@ class UserView(APIView):
             with open(image_path, "wb") as f:
                 rh.img.save(f, format="png")
 
+        
+
         # Create new credentials and login if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname,
                                      password=token,
                                      is_staff=False)
             user = authenticate(request, username=nickname, password=token)
-            user.profile.avatar = "static/assets/avatars/" + nickname + ".png"
             login(request, user)
+
+            context['referral_code'] = token_urlsafe(8)
+            user.profile.referral_code = context['referral_code']
+            user.profile.avatar = "static/assets/avatars/" + nickname + ".png"
+
+            # If the ref_code was created by another robot, this robot was referred.
+            queryset = Profile.objects.filter(referral_code=ref_code)
+            if len(queryset) == 1:
+                user.profile.is_referred = True
+                user.profile.referred_by = queryset[0]
+            
+            user.profile.save()
             return Response(context, status=status.HTTP_201_CREATED)
 
         else:
@@ -635,6 +644,8 @@ class InfoView(ListAPIView):
         context["num_public_sell_orders"] = len(
             Order.objects.filter(type=Order.Types.SELL,
                                  status=Order.Status.PUB))
+        context["book_liquidity"] = Order.objects.filter(status=Order.Status.PUB).aggregate(Sum('last_satoshis'))['last_satoshis__sum']
+        context["book_liquidity"] = 0 if context["book_liquidity"] == None else context["book_liquidity"]
 
         # Number of active users (logged in in last 30 minutes)
         today = datetime.today()
@@ -679,11 +690,45 @@ class InfoView(ListAPIView):
         context["maker_fee"] = float(config("FEE"))*float(config("MAKER_FEE_SPLIT"))
         context["taker_fee"] = float(config("FEE"))*(1 - float(config("MAKER_FEE_SPLIT")))
         context["bond_size"] = float(config("BOND_SIZE"))
+
         if request.user.is_authenticated:
             context["nickname"] = request.user.username
+            context["referral_link"] = str(config('HOST_NAME'))+'/ref/'+str(request.user.profile.referral_code)
+            context["earned_rewards"] = request.user.profile.earned_rewards
             has_no_active_order, _, order = Logics.validate_already_maker_or_taker(
                 request.user)
             if not has_no_active_order:
                 context["active_order_id"] = order.id
 
         return Response(context, status.HTTP_200_OK)
+
+
+class RewardView(CreateAPIView):
+    serializer_class = ClaimRewardSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+
+        if not request.user.is_authenticated:
+            return Response(
+                {
+                    "bad_request":
+                    "Woops! It seems you do not have a robot avatar"
+                },
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        invoice = serializer.data.get("invoice")
+
+        valid, context = Logics.withdraw_rewards(request.user, invoice)
+
+        if not valid:
+            context['successful_withdrawal'] = False
+            return Response(context, status.HTTP_400_BAD_REQUEST)
+
+
+        
+        return Response({"successful_withdrawal": True}, status.HTTP_200_OK)

@@ -815,17 +815,17 @@ handleRatingRobosatsChange=(e)=>{
             🎉Trade finished!🥳
           </Typography>
         </Grid>
-        <Grid item xs={12} align="center">
+        {/* <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
             What do you think of ⚡<b>{this.props.data.is_maker ? this.props.data.taker_nick : this.props.data.maker_nick}</b>⚡?
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           <Rating name="size-large" defaultValue={0} size="large" onChange={this.handleRatingUserChange} />
-        </Grid>
+        </Grid> */}
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
-            What do you think of 🤖<b>RoboSats</b>🤖?
+            What do you think of 🤖<b>RoboSats</b>⚡?
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -834,7 +834,7 @@ handleRatingRobosatsChange=(e)=>{
         {this.state.rating_platform==5 ?
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
-            <p>Thank you! RoboSats loves you too ❤️</p>
+            <p><b>Thank you! RoboSats loves you too ❤️</b></p>
             <p>RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!</p>
           </Typography>
         </Grid>
@@ -842,8 +842,9 @@ handleRatingRobosatsChange=(e)=>{
         {this.state.rating_platform!=5 & this.state.rating_platform!=null ?
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
-            Thank you for using Robosats! Let us know what you did not like and how the platform could improve 
-            (<a href="https://t.me/robosats">Telegram</a> / <a href="https://github.com/Reckless-Satoshi/robosats/issues">Github</a>)
+            <p><b>Thank you for using Robosats!</b></p> 
+            <p>Let us know how the platform could improve
+            (<a href="https://t.me/robosats">Telegram</a> / <a href="https://github.com/Reckless-Satoshi/robosats/issues">Github</a>)</p>
           </Typography>
         </Grid>
         : null}
@@ -902,7 +903,9 @@ handleRatingRobosatsChange=(e)=>{
           </Grid>
           <Grid item xs={12} align="center">
             <Typography component="body2" variant="body2" align="center">
-              Your invoice has expires or more than 3 payments attempts have been made.
+              Your invoice has expired or more than 3 payment attempts have been made. 
+              Muun is not recommended, <a href="https://github.com/Reckless-Satoshi/robosats/issues/44">check the list of
+              compatible wallets</a>
             </Typography>
           </Grid>
           <Grid item xs={12} align="center">

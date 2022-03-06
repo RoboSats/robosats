@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {Badge, Tooltip, TextField, ListItemAvatar, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import {Chip, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
 import { Link } from 'react-router-dom'
 
@@ -21,13 +21,36 @@ import PasswordIcon from '@mui/icons-material/Password';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import DnsIcon from '@mui/icons-material/Dns';
 import WebIcon from '@mui/icons-material/Web';
+import BookIcon from '@mui/icons-material/Book';
+import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
 // pretty numbers
 function pn(x) {
-    var parts = x.toString().split(".");
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    return parts.join(".");
+    if(x == null){
+        return 'null'
+    }else{
+        var parts = x.toString().split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join(".");
+    }
 }
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+  }
 
 export default class BottomBar extends Component {
     constructor(props) {
@@ -36,8 +59,10 @@ export default class BottomBar extends Component {
             openStatsForNerds: false,
             openCommuniy: false,
             openExchangeSummary:false,
+            openClaimRewards: false,
             num_public_buy_orders: 0,
             num_public_sell_orders: 0,
+            book_liquidity: 0,
             active_robots_today: 0,
             maker_fee: 0,
             taker_fee: 0,
@@ -49,6 +74,12 @@ export default class BottomBar extends Component {
             profileShown: false,
             alternative_site: 'robosats...',
             node_id: '00000000',
+            referral_link: 'No referral link',
+            earned_rewards: 0,
+            rewardInvoice: null,
+            badInvoice: false,
+            showRewardsSpinner: false,
+            withdrawn: false,
         };
         this.getInfo();
       }
@@ -215,6 +246,30 @@ export default class BottomBar extends Component {
         this.setState({openProfile: false});
     };
 
+    handleSubmitInvoiceClicked=()=>{
+        this.setState({
+            badInvoice:false,
+            showRewardsSpinner: true,
+        });
+  
+        const requestOptions = {
+            method: 'POST',
+            headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+            body: JSON.stringify({
+              'invoice': this.state.rewardInvoice,
+            }),
+        };
+        fetch('/api/reward/', requestOptions)
+        .then((response) => response.json())
+        .then((data) => console.log(data) & this.setState({
+            badInvoice:data.bad_invoice, 
+            openClaimRewards: data.successful_withdrawal ? false : true,
+            earned_rewards: data.successful_withdrawal ? 0 : this.state.earned_rewards,
+            withdrawn: data.successful_withdrawal ? true : false,
+            showRewardsSpinner: false,
+        }));
+    }
+
     dialogProfile =() =>{
         return(
         <Dialog
@@ -241,6 +296,7 @@ export default class BottomBar extends Component {
                         />
                     </ListItemAvatar>
                 </ListItem>
+
                 <Divider/>
                 {this.state.active_order_id ? 
                 // TODO Link to router and do this.props.history.push
@@ -258,6 +314,7 @@ export default class BottomBar extends Component {
                     <ListItemText primary="No active orders" secondary="Your current order"/>
                 </ListItem>
                 }
+                
                 <ListItem>
                     <ListItemIcon>
                         <PasswordIcon/>
@@ -266,21 +323,97 @@ export default class BottomBar extends Component {
                     {this.props.token ?  
                     <TextField
                         disabled
-                        label='Store safely'
+                        label='Store Safely'
                         value={this.props.token }
                         variant='filled'
                         size='small'
                         InputProps={{
                             endAdornment:
-                            <IconButton onClick= {()=>navigator.clipboard.writeText(this.props.token)}>
-                                <ContentCopy />
-                            </IconButton>,
+                            <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
+                                <IconButton onClick= {()=>navigator.clipboard.writeText(this.props.token)}>
+                                    <ContentCopy />
+                                </IconButton>
+                            </Tooltip>,
                             }}
                         />
                     : 
                     'Cannot remember'}
-              </ListItemText>
+                </ListItemText>
                 </ListItem>
+                
+                <Divider><Chip label='Earn Sats'/></Divider>
+                <ListItem>
+                    <ListItemIcon>
+                        <PersonAddAltIcon/>
+                    </ListItemIcon>
+                    <ListItemText secondary="Share to earn 100 Sats per trade">
+                    <TextField
+                        label='Your Referral Link'
+                        value={this.state.referral_link}
+                        // variant='filled'
+                        size='small'
+                        InputProps={{
+                            endAdornment:
+                            <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
+                                <IconButton onClick= {()=>navigator.clipboard.writeText(this.state.referral_link)}>
+                                    <ContentCopy />
+                                </IconButton>
+                            </Tooltip>,
+                            }}
+                        />
+                </ListItemText>
+                </ListItem>
+                
+                <ListItem>
+                    <ListItemIcon>
+                        <EmojiEventsIcon/>
+                    </ListItemIcon>
+                    {!this.state.openClaimRewards ?
+                    <ListItemText secondary="Your earned rewards">
+                        <Grid container xs={12}>
+                            <Grid item xs={9}>
+                                <Typography>{this.state.earned_rewards+" Sats"}</Typography>
+                            </Grid>
+                            <Grid item xs={3}>
+                                <Button disabled={this.state.earned_rewards==0? true : false} onClick={() => this.setState({openClaimRewards:true})} variant="contained" size="small">Claim</Button>
+                            </Grid>
+                        </Grid>
+                    </ListItemText>
+                    :
+                    <form style={{maxWidth: 270}}>
+                        <Grid containter alignItems="stretch" style={{ display: "flex"}} align="center">
+                            <Grid item alignItems="stretch" style={{ display: "flex" }} align="center">
+                            <TextField
+                                error={this.state.badInvoice}
+                                helperText={this.state.badInvoice ? this.state.badInvoice : "" }
+                                label={"Invoice for " + this.state.earned_rewards + " Sats"}
+                                //variant="standard"
+                                size="small"
+                                value={this.state.rewardInvoice}
+                                onChange={e => {
+                                this.setState({ rewardInvoice: e.target.value });
+                                }}
+                            />
+                            </Grid>
+                            <Grid item alignItems="stretch" style={{ display: "flex" }}>
+                                <Button sx={{maxHeight:38}} onClick={this.handleSubmitInvoiceClicked} variant="contained" color="primary" size="small" > Submit </Button>
+                            </Grid>
+                        </Grid>
+                    </form>
+                    }
+                </ListItem>
+
+                {this.state.showRewardsSpinner?
+                <div style={{display: 'flex', justifyContent: 'center'}}>
+                    <CircularProgress/>
+                </div>
+                :""}
+                
+                {this.state.withdrawn?
+                <div style={{display: 'flex', justifyContent: 'center'}}>
+                    <Typography color="primary" variant="body2"><b>There it goes, thank you!🥇</b></Typography>
+                </div>
+                :""}
 
             </List>
             </DialogContent>
@@ -462,6 +595,18 @@ bottomBarDesktop =()=>{
                         secondaryTypographyProps={{fontSize: '12px'}} 
                         primary={this.state.num_public_sell_orders} 
                         secondary="Public sell orders" />
+                </ListItem>
+                <Divider/>
+
+                <ListItem >
+                    <ListItemIcon size="small">
+                        <BookIcon/>
+                    </ListItemIcon>
+                    <ListItemText 
+                        primaryTypographyProps={{fontSize: '14px'}} 
+                        secondaryTypographyProps={{fontSize: '12px'}} 
+                        primary={pn(this.state.book_liquidity)+" Sats"} 
+                        secondary="Book liquidity" />
                 </ListItem>
                 <Divider/>
 
