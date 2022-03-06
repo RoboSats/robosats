@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid';
 import MediaQuery from 'react-responsive'
 import Image from 'material-ui-image'
-
 import getFlags from './getFlags'
 
 export default class BookPage extends Component {
@@ -16,6 +15,7 @@ export default class BookPage extends Component {
       type: 2,
       currencies_dict: {"0":"ANY"},
       loading: true,
+      pageSize: 6,
     };
     this.getCurrencyDict()
     this.getOrderDetails(this.state.type, this.state.currency)
@@ -81,7 +81,7 @@ export default class BookPage extends Component {
 
   bookListTableDesktop=()=>{
     return (
-      <div style={{ height: 475, width: '100%' }}>
+      <div style={{ height: 422, width: '100%' }}>
       <DataGrid
         rows={
             this.state.orders.map((order) =>
@@ -142,15 +142,17 @@ export default class BookPage extends Component {
             )} },
           ]}
 
-        pageSize={7}
+        pageSize={this.state.pageSize}
+        rowsPerPageOptions={[6,20,50]}
+        onPageSizeChange={(newPageSize) => this.setState({pageSize:newPageSize})}
         onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
-        rowsPerPageOptions={[7]}
       />
     </div>
     );
   }
 
   bookListTablePhone=()=>{
+
     return (
       <div style={{ height: 422, width: '100%' }}>
       <DataGrid
@@ -214,9 +216,11 @@ export default class BookPage extends Component {
             )} },
           ]}
 
-        pageSize={6}
+        pageSize={this.state.pageSize}
+        rowsPerPageOptions={[6,20,50]}
+        onPageSizeChange={(newPageSize) => this.setState({pageSize:newPageSize})}
         onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
-        rowsPerPageOptions={[6]}
+
       />
     </div>
     );
@@ -303,14 +307,14 @@ export default class BookPage extends Component {
           : 
           <Grid item xs={12} align="center">
             {/* Desktop Book */}
-            <MediaQuery minWidth={920}>
-              <Paper elevation={0} style={{width: 910, maxHeight: 500, overflow: 'auto'}}>
+            <MediaQuery minWidth={930}>
+              <Paper elevation={0} style={{width: 925, maxHeight: 500, overflow: 'auto'}}>
                   {this.state.loading ? null : this.bookListTableDesktop()}
               </Paper>
             </MediaQuery>
 
             {/* Smartphone Book */}
-            <MediaQuery maxWidth={919}>
+            <MediaQuery maxWidth={929}>
               <Paper elevation={0} style={{width: 380, maxHeight: 450, overflow: 'auto'}}>
                   {this.state.loading ? null : this.bookListTablePhone()}
               </Paper>
