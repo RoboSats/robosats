@@ -116,7 +116,7 @@ export default class Chat extends Component {
               </Grid>
             </form>
             <FormHelperText>
-              The chat has no memory: if you leave, messages are lost. <a target="_blank" href="https://diverter.hostyourown.tools/as-easy-as-pgp/"> Learn easy PGP encryption.</a>
+              The chat has no memory: if you leave, messages are lost. <a target="_blank" href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/sensitive-data-PGP-guide.md/"> Learn easy PGP encryption.</a>
             </FormHelperText>
       </Container>
     )
