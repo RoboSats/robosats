@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import {Chip, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
 import { Link } from 'react-router-dom'
 
@@ -43,6 +43,7 @@ export default class BottomBar extends Component {
             openStatsForNerds: false,
             openCommuniy: false,
             openExchangeSummary:false,
+            openClaimRewards: false,
             num_public_buy_orders: 0,
             num_public_sell_orders: 0,
             book_liquidity: 0,
@@ -59,6 +60,7 @@ export default class BottomBar extends Component {
             node_id: '00000000',
             referral_link: 'No referral link',
             earned_rewards: 0,
+            rewardInvoice: null,
         };
         this.getInfo();
       }
@@ -225,6 +227,10 @@ export default class BottomBar extends Component {
         this.setState({openProfile: false});
     };
 
+    handleClickClaimRewards = () => {
+        this.setState({openClaimRewards:true});
+    }
+
     dialogProfile =() =>{
         return(
         <Dialog
@@ -296,14 +302,14 @@ export default class BottomBar extends Component {
                 </ListItemText>
                 </ListItem>
                 
-                <Divider/>
+                <Divider><Chip label='Earn Sats'/></Divider>
                 <ListItem>
                     <ListItemIcon>
                         <PersonAddAltIcon/>
                     </ListItemIcon>
-                    <ListItemText secondary="Your referral link">
+                    <ListItemText secondary="Share to earn 100 Sats per trade">
                     <TextField
-                        label='Share to Earn Satoshis'
+                        label='Your Referral Link'
                         value={this.state.referral_link}
                         // variant='filled'
                         size='small'
@@ -318,23 +324,42 @@ export default class BottomBar extends Component {
                         />
                 </ListItemText>
                 </ListItem>
+                
                 <ListItem>
                     <ListItemIcon>
                         <EmojiEventsIcon/>
                     </ListItemIcon>
+                    {!this.state.openClaimRewards ?
                     <ListItemText secondary="Your earned rewards">
-                    <Grid container xs={12}>
-                        <Grid item xs={9}>
-                            <Typography>{this.state.earned_rewards+" Sats"}</Typography>
+                        <Grid container xs={12}>
+                            <Grid item xs={9}>
+                                <Typography>{this.state.earned_rewards+" Sats"}</Typography>
+                            </Grid>
+                            <Grid item xs={3}>
+                                <Button disabled={this.state.earned_rewards==0? true : false} onCLick={this.handleClickClaimRewards} variant="contained" size="small">Claim</Button>
+                            </Grid>
                         </Grid>
-                        <Grid item xs={3}>
-                            {/* WIP: BUTTON ALWAYS DISABLED <Button disabled={this.state.earned_rewards==0? true : false} variant="contained" size="small">Claim</Button> */}
-                            <Button disabled={this.state.earned_rewards==0? true : true} variant="contained" size="small">Claim</Button>
+                    </ListItemText>
+                    :
+                    <form onSubmit={this.submitRewardInvoice}>
+                        <Grid containter alignItems="stretch" style={{ display: "flex" }} align="center">
+                            <Grid item alignItems="stretch" style={{ display: "flex" }} align="center">
+                            <TextField
+                                label={"Invoice for " + this.state.earned_rewards + " Sats"}
+                                //variant="standard"
+                                size="small"
+                                value={this.state.rewardInvoice}
+                                onChange={e => {
+                                this.setState({ rewardInvoice: e.target.value });
+                                }}
+                            />
+                            </Grid>
+                            <Grid item alignItems="stretch" style={{ display: "flex" }}>
+                            <Button type="submit" variant="contained" color="primary" size="small" > Send </Button>
+                            </Grid>
                         </Grid>
-
-                    </Grid>
-
-                </ListItemText>
+                    </form>
+                    }
                 </ListItem>
 
             </List>

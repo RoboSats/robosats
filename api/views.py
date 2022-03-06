@@ -524,10 +524,11 @@ class UserView(APIView):
             user.profile.referral_code = context['referral_code']
             user.profile.avatar = "static/assets/avatars/" + nickname + ".png"
 
-            # If the ref_code is not none this is a new referred robot
-            if ref_code != None and ref_code !='undefined':
+            # If the ref_code was created by another robot, this robot was referred.
+            queryset = Profile.objects.filter(referral_code=ref_code)
+            if len(queryset) == 1:
                 user.profile.is_referred = True
-                user.profile.referred_by = Profile.objects.get(referral_code=ref_code)
+                user.profile.referred_by = queryset[0]
             
             user.profile.save()
             return Response(context, status=status.HTTP_201_CREATED)
