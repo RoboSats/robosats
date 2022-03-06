@@ -66,3 +66,9 @@ class UpdateOrderSerializer(serializers.Serializer):
         allow_blank=True,
         default=None,
     )
+
+class ClaimRewardSerializer(serializers.Serializer):
+    invoice = serializers.CharField(max_length=2000,
+                                    allow_null=True,
+                                    allow_blank=True,
+                                    default=None)

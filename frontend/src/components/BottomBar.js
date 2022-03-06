@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {Chip, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import {Chip, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
 import { Link } from 'react-router-dom'
 
@@ -36,6 +36,22 @@ function pn(x) {
     }
 }
 
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+  }
+
 export default class BottomBar extends Component {
     constructor(props) {
         super(props);
@@ -61,6 +77,9 @@ export default class BottomBar extends Component {
             referral_link: 'No referral link',
             earned_rewards: 0,
             rewardInvoice: null,
+            badInvoice: false,
+            showRewardsSpinner: false,
+            withdrawn: false,
         };
         this.getInfo();
       }
@@ -227,8 +246,28 @@ export default class BottomBar extends Component {
         this.setState({openProfile: false});
     };
 
-    handleClickClaimRewards = () => {
-        this.setState({openClaimRewards:true});
+    handleSubmitInvoiceClicked=()=>{
+        this.setState({
+            badInvoice:false,
+            showRewardsSpinner: true,
+        });
+  
+        const requestOptions = {
+            method: 'POST',
+            headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+            body: JSON.stringify({
+              'invoice': this.state.rewardInvoice,
+            }),
+        };
+        fetch('/api/reward/', requestOptions)
+        .then((response) => response.json())
+        .then((data) => console.log(data) & this.setState({
+            badInvoice:data.bad_invoice, 
+            openClaimRewards: data.successful_withdrawal ? false : true,
+            earned_rewards: data.successful_withdrawal ? 0 : this.state.earned_rewards,
+            withdrawn: data.successful_withdrawal ? true : false,
+            showRewardsSpinner: false,
+        }));
     }
 
     dialogProfile =() =>{
@@ -336,15 +375,17 @@ export default class BottomBar extends Component {
                                 <Typography>{this.state.earned_rewards+" Sats"}</Typography>
                             </Grid>
                             <Grid item xs={3}>
-                                <Button disabled={this.state.earned_rewards==0? true : false} onCLick={this.handleClickClaimRewards} variant="contained" size="small">Claim</Button>
+                                <Button disabled={this.state.earned_rewards==0? true : false} onClick={() => this.setState({openClaimRewards:true})} variant="contained" size="small">Claim</Button>
                             </Grid>
                         </Grid>
                     </ListItemText>
                     :
-                    <form onSubmit={this.submitRewardInvoice}>
-                        <Grid containter alignItems="stretch" style={{ display: "flex" }} align="center">
+                    <form style={{maxWidth: 270}}>
+                        <Grid containter alignItems="stretch" style={{ display: "flex"}} align="center">
                             <Grid item alignItems="stretch" style={{ display: "flex" }} align="center">
                             <TextField
+                                error={this.state.badInvoice}
+                                helperText={this.state.badInvoice ? this.state.badInvoice : "" }
                                 label={"Invoice for " + this.state.earned_rewards + " Sats"}
                                 //variant="standard"
                                 size="small"
@@ -355,12 +396,24 @@ export default class BottomBar extends Component {
                             />
                             </Grid>
                             <Grid item alignItems="stretch" style={{ display: "flex" }}>
-                            <Button type="submit" variant="contained" color="primary" size="small" > Send </Button>
+                                <Button sx={{maxHeight:38}} onClick={this.handleSubmitInvoiceClicked} variant="contained" color="primary" size="small" > Submit </Button>
                             </Grid>
                         </Grid>
                     </form>
                     }
                 </ListItem>
+
+                {this.state.showRewardsSpinner?
+                <div style={{display: 'flex', justifyContent: 'center'}}>
+                    <CircularProgress/>
+                </div>
+                :""}
+                
+                {this.state.withdrawn?
+                <div style={{display: 'flex', justifyContent: 'center'}}>
+                    <Typography color="primary" variant="body2"><b>There it goes, thank you!🥇</b></Typography>
+                </div>
+                :""}
 
             </List>
             </DialogContent>

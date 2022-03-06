@@ -1112,3 +1112,38 @@ class Logics:
 
         return
 
+    @classmethod
+    def withdraw_rewards(cls, user, invoice):
+
+        # only a user with positive withdraw balance can use this
+
+        if user.profile.earned_rewards < 1:
+            return False, {"bad_invoice": "You have not earned rewards"}
+
+        num_satoshis = user.profile.earned_rewards
+        reward_payout = LNNode.validate_ln_invoice(invoice, num_satoshis)
+
+        if not reward_payout["valid"]:
+            return False, reward_payout["context"]
+
+        lnpayment = LNPayment.objects.create(
+            concept= LNPayment.Concepts.WITHREWA,
+            type= LNPayment.Types.NORM,
+            sender= User.objects.get(username=ESCROW_USERNAME),
+            status= LNPayment.Status.VALIDI,
+            receiver=user,
+            invoice= invoice,
+            num_satoshis= num_satoshis,
+            description= reward_payout["description"],
+            payment_hash= reward_payout["payment_hash"],
+            created_at= reward_payout["created_at"],
+            expires_at= reward_payout["expires_at"],
+        )
+
+        if LNNode.pay_invoice(lnpayment):
+            user.profile.earned_rewards = 0
+            user.profile.claimed_rewards += num_satoshis
+            user.profile.save()
+
+        return True, None
+

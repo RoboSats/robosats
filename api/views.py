@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
-from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer
+from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer
 from api.models import LNPayment, MarketTick, Order, Currency, Profile
 from api.logics import Logics
 from api.messages import Telegram
@@ -701,3 +701,34 @@ class InfoView(ListAPIView):
                 context["active_order_id"] = order.id
 
         return Response(context, status.HTTP_200_OK)
+
+
+class RewardView(CreateAPIView):
+    serializer_class = ClaimRewardSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+
+        if not request.user.is_authenticated:
+            return Response(
+                {
+                    "bad_request":
+                    "Woops! It seems you do not have a robot avatar"
+                },
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        invoice = serializer.data.get("invoice")
+
+        valid, context = Logics.withdraw_rewards(request.user, invoice)
+
+        if not valid:
+            context['successful_withdrawal'] = False
+            return Response(context, status.HTTP_400_BAD_REQUEST)
+
+
+        
+        return Response({"successful_withdrawal": True}, status.HTTP_200_OK)

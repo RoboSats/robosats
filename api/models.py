@@ -60,6 +60,7 @@ class LNPayment(models.Model):
         TAKEBOND = 1, "Taker bond"
         TRESCROW = 2, "Trade escrow"
         PAYBUYER = 3, "Payment to buyer"
+        WITHREWA = 4, "Withdraw rewards"
 
     class Status(models.IntegerChoices):
         INVGEN = 0, "Generated"
