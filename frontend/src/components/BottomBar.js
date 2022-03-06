@@ -74,7 +74,7 @@ export default class BottomBar extends Component {
             profileShown: false,
             alternative_site: 'robosats...',
             node_id: '00000000',
-            referral_link: 'No referral link',
+            referral_link: 'Loading...',
             earned_rewards: 0,
             rewardInvoice: null,
             badInvoice: false,
@@ -83,10 +83,6 @@ export default class BottomBar extends Component {
         };
         this.getInfo();
       }
-
-    handleClickSuppport = () => {
-        window.open("https://t.me/robosats");
-    };
 
     getInfo() {
         this.setState(null)
@@ -381,7 +377,7 @@ export default class BottomBar extends Component {
                     </ListItemText>
                     :
                     <form style={{maxWidth: 270}}>
-                        <Grid containter alignItems="stretch" style={{ display: "flex"}} align="center">
+                        <Grid alignItems="stretch" style={{ display: "flex"}} align="center">
                             <Grid item alignItems="stretch" style={{ display: "flex" }} align="center">
                             <TextField
                                 error={this.state.badInvoice}

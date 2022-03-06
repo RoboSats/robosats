@@ -20,14 +20,18 @@ def users_cleansing():
     # And do not have an active trade, any past contract or any reward.
     deleted_users = []
     for user in queryset:
-        if user.profile.pending_rewards > 0 or user.profile.earned_rewards > 0 or user.profile.claimed_rewards > 0:
-            continue
-        if not user.profile.total_contracts == 0:
-            continue
-        valid, _, _ = Logics.validate_already_maker_or_taker(user)
-        if valid:
-            deleted_users.append(str(user))
-            user.delete()
+        # Try an except, due to unknown cause for users lacking profiles.
+        try:
+            if user.profile.pending_rewards > 0 or user.profile.earned_rewards > 0 or user.profile.claimed_rewards > 0:
+                continue
+            if not user.profile.total_contracts == 0:
+                continue
+            valid, _, _ = Logics.validate_already_maker_or_taker(user)
+            if valid:
+                deleted_users.append(str(user))
+                user.delete()
+        except:
+            pass
 
     results = {
         "num_deleted": len(deleted_users),
@@ -63,13 +67,11 @@ def follow_send_payment(lnpayment):
     """Sends sats to buyer, continuous update"""
 
     from decouple import config
-    from base64 import b64decode
     from django.utils import timezone
     from datetime import timedelta
 
     from api.lightning.node import LNNode, MACAROON
     from api.models import LNPayment, Order
-    from api.logics import Logics
 
     fee_limit_sat = int(
         max(
