@@ -6,10 +6,10 @@ Since RoboSats works over the TOR network all communication is end-to-end encryp
 
 ## OpenKeychain app.
 
-OpenKeychain is an open source Android app that allows to create and manage cryptographic key pairs and sign or/and encrypt/decrypt text and files. OpenKeychain is based on the well established OpenPGP standard making encryption compatible across devices and systems. For a list of compatible software for Windows, Mac OS, and other operating systems check [openpgp.org/software/](openpgp.org/software/). Since the concept is the same, this method can be replicated using any another application. OpenKeychain app can be found at F-droid.org [[Link]](https://f-droid.org/packages/org.sufficientlysecure.keychain/) or at Google play store [[Link]](https://play.google.com/store/apps/details?id=org.sufficientlysecure.keychain)
+OpenKeychain is an open source Android app that allows to create and manage cryptographic key pairs and sign or/and encrypt/decrypt text and files. OpenKeychain is based on the well established OpenPGP standard making encryption compatible across devices and systems. For a list of compatible software for Windows, Mac OS, and other operating systems check [openpgp.org/software/](https://openpgp.org/software/). Since the concept is the same, this method can be replicated using any another application. OpenKeychain app can be found at F-droid.org [[Link]](https://f-droid.org/packages/org.sufficientlysecure.keychain/) or at Google play store [[Link]](https://play.google.com/store/apps/details?id=org.sufficientlysecure.keychain)
 
 <div align="center">
-    <img src="images/sensitive-data-asymmetric-cipher-guide/OpenKeychain-logo.png" width="150"/>
+    <img src="images/sensitive-data-PGP-guide/OpenKeychain-logo.png" width="150"/>
 </div>
 
 ## Encryption schema.
@@ -17,7 +17,7 @@ OpenKeychain is an open source Android app that allows to create and manage cryp
 In most cases, the sensitive information we would want to protect is the seller's fiat payment information, i.e. phone number, PayPal account, etc. So, the image below shows the encryption scheme that ensures that the seller payment information can only be read by the buyer.
 
 <div align="center">
-    <img src="images/sensitive-data-asymmetric-cipher-guide/encrypted-communication-schema.png" width="900"/>
+    <img src="images/sensitive-data-PGP-guide/encrypted-communication-schema.png" width="900"/>
 </div>
 
 The data exchange process has been divided into 3 easy steps:
@@ -37,7 +37,7 @@ The first step to ensure data confidentiality is to create a public/private key 
 <br/>
 
 <div align="center">
-    <img src="images/sensitive-data-asymmetric-cipher-guide/PGP-keys-creation-steps.png" width="900"/>
+    <img src="images/sensitive-data-PGP-guide/PGP-keys-creation-steps.png" width="900"/>
 </div>
 
 <br/>
@@ -49,7 +49,7 @@ Now the buyer is holding two keys, the private key must only be known by his own
 <br/>
 
 <div align="center">
-    <img src="images/sensitive-data-asymmetric-cipher-guide/pub-key-sharing-steps.png" width="900"/>
+    <img src="images/sensitive-data-PGP-guide/pub-key-sharing-steps.png" width="900"/>
 </div>
 
 <br/>
@@ -63,7 +63,7 @@ Once the seller has the buyer's public key, the encryption schema show above can
 <br/>
 
 <div align="center">
-    <img src="images/sensitive-data-asymmetric-cipher-guide/encrypted-data-sharing-steps.png" width="900"/>
+    <img src="images/sensitive-data-PGP-guide/encrypted-data-sharing-steps.png" width="900"/>
 </div>
 
 <br/>
