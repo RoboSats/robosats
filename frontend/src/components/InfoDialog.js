@@ -3,7 +3,6 @@ import {Typography, DialogActions,  DialogContent, Button, Grid} from "@mui/mate
 import React, { Component } from 'react'
 import Image from 'material-ui-image'
 import MediaQuery from 'react-responsive'
-import { maxWidth, minWidth } from "@mui/system"
 
 export default class InfoDialog extends Component {
   render() {
@@ -76,10 +75,10 @@ export default class InfoDialog extends Component {
 
           <Typography component="h5" variant="h5">Are there trade limits?</Typography>
           <Typography component="body2" variant="body2">
-            <p>Maximum single trade size is 500,000 Satoshis to minimize lightning
+            <p>Maximum single trade size is 800,000 Satoshis to minimize lightning
               routing failure. There is no limits to the number of trades per day. A robot
               can only have one order at a time. However, you can use multiple
-              robots simultatenously in different browsers (remember to back up your robot tokens!). </p>
+              robots simultaneously in different browsers (remember to back up your robot tokens!). </p>
           </Typography>
 
           <Typography component="h5" variant="h5">Is <i>RoboSats</i> private?</Typography>
@@ -99,9 +98,9 @@ export default class InfoDialog extends Component {
             <p> This is an experimental application, things could go wrong. 
               Trade small amounts!  </p>
 
-            <p>The seller faces the same chargeback risk as with any 
+            <p>The seller faces the same charge-back risk as with any 
               other peer-to-peer service. Paypal or credit cards are 
-              not recommened.</p>
+              not recommended.</p>
           </Typography>
 
           <Typography component="h5" variant="h5">What is the trust model?</Typography>
@@ -124,13 +123,13 @@ export default class InfoDialog extends Component {
               inspecting the source code. </a> </p>
           </Typography>
 
-          <Typography component="h5" variant="h5">What happens if <i>RoboSats</i> suddenly disapears?</Typography>
+          <Typography component="h5" variant="h5">What happens if <i>RoboSats</i> suddenly disappears?</Typography>
           <Typography component="body2" variant="body2">
             <p> Your sats will return to you. Any hold invoice that is not 
               settled would be automatically returned even if <i>RoboSats</i> goes down 
               forever. This is true for both, locked bonds and trading escrows. However, 
               there is a small window between the seller confirms FIAT RECEIVED and the moment 
-              the buyer receives the satoshis when the funds could be permanentely lost if
+              the buyer receives the satoshis when the funds could be permanently lost if
               <i> RoboSats</i> disappears. This window is about 1 second long. Make sure to have enough
               inbound liquidity to avoid routing failures. If you have any problem, reach out
               trough the <i>RoboSats</i> public channels.

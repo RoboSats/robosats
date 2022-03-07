@@ -35,8 +35,8 @@ export default class MakerPage extends Component {
   defaultCurrencyCode = 'USD';
   defaultPaymentMethod = "not specified";
   defaultPremium = 0;
-  minTradeSats = 10000;
-  maxTradeSats = 500000;
+  minTradeSats = 20000;
+  maxTradeSats = 800000;
 
   constructor(props) {
     super(props);
