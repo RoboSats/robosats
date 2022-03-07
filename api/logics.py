@@ -244,6 +244,8 @@ class Logics:
                     pass
                 order.status = Order.Status.EXP
                 order.save()
+                # Reward taker with part of the maker bond
+                cls.add_slashed_rewards(order.maker_bond, order.taker.profile)
                 return True
 
             # If maker is buyer, settle the taker's bond order goes back to public
@@ -254,10 +256,13 @@ class Logics:
                     cls.cancel_escrow(order)
                 except:
                     pass
+                taker_bond = order.taker_bond
                 order.taker = None
                 order.taker_bond = None
                 order.trade_escrow = None
                 cls.publish_order(order)
+                # Reward maker with part of the taker bond
+                cls.add_slashed_rewards(taker_bond, order.maker.profile)
                 return True
 
         elif order.status == Order.Status.WFI:
@@ -272,16 +277,21 @@ class Logics:
                 cls.return_escrow(order)
                 order.status = Order.Status.EXP
                 order.save()
+                # Reward taker with part of the maker bond
+                cls.add_slashed_rewards(order.maker_bond, order.taker.profile)
                 return True
 
             # If maker is seller settle the taker's bond, order goes back to public
             else:
                 cls.settle_bond(order.taker_bond)
                 cls.return_escrow(order)
+                taker_bond = order.taker_bond
                 order.taker = None
                 order.taker_bond = None
                 order.trade_escrow = None
                 cls.publish_order(order)
+                # Reward maker with part of the taker bond
+                cls.add_slashed_rewards(taker_bond, order.maker.profile)
                 return True
 
         elif order.status in [Order.Status.CHA, Order.Status.FSE]:
@@ -310,9 +320,9 @@ class Logics:
     @classmethod
     def open_dispute(cls, order, user=None):
 
-        # Always settle escro and bonds during a dispute. Disputes 
+        # Always settle escrow and bonds during a dispute. Disputes 
         # can take long to resolve, it might trigger force closure 
-        # for unresolve HTLCs) Dispute winner will have to submit a 
+        # for unresolved HTLCs) Dispute winner will have to submit a 
         # new invoice for value of escrow + bond.
 
         if not order.trade_escrow.status == LNPayment.Status.SETLED:
@@ -578,16 +588,15 @@ class Logics:
 
             # 4.a) When maker cancel after bond (before escrow)
             """The order into cancelled status if maker cancels."""
-        elif (order.status in [
-                Order.Status.PUB, Order.Status.TAK, Order.Status.WF2,
-                Order.Status.WFE
-        ] and order.maker == user):
+        elif (order.status in [Order.Status.TAK, Order.Status.WF2,Order.Status.WFE] and order.maker == user):
             # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)  # returns taker bond
             if valid:
                 order.status = Order.Status.UCA
                 order.save()
+                # Reward taker with part of the maker bond
+                cls.add_slashed_rewards(order.maker_bond, order.taker.profile)
                 return True, None
 
             # 4.b) When taker cancel after bond (before escrow)
@@ -599,6 +608,8 @@ class Logics:
             if valid:
                 order.taker = None
                 cls.publish_order(order)
+                # Reward maker with part of the taker bond
+                cls.add_slashed_rewards(order.taker_bond, order.maker.profile)
                 return True, None
 
             # 5) When trade collateral has been posted (after escrow)
@@ -1042,7 +1053,7 @@ class Logics:
 
                     # Add referral rewards (safe)
                     try:
-                        Logics.add_rewards(order)
+                        cls.add_rewards(order)
                     except:
                         pass
 
@@ -1109,6 +1120,19 @@ class Logics:
             profile = order.taker.profile.referred_by
             profile.pending_rewards += int(config('REWARD_TIP'))
             profile.save()
+
+        return
+
+    @classmethod
+    def add_slashed_rewards(cls, bond, profile):
+        '''
+        When a bond is slashed due to overtime, rewards the user that was waiting.
+        If participants of the order were referred, the reward is given to the referees.
+        '''
+        reward_fraction = float(config('SLASHED_BOND_REWARD_SPLIT'))
+        reward = int(bond.num_satoshis*reward_fraction)
+        profile.earned_rewards += reward
+        profile.save()
 
         return
 

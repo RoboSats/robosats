@@ -38,7 +38,7 @@ export default class InfoDialog extends Component {
           <Typography component="h4" variant="h4">What is <i>RoboSats</i>?</Typography>
           <Typography component="body2" variant="body2">
             <p>It is a BTC/FIAT peer-to-peer exchange over lightning. It simplifies 
-              matchmaking and minimizes the need of trust. RoboSats focuses in privacy and speed.</p>
+              matchmaking and minimizes the need for entrust. RoboSats focuses in privacy and speed.</p>
               <img
                 width='100%'
                 src={window.location.origin +'/static/assets/images/robosats_0.1.0_banner.png'}

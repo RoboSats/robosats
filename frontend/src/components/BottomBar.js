@@ -634,12 +634,24 @@ bottomBarDesktop =()=>{
                     <ListItemIcon size="small">
                         <PercentIcon/>
                     </ListItemIcon>
-                    <ListItemText 
-                        primaryTypographyProps={{fontSize: '14px'}} 
-                        secondaryTypographyProps={{fontSize: '12px'}} 
-                        secondary="Trading fees">
-                        {(this.state.maker_fee*100).toFixed(3)}% <small>(maker)</small> | {(this.state.taker_fee*100).toFixed(3)}% <small>(taker)</small>
-                    </ListItemText>
+                    <Grid container xs={12}>
+                        <Grid item xs={6}>
+                            <ListItemText 
+                                primaryTypographyProps={{fontSize: '14px'}} 
+                                secondaryTypographyProps={{fontSize: '12px'}} 
+                                secondary="Maker fee">
+                                {(this.state.maker_fee*100).toFixed(3)}%
+                            </ListItemText>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <ListItemText 
+                                primaryTypographyProps={{fontSize: '14px'}} 
+                                secondaryTypographyProps={{fontSize: '12px'}} 
+                                secondary="Taker fee">
+                                {(this.state.taker_fee*100).toFixed(3)}%
+                            </ListItemText>
+                        </Grid>
+                    </Grid>
                 </ListItem>
                 </List>
                 
