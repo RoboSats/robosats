@@ -1,4 +1,4 @@
-# How to use OpenKeychain for cipher sensible data durning RoboSats trade.
+# How to use OpenKeychain for cipher sensible data during RoboSats trade.
 
 ## Why encryption is needed?
 
@@ -70,4 +70,4 @@ Once the seller has the buyer's public key, the encryption schema show above can
 
 The encrypted data must be copied including the header `(-----BEGIN PGP MESSAGE-----)` and footer `(-----END PGP MESSAGE-----)` for the correct operation of the application. If the buyer obtains interpretable data, it means that the exchange has been successful and the confidentiality of the data is assured since the only key that can decrypt it is the private key of the buyer.
 
-If you would like to read more easily crafted tutorial on how to user OpenKeychain for general purposes check [As Easy as P,G,P](https://diverter.hostyourown.tools/as-easy-as-pgp/)
+If you would like to read more easily crafted tutorial on how to use OpenKeychain for general purposes check [As Easy as P,G,P](https://diverter.hostyourown.tools/as-easy-as-pgp/)
