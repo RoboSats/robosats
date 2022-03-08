@@ -50,7 +50,7 @@ export default class TradeBox extends Component {
   }
 
   Sound = ({soundFileName}) => (
-    // Four filenames: "locked-invoice", "taker-found", "open-chat", "sucessful"
+    // Four filenames: "locked-invoice", "taker-found", "open-chat", "successful"
     <audio autoPlay src={`/static/assets/sounds/${soundFileName}.mp3`} />
   )
 
@@ -295,7 +295,7 @@ export default class TradeBox extends Component {
           <DialogContentText id="alert-dialog-description">
             You will be taken to a conversation with RoboSats telegram bot.
             Simply open the chat and press "Start". Note that by enabling
-            telegram notifications you might lower your level of anonimity.
+            telegram notifications you might lower your level of anonymity.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -339,7 +339,6 @@ export default class TradeBox extends Component {
               </Button>
               }
             </Grid>
-            {/* TODO API sends data for a more confortable wait */}
             <Divider/>
               <ListItem>
               <ListItemIcon>
@@ -496,10 +495,10 @@ export default class TradeBox extends Component {
           </Grid>
           <Grid item xs={12} align="left">
             <Typography component="body2" variant="body2">
-              <p>We are waiting for your trade counterparty statement. If you are hesitant about
+              <p>We are waiting for your trade counterpart statement. If you are hesitant about
               the state of the dispute or want to add more information, contact robosats@protonmail.com.</p>
 
-              <p>Please, save the information needed to identificate your order and your payments: order ID;
+              <p>Please, save the information needed to identify your order and your payments: order ID;
               payment hashes of the bonds or escrow (check on your lightning wallet); exact amount of
               satoshis; and robot nickname. You will have to identify yourself as the user involved
               in this trade via email (or other contact methods).</p>
@@ -563,9 +562,9 @@ export default class TradeBox extends Component {
             <p>Both statements have been received, wait for the staff to resolve the dispute. 
             The dispute winner will be asked to submit a LN invoice via the contact methods provided.
             If you are hesitant about the state of the dispute or want to add more information, 
-            contact robosats@protonmail.com. If you did not provide a contact method, write us inmediately. </p>
+            contact robosats@protonmail.com. If you did not provide a contact method, write us immediately. </p>
             
-            <p>Please, save the information needed to identificate your order and your payments: order ID;
+            <p>Please, save the information needed to identify your order and your payments: order ID;
             payment hashes of the bonds or escrow (check on your lightning wallet); exact amount of
             satoshis; and robot nickname. You will have to identify yourself as the user involved
             in this trade via email (or other contact methods).</p>
@@ -589,8 +588,7 @@ export default class TradeBox extends Component {
             You will be sent the satoshis of the escrow and your fidelity bond. 
             This is not an automatic process, instead it will be sent manually by the staff.
             Please coordinate with the staff by writing to robosats@protonmail.com (or via your provided
-            burner contact method). You will be asked to submit a new invoice together with identificative
-            information about this order (bond payment hash, robot nicknames, exact amount in satoshis and order ID).
+            burner contact method).
           </Typography>
         </Grid>
         {this.showBondIsSettled()}
@@ -630,7 +628,8 @@ export default class TradeBox extends Component {
           <Typography component="body2" variant="body2" align="left">
             <p>We are waiting for the seller lock the trade amount. </p>
             <p> Just hang on for a moment. If the seller does not deposit, 
-              you will get your bond back automatically.</p>
+              you will get your bond back automatically. In addition, you will
+              receive a compensation (check the rewards in your profile).</p>
           </Typography>
         </Grid>
         {this.showBondIsLocked()}
@@ -654,7 +653,8 @@ export default class TradeBox extends Component {
               he does, you will be able to directly communicate the fiat payment
               details. </p>
             <p> Just hang on for a moment. If the buyer does not cooperate, 
-                you will get back the trade collateral and your bond automatically.</p>
+                you will get back the trade collateral and your bond automatically. In addition, you will
+              receive a compensation (check the rewards in your profile).</p>
           </Typography>
         </Grid>
         {this.showBondIsLocked()}
