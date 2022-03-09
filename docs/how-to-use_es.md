@@ -29,6 +29,9 @@ Tu navegador recordará el token durante un tiempo, así que si se te olvida cop
 
 Lo más seguro es escribirlo en papel... pero es bastante trabajo. Basta con copiarlo al portapapeles y pegarlo en otro sitio seguro. **Si tu navegador se congela, la batería de tu teléfono se acaba, si pierdes la conexión mientras compras-vendes... ¡Vas a necesitar el token para autentificarte otra vez y continuar!**
 
+### Recuperando un robot
+Para recuperar un robot desde un token guardado previamente, simplemente reemplaza el token en la caja de texto y presiona "Generate Robot". La web te saludará con el mensaje "We found your Robot avatar. Welcome back!"
+
 ## Intercambio
 
 En RoboSats puedes crear tus propias órdenes o tomar las órdenes creadas por otros. Para crear tu orden, solo pulsa en "Create Order". Para tomar una orden existente, pulsa en "View Book" así puedes explorar todas las órdenes que ya existen.

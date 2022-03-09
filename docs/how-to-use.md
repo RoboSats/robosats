@@ -29,6 +29,9 @@ The token will live in your browser memory for some time, so you still might hav
 
 It is best to write it down in paper... but that's a lot of work!! Most often it is good enough to simply copy it to clipboard and save it somewhere else. **If your browser crashes, your phone battery dies, or you lose connection during trading, you will need the token to log in again and continue with the trade!**
 
+### Recovering a robot
+To recover a backed-up token, simply replace the token in the textbox and tap "Generate Robot". The site will greet you with "We found your Robot avatar. Welcome back!"
+
 ## Trade
 
 In RoboSats you can make new orders or take orders made by others. To be an _order maker_ simply click on "Create Order" in the homepage. To take an order, click on "View Book" so you can explore the orders created by other robots.
