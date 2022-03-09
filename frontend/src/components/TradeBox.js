@@ -559,10 +559,10 @@ export default class TradeBox extends Component {
         </Grid>
         <Grid item xs={12} align="left">
           <Typography component="body2" variant="body2">
-            <p>Both statements have been received, wait for the staff to resolve the dispute. 
-            The dispute winner will be asked to submit a LN invoice via the contact methods provided.
+            <p>Both statements have been received, wait for the staff to resolve the dispute.
             If you are hesitant about the state of the dispute or want to add more information, 
-            contact robosats@protonmail.com. If you did not provide a contact method, write us immediately. </p>
+            contact robosats@protonmail.com. If you did not provide a contact method, or are unsure whether
+            you wrote it right, write us immediately. </p>
             
             <p>Please, save the information needed to identify your order and your payments: order ID;
             payment hashes of the bonds or escrow (check on your lightning wallet); exact amount of
@@ -585,10 +585,9 @@ export default class TradeBox extends Component {
         </Grid>
         <Grid item xs={12} align="left">
           <Typography component="body2" variant="body2">
-            You will be sent the satoshis of the escrow and your fidelity bond. 
-            This is not an automatic process, instead it will be sent manually by the staff.
-            Please coordinate with the staff by writing to robosats@protonmail.com (or via your provided
-            burner contact method).
+            You can claim the dispute resolution amount (escrow and fidelity bond) from
+            your profile rewards. If there is anything the staff can help with, do not hesitate to contact to
+            robosats@protonmail.com (or via your provided burner contact method).
           </Typography>
         </Grid>
         {this.showBondIsSettled()}

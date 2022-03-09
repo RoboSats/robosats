@@ -22,7 +22,6 @@ class Command(BaseCommand):
             Order.Status.DEL,
             Order.Status.UCA,
             Order.Status.EXP,
-            Order.Status.FSE,
             Order.Status.DIS,
             Order.Status.CCA,
             Order.Status.PAY,
