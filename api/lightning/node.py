@@ -232,7 +232,7 @@ class LNNode:
             ))  # 200 ppm or 10 sats
         request = routerrpc.SendPaymentRequest(payment_request=lnpayment.invoice,
                                                fee_limit_sat=fee_limit_sat,
-                                               timeout_seconds=60)
+                                               timeout_seconds=30)
 
         for response in cls.routerstub.SendPaymentV2(request,
                                                      metadata=[("macaroon",
@@ -244,7 +244,7 @@ class LNNode:
                 pass
 
             if response.status == 1:  # Status 1 'IN_FLIGHT'
-                return True, "In flight"
+                pass
 
             if response.status == 3:  # Status 3 'FAILED'
                 """0	Payment isn't failed (yet).
@@ -254,10 +254,14 @@ class LNNode:
                 4	Payment details incorrect (unknown hash, invalid amt or invalid final cltv delta)
                 5	Insufficient local balance.
                 """
-                context = cls.payment_failure_context[response.failure_reason]
-                return False, context
+                failure_reason = cls.payment_failure_context[response.failure_reason]
+                lnpayment.status = LNPayment.Status.FAILRO
+                lnpayment.save()
+                return False, failure_reason
 
             if response.status == 2:  # STATUS 'SUCCEEDED'
+                lnpayment.status = LNPayment.Status.SUCCED
+                lnpayment.save()
                 return True, None
 
         return False

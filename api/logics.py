@@ -1145,29 +1145,48 @@ class Logics:
             return False, {"bad_invoice": "You have not earned rewards"}
 
         num_satoshis = user.profile.earned_rewards
+
         reward_payout = LNNode.validate_ln_invoice(invoice, num_satoshis)
 
         if not reward_payout["valid"]:
             return False, reward_payout["context"]
 
-        lnpayment = LNPayment.objects.create(
-            concept= LNPayment.Concepts.WITHREWA,
-            type= LNPayment.Types.NORM,
-            sender= User.objects.get(username=ESCROW_USERNAME),
-            status= LNPayment.Status.VALIDI,
-            receiver=user,
-            invoice= invoice,
-            num_satoshis= num_satoshis,
-            description= reward_payout["description"],
-            payment_hash= reward_payout["payment_hash"],
-            created_at= reward_payout["created_at"],
-            expires_at= reward_payout["expires_at"],
-        )
+        try:
+            lnpayment = LNPayment.objects.create(
+                concept= LNPayment.Concepts.WITHREWA,
+                type= LNPayment.Types.NORM,
+                sender= User.objects.get(username=ESCROW_USERNAME),
+                status= LNPayment.Status.VALIDI,
+                receiver=user,
+                invoice= invoice,
+                num_satoshis= num_satoshis,
+                description= reward_payout["description"],
+                payment_hash= reward_payout["payment_hash"],
+                created_at= reward_payout["created_at"],
+                expires_at= reward_payout["expires_at"],
+            )
+        # Might fail if payment_hash already exists in DB
+        except:
+            return False, {"bad_invoice": "Give me a new invoice"}
 
-        if LNNode.pay_invoice(lnpayment):
+        user.profile.earned_rewards = 0
+        user.profile.save()
+
+        # Pays the invoice.
+        paid, failure_reason = LNNode.pay_invoice(lnpayment)
+        if paid:  
             user.profile.earned_rewards = 0
             user.profile.claimed_rewards += num_satoshis
             user.profile.save()
+            return True, None
 
-        return True, None
+        # If fails, adds the rewards again.
+        else:  
+            user.profile.earned_rewards = num_satoshis
+            user.profile.save()
+            context = {}
+            context['bad_invoice'] = failure_reason
+            return False, context
+
+        
 
