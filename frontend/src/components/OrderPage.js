@@ -310,7 +310,8 @@ export default class OrderPage extends Component {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="cancel-dialog-description">
-            By taking this order you risk wasting your time.
+            By taking this order you risk wasting your time. 
+            If the maker does not proceed in time, you will be compensated with 50% of the satoshis of maker bond.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
