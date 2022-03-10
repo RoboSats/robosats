@@ -83,23 +83,23 @@ export default class Chat extends Component {
       <Container component="main" maxWidth="xs">
             <Paper elevation={1} style={{ height: 300, maxHeight: 300, overflow: 'auto', backgroundColor: '#F7F7F7' }}>
               <Grid container xs={12} spacing={0.5}>
-                <Grid item xs={0.5}/>
-                <Grid item xs={5}>
+                <Grid item xs={0.3}/>
+                <Grid item xs={5.5}>
                   <Paper elevation={1} style={this.state.connected ? {backgroundColor: '#e8ffe6'}: {backgroundColor: '#FFF1C5'}}>
                     <Typography variant='caption' >
                       You: {this.state.connected ? 'connected': 'disconnected'}
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={1}/>
-                <Grid item xs={5}>
+                <Grid item xs={0.4}/>
+                <Grid item xs={5.5}>
                   <Paper elevation={1} style={this.state.peer_connected ? {backgroundColor: '#e8ffe6'}: {backgroundColor: '#FFF1C5'}}>
                     <Typography variant='caption'>
                       Peer: {this.state.peer_connected ? 'connected': 'disconnected'}
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={0.5}/>
+                <Grid item xs={0.3}/>
               </Grid>
               {this.state.messages.map(message => <>
               <Card elevation={5} align="left" >
