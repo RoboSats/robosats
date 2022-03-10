@@ -790,7 +790,6 @@ handleRatingRobosatsChange=(e)=>{
             Say hi! Ask for payment details and click "Confirm Sent" as soon as the payment is sent.
           </Typography>
           }
-          <Divider/>
         </Grid>
 
         <Chat orderId={this.props.data.id} ur_nick={this.props.data.ur_nick}/>

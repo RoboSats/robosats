@@ -38,6 +38,7 @@
     "react-qr-reader": "^2.2.1",
     "react-responsive": "^9.0.0-beta.6",
     "react-router-dom": "^5.2.0",
+    "reconnecting-websocket": "^4.4.0",
     "websocket": "^1.0.34"
   }
 }

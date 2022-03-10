@@ -315,11 +315,11 @@ export default class BottomBar extends Component {
                     <ListItemIcon>
                         <PasswordIcon/>
                     </ListItemIcon>
-                    <ListItemText secondary="Your token">
+                    <ListItemText secondary="Back it up now. It will not remain here.">
                     {this.props.token ?  
                     <TextField
                         disabled
-                        label='Store Safely'
+                        label='Your Token'
                         value={this.props.token }
                         variant='filled'
                         size='small'
@@ -337,7 +337,7 @@ export default class BottomBar extends Component {
                 </ListItemText>
                 </ListItem>
                 
-                <Divider><Chip label='Earn Sats'/></Divider>
+                <Divider><Chip label='Rewards & Compensations'/></Divider>
                 <ListItem>
                     <ListItemIcon>
                         <PersonAddAltIcon/>
@@ -430,6 +430,7 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <div style={{display: this.props.avatarLoaded ? '':'none'}}>                     
                         <ListItemButton onClick={this.handleClickOpenProfile} >
+                            <Tooltip open={this.state.earned_rewards > 0 ? true: false} title="You can claim satoshis!">
                             <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
                                         title="You have an active order">
                                 <ListItemAvatar sx={{ width: 30, height: 30 }} >
@@ -443,6 +444,7 @@ bottomBarDesktop =()=>{
                                     />
                                     </Badge>
                                 </ListItemAvatar>
+                            </Tooltip>
                             </Tooltip>
                             <ListItemText primary={this.props.nickname}/>
                         </ListItemButton>
@@ -671,8 +673,9 @@ bottomBarPhone =()=>{
 
                     <Grid item xs={1.6}>
                     <div style={{display: this.props.avatarLoaded ? '':'none'}}>
-                    <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
-                        title="You have an active order">
+                    <Tooltip open={this.state.earned_rewards > 0 ? true: false} title="You can claim satoshis!">
+                        <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
+                                    title="You have an active order">
                         <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, bottom: 17, right: 8}} >
                             <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "": null} color="primary">
                                 <Avatar className='phoneFlippedSmallAvatar'
@@ -685,6 +688,7 @@ bottomBarPhone =()=>{
                                 />
                             </Badge>
                         </IconButton>
+                    </Tooltip>
                     </Tooltip>
                     </div>
                     </Grid>

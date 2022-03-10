@@ -2,7 +2,7 @@ from django.contrib import admin
 from django_admin_relation_links import AdminChangeLinksMixin
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.admin import UserAdmin
-from .models import Order, LNPayment, Profile, MarketTick, Currency
+from api.models import Order, LNPayment, Profile, MarketTick, Currency
 
 admin.site.unregister(Group)
 admin.site.unregister(User)
