@@ -261,6 +261,7 @@ class Logics:
                 order.taker_bond = None
                 order.trade_escrow = None
                 cls.publish_order(order)
+                send_message.delay(order.id,'order_published')
                 # Reward maker with part of the taker bond
                 cls.add_slashed_rewards(taker_bond, order.maker.profile)
                 return True
@@ -290,6 +291,7 @@ class Logics:
                 order.taker_bond = None
                 order.trade_escrow = None
                 cls.publish_order(order)
+                send_message.delay(order.id,'order_published')
                 # Reward maker with part of the taker bond
                 cls.add_slashed_rewards(taker_bond, order.maker.profile)
                 return True
@@ -608,6 +610,7 @@ class Logics:
             if valid:
                 order.taker = None
                 cls.publish_order(order)
+                send_message.delay(order.id,'order_published')
                 # Reward maker with part of the taker bond
                 cls.add_slashed_rewards(order.taker_bond, order.maker.profile)
                 return True, None
@@ -659,7 +662,7 @@ class Logics:
         order.expires_at = order.created_at + timedelta(
             seconds=Order.t_to_expire[Order.Status.PUB])
         order.save()
-        send_message.delay(order.id,'order_published')
+        # send_message.delay(order.id,'order_published') # too spammy
         return
 
     @classmethod
@@ -668,6 +671,7 @@ class Logics:
             return True
         elif LNNode.validate_hold_invoice_locked(order.maker_bond):
             cls.publish_order(order)
+            send_message.delay(order.id,'order_published')
             return True
         return False
 
