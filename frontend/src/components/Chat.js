@@ -80,27 +80,27 @@ export default class Chat extends Component {
 
   render() {
     return (
-      <Container component="main" maxWidth="xs">
-            <Paper elevation={1} style={{ height: 300, maxHeight: 300, overflow: 'auto', backgroundColor: '#F7F7F7' }}>
-              <Grid container xs={12} spacing={0.5}>
-                <Grid item xs={0.3}/>
-                <Grid item xs={5.5}>
-                  <Paper elevation={1} style={this.state.connected ? {backgroundColor: '#e8ffe6'}: {backgroundColor: '#FFF1C5'}}>
-                    <Typography variant='caption' >
-                      You: {this.state.connected ? 'connected': 'disconnected'}
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={0.4}/>
-                <Grid item xs={5.5}>
-                  <Paper elevation={1} style={this.state.peer_connected ? {backgroundColor: '#e8ffe6'}: {backgroundColor: '#FFF1C5'}}>
-                    <Typography variant='caption'>
-                      Peer: {this.state.peer_connected ? 'connected': 'disconnected'}
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={0.3}/>
+      <Container component="main" maxWidth="xs" >
+            <Grid container xs={12} spacing={0.5}>
+              <Grid item xs={0.3}/>
+              <Grid item xs={5.5}>
+                <Paper elevation={1} style={this.state.connected ? {backgroundColor: '#e8ffe6'}: {backgroundColor: '#FFF1C5'}}>
+                  <Typography variant='caption' >
+                    You: {this.state.connected ? 'connected': 'disconnected'}
+                  </Typography>
+                </Paper>
               </Grid>
+              <Grid item xs={0.4}/>
+              <Grid item xs={5.5}>
+                <Paper elevation={1} style={this.state.peer_connected ? {backgroundColor: '#e8ffe6'}: {backgroundColor: '#FFF1C5'}}>
+                  <Typography variant='caption'>
+                    Peer: {this.state.peer_connected ? 'connected': 'disconnected'}
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={0.3}/>
+            </Grid>
+            <Paper elevation={1} style={{ height: 300, maxHeight: 300, width:280,overflow: 'auto', backgroundColor: '#F7F7F7' }}>
               {this.state.messages.map(message => <>
               <Card elevation={5} align="left" >
               {/* If message sender is not our nick, gray color, if it is our nick, green color */}
@@ -114,7 +114,7 @@ export default class Chat extends Component {
                         />
                     </Badge>
                   }
-                  style={{backgroundColor: '#e8ffe6'}}
+                  style={{backgroundColor: '#eeeeee'}}
                   title={message.userNick}
                   subheader={message.msg}
                   subheaderTypographyProps={{sx: {wordWrap: "break-word", width: 200}}}
@@ -129,7 +129,7 @@ export default class Chat extends Component {
                         />
                     </Badge>
                   }
-                  style={{backgroundColor: '#fcfcfc'}}
+                  style={{backgroundColor: '#fafafa'}}
                   title={message.userNick}
                   subheader={message.msg}
                   subheaderTypographyProps={{sx: {wordWrap: "break-word", width: 200}}}

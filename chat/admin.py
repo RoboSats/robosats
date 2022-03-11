@@ -5,7 +5,7 @@ from chat.models import ChatRoom
 
 
 @admin.register(ChatRoom)
-class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
+class ChatRoomAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     list_display = (
         "id",
         "order_link",
@@ -18,3 +18,4 @@ class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "room_group_name",
     )
     change_links = ["order","maker","taker"]
+    search_fields = ["id","maker__chat_maker"]

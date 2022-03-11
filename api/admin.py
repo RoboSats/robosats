@@ -65,7 +65,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "trade_escrow",
     )
     list_filter = ("is_disputed", "is_fiat_sent", "type", "currency", "status")
-
+    search_fields = ["id","amount"]
 
 @admin.register(LNPayment)
 class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
@@ -95,6 +95,7 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     )
     list_filter = ("type", "concept", "status")
     ordering = ("-expires_at", )
+    search_fields = ["payment_hash","num_satoshis"]
 
 
 @admin.register(Profile)
