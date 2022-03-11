@@ -34,7 +34,6 @@ class Telegram():
         chat_id = user.profile.telegram_chat_id
         message_url = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={chat_id}&text={text}'
         
-        # telegram messaging is atm inserted dangerously in the logics module
         # if it fails, it should keep trying
         while True:
             try:
@@ -47,7 +46,6 @@ class Telegram():
         lang = user.profile.telegram_lang_code
 
         # In weird cases the order cannot be found (e.g. it is cancelled)
-
         queryset = Order.objects.filter(maker=user)
         order = queryset.last()
 
@@ -77,6 +75,22 @@ class Telegram():
         self.send_message(user, text)
         return
     
+    def order_taken_confirmed(self, order):
+        user = order.maker
+        if not user.profile.telegram_enabled:
+            return
+
+        lang = user.profile.telegram_lang_code
+        taker_nick = order.taker.username
+        site = config('HOST_NAME')
+        if lang == 'es':
+            text = f'¡Tu orden con ID {order.id} ha sido tomada por {taker_nick}!🥳 El tomador ya ha bloqueado su fianza. Visita http://{site}/order/{order.id} para continuar.'
+        else:
+            text = f'Your order with ID {order.id} was taken by {taker_nick}!🥳 The taker bond has been already locked. Visit http://{site}/order/{order.id} to proceed with the trade.'
+        
+        self.send_message(user, text)
+        return
+
     def order_expired_untaken(self, order):
         user = order.maker
         if not user.profile.telegram_enabled:

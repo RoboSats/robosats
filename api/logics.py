@@ -130,7 +130,7 @@ class Logics:
             order.expires_at = timezone.now() + timedelta(
                 seconds=Order.t_to_expire[Order.Status.TAK])
             order.save()
-            send_message.delay(order.id,'order_taken')
+            # send_message.delay(order.id,'order_taken') # Too spammy
             return True, None
 
     def is_buyer(order, user):
@@ -215,7 +215,7 @@ class Logics:
         elif order.status == Order.Status.TAK:
             cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
-            send_message.delay(order.id,'taker_expired_b4bond')
+            # send_message.delay(order.id,'taker_expired_b4bond') # Too spammy
             return True
 
         elif order.status == Order.Status.WF2:
@@ -578,7 +578,7 @@ class Logics:
             # adds a timeout penalty
             cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
-            send_message.delay(order.id,'taker_canceled_b4bond')
+            # send_message.delay(order.id,'taker_canceled_b4bond') # too spammy
             return True, None
 
             # 4) When taker or maker cancel after bond (before escrow)
@@ -769,6 +769,7 @@ class Logics:
             MarketTick.log_a_tick(order)
         except:
             pass
+        send_message.delay(order.id,'order_taken_confirmed')
         return True
 
     @classmethod

@@ -211,5 +211,7 @@ def send_message(order_id, message):
 
     elif message == 'order_published':
         telegram.order_published(order)
-        
+    
+    elif message == 'order_taken_confirmed':
+        telegram.order_taken_confirmed(order)
     return
