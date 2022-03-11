@@ -4,6 +4,7 @@ from api.lightning.node import LNNode
 from api.tasks import follow_send_payment
 from api.models import LNPayment, Order
 from api.logics import Logics
+from api.tasks import send_message
 
 from django.utils import timezone
 from datetime import timedelta
@@ -177,6 +178,7 @@ class Command(BaseCommand):
                 # It is a maker bond => Publish order.
                 if hasattr(lnpayment, "order_made"):
                     Logics.publish_order(lnpayment.order_made)
+                    send_message.delay(lnpayment.order_made.id,'order_published')
                     return
 
                 # It is a taker bond => close contract.
@@ -194,7 +196,7 @@ class Command(BaseCommand):
                 self.stdout.write(str(e))
 
         # If the LNPayment goes to CANCEL from INVGEN, the invoice had expired
-        # If it goes to CANCEL from LOCKED the bond was relased. Order had expired in both cases.
+        # If it goes to CANCEL from LOCKED the bond was unlocked. Order had expired in both cases.
         # Testing needed for end of time trades!
         if lnpayment.status == LNPayment.Status.CANCEL:
             if hasattr(lnpayment, "order_made"):
