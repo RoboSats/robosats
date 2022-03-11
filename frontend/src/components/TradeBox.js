@@ -11,6 +11,10 @@ import PercentIcon from '@mui/icons-material/Percent';
 import BookIcon from '@mui/icons-material/Book';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import SendIcon from '@mui/icons-material/Send';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import BalanceIcon from '@mui/icons-material/Balance';
+import ContentCopy from "@mui/icons-material/ContentCopy";
 
 function getCookie(name) {
   let cookieValue = null;
@@ -58,6 +62,49 @@ export default class TradeBox extends Component {
     this.setState({ playSound: !this.state.playSound }, () => {
       this.state.playSound ? this.audio.play() : this.audio.pause();
     });
+  }
+
+  stepXofY = () => {
+    // set y value
+    var x = null
+    var y = null
+    var status = this.props.data.status
+
+    if(this.props.data.is_maker){y = 5}
+    if(this.props.data.is_taker){y = 4}
+
+    // set x values
+    if(this.props.data.is_maker){
+      if (status == 0){
+        x = 1
+      } else if ([1,3].includes(status)){
+        x = 2
+      } else if ([6,7,8].includes(status)){
+        x = 3
+      } else if(status == 9){
+        x = 4
+      } else if(status == 10){
+        x = 5
+      }
+    }
+    if(this.props.data.is_taker){
+      if(status == 3){
+        x = 1
+      }else if([6,7,8].includes(status)){
+        x = 2
+      }else if(status == 9){
+        x = 3
+      }else if(status == 10){
+        x = 4
+      }
+    }
+
+    // Return "(x/y)"
+    if(x != null & y != null){
+      return "("+x+"/"+y+")"
+    }else{
+      return ''
+    }
   }
 
   handleClickOpenConfirmDispute = () => {
@@ -158,17 +205,19 @@ export default class TradeBox extends Component {
         <Grid item xs={12} align="center">
           {this.props.data.is_maker ?
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b>Lock {pn(this.props.data.bond_satoshis)} Sats to PUBLISH order </b>
+            <b>Lock {pn(this.props.data.bond_satoshis)} Sats to PUBLISH order </b> {" " + this.stepXofY()}
           </Typography>
           : 
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b>Lock {pn(this.props.data.bond_satoshis)} Sats to TAKE the order </b>
+            <b>Lock {pn(this.props.data.bond_satoshis)} Sats to TAKE the order </b> {" " + this.stepXofY()}
           </Typography>
           }
         </Grid>
         <Grid item xs={12} align="center">
           <QRCode value={this.props.data.bond_invoice} size={305}/>
-          <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.bond_invoice)}} align="center"> 📋Copy to clipboard</Button>
+          <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
+            <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.bond_invoice)}} align="center"> <ContentCopy/> Copy to clipboard</Button>
+          </Tooltip>
         </Grid> 
         <Grid item xs={12} align="center">
         <TextField 
@@ -189,7 +238,10 @@ export default class TradeBox extends Component {
     return (
         <Grid item xs={12} align="center">
           <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
-            🔒 Your {this.props.data.is_maker ? 'maker' : 'taker'} bond is locked
+            <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}>
+              <LockIcon/>
+              {" Your " + (this.props.data.is_maker ? 'maker' : 'taker')+" bond is locked"}
+            </div>
           </Typography>
         </Grid>
     );
@@ -199,7 +251,10 @@ export default class TradeBox extends Component {
     return (
         <Grid item xs={12} align="center">
           <Typography color="error" component="subtitle1" variant="subtitle1" align="center">
-            ⚖️ Your {this.props.data.is_maker ? 'maker' : 'taker'} bond was settled
+                <div style={{display:'flex',alignItems:'center', justifyContent:'center', flexWrap:'wrap', align:"center"}} align="center">
+                    <BalanceIcon/>
+                    {" Your " + (this.props.data.is_maker ? 'maker' : 'taker')+" bond was settled"}
+                </div>
           </Typography>
         </Grid>
     );
@@ -209,7 +264,10 @@ export default class TradeBox extends Component {
     return (
         <Grid item xs={12} align="center">
           <Typography color="green" component="subtitle1" variant="subtitle1" align="center">
-            🔓 Your {this.props.data.is_maker ? 'maker' : 'taker'} bond was unlocked
+            <div style={{display:'flex',alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}>
+              <LockOpenIcon/>
+              {" Your " + (this.props.data.is_maker ? 'maker' : 'taker')+" bond was unlocked"}
+            </div>
           </Typography>
         </Grid>
     );
@@ -222,12 +280,14 @@ export default class TradeBox extends Component {
         <this.Sound soundFileName="locked-invoice"/>
         <Grid item xs={12} align="center">
           <Typography color="green" component="subtitle1" variant="subtitle1">
-            <b>Deposit {pn(this.props.data.escrow_satoshis)} Sats as trade collateral </b>
+            <b>Lock {pn(this.props.data.escrow_satoshis)} Sats as collateral </b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           <QRCode value={this.props.data.escrow_invoice} size={305}/>
-          <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.escrow_invoice)}} align="center"> 📋Copy to clipboard</Button>
+          <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
+            <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.escrow_invoice)}} align="center"> <ContentCopy/>Copy to clipboard</Button>
+          </Tooltip>
         </Grid> 
         <Grid item xs={12} align="center">
           <TextField 
@@ -252,7 +312,7 @@ export default class TradeBox extends Component {
         <this.Sound soundFileName="taker-found"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>A taker has been found! </b>
+            <b>A taker has been found! </b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Divider/>
@@ -314,7 +374,7 @@ export default class TradeBox extends Component {
         <this.EnableTelegramDialog/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b> Your order is public. Wait for a taker. </b>
+            <b> Your order is public </b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -435,7 +495,7 @@ export default class TradeBox extends Component {
           {/* Make confirmation sound for HTLC received. */}
           <this.Sound soundFileName="locked-invoice"/>
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b> Submit a LN invoice for {pn(this.props.data.invoice_amount)} Sats </b>
+            <b> Submit an invoice for {pn(this.props.data.invoice_amount)} Sats </b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="left">
@@ -620,7 +680,7 @@ export default class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>Your invoice looks good!🎉</b>
+            <b>Your invoice looks good!🎉</b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -643,7 +703,7 @@ export default class TradeBox extends Component {
         <this.Sound soundFileName="locked-invoice"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>The trade collateral is locked! 🎉 </b>
+            <b>The trade collateral is locked! 🎉 </b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -777,17 +837,25 @@ handleRatingRobosatsChange=(e)=>{
         <this.Sound soundFileName="chat-open"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>Chatting with {this.props.data.is_maker ? this.props.data.taker_nick : this.props.data.maker_nick}</b>
+            <b>Chat with the {this.props.data.is_seller ? 'buyer': 'seller'}</b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           {this.props.data.is_seller ? 
           <Typography component="body2" variant="body2"  align="center">
-            Say hi! Be helpful and concise. Let them know how to send you {this.props.data.currencyCode}. 
+            {this.props.data.status == 9?
+            "Say hi! Be helpful and concise. Let them know how to send you "+this.props.data.currencyCode+"."
+            :
+            "The buyer has sent the fiat. Click 'Confirm Received' once you receive it."
+            }
           </Typography>
           :
           <Typography component="body2" variant="body2" align="center">
-            Say hi! Ask for payment details and click "Confirm Sent" as soon as the payment is sent.
+            {this.props.data.status == 9?
+            "Say hi! Ask for payment details and click 'Confirm Sent' as soon as the payment is sent."
+            :
+            "Wait for the seller to confirm he has received the payment."
+            }
           </Typography>
           }
         </Grid>
