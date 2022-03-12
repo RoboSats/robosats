@@ -86,7 +86,7 @@ class Telegram():
         if lang == 'es':
             text = f'¡Tu orden con ID {order.id} ha sido tomada por {taker_nick}!🥳 El tomador ya ha bloqueado su fianza. Visita http://{site}/order/{order.id} para continuar.'
         else:
-            text = f'Your order with ID {order.id} was taken by {taker_nick}!🥳 The taker bond has been already locked. Visit http://{site}/order/{order.id} to proceed with the trade.'
+            text = f'Your order with ID {order.id} was taken by {taker_nick}!🥳 The taker bond has already been locked. Visit http://{site}/order/{order.id} to proceed with the trade.'
         
         self.send_message(user, text)
         return

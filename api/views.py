@@ -730,25 +730,20 @@ class PriceView(CreateAPIView):
 
     def get(self, request):
 
-        # Compute average premium and volume of last 24 h
-        start_datetime = timezone.now() - timedelta(days=1)
-        queryset = MarketTick.objects.filter(timestamp__gt=start_datetime)
-        if not len(queryset) == 0:
-            avg_premium, _ = compute_avg_premium(queryset)
-
-        # If no contracts exists in the last 24 h, fallback to lifetime average premium.
-        else:
-            queryset = MarketTick.objects.all()
-            avg_premium, _ = compute_avg_premium(queryset)     
-
         payload = {}
         queryset = Currency.objects.all().order_by('currency')
+
         for currency in queryset:
             code = Currency.currency_dict[str(currency.currency)]
-            payload[code] = {'price': currency.exchange_rate * (1 + avg_premium / 100),
-                            'premium': avg_premium}
-        
-        # A hack here. BTC swaps have usually no premium (at least, they are totally different)
-        payload['BTC'] = {'price': 1, 'premium': 0}
+            try:
+                last_tick = MarketTick.objects.filter(currency=currency).latest('timestamp')
+                payload[code] = {
+                    'price': last_tick.price,
+                    'volume': last_tick.volume,
+                    'premium': last_tick.premium,
+                    'timestamp': last_tick.timestamp,
+                }
+            except:
+                payload[code] = None
 
         return Response(payload, status.HTTP_200_OK)
