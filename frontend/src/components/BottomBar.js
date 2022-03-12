@@ -315,11 +315,11 @@ export default class BottomBar extends Component {
                     <ListItemIcon>
                         <PasswordIcon/>
                     </ListItemIcon>
-                    <ListItemText secondary="It will not remain here">
+                    <ListItemText secondary="Your token (will not remain here)">
                     {this.props.token ?  
                     <TextField
                         disabled
-                        label='Your Token, back it up!'
+                        label='Back it up!'
                         value={this.props.token }
                         variant='filled'
                         size='small'

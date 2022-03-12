@@ -109,3 +109,16 @@ def compute_premium_percentile(order):
 
     rates = np.array(rates)
     return round(np.sum(rates < order_rate) / len(rates), 2)
+
+
+def compute_avg_premium(queryset):
+    weighted_premiums = []
+    volumes = []
+    for tick in queryset:
+        weighted_premiums.append(tick.premium * tick.volume)
+        volumes.append(tick.volume)
+
+    total_volume = sum(volumes)
+    # Avg_premium is the weighted average of the premiums by volume
+    avg_premium = sum(weighted_premiums) / total_volume
+    return avg_premium, total_volume

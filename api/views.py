@@ -9,12 +9,12 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
-from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer
+from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer
 from api.models import LNPayment, MarketTick, Order, Currency, Profile
 from api.logics import Logics
 from api.messages import Telegram
 from secrets import token_urlsafe
-from api.utils import get_lnd_version, get_commit_robosats, compute_premium_percentile
+from api.utils import get_lnd_version, get_commit_robosats, compute_premium_percentile, compute_avg_premium
 
 from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
@@ -655,18 +655,11 @@ class InfoView(ListAPIView):
         # Compute average premium and volume of today
         queryset = MarketTick.objects.filter(timestamp__day=today.day)
         if not len(queryset) == 0:
-            weighted_premiums = []
-            volumes = []
-            for tick in queryset:
-                weighted_premiums.append(tick.premium * tick.volume)
-                volumes.append(tick.volume)
-
-            total_volume = sum(volumes)
-            # Avg_premium is the weighted average of the premiums by volume
-            avg_premium = sum(weighted_premiums) / total_volume
+            avg_premium, total_volume = compute_avg_premium(queryset)
+        # If no contracts, fallback to lifetime avg premium
         else:
-            avg_premium = 0
-            total_volume = 0
+            queryset = MarketTick.objects.all()
+            avg_premium, total_volume = compute_avg_premium(queryset)
 
         queryset = MarketTick.objects.all()
         if not len(queryset) == 0:
@@ -729,6 +722,33 @@ class RewardView(CreateAPIView):
             context['successful_withdrawal'] = False
             return Response(context, status.HTTP_400_BAD_REQUEST)
 
-
-        
         return Response({"successful_withdrawal": True}, status.HTTP_200_OK)
+
+class PriceView(CreateAPIView):
+
+    serializer_class = PriceSerializer
+
+    def get(self, request):
+
+        # Compute average premium and volume of last 24 h
+        start_datetime = timezone.now() - timedelta(days=1)
+        queryset = MarketTick.objects.filter(timestamp__gt=start_datetime)
+        if not len(queryset) == 0:
+            avg_premium, _ = compute_avg_premium(queryset)
+
+        # If no contracts exists in the last 24 h, fallback to lifetime average premium.
+        else:
+            queryset = MarketTick.objects.all()
+            avg_premium, _ = compute_avg_premium(queryset)     
+
+        payload = {}
+        queryset = Currency.objects.all().order_by('currency')
+        for currency in queryset:
+            code = Currency.currency_dict[str(currency.currency)]
+            payload[code] = {'price': currency.exchange_rate * (1 + avg_premium / 100),
+                            'premium': avg_premium}
+        
+        # A hack here. BTC swaps have usually no premium (at least, they are totally different)
+        payload['BTC'] = {'price': 1, 'premium': 0}
+
+        return Response(payload, status.HTTP_200_OK)

@@ -72,3 +72,6 @@ class ClaimRewardSerializer(serializers.Serializer):
                                     allow_null=True,
                                     allow_blank=True,
                                     default=None)
+
+class PriceSerializer(serializers.Serializer):
+    pass

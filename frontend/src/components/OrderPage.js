@@ -367,6 +367,17 @@ export default class OrderPage extends Component {
     )
   }
 
+  BackButton = () => {
+    // If order has expired, show back button.
+    if (this.state.status == 5){
+      return(
+        <Grid item xs={12} align="center">
+          <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>Back</Button>
+        </Grid>
+      )}
+    return(null)
+  }
+
   CancelButton = () => {
 
     // If maker and Waiting for Bond. Or if taker and Waiting for bond.
@@ -560,8 +571,11 @@ export default class OrderPage extends Component {
         
         <Grid item xs={12} align="center">
           {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}
-          {this.state.is_participant ? 
-            <this.CancelButton/>
+          {this.state.is_participant ?
+            <>
+              <this.CancelButton/>
+              <this.BackButton/>
+            </> 
           :
             <Grid container spacing={1}>
               <Grid item xs={12} align="center">
