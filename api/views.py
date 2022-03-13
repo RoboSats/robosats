@@ -653,13 +653,15 @@ class InfoView(ListAPIView):
             User.objects.filter(last_login__day=today.day))
 
         # Compute average premium and volume of today
-        queryset = MarketTick.objects.filter(timestamp__day=today.day)
+        last_day = timezone.now() - timedelta(days=1)
+        queryset = MarketTick.objects.filter(timestamp__gt=last_day)
         if not len(queryset) == 0:
             avg_premium, total_volume = compute_avg_premium(queryset)
         # If no contracts, fallback to lifetime avg premium
         else:
             queryset = MarketTick.objects.all()
-            avg_premium, total_volume = compute_avg_premium(queryset)
+            avg_premium, _ = compute_avg_premium(queryset)
+            total_volume = 0
 
         queryset = MarketTick.objects.all()
         if not len(queryset) == 0:
@@ -670,8 +672,8 @@ class InfoView(ListAPIView):
         else:
             lifetime_volume = 0
 
-        context["today_avg_nonkyc_btc_premium"] = round(avg_premium, 2)
-        context["today_volume"] = total_volume *100000000
+        context["last_day_nonkyc_btc_premium"] = round(avg_premium, 2)
+        context["last_day_volume"] = total_volume *100000000
         context["lifetime_volume"] = lifetime_volume
         context["lnd_version"] = get_lnd_version()
         context["robosats_running_commit_hash"] = get_commit_robosats()

@@ -66,8 +66,8 @@ export default class BottomBar extends Component {
             active_robots_today: 0,
             maker_fee: 0,
             taker_fee: 0,
-            today_avg_nonkyc_btc_premium: 0,
-            today_volume: 0,
+            last_day_nonkyc_btc_premium: 0,
+            last_day_volume: 0,
             lifetime_volume: 0,
             robosats_running_commit_hash: '000000000000000',
             openProfile: false,
@@ -158,7 +158,7 @@ export default class BottomBar extends Component {
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><EqualizerIcon/></ListItemIcon>
-                    <ListItemText primary={pn(this.state.today_volume)+" Sats"} secondary="Today contracted volume"/>
+                    <ListItemText primary={pn(this.state.last_day_volume)+" Sats"} secondary="24h contracted volume"/>
                 </ListItem>
 
                 <Divider/>
@@ -498,8 +498,8 @@ bottomBarDesktop =()=>{
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
-                                primary={this.state.today_avg_nonkyc_btc_premium+"%"} 
-                                secondary="Today Avg Premium" />
+                                primary={this.state.last_day_nonkyc_btc_premium+"%"} 
+                                secondary="24h Avg Premium" />
                         </ListItem>
                     </Grid>
 
@@ -627,8 +627,8 @@ bottomBarDesktop =()=>{
                     <ListItemText 
                         primaryTypographyProps={{fontSize: '14px'}} 
                         secondaryTypographyProps={{fontSize: '12px'}} 
-                        primary={this.state.today_avg_nonkyc_btc_premium+"%"} 
-                        secondary="Today non-KYC average premium" />
+                        primary={this.state.last_day_nonkyc_btc_premium+"%"} 
+                        secondary="24h non-KYC average premium" />
                 </ListItem>
                 <Divider/>
 
@@ -724,9 +724,9 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.8} align="center">
-                        <Tooltip enterTouchDelay="300" title="Today non-KYC bitcoin premium"> 
+                        <Tooltip enterTouchDelay="300" title="24h non-KYC bitcoin premium"> 
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
-                            <Badge badgeContent={this.state.today_avg_nonkyc_btc_premium+"%"}  color="action">
+                            <Badge badgeContent={this.state.last_day_nonkyc_btc_premium+"%"}  color="action">
                                 <PriceChangeIcon />
                             </Badge>
                             </IconButton>
