@@ -131,7 +131,7 @@ export default class BottomBar extends Component {
                 :
                 <ListItem>
                     <ListItemAvatar>
-                        <Avatar src='/static/assets/images/amboss.png'/>
+                        <Avatar sx={{ width: 25, height:25, }} src='/static/assets/images/amboss.png' variant="rounded"/>
                     </ListItemAvatar>
                     <ListItemText secondary={this.state.node_alias}>
                             <a target="_blank" href={"https://amboss.space/node/" 
