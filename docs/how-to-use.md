@@ -85,7 +85,7 @@ Every order has an expiration counter. By default, in RoboSats v0.1.0 new orders
 
 When you are decided for an order to take simply tap the "Take Order" button. You will see the contract box. Follow the contract box indications until you complete the trade! :) 
 
-First thing is to lock a fidelity bond, so the seller knows you can be trusted. The satoshis in this bond will just freeze in your wallet. If you try to cheat or cancel unilaterally, you will lose the satoshis locked in the bond.
+First thing is to lock a small fidelity bond (just 1% of the trade amount), so the seller knows you can be trusted. The satoshis in this bond will just freeze in your wallet. If you try to cheat or cancel unilaterally, you will lose the satoshis locked in the bond.
 
 <div align="center">
 <img src="images/how-to-use/contract-box-1.png"  width="370" />
@@ -149,7 +149,7 @@ In the maker page you are only required to enter the currency, order type (buy/s
 <img src="images/how-to-use/contract-box-7.png"  width="370" />
 </div>
 
-You have to copy or scan the invoice with your lightning wallet in order to lock your fidelity maker bond. By locking this bond, the takers know you can be trusted and are committed to follow with this trade. In your wallet it might show as a payment that is on transit, freeze or even seemingly break your wallet. You should always check on the RoboSats website whether the bond has been locked (your wallet will probably not tell you! Check [wallet compatibility list](https://github.com/Reckless-Satoshi/robosats/issues/44))
+You have to copy or scan the invoice with your lightning wallet in order to lock your fidelity maker bond (just 1% of the trade amount)). By locking this bond, the takers know you can be trusted and are committed to follow with this trade. In your wallet it might show as a payment that is on transit, freeze or even seemingly break your wallet. You should always check on the RoboSats website whether the bond has been locked (your wallet will probably not tell you! Check [wallet compatibility list](https://github.com/Reckless-Satoshi/robosats/issues/44))
 
 <div align="center">
 <img src="images/how-to-use/contract-box-8.png"  width="370" />

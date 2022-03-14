@@ -119,22 +119,28 @@ export default class BottomBar extends Component {
                 </ListItem>
 
                 <Divider/>
+                {this.state.network == 'testnet'? 
                 <ListItem>
                     <ListItemIcon><DnsIcon/></ListItemIcon>
-                    {this.state.network == 'testnet'? 
                     <ListItemText secondary={this.state.node_alias}>
                          <a target="_blank" href={"https://1ml.com/testnet/node/" 
                         + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (1ML)"}
                         </a>
                     </ListItemText>
-                    :
+                </ListItem>
+                :
+                <ListItem>
+                    <ListItemAvatar>
+                        <Avatar src='/static/assets/images/amboss.png'/>
+                    </ListItemAvatar>
                     <ListItemText secondary={this.state.node_alias}>
-                         <a target="_blank" href={"https://1ml.com/node/" 
-                        + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (1ML)"}
+                            <a target="_blank" href={"https://amboss.space/node/" 
+                        + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (AMBOSS)"}
                         </a>
                     </ListItemText>
-                    }
                 </ListItem>
+                }
+                
 
                 <Divider/>
                 <ListItem>
