@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { Checkbox, Switch, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
+import { AdapterDateFns, LocalizationProvider, DateTimePicker}  from '@mui/lab';
+import DateFnsUtils from "@date-io/date-fns";
 import { Link } from 'react-router-dom'
 import getFlags from './getFlags'
 
@@ -37,7 +39,7 @@ export default class MakerPage extends Component {
   defaultPremium = 0;
   minTradeSats = 20000;
   maxTradeSats = 800000;
-
+  
   constructor(props) {
     super(props);
     this.state={
@@ -51,6 +53,7 @@ export default class MakerPage extends Component {
         currencies_dict: {"1":"USD"},
         showAdvanced: false,
         allowBondless: false,
+        publicExpiryTime: Date.now() + 86400000,
     }
     this.getCurrencyDict()
   }
@@ -304,6 +307,18 @@ export default class MakerPage extends Component {
     AdvancedMakerOptions = () => {
         return(
             <Paper elevation={12} style={{ padding: 8, width:300, align:'center'}}>
+
+            <Grid item xs={12} align="center" spacing={1}>
+                <LocalizationProvider dateAdapter={DateFnsUtils}>
+                    <DateTimePicker
+                    renderInput={(props) => <TextField {...props} />}
+                    label="Public Order Expiry Time"
+                    value={this.state.publicExpiryTime}
+                    onChange={(newValue) => {this.setState({publicExpiryTime: newValue})}}
+                    />
+            </LocalizationProvider>
+            </Grid>
+
             <Grid item xs={12} align="center" spacing={1}>
                 <Tooltip enterTouchDelay="0" title="Takers will not have to lock a bond. High risk! Only small stakes allowed!">
                     <FormControlLabel
@@ -319,6 +334,7 @@ export default class MakerPage extends Component {
                         />
                 </Tooltip>
             </Grid>
+            
             </Paper>
         )
     }
