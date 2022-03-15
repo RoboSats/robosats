@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
-import { Checkbox, Switch, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
-import { AdapterDateFns, LocalizationProvider, DateTimePicker}  from '@mui/lab';
+import { Checkbox, InputAdornment, Input, Slider, Switch, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
+import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link } from 'react-router-dom'
 import getFlags from './getFlags'
+
+import LockIcon from '@mui/icons-material/Lock';
+import PercentIcon from '@mui/icons-material/Percent';
 
 function getCookie(name) {
     let cookieValue = null;
@@ -39,7 +42,8 @@ export default class MakerPage extends Component {
   defaultPremium = 0;
   minTradeSats = 20000;
   maxTradeSats = 800000;
-  
+  maxBondlessSats = 50000;
+
   constructor(props) {
     super(props);
     this.state={
@@ -54,6 +58,8 @@ export default class MakerPage extends Component {
         showAdvanced: false,
         allowBondless: false,
         publicExpiryTime: Date.now() + 86400000,
+        minAmount: null,
+        bondSize: 1,
     }
     this.getCurrencyDict()
   }
@@ -156,6 +162,23 @@ export default class MakerPage extends Component {
     getCurrencyCode(val){
         return this.state.currencies_dict[val.toString()]
     }
+
+    handleBlur = () => {
+    if (this.state.bondSize < 0) {
+        this.setState({bondSize:0});
+    } else if (this.state.bondSize > 100) {
+        this.setState({bondSize:20});
+    }
+    };
+
+    
+    handleSliderBondSizeChange = (event, newValue) => {
+        this.setState({bondSize: newValue});
+    };
+
+    handleInputBondSizeChange = (event) => {
+        this.setState({bondSize: event.target.value === '' ? 1 : Number(event.target.value)});
+    };
 
     StandardMakerOptions = () => {
         return(
@@ -306,35 +329,80 @@ export default class MakerPage extends Component {
 
     AdvancedMakerOptions = () => {
         return(
-            <Paper elevation={12} style={{ padding: 8, width:300, align:'center'}}>
+            <Paper elevation={12} style={{ padding: 8, width:280, align:'center'}}>
+            <br/>
+            <Grid container xs={12}  spacing={1}>
 
-            <Grid item xs={12} align="center" spacing={1}>
-                <LocalizationProvider dateAdapter={DateFnsUtils}>
-                    <DateTimePicker
-                    renderInput={(props) => <TextField {...props} />}
-                    label="Public Order Expiry Time"
-                    value={this.state.publicExpiryTime}
-                    onChange={(newValue) => {this.setState({publicExpiryTime: newValue})}}
-                    />
-            </LocalizationProvider>
-            </Grid>
-
-            <Grid item xs={12} align="center" spacing={1}>
-                <Tooltip enterTouchDelay="0" title="Takers will not have to lock a bond. High risk! Only small stakes allowed!">
-                    <FormControlLabel
-                        label={<a>Allow bondless taker (<a href="https://git.robosats.com" target="_blank">Read More</a>)</a>}
-                        control={
-                            <Checkbox
-                                disabled={this.state.type==0}
-                                color="secondary"
-                                checked={this.state.allowBondless}
-                                onChange={()=> this.setState({allowBondless: !this.state.allowBondless})}
-                                />
-                        }
+                <Grid item xs={12} align="center" spacing={1}>
+                    <LocalizationProvider dateAdapter={DateFnsUtils}>
+                        <TimePicker
+                        renderInput={(props) => <TextField {...props} />}
+                        label="Public Order Expiry Time"
+                        value={this.state.publicExpiryTime}
+                        onChange={(newValue) => {this.setState({publicExpiryTime: newValue})}}
                         />
-                </Tooltip>
+                </LocalizationProvider>
+                </Grid>
+                
+                <Grid item xs={12} align="center" spacing={1}>
+                    <FormControl align="center">
+                        <FormHelperText>
+                            <div align="center" style={{display:'flex',flexWrap:'wrap', transform: 'translate(20%, 0)'}}>
+                                <LockIcon sx={{height:20,width:20}}/> Fidelity Bond Size 
+                            </div>
+                        </FormHelperText>
+                        {/* <Grid container xs={12} align="center">
+                        <Grid item xs={0.5}/>
+                        <Grid item xs={8} align="right"> */}
+                        <Slider
+                            sx={{width:220, align:"center"}}
+                            aria-label="Bond Size (%)"
+                            defaultValue={1}
+                            getAriaValueText={this.bondSizeText}
+                            valueLabelDisplay="auto"
+                            step={1}
+                            marks={[{value: 1,label: '1%'},{value: 5,label: '5%'},{value: 10,label: '10%'},{value: 15,label: '15%'},{value: 20,label: '20%'}]}
+                            min={1}
+                            max={20}
+                            onChange={this.handleSliderBondSizeChange}
+                        />
+                        {/*</Grid>
+                         <Grid item xs={0.5}/>
+                        <Grid item xs={2.5} align="right">
+                        <Input
+                            value={this.state.bondSize}
+                            size="small"
+                            onChange={this.handleInputBondSizeChange}
+                            onBlur={this.handleBlur}
+                            endAdornment={<InputAdornment><PercentIcon/></InputAdornment>}
+                            inputProps={{
+                                min: 1,
+                                max: 20,
+                                type: 'tel',
+                                style: { textAlign: 'center' },
+                            }}
+                        />
+                        </Grid>
+                        </Grid> */}
+                    </FormControl>
+                </Grid>
+
+                <Grid item xs={12} align="center" spacing={1}>
+                    <Tooltip enterTouchDelay="0" title={"High risk! Limited to "+ this.state.maxBondlessSats/1000 +"K Sats"}>
+                        <FormControlLabel
+                            label={<a>Allow bondless taker (<a href="https://git.robosats.com" target="_blank">info</a>)</a>}
+                            control={
+                                <Checkbox
+                                    disabled={this.state.type==0}
+                                    color="secondary"
+                                    checked={this.state.allowBondless}
+                                    onChange={()=> this.setState({allowBondless: !this.state.allowBondless})}
+                                    />
+                            }
+                            />
+                    </Tooltip>
+                </Grid>
             </Grid>
-            
             </Paper>
         )
     }
@@ -348,9 +416,9 @@ export default class MakerPage extends Component {
                 </Grid> */}
                 <Grid item xs={12} align="center">
                     <div className="advancedSwitch">
-                    <Tooltip enterTouchDelay="0" title="Comming soon">
+                    <Tooltip enterTouchDelay="0" title="Coming soon">
                         <FormControlLabel
-                            labelPlacement="start"control={
+                            labelPlacement="start" control={
                             <Switch
                                 //disabled
                                 checked={this.state.showAdvanced} 
