@@ -32,6 +32,13 @@ body {
   height: 40px;
 }
 
+.advancedSwitch{
+  width: 240; 
+  left: 50%;
+  transform: translate(55px, 0px);
+  margin-right: 0;
+  margin-left: auto;
+}
 .bottomItem {
   margin: 0;
   top: -14px;

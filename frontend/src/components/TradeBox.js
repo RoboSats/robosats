@@ -385,7 +385,7 @@ export default class TradeBox extends Component {
               <Typography component="body2" variant="body2" align="left">
                 <p>Be patient while robots check the book. 
                 It might take some time. This box will ring 🔊 once a robot takes your order. </p>
-                <p>Please note that if your premium is excessive, or your currency or payment
+                <p>Please note that if your premium is excessive or your currency or payment
                   methods are not popular, your order might expire untaken. Your bond will
                   return to you (no action needed).</p> 
               </Typography>
@@ -970,7 +970,7 @@ handleRatingRobosatsChange=(e)=>{
           <Grid item xs={12} align="center">
             <Typography component="body2" variant="body2" align="center">
               Your invoice has expired or more than 3 payment attempts have been made. 
-              Muun is not recommended, <a href="https://github.com/Reckless-Satoshi/robosats/issues/44">check the list of
+              Muun wallet is not recommended, <a href="https://github.com/Reckless-Satoshi/robosats/issues/44">check the list of
               compatible wallets</a>
             </Typography>
           </Grid>
@@ -1011,7 +1011,7 @@ handleRatingRobosatsChange=(e)=>{
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
             RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you
-            will be able to submit a new invoice. Check whether you have enough inboud liquidity.
+            will be able to submit a new invoice. Check whether you have enough inbound liquidity.
             Remember that lightning nodes must be online in order to receive payments.
           </Typography>
           <List>

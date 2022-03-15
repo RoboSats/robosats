@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {Chip, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import {FormControlLabel, Switch, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
 import { Link } from 'react-router-dom'
 
@@ -74,6 +74,7 @@ export default class BottomBar extends Component {
             profileShown: false,
             alternative_site: 'robosats...',
             node_id: '00000000',
+            showRewards: false,
             referral_link: 'Loading...',
             earned_rewards: 0,
             rewardInvoice: null,
@@ -343,80 +344,92 @@ export default class BottomBar extends Component {
                 </ListItemText>
                 </ListItem>
                 
-                <Divider><Chip label='Rewards & Compensations'/></Divider>
-                <ListItem>
-                    <ListItemIcon>
-                        <PersonAddAltIcon/>
-                    </ListItemIcon>
-                    <ListItemText secondary="Share to earn 100 Sats per trade">
-                    <TextField
-                        label='Your Referral Link'
-                        value={this.state.referral_link}
-                        // variant='filled'
-                        size='small'
-                        InputProps={{
-                            endAdornment:
-                            <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
-                                <IconButton onClick= {()=>navigator.clipboard.writeText(this.state.referral_link)}>
-                                    <ContentCopy />
-                                </IconButton>
-                            </Tooltip>,
-                            }}
+                <Divider/>
+
+                <Grid spacing={1} align="center">
+                    <FormControlLabel labelPlacement="start"control={
+                        <Switch
+                        checked={this.state.showRewards} 
+                        onChange={()=> this.setState({showRewards: !this.state.showRewards})}/>} 
+                        label="Rewards and compensations" 
                         />
-                </ListItemText>
-                </ListItem>
+                </Grid>
                 
-                <ListItem>
-                    <ListItemIcon>
-                        <EmojiEventsIcon/>
-                    </ListItemIcon>
-                    {!this.state.openClaimRewards ?
-                    <ListItemText secondary="Your earned rewards">
-                        <Grid container xs={12}>
-                            <Grid item xs={9}>
-                                <Typography>{this.state.earned_rewards+" Sats"}</Typography>
-                            </Grid>
-                            <Grid item xs={3}>
-                                <Button disabled={this.state.earned_rewards==0? true : false} onClick={() => this.setState({openClaimRewards:true})} variant="contained" size="small">Claim</Button>
-                            </Grid>
-                        </Grid>
-                    </ListItemText>
-                    :
-                    <form style={{maxWidth: 270}}>
-                        <Grid alignItems="stretch" style={{ display: "flex"}} align="center">
-                            <Grid item alignItems="stretch" style={{ display: "flex" }} align="center">
-                            <TextField
-                                error={this.state.badInvoice}
-                                helperText={this.state.badInvoice ? this.state.badInvoice : "" }
-                                label={"Invoice for " + this.state.earned_rewards + " Sats"}
-                                //variant="standard"
-                                size="small"
-                                value={this.state.rewardInvoice}
-                                onChange={e => {
-                                this.setState({ rewardInvoice: e.target.value });
+                <div style={{ display: this.state.showRewards ? '':'none'}}>
+                    <ListItem>
+                        <ListItemIcon>
+                            <PersonAddAltIcon/>
+                        </ListItemIcon>
+                        <ListItemText secondary="Share to earn 100 Sats per trade">
+                        <TextField
+                            label='Your referral link'
+                            value={this.state.referral_link}
+                            // variant='filled'
+                            size='small'
+                            InputProps={{
+                                endAdornment:
+                                <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
+                                    <IconButton onClick= {()=>navigator.clipboard.writeText(this.state.referral_link)}>
+                                        <ContentCopy />
+                                    </IconButton>
+                                </Tooltip>,
                                 }}
                             />
+                    </ListItemText>
+                    </ListItem>
+                    
+                    <ListItem>
+                        <ListItemIcon>
+                            <EmojiEventsIcon/>
+                        </ListItemIcon>
+                        {!this.state.openClaimRewards ?
+                        <ListItemText secondary="Your earned rewards">
+                            <Grid container xs={12}>
+                                <Grid item xs={9}>
+                                    <Typography>{this.state.earned_rewards+" Sats"}</Typography>
+                                </Grid>
+                                <Grid item xs={3}>
+                                    <Button disabled={this.state.earned_rewards==0? true : false} onClick={() => this.setState({openClaimRewards:true})} variant="contained" size="small">Claim</Button>
+                                </Grid>
                             </Grid>
-                            <Grid item alignItems="stretch" style={{ display: "flex" }}>
-                                <Button sx={{maxHeight:38}} onClick={this.handleSubmitInvoiceClicked} variant="contained" color="primary" size="small" > Submit </Button>
+                        </ListItemText>
+                        :
+                        <form style={{maxWidth: 270}}>
+                            <Grid alignItems="stretch" style={{ display: "flex"}} align="center">
+                                <Grid item alignItems="stretch" style={{ display: "flex" }} align="center">
+                                <TextField
+                                    error={this.state.badInvoice}
+                                    helperText={this.state.badInvoice ? this.state.badInvoice : "" }
+                                    label={"Invoice for " + this.state.earned_rewards + " Sats"}
+                                    //variant="standard"
+                                    size="small"
+                                    value={this.state.rewardInvoice}
+                                    onChange={e => {
+                                    this.setState({ rewardInvoice: e.target.value });
+                                    }}
+                                />
+                                </Grid>
+                                <Grid item alignItems="stretch" style={{ display: "flex" }}>
+                                    <Button sx={{maxHeight:38}} onClick={this.handleSubmitInvoiceClicked} variant="contained" color="primary" size="small" > Submit </Button>
+                                </Grid>
                             </Grid>
-                        </Grid>
-                    </form>
-                    }
-                </ListItem>
+                        </form>
+                        }
+                    </ListItem>
 
-                {this.state.showRewardsSpinner?
-                <div style={{display: 'flex', justifyContent: 'center'}}>
-                    <CircularProgress/>
-                </div>
-                :""}
-                
-                {this.state.withdrawn?
-                <div style={{display: 'flex', justifyContent: 'center'}}>
-                    <Typography color="primary" variant="body2"><b>There it goes, thank you!🥇</b></Typography>
-                </div>
-                :""}
+                    {this.state.showRewardsSpinner?
+                    <div style={{display: 'flex', justifyContent: 'center'}}>
+                        <CircularProgress/>
+                    </div>
+                    :""}
+                    
+                    {this.state.withdrawn?
+                    <div style={{display: 'flex', justifyContent: 'center'}}>
+                        <Typography color="primary" variant="body2"><b>There it goes, thank you!🥇</b></Typography>
+                    </div>
+                    :""}
 
+                </div>
             </List>
             </DialogContent>
             

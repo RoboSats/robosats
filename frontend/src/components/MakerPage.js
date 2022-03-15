@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
+import { Checkbox, Switch, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
 import { Link } from 'react-router-dom'
 import getFlags from './getFlags'
 
@@ -48,7 +48,9 @@ export default class MakerPage extends Component {
         payment_method: this.defaultPaymentMethod,
         premium: 0,
         satoshis: null,
-        currencies_dict: {"1":"USD"}
+        currencies_dict: {"1":"USD"},
+        showAdvanced: false,
+        allowBondless: false,
     }
     this.getCurrencyDict()
   }
@@ -152,7 +154,174 @@ export default class MakerPage extends Component {
         return this.state.currencies_dict[val.toString()]
     }
 
+    StandardMakerOptions = () => {
+        return(
+            <Paper elevation={12} style={{ padding: 8, width:240, align:'center'}}>
+            <Grid item xs={12} align="center" spacing={1}>
+                <FormControl component="fieldset">
+                    <FormHelperText>
+                        Buy or Sell Bitcoin?
+                    </FormHelperText>
+                    <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
+                        <FormControlLabel 
+                            value="0" 
+                            control={<Radio color="primary"/>}
+                            label="Buy"
+                            labelPlacement="Top"
+                        />
+                        <FormControlLabel 
+                            value="1" 
+                            control={<Radio color="secondary"/>}
+                            label="Sell"
+                            labelPlacement="Top"
+                        />
+                    </RadioGroup>
+                </FormControl>
+            </Grid>
+            <Grid containter xs={12} alignItems="stretch" style={{ display: "flex" }}>
+                    <div style={{maxWidth:140}}>
+                    <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Amount of fiat to exchange for bitcoin">
+                        <TextField
+                            error={this.state.amount <= 0} 
+                            helperText={this.state.amount <= 0 ? 'Invalid' : null}
+                            label="Amount"
+                            type="number" 
+                            required="true"
+                            inputProps={{
+                                min:0 , 
+                                style: {textAlign:"center"}
+                            }}
+                            onChange={this.handleAmountChange}
+                        />
+                    </Tooltip>
+                        </div>
+                        <div >
+                            <Select
+                                required="true" 
+                                defaultValue={this.defaultCurrency} 
+                                inputProps={{
+                                    style: {textAlign:"center"}
+                                }}
+                                onChange={this.handleCurrencyChange}>
+                                    {Object.entries(this.state.currencies_dict)
+                                    .map( ([key, value]) => <MenuItem value={parseInt(key)}>
+                                        <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div>
+                                        </MenuItem> )}
+                            </Select>
+                        </div>
 
+            </Grid>
+            <br/>
+            <Grid item xs={12} align="center">
+                <Tooltip placement="top" enterTouchDelay="300" enterDelay="700" enterNextDelay="2000" title="Enter your preferred fiat payment methods. Instant recommended (e.g., Revolut, CashApp ...)">
+                    <TextField 
+                        sx={{width:240}}
+                        label={this.state.currency==1000 ? "Swap Destination (e.g. rBTC)":"Fiat Payment Method(s)"}
+                        error={this.state.badPaymentMethod}
+                        helperText={this.state.badPaymentMethod ? "Must be shorter than 35 characters":""}
+                        type="text" 
+                        require={true}  
+                        inputProps={{
+                            style: {textAlign:"center"},
+                            maxLength: 35
+                        }}
+                        onChange={this.handlePaymentMethodChange}
+                    />
+                </Tooltip>
+            </Grid>
+
+            <Grid item xs={12} align="center">
+                <FormControl component="fieldset">
+                    <FormHelperText >
+                        <div align='center'>
+                            Choose a Pricing Method
+                        </div>
+                    </FormHelperText>
+                    <RadioGroup row defaultValue="relative">
+                    <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title="Let the price move with the market">
+                        <FormControlLabel 
+                        value="relative" 
+                        control={<Radio color="primary"/>}
+                        label="Relative"
+                        labelPlacement="Top"
+                        onClick={this.handleClickRelative}
+                        />
+                    </Tooltip>
+                    <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title="Set a fix amount of satoshis">
+                        <FormControlLabel 
+                        value="explicit" 
+                        control={<Radio color="secondary"/>}
+                        label="Explicit"
+                        labelPlacement="Top"
+                        onClick={this.handleClickExplicit}
+                        />
+                    </Tooltip>
+                    </RadioGroup>
+                </FormControl>
+            </Grid>
+                {/* conditional shows either Premium % field or Satoshis field based on pricing method */}
+                <Grid item xs={12} align="center">
+                    <div style={{display: this.state.is_explicit ? '':'none'}}>
+                    <TextField
+                            sx={{width:240}}
+                            label="Satoshis"
+                            error={this.state.badSatoshis}
+                            helperText={this.state.badSatoshis}
+                            type="number" 
+                            required="true"
+                            value={this.state.satoshis} 
+                            inputProps={{
+                                // TODO read these from .env file
+                                min:this.minTradeSats , 
+                                max:this.maxTradeSats , 
+                                style: {textAlign:"center"}
+                            }}
+                            onChange={this.handleSatoshisChange}
+                            // defaultValue={this.defaultSatoshis} 
+                        />
+                    </div>
+                    <div style={{display: this.state.is_explicit ? 'none':''}}>
+                        <TextField 
+                                sx={{width:240}}
+                                error={this.state.badPremium}
+                                helperText={this.state.badPremium}
+                                label="Premium over Market (%)"
+                                type="number" 
+                                // defaultValue={this.defaultPremium} 
+                                inputProps={{
+                                    min: -100, 
+                                    max: 999, 
+                                    style: {textAlign:"center"}
+                                }}
+                                onChange={this.handlePremiumChange}
+                            />
+                    </div>
+                </Grid>
+            </Paper>
+        )
+    }
+
+    AdvancedMakerOptions = () => {
+        return(
+            <Paper elevation={12} style={{ padding: 8, width:300, align:'center'}}>
+            <Grid item xs={12} align="center" spacing={1}>
+                <Tooltip enterTouchDelay="0" title="Takers will not have to lock a bond. High risk! Only small stakes allowed!">
+                    <FormControlLabel
+                        label={<a>Allow bondless taker (<a href="https://git.robosats.com" target="_blank">Read More</a>)</a>}
+                        control={
+                            <Checkbox
+                                disabled={this.state.type==0}
+                                color="secondary"
+                                checked={this.state.allowBondless}
+                                onChange={()=> this.setState({allowBondless: !this.state.allowBondless})}
+                                />
+                        }
+                        />
+                </Tooltip>
+            </Grid>
+            </Paper>
+        )
+    }
   render() {
     return (
             <Grid container xs={12} align="center" spacing={1} sx={{minWidth:380}}>
@@ -161,150 +330,30 @@ export default class MakerPage extends Component {
                         ORDER MAKER
                     </Typography>
                 </Grid> */}
-                <Grid item xs={12} align="center" spacing={1}>
-                <Paper elevation={12} style={{ padding: 8, width:240, align:'center'}}>
-                    <Grid item xs={12} align="center" spacing={1}>
-                    <FormControl component="fieldset">
-                        <FormHelperText>
-                            Buy or Sell Bitcoin?
-                        </FormHelperText>
-                        <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
-                            <FormControlLabel 
-                                value="0" 
-                                control={<Radio color="primary"/>}
-                                label="Buy"
-                                labelPlacement="Top"
-                            />
-                            <FormControlLabel 
-                                value="1" 
-                                control={<Radio color="secondary"/>}
-                                label="Sell"
-                                labelPlacement="Top"
-                            />
-                        </RadioGroup>
-                    </FormControl>
-                </Grid>
-                <Grid containter xs={12} alignItems="stretch" style={{ display: "flex" }}>
-                        <div style={{maxWidth:140}}>
-                        <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Amount of fiat to exchange for bitcoin">
-                            <TextField
-                                error={this.state.amount <= 0} 
-                                helperText={this.state.amount <= 0 ? 'Invalid' : null}
-                                label="Amount"
-                                type="number" 
-                                required="true"
-                                inputProps={{
-                                    min:0 , 
-                                    style: {textAlign:"center"}
-                                }}
-                                onChange={this.handleAmountChange}
-                            />
-                        </Tooltip>
-                            </div>
-                            <div >
-                                <Select
-                                    required="true" 
-                                    defaultValue={this.defaultCurrency} 
-                                    inputProps={{
-                                        style: {textAlign:"center"}
-                                    }}
-                                    onChange={this.handleCurrencyChange}>
-                                        {Object.entries(this.state.currencies_dict)
-                                        .map( ([key, value]) => <MenuItem value={parseInt(key)}>
-                                            <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div>
-                                            </MenuItem> )}
-                                </Select>
-                            </div>
-
-                </Grid>
-                <br/>
                 <Grid item xs={12} align="center">
-                    <Tooltip placement="top" enterTouchDelay="300" enterDelay="700" enterNextDelay="2000" title="Enter your prefered fiat payment methods (instant recommended)">
-                        <TextField 
-                            sx={{width:240}}
-                            label={this.state.currency==1000 ? "Swap Destination (e.g. rBTC)":"Fiat Payment Method(s)"}
-                            error={this.state.badPaymentMethod}
-                            helperText={this.state.badPaymentMethod ? "Must be shorter than 35 characters":""}
-                            type="text" 
-                            require={true}  
-                            inputProps={{
-                                style: {textAlign:"center"},
-                                maxLength: 35
-                            }}
-                            onChange={this.handlePaymentMethodChange}
+                    <div className="advancedSwitch">
+                    <Tooltip enterTouchDelay="0" title="Comming soon">
+                        <FormControlLabel
+                            labelPlacement="start"control={
+                            <Switch
+                                //disabled
+                                checked={this.state.showAdvanced} 
+                                onChange={()=> this.setState({showAdvanced: !this.state.showAdvanced})}/>}
+                            label="Advanced" 
                         />
                     </Tooltip>
+                    </div>
                 </Grid>
 
-                <Grid item xs={12} align="center">
-                    <FormControl component="fieldset">
-                        <FormHelperText >
-                            <div align='center'>
-                                Choose a Pricing Method
-                            </div>
-                        </FormHelperText>
-                        <RadioGroup row defaultValue="relative">
-                        <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title="Let the price move with the market">
-                            <FormControlLabel 
-                            value="relative" 
-                            control={<Radio color="primary"/>}
-                            label="Relative"
-                            labelPlacement="Top"
-                            onClick={this.handleClickRelative}
-                            />
-                        </Tooltip>
-                        <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title="Set a fix amount of satoshis">
-                            <FormControlLabel 
-                            value="explicit" 
-                            control={<Radio color="secondary"/>}
-                            label="Explicit"
-                            labelPlacement="Top"
-                            onClick={this.handleClickExplicit}
-                            />
-                        </Tooltip>
-                        </RadioGroup>
-                    </FormControl>
+                <Grid item xs={12} align="center" spacing={1}>
+                    <div style={{ display: this.state.showAdvanced == false ? '':'none'}}>
+                        <this.StandardMakerOptions/>
+                    </div>
+                    <div style={{ display: this.state.showAdvanced == true ? '':'none'}}>
+                        <this.AdvancedMakerOptions/>
+                    </div>
                 </Grid>
-    {/* conditional shows either Premium % field or Satoshis field based on pricing method */}
-                    <Grid item xs={12} align="center">
-                        <div style={{display: this.state.is_explicit ? '':'none'}}>
-                        <TextField
-                                sx={{width:240}}
-                                label="Satoshis"
-                                error={this.state.badSatoshis}
-                                helperText={this.state.badSatoshis}
-                                type="number" 
-                                required="true"
-                                value={this.state.satoshis} 
-                                inputProps={{
-                                    // TODO read these from .env file
-                                    min:this.minTradeSats , 
-                                    max:this.maxTradeSats , 
-                                    style: {textAlign:"center"}
-                                }}
-                                onChange={this.handleSatoshisChange}
-                                // defaultValue={this.defaultSatoshis} 
-                            />
-                        </div>
-                        <div style={{display: this.state.is_explicit ? 'none':''}}>
-                            <TextField 
-                                    sx={{width:240}}
-                                    error={this.state.badPremium}
-                                    helperText={this.state.badPremium}
-                                    label="Premium over Market (%)"
-                                    type="number" 
-                                    // defaultValue={this.defaultPremium} 
-                                    inputProps={{
-                                        min: -100, 
-                                        max: 999, 
-                                        style: {textAlign:"center"}
-                                    }}
-                                    onChange={this.handlePremiumChange}
-                                />
-                        </div>
-                    </Grid>
-                </Paper>
-                </Grid>
+
             <Grid item xs={12} align="center">
                 {/* conditions to disable the make button */}
                 {(this.state.amount == null || 
