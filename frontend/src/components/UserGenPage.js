@@ -7,6 +7,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CasinoIcon from '@mui/icons-material/Casino';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import RoboSatsIcon from "./icons/RoboSatsIcon"
+import RoboSatsTextIcon from "./icons/RoboSatsTextIcon"
 
 function getCookie(name) {
   let cookieValue = null;

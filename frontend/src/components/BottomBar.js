@@ -24,6 +24,7 @@ import WebIcon from '@mui/icons-material/Web';
 import BookIcon from '@mui/icons-material/Book';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import AmbossIcon from "./icons/AmbossIcon"
 
 // pretty numbers
 function pn(x) {
@@ -131,9 +132,7 @@ export default class BottomBar extends Component {
                 </ListItem>
                 :
                 <ListItem>
-                    <ListItemAvatar>
-                        <Avatar sx={{ width: 25, height:25, }} src='/static/assets/images/amboss.png' variant="rounded"/>
-                    </ListItemAvatar>
+                    <ListItemIcon><AmbossIcon/></ListItemIcon>
                     <ListItemText secondary={this.state.node_alias}>
                             <a target="_blank" href={"https://amboss.space/node/" 
                         + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (AMBOSS)"}

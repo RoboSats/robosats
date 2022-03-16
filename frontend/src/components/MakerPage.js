@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
-import { Checkbox, InputAdornment, Input, Slider, Switch, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
+import { Checkbox, Slider, Switch, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
 import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link } from 'react-router-dom'
 import getFlags from './getFlags'
 
 import LockIcon from '@mui/icons-material/Lock';
-import HdrWeakIcon from '@mui/icons-material/HdrWeak';
 
 function getCookie(name) {
     let cookieValue = null;
@@ -353,13 +352,14 @@ export default class MakerPage extends Component {
                         <Grid container xs={12} align="center">
                             <Grid item xs={2} align="center">
                                 <Checkbox 
-                                disabled={this.state.amount == null}
+                                disabled
+                                //disabled={this.state.amount == null}
                                 onChange={()=>this.setState({enableAmountRange:!this.state.enableAmountRange})}/>
                             </Grid>
                             <Grid xs={1}/>
                             <Grid item xs={9} align="center">
                             <Slider
-                                sx={{width:180, align:"center"}}
+                                sx={{width:170, align:"center"}}
                                 disabled={!this.state.enableAmountRange}
                                 aria-label="Amount Range"
                                 defaultValue={this.state.amount}
@@ -386,6 +386,7 @@ export default class MakerPage extends Component {
                 <Grid item xs={12} align="center" spacing={1}>
                     <LocalizationProvider dateAdapter={DateFnsUtils}>
                         <TimePicker
+                        disabled
                         renderInput={(props) => <TextField {...props} />}
                         label="Public Order Expiry Time"
                         value={this.state.publicExpiryTime}
@@ -397,7 +398,7 @@ export default class MakerPage extends Component {
                 <Grid item xs={12} align="center" spacing={1}>
                     <FormControl align="center">
                         <FormHelperText>
-                            <Tooltip enterTouchDelay="0" title={"Increase to ensure counterpart good behaviour"}>
+                            <Tooltip enterTouchDelay="0" title={"Increase for a higher safety assurance"}>
                             <div align="center" style={{display:'flex',flexWrap:'wrap', transform: 'translate(20%, 0)'}}>
                                 <LockIcon sx={{height:20,width:20}}/> Fidelity Bond Size 
                             </div>
@@ -405,6 +406,7 @@ export default class MakerPage extends Component {
                         </FormHelperText>
 
                         <Slider
+                            disabled
                             sx={{width:220, align:"center"}}
                             aria-label="Bond Size (%)"
                             defaultValue={1}
@@ -428,7 +430,8 @@ export default class MakerPage extends Component {
                             label={<a>Allow bondless taker (<a href="https://git.robosats.com" target="_blank">info</a>)</a>}
                             control={
                                 <Checkbox
-                                    disabled={this.state.type==0}
+                                    disabled
+                                    //disabled={this.state.type==0}
                                     color="secondary"
                                     checked={this.state.allowBondless}
                                     onChange={()=> this.setState({allowBondless: !this.state.allowBondless})}

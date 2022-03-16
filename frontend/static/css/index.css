@@ -18,6 +18,10 @@ body {
   height: 100%;
 }
 
+.amboss{
+  fill:url(#SVGID_1_);
+}
+
 .appCenter {
   position: absolute;
   top: 50%;
