@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import { render } from "react-dom";
-
 import HomePage from "./HomePage";
-import BottomBar from "./BottomBar";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 export default class App extends Component {
   constructor(props) {
@@ -10,6 +9,7 @@ export default class App extends Component {
     this.state = {
       nickname: null,
       token: null,
+      dark: false,
     }
   }
 
@@ -17,11 +17,23 @@ export default class App extends Component {
     this.setState(newState)
   }
 
+  lightTheme = createTheme({
+  });
+
+  darkTheme = createTheme({
+    palette: {
+      mode: 'dark',
+      background: {
+        default: "#222222"
+      },
+    },
+  });
+
   render() {
     return (
-      <>
-          <HomePage setAppState={this.setAppState}/>
-      </>
+      <ThemeProvider theme={this.state.dark ? this.darkTheme : this.lightTheme}>
+        <HomePage setAppState={this.setAppState}/>
+      </ThemeProvider>
     );
   }
 }

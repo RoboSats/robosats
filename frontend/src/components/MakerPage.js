@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 import getFlags from './getFlags'
 
 import LockIcon from '@mui/icons-material/Lock';
-import PercentIcon from '@mui/icons-material/Percent';
+import HdrWeakIcon from '@mui/icons-material/HdrWeak';
 
 function getCookie(name) {
     let cookieValue = null;
@@ -43,6 +43,7 @@ export default class MakerPage extends Component {
   minTradeSats = 20000;
   maxTradeSats = 800000;
   maxBondlessSats = 50000;
+  minAmountFraction = 0.2;
 
   constructor(props) {
     super(props);
@@ -58,6 +59,7 @@ export default class MakerPage extends Component {
         showAdvanced: false,
         allowBondless: false,
         publicExpiryTime: Date.now() + 86400000,
+        enableAmountRange: false,
         minAmount: null,
         bondSize: 1,
     }
@@ -80,6 +82,13 @@ export default class MakerPage extends Component {
             amount: e.target.value,     
         });
     }
+
+    handleMinAmountChange=(e)=>{
+        this.setState({
+            minAmount: e.target.value,     
+        });
+    }
+
     handlePaymentMethodChange=(e)=>{
         this.setState({
             payment_method: e.target.value,
@@ -330,8 +339,49 @@ export default class MakerPage extends Component {
     AdvancedMakerOptions = () => {
         return(
             <Paper elevation={12} style={{ padding: 8, width:280, align:'center'}}>
-            <br/>
             <Grid container xs={12}  spacing={1}>
+
+                <Grid item xs={12} align="center" spacing={1}>
+                <FormControl align="center">
+                        <FormHelperText>
+                            <Tooltip enterTouchDelay="0" title={"Let the taker chose an amount within the range"}>
+                            <div align="center">
+                                Amount Range 
+                            </div>
+                            </Tooltip>
+                        </FormHelperText>
+                        <Grid container xs={12} align="center">
+                            <Grid item xs={2} align="center">
+                                <Checkbox 
+                                disabled={this.state.amount == null}
+                                onChange={()=>this.setState({enableAmountRange:!this.state.enableAmountRange})}/>
+                            </Grid>
+                            <Grid xs={1}/>
+                            <Grid item xs={9} align="center">
+                            <Slider
+                                sx={{width:180, align:"center"}}
+                                disabled={!this.state.enableAmountRange}
+                                aria-label="Amount Range"
+                                defaultValue={this.state.amount}
+                                track="inverted"
+                                value={this.state.minAmount ? this.state.minAmount : this.state.amount}
+                                step={this.state.amount/100}
+                                getAriaValueText={this.bondSizeText}
+                                valueLabelDisplay="auto"
+                                valueLabelFormat={(x) => (x+" "+this.state.currencyCode)}
+                                marks={this.state.amount == null ?
+                                    null
+                                    :
+                                    [{value: this.state.amount*this.minAmountFraction,label: pn(this.state.amount*this.minAmountFraction)+" "+ this.state.currencyCode},
+                                    {value: this.state.amount,label: this.state.amount+" "+this.state.currencyCode}]}
+                                min={this.state.amount*this.minAmountFraction}
+                                max={this.state.amount}
+                                onChange={this.handleMinAmountChange}
+                            />
+                            </Grid>
+                        </Grid>
+                    </FormControl>
+                </Grid>
 
                 <Grid item xs={12} align="center" spacing={1}>
                     <LocalizationProvider dateAdapter={DateFnsUtils}>
@@ -347,48 +397,33 @@ export default class MakerPage extends Component {
                 <Grid item xs={12} align="center" spacing={1}>
                     <FormControl align="center">
                         <FormHelperText>
+                            <Tooltip enterTouchDelay="0" title={"Increase to ensure counterpart good behaviour"}>
                             <div align="center" style={{display:'flex',flexWrap:'wrap', transform: 'translate(20%, 0)'}}>
                                 <LockIcon sx={{height:20,width:20}}/> Fidelity Bond Size 
                             </div>
+                            </Tooltip>
                         </FormHelperText>
-                        {/* <Grid container xs={12} align="center">
-                        <Grid item xs={0.5}/>
-                        <Grid item xs={8} align="right"> */}
+
                         <Slider
                             sx={{width:220, align:"center"}}
                             aria-label="Bond Size (%)"
                             defaultValue={1}
                             getAriaValueText={this.bondSizeText}
                             valueLabelDisplay="auto"
+                            valueLabelFormat={(x) => (x+'%')}
                             step={1}
                             marks={[{value: 1,label: '1%'},{value: 5,label: '5%'},{value: 10,label: '10%'},{value: 15,label: '15%'},{value: 20,label: '20%'}]}
                             min={1}
                             max={20}
                             onChange={this.handleSliderBondSizeChange}
                         />
-                        {/*</Grid>
-                         <Grid item xs={0.5}/>
-                        <Grid item xs={2.5} align="right">
-                        <Input
-                            value={this.state.bondSize}
-                            size="small"
-                            onChange={this.handleInputBondSizeChange}
-                            onBlur={this.handleBlur}
-                            endAdornment={<InputAdornment><PercentIcon/></InputAdornment>}
-                            inputProps={{
-                                min: 1,
-                                max: 20,
-                                type: 'tel',
-                                style: { textAlign: 'center' },
-                            }}
-                        />
-                        </Grid>
-                        </Grid> */}
+
                     </FormControl>
+                    
                 </Grid>
 
                 <Grid item xs={12} align="center" spacing={1}>
-                    <Tooltip enterTouchDelay="0" title={"High risk! Limited to "+ this.state.maxBondlessSats/1000 +"K Sats"}>
+                    <Tooltip enterTouchDelay="0" title={"High risk! Limited to "+ this.maxBondlessSats/1000 +"K Sats"}>
                         <FormControlLabel
                             label={<a>Allow bondless taker (<a href="https://git.robosats.com" target="_blank">info</a>)</a>}
                             control={
