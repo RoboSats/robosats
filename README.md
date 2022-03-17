@@ -5,19 +5,20 @@
 
 RoboSats is a simple and private way to exchange bitcoin for national currencies. Robosats simplifies the peer-to-peer user experience and uses lightning hold invoices to minimize custody and trust requirements. The deterministically generated avatars help users stick to best privacy practices. 
 
-## Try it out
+
 <div align="center">
-  <img width="75%" src="https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats_0.1.0_banner.png">
+  <img width="75%" src="https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png">
 </div>
 
-### 🔗 **Bitcoin Mainnet**
+## Try it out! 
+### **Bitcoin Mainnet**
 - 🧅 **TOR URL:** [**RoboSats**6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion) ( Open with [Tor Browser](https://www.torproject.org/download/))
 - Clearnet URL: [unsafe.robosats.com](https://unsafe.robosats.com) (not recommended!)
 - Version: v0.1.0 MVP (+++)
 
 *⚠️ Always use [Tor Browser](https://www.torproject.org/download/) and .onion for best anonymity. The Clearnet URL redirects to a third party Tor2web service. Your privacy cannot be guaranteed to be respected. Use clearnet only to check around the app, never use for trading!⚠️*
 
-**You can also use RoboSats in Testnet:**
+### **Bitcoin Testnet**
 - TOR URL: [RoboTestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion](http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion)
 - Clearnet URL: [unsafe.testnet.robosats.com](https://unsafe.testnet.robosats.com)
 
