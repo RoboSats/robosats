@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { render } from "react-dom";
 import HomePage from "./HomePage";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import UnsafeAlert from "./UnsafeAlert";
 
 export default class App extends Component {
   constructor(props) {
@@ -32,6 +33,7 @@ export default class App extends Component {
   render() {
     return (
       <ThemeProvider theme={this.state.dark ? this.darkTheme : this.lightTheme}>
+        <UnsafeAlert/>
         <HomePage setAppState={this.setAppState}/>
       </ThemeProvider>
     );
