@@ -6,8 +6,7 @@ import InfoDialog from './InfoDialog'
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CasinoIcon from '@mui/icons-material/Casino';
 import ContentCopy from "@mui/icons-material/ContentCopy";
-import RoboSatsIcon from "./icons/RoboSatsIcon"
-import RoboSatsTextIcon from "./icons/RoboSatsTextIcon"
+import RoboSatsNoTextIcon from "./icons/RoboSatsNoTextIcon"
 
 function getCookie(name) {
   let cookieValue = null;
@@ -262,7 +261,7 @@ export default class UserGenPage extends Component {
                   </Typography>
                 </Grid>
                 <Grid item xs={2.5} align="left">
-                    <RoboSatsIcon color="primary" sx={{height:70, width:70}}/>
+                    <RoboSatsNoTextIcon color="primary" sx={{height:72, width:72}}/>
                 </Grid>
               </Grid>
             </div>
