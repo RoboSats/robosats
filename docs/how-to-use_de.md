@@ -37,7 +37,7 @@ Um einen gesicherten Token wiederherzustellen, ersetze den Token einfach im Text
 
 ## Handeln
 
-In RoboSats kannst du neue Order machen oder Order von anderen annehmen. Um ein _Auftragsersteller_ zu sein, klick einfach auf "Create Order" auf der Homepage. Um einen Auftrag anzunehmen, klicke auf "Buch ansehen", damit du die von anderen Robotern erstellten Aufträge sehen kannst.
+In RoboSats kannst du neue Angebote (Order) machen oder Angebote von anderen annehmen. Um ein _Aungebotssersteller_ zu sein, klick einfach auf "Create Order" auf der Homepage. Um ein Angebot anzunehmen, klicke auf "Buch ansehen", damit du die von anderen Robotern erstellten Angebote sehen kannst.
 
 ### Erkunden des Orderbuches
 
@@ -47,13 +47,13 @@ Wir klicken auf "View book" und sehen uns die Angebote auf der Orderbuch Seite a
 <img src="images/how-to-use/book-desktop.png"/>
 </div>
 
-In einem Desktop-Browser siehst du auf einen Blick alle wichtigen Informationen zu den Aufträgen, so dass du entscheiden kannst, welchen du annehmen möchtest. Standardmäßig zeigt das Buch "JEDE" Art von Auftrag (Kauf und Verkauf) und "JEDE" Währung an. Verwenden Sie die Dropdown-Menüs am oberen Rand, um Ihre Präferenzen auszuwählen.
+In einem Desktop-Browser siehst du auf einen Blick alle wichtigen Informationen zu den Angeboten, so dass du entscheiden kannst, welchen du annehmen möchtest. Standardmäßig zeigt das Buch "JEDE" Art von Angeboten (Buy / Sell) und "JEDE" Währung an. Verwende die Dropdown-Menüs am oberen Rand, um deine Präferenzen auszuwählen.
 
 <div align="center">
 <img src="images/how-to-use/book-phone.png"  width="370" />
 </div>
 
-Auf einem Smartphone passen jedoch nicht alle Spalten auf den Bildschirm. Die Spitznamen, die Art des Auftrags, die Zahlungsmethode und der Wechselkurs sind standardmäßig ausgeblendet. Du kannst auf eine beliebige Spalte und dann auf "Spalten anzeigen" tippen, um auszuwählen, welche Spalten sichtbar sein sollen.
+Auf einem Smartphone passen jedoch nicht alle Spalten auf den Bildschirm. Die Spitznamen, die Art des Angebotes, die Zahlungsmethode und der Wechselkurs sind standardmäßig ausgeblendet. Du kannst auf eine beliebige Spalte und dann auf "Spalten anzeigen" tippen, um auszuwählen, welche Spalten sichtbar sein sollen.
 
 <div align="center">
 <img src="images/how-to-use/book-show-columns.png"  width="230" />
@@ -61,7 +61,7 @@ Auf einem Smartphone passen jedoch nicht alle Spalten auf den Bildschirm. Die Sp
 
 Ein weiterer Trick ist ein langes Tippen oder Wischen:
  - Auf Avatar: Du erhältst Nickname und Aktivitätsstatus.
- - Auf Betrag: Du erfährst, ob der Ersteller ein Verkäufer oder ein Käufer ist.
+ - Auf Betrag: Du erfährst, ob der Ersteller ein Verkäufer (Seller) oder ein Käufer (Buyer) ist.
  - Auf Währung: Du erhältst die bevorzugte Zahlungsmethode.
  - Auf Prämie: Du erhältst den aktuellen Wechselkurs.
 Beispiel für langes Tippen/Wischen über die Währung:
@@ -76,7 +76,7 @@ Beispiel für langes Tippen/Wischen oberhalb der Prämie:
 <img src="images/how-to-use/book-tap-2.png"  width="370" />
 </div>
 
-Du kannst auch auf einen beliebigen Auftrag tippen, um die komplette Auftragsseite zu sehen:
+Du kannst auch auf einen beliebiges Angebot tippen, um die komplette Angebotsseite zu sehen:
 
 <div align="center">
 <img src="images/how-to-use/order-page-1.png"  width="370" />
