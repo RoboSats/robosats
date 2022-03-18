@@ -91,6 +91,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "robosats.wsgi.application"
+USE_TZ = True 
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases

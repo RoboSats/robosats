@@ -25,9 +25,9 @@ export default class UnsafeAlert extends Component {
   render() {
     return (
       (!this.safe_urls.includes(this.getHost()) & this.state.show) ? 
-      <>
+      <div>
       <MediaQuery minWidth={800}>
-        <Alert severity="warning" 
+        <Alert severity="warning"  sx={{maxHeight:100, zIndex:9999}} z-index={9999}
           action={<Button onClick={() => this.setState({show:false})}>Hide</Button>}
           >
           <AlertTitle>You are not using RoboSats privately</AlertTitle>
@@ -37,7 +37,7 @@ export default class UnsafeAlert extends Component {
       </MediaQuery>
 
       <MediaQuery maxWidth={799}>
-        <Alert severity="warning" >
+        <Alert severity="warning" sx={{maxHeight:100, zIndex:9999}} z-index={9999}>
         <AlertTitle>You are not using RoboSats privately</AlertTitle>
           You will not be able to complete a 
           trade. Use <a href='https://www.torproject.org/download/' target="_blank">Tor Browser</a> and visit the <a href='http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion' target="_blank">Onion</a> site.         
@@ -48,7 +48,7 @@ export default class UnsafeAlert extends Component {
         </div>
         </Alert>
       </MediaQuery>
-      </>
+      </div>
       : 
         null
     )

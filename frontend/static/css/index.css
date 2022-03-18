@@ -18,15 +18,18 @@ body {
   height: 100%;
 }
 
-.amboss{
-  fill:url(#SVGID_1_);
-}
-
 .appCenter {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%,-50%) translate(0,-20px);
+  z-index: 1;
+}
+
+.clickTrough{
+  height: 50px;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .bottomBar {
@@ -36,10 +39,14 @@ body {
   height: 40px;
 }
 
+.amboss{
+  fill:url(#SVGID_1_);
+}
+
 .advancedSwitch{
-  width: 240; 
+  width: 20; 
   left: 50%;
-  transform: translate(55px, 0px);
+  transform: translate(62px, 0px);
   margin-right: 0;
   margin-left: auto;
 }

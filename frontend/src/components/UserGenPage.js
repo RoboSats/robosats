@@ -151,7 +151,7 @@ export default class UserGenPage extends Component {
     return (
       <Grid container spacing={1}>
         <Grid item>
-          <div style={{height:40}}/>
+          <div className='clickTrough'/>
         </Grid>
         <Grid item xs={12} align="center" sx={{width:370, height:260}}>
           {!this.state.loadingRobot ?
@@ -250,7 +250,7 @@ export default class UserGenPage extends Component {
 
           <Grid item xs={12} align="center" spacing={2} sx={{width:370}}>
             <Grid item>
-              <div style={{height:30}}/>
+              <div style={{height:40}}/>
             </Grid>
             <div style={{width:370, left:30}}>
               <Grid container xs={12} align="center">
@@ -266,7 +266,6 @@ export default class UserGenPage extends Component {
               </Grid>
             </div>
           </Grid>
-
       </Grid>
     );
   }

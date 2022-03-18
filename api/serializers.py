@@ -35,8 +35,8 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "is_explicit",
             "premium",
             "satoshis",
+            "public_duration",
         )
-
 
 class UpdateOrderSerializer(serializers.Serializer):
     invoice = serializers.CharField(max_length=2000,

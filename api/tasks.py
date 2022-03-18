@@ -191,6 +191,9 @@ def send_message(order_id, message):
     from api.messages import Telegram
     telegram = Telegram()
 
+    if message == 'welcome':
+        telegram.welcome(order)
+
     if message == 'order_taken':
         telegram.order_taken(order)
         

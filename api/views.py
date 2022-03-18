@@ -72,6 +72,7 @@ class MakerView(CreateAPIView):
         premium = serializer.data.get("premium")
         satoshis = serializer.data.get("satoshis")
         is_explicit = serializer.data.get("is_explicit")
+        public_duration = serializer.data.get("public_duration")
 
         valid, context, _ = Logics.validate_already_maker_or_taker(
             request.user)
@@ -90,6 +91,7 @@ class MakerView(CreateAPIView):
             expires_at=timezone.now() + timedelta(
                 seconds=EXP_MAKER_BOND_INVOICE),  # TODO Move to class method
             maker=request.user,
+            public_duration=public_duration,
         )
 
         # TODO move to Order class method when new instance is created!
@@ -155,7 +157,7 @@ class OrderView(viewsets.ViewSet):
             )
 
         data = ListOrderSerializer(order).data
-        data["total_secs_exp"] = Order.t_to_expire[order.status]
+        data["total_secs_exp"] = order.t_to_expire(order.status)
 
         # if user is under a limit (penalty), inform him.
         is_penalized, time_out = Logics.is_penalized(request.user)

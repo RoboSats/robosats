@@ -13,21 +13,25 @@ class ProfileInline(admin.StackedInline):
     can_delete = False
     fields = ("avatar_tag", )
     readonly_fields = ["avatar_tag"]
-
+    show_change_link = True
 
 # extended users with avatars
 @admin.register(User)
-class EUserAdmin(UserAdmin):
+class EUserAdmin(AdminChangeLinksMixin, UserAdmin):
     inlines = [ProfileInline]
     list_display = (
         "avatar_tag",
         "id",
+        "profile_link",
         "username",
         "last_login",
         "date_joined",
         "is_staff",
     )
     list_display_links = ("id", "username")
+    change_links = (
+        "profile",
+    )
     ordering = ("-id", )
 
     def avatar_tag(self, obj):
@@ -95,7 +99,7 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     )
     list_filter = ("type", "concept", "status")
     ordering = ("-expires_at", )
-    search_fields = ["payment_hash","num_satoshis"]
+    search_fields = ["payment_hash","num_satoshis","sender__username","receiver__username","description"]
 
 
 @admin.register(Profile)
@@ -119,6 +123,7 @@ class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     list_display_links = ("avatar_tag", "id")
     change_links = ["user"]
     readonly_fields = ["avatar_tag"]
+    search_fields = ["user__username","id"]
 
 
 @admin.register(Currency)

@@ -33,7 +33,7 @@ export default class App extends Component {
   render() {
     return (
       <ThemeProvider theme={this.state.dark ? this.darkTheme : this.lightTheme}>
-        <UnsafeAlert/>
+        <UnsafeAlert className="unsafeAlert"/>
         <HomePage setAppState={this.setAppState}/>
       </ThemeProvider>
     );

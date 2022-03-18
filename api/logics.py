@@ -27,7 +27,6 @@ EXP_TAKER_BOND_INVOICE = int(config("EXP_TAKER_BOND_INVOICE"))
 BOND_EXPIRY = int(config("BOND_EXPIRY"))
 ESCROW_EXPIRY = int(config("ESCROW_EXPIRY"))
 
-PUBLIC_ORDER_DURATION = int(config("PUBLIC_ORDER_DURATION"))
 INVOICE_AND_ESCROW_DURATION = int(config("INVOICE_AND_ESCROW_DURATION"))
 FIAT_EXCHANGE_DURATION = int(config("FIAT_EXCHANGE_DURATION"))
 
@@ -129,7 +128,7 @@ class Logics:
             order.taker = user
             order.status = Order.Status.TAK
             order.expires_at = timezone.now() + timedelta(
-                seconds=Order.t_to_expire[Order.Status.TAK])
+                seconds=order.t_to_expire(Order.Status.TAK))
             order.save()
             # send_message.delay(order.id,'order_taken') # Too spammy
             return True, None
@@ -336,7 +335,7 @@ class Logics:
         order.is_disputed = True
         order.status = Order.Status.DIS
         order.expires_at = timezone.now() + timedelta(
-            seconds=Order.t_to_expire[Order.Status.DIS])
+            seconds=order.t_to_expire(Order.Status.DIS))
         order.save()
 
         # User could be None if a dispute is open automatically due to weird expiration.
@@ -380,7 +379,7 @@ class Logics:
         if order.maker_statement not in [None,""] and order.taker_statement not in [None,""]:
             order.status = Order.Status.WFR
             order.expires_at = timezone.now() + timedelta(
-                seconds=Order.t_to_expire[Order.Status.WFR])
+                seconds=order.t_to_expire(Order.Status.WFR))
 
         order.save()
         return True, None
@@ -472,7 +471,7 @@ class Logics:
         if order.status == Order.Status.WFI:
             order.status = Order.Status.CHA
             order.expires_at = timezone.now() + timedelta(
-                seconds=Order.t_to_expire[Order.Status.CHA])
+                seconds=order.t_to_expire(Order.Status.CHA))
 
         # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow'
         if order.status == Order.Status.WF2:
@@ -483,7 +482,7 @@ class Logics:
             elif order.trade_escrow.status == LNPayment.Status.LOCKED:
                 order.status = Order.Status.CHA
                 order.expires_at = timezone.now() + timedelta(
-                    seconds=Order.t_to_expire[Order.Status.CHA])
+                    seconds=order.t_to_expire(Order.Status.CHA))
             else:
                 order.status = Order.Status.WFE
 
@@ -661,7 +660,7 @@ class Logics:
     def publish_order(order):
         order.status = Order.Status.PUB
         order.expires_at = order.created_at + timedelta(
-            seconds=Order.t_to_expire[Order.Status.PUB])
+            seconds=order.t_to_expire(Order.Status.PUB))
         order.save()
         # send_message.delay(order.id,'order_published') # too spammy
         return
@@ -708,7 +707,7 @@ class Logics:
             hold_payment = LNNode.gen_hold_invoice(
                 bond_satoshis,
                 description,
-                invoice_expiry=Order.t_to_expire[Order.Status.WFB],
+                invoice_expiry=order.t_to_expire(Order.Status.WFB),
                 cltv_expiry_secs=BOND_EXPIRY * 3600,
             )
         except Exception as e:
@@ -759,7 +758,7 @@ class Logics:
 
          # With the bond confirmation the order is extended 'public_order_duration' hours
         order.expires_at = timezone.now() + timedelta(
-        seconds=Order.t_to_expire[Order.Status.WF2])
+        seconds=order.t_to_expire(Order.Status.WF2))
         order.status = Order.Status.WF2
         order.save()
 
@@ -822,7 +821,7 @@ class Logics:
             hold_payment = LNNode.gen_hold_invoice(
                 bond_satoshis,
                 description,
-                invoice_expiry=Order.t_to_expire[Order.Status.TAK],
+                invoice_expiry=order.t_to_expire(Order.Status.TAK),
                 cltv_expiry_secs=BOND_EXPIRY * 3600,
             )
 
@@ -850,7 +849,7 @@ class Logics:
         )
 
         order.expires_at = timezone.now() + timedelta(
-            seconds=Order.t_to_expire[Order.Status.TAK])
+            seconds=order.t_to_expire(Order.Status.TAK))
         order.save()
         return True, {
             "bond_invoice": hold_payment["invoice"],
@@ -866,7 +865,7 @@ class Logics:
         elif order.status == Order.Status.WFE:
             order.status = Order.Status.CHA
             order.expires_at = timezone.now() + timedelta(
-                seconds=Order.t_to_expire[Order.Status.CHA])
+                seconds=order.t_to_expire(Order.Status.CHA))
         order.save()
 
     @classmethod
@@ -909,7 +908,7 @@ class Logics:
             hold_payment = LNNode.gen_hold_invoice(
                 escrow_satoshis,
                 description,
-                invoice_expiry=Order.t_to_expire[Order.Status.WF2],
+                invoice_expiry=order.t_to_expire(Order.Status.WF2),
                 cltv_expiry_secs=ESCROW_EXPIRY * 3600,
             )
 

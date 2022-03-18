@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import getFlags from './getFlags'
 
 import LockIcon from '@mui/icons-material/Lock';
+import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
 
 function getCookie(name) {
     let cookieValue = null;
@@ -57,7 +58,8 @@ export default class MakerPage extends Component {
         currencies_dict: {"1":"USD"},
         showAdvanced: false,
         allowBondless: false,
-        publicExpiryTime: Date.now() + 86400000,
+        publicExpiryTime: new Date(0, 0, 0, 23, 59),
+        publicDuration: 23*60*60 + 59*60,
         enableAmountRange: false,
         minAmount: null,
         bondSize: 1,
@@ -149,6 +151,7 @@ export default class MakerPage extends Component {
                 is_explicit: this.state.is_explicit,
                 premium: this.state.is_explicit ? null: this.state.premium,
                 satoshis: this.state.is_explicit ? this.state.satoshis: null,
+                public_duration: this.state.publicDuration,
             }),
         };
         fetch("/api/make/",requestOptions)
@@ -335,31 +338,65 @@ export default class MakerPage extends Component {
         )
     }
 
+    handleChangePublicDuration = (date) => {
+        console.log(date)
+        let d = new Date(date),
+            hours = d.getHours(),
+            minutes = d.getMinutes();
+        
+        var total_secs = hours*60*60 + minutes * 60;
+
+        this.setState({
+            changedPublicExpiryTime: true,
+            publicExpiryTime: date, 
+            publicDuration: total_secs,
+            badDuration: false,
+        });
+        
+    }
+
     AdvancedMakerOptions = () => {
         return(
             <Paper elevation={12} style={{ padding: 8, width:280, align:'center'}}>
             <Grid container xs={12}  spacing={1}>
+                <Grid item xs={12} align="center" spacing={1}>
+                    <br/>
+                    <LocalizationProvider dateAdapter={DateFnsUtils}>
+                        <TimePicker
+                            ampm={false}
+                            openTo="hours"
+                            views={['hours', 'minutes']}
+                            inputFormat="HH:mm"
+                            mask="__:__"
+                            renderInput={(props) => <TextField {...props} />}
+                            label="Public Duration (HH:mm)"
+                            value={this.state.publicExpiryTime}
+                            onChange={this.handleChangePublicDuration}
+                            minTime={new Date(0, 0, 0, 0, 10)}
+                            maxTime={new Date(0, 0, 0, 23, 59)}
+                        />
+                    </LocalizationProvider>
+                </Grid>
 
                 <Grid item xs={12} align="center" spacing={1}>
                 <FormControl align="center">
                         <FormHelperText>
-                            <Tooltip enterTouchDelay="0" title={"Let the taker chose an amount within the range"}>
+                            <Tooltip enterTouchDelay="0" title={"COMING SOON - Let the taker chose an amount within the range"}>
                             <div align="center">
                                 Amount Range 
                             </div>
                             </Tooltip>
                         </FormHelperText>
-                        <Grid container xs={12} align="center">
-                            <Grid item xs={2} align="center">
+                        <Grid container xs={12} align="left">
+                            <Grid item xs={3} align="left">
                                 <Checkbox 
-                                disabled
-                                //disabled={this.state.amount == null}
-                                onChange={()=>this.setState({enableAmountRange:!this.state.enableAmountRange})}/>
+                                    disabled
+                                    //disabled={this.state.amount == null}
+                                    onChange={()=>this.setState({enableAmountRange:!this.state.enableAmountRange})}/>
                             </Grid>
-                            <Grid xs={1}/>
-                            <Grid item xs={9} align="center">
+                            <Grid item xs={9} align="left">
                             <Slider
-                                sx={{width:170, align:"center"}}
+                                sx={{width:140, align:"center"}}
                                 disabled={!this.state.enableAmountRange}
                                 aria-label="Amount Range"
                                 defaultValue={this.state.amount}
@@ -372,7 +409,7 @@ export default class MakerPage extends Component {
                                 marks={this.state.amount == null ?
                                     null
                                     :
-                                    [{value: this.state.amount*this.minAmountFraction,label: pn(this.state.amount*this.minAmountFraction)+" "+ this.state.currencyCode},
+                                    [{value: this.state.amount*this.minAmountFraction,label: parseFloat(parseFloat(this.state.amount*this.minAmountFraction).toFixed(4))+" "+ this.state.currencyCode},
                                     {value: this.state.amount,label: this.state.amount+" "+this.state.currencyCode}]}
                                 min={this.state.amount*this.minAmountFraction}
                                 max={this.state.amount}
@@ -382,23 +419,11 @@ export default class MakerPage extends Component {
                         </Grid>
                     </FormControl>
                 </Grid>
-
-                <Grid item xs={12} align="center" spacing={1}>
-                    <LocalizationProvider dateAdapter={DateFnsUtils}>
-                        <TimePicker
-                        disabled
-                        renderInput={(props) => <TextField {...props} />}
-                        label="Public Order Expiry Time"
-                        value={this.state.publicExpiryTime}
-                        onChange={(newValue) => {this.setState({publicExpiryTime: newValue})}}
-                        />
-                </LocalizationProvider>
-                </Grid>
                 
                 <Grid item xs={12} align="center" spacing={1}>
                     <FormControl align="center">
                         <FormHelperText>
-                            <Tooltip enterTouchDelay="0" title={"Increase for a higher safety assurance"}>
+                            <Tooltip enterTouchDelay="0" title={"COMING SOON - Increase for a higher safety assurance"}>
                             <div align="center" style={{display:'flex',flexWrap:'wrap', transform: 'translate(20%, 0)'}}>
                                 <LockIcon sx={{height:20,width:20}}/> Fidelity Bond Size 
                             </div>
@@ -425,7 +450,7 @@ export default class MakerPage extends Component {
                 </Grid>
 
                 <Grid item xs={12} align="center" spacing={1}>
-                    <Tooltip enterTouchDelay="0" title={"High risk! Limited to "+ this.maxBondlessSats/1000 +"K Sats"}>
+                    <Tooltip enterTouchDelay="0" title={"COMING SOON - High risk! Limited to "+ this.maxBondlessSats/1000 +"K Sats"}>
                         <FormControlLabel
                             label={<a>Allow bondless taker (<a href="https://git.robosats.com" target="_blank">info</a>)</a>}
                             control={
@@ -454,16 +479,18 @@ export default class MakerPage extends Component {
                 </Grid> */}
                 <Grid item xs={12} align="center">
                     <div className="advancedSwitch">
-                    <Tooltip enterTouchDelay="0" title="Coming soon">
+                    {/* <Tooltip enterTouchDelay="0" title="Coming soon"> */}
                         <FormControlLabel
+                            size="small"
+                            disableTypography={true}
+                            label={<Typography variant="body2">Advanced</Typography>} 
                             labelPlacement="start" control={
                             <Switch
-                                //disabled
+                                size="small"
                                 checked={this.state.showAdvanced} 
                                 onChange={()=> this.setState({showAdvanced: !this.state.showAdvanced})}/>}
-                            label="Advanced" 
                         />
-                    </Tooltip>
+                    {/* </Tooltip> */}
                     </div>
                 </Grid>
 

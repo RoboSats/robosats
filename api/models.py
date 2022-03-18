@@ -5,6 +5,7 @@ from django.core.validators import (
     MinValueValidator,
     validate_comma_separated_integer_list,
 )
+from django.utils import timezone
 from django.db.models.signals import post_save, pre_delete
 from django.template.defaultfilters import truncatechars
 from django.dispatch import receiver
@@ -38,7 +39,7 @@ class Currency(models.Model):
         null=True,
         validators=[MinValueValidator(0)],
     )
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         # returns currency label ( 3 letters code)
@@ -181,7 +182,7 @@ class Order(models.Model):
     status = models.PositiveSmallIntegerField(choices=Status.choices,
                                               null=False,
                                               default=Status.WFB)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
     expires_at = models.DateTimeField()
 
     # order details
@@ -218,6 +219,17 @@ class Order(models.Model):
         ],
         blank=True,
     )
+    # optionally makers can choose the public order duration length (seconds)
+    public_duration = models.PositiveBigIntegerField(
+        default=60*60*int(config("DEFAULT_PUBLIC_ORDER_DURATION"))-1,
+        null=False,
+        validators=[
+            MinValueValidator(60*60*float(config("MIN_PUBLIC_ORDER_DURATION"))),   # Min is 10 minutes
+            MaxValueValidator(60*60*float(config("MAX_PUBLIC_ORDER_DURATION"))),   # Max is 24 Hours
+        ],
+        blank=False,
+    )
+
     # how many sats at creation and at last check (relevant for marked to market)
     t0_satoshis = models.PositiveBigIntegerField(
         null=True,
@@ -311,30 +323,34 @@ class Order(models.Model):
     maker_platform_rated = models.BooleanField(default=False, null=False)
     taker_platform_rated = models.BooleanField(default=False, null=False)
 
-    t_to_expire = {
-        0: int(config("EXP_MAKER_BOND_INVOICE")),           # 'Waiting for maker bond'
-        1: 60 * 60 * int(config("PUBLIC_ORDER_DURATION")),  # 'Public'
-        2: 0,                                               # 'Deleted'
-        3: int(config("EXP_TAKER_BOND_INVOICE")),           # 'Waiting for taker bond'
-        4: 0,                                               # 'Cancelled'
-        5: 0,                                               # 'Expired'
-        6: 60 * int(config("INVOICE_AND_ESCROW_DURATION")), # 'Waiting for trade collateral and buyer invoice'
-        7: 60 * int(config("INVOICE_AND_ESCROW_DURATION")), # 'Waiting only for seller trade collateral'
-        8: 60 * int(config("INVOICE_AND_ESCROW_DURATION")), # 'Waiting only for buyer invoice'
-        9: 60 * 60 * int(config("FIAT_EXCHANGE_DURATION")), # 'Sending fiat - In chatroom'
-        10: 60 * 60 * int(config("FIAT_EXCHANGE_DURATION")),# 'Fiat sent - In chatroom'
-        11: 1 * 24 * 60 * 60,                               # 'In dispute'
-        12: 0,                                              # 'Collaboratively cancelled'
-        13: 24 * 60 * 60,                                   # 'Sending satoshis to buyer'
-        14: 24 * 60 * 60,                                   # 'Sucessful trade'
-        15: 24 * 60 * 60,                                   # 'Failed lightning network routing'
-        16: 10 * 24 * 60 * 60,                              # 'Wait for dispute resolution'
-        17: 24 * 60 * 60,                                   # 'Maker lost dispute'
-        18: 24 * 60 * 60,                                   # 'Taker lost dispute'
-    }
-
     def __str__(self):
         return f"Order {self.id}: {self.Types(self.type).label} BTC for {float(self.amount)} {self.currency}"
+
+    def t_to_expire(self, status):
+
+        t_to_expire = {
+            0: int(config("EXP_MAKER_BOND_INVOICE")),           # 'Waiting for maker bond'
+            1: self.public_duration,  # 'Public'
+            2: 0,                                               # 'Deleted'
+            3: int(config("EXP_TAKER_BOND_INVOICE")),           # 'Waiting for taker bond'
+            4: 0,                                               # 'Cancelled'
+            5: 0,                                               # 'Expired'
+            6: 60 * int(config("INVOICE_AND_ESCROW_DURATION")), # 'Waiting for trade collateral and buyer invoice'
+            7: 60 * int(config("INVOICE_AND_ESCROW_DURATION")), # 'Waiting only for seller trade collateral'
+            8: 60 * int(config("INVOICE_AND_ESCROW_DURATION")), # 'Waiting only for buyer invoice'
+            9: 60 * 60 * int(config("FIAT_EXCHANGE_DURATION")), # 'Sending fiat - In chatroom'
+            10: 60 * 60 * int(config("FIAT_EXCHANGE_DURATION")),# 'Fiat sent - In chatroom'
+            11: 1 * 24 * 60 * 60,                               # 'In dispute'
+            12: 0,                                              # 'Collaboratively cancelled'
+            13: 24 * 60 * 60,                                   # 'Sending satoshis to buyer'
+            14: 24 * 60 * 60,                                   # 'Sucessful trade'
+            15: 24 * 60 * 60,                                   # 'Failed lightning network routing'
+            16: 10 * 24 * 60 * 60,                              # 'Wait for dispute resolution'
+            17: 24 * 60 * 60,                                   # 'Maker lost dispute'
+            18: 24 * 60 * 60,                                   # 'Taker lost dispute'
+        }
+        
+        return t_to_expire[status]
 
 
 @receiver(pre_delete, sender=Order)
@@ -393,7 +409,7 @@ class Profile(models.Model):
         null=False
     )
     telegram_lang_code = models.CharField(
-        max_length=4,
+        max_length=10,
         null=True,
         blank=True
     )
@@ -529,7 +545,7 @@ class MarketTick(models.Model):
     currency = models.ForeignKey(Currency,
                                  null=True,
                                  on_delete=models.SET_NULL)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     # Relevant to keep record of the historical fee, so the insight on the premium can be better analyzed
     fee = models.DecimalField(
