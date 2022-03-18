@@ -36,6 +36,7 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "premium",
             "satoshis",
             "public_duration",
+            "bond_size",
         )
 
 class UpdateOrderSerializer(serializers.Serializer):

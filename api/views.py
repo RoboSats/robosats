@@ -30,6 +30,8 @@ from decouple import config
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
+PUBLIC_DURATION = 60*60*int(config("DEFAULT_PUBLIC_ORDER_DURATION"))-1
+BOND_SIZE = int(config("DEFAULT_BOND_SIZE"))
 
 avatar_path = Path(settings.AVATAR_ROOT)
 avatar_path.mkdir(parents=True, exist_ok=True)
@@ -73,6 +75,13 @@ class MakerView(CreateAPIView):
         satoshis = serializer.data.get("satoshis")
         is_explicit = serializer.data.get("is_explicit")
         public_duration = serializer.data.get("public_duration")
+        bond_size = serializer.data.get("bond_size")
+
+        # Optional params
+        if public_duration == None:
+            public_duration = PUBLIC_DURATION
+        if bond_size == None:
+            bond_size = BOND_SIZE
 
         valid, context, _ = Logics.validate_already_maker_or_taker(
             request.user)
@@ -89,9 +98,10 @@ class MakerView(CreateAPIView):
             satoshis=satoshis,
             is_explicit=is_explicit,
             expires_at=timezone.now() + timedelta(
-                seconds=EXP_MAKER_BOND_INVOICE),  # TODO Move to class method
+                seconds=EXP_MAKER_BOND_INVOICE),
             maker=request.user,
             public_duration=public_duration,
+            bond_size=bond_size,
         )
 
         # TODO move to Order class method when new instance is created!
@@ -686,7 +696,7 @@ class InfoView(ListAPIView):
         context["network"] = config("NETWORK")
         context["maker_fee"] = float(config("FEE"))*float(config("MAKER_FEE_SPLIT"))
         context["taker_fee"] = float(config("FEE"))*(1 - float(config("MAKER_FEE_SPLIT")))
-        context["bond_size"] = float(config("BOND_SIZE"))
+        context["bond_size"] = float(config("DEFAULT_BOND_SIZE"))
 
         if request.user.is_authenticated:
             context["nickname"] = request.user.username

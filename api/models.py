@@ -20,7 +20,7 @@ import json
 MIN_TRADE = int(config("MIN_TRADE"))
 MAX_TRADE = int(config("MAX_TRADE"))
 FEE = float(config("FEE"))
-BOND_SIZE = float(config("BOND_SIZE"))
+DEFAULT_BOND_SIZE = float(config("DEFAULT_BOND_SIZE"))
 
 
 class Currency(models.Model):
@@ -106,8 +106,8 @@ class LNPayment(models.Model):
                                    default=None,
                                    blank=True)
     num_satoshis = models.PositiveBigIntegerField(validators=[
-        MinValueValidator(MIN_TRADE * BOND_SIZE),
-        MaxValueValidator(MAX_TRADE * (1 + BOND_SIZE + FEE)),
+        MinValueValidator(100),
+        MaxValueValidator(MAX_TRADE * (1 + DEFAULT_BOND_SIZE + FEE)),
     ])
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField()
@@ -226,6 +226,18 @@ class Order(models.Model):
         validators=[
             MinValueValidator(60*60*float(config("MIN_PUBLIC_ORDER_DURATION"))),   # Min is 10 minutes
             MaxValueValidator(60*60*float(config("MAX_PUBLIC_ORDER_DURATION"))),   # Max is 24 Hours
+        ],
+        blank=False,
+    )
+    # optionally makers can choose the fidelity bond size of the maker and taker (%)
+    bond_size = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=DEFAULT_BOND_SIZE,
+        null=False,
+        validators=[
+            MinValueValidator(float(config("MIN_BOND_SIZE"))),   # 1  %
+            MaxValueValidator(float(config("MAX_BOND_SIZE"))),   # 15 %
         ],
         blank=False,
     )

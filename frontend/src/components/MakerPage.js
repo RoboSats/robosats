@@ -59,7 +59,6 @@ export default class MakerPage extends Component {
         showAdvanced: false,
         allowBondless: false,
         publicExpiryTime: new Date(0, 0, 0, 23, 59),
-        publicDuration: 23*60*60 + 59*60,
         enableAmountRange: false,
         minAmount: null,
         bondSize: 1,
@@ -139,7 +138,6 @@ export default class MakerPage extends Component {
 
     handleCreateOfferButtonPressed=()=>{
         this.state.amount == null ? this.setState({amount: 0}) : null;
-
         const requestOptions = {
             method: 'POST',
             headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
@@ -152,6 +150,7 @@ export default class MakerPage extends Component {
                 premium: this.state.is_explicit ? null: this.state.premium,
                 satoshis: this.state.is_explicit ? this.state.satoshis: null,
                 public_duration: this.state.publicDuration,
+                bond_size: this.state.bondSize,
             }),
         };
         fetch("/api/make/",requestOptions)
@@ -173,19 +172,6 @@ export default class MakerPage extends Component {
     getCurrencyCode(val){
         return this.state.currencies_dict[val.toString()]
     }
-
-    handleBlur = () => {
-    if (this.state.bondSize < 0) {
-        this.setState({bondSize:0});
-    } else if (this.state.bondSize > 100) {
-        this.setState({bondSize:20});
-    }
-    };
-
-    
-    handleSliderBondSizeChange = (event, newValue) => {
-        this.setState({bondSize: newValue});
-    };
 
     handleInputBondSizeChange = (event) => {
         this.setState({bondSize: event.target.value === '' ? 1 : Number(event.target.value)});
@@ -358,9 +344,36 @@ export default class MakerPage extends Component {
     AdvancedMakerOptions = () => {
         return(
             <Paper elevation={12} style={{ padding: 8, width:280, align:'center'}}>
+            
             <Grid container xs={12}  spacing={1}>
+
+            <Grid item xs={12} align="center" spacing={1}>
+                    <FormControl align="center">
+                        <FormHelperText>
+                            <Tooltip enterTouchDelay="0" title={"Set the skin-in-the-game (increase for higher safety assurance)"}>
+                                <div align="center" style={{display:'flex',flexWrap:'wrap', transform: 'translate(20%, 0)'}}>
+                                    Fidelity Bond Size <LockIcon sx={{height:20,width:20}}/>
+                                </div>
+                            </Tooltip>
+                        </FormHelperText>
+
+                        <Slider
+                            sx={{width:220, align:"center"}}
+                            aria-label="Bond Size (%)"
+                            defaultValue={1}
+                            valueLabelDisplay="auto"
+                            valueLabelFormat={(x) => (x+'%')}
+                            step={0.25}
+                            marks={[{value: 1,label: '1%'},{value: 5,label: '5%'},{value: 10,label: '10%'},{value: 15,label: '15%'}]}
+                            min={1}
+                            max={15}
+                            onChange={(e) => this.setState({bondSize: e.target.value})}
+                        />
+
+                    </FormControl>
+                </Grid>
+
                 <Grid item xs={12} align="center" spacing={1}>
-                    <br/>
                     <LocalizationProvider dateAdapter={DateFnsUtils}>
                         <TimePicker
                             ampm={false}
@@ -377,7 +390,7 @@ export default class MakerPage extends Component {
                         />
                     </LocalizationProvider>
                 </Grid>
-
+                
                 <Grid item xs={12} align="center" spacing={1}>
                 <FormControl align="center">
                         <FormHelperText>
@@ -403,7 +416,6 @@ export default class MakerPage extends Component {
                                 track="inverted"
                                 value={this.state.minAmount ? this.state.minAmount : this.state.amount}
                                 step={this.state.amount/100}
-                                getAriaValueText={this.bondSizeText}
                                 valueLabelDisplay="auto"
                                 valueLabelFormat={(x) => (x+" "+this.state.currencyCode)}
                                 marks={this.state.amount == null ?
@@ -418,35 +430,6 @@ export default class MakerPage extends Component {
                             </Grid>
                         </Grid>
                     </FormControl>
-                </Grid>
-                
-                <Grid item xs={12} align="center" spacing={1}>
-                    <FormControl align="center">
-                        <FormHelperText>
-                            <Tooltip enterTouchDelay="0" title={"COMING SOON - Increase for a higher safety assurance"}>
-                            <div align="center" style={{display:'flex',flexWrap:'wrap', transform: 'translate(20%, 0)'}}>
-                                <LockIcon sx={{height:20,width:20}}/> Fidelity Bond Size 
-                            </div>
-                            </Tooltip>
-                        </FormHelperText>
-
-                        <Slider
-                            disabled
-                            sx={{width:220, align:"center"}}
-                            aria-label="Bond Size (%)"
-                            defaultValue={1}
-                            getAriaValueText={this.bondSizeText}
-                            valueLabelDisplay="auto"
-                            valueLabelFormat={(x) => (x+'%')}
-                            step={0.5}
-                            marks={[{value: 1,label: '1%'},{value: 3,label: '3%'},{value: 5,label: '5%'},{value: 9,label: '9%'},{value: 15,label: '15%'}]}
-                            min={1}
-                            max={15}
-                            onChange={this.handleSliderBondSizeChange}
-                        />
-
-                    </FormControl>
-                    
                 </Grid>
 
                 <Grid item xs={12} align="center" spacing={1}>

@@ -14,7 +14,6 @@ import time
 FEE = float(config("FEE"))
 MAKER_FEE_SPLIT = float(config("MAKER_FEE_SPLIT"))
 
-BOND_SIZE = float(config("BOND_SIZE"))
 ESCROW_USERNAME = config("ESCROW_USERNAME")
 PENALTY_TIMEOUT = int(config("PENALTY_TIMEOUT"))
 
@@ -698,7 +697,7 @@ class Logics:
 
         # If there was no maker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
-        bond_satoshis = int(order.last_satoshis * BOND_SIZE)
+        bond_satoshis = int(order.last_satoshis * order.bond_size/100)
 
         description = f"RoboSats - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally."
 
@@ -808,7 +807,7 @@ class Logics:
 
         # If there was no taker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
-        bond_satoshis = int(order.last_satoshis * BOND_SIZE)
+        bond_satoshis = int(order.last_satoshis * order.bond_size/100)
         pos_text = "Buying" if cls.is_buyer(order, user) else "Selling"
         description = (
             f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
