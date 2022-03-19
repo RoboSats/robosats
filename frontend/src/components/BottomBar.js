@@ -76,7 +76,7 @@ export default class BottomBar extends Component {
             alternative_site: 'robosats...',
             node_id: '00000000',
             showRewards: false,
-            referral_link: 'Loading...',
+            referral_code: '',
             earned_rewards: 0,
             rewardInvoice: null,
             badInvoice: false,
@@ -140,7 +140,6 @@ export default class BottomBar extends Component {
                     </ListItemText>
                 </ListItem>
                 }
-                
 
                 <Divider/>
                 <ListItem>
@@ -272,6 +271,11 @@ export default class BottomBar extends Component {
         }));
     }
 
+    getHost(){ 
+        var url = (window.location != window.parent.location) ? this.getHost(document.referrer) : document.location.href;
+        return url.split('/')[2]
+      }
+
     dialogProfile =() =>{
         return(
         <Dialog
@@ -362,13 +366,13 @@ export default class BottomBar extends Component {
                         <ListItemText secondary="Share to earn 100 Sats per trade">
                         <TextField
                             label='Your referral link'
-                            value={this.state.referral_link}
+                            value={this.getHost()+'/ref/'+this.state.referral_code}
                             // variant='filled'
                             size='small'
                             InputProps={{
                                 endAdornment:
                                 <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
-                                    <IconButton onClick= {()=>navigator.clipboard.writeText(this.state.referral_link)}>
+                                    <IconButton onClick= {()=>navigator.clipboard.writeText('http://'+this.getHost()+'/ref/'+this.state.referral_code)}>
                                         <ContentCopy />
                                     </IconButton>
                                 </Tooltip>,

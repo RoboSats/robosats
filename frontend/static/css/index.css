@@ -23,7 +23,16 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%,-50%) translate(0,-20px);
-  z-index: 1;
+}
+
+.alertUnsafe{
+  position: absolute;
+  width: 100%;
+  z-index: 9999;
+}
+
+.hideAlertButton{
+  position: fixed;
 }
 
 .clickTrough{

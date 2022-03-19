@@ -343,7 +343,7 @@ export default class MakerPage extends Component {
 
     AdvancedMakerOptions = () => {
         return(
-            <Paper elevation={12} style={{ padding: 8, width:280, align:'center'}}>
+            <Paper elevation={12} style={{ padding: 8, width:250, align:'center'}}>
             
             <Grid container xs={12}  spacing={1}>
 

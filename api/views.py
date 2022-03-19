@@ -700,7 +700,7 @@ class InfoView(ListAPIView):
 
         if request.user.is_authenticated:
             context["nickname"] = request.user.username
-            context["referral_link"] = str(config('HOST_NAME'))+'/ref/'+str(request.user.profile.referral_code)
+            context["referral_code"] = str(request.user.profile.referral_code)
             context["earned_rewards"] = request.user.profile.earned_rewards
             has_no_active_order, _, order = Logics.validate_already_maker_or_taker(
                 request.user)

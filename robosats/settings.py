@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "django_celery_results",
     "api",
     "chat",
+    "control",
     "frontend.apps.FrontendConfig",
 ]
 from .celery.conf import *
