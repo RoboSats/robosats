@@ -117,7 +117,7 @@ As soon as the seller locks the satoshis, it is safe to send the fiat currency! 
 <img src="images/how-to-use/contract-box-5.png"  width="370" />
 </div>
 
-There is a time limit of 4 hours to complete the fiat exchange. If the time runs out, the order will expire and a dispute will be opened automatically. To avoid order expiration, **use always instant fiat payment methods**. For example, sending cash by ordinary mail is slow and will always trigger a dispute in v0.1.0. In the future longer expiry times will be possible.
+There is a time limit of 24 hours to complete the fiat exchange. If the time runs out, the order will expire and a dispute will be opened automatically. To avoid order expiration, **use always instant fiat payment methods**. For example, sending cash by ordinary mail is slow and will always trigger a dispute in v0.1.0. In the future longer expiry times will be possible.
 
 As soon as you have sent the fiat, you should tap on "Confirm fiat sent" button. After that, the seller will have to confirm the fiat was received. As soon as he confirms the trade is finished and you will be paid out to your lightning wallet. You might see that it is "sending satoshis to buyer" but usually it is so fast you will simply see this screen. Enjoy your sats!
 
@@ -143,7 +143,7 @@ We can create the order exactly has we want it. But mind that you need to publis
 
 In the maker page you are only required to enter the currency, order type (buy/sell) and amount. However, it is best practice to specify the payment methods you allow. It might be also helpful to set a premium/discount for your order to be taken faster. Remember that as a seller you can incentivze buyers to take your order by lowering the premium. If there are too many buyers, however, you can increase the premium to have a trading profit. Alternatively, you can set a fixed amount of Satoshis.
 
-*Limits: in Robosats v0.1.0 an order cannot be smaller than 10.000 Satoshis. It cannot be larger than 500.000 Satoshis in order to avoid lightning routing failures. This limit will be increased in the future.*
+*Limits: in Robosats v0.1.0 an order cannot be smaller than 20.000 Satoshis. It cannot be larger than 800.000 Satoshis in order to avoid lightning routing failures. This limit will be increased in the future.*
 
 <div align="center">
 <img src="images/how-to-use/contract-box-7.png"  width="370" />
@@ -155,7 +155,7 @@ You have to copy or scan the invoice with your lightning wallet in order to lock
 <img src="images/how-to-use/contract-box-8.png"  width="370" />
 </div>
 
-Your order will be public for 6 hours. You can check the time left to expiration by checking the "Order" tab. It can be canceled at any time without penalty before it is taken by another robot. Keep the contract tab open to be notified [with this sound](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3). It might be best to do this on a desktop computer and turn on the volume, so you do not miss when your order is taken. It might take long! Maybe you even forget! You can also enable telegram notifications by pressing "Enable Telegram Notification" and then pressing "Start" in the chat. You will receive a welcome message as confirmation of the enabled notifications. Another message will be sent once a taker for your order is found.
+Your order will be public for 24 hours. You can check the time left to expiration by checking the "Order" tab. It can be canceled at any time without penalty before it is taken by another robot. Keep the contract tab open to be notified [with this sound](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3). It might be best to do this on a desktop computer and turn on the volume, so you do not miss when your order is taken. It might take long! Maybe you even forget! You can also enable telegram notifications by pressing "Enable Telegram Notification" and then pressing "Start" in the chat. You will receive a welcome message as confirmation of the enabled notifications. Another message will be sent once a taker for your order is found.
 
 *Note: If you forget your order and a robot takes it and locks his fidelity bond, you risk losing your own fidelity bond by not fulfilling the next contract steps.*
 
