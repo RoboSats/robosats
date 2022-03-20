@@ -761,3 +761,27 @@ class PriceView(CreateAPIView):
                 payload[code] = None
 
         return Response(payload, status.HTTP_200_OK)
+
+class LimitView(ListAPIView):
+
+    def get(self, request):
+        
+        # Trade limits as BTC
+        min_trade = float(config('MIN_TRADE')) / 100000000
+        max_trade = float(config('MAX_TRADE')) / 100000000
+        max_bondless_trade = float(config('MAX_TRADE_BONDLESS_TAKER')) / 100000000
+
+        payload = {}
+        queryset = Currency.objects.all().order_by('currency')
+
+        for currency in queryset:
+            code = Currency.currency_dict[str(currency.currency)]
+            exchange_rate = float(currency.exchange_rate)
+            payload[currency.currency] = {
+                'code': code,
+                'min_amount': min_trade * exchange_rate,
+                'max_amount': max_trade * exchange_rate,
+                'max_bondless_amount': max_bondless_trade * exchange_rate,
+            }
+
+        return Response(payload, status.HTTP_200_OK)
