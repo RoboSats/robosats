@@ -350,7 +350,7 @@ export default class MakerPage extends Component {
             <Grid item xs={12} align="center" spacing={1}>
                     <FormControl align="center">
                         <FormHelperText>
-                            <Tooltip enterTouchDelay="0" title={"Set the skin-in-the-game (increase for higher safety assurance)"}>
+                            <Tooltip enterTouchDelay="0" placement="top" title={"Set the skin-in-the-game (increase for higher safety assurance)"}>
                                 <div align="center" style={{display:'flex',flexWrap:'wrap', transform: 'translate(20%, 0)'}}>
                                     Fidelity Bond Size <LockIcon sx={{height:20,width:20}}/>
                                 </div>

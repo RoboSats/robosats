@@ -39,6 +39,10 @@ app.conf.beat_schedule = {
         "task": "give_rewards",
         "schedule": crontab(hour=0, minute=0),
     },
+    "account-day": {  # Does accounting for the last day
+        "task": "account_day",
+        "schedule": crontab(hour=23, minute=55),
+    },
     "cache-market-prices": {  # Cache market prices every minute
         "task": "cache_external_market_prices",
         "schedule": timedelta(seconds=60),

@@ -7,6 +7,8 @@ class AccountingDay(models.Model):
     # Every field is denominated in Sats with (3 decimals for millisats)
     # Total volume contracted
     contracted = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    # Number of contracts
+    num_contracts = models.BigIntegerField(default=0, null=False, blank=False)
     # Net volume of trading invoices settled (excludes disputes)
     net_settled = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Net volume of trading invoices paid (excludes rewards and disputes)
@@ -14,19 +16,26 @@ class AccountingDay(models.Model):
     # Sum of net settled and net paid
     net_balance = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Total volume of invoices settled
-    total_inflow = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    inflow = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Total volume of invoices paid
-    total_outflow = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    outflow = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Total cost in routing fees
-    total_routing_fees = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    routing_fees = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Total inflows minus outflows and routing fees
-    total_cashflow = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
-    # Balance on pending rewards (referral rewards and slashed bonds)
-    pending_rewards = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    cashflow = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    # Balance on earned rewards (referral rewards, slashed bonds and solved disputes)
+    outstanding_earned_rewards = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Balance on pending disputes (not resolved yet)
+    outstanding_pending_disputes = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    # Rewards claimed lifetime
+    lifetime_rewards_claimed = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    # Balance change from last day on earned rewards (referral rewards, slashed bonds and solved disputes)
+    earned_rewards = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    # Balance change on pending disputes (not resolved yet)
     pending_disputes = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
-    # Balance on pending rewards and resolved disputes
-    pending_claimable = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    # Rewards claimed on day
+    rewards_claimed = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+
 
 
 class AccountingMonth(models.Model):
@@ -35,6 +44,8 @@ class AccountingMonth(models.Model):
     # Every field is denominated in Sats with (3 decimals for millisats)
     # Total volume contracted
     contracted = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    # Number of contracts
+    num_contracts = models.BigIntegerField(default=0, null=False, blank=False)
     # Net volume of trading invoices settled (excludes disputes)
     net_settled = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Net volume of trading invoices paid (excludes rewards and disputes)
@@ -42,19 +53,25 @@ class AccountingMonth(models.Model):
     # Sum of net settled and net paid
     net_balance = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Total volume of invoices settled
-    total_inflow = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    inflow = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Total volume of invoices paid
-    total_outflow = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    outflow = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Total cost in routing fees
-    total_routing_fees = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    routing_fees = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Total inflows minus outflows and routing fees
-    total_cashflow = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
-    # Balance on pending rewards (referral rewards and slashed bonds)
-    pending_rewards = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    cashflow = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    # Balance on earned rewards (referral rewards, slashed bonds and solved disputes)
+    outstanding_earned_rewards = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Balance on pending disputes (not resolved yet)
+    outstanding_pending_disputes = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    # Rewards claimed lifetime
+    lifetime_rewards_claimed = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    # Balance change from last day on earned rewards (referral rewards, slashed bonds and solved disputes)
+    earned_rewards = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    # Balance change on pending disputes (not resolved yet)
     pending_disputes = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
-    # Balance on pending rewards and resolved disputes
-    pending_claimable = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    # Rewards claimed on day
+    rewards_claimed = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
 
 class Dispute(models.Model):
     pass

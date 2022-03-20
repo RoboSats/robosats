@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "channels",
     "django_celery_beat",
     "django_celery_results",
+    "import_export",
     "api",
     "chat",
     "control",
@@ -74,6 +75,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "robosats.urls"
+IMPORT_EXPORT_USE_TRANSACTIONS = True
 
 TEMPLATES = [
     {
@@ -92,7 +94,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "robosats.wsgi.application"
-USE_TZ = True 
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases

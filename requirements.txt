@@ -23,4 +23,5 @@ scipy==1.8.0
 gunicorn==20.1.0
 psycopg2==2.9.3
 SQLAlchemy==1.4.31
+django-import-export==2.7.1
 requests[socks]

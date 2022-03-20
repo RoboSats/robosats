@@ -109,6 +109,8 @@ class LNPayment(models.Model):
         MinValueValidator(100),
         MaxValueValidator(MAX_TRADE * (1 + DEFAULT_BOND_SIZE + FEE)),
     ])
+    # Fee in sats with mSats decimals fee_msat
+    fee = models.DecimalField(max_digits=10, decimal_places=3, default=0, null=False, blank=False)
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField()
     cltv_expiry = models.PositiveSmallIntegerField(null=True,

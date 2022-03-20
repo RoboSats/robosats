@@ -440,6 +440,12 @@ class Logics:
                 "bad_request":
                 "You cannot submit a invoice while bonds are not locked."
             }
+        if order.status == Order.Status.FAI:
+            if order.payout.status != LNPayment.Status.EXPIRE:
+                return False, {
+                    "bad_request":
+                    "You cannot submit an invoice only after expiration or 3 failed attempts"
+                }
 
         num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
         payout = LNNode.validate_ln_invoice(invoice, num_satoshis)

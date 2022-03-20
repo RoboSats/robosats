@@ -78,6 +78,7 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "concept",
         "status",
         "num_satoshis",
+        "fee",
         "type",
         "expires_at",
         "expiry_height",
@@ -132,7 +133,6 @@ class CurrencieAdmin(admin.ModelAdmin):
     list_display_links = ("id", "currency")
     readonly_fields = ("currency", "exchange_rate", "timestamp")
     ordering = ("id", )
-
 
 @admin.register(MarketTick)
 class MarketTickAdmin(admin.ModelAdmin):

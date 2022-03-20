@@ -123,6 +123,7 @@ def follow_send_payment(lnpayment):
             if response.status == 2:  # Status 2 'SUCCEEDED'
                 print("SUCCEEDED")
                 lnpayment.status = LNPayment.Status.SUCCED
+                lnpayment.fee = float(response.fee_msat)/1000
                 lnpayment.save()
                 order.status = Order.Status.SUC
                 order.expires_at = timezone.now() + timedelta(
