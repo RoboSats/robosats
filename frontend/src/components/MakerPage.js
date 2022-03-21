@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Checkbox, Slider, Switch, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
+import { LinearProgress, Checkbox, Slider, Switch, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
 import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link } from 'react-router-dom'
@@ -43,7 +43,8 @@ export default class MakerPage extends Component {
   minTradeSats = 20000;
   maxTradeSats = 800000;
   maxBondlessSats = 50000;
-  minAmountFraction = 0.2;
+  maxRangeAmountMultiple = 5;
+  minRangeAmountMultiple = 1.5;
 
   constructor(props) {
     super(props);
@@ -62,8 +63,25 @@ export default class MakerPage extends Component {
         enableAmountRange: false,
         minAmount: null,
         bondSize: 1,
+        limits: null,
+        minAmount: null,
+        maxAmount: null,
+        loadingLimits: false,
     }
     this.getCurrencyDict()
+  }
+
+  getLimits() {
+    this.setState({loadingLimits:true})
+    fetch('/api/limits/')
+      .then((response) => response.json())
+      .then((data) => this.setState({
+          limits:data, 
+          loadingLimits:false,
+          minAmount: Number(data[this.state.currency]['max_amount']*0.25), 
+          maxAmount: Number(data[this.state.currency]['max_amount']*0.75),
+          amount: ""})
+      & console.log(this.state.limits));
   }
 
   handleTypeChange=(e)=>{
@@ -83,9 +101,38 @@ export default class MakerPage extends Component {
         });
     }
 
-    handleMinAmountChange=(e)=>{
+    handleRangeAmountChange = (e, activeThumb) => {
+        var maxAmount = this.getMaxAmount();
+        var minAmount = this.getMinAmount();
+        var lowerValue = e.target.value[0];
+        var upperValue = e.target.value[1];
+        var minRange = this.minRangeAmountMultiple;
+        var maxRange = this.maxRangeAmountMultiple;
+
+        if (lowerValue > maxAmount/minRange){
+            lowerValue = maxAmount/minRange
+        }
+        if (upperValue < minRange*minAmount){
+            upperValue = minRange*minAmount
+        }
+
+        if (lowerValue > upperValue/minRange) {
+            if (activeThumb === 0) {
+                upperValue = minRange*lowerValue
+            } else {
+                lowerValue = upperValue/minRange
+            }
+        }else if(lowerValue < upperValue/maxRange){
+            if (activeThumb === 0) {
+                upperValue = maxRange*lowerValue
+            } else {
+                lowerValue = upperValue/maxRange
+            }
+        }
+
         this.setState({
-            minAmount: e.target.value,     
+            minAmount: lowerValue,
+            maxAmount: upperValue,     
         });
     }
 
@@ -205,11 +252,13 @@ export default class MakerPage extends Component {
                     <div style={{maxWidth:140}}>
                     <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Amount of fiat to exchange for bitcoin">
                         <TextField
-                            error={this.state.amount <= 0} 
-                            helperText={this.state.amount <= 0 ? 'Invalid' : null}
+                            disabled = {this.state.enableAmountRange}
+                            error={this.state.amount <= 0 & this.state.amount != "" } 
+                            helperText={this.state.amount <= 0 & this.state.amount != "" ? 'Invalid' : null}
                             label="Amount"
                             type="number" 
                             required="true"
+                            value={this.state.amount}
                             inputProps={{
                                 min:0 , 
                                 style: {textAlign:"center"}
@@ -341,6 +390,25 @@ export default class MakerPage extends Component {
         
     }
 
+    getMaxAmount = () => {
+        if (this.state.limits == null){
+            var max_amount = null
+        }else{
+            var max_amount = this.state.limits[this.state.currency]['max_amount']
+        }
+        return parseFloat(Number(max_amount).toPrecision(3))
+    }
+
+    getMinAmount = () => {
+        if (this.state.limits == null){
+            var min_amount = null
+        }else{
+            var min_amount = this.state.limits[this.state.currency]['min_amount']
+        }
+        return parseFloat(Number(min_amount).toPrecision(3))
+    }
+
+    
     AdvancedMakerOptions = () => {
         return(
             <Paper elevation={12} style={{ padding: 8, width:250, align:'center'}}>
@@ -394,41 +462,35 @@ export default class MakerPage extends Component {
                 <Grid item xs={12} align="center" spacing={1}>
                 <FormControl align="center">
                         <FormHelperText>
-                            <Tooltip enterTouchDelay="0" title={"COMING SOON - Let the taker chose an amount within the range"}>
-                            <div align="center">
+                            <Tooltip enterTouchDelay="0" title={"Let the taker chose an amount within a range"}>
+                            <div align="center" style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+                                <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked}) & (e.target.checked ? this.getLimits() : null)}/>
                                 Amount Range 
                             </div>
                             </Tooltip>
                         </FormHelperText>
-                        <Grid container xs={12} align="left">
-                            <Grid item xs={3} align="left">
-                                <Checkbox 
-                                    disabled
-                                    //disabled={this.state.amount == null}
-                                    onChange={()=>this.setState({enableAmountRange:!this.state.enableAmountRange})}/>
-                            </Grid>
-                            <Grid item xs={9} align="left">
+                            <div style={{ display: this.state.loadingLimits == true ? '':'none'}}>
+                                <LinearProgress />
+                            </div>
+                            <div style={{ display: this.state.loadingLimits == false ? '':'none'}}>
                             <Slider
-                                sx={{width:140, align:"center"}}
-                                disabled={!this.state.enableAmountRange}
-                                aria-label="Amount Range"
-                                defaultValue={this.state.amount}
-                                track="inverted"
-                                value={this.state.minAmount ? this.state.minAmount : this.state.amount}
-                                step={this.state.amount/100}
-                                valueLabelDisplay="auto"
-                                valueLabelFormat={(x) => (x+" "+this.state.currencyCode)}
-                                marks={this.state.amount == null ?
+                                disableSwap={true}
+                                sx={{width:200, align:"center"}}
+                                disabled={!this.state.enableAmountRange || this.state.loadingLimits}
+                                value={[this.state.minAmount, this.state.maxAmount]}
+                                step={this.getMaxAmount()/1000}
+                                //valueLabelDisplay="auto"
+                                valueLabelFormat={(x) => (Number(x).toPrecision(3)+" "+this.state.currencyCode)}
+                                marks={this.state.limits == null?
                                     null
                                     :
-                                    [{value: this.state.amount*this.minAmountFraction,label: parseFloat(parseFloat(this.state.amount*this.minAmountFraction).toFixed(4))+" "+ this.state.currencyCode},
-                                    {value: this.state.amount,label: this.state.amount+" "+this.state.currencyCode}]}
-                                min={this.state.amount*this.minAmountFraction}
-                                max={this.state.amount}
-                                onChange={this.handleMinAmountChange}
+                                    [{value: this.getMinAmount(),label: this.getMinAmount()+" "+ this.state.currencyCode},
+                                    {value: this.getMaxAmount(),label: this.getMaxAmount()+" "+this.state.currencyCode}]}
+                                min={this.getMinAmount()}
+                                max={this.getMaxAmount()}
+                                onChange={this.handleRangeAmountChange}
                             />
-                            </Grid>
-                        </Grid>
+                            </div>
                     </FormControl>
                 </Grid>
 
