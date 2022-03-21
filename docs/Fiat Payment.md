@@ -1,4 +1,4 @@
-# Practical guideline for fiat transaction
+# Fiat payment methods
 
 Because Robosats is a decentralized bitcoin exchange that allows users to exchange between fiat currency and bitcoin like bisq.
 <br>We encourage users to follow the fiat payment guide provided in bisq wiki <a href="https://bisq.wiki/Payment_methods">here</a>  
@@ -8,4 +8,5 @@ as order expiration will automatically trigger the dispute.
 
 ## Available Fiat Payment method
 
-Currently, there is no fiat payment method limitation like bisq, users can use higher risk payment method such as Paypal, Venmo and Cash App.
+Currently, there is no restriction for fiat payment method, users can use any method available as their peer agreed to trade with.
+
