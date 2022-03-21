@@ -87,24 +87,56 @@ class Logics:
 
         return True, None, None
 
-    def validate_order_size(order):
-        """Validates if order is withing limits in satoshis at t0"""
-        if order.t0_satoshis > MAX_TRADE:
-            return False, {
-                "bad_request":
-                "Your order is too big. It is worth " +
-                "{:,}".format(order.t0_satoshis) +
-                " Sats now, but the limit is " + "{:,}".format(MAX_TRADE) +
-                " Sats"
-            }
-        if order.t0_satoshis < MIN_TRADE:
-            return False, {
-                "bad_request":
-                "Your order is too small. It is worth " +
-                "{:,}".format(order.t0_satoshis) +
-                " Sats now, but the limit is " + "{:,}".format(MIN_TRADE) +
-                " Sats"
-            }
+    @classmethod
+    def validate_order_size(cls, order):
+        """Validates if order size in Sats is within limits at t0"""
+        if not order.has_range:
+            if order.t0_satoshis > MAX_TRADE:
+                return False, {
+                    "bad_request":
+                    "Your order is too big. It is worth " +
+                    "{:,}".format(order.t0_satoshis) +
+                    " Sats now, but the limit is " + "{:,}".format(MAX_TRADE) +
+                    " Sats"
+                }
+            if order.t0_satoshis < MIN_TRADE:
+                return False, {
+                    "bad_request":
+                    "Your order is too small. It is worth " +
+                    "{:,}".format(order.t0_satoshis) +
+                    " Sats now, but the limit is " + "{:,}".format(MIN_TRADE) +
+                    " Sats"
+                }
+        elif order.has_range:
+            min_sats = cls.calc_sats(order.min_amount, order.currency.exchange_rate, order.premium)
+            max_sats = cls.calc_sats(order.max_amount, order.currency.exchange_rate, order.premium)
+            if min_sats > max_sats/1.5:
+                return False, {
+                    "bad_request":
+                    "min_sats*1.5 has to be smaller than max_sats"
+                }
+            elif max_sats > MAX_TRADE:
+                return False, {
+                    "bad_request":
+                    "Your order upper range value (max_amount) is too big. It is worth " +
+                    "{:,}".format(max_sats) +
+                    " Sats now, but the limit is " + "{:,}".format(MAX_TRADE) +
+                    " Sats"
+                }
+            elif min_sats < MIN_TRADE:
+                return False, {
+                    "bad_request":
+                    "Your order lower range value (min_mount) is too small. It is worth " +
+                    "{:,}".format(min_sats) +
+                    " Sats now, but the limit is " + "{:,}".format(MAX_TRADE) +
+                    " Sats"
+                }
+            elif min_sats < max_sats/5:
+                return False, {
+                    "bad_request":
+                    f"Your order amount range is too large. Max amount can only be 5 times bigger than min amount"
+                }
+
         return True, None
 
     def user_activity_status(last_seen):
@@ -144,15 +176,19 @@ class Logics:
         return (is_maker and order.type == Order.Types.SELL) or (
             is_taker and order.type == Order.Types.BUY)
 
-    def satoshis_now(order):
+    def calc_sats(amount, exchange_rate, premium):
+        exchange_rate = float(exchange_rate)
+        premium_rate = exchange_rate * (1 + float(premium) / 100)
+        return (float(amount) /premium_rate) * 100 * 1000 * 1000
+
+    @classmethod
+    def satoshis_now(cls, order):
         """checks trade amount in sats"""
         if order.is_explicit:
             satoshis_now = order.satoshis
         else:
-            exchange_rate = float(order.currency.exchange_rate)
-            premium_rate = exchange_rate * (1 + float(order.premium) / 100)
-            satoshis_now = (float(order.amount) /
-                            premium_rate) * 100 * 1000 * 1000
+            amount = order.amount if order.amount != None else order.max_amount
+            satoshis_now = cls.calc_sats(amount, order.currency.exchange_rate, order.premium)
 
         return int(satoshis_now)
 

@@ -66,33 +66,64 @@ class MakerView(CreateAPIView):
                 },
                 status.HTTP_400_BAD_REQUEST,
             )
+        # Only allow users who are not already engaged in an order
+        valid, context, _ = Logics.validate_already_maker_or_taker(request.user)
+        if not valid:
+            return Response(context, status.HTTP_409_CONFLICT)
 
         type = serializer.data.get("type")
         currency = serializer.data.get("currency")
         amount = serializer.data.get("amount")
+        has_range = serializer.data.get("has_range")
+        min_amount = serializer.data.get("min_amount")
+        max_amount = serializer.data.get("max_amount")
         payment_method = serializer.data.get("payment_method")
         premium = serializer.data.get("premium")
         satoshis = serializer.data.get("satoshis")
         is_explicit = serializer.data.get("is_explicit")
         public_duration = serializer.data.get("public_duration")
         bond_size = serializer.data.get("bond_size")
+        bondless_taker = serializer.data.get("bondless_taker")
 
         # Optional params
-        if public_duration == None:
-            public_duration = PUBLIC_DURATION
-        if bond_size == None:
-            bond_size = BOND_SIZE
+        if public_duration == None: public_duration = PUBLIC_DURATION
+        if bond_size == None: bond_size = BOND_SIZE
+        if bondless_taker == None: bondless_taker = False
+        if has_range == None: has_range = False
 
-        valid, context, _ = Logics.validate_already_maker_or_taker(
-            request.user)
-        if not valid:
-            return Response(context, status.HTTP_409_CONFLICT)
+        # An order can either have an amount or a range (min_amount and max_amount)
+        if has_range:
+            amount = None
+        else:
+            min_amount = None
+            max_amount = None
+
+        # Either amount or min_max has to be specified.
+        if has_range and (min_amount == None or max_amount == None):
+            return Response(
+                {
+                    "bad_request":
+                    "You must specify min_amount and max_amount for a range order"
+                },
+                status.HTTP_400_BAD_REQUEST,
+            )
+        elif not has_range and amount == None:
+            return Response(
+                {
+                    "bad_request":
+                    "You must specify an order amount"
+                },
+                status.HTTP_400_BAD_REQUEST,
+            )
 
         # Creates a new order
         order = Order(
             type=type,
             currency=Currency.objects.get(id=currency),
             amount=amount,
+            has_range=has_range,
+            min_amount=min_amount,
+            max_amount=max_amount,
             payment_method=payment_method,
             premium=premium,
             satoshis=satoshis,
@@ -102,9 +133,9 @@ class MakerView(CreateAPIView):
             maker=request.user,
             public_duration=public_duration,
             bond_size=bond_size,
+            bondless_taker=bondless_taker,
         )
 
-        # TODO move to Order class method when new instance is created!
         order.last_satoshis = order.t0_satoshis = Logics.satoshis_now(order)
 
         valid, context = Logics.validate_order_size(order)

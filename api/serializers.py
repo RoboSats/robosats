@@ -14,10 +14,14 @@ class ListOrderSerializer(serializers.ModelSerializer):
             "type",
             "currency",
             "amount",
+            "has_range",
+            "min_amount",
+            "max_amount",
             "payment_method",
             "is_explicit",
             "premium",
             "satoshis",
+            "bondless_taker"
             "maker",
             "taker",
         )
@@ -31,12 +35,16 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "type",
             "currency",
             "amount",
+            "has_range",
+            "min_amount",
+            "max_amount",
             "payment_method",
             "is_explicit",
             "premium",
             "satoshis",
             "public_duration",
             "bond_size",
+            "bondless_taker",
         )
 
 class UpdateOrderSerializer(serializers.Serializer):

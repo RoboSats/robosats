@@ -192,14 +192,15 @@ class Order(models.Model):
     currency = models.ForeignKey(Currency,
                                  null=True,
                                  on_delete=models.SET_NULL)
-    amount = models.DecimalField(max_digits=16,
-                                 decimal_places=8,
-                                 validators=[MinValueValidator(0.00000001)])
+    amount = models.DecimalField(max_digits=18, decimal_places=8, null=True, blank=True)
+    has_range = models.BooleanField(default=False, null=False, blank=False)
+    min_amount = models.DecimalField(max_digits=18, decimal_places=8, null=True, blank=True)
+    max_amount = models.DecimalField(max_digits=18, decimal_places=8, null=True, blank=True)
     payment_method = models.CharField(max_length=35,
                                       null=False,
                                       default="not specified",
                                       blank=True)
-
+    bondless_taker = models.BooleanField(default=False, null=False, blank=False)
     # order pricing method. A explicit amount of sats, or a relative premium above/below market.
     is_explicit = models.BooleanField(default=False, null=False)
     # marked to market

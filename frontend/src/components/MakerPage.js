@@ -78,9 +78,9 @@ export default class MakerPage extends Component {
       .then((data) => this.setState({
           limits:data, 
           loadingLimits:false,
-          minAmount: Number(data[this.state.currency]['max_amount']*0.25), 
-          maxAmount: Number(data[this.state.currency]['max_amount']*0.75),
-          amount: ""})
+          minAmount: parseFloat(Number(data[this.state.currency]['max_amount']*0.25).toPrecision(2)), 
+          maxAmount: parseFloat(Number(data[this.state.currency]['max_amount']*0.75).toPrecision(2))
+        })
       & console.log(this.state.limits));
   }
 
@@ -131,8 +131,8 @@ export default class MakerPage extends Component {
         }
 
         this.setState({
-            minAmount: lowerValue,
-            maxAmount: upperValue,     
+            minAmount: parseFloat(Number(lowerValue).toPrecision(2)),
+            maxAmount: parseFloat(Number(upperValue).toPrecision(2)),
         });
     }
 
@@ -192,12 +192,16 @@ export default class MakerPage extends Component {
                 type: this.state.type,
                 currency: this.state.currency,
                 amount: this.state.amount,
+                has_range: this.state.enableAmountRange,
+                min_amount: this.state.minAmount,
+                max_amount: this.state.maxAmount,
                 payment_method: this.state.payment_method,
                 is_explicit: this.state.is_explicit,
                 premium: this.state.is_explicit ? null: this.state.premium,
                 satoshis: this.state.is_explicit ? this.state.satoshis: null,
                 public_duration: this.state.publicDuration,
                 bond_size: this.state.bondSize,
+                bondless_taker: this.state.allowBondless,
             }),
         };
         fetch("/api/make/",requestOptions)
@@ -253,6 +257,7 @@ export default class MakerPage extends Component {
                     <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Amount of fiat to exchange for bitcoin">
                         <TextField
                             disabled = {this.state.enableAmountRange}
+                            variant = {this.state.enableAmountRange ? 'filled' : 'outlined'}
                             error={this.state.amount <= 0 & this.state.amount != "" } 
                             helperText={this.state.amount <= 0 & this.state.amount != "" ? 'Invalid' : null}
                             label="Amount"
@@ -396,7 +401,7 @@ export default class MakerPage extends Component {
         }else{
             var max_amount = this.state.limits[this.state.currency]['max_amount']
         }
-        return parseFloat(Number(max_amount).toPrecision(3))
+        return parseFloat(Number(max_amount).toPrecision(2))
     }
 
     getMinAmount = () => {
@@ -405,7 +410,7 @@ export default class MakerPage extends Component {
         }else{
             var min_amount = this.state.limits[this.state.currency]['min_amount']
         }
-        return parseFloat(Number(min_amount).toPrecision(3))
+        return parseFloat(Number(min_amount).toPrecision(2))
     }
 
     
@@ -417,14 +422,13 @@ export default class MakerPage extends Component {
 
             <Grid item xs={12} align="center" spacing={1}>
                     <FormControl align="center">
+                    <Tooltip enterDelay="800" enterTouchDelay="0" placement="top" title={"Set the skin-in-the-game, increase for higher safety assurance"}>
                         <FormHelperText>
-                            <Tooltip enterTouchDelay="0" placement="top" title={"Set the skin-in-the-game (increase for higher safety assurance)"}>
                                 <div align="center" style={{display:'flex',flexWrap:'wrap', transform: 'translate(20%, 0)'}}>
                                     Fidelity Bond Size <LockIcon sx={{height:20,width:20}}/>
                                 </div>
-                            </Tooltip>
                         </FormHelperText>
-
+                        </Tooltip>
                         <Slider
                             sx={{width:220, align:"center"}}
                             aria-label="Bond Size (%)"
@@ -462,7 +466,7 @@ export default class MakerPage extends Component {
                 <Grid item xs={12} align="center" spacing={1}>
                 <FormControl align="center">
                         <FormHelperText>
-                            <Tooltip enterTouchDelay="0" title={"Let the taker chose an amount within a range"}>
+                            <Tooltip enterTouchDelay="0" placement="top" align="center"title={"Let the taker chose an amount within the range"}>
                             <div align="center" style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
                                 <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked}) & (e.target.checked ? this.getLimits() : null)}/>
                                 Amount Range 
@@ -475,12 +479,12 @@ export default class MakerPage extends Component {
                             <div style={{ display: this.state.loadingLimits == false ? '':'none'}}>
                             <Slider
                                 disableSwap={true}
-                                sx={{width:200, align:"center"}}
+                                sx={{width:190, align:"center"}}
                                 disabled={!this.state.enableAmountRange || this.state.loadingLimits}
                                 value={[this.state.minAmount, this.state.maxAmount]}
-                                step={this.getMaxAmount()/1000}
-                                //valueLabelDisplay="auto"
-                                valueLabelFormat={(x) => (Number(x).toPrecision(3)+" "+this.state.currencyCode)}
+                                step={(this.getMaxAmount()-this.getMinAmount())/100}
+                                valueLabelDisplay="auto"
+                                valueLabelFormat={(x) => (parseFloat(Number(x).toPrecision(2))+" "+this.state.currencyCode)}
                                 marks={this.state.limits == null?
                                     null
                                     :
@@ -571,7 +575,8 @@ export default class MakerPage extends Component {
                 : ""}
                 <Typography component="subtitle2" variant="subtitle2">
                     <div align='center'>
-                        Create a BTC {this.state.type==0 ? "buy":"sell"} order for {pn(this.state.amount)} {this.state.currencyCode} 
+                        Create a BTC {this.state.type==0 ? "buy":"sell"} order for {this.state.enableAmountRange & this.state.minAmount != null? 
+                                    " "+this.state.minAmount+"-"+this.state.maxAmount : pn(this.state.amount)} {this.state.currencyCode} 
                         {this.state.is_explicit ? " of " + pn(this.state.satoshis) + " Satoshis" : 
                             (this.state.premium == 0 ? " at market price" : 
                                 (this.state.premium > 0 ? " at a " + this.state.premium + "% premium":" at a " + -this.state.premium + "% discount")
