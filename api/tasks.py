@@ -111,7 +111,7 @@ def follow_send_payment(lnpayment):
                 lnpayment.save()
                 order.status = Order.Status.FAI
                 order.expires_at = timezone.now() + timedelta(
-                    seconds=Order.t_to_expire[Order.Status.FAI])
+                    seconds=order.t_to_expire(Order.Status.FAI))
                 order.save()
                 context = {
                     "routing_failed":
@@ -127,7 +127,7 @@ def follow_send_payment(lnpayment):
                 lnpayment.save()
                 order.status = Order.Status.SUC
                 order.expires_at = timezone.now() + timedelta(
-                    seconds=Order.t_to_expire[Order.Status.SUC])
+                    seconds=order.t_to_expire(Order.Status.SUC))
                 order.save()
                 return True, None
 
@@ -139,7 +139,7 @@ def follow_send_payment(lnpayment):
             lnpayment.save()
             order.status = Order.Status.FAI
             order.expires_at = timezone.now() + timedelta(
-                seconds=Order.t_to_expire[Order.Status.FAI])
+                seconds=order.t_to_expire(Order.Status.FAI))
             order.save()
             context = {"routing_failed": "The payout invoice has expired"}
             return False, context

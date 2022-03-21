@@ -32,7 +32,7 @@ class AccountingDay(models.Model):
     # Balance change from last day on earned rewards (referral rewards, slashed bonds and solved disputes)
     earned_rewards = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Balance change on pending disputes (not resolved yet)
-    pending_disputes = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+    disputes = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Rewards claimed on day
     rewards_claimed = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
 

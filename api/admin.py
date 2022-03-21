@@ -121,6 +121,7 @@ class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "num_disputes",
         "lost_disputes",
     )
+    list_editable = ["pending_rewards", "earned_rewards"]
     list_display_links = ("avatar_tag", "id")
     change_links = ["user"]
     readonly_fields = ["avatar_tag"]

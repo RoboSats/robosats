@@ -22,7 +22,8 @@ class AccountingDayAdmin(ImportExportModelAdmin):
         "outstanding_pending_disputes",
         "lifetime_rewards_claimed",
         "outstanding_earned_rewards",
-        "pending_disputes",
+        "earned_rewards",
+        "disputes",
         "rewards_claimed",
     )
     change_links = ["day"]
