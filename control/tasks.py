@@ -84,7 +84,7 @@ def do_accounting():
         
         accounted_day.net_settled = escrows_settled + collected_slashed_bonds
         accounted_day.net_paid = payouts_paid + routing_cost
-        accounted_day.net_balance = (escrows_settled + collected_slashed_bonds) - (payouts_paid + routing_cost)
+        accounted_day.net_balance = float(accounted_day.net_settled) - float(accounted_day.net_paid)
 
         # Differential accounting based on change of outstanding states and disputes unreslved
         if day == today:
