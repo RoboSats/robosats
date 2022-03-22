@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Chip, Tooltip, Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import {TextField,Chip, Tooltip, Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import MediaQuery from 'react-responsive'
 
@@ -89,6 +89,7 @@ export default class OrderPage extends Component {
     }
 
     var otherStateVars = {
+      amount: newStateVars.amount ? newStateVars.amount : null,
       loading: false,
       delay: this.setDelay(newStateVars.status),
       currencyCode: this.getCurrencyCode(newStateVars.currency),
@@ -157,32 +158,81 @@ export default class OrderPage extends Component {
     }
     };
   
-  countdownTakeOrderRenderer = ({ seconds, completed }) => {
-    if(isNaN(seconds)){
-      return (
-      <>
+  handleTakeAmountChange = (e) => {
+    if (e.target.value != "" & e.target.value != null){
+      this.setState({takeAmount: parseFloat(e.target.value)})
+    }else{
+      this.setState({takeAmount: e.target.value})
+    }
+  }
+
+  amountHelperText=()=>{
+    if(this.state.takeAmount < this.state.min_amount & this.state.takeAmount != ""){
+      return "Too low"
+    }else if (this.state.takeAmount > this.state.max_amount & this.state.takeAmount != ""){
+      return "Too high"
+    }else{
+      return null
+    }
+  }
+
+  takeOrderButton = () => {
+    if(this.state.has_range){
+    return(
+        <Grid containter xs={12} align="center" alignItems="stretch" justifyContent="center" style={{ display: "flex"}}>
+          <this.InactiveMakerDialog/>
+          <div style={{maxWidth:120}}>
+          <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Amount of fiat to exchange for bitcoin">
+            <Paper sx={{maxHeight:40}}>
+              <TextField
+                  error={(this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount) & this.state.takeAmount != "" } 
+                  helperText={this.amountHelperText()}
+                  label={"Amount "+this.state.currencyCode}
+                  size="small"
+                  type="number" 
+                  required="true"
+                  value={this.state.takeAmount}
+                  inputProps={{
+                      min:this.state.min_amount ,
+                      max:this.state.max_amount ,  
+                      style: {textAlign:"center"}
+                  }}
+                  onChange={this.handleTakeAmountChange}
+              />
+            </Paper>
+          </Tooltip>
+          </div>
+          <div style={{height:38, top:'1px', position:'relative'}}>
+            <Button sx={{height:38}} variant='contained' color='primary' 
+              onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}
+              disabled={this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount || this.state.takeAmount == "" || this.state.takeAmount == null } >
+              Take Order
+            </Button>
+          </div>
+        </Grid>
+      )
+    }else{
+      return(
+        <>
         <this.InactiveMakerDialog/>
         <Button variant='contained' color='primary' 
-            onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}>
-            Take Order
-          </Button>
-      </>)
+          onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}>
+          Take Order
+        </Button>
+        </>
+      )
     }
+  }
+
+  countdownTakeOrderRenderer = ({ seconds, completed }) => {
+    if(isNaN(seconds)){return (<this.takeOrderButton/>)}
     if (completed) {
       // Render a completed state
-      return (
-        <>
-          <this.InactiveMakerDialog/>
-          <Button variant='contained' color='primary' 
-            onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}>
-            Take Order
-          </Button>
-        </>
-      );
+      return ( <this.takeOrderButton/>);
     } else{
       return(
       <Tooltip enterTouchDelay="0" title="Wait until you can take an order"><div>
-      <Button disabled={true} variant='contained' color='primary' onClick={this.takeOrder}>Take Order</Button>
+      <Button disabled={true} variant='contained' color='primary'>Take Order</Button>
       </div></Tooltip>)
     }
   };
@@ -212,12 +262,13 @@ export default class OrderPage extends Component {
 
   takeOrder=()=>{
     this.setState({loading:true})
-
+    console.log(this.state.takeAmount)
     const requestOptions = {
         method: 'POST',
         headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
         body: JSON.stringify({
           'action':'take',
+          'amount':this.state.takeAmount,
         }),
       };
       fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
@@ -483,10 +534,17 @@ export default class OrderPage extends Component {
               <ListItemIcon>
                {getFlags(this.state.currencyCode)}
               </ListItemIcon>
+              {this.state.has_range & this.state.amount == null ?
+              <ListItemText primary={parseFloat(Number(this.state.min_amount).toPrecision(2))
+                +"-" + parseFloat(Number(this.state.max_amount).toPrecision(2)) +" "+this.state.currencyCode} secondary="Amount range"/>
+              :
               <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))
                 +" "+this.state.currencyCode} secondary="Amount"/>
+              }
+
             </ListItem>
             <Divider />
+
             <ListItem>
               <ListItemIcon>
                 <PaymentsIcon/>

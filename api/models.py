@@ -339,7 +339,11 @@ class Order(models.Model):
     taker_platform_rated = models.BooleanField(default=False, null=False)
 
     def __str__(self):
-        return f"Order {self.id}: {self.Types(self.type).label} BTC for {float(self.amount)} {self.currency}"
+        if self.has_range and self.amount == None:
+            amt = str(float(self.min_amount))+"-"+ str(float(self.max_amount))
+        else:
+            amt = float(self.amount)
+        return f"Order {self.id}: {self.Types(self.type).label} BTC for {amt} {self.currency}"
 
     def t_to_expire(self, status):
 

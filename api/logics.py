@@ -118,16 +118,16 @@ class Logics:
             elif max_sats > MAX_TRADE:
                 return False, {
                     "bad_request":
-                    "Your order upper range value (max_amount) is too big. It is worth " +
-                    "{:,}".format(max_sats) +
+                    "Your order maximum amount is too big. It is worth " +
+                    "{:,}".format(int(max_sats)) +
                     " Sats now, but the limit is " + "{:,}".format(MAX_TRADE) +
                     " Sats"
                 }
             elif min_sats < MIN_TRADE:
                 return False, {
                     "bad_request":
-                    "Your order lower range value (min_mount) is too small. It is worth " +
-                    "{:,}".format(min_sats) +
+                    "Your order minimum amount is too small. It is worth " +
+                    "{:,}".format(int(min_sats)) +
                     " Sats now, but the limit is " + "{:,}".format(MAX_TRADE) +
                     " Sats"
                 }
@@ -136,6 +136,15 @@ class Logics:
                     "bad_request":
                     f"Your order amount range is too large. Max amount can only be 5 times bigger than min amount"
                 }
+
+        return True, None
+
+    def validate_amount_within_range(order, amount):
+        if amount > float(order.max_amount) or amount < float(order.min_amount):
+            return False, {
+                "bad_request":
+                "The amount specified is outside the range specified by the maker"
+            }
 
         return True, None
 
@@ -148,7 +157,7 @@ class Logics:
             return "Inactive"
 
     @classmethod
-    def take(cls, order, user):
+    def take(cls, order, user, amount=None):
         is_penalized, time_out = cls.is_penalized(user)
         if is_penalized:
             return False, {
@@ -156,6 +165,8 @@ class Logics:
                 f"You need to wait {time_out} seconds to take an order",
             }
         else:
+            if order.has_range:
+                order.amount= amount
             order.taker = user
             order.status = Order.Status.TAK
             order.expires_at = timezone.now() + timedelta(
@@ -702,6 +713,8 @@ class Logics:
         order.status = Order.Status.PUB
         order.expires_at = order.created_at + timedelta(
             seconds=order.t_to_expire(Order.Status.PUB))
+        if order.has_range:
+            order.amount = None
         order.save()
         # send_message.delay(order.id,'order_published') # too spammy
         return

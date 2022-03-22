@@ -46,7 +46,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "maker_link",
         "taker_link",
         "status",
-        "amount",
+        "amt",
         "currency_link",
         "t0_satoshis",
         "is_disputed",
@@ -69,7 +69,13 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "trade_escrow",
     )
     list_filter = ("is_disputed", "is_fiat_sent", "type", "currency", "status")
-    search_fields = ["id","amount"]
+    search_fields = ["id","amount","min_amount","max_amount"]
+
+    def amt(self, obj):
+        if obj.has_range and obj.amount == None:
+            return str(float(obj.min_amount))+"-"+ str(float(obj.max_amount))
+        else:
+           return float(obj.amount)
 
 @admin.register(LNPayment)
 class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):

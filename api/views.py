@@ -390,6 +390,10 @@ class OrderView(viewsets.ViewSet):
         """
         order_id = request.GET.get(self.lookup_url_kwarg)
 
+        import sys
+        sys.stdout.write('AAAAAA')
+        print('BBBBB1')
+
         serializer = UpdateOrderSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -410,7 +414,17 @@ class OrderView(viewsets.ViewSet):
                     request.user)
                 if not valid:
                     return Response(context, status=status.HTTP_409_CONFLICT)
-                valid, context = Logics.take(order, request.user)
+
+                # For order with amount range, set the amount now.
+                if order.has_range:
+                    amount = float(serializer.data.get("amount"))
+                    valid, context = Logics.validate_amount_within_range(order, amount)
+                    if not valid:
+                        return Response(context, status=status.HTTP_400_BAD_REQUEST)
+
+                    valid, context = Logics.take(order, request.user, amount)
+                else:
+                    valid, context = Logics.take(order, request.user)
                 if not valid:
                     return Response(context, status=status.HTTP_403_FORBIDDEN)
 
