@@ -93,6 +93,8 @@ def do_accounting():
                 outstanding_pending_disputes = 0
                 for order in pending_disputes:
                     outstanding_pending_disputes += order.payout.num_satoshis
+            else:
+                outstanding_pending_disputes = 0
 
             accounted_day.outstanding_earned_rewards = Profile.objects.all().aggregate(Sum('earned_rewards'))['earned_rewards__sum']
             accounted_day.outstanding_pending_disputes = outstanding_pending_disputes
@@ -106,7 +108,5 @@ def do_accounting():
         accounted_yesterday = accounted_day
         result[str(day)]={'contracted':contracted,'inflow':inflow,'outflow':outflow}
         day = day + timedelta(days=1)
-
-        
 
     return result
