@@ -41,6 +41,17 @@ body {
   z-index: 1;
 }
 
+/* No arrows on numeric inputs */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+
 .bottomBar {
   position: fixed;
   bottom: 0;

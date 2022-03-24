@@ -78,7 +78,7 @@ export default class MakerPage extends Component {
       .then((data) => this.setState({
           limits:data, 
           loadingLimits:false,
-          minAmount: parseFloat(Number(data[this.state.currency]['max_amount']*0.25).toPrecision(2)), 
+          minAmount: this.state.amount ? parseFloat((this.state.amount/2).toPrecision(2)) : parseFloat(Number(data[this.state.currency]['max_amount']*0.25).toPrecision(2)), 
           maxAmount: this.state.amount ? this.state.amount : parseFloat(Number(data[this.state.currency]['max_amount']*0.75).toPrecision(2)),
         }));
   }
@@ -480,23 +480,26 @@ export default class MakerPage extends Component {
     }
 
     rangeText =()=> {
+        
         return (
             <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
                 <span style={{width: 40}}>From</span>
                 <TextField
                     variant="standard"
+                    type="number" 
                     size="small"
                     value={this.state.minAmount}
                     onChange={this.handleMinAmountChange}
-                    error={this.state.minAmount < this.getMinAmount()}
+                    error={this.state.minAmount < this.getMinAmount() || this.state.maxAmount < this.state.minAmount}
                     sx={{width: this.state.minAmount.toString().length * 10, maxWidth: 40}}
                   />
                 <span style={{width: 20}}>to</span>
                 <TextField
                     variant="standard"
                     size="small"
+                    type="number" 
                     value={this.state.maxAmount}
-                    error={this.state.maxAmount > this.getMaxAmount()}
+                    error={this.state.maxAmount > this.getMaxAmount() || this.state.maxAmount < this.state.minAmount}
                     onChange={this.handleMaxAmountChange}
                     sx={{width: this.state.maxAmount.toString().length * 10, maxWidth: 50}}
                   />

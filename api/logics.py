@@ -113,7 +113,7 @@ class Logics:
             if min_sats > max_sats/1.5:
                 return False, {
                     "bad_request":
-                    "max amount must be at least 50 percent larger than min amount"
+                    "Maximum range amount must be at least 50 percent higher than the minimum amount"
                 }
             elif max_sats > MAX_TRADE:
                 return False, {
