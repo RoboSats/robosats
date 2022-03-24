@@ -113,7 +113,7 @@ class Logics:
             if min_sats > max_sats/1.5:
                 return False, {
                     "bad_request":
-                    "min_sats*1.5 has to be smaller than max_sats"
+                    "max amount must be at least 50 percent larger than min amount"
                 }
             elif max_sats > MAX_TRADE:
                 return False, {
@@ -128,7 +128,7 @@ class Logics:
                     "bad_request":
                     "Your order minimum amount is too small. It is worth " +
                     "{:,}".format(int(min_sats)) +
-                    " Sats now, but the limit is " + "{:,}".format(MAX_TRADE) +
+                    " Sats now, but the limit is " + "{:,}".format(MIN_TRADE) +
                     " Sats"
                 }
             elif min_sats < max_sats/5:

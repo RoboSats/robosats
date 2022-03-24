@@ -182,8 +182,8 @@ export default class OrderPage extends Component {
         <Grid containter xs={12} align="center" alignItems="stretch" justifyContent="center" style={{ display: "flex"}}>
           <this.InactiveMakerDialog/>
           <div style={{maxWidth:120}}>
-          <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Amount of fiat to exchange for bitcoin">
-            <Paper sx={{maxHeight:40}}>
+          <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Enter amount of fiat to exchange for bitcoin">
+            <Paper elevation={5} sx={{maxHeight:40}}>
               <TextField
                   error={(this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount) & this.state.takeAmount != "" } 
                   helperText={this.amountHelperText()}
@@ -202,12 +202,23 @@ export default class OrderPage extends Component {
             </Paper>
           </Tooltip>
           </div>
-          <div style={{height:38, top:'1px', position:'relative'}}>
-            <Button sx={{height:38}} variant='contained' color='primary' 
-              onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}
-              disabled={this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount || this.state.takeAmount == "" || this.state.takeAmount == null } >
-              Take Order
-            </Button>
+          <div style={{height:38, top:'1px', position:'relative', display: (this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount || this.state.takeAmount == "" || this.state.takeAmount == null) ? '':'none'}}>
+            <Tooltip placement="top" enterTouchDelay="0" enterDelay="500" enterNextDelay="1200" title="You must specify an amount first">
+              <Paper elevation={4}>
+                <Button sx={{height:38}} variant='contained' color='primary' 
+                  disabled={true}>
+                  Take Order
+                </Button>
+              </Paper>
+            </Tooltip>
+          </div>
+          <div style={{height:38, top:'1px', position:'relative', display: (this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount || this.state.takeAmount == "" || this.state.takeAmount == null) ? 'none':''}}>
+          <Paper elevation={4}>
+              <Button sx={{height:38}} variant='contained' color='primary' 
+                onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}>
+                Take Order
+              </Button>
+            </Paper>
           </div>
         </Grid>
       )
