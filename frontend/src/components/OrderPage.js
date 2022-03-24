@@ -131,7 +131,7 @@ export default class OrderPage extends Component {
     return (<span> The order has expired</span>);
 
   } else {
-    var col = 'black'
+    var col = 'inherit'
     var fraction_left = (total/1000) / this.state.total_secs_exp
     // Make orange at 25% of time left
     if (fraction_left < 0.25){col = 'orange'}
@@ -679,7 +679,7 @@ export default class OrderPage extends Component {
     };
 
     return(
-      <Box sx={{ width: '100%' }}>
+      <Box sx={{ width: '100%'}}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={value} onChange={handleChange} variant="fullWidth" >
             <Tab label="Order" {...this.a11yProps(0)} />

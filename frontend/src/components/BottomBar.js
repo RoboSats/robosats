@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
-import {FormControlLabel, Switch, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import {FormControlLabel, Link, Switch, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
-import { Link } from 'react-router-dom'
+import { Link as LinkRouter } from 'react-router-dom'
 
 // Icons
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -90,8 +90,8 @@ export default class BottomBar extends Component {
         this.setState(null)
         fetch('/api/info/')
           .then((response) => response.json())
-          .then((data) => this.setState(data) &
-          this.props.setAppState({nickname:data.nickname, loading:false}));
+          .then((data) => this.setState(data) & this.setState({active_order_id: data.active_order_id ? data.active_order_id : null})
+          & this.props.setAppState({nickname:data.nickname, loading:false}));
       }
 
     handleClickOpenStatsForNerds = () => {
@@ -125,18 +125,18 @@ export default class BottomBar extends Component {
                 <ListItem>
                     <ListItemIcon><DnsIcon/></ListItemIcon>
                     <ListItemText secondary={this.state.node_alias}>
-                         <a target="_blank" href={"https://1ml.com/testnet/node/" 
+                         <Link target="_blank" href={"https://1ml.com/testnet/node/" 
                         + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (1ML)"}
-                        </a>
+                        </Link>
                     </ListItemText>
                 </ListItem>
                 :
                 <ListItem>
                     <ListItemIcon><AmbossIcon/></ListItemIcon>
                     <ListItemText secondary={this.state.node_alias}>
-                            <a target="_blank" href={"https://amboss.space/node/" 
+                            <Link target="_blank" href={"https://amboss.space/node/" 
                         + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (AMBOSS)"}
-                        </a>
+                        </Link>
                     </ListItemText>
                 </ListItem>
                 }
@@ -145,8 +145,8 @@ export default class BottomBar extends Component {
                 <ListItem>
                     <ListItemIcon><WebIcon/></ListItemIcon>
                     <ListItemText secondary={this.state.alternative_name}>
-                        <a target="_blank" href={"http://"+this.state.alternative_site}>{this.state.alternative_site.slice(0, 12)+"...onion"}
-                        </a>
+                        <Link target="_blank" href={"http://"+this.state.alternative_site}>{this.state.alternative_site.slice(0, 12)+"...onion"}
+                        </Link>
                     </ListItemText>
                 </ListItem>
 
@@ -154,9 +154,9 @@ export default class BottomBar extends Component {
                 <ListItem>
                     <ListItemIcon><GitHubIcon/></ListItemIcon>
                     <ListItemText secondary="Currently running commit hash">
-                        <a target="_blank" href={"https://github.com/Reckless-Satoshi/robosats/tree/" 
+                        <Link target="_blank" href={"https://github.com/Reckless-Satoshi/robosats/tree/" 
                         + this.state.robosats_running_commit_hash}>{this.state.robosats_running_commit_hash.slice(0, 12)+"..."}
-                        </a>
+                        </Link>
                     </ListItemText>
                 </ListItem>
 
@@ -305,8 +305,7 @@ export default class BottomBar extends Component {
 
                 <Divider/>
                 {this.state.active_order_id ? 
-                // TODO Link to router and do this.props.history.push
-                <ListItemButton onClick={this.handleClickCloseProfile} to={'/order/'+this.state.active_order_id} component={Link}>
+                <ListItemButton onClick={this.handleClickCloseProfile} to={'/order/'+this.state.active_order_id} component={LinkRouter}>
                     <ListItemIcon>
                         <Badge badgeContent="" color="primary"> 
                             <NumbersIcon color="primary"/>

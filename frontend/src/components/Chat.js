@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Button, Badge, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, FormHelperText, Typography} from "@mui/material";
+import {Button, Link, Badge, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, FormHelperText, Typography} from "@mui/material";
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
 export default class Chat extends Component {
@@ -160,7 +160,7 @@ export default class Chat extends Component {
               </Grid>
             </form>
             <FormHelperText>
-              The chat has no memory: if you leave, messages are lost. <a target="_blank" href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/sensitive-data-PGP-guide.md/"> Learn easy PGP encryption.</a>
+              The chat has no memory: if you leave, messages are lost. <Link target="_blank" href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/sensitive-data-PGP-guide.md/"> Learn easy PGP encryption.</Link>
             </FormHelperText>
       </Container>
     )

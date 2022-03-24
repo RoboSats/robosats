@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { IconButton, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { IconButton, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
 import Countdown, { zeroPad} from 'react-countdown';
 import Chat from "./Chat"
@@ -910,7 +910,7 @@ handleRatingRobosatsChange=(e)=>{
           <Typography component="body2" variant="body2" align="center">
             <p><b>Thank you for using Robosats!</b></p> 
             <p>Let us know how the platform could improve
-            (<a href="https://t.me/robosats">Telegram</a> / <a href="https://github.com/Reckless-Satoshi/robosats/issues">Github</a>)</p>
+            (<Link href="https://t.me/robosats">Telegram</Link> / <Link href="https://github.com/Reckless-Satoshi/robosats/issues">Github</Link>)</p>
           </Typography>
         </Grid>
         : null}
@@ -970,8 +970,8 @@ handleRatingRobosatsChange=(e)=>{
           <Grid item xs={12} align="center">
             <Typography component="body2" variant="body2" align="center">
               Your invoice has expired or more than 3 payment attempts have been made. 
-              Muun wallet is not recommended, <a href="https://github.com/Reckless-Satoshi/robosats/issues/44">check the list of
-              compatible wallets</a>
+              Muun wallet is not recommended, <Link href="https://github.com/Reckless-Satoshi/robosats/issues/44">check the list of
+              compatible wallets</Link>
             </Typography>
           </Grid>
           <Grid item xs={12} align="center">

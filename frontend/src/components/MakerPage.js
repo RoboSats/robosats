@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import { LinearProgress, Checkbox, Slider, SliderThumb, Switch, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
+import { LinearProgress, Link, Checkbox, Slider, Box, Tab, Tabs, SliderThumb, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
 import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
-import { Link } from 'react-router-dom'
+import { Link as LinkRouter } from 'react-router-dom'
 import { styled } from '@mui/material/styles';
 import getFlags from './getFlags'
 
@@ -79,8 +79,15 @@ export default class MakerPage extends Component {
           limits:data, 
           loadingLimits:false,
           minAmount: parseFloat(Number(data[this.state.currency]['max_amount']*0.25).toPrecision(2)), 
-          maxAmount: parseFloat(Number(data[this.state.currency]['max_amount']*0.75).toPrecision(2)),
+          maxAmount: this.state.amount ? this.state.amount : parseFloat(Number(data[this.state.currency]['max_amount']*0.75).toPrecision(2)),
         }));
+  }
+
+  a11yProps(index) {
+    return {
+      id: `simple-tab-${index}`,
+      'aria-controls': `simple-tabpanel-${index}`,
+    };
   }
 
   handleTypeChange=(e)=>{
@@ -103,6 +110,16 @@ export default class MakerPage extends Component {
     handleAmountChange=(e)=>{
         this.setState({
             amount: e.target.value,     
+        });
+    }
+    handleMinAmountChange=(e)=>{
+        this.setState({
+            minAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),     
+        });
+    }
+    handleMaxAmountChange=(e)=>{
+        this.setState({
+            maxAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),  
         });
     }
 
@@ -134,10 +151,10 @@ export default class MakerPage extends Component {
                 lowerValue = upperValue/maxRange
             }
         }
-
+        
         this.setState({
-            minAmount: parseFloat(Number(lowerValue).toPrecision(2)),
-            maxAmount: parseFloat(Number(upperValue).toPrecision(2)),
+            minAmount: parseFloat(Number(lowerValue).toPrecision(lowerValue < 100 ? 2 : 3)),
+            maxAmount: parseFloat(Number(upperValue).toPrecision(upperValue < 100 ? 2 : 3)),
         });
     }
 
@@ -235,7 +252,7 @@ export default class MakerPage extends Component {
 
     StandardMakerOptions = () => {
         return(
-            <Paper elevation={12} style={{ padding: 8, width:240, align:'center'}}>
+            <Paper elevation={12} style={{ padding: 8, width:'260px', align:'center'}}>
             <Grid item xs={12} align="center" spacing={1}>
                 <FormControl component="fieldset">
                     <FormHelperText>
@@ -257,6 +274,7 @@ export default class MakerPage extends Component {
                     </RadioGroup>
                 </FormControl>
             </Grid>
+            
             <Grid containter xs={12} alignItems="stretch" style={{ display: "flex" }}>
                     <div style={{maxWidth:140}}>
                     <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Amount of fiat to exchange for bitcoin">
@@ -461,9 +479,36 @@ export default class MakerPage extends Component {
         );
     }
 
+    rangeText =()=> {
+        return (
+            <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+                <span style={{width: 40}}>From</span>
+                <TextField
+                    variant="standard"
+                    size="small"
+                    value={this.state.minAmount}
+                    onChange={this.handleMinAmountChange}
+                    error={this.state.minAmount < this.getMinAmount()}
+                    sx={{width: this.state.minAmount.toString().length * 10, maxWidth: 40}}
+                  />
+                <span style={{width: 20}}>to</span>
+                <TextField
+                    variant="standard"
+                    size="small"
+                    value={this.state.maxAmount}
+                    error={this.state.maxAmount > this.getMaxAmount()}
+                    onChange={this.handleMaxAmountChange}
+                    sx={{width: this.state.maxAmount.toString().length * 10, maxWidth: 50}}
+                  />
+                <span>{this.state.currencyCode}</span>
+            </div>
+            )
+
+      }
+
     AdvancedMakerOptions = () => {
         return(
-            <Paper elevation={12} style={{ padding: 8, width:250, align:'center'}}>
+            <Paper elevation={12} style={{ padding: 8, width:'280px', align:'center'}}>
             
             <Grid container xs={12}  spacing={1}>
 
@@ -473,8 +518,7 @@ export default class MakerPage extends Component {
                             <Tooltip enterTouchDelay="0" placement="top" align="center"title={"Let the taker chose an amount within the range"}>
                             <div align="center" style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
                                 <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked}) & (e.target.checked ? this.getLimits() : null)}/>
-                                {this.state.enableAmountRange & this.state.minAmount != null? 
-                                    "From "+this.state.minAmount+" to "+this.state.maxAmount +" "+this.state.currencyCode: "Enable Amount Range"}
+                                {this.state.enableAmountRange & this.state.minAmount != null? <this.rangeText/> : "Enable Amount Range"}
                             </div>
                             </Tooltip>
                         </FormHelperText>
@@ -487,10 +531,10 @@ export default class MakerPage extends Component {
                                 sx={{width:200, align:"center"}}
                                 disabled={!this.state.enableAmountRange || this.state.loadingLimits}
                                 value={[this.state.minAmount, this.state.maxAmount]}
-                                step={(this.getMaxAmount()-this.getMinAmount())/100}
+                                step={(this.getMaxAmount()-this.getMinAmount())/5000}
                                 valueLabelDisplay="auto"
                                 components={{ Thumb: this.RangeThumbComponent }}
-                                valueLabelFormat={(x) => (parseFloat(Number(x).toPrecision(2))+" "+this.state.currencyCode)}
+                                valueLabelFormat={(x) => (parseFloat(Number(x).toPrecision(x < 100 ? 2 : 3))+" "+this.state.currencyCode)}
                                 marks={this.state.limits == null?
                                     null
                                     :
@@ -507,6 +551,7 @@ export default class MakerPage extends Component {
                 <Grid item xs={12} align="center" spacing={1}>
                     <LocalizationProvider dateAdapter={DateFnsUtils}>
                         <TimePicker
+                            sx={{width:210, align:"center"}}
                             ampm={false}
                             openTo="hours"
                             views={['hours', 'minutes']}
@@ -550,7 +595,7 @@ export default class MakerPage extends Component {
                 <Grid item xs={12} align="center" spacing={1}>
                     <Tooltip enterTouchDelay="0" title={"COMING SOON - High risk! Limited to "+ this.maxBondlessSats/1000 +"K Sats"}>
                         <FormControlLabel
-                            label={<a>Allow bondless taker (<a href="https://git.robosats.com" target="_blank">info</a>)</a>}
+                            label={<a>Allow bondless taker (<Link href="https://git.robosats.com" target="_blank">info</Link>)</a>}
                             control={
                                 <Checkbox
                                     disabled
@@ -567,7 +612,36 @@ export default class MakerPage extends Component {
             </Paper>
         )
     }
+
+    makeOrderBox=()=>{
+        const [value, setValue] = React.useState(this.state.showAdvanced);
+
+        const handleChange = (event, newValue) => {
+        this.setState({showAdvanced:newValue})
+        setValue(newValue);
+        };
+        return(
+            <Box sx={{ width: this.state.showAdvanced? '275px':'252px'}}>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <Tabs value={value? value:0} onChange={handleChange} variant="fullWidth" >
+                        <Tab label="Basic" {...this.a11yProps(0)} />
+                        <Tab label="Advanced" {...this.a11yProps(1)} />
+                    </Tabs>
+                    </Box>
+                            
+                    <Grid item xs={12} align="center" spacing={1}>
+                        <div style={{ display: this.state.showAdvanced == false ? '':'none'}}>
+                            <this.StandardMakerOptions/>
+                        </div>
+                        <div style={{ display: this.state.showAdvanced == true ? '':'none'}}>
+                            <this.AdvancedMakerOptions/>
+                        </div>
+                    </Grid>
+                </Box>
+        )
+    }
   render() {
+
     return (
             <Grid container xs={12} align="center" spacing={1} sx={{minWidth:380}}>
                 {/* <Grid item xs={12} align="center" sx={{minWidth:380}}>
@@ -576,34 +650,12 @@ export default class MakerPage extends Component {
                     </Typography>
                 </Grid> */}
                 <Grid item xs={12} align="center">
-                    <div className="advancedSwitch">
-                    {/* <Tooltip enterTouchDelay="0" title="Coming soon"> */}
-                        <FormControlLabel
-                            size="small"
-                            disableTypography={true}
-                            label={<Typography variant="body2">Advanced</Typography>} 
-                            labelPlacement="start" control={
-                            <Switch
-                                size="small"
-                                checked={this.state.showAdvanced} 
-                                onChange={()=> this.setState({showAdvanced: !this.state.showAdvanced})}/>}
-                        />
-                    {/* </Tooltip> */}
-                    </div>
-                </Grid>
-
-                <Grid item xs={12} align="center" spacing={1}>
-                    <div style={{ display: this.state.showAdvanced == false ? '':'none'}}>
-                        <this.StandardMakerOptions/>
-                    </div>
-                    <div style={{ display: this.state.showAdvanced == true ? '':'none'}}>
-                        <this.AdvancedMakerOptions/>
-                    </div>
+                <this.makeOrderBox/>
                 </Grid>
 
             <Grid item xs={12} align="center">
                 {/* conditions to disable the make button */}
-                {(this.state.amount == null & (this.state.enableAmountRange == false & this.state.minAmount != null) || 
+                {(this.state.amount == null & (this.state.enableAmountRange == false & this.state.minAmount == null) || 
                     this.state.amount <= 0 & !this.state.enableAmountRange || 
                     (this.state.is_explicit & (this.state.badSatoshis != null || this.state.satoshis == null)) || 
                     (!this.state.is_explicit & this.state.badPremium != null))
@@ -634,7 +686,7 @@ export default class MakerPage extends Component {
                     </div>
                 </Typography>
                 <Grid item xs={12} align="center">
-                    <Button color="secondary" variant="contained" to="/" component={Link}>
+                    <Button color="secondary" variant="contained" to="/" component={LinkRouter}>
                         Back
                     </Button>
                 </Grid>
