@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { IconButton, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { IconButton, Box, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
 import Countdown, { zeroPad} from 'react-countdown';
 import Chat from "./Chat"
@@ -214,7 +214,9 @@ export default class TradeBox extends Component {
           }
         </Grid>
         <Grid item xs={12} align="center">
-          <QRCode value={this.props.data.bond_invoice} size={305}/>
+          <Box sx={{bgcolor:'#ffffff', width:'315px', position:'relative', left:'-5px'}} >
+            <QRCode value={this.props.data.bond_invoice} size={305} style={{position:'relative', top:'3px'}}/>
+          </Box>
           <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
             <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.bond_invoice)}} align="center"> <ContentCopy/> Copy to clipboard</Button>
           </Tooltip>
@@ -284,7 +286,9 @@ export default class TradeBox extends Component {
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          <QRCode value={this.props.data.escrow_invoice} size={305}/>
+          <Box sx={{bgcolor:'#ffffff', width:'315px', position:'relative', left:'-5px'}} >
+            <QRCode value={this.props.data.escrow_invoice} size={305} style={{position:'relative', top:'3px'}}/>
+          </Box>
           <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
             <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.escrow_invoice)}} align="center"> <ContentCopy/>Copy to clipboard</Button>
           </Tooltip>
