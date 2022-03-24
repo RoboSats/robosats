@@ -621,12 +621,12 @@ export default class MakerPage extends Component {
         setValue(newValue);
         };
         return(
-            <Box sx={{ width: this.state.showAdvanced? '275px':'252px'}}>
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                    <Tabs value={value? value:0} onChange={handleChange} variant="fullWidth" >
-                        <Tab label="Basic" {...this.a11yProps(0)} />
-                        <Tab label="Advanced" {...this.a11yProps(1)} />
-                    </Tabs>
+            <Box sx={{width: this.state.showAdvanced? '270px':'252px'}}>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider', position:'relative',left:'5px'}}>
+                        <Tabs value={value? value:0} onChange={handleChange} variant="fullWidth" >
+                            <Tab label="Basic" {...this.a11yProps(0)} />
+                            <Tab label="Advanced" {...this.a11yProps(1)} />
+                        </Tabs>
                     </Box>
                             
                     <Grid item xs={12} align="center" spacing={1}>

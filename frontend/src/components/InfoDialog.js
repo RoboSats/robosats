@@ -38,7 +38,7 @@ export default class InfoDialog extends Component {
           <Typography component="h4" variant="h4">What is <i>RoboSats</i>?</Typography>
           <Typography component="body2" variant="body2">
             <p>It is a BTC/FIAT peer-to-peer exchange over lightning. It simplifies 
-              matchmaking and minimizes the need for entrust. RoboSats focuses in privacy and speed.</p>
+              matchmaking and minimizes the need for trust. RoboSats focuses in privacy and speed.</p>
               <img
                 width='100%'
                 src={window.location.origin +'/static/assets/images/robosats_0.1.0_banner.png'}
@@ -59,7 +59,7 @@ export default class InfoDialog extends Component {
               received the fiat, then the satoshis are released to Bob. Enjoy your satoshis, 
               Bob!</p>
 
-            <p>At no point, AnonymousAlice01 and BafflingBob02 have to trust the 
+            <p>At no point, AnonymousAlice01 and BafflingBob02 have to entrust the 
               bitcoin funds to each other. In case they have a conflict, <i>RoboSats</i> staff 
               will help resolving the dispute. You can find a step-by-step 
               description of the trade pipeline in <Link href='https://github.com/Reckless-Satoshi/robosats/blob/main/README.md#how-it-works'>How it works</Link>
