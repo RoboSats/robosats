@@ -18,6 +18,32 @@ body {
   height: 100%;
 }
 
+.loaderCenter{
+  margin:0 auto;
+  position: absolute;
+  left:50%;
+  top:50%;
+  margin-left:-76px;
+  margin-top:-60px;
+  width:170px;
+  height:120px;
+}
+.loaderSpinner {
+  position: relative;
+  border: 16px solid #f3f3f3; 
+  border-top: 16px solid #1976d2;
+  border-bottom: 16px solid #9c27b0;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 4s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .appCenter {
   position: absolute;
   top: 50%;
