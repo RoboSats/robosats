@@ -107,7 +107,7 @@ def compute_premium_percentile(order):
     for similar_order in queryset:
         similar_order_amount = similar_order.amount if not similar_order.has_range else similar_order.max_amount
         rates.append(
-            float(similar_order.last_satoshis) / float(similar_order.amount))
+            float(similar_order.last_satoshis) / float(similar_order_amount))
 
     rates = np.array(rates)
     return round(np.sum(rates < order_rate) / len(rates), 2)

@@ -521,7 +521,7 @@ export default class MakerPage extends Component {
                         <FormHelperText>
                             <Tooltip enterTouchDelay="0" placement="top" align="center"title={"Let the taker chose an amount within the range"}>
                             <div align="center" style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                                <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked}) & this.handleClickRelative() & (e.target.checked ? this.getLimits() : null)}/>
+                                <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked}) & (e.target.checked ? this.getLimits() : null)}/>
                                 {this.state.enableAmountRange & this.state.minAmount != null? <this.rangeText/> : "Enable Amount Range"}
                             </div>
                             </Tooltip>
