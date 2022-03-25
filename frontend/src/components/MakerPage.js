@@ -348,7 +348,8 @@ export default class MakerPage extends Component {
                         />
                     </Tooltip>
                     <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title="Set a fix amount of satoshis">
-                        <FormControlLabel 
+                        <FormControlLabel
+                        disabled={this.state.enableAmountRange} 
                         value="explicit" 
                         control={<Radio color="secondary"/>}
                         label="Explicit"
@@ -421,7 +422,7 @@ export default class MakerPage extends Component {
         if (this.state.limits == null){
             var max_amount = null
         }else{
-            var max_amount = this.state.limits[this.state.currency]['max_amount']
+            var max_amount = this.state.limits[this.state.currency]['max_amount']*(1+this.state.premium/100)
         }
         // times 0.98 to allow a bit of margin with respect to the backend minimum
         return parseFloat(Number(max_amount*0.98).toPrecision(2))
@@ -431,7 +432,7 @@ export default class MakerPage extends Component {
         if (this.state.limits == null){
             var min_amount = null
         }else{
-            var min_amount = this.state.limits[this.state.currency]['min_amount']
+            var min_amount = this.state.limits[this.state.currency]['min_amount']*(1+this.state.premium/100)
         }
         // times 1.1 to allow a bit of margin with respect to the backend minimum
         return parseFloat(Number(min_amount*1.1).toPrecision(2))
@@ -520,7 +521,7 @@ export default class MakerPage extends Component {
                         <FormHelperText>
                             <Tooltip enterTouchDelay="0" placement="top" align="center"title={"Let the taker chose an amount within the range"}>
                             <div align="center" style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                                <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked}) & (e.target.checked ? this.getLimits() : null)}/>
+                                <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked}) & this.handleClickRelative() & (e.target.checked ? this.getLimits() : null)}/>
                                 {this.state.enableAmountRange & this.state.minAmount != null? <this.rangeText/> : "Enable Amount Range"}
                             </div>
                             </Tooltip>

@@ -210,8 +210,8 @@ class Logics:
             premium = order.premium
             price = exchange_rate * (1 + float(premium) / 100)
         else:
-            order_rate = float(
-                order.amount) / (float(order.satoshis) / 100000000)
+            amount = order.amount if not order.has_range else order.max_amount
+            order_rate = float(amount) / (float(order.satoshis) / 100000000)
             premium = order_rate / exchange_rate - 1
             premium = int(premium * 10000) / 100  # 2 decimals left
             price = order_rate

@@ -101,9 +101,11 @@ def compute_premium_percentile(order):
     if len(queryset) <= 1:
         return 0.5
 
-    order_rate = float(order.last_satoshis) / float(order.amount)
+    amount = order.amount if not order.has_range else order.max_amount
+    order_rate = float(order.last_satoshis) / float(amount)
     rates = []
     for similar_order in queryset:
+        similar_order_amount = similar_order.amount if not similar_order.has_range else similar_order.max_amount
         rates.append(
             float(similar_order.last_satoshis) / float(similar_order.amount))
 
