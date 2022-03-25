@@ -492,7 +492,7 @@ export default class MakerPage extends Component {
                     value={this.state.minAmount}
                     onChange={this.handleMinAmountChange}
                     error={this.state.minAmount < this.getMinAmount() || this.state.maxAmount < this.state.minAmount}
-                    sx={{width: this.state.minAmount.toString().length * 10, maxWidth: 40}}
+                    sx={{width: this.state.minAmount.toString().length * 9, maxWidth: 40}}
                   />
                 <span style={{width: 20}}>to</span>
                 <TextField
@@ -502,7 +502,7 @@ export default class MakerPage extends Component {
                     value={this.state.maxAmount}
                     error={this.state.maxAmount > this.getMaxAmount() || this.state.maxAmount < this.state.minAmount}
                     onChange={this.handleMaxAmountChange}
-                    sx={{width: this.state.maxAmount.toString().length * 10, maxWidth: 50}}
+                    sx={{width: this.state.maxAmount.toString().length * 9, maxWidth: 50}}
                   />
                 <span>{this.state.currencyCode}</span>
             </div>

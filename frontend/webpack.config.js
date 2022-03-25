@@ -21,6 +21,7 @@ module.exports = {
   optimization: {
     minimize: true,
   },
+ 
   plugins: [
     new webpack.DefinePlugin({
       "process.env": {
@@ -28,6 +29,7 @@ module.exports = {
         NODE_ENV: JSON.stringify("production"),
       },
     }),
+    //new webpack.optimize.AggressiveMergingPlugin() //Merge chunks 
   ],
   resolve: {
     extensions: ['.ts', '.js'],
