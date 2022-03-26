@@ -62,14 +62,20 @@ export default class BookPage extends Component {
   }
 
   getCurrencyCode(val){
-    return this.state.currencies_dict[val.toString()]
+    if (val){
+      return this.state.currencies_dict[val.toString()]
+    }
   }
 
   // pretty numbers
   pn(x) {
-      var parts = x.toString().split(".");
-      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-      return parts.join(".");
+    if(x == null){
+        return 'null'
+    }else{
+        var parts = x.toString().split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join(".");
+    }
   }
   
   // Colors for the status badges
@@ -109,7 +115,7 @@ export default class BookPage extends Component {
               premium: order.premium,
             })
           )}
-
+        loading={this.state.loading}
         columns={[
           // { field: 'id', headerName: 'ID', width: 40 },
           { field: 'robot', headerName: 'Robot', width: 240, 
@@ -154,7 +160,7 @@ export default class BookPage extends Component {
             )} },
           ]}
 
-        pageSize={this.state.pageSize}
+        pageSize={this.state.loading ? 0 : this.state.pageSize}
         rowsPerPageOptions={[6,20,50]}
         onPageSizeChange={(newPageSize) => this.setState({pageSize:newPageSize})}
         onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
@@ -168,6 +174,7 @@ export default class BookPage extends Component {
     return (
       <div style={{ height: 422, width: '100%' }}>
       <DataGrid
+        loading={this.state.loading}
         rows={
             this.state.orders.map((order) =>
             ({id: order.id,
@@ -231,7 +238,7 @@ export default class BookPage extends Component {
             )} },
           ]}
 
-        pageSize={this.state.pageSize}
+        pageSize={this.state.loading ? 0 : this.state.pageSize}
         rowsPerPageOptions={[6,20,50]}
         onPageSizeChange={(newPageSize) => this.setState({pageSize:newPageSize})}
         onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
@@ -296,11 +303,6 @@ export default class BookPage extends Component {
             </Typography>
           </Grid>
           }
-          {/* If loading, show circular progressbar */}
-          {this.state.loading ?
-          <Grid item xs={12} align="center">
-            <CircularProgress />
-          </Grid> : ""}
 
         { this.state.not_found ?
           (<Grid item xs={12} align="center">
@@ -324,14 +326,14 @@ export default class BookPage extends Component {
             {/* Desktop Book */}
             <MediaQuery minWidth={930}>
               <Paper elevation={0} style={{width: 925, maxHeight: 500, overflow: 'auto'}}>
-                  {this.state.loading ? null : this.bookListTableDesktop()}
+                  <this.bookListTableDesktop/>
               </Paper>
             </MediaQuery>
 
             {/* Smartphone Book */}
             <MediaQuery maxWidth={929}>
               <Paper elevation={0} style={{width: 380, maxHeight: 450, overflow: 'auto'}}>
-                  {this.state.loading ? null : this.bookListTablePhone()}
+                  <this.bookListTablePhone/>
               </Paper>
             </MediaQuery>
            </Grid>
