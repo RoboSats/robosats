@@ -13,21 +13,25 @@ class ProfileInline(admin.StackedInline):
     can_delete = False
     fields = ("avatar_tag", )
     readonly_fields = ["avatar_tag"]
-
+    show_change_link = True
 
 # extended users with avatars
 @admin.register(User)
-class EUserAdmin(UserAdmin):
+class EUserAdmin(AdminChangeLinksMixin, UserAdmin):
     inlines = [ProfileInline]
     list_display = (
         "avatar_tag",
         "id",
+        "profile_link",
         "username",
         "last_login",
         "date_joined",
         "is_staff",
     )
     list_display_links = ("id", "username")
+    change_links = (
+        "profile",
+    )
     ordering = ("-id", )
 
     def avatar_tag(self, obj):
@@ -42,7 +46,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "maker_link",
         "taker_link",
         "status",
-        "amount",
+        "amt",
         "currency_link",
         "t0_satoshis",
         "is_disputed",
@@ -65,7 +69,13 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "trade_escrow",
     )
     list_filter = ("is_disputed", "is_fiat_sent", "type", "currency", "status")
-    search_fields = ["id","amount"]
+    search_fields = ["id","amount","min_amount","max_amount"]
+
+    def amt(self, obj):
+        if obj.has_range and obj.amount == None:
+            return str(float(obj.min_amount))+"-"+ str(float(obj.max_amount))
+        else:
+           return float(obj.amount)
 
 @admin.register(LNPayment)
 class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
@@ -74,6 +84,7 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "concept",
         "status",
         "num_satoshis",
+        "fee",
         "type",
         "expires_at",
         "expiry_height",
@@ -95,7 +106,7 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     )
     list_filter = ("type", "concept", "status")
     ordering = ("-expires_at", )
-    search_fields = ["payment_hash","num_satoshis"]
+    search_fields = ["payment_hash","num_satoshis","sender__username","receiver__username","description"]
 
 
 @admin.register(Profile)
@@ -116,9 +127,11 @@ class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "num_disputes",
         "lost_disputes",
     )
+    list_editable = ["pending_rewards", "earned_rewards"]
     list_display_links = ("avatar_tag", "id")
     change_links = ["user"]
     readonly_fields = ["avatar_tag"]
+    search_fields = ["user__username","id"]
 
 
 @admin.register(Currency)
@@ -127,7 +140,6 @@ class CurrencieAdmin(admin.ModelAdmin):
     list_display_links = ("id", "currency")
     readonly_fields = ("currency", "exchange_rate", "timestamp")
     ordering = ("id", )
-
 
 @admin.register(MarketTick)
 class MarketTickAdmin(admin.ModelAdmin):

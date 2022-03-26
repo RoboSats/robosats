@@ -1,5 +1,5 @@
 
-import {Typography, DialogActions,  DialogContent, Button, Grid} from "@mui/material"
+import {Typography, Link, DialogActions,  DialogContent, Button, Grid} from "@mui/material"
 import React, { Component } from 'react'
 import Image from 'material-ui-image'
 import MediaQuery from 'react-responsive'
@@ -18,8 +18,8 @@ export default class InfoDialog extends Component {
                 <p>It is a BTC/FIAT peer-to-peer exchange over lightning. <br/> It simplifies 
                   matchmaking and minimizes the need of trust. RoboSats focuses in privacy and speed.</p>
                 
-                <p>RoboSats is an open source project <a 
-                  href='https://github.com/reckless-satoshi/robosats'>(GitHub).</a>
+                <p>RoboSats is an open source project <Link 
+                  href='https://github.com/reckless-satoshi/robosats'>(GitHub).</Link>
                 </p>
               </Typography>
             </Grid>
@@ -38,13 +38,13 @@ export default class InfoDialog extends Component {
           <Typography component="h4" variant="h4">What is <i>RoboSats</i>?</Typography>
           <Typography component="body2" variant="body2">
             <p>It is a BTC/FIAT peer-to-peer exchange over lightning. It simplifies 
-              matchmaking and minimizes the need for entrust. RoboSats focuses in privacy and speed.</p>
+              matchmaking and minimizes the need for trust. RoboSats focuses in privacy and speed.</p>
               <img
                 width='100%'
                 src={window.location.origin +'/static/assets/images/robosats_0.1.0_banner.png'}
               />
-            <p>RoboSats is an open source project <a 
-              href='https://github.com/reckless-satoshi/robosats'>(GitHub).</a>
+            <p>RoboSats is an open source project <Link 
+              href='https://github.com/reckless-satoshi/robosats'>(GitHub).</Link>
             </p>
           </Typography>
           </MediaQuery>
@@ -59,10 +59,11 @@ export default class InfoDialog extends Component {
               received the fiat, then the satoshis are released to Bob. Enjoy your satoshis, 
               Bob!</p>
 
-            <p>At no point, AnonymousAlice01 and BafflingBob02 have to trust the 
+            <p>At no point, AnonymousAlice01 and BafflingBob02 have to entrust the 
               bitcoin funds to each other. In case they have a conflict, <i>RoboSats</i> staff 
               will help resolving the dispute. You can find a step-by-step 
-              description of the trade pipeline in <a href='https://github.com/Reckless-Satoshi/robosats/blob/main/README.md#how-it-works'>How it works</a></p>
+              description of the trade pipeline in <Link href='https://github.com/Reckless-Satoshi/robosats/blob/main/README.md#how-it-works'>How it works</Link>
+              You can also check the full guide in <Link href='https://github.com/Reckless-Satoshi/robosats/blob/main/docs/how-to-use.md'>How to use</Link></p>
           </Typography>
 
           <Typography component="h5" variant="h5">What payment methods are accepted?</Typography>
@@ -119,8 +120,8 @@ export default class InfoDialog extends Component {
               time. For large amounts use an onchain escrow service such as <i>Bisq</i>
             </p> 
 
-            <p> You can build more trust on <i>RoboSats</i> by <a href='https://github.com/reckless-satoshi/robosats'>
-              inspecting the source code. </a> </p>
+            <p> You can build more trust on <i>RoboSats</i> by <Link href='https://github.com/reckless-satoshi/robosats'>
+              inspecting the source code. </Link> </p>
           </Typography>
 
           <Typography component="h5" variant="h5">What happens if <i>RoboSats</i> suddenly disappears?</Typography>
@@ -148,8 +149,8 @@ export default class InfoDialog extends Component {
           <Typography component="body2" variant="body2">
             <p> This lightning application is provided as is. It is in active 
               development: trade with the utmost caution. There is no private 
-              support. Support is only offered via public channels <a href='https://t.me/robosats'>
-              (Telegram)</a>. <i>RoboSats</i> will never contact you. <i>
+              support. Support is only offered via public channels <Link href='https://t.me/robosats'>
+              (Telegram)</Link>. <i>RoboSats</i> will never contact you. <i>
               RoboSats</i> will definitely never ask for your robot token.
             </p>
           </Typography>

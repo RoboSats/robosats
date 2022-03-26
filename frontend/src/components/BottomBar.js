@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
-import {Chip, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import {FormControlLabel, Link, Switch, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
-import { Link } from 'react-router-dom'
+import { Link as LinkRouter } from 'react-router-dom'
 
 // Icons
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -24,6 +24,7 @@ import WebIcon from '@mui/icons-material/Web';
 import BookIcon from '@mui/icons-material/Book';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import AmbossIcon from "./icons/AmbossIcon"
 
 // pretty numbers
 function pn(x) {
@@ -74,7 +75,8 @@ export default class BottomBar extends Component {
             profileShown: false,
             alternative_site: 'robosats...',
             node_id: '00000000',
-            referral_link: 'Loading...',
+            showRewards: false,
+            referral_code: '',
             earned_rewards: 0,
             rewardInvoice: null,
             badInvoice: false,
@@ -88,8 +90,8 @@ export default class BottomBar extends Component {
         this.setState(null)
         fetch('/api/info/')
           .then((response) => response.json())
-          .then((data) => this.setState(data) &
-          this.props.setAppState({nickname:data.nickname, loading:false}));
+          .then((data) => this.setState(data) & this.setState({active_order_id: data.active_order_id ? data.active_order_id : null})
+          & this.props.setAppState({nickname:data.nickname, loading:false}));
       }
 
     handleClickOpenStatsForNerds = () => {
@@ -123,31 +125,28 @@ export default class BottomBar extends Component {
                 <ListItem>
                     <ListItemIcon><DnsIcon/></ListItemIcon>
                     <ListItemText secondary={this.state.node_alias}>
-                         <a target="_blank" href={"https://1ml.com/testnet/node/" 
+                         <Link target="_blank" href={"https://1ml.com/testnet/node/" 
                         + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (1ML)"}
-                        </a>
+                        </Link>
                     </ListItemText>
                 </ListItem>
                 :
                 <ListItem>
-                    <ListItemAvatar>
-                        <Avatar sx={{ width: 25, height:25, }} src='/static/assets/images/amboss.png' variant="rounded"/>
-                    </ListItemAvatar>
+                    <ListItemIcon><AmbossIcon/></ListItemIcon>
                     <ListItemText secondary={this.state.node_alias}>
-                            <a target="_blank" href={"https://amboss.space/node/" 
+                            <Link target="_blank" href={"https://amboss.space/node/" 
                         + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (AMBOSS)"}
-                        </a>
+                        </Link>
                     </ListItemText>
                 </ListItem>
                 }
-                
 
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><WebIcon/></ListItemIcon>
                     <ListItemText secondary={this.state.alternative_name}>
-                        <a target="_blank" href={"http://"+this.state.alternative_site}>{this.state.alternative_site.slice(0, 12)+"...onion"}
-                        </a>
+                        <Link target="_blank" href={"http://"+this.state.alternative_site}>{this.state.alternative_site.slice(0, 12)+"...onion"}
+                        </Link>
                     </ListItemText>
                 </ListItem>
 
@@ -155,9 +154,9 @@ export default class BottomBar extends Component {
                 <ListItem>
                     <ListItemIcon><GitHubIcon/></ListItemIcon>
                     <ListItemText secondary="Currently running commit hash">
-                        <a target="_blank" href={"https://github.com/Reckless-Satoshi/robosats/tree/" 
+                        <Link target="_blank" href={"https://github.com/Reckless-Satoshi/robosats/tree/" 
                         + this.state.robosats_running_commit_hash}>{this.state.robosats_running_commit_hash.slice(0, 12)+"..."}
-                        </a>
+                        </Link>
                     </ListItemText>
                 </ListItem>
 
@@ -272,6 +271,11 @@ export default class BottomBar extends Component {
         }));
     }
 
+    getHost(){ 
+        var url = (window.location != window.parent.location) ? this.getHost(document.referrer) : document.location.href;
+        return url.split('/')[2]
+      }
+
     dialogProfile =() =>{
         return(
         <Dialog
@@ -301,8 +305,7 @@ export default class BottomBar extends Component {
 
                 <Divider/>
                 {this.state.active_order_id ? 
-                // TODO Link to router and do this.props.history.push
-                <ListItemButton onClick={this.handleClickCloseProfile} to={'/order/'+this.state.active_order_id} component={Link}>
+                <ListItemButton onClick={this.handleClickCloseProfile} to={'/order/'+this.state.active_order_id} component={LinkRouter}>
                     <ListItemIcon>
                         <Badge badgeContent="" color="primary"> 
                             <NumbersIcon color="primary"/>
@@ -343,80 +346,92 @@ export default class BottomBar extends Component {
                 </ListItemText>
                 </ListItem>
                 
-                <Divider><Chip label='Rewards & Compensations'/></Divider>
-                <ListItem>
-                    <ListItemIcon>
-                        <PersonAddAltIcon/>
-                    </ListItemIcon>
-                    <ListItemText secondary="Share to earn 100 Sats per trade">
-                    <TextField
-                        label='Your Referral Link'
-                        value={this.state.referral_link}
-                        // variant='filled'
-                        size='small'
-                        InputProps={{
-                            endAdornment:
-                            <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
-                                <IconButton onClick= {()=>navigator.clipboard.writeText(this.state.referral_link)}>
-                                    <ContentCopy />
-                                </IconButton>
-                            </Tooltip>,
-                            }}
+                <Divider/>
+
+                <Grid spacing={1} align="center">
+                    <FormControlLabel labelPlacement="start"control={
+                        <Switch
+                        checked={this.state.showRewards} 
+                        onChange={()=> this.setState({showRewards: !this.state.showRewards})}/>} 
+                        label="Rewards and compensations" 
                         />
-                </ListItemText>
-                </ListItem>
+                </Grid>
                 
-                <ListItem>
-                    <ListItemIcon>
-                        <EmojiEventsIcon/>
-                    </ListItemIcon>
-                    {!this.state.openClaimRewards ?
-                    <ListItemText secondary="Your earned rewards">
-                        <Grid container xs={12}>
-                            <Grid item xs={9}>
-                                <Typography>{this.state.earned_rewards+" Sats"}</Typography>
-                            </Grid>
-                            <Grid item xs={3}>
-                                <Button disabled={this.state.earned_rewards==0? true : false} onClick={() => this.setState({openClaimRewards:true})} variant="contained" size="small">Claim</Button>
-                            </Grid>
-                        </Grid>
-                    </ListItemText>
-                    :
-                    <form style={{maxWidth: 270}}>
-                        <Grid alignItems="stretch" style={{ display: "flex"}} align="center">
-                            <Grid item alignItems="stretch" style={{ display: "flex" }} align="center">
-                            <TextField
-                                error={this.state.badInvoice}
-                                helperText={this.state.badInvoice ? this.state.badInvoice : "" }
-                                label={"Invoice for " + this.state.earned_rewards + " Sats"}
-                                //variant="standard"
-                                size="small"
-                                value={this.state.rewardInvoice}
-                                onChange={e => {
-                                this.setState({ rewardInvoice: e.target.value });
+                <div style={{ display: this.state.showRewards ? '':'none'}}>
+                    <ListItem>
+                        <ListItemIcon>
+                            <PersonAddAltIcon/>
+                        </ListItemIcon>
+                        <ListItemText secondary="Share to earn 100 Sats per trade">
+                        <TextField
+                            label='Your referral link'
+                            value={this.getHost()+'/ref/'+this.state.referral_code}
+                            // variant='filled'
+                            size='small'
+                            InputProps={{
+                                endAdornment:
+                                <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
+                                    <IconButton onClick= {()=>navigator.clipboard.writeText('http://'+this.getHost()+'/ref/'+this.state.referral_code)}>
+                                        <ContentCopy />
+                                    </IconButton>
+                                </Tooltip>,
                                 }}
                             />
+                    </ListItemText>
+                    </ListItem>
+                    
+                    <ListItem>
+                        <ListItemIcon>
+                            <EmojiEventsIcon/>
+                        </ListItemIcon>
+                        {!this.state.openClaimRewards ?
+                        <ListItemText secondary="Your earned rewards">
+                            <Grid container xs={12}>
+                                <Grid item xs={9}>
+                                    <Typography>{this.state.earned_rewards+" Sats"}</Typography>
+                                </Grid>
+                                <Grid item xs={3}>
+                                    <Button disabled={this.state.earned_rewards==0? true : false} onClick={() => this.setState({openClaimRewards:true})} variant="contained" size="small">Claim</Button>
+                                </Grid>
                             </Grid>
-                            <Grid item alignItems="stretch" style={{ display: "flex" }}>
-                                <Button sx={{maxHeight:38}} onClick={this.handleSubmitInvoiceClicked} variant="contained" color="primary" size="small" > Submit </Button>
+                        </ListItemText>
+                        :
+                        <form style={{maxWidth: 270}}>
+                            <Grid alignItems="stretch" style={{ display: "flex"}} align="center">
+                                <Grid item alignItems="stretch" style={{ display: "flex" }} align="center">
+                                <TextField
+                                    error={this.state.badInvoice}
+                                    helperText={this.state.badInvoice ? this.state.badInvoice : "" }
+                                    label={"Invoice for " + this.state.earned_rewards + " Sats"}
+                                    //variant="standard"
+                                    size="small"
+                                    value={this.state.rewardInvoice}
+                                    onChange={e => {
+                                    this.setState({ rewardInvoice: e.target.value });
+                                    }}
+                                />
+                                </Grid>
+                                <Grid item alignItems="stretch" style={{ display: "flex" }}>
+                                    <Button sx={{maxHeight:38}} onClick={this.handleSubmitInvoiceClicked} variant="contained" color="primary" size="small" > Submit </Button>
+                                </Grid>
                             </Grid>
-                        </Grid>
-                    </form>
-                    }
-                </ListItem>
+                        </form>
+                        }
+                    </ListItem>
 
-                {this.state.showRewardsSpinner?
-                <div style={{display: 'flex', justifyContent: 'center'}}>
-                    <CircularProgress/>
-                </div>
-                :""}
-                
-                {this.state.withdrawn?
-                <div style={{display: 'flex', justifyContent: 'center'}}>
-                    <Typography color="primary" variant="body2"><b>There it goes, thank you!🥇</b></Typography>
-                </div>
-                :""}
+                    {this.state.showRewardsSpinner?
+                    <div style={{display: 'flex', justifyContent: 'center'}}>
+                        <CircularProgress/>
+                    </div>
+                    :""}
+                    
+                    {this.state.withdrawn?
+                    <div style={{display: 'flex', justifyContent: 'center'}}>
+                        <Typography color="primary" variant="body2"><b>There it goes, thank you!🥇</b></Typography>
+                    </div>
+                    :""}
 
+                </div>
             </List>
             </DialogContent>
             

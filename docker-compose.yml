@@ -27,6 +27,7 @@ services:
     build: ./frontend
     container_name: npm-dev
     restart: always
+    command: npm run build
     volumes:
       - ./frontend:/usr/src/frontend
 

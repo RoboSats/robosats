@@ -261,6 +261,7 @@ class LNNode:
 
             if response.status == 2:  # STATUS 'SUCCEEDED'
                 lnpayment.status = LNPayment.Status.SUCCED
+                lnpayment.fee = float(response.fee_msat)/1000
                 lnpayment.save()
                 return True, None
 

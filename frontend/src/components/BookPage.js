@@ -78,6 +78,15 @@ export default class BookPage extends Component {
     if(status=='Seen recently'){return("warning")}
     if(status=='Inactive'){return('error')}
   }
+  amountToString = (amount,has_range,min_amount,max_amount) => {
+    if (has_range){
+      console.log(this.pn(parseFloat(Number(min_amount).toPrecision(2))))
+      console.log(this.pn(parseFloat(Number(min_amount).toPrecision(2)))+'-'+this.pn(parseFloat(Number(max_amount).toPrecision(2))))
+      return this.pn(parseFloat(Number(min_amount).toPrecision(2)))+'-'+this.pn(parseFloat(Number(max_amount).toPrecision(2)))
+    }else{
+      return this.pn(parseFloat(Number(amount).toPrecision(3)))
+    }
+  }
 
   bookListTableDesktop=()=>{
     return (
@@ -90,7 +99,10 @@ export default class BookPage extends Component {
               robot: order.maker_nick, 
               robot_status: order.maker_status,
               type: order.type ? "Seller": "Buyer",
-              amount: parseFloat(parseFloat(order.amount).toFixed(5)),
+              amount: order.amount,
+              has_range: order.has_range,
+              min_amount: order.min_amount,
+              max_amount: order.max_amount,
               currency: this.getCurrencyCode(order.currency),
               payment_method: order.payment_method,
               price: order.price,
@@ -123,9 +135,9 @@ export default class BookPage extends Component {
             );
           } },
           { field: 'type', headerName: 'Is', width: 60 },
-          { field: 'amount', headerName: 'Amount', type: 'number', width: 80,
+          { field: 'amount', headerName: 'Amount', type: 'number', width: 90,
           renderCell: (params) => {return (
-            <div style={{ cursor: "pointer" }}>{this.pn(params.row.amount)}</div>
+            <div style={{ cursor: "pointer" }}>{this.amountToString(params.row.amount,params.row.has_range, params.row.min_amount, params.row.max_amount)}</div>
           )}},
           { field: 'currency', headerName: 'Currency', width: 100, 
           renderCell: (params) => {return (
@@ -163,7 +175,10 @@ export default class BookPage extends Component {
               robot: order.maker_nick, 
               robot_status: order.maker_status,
               type: order.type ? "Seller": "Buyer",
-              amount: parseFloat(parseFloat(order.amount).toFixed(4)),
+              amount: order.amount,
+              has_range: order.has_range,
+              min_amount: order.min_amount,
+              max_amount: order.max_amount,
               currency: this.getCurrencyCode(order.currency),
               payment_method: order.payment_method,
               price: order.price,
@@ -191,10 +206,10 @@ export default class BookPage extends Component {
             );
           } },
           { field: 'type', headerName: 'Is', width: 60, hide:'true'},
-          { field: 'amount', headerName: 'Amount', type: 'number', width: 80, 
+          { field: 'amount', headerName: 'Amount', type: 'number', width: 90, 
           renderCell: (params) => {return (
             <Tooltip placement="right" enterTouchDelay="0" title={params.row.type}>
-              <div style={{ cursor: "pointer" }}>{this.pn(params.row.amount)}</div>
+              <div style={{ cursor: "pointer" }}>{this.amountToString(params.row.amount,params.row.has_range, params.row.min_amount, params.row.max_amount)}</div>
             </Tooltip>
           )} },
           { field: 'currency', headerName: 'Currency', width: 100, 

@@ -56,8 +56,10 @@ INSTALLED_APPS = [
     "channels",
     "django_celery_beat",
     "django_celery_results",
+    "import_export",
     "api",
     "chat",
+    "control",
     "frontend.apps.FrontendConfig",
 ]
 from .celery.conf import *
@@ -73,6 +75,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "robosats.urls"
+IMPORT_EXPORT_USE_TRANSACTIONS = True
 
 TEMPLATES = [
     {

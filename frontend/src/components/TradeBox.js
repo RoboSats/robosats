@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { IconButton, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { IconButton, Box, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
 import Countdown, { zeroPad} from 'react-countdown';
 import Chat from "./Chat"
@@ -214,7 +214,9 @@ export default class TradeBox extends Component {
           }
         </Grid>
         <Grid item xs={12} align="center">
-          <QRCode value={this.props.data.bond_invoice} size={305}/>
+          <Box sx={{bgcolor:'#ffffff', width:'315px', position:'relative', left:'-5px'}} >
+            <QRCode value={this.props.data.bond_invoice} size={305} style={{position:'relative', top:'3px'}}/>
+          </Box>
           <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
             <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.bond_invoice)}} align="center"> <ContentCopy/> Copy to clipboard</Button>
           </Tooltip>
@@ -284,7 +286,9 @@ export default class TradeBox extends Component {
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          <QRCode value={this.props.data.escrow_invoice} size={305}/>
+          <Box sx={{bgcolor:'#ffffff', width:'315px', position:'relative', left:'-5px'}} >
+            <QRCode value={this.props.data.escrow_invoice} size={305} style={{position:'relative', top:'3px'}}/>
+          </Box>
           <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
             <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.escrow_invoice)}} align="center"> <ContentCopy/>Copy to clipboard</Button>
           </Tooltip>
@@ -385,7 +389,7 @@ export default class TradeBox extends Component {
               <Typography component="body2" variant="body2" align="left">
                 <p>Be patient while robots check the book. 
                 It might take some time. This box will ring 🔊 once a robot takes your order. </p>
-                <p>Please note that if your premium is excessive, or your currency or payment
+                <p>Please note that if your premium is excessive or your currency or payment
                   methods are not popular, your order might expire untaken. Your bond will
                   return to you (no action needed).</p> 
               </Typography>
@@ -910,7 +914,7 @@ handleRatingRobosatsChange=(e)=>{
           <Typography component="body2" variant="body2" align="center">
             <p><b>Thank you for using Robosats!</b></p> 
             <p>Let us know how the platform could improve
-            (<a href="https://t.me/robosats">Telegram</a> / <a href="https://github.com/Reckless-Satoshi/robosats/issues">Github</a>)</p>
+            (<Link href="https://t.me/robosats">Telegram</Link> / <Link href="https://github.com/Reckless-Satoshi/robosats/issues">Github</Link>)</p>
           </Typography>
         </Grid>
         : null}
@@ -970,8 +974,8 @@ handleRatingRobosatsChange=(e)=>{
           <Grid item xs={12} align="center">
             <Typography component="body2" variant="body2" align="center">
               Your invoice has expired or more than 3 payment attempts have been made. 
-              Muun is not recommended, <a href="https://github.com/Reckless-Satoshi/robosats/issues/44">check the list of
-              compatible wallets</a>
+              Muun wallet is not recommended, <Link href="https://github.com/Reckless-Satoshi/robosats/issues/44">check the list of
+              compatible wallets</Link>
             </Typography>
           </Grid>
           <Grid item xs={12} align="center">
@@ -1011,7 +1015,7 @@ handleRatingRobosatsChange=(e)=>{
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
             RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you
-            will be able to submit a new invoice. Check whether you have enough inboud liquidity.
+            will be able to submit a new invoice. Check whether you have enough inbound liquidity.
             Remember that lightning nodes must be online in order to receive payments.
           </Typography>
           <List>

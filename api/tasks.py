@@ -111,7 +111,7 @@ def follow_send_payment(lnpayment):
                 lnpayment.save()
                 order.status = Order.Status.FAI
                 order.expires_at = timezone.now() + timedelta(
-                    seconds=Order.t_to_expire[Order.Status.FAI])
+                    seconds=order.t_to_expire(Order.Status.FAI))
                 order.save()
                 context = {
                     "routing_failed":
@@ -123,10 +123,11 @@ def follow_send_payment(lnpayment):
             if response.status == 2:  # Status 2 'SUCCEEDED'
                 print("SUCCEEDED")
                 lnpayment.status = LNPayment.Status.SUCCED
+                lnpayment.fee = float(response.fee_msat)/1000
                 lnpayment.save()
                 order.status = Order.Status.SUC
                 order.expires_at = timezone.now() + timedelta(
-                    seconds=Order.t_to_expire[Order.Status.SUC])
+                    seconds=order.t_to_expire(Order.Status.SUC))
                 order.save()
                 return True, None
 
@@ -138,7 +139,7 @@ def follow_send_payment(lnpayment):
             lnpayment.save()
             order.status = Order.Status.FAI
             order.expires_at = timezone.now() + timedelta(
-                seconds=Order.t_to_expire[Order.Status.FAI])
+                seconds=order.t_to_expire(Order.Status.FAI))
             order.save()
             context = {"routing_failed": "The payout invoice has expired"}
             return False, context
@@ -190,6 +191,9 @@ def send_message(order_id, message):
 
     from api.messages import Telegram
     telegram = Telegram()
+
+    if message == 'welcome':
+        telegram.welcome(order)
 
     if message == 'order_taken':
         telegram.order_taken(order)

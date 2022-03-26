@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Button, Badge, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, FormHelperText, Typography} from "@mui/material";
+import {Button, Link, Badge, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, FormHelperText, Typography} from "@mui/material";
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
 export default class Chat extends Component {
@@ -85,7 +85,7 @@ export default class Chat extends Component {
               <Grid item xs={0.3}/>
               <Grid item xs={5.5}>
                 <Paper elevation={1} style={this.state.connected ? {backgroundColor: '#e8ffe6'}: {backgroundColor: '#FFF1C5'}}>
-                  <Typography variant='caption' >
+                  <Typography variant='caption' sx={{color: '#111111'}}>
                     You: {this.state.connected ? 'connected': 'disconnected'}
                   </Typography>
                 </Paper>
@@ -93,19 +93,19 @@ export default class Chat extends Component {
               <Grid item xs={0.4}/>
               <Grid item xs={5.5}>
                 <Paper elevation={1} style={this.state.peer_connected ? {backgroundColor: '#e8ffe6'}: {backgroundColor: '#FFF1C5'}}>
-                  <Typography variant='caption'>
+                  <Typography variant='caption' sx={{color: '#111111'}}>
                     Peer: {this.state.peer_connected ? 'connected': 'disconnected'}
                   </Typography>
                 </Paper>
               </Grid>
               <Grid item xs={0.3}/>
             </Grid>
-            <Paper elevation={1} style={{ height: 300, maxHeight: 300, width:280,overflow: 'auto', backgroundColor: '#F7F7F7' }}>
+            <Paper elevation={1} style={{ height: '300px', maxHeight: '300px' , width: '280px' ,overflow: 'auto', backgroundColor: '#F7F7F7' }}>
               {this.state.messages.map(message => <>
               <Card elevation={5} align="left" >
               {/* If message sender is not our nick, gray color, if it is our nick, green color */}
               {message.userNick == this.props.ur_nick ? 
-                <CardHeader
+                <CardHeader sx={{color: '#111111'}}
                   avatar={
                     <Badge variant="dot" overlap="circular" badgeContent="" color={this.state.connected ? "success" : "error"}>
                       <Avatar className="flippedSmallAvatar"
@@ -117,10 +117,10 @@ export default class Chat extends Component {
                   style={{backgroundColor: '#eeeeee'}}
                   title={message.userNick}
                   subheader={message.msg}
-                  subheaderTypographyProps={{sx: {wordWrap: "break-word", width: 200}}}
+                  subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444'}}}
                 />
                 :
-                <CardHeader
+                <CardHeader sx={{color: '#111111'}}
                   avatar={
                     <Badge variant="dot" overlap="circular" badgeContent="" color={this.state.peer_connected ? "success" : "error"}>
                       <Avatar className="flippedSmallAvatar"
@@ -132,7 +132,7 @@ export default class Chat extends Component {
                   style={{backgroundColor: '#fafafa'}}
                   title={message.userNick}
                   subheader={message.msg}
-                  subheaderTypographyProps={{sx: {wordWrap: "break-word", width: 200}}}
+                  subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444'}}}
                 />} 
                 </Card>
               </>)}
@@ -160,7 +160,7 @@ export default class Chat extends Component {
               </Grid>
             </form>
             <FormHelperText>
-              The chat has no memory: if you leave, messages are lost. <a target="_blank" href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/sensitive-data-PGP-guide.md/"> Learn easy PGP encryption.</a>
+              The chat has no memory: if you leave, messages are lost. <Link target="_blank" href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/sensitive-data-PGP-guide.md/"> Learn easy PGP encryption.</Link>
             </FormHelperText>
       </Container>
     )

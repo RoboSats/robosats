@@ -18,4 +18,4 @@ class ChatRoomAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "room_group_name",
     )
     change_links = ["order","maker","taker"]
-    search_fields = ["id","maker__chat_maker"]
+    search_fields = ["id"]

@@ -652,3 +652,4 @@ api/lightning/router*
 api/lightning/googleapis*
 frontend/static/admin*
 frontend/static/rest_framework*
+frontend/static/import_export*

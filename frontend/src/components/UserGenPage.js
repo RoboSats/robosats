@@ -6,6 +6,7 @@ import InfoDialog from './InfoDialog'
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CasinoIcon from '@mui/icons-material/Casino';
 import ContentCopy from "@mui/icons-material/ContentCopy";
+import RoboSatsNoTextIcon from "./icons/RoboSatsNoTextIcon"
 
 function getCookie(name) {
   let cookieValue = null;
@@ -149,6 +150,9 @@ export default class UserGenPage extends Component {
   render() {
     return (
       <Grid container spacing={1}>
+        <Grid item>
+          <div className='clickTrough'/>
+        </Grid>
         <Grid item xs={12} align="center" sx={{width:370, height:260}}>
           {!this.state.loadingRobot ?
             <div>
@@ -243,10 +247,24 @@ export default class UserGenPage extends Component {
               <Button disabled={this.state.loadingRobot} color='secondary' to='/book/' component={Link}>View Book</Button>
             </ButtonGroup>
           </Grid>
-          <Grid item xs={12} align="center">
-            <Typography component="h5" variant="h5">
-            Simple and Private Lightning peer-to-peer Exchange
-          </Typography>
+
+          <Grid item xs={12} align="center" spacing={2} sx={{width:370}}>
+            <Grid item>
+              <div style={{height:40}}/>
+            </Grid>
+            <div style={{width:370, left:30}}>
+              <Grid container xs={12} align="center">
+                <Grid item xs={0.8}/>
+                <Grid item xs={7.5} align="right">
+                  <Typography component="h5" variant="h5">
+                     Simple and Private LN P2P Exchange
+                  </Typography>
+                </Grid>
+                <Grid item xs={2.5} align="left">
+                    <RoboSatsNoTextIcon color="primary" sx={{height:72, width:72}}/>
+                </Grid>
+              </Grid>
+            </div>
           </Grid>
       </Grid>
     );
