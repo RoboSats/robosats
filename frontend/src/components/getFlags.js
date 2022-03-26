@@ -62,6 +62,7 @@ export default function getFlags(code){
     if(code == 'TTD') return '🇹🇹';
     if(code == 'VND') return '🇻🇳';
     if(code == 'XOF') return '🇸🇳';
+    if(code == 'TWD') return '🇹🇼';
     if(code == 'XAU') return '🟨';
     if(code == 'BTC') return <SwapCallsIcon color="primary"/>;
     return '🏳';
