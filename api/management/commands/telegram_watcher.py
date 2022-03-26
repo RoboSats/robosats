@@ -54,7 +54,9 @@ class Command(BaseCommand):
                             self.telegram.welcome(profile.user)
                             profile.telegram_enabled = True
                             profile.save()
+                            break
                         except:
+                            time.sleep(5)
                             attempts = attempts - 1
 
             offset = response['result'][-1]['update_id']
