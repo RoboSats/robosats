@@ -543,7 +543,7 @@ export default class OrderPage extends Component {
             
             <ListItem>
               <ListItemIcon>
-                <div style={{zoom:1.25,opacity: 0.7}}>
+                <div style={{zoom:1.25,opacity: 0.7, '-ms-zoom': 1.25, '-webkit-zoom': 1.25,'-moz-transform':  'scale(1.25,1.25)', '-moz-transform-origin': 'left center'}}>
                   {getFlags(this.state.currencyCode)}
                 </div>
               </ListItemIcon>

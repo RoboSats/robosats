@@ -24,7 +24,8 @@ import WebIcon from '@mui/icons-material/Web';
 import BookIcon from '@mui/icons-material/Book';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import AmbossIcon from "./icons/AmbossIcon"
+import AmbossIcon from "./icons/AmbossIcon";
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 // pretty numbers
 function pn(x) {
@@ -175,7 +176,14 @@ export default class BottomBar extends Component {
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><PublicIcon/></ListItemIcon>
-                    <ListItemText primary="Made with ❤️ and ⚡" secondary="... somewhere on Earth!"/>
+                    <ListItemText primary={
+                        <div style={{display:'flex', alignItems:'center', justifyContent:'left', flexWrap:'wrap'}}>
+                            <span>Made with  </span>
+                            <FavoriteIcon sx={{ color: "#FF0000", height: '22px',width: '22px'}}/>
+                            <span>  and  </span>
+                            <BoltIcon sx={{ color: "#fcba03", height: '23px',width: '23px'}}/>
+                        </div>}
+                        secondary="... somewhere on Earth!"/>
                 </ListItem>
             </List>
 
@@ -291,7 +299,13 @@ export default class BottomBar extends Component {
                 <ListItem className="profileNickname">
                     <ListItemText secondary="Your robot">
                     <Typography component="h6" variant="h6">
-                    {this.props.nickname ? "⚡"+this.props.nickname+"⚡" : ""}
+                    {this.props.nickname ? 
+                    <div style={{position:'relative',left:'-7px'}}>
+                    <div style={{display:'flex', alignItems:'center', justifyContent:'left', flexWrap:'wrap', width:300}}>
+                        <BoltIcon sx={{ color: "#fcba03", height: '28px',width: '24px'}}/><a>{this.props.nickname}</a><BoltIcon sx={{ color: "#fcba03", height: '28px',width: '24px'}}/>
+                    </div>
+                    </div>
+                    : ""}
                     </Typography>
                     </ListItemText>
                     <ListItemAvatar>

@@ -9,5 +9,5 @@ export default function getFlags(code){
     if(code == 'AZN') return '🇦🇿'; // code AZ not working
     if(code == 'XOF') code = 'SN';
     if(code == 'ANG') code = 'CW';
-    return <div style={{width:24, height: 16}}><Flag country={code.substring(0,2)} size={18}/></div>;
+    return <div style={{width:24, height: 18}}><Flag country={code.substring(0,2)} size={18}/></div>;
 };
