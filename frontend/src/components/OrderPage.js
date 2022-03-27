@@ -543,7 +543,9 @@ export default class OrderPage extends Component {
             
             <ListItem>
               <ListItemIcon>
-               {getFlags(this.state.currencyCode)}
+                <div style={{zoom:1.25,opacity: 0.7}}>
+                  {getFlags(this.state.currencyCode)}
+                </div>
               </ListItemIcon>
               {this.state.has_range & this.state.amount == null ?
               <ListItemText primary={parseFloat(Number(this.state.min_amount).toPrecision(2))

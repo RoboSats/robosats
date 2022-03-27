@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { LinearProgress, Link, Checkbox, Slider, Box, Tab, Tabs, SliderThumb, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
+import { InputAdornment, LinearProgress, Link, Checkbox, Slider, Box, Tab, Tabs, SliderThumb, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
 import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link as LinkRouter } from 'react-router-dom'
@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles';
 import getFlags from './getFlags'
 
 import LockIcon from '@mui/icons-material/Lock';
+import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 
 function getCookie(name) {
     let cookieValue = null;
@@ -561,6 +562,16 @@ export default class MakerPage extends Component {
                             views={['hours', 'minutes']}
                             inputFormat="HH:mm"
                             mask="__:__"
+                            components={{
+                                OpenPickerIcon: HourglassTopIcon
+                              }}
+                            open={this.state.openTimePicker}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <HourglassTopIcon />
+                                    </InputAdornment>)
+                                }}
                             renderInput={(props) => <TextField {...props} />}
                             label="Public Duration (HH:mm)"
                             value={this.state.publicExpiryTime}
