@@ -8,6 +8,8 @@ import CasinoIcon from '@mui/icons-material/Casino';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import RoboSatsNoTextIcon from "./icons/RoboSatsNoTextIcon"
 
+import BoltIcon from '@mui/icons-material/Bolt';
+
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -158,7 +160,11 @@ export default class UserGenPage extends Component {
             <div>
               <Grid item xs={12} align="center">
                 <Typography component="h5" variant="h5">
-                <b>{this.state.nickname ? "⚡"+this.state.nickname+"⚡" : ""}</b>
+                  <b>{this.state.nickname ? 
+                    <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap', height:'45px'}}>
+                      <BoltIcon sx={{ color: "#fcba03", height: '33px',width: '33px'}}/><a>{this.state.nickname}</a><BoltIcon sx={{ color: "#fcba03", height: '33px',width: '33px'}}/>
+                    </div>
+                    : ""}</b>
                 </Typography>
               </Grid>
               <Grid item xs={12} align="center">
