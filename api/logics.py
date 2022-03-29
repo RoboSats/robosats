@@ -362,6 +362,7 @@ class Logics:
         # Make order public again
         order.taker = None
         order.taker_bond = None
+        order.last_satoshis = cls.satoshis_now(order)
         cls.publish_order(order)
         return True
 

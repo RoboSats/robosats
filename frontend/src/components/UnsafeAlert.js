@@ -43,7 +43,7 @@ export default class UnsafeAlert extends Component {
         <Alert severity="warning" sx={{maxHeight:"120px"}}>
         <AlertTitle>You are not using RoboSats privately</AlertTitle>
           You will not be able to complete a 
-          trade. Use <Link href='https://www.torproject.org/download/' target="_blank">Tor Browser</Link> and visit the <Link chref='http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion' target="_blank">Onion</Link> site.
+          trade. Use <Link href='https://www.torproject.org/download/' target="_blank">Tor Browser</Link> and visit the <Link href='http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion' target="_blank">Onion</Link> site.
         <div style={{width: '100%'}}>
         </div>
         <div align="center">

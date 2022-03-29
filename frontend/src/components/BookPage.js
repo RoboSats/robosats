@@ -261,6 +261,8 @@ export default class BookPage extends Component {
                 I want to 
               </FormHelperText>
               <Select
+                  sx={{width:90}}
+                  autoWidth={true}
                   label="Select Order Type"
                   required="true" 
                   value={this.state.type} 
@@ -281,6 +283,8 @@ export default class BookPage extends Component {
                 and {this.state.type == 0 ? ' receive' : (this.state.type == 1 ? ' pay with' : ' use' )} 
               </FormHelperText>
               <Select
+                  //autoWidth={true}
+                  sx={{width:110}}
                   label="Select Payment Currency"
                   required="true" 
                   value={this.state.currency} 

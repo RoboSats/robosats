@@ -4,8 +4,8 @@ import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link as LinkRouter } from 'react-router-dom'
 import { styled } from '@mui/material/styles';
-import getFlags from './getFlags'
-
+import getFlags from './getFlags';
+import AutocompletePayments from './autocompletePayments';
 import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 
@@ -159,10 +159,10 @@ export default class MakerPage extends Component {
         });
     }
 
-    handlePaymentMethodChange=(e)=>{
+    handlePaymentMethodChange=(value)=>{
         this.setState({
-            payment_method: e.target.value,
-            badPaymentMethod: e.target.value.length > 35,    
+            payment_method: value,
+            badPaymentMethod: value.length > 35,    
         });
     }
     handlePremiumChange=(e)=>{
@@ -255,6 +255,7 @@ export default class MakerPage extends Component {
         return(
             <Paper elevation={12} style={{ padding: 8, width:'260px', align:'center'}}>
             <Grid item xs={12} align="center" spacing={1}>
+                <div style={{position:'relative', left:'5px'}}>
                 <FormControl component="fieldset">
                     <FormHelperText>
                         Buy or Sell Bitcoin?
@@ -274,10 +275,11 @@ export default class MakerPage extends Component {
                         />
                     </RadioGroup>
                 </FormControl>
+                </div>
             </Grid>
             
             <Grid containter xs={12} alignItems="stretch" style={{ display: "flex" }}>
-                    <div style={{maxWidth:140}}>
+                    <div style={{maxWidth:150}}>
                     <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Amount of fiat to exchange for bitcoin">
                         <TextField
                             disabled = {this.state.enableAmountRange}
@@ -298,6 +300,7 @@ export default class MakerPage extends Component {
                         </div>
                         <div >
                             <Select
+                                sx={{width:'120px'}}
                                 required="true" 
                                 defaultValue={this.defaultCurrency} 
                                 inputProps={{
@@ -312,10 +315,9 @@ export default class MakerPage extends Component {
                         </div>
 
             </Grid>
-            <br/>
             <Grid item xs={12} align="center">
-                <Tooltip placement="top" enterTouchDelay="300" enterDelay="700" enterNextDelay="2000" title="Enter your preferred fiat payment methods. Instant recommended (e.g., Revolut, CashApp ...)">
-                    <TextField 
+                <Tooltip placement="top" enterTouchDelay="300" enterDelay="700" enterNextDelay="2000" title="Enter your preferred fiat payment methods. Fast methods are highly recommended.">
+                    {/* <TextField 
                         sx={{width:240}}
                         label={this.state.currency==1000 ? "Swap Destination (e.g. rBTC)":"Fiat Payment Method(s)"}
                         error={this.state.badPaymentMethod}
@@ -327,7 +329,18 @@ export default class MakerPage extends Component {
                             maxLength: 35
                         }}
                         onChange={this.handlePaymentMethodChange}
-                    />
+                    /> */}
+                    <AutocompletePayments
+                        onAutocompleteChange={this.handlePaymentMethodChange}
+                        // inputProps={{
+                        //     style: {textAlign:"center"},
+                        //     maxLength: 35
+                        // }}
+                        type="text" 
+                        error={this.state.badPaymentMethod}
+                        helperText={this.state.badPaymentMethod ? "Must be shorter than 35 characters":""}
+                        label={this.state.currency==1000 ? "Swap Destination (e.g. rBTC)":"Fiat Payment Method(s)"}
+                        />
                 </Tooltip>
             </Grid>
 
