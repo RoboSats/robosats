@@ -5,6 +5,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import MediaQuery from 'react-responsive'
 import Image from 'material-ui-image'
 import getFlags from './getFlags'
+import PaymentText from './PaymentText'
 
 export default class BookPage extends Component {
   constructor(props) {
@@ -149,7 +150,11 @@ export default class BookPage extends Component {
           renderCell: (params) => {return (
             <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>{params.row.currency+" "}{getFlags(params.row.currency)}</div>)
           }},
-          { field: 'payment_method', headerName: 'Payment Method', width: 180 },
+          { field: 'payment_method', headerName: 'Payment Method', width: 180, hide:'true'},
+          { field: 'payment_icons', headerName: 'Payment', width: 180 ,
+          renderCell: (params) => {return (
+            <div style={{ cursor: "pointer", align:"center"}}><PaymentText size={20} text={params.row.payment_method}/></div>
+          )} },
           { field: 'price', headerName: 'Price', type: 'number', width: 140,
           renderCell: (params) => {return (
             <div style={{ cursor: "pointer" }}>{this.pn(params.row.price) + " " +params.row.currency+ "/BTC" }</div>
@@ -195,7 +200,7 @@ export default class BookPage extends Component {
 
         columns={[
           // { field: 'id', headerName: 'ID', width: 40 },
-          { field: 'robot', headerName: 'Robot', width: 80, 
+          { field: 'robot', headerName: 'Robot', width: 64, 
             renderCell: (params) => {return (
               <Tooltip placement="right" enterTouchDelay="0" title={params.row.robot+" ("+params.row.robot_status+")"}>
                 <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(params.row.robot_status)}>
@@ -213,19 +218,23 @@ export default class BookPage extends Component {
             );
           } },
           { field: 'type', headerName: 'Is', width: 60, hide:'true'},
-          { field: 'amount', headerName: 'Amount', type: 'number', width: 90, 
+          { field: 'amount', headerName: 'Amount', type: 'number', width: 84, 
           renderCell: (params) => {return (
             <Tooltip placement="right" enterTouchDelay="0" title={params.row.type}>
               <div style={{ cursor: "pointer" }}>{this.amountToString(params.row.amount,params.row.has_range, params.row.min_amount, params.row.max_amount)}</div>
             </Tooltip>
           )} },
-          { field: 'currency', headerName: 'Currency', width: 100, 
+          { field: 'currency', headerName: 'Currency', width: 85, 
           renderCell: (params) => {return (
-            <Tooltip placement="left" enterTouchDelay="0" title={params.row.payment_method}>
+            // <Tooltip placement="left" enterTouchDelay="0" title={params.row.payment_method}>
               <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>{params.row.currency+" "}{getFlags(params.row.currency)}</div>
-            </Tooltip>
+            // </Tooltip>
           )} },
           { field: 'payment_method', headerName: 'Payment Method', width: 180, hide:'true'},
+          { field: 'payment_icons', headerName: 'Pay', width: 75 ,
+          renderCell: (params) => {return (
+            <div style={{position:'relative', left:'-8px', cursor: "pointer", align:"center"}}><PaymentText size={16} text={params.row.payment_method}/></div>
+          )} },
           { field: 'price', headerName: 'Price', type: 'number', width: 140, hide:'true',
           renderCell: (params) => {return (
             <div style={{ cursor: "pointer" }}>{this.pn(params.row.price) + " " +params.row.currency+ "/BTC" }</div>
@@ -261,6 +270,8 @@ export default class BookPage extends Component {
                 I want to 
               </FormHelperText>
               <Select
+                  sx={{width:90}}
+                  autoWidth={true}
                   label="Select Order Type"
                   required="true" 
                   value={this.state.type} 
@@ -281,6 +292,8 @@ export default class BookPage extends Component {
                 and {this.state.type == 0 ? ' receive' : (this.state.type == 1 ? ' pay with' : ' use' )} 
               </FormHelperText>
               <Select
+                  //autoWidth={true}
+                  sx={{width:110}}
                   label="Select Payment Currency"
                   required="true" 
                   value={this.state.currency} 
@@ -332,7 +345,7 @@ export default class BookPage extends Component {
 
             {/* Smartphone Book */}
             <MediaQuery maxWidth={929}>
-              <Paper elevation={0} style={{width: 380, maxHeight: 450, overflow: 'auto'}}>
+              <Paper elevation={0} style={{width: 395, maxHeight: 450, overflow: 'auto'}}>
                   <this.bookListTablePhone/>
               </Paper>
             </MediaQuery>

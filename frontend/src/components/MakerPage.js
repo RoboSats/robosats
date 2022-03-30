@@ -4,8 +4,8 @@ import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link as LinkRouter } from 'react-router-dom'
 import { styled } from '@mui/material/styles';
-import getFlags from './getFlags'
-
+import getFlags from './getFlags';
+import AutocompletePayments from './autocompletePayments';
 import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 
@@ -159,12 +159,19 @@ export default class MakerPage extends Component {
         });
     }
 
-    handlePaymentMethodChange=(e)=>{
+    handlePaymentMethodChange=(value)=>{
+        if (value.length > 50){
+            this.setState({
+                badPaymentMethod: true,    
+            });
+        }else{
         this.setState({
-            payment_method: e.target.value,
-            badPaymentMethod: e.target.value.length > 35,    
+            payment_method: value.substring(0,53),
+            badPaymentMethod: value.length > 50,    
         });
     }
+    }
+
     handlePremiumChange=(e)=>{
         if(e.target.value > 999){
             var bad_premium = "Must be less than 999%"
@@ -214,7 +221,7 @@ export default class MakerPage extends Component {
             body: JSON.stringify({
                 type: this.state.type,
                 currency: this.state.currency,
-                amount: this.state.amount,
+                amount: this.state.has_range ? null : this.state.amount,
                 has_range: this.state.enableAmountRange,
                 min_amount: this.state.minAmount,
                 max_amount: this.state.maxAmount,
@@ -255,6 +262,7 @@ export default class MakerPage extends Component {
         return(
             <Paper elevation={12} style={{ padding: 8, width:'260px', align:'center'}}>
             <Grid item xs={12} align="center" spacing={1}>
+                <div style={{position:'relative', left:'5px'}}>
                 <FormControl component="fieldset">
                     <FormHelperText>
                         Buy or Sell Bitcoin?
@@ -274,10 +282,11 @@ export default class MakerPage extends Component {
                         />
                     </RadioGroup>
                 </FormControl>
+                </div>
             </Grid>
             
             <Grid containter xs={12} alignItems="stretch" style={{ display: "flex" }}>
-                    <div style={{maxWidth:140}}>
+                    <div style={{maxWidth:150}}>
                     <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title="Amount of fiat to exchange for bitcoin">
                         <TextField
                             disabled = {this.state.enableAmountRange}
@@ -298,6 +307,7 @@ export default class MakerPage extends Component {
                         </div>
                         <div >
                             <Select
+                                sx={{width:'120px'}}
                                 required="true" 
                                 defaultValue={this.defaultCurrency} 
                                 inputProps={{
@@ -312,22 +322,15 @@ export default class MakerPage extends Component {
                         </div>
 
             </Grid>
-            <br/>
             <Grid item xs={12} align="center">
-                <Tooltip placement="top" enterTouchDelay="300" enterDelay="700" enterNextDelay="2000" title="Enter your preferred fiat payment methods. Instant recommended (e.g., Revolut, CashApp ...)">
-                    <TextField 
-                        sx={{width:240}}
-                        label={this.state.currency==1000 ? "Swap Destination (e.g. rBTC)":"Fiat Payment Method(s)"}
+                <Tooltip placement="top" enterTouchDelay="300" enterDelay="700" enterNextDelay="2000" title="Enter your preferred fiat payment methods. Fast methods are highly recommended.">
+                    <AutocompletePayments
+                        onAutocompleteChange={this.handlePaymentMethodChange}
+                        optionsType={this.state.currency==1000 ? "swap":"fiat"}
                         error={this.state.badPaymentMethod}
-                        helperText={this.state.badPaymentMethod ? "Must be shorter than 35 characters":""}
-                        type="text" 
-                        require={true}  
-                        inputProps={{
-                            style: {textAlign:"center"},
-                            maxLength: 35
-                        }}
-                        onChange={this.handlePaymentMethodChange}
-                    />
+                        helperText={this.state.badPaymentMethod ? "Must be shorter than 65 characters":""}
+                        label={this.state.currency==1000 ? "Swap Destination(s)" : "Fiat Payment Method(s)"}
+                        />
                 </Tooltip>
             </Grid>
 
@@ -492,7 +495,7 @@ export default class MakerPage extends Component {
                     size="small"
                     value={this.state.minAmount}
                     onChange={this.handleMinAmountChange}
-                    error={this.state.minAmount < this.getMinAmount() || this.state.maxAmount < this.state.minAmount}
+                    error={this.state.minAmount < this.getMinAmount() || this.state.maxAmount < this.state.minAmount || this.state.minAmount < this.state.maxAmount/(this.maxRangeAmountMultiple+0.15) || this.state.minAmount*(this.minRangeAmountMultiple-0.1) > this.state.maxAmount}
                     sx={{width: this.state.minAmount.toString().length * 9, maxWidth: 40}}
                   />
                 <span style={{width: 20}}>to</span>
@@ -501,7 +504,7 @@ export default class MakerPage extends Component {
                     size="small"
                     type="number" 
                     value={this.state.maxAmount}
-                    error={this.state.maxAmount > this.getMaxAmount() || this.state.maxAmount < this.state.minAmount}
+                    error={this.state.maxAmount > this.getMaxAmount() || this.state.maxAmount < this.state.minAmount || this.state.minAmount < this.state.maxAmount/(this.maxRangeAmountMultiple+0.15) || this.state.minAmount*(this.minRangeAmountMultiple-0.1) > this.state.maxAmount}
                     onChange={this.handleMaxAmountChange}
                     sx={{width: this.state.maxAmount.toString().length * 9, maxWidth: 50}}
                   />
