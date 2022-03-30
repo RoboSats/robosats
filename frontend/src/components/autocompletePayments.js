@@ -32,8 +32,7 @@ const InputWrapper = styled('div')(
   ({ theme , error}) => `
   width: 244px;
   min-height: 44px;
-  max-height: 128px;
-  max-rows: 5;
+  max-height: 124px;
   border: 1px solid ${theme.palette.mode === 'dark' ? (error? '#f44336': '#434343') : (error? '#dd0000':'#c4c4c4')};
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
   border-radius: 4px;
@@ -65,7 +64,7 @@ const InputWrapper = styled('div')(
     border: 0;
     margin: 0;
     outline: 0;
-    max-height: 128px;
+    max-height: 124px;
   }
 `,
 );

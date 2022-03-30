@@ -221,7 +221,7 @@ export default class MakerPage extends Component {
             body: JSON.stringify({
                 type: this.state.type,
                 currency: this.state.currency,
-                amount: this.state.amount,
+                amount: this.state.has_range ? null : this.state.amount,
                 has_range: this.state.enableAmountRange,
                 min_amount: this.state.minAmount,
                 max_amount: this.state.maxAmount,
@@ -495,7 +495,7 @@ export default class MakerPage extends Component {
                     size="small"
                     value={this.state.minAmount}
                     onChange={this.handleMinAmountChange}
-                    error={this.state.minAmount < this.getMinAmount() || this.state.maxAmount < this.state.minAmount}
+                    error={this.state.minAmount < this.getMinAmount() || this.state.maxAmount < this.state.minAmount || this.state.minAmount < this.state.maxAmount/(this.maxRangeAmountMultiple+0.15) || this.state.minAmount*(this.minRangeAmountMultiple-0.1) > this.state.maxAmount}
                     sx={{width: this.state.minAmount.toString().length * 9, maxWidth: 40}}
                   />
                 <span style={{width: 20}}>to</span>
@@ -504,7 +504,7 @@ export default class MakerPage extends Component {
                     size="small"
                     type="number" 
                     value={this.state.maxAmount}
-                    error={this.state.maxAmount > this.getMaxAmount() || this.state.maxAmount < this.state.minAmount}
+                    error={this.state.maxAmount > this.getMaxAmount() || this.state.maxAmount < this.state.minAmount || this.state.minAmount < this.state.maxAmount/(this.maxRangeAmountMultiple+0.15) || this.state.minAmount*(this.minRangeAmountMultiple-0.1) > this.state.maxAmount}
                     onChange={this.handleMaxAmountChange}
                     sx={{width: this.state.maxAmount.toString().length * 9, maxWidth: 50}}
                   />

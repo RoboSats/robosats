@@ -1,6 +1,7 @@
 import { TextField } from '@mui/material';
 import React, { Component } from 'react';
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
+import {Tooltip} from "@mui/material"
 
 let icons = {
   airtel: {
@@ -159,7 +160,7 @@ export default class PaymentIcon extends Component {
   }
   
   render() {
-    if(this.props.icon==="custom"){return <div style={{maxWidht:'2px'}}><DashboardCustomizeIcon sx={{...this.props}} color="primary"/></div>}
+    if(this.props.icon==="custom"){return <DashboardCustomizeIcon sx={{...this.props}} color="primary"/>}
     return ( 
       <img {...this.props} src={icons[this.props.icon].image} style={{borderRadius: '23%'}}/>
     )
