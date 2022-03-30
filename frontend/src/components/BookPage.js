@@ -233,7 +233,7 @@ export default class BookPage extends Component {
           { field: 'payment_method', headerName: 'Payment Method', width: 180, hide:'true'},
           { field: 'payment_icons', headerName: 'Pay', width: 75 ,
           renderCell: (params) => {return (
-            <div style={{position:'relative', left:'-5px', cursor: "pointer", align:"center"}}><PaymentText size={16} text={params.row.payment_method}/></div>
+            <div style={{position:'relative', left:'-8px', cursor: "pointer", align:"center"}}><PaymentText size={16} text={params.row.payment_method}/></div>
           )} },
           { field: 'price', headerName: 'Price', type: 'number', width: 140, hide:'true',
           renderCell: (params) => {return (

@@ -160,14 +160,14 @@ export default class MakerPage extends Component {
     }
 
     handlePaymentMethodChange=(value)=>{
-        if (value.length > 65){
+        if (value.length > 50){
             this.setState({
                 badPaymentMethod: true,    
             });
         }else{
         this.setState({
-            payment_method: value.substring(0,68),
-            badPaymentMethod: value.length > 65,    
+            payment_method: value.substring(0,53),
+            badPaymentMethod: value.length > 50,    
         });
     }
     }

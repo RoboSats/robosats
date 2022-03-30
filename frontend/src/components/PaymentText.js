@@ -56,7 +56,7 @@ export default class PaymentText extends Component {
                 custom_methods = custom_methods.replace(method.name,'')
                 rows.push(
                     <Tooltip placement="top" enterTouchDelay="0" title={method.name} >
-                        <div style={{display: 'inline-block', width: this.props.size+1, height: this.props.size}}>
+                        <div style={{display: 'inline-block', width: this.props.size+2, height: this.props.size}}>
                             <PaymentIcon width={this.props.size} height={this.props.size} icon={method.icon}/>
                         </div>
                     </Tooltip>
@@ -68,20 +68,19 @@ export default class PaymentText extends Component {
         var words = this.props.text.match(/\b(\w+)\b/g)
         var custom = false
         words.forEach((word, i) =>{
-            console.log(word);
             if(!someMethods.map(item => item.name).includes(word)){ custom=true;}
         });
 
         if(custom==true){rows.push(
             <Tooltip placement="top" enterTouchDelay="0" title={this.props.verbose ? "Others": "Other: "+ custom_methods} >
-                <div style={{position:'relative', display: 'inline-block',width: this.props.size+1, maxHeight: this.props.size, top:'1px'}}>
+                <div style={{position:'relative', display: 'inline-block',width: this.props.size+2, maxHeight: this.props.size, top:'1px'}}>
                     <PaymentIcon width={this.props.size*1.1} height={this.props.size*1.1} icon={"custom"}/>
                 </div>
             </Tooltip>
             )}
 
         if(this.props.verbose){
-            return (<>{rows} <span>{custom_methods}</span> </>)
+            return (<>{rows} <span>{custom_methods}</span></>)
         }else{
             return rows
         }
@@ -89,7 +88,9 @@ export default class PaymentText extends Component {
 
     render() {
       return ( 
-        <div style={{position:'flex',alignItems:'center', flexWrap:'wrap'}}> {this.parseText()}</div>
+        <div style={{position:'flex',alignItems:'center', flexWrap:'wrap'}}>
+            {this.parseText()}
+        </div>
       )
     }
   };

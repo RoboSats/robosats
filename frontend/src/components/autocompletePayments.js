@@ -204,7 +204,7 @@ export default function AutocompletePayments(props) {
     multiple: true,
     options: props.optionsType=="fiat" ? somePaymentMethods : someSwapDestinations,
     getOptionLabel: (option) => option.name,
-    onInputChange: (e) => setVal(e.target.value),
+    onInputChange: (e) => setVal(e ? (e.target.value ? e.target.value : "") : ""),
     onChange: (event, value) => props.onAutocompleteChange(optionsToString(value)),
     onClose: () => (setVal(() => "")),
   });
@@ -233,6 +233,7 @@ export default function AutocompletePayments(props) {
     <Root>
       <div style={{height:'5px'}}></div>
       <div {...getRootProps()} >
+        
         <Label {...getInputLabelProps()} error={props.error}>{props.label}</Label>
         <InputWrapper ref={setAnchorEl} error={props.error} className={focused ? 'focused' : ''}>
           {value.map((option, index) => (
@@ -246,9 +247,16 @@ export default function AutocompletePayments(props) {
             <div style={{position:'fixed', minHeight:'20px',  marginLeft: '53px', marginTop: '-13px'}}>
                 <ListHeader><i>You can add any method </i></ListHeader>
             </div>
+            {val != null?
+              (val.length > 2 ?
+                <div style={{position:'relative',top:'3px'}}>
+                  <Button size="small" sx={{width:'240px'}} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:18,height:18}}/>Add</Button>
+                </div>
+              :null)
+            :null}
           {groupedOptions.map((option, index) => (
             <li {...getOptionProps({ option, index })}>
-              <span align="left">{option.name}</span>
+              <span style={{textAlign: 'left'}}>{option.name}</span>
               <CheckIcon fontSize="small" />
             </li>
           ))}
@@ -257,7 +265,7 @@ export default function AutocompletePayments(props) {
       //Here goes what happens if there is no groupedOptions
       (getInputProps().value.length > 0 ?
         <Listbox {...getListboxProps()}>
-          <Button sx={{width:'240px'}} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon/>Add</Button>
+          <Button sx={{width:'240px'}} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:20,height:20}}/>Add</Button>
         </Listbox>
         :null)
       }

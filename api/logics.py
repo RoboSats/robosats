@@ -362,7 +362,6 @@ class Logics:
         # Make order public again
         order.taker = None
         order.taker_bond = None
-        order.last_satoshis = cls.satoshis_now(order)
         cls.publish_order(order)
         return True
 
@@ -710,12 +709,14 @@ class Logics:
         order.save()
         return
 
-    def publish_order(order):
+    @classmethod
+    def publish_order(cls, order):
         order.status = Order.Status.PUB
         order.expires_at = order.created_at + timedelta(
             seconds=order.t_to_expire(Order.Status.PUB))
         if order.has_range:
             order.amount = None
+            order.last_satoshis = cls.satoshis_now(order)
         order.save()
         # send_message.delay(order.id,'order_published') # too spammy
         return
