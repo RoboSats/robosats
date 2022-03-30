@@ -160,11 +160,18 @@ export default class MakerPage extends Component {
     }
 
     handlePaymentMethodChange=(value)=>{
+        if (value.length > 65){
+            this.setState({
+                badPaymentMethod: true,    
+            });
+        }else{
         this.setState({
-            payment_method: value,
-            badPaymentMethod: value.length > 35,    
+            payment_method: value.substring(0,68),
+            badPaymentMethod: value.length > 65,    
         });
     }
+    }
+
     handlePremiumChange=(e)=>{
         if(e.target.value > 999){
             var bad_premium = "Must be less than 999%"
@@ -317,29 +324,12 @@ export default class MakerPage extends Component {
             </Grid>
             <Grid item xs={12} align="center">
                 <Tooltip placement="top" enterTouchDelay="300" enterDelay="700" enterNextDelay="2000" title="Enter your preferred fiat payment methods. Fast methods are highly recommended.">
-                    {/* <TextField 
-                        sx={{width:240}}
-                        label={this.state.currency==1000 ? "Swap Destination (e.g. rBTC)":"Fiat Payment Method(s)"}
-                        error={this.state.badPaymentMethod}
-                        helperText={this.state.badPaymentMethod ? "Must be shorter than 35 characters":""}
-                        type="text" 
-                        require={true}  
-                        inputProps={{
-                            style: {textAlign:"center"},
-                            maxLength: 35
-                        }}
-                        onChange={this.handlePaymentMethodChange}
-                    /> */}
                     <AutocompletePayments
                         onAutocompleteChange={this.handlePaymentMethodChange}
-                        // inputProps={{
-                        //     style: {textAlign:"center"},
-                        //     maxLength: 35
-                        // }}
-                        type="text" 
+                        optionsType={this.state.currency==1000 ? "swap":"fiat"}
                         error={this.state.badPaymentMethod}
-                        helperText={this.state.badPaymentMethod ? "Must be shorter than 35 characters":""}
-                        label={this.state.currency==1000 ? "Swap Destination (e.g. rBTC)":"Fiat Payment Method(s)"}
+                        helperText={this.state.badPaymentMethod ? "Must be shorter than 65 characters":""}
+                        label={this.state.currency==1000 ? "Swap Destination(s)" : "Fiat Payment Method(s)"}
                         />
                 </Tooltip>
             </Grid>

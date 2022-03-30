@@ -18,23 +18,23 @@ const Root = styled('div')(
 );
 
 const Label = styled('label')(
-    ({ theme }) => `
-  color: ${theme.palette.mode === 'dark' ? '#cfcfcf' : '#717171'};
+    ({ theme , error}) => `
+  color: ${theme.palette.mode === 'dark' ? (error? '#f44336': '#cfcfcf') :  (error? '#dd0000':'#717171')};
   aling: center;
   padding: 0 0 4px;
-  line-height: 1.5;
+  line-height: 1.5; f44336
   display: block;
   font-size: 13px;
 `,
 );
 
 const InputWrapper = styled('div')(
-  ({ theme }) => `
+  ({ theme , error}) => `
   width: 244px;
   min-height: 44px;
-  max-height: 166px;
+  max-height: 128px;
   max-rows: 5;
-  border: 1px solid ${theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4'};
+  border: 1px solid ${theme.palette.mode === 'dark' ? (error? '#f44336': '#434343') : (error? '#dd0000':'#c4c4c4')};
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
   border-radius: 4px;
   padding: 1px;
@@ -43,11 +43,11 @@ const InputWrapper = styled('div')(
   overflow-y:auto;
   
   &:hover {
-    border-color: ${theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f'};
+    border-color: ${theme.palette.mode === 'dark' ? (error? '#f44336':'#ffffff') : (error? '#dd0000' :'#2f2f2f')};
   }
 
   &.focused {
-    border: 2px solid ${theme.palette.mode === 'dark' ? '#90caf9' : '#1976d2'};
+    border: 2px solid ${theme.palette.mode === 'dark' ? (error? '#f44336':'#90caf9') : (error? '#dd0000' :'#1976d2')};
   }
 
   & input {
@@ -65,7 +65,7 @@ const InputWrapper = styled('div')(
     border: 0;
     margin: 0;
     outline: 0;
-    max-height: 166px;
+    max-height: 128px;
   }
 `,
 );
@@ -130,10 +130,13 @@ const ListHeader = styled('span')(
     ({ theme }) => `
   color: ${theme.palette.mode === 'dark' ? '#90caf9' : '#1976d2'};
   aling: center;
-  width: 187px;
+  width: 141px;
+  line-height:10px;
+  max-height: 10px;
   display: inline-block;
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#ffffff'};
   font-size: 12px;
+  pointer-events: none;
 `,
 );
 
@@ -200,43 +203,39 @@ export default function AutocompletePayments(props) {
     sx: {width:'200px', align:'left'},
     id: 'payment-methods',
     multiple: true,
-    options: somePaymentMethods,
+    options: props.optionsType=="fiat" ? somePaymentMethods : someSwapDestinations,
     getOptionLabel: (option) => option.name,
-    onInputChange: (e) => setVal(e.target.value) & props.onAutocompleteChange(optionsToString()),
-    onChange: () => props.onAutocompleteChange(optionsToString()),
+    onInputChange: (e) => setVal(e.target.value),
+    onChange: (event, value) => props.onAutocompleteChange(optionsToString(value)),
+    onClose: () => (setVal(() => "")),
   });
+
   const [val, setVal] = useState();
 
-  function optionsToString(){
+  function optionsToString(newValue){
     var str = '';
-    var arrayLength = value.length;
+    var arrayLength = newValue.length;
       for (var i = 0; i < arrayLength; i++) {
-          str += value[i].name + ' ';
+          str += newValue[i].name + ' ';
       }
-    return str;
+    return str.slice(0, -1);
   }
 
   function handleAddNew(inputProps){
-    console.log(inputProps)
     somePaymentMethods.push({name: inputProps.value, icon:'custom'})
     var a = value.push({name: inputProps.value, icon:'custom'});
     setVal(() => "");
 
-    if(a || a == null){props.onAutocompleteChange(optionsToString())}
+    if(a || a == null){props.onAutocompleteChange(optionsToString(value))}
+    return false
   };
-
-  // function handleInputChange(e){
-  //   getInputProps().onChange(e)
-  //   setVal(() => e.target.value);
-  // };
 
   return (
     <Root>
-    {console.log(()=>props.onAutocompleteChange(value))}
-    <div style={{height:'5px'}}></div>
+      <div style={{height:'5px'}}></div>
       <div {...getRootProps()} >
-        <Label {...getInputLabelProps()}>Payment method(s)</Label>
-        <InputWrapper ref={setAnchorEl} className={focused ? 'focused' : ''}>
+        <Label {...getInputLabelProps()} error={props.error}>{props.label}</Label>
+        <InputWrapper ref={setAnchorEl} error={props.error} className={focused ? 'focused' : ''}>
           {value.map((option, index) => (
             <StyledTag label={option.name} icon={option.icon} {...getTagProps({ index })} />
           ))}
@@ -245,7 +244,7 @@ export default function AutocompletePayments(props) {
       </div>
       {groupedOptions.length > 0 ? (
         <Listbox {...getListboxProps()}>
-            <div style={{position:'fixed', minHeight:'20px',  marginLeft: '30px', marginTop: '-13px'}}>
+            <div style={{position:'fixed', minHeight:'20px',  marginLeft: '53px', marginTop: '-13px'}}>
                 <ListHeader><i>You can add any method </i></ListHeader>
             </div>
           {groupedOptions.map((option, index) => (
@@ -300,4 +299,11 @@ var somePaymentMethods = [
   {name: "MoMo",icon:'momo'},
   {name: "Tigo Pesa",icon:'tigopesa'},
   {name: "Cash F2F",icon:'cash'},
+];
+
+var someSwapDestinations = [
+  {name: "On-Chain BTC",icon:'onchain'},
+  {name: "RBTC",icon:'rbtc'},
+  {name: "LBTC",icon:'lbtc'},
+  {name: "WBTC",icon:'wbtc'},
 ];

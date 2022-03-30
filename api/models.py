@@ -196,7 +196,7 @@ class Order(models.Model):
     has_range = models.BooleanField(default=False, null=False, blank=False)
     min_amount = models.DecimalField(max_digits=18, decimal_places=8, null=True, blank=True)
     max_amount = models.DecimalField(max_digits=18, decimal_places=8, null=True, blank=True)
-    payment_method = models.CharField(max_length=35,
+    payment_method = models.CharField(max_length=70,
                                       null=False,
                                       default="not specified",
                                       blank=True)
