@@ -148,10 +148,9 @@ export default class BookPage extends Component {
           renderCell: (params) => {return (
             <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>{params.row.currency+" "}{getFlags(params.row.currency)}</div>)
           }},
-          { field: 'payment_method', headerName: 'Payment Method', width: 180, hide:'true'},
-          { field: 'payment_icons', headerName: 'Payment', width: 180 ,
+          { field: 'payment_method', headerName: 'Payment Method', width: 180 ,
           renderCell: (params) => {return (
-            <div style={{ cursor: "pointer", align:"center"}}><PaymentText size={20} text={params.row.payment_method}/></div>
+            <div style={{ cursor: "pointer" }}><PaymentText verbose={true} size={20} text={params.row.payment_method}/></div>
           )} },
           { field: 'price', headerName: 'Price', type: 'number', width: 140,
           renderCell: (params) => {return (
@@ -231,7 +230,7 @@ export default class BookPage extends Component {
           { field: 'payment_method', headerName: 'Payment Method', width: 180, hide:'true'},
           { field: 'payment_icons', headerName: 'Pay', width: 75 ,
           renderCell: (params) => {return (
-            <div style={{position:'relative', left:'-8px', cursor: "pointer", align:"center"}}><PaymentText size={16} text={params.row.payment_method}/></div>
+            <div style={{position:'relative', left:'-4px', cursor: "pointer", align:"center"}}><PaymentText size={16} text={params.row.payment_method}/></div>
           )} },
           { field: 'price', headerName: 'Price', type: 'number', width: 140, hide:'true',
           renderCell: (params) => {return (
@@ -310,7 +309,7 @@ export default class BookPage extends Component {
         { this.state.not_found ? "" :
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
-              You are {this.state.type == 0 ? <b> selling </b> : (this.state.type == 1 ? <b> buying </b> :" looking at all ")} BTC for {this.state.currencyCode}
+              You are {this.state.type == 0 ? <b> selling </b> : (this.state.type == 1 ? <b> buying </b> :" looking at all ")} BTC for {this.state.currencyCode ? this.state.currencyCode : 'ANY'}
             </Typography>
           </Grid>
           }

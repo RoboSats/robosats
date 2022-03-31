@@ -247,19 +247,17 @@ export default function AutocompletePayments(props) {
             <div style={{position:'fixed', minHeight:'20px',  marginLeft: '53px', marginTop: '-13px'}}>
                 <ListHeader><i>You can add any method </i></ListHeader>
             </div>
-            {val != null?
-              (val.length > 2 ?
-                <div style={{position:'relative',top:'3px'}}>
-                  <Button size="small" sx={{width:'240px'}} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:18,height:18}}/>Add</Button>
-                </div>
-              :null)
-            :null}
           {groupedOptions.map((option, index) => (
             <li {...getOptionProps({ option, index })}>
               <span style={{textAlign: 'left'}}>{option.name}</span>
               <CheckIcon fontSize="small" />
             </li>
           ))}
+          {val != null?
+              (val.length > 2 ?
+                  <Button size="small" sx={{width:'240px'}} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:18,height:18}}/>Add</Button>
+              :null)
+            :null}
         </Listbox>
       ) : 
       //Here goes what happens if there is no groupedOptions
