@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { Badge, Tooltip, Paper, Button , CircularProgress, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, List, ListItem, ListItemText, Avatar, RouterLink, ListItemAvatar, IconButton} from "@mui/material";
+import React, { Component , useState } from "react";
+import { Badge, Tooltip, Paper, Button, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, ListItemText, ListItemAvatar, IconButton} from "@mui/material";
 import { Link } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid';
 import MediaQuery from 'react-responsive'
@@ -12,15 +12,15 @@ export default class BookPage extends Component {
     super(props);
     this.state = {
       orders: new Array({id:0,}),
-      currency: 0,
-      type: 2,
+      currency: this.props.currency ? this.props.currency : 0,
+      type: this.props.type ? this.props.type : 2,
       currencies_dict: {"0":"ANY"},
       loading: true,
       pageSize: 6,
     };
     this.getCurrencyDict()
-    this.getOrderDetails(this.state.type, this.state.currency)
-    this.state.currencyCode = this.getCurrencyCode(this.state.currency)
+    this.getOrderDetails(this.props.type, this.props.currency)
+    this.state.currencyCode = this.getCurrencyCode(this.props.currency)
   }
 
   getOrderDetails(type, currency) {
@@ -39,18 +39,18 @@ export default class BookPage extends Component {
 
   handleTypeChange=(e)=>{
     this.setState({
-        type: e.target.value,
         loading: true,     
     });
-    this.getOrderDetails(e.target.value,this.state.currency);
+    this.props.setAppState({type: e.target.value})
+    this.getOrderDetails(e.target.value,this.props.currency);
   }
   handleCurrencyChange=(e)=>{
     this.setState({
-        currency: e.target.value,
         currencyCode: this.getCurrencyCode(e.target.value),
         loading: true,
     })
-    this.getOrderDetails(this.state.type, e.target.value);
+    this.props.setAppState({currency: e.target.value})
+    this.getOrderDetails(this.props.type, e.target.value);
   }
   
   getCurrencyDict() {
@@ -271,7 +271,7 @@ export default class BookPage extends Component {
                   autoWidth={true}
                   label="Select Order Type"
                   required="true" 
-                  value={this.state.type} 
+                  value={this.props.type} 
                   inputProps={{
                       style: {textAlign:"center"}
                   }}
@@ -286,14 +286,14 @@ export default class BookPage extends Component {
           <Grid item xs={6} align="left">
             <FormControl align="center">
               <FormHelperText align="center">
-                and {this.state.type == 0 ? ' receive' : (this.state.type == 1 ? ' pay with' : ' use' )} 
+                and {this.props.type == 0 ? ' receive' : (this.props.type == 1 ? ' pay with' : ' use' )} 
               </FormHelperText>
               <Select
                   //autoWidth={true}
                   sx={{width:110}}
                   label="Select Payment Currency"
                   required="true" 
-                  value={this.state.currency} 
+                  value={this.props.currency} 
                   inputProps={{
                       style: {textAlign:"center"}
                   }}
@@ -309,7 +309,7 @@ export default class BookPage extends Component {
         { this.state.not_found ? "" :
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
-              You are {this.state.type == 0 ? <b> selling </b> : (this.state.type == 1 ? <b> buying </b> :" looking at all ")} BTC for {this.state.currencyCode ? this.state.currencyCode : 'ANY'}
+              You are {this.props.type == 0 ? <b> selling </b> : (this.props.type == 1 ? <b> buying </b> :" looking at all ")} BTC for {this.state.currencyCode ? this.state.currencyCode : 'ANY'}
             </Typography>
           </Grid>
           }
@@ -318,7 +318,7 @@ export default class BookPage extends Component {
           (<Grid item xs={12} align="center">
             <Grid item xs={12} align="center">
               <Typography component="h5" variant="h5">
-                No orders found to {this.state.type == 0 ? ' sell ' :' buy ' } BTC for {this.state.currencyCode}
+                No orders found to {this.props.type == 0 ? ' sell ' :' buy ' } BTC for {this.state.currencyCode}
               </Typography>
             </Grid>
             <br/>

@@ -14,6 +14,8 @@ export default class HomePage extends Component {
         nickname: null,
         token: null,
         avatarLoaded: false,
+        bookType:2,
+        bookCurrency:0,
       }
     }
   
@@ -33,7 +35,7 @@ export default class HomePage extends Component {
                         <Route exact path='/' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
                         <Route path='/ref/:refCode' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
                         <Route path='/make' component={MakerPage}/>
-                        <Route path='/book' component={BookPage}/>
+                        <Route path='/book' render={(props) => <BookPage {...props} type={this.state.bookType} currency={this.state.bookCurrency} setAppState={this.setAppState} />}/>
                         <Route path="/order/:orderId" component={OrderPage}/>
                     </Switch>
                   </div>
