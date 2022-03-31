@@ -87,8 +87,6 @@ export default class BookPage extends Component {
   }
   amountToString = (amount,has_range,min_amount,max_amount) => {
     if (has_range){
-      console.log(this.pn(parseFloat(Number(min_amount).toPrecision(2))))
-      console.log(this.pn(parseFloat(Number(min_amount).toPrecision(2)))+'-'+this.pn(parseFloat(Number(max_amount).toPrecision(2))))
       return this.pn(parseFloat(Number(min_amount).toPrecision(2)))+'-'+this.pn(parseFloat(Number(max_amount).toPrecision(2)))
     }else{
       return this.pn(parseFloat(Number(amount).toPrecision(3)))
