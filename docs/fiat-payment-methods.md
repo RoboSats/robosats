@@ -1,10 +1,12 @@
 # Fiat payment method
 
-Currently, there are no restrictions for fiat payment method. You can pay with any method that both you and your peer agree. This include the higher risk method such as paypal, venmo and cash app.
+Currently, there are no restrictions for fiat payment method. You can pay with any method that both you and your peer agree. This include the higher risk method such as paypal, venmo and cash app. However, the payment method with lower risk is recommended, you can learn more about lower risk payment method from <a href =  "https://bisq.wiki/Payment_methods#Payment_method_guides">Bisq wiki</a>.
 
 ## General recommendation
 
 This recommendation is created as a best practice for trading in the Robosats platform. These best practices is highly encourage for both trading peers to follow to ensure successful trade and prevent unnecessary dispute.
+
+Note: This guidance is modified from Bisq's <a href="https://bisq.wiki/Trading_rules">trading rules</a> and adjusted according to the difference in trading mechanism of each platforms.
 
 ### For both bitcoin buyer and seller
 
@@ -25,14 +27,15 @@ if the timer reach the expire, it could trigger dispute and could lead to a loss
 
   1. Confirming if the final amount of fiat received is correct.<br>
   2. Click "Confirm fiat recieve" after you 100% sure that fiat is successfully deposited in your account.<br>
-  3. If you agree with buyer to use high chageback risk platform you will need special precaution to prevent chargeback (This'll be discuss later).<br>
+  3. If you agree with buyer to use high risk platform you will need special precaution to prevent chargeback (This'll be discuss later).<br>
 
-## High chargeback risk payment method
+## High risk payment method
 
-The best practice for user try to transact with payment method with high chargeback risk is disscussed in this section.
+The best practice for user try to transact with payment method with high risk of lossing funds is disscussed in this section.
 
 ### Paypal
-Paypal is a popular international payment method but according to their buyer protection policy <a href =  "https://www.paypal.com/us/webapps/mpp/ua/buyer-protection">Here</a>, 
+Paypal is a popular international payment method. However, this platform <a href="https://www.paypal.com/us/webapps/mpp/ua/buyer-protection">Buyer protection policy</a>, it is possible for buyer to do fraudulent activity by creating a refund request in Paypal after trading process in Robosats is finished and therefore taking both fiat and bitcoin all by themselves. 
 
-Paypal is a popular international payment method, but it come with substaintial risk of chargingback. To prevent chargeback, seller should demand buyer to pay with Paypal friend instead of usual merchant payment option. Because the buyer protection policy is only apply for merchant purchasing. <br>
-However, if you are seller and the buyer agree to send fiat via Paypal friend, But they send the fiat via refundable option instead, you should payback the fiat to the buyer and demand them to resend with correct option or if thing gets suspicious you can Open dispute.
+This fraud can be prevent by agreeing with the buyer to have them send money using the “send money to a friend or family member” option. This will make the buyer become the one liability for transaction fee and make it less likely for them requesting refund.
+
+If you are a seller and your peer both agreed to use “send money to a friend or family member” but your peer use "send money for Goods or Services" option, you should return the fiat payment and ask your peer to send with agreed method. If they're insist to break the agreement, you may ask them to voluntary end the trade or end the trade by calling dispute.
