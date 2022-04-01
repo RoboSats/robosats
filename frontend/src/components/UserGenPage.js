@@ -10,6 +10,8 @@ import RoboSatsNoTextIcon from "./icons/RoboSatsNoTextIcon"
 
 import BoltIcon from '@mui/icons-material/Bolt';
 
+import { withTranslation } from "react-i18next";
+
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -27,7 +29,7 @@ function getCookie(name) {
 }
 const csrftoken = getCookie('csrftoken');
 
-export default class UserGenPage extends Component {
+class UserGenPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -101,8 +103,7 @@ export default class UserGenPage extends Component {
       headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
     };
     fetch("/api/user", requestOptions)
-      .then((response) => response.json())
-      .then((data) => console.log(data));
+      .then((response) => response.json());
   }
 
   handleClickNewRandomToken=()=>{
@@ -150,6 +151,7 @@ export default class UserGenPage extends Component {
   }
 
   render() {
+    const { t } = this.props;
     return (
       <Grid container spacing={1}>
         <Grid item>
@@ -168,7 +170,7 @@ export default class UserGenPage extends Component {
                 </Typography>
               </Grid>
               <Grid item xs={12} align="center">
-              <Tooltip enterTouchDelay="0" title="This is your trading avatar">
+              <Tooltip enterTouchDelay="0" title={t("This is your trading avatar")}>
                 <div style={{ maxWidth: 200, maxHeight: 200 }}>
                   <Image className='newAvatar'
                     disableError='true'
@@ -276,3 +278,5 @@ export default class UserGenPage extends Component {
     );
   }
 }
+
+export default withTranslation()(UserGenPage);

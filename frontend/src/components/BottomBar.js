@@ -553,14 +553,7 @@ bottomBarDesktop =()=>{
 
                     <Grid container item xs={1}>
                         <Grid item xs={6}>
-                            <Select 
-                            size = 'small'
-                            defaultValue={1}
-                            inputProps={{
-                                style: {textAlign:"center"}
-                            }}>
-                                <MenuItem value={1}>EN</MenuItem>
-                            </Select>
+                            <this.LangSelect/>
                         </Grid>
                         <Grid item xs={3}>
                         <Tooltip enterTouchDelay="250" title="Show community and support links">
@@ -587,7 +580,27 @@ bottomBarDesktop =()=>{
             </Paper>
     )
 }
-
+    handleChangeLang=(e)=>{
+        this.props.changeLang(e.target.value)
+    }
+    LangSelect = () => {
+        return(
+            <Select 
+                size = 'small'
+                defaultValue={'en'}
+                inputProps={{
+                    style: {textAlign:"center"}
+                }}
+                onChange={this.handleChangeLang}> 
+                    <MenuItem value={'en'}>EN</MenuItem>
+                    <MenuItem value={'es'}>ES</MenuItem>
+                    <MenuItem value={'de'}>DE</MenuItem>
+                    <MenuItem value={'ru'}>RU</MenuItem>
+                    <MenuItem value={'cn'}>CN</MenuItem>
+                </Select>
+        )
+    }
+    
     handleClickOpenExchangeSummary = () => {
         this.getInfo();
         this.setState({openExchangeSummary: true});
@@ -770,14 +783,7 @@ bottomBarPhone =()=>{
 
                     <Grid container item xs={3.8}>
                         <Grid item xs={6}>
-                            <Select 
-                            size = 'small'
-                            defaultValue={1}
-                            inputProps={{
-                                style: {textAlign:"center"}
-                            }}>
-                                <MenuItem value={1}>EN</MenuItem>
-                            </Select>
+                            <this.LangSelect/>
                         </Grid>
                         <Grid item xs={3}>
                         <Tooltip enterTouchDelay="250" title="Show community and support links">

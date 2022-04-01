@@ -41,7 +41,7 @@ export default class HomePage extends Component {
                     </Switch>
                   </div>
                   <div className='bottomBar'>
-                    <BottomBar redirectTo={this.redirectTo} {...this.state} setAppState={this.setAppState} />
+                    <BottomBar changeLang={this.props.changeLang} redirectTo={this.redirectTo} {...this.state} setAppState={this.setAppState} />
                   </div>
               </Router>
           );
