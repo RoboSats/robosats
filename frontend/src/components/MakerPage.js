@@ -484,6 +484,13 @@ export default class MakerPage extends Component {
         );
     }
 
+    minAmountError=()=>{
+        return this.state.minAmount < this.getMinAmount() || this.state.maxAmount < this.state.minAmount || this.state.minAmount < this.state.maxAmount/(this.maxRangeAmountMultiple+0.15) || this.state.minAmount*(this.minRangeAmountMultiple-0.1) > this.state.maxAmount
+    }
+    maxAmountError=()=>{
+        return this.state.maxAmount > this.getMaxAmount() || this.state.maxAmount < this.state.minAmount || this.state.minAmount < this.state.maxAmount/(this.maxRangeAmountMultiple+0.15) || this.state.minAmount*(this.minRangeAmountMultiple-0.1) > this.state.maxAmount
+    }
+
     rangeText =()=> {
         
         return (
@@ -495,7 +502,7 @@ export default class MakerPage extends Component {
                     size="small"
                     value={this.state.minAmount}
                     onChange={this.handleMinAmountChange}
-                    error={this.state.minAmount < this.getMinAmount() || this.state.maxAmount < this.state.minAmount || this.state.minAmount < this.state.maxAmount/(this.maxRangeAmountMultiple+0.15) || this.state.minAmount*(this.minRangeAmountMultiple-0.1) > this.state.maxAmount}
+                    error={this.minAmountError()}
                     sx={{width: this.state.minAmount.toString().length * 9, maxWidth: 40}}
                   />
                 <span style={{width: 20}}>to</span>
@@ -504,7 +511,7 @@ export default class MakerPage extends Component {
                     size="small"
                     type="number" 
                     value={this.state.maxAmount}
-                    error={this.state.maxAmount > this.getMaxAmount() || this.state.maxAmount < this.state.minAmount || this.state.minAmount < this.state.maxAmount/(this.maxRangeAmountMultiple+0.15) || this.state.minAmount*(this.minRangeAmountMultiple-0.1) > this.state.maxAmount}
+                    error={this.maxAmountError()}
                     onChange={this.handleMaxAmountChange}
                     sx={{width: this.state.maxAmount.toString().length * 9, maxWidth: 50}}
                   />
@@ -642,8 +649,8 @@ export default class MakerPage extends Component {
             <Box sx={{width: this.state.showAdvanced? '270px':'252px'}}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider', position:'relative',left:'5px'}}>
                         <Tabs value={value? value:0} onChange={handleChange} variant="fullWidth" >
-                            <Tab label="Basic" {...this.a11yProps(0)} />
-                            <Tab label="Advanced" {...this.a11yProps(1)} />
+                            <Tab label="Order" {...this.a11yProps(0)} />
+                            <Tab label="Customize" {...this.a11yProps(1)} />
                         </Tabs>
                     </Box>
                             
@@ -659,7 +666,6 @@ export default class MakerPage extends Component {
         )
     }
   render() {
-
     return (
             <Grid container xs={12} align="center" spacing={1} sx={{minWidth:380}}>
                 {/* <Grid item xs={12} align="center" sx={{minWidth:380}}>
@@ -673,7 +679,8 @@ export default class MakerPage extends Component {
 
             <Grid item xs={12} align="center">
                 {/* conditions to disable the make button */}
-                {(this.state.amount == null & (this.state.enableAmountRange == false & this.state.minAmount == null) || 
+                {(this.state.amount == null & (this.state.enableAmountRange == false || this.state.loadingLimits) || 
+                    this.state.enableAmountRange & (this.minAmountError() || this.maxAmountError()) ||
                     this.state.amount <= 0 & !this.state.enableAmountRange || 
                     (this.state.is_explicit & (this.state.badSatoshis != null || this.state.satoshis == null)) || 
                     (!this.state.is_explicit & this.state.badPremium != null))

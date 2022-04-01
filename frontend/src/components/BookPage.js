@@ -12,15 +12,12 @@ export default class BookPage extends Component {
     super(props);
     this.state = {
       orders: new Array({id:0,}),
-      currency: this.props.currency ? this.props.currency : 0,
-      type: this.props.type ? this.props.type : 2,
       currencies_dict: {"0":"ANY"},
       loading: true,
       pageSize: 6,
     };
     this.getCurrencyDict()
     this.getOrderDetails(this.props.type, this.props.currency)
-    this.state.currencyCode = this.getCurrencyCode(this.props.currency)
   }
 
   getOrderDetails(type, currency) {
@@ -41,16 +38,17 @@ export default class BookPage extends Component {
     this.setState({
         loading: true,     
     });
-    this.props.setAppState({type: e.target.value})
+    this.props.setAppState({bookType: e.target.value})
     this.getOrderDetails(e.target.value,this.props.currency);
   }
   handleCurrencyChange=(e)=>{
-    this.setState({
-        currencyCode: this.getCurrencyCode(e.target.value),
-        loading: true,
+    var currency = e.target.value;
+    this.setState({loading: true})
+    this.props.setAppState({
+      bookCurrency: currency,
+      bookCurrencyCode: this.getCurrencyCode(currency),
     })
-    this.props.setAppState({currency: e.target.value})
-    this.getOrderDetails(this.props.type, e.target.value);
+    this.getOrderDetails(this.props.type, currency);
   }
   
   getCurrencyDict() {
@@ -64,7 +62,9 @@ export default class BookPage extends Component {
 
   getCurrencyCode(val){
     if (val){
-      return this.state.currencies_dict[val.toString()]
+      return val == 0 ? 'ANY' : this.state.currencies_dict[val.toString()]
+    }else{
+      return 'ANY'
     }
   }
 
@@ -309,7 +309,7 @@ export default class BookPage extends Component {
         { this.state.not_found ? "" :
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
-              You are {this.props.type == 0 ? <b> selling </b> : (this.props.type == 1 ? <b> buying </b> :" looking at all ")} BTC for {this.state.currencyCode ? this.state.currencyCode : 'ANY'}
+              You are {this.props.type == 0 ? <b> selling </b> : (this.props.type == 1 ? <b> buying </b> :" looking at all ")} BTC for {this.props.currencyCode}
             </Typography>
           </Grid>
           }
@@ -318,14 +318,14 @@ export default class BookPage extends Component {
           (<Grid item xs={12} align="center">
             <Grid item xs={12} align="center">
               <Typography component="h5" variant="h5">
-                No orders found to {this.props.type == 0 ? ' sell ' :' buy ' } BTC for {this.state.currencyCode}
+                No orders found to {this.props.type == 0 ? ' sell ' :' buy ' } BTC for {this.props.currencyCode}
               </Typography>
             </Grid>
             <br/>
             <Grid item>
-              <Button variant="contained" color='primary' to='/make/' component={Link}>Make Order</Button>
+              <Button size="large" variant="contained" color='primary' to='/make/' component={Link}>Make Order</Button>
             </Grid>
-              <Typography component="body1" variant="body1">
+              <Typography color="primary" component="body1" variant="body1">
                 Be the first one to create an order
                 <br/>
                 <br/>

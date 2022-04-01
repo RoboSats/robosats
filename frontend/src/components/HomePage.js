@@ -16,6 +16,7 @@ export default class HomePage extends Component {
         avatarLoaded: false,
         bookType:2,
         bookCurrency:0,
+        bookCurrencyCode:'ANY',
       }
     }
   
@@ -35,7 +36,7 @@ export default class HomePage extends Component {
                         <Route exact path='/' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
                         <Route path='/ref/:refCode' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
                         <Route path='/make' component={MakerPage}/>
-                        <Route path='/book' render={(props) => <BookPage {...props} type={this.state.bookType} currency={this.state.bookCurrency} setAppState={this.setAppState} />}/>
+                        <Route path='/book' render={(props) => <BookPage {...props} type={this.state.bookType} currencyCode={this.state.bookCurrencyCode} currency={this.state.bookCurrency} setAppState={this.setAppState} />}/>
                         <Route path="/order/:orderId" component={OrderPage}/>
                     </Switch>
                   </div>

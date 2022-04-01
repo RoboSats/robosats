@@ -6,7 +6,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/material/styles';
 import PaymentIcon from './PaymentIcons';
 import {Button} from "@mui/material";
+
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
+import AddIcon from '@mui/icons-material/Add';
 
 const Root = styled('div')(
   ({ theme }) => `
@@ -164,6 +166,7 @@ const Listbox = styled('ul')(
     & svg {
       color: transparent;
     }
+
   }
 
   & li[aria-selected='true'] {
@@ -171,7 +174,7 @@ const Listbox = styled('ul')(
     font-weight: 600;
 
     & svg {
-      color: #1890ff;
+      color: ${theme.palette.primary.main};
     }
   }
 
@@ -228,12 +231,11 @@ export default function AutocompletePayments(props) {
     if(a || a == null){props.onAutocompleteChange(optionsToString(value))}
     return false
   };
-
+  
   return (
     <Root>
       <div style={{height:'5px'}}></div>
       <div {...getRootProps()} >
-        
         <Label {...getInputLabelProps()} error={props.error}>{props.label}</Label>
         <InputWrapper ref={setAnchorEl} error={props.error} className={focused ? 'focused' : ''}>
           {value.map((option, index) => (
@@ -249,13 +251,18 @@ export default function AutocompletePayments(props) {
             </div>
           {groupedOptions.map((option, index) => (
             <li {...getOptionProps({ option, index })}>
-              <span style={{textAlign: 'left'}}>{option.name}</span>
-              <CheckIcon fontSize="small" />
+              <Button fullWidth={true} color='inherit' size="small" sx={{textTransform: "none"}} style={{justifyContent: "flex-start"}}>
+                  <div style={{position:'relative', right: '4px', top:'4px'}}>
+                    <AddIcon style={{color : '#1976d2'}} sx={{width:18,height:18}} />
+                  </div>
+                  {option.name}
+              </Button>
+              <div style={{position:'relative', top: '5px'}}><CheckIcon/></div>
             </li>
           ))}
           {val != null?
               (val.length > 2 ?
-                  <Button size="small" sx={{width:'240px'}} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:18,height:18}}/>Add</Button>
+                  <Button size="small" fullWidth={true} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:18,height:18}}/>Add New</Button>
               :null)
             :null}
         </Listbox>
@@ -263,7 +270,7 @@ export default function AutocompletePayments(props) {
       //Here goes what happens if there is no groupedOptions
       (getInputProps().value.length > 0 ?
         <Listbox {...getListboxProps()}>
-          <Button sx={{width:'240px'}} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:20,height:20}}/>Add</Button>
+          <Button fullWidth={true} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:20,height:20}}/>Add New</Button>
         </Listbox>
         :null)
       }
