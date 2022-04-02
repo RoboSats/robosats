@@ -1,16 +1,15 @@
 import React, { Component } from "react";
+import { withTranslation } from "react-i18next";
 import { Button , Tooltip, Dialog, Grid, Typography, TextField, ButtonGroup, CircularProgress, IconButton} from "@mui/material"
 import { Link } from 'react-router-dom'
 import Image from 'material-ui-image'
 import InfoDialog from './InfoDialog'
+
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CasinoIcon from '@mui/icons-material/Casino';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import RoboSatsNoTextIcon from "./icons/RoboSatsNoTextIcon"
-
 import BoltIcon from '@mui/icons-material/Bolt';
-
-import { withTranslation } from "react-i18next";
 
 function getCookie(name) {
   let cookieValue = null;
@@ -151,7 +150,7 @@ class UserGenPage extends Component {
   }
 
   render() {
-    const { t } = this.props;
+    const { t, i18n} = this.props;
     return (
       <Grid container spacing={1}>
         <Grid item>
@@ -265,7 +264,7 @@ class UserGenPage extends Component {
                 <Grid item xs={0.8}/>
                 <Grid item xs={7.5} align="right">
                   <Typography component="h5" variant="h5">
-                     Simple and Private LN P2P Exchange
+                     {t("Simple and Private LN P2P Exchange")}
                   </Typography>
                 </Grid>
                 <Grid item xs={2.5} align="left">

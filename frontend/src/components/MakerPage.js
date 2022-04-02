@@ -8,6 +8,7 @@ import getFlags from './getFlags';
 import AutocompletePayments from './autocompletePayments';
 import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import currencyDict from '../../static/assets/currencies.json';
 
 function getCookie(name) {
     let cookieValue = null;
@@ -57,7 +58,6 @@ export default class MakerPage extends Component {
         payment_method: this.defaultPaymentMethod,
         premium: 0,
         satoshis: null,
-        currencies_dict: {"1":"USD"},
         showAdvanced: false,
         allowBondless: false,
         publicExpiryTime: new Date(0, 0, 0, 23, 59),
@@ -69,7 +69,6 @@ export default class MakerPage extends Component {
         maxAmount: null,
         loadingLimits: false,
     }
-    this.getCurrencyDict()
   }
 
   getLimits() {
@@ -240,18 +239,8 @@ export default class MakerPage extends Component {
              & (data.id ? this.props.history.push('/order/' + data.id) :"")));
     }
 
-    getCurrencyDict() {
-        fetch('/static/assets/currencies.json')
-          .then((response) => response.json())
-          .then((data) => 
-          this.setState({
-            currencies_dict: data
-          }));
-    
-      }
-
     getCurrencyCode(val){
-        return this.state.currencies_dict[val.toString()]
+        return currencyDict[val.toString()]
     }
 
     handleInputBondSizeChange = (event) => {
@@ -314,7 +303,7 @@ export default class MakerPage extends Component {
                                     style: {textAlign:"center"}
                                 }}
                                 onChange={this.handleCurrencyChange}>
-                                    {Object.entries(this.state.currencies_dict)
+                                    {Object.entries(currencyDict)
                                     .map( ([key, value]) => <MenuItem value={parseInt(key)}>
                                         <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div>
                                         </MenuItem> )}

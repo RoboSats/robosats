@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { withTranslation } from "react-i18next";
 import {FormControlLabel, Link, Switch, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
 import { Link as LinkRouter } from 'react-router-dom'
@@ -26,6 +27,7 @@ import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AmbossIcon from "./icons/AmbossIcon";
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import { t } from 'i18next';
 
 // pretty numbers
 function pn(x) {
@@ -54,7 +56,7 @@ function getCookie(name) {
     return cookieValue;
   }
 
-export default class BottomBar extends Component {
+class BottomBar extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -581,13 +583,16 @@ bottomBarDesktop =()=>{
     )
 }
     handleChangeLang=(e)=>{
-        this.props.changeLang(e.target.value)
+        const { i18n} = this.props;
+        console.log(i18n)
+        i18n.changeLanguage(e.target.value)
     }
     LangSelect = () => {
+        const { i18n} = this.props;
         return(
             <Select 
                 size = 'small'
-                defaultValue={'en'}
+                value = {i18n.resolvedLanguage}
                 inputProps={{
                     style: {textAlign:"center"}
                 }}
@@ -825,3 +830,4 @@ bottomBarPhone =()=>{
         )
     }
 }
+export default withTranslation()(BottomBar);

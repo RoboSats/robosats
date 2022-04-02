@@ -1,39 +1,25 @@
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
+import XHR from "i18next-xhr-backend";
+
+import translationEN from "./locales/en/translation.json";
+import translationES from "./locales/es/translation.json";
+import translationDE from "./locales/de/translation.json";
+import translationRU from "./locales/ru/translation.json";
+import translationCN from "./locales/cn/translation.json";
 
 i18n
+  .use(XHR)
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-  // we init with resources
   resources: {
     en: {
-      translations: {
-        Your_avatar: "Avatar",
-        "This is your trading avatar":
-          "This is your trading avatar",
-        "Plugins to detect the user language":
-          "Plugins to detect the user language",
-        "Plugins to load translations": "Plugins to load translations",
-        "Optionally cache the translations":
-          "Optionally cache the translations",
-        Advantages: "Advantages",
-        "Flexibility to use other packages": "Flexibility to use other packages"
-      }
+      translations: translationEN
     },
     es: {
-    translations: {
-        Your_avatar: "Avatar",
-        "This is your trading avatar":
-            "Este es tu avatar para comprar y vender",
-        "Plugins to detect the user language":
-          "ユーザー言語を検出するためのプラグイン",
-        "Plugins to load translations": "翻訳をロードするためのプラグイン",
-        "Optionally cache the translations": "必要に応じて翻訳をキャッシュする",
-        Advantages: "利点",
-        "Flexibility to use other packages": "他のパッケージを使用する柔軟性"
-      }
+      translations: translationES
     },
 
     ru: {
@@ -97,7 +83,8 @@ i18n
   },
 
   react: {
-    wait: true
+    wait: true,
+    useSuspense: true
   }
 });
 

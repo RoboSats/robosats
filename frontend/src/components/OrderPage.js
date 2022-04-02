@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import {TextField,Chip, Tooltip, Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import MediaQuery from 'react-responsive'
+import currencyDict from '../../static/assets/currencies.json';
 
 import PaymentText from './PaymentText'
 import TradeBox from "./TradeBox";
@@ -44,7 +45,6 @@ export default class OrderPage extends Component {
     this.state = {
         is_explicit: false,
         delay: 60000, // Refresh every 60 seconds by default
-        currencies_dict: {"1":"USD"},
         total_secs_exp: 300,
         loading: true,
         openCancel: false,
@@ -53,7 +53,6 @@ export default class OrderPage extends Component {
         showContractBox: 1,
     };
     this.orderId = this.props.match.params.orderId;
-    this.getCurrencyDict();
     this.getOrderDetails();
 
     // Refresh delays according to Order status
@@ -274,7 +273,6 @@ export default class OrderPage extends Component {
 
   takeOrder=()=>{
     this.setState({loading:true})
-    console.log(this.state.takeAmount)
     const requestOptions = {
         method: 'POST',
         headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
@@ -287,15 +285,6 @@ export default class OrderPage extends Component {
       .then((response) => response.json())
       .then((data) => this.completeSetState(data));
   }
-
-  getCurrencyDict() {
-    fetch('/static/assets/currencies.json')
-      .then((response) => response.json())
-      .then((data) => 
-      this.setState({
-        currencies_dict: data
-      }));
-  }
   
   // set delay to the one matching the order status. If null order status, delay goes to 9999999.
   setDelay = (status)=>{
@@ -303,7 +292,7 @@ export default class OrderPage extends Component {
   }
 
   getCurrencyCode(val){
-    let code = val ? this.state.currencies_dict[val.toString()] : "" 
+    let code = val ? currencyDict[val.toString()] : "" 
     return code
   }
 

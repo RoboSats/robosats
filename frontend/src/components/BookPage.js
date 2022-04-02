@@ -2,6 +2,8 @@ import React, { Component , useState } from "react";
 import { Badge, Tooltip, Paper, Button, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, ListItemText, ListItemAvatar, IconButton} from "@mui/material";
 import { Link } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid';
+import currencyDict from '../../static/assets/currencies.json';
+
 import MediaQuery from 'react-responsive'
 import Image from 'material-ui-image'
 import getFlags from './getFlags'
@@ -12,11 +14,9 @@ export default class BookPage extends Component {
     super(props);
     this.state = {
       orders: new Array({id:0,}),
-      currencies_dict: {"0":"ANY"},
       loading: true,
       pageSize: 6,
     };
-    this.getCurrencyDict()
     this.getOrderDetails(this.props.type, this.props.currency)
   }
 
@@ -50,19 +50,10 @@ export default class BookPage extends Component {
     })
     this.getOrderDetails(this.props.type, currency);
   }
-  
-  getCurrencyDict() {
-    fetch('/static/assets/currencies.json')
-      .then((response) => response.json())
-      .then((data) => 
-      this.setState({
-        currencies_dict: data
-      }));
-  }
 
   getCurrencyCode(val){
     if (val){
-      return val == 0 ? 'ANY' : this.state.currencies_dict[val.toString()]
+      return val == 0 ? 'ANY' : currencyDict[val.toString()]
     }else{
       return 'ANY'
     }
@@ -300,7 +291,7 @@ export default class BookPage extends Component {
                   onChange={this.handleCurrencyChange}
               >     <MenuItem value={0}>🌍 ANY</MenuItem>
                     {
-                      Object.entries(this.state.currencies_dict)
+                      Object.entries(currencyDict)
                       .map( ([key, value]) => <MenuItem value={parseInt(key)}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div></MenuItem> )
                     }
               </Select>
