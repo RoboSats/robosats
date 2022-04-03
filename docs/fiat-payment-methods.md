@@ -4,7 +4,7 @@ Currently, there are no restrictions on the fiat payment method. You can pay wit
 
 ## General recommendation
 
-This recommendation is created as a best practice for trading in the Robosats platform. These best practices are highly encouraged for both trading peers to follow to ensure successful trade and prevent unnecessary disputes.
+This recommendation is created as a best practice for trading in the RoboSats platform. These best practices are highly encouraged for both trading peers to follow to ensure successful trade and prevent unnecessary disputes.
 
 Note: This guidance is modified from Bisq's <a href="https://bisq.wiki/Trading_rules">trading rules</a> and adjusted according to the difference in the trading mechanism of each platform.
 
@@ -34,7 +34,7 @@ if the timer reaches the expiration, it could trigger a dispute and could lead t
 The best practice for users trying to transact with a payment method with a high risk of losing funds is discussed in this section.
 
 ### Paypal
-Paypal is one of the widely used fiat payment methods. However, with <a href="https://www.paypal.com/us/webapps/mpp/ua/buyer-protection">PayPal buyer protection policy</a>, buyer can do fraudulent action by creating a refund request in PayPal after the trading process in Robosats is finished and therefore taking both fiat and bitcoin all by themselves. 
+Paypal is one of the widely used fiat payment methods. However, with <a href="https://www.paypal.com/us/webapps/mpp/ua/buyer-protection">PayPal buyer protection policy</a>, buyer can do fraudulent action by creating a refund request in PayPal after the trading process in RoboSats is finished and therefore taking both fiat and bitcoin all by themselves. 
 
 This fraud can be prevented by agreeing with the buyer to have them send money using the “send money to a friend or family member” option. This will make the buyer become the one liable for the transaction fee and make it less likely for them to request a refund.
 
