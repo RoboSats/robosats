@@ -34,8 +34,34 @@ if the timer reaches the expiration, it could trigger a dispute and could lead t
 The best practice for users trying to transact with a payment method with a high risk of losing funds is discussed in this section.
 
 ### Paypal
-Paypal is a popular international payment method. However, this platform <a href="https://www.paypal.com/us/webapps/mpp/ua/buyer-protection">Buyer protection policy</a>, it is possible for buyers to do fraudulent activity by creating a refund request in Paypal after the trading process in Robosats is finished and therefore taking both fiat and bitcoin all by themselves. 
+Paypal is one of the widely used fiat payment methods. However, with <a href="https://www.paypal.com/us/webapps/mpp/ua/buyer-protection">PayPal buyer protection policy</a>, buyer can do fraudulent action by creating a refund request in PayPal after the trading process in Robosats is finished and therefore taking both fiat and bitcoin all by themselves. 
 
 This fraud can be prevented by agreeing with the buyer to have them send money using the “send money to a friend or family member” option. This will make the buyer become the one liable for the transaction fee and make it less likely for them to request a refund.
 
+### For seller
 If you are a seller and your peer both agreed to use “send money to a friend or family member” but your peer used the "send money for Goods or Services" option, you should return the fiat payment and ask your peer to send with an agreed method. If they insist to break the agreement, you may ask them to voluntarily end the trade or end the trade by calling a dispute.
+
+### For buyer
+If you are a buyer and you need to use “send money to a friend or family member” to pay fiat to your peer, you can choose the specified payment type by following these steps.
+
+#### PayPal Desktop
+In PayPal desktop, it is located below the drop-down currency list, it should be labeled as "Sending to a friend".
+If it is labeled otherwise, you'll need to click "Change" on the right to change the payment type.
+<div align="center">
+<img src="images/fiat-payment-methods/PayPal-main-desktop.png" width="370"/>
+</div>
+Then select "Sending to a friend" in the payment type choosing page.
+<div align="center">
+<img src="images/fiat-payment-methods/PayPal-choose-desktop.png" width="370"/>
+</div>
+
+#### PayPal Mobile
+In PayPal mobile, it is located below the payment method (In this case is VISA), it should be labeled as "Friends or Family".
+If it is labeled otherwise, you'll need to tab ">" on the right to change the payment type.
+<div align="center">
+<img src="images/fiat-payment-methods/PayPal-main-phone.png" width="230"/>
+</div>
+Then select "Friends or Family" in the payment type choosing page.
+<div align="center">
+<img src="images/fiat-payment-methods/PayPal-choose-phone.png" width="230"/>
+</div>
