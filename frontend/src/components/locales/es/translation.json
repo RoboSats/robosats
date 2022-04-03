@@ -1,10 +1,11 @@
 {
+    "UNSAFE-ALERT": "Alert that shows on top when browsing from the unsafe clearnet sites",
+    "You are not using RoboSats privately": "No estás usando RoboSats de forma privada",
+    "desktop_unsafe_alert": "Some features are disabled for your protection (e.g. chat) and you will not be able to complete a trade without them. To protect your privacy and fully enable RoboSats, use <1>Tor Browser</1> and visit the <3>Onion</3> site.",
+    "phone_unsafe_alert": "You will not be able to complete a trade. Use <1>Tor Browser</1> and visit the <3>Onion</3> site.",
+    "Hide":"Hide",
+
     "UserGenPage": "User Generation Page and Landing Page",
     "Simple and Private LN P2P Exchange":"Intercambio LN P2P Fácil y Privado",
-    "This is your trading avatar":"Este es tu avatar de compraventa",
-    "Plugins to detect the user language":"ユーザー言語を検出するためのプラグイン",
-    "Plugins to load translations": "翻訳をロードするためのプラグイン",
-    "Optionally cache the translations": "必要に応じて翻訳をキャッシュする",
-    "Advantages": "利点",
-    "Flexibility to use other packages": "他のパッケージを使用する柔軟性"
+    "This is your trading avatar":"Este es tu avatar de compraventa"
   }

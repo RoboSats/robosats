@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { withTranslation } from "react-i18next";
+import { withTranslation, Trans} from "react-i18next";
 import {FormControlLabel, Link, Switch, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
 import { Link as LinkRouter } from 'react-router-dom'
@@ -27,7 +27,6 @@ import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AmbossIcon from "./icons/AmbossIcon";
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { t } from 'i18next';
 
 // pretty numbers
 function pn(x) {
@@ -592,7 +591,7 @@ bottomBarDesktop =()=>{
         return(
             <Select 
                 size = 'small'
-                value = {i18n.resolvedLanguage}
+                value = {i18n.resolvedLanguage.substring(0,2)}
                 inputProps={{
                     style: {textAlign:"center"}
                 }}

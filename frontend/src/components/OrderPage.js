@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { withTranslation, Trans} from "react-i18next";
 import {TextField,Chip, Tooltip, Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import MediaQuery from 'react-responsive'
@@ -39,7 +40,7 @@ function pn(x) {
   return parts.join(".");
 }
 
-export default class OrderPage extends Component {
+class OrderPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -739,3 +740,5 @@ export default class OrderPage extends Component {
     );
   }
 }
+
+export default withTranslation()(OrderPage);

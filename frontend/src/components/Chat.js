@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
+import { withTranslation, Trans} from "react-i18next";
 import {Button, Link, Badge, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, FormHelperText, Typography} from "@mui/material";
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
-export default class Chat extends Component {
+class Chat extends Component {
   constructor(props) {
     super(props);
   }
@@ -166,3 +167,5 @@ export default class Chat extends Component {
     )
   }
 }
+
+export default withTranslation()(Chat);

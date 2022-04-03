@@ -1,11 +1,15 @@
 import React, { Component } from 'react';
+import { withTranslation, Trans} from "react-i18next";
 import { InputAdornment, LinearProgress, Link, Checkbox, Slider, Box, Tab, Tabs, SliderThumb, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
 import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link as LinkRouter } from 'react-router-dom'
 import { styled } from '@mui/material/styles';
+
 import getFlags from './getFlags';
 import AutocompletePayments from './autocompletePayments';
+
+
 import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import currencyDict from '../../static/assets/currencies.json';
@@ -37,7 +41,7 @@ function pn(x) {
     return parts.join(".");  
   }
 
-export default class MakerPage extends Component {
+class MakerPage extends Component {
   defaultCurrency = 1;
   defaultCurrencyCode = 'USD';
   defaultPaymentMethod = "not specified";
@@ -319,6 +323,8 @@ export default class MakerPage extends Component {
                         error={this.state.badPaymentMethod}
                         helperText={this.state.badPaymentMethod ? "Must be shorter than 65 characters":""}
                         label={this.state.currency==1000 ? "Swap Destination(s)" : "Fiat Payment Method(s)"}
+                        listHeaderText={"You can add any method"}
+                        addNewButtonText={"Add New"}
                         />
                 </Tooltip>
             </Grid>
@@ -709,3 +715,5 @@ export default class MakerPage extends Component {
     );
   }
 }
+
+export default withTranslation()(MakerPage);

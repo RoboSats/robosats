@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { withTranslation, Trans} from "react-i18next";
 import { IconButton, Box, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
 import Countdown, { zeroPad} from 'react-countdown';
@@ -40,7 +41,7 @@ function pn(x) {
   return parts.join(".");
 }
 
-export default class TradeBox extends Component {
+class TradeBox extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -52,6 +53,8 @@ export default class TradeBox extends Component {
       qrscanner: false,
     }
   }
+
+  
 
   Sound = ({soundFileName}) => (
     // Four filenames: "locked-invoice", "taker-found", "open-chat", "successful"
@@ -195,21 +198,28 @@ export default class TradeBox extends Component {
   }
 
   showQRInvoice=()=>{
+    const { t } = this.props;
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2">
-            Robots show commitment to their peers
+            {t("Robots show commitment to their peers")}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           {this.props.data.is_maker ?
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b>Lock {pn(this.props.data.bond_satoshis)} Sats to PUBLISH order </b> {" " + this.stepXofY()}
+            <b><Trans i18nKey="lock_to_publish">
+              Lock {{amount_sats: pn(this.props.data.bond_satoshis)}} Sats to PUBLISH order 
+              </Trans>
+            </b> {" " + this.stepXofY()}
           </Typography>
           : 
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b>Lock {pn(this.props.data.bond_satoshis)} Sats to TAKE the order </b> {" " + this.stepXofY()}
+            <b><Trans i18nKey="lock_to_take">
+              Lock {{amount_sats: pn(this.props.data.bond_satoshis)}} Sats to TAKE the order 
+              </Trans>
+            </b> {" " + this.stepXofY()}
           </Typography>
           }
         </Grid>
@@ -217,8 +227,8 @@ export default class TradeBox extends Component {
           <Box sx={{bgcolor:'#ffffff', width:'315px', position:'relative', left:'-5px'}} >
             <QRCode value={this.props.data.bond_invoice} size={305} style={{position:'relative', top:'3px'}}/>
           </Box>
-          <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
-            <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.bond_invoice)}} align="center"> <ContentCopy/> Copy to clipboard</Button>
+          <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+            <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.bond_invoice)}} align="center"> <ContentCopy/>{t("Copy to clipboard")}</Button>
           </Tooltip>
         </Grid> 
         <Grid item xs={12} align="center">
@@ -228,7 +238,7 @@ export default class TradeBox extends Component {
             size="small"
             defaultValue={this.props.data.bond_invoice} 
             disabled="true"
-            helperText="This is a hold invoice, it will freeze in your wallet. It will be charged only if you cancel or lose a dispute."
+            helperText={t("This is a hold invoice, it will freeze in your wallet. It will be charged only if you cancel or lose a dispute.")}
             color = "secondary"
           />
         </Grid>
@@ -237,12 +247,13 @@ export default class TradeBox extends Component {
   }
 
   showBondIsLocked=()=>{
+    const {t} = this.props
     return (
         <Grid item xs={12} align="center">
           <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
             <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}>
               <LockIcon/>
-              {" Your " + (this.props.data.is_maker ? 'maker' : 'taker')+" bond is locked"}
+              {this.props.data.is_maker ? t("Your maker bond is locked") : t("Your taker bond is locked")}
             </div>
           </Typography>
         </Grid>
@@ -255,7 +266,7 @@ export default class TradeBox extends Component {
           <Typography color="error" component="subtitle1" variant="subtitle1" align="center">
                 <div style={{display:'flex',alignItems:'center', justifyContent:'center', flexWrap:'wrap', align:"center"}} align="center">
                     <BalanceIcon/>
-                    {" Your " + (this.props.data.is_maker ? 'maker' : 'taker')+" bond was settled"}
+                    {this.props.data.is_maker ? t("Your maker bond was settled") : t("Your taker bond was settled")}
                 </div>
           </Typography>
         </Grid>
@@ -268,7 +279,7 @@ export default class TradeBox extends Component {
           <Typography color="green" component="subtitle1" variant="subtitle1" align="center">
             <div style={{display:'flex',alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}>
               <LockOpenIcon/>
-              {" Your " + (this.props.data.is_maker ? 'maker' : 'taker')+" bond was unlocked"}
+              {this.props.data.is_maker ? t("Your maker bond was unlock") : t("Your taker bond was unlocked")}
             </div>
           </Typography>
         </Grid>
@@ -282,7 +293,10 @@ export default class TradeBox extends Component {
         <this.Sound soundFileName="locked-invoice"/>
         <Grid item xs={12} align="center">
           <Typography color="green" component="subtitle1" variant="subtitle1">
-            <b>Lock {pn(this.props.data.escrow_satoshis)} Sats as collateral </b> {" " + this.stepXofY()}
+            <b><Trans i18nKey="lock_escrow" >
+              Lock {{amount_sats:pn(this.props.data.escrow_satoshis)}} Sats as collateral
+              </Trans> 
+            </b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -300,7 +314,7 @@ export default class TradeBox extends Component {
             size="small"
             defaultValue={this.props.data.escrow_invoice} 
             disabled="true"
-            helperText={"This is a hold invoice, it will freeze in your wallet. It will be released to the buyer once you confirm to have received the "+this.props.data.currencyCode+"."}
+            helperText={<Trans i18nKey="hold_escrow_invoice_explanation">This is a hold invoice, it will freeze in your wallet. It will be released to the buyer once you confirm to have received the {{currencyCode: this.props.data.currencyCode}}.</Trans>}
             color = "secondary"
           />
         </Grid>
@@ -310,21 +324,20 @@ export default class TradeBox extends Component {
   }
 
   showTakerFound=()=>{
+    const { t } = this.props;
     return (
       <Grid container spacing={1}>
         {/* Make bell sound when taker is found */}
         <this.Sound soundFileName="taker-found"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>A taker has been found! </b> {" " + this.stepXofY()}
+            <b>{t("A taker has been found!")}</b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Divider/>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2">
-            Please wait for the taker to lock a bond. 
-            If the taker does not lock a bond in time, the order will be made
-            public again.
+            {t("Please wait for the taker to lock a bond. If the taker does not lock a bond in time, the order will be made public again.")}
           </Typography>
         </Grid>
         {this.showBondIsLocked()}
@@ -345,6 +358,7 @@ export default class TradeBox extends Component {
   };
 
   EnableTelegramDialog =() =>{
+    const { t } = this.props;
   return(
       <Dialog
       open={this.state.openEnableTelegram}
@@ -353,24 +367,23 @@ export default class TradeBox extends Component {
       aria-describedby="enable-telegram-dialog-description"
       >
         <DialogTitle id="open-dispute-dialog-title">
-          Enable TG Notifications
+          {t("Enable TG Notifications")}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            You will be taken to a conversation with RoboSats telegram bot.
-            Simply open the chat and press "Start". Note that by enabling
-            telegram notifications you might lower your level of anonymity.
+            {t("You will be taken to a conversation with RoboSats telegram bot. Simply open the chat and press Start. Note that by enabling telegram notifications you might lower your level of anonymity.")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.handleClickCloseEnableTelegramDialog}>Go back</Button>
-          <Button onClick={this.handleClickEnableTelegram} autoFocus> Enable </Button>
+          <Button onClick={this.handleClickCloseEnableTelegramDialog}> {t("Go back")} </Button>
+          <Button onClick={this.handleClickEnableTelegram} autoFocus> {t("Enable")} </Button>
         </DialogActions>
       </Dialog>
     )
   }
 
   showMakerWait=()=>{
+    const { t } = this.props;
     return (
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
@@ -378,7 +391,7 @@ export default class TradeBox extends Component {
         <this.EnableTelegramDialog/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b> Your order is public </b> {" " + this.stepXofY()}
+            <b> {t("Your order is public")} </b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -387,19 +400,16 @@ export default class TradeBox extends Component {
           <Divider/>
             <ListItem>
               <Typography component="body2" variant="body2" align="left">
-                <p>Be patient while robots check the book. 
-                It might take some time. This box will ring 🔊 once a robot takes your order. </p>
-                <p>Please note that if your premium is excessive or your currency or payment
-                  methods are not popular, your order might expire untaken. Your bond will
-                  return to you (no action needed).</p> 
+                <p>{t("Be patient while robots check the book. It might take some time. This box will ring 🔊 once a robot takes your order.")} </p>
+                <p>{t("Please note that if your premium is excessive or your currency or payment methods are not popular, your order might expire untaken. Your bond will return to you (no action needed).")}</p> 
               </Typography>
             </ListItem>
             <Grid item xs={12} align="center">
               {this.props.data.tg_enabled ?
-              <Typography color='primary' component="h6" variant="h6" align="center"> Telegram enabled</Typography>
+              <Typography color='primary' component="h6" variant="h6" align="center">{t("Telegram enabled")}</Typography>
               :
               <Button color="primary" onClick={this.handleClickOpenTelegramDialog}>
-                <SendIcon/>Enable Telegram Notifications
+                <SendIcon/>{t("Enable Telegram Notifications")}
               </Button>
               }
             </Grid>
@@ -408,7 +418,7 @@ export default class TradeBox extends Component {
               <ListItemIcon>
                 <BookIcon/>
               </ListItemIcon>
-                <ListItemText primary={this.props.data.num_similar_orders} secondary={"Public orders for " + this.props.data.currencyCode}/>
+                <ListItemText primary={this.props.data.num_similar_orders} secondary={<Trans i18n="public_order_num_subtitle">Public orders for {{currencyCode: this.props.data.currencyCode}} </Trans>}/>
               </ListItem>
               
             <Divider/>
@@ -416,8 +426,8 @@ export default class TradeBox extends Component {
               <ListItemIcon>
                 <PercentIcon/>
               </ListItemIcon>
-                <ListItemText primary={"Premium rank " + this.props.data.premium_percentile*100+"%"} 
-                  secondary={"Among public " + this.props.data.currencyCode + " orders (higher is cheaper)"} />
+                <ListItemText primary={t("Premium rank") +" "+this.props.data.premium_percentile*100+"%"} 
+                  secondary={<Trans i18n="among_public"> Among public {{ currencyCode: this.props.data.currencyCode }} orders (higher is cheaper)</Trans>} />
               </ListItem>
             <Divider/>
 
@@ -1088,3 +1098,5 @@ handleRatingRobosatsChange=(e)=>{
     );
   }
 }
+
+export default withTranslation()(TradeBox);

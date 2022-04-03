@@ -1,10 +1,10 @@
-
-import {Typography, Link, DialogActions,  DialogContent, Button, Grid} from "@mui/material"
 import React, { Component } from 'react'
+import { withTranslation, Trans} from "react-i18next";
+import {Typography, Link, DialogActions,  DialogContent, Button, Grid} from "@mui/material"
 import Image from 'material-ui-image'
 import MediaQuery from 'react-responsive'
 
-export default class InfoDialog extends Component {
+class InfoDialog extends Component {
   render() {
     return (
       <div>
@@ -162,3 +162,5 @@ export default class InfoDialog extends Component {
     )
   }
 }
+
+export default withTranslation()(InfoDialog);

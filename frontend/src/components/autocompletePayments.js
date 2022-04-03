@@ -247,7 +247,7 @@ export default function AutocompletePayments(props) {
       {groupedOptions.length > 0 ? (
         <Listbox {...getListboxProps()}>
             <div style={{position:'fixed', minHeight:'20px',  marginLeft: '53px', marginTop: '-13px'}}>
-                <ListHeader><i>You can add any method </i></ListHeader>
+                <ListHeader><i>{props.listHeaderText}</i></ListHeader>
             </div>
           {groupedOptions.map((option, index) => (
             <li {...getOptionProps({ option, index })}>
@@ -262,7 +262,7 @@ export default function AutocompletePayments(props) {
           ))}
           {val != null?
               (val.length > 2 ?
-                  <Button size="small" fullWidth={true} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:18,height:18}}/>Add New</Button>
+                  <Button size="small" fullWidth={true} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:18,height:18}}/>{props.addNewButtonText}</Button>
               :null)
             :null}
         </Listbox>
@@ -270,7 +270,7 @@ export default function AutocompletePayments(props) {
       //Here goes what happens if there is no groupedOptions
       (getInputProps().value.length > 0 ?
         <Listbox {...getListboxProps()}>
-          <Button fullWidth={true} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:20,height:20}}/>Add New</Button>
+          <Button fullWidth={true} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:20,height:20}}/>{props.addNewButtonText}</Button>
         </Listbox>
         :null)
       }

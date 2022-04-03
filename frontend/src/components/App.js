@@ -16,12 +16,7 @@ export default class App extends Component {
     super(props);
     this.state = {
       dark: false,
-      lang: 'en',
     }
-  }
-
-  setLang=(newLang)=>{
-    this.setState({lang:newLang})
   }
 
   lightTheme = createTheme({});
@@ -44,7 +39,7 @@ export default class App extends Component {
             {this.state.dark ? <LightModeIcon/>:<DarkModeIcon/>}
           </IconButton>
           <UnsafeAlert className="unsafeAlert"/>
-          <HomePage changeLang={i18n.changeLanguage}/>
+          <HomePage/>
         </ThemeProvider>
       </I18nextProvider>
     );

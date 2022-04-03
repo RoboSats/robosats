@@ -1,4 +1,5 @@
-import React, { Component , useState } from "react";
+import React, { Component } from "react";
+import { withTranslation, Trans} from "react-i18next";
 import { Badge, Tooltip, Paper, Button, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, ListItemText, ListItemAvatar, IconButton} from "@mui/material";
 import { Link } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid';
@@ -9,7 +10,7 @@ import Image from 'material-ui-image'
 import getFlags from './getFlags'
 import PaymentText from './PaymentText'
 
-export default class BookPage extends Component {
+class BookPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -348,3 +349,5 @@ export default class BookPage extends Component {
     );
   };
 }
+
+export default withTranslation()(BookPage);

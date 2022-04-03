@@ -1,7 +1,6 @@
-import PaymentIcon from './PaymentIcons'
 import React, { Component } from 'react'
+import PaymentIcon from './PaymentIcons'
 import {Tooltip} from "@mui/material"
-import { intlFormat } from 'date-fns';
 
 const someMethods = [
     {name: "Revolut",icon:'revolut'},
