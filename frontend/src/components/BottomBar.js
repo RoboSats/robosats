@@ -3,6 +3,7 @@ import { withTranslation, Trans} from "react-i18next";
 import {FormControlLabel, Link, Switch, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
 import { Link as LinkRouter } from 'react-router-dom'
+import Flags from 'country-flag-icons/react/3x2'
 
 // Icons
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -105,7 +106,7 @@ class BottomBar extends Component {
     };
 
     StatsDialog =() =>{
-
+        const { t } = this.props;
     return(
         <Dialog
         open={this.state.openStatsForNerds}
@@ -114,12 +115,12 @@ class BottomBar extends Component {
         aria-describedby="stats-for-nerds-description"
         >
         <DialogContent>
-            <Typography component="h5" variant="h5">Stats For Nerds</Typography>
+            <Typography component="h5" variant="h5">{t("Stats For Nerds")}</Typography>
             <List dense>
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><BoltIcon/></ListItemIcon>
-                    <ListItemText primary={this.state.lnd_version} secondary="LND version"/>
+                    <ListItemText primary={this.state.lnd_version} secondary={t("LND version")}/>
                 </ListItem>
 
                 <Divider/>
@@ -155,7 +156,7 @@ class BottomBar extends Component {
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><GitHubIcon/></ListItemIcon>
-                    <ListItemText secondary="Currently running commit hash">
+                    <ListItemText secondary={t("Currently running commit hash")}>
                         <Link target="_blank" href={"https://github.com/Reckless-Satoshi/robosats/tree/" 
                         + this.state.robosats_running_commit_hash}>{this.state.robosats_running_commit_hash.slice(0, 12)+"..."}
                         </Link>
@@ -165,13 +166,13 @@ class BottomBar extends Component {
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><EqualizerIcon/></ListItemIcon>
-                    <ListItemText primary={pn(this.state.last_day_volume)+" Sats"} secondary="24h contracted volume"/>
+                    <ListItemText primary={pn(this.state.last_day_volume)+" Sats"} secondary={t("24h contracted volume")}/>
                 </ListItem>
 
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><EqualizerIcon/></ListItemIcon>
-                    <ListItemText primary={pn(this.state.lifetime_volume)+" BTC"} secondary="Lifetime contracted volume"/>
+                    <ListItemText primary={pn(this.state.lifetime_volume)+" BTC"} secondary={t("Lifetime contracted volume")}/>
                 </ListItem>
 
                 <Divider/>
@@ -179,12 +180,12 @@ class BottomBar extends Component {
                     <ListItemIcon><PublicIcon/></ListItemIcon>
                     <ListItemText primary={
                         <div style={{display:'flex', alignItems:'center', justifyContent:'left', flexWrap:'wrap'}}>
-                            <span>Made with  </span>
+                            <span>{t("Made with")+" "}</span>
                             <FavoriteIcon sx={{ color: "#FF0000", height: '22px',width: '22px'}}/>
-                            <span>  and  </span>
+                            <span>{" "+t("and")+" "}</span>
                             <BoltIcon sx={{ color: "#fcba03", height: '23px',width: '23px'}}/>
                         </div>}
-                        secondary="... somewhere on Earth!"/>
+                        secondary={t("... somewhere on Earth!")}/>
                 </ListItem>
             </List>
 
@@ -201,6 +202,7 @@ class BottomBar extends Component {
     };
 
     CommunityDialog =() =>{
+        const { t } = this.props;
 
         return(
         <Dialog
@@ -210,36 +212,43 @@ class BottomBar extends Component {
         aria-describedby="community-description"
         >
         <DialogContent>
-            <Typography component="h5" variant="h5">Community</Typography>
+            <Typography component="h5" variant="h5">{t("Community")}</Typography>
             <Typography component="body2" variant="body2">
-                <p> Support is only offered via public channels.
-                    Join our Telegram community if you have
-                    questions or want to hang out with other cool robots.
-                    Please, use our Github Issues if you find a bug or want 
-                    to see new features!
-                </p>
+                <p>{t("Support is only offered via public channels. Join our Telegram community if you have questions or want to hang out with other cool robots. Please, use our Github Issues if you find a bug or want to see new features!")}</p>
             </Typography>
             <List> 
                 <Divider/>
 
                 <ListItemButton component="a" target="_blank" href="https://t.me/robosats">
                     <ListItemIcon><SendIcon/></ListItemIcon>
-                    <ListItemText primary="Join the RoboSats group"
-                    secondary="Telegram (English / Main)"/>
+                    <ListItemText primary={t("Join the RoboSats group")}
+                    secondary={t("Telegram (English / Main)")}/>
                 </ListItemButton>
                 <Divider/>
 
-                <ListItemButton component="a" target="_blank" href="https://t.me/robosats_es">
+                <ListItem>
                     <ListItemIcon><SendIcon/></ListItemIcon>
-                    <ListItemText primary="Unase al grupo RoboSats"
-                    secondary="Telegram (Español)"/>
-                </ListItemButton>
+                    <ListItemText secondary={t("RoboSats Telegram Communities")}>
+                        <Tooltip title={t("Join RoboSats Spanish speaking community!")}>
+                            <IconButton component="a" target="_blank" href="https://t.me/robosats_es"><Flags.ES width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
+                        </Tooltip>
+                        <Tooltip title={t("Join RoboSats Russian speaking community!")}>
+                            <IconButton component="a" target="_blank" href="https://t.me/robosats_ru"><Flags.RU width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
+                        </Tooltip>
+                        <Tooltip title={t("Join RoboSats Chinesse speaking community!")}>
+                            <IconButton component="a" target="_blank" href="https://t.me/robosats_cn"><Flags.CN width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
+                        </Tooltip>
+                        <Tooltip title={t("Join RoboSats English speaking community!")}>
+                            <IconButton component="a" target="_blank" href="https://t.me/robosats"><Flags.US width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
+                        </Tooltip>
+                    </ListItemText>
+                </ListItem>
                 <Divider/>
 
                 <ListItemButton component="a" target="_blank" href="https://github.com/Reckless-Satoshi/robosats/issues">
                     <ListItemIcon><GitHubIcon/></ListItemIcon>
-                    <ListItemText primary="Tell us about a new feature or a bug" 
-                    secondary="Github Issues - The Robotic Satoshis Open Source Project"/>
+                    <ListItemText primary={t("Tell us about a new feature or a bug")} 
+                    secondary={t("Github Issues - The Robotic Satoshis Open Source Project")}/>
                 </ListItemButton>
 
             </List>
@@ -286,6 +295,7 @@ class BottomBar extends Component {
       }
 
     dialogProfile =() =>{
+        const { t } = this.props;
         return(
         <Dialog
         open={this.state.openProfile}
@@ -294,11 +304,11 @@ class BottomBar extends Component {
         aria-describedby="profile-description"
         >
             <DialogContent>
-            <Typography component="h5" variant="h5">Your Profile</Typography>
+            <Typography component="h5" variant="h5">{t("Your Profile")}</Typography>
             <List>
                 <Divider/>
                 <ListItem className="profileNickname">
-                    <ListItemText secondary="Your robot">
+                    <ListItemText secondary={t("Your robot")}>
                     <Typography component="h6" variant="h6">
                     {this.props.nickname ? 
                     <div style={{position:'relative',left:'-7px'}}>
@@ -326,12 +336,12 @@ class BottomBar extends Component {
                             <NumbersIcon color="primary"/>
                         </Badge>
                     </ListItemIcon>
-                    <ListItemText primary={'One active order #'+this.state.active_order_id} secondary="Your current order"/>
+                    <ListItemText primary={t("One active order #{{orderID}}",{orderID: this.state.active_order_id})} secondary={t("Your current order")}/>
                 </ListItemButton>
                 :
                 <ListItem>
                     <ListItemIcon><NumbersIcon/></ListItemIcon>
-                    <ListItemText primary="No active orders" secondary="Your current order"/>
+                    <ListItemText primary={t("No active orders")} secondary={t("Your current order")}/>
                 </ListItem>
                 }
                 
@@ -339,17 +349,17 @@ class BottomBar extends Component {
                     <ListItemIcon>
                         <PasswordIcon/>
                     </ListItemIcon>
-                    <ListItemText secondary="Your token (will not remain here)">
+                    <ListItemText secondary={t("Your token (will not remain here)")}>
                     {this.props.token ?  
                     <TextField
                         disabled
-                        label='Back it up!'
+                        label={t("Back it up!")}
                         value={this.props.token }
                         variant='filled'
                         size='small'
                         InputProps={{
                             endAdornment:
-                            <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
+                            <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
                                 <IconButton onClick= {()=>navigator.clipboard.writeText(this.props.token)}>
                                     <ContentCopy />
                                 </IconButton>
@@ -357,7 +367,7 @@ class BottomBar extends Component {
                             }}
                         />
                     : 
-                    'Cannot remember'}
+                    t("Cannot remember")}
                 </ListItemText>
                 </ListItem>
                 
@@ -368,7 +378,7 @@ class BottomBar extends Component {
                         <Switch
                         checked={this.state.showRewards} 
                         onChange={()=> this.setState({showRewards: !this.state.showRewards})}/>} 
-                        label="Rewards and compensations" 
+                        label={t("Rewards and compensations")}
                         />
                 </Grid>
                 
@@ -377,15 +387,14 @@ class BottomBar extends Component {
                         <ListItemIcon>
                             <PersonAddAltIcon/>
                         </ListItemIcon>
-                        <ListItemText secondary="Share to earn 100 Sats per trade">
+                        <ListItemText secondary={t("Share to earn 100 Sats per trade")}>
                         <TextField
-                            label='Your referral link'
+                            label={t("Your referral link")}
                             value={this.getHost()+'/ref/'+this.state.referral_code}
-                            // variant='filled'
                             size='small'
                             InputProps={{
                                 endAdornment:
-                                <Tooltip disableHoverListener enterTouchDelay="0" title="Copied!">
+                                <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
                                     <IconButton onClick= {()=>navigator.clipboard.writeText('http://'+this.getHost()+'/ref/'+this.state.referral_code)}>
                                         <ContentCopy />
                                     </IconButton>
@@ -400,13 +409,13 @@ class BottomBar extends Component {
                             <EmojiEventsIcon/>
                         </ListItemIcon>
                         {!this.state.openClaimRewards ?
-                        <ListItemText secondary="Your earned rewards">
+                        <ListItemText secondary={t("Your earned rewards")}>
                             <Grid container xs={12}>
                                 <Grid item xs={9}>
                                     <Typography>{this.state.earned_rewards+" Sats"}</Typography>
                                 </Grid>
                                 <Grid item xs={3}>
-                                    <Button disabled={this.state.earned_rewards==0? true : false} onClick={() => this.setState({openClaimRewards:true})} variant="contained" size="small">Claim</Button>
+                                    <Button disabled={this.state.earned_rewards==0? true : false} onClick={() => this.setState({openClaimRewards:true})} variant="contained" size="small">{t("Claim")}</Button>
                                 </Grid>
                             </Grid>
                         </ListItemText>
@@ -417,8 +426,7 @@ class BottomBar extends Component {
                                 <TextField
                                     error={this.state.badInvoice}
                                     helperText={this.state.badInvoice ? this.state.badInvoice : "" }
-                                    label={"Invoice for " + this.state.earned_rewards + " Sats"}
-                                    //variant="standard"
+                                    label={t("Invoice for {{amountSats}} Sats", {amountSats: this.state.earned_rewards})}
                                     size="small"
                                     value={this.state.rewardInvoice}
                                     onChange={e => {
@@ -427,7 +435,7 @@ class BottomBar extends Component {
                                 />
                                 </Grid>
                                 <Grid item alignItems="stretch" style={{ display: "flex" }}>
-                                    <Button sx={{maxHeight:38}} onClick={this.handleSubmitInvoiceClicked} variant="contained" color="primary" size="small" > Submit </Button>
+                                    <Button sx={{maxHeight:38}} onClick={this.handleSubmitInvoiceClicked} variant="contained" color="primary" size="small">{t("Submit")}</Button>
                                 </Grid>
                             </Grid>
                         </form>
@@ -442,7 +450,7 @@ class BottomBar extends Component {
                     
                     {this.state.withdrawn?
                     <div style={{display: 'flex', justifyContent: 'center'}}>
-                        <Typography color="primary" variant="body2"><b>There it goes, thank you!🥇</b></Typography>
+                        <Typography color="primary" variant="body2"><b>{t("There it goes, thank you!🥇")}</b></Typography>
                     </div>
                     :""}
 
@@ -455,6 +463,7 @@ class BottomBar extends Component {
     }
 
 bottomBarDesktop =()=>{
+    const { t } = this.props;
     return(
         <Paper elevation={6} style={{height:40}}>
                 <this.StatsDialog/>
@@ -466,9 +475,9 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <div style={{display: this.props.avatarLoaded ? '':'none'}}>                     
                         <ListItemButton onClick={this.handleClickOpenProfile} >
-                            <Tooltip open={this.state.earned_rewards > 0 ? true: false} title="You can claim satoshis!">
+                            <Tooltip open={this.state.earned_rewards > 0 ? true: false} title={t("You can claim satoshis!")}>
                             <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
-                                        title="You have an active order">
+                                        title={t("You have an active order")}>
                                 <ListItemAvatar sx={{ width: 30, height: 30 }} >
                                     <Badge badgeContent={(this.state.active_order_id > 0 & !this.state.profileShown) ? "": null} color="primary">
                                     <Avatar className='flippedSmallAvatar' sx={{margin: 0, top: -13}}
@@ -496,7 +505,7 @@ bottomBarDesktop =()=>{
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
                                 primary={this.state.num_public_buy_orders} 
-                                secondary="Public Buy Orders" />
+                                secondary={t("Public Buy Orders")} />
                         </ListItem>
                     </Grid>
 
@@ -509,7 +518,7 @@ bottomBarDesktop =()=>{
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
                                 primary={this.state.num_public_sell_orders} 
-                                secondary="Public Sell Orders" />
+                                secondary={t("Public Sell Orders")} />
                         </ListItem>
                     </Grid>
 
@@ -522,7 +531,7 @@ bottomBarDesktop =()=>{
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
                                 primary={this.state.active_robots_today} 
-                                secondary="Today Active Robots" />
+                                secondary={t("Today Active Robots")}/>
                         </ListItem>
                     </Grid>
 
@@ -535,7 +544,7 @@ bottomBarDesktop =()=>{
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
                                 primary={this.state.last_day_nonkyc_btc_premium+"%"} 
-                                secondary="24h Avg Premium" />
+                                secondary={t("24h Avg Premium")} />
                         </ListItem>
                     </Grid>
 
@@ -548,7 +557,7 @@ bottomBarDesktop =()=>{
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
                                 primary={(this.state.maker_fee + this.state.taker_fee)*100} 
-                                secondary="Trade Fee" />
+                                secondary={t("Trade Fee")} />
                         </ListItem>
                     </Grid>
 
@@ -557,7 +566,7 @@ bottomBarDesktop =()=>{
                             <this.LangSelect/>
                         </Grid>
                         <Grid item xs={3}>
-                        <Tooltip enterTouchDelay="250" title="Show community and support links">
+                        <Tooltip enterTouchDelay="250" title={t("Show community and support links")}>
                             <IconButton 
                             color="primary" 
                             aria-label="Community" 
@@ -567,7 +576,7 @@ bottomBarDesktop =()=>{
                         </Tooltip>
                         </Grid>
                         <Grid item xs={3}> 
-                            <Tooltip enterTouchDelay="250" title="Show stats for nerds">
+                            <Tooltip enterTouchDelay="250" title={t("Show stats for nerds")}>
                                 <IconButton color="primary" 
                                     aria-label="Stats for Nerds" 
                                     onClick={this.handleClickOpenStatsForNerds} >
@@ -614,6 +623,7 @@ bottomBarDesktop =()=>{
     };
 
     exchangeSummaryDialog =() =>{
+        const { t } = this.props;
         return(
         <Dialog
         open={this.state.openExchangeSummary}
@@ -622,7 +632,7 @@ bottomBarDesktop =()=>{
         aria-describedby="exchange-summary-description"
         >
         <DialogContent>
-            <Typography component="h5" variant="h5">Exchange Summary</Typography>
+            <Typography component="h5" variant="h5">{t("Exchange Summary")}</Typography>
             <List dense>
                 <ListItem >
                     <ListItemIcon size="small">
@@ -632,7 +642,7 @@ bottomBarDesktop =()=>{
                         primaryTypographyProps={{fontSize: '14px'}} 
                         secondaryTypographyProps={{fontSize: '12px'}} 
                         primary={this.state.num_public_buy_orders} 
-                        secondary="Public buy orders" />
+                        secondary={t("Public buy orders")} />
                 </ListItem>
                 <Divider/>
 
@@ -644,7 +654,7 @@ bottomBarDesktop =()=>{
                         primaryTypographyProps={{fontSize: '14px'}} 
                         secondaryTypographyProps={{fontSize: '12px'}} 
                         primary={this.state.num_public_sell_orders} 
-                        secondary="Public sell orders" />
+                        secondary={t("Public sell orders")} />
                 </ListItem>
                 <Divider/>
 
@@ -656,7 +666,7 @@ bottomBarDesktop =()=>{
                         primaryTypographyProps={{fontSize: '14px'}} 
                         secondaryTypographyProps={{fontSize: '12px'}} 
                         primary={pn(this.state.book_liquidity)+" Sats"} 
-                        secondary="Book liquidity" />
+                        secondary={t("Book liquidity")}/>
                 </ListItem>
                 <Divider/>
 
@@ -668,7 +678,7 @@ bottomBarDesktop =()=>{
                         primaryTypographyProps={{fontSize: '14px'}} 
                         secondaryTypographyProps={{fontSize: '12px'}} 
                         primary={this.state.active_robots_today} 
-                        secondary="Today active robots" />
+                        secondary={t("Today active robots")} />
                 </ListItem>
                 <Divider/>
 
@@ -680,7 +690,7 @@ bottomBarDesktop =()=>{
                         primaryTypographyProps={{fontSize: '14px'}} 
                         secondaryTypographyProps={{fontSize: '12px'}} 
                         primary={this.state.last_day_nonkyc_btc_premium+"%"} 
-                        secondary="24h non-KYC average premium" />
+                        secondary={t("24h non-KYC bitcoin premium")} />
                 </ListItem>
                 <Divider/>
 
@@ -693,7 +703,7 @@ bottomBarDesktop =()=>{
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
-                                secondary="Maker fee">
+                                secondary={t("Maker fee")}>
                                 {(this.state.maker_fee*100).toFixed(3)}%
                             </ListItemText>
                         </Grid>
@@ -701,7 +711,7 @@ bottomBarDesktop =()=>{
                             <ListItemText 
                                 primaryTypographyProps={{fontSize: '14px'}} 
                                 secondaryTypographyProps={{fontSize: '12px'}} 
-                                secondary="Taker fee">
+                                secondary={t("Taker fee")}>
                                 {(this.state.taker_fee*100).toFixed(3)}%
                             </ListItemText>
                         </Grid>
@@ -715,6 +725,7 @@ bottomBarDesktop =()=>{
     }
 
 bottomBarPhone =()=>{
+    const { t } = this.props;
     return(
         <Paper elevation={6} style={{height:40}}>
                 <this.StatsDialog/>
@@ -725,9 +736,9 @@ bottomBarPhone =()=>{
 
                     <Grid item xs={1.6}>
                     <div style={{display: this.props.avatarLoaded ? '':'none'}}>
-                    <Tooltip open={this.state.earned_rewards > 0 ? true: false} title="You can claim satoshis!">
+                    <Tooltip open={this.state.earned_rewards > 0 ? true: false} title={t("You can claim satoshis!")}>
                         <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
-                                    title="You have an active order">
+                                    title={t("You have an active order")}>
                         <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, bottom: 17, right: 8}} >
                             <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "": null} color="primary">
                                 <Avatar className='phoneFlippedSmallAvatar'
@@ -746,7 +757,7 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
-                        <Tooltip enterTouchDelay="300" title="Number of public BUY orders"> 
+                        <Tooltip enterTouchDelay="300" title={t("Number of public BUY orders")}> 
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.num_public_buy_orders}  color="action">
                                 <InventoryIcon />
@@ -756,7 +767,7 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
-                        <Tooltip enterTouchDelay="300" title="Number of public SELL orders">
+                        <Tooltip enterTouchDelay="300" title={t("Number of public SELL orders")}>
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.num_public_sell_orders}  color="action">
                                 <SellIcon />
@@ -766,7 +777,7 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
-                        <Tooltip enterTouchDelay="300" title="Today active robots">
+                        <Tooltip enterTouchDelay="300" title={t("Today active robots")}>
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.active_robots_today}  color="action">
                                 <SmartToyIcon />
@@ -776,7 +787,7 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.8} align="center">
-                        <Tooltip enterTouchDelay="300" title="24h non-KYC bitcoin premium"> 
+                        <Tooltip enterTouchDelay="300" title={t("24h non-KYC bitcoin premium")}> 
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.last_day_nonkyc_btc_premium+"%"}  color="action">
                                 <PriceChangeIcon />
@@ -790,7 +801,7 @@ bottomBarPhone =()=>{
                             <this.LangSelect/>
                         </Grid>
                         <Grid item xs={3}>
-                        <Tooltip enterTouchDelay="250" title="Show community and support links">
+                        <Tooltip enterTouchDelay="250" title={t("Show community and support links")}>
                             <IconButton 
                             color="primary" 
                             aria-label="Community" 
@@ -800,7 +811,7 @@ bottomBarPhone =()=>{
                         </Tooltip>
                         </Grid>
                         <Grid item xs={3}>
-                        <Tooltip enterTouchDelay="250" title="Show stats for nerds">
+                        <Tooltip enterTouchDelay="250" title={t("Show stats for nerds")}>
                             <IconButton color="primary" 
                                 aria-label="Stats for Nerds" 
                                 onClick={this.handleClickOpenStatsForNerds} >

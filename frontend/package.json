@@ -35,6 +35,7 @@
     "date-fns": "^2.28.0",
     "i18next": "^21.6.14",
     "i18next-browser-languagedetector": "^6.1.4",
+    "i18next-http-backend": "^1.4.0",
     "i18next-xhr-backend": "^3.2.2",
     "material-ui-image": "^3.3.2",
     "react-countdown": "^2.3.2",

@@ -53,10 +53,11 @@ class BookPage extends Component {
   }
 
   getCurrencyCode(val){
+    const { t } = this.props;
     if (val){
-      return val == 0 ? 'ANY' : currencyDict[val.toString()]
+      return val == 0 ? t('ANY_currency') : currencyDict[val.toString()]
     }else{
-      return 'ANY'
+      return t('ANY_currency')
     }
   }
 
@@ -86,6 +87,7 @@ class BookPage extends Component {
   }
 
   bookListTableDesktop=()=>{
+    const { t } = this.props;
     return (
       <div style={{ height: 422, width: '100%' }}>
       <DataGrid
@@ -95,7 +97,7 @@ class BookPage extends Component {
               avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
               robot: order.maker_nick, 
               robot_status: order.maker_status,
-              type: order.type ? "Seller": "Buyer",
+              type: order.type ? t("Seller"): t("Buyer"),
               amount: order.amount,
               has_range: order.has_range,
               min_amount: order.min_amount,
@@ -109,11 +111,11 @@ class BookPage extends Component {
         loading={this.state.loading}
         columns={[
           // { field: 'id', headerName: 'ID', width: 40 },
-          { field: 'robot', headerName: 'Robot', width: 240, 
+          { field: 'robot', headerName: t("Robot"), width: 240, 
             renderCell: (params) => {return (
               <ListItemButton style={{ cursor: "pointer" }}>
                 <ListItemAvatar>
-                <Tooltip placement="right" enterTouchDelay="0" title={params.row.robot_status}>
+                <Tooltip placement="right" enterTouchDelay="0" title={t(params.row.robot_status)}>
                   <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(params.row.robot_status)}>
                     <div style={{ width: 45, height: 45 }}>
                       <Image className='bookAvatar' 
@@ -131,24 +133,24 @@ class BookPage extends Component {
               </ListItemButton>
             );
           } },
-          { field: 'type', headerName: 'Is', width: 60 },
-          { field: 'amount', headerName: 'Amount', type: 'number', width: 90,
+          { field: 'type', headerName: t("Is"), width: 60 },
+          { field: 'amount', headerName: t("Amount"), type: 'number', width: 90,
           renderCell: (params) => {return (
             <div style={{ cursor: "pointer" }}>{this.amountToString(params.row.amount,params.row.has_range, params.row.min_amount, params.row.max_amount)}</div>
           )}},
-          { field: 'currency', headerName: 'Currency', width: 100, 
+          { field: 'currency', headerName: t("Currency"), width: 100, 
           renderCell: (params) => {return (
             <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>{params.row.currency+" "}{getFlags(params.row.currency)}</div>)
           }},
-          { field: 'payment_method', headerName: 'Payment Method', width: 180 ,
+          { field: 'payment_method', headerName: t("Payment Method"), width: 180 ,
           renderCell: (params) => {return (
             <div style={{ cursor: "pointer" }}><PaymentText verbose={true} size={20} text={params.row.payment_method}/></div>
           )} },
-          { field: 'price', headerName: 'Price', type: 'number', width: 140,
+          { field: 'price', headerName: t("Price"), type: 'number', width: 140,
           renderCell: (params) => {return (
             <div style={{ cursor: "pointer" }}>{this.pn(params.row.price) + " " +params.row.currency+ "/BTC" }</div>
           )} },
-          { field: 'premium', headerName: 'Premium', type: 'number', width: 100,
+          { field: 'premium', headerName: t("Premium"), type: 'number', width: 100,
             renderCell: (params) => {return (
               <div style={{ cursor: "pointer" }}>{parseFloat(parseFloat(params.row.premium).toFixed(4))+"%" }</div>
             )} },
@@ -164,7 +166,7 @@ class BookPage extends Component {
   }
 
   bookListTablePhone=()=>{
-
+    const { t } = this.props;
     return (
       <div style={{ height: 422, width: '100%' }}>
       <DataGrid
@@ -175,7 +177,7 @@ class BookPage extends Component {
               avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
               robot: order.maker_nick, 
               robot_status: order.maker_status,
-              type: order.type ? "Seller": "Buyer",
+              type: order.type ? t("Seller"): t("Buyer"),
               amount: order.amount,
               has_range: order.has_range,
               min_amount: order.min_amount,
@@ -189,9 +191,9 @@ class BookPage extends Component {
 
         columns={[
           // { field: 'id', headerName: 'ID', width: 40 },
-          { field: 'robot', headerName: 'Robot', width: 64, 
+          { field: 'robot', headerName: t("Robot"), width: 64, 
             renderCell: (params) => {return (
-              <Tooltip placement="right" enterTouchDelay="0" title={params.row.robot+" ("+params.row.robot_status+")"}>
+              <Tooltip placement="right" enterTouchDelay="0" title={params.row.robot+" ("+t(params.row.robot_status)+")"}>
                 <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(params.row.robot_status)}>
                   <div style={{ width: 45, height: 45 }}>
                     <Image className='bookAvatar' 
@@ -206,29 +208,29 @@ class BookPage extends Component {
               </Tooltip>
             );
           } },
-          { field: 'type', headerName: 'Is', width: 60, hide:'true'},
-          { field: 'amount', headerName: 'Amount', type: 'number', width: 84, 
+          { field: 'type', headerName: t("Is"), width: 60, hide:'true'},
+          { field: 'amount', headerName: t("Amount"), type: 'number', width: 84, 
           renderCell: (params) => {return (
-            <Tooltip placement="right" enterTouchDelay="0" title={params.row.type}>
+            <Tooltip placement="right" enterTouchDelay="0" title={t(params.row.type)}>
               <div style={{ cursor: "pointer" }}>{this.amountToString(params.row.amount,params.row.has_range, params.row.min_amount, params.row.max_amount)}</div>
             </Tooltip>
           )} },
-          { field: 'currency', headerName: 'Currency', width: 85, 
+          { field: 'currency', headerName: t("Currency"), width: 85, 
           renderCell: (params) => {return (
             // <Tooltip placement="left" enterTouchDelay="0" title={params.row.payment_method}>
               <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>{params.row.currency+" "}{getFlags(params.row.currency)}</div>
             // </Tooltip>
           )} },
-          { field: 'payment_method', headerName: 'Payment Method', width: 180, hide:'true'},
-          { field: 'payment_icons', headerName: 'Pay', width: 75 ,
+          { field: 'payment_method', headerName: t("Payment Method"), width: 180, hide:'true'},
+          { field: 'payment_icons', headerName: t("Pay"), width: 75 ,
           renderCell: (params) => {return (
             <div style={{position:'relative', left:'-4px', cursor: "pointer", align:"center"}}><PaymentText size={16} text={params.row.payment_method}/></div>
           )} },
-          { field: 'price', headerName: 'Price', type: 'number', width: 140, hide:'true',
+          { field: 'price', headerName: t("Price"), type: 'number', width: 140, hide:'true',
           renderCell: (params) => {return (
             <div style={{ cursor: "pointer" }}>{this.pn(params.row.price) + " " +params.row.currency+ "/BTC" }</div>
           )} },
-          { field: 'premium', headerName: 'Premium', type: 'number', width: 85,
+          { field: 'premium', headerName: t("Premium"), type: 'number', width: 85,
             renderCell: (params) => {return (
               <Tooltip placement="left" enterTouchDelay="0" title={this.pn(params.row.price) + " " +params.row.currency+ "/BTC" }>
               <div style={{ cursor: "pointer" }}>{parseFloat(parseFloat(params.row.premium).toFixed(4))+"%" }</div>
@@ -247,6 +249,7 @@ class BookPage extends Component {
   }
 
   render() {
+    const { t } = this.props;
       return (
         <Grid className='orderBook' container spacing={1} sx={{minWidth:400}}>
           {/* <Grid item xs={12} align="center">
@@ -256,21 +259,21 @@ class BookPage extends Component {
           <Grid item xs={6} align="right">
             <FormControl align="center">
               <FormHelperText align="center">
-                I want to 
+                {t("I want to")} 
               </FormHelperText>
               <Select
                   sx={{width:90}}
                   autoWidth={true}
-                  label="Select Order Type"
+                  label={t("Select Order Type")}
                   required="true" 
                   value={this.props.type} 
                   inputProps={{
                       style: {textAlign:"center"}
                   }}
                   onChange={this.handleTypeChange}
-              >   <MenuItem value={2}>ANY</MenuItem>
-                  <MenuItem value={1}>BUY</MenuItem>
-                  <MenuItem value={0}>SELL</MenuItem>
+              >   <MenuItem value={2}>{t("ANY_type")}</MenuItem>
+                  <MenuItem value={1}>{t("BUY")}</MenuItem>
+                  <MenuItem value={0}>{t("SELL")}</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -278,19 +281,19 @@ class BookPage extends Component {
           <Grid item xs={6} align="left">
             <FormControl align="center">
               <FormHelperText align="center">
-                and {this.props.type == 0 ? ' receive' : (this.props.type == 1 ? ' pay with' : ' use' )} 
+                {this.props.type == 0 ? t("and receive") : (this.props.type == 1 ? t("and pay with") : t("and use") )} 
               </FormHelperText>
               <Select
                   //autoWidth={true}
                   sx={{width:110}}
-                  label="Select Payment Currency"
+                  label={t("Select Payment Currency")}
                   required="true" 
                   value={this.props.currency} 
                   inputProps={{
                       style: {textAlign:"center"}
                   }}
                   onChange={this.handleCurrencyChange}
-              >     <MenuItem value={0}>🌍 ANY</MenuItem>
+              >     <MenuItem value={0}>{t("🌍 ANY")}</MenuItem>
                     {
                       Object.entries(currencyDict)
                       .map( ([key, value]) => <MenuItem value={parseInt(key)}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div></MenuItem> )
@@ -301,7 +304,15 @@ class BookPage extends Component {
         { this.state.not_found ? "" :
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
-              You are {this.props.type == 0 ? <b> selling </b> : (this.props.type == 1 ? <b> buying </b> :" looking at all ")} BTC for {this.props.currencyCode}
+               {this.props.type == 0 ? 
+                t("You are SELLING BTC for {{currencyCode}}",{currencyCode:this.props.currencyCode}) 
+               : 
+                (this.props.type == 1 ? 
+                  t("You are BUYING BTC for {{currencyCode}}",{currencyCode:this.props.currencyCode})
+                :
+                  t("You are looking at all")
+                )
+               } 
             </Typography>
           </Grid>
           }
@@ -310,15 +321,19 @@ class BookPage extends Component {
           (<Grid item xs={12} align="center">
             <Grid item xs={12} align="center">
               <Typography component="h5" variant="h5">
-                No orders found to {this.props.type == 0 ? ' sell ' :' buy ' } BTC for {this.props.currencyCode}
+                {this.props.type == 0 ?
+                  t("No orders found to sell BTC for {{currencyCode}}",{currencyCode:this.props.currencyCode})
+                :
+                  t("No orders found to buy BTC for {{currencyCode}}",{currencyCode:this.props.currencyCode})
+                }
               </Typography>
             </Grid>
             <br/>
             <Grid item>
-              <Button size="large" variant="contained" color='primary' to='/make/' component={Link}>Make Order</Button>
+              <Button size="large" variant="contained" color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
             </Grid>
               <Typography color="primary" component="body1" variant="body1">
-                Be the first one to create an order
+                {t("Be the first one to create an order")}
                 <br/>
                 <br/>
               </Typography>
@@ -342,7 +357,7 @@ class BookPage extends Component {
           }
           <Grid item xs={12} align="center">
               <Button color="secondary" variant="contained" to="/" component={Link}>
-                  Back
+                  {t("Back")}
               </Button>
           </Grid>
         </Grid>
