@@ -125,6 +125,19 @@
     "Cancel":"Cancel",
     "Collaborative Cancel":"Collaborative Cancel",
 
+    "CHAT BOX - Chat.js":"Chat Box",
+    "You":"You",
+    "Peer":"Peer",
+    "connected":"connected",
+    "disconnected":"disconnected",
+    "Type a message":"Type a message",
+    "Connecting...":"Connecting...",
+    "Send":"Send",
+    "The chat has no memory: if you leave, messages are lost.":"The chat has no memory: if you leave, messages are lost.",
+    "Learn easy PGP encryption.":"Learn easy PGP encryption.",
+    
+
+
 
     "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
     "Contract Box":"Contract Box",

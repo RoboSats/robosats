@@ -80,6 +80,7 @@ class Chat extends Component {
   }
 
   render() {
+    const { t } = this.props;
     return (
       <Container component="main" maxWidth="xs" >
             <Grid container xs={12} spacing={0.5}>
@@ -87,7 +88,7 @@ class Chat extends Component {
               <Grid item xs={5.5}>
                 <Paper elevation={1} style={this.state.connected ? {backgroundColor: '#e8ffe6'}: {backgroundColor: '#FFF1C5'}}>
                   <Typography variant='caption' sx={{color: '#111111'}}>
-                    You: {this.state.connected ? 'connected': 'disconnected'}
+                    {t("You")+": "}{this.state.connected ? t("connected"): t("disconnected")}
                   </Typography>
                 </Paper>
               </Grid>
@@ -95,7 +96,7 @@ class Chat extends Component {
               <Grid item xs={5.5}>
                 <Paper elevation={1} style={this.state.peer_connected ? {backgroundColor: '#e8ffe6'}: {backgroundColor: '#FFF1C5'}}>
                   <Typography variant='caption' sx={{color: '#111111'}}>
-                    Peer: {this.state.peer_connected ? 'connected': 'disconnected'}
+                  {t("Peer")+": "}{this.state.peer_connected ? t("connected"): t("disconnected")}
                   </Typography>
                 </Paper>
               </Grid>
@@ -143,10 +144,10 @@ class Chat extends Component {
               <Grid containter alignItems="stretch" style={{ display: "flex" }}>
                 <Grid item alignItems="stretch" style={{ display: "flex"}}>
                   <TextField
-                    label="Type a message"
+                    label={t("Type a message")}
                     variant="standard"
                     size="small"
-                    helperText={this.state.connected ? null : "Connecting..."}
+                    helperText={this.state.connected ? null : t("Connecting...")}
                     value={this.state.value}
                     onChange={e => {
                       this.setState({ value: e.target.value });
@@ -156,12 +157,12 @@ class Chat extends Component {
                   />
                 </Grid>
                 <Grid item alignItems="stretch" style={{ display: "flex" }}>
-                  <Button disabled={!this.state.connected} type="submit" variant="contained" color="primary" > Send </Button>
+                  <Button disabled={!this.state.connected} type="submit" variant="contained" color="primary">{t("Send")} </Button>
                 </Grid>
               </Grid>
             </form>
             <FormHelperText>
-              The chat has no memory: if you leave, messages are lost. <Link target="_blank" href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/sensitive-data-PGP-guide.md/"> Learn easy PGP encryption.</Link>
+              {t("The chat has no memory: if you leave, messages are lost.")} <Link target="_blank" href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/sensitive-data-PGP-guide.md/"> {t("Learn easy PGP encryption.")}</Link>
             </FormHelperText>
       </Container>
     )
