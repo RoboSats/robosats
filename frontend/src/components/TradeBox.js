@@ -178,13 +178,11 @@ class TradeBox extends Component {
       aria-describedby="fiat-received-dialog-description"
       >
         <DialogTitle id="open-dispute-dialog-title">
-          <Trans i18n="confirm_fiat_received_title">Confirm you received {{currencyCode: this.props.data.currencyCode}}?</Trans>
+          {t("Confirm you received {{currencyCode}}?", {currencyCode: this.props.data.currencyCode})}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            <Trans i18n="confirm_fiat_received_dialog">
-            Confirming that you received the fiat will finalize the trade. The satoshis in the escrow will be released to the buyer. Only confirm after the {{currencyCode: this.props.data.currencyCode}} has arrived to your account. In addition, if you have received {{currencyCode: this.props.data.currencyCode}} and do not confirm the receipt, you risk losing your bond.
-            </Trans>
+            {t("Confirming that you received the fiat will finalize the trade. The satoshis in the escrow will be released to the buyer. Only confirm after the {{currencyCode}} has arrived to your account. In addition, if you have received {{currencyCode}} and do not confirm the receipt, you risk losing your bond.",{currencyCode: this.props.data.currencyCode})}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -207,16 +205,14 @@ class TradeBox extends Component {
         <Grid item xs={12} align="center">
           {this.props.data.is_maker ?
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b><Trans i18nKey="lock_to_publish">
-              Lock {{amountSats: pn(this.props.data.bond_satoshis)}} Sats to PUBLISH order 
-              </Trans>
+            <b>
+              {t("Lock {{amountSats}} Sats to PUBLISH order", {amountSats: pn(this.props.data.bond_satoshis)})}
             </b> {" " + this.stepXofY()}
           </Typography>
           : 
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b><Trans i18nKey="lock_to_take">
-              Lock {{amountSats: pn(this.props.data.bond_satoshis)}} Sats to TAKE the order 
-              </Trans>
+            <b>
+              {t("Lock {{amountSats}} Sats to TAKE order", {amountSats: pn(this.props.data.bond_satoshis)})}
             </b> {" " + this.stepXofY()}
           </Typography>
           }
@@ -291,10 +287,9 @@ class TradeBox extends Component {
         <this.Sound soundFileName="locked-invoice"/>
         <Grid item xs={12} align="center">
           <Typography color="green" component="subtitle1" variant="subtitle1">
-            <b><Trans i18nKey="lock_escrow" >
-              Lock {{amountSats:pn(this.props.data.escrow_satoshis)}} Sats as collateral
-              </Trans> 
-            </b> {" " + this.stepXofY()}
+            <b>
+              {t("Lock {{amountSats}} Sats as collateral", {amountSats:pn(this.props.data.escrow_satoshis)})}
+            </b>{" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -312,7 +307,7 @@ class TradeBox extends Component {
             size="small"
             defaultValue={this.props.data.escrow_invoice} 
             disabled="true"
-            helperText={<Trans i18nKey="hold_escrow_invoice_explanation">This is a hold invoice, it will freeze in your wallet. It will be released to the buyer once you confirm to have received the {{currencyCode: this.props.data.currencyCode}}.</Trans>}
+            helperText={t("This is a hold invoice, it will freeze in your wallet. It will be released to the buyer once you confirm to have received the {{currencyCode}}.",{currencyCode: this.props.data.currencyCode})}
             color = "secondary"
           />
         </Grid>
@@ -416,7 +411,7 @@ class TradeBox extends Component {
               <ListItemIcon>
                 <BookIcon/>
               </ListItemIcon>
-                <ListItemText primary={this.props.data.num_similar_orders} secondary={<Trans i18n="public_order_num_subtitle">Public orders for {{currencyCode: this.props.data.currencyCode}} </Trans>}/>
+                <ListItemText primary={this.props.data.num_similar_orders} secondary={t("Public orders for {{currencyCode}}",{currencyCode: this.props.data.currencyCode})}/>
               </ListItem>
               
             <Divider/>
@@ -425,7 +420,7 @@ class TradeBox extends Component {
                 <PercentIcon/>
               </ListItemIcon>
                 <ListItemText primary={t("Premium rank") +" "+this.props.data.premium_percentile*100+"%"} 
-                  secondary={<Trans i18n="among_public"> Among public {{ currencyCode: this.props.data.currencyCode }} orders (higher is cheaper)</Trans>} />
+                  secondary={t("Among public {{currencyCode}} orders (higher is cheaper)",{ currencyCode: this.props.data.currencyCode })}/>
               </ListItem>
             <Divider/>
 
@@ -508,18 +503,18 @@ class TradeBox extends Component {
           {/* Make confirmation sound for HTLC received. */}
           <this.Sound soundFileName="locked-invoice"/>
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b> <Trans i18n="submit_invoice">
-              Submit an invoice for {{amountSats: pn(this.props.data.invoice_amount)}} Sats 
-              </Trans>
+            <b> {t("Submit an invoice for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}
             </b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="left">
           <Typography component="body2" variant="body2">
-            <Trans i18n='submit_invoice_body'>
-              The taker is committed! Before letting you send {{amountFiat: parseFloat(parseFloat(this.props.data.amount).toFixed(4))}} {{currencyCode: this.props.data.currencyCode}}, we want to make sure you are able to receive the BTC. 
-              Please provide a valid invoice for {{amountSats: pn(this.props.data.invoice_amount)}} Satoshis.
-            </Trans>
+            {t("The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC. Please provide a valid invoice for {{amountSats}} Satoshis.", 
+            {amountFiat: parseFloat(parseFloat(this.props.data.amount).toFixed(4)), 
+              currencyCode: this.props.data.currencyCode, 
+              amountSats: pn(this.props.data.invoice_amount)} 
+              )
+            }
           </Typography>
         </Grid>
 
@@ -766,19 +761,21 @@ handleRatingRobosatsChange=(e)=>{
 }
 
   showFiatSentButton(){
+    const { t } = this.props;
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickConfirmButton}><Trans i18n="confirm_fiat_sent">Confirm {{currencyCode: this.props.data.currencyCode}} sent</Trans></Button>
+          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickConfirmButton}>{t("Confirm {{currencyCode}} sent",{currencyCode: this.props.data.currencyCode})}</Button>
         </Grid>
       </Grid>
     )
   }
 
   showFiatReceivedButton(){
+    const { t } = this.props;
     return(
         <Grid item xs={12} align="center">
-          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickOpenConfirmFiatReceived}><Trans i18n="confirm_fiat_received">Confirm {{currencyCode: this.props.data.currencyCode}} received</Trans></Button>
+          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickOpenConfirmFiatReceived}>{t("Confirm {{currencyCode}} received",{currencyCode: this.props.data.currencyCode})}</Button>
         </Grid>
     )
   }
@@ -844,7 +841,7 @@ handleRatingRobosatsChange=(e)=>{
           {this.props.data.is_seller ? 
           <Typography component="body2" variant="body2"  align="center">
             {this.props.data.status == 9?
-            <Trans i18n="say_hi_seller">Say hi! Be helpful and concise. Let them know how to send you {{currencyCode: this.props.data.currencyCode}}.</Trans>
+            t("Say hi! Be helpful and concise. Let them know how to send you {{currencyCode}}.",{currencyCode: this.props.data.currencyCode})
             :
             t("The buyer has sent the fiat. Click 'Confirm Received' once you receive it.")
             }
@@ -976,9 +973,7 @@ handleRatingRobosatsChange=(e)=>{
           </Grid>
           <Grid item xs={12} align="center">
             <Typography color="primary" component="subtitle1" variant="subtitle1">
-              <b> <Trans i18n="submit_invoice">
-              Submit an invoice for {{amountSats: pn(this.props.data.invoice_amount)}} Sats 
-              </Trans></b>
+              <b> {t("Submit an invoice for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}</b>
             </Typography>
           </Grid>
           <Grid item xs={12} align="center">
