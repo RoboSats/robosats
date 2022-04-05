@@ -3,11 +3,11 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 import HttpApi from 'i18next-http-backend';
 
-import translationEN from "./locales/en.json";
-import translationES from "./locales/es.json";
-import translationDE from "./locales/de.json";
-import translationRU from "./locales/ru.json";
-import translationCN from "./locales/cn.json";
+import translationEN from "../locales/en.json";
+import translationES from "../locales/es.json";
+import translationDE from "../locales/de.json";
+import translationRU from "../locales/ru.json";
+import translationZH from "../locales/zh.json";
 
 i18n
   .use(HttpApi)
@@ -19,7 +19,7 @@ i18n
     es: {translations: translationES},
     ru: {translations: translationRU},
     de: {translations: translationDE},
-    cn: {translations: translationCN},
+    zh: {translations: translationZH},
   },
   
   fallbackLng: "en",

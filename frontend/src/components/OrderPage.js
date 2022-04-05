@@ -561,7 +561,7 @@ class OrderPage extends Component {
               <ListItemIcon>
                 <PaymentsIcon/>
               </ListItemIcon>
-              <ListItemText primary={<PaymentText size={20} verbose={true} text={this.state.payment_method}/>} secondary={this.state.currency==1000 ? t("Swap destination"):t("Accepted payment methods")}/>
+              <ListItemText primary={<PaymentText size={20} othersText={t("Others")} verbose={true} text={this.state.payment_method}/>} secondary={this.state.currency==1000 ? t("Swap destination"):t("Accepted payment methods")}/>
             </ListItem>
             <Divider />
 
@@ -618,7 +618,7 @@ class OrderPage extends Component {
               <Divider />
               <Grid item xs={12} align="center">
                 <Alert severity="warning" sx={{maxWidth:360}}>
-                  {t("{{nickname}} is asking for a collaboratice cancel", {nickname: this.state.is_maker ? this.state.taker_nick : this.state.maker_nick})}
+                  {t("{{nickname}} is asking for a collaborative cancel", {nickname: this.state.is_maker ? this.state.taker_nick : this.state.maker_nick})}
                 </Alert>  
               </Grid>
             </>
@@ -719,7 +719,7 @@ class OrderPage extends Component {
         <div align='center'>
           <Typography component="subtitle2" variant="subtitle2" color="secondary" >
             {/* IMPLEMENT I18N for bad_request */}
-            {this.state.bad_request}<br/>
+            {t(this.state.bad_request)}<br/>
           </Typography>
           <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>{t("Back")}</Button>
         </div>

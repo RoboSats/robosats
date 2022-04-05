@@ -66,9 +66,9 @@ export default class PaymentText extends Component {
         // Adds a Custom icon if there are words that do not match
         var chars_left = custom_methods.replace(' ','')
         chars_left = chars_left.replace(' ','')
-        
+
         if(chars_left.length > 0){rows.push(
-            <Tooltip placement="top" enterTouchDelay="0" title={this.props.verbose ? "Others": "Other: "+ custom_methods} >
+            <Tooltip placement="top" enterTouchDelay="0" title={this.props.verbose ? this.props.othersText: this.props.othersText+": "+ custom_methods} >
                 <div style={{position:'relative', display: 'inline-block',width: this.props.size+2, maxHeight: this.props.size, top:'-1px'}}>
                     <PaymentIcon width={this.props.size*1.1} height={this.props.size*1.1} icon={"custom"}/>
                 </div>

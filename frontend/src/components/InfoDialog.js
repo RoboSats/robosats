@@ -14,7 +14,7 @@ class InfoDialog extends Component {
           <MediaQuery minWidth={475}>
           <Grid container xs={12}>
             <Grid item xs={8}>
-              <Typography component="h4" variant="h4">{t("What is <RoboSats?")}</Typography>
+              <Typography component="h4" variant="h4">{t("What is RoboSats?")}</Typography>
               <Typography component="body2" variant="body2">
                 <p>{t("It is a BTC/FIAT peer-to-peer exchange over lightning.")} <br/> 
                 {t("It simplifies matchmaking and minimizes the need of trust. RoboSats focuses in privacy and speed.")}</p>
@@ -43,7 +43,7 @@ class InfoDialog extends Component {
                 width='100%'
                 src={window.location.origin +'/static/assets/images/robosats_0.1.0_banner.png'}
               />
-            <p>{t("RoboSats is an open source project")} <Link 
+            <p>{t("RoboSats is an open source project ")} <Link 
               href='https://github.com/reckless-satoshi/robosats'>{t("(GitHub).")}</Link>
             </p>
           </Typography>

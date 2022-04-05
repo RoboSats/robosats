@@ -235,7 +235,7 @@ class BottomBar extends Component {
                         <Tooltip title={t("Join RoboSats Russian speaking community!")}>
                             <IconButton component="a" target="_blank" href="https://t.me/robosats_ru"><Flags.RU width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
                         </Tooltip>
-                        <Tooltip title={t("Join RoboSats Chinesse speaking community!")}>
+                        <Tooltip title={t("Join RoboSats Chinese speaking community!")}>
                             <IconButton component="a" target="_blank" href="https://t.me/robosats_cn"><Flags.CN width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
                         </Tooltip>
                         <Tooltip title={t("Join RoboSats English speaking community!")}>
@@ -606,10 +606,10 @@ bottomBarDesktop =()=>{
                 }}
                 onChange={this.handleChangeLang}> 
                     <MenuItem value={'en'}>EN</MenuItem>
-                    <MenuItem value={'es'}>ES</MenuItem>
-                    <MenuItem value={'de'}>DE</MenuItem>
-                    <MenuItem value={'ru'}>RU</MenuItem>
-                    <MenuItem value={'cn'}>CN</MenuItem>
+                    <MenuItem disabled={true} value={'es'}>ES</MenuItem>
+                    <MenuItem disabled={true} value={'de'}>DE</MenuItem>
+                    <MenuItem disabled={true} value={'ru'}>RU</MenuItem>
+                    <MenuItem disabled={true} value={'zh'}>ZH</MenuItem>
                 </Select>
         )
     }

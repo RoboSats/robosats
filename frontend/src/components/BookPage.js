@@ -144,7 +144,7 @@ class BookPage extends Component {
           }},
           { field: 'payment_method', headerName: t("Payment Method"), width: 180 ,
           renderCell: (params) => {return (
-            <div style={{ cursor: "pointer" }}><PaymentText verbose={true} size={20} text={params.row.payment_method}/></div>
+            <div style={{ cursor: "pointer" }}><PaymentText othersText={t("Others")} verbose={true} size={20} text={params.row.payment_method}/></div>
           )} },
           { field: 'price', headerName: t("Price"), type: 'number', width: 140,
           renderCell: (params) => {return (
@@ -224,7 +224,7 @@ class BookPage extends Component {
           { field: 'payment_method', headerName: t("Payment Method"), width: 180, hide:'true'},
           { field: 'payment_icons', headerName: t("Pay"), width: 75 ,
           renderCell: (params) => {return (
-            <div style={{position:'relative', left:'-4px', cursor: "pointer", align:"center"}}><PaymentText size={16} text={params.row.payment_method}/></div>
+            <div style={{position:'relative', left:'-4px', cursor: "pointer", align:"center"}}><PaymentText othersText={t("Others")} size={16} text={params.row.payment_method}/></div>
           )} },
           { field: 'price', headerName: t("Price"), type: 'number', width: 140, hide:'true',
           renderCell: (params) => {return (
@@ -293,7 +293,7 @@ class BookPage extends Component {
                       style: {textAlign:"center"}
                   }}
                   onChange={this.handleCurrencyChange}
-              >     <MenuItem value={0}>{t("🌍 ANY")}</MenuItem>
+              >     <MenuItem value={0}>{"🌍 "+t("ANY_currency")}</MenuItem>
                     {
                       Object.entries(currencyDict)
                       .map( ([key, value]) => <MenuItem value={parseInt(key)}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div></MenuItem> )

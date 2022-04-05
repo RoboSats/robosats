@@ -255,6 +255,7 @@ class TradeBox extends Component {
   }
 
   showBondIsSettled=()=>{
+    const { t } = this.props;
     return (
         <Grid item xs={12} align="center">
           <Typography color="error" component="subtitle1" variant="subtitle1" align="center">
@@ -268,6 +269,7 @@ class TradeBox extends Component {
   }
 
   showBondIsReturned=()=>{
+    const { t } = this.props;
     return (
         <Grid item xs={12} align="center">
           <Typography color="green" component="subtitle1" variant="subtitle1" align="center">
@@ -281,6 +283,7 @@ class TradeBox extends Component {
   }
 
   showEscrowQRInvoice=()=>{
+    const { t } = this.props;
     return (
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
@@ -889,7 +892,7 @@ handleRatingRobosatsChange=(e)=>{
         </Grid> */}
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
-            <Trans i18n="rate_robosats">What do you think of 🤖<b>RoboSats</b>⚡?</Trans>
+            <Trans i18nKey="rate_robosats">What do you think of 🤖<b>RoboSats</b>⚡?</Trans>
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -907,7 +910,7 @@ handleRatingRobosatsChange=(e)=>{
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
             <p><b>{t("Thank you for using Robosats!")}</b></p> 
-            <p><Trans i18n="let_us_know_hot_to_improve">Let us know how the platform could improve (<Link href="https://t.me/robosats">Telegram</Link> / <Link href="https://github.com/Reckless-Satoshi/robosats/issues">Github</Link>)</Trans></p>
+            <p><Trans i18nKey="let_us_know_hot_to_improve">Let us know how the platform could improve (<Link target='_blank' href="https://t.me/robosats">Telegram</Link> / <Link target='_blank' href="https://github.com/Reckless-Satoshi/robosats/issues">Github</Link>)</Trans></p>
           </Typography>
         </Grid>
         : null}
