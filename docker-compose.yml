@@ -20,7 +20,6 @@ services:
       DEVELOPMENT: 1
     volumes:
       - .:/usr/src/robosats
-      - /mnt/development/database:/usr/src/database
       - /mnt/development/lnd:/lnd
     network_mode: service:tor
 
@@ -28,6 +27,7 @@ services:
     build: ./frontend
     container_name: npm-dev
     restart: always
+    command: npm run build
     volumes:
       - ./frontend:/usr/src/frontend
 
@@ -38,7 +38,8 @@ services:
     command: python3 manage.py clean_orders
     volumes:
       - .:/usr/src/robosats
-      - /mnt/development/database:/usr/src/database
+      - /mnt/development/lnd:/lnd
+    network_mode: service:tor
 
   follow-invoices:
     build: .
@@ -50,7 +51,16 @@ services:
     command: python3 manage.py follow_invoices
     volumes:
       - .:/usr/src/robosats
-      - /mnt/development/database:/usr/src/database
+      - /mnt/development/lnd:/lnd
+    network_mode: service:tor
+
+  telegram-watcher:
+    build: .
+    container_name: tg-dev
+    restart: always
+    command: python3 manage.py telegram_watcher
+    volumes:
+      - .:/usr/src/robosats
       - /mnt/development/lnd:/lnd
     network_mode: service:tor
 
@@ -63,7 +73,6 @@ services:
       REDIS_URL: redis://localhost:6379
     volumes:
       - .:/usr/src/robosats
-      - /mnt/development/database:/usr/src/database
     network_mode: service:tor
 
   tor:
@@ -114,6 +123,16 @@ services:
       - /mnt/development/tor/data:/var/lib/tor:ro
       - /mnt/development/tor/config:/etc/tor:ro
       - /mnt/development/bitcoin:/home/bitcoin/.bitcoin
+  
+  postgres:
+    image: postgres:14.2-alpine
+    container_name: sql-dev
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+    network_mode: service:tor
+    volumes:
+      - ./db:/var/lib/postgresql/data
 
 volumes:
   redisdata:

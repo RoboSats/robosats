@@ -641,6 +641,9 @@ FodyWeavers.xsd
 # Celery
 django
 
+# Postgres
+db
+
 # robosats
 frontend/static/assets/avatars*
 api/lightning/lightning*
@@ -649,3 +652,6 @@ api/lightning/router*
 api/lightning/googleapis*
 frontend/static/admin*
 frontend/static/rest_framework*
+frontend/static/import_export*
+frontend/src/components/payment-method-images/code*
+frontend/src/components/payment-method-images/webp*

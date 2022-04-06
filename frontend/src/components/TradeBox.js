@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import { IconButton, Paper, Rating, Button, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { withTranslation, Trans} from "react-i18next";
+import { IconButton, Box, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
 import Countdown, { zeroPad} from 'react-countdown';
 import Chat from "./Chat"
@@ -10,6 +11,11 @@ import QrReader from 'react-qr-reader'
 import PercentIcon from '@mui/icons-material/Percent';
 import BookIcon from '@mui/icons-material/Book';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+import SendIcon from '@mui/icons-material/Send';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import BalanceIcon from '@mui/icons-material/Balance';
+import ContentCopy from "@mui/icons-material/ContentCopy";
 
 function getCookie(name) {
   let cookieValue = null;
@@ -30,23 +36,28 @@ const csrftoken = getCookie('csrftoken');
 
 // pretty numbers
 function pn(x) {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  var parts = x.toString().split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return parts.join(".");
 }
 
-export default class TradeBox extends Component {
+class TradeBox extends Component {
   constructor(props) {
     super(props);
     this.state = {
       openConfirmFiatReceived: false,
       openConfirmDispute: false,
+      openEnableTelegram: false,
       badInvoice: false,
       badStatement: false,
       qrscanner: false,
     }
   }
 
+  
+
   Sound = ({soundFileName}) => (
-    // Four filenames: "locked-invoice", "taker-found", "open-chat", "sucessful"
+    // Four filenames: "locked-invoice", "taker-found", "open-chat", "successful"
     <audio autoPlay src={`/static/assets/sounds/${soundFileName}.mp3`} />
   )
 
@@ -54,6 +65,49 @@ export default class TradeBox extends Component {
     this.setState({ playSound: !this.state.playSound }, () => {
       this.state.playSound ? this.audio.play() : this.audio.pause();
     });
+  }
+
+  stepXofY = () => {
+    // set y value
+    var x = null
+    var y = null
+    var status = this.props.data.status
+
+    if(this.props.data.is_maker){y = 5}
+    if(this.props.data.is_taker){y = 4}
+
+    // set x values
+    if(this.props.data.is_maker){
+      if (status == 0){
+        x = 1
+      } else if ([1,3].includes(status)){
+        x = 2
+      } else if ([6,7,8].includes(status)){
+        x = 3
+      } else if(status == 9){
+        x = 4
+      } else if(status == 10){
+        x = 5
+      }
+    }
+    if(this.props.data.is_taker){
+      if(status == 3){
+        x = 1
+      }else if([6,7,8].includes(status)){
+        x = 2
+      }else if(status == 9){
+        x = 3
+      }else if(status == 10){
+        x = 4
+      }
+    }
+
+    // Return "(x/y)"
+    if(x != null & y != null){
+      return "("+x+"/"+y+")"
+    }else{
+      return ''
+    }
   }
 
   handleClickOpenConfirmDispute = () => {
@@ -78,6 +132,7 @@ export default class TradeBox extends Component {
   }
 
   ConfirmDisputeDialog =() =>{
+    const { t } = this.props;
   return(
       <Dialog
       open={this.state.openConfirmDispute}
@@ -86,19 +141,16 @@ export default class TradeBox extends Component {
       aria-describedby="open-dispute-dialog-description"
       >
         <DialogTitle id="open-dispute-dialog-title">
-          {"Do you want to open a dispute?"}
+          {t("Do you want to open a dispute?")}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            The RoboSats staff will examine the statements and evidence provided. You need to build
-            a complete case, as the staff cannot read the chat. It is best to provide a burner contact 
-            method with your statement. The satoshis in the trade escrow will be sent to the dispute winner, 
-            while the dispute loser will lose the bond. 
+            {t("The RoboSats staff will examine the statements and evidence provided. You need to build a complete case, as the staff cannot read the chat. It is best to provide a burner contact method with your statement. The satoshis in the trade escrow will be sent to the dispute winner, while the dispute loser will lose the bond.")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.handleClickCloseConfirmDispute} autoFocus>Disagree</Button>
-          <Button onClick={this.handleClickAgreeDisputeButton}> Agree and open dispute </Button>
+          <Button onClick={this.handleClickCloseConfirmDispute} autoFocus>{t("Disagree")}</Button>
+          <Button onClick={this.handleClickAgreeDisputeButton}>{t("Agree and open dispute")}</Button>
         </DialogActions>
       </Dialog>
     )
@@ -117,6 +169,7 @@ export default class TradeBox extends Component {
   };
 
   ConfirmFiatReceivedDialog =() =>{
+    const { t } = this.props;
   return(
       <Dialog
       open={this.state.openConfirmFiatReceived}
@@ -125,46 +178,52 @@ export default class TradeBox extends Component {
       aria-describedby="fiat-received-dialog-description"
       >
         <DialogTitle id="open-dispute-dialog-title">
-          {"Confirm you received " +this.props.data.currencyCode+ "?"}
+          {t("Confirm you received {{currencyCode}}?", {currencyCode: this.props.data.currencyCode})}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Confirming that you received the fiat will finalize the trade. The satoshis
-            in the escrow will be released to the buyer. Only confirm after the {this.props.data.currencyCode+ " "} 
-            has arrived to your account. In addition, if you have received {this.props.data.currencyCode+ " "} 
-            and do not confirm the receipt, you risk losing your bond.
+            {t("Confirming that you received the fiat will finalize the trade. The satoshis in the escrow will be released to the buyer. Only confirm after the {{currencyCode}} has arrived to your account. In addition, if you have received {{currencyCode}} and do not confirm the receipt, you risk losing your bond.",{currencyCode: this.props.data.currencyCode})}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.handleClickCloseConfirmFiatReceived} autoFocus>Go back</Button>
-          <Button onClick={this.handleClickTotallyConfirmFiatReceived}> Confirm </Button>
+          <Button onClick={this.handleClickCloseConfirmFiatReceived} autoFocus>{t("Go back")}</Button>
+          <Button onClick={this.handleClickTotallyConfirmFiatReceived}>{t("Confirm")}</Button>
         </DialogActions>
       </Dialog>
     )
   }
 
   showQRInvoice=()=>{
+    const { t } = this.props;
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2">
-            Robots show commitment to their peers
+            {t("Robots show commitment to their peers")}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           {this.props.data.is_maker ?
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b>Lock {pn(this.props.data.bond_satoshis)} Sats to PUBLISH order </b>
+            <b>
+              {t("Lock {{amountSats}} Sats to PUBLISH order", {amountSats: pn(this.props.data.bond_satoshis)})}
+            </b> {" " + this.stepXofY()}
           </Typography>
           : 
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b>Lock {pn(this.props.data.bond_satoshis)} Sats to TAKE the order </b>
+            <b>
+              {t("Lock {{amountSats}} Sats to TAKE order", {amountSats: pn(this.props.data.bond_satoshis)})}
+            </b> {" " + this.stepXofY()}
           </Typography>
           }
         </Grid>
         <Grid item xs={12} align="center">
-          <QRCode value={this.props.data.bond_invoice} size={305}/>
-          <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.bond_invoice)}} align="center"> 📋Copy to clipboard</Button>
+          <Box sx={{bgcolor:'#ffffff', width:'315px', position:'relative', left:'-5px'}} >
+            <QRCode value={this.props.data.bond_invoice} size={305} style={{position:'relative', top:'3px'}}/>
+          </Box>
+          <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+            <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.bond_invoice)}} align="center"> <ContentCopy/>{t("Copy to clipboard")}</Button>
+          </Tooltip>
         </Grid> 
         <Grid item xs={12} align="center">
         <TextField 
@@ -173,7 +232,7 @@ export default class TradeBox extends Component {
             size="small"
             defaultValue={this.props.data.bond_invoice} 
             disabled="true"
-            helperText="This is a hold invoice, it will freeze in your wallet. It will be charged only if you cancel or lose a dispute."
+            helperText={t("This is a hold invoice, it will freeze in your wallet. It will be charged only if you cancel or lose a dispute.")}
             color = "secondary"
           />
         </Grid>
@@ -182,28 +241,67 @@ export default class TradeBox extends Component {
   }
 
   showBondIsLocked=()=>{
+    const {t} = this.props
     return (
         <Grid item xs={12} align="center">
           <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
-            🔒 Your {this.props.data.is_maker ? 'maker' : 'taker'} bond is locked
+            <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}>
+              <LockIcon/>
+              {this.props.data.is_maker ? t("Your maker bond is locked") : t("Your taker bond is locked")}
+            </div>
+          </Typography>
+        </Grid>
+    );
+  }
+
+  showBondIsSettled=()=>{
+    const { t } = this.props;
+    return (
+        <Grid item xs={12} align="center">
+          <Typography color="error" component="subtitle1" variant="subtitle1" align="center">
+                <div style={{display:'flex',alignItems:'center', justifyContent:'center', flexWrap:'wrap', align:"center"}} align="center">
+                    <BalanceIcon/>
+                    {this.props.data.is_maker ? t("Your maker bond was settled") : t("Your taker bond was settled")}
+                </div>
+          </Typography>
+        </Grid>
+    );
+  }
+
+  showBondIsReturned=()=>{
+    const { t } = this.props;
+    return (
+        <Grid item xs={12} align="center">
+          <Typography color="green" component="subtitle1" variant="subtitle1" align="center">
+            <div style={{display:'flex',alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}>
+              <LockOpenIcon/>
+              {this.props.data.is_maker ? t("Your maker bond was unlock") : t("Your taker bond was unlocked")}
+            </div>
           </Typography>
         </Grid>
     );
   }
 
   showEscrowQRInvoice=()=>{
+    const { t } = this.props;
     return (
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
         <this.Sound soundFileName="locked-invoice"/>
         <Grid item xs={12} align="center">
           <Typography color="green" component="subtitle1" variant="subtitle1">
-            <b>Deposit {pn(this.props.data.escrow_satoshis)} Sats as trade collateral </b>
+            <b>
+              {t("Lock {{amountSats}} Sats as collateral", {amountSats:pn(this.props.data.escrow_satoshis)})}
+            </b>{" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          <QRCode value={this.props.data.escrow_invoice} size={305}/>
-          <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.escrow_invoice)}} align="center"> 📋Copy to clipboard</Button>
+          <Box sx={{bgcolor:'#ffffff', width:'315px', position:'relative', left:'-5px'}} >
+            <QRCode value={this.props.data.escrow_invoice} size={305} style={{position:'relative', top:'3px'}}/>
+          </Box>
+          <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+            <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.escrow_invoice)}} align="center"> <ContentCopy/>Copy to clipboard</Button>
+          </Tooltip>
         </Grid> 
         <Grid item xs={12} align="center">
           <TextField 
@@ -212,7 +310,7 @@ export default class TradeBox extends Component {
             size="small"
             defaultValue={this.props.data.escrow_invoice} 
             disabled="true"
-            helperText={"This is a hold invoice, it will freeze in your wallet. It will be released to the buyer once you confirm to have received the "+this.props.data.currencyCode+"."}
+            helperText={t("This is a hold invoice, it will freeze in your wallet. It will be released to the buyer once you confirm to have received the {{currencyCode}}.",{currencyCode: this.props.data.currencyCode})}
             color = "secondary"
           />
         </Grid>
@@ -222,21 +320,20 @@ export default class TradeBox extends Component {
   }
 
   showTakerFound=()=>{
+    const { t } = this.props;
     return (
       <Grid container spacing={1}>
         {/* Make bell sound when taker is found */}
         <this.Sound soundFileName="taker-found"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>A taker has been found! </b>
+            <b>{t("A taker has been found!")}</b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Divider/>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2">
-            Please wait for the taker to lock a bond. 
-            If the taker does not lock a bond in time, the order will be made
-            public again.
+            {t("Please wait for the taker to lock a bond. If the taker does not lock a bond in time, the order will be made public again.")}
           </Typography>
         </Grid>
         {this.showBondIsLocked()}
@@ -244,14 +341,53 @@ export default class TradeBox extends Component {
     );
   }
 
+  handleClickOpenTelegramDialog = () => {
+    this.setState({openEnableTelegram: true});
+  };
+  handleClickCloseEnableTelegramDialog = () => {
+      this.setState({openEnableTelegram: false});
+  };
+
+  handleClickEnableTelegram = () =>{
+    window.open("https://t.me/"+this.props.data.tg_bot_name+'?start='+this.props.data.tg_token, '_blank').focus()
+    this.handleClickCloseEnableTelegramDialog();
+  };
+
+  EnableTelegramDialog =() =>{
+    const { t } = this.props;
+  return(
+      <Dialog
+      open={this.state.openEnableTelegram}
+      onClose={this.handleClickCloseEnableTelegramDialog}
+      aria-labelledby="enable-telegram-dialog-title"
+      aria-describedby="enable-telegram-dialog-description"
+      >
+        <DialogTitle id="open-dispute-dialog-title">
+          {t("Enable TG Notifications")}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {t("You will be taken to a conversation with RoboSats telegram bot. Simply open the chat and press Start. Note that by enabling telegram notifications you might lower your level of anonymity.")}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleClickCloseEnableTelegramDialog}> {t("Go back")} </Button>
+          <Button onClick={this.handleClickEnableTelegram} autoFocus> {t("Enable")} </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
   showMakerWait=()=>{
+    const { t } = this.props;
     return (
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
         <this.Sound soundFileName="locked-invoice"/>
+        <this.EnableTelegramDialog/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b> Your order is public. Wait for a taker. </b>
+            <b> {t("Your order is public")} </b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -260,20 +396,25 @@ export default class TradeBox extends Component {
           <Divider/>
             <ListItem>
               <Typography component="body2" variant="body2" align="left">
-                <p>Be patient while robots check the book. 
-                It might take some time. This box will ring 🔊 once a robot takes your order. </p>
-                <p>Please note that if your premium is too high, or if your currency or payment
-                  methods are not popular, your order might expire untaken. Your bond will
-                  return to you (no action needed).</p> 
+                <p>{t("Be patient while robots check the book. It might take some time. This box will ring 🔊 once a robot takes your order.")} </p>
+                <p>{t("Please note that if your premium is excessive or your currency or payment methods are not popular, your order might expire untaken. Your bond will return to you (no action needed).")}</p> 
               </Typography>
             </ListItem>
-            {/* TODO API sends data for a more confortable wait */}
+            <Grid item xs={12} align="center">
+              {this.props.data.tg_enabled ?
+              <Typography color='primary' component="h6" variant="h6" align="center">{t("Telegram enabled")}</Typography>
+              :
+              <Button color="primary" onClick={this.handleClickOpenTelegramDialog}>
+                <SendIcon/>{t("Enable Telegram Notifications")}
+              </Button>
+              }
+            </Grid>
             <Divider/>
               <ListItem>
               <ListItemIcon>
                 <BookIcon/>
               </ListItemIcon>
-                <ListItemText primary={this.props.data.num_similar_orders} secondary={"Public orders for " + this.props.data.currencyCode}/>
+                <ListItemText primary={this.props.data.num_similar_orders} secondary={t("Public orders for {{currencyCode}}",{currencyCode: this.props.data.currencyCode})}/>
               </ListItem>
               
             <Divider/>
@@ -281,8 +422,8 @@ export default class TradeBox extends Component {
               <ListItemIcon>
                 <PercentIcon/>
               </ListItemIcon>
-                <ListItemText primary={"Premium rank " + this.props.data.premium_percentile*100+"%"} 
-                  secondary={"Among public " + this.props.data.currencyCode + " orders (higher is cheaper)"} />
+                <ListItemText primary={t("Premium rank") +" "+this.props.data.premium_percentile*100+"%"} 
+                  secondary={t("Among public {{currencyCode}} orders (higher is cheaper)",{ currencyCode: this.props.data.currencyCode })}/>
               </ListItem>
             <Divider/>
 
@@ -357,6 +498,7 @@ export default class TradeBox extends Component {
   }
 
   showInputInvoice(){
+    const { t } = this.props;
     return (
 
       <Grid container spacing={1}>
@@ -364,14 +506,18 @@ export default class TradeBox extends Component {
           {/* Make confirmation sound for HTLC received. */}
           <this.Sound soundFileName="locked-invoice"/>
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b> Submit a LN invoice for {pn(this.props.data.invoice_amount)} Sats </b>
+            <b> {t("Submit an invoice for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}
+            </b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="left">
           <Typography component="body2" variant="body2">
-            The taker is committed! Before letting you send {" "+ parseFloat(parseFloat(this.props.data.amount).toFixed(4))+
-            " "+ this.props.data.currencyCode}, we want to make sure you are able to receive the BTC. Please provide a 
-            valid invoice for {pn(this.props.data.invoice_amount)} Satoshis.
+            {t("The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC. Please provide a valid invoice for {{amountSats}} Satoshis.", 
+            {amountFiat: parseFloat(parseFloat(this.props.data.amount).toFixed(4)), 
+              currencyCode: this.props.data.currencyCode, 
+              amountSats: pn(this.props.data.invoice_amount)} 
+              )
+            }
           </Typography>
         </Grid>
 
@@ -379,7 +525,7 @@ export default class TradeBox extends Component {
           <TextField 
               error={this.state.badInvoice}
               helperText={this.state.badInvoice ? this.state.badInvoice : "" }
-              label={"Payout Lightning Invoice"}
+              label={t("Payout Lightning Invoice")}
               required
               value={this.state.invoice}
               inputProps={{
@@ -414,20 +560,22 @@ export default class TradeBox extends Component {
 
   // Asks the user for a dispute statement.
   showInDisputeStatement=()=>{
+    const { t } = this.props;
     if(this.props.data.statement_submitted){
       return (
         <Grid container spacing={1}>
           <Grid item xs={12} align="center">
             <Typography color="primary" component="subtitle1" variant="subtitle1">
-              <b> We have received your statement </b>
+              <b> {t("We have received your statement")} </b>
             </Typography>
           </Grid>
           <Grid item xs={12} align="left">
             <Typography component="body2" variant="body2">
-              We are waiting for your trade counterparty statement.
+              <p>{t("We are waiting for your trade counterpart statement. If you are hesitant about the state of the dispute or want to add more information, contact robosats@protonmail.com.")}</p>
+              <p>{t("Please, save the information needed to identify your order and your payments: order ID; payment hashes of the bonds or escrow (check on your lightning wallet); exact amount of satoshis; and robot nickname. You will have to identify yourself as the user involved in this trade via email (or other contact methods).")}</p>
             </Typography>
           </Grid>
-          {this.showBondIsLocked()}
+          {this.showBondIsSettled()}
         </Grid>
       )
     }else{
@@ -438,15 +586,12 @@ export default class TradeBox extends Component {
         <Grid container spacing={1}>
           <Grid item xs={12} align="center">
             <Typography color="primary" component="subtitle1" variant="subtitle1">
-              <b> A dispute has been opened </b>
+              <b> {t("A dispute has been opened")} </b>
             </Typography>
           </Grid>
           <Grid item xs={12} align="left">
             <Typography component="body2" variant="body2">
-              Please, submit your statement. Be clear and specific about what happened and provide the necessary 
-              evidence. It is best to provide a burner email, XMPP or telegram username to follow up with the staff.
-              Disputes are solved at the discretion of real robots <i>(aka humans)</i>, so be as helpful 
-              as possible to ensure a fair outcome. Max 5000 chars.
+            {t("Please, submit your statement. Be clear and specific about what happened and provide the necessary evidence. You MUST provide a contact method: burner email, XMPP or telegram username to follow up with the staff. Disputes are solved at the discretion of real robots (aka humans), so be as helpful as possible to ensure a fair outcome. Max 5000 chars.")}
             </Typography>
           </Grid>
   
@@ -454,7 +599,7 @@ export default class TradeBox extends Component {
             <TextField 
                 error={this.state.badStatement}
                 helperText={this.state.badStatement ? this.state.badStatement : "" }
-                label={"Submit dispute statement"}
+                label={t("Submit dispute statement")}
                 required
                 inputProps={{
                     style: {textAlign:"center"}
@@ -467,44 +612,82 @@ export default class TradeBox extends Component {
           <Grid item xs={12} align="center">
             <Button onClick={this.handleClickSubmitStatementButton} variant='contained' color='primary'>Submit</Button>
           </Grid>
-  
-          {this.showBondIsLocked()}
-        </Grid>
+        {this.showBondIsSettled()}
+      </Grid>
       )}
   }
 
   showWaitForDisputeResolution=()=>{
+    const { t } = this.props;
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography color="primary" component="subtitle1" variant="subtitle1">
-            <b> We have the statements </b>
+            <b> {t("We have the statements")} </b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="left">
           <Typography component="body2" variant="body2">
-            Wait for the staff to resolve the dispute. The dispute winner
-            will be asked to submit a LN invoice.
+            <p>{t("Both statements have been received, wait for the staff to resolve the dispute. If you are hesitant about the state of the dispute or want to add more information, contact robosats@protonmail.com. If you did not provide a contact method, or are unsure whether you wrote it right, write us immediately.")} </p>
+            <p>{t("Please, save the information needed to identify your order and your payments: order ID; payment hashes of the bonds or escrow (check on your lightning wallet); exact amount of satoshis; and robot nickname. You will have to identify yourself as the user involved in this trade via email (or other contact methods).")}</p>
           </Typography>
         </Grid>
-        {this.showBondIsLocked()}
+        {this.showBondIsSettled()}
+      </Grid>
+    )
+  }
+
+  showDisputeWinner=()=>{
+    const { t } = this.props;
+    return (
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography color="primary" component="subtitle1" variant="subtitle1">
+            <b> {t("You have won the dispute")} </b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="left">
+          <Typography component="body2" variant="body2">
+            {t("You can claim the dispute resolution amount (escrow and fidelity bond) from your profile rewards. If there is anything the staff can help with, do not hesitate to contact to robosats@protonmail.com (or via your provided burner contact method).")}
+          </Typography>
+        </Grid>
+        {this.showBondIsSettled()}
+      </Grid>
+    )
+  }
+
+  showDisputeLoser=()=>{
+    const { t } = this.props;
+    return (
+      <Grid container spacing={1}>
+        <Grid item xs={12} align="center">
+          <Typography color="error" component="subtitle1" variant="subtitle1">
+            <b> {t("You have lost the dispute")} </b>
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="left">
+          <Typography component="body2" variant="body2">
+          {t("Unfortunately you have lost the dispute. If you think this is a mistake you can ask to re-open the case via email to robosats@protonmail.com. However, chances of it being investigated again are low.")}
+          </Typography>
+        </Grid>
+        {this.showBondIsSettled()}
       </Grid>
     )
   }
 
   showWaitingForEscrow(){
+    const { t } = this.props;
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>Your invoice looks good!🎉</b>
+            <b>{t("Your invoice looks good!")}</b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="left">
-            <p>We are waiting for the seller lock the trade amount. </p>
-            <p> Just hang on for a moment. If the seller does not deposit, 
-              you will get your bond back automatically.</p>
+            <p>{t("We are waiting for the seller lock the trade amount.")}</p>
+            <p>{t("Just hang on for a moment. If the seller does not deposit, you will get your bond back automatically. In addition, you will receive a compensation (check the rewards in your profile).")}</p>
           </Typography>
         </Grid>
         {this.showBondIsLocked()}
@@ -513,22 +696,20 @@ export default class TradeBox extends Component {
   }
 
   showWaitingForBuyerInvoice(){
+    const { t } = this.props;
     return(
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
         <this.Sound soundFileName="locked-invoice"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>The trade collateral is locked! 🎉 </b>
+            <b>{t("The trade collateral is locked!")}</b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="left">
-            <p> We are waiting for the buyer to post a lightning invoice. Once
-              he does, you will be able to directly communicate the fiat payment
-              details. </p>
-            <p> Just hang on for a moment. If the buyer does not cooperate, 
-                you will get back the trade collateral and your bond automatically.</p>
+            <p>{t("We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.")} </p>
+            <p>{t("Just hang on for a moment. If the buyer does not cooperate, you will get back the trade collateral and your bond automatically. In addition, you will receive a compensation (check the rewards in your profile).")}</p>
           </Typography>
         </Grid>
         {this.showBondIsLocked()}
@@ -583,38 +764,41 @@ handleRatingRobosatsChange=(e)=>{
 }
 
   showFiatSentButton(){
+    const { t } = this.props;
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickConfirmButton}>Confirm {this.props.data.currencyCode} sent</Button>
+          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickConfirmButton}>{t("Confirm {{currencyCode}} sent",{currencyCode: this.props.data.currencyCode})}</Button>
         </Grid>
       </Grid>
     )
   }
 
   showFiatReceivedButton(){
+    const { t } = this.props;
     return(
         <Grid item xs={12} align="center">
-          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickOpenConfirmFiatReceived}>Confirm {this.props.data.currencyCode} received</Button>
+          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickOpenConfirmFiatReceived}>{t("Confirm {{currencyCode}} received",{currencyCode: this.props.data.currencyCode})}</Button>
         </Grid>
     )
   }
 
   showOpenDisputeButton(){
-    // TODO, show alert about how opening a dispute might involve giving away personal data and might mean losing the bond. Ask for double confirmation.
+    const { t } = this.props;
     return(
         <Grid item xs={12} align="center">
-          <Button color="inherit" onClick={this.handleClickOpenConfirmDispute}>Open Dispute</Button>
+          <Button color="inherit" onClick={this.handleClickOpenConfirmDispute}>{t("Open Dispute")}</Button>
         </Grid>
     )
   }
 
   showOrderExpired(){
+    const { t } = this.props;
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>The order has expired</b>
+            <b>{t("The order has expired")}</b>
           </Typography>
         </Grid>
       </Grid>
@@ -622,6 +806,7 @@ handleRatingRobosatsChange=(e)=>{
   }
 
   showChat=()=>{
+    const { t } = this.props;
     //In Chatroom - No fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton)
       if(this.props.data.is_buyer & this.props.data.status == 9){
         var showSendButton=true;
@@ -652,20 +837,27 @@ handleRatingRobosatsChange=(e)=>{
         <this.Sound soundFileName="chat-open"/>
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
-            <b>Chatting with {this.props.data.is_maker ? this.props.data.taker_nick : this.props.data.maker_nick}</b>
+            <b> {this.props.data.is_seller ? t("Chat with the buyer"): t("Chat with the seller")}</b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           {this.props.data.is_seller ? 
           <Typography component="body2" variant="body2"  align="center">
-            Say hi! Be helpful and concise. Let them know how to send you {this.props.data.currencyCode}. 
+            {this.props.data.status == 9?
+            t("Say hi! Be helpful and concise. Let them know how to send you {{currencyCode}}.",{currencyCode: this.props.data.currencyCode})
+            :
+            t("The buyer has sent the fiat. Click 'Confirm Received' once you receive it.")
+            }
           </Typography>
           :
           <Typography component="body2" variant="body2" align="center">
-            Say hi! Ask for payment details and click "Confirm Sent" as soon as the payment is sent.
+            {this.props.data.status == 9?
+            t("Say hi! Ask for payment details and click 'Confirm Sent' as soon as the payment is sent.")
+            :
+            t("Wait for the seller to confirm he has received the payment.")
+            }
           </Typography>
           }
-          <Divider/>
         </Grid>
 
         <Chat orderId={this.props.data.id} ur_nick={this.props.data.ur_nick}/>
@@ -680,26 +872,27 @@ handleRatingRobosatsChange=(e)=>{
   }
 
   showRateSelect(){
+    const { t } = this.props;
     return(
       <Grid container spacing={1}>
         {/* Make confirmation sound for Chat Open. */}
         <this.Sound soundFileName="successful"/>
         <Grid item xs={12} align="center">
           <Typography component="h6" variant="h6">
-            🎉Trade finished!🥳
+            {t("🎉Trade finished!🥳")}
           </Typography>
         </Grid>
-        <Grid item xs={12} align="center">
+        {/* <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
             What do you think of ⚡<b>{this.props.data.is_maker ? this.props.data.taker_nick : this.props.data.maker_nick}</b>⚡?
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           <Rating name="size-large" defaultValue={0} size="large" onChange={this.handleRatingUserChange} />
-        </Grid>
+        </Grid> */}
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
-            What do you think of 🤖<b>RoboSats</b>🤖?
+            <Trans i18nKey="rate_robosats">What do you think of 🤖<b>RoboSats</b>⚡?</Trans>
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -708,38 +901,39 @@ handleRatingRobosatsChange=(e)=>{
         {this.state.rating_platform==5 ?
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
-            <p>Thank you! RoboSats loves you too ❤️</p>
-            <p>RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!</p>
+            <p><b>{t("Thank you! RoboSats loves you too ❤️")}</b></p>
+            <p>{t("RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!")}</p>
           </Typography>
         </Grid>
         : null}
         {this.state.rating_platform!=5 & this.state.rating_platform!=null ?
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
-            Thank you for using Robosats! Let us know what you did not like and how the platform could improve 
-            (<a href="https://t.me/robosats">Telegram</a> / <a href="https://github.com/Reckless-Satoshi/robosats/issues">Github</a>)
+            <p><b>{t("Thank you for using Robosats!")}</b></p> 
+            <p><Trans i18nKey="let_us_know_hot_to_improve">Let us know how the platform could improve (<Link target='_blank' href="https://t.me/robosats">Telegram</Link> / <Link target='_blank' href="https://github.com/Reckless-Satoshi/robosats/issues">Github</Link>)</Trans></p>
           </Typography>
         </Grid>
         : null}
         <Grid item xs={12} align="center">
-          <Button color='primary' onClick={() => {this.props.push('/')}}>Start Again</Button> 
+          <Button color='primary' onClick={() => {this.props.push('/')}}>{t("Start Again")}</Button> 
         </Grid>
-      </Grid>
+      {this.showBondIsReturned()}
+    </Grid>
     )
   }
 
   showSendingPayment(){
+    const { t } = this.props;
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="h6" variant="h6">
-            Attempting Lightning Payment
+            {t("Attempting Lightning Payment")}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
-            RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must
-            be online in order to receive payments.
+            {t("RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must be online in order to receive payments.")}
           </Typography>
         <br/>
         <Grid item xs={12} align="center">
@@ -752,9 +946,10 @@ handleRatingRobosatsChange=(e)=>{
 
   // Countdown Renderer callback with condition 
   countdownRenderer = ({ minutes, seconds, completed }) => {
+    const { t } = this.props;
     if (completed) {
       // Render a completed state
-      return (<div align="center"><span> Retrying! </span><br/><CircularProgress/></div> );
+      return (<div align="center"><span> {t("Retrying!")} </span><br/><CircularProgress/></div> );
   
     } else {
       return (
@@ -764,69 +959,73 @@ handleRatingRobosatsChange=(e)=>{
     };
 
   showRoutingFailed=()=>{
-    // TODO If it has failed 3 times, ask for a new invoice.
+    const { t } = this.props;
     if(this.props.data.invoice_expired){
       return(
         <Grid container spacing={1}>
           <Grid item xs={12} align="center">
             <Typography component="h6" variant="h6">
-              Lightning Routing Failed
+            {t("Lightning Routing Failed")}
             </Typography>
           </Grid>
           <Grid item xs={12} align="center">
             <Typography component="body2" variant="body2" align="center">
-              Your invoice has expires or more than 3 payments attempts have been made.
+              {t("Your invoice has expired or more than 3 payment attempts have been made. Muun wallet is not recommended. ")} 
+              <Link href="https://github.com/Reckless-Satoshi/robosats/issues/44"> {t("Check the list of compatible wallets")}</Link>
             </Typography>
           </Grid>
           <Grid item xs={12} align="center">
             <Typography color="primary" component="subtitle1" variant="subtitle1">
-              <b> Submit a LN invoice for {pn(this.props.data.invoice_amount)} Sats </b>
+              <b> {t("Submit an invoice for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}</b>
             </Typography>
           </Grid>
           <Grid item xs={12} align="center">
             <TextField 
                 error={this.state.badInvoice}
                 helperText={this.state.badInvoice ? this.state.badInvoice : "" }
-                label={"Payout Lightning Invoice"}
+                label={t("Payout Lightning Invoice")}
                 required
                 inputProps={{
                     style: {textAlign:"center"}
                 }}
                 multiline
+                minRows={4}
+                maxRows={8}
                 onChange={this.handleInputInvoiceChanged}
             />
           </Grid>
           <Grid item xs={12} align="center">
             <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>Submit</Button>
           </Grid>
-        </Grid>
+        {this.showBondIsReturned()}
+      </Grid>
       )
     }else{
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography component="h6" variant="h6">
-            Lightning Routing Failed
+            {t("Lightning Routing Failed")}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           <Typography component="body2" variant="body2" align="center">
-            RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you
-            will be able to submit a new invoice. Check whether you have enough inboud liquidity.
-            Remember that lightning nodes must be online in order to receive payments.
+            {t("RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.")}
           </Typography>
           <List>
             <Divider/>
-            <ListItemText secondary="Next attempt in">
+            <ListItemText secondary={t("Next attempt in")}>
               <Countdown date={new Date(this.props.data.next_retry_time)} renderer={this.countdownRenderer} />
             </ListItemText>
           </List>
         </Grid>
-      </Grid>
+      {this.showBondIsReturned()}
+    </Grid>
     )}
   }
 
   render() {
+    const { t } = this.props;
     return (
       <Grid container spacing={1} style={{ width:this.props.width}}>
         <this.ConfirmDisputeDialog/>
@@ -834,7 +1033,7 @@ handleRatingRobosatsChange=(e)=>{
         <Grid item xs={12} align="center">
           <MediaQuery minWidth={920}>
             <Typography component="h5" variant="h5">
-              Contract Box
+              {t("Contract Box")}
             </Typography>
           </MediaQuery>
           <Paper elevation={12} style={{ padding: 8,}}>
@@ -868,7 +1067,9 @@ handleRatingRobosatsChange=(e)=>{
             {/* Trade Finished - TODO Needs more planning */}
             {this.props.data.status == 11 ? this.showInDisputeStatement() : ""}
             {this.props.data.status == 16 ? this.showWaitForDisputeResolution() : ""}
-            
+            {(this.props.data.status == 17 & this.props.data.is_taker) || (this.props.data.status == 18 & this.props.data.is_maker) ? this.showDisputeWinner() : ""}
+            {(this.props.data.status == 18 & this.props.data.is_taker) || (this.props.data.status == 17 & this.props.data.is_maker) ? this.showDisputeLoser() : ""}
+
             {/* Order has expired */}
             {this.props.data.status == 5 ? this.showOrderExpired() : ""}
               {/* TODO */}
@@ -882,3 +1083,5 @@ handleRatingRobosatsChange=(e)=>{
     );
   }
 }
+
+export default withTranslation()(TradeBox);

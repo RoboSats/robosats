@@ -29,6 +29,9 @@ The token will live in your browser memory for some time, so you still might hav
 
 It is best to write it down in paper... but that's a lot of work!! Most often it is good enough to simply copy it to clipboard and save it somewhere else. **If your browser crashes, your phone battery dies, or you lose connection during trading, you will need the token to log in again and continue with the trade!**
 
+### Recovering a robot
+To recover a backed-up token, simply replace the token in the textbox and tap "Generate Robot". The site will greet you with "We found your Robot avatar. Welcome back!"
+
 ## Trade
 
 In RoboSats you can make new orders or take orders made by others. To be an _order maker_ simply click on "Create Order" in the homepage. To take an order, click on "View Book" so you can explore the orders created by other robots.
@@ -82,13 +85,13 @@ Every order has an expiration counter. By default, in RoboSats v0.1.0 new orders
 
 When you are decided for an order to take simply tap the "Take Order" button. You will see the contract box. Follow the contract box indications until you complete the trade! :) 
 
-First thing is to lock a fidelity bond, so the seller knows you can be trusted. The satoshis in this bond will just freeze in your wallet. If you try to cheat or cancel unilaterally, you will lose the satoshis locked in the bond.
+First thing is to lock a small fidelity bond (just 1% of the trade amount), so the seller knows you can be trusted. The satoshis in this bond will just freeze in your wallet. If you try to cheat or cancel unilaterally, you will lose the satoshis locked in the bond.
 
 <div align="center">
 <img src="images/how-to-use/contract-box-1.png"  width="370" />
 </div>
 
-Scan or copy the invoice into your lightning wallet. It might show as a payment that is on transit, freeze or even seemenly break your wallet. You should always check on the RoboSats website whether the bond has been locked (your wallet will probably not tell you! Check [wallet compatibility list](https://github.com/Reckless-Satoshi/robosats/issues/44))
+Scan or copy the invoice into your lightning wallet. It might show as a payment that is on transit, freeze or even seemingly break your wallet. You should always check on the RoboSats website whether the bond has been locked (your wallet will probably not tell you! Check [wallet compatibility list](https://github.com/Reckless-Satoshi/robosats/issues/44))
 
 <div align="center">
 <img src="images/how-to-use/contract-box-2.png"  width="370" />
@@ -102,19 +105,21 @@ As soon as our bond is locked, RoboSats will ask you to provide a lightning invo
 
 While you are submitting your payout invoice, the seller is asked to lock the trade escrow hold invoice. If you are faster than him, you would have to wait. Otherwise, you would already be able to chat with him. 
 
-There is a time limit of 30 minutes to submit the invoice (buyer) and lock the trade escrow (seller). If the time runs out, the order will expire and the robot who did not follow with the contract obligations will lose the bond. This is a mechanism that helps prevent fake order spamming, wasting time of counterparts and DDOSing the order book.
+There is a time limit of 3 hours to submit the invoice (buyer) and lock the trade escrow (seller). If the time runs out, the order will expire and the robot who did not follow with the contract obligations will lose the bond. This is a mechanism that helps prevent fake order spamming, wasting time of counterparts and DDOSing the order book.
 
 <div align="center">
 <img src="images/how-to-use/contract-box-4.png"  width="370" />
 </div>
 
-As soon as the seller locks the satoshis, it is safe to send the fiat currency! As a buyer, you will have to ask the seller for the details to send fiat. Remember to only share the information needed about yourself to not compromise your privacy. Remember, in RoboSats v0.1.0 this chat is memoryless, so the conversation will be lost if you refresh the browser.
+As soon as the seller locks the satoshis, it is safe to send the fiat currency! As a buyer, you will have to ask the seller for the details to send fiat. Only share the strictly needed information about yourself to not compromise your privacy. Remember, in RoboSats v0.1.0 this chat is memoryless, so the conversation will be lost if you refresh the browser.
  
 <div align="center">
 <img src="images/how-to-use/contract-box-5.png"  width="370" />
 </div>
 
-As soon as you have sent the fiat, you should tap on "Confirm fiat sent" button! After that, the seller will have to confirm the fiat was received. As soon as he confirms the trade is finished and you will be paid out to your lightning wallet. You might see that it is "sending satoshis to buyer" but usually it is so fast you will simply see this screen. Enjoy your sats!
+There is a time limit of 24 hours to complete the fiat exchange. If the time runs out, the order will expire and a dispute will be opened automatically. To avoid order expiration, **use always instant fiat payment methods**. For example, sending cash by ordinary mail is slow and will always trigger a dispute in v0.1.0. In the future longer expiry times will be possible.
+
+As soon as you have sent the fiat, you should tap on "Confirm fiat sent" button. After that, the seller will have to confirm the fiat was received. As soon as he confirms the trade is finished and you will be paid out to your lightning wallet. You might see that it is "sending satoshis to buyer" but usually it is so fast you will simply see this screen. Enjoy your sats!
 
 <div align="center">
 <img src="images/how-to-use/contract-box-6.png"  width="370" />
@@ -138,19 +143,21 @@ We can create the order exactly has we want it. But mind that you need to publis
 
 In the maker page you are only required to enter the currency, order type (buy/sell) and amount. However, it is best practice to specify the payment methods you allow. It might be also helpful to set a premium/discount for your order to be taken faster. Remember that as a seller you can incentivze buyers to take your order by lowering the premium. If there are too many buyers, however, you can increase the premium to have a trading profit. Alternatively, you can set a fixed amount of Satoshis.
 
-*Limits: in Robosats v0.1.0 an order cannot be smaller than 10.000 Satoshis. It cannot be larger than 500.000 Satoshis in order to avoid lightning routing failures. This limit will be increased in the future.*
+*Limits: in Robosats v0.1.0 an order cannot be smaller than 20.000 Satoshis. It cannot be larger than 800.000 Satoshis in order to avoid lightning routing failures. This limit will be increased in the future.*
 
 <div align="center">
 <img src="images/how-to-use/contract-box-7.png"  width="370" />
 </div>
 
-You have to copy or scan the invoice with your lightning wallet in order to lock your fidelity maker bond. By locking this bond, the takers know you can be trusted and are committed to follow with this trade. In your wallet it might show as a payment that is on transit, freeze or even seemingly break your wallet. You should always check on the RoboSats website whether the bond has been locked (your wallet will probably not tell you! Check [wallet compatibility list](https://github.com/Reckless-Satoshi/robosats/issues/44))
+You have to copy or scan the invoice with your lightning wallet in order to lock your fidelity maker bond (just 1% of the trade amount)). By locking this bond, the takers know you can be trusted and are committed to follow with this trade. In your wallet it might show as a payment that is on transit, freeze or even seemingly break your wallet. You should always check on the RoboSats website whether the bond has been locked (your wallet will probably not tell you! Check [wallet compatibility list](https://github.com/Reckless-Satoshi/robosats/issues/44))
 
 <div align="center">
 <img src="images/how-to-use/contract-box-8.png"  width="370" />
 </div>
 
-Your order will be public for 6 hours. You can check the time left to expiration by checking the "Order" tab. It can be canceled at any time without penalty before it is taken by another robot. Keep the contract tab open to be notified [with this sound](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3). It might be best to do this on a desktop computer and turn on the volume, so you do not miss when your order is taken. It might take long! Maybe you even forget! *Note: If you forget your order and a robot takes it and locks his fidelity bond, you risk losing your own fidelity bond by not fulfilling the next contract steps.*
+Your order will be public for 24 hours. You can check the time left to expiration by checking the "Order" tab. It can be canceled at any time without penalty before it is taken by another robot. Keep the contract tab open to be notified [with this sound](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3). It might be best to do this on a desktop computer and turn on the volume, so you do not miss when your order is taken. It might take long! Maybe you even forget! You can also enable telegram notifications by pressing "Enable Telegram Notification" and then pressing "Start" in the chat. You will receive a welcome message as confirmation of the enabled notifications. Another message will be sent once a taker for your order is found.
+
+*Note: If you forget your order and a robot takes it and locks his fidelity bond, you risk losing your own fidelity bond by not fulfilling the next contract steps.*
 
 In the contract tab you can also see how many other orders are public for the same currency. You can also see how well does your premium ranks among all other orders for the same currency.
 

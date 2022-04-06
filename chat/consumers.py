@@ -1,69 +1,136 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
-from api.logics import Logics
+from channels.db import database_sync_to_async
 from api.models import Order
+from chat.models import ChatRoom
 
 import json
 
 class ChatRoomConsumer(AsyncWebsocketConsumer):
-    
+
+    @database_sync_to_async
+    def allow_in_chatroom(self):
+        order = Order.objects.get(id=self.order_id)
+        if not (order.maker == self.user or order.taker == self.user):
+            print("Not allowed in this chat")
+            return False
+        return True
+
+    @database_sync_to_async
+    def save_connect_user(self):
+        '''Creates or updates the ChatRoom object'''
+
+        order = Order.objects.get(id=self.order_id)
+
+        if order.maker == self.user:
+            ChatRoom.objects.update_or_create(
+                id=self.order_id, 
+                order=order,  
+                room_group_name=self.room_group_name,
+                defaults={
+                    "maker": self.user,
+                    "maker_connected": True,
+                    }
+                )
+
+        elif order.taker == self.user:
+            ChatRoom.objects.update_or_create(
+                id=self.order_id, 
+                order=order,  
+                room_group_name=self.room_group_name,
+                defaults={
+                    "taker": self.user,
+                    "taker_connected": True,
+                    }
+                )
+
+        return None
+
+    @database_sync_to_async
+    def save_disconnect_user(self):
+        '''Creates or updates the ChatRoom object'''
+        
+        order = Order.objects.get(id=self.order_id)
+        if order.maker == self.user:
+            ChatRoom.objects.update_or_create(
+                id=self.order_id, 
+                defaults={
+                    "maker_connected": False
+                    }
+                )
+        elif order.taker == self.user:
+            ChatRoom.objects.update_or_create(
+                id=self.order_id,
+                defaults={
+                    "taker_connected": False
+                    }
+                )
+        return None
+
+    @database_sync_to_async
+    def is_peer_connected(self):
+        '''Creates or updates the ChatRoom object'''
+
+        chatroom = ChatRoom.objects.get(id=self.order_id)
+
+        if chatroom.maker == self.user:
+            return chatroom.taker_connected
+
+        if chatroom.taker == self.user:
+            return chatroom.maker_connected
 
     async def connect(self):
-        self.order_id = self.scope['url_route']['kwargs']['order_id']
-        self.room_group_name = f'chat_order_{self.order_id}'
+        self.order_id = self.scope["url_route"]["kwargs"]["order_id"]
+        self.room_group_name = f"chat_order_{self.order_id}"
         self.user = self.scope["user"]
         self.user_nick = str(self.user)
 
-        # Forbit if user is not part of the order
-        # Does not work Async
-        # order = Order.objects.get(id=self.order_id)
+        allowed = await self.allow_in_chatroom()
 
-        # # Check if user is participant on the order.
-        # if not (Logics.is_buyer(order[0], self.user) or Logics.is_seller(order[0], self.user)):
-        #     print ("Outta this chat")
-        #     return False
-        
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
+        if allowed:
+            await self.save_connect_user()
+            await self.channel_layer.group_add(self.room_group_name,
+                                            self.channel_name)
 
-        await self.accept()
+            await self.accept()
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
+        await self.save_disconnect_user()
+        await self.channel_layer.group_discard(self.room_group_name,
+                                               self.channel_name)
+        await self.channel_layer.group_send(
             self.room_group_name,
-            self.channel_name
+            {
+                "type": "chatroom_message",
+                "message": 'peer-disconnected',
+                "nick": self.scope["user"].username,
+                "peer_connected": False,
+            },
         )
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-        nick = text_data_json['nick']
-
+        message = text_data_json["message"]
+        
+        peer_connected = await self.is_peer_connected()
         await self.channel_layer.group_send(
             self.room_group_name,
             {
-                'type': 'chatroom_message',
-                'message': message,
-                'nick': nick,
-            }
+                "type": "chatroom_message",
+                "message": message,
+                "nick": self.scope["user"].username,
+                "peer_connected": peer_connected,
+            },
         )
 
     async def chatroom_message(self, event):
-        message = event['message']
-        nick = event['nick']
-
-        # Insert a white space in words longer than 22 characters.
-        # Helps when messages overflow in a single line.
-        words = message.split(' ')
-        fix_message = ''
-        for word in words:
-            word = ' '.join(word[i:i+22] for i in range(0, len(word), 22))
-            fix_message = fix_message +' '+ word
+        message = event["message"]
+        nick = event["nick"]
+        peer_connected = event["peer_connected"]
 
         await self.send(text_data=json.dumps({
-            'message': fix_message,
-            'user_nick': nick,
+            "message": message,
+            "user_nick": nick,
+            "peer_connected": peer_connected,
         }))
 
     pass
