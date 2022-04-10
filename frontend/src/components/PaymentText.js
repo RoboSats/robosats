@@ -8,6 +8,7 @@ const someMethods = [
     {name: "Zelle",icon:'zelle'},
     {name: "Strike",icon:'strike'},
     {name: "Rebellion",icon:'rebellion'},
+    {name: "Instant SEPA", icon:'sepa'},
     {name: "Interac e-Transfer",icon:'interac'},
     {name: "Wise",icon:'wise'},
     {name: "Venmo",icon:'venmo'},
