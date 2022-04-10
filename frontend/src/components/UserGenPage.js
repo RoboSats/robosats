@@ -244,7 +244,7 @@ class UserGenPage extends Component {
           <Grid item xs={12} align="center">
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
               <Button disabled={this.state.loadingRobot} color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
-              <Button color='inherit' onClick={this.handleClickOpenInfo}>{t("Info")}</Button>
+              <Button color='inherit' style={{color: '#111111'}} onClick={this.handleClickOpenInfo}>{t("Info")}</Button>
               <this.InfoDialog/>
               <Button disabled={this.state.loadingRobot} color='secondary' to='/book/' component={Link}>{t("View Book")}</Button>
             </ButtonGroup>

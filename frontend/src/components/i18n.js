@@ -35,7 +35,7 @@ i18n
     escapeValue: false,
     formatSeparator: ","
   },
-
+  
   react: {
     wait: true,
     useSuspense: false,

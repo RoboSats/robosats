@@ -55,9 +55,9 @@ class InfoDialog extends Component {
 
             <p>{t("At no point, AnonymousAlice01 and BafflingBob02 have to entrust the bitcoin funds to each other. In case they have a conflict, RoboSats staff will help resolving the dispute.")} 
               {t("You can find a step-by-step description of the trade pipeline in ")}
-              <Link href='https://github.com/Reckless-Satoshi/robosats/blob/main/README.md#how-it-works'>{t("How it works")}</Link>
-              {t("You can also check the full guide in ")}
-              <Link href='https://github.com/Reckless-Satoshi/robosats/blob/main/docs/how-to-use.md'>{t("How to use")}</Link></p>
+              <Link href='https://github.com/Reckless-Satoshi/robosats/blob/main/README.md#how-it-works'>{t("How it works")}</Link>.
+              {" "+t("You can also check the full guide in ")}
+              <Link href='https://github.com/Reckless-Satoshi/robosats/blob/main/docs/how-to-use.md'>{t("How to use")}</Link>.</p>
           </Typography>
 
           <Typography component="h5" variant="h5">{t("What payment methods are accepted?")}</Typography>
@@ -86,7 +86,7 @@ class InfoDialog extends Component {
           <Typography component="body2" variant="body2">
             <p> {t("The buyer and the seller never have to trust each other. Some trust on RoboSats is needed since linking the seller's hold invoice and buyer payment is not atomic (yet). In addition, disputes are solved by the RoboSats staff.")}</p> 
             <p> {t("To be totally clear. Trust requirements are minimized. However, there is still one way RoboSats could run away with your satoshis: by not releasing the satoshis to the buyer. It could be argued that such move is not in RoboSats' interest as it would damage the reputation for a small payout. However, you should hesitate and only trade small quantities at a time. For large amounts use an onchain escrow service such as Bisq")}</p> 
-            <p> {t("You can build more trust on RoboSats by inspecting the source code.")} <Link href='https://github.com/reckless-satoshi/robosats'> {t("Project source code")} </Link> </p>
+            <p> {t("You can build more trust on RoboSats by inspecting the source code.")} <Link href='https://github.com/reckless-satoshi/robosats'> {t("Project source code")}</Link>. </p>
           </Typography>
 
           <Typography component="h5" variant="h5">{t("What happens if RoboSats suddenly disappears?")}</Typography>

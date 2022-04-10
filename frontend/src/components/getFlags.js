@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import Flags from 'country-flag-icons/react/3x2'
 import SwapCallsIcon from '@mui/icons-material/SwapCalls';
+import GoldIcon from './icons/GoldIcon';
+import EarthIcon from './icons/EarthIcon'
 
 export default function getFlags(code){
     const props = {width:20,height:20}
@@ -66,7 +68,8 @@ export default function getFlags(code){
     if(code == 'VND') flag = <Flags.VN {...props}/>;
     if(code == 'XOF') flag = <Flags.SE {...props}/>;
     if(code == 'TWD') flag = <Flags.TW {...props}/>;
-    if(code == 'XAU') return '🟨';
-    if(code == 'BTC') return <SwapCallsIcon color="primary"/>;
+    if(code == 'ANY') flag = <EarthIcon {...props}/>;
+    if(code == 'XAU') flag = <GoldIcon {...props}/>;
+    if(code == 'BTC') flag = <SwapCallsIcon color="primary"/>;
     return <div style={{width:28, height: 20}}>{flag}</div>;
 };

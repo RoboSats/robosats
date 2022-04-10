@@ -42,7 +42,7 @@
     "Explicit":"Explicit",
     "Set a fix amount of satoshis":"Set a fix amount of satoshis",
     "Satoshis":"Satoshis",
-    "Let the taker chose an amount within the range":"Let the taker chose an amount within the range",
+    "Let the taker choose an amount within the range":"Let the taker choose an amount within the range",
     "Enable Amount Range":"Enable Amount Range",
     "From": "From",
     "to":"to",
@@ -216,7 +216,7 @@
     "Collaborative Cancel":"Collaborative Cancel",
     "Invalid Order Id":"Invalid Order Id",
     "You must have a robot avatar to see the order details":"You must have a robot avatar to see the order details",
-    "This order has been cancelled collaborativelly":"This order has been cancelled collaborativelly",
+    "This order has been cancelled collaborativelly":"This order has been cancelled collaboratively",
     "You are not allowed to see this order":"You are not allowed to see this order",
     "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues":"The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues",
 
