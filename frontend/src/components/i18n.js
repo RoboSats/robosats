@@ -36,10 +36,7 @@ i18n
     formatSeparator: ","
   },
 
-  react: {
-    wait: true,
-    useSuspense: false,
-  }
+
 });
 
 export default i18n;
