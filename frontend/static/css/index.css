@@ -134,3 +134,5 @@ input[type=number] {
   border: 0.3px solid #555; 
   filter: drop-shadow(0.5px 0.5px 0.5px #000000);
 }
+
+.MuiButton-textInherit {color : '#111111';}

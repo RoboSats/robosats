@@ -8,6 +8,7 @@ const someMethods = [
     {name: "Zelle",icon:'zelle'},
     {name: "Strike",icon:'strike'},
     {name: "Rebellion",icon:'rebellion'},
+    {name: "Instant SEPA", icon:'sepa'},
     {name: "Interac e-Transfer",icon:'interac'},
     {name: "Wise",icon:'wise'},
     {name: "Venmo",icon:'venmo'},
@@ -64,9 +65,8 @@ export default class PaymentText extends Component {
         })
 
         // Adds a Custom icon if there are words that do not match
-        var chars_left = custom_methods.replace(' ','')
-        chars_left = chars_left.replace(' ','')
-
+        var chars_left = custom_methods.replace('   ','').replace('  ','').replace(' ','').replace(' ','').replace(' ','')
+        
         if(chars_left.length > 0){rows.push(
             <Tooltip placement="top" enterTouchDelay="0" title={this.props.verbose ? this.props.othersText: this.props.othersText+": "+ custom_methods} >
                 <div style={{position:'relative', display: 'inline-block',width: this.props.size+2, maxHeight: this.props.size, top:'-1px'}}>

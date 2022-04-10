@@ -293,7 +293,7 @@ class BookPage extends Component {
                       style: {textAlign:"center"}
                   }}
                   onChange={this.handleCurrencyChange}
-              >     <MenuItem value={0}>{"🌍 "+t("ANY_currency")}</MenuItem>
+              >     <MenuItem value={0}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags('ANY')}{" "+t("ANY_currency")}</div></MenuItem>
                     {
                       Object.entries(currencyDict)
                       .map( ([key, value]) => <MenuItem value={parseInt(key)}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div></MenuItem> )
