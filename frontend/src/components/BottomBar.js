@@ -29,6 +29,8 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AmbossIcon from "./icons/AmbossIcon";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
+import { getCookie } from "../utils/cookies";
+
 // pretty numbers
 function pn(x) {
     if(x == null){
@@ -39,22 +41,6 @@ function pn(x) {
         return parts.join(".");
     }
 }
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-  }
 
 class BottomBar extends Component {
     constructor(props) {
@@ -124,11 +110,11 @@ class BottomBar extends Component {
                 </ListItem>
 
                 <Divider/>
-                {this.state.network == 'testnet'? 
+                {this.state.network == 'testnet'?
                 <ListItem>
                     <ListItemIcon><DnsIcon/></ListItemIcon>
                     <ListItemText secondary={this.state.node_alias}>
-                         <Link target="_blank" href={"https://1ml.com/testnet/node/" 
+                         <Link target="_blank" href={"https://1ml.com/testnet/node/"
                         + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (1ML)"}
                         </Link>
                     </ListItemText>
@@ -137,7 +123,7 @@ class BottomBar extends Component {
                 <ListItem>
                     <ListItemIcon><AmbossIcon/></ListItemIcon>
                     <ListItemText secondary={this.state.node_alias}>
-                            <Link target="_blank" href={"https://amboss.space/node/" 
+                            <Link target="_blank" href={"https://amboss.space/node/"
                         + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (AMBOSS)"}
                         </Link>
                     </ListItemText>
@@ -157,7 +143,7 @@ class BottomBar extends Component {
                 <ListItem>
                     <ListItemIcon><GitHubIcon/></ListItemIcon>
                     <ListItemText secondary={t("Currently running commit hash")}>
-                        <Link target="_blank" href={"https://github.com/Reckless-Satoshi/robosats/tree/" 
+                        <Link target="_blank" href={"https://github.com/Reckless-Satoshi/robosats/tree/"
                         + this.state.robosats_running_commit_hash}>{this.state.robosats_running_commit_hash.slice(0, 12)+"..."}
                         </Link>
                     </ListItemText>
@@ -216,7 +202,7 @@ class BottomBar extends Component {
             <Typography component="body2" variant="body2">
                 <p>{t("Support is only offered via public channels. Join our Telegram community if you have questions or want to hang out with other cool robots. Please, use our Github Issues if you find a bug or want to see new features!")}</p>
             </Typography>
-            <List> 
+            <List>
                 <Divider/>
 
                 <ListItemButton component="a" target="_blank" href="https://t.me/robosats">
@@ -247,7 +233,7 @@ class BottomBar extends Component {
 
                 <ListItemButton component="a" target="_blank" href="https://github.com/Reckless-Satoshi/robosats/issues">
                     <ListItemIcon><GitHubIcon/></ListItemIcon>
-                    <ListItemText primary={t("Tell us about a new feature or a bug")} 
+                    <ListItemText primary={t("Tell us about a new feature or a bug")}
                     secondary={t("Github Issues - The Robotic Satoshis Open Source Project")}/>
                 </ListItemButton>
 
@@ -270,7 +256,7 @@ class BottomBar extends Component {
             badInvoice:false,
             showRewardsSpinner: true,
         });
-  
+
         const requestOptions = {
             method: 'POST',
             headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
@@ -281,7 +267,7 @@ class BottomBar extends Component {
         fetch('/api/reward/', requestOptions)
         .then((response) => response.json())
         .then((data) => console.log(data) & this.setState({
-            badInvoice:data.bad_invoice, 
+            badInvoice:data.bad_invoice,
             openClaimRewards: data.successful_withdrawal ? false : true,
             earned_rewards: data.successful_withdrawal ? 0 : this.state.earned_rewards,
             withdrawn: data.successful_withdrawal ? true : false,
@@ -289,7 +275,7 @@ class BottomBar extends Component {
         }));
     }
 
-    getHost(){ 
+    getHost(){
         var url = (window.location != window.parent.location) ? this.getHost(document.referrer) : document.location.href;
         return url.split('/')[2]
       }
@@ -310,7 +296,7 @@ class BottomBar extends Component {
                 <ListItem className="profileNickname">
                     <ListItemText secondary={t("Your robot")}>
                     <Typography component="h6" variant="h6">
-                    {this.props.nickname ? 
+                    {this.props.nickname ?
                     <div style={{position:'relative',left:'-7px'}}>
                     <div style={{display:'flex', alignItems:'center', justifyContent:'left', flexWrap:'wrap', width:300}}>
                         <BoltIcon sx={{ color: "#fcba03", height: '28px',width: '24px'}}/><a>{this.props.nickname}</a><BoltIcon sx={{ color: "#fcba03", height: '28px',width: '24px'}}/>
@@ -320,19 +306,19 @@ class BottomBar extends Component {
                     </Typography>
                     </ListItemText>
                     <ListItemAvatar>
-                    <Avatar className='profileAvatar' 
+                    <Avatar className='profileAvatar'
                         sx={{ width: 65, height:65 }}
                         alt={this.props.nickname}
-                        src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
+                        src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null}
                         />
                     </ListItemAvatar>
                 </ListItem>
 
                 <Divider/>
-                {this.state.active_order_id ? 
+                {this.state.active_order_id ?
                 <ListItemButton onClick={this.handleClickCloseProfile} to={'/order/'+this.state.active_order_id} component={LinkRouter}>
                     <ListItemIcon>
-                        <Badge badgeContent="" color="primary"> 
+                        <Badge badgeContent="" color="primary">
                             <NumbersIcon color="primary"/>
                         </Badge>
                     </ListItemIcon>
@@ -344,13 +330,13 @@ class BottomBar extends Component {
                     <ListItemText primary={t("No active orders")} secondary={t("Your current order")}/>
                 </ListItem>
                 }
-                
+
                 <ListItem>
                     <ListItemIcon>
                         <PasswordIcon/>
                     </ListItemIcon>
                     <ListItemText secondary={t("Your token (will not remain here)")}>
-                    {this.props.token ?  
+                    {this.props.token ?
                     <TextField
                         disabled
                         label={t("Back it up!")}
@@ -366,22 +352,22 @@ class BottomBar extends Component {
                             </Tooltip>,
                             }}
                         />
-                    : 
+                    :
                     t("Cannot remember")}
                 </ListItemText>
                 </ListItem>
-                
+
                 <Divider/>
 
                 <Grid spacing={1} align="center">
                     <FormControlLabel labelPlacement="start"control={
                         <Switch
-                        checked={this.state.showRewards} 
-                        onChange={()=> this.setState({showRewards: !this.state.showRewards})}/>} 
+                        checked={this.state.showRewards}
+                        onChange={()=> this.setState({showRewards: !this.state.showRewards})}/>}
                         label={t("Rewards and compensations")}
                         />
                 </Grid>
-                
+
                 <div style={{ display: this.state.showRewards ? '':'none'}}>
                     <ListItem>
                         <ListItemIcon>
@@ -403,7 +389,7 @@ class BottomBar extends Component {
                             />
                     </ListItemText>
                     </ListItem>
-                    
+
                     <ListItem>
                         <ListItemIcon>
                             <EmojiEventsIcon/>
@@ -447,7 +433,7 @@ class BottomBar extends Component {
                         <CircularProgress/>
                     </div>
                     :""}
-                    
+
                     {this.state.withdrawn?
                     <div style={{display: 'flex', justifyContent: 'center'}}>
                         <Typography color="primary" variant="body2"><b>{t("There it goes, thank you!🥇")}</b></Typography>
@@ -457,7 +443,7 @@ class BottomBar extends Component {
                 </div>
             </List>
             </DialogContent>
-            
+
         </Dialog>
     )
     }
@@ -473,7 +459,7 @@ bottomBarDesktop =()=>{
                 <Grid container xs={12}>
 
                     <Grid item xs={1.9}>
-                        <div style={{display: this.props.avatarLoaded ? '':'none'}}>                     
+                        <div style={{display: this.props.avatarLoaded ? '':'none'}}>
                         <ListItemButton onClick={this.handleClickOpenProfile} >
                             <Tooltip open={this.state.earned_rewards > 0 ? true: false} title={t("You can claim satoshis!")}>
                             <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
@@ -481,10 +467,10 @@ bottomBarDesktop =()=>{
                                 <ListItemAvatar sx={{ width: 30, height: 30 }} >
                                     <Badge badgeContent={(this.state.active_order_id > 0 & !this.state.profileShown) ? "": null} color="primary">
                                     <Avatar className='flippedSmallAvatar' sx={{margin: 0, top: -13}}
-                                    alt={this.props.nickname} 
+                                    alt={this.props.nickname}
                                     imgProps={{
                                         onLoad:() => this.props.setAppState({avatarLoaded: true}),
-                                    }} 
+                                    }}
                                     src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null}
                                     />
                                     </Badge>
@@ -501,10 +487,10 @@ bottomBarDesktop =()=>{
                             <ListItemIcon size="small">
                                 <IconButton onClick={this.handleClickOpenExchangeSummary}><InventoryIcon/></IconButton>
                             </ListItemIcon>
-                            <ListItemText 
-                                primaryTypographyProps={{fontSize: '14px'}} 
-                                secondaryTypographyProps={{fontSize: '12px'}} 
-                                primary={this.state.num_public_buy_orders} 
+                            <ListItemText
+                                primaryTypographyProps={{fontSize: '14px'}}
+                                secondaryTypographyProps={{fontSize: '12px'}}
+                                primary={this.state.num_public_buy_orders}
                                 secondary={t("Public Buy Orders")} />
                         </ListItem>
                     </Grid>
@@ -514,10 +500,10 @@ bottomBarDesktop =()=>{
                             <ListItemIcon size="small">
                             <IconButton onClick={this.handleClickOpenExchangeSummary}><SellIcon/></IconButton>
                             </ListItemIcon>
-                            <ListItemText 
-                                primaryTypographyProps={{fontSize: '14px'}} 
-                                secondaryTypographyProps={{fontSize: '12px'}} 
-                                primary={this.state.num_public_sell_orders} 
+                            <ListItemText
+                                primaryTypographyProps={{fontSize: '14px'}}
+                                secondaryTypographyProps={{fontSize: '12px'}}
+                                primary={this.state.num_public_sell_orders}
                                 secondary={t("Public Sell Orders")} />
                         </ListItem>
                     </Grid>
@@ -527,10 +513,10 @@ bottomBarDesktop =()=>{
                             <ListItemIcon size="small">
                             <IconButton onClick={this.handleClickOpenExchangeSummary}><SmartToyIcon/></IconButton>
                             </ListItemIcon>
-                            <ListItemText 
-                                primaryTypographyProps={{fontSize: '14px'}} 
-                                secondaryTypographyProps={{fontSize: '12px'}} 
-                                primary={this.state.active_robots_today} 
+                            <ListItemText
+                                primaryTypographyProps={{fontSize: '14px'}}
+                                secondaryTypographyProps={{fontSize: '12px'}}
+                                primary={this.state.active_robots_today}
                                 secondary={t("Today Active Robots")}/>
                         </ListItem>
                     </Grid>
@@ -540,10 +526,10 @@ bottomBarDesktop =()=>{
                             <ListItemIcon size="small">
                                 <IconButton onClick={this.handleClickOpenExchangeSummary}><PriceChangeIcon/></IconButton>
                             </ListItemIcon>
-                            <ListItemText 
-                                primaryTypographyProps={{fontSize: '14px'}} 
-                                secondaryTypographyProps={{fontSize: '12px'}} 
-                                primary={this.state.last_day_nonkyc_btc_premium+"%"} 
+                            <ListItemText
+                                primaryTypographyProps={{fontSize: '14px'}}
+                                secondaryTypographyProps={{fontSize: '12px'}}
+                                primary={this.state.last_day_nonkyc_btc_premium+"%"}
                                 secondary={t("24h Avg Premium")} />
                         </ListItem>
                     </Grid>
@@ -553,10 +539,10 @@ bottomBarDesktop =()=>{
                             <ListItemIcon size="small">
                             <   IconButton onClick={this.handleClickOpenExchangeSummary}><PercentIcon/></IconButton>
                             </ListItemIcon>
-                            <ListItemText 
-                                primaryTypographyProps={{fontSize: '14px'}} 
-                                secondaryTypographyProps={{fontSize: '12px'}} 
-                                primary={(this.state.maker_fee + this.state.taker_fee)*100} 
+                            <ListItemText
+                                primaryTypographyProps={{fontSize: '14px'}}
+                                secondaryTypographyProps={{fontSize: '12px'}}
+                                primary={(this.state.maker_fee + this.state.taker_fee)*100}
                                 secondary={t("Trade Fee")} />
                         </ListItem>
                     </Grid>
@@ -567,18 +553,18 @@ bottomBarDesktop =()=>{
                         </Grid>
                         <Grid item xs={3}>
                         <Tooltip enterTouchDelay="250" title={t("Show community and support links")}>
-                            <IconButton 
-                            color="primary" 
-                            aria-label="Community" 
+                            <IconButton
+                            color="primary"
+                            aria-label="Community"
                             onClick={this.handleClickOpenCommunity} >
                                 <PeopleIcon />
                             </IconButton>
                         </Tooltip>
                         </Grid>
-                        <Grid item xs={3}> 
+                        <Grid item xs={3}>
                             <Tooltip enterTouchDelay="250" title={t("Show stats for nerds")}>
-                                <IconButton color="primary" 
-                                    aria-label="Stats for Nerds" 
+                                <IconButton color="primary"
+                                    aria-label="Stats for Nerds"
                                     onClick={this.handleClickOpenStatsForNerds} >
                                     <SettingsIcon />
                                 </IconButton>
@@ -598,13 +584,13 @@ bottomBarDesktop =()=>{
     LangSelect = () => {
         const { i18n} = this.props;
         return(
-            <Select 
+            <Select
                 size = 'small'
                 value = {i18n.resolvedLanguage.substring(0,2)}
                 inputProps={{
                     style: {textAlign:"center"}
                 }}
-                onChange={this.handleChangeLang}> 
+                onChange={this.handleChangeLang}>
                     <MenuItem value={'en'}>EN</MenuItem>
                     <MenuItem disabled={true} value={'es'}>ES</MenuItem>
                     <MenuItem disabled={true} value={'de'}>DE</MenuItem>
@@ -613,7 +599,7 @@ bottomBarDesktop =()=>{
                 </Select>
         )
     }
-    
+
     handleClickOpenExchangeSummary = () => {
         this.getInfo();
         this.setState({openExchangeSummary: true});
@@ -638,10 +624,10 @@ bottomBarDesktop =()=>{
                     <ListItemIcon size="small">
                         <InventoryIcon/>
                     </ListItemIcon>
-                    <ListItemText 
-                        primaryTypographyProps={{fontSize: '14px'}} 
-                        secondaryTypographyProps={{fontSize: '12px'}} 
-                        primary={this.state.num_public_buy_orders} 
+                    <ListItemText
+                        primaryTypographyProps={{fontSize: '14px'}}
+                        secondaryTypographyProps={{fontSize: '12px'}}
+                        primary={this.state.num_public_buy_orders}
                         secondary={t("Public buy orders")} />
                 </ListItem>
                 <Divider/>
@@ -650,10 +636,10 @@ bottomBarDesktop =()=>{
                     <ListItemIcon size="small">
                         <SellIcon/>
                     </ListItemIcon>
-                    <ListItemText 
-                        primaryTypographyProps={{fontSize: '14px'}} 
-                        secondaryTypographyProps={{fontSize: '12px'}} 
-                        primary={this.state.num_public_sell_orders} 
+                    <ListItemText
+                        primaryTypographyProps={{fontSize: '14px'}}
+                        secondaryTypographyProps={{fontSize: '12px'}}
+                        primary={this.state.num_public_sell_orders}
                         secondary={t("Public sell orders")} />
                 </ListItem>
                 <Divider/>
@@ -662,10 +648,10 @@ bottomBarDesktop =()=>{
                     <ListItemIcon size="small">
                         <BookIcon/>
                     </ListItemIcon>
-                    <ListItemText 
-                        primaryTypographyProps={{fontSize: '14px'}} 
-                        secondaryTypographyProps={{fontSize: '12px'}} 
-                        primary={pn(this.state.book_liquidity)+" Sats"} 
+                    <ListItemText
+                        primaryTypographyProps={{fontSize: '14px'}}
+                        secondaryTypographyProps={{fontSize: '12px'}}
+                        primary={pn(this.state.book_liquidity)+" Sats"}
                         secondary={t("Book liquidity")}/>
                 </ListItem>
                 <Divider/>
@@ -674,10 +660,10 @@ bottomBarDesktop =()=>{
                     <ListItemIcon size="small">
                         <SmartToyIcon/>
                     </ListItemIcon>
-                    <ListItemText 
-                        primaryTypographyProps={{fontSize: '14px'}} 
-                        secondaryTypographyProps={{fontSize: '12px'}} 
-                        primary={this.state.active_robots_today} 
+                    <ListItemText
+                        primaryTypographyProps={{fontSize: '14px'}}
+                        secondaryTypographyProps={{fontSize: '12px'}}
+                        primary={this.state.active_robots_today}
                         secondary={t("Today active robots")} />
                 </ListItem>
                 <Divider/>
@@ -686,10 +672,10 @@ bottomBarDesktop =()=>{
                     <ListItemIcon size="small">
                         <PriceChangeIcon/>
                     </ListItemIcon>
-                    <ListItemText 
-                        primaryTypographyProps={{fontSize: '14px'}} 
-                        secondaryTypographyProps={{fontSize: '12px'}} 
-                        primary={this.state.last_day_nonkyc_btc_premium+"%"} 
+                    <ListItemText
+                        primaryTypographyProps={{fontSize: '14px'}}
+                        secondaryTypographyProps={{fontSize: '12px'}}
+                        primary={this.state.last_day_nonkyc_btc_premium+"%"}
                         secondary={t("24h non-KYC bitcoin premium")} />
                 </ListItem>
                 <Divider/>
@@ -700,17 +686,17 @@ bottomBarDesktop =()=>{
                     </ListItemIcon>
                     <Grid container xs={12}>
                         <Grid item xs={6}>
-                            <ListItemText 
-                                primaryTypographyProps={{fontSize: '14px'}} 
-                                secondaryTypographyProps={{fontSize: '12px'}} 
+                            <ListItemText
+                                primaryTypographyProps={{fontSize: '14px'}}
+                                secondaryTypographyProps={{fontSize: '12px'}}
                                 secondary={t("Maker fee")}>
                                 {(this.state.maker_fee*100).toFixed(3)}%
                             </ListItemText>
                         </Grid>
                         <Grid item xs={6}>
-                            <ListItemText 
-                                primaryTypographyProps={{fontSize: '14px'}} 
-                                secondaryTypographyProps={{fontSize: '12px'}} 
+                            <ListItemText
+                                primaryTypographyProps={{fontSize: '14px'}}
+                                secondaryTypographyProps={{fontSize: '12px'}}
                                 secondary={t("Taker fee")}>
                                 {(this.state.taker_fee*100).toFixed(3)}%
                             </ListItemText>
@@ -718,7 +704,7 @@ bottomBarDesktop =()=>{
                     </Grid>
                 </ListItem>
                 </List>
-                
+
             </DialogContent>
         </Dialog>
     )
@@ -742,12 +728,12 @@ bottomBarPhone =()=>{
                         <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, bottom: 17, right: 8}} >
                             <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "": null} color="primary">
                                 <Avatar className='phoneFlippedSmallAvatar'
-                                sx={{ width: 55, height:55 }} 
-                                alt={this.props.nickname} 
+                                sx={{ width: 55, height:55 }}
+                                alt={this.props.nickname}
                                 imgProps={{
                                     onLoad:() => this.props.setAppState({avatarLoaded: true}),
-                                }} 
-                                src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null} 
+                                }}
+                                src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null}
                                 />
                             </Badge>
                         </IconButton>
@@ -757,13 +743,13 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
-                        <Tooltip enterTouchDelay="300" title={t("Number of public BUY orders")}> 
+                        <Tooltip enterTouchDelay="300" title={t("Number of public BUY orders")}>
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.num_public_buy_orders}  color="action">
                                 <InventoryIcon />
                             </Badge>
                             </IconButton>
-                        </Tooltip> 
+                        </Tooltip>
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
@@ -787,7 +773,7 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.8} align="center">
-                        <Tooltip enterTouchDelay="300" title={t("24h non-KYC bitcoin premium")}> 
+                        <Tooltip enterTouchDelay="300" title={t("24h non-KYC bitcoin premium")}>
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.last_day_nonkyc_btc_premium+"%"}  color="action">
                                 <PriceChangeIcon />
@@ -802,9 +788,9 @@ bottomBarPhone =()=>{
                         </Grid>
                         <Grid item xs={3}>
                         <Tooltip enterTouchDelay="250" title={t("Show community and support links")}>
-                            <IconButton 
-                            color="primary" 
-                            aria-label="Community" 
+                            <IconButton
+                            color="primary"
+                            aria-label="Community"
                             onClick={this.handleClickOpenCommunity} >
                                 <PeopleIcon />
                             </IconButton>
@@ -812,8 +798,8 @@ bottomBarPhone =()=>{
                         </Grid>
                         <Grid item xs={3}>
                         <Tooltip enterTouchDelay="250" title={t("Show stats for nerds")}>
-                            <IconButton color="primary" 
-                                aria-label="Stats for Nerds" 
+                            <IconButton color="primary"
+                                aria-label="Stats for Nerds"
                                 onClick={this.handleClickOpenStatsForNerds} >
                                 <SettingsIcon />
                             </IconButton>

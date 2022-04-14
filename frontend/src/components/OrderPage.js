@@ -17,22 +17,7 @@ import PaymentsIcon from '@mui/icons-material/Payments';
 import ArticleIcon from '@mui/icons-material/Article';
 import { t } from "i18next";
 
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          // Does this cookie string begin with the name we want?
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
-          }
-      }
-  }
-  return cookieValue;
-}
-const csrftoken = getCookie('csrftoken');
+import { getCookie } from "../utils/cookies";
 
 // pretty numbers
 function pn(x) {
@@ -126,7 +111,7 @@ class OrderPage extends Component {
     this.getOrderDetails();
   }
 
-  // Countdown Renderer callback with condition 
+  // Countdown Renderer callback with condition
   countdownRenderer = ({ total, hours, minutes, seconds, completed }) => {
     const { t } = this.props;
   if (completed) {
@@ -148,20 +133,20 @@ class OrderPage extends Component {
   }
   };
 
-  // Countdown Renderer callback with condition 
+  // Countdown Renderer callback with condition
   countdownPenaltyRenderer = ({ minutes, seconds, completed }) => {
     const { t } = this.props;
     if (completed) {
       // Render a completed state
       return (<span> {t("Penalty lifted, good to go!")}</span>);
-  
+
     } else {
       return (
         <span> {t("You cannot take an order yet! Wait {{timeMin}}m {{timeSec}}s",{timeMin: zeroPad(minutes), timeSec: zeroPad(seconds) })} </span>
       );
     }
     };
-  
+
   handleTakeAmountChange = (e) => {
     if (e.target.value != "" & e.target.value != null){
       this.setState({takeAmount: parseFloat(e.target.value)})
@@ -191,16 +176,16 @@ class OrderPage extends Component {
           <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title={t("Enter amount of fiat to exchange for bitcoin")}>
             <Paper elevation={5} sx={{maxHeight:40}}>
               <TextField
-                  error={(this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount) & this.state.takeAmount != "" } 
+                  error={(this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount) & this.state.takeAmount != "" }
                   helperText={this.amountHelperText()}
                   label={t("Amount {{currencyCode}}", {currencyCode: this.state.currencyCode})}
                   size="small"
-                  type="number" 
+                  type="number"
                   required="true"
                   value={this.state.takeAmount}
                   inputProps={{
                       min:this.state.min_amount ,
-                      max:this.state.max_amount ,  
+                      max:this.state.max_amount ,
                       style: {textAlign:"center"}
                   }}
                   onChange={this.handleTakeAmountChange}
@@ -211,7 +196,7 @@ class OrderPage extends Component {
           <div style={{height:38, top:'1px', position:'relative', display: (this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount || this.state.takeAmount == "" || this.state.takeAmount == null) ? '':'none'}}>
             <Tooltip placement="top" enterTouchDelay="0" enterDelay="500" enterNextDelay="1200" title={t("You must specify an amount first")}>
               <Paper elevation={4}>
-                <Button sx={{height:38}} variant='contained' color='primary' 
+                <Button sx={{height:38}} variant='contained' color='primary'
                   disabled={true}>
                   {t("Take Order")}
                 </Button>
@@ -220,7 +205,7 @@ class OrderPage extends Component {
           </div>
           <div style={{height:38, top:'1px', position:'relative', display: (this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount || this.state.takeAmount == "" || this.state.takeAmount == null) ? 'none':''}}>
           <Paper elevation={4}>
-              <Button sx={{height:38}} variant='contained' color='primary' 
+              <Button sx={{height:38}} variant='contained' color='primary'
                 onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}>
                 {t("Take Order")}
               </Button>
@@ -232,7 +217,7 @@ class OrderPage extends Component {
       return(
         <>
         <this.InactiveMakerDialog/>
-        <Button variant='contained' color='primary' 
+        <Button variant='contained' color='primary'
           onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}>
           {t("Take Order")}
         </Button>
@@ -256,7 +241,7 @@ class OrderPage extends Component {
 
   LinearDeterminate =()=> {
     const [progress, setProgress] = React.useState(0);
-  
+
     React.useEffect(() => {
       const timer = setInterval(() => {
         setProgress((oldProgress) => {
@@ -264,12 +249,12 @@ class OrderPage extends Component {
           return (left / this.state.total_secs_exp) * 100;
         });
       }, 1000);
-  
+
       return () => {
         clearInterval(timer);
       };
     }, []);
-  
+
     return (
       <Box sx={{ width: '100%' }}>
         <LinearProgress variant="determinate" value={progress} />
@@ -291,14 +276,14 @@ class OrderPage extends Component {
       .then((response) => response.json())
       .then((data) => this.completeSetState(data));
   }
-  
+
   // set delay to the one matching the order status. If null order status, delay goes to 9999999.
   setDelay = (status)=>{
     return status >= 0 ? this.statusToDelay[status.toString()] : 99999999;
   }
 
   getCurrencyCode(val){
-    let code = val ? currencyDict[val.toString()] : "" 
+    let code = val ? currencyDict[val.toString()] : ""
     return code
   }
 
@@ -441,7 +426,7 @@ class OrderPage extends Component {
   CancelButton = () => {
     const { t } = this.props;
     // If maker and Waiting for Bond. Or if taker and Waiting for bond.
-    // Simply allow to cancel without showing the cancel dialog. 
+    // Simply allow to cancel without showing the cancel dialog.
     if ((this.state.is_maker & [0,1].includes(this.state.status)) || this.state.is_taker & this.state.status == 3){
       return(
         <Grid item xs={12} align="center">
@@ -459,9 +444,9 @@ class OrderPage extends Component {
           </Grid>
         </div>
       )}
-    
+
     // If the escrow is Locked, show the collaborative cancel button.
-  
+
     if ([8,9].includes(this.state.status)){
       return(
         <Grid item xs={12} align="center">
@@ -498,8 +483,8 @@ class OrderPage extends Component {
               <Tooltip placement="top" enterTouchDelay="0" title={t(this.state.maker_status)} >
                 <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.maker_status)}>
                   <Avatar className="flippedSmallAvatar"
-                    alt={this.state.maker_nick} 
-                    src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'} 
+                    alt={this.state.maker_nick}
+                    src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'}
                     />
                 </Badge>
               </Tooltip>
@@ -514,18 +499,18 @@ class OrderPage extends Component {
                     <Divider />
                     <ListItem align="left">
                       <ListItemText primary={this.state.taker_nick + (this.state.type ? " "+t("(Buyer)") : " "+t("(Seller)"))} secondary={t("Order taker")}/>
-                      <ListItemAvatar > 
+                      <ListItemAvatar >
                       <Tooltip enterTouchDelay="0" title={t(this.state.taker_status)} >
                         <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
                           <Avatar className="smallAvatar"
-                            alt={this.state.taker_nick} 
+                            alt={this.state.taker_nick}
                             src={window.location.origin +'/static/assets/avatars/' + this.state.taker_nick + '.png'}
                             />
                         </Badge>
                         </Tooltip>
                       </ListItemAvatar>
-                    </ListItem>           
-                  </>: 
+                    </ListItem>
+                  </>:
                   ""
                   }
                   <Divider><Chip label={t("Order Details")}/></Divider>
@@ -539,7 +524,7 @@ class OrderPage extends Component {
               </>
             :<Divider><Chip label={t("Order Details")}/></Divider>
             }
-            
+
             <ListItem>
               <ListItemIcon>
                 <div style={{zoom:1.25,opacity: 0.7, '-ms-zoom': 1.25, '-webkit-zoom': 1.25,'-moz-transform':  'scale(1.25,1.25)', '-moz-transform-origin': 'left center'}}>
@@ -570,15 +555,15 @@ class OrderPage extends Component {
               <ListItemIcon>
                 <PriceChangeIcon/>
               </ListItemIcon>
-            {this.state.price_now? 
+            {this.state.price_now?
                 <ListItemText primary={t("{{price}} {{currencyCode}}/BTC - Premium: {{premium}}%", {price: pn(this.state.price_now), currencyCode:this.state.currencyCode, premium: this.state.premium_now})} secondary={t("Price and Premium")}/>
             :
-              (this.state.is_explicit ? 
+              (this.state.is_explicit ?
                 <ListItemText primary={pn(this.state.satoshis)} secondary={t("Amount of Satoshis")}/>
                 :
                 <ListItemText primary={parseFloat(parseFloat(this.state.premium).toFixed(2))+"%"} secondary={t("Premium over market price")}/>
               )
-            } 
+            }
             </ListItem>
             <Divider />
 
@@ -599,53 +584,53 @@ class OrderPage extends Component {
             </ListItem>
             <this.LinearDeterminate />
             </List>
-            
+
             {/* If the user has a penalty/limit */}
-            {this.state.penalty ? 
+            {this.state.penalty ?
             <>
               <Divider />
               <Grid item xs={12} align="center">
                 <Alert severity="warning" sx={{maxWidth:360}}>
                    <Countdown date={new Date(this.state.penalty)} renderer={this.countdownPenaltyRenderer} />
-                </Alert>  
+                </Alert>
               </Grid>
             </>
-            : null} 
-            
+            : null}
+
             {/* If the counterparty asked for collaborative cancel */}
-            {this.state.pending_cancel ? 
+            {this.state.pending_cancel ?
             <>
               <Divider />
               <Grid item xs={12} align="center">
                 <Alert severity="warning" sx={{maxWidth:360}}>
                   {t("{{nickname}} is asking for a collaborative cancel", {nickname: this.state.is_maker ? this.state.taker_nick : this.state.maker_nick})}
-                </Alert>  
+                </Alert>
               </Grid>
             </>
-            : null} 
+            : null}
 
             {/* If the user has asked for a collaborative cancel */}
-            {this.state.asked_for_cancel ? 
+            {this.state.asked_for_cancel ?
             <>
               <Divider />
               <Grid item xs={12} align="center">
                 <Alert severity="warning" sx={{maxWidth:360}}>
                   {t("You asked for a collaborative cancellation")}
-                </Alert>  
+                </Alert>
               </Grid>
             </>
-            : null} 
+            : null}
 
           </Paper>
         </Grid>
-        
+
         <Grid item xs={12} align="center">
           {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}
           {this.state.is_participant ?
             <>
               <this.CancelButton/>
               <this.BackButton/>
-            </> 
+            </>
           :
             <Grid container spacing={1}>
               <Grid item xs={12} align="center">
@@ -660,7 +645,7 @@ class OrderPage extends Component {
       </Grid>
     )
   }
-  
+
   doubleOrderPageDesktop=()=>{
     return(
       <Grid container xs={12} align="center" spacing={2} >
@@ -673,7 +658,7 @@ class OrderPage extends Component {
       </Grid>
     )
   }
-  
+
   a11yProps(index) {
     return {
       id: `simple-tab-${index}`,
@@ -724,7 +709,7 @@ class OrderPage extends Component {
           <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>{t("Back")}</Button>
         </div>
         :
-        (this.state.is_participant ? 
+        (this.state.is_participant ?
           <>
             {/* Desktop View */}
             <MediaQuery minWidth={920}>
@@ -744,7 +729,7 @@ class OrderPage extends Component {
   }
 
   render (){
-    return ( 
+    return (
       // Only so nothing shows while requesting the first batch of data
       this.state.loading ? <CircularProgress /> : this.orderDetailsPage()
     );
