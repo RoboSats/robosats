@@ -14,22 +14,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import currencyDict from '../../static/assets/currencies.json';
 
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-const csrftoken = getCookie('csrftoken');
+import { getCookie } from "../utils/cookies";
 
 // pretty numbers
 function pn(x) {
@@ -38,7 +23,7 @@ function pn(x) {
     }
     var parts = x.toString().split(".");
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    return parts.join(".");  
+    return parts.join(".");
   }
 
 class MakerPage extends Component {
@@ -55,7 +40,7 @@ class MakerPage extends Component {
   constructor(props) {
     super(props);
     this.state={
-        is_explicit: false, 
+        is_explicit: false,
         type: 0,
         currency: this.defaultCurrency,
         currencyCode: this.defaultCurrencyCode,
@@ -80,9 +65,9 @@ class MakerPage extends Component {
     fetch('/api/limits/')
       .then((response) => response.json())
       .then((data) => this.setState({
-          limits:data, 
+          limits:data,
           loadingLimits:false,
-          minAmount: this.state.amount ? parseFloat((this.state.amount/2).toPrecision(2)) : parseFloat(Number(data[this.state.currency]['max_amount']*0.25).toPrecision(2)), 
+          minAmount: this.state.amount ? parseFloat((this.state.amount/2).toPrecision(2)) : parseFloat(Number(data[this.state.currency]['max_amount']*0.25).toPrecision(2)),
           maxAmount: this.state.amount ? this.state.amount : parseFloat(Number(data[this.state.currency]['max_amount']*0.75).toPrecision(2)),
         }));
   }
@@ -96,7 +81,7 @@ class MakerPage extends Component {
 
   handleTypeChange=(e)=>{
       this.setState({
-          type: e.target.value,     
+          type: e.target.value,
       });
   }
   handleCurrencyChange=(e)=>{
@@ -106,24 +91,24 @@ class MakerPage extends Component {
     });
     if(this.state.enableAmountRange){
         this.setState({
-            minAmount: parseFloat(Number(this.state.limits[e.target.value]['max_amount']*0.25).toPrecision(2)), 
+            minAmount: parseFloat(Number(this.state.limits[e.target.value]['max_amount']*0.25).toPrecision(2)),
             maxAmount: parseFloat(Number(this.state.limits[e.target.value]['max_amount']*0.75).toPrecision(2)),
         })
     }
 }
     handleAmountChange=(e)=>{
         this.setState({
-            amount: e.target.value,     
+            amount: e.target.value,
         });
     }
     handleMinAmountChange=(e)=>{
         this.setState({
-            minAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),     
+            minAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
         });
     }
     handleMaxAmountChange=(e)=>{
         this.setState({
-            maxAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),  
+            maxAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
         });
     }
 
@@ -155,7 +140,7 @@ class MakerPage extends Component {
                 lowerValue = upperValue/maxRange
             }
         }
-        
+
         this.setState({
             minAmount: parseFloat(Number(lowerValue).toPrecision(lowerValue < 100 ? 2 : 3)),
             maxAmount: parseFloat(Number(upperValue).toPrecision(upperValue < 100 ? 2 : 3)),
@@ -165,12 +150,12 @@ class MakerPage extends Component {
     handlePaymentMethodChange=(value)=>{
         if (value.length > 50){
             this.setState({
-                badPaymentMethod: true,    
+                badPaymentMethod: true,
             });
         }else{
         this.setState({
             payment_method: value.substring(0,53),
-            badPaymentMethod: value.length > 50,    
+            badPaymentMethod: value.length > 50,
         });
     }
     }
@@ -188,7 +173,7 @@ class MakerPage extends Component {
 
         this.setState({
             premium: e.target.value,
-            badPremium: bad_premium,     
+            badPremium: bad_premium,
         });
     }
 
@@ -203,20 +188,20 @@ class MakerPage extends Component {
 
         this.setState({
             satoshis: e.target.value,
-            badSatoshis: bad_sats,      
+            badSatoshis: bad_sats,
         });
     }
     handleClickRelative=(e)=>{
         this.setState({
-            is_explicit: false, 
+            is_explicit: false,
         });
         this.handlePremiumChange();
     }
-    
+
     handleClickExplicit=(e)=>{
         if(!this.state.enableAmountRange){
             this.setState({
-                is_explicit: true,   
+                is_explicit: true,
             });
             this.handleSatoshisChange();
         }
@@ -268,14 +253,14 @@ class MakerPage extends Component {
                         {t("Buy or Sell Bitcoin?")}
                     </FormHelperText>
                     <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
-                        <FormControlLabel 
-                            value="0" 
+                        <FormControlLabel
+                            value="0"
                             control={<Radio color="primary"/>}
                             label={t("Buy")}
                             labelPlacement="Top"
                         />
-                        <FormControlLabel 
-                            value="1" 
+                        <FormControlLabel
+                            value="1"
                             control={<Radio color="secondary"/>}
                             label={t("Sell")}
                             labelPlacement="Top"
@@ -284,21 +269,21 @@ class MakerPage extends Component {
                 </FormControl>
                 </div>
             </Grid>
-            
+
             <Grid containter xs={12} alignItems="stretch" style={{ display: "flex" }}>
                     <div style={{maxWidth:150}}>
                     <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title={t("Amount of fiat to exchange for bitcoin")}>
                         <TextField
                             disabled = {this.state.enableAmountRange}
                             variant = {this.state.enableAmountRange ? 'filled' : 'outlined'}
-                            error={this.state.amount <= 0 & this.state.amount != "" } 
+                            error={this.state.amount <= 0 & this.state.amount != "" }
                             helperText={this.state.amount <= 0 & this.state.amount != "" ? t("Invalid") : null}
                             label={t("Amount")}
-                            type="number" 
+                            type="number"
                             required="true"
                             value={this.state.amount}
                             inputProps={{
-                                min:0 , 
+                                min:0 ,
                                 style: {textAlign:"center"}
                             }}
                             onChange={this.handleAmountChange}
@@ -308,8 +293,8 @@ class MakerPage extends Component {
                         <div >
                             <Select
                                 sx={{width:'120px'}}
-                                required="true" 
-                                defaultValue={this.defaultCurrency} 
+                                required="true"
+                                defaultValue={this.defaultCurrency}
                                 inputProps={{
                                     style: {textAlign:"center"}
                                 }}
@@ -345,8 +330,8 @@ class MakerPage extends Component {
                     </FormHelperText>
                     <RadioGroup row defaultValue="relative">
                     <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title={t("Let the price move with the market")}>
-                        <FormControlLabel 
-                        value="relative" 
+                        <FormControlLabel
+                        value="relative"
                         control={<Radio color="primary"/>}
                         label={t("Relative")}
                         labelPlacement="Top"
@@ -355,8 +340,8 @@ class MakerPage extends Component {
                     </Tooltip>
                     <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title={t("Set a fix amount of satoshis")}>
                         <FormControlLabel
-                        disabled={this.state.enableAmountRange} 
-                        value="explicit" 
+                        disabled={this.state.enableAmountRange}
+                        value="explicit"
                         control={<Radio color="secondary"/>}
                         label={t("Explicit")}
                         labelPlacement="Top"
@@ -374,27 +359,27 @@ class MakerPage extends Component {
                             label={t("Satoshis")}
                             error={this.state.badSatoshis}
                             helperText={this.state.badSatoshis}
-                            type="number" 
+                            type="number"
                             required="true"
-                            value={this.state.satoshis} 
+                            value={this.state.satoshis}
                             inputProps={{
-                                min:this.minTradeSats , 
-                                max:this.maxTradeSats , 
+                                min:this.minTradeSats ,
+                                max:this.maxTradeSats ,
                                 style: {textAlign:"center"}
                             }}
                             onChange={this.handleSatoshisChange}
                         />
                     </div>
                     <div style={{display: this.state.is_explicit ? 'none':''}}>
-                        <TextField 
+                        <TextField
                                 sx={{width:240}}
                                 error={this.state.badPremium}
                                 helperText={this.state.badPremium}
                                 label={t("Premium over Market (%)")}
-                                type="number" 
+                                type="number"
                                 inputProps={{
-                                    min: -100, 
-                                    max: 999, 
+                                    min: -100,
+                                    max: 999,
                                     style: {textAlign:"center"}
                                 }}
                                 onChange={this.handlePremiumChange}
@@ -409,16 +394,16 @@ class MakerPage extends Component {
         let d = new Date(date),
             hours = d.getHours(),
             minutes = d.getMinutes();
-        
+
         var total_secs = hours*60*60 + minutes * 60;
 
         this.setState({
             changedPublicExpiryTime: true,
-            publicExpiryTime: date, 
+            publicExpiryTime: date,
             publicDuration: total_secs,
             badDuration: false,
         });
-        
+
     }
 
     getMaxAmount = () => {
@@ -470,7 +455,7 @@ class MakerPage extends Component {
           height: 3,
         },
       }));
-    
+
     RangeThumbComponent(props) {
         const { children, ...other } = props;
         return (
@@ -497,7 +482,7 @@ class MakerPage extends Component {
                 <span style={{width: 40}}>{t("From")}</span>
                 <TextField
                     variant="standard"
-                    type="number" 
+                    type="number"
                     size="small"
                     value={this.state.minAmount}
                     onChange={this.handleMinAmountChange}
@@ -508,7 +493,7 @@ class MakerPage extends Component {
                 <TextField
                     variant="standard"
                     size="small"
-                    type="number" 
+                    type="number"
                     value={this.state.maxAmount}
                     error={this.maxAmountError()}
                     onChange={this.handleMaxAmountChange}
@@ -524,7 +509,7 @@ class MakerPage extends Component {
         const { t } = this.props;
         return(
             <Paper elevation={12} style={{ padding: 8, width:'280px', align:'center'}}>
-            
+
             <Grid container xs={12}  spacing={1}>
 
             <Grid item xs={12} align="center" spacing={1}>
@@ -653,7 +638,7 @@ class MakerPage extends Component {
                             <Tab label={t("Customize")} {...this.a11yProps(1)} />
                         </Tabs>
                     </Box>
-                            
+
                     <Grid item xs={12} align="center" spacing={1}>
                         <div style={{ display: this.state.showAdvanced == false ? '':'none'}}>
                             <this.StandardMakerOptions/>
@@ -680,10 +665,10 @@ class MakerPage extends Component {
 
             <Grid item xs={12} align="center">
                 {/* conditions to disable the make button */}
-                {(this.state.amount == null & (this.state.enableAmountRange == false || this.state.loadingLimits) || 
+                {(this.state.amount == null & (this.state.enableAmountRange == false || this.state.loadingLimits) ||
                     this.state.enableAmountRange & (this.minAmountError() || this.maxAmountError()) ||
-                    this.state.amount <= 0 & !this.state.enableAmountRange || 
-                    (this.state.is_explicit & (this.state.badSatoshis != null || this.state.satoshis == null)) || 
+                    this.state.amount <= 0 & !this.state.enableAmountRange ||
+                    (this.state.is_explicit & (this.state.badSatoshis != null || this.state.satoshis == null)) ||
                     (!this.state.is_explicit & this.state.badPremium != null))
                     ?
                     <Tooltip enterTouchDelay="0" title={t("You must fill the order correctly")}>
@@ -691,8 +676,8 @@ class MakerPage extends Component {
                     </Tooltip>
                     :
                     <Button color="primary" variant="contained" onClick={this.handleCreateOfferButtonPressed}>{t("Create Order")}</Button>
-                    } 
-                
+                    }
+
             </Grid>
             <Grid item xs={12} align="center">
                 {this.state.badRequest ?
@@ -702,21 +687,21 @@ class MakerPage extends Component {
                 : ""}
                 <Typography component="subtitle2" variant="subtitle2">
                     <div align='center'>
-                        {this.state.type==0 ? 
+                        {this.state.type==0 ?
                             t("Create a BTC buy order for ")
                         :
                             t("Create a BTC sell order for ")
-                        } 
-                        {this.state.enableAmountRange & this.state.minAmount != null? 
-                            this.state.minAmount+"-"+this.state.maxAmount 
-                        : 
-                            pn(this.state.amount)} 
+                        }
+                        {this.state.enableAmountRange & this.state.minAmount != null?
+                            this.state.minAmount+"-"+this.state.maxAmount
+                        :
+                            pn(this.state.amount)}
                         {" " + this.state.currencyCode}
-                        {this.state.is_explicit ? 
+                        {this.state.is_explicit ?
                             t(" of {{satoshis}} Satoshis",{satoshis: pn(this.state.satoshis)})
-                        : 
-                            (this.state.premium == 0 ? t(" at market price") : 
-                                (this.state.premium > 0 ? 
+                        :
+                            (this.state.premium == 0 ? t(" at market price") :
+                                (this.state.premium > 0 ?
                                     t(" at a {{premium}}% premium", {premium: this.state.premium})
                                 :
                                     t(" at a {{discount}}% discount", {discount: -this.state.premium}))

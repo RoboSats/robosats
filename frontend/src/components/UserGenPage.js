@@ -11,22 +11,7 @@ import ContentCopy from "@mui/icons-material/ContentCopy";
 import RoboSatsNoTextIcon from "./icons/RoboSatsNoTextIcon"
 import BoltIcon from '@mui/icons-material/Bolt';
 
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          // Does this cookie string begin with the name we want?
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
-          }
-      }
-  }
-  return cookieValue;
-}
-const csrftoken = getCookie('csrftoken');
+import { getCookie } from "../utils/cookies";
 
 class UserGenPage extends Component {
   constructor(props) {
@@ -59,7 +44,7 @@ class UserGenPage extends Component {
 
   // sort of cryptographically strong function to generate Base62 token client-side
   genBase62Token(length)
-  {   
+  {
       return window.btoa(Array.from(
         window.crypto.getRandomValues(
           new Uint8Array(length * 2)))
@@ -161,7 +146,7 @@ class UserGenPage extends Component {
             <div>
               <Grid item xs={12} align="center">
                 <Typography component="h5" variant="h5">
-                  <b>{this.state.nickname ? 
+                  <b>{this.state.nickname ?
                     <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap', height:'45px'}}>
                       <BoltIcon sx={{ color: "#fcba03", height: '33px',width: '33px'}}/><a>{this.state.nickname}</a><BoltIcon sx={{ color: "#fcba03", height: '33px',width: '33px'}}/>
                     </div>
