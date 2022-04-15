@@ -153,9 +153,7 @@ class Command(BaseCommand):
         queryset = queryset.union(queryset_retries)
 
         for lnpayment in queryset:
-            success, _ = follow_send_payment(
-                lnpayment
-            )  # Do follow_send_payment.delay() for further concurrency.
+            success, _ = follow_send_payment.delay(lnpayment.payment_hash)
 
             # If failed, reset mision control. (This won't scale well, just a temporary fix)
             if not success:

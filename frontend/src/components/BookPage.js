@@ -262,7 +262,7 @@ class BookPage extends Component {
                 {t("I want to")} 
               </FormHelperText>
               <Select
-                  sx={{width:130}}
+                  sx={{width:110}}
                   autoWidth={true}
                   label={t("Select Order Type")}
                   required="true" 
@@ -285,7 +285,7 @@ class BookPage extends Component {
               </FormHelperText>
               <Select
                   //autoWidth={true}
-                  sx={{width:130}}
+                  sx={{width:120}}
                   label={t("Select Payment Currency")}
                   required="true" 
                   value={this.props.currency} 

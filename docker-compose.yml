@@ -27,7 +27,7 @@ services:
     build: ./frontend
     container_name: npm-dev
     restart: always
-    command: npm run dev
+    command: npm run build
     volumes:
       - ./frontend:/usr/src/frontend
 
@@ -73,6 +73,7 @@ services:
       REDIS_URL: redis://localhost:6379
     volumes:
       - .:/usr/src/robosats
+      - /mnt/development/lnd:/lnd
     network_mode: service:tor
 
   tor:

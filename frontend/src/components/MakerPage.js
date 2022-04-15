@@ -315,7 +315,7 @@ class MakerPage extends Component {
                         error={this.state.badPaymentMethod}
                         helperText={this.state.badPaymentMethod ? t("Must be shorter than 65 characters"):""}
                         label={this.state.currency==1000 ? t("Swap Destination(s)") : t("Fiat Payment Method(s)")}
-                        listHeaderText={t("You can add any method")}
+                        listHeaderText={t("You can add new methods")}
                         addNewButtonText={t("Add New")}
                         />
                 </Tooltip>

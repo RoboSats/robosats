@@ -27,6 +27,8 @@ function pn(x) {
 }
 
 class TradeBox extends Component {
+  invoice_escrow_duration = 3;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -260,7 +262,7 @@ class TradeBox extends Component {
           <Typography color="green" component="subtitle1" variant="subtitle1" align="center">
             <div style={{display:'flex',alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}>
               <LockOpenIcon/>
-              {this.props.data.is_maker ? t("Your maker bond was unlock") : t("Your taker bond was unlocked")}
+              {this.props.data.is_maker ? t("Your maker bond was unlocked") : t("Your taker bond was unlocked")}
             </div>
           </Typography>
         </Grid>
@@ -285,7 +287,7 @@ class TradeBox extends Component {
             <QRCode value={this.props.data.escrow_invoice} size={305} style={{position:'relative', top:'3px'}}/>
           </Box>
           <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
-            <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.escrow_invoice)}} align="center"> <ContentCopy/>Copy to clipboard</Button>
+            <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.escrow_invoice)}} align="center"> <ContentCopy/>{t("Copy to clipboard")}</Button>
           </Tooltip>
         </Grid>
         <Grid item xs={12} align="center">
@@ -381,8 +383,8 @@ class TradeBox extends Component {
           <Divider/>
             <ListItem>
               <Typography component="body2" variant="body2" align="left">
-                <p>{t("Be patient while robots check the book. It might take some time. This box will ring 🔊 once a robot takes your order.")} </p>
-                <p>{t("Please note that if your premium is excessive or your currency or payment methods are not popular, your order might expire untaken. Your bond will return to you (no action needed).")}</p>
+                <p>{t("Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{invoice_escrow_duration}} hours to reply. If you do not reply, you risk losing your bond.", {invoice_escrow_duration: pn(this.invoice_escrow_duration)})} </p>
+                <p>{t("If the order expires untaken, your bond will return to you and no action needed.")}</p>
               </Typography>
             </ListItem>
             <Grid item xs={12} align="center">
@@ -535,7 +537,7 @@ class TradeBox extends Component {
           : null }
         <Grid item xs={12} align="center">
           <IconButton><QrCodeScannerIcon onClick={this.handleQRbutton}/></IconButton>
-          <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>Submit</Button>
+          <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>{t("Submit")}</Button>
         </Grid>
 
         {this.showBondIsLocked()}

@@ -157,12 +157,12 @@ class Chat extends Component {
                   />
                 </Grid>
                 <Grid item alignItems="stretch" style={{ display: "flex" }}>
-                  <Button disabled={!this.state.connected} type="submit" variant="contained" color="primary">{t("Send")} </Button>
+                  <Button sx={{'width':68}} disabled={!this.state.connected} type="submit" variant="contained" color="primary">{t("Send")} </Button>
                 </Grid>
               </Grid>
             </form>
             <FormHelperText>
-              {t("The chat has no memory: if you leave, messages are lost.")} <Link target="_blank" href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/sensitive-data-PGP-guide.md/"> {t("Learn easy PGP encryption.")}</Link>
+              {t("The chat has no memory: if you leave, messages are lost.")} <Link target="_blank" href={t("PGP_guide_url")}> {t("Learn easy PGP encryption.")}</Link>
             </FormHelperText>
       </Container>
     )

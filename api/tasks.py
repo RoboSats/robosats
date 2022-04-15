@@ -63,7 +63,7 @@ def users_cleansing():
     return results
 
 @shared_task(name="follow_send_payment")
-def follow_send_payment(lnpayment):
+def follow_send_payment(hash):
     """Sends sats to buyer, continuous update"""
 
     from decouple import config
@@ -73,6 +73,7 @@ def follow_send_payment(lnpayment):
     from api.lightning.node import LNNode, MACAROON
     from api.models import LNPayment, Order
 
+    lnpayment = LNPayment.objects.get(payment_hash=hash)
     fee_limit_sat = int(
         max(
             lnpayment.num_satoshis *
