@@ -264,7 +264,7 @@ class MakerPage extends Component {
             <Grid item xs={12} align="center" spacing={1}>
                 <div style={{position:'relative', left:'5px'}}>
                 <FormControl component="fieldset">
-                    <FormHelperText>
+                    <FormHelperText sx={{align:"center"}}>
                         {t("Buy or Sell Bitcoin?")}
                     </FormHelperText>
                     <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
@@ -504,7 +504,7 @@ class MakerPage extends Component {
                     error={this.minAmountError()}
                     sx={{width: this.state.minAmount.toString().length * 9, maxWidth: 40}}
                   />
-                <span style={{width: 20}}>{t("to")}</span>
+                <span style={{width: t("to").length*8, align:"center"}}>{t("to")}</span>
                 <TextField
                     variant="standard"
                     size="small"
@@ -514,7 +514,7 @@ class MakerPage extends Component {
                     onChange={this.handleMaxAmountChange}
                     sx={{width: this.state.maxAmount.toString().length * 9, maxWidth: 50}}
                   />
-                <span>{this.state.currencyCode}</span>
+                <span style={{width: this.state.currencyCode.length*9+4, align:"right"}}>{this.state.currencyCode}</span>
             </div>
             )
 

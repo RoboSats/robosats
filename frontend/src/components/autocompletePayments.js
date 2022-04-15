@@ -130,8 +130,7 @@ const StyledTag = styled(Tag)(
 const ListHeader = styled('span')(
     ({ theme }) => `
   color: ${theme.palette.mode === 'dark' ? '#90caf9' : '#1976d2'};
-  aling: center;
-  width: 141px;
+  align: left;
   line-height:10px;
   max-height: 10px;
   display: inline-block;
@@ -246,8 +245,8 @@ export default function AutocompletePayments(props) {
       </div>
       {groupedOptions.length > 0 ? (
         <Listbox {...getListboxProps()}>
-            <div style={{position:'fixed', minHeight:'20px',  marginLeft: '53px', marginTop: '-13px'}}>
-                <ListHeader><i>{props.listHeaderText}</i></ListHeader>
+            <div style={{position:'fixed', minHeight:'20px',  marginLeft: 120-props.listHeaderText.length*3, marginTop: '-13px'}}>
+                <ListHeader ><i>{props.listHeaderText+" "} </i> </ListHeader>
             </div>
           {groupedOptions.map((option, index) => (
             <li {...getOptionProps({ option, index })}>
