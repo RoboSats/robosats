@@ -306,6 +306,7 @@ class Logics:
                 order.taker = None
                 order.taker_bond = None
                 order.trade_escrow = None
+                order.payout = None
                 cls.publish_order(order)
                 send_message.delay(order.id,'order_published')
                 # Reward maker with part of the taker bond
@@ -661,6 +662,8 @@ class Logics:
             valid = cls.settle_bond(order.taker_bond)
             if valid:
                 order.taker = None
+                order.payout = None
+                order.trade_escrow = None
                 cls.publish_order(order)
                 send_message.delay(order.id,'order_published')
                 # Reward maker with part of the taker bond

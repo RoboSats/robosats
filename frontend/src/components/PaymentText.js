@@ -30,6 +30,7 @@ const someMethods = [
     {name: "DaviPlata",icon:'daviplata'},
     {name: "CoDi",icon:'codi'},
     {name: "TaiwanPay",icon:'taiwanpay'},
+    {name: "MaiCoin",icon:'maicoin'},
     {name: "MercadoPago",icon:'mercadopago'},
     {name: "Monero",icon:'monero'},
     {name: "USDT",icon:'usdt'},
