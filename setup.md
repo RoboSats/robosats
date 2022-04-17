@@ -23,13 +23,13 @@ Running the full stack is not easy, since RoboSats needs of many services. Howev
 
 6 - Pick a RoboSats backend to test the new frontend: e.g. "robosats.onion.moe", or "unsafe.testnet.robosats.com". You can also use the onion services also if you are using Brave or Tor Browser (untested!)
 
-7 - Open requestly extension and add a new redirect rule. Make  "{robosats-site}/static/frontend/main.js" redirect to "127.0.0.1:8080/main.js" and save the changes.
+7 - Open Requestly extension and add a new redirect rule. Make  "{robosats-site}/static/frontend/main.js" redirect to "127.0.0.1:8080/main.js" and save the changes.
 
 -------------------
 
-**You are ready to go!** Edit the frontend code in `/frontend/src/` to make the changes you want. Withing a few seconds, the `npm run dev` process will pack the code into the local `main.js`. Visit your selected {robosats-site} and you will see your new awesome frontend! :)
+**You are ready to go!** Edit the frontend code in `/frontend/src/` to make the changes you want. Within a few seconds, the `npm run dev` process will pack the code into the local `main.js`. Visit your selected {robosats-site} and you will see your new awesome frontend! :)
 
-Everytime you save changes to files in `/frontend/src` you will be able to see them in your browser after a few seconds using force refresh (Ctrl+Shift+R). If you need to edit CSS or other static files, simply add them to Requestly in the same way.
+Every time you save changes to files in `/frontend/src` you will be able to see them in your browser after a few seconds using force refresh (Ctrl+Shift+R). If you need to edit CSS or other static files, simply add them to Requestly in the same way.
 
 # Full Stack Development
 ## The Easy Way: Docker-compose (-dev containers running on testnet)
