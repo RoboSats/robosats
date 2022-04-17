@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { useAutocomplete } from '@mui/base/AutocompleteUnstyled';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -189,6 +190,7 @@ const Listbox = styled('ul')(
 );
 
 export default function AutocompletePayments(props) {
+  const { t, i18n } = useTranslation();
   const {
     getRootProps,
     getInputLabelProps,
@@ -238,7 +240,7 @@ export default function AutocompletePayments(props) {
         <Label {...getInputLabelProps()} error={props.error}>{props.label}</Label>
         <InputWrapper ref={setAnchorEl} error={props.error} className={focused ? 'focused' : ''}>
           {value.map((option, index) => (
-            <StyledTag label={option.name} icon={option.icon} {...getTagProps({ index })} />
+            <StyledTag label={t(option.name)} icon={option.icon} {...getTagProps({ index })} />
           ))}
           <input {...getInputProps()} value={val}/>
         </InputWrapper>
@@ -254,7 +256,7 @@ export default function AutocompletePayments(props) {
                   <div style={{position:'relative', right: '4px', top:'4px'}}>
                     <AddIcon style={{color : '#1976d2'}} sx={{width:18,height:18}} />
                   </div>
-                  {option.name}
+                  {t(option.name)}
               </Button>
               <div style={{position:'relative', top: '5px'}}><CheckIcon/></div>
             </li>

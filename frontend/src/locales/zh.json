@@ -65,6 +65,15 @@
     "Must be less than {{maxSats}": "Must be less than {{maxSats}}",
     "Must be more than {{minSats}}": "Must be more than {{minSats}}",
 
+    
+    "PAYMENT METHODS - autocompletePayments.js": "Payment method strings",
+    "not specified":"Not specified",
+    "Instant SEPA":"Instant SEPA",
+    "Amazon GiftCard":"Amazon GiftCard",
+    "Google Play Gift Code":"Google Play Gift Code",
+    "Cash F2F":"Cash F2F",
+    "On-Chain BTC":"On-Chain BTC",
+
 
     "BOOK PAGE - BookPage.js":"The Book Order page",
     "Seller":"Seller",

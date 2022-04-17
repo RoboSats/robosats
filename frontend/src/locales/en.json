@@ -65,6 +65,15 @@
     "Must be less than {{maxSats}": "Must be less than {{maxSats}}",
     "Must be more than {{minSats}}": "Must be more than {{minSats}}",
 
+    
+    "PAYMENT METHODS - autocompletePayments.js": "Payment method strings",
+    "not specified":"Not specified",
+    "Instant SEPA":"Instant SEPA",
+    "Amazon GiftCard":"Amazon GiftCard",
+    "Google Play Gift Code":"Google Play Gift Code",
+    "Cash F2F":"Cash F2F",
+    "On-Chain BTC":"On-Chain BTC",
+
 
     "BOOK PAGE - BookPage.js":"The Book Order page",
     "Seller":"Seller",
@@ -195,6 +204,7 @@
     "You asked for a collaborative cancellation":"You asked for a collaborative cancellation",
     "Invoice expired. You did not confirm publishing the order in time. Make a new order.":"Invoice expired. You did not confirm publishing the order in time. Make a new order.",
     "This order has been cancelled by the maker":"This order has been cancelled by the maker",
+    "Invoice expired. You did not confirm taking the order in time.":"Invoice expired. You did not confirm taking the order in time.",
     "Penalty lifted, good to go!":"Penalty lifted, good to go!",
     "You cannot take an order yet! Wait {{timeMin}}m {{timeSec}}s":"You cannot take an order yet! Wait {{timeMin}}m {{timeSec}}s",
     "Too low":"Too low",

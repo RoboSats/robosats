@@ -66,6 +66,15 @@
     "Must be more than {{minSats}}": "Debe ser más de {{minSats}}",
 
 
+    "PAYMENT METHODS - autocompletePayments.js": "Payment method strings",
+    "not specified":"Sin especificar",
+    "Instant SEPA":"SEPA Instantánea",
+    "Amazon GiftCard":"Amazon Tarjeta Regalo",
+    "Google Play Gift Code":"Google Play Tarjeta Regalo",
+    "Cash F2F":"Efectivo en persona",
+    "On-Chain BTC":"On-Chain BTC",
+
+
     "BOOK PAGE - BookPage.js":"The Book Order page",
     "Seller":"Vendedor",
     "Buyer":"Comprador",
@@ -286,7 +295,7 @@
     "Confirm": "Confirmar",
     "🎉Trade finished!🥳": "🎉¡Intercambio finalizado!🥳",
     "rate_robosats": "¿Qué opinas de 🤖<1>RoboSats</1>⚡?",
-    "Thank you! RoboSats loves you too ❤️": "¡Muchas gracias! RoboSats te quiere también ❤️",
+    "Thank you! RoboSats loves you too ❤️": "¡Muchas gracias! RoboSats también te ❤️",
     "RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!": "RoboSats mejora con más liquidez y usuarios. ¡Cuéntale a un amigo bitcoiner sobre RoboSats!",
     "Thank you for using Robosats!": "¡Gracias por usar RoboSats!",
     "let_us_know_hot_to_improve": "Dinos cómo podría mejorar la plataforma (<1>Telegram</1> / <3>Github</3>)",
@@ -297,7 +306,7 @@
     "Lightning Routing Failed": "Fallo en el enrutamiento de Lightning",
     "Your invoice has expired or more than 3 payment attempts have been made. Muun wallet is not recommended. ": "Tu factura ha expirado o se han hecho más de 3 intentos de pago. La cartera Muun no está recomendada. ",
     "Check the list of compatible wallets": "Mira la lista de carteras compatibles",
-    "RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.": "RoboSats intentará pagar tu factura 3 veces cada 5 minutos. Si sigue fallando, podras presentar una nueva factura. Comprueba si tienes suficiente liquidez entrante. Recuerda que los nodos de Lightning tienen que estar en línea para poder recibir pagos.",
+    "RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.": "RoboSats intentará pagar tu factura 3 veces cada 5 minutos. Si sigue fallando, podrás presentar una nueva factura. Comprueba si tienes suficiente liquidez entrante. Recuerda que los nodos de Lightning tienen que estar en línea para poder recibir pagos.",
     "Next attempt in": "Próximo intento en",
     "Do you want to open a dispute?": "¿Quieres abrir una disputa?",
     "The RoboSats staff will examine the statements and evidence provided. You need to build a complete case, as the staff cannot read the chat. It is best to provide a burner contact method with your statement. The satoshis in the trade escrow will be sent to the dispute winner, while the dispute loser will lose the bond.": "El equipo de RoboSats examinará las declaraciones y evidencias presentadas. Como el equipo no puede leer el chat, necesitas escribir una declaració completa y exhaustiva. Es mejor dar un método de contacto de usar y tirar con tu declaración. Los Sats del colateral serán enviados al ganador de la disputa, mientras que el perdedor perderá la fianza.",

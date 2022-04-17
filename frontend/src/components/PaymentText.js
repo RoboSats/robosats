@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { withTranslation, Trans} from "react-i18next";
 import PaymentIcon from './PaymentIcons'
 import {Tooltip} from "@mui/material"
 
@@ -46,13 +47,14 @@ const someMethods = [
     {name: "WBTC",icon:'wbtc'},
   ];
 
-export default class PaymentText extends Component {
+class PaymentText extends Component {
     constructor(props) {
       super(props);
     }
     
 
     parseText(){
+        const { t } = this.props;
         var rows = [];
         var custom_methods = this.props.text;
         // Adds icons for each PaymentMethod that matches
@@ -60,7 +62,7 @@ export default class PaymentText extends Component {
             if(this.props.text.includes(method.name)){
                 custom_methods = custom_methods.replace(method.name,'')
                 rows.push(
-                    <Tooltip placement="top" enterTouchDelay="0" title={method.name} >
+                    <Tooltip placement="top" enterTouchDelay="0" title={t(method.name)}>
                         <div style={{display: 'inline-block', width: this.props.size+2, height: this.props.size}}>
                             <PaymentIcon width={this.props.size} height={this.props.size} icon={method.icon}/>
                         </div>
@@ -94,4 +96,6 @@ export default class PaymentText extends Component {
         </div>
       )
     }
-  };
+};
+
+export default withTranslation()(PaymentText);

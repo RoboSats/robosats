@@ -577,10 +577,10 @@ bottomBarDesktop =()=>{
     )
 }
     handleChangeLang=(e)=>{
-        const { i18n} = this.props;
-        console.log(i18n)
+        const { i18n } = this.props;
         i18n.changeLanguage(e.target.value)
     }
+
     LangSelect = () => {
         const { i18n} = this.props;
         return(
