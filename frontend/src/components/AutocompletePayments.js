@@ -5,8 +5,9 @@ import { useAutocomplete } from '@mui/base/AutocompleteUnstyled';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/material/styles';
-import PaymentIcon from './PaymentIcons';
+import PaymentIcon from './payment-methods/Icons'
 import {Button} from "@mui/material";
+import { paymentMethods, swapDestinations } from "./payment-methods/Methods";
 
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 import AddIcon from '@mui/icons-material/Add';
@@ -23,7 +24,7 @@ const Root = styled('div')(
 const Label = styled('label')(
     ({ theme , error}) => `
   color: ${theme.palette.mode === 'dark' ? (error? '#f44336': '#cfcfcf') :  (error? '#dd0000':'#717171')};
-  aling: center;
+  align: center;
   padding: 0 0 4px;
   line-height: 1.5; f44336
   display: block;
@@ -206,7 +207,7 @@ export default function AutocompletePayments(props) {
     sx: {width:'200px', align:'left'},
     id: 'payment-methods',
     multiple: true,
-    options: props.optionsType=="fiat" ? somePaymentMethods : someSwapDestinations,
+    options: props.optionsType=="fiat" ? paymentMethods : swapDestinations,
     getOptionLabel: (option) => option.name,
     onInputChange: (e) => setVal(e ? (e.target.value ? e.target.value : "") : ""),
     onChange: (event, value) => props.onAutocompleteChange(optionsToString(value)),
@@ -225,7 +226,7 @@ export default function AutocompletePayments(props) {
   }
 
   function handleAddNew(inputProps){
-    somePaymentMethods.push({name: inputProps.value, icon:'custom'})
+    paymentMethods.push({name: inputProps.value, icon:'custom'})
     var a = value.push({name: inputProps.value, icon:'custom'});
     setVal(() => "");
 
@@ -278,51 +279,3 @@ export default function AutocompletePayments(props) {
     </Root>
   );
 }
-
-// Most used Payment Methods RoboSats (First Month)
-var somePaymentMethods = [
-  {name: "Revolut",icon:'revolut'},
-  {name: "CashApp",icon:'cashapp'},
-  {name: "Zelle",icon:'zelle'},
-  {name: "Strike",icon:'strike'},
-  {name: "Rebellion",icon:'rebellion'},
-  {name: "Instant SEPA", icon:'sepa'},
-  {name: "Interac e-Transfer",icon:'interac'},
-  {name: "Wise",icon:'wise'},
-  {name: "Venmo",icon:'venmo'},
-  {name: "Faster Payments",icon:'faster'},
-  {name: "Paypal",icon:'paypal'},
-  {name: "LINE Pay",icon:'linepay'},
-  {name: "PromptPay",icon:'promptpay'},
-  {name: "Bizum",icon:'bizum'},
-  {name: "N26",icon:'n26'},
-  {name: "Amazon GiftCard",icon:'amazon'},
-  {name: "Bancolombia",icon:'bancolombia'},
-  {name: "SPEI",icon:'spei'},
-  {name: "PIX",icon:'pix'},
-  {name: "HalCash",icon:'halcash'},
-  {name: "Vivid",icon:'vivid'},
-  {name: "Google Play Gift Code",icon:'googleplay'},
-  {name: "Nequi",icon:'nequi'},
-  {name: "ShakePay",icon:'shakepay'},
-  {name: "DaviPlata",icon:'daviplata'},
-  {name: "CoDi",icon:'codi'},
-  {name: "TaiwanPay",icon:'taiwanpay'},
-  {name: "MaiCoin",icon:'maicoin'},
-  {name: "MercadoPago",icon:'mercadopago'},
-  {name: "Monero",icon:'monero'},
-  {name: "USDT",icon:'usdt'},
-  {name: "Airtel Money",icon:'airtel'},
-  {name: "MTN Money",icon:'mtn'},
-  {name: "M-Pesa",icon:'mpesa'},
-  {name: "MoMo",icon:'momo'},
-  {name: "Tigo Pesa",icon:'tigopesa'},
-  {name: "Cash F2F",icon:'cash'},
-];
-
-var someSwapDestinations = [
-  {name: "On-Chain BTC",icon:'onchain'},
-  {name: "RBTC",icon:'rbtc'},
-  {name: "LBTC",icon:'lbtc'},
-  {name: "WBTC",icon:'wbtc'},
-];
