@@ -154,17 +154,7 @@ class Command(BaseCommand):
         queryset = queryset.union(queryset_retries)
 
         for lnpayment in queryset:
-            success, _ = follow_send_payment(lnpayment.payment_hash)
-
-            # If failed, reset mission control. (This won't scale well, just a temporary fix)
-            if not success:
-                LNNode.resetmc()
-
-            # If already 3 attempts and last failed. Make it expire (ask for a new invoice) an reset attempts.
-            if not success and lnpayment.routing_attempts > 2:
-                lnpayment.status = LNPayment.Status.EXPIRE
-                lnpayment.routing_attempts = 0
-                lnpayment.save()
+            follow_send_payment(lnpayment.payment_hash)
 
     def update_order_status(self, lnpayment):
         """Background process following LND hold invoices
