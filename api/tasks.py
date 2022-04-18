@@ -95,11 +95,13 @@ def follow_send_payment(hash):
                                                         ]):
             if response.status == 0:  # Status 0 'UNKNOWN'
                 # Not sure when this status happens
-                pass
+                lnpayment.in_flight = False
+                lnpayment.save()
 
             if response.status == 1:  # Status 1 'IN_FLIGHT'
                 print("IN_FLIGHT")
                 lnpayment.status = LNPayment.Status.FLIGHT
+                lnpayment.in_flight = True
                 lnpayment.save()
                 order.status = Order.Status.PAY
                 order.save()
@@ -109,6 +111,7 @@ def follow_send_payment(hash):
                 lnpayment.status = LNPayment.Status.FAILRO
                 lnpayment.last_routing_time = timezone.now()
                 lnpayment.routing_attempts += 1
+                lnpayment.in_flight = False
                 lnpayment.save()
                 order.status = Order.Status.FAI
                 order.expires_at = timezone.now() + timedelta(
@@ -116,7 +119,8 @@ def follow_send_payment(hash):
                 order.save()
                 context = {
                     "routing_failed":
-                    LNNode.payment_failure_context[response.failure_reason]
+                    LNNode.payment_failure_context[response.failure_reason],
+                    "IN_FLIGHT":False,
                 }
                 print(context)
                 return False, context
@@ -130,13 +134,14 @@ def follow_send_payment(hash):
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.SUC))
                 order.save()
-                return True, None
+                return True, {"IN_FLIGHT":False}
 
     except Exception as e:
         if "invoice expired" in str(e):
             print("INVOICE EXPIRED")
             lnpayment.status = LNPayment.Status.EXPIRE
             lnpayment.last_routing_time = timezone.now()
+            lnpayment.in_flight = False
             lnpayment.save()
             order.status = Order.Status.FAI
             order.expires_at = timezone.now() + timedelta(

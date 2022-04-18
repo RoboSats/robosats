@@ -125,7 +125,7 @@ class LNPayment(models.Model):
     last_routing_time = models.DateTimeField(null=True,
                                              default=None,
                                              blank=True)
-
+    in_flight = models.BooleanField(default=False, null=False, blank=False)
     # involved parties
     sender = models.ForeignKey(User,
                                related_name="sender",

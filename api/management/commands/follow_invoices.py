@@ -139,13 +139,14 @@ class Command(BaseCommand):
         queryset = LNPayment.objects.filter(
             type=LNPayment.Types.NORM,
             status=LNPayment.Status.FLIGHT,
+            in_flight=False,
             routing_attempts=0,
         )
 
         queryset_retries = LNPayment.objects.filter(
             type=LNPayment.Types.NORM,
             status__in=[LNPayment.Status.VALIDI, LNPayment.Status.FAILRO],
-            routing_attempts__lt=5,
+            in_flight=False,
             last_routing_time__lt=(
                 timezone.now() - timedelta(minutes=int(config("RETRY_TIME")))),
         )
@@ -153,9 +154,9 @@ class Command(BaseCommand):
         queryset = queryset.union(queryset_retries)
 
         for lnpayment in queryset:
-            success, _ = follow_send_payment.delay(lnpayment.payment_hash)
+            success, _ = follow_send_payment(lnpayment.payment_hash)
 
-            # If failed, reset mision control. (This won't scale well, just a temporary fix)
+            # If failed, reset mission control. (This won't scale well, just a temporary fix)
             if not success:
                 LNNode.resetmc()
 
