@@ -18,13 +18,7 @@ import BalanceIcon from '@mui/icons-material/Balance';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 
 import { getCookie } from "../utils/cookies";
-
-// pretty numbers
-function pn(x) {
-  var parts = x.toString().split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return parts.join(".");
-}
+import { pn } from "../utils/prettyNumbers";
 
 class TradeBox extends Component {
   invoice_escrow_duration = 3;

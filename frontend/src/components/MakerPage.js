@@ -15,16 +15,7 @@ import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import currencyDict from '../../static/assets/currencies.json';
 
 import { getCookie } from "../utils/cookies";
-
-// pretty numbers
-function pn(x) {
-    if(x==null){
-        return(null)
-    }
-    var parts = x.toString().split(".");
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    return parts.join(".");
-  }
+import { pn } from "../utils/prettyNumbers";
 
 class MakerPage extends Component {
   defaultCurrency = 1;
