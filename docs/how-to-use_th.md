@@ -6,16 +6,42 @@ RoboSats จะเน้นที่ความสะดวกในการ�
 1) การใช้งานในฐานะผู้ซื้อเหรียญและเป็นฝ่ายคนขอซื้อ 
 2) การใช้งานในฐานะผู้ขายเหรียญและเป็นฝ่ายร้านเสนอขายเนื่องจากว่าแพล้ตฟอร์มได้อธิบายทุกอย่างด้วยตัวมันเองอยู่แล้วเราจะเน้นที่จุดสำคัญหรือเทคนิคเล็กๆที่จะทำให้คุณเทรดได้อย่างปลอดภัย
 
-RoboSats is focused on user friendliness. The platform is totally self-explanatory, so one could say a tutorial is really not necessary. 
+<!---RoboSats is focused on user friendliness. The platform is totally self-explanatory, so one could say a tutorial is really not necessary. 
 However, it really helps to feel comfortable when trading if you already know what are the next steps to come so nothing surprises you. 
 After all, bitcoin p2p exchanges are very intimidating! Fear no more, RoboSats keeps it really simple and you simply cannot do things wrong! :D
 
 This document has two complete walkthroughs: 1) as a buyer that takes an order and; 2) as a seller that makes an order. 
 Given that the platform explains to the user exactly everything in the menus, 
-we are going to dedicate some lines to some tricks and give tips for safe trading in between.
+we are going to dedicate some lines to some tricks and give tips for safe trading in between.--->
 
-## User Generation Home Page
-RoboSats help users preserve their privacy by using newly generated avatars in every trade. Avatars are super easy to generate!
+## หน้าโฮมเพจและการสร้างผู้ใช้งาน
+RoboSats จะช่วยรักษาความเป็นส่วนตัวโดยสร้างอวตารใหม่ให้แก่ผู้ใช้งานทุกครั้งที่ทำการซื้อขาย อวตารนั้นสามารถสร้างได้อย่างง่ายดายมากๆ!
+<div align="center">
+<img src="images/how-to-use/homepage-1.png"  width="370" />
+</div>
+
+
+ทันทีที่คุณเริ่มใช้งาน RoboSats คุณจะได้รับหุ่นอวตารของคุณ หุ่นอวตารจะถูกสร้างขึ้นจากชุดตัวอักษร Token ที่อยู่ด้านใต้ ซึ่งคุณจะต้องใช้ Token นี้ในการเรียกหุ่นอวตารตัวเดิมกลับมาใช้งานอีกครั้งในอนาคต ดังนั้นคุณควรบันทึก Token ดังกล่าวและ **เก็บรักษาชุดตัวอักษร Token ไว้ให้ดี**
+
+Token นั้นถูกสร้างขึ้นในบราวเซอร์ของคุณ อย่างไรก็ตาม ถ้าหากคุณไม่เชื่อมั่นในการสุ่มของอุปกรณ์ของคุณ คุณสามารถระบุ Entropy Token ของคุณเองก็ได้ *หมายเหตุ Token ที่มี Entropy ต่ำเกินไปหรือมีความเดาสุ่มต่ำเกินไปจะไม่สามารถนำมาใช้งานได้
+
+ยกตัวอย่าง หากเราไม่ชอบชื่อ "HomelessCash"! ให้เราคลิ้กที่ไอคอนรูปลูกเต๋าเพื่อทำการสุ่มชุดคำ Token ใหม่ จากนั้นให้กดที่ "Generate avatar" เพื่อสร้างหุ่นอวตารใหม่จาก Token ใหม่ที่เราเพิ่งระบุลงไป
+
+<div align="center">
+<img src="images/how-to-use/homepage-2.png"  width="370" />
+</div>
+
+ผมได้หุ่นอวตารใหม่ชื่อ "JoyfulPain" ซึ่งหากเราชอบชื่อนี้ให้เราทำการเซฟ Token ไว้
+ชุด Token จะถูกเก็บไว้ในบราวเซอร์เราต่อไปอีกซักพัก คุณสามารถทำการคัดลอก (copy) Token ได้ในภายหลัง โดยกดที่รูปโปรไฟล์หุ่นอวตารเราบริเวณมุมซ้ายล่าง
+อย่างไรก็ตาม หากเราทำการรีเฟรชหรือปิดบราวเซอร์ บราวเซอร์จะลืม Token ของคุณทันที!
+
+<div align="center">
+<img src="images/how-to-use/homepage-3.png"  width="370" />
+</div>
+
+การเก็บรักษา Token โดยการจดลงในกระดาษจะทำได้ลำบาก คุณสามารถเก็บรักษามันโดยการคัดลอกไปวางไว้ที่อื่นเช่นโปรแกรม notepad หรือ note สำหรับการจดบันทึก **หากบราวเซอร์ของคุณมีการปิดไปเอง หรือแบตมือถือของคุณหมด หรือเน็ตคุณหลุดระหว่างการซื้อขาย คุณจะต้องใช้ Token ในการกลับเข้ามาใช้งานหุ่นอวตารเดิมและดำเนินการซื้อขายแลกเปลี่ยนต่อ
+
+<!---RoboSats help users preserve their privacy by using newly generated avatars in every trade. Avatars are super easy to generate!
 <div align="center">
 <img src="images/how-to-use/homepage-1.png"  width="370" />
 </div>
@@ -37,14 +63,19 @@ The token will live in your browser memory for some time, so you still might hav
 <img src="images/how-to-use/homepage-3.png"  width="370" />
 </div>
 
-It is best to write it down in paper... but that's a lot of work!! Most often it is good enough to simply copy it to clipboard and save it somewhere else. **If your browser crashes, your phone battery dies, or you lose connection during trading, you will need the token to log in again and continue with the trade!**
+It is best to write it down in paper... but that's a lot of work!! Most often it is good enough to simply copy it to clipboard and save it somewhere else. **If your browser crashes, your phone battery dies, or you lose connection during trading, you will need the token to log in again and continue with the trade!**--->
 
-### Recovering a robot
-To recover a backed-up token, simply replace the token in the textbox and tap "Generate Robot". The site will greet you with "We found your Robot avatar. Welcome back!"
+### การเรียกหุ่นอวตารเดิมกลับมาใช้งาน
 
-## Trade
+หากคุณต้องการเรียกหุ่นอวตารเดิมกลับมาใช้งาน ให้คุณวาง Token ของคุณแทนที่ไปในช่อง จากนั้นกดที่ "Generate Robot" จากนั้นแพลทฟอร์มจะแจ้งว่า "We found your Robot avatar. Welcome back!" ซึ่งบ่งชี้ว่าเราเรียกหุ่นอวตารเดิมกลับมาใช้งานได้สำเร็จ
 
-In RoboSats you can make new orders or take orders made by others. To be an _order maker_ simply click on "Create Order" in the homepage. To take an order, click on "View Book" so you can explore the orders created by other robots.
+<!--To recover a backed-up token, simply replace the token in the textbox and tap "Generate Robot". The site will greet you with "We found your Robot avatar. Welcome back!"-->
+
+## การซื้อขาย
+
+ใน RoboSats คุณสามารถเป็นได้ทั้งผู้สร้างรายการซื้อขาย (Maker) และผู้รับรายการซื้อขาย (Taker) ในการเป็น _(ผู้สร้างรายการซื้อขาย) order maker_ ให้กดที่ "Create Order" ในหน้าโฮมเพจ หากต้องการรับรายการซื้อขายที่ผู้ใช้งานท่านอื่นสร้างไว้ ให้กดที่ "View Book" เพื่อสำรวจรายการซื้อขายที่สร้างโดยหุ่นอวตารของคนอื่น
+
+<!--In RoboSats you can make new orders or take orders made by others. To be an _order maker_ simply click on "Create Order" in the homepage. To take an order, click on "View Book" so you can explore the orders created by other robots.-->
 
 ### Exploring the Order Book
 
