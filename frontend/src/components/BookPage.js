@@ -10,6 +10,9 @@ import Image from 'material-ui-image'
 import getFlags from './getFlags'
 import PaymentText from './PaymentText'
 
+// Icons
+import RefreshIcon from '@mui/icons-material/Refresh';
+
 class BookPage extends Component {
   constructor(props) {
     super(props);
@@ -252,9 +255,10 @@ class BookPage extends Component {
     const { t } = this.props;
       return (
         <Grid className='orderBook' container spacing={1} sx={{minWidth:400}}>
-          {/* <Grid item xs={12} align="center">
-            <Typography component="h4" variant="h4">ORDER BOOK</Typography>
-          </Grid> */}
+
+          <IconButton sx={{position:'fixed',right:'0px', top:'30px'}} onClick={()=>this.setState({loading: true}) & this.getOrderDetails(this.props.type, this.props.currency)}>
+            <RefreshIcon/>
+          </IconButton>
 
           <Grid item xs={6} align="right">
             <FormControl align="center">
