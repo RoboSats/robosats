@@ -403,7 +403,7 @@ class TradeBox extends Component {
               <ListItemIcon>
                 <PercentIcon/>
               </ListItemIcon>
-                <ListItemText primary={t("Premium rank") +" "+this.props.data.premium_percentile*100+"%"}
+                <ListItemText primary={t("Premium rank") +" "+Number(this.props.data.premium_percentile*100).toPrecision(2)+"%"}
                   secondary={t("Among public {{currencyCode}} orders (higher is cheaper)",{ currencyCode: this.props.data.currencyCode })}/>
               </ListItem>
             <Divider/>
