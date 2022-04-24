@@ -129,12 +129,12 @@ class LNPayment(models.Model):
     # involved parties
     sender = models.ForeignKey(User,
                                related_name="sender",
-                               on_delete=models.CASCADE,
+                               on_delete=models.SET_NULL,
                                null=True,
                                default=None)
     receiver = models.ForeignKey(User,
                                  related_name="receiver",
-                                 on_delete=models.CASCADE,
+                                 on_delete=models.SET_NULL,
                                  null=True,
                                  default=None)
 

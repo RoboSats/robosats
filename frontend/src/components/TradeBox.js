@@ -18,13 +18,7 @@ import BalanceIcon from '@mui/icons-material/Balance';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 
 import { getCookie } from "../utils/cookies";
-
-// pretty numbers
-function pn(x) {
-  var parts = x.toString().split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return parts.join(".");
-}
+import { pn } from "../utils/prettyNumbers";
 
 class TradeBox extends Component {
   invoice_escrow_duration = 3;
@@ -157,7 +151,7 @@ class TradeBox extends Component {
 
   ConfirmFiatReceivedDialog =() =>{
     const { t } = this.props;
-  return(
+    return(
       <Dialog
       open={this.state.openConfirmFiatReceived}
       onClose={this.handleClickCloseConfirmFiatReceived}
@@ -409,7 +403,7 @@ class TradeBox extends Component {
               <ListItemIcon>
                 <PercentIcon/>
               </ListItemIcon>
-                <ListItemText primary={t("Premium rank") +" "+this.props.data.premium_percentile*100+"%"}
+                <ListItemText primary={t("Premium rank") +" "+Number(this.props.data.premium_percentile*100).toPrecision(2)+"%"}
                   secondary={t("Among public {{currencyCode}} orders (higher is cheaper)",{ currencyCode: this.props.data.currencyCode })}/>
               </ListItem>
             <Divider/>

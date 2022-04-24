@@ -13,17 +13,19 @@ Running the full stack is not easy, since RoboSats needs of many services. Howev
 
 1 - `cd robosats/frontend`
 
-2 - `npm run dev` (leave it running)
+2 - `npm install`
 
-3 - On another terminal `npm install -g http-server`
+3 - `npm run dev` (leave it running)
 
-4 - Then run `http-server "robosats/frontend/static/frontend/`
+4 - On another terminal `npm install -g http-server`
 
-5 - Install [Requestly](https://requestly.io/) extension in your browser, it's a lightweight proxy. We want to use it so our browser grabs our local `main.js` instead of the remote. There are many alternatives to Requestly (be aware that Requestly might not respect your privacy. Didn't research it).
+5 - Then run `http-server "robosats/frontend/static/frontend/`
 
-6 - Pick a RoboSats backend to test the new frontend: e.g. "robosats.onion.moe", or "unsafe.testnet.robosats.com". You can also use the onion services also if you are using Brave or Tor Browser (untested!)
+6 - Install [Requestly](https://requestly.io/) extension in your browser, it's a lightweight proxy. We want to use it so our browser grabs our local `main.js` instead of the remote. There are many alternatives to Requestly (be aware that Requestly might not respect your privacy. Didn't research it).
 
-7 - Open Requestly extension and add a new redirect rule. Make  "{robosats-site}/static/frontend/main.js" redirect to "127.0.0.1:8080/main.js" and save the changes.
+7 - Pick a RoboSats backend to test the new frontend: e.g. "robosats.onion.moe", or "unsafe.testnet.robosats.com". You can also use the onion services also if you are using Brave or Tor Browser (untested!)
+
+8 - Open Requestly extension and add a new redirect rule. Make  "{robosats-site}/static/frontend/main.js" redirect to "127.0.0.1:8080/main.js" and save the changes.
 
 -------------------
 
