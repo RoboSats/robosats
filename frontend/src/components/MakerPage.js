@@ -10,10 +10,12 @@ import getFlags from './getFlags';
 import AutocompletePayments from './AutocompletePayments';
 import currencyDict from '../../static/assets/currencies.json';
 
+//icons
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import OutboxIcon from '@mui/icons-material/Outbox';
 import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
