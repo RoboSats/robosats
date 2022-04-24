@@ -93,13 +93,19 @@ def follow_send_payment(hash):
                                                             ("macaroon",
                                                              MACAROON.hex())
                                                         ]):
+                                                        
+            lnpayment.in_flight = True
+            lnpayment.save()
+                
             if response.status == 0:  # Status 0 'UNKNOWN'
                 # Not sure when this status happens
-                pass
+                lnpayment.in_flight = False
+                lnpayment.save()
 
             if response.status == 1:  # Status 1 'IN_FLIGHT'
                 print("IN_FLIGHT")
                 lnpayment.status = LNPayment.Status.FLIGHT
+                lnpayment.in_flight = True
                 lnpayment.save()
                 order.status = Order.Status.PAY
                 order.save()
@@ -109,16 +115,25 @@ def follow_send_payment(hash):
                 lnpayment.status = LNPayment.Status.FAILRO
                 lnpayment.last_routing_time = timezone.now()
                 lnpayment.routing_attempts += 1
+                lnpayment.in_flight = False
+                if lnpayment.routing_attempts > 2:
+                    lnpayment.status = LNPayment.Status.EXPIRE
+                    lnpayment.routing_attempts = 0
                 lnpayment.save()
+
                 order.status = Order.Status.FAI
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.FAI))
                 order.save()
                 context = {
                     "routing_failed":
-                    LNNode.payment_failure_context[response.failure_reason]
+                    LNNode.payment_failure_context[response.failure_reason],
+                    "IN_FLIGHT":False,
                 }
                 print(context)
+
+                # If failed, reset mission control. (This won't scale well, just a temporary fix)
+                LNNode.resetmc()
                 return False, context
 
             if response.status == 2:  # Status 2 'SUCCEEDED'
@@ -137,6 +152,7 @@ def follow_send_payment(hash):
             print("INVOICE EXPIRED")
             lnpayment.status = LNPayment.Status.EXPIRE
             lnpayment.last_routing_time = timezone.now()
+            lnpayment.in_flight = False
             lnpayment.save()
             order.status = Order.Status.FAI
             order.expires_at = timezone.now() + timedelta(

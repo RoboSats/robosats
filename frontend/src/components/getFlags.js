@@ -66,8 +66,10 @@ export default function getFlags(code){
     if(code == 'THB') flag = <Flags.TH {...props}/>;
     if(code == 'TTD') flag = <Flags.TT {...props}/>;
     if(code == 'VND') flag = <Flags.VN {...props}/>;
-    if(code == 'XOF') flag = <Flags.SE {...props}/>;
+    if(code == 'XOF') flag = <Flags.BJ {...props}/>;
     if(code == 'TWD') flag = <Flags.TW {...props}/>;
+    if(code == 'TZS') flag = <Flags.TZ {...props}/>;
+    if(code == 'XAF') flag = <Flags.CM {...props}/>;
     if(code == 'ANY') flag = <EarthIcon {...props}/>;
     if(code == 'XAU') flag = <GoldIcon {...props}/>;
     if(code == 'BTC') flag = <SwapCallsIcon color="primary"/>;

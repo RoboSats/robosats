@@ -384,7 +384,7 @@ class TradeBox extends Component {
             <ListItem>
               <Typography component="body2" variant="body2" align="left">
                 <p>{t("Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{invoice_escrow_duration}} hours to reply. If you do not reply, you risk losing your bond.", {invoice_escrow_duration: pn(this.invoice_escrow_duration)})} </p>
-                <p>{t("If the order expires untaken, your bond will return to you and no action needed.")}</p>
+                <p>{t("If the order expires untaken, your bond will return to you (no action needed).")}</p>
               </Typography>
             </ListItem>
             <Grid item xs={12} align="center">

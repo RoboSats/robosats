@@ -7,7 +7,7 @@ import { Link as LinkRouter } from 'react-router-dom'
 import { styled } from '@mui/material/styles';
 
 import getFlags from './getFlags';
-import AutocompletePayments from './autocompletePayments';
+import AutocompletePayments from './AutocompletePayments';
 
 
 import LockIcon from '@mui/icons-material/Lock';

@@ -653,5 +653,5 @@ api/lightning/googleapis*
 frontend/static/admin*
 frontend/static/rest_framework*
 frontend/static/import_export*
-frontend/src/components/payment-method-images/code*
-frontend/src/components/payment-method-images/webp*
+frontend/src/components/payment-methods/code*
+frontend/src/components/payment-methods/webp*

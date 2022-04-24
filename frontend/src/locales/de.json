@@ -65,6 +65,15 @@
     "Must be less than {{maxSats}": "Muss kleiner sein als {{maxSats}}",
     "Must be more than {{minSats}}": "Muss mehr sein als {{minSats}}",
 
+    
+    "PAYMENT METHODS - autocompletePayments.js": "Payment method strings",
+    "not specified":"Not specified",
+    "Instant SEPA":"Instant SEPA",
+    "Amazon GiftCard":"Amazon GiftCard",
+    "Google Play Gift Code":"Google Play Gift Code",
+    "Cash F2F":"Cash F2F",
+    "On-Chain BTC":"On-Chain BTC",
+
 
     "BOOK PAGE - BookPage.js":"The Book Order page",
     "Seller":"Verkäufer",
@@ -190,6 +199,7 @@
     "Amount of Satoshis":"Anzahl Satoshis",
     "Premium over market price":"Prämie über dem Marktpreis",
     "Order ID":"Order ID",
+
     "Expires in":"Läuft ab in",
     "{{nickname}} is asking for a collaborative cancel":"{{nickname}} bittet um gemeinsamen Abbruch",
     "You asked for a collaborative cancellation":"Du hast um einen gemeinsamen Abbruch gebeten",
