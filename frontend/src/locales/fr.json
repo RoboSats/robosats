@@ -7,17 +7,17 @@
 
 
     "USER GENERATION PAGE - UserGenPage.js": "Landing Page and User Generation",
-    "Simple and Private LN P2P Exchange": "Simple and Private LN P2P Exchange",
-    "This is your trading avatar":"This is your trading avatar",
-    "Store your token safely":"Store your token safely",
-    "A robot avatar was found, welcome back!":"A robot avatar was found, welcome back!",
-    "Copied!":"Copied!",
-    "Generate a new token":"Generate a new token",
-    "Generate Robot":"Generate Robot",
-    "You must enter a new token first":"You must enter a new token first",
-    "Make Order":"Make Order",
+    "Simple and Private LN P2P Exchange": "Echange LN P2P simple et privé",
+    "This is your trading avatar":"Ceci est votre avatar d'échange",
+    "Store your token safely":"Stockez votre jeton en sécurité",
+    "A robot avatar was found, welcome back!":"Un avatar de robot a été trouvé, bienvenu",
+    "Copied!":"Copié!",
+    "Generate a new token":"Générer un nouveau jeton",
+    "Generate Robot":"Générer un robot",
+    "You must enter a new token first":"Vous devez d'abord entrer un nouveau jeton",
+    "Make Order":"Passer commande",
     "Info":"Info",
-    "View Book":"View Book",
+    "View Book":"Voir livre",
 
 
     "MAKER PAGE - MakerPage.js": "This is the page where users can create new orders",
