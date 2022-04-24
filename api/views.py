@@ -31,6 +31,7 @@ from decouple import config
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
 PUBLIC_DURATION = 60*60*int(config("DEFAULT_PUBLIC_ORDER_DURATION"))-1
+ESCROW_DURATION = 60 * int(config("INVOICE_AND_ESCROW_DURATION"))
 BOND_SIZE = int(config("DEFAULT_BOND_SIZE"))
 
 avatar_path = Path(settings.AVATAR_ROOT)
@@ -82,11 +83,13 @@ class MakerView(CreateAPIView):
         satoshis = serializer.data.get("satoshis")
         is_explicit = serializer.data.get("is_explicit")
         public_duration = serializer.data.get("public_duration")
+        escrow_duration = serializer.data.get("escrow_duration")
         bond_size = serializer.data.get("bond_size")
         bondless_taker = serializer.data.get("bondless_taker")
 
         # Optional params
         if public_duration == None: public_duration = PUBLIC_DURATION
+        if escrow_duration == None: escrow_duration = ESCROW_DURATION
         if bond_size == None: bond_size = BOND_SIZE
         if bondless_taker == None: bondless_taker = False
         if has_range == None: has_range = False
@@ -132,6 +135,7 @@ class MakerView(CreateAPIView):
                 seconds=EXP_MAKER_BOND_INVOICE),
             maker=request.user,
             public_duration=public_duration,
+            escrow_duration=escrow_duration,
             bond_size=bond_size,
             bondless_taker=bondless_taker,
         )
@@ -389,10 +393,6 @@ class OrderView(viewsets.ViewSet):
         That is: take, confim, cancel, dispute, update_invoice or rate.
         """
         order_id = request.GET.get(self.lookup_url_kwarg)
-
-        import sys
-        sys.stdout.write('AAAAAA')
-        print('BBBBB1')
 
         serializer = UpdateOrderSerializer(data=request.data)
         if not serializer.is_valid():

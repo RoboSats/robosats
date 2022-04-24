@@ -15,7 +15,6 @@ import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import OutboxIcon from '@mui/icons-material/Outbox';
 import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
-import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -45,6 +44,7 @@ class MakerPage extends Component {
         showAdvanced: false,
         allowBondless: false,
         publicExpiryTime: new Date(0, 0, 0, 23, 59),
+        escrowExpiryTime: new Date(0, 0, 0, 3, 0),
         enableAmountRange: false,
         minAmount: null,
         bondSize: 1,
@@ -219,6 +219,7 @@ class MakerPage extends Component {
                 premium: this.state.is_explicit ? null: this.state.premium,
                 satoshis: this.state.is_explicit ? this.state.satoshis: null,
                 public_duration: this.state.publicDuration,
+                escrow_duration: this.state.escrowDuration,
                 bond_size: this.state.bondSize,
                 bondless_taker: this.state.allowBondless,
             }),
@@ -411,12 +412,22 @@ class MakerPage extends Component {
         var total_secs = hours*60*60 + minutes * 60;
 
         this.setState({
-            changedPublicExpiryTime: true,
             publicExpiryTime: date,
             publicDuration: total_secs,
-            badDuration: false,
         });
+    }
 
+    handleChangeEscrowDuration = (date) => {
+        let d = new Date(date),
+            hours = d.getHours(),
+            minutes = d.getMinutes();
+
+        var total_secs = hours*60*60 + minutes * 60;
+
+        this.setState({
+            escrowExpiryTime: date,
+            escrowDuration: total_secs,
+        });
     }
 
     getMaxAmount = () => {
@@ -589,6 +600,36 @@ class MakerPage extends Component {
                         />
                     </LocalizationProvider>
                 </Grid>
+                
+                <Grid item xs={12} align="center" spacing={1}>
+                    <LocalizationProvider dateAdapter={DateFnsUtils}>
+                        <TimePicker
+                            sx={{width:210, align:"center"}}
+                            ampm={false}
+                            openTo="hours"
+                            views={['hours', 'minutes']}
+                            inputFormat="HH:mm"
+                            mask="__:__"
+                            components={{
+                                OpenPickerIcon: HourglassTopIcon
+                              }}
+                            open={this.state.openTimePicker}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <HourglassTopIcon />
+                                    </InputAdornment>)
+                                }}
+                            renderInput={(props) => <TextField {...props} />}
+                            label={t("Escrow/Invoice Step Duration (HH:mm)")}
+                            value={this.state.escrowExpiryTime}
+                            onChange={this.handleChangeEscrowDuration}
+                            minTime={new Date(0, 0, 0, 0, 30)}
+                            maxTime={new Date(0, 0, 0, 7, 59)}
+                        />
+                    </LocalizationProvider>
+                </Grid>
+
 
                 <Grid item xs={12} align="center" spacing={1}>
                     <FormControl align="center">
