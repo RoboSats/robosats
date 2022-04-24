@@ -584,6 +584,7 @@ bottomBarDesktop =()=>{
                     <MenuItem value={'en'}>EN</MenuItem>
                     <MenuItem value={'es'}>ES</MenuItem>
                     <MenuItem disabled={true} value={'de'}>DE</MenuItem>
+                    <MenuItem value={'pl'}>PL</MenuItem>
                     <MenuItem disabled={true} value={'ru'}>RU</MenuItem>
                     <MenuItem disabled={true} value={'zh'}>ZH</MenuItem>
                 </Select>
