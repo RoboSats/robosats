@@ -8,14 +8,16 @@ import { styled } from '@mui/material/styles';
 
 import getFlags from './getFlags';
 import AutocompletePayments from './AutocompletePayments';
+import currencyDict from '../../static/assets/currencies.json';
 
-
+import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
+import OutboxIcon from '@mui/icons-material/Outbox';
 import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
-import currencyDict from '../../static/assets/currencies.json';
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
+
 
 class MakerPage extends Component {
   defaultCurrency = 1;
@@ -243,18 +245,36 @@ class MakerPage extends Component {
                     <FormHelperText sx={{align:"center"}}>
                         {t("Buy or Sell Bitcoin?")}
                     </FormHelperText>
+                    {/* <RadioGroup row>
+                <div style={{position:"relative", left:"20px"}}>
+                  <FormControlLabel
+                      control={<Checkbox defaultChecked={true} icon={<MoveToInboxIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<MoveToInboxIcon sx={{width:"30px",height:"30px"}} color="primary"/>}/>}
+                      label={<div style={{position:"relative",top:"-13px"}}><Typography style={{color:"#666666"}} variant="caption">{t("Buy")}</Typography></div>}
+                      labelPlacement="bottom"
+                      checked={this.state.buyChecked}
+                      onChange={this.handleClickBuy}
+                  />
+                </div>
+                  <FormControlLabel
+                      control={<Checkbox defaultChecked={true} icon={<OutboxIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<OutboxIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
+                      label={<div style={{position:"relative",top:"-13px"}}><Typography style={{color:"#666666"}} variant="caption">{t("Sell")}</Typography></div>}
+                      labelPlacement="bottom"
+                      checked={this.state.sellChecked}
+                      onChange={this.handleClickSell}
+                  /> */}
+
                     <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
                         <FormControlLabel
                             value="0"
-                            control={<Radio color="primary"/>}
+                            control={<Radio icon={<MoveToInboxIcon sx={{width:"26px",height:"26px"}} color="inherit"/>} checkedIcon={<MoveToInboxIcon sx={{width:"26px",height:"26px"}} color="primary"/>}/>}
                             label={t("Buy")}
-                            labelPlacement="Top"
+                            labelPlacement="end"
                         />
                         <FormControlLabel
                             value="1"
-                            control={<Radio color="secondary"/>}
+                            control={<Radio icon={<OutboxIcon sx={{width:"26px",height:"26px"}} color="inherit"/>} checkedIcon={<OutboxIcon sx={{width:"26px",height:"26px"}} color="secondary"/>}/>}
                             label={t("Sell")}
-                            labelPlacement="Top"
+                            labelPlacement="end"
                         />
                     </RadioGroup>
                 </FormControl>
@@ -325,7 +345,7 @@ class MakerPage extends Component {
                         value="relative"
                         control={<Radio color="primary"/>}
                         label={t("Relative")}
-                        labelPlacement="Top"
+                        labelPlacement="end"
                         onClick={this.handleClickRelative}
                         />
                     </Tooltip>
@@ -335,7 +355,7 @@ class MakerPage extends Component {
                         value="explicit"
                         control={<Radio color="secondary"/>}
                         label={t("Explicit")}
-                        labelPlacement="Top"
+                        labelPlacement="end"
                         onClick={this.handleClickExplicit}
                         />
                     </Tooltip>

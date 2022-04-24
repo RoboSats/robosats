@@ -78,8 +78,8 @@
 
 
     "BOOK PAGE - BookPage.js":"The Book Order page",
-    "Seller":"Vendedor",
-    "Buyer":"Comprador",
+    "Seller":"Vende",
+    "Buyer":"Compra",
     "I want to":"Quiero",
     "Select Order Type":"Selecciona tipo de orden",
     "ANY_type": "TODO",
@@ -97,11 +97,12 @@
     "Pay": "Pagar",
     "Price":"Precio",
     "Premium":"Prima",
-    "You are SELLING BTC for {{currencyCode}}": "Estás VENDIENDO bitcoin por {{currencyCode}}",
-    "You are BUYING BTC for {{currencyCode}}": "Estás COMPRANDO bitcoin por {{currencyCode}}",
+    "You are SELLING BTC for {{currencyCode}}": "VENDER bitcoin por {{currencyCode}}",
+    "You are BUYING BTC for {{currencyCode}}": "COMPRAR bitcoin por {{currencyCode}}",
     "You are looking at all": "Estás viendo todo",
     "No orders found to sell BTC for {{currencyCode}}": "No hay órdenes para vender bitcoin por {{currencyCode}}",
     "No orders found to buy BTC for {{currencyCode}}": "No hay órdenes para comprar bitcoin por {{currencyCode}}",
+    "Filter has no results":"No hay resultados para este filtro",
     "Be the first one to create an order":"Sé el primero en crear una orden",
 
 

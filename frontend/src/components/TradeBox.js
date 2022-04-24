@@ -151,7 +151,7 @@ class TradeBox extends Component {
 
   ConfirmFiatReceivedDialog =() =>{
     const { t } = this.props;
-  return(
+    return(
       <Dialog
       open={this.state.openConfirmFiatReceived}
       onClose={this.handleClickCloseConfirmFiatReceived}

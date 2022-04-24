@@ -100,6 +100,7 @@
     "You are looking at all":"You are looking at all",
     "No orders found to sell BTC for {{currencyCode}}":"No orders found to sell BTC for {{currencyCode}}",
     "No orders found to buy BTC for {{currencyCode}}":"No orders found to buy BTC for {{currencyCode}}",
+    "Filter has no results":"Filter has no results",
     "Be the first one to create an order":"Be the first one to create an order",
 
 
