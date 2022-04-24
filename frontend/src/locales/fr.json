@@ -67,12 +67,12 @@
 
     
     "PAYMENT METHODS - autocompletePayments.js": "Payment method strings",
-    "not specified":"Not specified",
+    "not specified":"Non spécifié",
     "Instant SEPA":"Instant SEPA",
-    "Amazon GiftCard":"Amazon GiftCard",
-    "Google Play Gift Code":"Google Play Gift Code",
-    "Cash F2F":"Cash F2F",
-    "On-Chain BTC":"On-Chain BTC",
+    "Amazon GiftCard":"Carte cadeau Amazon",
+    "Google Play Gift Code":"Code cadeau Google Play",
+    "Cash F2F":"En espèces face-à-face",
+    "On-Chain BTC":"BTC on-Chain",
 
 
     "BOOK PAGE - BookPage.js":"The Book Order page",
