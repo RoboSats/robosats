@@ -399,9 +399,11 @@ class MakerPage extends Component {
                             />
                     </div>
                 <Grid item>
+                <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title={this.state.is_explicit? t("Your order fixed exchange rate"): t("Your order's current exchange rate. Rate will move with the market.")}>
                     <Typography variant="caption" color="text.secondary">
-                        {(this.state.is_explicit ? t("Fixed price:"): t("Current price:"))+" "+pn(this.priceNow())+" "+this.state.currencyCode+"/BTC"}
+                        {(this.state.is_explicit ? t("Order rate:"): t("Order current rate:"))+" "+pn(this.priceNow())+" "+this.state.currencyCode+"/BTC"}
                     </Typography>
+                </Tooltip>
                 </Grid>
                 </Grid>
             </Paper>
@@ -423,6 +425,7 @@ class MakerPage extends Component {
 
     handleChangeEscrowDuration = (date) => {
         let d = new Date(date),
+            hours = d.getHours(),
             minutes = d.getMinutes();
 
         var total_secs = hours*60*60 + minutes * 60;
@@ -631,7 +634,7 @@ class MakerPage extends Component {
                                                 </InputAdornment>)
                                             }}
                                         renderInput={(props) => <TextField {...props} />}
-                                        label={t("Escrow/Invoice Time-Out (HH:mm)")}
+                                        label={t("Escrow Deposit Time-Out (HH:mm)")}
                                         value={this.state.escrowExpiryTime}
                                         onChange={this.handleChangeEscrowDuration}
                                         minTime={new Date(0, 0, 0, 1, 0)}

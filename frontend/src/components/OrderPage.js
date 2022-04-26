@@ -17,6 +17,7 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import ArticleIcon from '@mui/icons-material/Article';
 import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
+import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -131,9 +132,8 @@ class OrderPage extends Component {
   timerRenderer(seconds){
     var hours = parseInt(seconds/3600);
     var minutes = parseInt((seconds-hours*3600)/60);
-
     return(
-      <span>{hours}h {zeroPad(minutes)}m </span>
+      <span>{hours>0 ? hours+"h":""} {zeroPad(minutes)}m </span>
     )
   }
 
@@ -577,18 +577,24 @@ class OrderPage extends Component {
 
             <ListItem >
             <ListItemIcon>
-                    <NumbersIcon/>
-                  </ListItemIcon>
+                <NumbersIcon/>
+              </ListItemIcon>
             <Grid container xs={12}>
-                <Grid item xs={5}>
-                  
+                <Grid item xs={4.5}>
                   <ListItemText primary={this.orderId} secondary={t("Order ID")}/>
                 </Grid>
-                <Grid item xs={7}>
-                  <ListItemText
-                    primary={this.timerRenderer(this.state.escrow_duration)}
-                    secondary={t("Deposit timer")}>
-                  </ListItemText>
+                <Grid item xs={7.5}>
+                  <Grid container>
+                  <Grid item xs={2}>
+                    <ListItemIcon sx={{position:"relative",top:"12px",left:"-5px"}}><HourglassTopIcon/></ListItemIcon>
+                    </Grid>
+                    <Grid item xs={10}>
+                    <ListItemText
+                      primary={this.timerRenderer(this.state.escrow_duration)}
+                      secondary={t("Deposit timer")}>
+                    </ListItemText>
+                    </Grid>
+                  </Grid>
                 </Grid>
               </Grid>
             </ListItem>
