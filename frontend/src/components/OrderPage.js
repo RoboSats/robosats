@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { withTranslation, Trans} from "react-i18next";
+import { withTranslation} from "react-i18next";
 import {TextField,Chip, Tooltip, Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import MediaQuery from 'react-responsive'
@@ -127,6 +127,15 @@ class OrderPage extends Component {
     );
   }
   };
+
+  timerRenderer(seconds){
+    var hours = parseInt(seconds/3600);
+    var minutes = parseInt((seconds-hours*3600)/60);
+
+    return(
+      <span>{hours}h {zeroPad(minutes)}m </span>
+    )
+  }
 
   // Countdown Renderer callback with condition
   countdownPenaltyRenderer = ({ minutes, seconds, completed }) => {
@@ -566,12 +575,24 @@ class OrderPage extends Component {
             </ListItem>
             <Divider />
 
-            <ListItem>
-              <ListItemIcon>
-                <NumbersIcon/>
-              </ListItemIcon>
-              <ListItemText primary={this.orderId} secondary={t("Order ID")}/>
+            <ListItem >
+            <ListItemIcon>
+                    <NumbersIcon/>
+                  </ListItemIcon>
+            <Grid container xs={12}>
+                <Grid item xs={5}>
+                  
+                  <ListItemText primary={this.orderId} secondary={t("Order ID")}/>
+                </Grid>
+                <Grid item xs={7}>
+                  <ListItemText
+                    primary={this.timerRenderer(this.state.escrow_duration)}
+                    secondary={t("Deposit timer")}>
+                  </ListItemText>
+                </Grid>
+              </Grid>
             </ListItem>
+
             <Divider />
             <ListItem>
               <ListItemIcon>

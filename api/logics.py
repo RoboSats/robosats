@@ -230,7 +230,6 @@ class Logics:
         # Do not change order status if an order in any with
         # any of these status is sent to expire here
         does_not_expire = [
-            Order.Status.DEL,
             Order.Status.UCA,
             Order.Status.EXP,
             Order.Status.TLD,
@@ -590,7 +589,6 @@ class Logics:
         # Do not change order status if an is in order
         # any of these status
         do_not_cancel = [
-            Order.Status.DEL,
             Order.Status.UCA,
             Order.Status.EXP,
             Order.Status.TLD,
