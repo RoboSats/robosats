@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { withTranslation, Trans} from "react-i18next";
-import { InputAdornment, LinearProgress, Link, Checkbox, Slider, Box, Tab, Tabs, SliderThumb, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
+import { withTranslation } from "react-i18next";
+import { InputAdornment, LinearProgress, Accordion, AccordionDetails, AccordionSummary, Checkbox, Slider, Box, Tab, Tabs, SliderThumb, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
 import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link as LinkRouter } from 'react-router-dom'
@@ -15,6 +15,7 @@ import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import OutboxIcon from '@mui/icons-material/Outbox';
 import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -573,61 +574,72 @@ class MakerPage extends Component {
                 </Grid>
 
                 <Grid item xs={12} align="center" spacing={1}>
-                    <LocalizationProvider dateAdapter={DateFnsUtils}>
-                        <TimePicker
-                            sx={{width:210, align:"center"}}
-                            ampm={false}
-                            openTo="hours"
-                            views={['hours', 'minutes']}
-                            inputFormat="HH:mm"
-                            mask="__:__"
-                            components={{
-                                OpenPickerIcon: HourglassTopIcon
-                              }}
-                            open={this.state.openTimePicker}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <HourglassTopIcon />
-                                    </InputAdornment>)
-                                }}
-                            renderInput={(props) => <TextField {...props} />}
-                            label={t("Public Duration (HH:mm)")}
-                            value={this.state.publicExpiryTime}
-                            onChange={this.handleChangePublicDuration}
-                            minTime={new Date(0, 0, 0, 0, 10)}
-                            maxTime={new Date(0, 0, 0, 23, 59)}
-                        />
-                    </LocalizationProvider>
-                </Grid>
-                
-                <Grid item xs={12} align="center" spacing={1}>
-                    <LocalizationProvider dateAdapter={DateFnsUtils}>
-                        <TimePicker
-                            sx={{width:210, align:"center"}}
-                            ampm={false}
-                            openTo="hours"
-                            views={['hours', 'minutes']}
-                            inputFormat="HH:mm"
-                            mask="__:__"
-                            components={{
-                                OpenPickerIcon: HourglassTopIcon
-                              }}
-                            open={this.state.openTimePicker}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <HourglassTopIcon />
-                                    </InputAdornment>)
-                                }}
-                            renderInput={(props) => <TextField {...props} />}
-                            label={t("Escrow/Invoice Step Duration (HH:mm)")}
-                            value={this.state.escrowExpiryTime}
-                            onChange={this.handleChangeEscrowDuration}
-                            minTime={new Date(0, 0, 0, 0, 30)}
-                            maxTime={new Date(0, 0, 0, 7, 59)}
-                        />
-                    </LocalizationProvider>
+                    <Accordion elevation={0} sx={{width:'280px', position:'relative', left:'-12px'}}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon color="primary"/>}>
+                            <Typography sx={{flexGrow: 1, textAlign: "center"}} color="text.secondary">{t("Expiry Timers")}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                        <Grid container xs={12}  spacing={1}>
+                            <Grid item xs={12} align="center" spacing={1}>
+                                <LocalizationProvider dateAdapter={DateFnsUtils}>
+                                    <TimePicker
+                                        sx={{width:210, align:"center"}}
+                                        ampm={false}
+                                        openTo="hours"
+                                        views={['hours', 'minutes']}
+                                        inputFormat="HH:mm"
+                                        mask="__:__"
+                                        components={{
+                                            OpenPickerIcon: HourglassTopIcon
+                                        }}
+                                        open={this.state.openTimePicker}
+                                        InputProps={{
+                                            endAdornment: (
+                                                <InputAdornment position="end">
+                                                    <HourglassTopIcon />
+                                                </InputAdornment>)
+                                            }}
+                                        renderInput={(props) => <TextField {...props} />}
+                                        label={t("Public Duration (HH:mm)")}
+                                        value={this.state.publicExpiryTime}
+                                        onChange={this.handleChangePublicDuration}
+                                        minTime={new Date(0, 0, 0, 0, 10)}
+                                        maxTime={new Date(0, 0, 0, 23, 59)}
+                                    />
+                                </LocalizationProvider>
+                            </Grid>
+                            
+                            <Grid item xs={12} align="center" spacing={1}>
+                                <LocalizationProvider dateAdapter={DateFnsUtils}>
+                                    <TimePicker
+                                        sx={{width:210, align:"center"}}
+                                        ampm={false}
+                                        openTo="hours"
+                                        views={['hours', 'minutes']}
+                                        inputFormat="HH:mm"
+                                        mask="__:__"
+                                        components={{
+                                            OpenPickerIcon: HourglassTopIcon
+                                        }}
+                                        open={this.state.openTimePicker}
+                                        InputProps={{
+                                            endAdornment: (
+                                                <InputAdornment position="end">
+                                                    <HourglassTopIcon />
+                                                </InputAdornment>)
+                                            }}
+                                        renderInput={(props) => <TextField {...props} />}
+                                        label={t("Escrow/Invoice Step Duration (HH:mm)")}
+                                        value={this.state.escrowExpiryTime}
+                                        onChange={this.handleChangeEscrowDuration}
+                                        minTime={new Date(0, 0, 0, 1, 0)}
+                                        maxTime={new Date(0, 0, 0, 8, 0)}
+                                    />
+                                </LocalizationProvider>
+                            </Grid>
+                            </Grid>
+                        </AccordionDetails>
+                    </Accordion>
                 </Grid>
 
 
