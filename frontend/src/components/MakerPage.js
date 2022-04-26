@@ -52,8 +52,9 @@ class MakerPage extends Component {
         limits: null,
         minAmount: null,
         maxAmount: null,
-        loadingLimits: false,
+        loadingLimits: true,
     }
+    this.getLimits()
   }
 
   getLimits() {
@@ -239,6 +240,20 @@ class MakerPage extends Component {
         this.setState({bondSize: event.target.value === '' ? 1 : Number(event.target.value)});
     };
 
+    priceNow = () => {
+        if (this.state.loadingLimits){
+            return "...";
+        }
+        else if (this.state.is_explicit & this.state.amount > 0 & this.state.satoshis > 0){
+            return parseFloat(Number(this.state.amount / (this.state.satoshis/100000000)).toPrecision(5));
+        }
+        else if (!this.state.is_explicit){
+            var price = this.state.limits[this.state.currency]['price'];
+            return parseFloat(Number(price*(1+this.state.premium/100)).toPrecision(5));
+        }
+        return "...";
+    }
+
     StandardMakerOptions = () => {
         const { t } = this.props;
         return(
@@ -246,26 +261,9 @@ class MakerPage extends Component {
             <Grid item xs={12} align="center" spacing={1}>
                 <div style={{position:'relative', left:'5px'}}>
                 <FormControl component="fieldset">
-                    <FormHelperText sx={{align:"center"}}>
+                    <FormHelperText sx={{textAlign:"center"}}>
                         {t("Buy or Sell Bitcoin?")}
                     </FormHelperText>
-                    {/* <RadioGroup row>
-                <div style={{position:"relative", left:"20px"}}>
-                  <FormControlLabel
-                      control={<Checkbox defaultChecked={true} icon={<MoveToInboxIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<MoveToInboxIcon sx={{width:"30px",height:"30px"}} color="primary"/>}/>}
-                      label={<div style={{position:"relative",top:"-13px"}}><Typography style={{color:"#666666"}} variant="caption">{t("Buy")}</Typography></div>}
-                      labelPlacement="bottom"
-                      checked={this.state.buyChecked}
-                      onChange={this.handleClickBuy}
-                  />
-                </div>
-                  <FormControlLabel
-                      control={<Checkbox defaultChecked={true} icon={<OutboxIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<OutboxIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
-                      label={<div style={{position:"relative",top:"-13px"}}><Typography style={{color:"#666666"}} variant="caption">{t("Sell")}</Typography></div>}
-                      labelPlacement="bottom"
-                      checked={this.state.sellChecked}
-                      onChange={this.handleClickSell}
-                  /> */}
 
                     <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
                         <FormControlLabel
@@ -400,6 +398,11 @@ class MakerPage extends Component {
                                 onChange={this.handlePremiumChange}
                             />
                     </div>
+                <Grid item>
+                    <Typography variant="caption" color="text.secondary">
+                        {(this.state.is_explicit ? t("Fixed price:"): t("Current price:"))+" "+pn(this.priceNow())+" "+this.state.currencyCode+"/BTC"}
+                    </Typography>
+                </Grid>
                 </Grid>
             </Paper>
         )
@@ -420,7 +423,6 @@ class MakerPage extends Component {
 
     handleChangeEscrowDuration = (date) => {
         let d = new Date(date),
-            hours = d.getHours(),
             minutes = d.getMinutes();
 
         var total_secs = hours*60*60 + minutes * 60;
@@ -542,7 +544,7 @@ class MakerPage extends Component {
                         <FormHelperText>
                             <Tooltip enterTouchDelay="0" placement="top" align="center" title={t("Let the taker chose an amount within the range")}>
                             <div align="center" style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                                <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked, is_explicit: false}) & (e.target.checked ? this.getLimits() : null)}/>
+                                <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked, is_explicit: false})}/>
                                 {this.state.enableAmountRange & this.state.minAmount != null? <this.rangeText/> : t("Enable Amount Range")}
                             </div>
                             </Tooltip>
@@ -629,7 +631,7 @@ class MakerPage extends Component {
                                                 </InputAdornment>)
                                             }}
                                         renderInput={(props) => <TextField {...props} />}
-                                        label={t("Escrow/Invoice Step Duration (HH:mm)")}
+                                        label={t("Escrow/Invoice Time-Out (HH:mm)")}
                                         value={this.state.escrowExpiryTime}
                                         onChange={this.handleChangeEscrowDuration}
                                         minTime={new Date(0, 0, 0, 1, 0)}

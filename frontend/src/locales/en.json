@@ -42,11 +42,15 @@
     "Explicit":"Explicit",
     "Set a fix amount of satoshis":"Set a fix amount of satoshis",
     "Satoshis":"Satoshis",
+    "Fixed price:":"Fixed price:",
+    "Current price:":"Current price:",
     "Let the taker chose an amount within the range":"Let the taker choose an amount within the range",
     "Enable Amount Range":"Enable Amount Range",
     "From": "From",
     "to":"to",
+    "Expiry Timers":"Expiry Timers",
     "Public Duration (HH:mm)":"Public Duration (HH:mm)",
+    "Escrow/Invoice Time-Out (HH:mm)":"Escrow/Invoice Time-Out (HH:mm)",
     "Set the skin-in-the-game, increase for higher safety assurance":"Set the skin-in-the-game, increase for higher safety assurance",
     "Fidelity Bond Size":"Fidelity Bond Size",
     "Allow bondless takers":"Allow bondless takers",
@@ -64,7 +68,6 @@
     "Must be more than {{min}}%":"Must be more than {{min}}%",
     "Must be less than {{maxSats}": "Must be less than {{maxSats}}",
     "Must be more than {{minSats}}": "Must be more than {{minSats}}",
-
     
     "PAYMENT METHODS - autocompletePayments.js": "Payment method strings",
     "not specified":"Not specified",

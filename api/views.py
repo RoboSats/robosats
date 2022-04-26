@@ -824,6 +824,7 @@ class LimitView(ListAPIView):
             exchange_rate = float(currency.exchange_rate)
             payload[currency.currency] = {
                 'code': code,
+                'price': exchange_rate,
                 'min_amount': min_trade * exchange_rate,
                 'max_amount': max_trade * exchange_rate,
                 'max_bondless_amount': max_bondless_trade * exchange_rate,
