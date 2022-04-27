@@ -247,6 +247,7 @@ class Logics:
 
         elif order.status == Order.Status.WFB:
             order.status = Order.Status.EXP
+            order.expiry_reason = Order.ExpiryReasons.NMBOND
             cls.cancel_bond(order.maker_bond)
             order.save()
             return True
@@ -254,6 +255,7 @@ class Logics:
         elif order.status in [Order.Status.PUB, Order.Status.PAU]:
             cls.return_bond(order.maker_bond)
             order.status = Order.Status.EXP
+            order.expiry_reason = Order.ExpiryReasons.NTAKEN
             order.save()
             send_message.delay(order.id,'order_expired_untaken')
             return True
@@ -274,6 +276,7 @@ class Logics:
             cls.settle_bond(order.taker_bond)
             cls.cancel_escrow(order)
             order.status = Order.Status.EXP
+            order.expiry_reason = Order.ExpiryReasons.NESINV
             order.save()
             return True
 
@@ -289,6 +292,7 @@ class Logics:
                 except:
                     pass
                 order.status = Order.Status.EXP
+                order.expiry_reason = Order.ExpiryReasons.NESCRO
                 order.save()
                 # Reward taker with part of the maker bond
                 cls.add_slashed_rewards(order.maker_bond, order.taker.profile)
@@ -324,6 +328,7 @@ class Logics:
                 cls.return_bond(order.taker_bond)
                 cls.return_escrow(order)
                 order.status = Order.Status.EXP
+                order.expiry_reason = Order.ExpiryReasons.NINVOI
                 order.save()
                 # Reward taker with part of the maker bond
                 cls.add_slashed_rewards(order.maker_bond, order.taker.profile)

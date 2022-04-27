@@ -773,8 +773,38 @@ handleRatingRobosatsChange=(e)=>{
     )
   }
 
-  showOrderExpired(){
+  handleRenewOrderButtonPressed=()=>{
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+        body: JSON.stringify({
+            type: this.props.data.type,
+            currency: this.props.data.currency,
+            amount: this.props.data.has_range ? null : this.props.data.amount,
+            has_range: this.props.data.has_range,
+            min_amount: this.props.data.min_amount,
+            max_amount: this.props.data.max_amount,
+            payment_method: this.props.data.payment_method,
+            is_explicit: this.props.data.is_explicit,
+            premium: this.props.data.is_explicit ? null: this.props.data.premium,
+            satoshis: this.props.data.is_explicit ? this.props.data.satoshis: null,
+            public_duration:  this.props.data.public_duration,
+            escrow_duration: this.props.data.escrow_duration,
+            bond_size: this.props.data.bond_size,
+            bondless_taker: this.props.data.bondless_taker,
+        }),
+    };
+    fetch("/api/make/",requestOptions)
+    .then((response) => response.json())
+    .then((data) => (this.setState({badRequest:data.bad_request})
+         & (data.id ? this.props.push('/order/' + data.id) :"")
+         & window.location.reload()));
+  }
+
+  showOrderExpired=()=>{
     const { t } = this.props;
+    var show_renew = this.props.data.is_maker;
+
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
@@ -782,6 +812,18 @@ handleRatingRobosatsChange=(e)=>{
             <b>{t("The order has expired")}</b>
           </Typography>
         </Grid>
+
+        <Grid item xs={12} align="center">
+          <Typography component="body2" variant="body2">
+            {t(this.props.data.expiry_message)}
+          </Typography>
+        </Grid>
+        {show_renew ?
+          <Grid item xs={12} align="center">
+            <Button variant='contained' color='primary' onClick={this.handleRenewOrderButtonPressed}>{t("Renew Order")}</Button>
+          </Grid>
+        : null}
+
       </Grid>
     )
   }

@@ -36,7 +36,7 @@ class OrderPage extends Component {
         showContractBox: 1,
     };
     this.orderId = this.props.match.params.orderId;
-    this.getOrderDetails();
+    this.getOrderDetails(this.props.match.params.orderId);
 
     // Refresh delays according to Order status
     this.statusToDelay = {
@@ -84,9 +84,9 @@ class OrderPage extends Component {
     this.setState(completeStateVars);
   }
 
-  getOrderDetails() {
+  getOrderDetails =(id)=> {
     this.setState(null)
-    fetch('/api/order' + '?order_id=' + this.orderId)
+    fetch('/api/order' + '?order_id=' + id)
       .then((response) => response.json())
       .then((data) => this.completeSetState(data));
   }
@@ -104,7 +104,7 @@ class OrderPage extends Component {
     clearInterval(this.interval);
   }
   tick = () => {
-    this.getOrderDetails();
+    this.getOrderDetails(this.orderId);
   }
 
   // Countdown Renderer callback with condition

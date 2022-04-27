@@ -376,14 +376,22 @@ class OrderView(viewsets.ViewSet):
               and order.payout.receiver == request.user
               ):  # might not be the buyer if after a dispute where winner wins
             data["retries"] = order.payout.routing_attempts
-            data[
-                "next_retry_time"] = order.payout.last_routing_time + timedelta(
+            data["next_retry_time"] = order.payout.last_routing_time + timedelta(
                     minutes=RETRY_TIME)
 
             if order.payout.status == LNPayment.Status.EXPIRE:
                 data["invoice_expired"] = True
                 # Add invoice amount once again if invoice was expired.
                 data["invoice_amount"] = Logics.payout_amount(order,request.user)[1]["invoice_amount"]
+
+        # 10) If status is 'Expired', add expiry reason.
+        elif (order.status == Order.Status.EXP):
+            data["expiry_reason"] = order.expiry_reason
+            data["expiry_message"] = Order.ExpiryReasons(order.expiry_reason).label
+            # other pieces of info useful to renew an identical order
+            data["public_duration"] = order.public_duration
+            data["bond_size"] = order.bond_size
+            data["bondless_taker"] = order.bondless_taker
 
         return Response(data, status.HTTP_200_OK)
 

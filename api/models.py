@@ -181,10 +181,11 @@ class Order(models.Model):
         TLD = 18, "Taker lost dispute"
 
     class ExpiryReasons(models.IntegerChoices):
-        UNTAK = 0, "Expired not taken"
-        MBNLO = 1, "Maker bond not locked"
-        ESNLO = 2, "Escrow not locked"
-        INNLO = 3, "Invoice not submitted"
+        NTAKEN = 0, "Expired not taken"
+        NMBOND = 1, "Maker bond not locked"
+        NESCRO = 2, "Escrow not locked"
+        NINVOI = 3, "Invoice not submitted"
+        NESINV = 4, "Neither escrow locked or invoice submitted"
 
     # order info
     status = models.PositiveSmallIntegerField(choices=Status.choices,
@@ -243,7 +244,7 @@ class Order(models.Model):
         blank=False,
     )
 
-    # optionally makers can choose the escro lock / invoice submission step length (seconds)
+    # optionally makers can choose the escrow lock / invoice submission step length (seconds)
     escrow_duration = models.PositiveBigIntegerField(
         default=60 * int(config("INVOICE_AND_ESCROW_DURATION"))-1,
         null=False,

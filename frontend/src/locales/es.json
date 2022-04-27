@@ -334,6 +334,11 @@
     "You can claim the dispute resolution amount (escrow and fidelity bond) from your profile rewards. If there is anything the staff can help with, do not hesitate to contact to robosats@protonmail.com (or via your provided burner contact method).": "Puedes retirar la cantidad de la resolución de la disputa (fianza y colateral) desde las recompensas de tu perfil. Si hay algo que el equipo pueda hacer, no dudes en contactar con robosats@protonmail.com (o a través del método de contacto de usar y tirar que especificaste).",
     "You have lost the dispute": "Has perdido la disputa",
     "Unfortunately you have lost the dispute. If you think this is a mistake you can ask to re-open the case via email to robosats@protonmail.com. However, chances of it being investigated again are low.": "Desafortunadamente has perdido la disputa. Si piensas que es un error también puedes pedir reabrir el caso por email a robosats@protonmail.com. De todas formas, las probabilidades de ser investigado de nuevo son bajas.",
+    "Expired not taken":"Expiró sin ser tomada",
+    "Maker bond not locked":"La fianza del creador no fue bloqueada",
+    "Escrow not locked":"El depósito de garantía no fue bloqueado",
+    "Invoice not submitted":"No se entregó factura del comprado",
+    "Neither escrow locked or invoice submitted":"Ni el depósito de garantía fue bloqueado ni se entregó factura del comprador",
 
     "INFO DIALOG - InfoDiagog.js": "App information and clarifications and terms of use",
     "Close": "Cerrar",

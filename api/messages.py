@@ -99,9 +99,9 @@ class Telegram():
         lang = user.profile.telegram_lang_code
         site = config('HOST_NAME')
         if lang == 'es':
-            text = f'Tu orden con ID {order.id} ha expirado sin ser tomada por ningún robot. Visita http://{site} para crear una nueva.'
+            text = f'Tu orden con ID {order.id} ha expirado sin ser tomada por ningún robot. Visita http://{site}/order/{order.id} para renovarla.'
         else:
-            text = f'Your order with ID {order.id} has expired untaken. Visit http://{site} to create a new one.'
+            text = f'Your order with ID {order.id} has expired without a taker. Visit http://{site}/order/{order.id} to renew it.'
         
         self.send_message(user, text)
         return
