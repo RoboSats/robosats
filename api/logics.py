@@ -38,6 +38,7 @@ class Logics:
         active_order_status = [
             Order.Status.WFB,
             Order.Status.PUB,
+            Order.Status.PAU,
             Order.Status.TAK,
             Order.Status.WF2,
             Order.Status.WFE,
@@ -250,7 +251,7 @@ class Logics:
             order.save()
             return True
 
-        elif order.status == Order.Status.PUB:
+        elif order.status in [Order.Status.PUB, Order.Status.PAU]:
             cls.return_bond(order.maker_bond)
             order.status = Order.Status.EXP
             order.save()
@@ -616,7 +617,7 @@ class Logics:
             """The order dissapears from book and goes to cancelled. If strict, maker is charged the bond 
             to prevent DDOS on the LN node and order book. If not strict, maker is returned
             the bond (more user friendly)."""
-        elif order.status == Order.Status.PUB and order.maker == user:
+        elif order.status in [Order.Status.PUB, Order.Status.PAU] and order.maker == user:
             # Return the maker bond (Maker gets returned the bond for cancelling public order)
             if cls.return_bond(order.maker_bond):  # strict cancellation: cls.settle_bond(order.maker_bond):
                 order.status = Order.Status.UCA
@@ -1130,8 +1131,30 @@ class Logics:
         order.save()
         return True, None
 
+    def pause_unpause_public_order(order,user):
+        if not order.maker == user:
+            return False, {
+                "bad_request":
+                "You cannot pause or unpause an order you did not make"
+            }
+        else:
+            if order.status == Order.Status.PUB:
+                order.status = Order.Status.PAU
+            elif order.status == Order.Status.PAU:
+                order.status = Order.Status.PUB
+            else:
+                return False, {
+                    "bad_request":
+                    "You can only pause/unpause an order that is either public or paused"
+                }
+        order.save()
+        return True, None
+
     @classmethod
     def rate_counterparty(cls, order, user, rating):
+        '''
+        Not in use
+        '''
 
         rating_allowed_status = [
             Order.Status.PAY,

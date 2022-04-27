@@ -60,6 +60,7 @@ class UpdateOrderSerializer(serializers.Serializer):
                                       default=None)
     action = serializers.ChoiceField(
         choices=(
+            "pause",
             "take",
             "update_invoice",
             "submit_statement",

@@ -180,12 +180,22 @@ class Order(models.Model):
         MLD = 17, "Maker lost dispute"
         TLD = 18, "Taker lost dispute"
 
+    class ExpiryReasons(models.IntegerChoices):
+        UNTAK = 0, "Expired not taken"
+        MBNLO = 1, "Maker bond not locked"
+        ESNLO = 2, "Escrow not locked"
+        INNLO = 3, "Invoice not submitted"
+
     # order info
     status = models.PositiveSmallIntegerField(choices=Status.choices,
                                               null=False,
                                               default=Status.WFB)
     created_at = models.DateTimeField(default=timezone.now)
     expires_at = models.DateTimeField()
+    expiry_reason = models.PositiveSmallIntegerField(choices=ExpiryReasons.choices,
+                                                null=True,
+                                                blank=True,
+                                                default=None)
 
     # order details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False)

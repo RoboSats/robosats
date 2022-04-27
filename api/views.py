@@ -242,9 +242,9 @@ class OrderView(viewsets.ViewSet):
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
             data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
 
-            # 3. c) If maker and Public, add num robots in book, premium percentile 
+            # 3. c) If maker and Public/Paused, add premium percentile 
             # num similar orders, and maker information to enable telegram notifications.
-            if data["is_maker"] and order.status == Order.Status.PUB:
+            if data["is_maker"] and order.status in [Order.Status.PUB, Order.Status.PAU]:
                 data["premium_percentile"] = compute_premium_percentile(order)
                 data["num_similar_orders"] = len(
                     Order.objects.filter(currency=order.currency,
@@ -481,9 +481,15 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 6) If action is rate_platform
+        # 7) If action is rate_platform
         elif action == "rate_platform" and rating:
             valid, context = Logics.rate_platform(request.user, rating)
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        # 8) If action is rate_platform
+        elif action == "pause":
+            valid, context = Logics.pause_unpause_public_order(order, request.user)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
