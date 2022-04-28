@@ -19,6 +19,7 @@ import ContentCopy from "@mui/icons-material/ContentCopy";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
+import { t } from "i18next";
 
 class TradeBox extends Component {
   invoice_escrow_duration = 3;
@@ -780,6 +781,7 @@ handleRatingRobosatsChange=(e)=>{
   }
 
   handleRenewOrderButtonPressed=()=>{
+    this.setState({renewLoading:true})
     const requestOptions = {
         method: 'POST',
         headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
@@ -803,8 +805,11 @@ handleRatingRobosatsChange=(e)=>{
     fetch("/api/make/",requestOptions)
     .then((response) => response.json())
     .then((data) => (this.setState({badRequest:data.bad_request})
-         & (data.id ? this.props.push('/order/' + data.id) :"")
-         & this.props.getOrderDetails(data.id)));
+         & (data.id ? this.props.push('/order/' + data.id) 
+            & this.props.getOrderDetails(data.id)
+            .then(()=>this.setState({renewLoading:false}))
+          :"")
+          ));
   }
 
   showOrderExpired=()=>{
@@ -826,7 +831,11 @@ handleRatingRobosatsChange=(e)=>{
         </Grid>
         {show_renew ?
           <Grid item xs={12} align="center">
-            <Button variant='contained' color='primary' onClick={this.handleRenewOrderButtonPressed}>{t("Renew Order")}</Button>
+          {this.state.renewLoading ?
+              <CircularProgress/>
+            :
+              <Button variant='contained' color='primary' onClick={this.handleRenewOrderButtonPressed}>{t("Renew Order")}</Button>
+          }
           </Grid>
         : null}
 
