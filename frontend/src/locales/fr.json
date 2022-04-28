@@ -50,7 +50,7 @@
     "Set the skin-in-the-game, increase for higher safety assurance":"Définissez la peau en jeu, augmentez pour une meilleure assurance de sécurité"
     "Fidelity Bond Size":"Taille de la garantie de fidélité",
     "Allow bondless takers":"Autoriser les preneurs sans caution",
-    "COMING SOON - High risk! Limited to {{limitSats}}K Sats":"BIENTÔT DISPONIBLE - Haut risque ! Limité à {{limitSats}}K Sats"
+    "COMING SOON - High risk! Limited to {{limitSats}}K Sats":"BIENTÔT DISPONIBLE - Haut risque! Limité à {{limitSats}}K Sats"
     "You must fill the order correctly":"Vous devez remplir l'ordre correctement",
     "Create Order":"Créer une ordre",
     "Back":"Retour",
@@ -141,23 +141,23 @@
     "There it goes, thank you!🥇":"C'est parti, merci!🥇",
     "You have an active order":"Vous avez une ordre active",
     "You can claim satoshis!":"Vous pouvez réclamer des satoshis!",
-    "Public Buy Orders":"Ordres d'achat publics",
-    "Public Sell Orders":"Ordres de vente publics",
+    "Public Buy Orders":"Ordres d'achat publiques",
+    "Public Sell Orders":"Ordres de vente publiques",
     "Today Active Robots":"Robots actifs aujourd'hui",
     "24h Avg Premium":"Prime moyenne sur 24h",
     "Trade Fee":"Frais de transaction",
     "Show community and support links":"Afficher les liens de la communauté et du support",
     "Show stats for nerds":"Afficher les stats pour les geeks",
     "Exchange Summary":"Résumé de l'échange",
-    "Public buy orders":"Ordres d'achat publics",
-    "Public sell orders":"Ordres de vente publics",
+    "Public buy orders":"Ordres d'achat publiques",
+    "Public sell orders":"Ordres de vente publiques",
     "Book liquidity":"Liquidité du livre",
     "Today active robots":"Robots actifs aujourd'hui",
     "24h non-KYC bitcoin premium":"Prime bitcoin non-KYC 24h",
     "Maker fee":"Frais du createur",
     "Taker fee":"Frais du preneur",
-    "Number of public BUY orders":"Nombre d'ordres d'ACHAT publics",
-    "Number of public SELL orders":"Nombre d'ordres de VENTE publics",
+    "Number of public BUY orders":"Nombre d'ordres d'ACHAT publiques",
+    "Number of public SELL orders":"Nombre d'ordres de VENTE publiques",
     
 
     "ORDER PAGE - OrderPage.js": "Order details page",
