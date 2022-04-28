@@ -265,7 +265,7 @@
     "Your maker bond was unlocked":"Your maker bond was unlocked",
     "Your taker bond was unlocked":"Your taker bond was unlocked",
     "Your order is public":"Your order is public",
-    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{invoice_escrow_duration}} hours to reply. If you do not reply, you risk losing your bond.":"Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{invoice_escrow_duration}} hours to reply. If you do not reply, you risk losing your bond.",
+    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m hours to reply. If you do not reply, you risk losing your bond.":"Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m hours to reply. If you do not reply, you risk losing your bond.",
     "If the order expires untaken, your bond will return to you (no action needed).":"If the order expires untaken, your bond will return to you (no action needed).",
     "Enable Telegram Notifications":"Enable Telegram Notifications",
     "Enable TG Notifications":"Enable TG Notifications",
@@ -336,6 +336,8 @@
     "Escrow not locked":"Escrow not locked",
     "Invoice not submitted":"Invoice not submitted",
     "Neither escrow locked or invoice submitted":"Neither escrow locked or invoice submitted",
+    "Renew Order":"Renew Order",
+
 
     "INFO DIALOG - InfoDiagog.js":"App information and clarifications and terms of use",
     "Close":"Close",

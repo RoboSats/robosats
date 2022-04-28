@@ -358,6 +358,12 @@ class TradeBox extends Component {
       </Dialog>
     )
   }
+  depositHoursMinutes=()=>{
+    var hours = parseInt(this.props.data.escrow_duration/3600);
+    var minutes = parseInt((this.props.data.escrow_duration-hours*3600)/60);
+    var dict = {deposit_timer_hours:hours, deposit_timer_minutes:minutes}
+    return dict
+  }
 
   showMakerWait=()=>{
     const { t } = this.props;
@@ -377,7 +383,7 @@ class TradeBox extends Component {
           <Divider/>
             <ListItem>
               <Typography component="body2" variant="body2" align="left">
-                <p>{t("Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{invoice_escrow_duration}} hours to reply. If you do not reply, you risk losing your bond.", {invoice_escrow_duration: pn(this.invoice_escrow_duration)})} </p>
+                <p>{t("Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m hours to reply. If you do not reply, you risk losing your bond.", this.depositHoursMinutes() )} </p>
                 <p>{t("If the order expires untaken, your bond will return to you (no action needed).")}</p>
               </Typography>
             </ListItem>
@@ -798,7 +804,7 @@ handleRatingRobosatsChange=(e)=>{
     .then((response) => response.json())
     .then((data) => (this.setState({badRequest:data.bad_request})
          & (data.id ? this.props.push('/order/' + data.id) :"")
-         & window.location.reload()));
+         & this.props.getOrderDetails(data.id)));
   }
 
   showOrderExpired=()=>{

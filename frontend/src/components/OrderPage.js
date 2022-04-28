@@ -34,8 +34,8 @@ class OrderPage extends Component {
         openCollaborativeCancel: false,
         openInactiveMaker: false,
         showContractBox: 1,
+        orderId: this.props.match.params.orderId,
     };
-    this.orderId = this.props.match.params.orderId;
     this.getOrderDetails(this.props.match.params.orderId);
 
     // Refresh delays according to Order status
@@ -86,6 +86,7 @@ class OrderPage extends Component {
 
   getOrderDetails =(id)=> {
     this.setState(null)
+    this.setState({orderId:id})
     fetch('/api/order' + '?order_id=' + id)
       .then((response) => response.json())
       .then((data) => this.completeSetState(data));
@@ -104,7 +105,7 @@ class OrderPage extends Component {
     clearInterval(this.interval);
   }
   tick = () => {
-    this.getOrderDetails(this.orderId);
+    this.getOrderDetails(this.state.orderId);
   }
 
   // Countdown Renderer callback with condition
@@ -133,7 +134,7 @@ class OrderPage extends Component {
     var hours = parseInt(seconds/3600);
     var minutes = parseInt((seconds-hours*3600)/60);
     return(
-      <span>{hours>0 ? hours+"h":""} {zeroPad(minutes)}m </span>
+      <span>{hours>0 ? hours+"h":""} {minutes>0 ? zeroPad(minutes)+"m":""} </span>
     )
   }
 
@@ -276,7 +277,7 @@ class OrderPage extends Component {
           'amount':this.state.takeAmount,
         }),
       };
-      fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+      fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
       .then((response) => response.json())
       .then((data) => this.completeSetState(data));
   }
@@ -300,7 +301,7 @@ class OrderPage extends Component {
           'action':'cancel',
         }),
     };
-    fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+    fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
     .then((response) => response.json())
     .then((data) => this.getOrderDetails(data.id));
     this.handleClickCloseConfirmCancelDialog();
@@ -377,7 +378,7 @@ class OrderPage extends Component {
             'action':'cancel',
           }),
       };
-      fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+      fetch('/api/order/' + '?order_id=' + this.state.state.orderId, requestOptions)
       .then((response) => response.json())
       .then((data) => this.getOrderDetails(data.id));
     this.handleClickCloseCollaborativeCancelDialog();
@@ -540,8 +541,8 @@ class OrderPage extends Component {
                 </div>
               </ListItemIcon>
               {this.state.has_range & this.state.amount == null ?
-              <ListItemText primary={parseFloat(Number(this.state.min_amount).toPrecision(2))
-                +"-" + parseFloat(Number(this.state.max_amount).toPrecision(2)) +" "+this.state.currencyCode} secondary={t("Amount range")}/>
+              <ListItemText primary={parseFloat(Number(this.state.min_amount).toPrecision(4))
+                +"-" + parseFloat(Number(this.state.max_amount).toPrecision(4)) +" "+this.state.currencyCode} secondary={t("Amount range")}/>
               :
               <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))
                 +" "+this.state.currencyCode} secondary={t("Amount")}/>
@@ -581,7 +582,7 @@ class OrderPage extends Component {
               </ListItemIcon>
             <Grid container xs={12}>
                 <Grid item xs={4.5}>
-                  <ListItemText primary={this.orderId} secondary={t("Order ID")}/>
+                  <ListItemText primary={this.state.orderId} secondary={t("Order ID")}/>
                 </Grid>
                 <Grid item xs={7.5}>
                   <Grid container>
@@ -679,7 +680,7 @@ class OrderPage extends Component {
             {this.orderBox()}
         </Grid>
         <Grid item xs={6} align="left">
-          <TradeBox push={this.props.history.push} width={330} data={this.state} completeSetState={this.completeSetState} />
+          <TradeBox push={this.props.history.push} getOrderDetails={this.getOrderDetails} width={330} data={this.state} completeSetState={this.completeSetState} />
         </Grid>
       </Grid>
     )
@@ -715,7 +716,7 @@ class OrderPage extends Component {
                 {this.orderBox()}
             </div>
             <div style={{display: this.state.showContractBox == 1 ? '':'none'}}>
-              <TradeBox push={this.props.history.push} width={330} data={this.state} completeSetState={this.completeSetState} />
+              <TradeBox push={this.props.history.push} getOrderDetails={this.getOrderDetails} width={330} data={this.state} completeSetState={this.completeSetState} />
             </div>
           </Grid>
         </Grid>
