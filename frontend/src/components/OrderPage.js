@@ -42,7 +42,7 @@ class OrderPage extends Component {
     this.statusToDelay = {
       "0": 2000,    //'Waiting for maker bond'
       "1": 25000,   //'Public'
-      "2": 999999,  //'Deleted'
+      "2": 90000,   //'Paused'
       "3": 2000,    //'Waiting for taker bond'
       "4": 999999,  //'Cancelled'
       "5": 999999,  //'Expired'
@@ -303,7 +303,7 @@ class OrderPage extends Component {
     };
     fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
     .then((response) => response.json())
-    .then((data) => this.getOrderDetails(data.id));
+    .then(() => (this.getOrderDetails(this.state.orderId) & this.setState({status:4})));
     this.handleClickCloseConfirmCancelDialog();
   }
 
@@ -380,7 +380,7 @@ class OrderPage extends Component {
       };
       fetch('/api/order/' + '?order_id=' + this.state.state.orderId, requestOptions)
       .then((response) => response.json())
-      .then((data) => this.getOrderDetails(data.id));
+      .then(() => (this.getOrderDetails(this.state.orderId) & this.setState({status:4})));
     this.handleClickCloseCollaborativeCancelDialog();
   }
 
@@ -541,10 +541,10 @@ class OrderPage extends Component {
                 </div>
               </ListItemIcon>
               {this.state.has_range & this.state.amount == null ?
-              <ListItemText primary={parseFloat(Number(this.state.min_amount).toPrecision(4))
-                +"-" + parseFloat(Number(this.state.max_amount).toPrecision(4)) +" "+this.state.currencyCode} secondary={t("Amount range")}/>
+              <ListItemText primary={pn(parseFloat(Number(this.state.min_amount).toPrecision(4)))
+                +"-" + pn(parseFloat(Number(this.state.max_amount).toPrecision(4))) +" "+this.state.currencyCode} secondary={t("Amount range")}/>
               :
-              <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))
+              <ListItemText primary={pn(parseFloat(parseFloat(this.state.amount).toFixed(4)))
                 +" "+this.state.currencyCode} secondary={t("Amount")}/>
               }
 
