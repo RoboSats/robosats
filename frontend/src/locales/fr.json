@@ -29,7 +29,7 @@
     "Amount":"Montant",
     "Amount of fiat to exchange for bitcoin":"Montant de fiat à échanger contre bitcoin",
     "Invalid":"Invalide",
-    "Enter your preferred fiat payment methods. Fast methods are highly recommended.":"Entrez vos modes de paiement fiat préférées. Les modes rapides sont fortement recommandées."
+    "Enter your preferred fiat payment methods. Fast methods are highly recommended.":"Entrez vos modes de paiement fiat préférées. Les modes rapides sont fortement recommandées.",
     "Must be shorter than 65 characters":"Doit être plus court que 65 caractères",
     "Swap Destination(s)":"Destination(s) de l'échange",
     "Fiat Payment Method(s)":"Mode(s) de paiement Fiat",
@@ -47,10 +47,10 @@
     "From": "De",
     "to":"à",
     "Public Duration (HH:mm)":"Durée publique (HH:mm)",
-    "Set the skin-in-the-game, increase for higher safety assurance":"Définissez la peau en jeu, augmentez pour une meilleure assurance de sécurité"
+    "Set the skin-in-the-game, increase for higher safety assurance":"Définissez la peau en jeu, augmentez pour une meilleure assurance de sécurité",
     "Fidelity Bond Size":"Taille de la garantie de fidélité",
     "Allow bondless takers":"Autoriser les preneurs sans caution",
-    "COMING SOON - High risk! Limited to {{limitSats}}K Sats":"BIENTÔT DISPONIBLE - Haut risque! Limité à {{limitSats}}K Sats"
+    "COMING SOON - High risk! Limited to {{limitSats}}K Sats":"BIENTÔT DISPONIBLE - Haut risque! Limité à {{limitSats}}K Sats",
     "You must fill the order correctly":"Vous devez remplir l'ordre correctement",
     "Create Order":"Créer une ordre",
     "Back":"Retour",
@@ -220,7 +220,7 @@
     "The maker is away":"Le createur est absent",
     "By taking this order you risk wasting your time. If the maker does not proceed in time, you will be compensated in satoshis for 50% of the maker bond.":"En prenant cette ordre, vous risquez de perdre votre temps. Si le créateur ne procède pas dans les temps, vous serez compensé en satoshis à hauteur de 50% de la caution du créateur.",
     "Collaborative cancel the order?":"Annuler l'ordre en collaboration?",
-    "The trade escrow has been posted. The order can be cancelled only if both, maker and taker, agree to cancel.":"Le dépôt de transaction a été enregistré. L'ordre ne peut être annulé que si les deux parties, le createur et le preneur, sont d'accord pour l'annuler." 
+    "The trade escrow has been posted. The order can be cancelled only if both, maker and taker, agree to cancel.":"Le dépôt de transaction a été enregistré. L'ordre ne peut être annulé que si les deux parties, le createur et le preneur, sont d'accord pour l'annuler.",
     "Ask for Cancel":"Demande d'annulation",
     "Cancel":"Annuler",
     "Collaborative Cancel":"Annulation collaborative",
@@ -258,7 +258,7 @@
     "Your maker bond was unlocked":"Votre obligation de createur a été déverrouillée",
     "Your taker bond was unlocked":"Votre obligation de preneur a été déverrouillée",
     "Your order is public":"Votre ordre est publique",
-    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{invoice_escrow_duration}} hours to reply. If you do not reply, you risk losing your bond.":"Soyez patient pendant que les robots vérifient le livre. Cette case sonnera 🔊 dès qu'un robot prendra votre ordre, puis vous aurez {{invoice_escrow_duration}} heures pour répondre. Si vous ne répondez pas, vous risquez de perdre votre caution",
+    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m hours to reply. If you do not reply, you risk losing your bond.":"Soyez patient pendant que les robots vérifient le livre. Cette case sonnera 🔊 dès qu'un robot prendra votre ordre, puis vous aurez {{deposit_timer_hours}}h {{deposit_timer_minutes}}m pour répondre. Si vous ne répondez pas, vous risquez de perdre votre caution",
     "If the order expires untaken, your bond will return to you (no action needed).":"Si l'ordre expire sans être prise, votre caution vous sera rendue (aucune action n'est nécessaire).",
     "Enable Telegram Notifications":"Activer les notifications Telegram",
     "Enable TG Notifications":"Activer notifications TG",
@@ -276,10 +276,10 @@
     "Payout Lightning Invoice":"Facture lightning de paiement",
     "Your invoice looks good!":"Votre facture est correcte!",
     "We are waiting for the seller lock the trade amount.":"Nous attendons que le vendeur verrouille le montant de la transaction.",
-    "Just hang on for a moment. If the seller does not deposit, you will get your bond back automatically. In addition, you will receive a compensation (check the rewards in your profile).":"Patientez un instant. Si le vendeur n'effectue pas de dépôt, vous récupérez automatiquement votre caution. En outre, vous recevrez une compensation (vérifiez les récompenses dans votre profil)."
+    "Just hang on for a moment. If the seller does not deposit, you will get your bond back automatically. In addition, you will receive a compensation (check the rewards in your profile).":"Patientez un instant. Si le vendeur n'effectue pas de dépôt, vous récupérez automatiquement votre caution. En outre, vous recevrez une compensation (vérifiez les récompenses dans votre profil).",
     "The trade collateral is locked!":"La garantie est verrouillée!",
     "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.":"Nous attendons que l'acheteur dépose une facture lightning. Dès qu'il l'aura fait, vous pourrez communiquer directement les détails du paiement fiat.",
-    "Just hang on for a moment. If the buyer does not cooperate, you will get back the trade collateral and your bond automatically. In addition, you will receive a compensation (check the rewards in your profile).":"Patientez un instant. Si l'acheteur ne coopère pas, vous récupérez automatiquement le dépôt de garantie et votre caution. En outre, vous recevrez une compensation (vérifiez les récompenses dans votre profil)." 
+    "Just hang on for a moment. If the buyer does not cooperate, you will get back the trade collateral and your bond automatically. In addition, you will receive a compensation (check the rewards in your profile).":"Patientez un instant. Si l'acheteur ne coopère pas, vous récupérez automatiquement le dépôt de garantie et votre caution. En outre, vous recevrez une compensation (vérifiez les récompenses dans votre profil)." ,
     "Confirm {{currencyCode}} sent":"Confirmer l'envoi de {{currencyCode}}",
     "Confirm {{currencyCode}} received":"Confirmer la réception de {{currencyCode}}",
     "Open Dispute":"Ouvrir litige",

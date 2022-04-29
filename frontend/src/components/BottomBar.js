@@ -583,8 +583,9 @@ bottomBarDesktop =()=>{
                 onChange={this.handleChangeLang}>
                     <MenuItem value={'en'}>EN</MenuItem>
                     <MenuItem value={'es'}>ES</MenuItem>
-                    <MenuItem disabled={true} value={'de'}>DE</MenuItem>
+                    <MenuItem value={'de'}>DE</MenuItem>
                     <MenuItem value={'pl'}>PL</MenuItem>
+                    <MenuItem value={'fr'}>FR</MenuItem>
                     <MenuItem disabled={true} value={'ru'}>RU</MenuItem>
                     <MenuItem disabled={true} value={'zh'}>ZH</MenuItem>
                 </Select>

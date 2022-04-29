@@ -9,6 +9,7 @@ import translationDE from "../locales/de.json";
 import translationRU from "../locales/ru.json";
 import translationZH from "../locales/zh.json";
 import translationPL from "../locales/pl.json";
+import translationFR from "../locales/fr.json";
 
 i18n
   .use(HttpApi)
@@ -22,6 +23,7 @@ i18n
     de: {translations: translationDE},
     zh: {translations: translationZH},
     pl: {translations: translationPL},
+    fr: {translations: translationFR},
   },
   
   fallbackLng: "en",

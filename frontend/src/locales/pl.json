@@ -258,7 +258,7 @@
     "Your maker bond was unlocked":"Twoja obligacja twórcy została odblokowana",
     "Your taker bond was unlocked":"Twoja więź przyjmującego została odblokowana",
     "Your order is public":"Twoje zamówienie jest publiczne",
-    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{invoice_escrow_duration}} hours to reply. If you do not reply, you risk losing your bond.":"Bądź cierpliwy, gdy roboty sprawdzają książkę. To pole zadzwoni 🔊, gdy robot odbierze Twoje zamówienie, będziesz mieć {{invoice_escrow_duration}} godzin na odpowiedź. Jeśli nie odpowiesz, ryzykujesz utratę więzi.",
+    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m hours to reply. If you do not reply, you risk losing your bond.":"Bądź cierpliwy, gdy roboty sprawdzają książkę. To pole zadzwoni 🔊, gdy robot odbierze Twoje zamówienie, będziesz mieć {{deposit_timer_hours}}g {{deposit_timer_minutes}}m na odpowiedź. Jeśli nie odpowiesz, ryzykujesz utratę więzi.",
     "If the order expires untaken, your bond will return to you (no action needed).":"Jeśli zamówienie wygaśnie i nie zostanie zrealizowane, Twoja kaucja zostanie Ci zwrócona (nie musisz nic robić).",
     "Enable Telegram Notifications":"Włącz powiadomienia telegramu",
     "Enable TG Notifications":"Włącz powiadomienia TG",
