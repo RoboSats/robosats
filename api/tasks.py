@@ -235,4 +235,8 @@ def send_message(order_id, message):
     
     elif message == 'order_taken_confirmed':
         telegram.order_taken_confirmed(order)
+    
+    elif message == 'fiat_exchange_starts':
+        telegram.fiat_exchange_starts(order)
+        
     return

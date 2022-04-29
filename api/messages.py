@@ -91,6 +91,21 @@ class Telegram():
         self.send_message(user, text)
         return
 
+    def fiat_exchange_starts(self, order):
+        user = order.maker
+        if not user.profile.telegram_enabled:
+            return
+
+        lang = user.profile.telegram_lang_code
+        site = config('HOST_NAME')
+        if lang == 'es':
+            text = f'El depósito de garantía y el recibo del comprador han sido recibidos. Es hora de enviar el dinero fiat. Visita http://{site}/order/{order.id} para hablar con tu contraparte.'
+        else:
+            text = f'The escrow and invoice have been submitted. The fiat exchange starts now via the platform chat. Visit http://{site}/order/{order.id} to talk with your counterpart.'
+        
+        self.send_message(user, text)
+        return
+
     def order_expired_untaken(self, order):
         user = order.maker
         if not user.profile.telegram_enabled:

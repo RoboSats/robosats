@@ -530,6 +530,7 @@ class Logics:
             order.status = Order.Status.CHA
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.CHA))
+            send_message.delay(order.id,'fiat_exchange_starts')
 
         # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow'
         if order.status == Order.Status.WF2:
@@ -541,6 +542,7 @@ class Logics:
                 order.status = Order.Status.CHA
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.CHA))
+                send_message.delay(order.id,'fiat_exchange_starts')
             else:
                 order.status = Order.Status.WFE
 
@@ -929,6 +931,7 @@ class Logics:
             order.status = Order.Status.CHA
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.CHA))
+            send_message.delay(order.id,'fiat_exchange_starts')
         order.save()
 
     @classmethod
