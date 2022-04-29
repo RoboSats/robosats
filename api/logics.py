@@ -38,6 +38,7 @@ class Logics:
         active_order_status = [
             Order.Status.WFB,
             Order.Status.PUB,
+            Order.Status.PAU,
             Order.Status.TAK,
             Order.Status.WF2,
             Order.Status.WFE,
@@ -230,7 +231,6 @@ class Logics:
         # Do not change order status if an order in any with
         # any of these status is sent to expire here
         does_not_expire = [
-            Order.Status.DEL,
             Order.Status.UCA,
             Order.Status.EXP,
             Order.Status.TLD,
@@ -247,13 +247,15 @@ class Logics:
 
         elif order.status == Order.Status.WFB:
             order.status = Order.Status.EXP
+            order.expiry_reason = Order.ExpiryReasons.NMBOND
             cls.cancel_bond(order.maker_bond)
             order.save()
             return True
 
-        elif order.status == Order.Status.PUB:
+        elif order.status in [Order.Status.PUB, Order.Status.PAU]:
             cls.return_bond(order.maker_bond)
             order.status = Order.Status.EXP
+            order.expiry_reason = Order.ExpiryReasons.NTAKEN
             order.save()
             send_message.delay(order.id,'order_expired_untaken')
             return True
@@ -274,6 +276,7 @@ class Logics:
             cls.settle_bond(order.taker_bond)
             cls.cancel_escrow(order)
             order.status = Order.Status.EXP
+            order.expiry_reason = Order.ExpiryReasons.NESINV
             order.save()
             return True
 
@@ -289,6 +292,7 @@ class Logics:
                 except:
                     pass
                 order.status = Order.Status.EXP
+                order.expiry_reason = Order.ExpiryReasons.NESCRO
                 order.save()
                 # Reward taker with part of the maker bond
                 cls.add_slashed_rewards(order.maker_bond, order.taker.profile)
@@ -324,6 +328,7 @@ class Logics:
                 cls.return_bond(order.taker_bond)
                 cls.return_escrow(order)
                 order.status = Order.Status.EXP
+                order.expiry_reason = Order.ExpiryReasons.NINVOI
                 order.save()
                 # Reward taker with part of the maker bond
                 cls.add_slashed_rewards(order.maker_bond, order.taker.profile)
@@ -525,6 +530,7 @@ class Logics:
             order.status = Order.Status.CHA
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.CHA))
+            send_message.delay(order.id,'fiat_exchange_starts')
 
         # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow'
         if order.status == Order.Status.WF2:
@@ -536,6 +542,7 @@ class Logics:
                 order.status = Order.Status.CHA
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.CHA))
+                send_message.delay(order.id,'fiat_exchange_starts')
             else:
                 order.status = Order.Status.WFE
 
@@ -590,7 +597,6 @@ class Logics:
         # Do not change order status if an is in order
         # any of these status
         do_not_cancel = [
-            Order.Status.DEL,
             Order.Status.UCA,
             Order.Status.EXP,
             Order.Status.TLD,
@@ -618,7 +624,7 @@ class Logics:
             """The order dissapears from book and goes to cancelled. If strict, maker is charged the bond 
             to prevent DDOS on the LN node and order book. If not strict, maker is returned
             the bond (more user friendly)."""
-        elif order.status == Order.Status.PUB and order.maker == user:
+        elif order.status in [Order.Status.PUB, Order.Status.PAU] and order.maker == user:
             # Return the maker bond (Maker gets returned the bond for cancelling public order)
             if cls.return_bond(order.maker_bond):  # strict cancellation: cls.settle_bond(order.maker_bond):
                 order.status = Order.Status.UCA
@@ -925,6 +931,7 @@ class Logics:
             order.status = Order.Status.CHA
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.CHA))
+            send_message.delay(order.id,'fiat_exchange_starts')
         order.save()
 
     @classmethod
@@ -1132,8 +1139,30 @@ class Logics:
         order.save()
         return True, None
 
+    def pause_unpause_public_order(order,user):
+        if not order.maker == user:
+            return False, {
+                "bad_request":
+                "You cannot pause or unpause an order you did not make"
+            }
+        else:
+            if order.status == Order.Status.PUB:
+                order.status = Order.Status.PAU
+            elif order.status == Order.Status.PAU:
+                order.status = Order.Status.PUB
+            else:
+                return False, {
+                    "bad_request":
+                    "You can only pause/unpause an order that is either public or paused"
+                }
+        order.save()
+        return True, None
+
     @classmethod
     def rate_counterparty(cls, order, user, rating):
+        '''
+        Not in use
+        '''
 
         rating_allowed_status = [
             Order.Status.PAY,

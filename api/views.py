@@ -31,6 +31,7 @@ from decouple import config
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
 PUBLIC_DURATION = 60*60*int(config("DEFAULT_PUBLIC_ORDER_DURATION"))-1
+ESCROW_DURATION = 60 * int(config("INVOICE_AND_ESCROW_DURATION"))
 BOND_SIZE = int(config("DEFAULT_BOND_SIZE"))
 
 avatar_path = Path(settings.AVATAR_ROOT)
@@ -82,11 +83,13 @@ class MakerView(CreateAPIView):
         satoshis = serializer.data.get("satoshis")
         is_explicit = serializer.data.get("is_explicit")
         public_duration = serializer.data.get("public_duration")
+        escrow_duration = serializer.data.get("escrow_duration")
         bond_size = serializer.data.get("bond_size")
         bondless_taker = serializer.data.get("bondless_taker")
 
         # Optional params
         if public_duration == None: public_duration = PUBLIC_DURATION
+        if escrow_duration == None: escrow_duration = ESCROW_DURATION
         if bond_size == None: bond_size = BOND_SIZE
         if bondless_taker == None: bondless_taker = False
         if has_range == None: has_range = False
@@ -132,6 +135,7 @@ class MakerView(CreateAPIView):
                 seconds=EXP_MAKER_BOND_INVOICE),
             maker=request.user,
             public_duration=public_duration,
+            escrow_duration=escrow_duration,
             bond_size=bond_size,
             bondless_taker=bondless_taker,
         )
@@ -238,9 +242,9 @@ class OrderView(viewsets.ViewSet):
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
             data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
 
-            # 3. c) If maker and Public, add num robots in book, premium percentile 
+            # 3. c) If maker and Public/Paused, add premium percentile 
             # num similar orders, and maker information to enable telegram notifications.
-            if data["is_maker"] and order.status == Order.Status.PUB:
+            if data["is_maker"] and order.status in [Order.Status.PUB, Order.Status.PAU]:
                 data["premium_percentile"] = compute_premium_percentile(order)
                 data["num_similar_orders"] = len(
                     Order.objects.filter(currency=order.currency,
@@ -372,14 +376,22 @@ class OrderView(viewsets.ViewSet):
               and order.payout.receiver == request.user
               ):  # might not be the buyer if after a dispute where winner wins
             data["retries"] = order.payout.routing_attempts
-            data[
-                "next_retry_time"] = order.payout.last_routing_time + timedelta(
+            data["next_retry_time"] = order.payout.last_routing_time + timedelta(
                     minutes=RETRY_TIME)
 
             if order.payout.status == LNPayment.Status.EXPIRE:
                 data["invoice_expired"] = True
                 # Add invoice amount once again if invoice was expired.
                 data["invoice_amount"] = Logics.payout_amount(order,request.user)[1]["invoice_amount"]
+
+        # 10) If status is 'Expired', add expiry reason.
+        elif (order.status == Order.Status.EXP):
+            data["expiry_reason"] = order.expiry_reason
+            data["expiry_message"] = Order.ExpiryReasons(order.expiry_reason).label
+            # other pieces of info useful to renew an identical order
+            data["public_duration"] = order.public_duration
+            data["bond_size"] = order.bond_size
+            data["bondless_taker"] = order.bondless_taker
 
         return Response(data, status.HTTP_200_OK)
 
@@ -389,10 +401,6 @@ class OrderView(viewsets.ViewSet):
         That is: take, confim, cancel, dispute, update_invoice or rate.
         """
         order_id = request.GET.get(self.lookup_url_kwarg)
-
-        import sys
-        sys.stdout.write('AAAAAA')
-        print('BBBBB1')
 
         serializer = UpdateOrderSerializer(data=request.data)
         if not serializer.is_valid():
@@ -481,9 +489,15 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 6) If action is rate_platform
+        # 7) If action is rate_platform
         elif action == "rate_platform" and rating:
             valid, context = Logics.rate_platform(request.user, rating)
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        # 8) If action is rate_platform
+        elif action == "pause":
+            valid, context = Logics.pause_unpause_public_order(order, request.user)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
@@ -824,6 +838,7 @@ class LimitView(ListAPIView):
             exchange_rate = float(currency.exchange_rate)
             payload[currency.currency] = {
                 'code': code,
+                'price': exchange_rate,
                 'min_amount': min_trade * exchange_rate,
                 'max_amount': max_trade * exchange_rate,
                 'max_bondless_amount': max_bondless_trade * exchange_rate,

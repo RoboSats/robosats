@@ -25,7 +25,7 @@ class BookPage extends Component {
       loading: true,
       pageSize: 6,
     };
-    this.getOrderDetails(2, this.props.currency)
+    this.getOrderDetails(2, 0)
   }
 
   getOrderDetails(type, currency) {
@@ -158,7 +158,7 @@ class BookPage extends Component {
           ),
           NoResultsOverlay: () => (
             <Stack height="100%" alignItems="center" justifyContent="center">
-              {t("Local filter returns no result")}
+              {t("Filter has no results")}
             </Stack>
           )
         }}
@@ -328,7 +328,7 @@ class BookPage extends Component {
       return (
         <Grid className='orderBook' container spacing={1} sx={{minWidth:400}}>
 
-          <IconButton sx={{position:'fixed',right:'0px', top:'30px'}} onClick={()=>this.setState({loading: true}) & this.getOrderDetails(this.props.type, this.props.currency)}>
+          <IconButton sx={{position:'fixed',right:'0px', top:'30px'}} onClick={()=>this.setState({loading: true}) & this.getOrderDetails(2, 0)}>
             <RefreshIcon/>
           </IconButton>
 
@@ -341,7 +341,15 @@ class BookPage extends Component {
                 <div style={{position:"relative", left:"20px"}}>
                   <FormControlLabel
                       control={<Checkbox defaultChecked={true} icon={<MoveToInboxIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<MoveToInboxIcon sx={{width:"30px",height:"30px"}} color="primary"/>}/>}
-                      label={<div style={{position:"relative",top:"-13px"}}><Typography style={{color:"#666666"}} variant="caption">{t("Buy")}</Typography></div>}
+                      label={
+                        <div style={{position:"relative",top:"-13px"}}>
+                          {this.props.buyChecked ? 
+                            <Typography variant="caption" color="primary"><b>{t("Buy")}</b></Typography>
+                            : 
+                            <Typography variant="caption" color="text.secondary">{t("Buy")}</Typography>
+                          }
+                        </div>
+                        }
                       labelPlacement="bottom"
                       checked={this.props.buyChecked}
                       onChange={this.handleClickBuy}
@@ -349,7 +357,15 @@ class BookPage extends Component {
                 </div>
                   <FormControlLabel
                       control={<Checkbox defaultChecked={true} icon={<OutboxIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<OutboxIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
-                      label={<div style={{position:"relative",top:"-13px"}}><Typography style={{color:"#666666"}} variant="caption">{t("Sell")}</Typography></div>}
+                      label={
+                        <div style={{position:"relative",top:"-13px"}}>
+                          {this.props.sellChecked ? 
+                            <Typography variant="caption" color="secondary"><b>{t("Sell")}</b></Typography>
+                            :  
+                            <Typography variant="caption" color="text.secondary">{t("Sell")}</Typography>
+                          }
+                        </div>
+                        }
                       labelPlacement="bottom"
                       checked={this.props.sellChecked}
                       onChange={this.handleClickSell}

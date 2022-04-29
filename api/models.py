@@ -162,7 +162,7 @@ class Order(models.Model):
     class Status(models.IntegerChoices):
         WFB = 0, "Waiting for maker bond"
         PUB = 1, "Public"
-        DEL = 2, "Deleted"
+        PAU = 2, "Paused"
         TAK = 3, "Waiting for taker bond"
         UCA = 4, "Cancelled"
         EXP = 5, "Expired"
@@ -180,12 +180,23 @@ class Order(models.Model):
         MLD = 17, "Maker lost dispute"
         TLD = 18, "Taker lost dispute"
 
+    class ExpiryReasons(models.IntegerChoices):
+        NTAKEN = 0, "Expired not taken"
+        NMBOND = 1, "Maker bond not locked"
+        NESCRO = 2, "Escrow not locked"
+        NINVOI = 3, "Invoice not submitted"
+        NESINV = 4, "Neither escrow locked or invoice submitted"
+
     # order info
     status = models.PositiveSmallIntegerField(choices=Status.choices,
                                               null=False,
                                               default=Status.WFB)
     created_at = models.DateTimeField(default=timezone.now)
     expires_at = models.DateTimeField()
+    expiry_reason = models.PositiveSmallIntegerField(choices=ExpiryReasons.choices,
+                                                null=True,
+                                                blank=True,
+                                                default=None)
 
     # order details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False)
@@ -232,6 +243,18 @@ class Order(models.Model):
         ],
         blank=False,
     )
+
+    # optionally makers can choose the escrow lock / invoice submission step length (seconds)
+    escrow_duration = models.PositiveBigIntegerField(
+        default=60 * int(config("INVOICE_AND_ESCROW_DURATION"))-1,
+        null=False,
+        validators=[
+            MinValueValidator(60*30),        # Min is 30 minutes
+            MaxValueValidator(60*60*8),      # Max is 8 Hours
+        ],
+        blank=False,
+    )
+
     # optionally makers can choose the fidelity bond size of the maker and taker (%)
     bond_size = models.DecimalField(
         max_digits=4,
@@ -354,7 +377,7 @@ class Order(models.Model):
             3: int(config("EXP_TAKER_BOND_INVOICE")),           # 'Waiting for taker bond'
             4: 0,                                               # 'Cancelled'
             5: 0,                                               # 'Expired'
-            6: 60 * int(config("INVOICE_AND_ESCROW_DURATION")), # 'Waiting for trade collateral and buyer invoice'
+            6: self.escrow_duration,                               # 'Waiting for trade collateral and buyer invoice'
             7: 60 * int(config("INVOICE_AND_ESCROW_DURATION")), # 'Waiting only for seller trade collateral'
             8: 60 * int(config("INVOICE_AND_ESCROW_DURATION")), # 'Waiting only for buyer invoice'
             9: 60 * 60 * int(config("FIAT_EXCHANGE_DURATION")), # 'Sending fiat - In chatroom'

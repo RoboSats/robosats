@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { withTranslation, Trans} from "react-i18next";
-import { InputAdornment, LinearProgress, Link, Checkbox, Slider, Box, Tab, Tabs, SliderThumb, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
+import { withTranslation } from "react-i18next";
+import { InputAdornment, LinearProgress, Accordion, AccordionDetails, AccordionSummary, Checkbox, Slider, Box, Tab, Tabs, SliderThumb, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
 import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link as LinkRouter } from 'react-router-dom'
@@ -15,7 +15,7 @@ import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import OutboxIcon from '@mui/icons-material/Outbox';
 import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
-import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -45,14 +45,16 @@ class MakerPage extends Component {
         showAdvanced: false,
         allowBondless: false,
         publicExpiryTime: new Date(0, 0, 0, 23, 59),
+        escrowExpiryTime: new Date(0, 0, 0, 3, 0),
         enableAmountRange: false,
         minAmount: null,
         bondSize: 1,
         limits: null,
         minAmount: null,
         maxAmount: null,
-        loadingLimits: false,
+        loadingLimits: true,
     }
+    this.getLimits()
   }
 
   getLimits() {
@@ -219,6 +221,7 @@ class MakerPage extends Component {
                 premium: this.state.is_explicit ? null: this.state.premium,
                 satoshis: this.state.is_explicit ? this.state.satoshis: null,
                 public_duration: this.state.publicDuration,
+                escrow_duration: this.state.escrowDuration,
                 bond_size: this.state.bondSize,
                 bondless_taker: this.state.allowBondless,
             }),
@@ -237,6 +240,20 @@ class MakerPage extends Component {
         this.setState({bondSize: event.target.value === '' ? 1 : Number(event.target.value)});
     };
 
+    priceNow = () => {
+        if (this.state.loadingLimits){
+            return "...";
+        }
+        else if (this.state.is_explicit & this.state.amount > 0 & this.state.satoshis > 0){
+            return parseFloat(Number(this.state.amount / (this.state.satoshis/100000000)).toPrecision(5));
+        }
+        else if (!this.state.is_explicit){
+            var price = this.state.limits[this.state.currency]['price'];
+            return parseFloat(Number(price*(1+this.state.premium/100)).toPrecision(5));
+        }
+        return "...";
+    }
+
     StandardMakerOptions = () => {
         const { t } = this.props;
         return(
@@ -244,38 +261,21 @@ class MakerPage extends Component {
             <Grid item xs={12} align="center" spacing={1}>
                 <div style={{position:'relative', left:'5px'}}>
                 <FormControl component="fieldset">
-                    <FormHelperText sx={{align:"center"}}>
+                    <FormHelperText sx={{textAlign:"center"}}>
                         {t("Buy or Sell Bitcoin?")}
                     </FormHelperText>
-                    {/* <RadioGroup row>
-                <div style={{position:"relative", left:"20px"}}>
-                  <FormControlLabel
-                      control={<Checkbox defaultChecked={true} icon={<MoveToInboxIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<MoveToInboxIcon sx={{width:"30px",height:"30px"}} color="primary"/>}/>}
-                      label={<div style={{position:"relative",top:"-13px"}}><Typography style={{color:"#666666"}} variant="caption">{t("Buy")}</Typography></div>}
-                      labelPlacement="bottom"
-                      checked={this.state.buyChecked}
-                      onChange={this.handleClickBuy}
-                  />
-                </div>
-                  <FormControlLabel
-                      control={<Checkbox defaultChecked={true} icon={<OutboxIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<OutboxIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
-                      label={<div style={{position:"relative",top:"-13px"}}><Typography style={{color:"#666666"}} variant="caption">{t("Sell")}</Typography></div>}
-                      labelPlacement="bottom"
-                      checked={this.state.sellChecked}
-                      onChange={this.handleClickSell}
-                  /> */}
 
                     <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
                         <FormControlLabel
                             value="0"
                             control={<Radio icon={<MoveToInboxIcon sx={{width:"26px",height:"26px"}} color="inherit"/>} checkedIcon={<MoveToInboxIcon sx={{width:"26px",height:"26px"}} color="primary"/>}/>}
-                            label={t("Buy")}
+                            label={this.state.type == 0 ? <Typography color="primary"><b>{t("Buy")}</b></Typography>: <Typography color="text.secondary">{t("Buy")}</Typography>}
                             labelPlacement="end"
                         />
                         <FormControlLabel
                             value="1"
                             control={<Radio icon={<OutboxIcon sx={{width:"26px",height:"26px"}} color="inherit"/>} checkedIcon={<OutboxIcon sx={{width:"26px",height:"26px"}} color="secondary"/>}/>}
-                            label={t("Sell")}
+                            label={this.state.type == 1 ? <Typography color="secondary"><b>{t("Sell")}</b></Typography>: <Typography color="text.secondary">{t("Sell")}</Typography>}
                             labelPlacement="end"
                         />
                     </RadioGroup>
@@ -398,6 +398,13 @@ class MakerPage extends Component {
                                 onChange={this.handlePremiumChange}
                             />
                     </div>
+                <Grid item>
+                <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title={this.state.is_explicit? t("Your order fixed exchange rate"): t("Your order's current exchange rate. Rate will move with the market.")}>
+                    <Typography variant="caption" color="text.secondary">
+                        {(this.state.is_explicit ? t("Order rate:"): t("Order current rate:"))+" "+pn(this.priceNow())+" "+this.state.currencyCode+"/BTC"}
+                    </Typography>
+                </Tooltip>
+                </Grid>
                 </Grid>
             </Paper>
         )
@@ -411,12 +418,22 @@ class MakerPage extends Component {
         var total_secs = hours*60*60 + minutes * 60;
 
         this.setState({
-            changedPublicExpiryTime: true,
             publicExpiryTime: date,
             publicDuration: total_secs,
-            badDuration: false,
         });
+    }
 
+    handleChangeEscrowDuration = (date) => {
+        let d = new Date(date),
+            hours = d.getHours(),
+            minutes = d.getMinutes();
+
+        var total_secs = hours*60*60 + minutes * 60;
+
+        this.setState({
+            escrowExpiryTime: date,
+            escrowDuration: total_secs,
+        });
     }
 
     getMaxAmount = () => {
@@ -530,7 +547,7 @@ class MakerPage extends Component {
                         <FormHelperText>
                             <Tooltip enterTouchDelay="0" placement="top" align="center" title={t("Let the taker chose an amount within the range")}>
                             <div align="center" style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                                <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked, is_explicit: false}) & (e.target.checked ? this.getLimits() : null)}/>
+                                <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked, is_explicit: false})}/>
                                 {this.state.enableAmountRange & this.state.minAmount != null? <this.rangeText/> : t("Enable Amount Range")}
                             </div>
                             </Tooltip>
@@ -562,33 +579,74 @@ class MakerPage extends Component {
                 </Grid>
 
                 <Grid item xs={12} align="center" spacing={1}>
-                    <LocalizationProvider dateAdapter={DateFnsUtils}>
-                        <TimePicker
-                            sx={{width:210, align:"center"}}
-                            ampm={false}
-                            openTo="hours"
-                            views={['hours', 'minutes']}
-                            inputFormat="HH:mm"
-                            mask="__:__"
-                            components={{
-                                OpenPickerIcon: HourglassTopIcon
-                              }}
-                            open={this.state.openTimePicker}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <HourglassTopIcon />
-                                    </InputAdornment>)
-                                }}
-                            renderInput={(props) => <TextField {...props} />}
-                            label={t("Public Duration (HH:mm)")}
-                            value={this.state.publicExpiryTime}
-                            onChange={this.handleChangePublicDuration}
-                            minTime={new Date(0, 0, 0, 0, 10)}
-                            maxTime={new Date(0, 0, 0, 23, 59)}
-                        />
-                    </LocalizationProvider>
+                    <Accordion elevation={0} sx={{width:'280px', position:'relative', left:'-12px'}}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon color="primary"/>}>
+                            <Typography sx={{flexGrow: 1, textAlign: "center"}} color="text.secondary">{t("Expiry Timers")}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                        <Grid container xs={12}  spacing={1}>
+                            <Grid item xs={12} align="center" spacing={1}>
+                                <LocalizationProvider dateAdapter={DateFnsUtils}>
+                                    <TimePicker
+                                        sx={{width:210, align:"center"}}
+                                        ampm={false}
+                                        openTo="hours"
+                                        views={['hours', 'minutes']}
+                                        inputFormat="HH:mm"
+                                        mask="__:__"
+                                        components={{
+                                            OpenPickerIcon: HourglassTopIcon
+                                        }}
+                                        open={this.state.openTimePicker}
+                                        InputProps={{
+                                            endAdornment: (
+                                                <InputAdornment position="end">
+                                                    <HourglassTopIcon />
+                                                </InputAdornment>)
+                                            }}
+                                        renderInput={(props) => <TextField {...props} />}
+                                        label={t("Public Duration (HH:mm)")}
+                                        value={this.state.publicExpiryTime}
+                                        onChange={this.handleChangePublicDuration}
+                                        minTime={new Date(0, 0, 0, 0, 10)}
+                                        maxTime={new Date(0, 0, 0, 23, 59)}
+                                    />
+                                </LocalizationProvider>
+                            </Grid>
+                            
+                            <Grid item xs={12} align="center" spacing={1}>
+                                <LocalizationProvider dateAdapter={DateFnsUtils}>
+                                    <TimePicker
+                                        sx={{width:210, align:"center"}}
+                                        ampm={false}
+                                        openTo="hours"
+                                        views={['hours', 'minutes']}
+                                        inputFormat="HH:mm"
+                                        mask="__:__"
+                                        components={{
+                                            OpenPickerIcon: HourglassTopIcon
+                                        }}
+                                        open={this.state.openTimePicker}
+                                        InputProps={{
+                                            endAdornment: (
+                                                <InputAdornment position="end">
+                                                    <HourglassTopIcon />
+                                                </InputAdornment>)
+                                            }}
+                                        renderInput={(props) => <TextField {...props} />}
+                                        label={t("Escrow Deposit Time-Out (HH:mm)")}
+                                        value={this.state.escrowExpiryTime}
+                                        onChange={this.handleChangeEscrowDuration}
+                                        minTime={new Date(0, 0, 0, 1, 0)}
+                                        maxTime={new Date(0, 0, 0, 8, 0)}
+                                    />
+                                </LocalizationProvider>
+                            </Grid>
+                            </Grid>
+                        </AccordionDetails>
+                    </Accordion>
                 </Grid>
+
 
                 <Grid item xs={12} align="center" spacing={1}>
                     <FormControl align="center">

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { withTranslation, Trans} from "react-i18next";
+import { withTranslation} from "react-i18next";
 import {TextField,Chip, Tooltip, Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import MediaQuery from 'react-responsive'
@@ -17,6 +17,7 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import ArticleIcon from '@mui/icons-material/Article';
 import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
+import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -33,15 +34,15 @@ class OrderPage extends Component {
         openCollaborativeCancel: false,
         openInactiveMaker: false,
         showContractBox: 1,
+        orderId: this.props.match.params.orderId,
     };
-    this.orderId = this.props.match.params.orderId;
-    this.getOrderDetails();
+    this.getOrderDetails(this.props.match.params.orderId);
 
     // Refresh delays according to Order status
     this.statusToDelay = {
       "0": 2000,    //'Waiting for maker bond'
       "1": 25000,   //'Public'
-      "2": 999999,  //'Deleted'
+      "2": 90000,   //'Paused'
       "3": 2000,    //'Waiting for taker bond'
       "4": 999999,  //'Cancelled'
       "5": 999999,  //'Expired'
@@ -67,6 +68,7 @@ class OrderPage extends Component {
     // otherStateVars will fail to assign values
     if (newStateVars.currency == null){
       newStateVars.currency = this.state.currency
+      newStateVars.amount = this.state.amount
       newStateVars.status = this.state.status
     }
 
@@ -83,11 +85,12 @@ class OrderPage extends Component {
     this.setState(completeStateVars);
   }
 
-  getOrderDetails() {
+  getOrderDetails =(id)=> {
     this.setState(null)
-    fetch('/api/order' + '?order_id=' + this.orderId)
+    this.setState({orderId:id})
+    fetch('/api/order' + '?order_id=' + id)
       .then((response) => response.json())
-      .then((data) => this.completeSetState(data));
+      .then((data) => (this.completeSetState(data) & this.setState({pauseLoading:false})));
   }
 
   // These are used to refresh the data
@@ -103,7 +106,7 @@ class OrderPage extends Component {
     clearInterval(this.interval);
   }
   tick = () => {
-    this.getOrderDetails();
+    this.getOrderDetails(this.state.orderId);
   }
 
   // Countdown Renderer callback with condition
@@ -127,6 +130,14 @@ class OrderPage extends Component {
     );
   }
   };
+
+  timerRenderer(seconds){
+    var hours = parseInt(seconds/3600);
+    var minutes = parseInt((seconds-hours*3600)/60);
+    return(
+      <span>{hours>0 ? hours+"h":""} {minutes>0 ? zeroPad(minutes)+"m":""} </span>
+    )
+  }
 
   // Countdown Renderer callback with condition
   countdownPenaltyRenderer = ({ minutes, seconds, completed }) => {
@@ -267,7 +278,7 @@ class OrderPage extends Component {
           'amount':this.state.takeAmount,
         }),
       };
-      fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+      fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
       .then((response) => response.json())
       .then((data) => this.completeSetState(data));
   }
@@ -291,9 +302,9 @@ class OrderPage extends Component {
           'action':'cancel',
         }),
     };
-    fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+    fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
     .then((response) => response.json())
-    .then((data) => this.getOrderDetails(data.id));
+    .then(() => (this.getOrderDetails(this.state.orderId) & this.setState({status:4})));
     this.handleClickCloseConfirmCancelDialog();
   }
 
@@ -368,9 +379,9 @@ class OrderPage extends Component {
             'action':'cancel',
           }),
       };
-      fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+      fetch('/api/order/' + '?order_id=' + this.state.state.orderId, requestOptions)
       .then((response) => response.json())
-      .then((data) => this.getOrderDetails(data.id));
+      .then(() => (this.getOrderDetails(this.state.orderId) & this.setState({status:4})));
     this.handleClickCloseCollaborativeCancelDialog();
   }
 
@@ -531,10 +542,10 @@ class OrderPage extends Component {
                 </div>
               </ListItemIcon>
               {this.state.has_range & this.state.amount == null ?
-              <ListItemText primary={parseFloat(Number(this.state.min_amount).toPrecision(2))
-                +"-" + parseFloat(Number(this.state.max_amount).toPrecision(2)) +" "+this.state.currencyCode} secondary={t("Amount range")}/>
+              <ListItemText primary={pn(parseFloat(Number(this.state.min_amount).toPrecision(4)))
+                +"-" + pn(parseFloat(Number(this.state.max_amount).toPrecision(4))) +" "+this.state.currencyCode} secondary={t("Amount range")}/>
               :
-              <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))
+              <ListItemText primary={pn(parseFloat(parseFloat(this.state.amount).toFixed(4)))
                 +" "+this.state.currencyCode} secondary={t("Amount")}/>
               }
 
@@ -566,12 +577,30 @@ class OrderPage extends Component {
             </ListItem>
             <Divider />
 
-            <ListItem>
-              <ListItemIcon>
+            <ListItem >
+            <ListItemIcon>
                 <NumbersIcon/>
               </ListItemIcon>
-              <ListItemText primary={this.orderId} secondary={t("Order ID")}/>
+            <Grid container xs={12}>
+                <Grid item xs={4.5}>
+                  <ListItemText primary={this.state.orderId} secondary={t("Order ID")}/>
+                </Grid>
+                <Grid item xs={7.5}>
+                  <Grid container>
+                  <Grid item xs={2}>
+                    <ListItemIcon sx={{position:"relative",top:"12px",left:"-5px"}}><HourglassTopIcon/></ListItemIcon>
+                    </Grid>
+                    <Grid item xs={10}>
+                    <ListItemText
+                      primary={this.timerRenderer(this.state.escrow_duration)}
+                      secondary={t("Deposit timer")}>
+                    </ListItemText>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
             </ListItem>
+
             <Divider />
             <ListItem>
               <ListItemIcon>
@@ -652,7 +681,7 @@ class OrderPage extends Component {
             {this.orderBox()}
         </Grid>
         <Grid item xs={6} align="left">
-          <TradeBox push={this.props.history.push} width={330} data={this.state} completeSetState={this.completeSetState} />
+          <TradeBox push={this.props.history.push} getOrderDetails={this.getOrderDetails} pauseLoading={this.state.pauseLoading} width={330} data={this.state} completeSetState={this.completeSetState} />
         </Grid>
       </Grid>
     )
@@ -688,7 +717,7 @@ class OrderPage extends Component {
                 {this.orderBox()}
             </div>
             <div style={{display: this.state.showContractBox == 1 ? '':'none'}}>
-              <TradeBox push={this.props.history.push} width={330} data={this.state} completeSetState={this.completeSetState} />
+              <TradeBox push={this.props.history.push} getOrderDetails={this.getOrderDetails} pauseLoading={this.state.pauseLoading} width={330} data={this.state} completeSetState={this.completeSetState} />
             </div>
           </Grid>
         </Grid>

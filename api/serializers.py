@@ -24,6 +24,7 @@ class ListOrderSerializer(serializers.ModelSerializer):
             "bondless_taker",
             "maker",
             "taker",
+            "escrow_duration",
         )
 
 
@@ -43,6 +44,7 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "premium",
             "satoshis",
             "public_duration",
+            "escrow_duration",
             "bond_size",
             "bondless_taker",
         )
@@ -58,6 +60,7 @@ class UpdateOrderSerializer(serializers.Serializer):
                                       default=None)
     action = serializers.ChoiceField(
         choices=(
+            "pause",
             "take",
             "update_invoice",
             "submit_statement",
