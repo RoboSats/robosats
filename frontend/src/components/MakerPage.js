@@ -269,13 +269,13 @@ class MakerPage extends Component {
                         <FormControlLabel
                             value="0"
                             control={<Radio icon={<MoveToInboxIcon sx={{width:"26px",height:"26px"}} color="inherit"/>} checkedIcon={<MoveToInboxIcon sx={{width:"26px",height:"26px"}} color="primary"/>}/>}
-                            label={this.state.type == 0 ? <Typography color="primary"><b>{t("Buy")}</b></Typography>: t("Buy")}
+                            label={this.state.type == 0 ? <Typography color="primary"><b>{t("Buy")}</b></Typography>: <Typography color="text.secondary">{t("Buy")}</Typography>}
                             labelPlacement="end"
                         />
                         <FormControlLabel
                             value="1"
                             control={<Radio icon={<OutboxIcon sx={{width:"26px",height:"26px"}} color="inherit"/>} checkedIcon={<OutboxIcon sx={{width:"26px",height:"26px"}} color="secondary"/>}/>}
-                            label={this.state.type == 1 ? <Typography color="secondary"><b>{t("Sell")}</b></Typography>: t("Sell")}
+                            label={this.state.type == 1 ? <Typography color="secondary"><b>{t("Sell")}</b></Typography>: <Typography color="text.secondary">{t("Sell")}</Typography>}
                             labelPlacement="end"
                         />
                     </RadioGroup>

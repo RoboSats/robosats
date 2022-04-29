@@ -16,6 +16,8 @@ import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import BalanceIcon from '@mui/icons-material/Balance';
 import ContentCopy from "@mui/icons-material/ContentCopy";
+import PauseCircleIcon from '@mui/icons-material/PauseCircle';
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -62,7 +64,7 @@ class TradeBox extends Component {
     if(this.props.data.is_maker){
       if (status == 0){
         x = 1
-      } else if ([1,3].includes(status)){
+      } else if ([1,2,3].includes(status)){
         x = 2
       } else if ([6,7,8].includes(status)){
         x = 3
@@ -366,6 +368,20 @@ class TradeBox extends Component {
     return dict
   }
 
+  handleClickPauseOrder=()=>{
+    this.props.completeSetState({pauseLoading:true})
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+        body: JSON.stringify({
+          'action': "pause",
+        }),
+    };
+    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+    .then((response) => response.json())
+    .then((data) => (this.props.getOrderDetails(data.id)));
+  }
+
   showMakerWait=()=>{
     const { t } = this.props;
     return (
@@ -388,6 +404,7 @@ class TradeBox extends Component {
                 <p>{t("If the order expires untaken, your bond will return to you (no action needed).")}</p>
               </Typography>
             </ListItem>
+
             <Grid item xs={12} align="center">
               {this.props.data.tg_enabled ?
               <Typography color='primary' component="h6" variant="h6" align="center">{t("Telegram enabled")}</Typography>
@@ -398,13 +415,32 @@ class TradeBox extends Component {
               }
             </Grid>
             <Divider/>
-              <ListItem>
-              <ListItemIcon>
-                <BookIcon/>
-              </ListItemIcon>
-                <ListItemText primary={this.props.data.num_similar_orders} secondary={t("Public orders for {{currencyCode}}",{currencyCode: this.props.data.currencyCode})}/>
-              </ListItem>
 
+            <Grid container>
+              <Grid item xs={10}>
+                <ListItem>
+                  <ListItemIcon>
+                    <BookIcon/>
+                  </ListItemIcon>
+                    <ListItemText primary={this.props.data.num_similar_orders} secondary={t("Public orders for {{currencyCode}}",{currencyCode: this.props.data.currencyCode})}/>
+                </ListItem>
+              </Grid>
+              
+              <Grid item xs={2}>
+                <div style={{position:"relative", top:"7px", right:"14px"}}>
+                  {this.props.pauseLoading ?
+                  <CircularProgress sx={{width:"30px",height:"30px"}}/>
+                  :
+                  <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title={t("Pause the public order")}>
+                    <Button color="primary" onClick={this.handleClickPauseOrder}>
+                      <PauseCircleIcon sx={{width:"36px",height:"36px"}}/>
+                    </Button>
+                  </Tooltip>
+                  }
+              </div>
+              </Grid>
+            </Grid>
+              
             <Divider/>
               <ListItem>
               <ListItemIcon>
@@ -415,6 +451,44 @@ class TradeBox extends Component {
               </ListItem>
             <Divider/>
 
+          </List>
+        </Grid>
+        {this.showBondIsLocked()}
+      </Grid>
+    )
+  }
+
+  showPausedOrder=()=>{
+    const { t } = this.props;
+    return (
+      <Grid container align="center" spacing={1}>
+
+        <Grid item xs={12} align="center">
+          <Typography component="subtitle1" variant="subtitle1">
+            <b> {t("Your order is paused")} </b> {" " + this.stepXofY()}
+          </Typography>
+        </Grid>
+
+        <Grid item xs={12} align="center">
+          <List dense="true">
+            <Divider/>
+              <ListItem>
+              <Typography component="body2" variant="body2" align="left">
+                {t("Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.")}
+              </Typography>
+            </ListItem>
+            
+            <Grid item xs={12} align="center">
+              {this.props.pauseLoading ?
+              <CircularProgress/>
+              :
+              <Button color="primary" onClick={this.handleClickPauseOrder}>
+                <PlayCircleIcon sx={{width:"36px",height:"36px"}}/>{t("Unpause Order")}
+              </Button>
+              }
+            </Grid>
+
+          <Divider/>
           </List>
         </Grid>
         {this.showBondIsLocked()}
@@ -807,7 +881,6 @@ handleRatingRobosatsChange=(e)=>{
     .then((data) => (this.setState({badRequest:data.bad_request})
          & (data.id ? this.props.push('/order/' + data.id) 
             & this.props.getOrderDetails(data.id)
-            .then(()=>this.setState({renewLoading:false}))
           :"")
           ));
   }
@@ -1080,6 +1153,7 @@ handleRatingRobosatsChange=(e)=>{
               {this.props.data.is_taker & this.props.data.status == 3 ? this.showQRInvoice() : ""}
 
             {/* Waiting for taker and taker bond request */}
+              {this.props.data.is_maker & this.props.data.status == 2 ? this.showPausedOrder() : ""}
               {this.props.data.is_maker & this.props.data.status == 1 ? this.showMakerWait() : ""}
               {this.props.data.is_maker & this.props.data.status == 3 ? this.showTakerFound() : ""}
 

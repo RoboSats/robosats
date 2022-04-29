@@ -68,6 +68,7 @@ class OrderPage extends Component {
     // otherStateVars will fail to assign values
     if (newStateVars.currency == null){
       newStateVars.currency = this.state.currency
+      newStateVars.amount = this.state.amount
       newStateVars.status = this.state.status
     }
 
@@ -89,7 +90,7 @@ class OrderPage extends Component {
     this.setState({orderId:id})
     fetch('/api/order' + '?order_id=' + id)
       .then((response) => response.json())
-      .then((data) => this.completeSetState(data));
+      .then((data) => (this.completeSetState(data) & this.setState({pauseLoading:false})));
   }
 
   // These are used to refresh the data
@@ -680,7 +681,7 @@ class OrderPage extends Component {
             {this.orderBox()}
         </Grid>
         <Grid item xs={6} align="left">
-          <TradeBox push={this.props.history.push} getOrderDetails={this.getOrderDetails} width={330} data={this.state} completeSetState={this.completeSetState} />
+          <TradeBox push={this.props.history.push} getOrderDetails={this.getOrderDetails} pauseLoading={this.state.pauseLoading} width={330} data={this.state} completeSetState={this.completeSetState} />
         </Grid>
       </Grid>
     )
@@ -716,7 +717,7 @@ class OrderPage extends Component {
                 {this.orderBox()}
             </div>
             <div style={{display: this.state.showContractBox == 1 ? '':'none'}}>
-              <TradeBox push={this.props.history.push} getOrderDetails={this.getOrderDetails} width={330} data={this.state} completeSetState={this.completeSetState} />
+              <TradeBox push={this.props.history.push} getOrderDetails={this.getOrderDetails} pauseLoading={this.state.pauseLoading} width={330} data={this.state} completeSetState={this.completeSetState} />
             </div>
           </Grid>
         </Grid>

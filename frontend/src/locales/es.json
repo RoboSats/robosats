@@ -276,7 +276,7 @@
     "Go back": "Volver",
     "Enable": "Activar",
     "Telegram enabled": "Telegram activado",
-    "Public orders for {{currencyCode}}": "Órdenes públicas para {{currencyCode}}",
+    "Public orders for {{currencyCode}}": "Órdenes públicas por {{currencyCode}}",
     "Premium rank": "Percentil de la prima",
     "Among public {{currencyCode}} orders (higher is cheaper)": "Entre las órdenes públicas de {{currencyCode}} (más alto, más barato)",
     "A taker has been found!": "¡Un tomador ha sido encontrado!",
@@ -340,6 +340,10 @@
     "Invoice not submitted":"No se entregó factura del comprado",
     "Neither escrow locked or invoice submitted":"Ni el depósito de garantía fue bloqueado ni se entregó factura del comprador",
     "Renew Order":"Renovar Orden",
+    "Pause the public order":"Pausar la orden pública",
+    "Your order is paused":"Tu orden está en pausa",
+    "Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.":"Tu orden pública fue pausada. Ahora mismo, la orden no puede ser vista ni tomada por otros robots. Puedes volver a activarla cuando desees.",
+    "Unpause Order":"Activar Orden",
 
 
     "INFO DIALOG - InfoDiagog.js": "App information and clarifications and terms of use",
