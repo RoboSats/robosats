@@ -337,7 +337,7 @@ class BookPage extends Component {
           <Grid item xs={6} align="right">
             <FormControl align="center">
               <FormHelperText align="center">
-                <div style={{textAlign:"center"}}>{t("I want to")} </div>
+                <div style={{position:"relative", left:"10px", textAlign:"center"}}>{t("I want to")} </div>
               </FormHelperText>
               <RadioGroup row>
                 <div style={{position:"relative", left:"20px"}}>
@@ -379,7 +379,9 @@ class BookPage extends Component {
           <Grid item xs={6} align="left">
             <FormControl align="center">
               <FormHelperText align="center">
-                {this.props.type == 0 ? t("and receive") : (this.props.type == 1 ? t("and pay with") : t("and use") )}
+                <div style={{textAlign:"center", position:"relative", left:"-5px"}}>
+                  {this.props.type == 0 ? t("and receive") : (this.props.type == 1 ? t("and pay with") : t("and use") )}
+                </div>
               </FormHelperText>
               <Select
                   //autoWidth={true}
