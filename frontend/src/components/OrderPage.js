@@ -433,7 +433,7 @@ class OrderPage extends Component {
     const { t } = this.props;
     // If maker and Waiting for Bond. Or if taker and Waiting for bond.
     // Simply allow to cancel without showing the cancel dialog.
-    if ((this.state.is_maker & [0,1].includes(this.state.status)) || this.state.is_taker & this.state.status == 3){
+    if ((this.state.is_maker & [0,1,2].includes(this.state.status)) || this.state.is_taker & this.state.status == 3){
       return(
         <Grid item xs={12} align="center">
           <Button variant='contained' color='secondary' onClick={this.handleClickConfirmCancelButton}>{t("Cancel")}</Button>

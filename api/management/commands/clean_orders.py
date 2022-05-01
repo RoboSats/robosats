@@ -19,7 +19,6 @@ class Command(BaseCommand):
         # TODO handle 'database is locked'
 
         do_nothing = [
-            Order.Status.DEL,
             Order.Status.UCA,
             Order.Status.EXP,
             Order.Status.DIS,
