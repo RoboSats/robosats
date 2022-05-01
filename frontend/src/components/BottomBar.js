@@ -142,7 +142,7 @@ class BottomBar extends Component {
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><EqualizerIcon/></ListItemIcon>
-                    <ListItemText primary={pn(this.state.last_day_volume)+" Sats"} secondary={t("24h contracted volume")}/>
+                    <ListItemText primary={pn(this.state.last_day_volume)+" BTC"} secondary={t("24h contracted volume")}/>
                 </ListItem>
 
                 <Divider/>
