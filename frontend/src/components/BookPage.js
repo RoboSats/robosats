@@ -13,9 +13,11 @@ import PaymentText from './PaymentText'
 
 // Icons
 import RefreshIcon from '@mui/icons-material/Refresh';
-import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
-import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
-import OutboxIcon from '@mui/icons-material/Outbox';
+import SendReceiveIcon from "./icons/SendReceiveIcon";
+import BuySatsIcon from "./icons/BuySatsIcon";
+import BuySatsCheckedIcon from "./icons/BuySatsCheckedIcon";
+import SellSatsIcon from "./icons/SellSatsIcon";
+import SellSatsCheckedIcon from "./icons/SellSatsCheckedIcon";
 
 class BookPage extends Component {
   constructor(props) {
@@ -108,7 +110,7 @@ class BookPage extends Component {
                 <ListItemAvatar>
                 <Tooltip placement="right" enterTouchDelay="0" title={t(params.row.robot_status)}>
                   <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(params.row.robot_status)}>
-                  <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"10px"}}> {params.row.type == t("Buyer") ? <DoubleArrowIcon sx={{transform: "scaleX(-1)"}} color="secondary"/> : <DoubleArrowIcon color="primary"/>}</div>}>
+                  <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"11px", top:"2px"}}> {params.row.type == t("Buyer") ? <SendReceiveIcon sx={{transform: "scaleX(-1)",height:"20px",width:"20px"}} color="secondary"/> : <SendReceiveIcon sx={{height:"20px",width:"20px"}} color="primary"/>}</div>}>
                     <div style={{ width: 45, height: 45 }}>
                       <Image className='bookAvatar' 
                           disableError='true'
@@ -204,7 +206,7 @@ class BookPage extends Component {
               <div style={{ position: "relative", left: "-5px" }}>
                 <Tooltip placement="right" enterTouchDelay="0" title={params.row.robot+" ("+t(params.row.robot_status)+")"}>
                   <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(params.row.robot_status)}>
-                  <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"10px"}}> {params.row.type == t("Buyer") ? <DoubleArrowIcon sx={{transform: "scaleX(-1)"}} color="secondary"/> : <DoubleArrowIcon color="primary"/>}</div>}>
+                  <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"11px", top:"2px"}}> {params.row.type == t("Buyer") ? <SendReceiveIcon sx={{transform: "scaleX(-1)",height:"20px",width:"20px"}} color="secondary"/> : <SendReceiveIcon sx={{height:"20px",width:"20px"}} color="primary"/>}</div>}>
                     <div style={{ width: 45, height: 45 }}>
                       <Image className='bookAvatar' 
                           disableError='true'
@@ -340,7 +342,7 @@ class BookPage extends Component {
               <RadioGroup row>
                 <div style={{position:"relative", left:"20px"}}>
                   <FormControlLabel
-                      control={<Checkbox defaultChecked={true} icon={<MoveToInboxIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<MoveToInboxIcon sx={{width:"30px",height:"30px"}} color="primary"/>}/>}
+                      control={<Checkbox defaultChecked={true} icon={<BuySatsIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<BuySatsCheckedIcon sx={{width:"30px",height:"30px"}} color="primary"/>}/>}
                       label={
                         <div style={{position:"relative",top:"-13px"}}>
                           {this.props.buyChecked ? 
@@ -356,7 +358,7 @@ class BookPage extends Component {
                   />
                 </div>
                   <FormControlLabel
-                      control={<Checkbox defaultChecked={true} icon={<OutboxIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<OutboxIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
+                      control={<Checkbox defaultChecked={true} icon={<SellSatsIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<SellSatsCheckedIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
                       label={
                         <div style={{position:"relative",top:"-13px"}}>
                           {this.props.sellChecked ? 

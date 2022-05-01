@@ -6,8 +6,8 @@ import HttpApi from 'i18next-http-backend';
 import translationEN from "../locales/en.json";
 import translationES from "../locales/es.json";
 import translationDE from "../locales/de.json";
-import translationRU from "../locales/ru.json";
-import translationZH from "../locales/zh.json";
+// import translationRU from "../locales/ru.json";
+// import translationZH from "../locales/zh.json";
 import translationPL from "../locales/pl.json";
 import translationFR from "../locales/fr.json";
 
@@ -19,9 +19,9 @@ i18n
   resources: {
     en: {translations: translationEN},
     es: {translations: translationES},
-    ru: {translations: translationRU},
+    // ru: {translations: translationRU},
     de: {translations: translationDE},
-    zh: {translations: translationZH},
+    // zh: {translations: translationZH},
     pl: {translations: translationPL},
     fr: {translations: translationFR},
   },

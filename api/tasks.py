@@ -40,7 +40,7 @@ def users_cleansing():
     return results
 
 @shared_task(name="give_rewards")
-def users_cleansing():
+def give_rewards():
     """
     Referral rewards go from pending to earned.
     Happens asynchronously so the referral program cannot be easily used to spy.
@@ -174,8 +174,7 @@ def cache_market():
     exchange_rates = get_exchange_rates(currency_codes)
 
     results = {}
-    for i in range(len(Currency.currency_dict.values())
-                   ):  # currecies are indexed starting at 1 (USD)
+    for i in range(len(Currency.currency_dict.values())):  # currencies are indexed starting at 1 (USD)
 
         rate = exchange_rates[i]
         results[i] = {currency_codes[i], rate}
@@ -238,5 +237,5 @@ def send_message(order_id, message):
     
     elif message == 'fiat_exchange_starts':
         telegram.fiat_exchange_starts(order)
-        
+
     return

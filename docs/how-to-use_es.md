@@ -145,7 +145,7 @@ Puedes crear una orden que se adapte a tus condiciones. Pero ten en cuenta que e
 
 Al crear una orden, solo es requerido especificar la moneda, el tipo de orden (compra/venta) y el monto. Sin embargo, es una buena práctica especificar los métodos de pago que permites. También puede ser útil establecer una prima/descuento para que tu orden sea más interesante para los tomadores. Recuerda que, como vendedor, puedes incentivar a los compradores a tomar tu orden al reducir la prima. Sin embargo, si hay demasiados compradores, puedes aumentar la prima para obtener un mayor margen de beneficio. Como alternativa, puedes establecer una cantidad fija de Satoshis.
 
-*Límites: en la versión 0.1.0 de Robosats una orden no puede ser inferior a 10.000 Satoshis. Para evitar fallos de enrutamiento no puede ser mayor a 500.000 Satoshis. Este límite se incrementará en el futuro.*
+*Límites: en la versión 0.1.0 de Robosats una orden no puede ser inferior a 10.000 Satoshis. Para evitar fallos de enrutamiento no puede ser mayor a 1.200.000 Satoshis. Este límite se incrementará en el futuro.*
 
 <div align="center">
 <img src="images/how-to-use/contract-box-7.png" width="370" />

@@ -67,7 +67,7 @@ class InfoDialog extends Component {
 
           <Typography component="h5" variant="h5">{t("Are there trade limits?")}</Typography>
           <Typography component="body2" variant="body2">
-            <p>{t("Maximum single trade size is {{maxAmount}} Satoshis to minimize lightning routing failure. There is no limits to the number of trades per day. A robot can only have one order at a time. However, you can use multiple robots simultaneously in different browsers (remember to back up your robot tokens!).", {maxAmount: '800,000'})} </p>
+            <p>{t("Maximum single trade size is {{maxAmount}} Satoshis to minimize lightning routing failure. There is no limits to the number of trades per day. A robot can only have one order at a time. However, you can use multiple robots simultaneously in different browsers (remember to back up your robot tokens!).", {maxAmount: '1,200,000'})} </p>
           </Typography>
 
           <Typography component="h5" variant="h5">{t("Is RoboSats private?")}</Typography>

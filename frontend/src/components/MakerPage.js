@@ -11,11 +11,13 @@ import AutocompletePayments from './AutocompletePayments';
 import currencyDict from '../../static/assets/currencies.json';
 
 //icons
-import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
-import OutboxIcon from '@mui/icons-material/Outbox';
 import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import BuySatsIcon from "./icons/BuySatsIcon";
+import BuySatsCheckedIcon from "./icons/BuySatsCheckedIcon";
+import SellSatsIcon from "./icons/SellSatsIcon";
+import SellSatsCheckedIcon from "./icons/SellSatsCheckedIcon";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -27,7 +29,7 @@ class MakerPage extends Component {
   defaultPaymentMethod = "not specified";
   defaultPremium = 0;
   minTradeSats = 20000;
-  maxTradeSats = 800000;
+  maxTradeSats = 1200000;
   maxBondlessSats = 50000;
   maxRangeAmountMultiple = 4.8;
   minRangeAmountMultiple = 1.6;
@@ -268,13 +270,13 @@ class MakerPage extends Component {
                     <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
                         <FormControlLabel
                             value="0"
-                            control={<Radio icon={<MoveToInboxIcon sx={{width:"26px",height:"26px"}} color="inherit"/>} checkedIcon={<MoveToInboxIcon sx={{width:"26px",height:"26px"}} color="primary"/>}/>}
+                            control={<Radio icon={<BuySatsIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<BuySatsCheckedIcon sx={{width:"30px",height:"30px"}} color="primary"/>}/>}
                             label={this.state.type == 0 ? <Typography color="primary"><b>{t("Buy")}</b></Typography>: <Typography color="text.secondary">{t("Buy")}</Typography>}
                             labelPlacement="end"
                         />
                         <FormControlLabel
                             value="1"
-                            control={<Radio icon={<OutboxIcon sx={{width:"26px",height:"26px"}} color="inherit"/>} checkedIcon={<OutboxIcon sx={{width:"26px",height:"26px"}} color="secondary"/>}/>}
+                            control={<Radio icon={<SellSatsIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<SellSatsCheckedIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
                             label={this.state.type == 1 ? <Typography color="secondary"><b>{t("Sell")}</b></Typography>: <Typography color="text.secondary">{t("Sell")}</Typography>}
                             labelPlacement="end"
                         />

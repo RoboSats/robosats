@@ -16,7 +16,7 @@ import NumbersIcon from '@mui/icons-material/Numbers';
 import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import ArticleIcon from '@mui/icons-material/Article';
-import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
+import SendReceiveIcon from "./icons/SendReceiveIcon";
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 
 import { getCookie } from "../utils/cookies";
@@ -488,7 +488,7 @@ class OrderPage extends Component {
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
               <Tooltip placement="top" enterTouchDelay="0" title={t(this.state.maker_status)} >
                 <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.maker_status)}>
-                <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"10px"}}> {!this.state.type ? <DoubleArrowIcon sx={{transform: "scaleX(-1)"}} color="secondary"/> : <DoubleArrowIcon color="primary"/>}</div>}>
+                <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"12px", top:"4px"}}> {!this.state.type ? <SendReceiveIcon sx={{transform: "scaleX(-1)"}} color="secondary"/> : <SendReceiveIcon color="primary"/>}</div>}>
                   <Avatar className="flippedSmallAvatar"
                     alt={this.state.maker_nick}
                     src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'}
@@ -510,7 +510,7 @@ class OrderPage extends Component {
                       <ListItemAvatar >
                         <Tooltip enterTouchDelay="0" title={t(this.state.taker_status)} >
                           <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
-                          <Badge overlap="circular" anchorOrigin={{horizontal: 'left', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", right:"10px"}}> {this.state.type ? <DoubleArrowIcon color="secondary"/> : <DoubleArrowIcon sx={{transform: "scaleX(-1)"}} color="primary"/> }</div>}>
+                          <Badge overlap="circular" anchorOrigin={{horizontal: 'left', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", right:"12px", top:"4px"}}> {this.state.type ? <SendReceiveIcon color="secondary"/> : <SendReceiveIcon sx={{transform: "scaleX(-1)"}} color="primary"/> }</div>}>
                             <Avatar className="smallAvatar"
                               alt={this.state.taker_nick}
                               src={window.location.origin +'/static/assets/avatars/' + this.state.taker_nick + '.png'}
