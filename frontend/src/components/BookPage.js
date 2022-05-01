@@ -139,7 +139,7 @@ class BookPage extends Component {
           }},
           { field: 'payment_method', headerName: t("Payment Method"), width: 180 ,
           renderCell: (params) => {return (
-            <div style={{ cursor: "pointer" }}><PaymentText othersText={t("Others")} verbose={true} size={20} text={params.row.payment_method}/></div>
+            <div style={{ cursor: "pointer" }}><PaymentText othersText={t("Others")} verbose={true} size={24} text={params.row.payment_method}/></div>
           )} },
           { field: 'price', headerName: t("Price"), type: 'number', width: 140,
           renderCell: (params) => {return (

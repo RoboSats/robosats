@@ -29,7 +29,7 @@ class InfoDialog extends Component {
                 disableError='true'
                 cover='true'
                 color='null'
-                src={window.location.origin +'/static/assets/images/robosats_0.1.0.png'}
+                src={window.location.origin +'/static/assets/images/v0.1.2-04.png'}
               />
             </Grid>
           </Grid>
@@ -41,7 +41,7 @@ class InfoDialog extends Component {
             <p>{t("It is a BTC/FIAT peer-to-peer exchange over lightning.")+" "} {t("It simplifies matchmaking and minimizes the need of trust. RoboSats focuses in privacy and speed.")}</p>
               <img
                 width='100%'
-                src={window.location.origin +'/static/assets/images/robosats_0.1.0_banner.png'}
+                src={window.location.origin +'/static/assets/images/v0.1.2-03.png'}
               />
             <p>{t("RoboSats is an open source project ")} <Link 
               href='https://github.com/reckless-satoshi/robosats'>{t("(GitHub).")}</Link>
