@@ -654,5 +654,6 @@ frontend/static/admin*
 frontend/static/rest_framework*
 frontend/static/import_export*
 frontend/src/components/payment-methods/code*
+frontend/src/components/payment-methods/code/*
 frontend/src/components/payment-methods/webp*
 frontend/static/frontend/**
