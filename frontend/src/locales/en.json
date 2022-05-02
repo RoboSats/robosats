@@ -265,7 +265,7 @@
     "Your maker bond was unlocked":"Your maker bond was unlocked",
     "Your taker bond was unlocked":"Your taker bond was unlocked",
     "Your order is public":"Your order is public",
-    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m hours to reply. If you do not reply, you risk losing your bond.":"Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m hours to reply. If you do not reply, you risk losing your bond.",
+    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m to reply. If you do not reply, you risk losing your bond.":"Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m to reply. If you do not reply, you risk losing your bond.",
     "If the order expires untaken, your bond will return to you (no action needed).":"If the order expires untaken, your bond will return to you (no action needed).",
     "Enable Telegram Notifications":"Enable Telegram Notifications",
     "Enable TG Notifications":"Enable TG Notifications",
@@ -337,7 +337,10 @@
     "Invoice not submitted":"Invoice not submitted",
     "Neither escrow locked or invoice submitted":"Neither escrow locked or invoice submitted",
     "Renew Order":"Renew Order",
-
+    "Pause the public order":"Pause the public order",
+    "Your order is paused":"Your order is paused",
+    "Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.":"Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.",
+    "Unpause Order":"Unpause Order",
 
     "INFO DIALOG - InfoDiagog.js":"App information and clarifications and terms of use",
     "Close":"Close",

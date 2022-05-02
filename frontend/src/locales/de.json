@@ -258,7 +258,7 @@
     "Your maker bond was unlocked":"Deine Maker-Kaution wurde freigegeben",
     "Your taker bond was unlocked":"Deine Taker-Kaution wurde freigegeben.",
     "Your order is public":"Deine Order ist öffentlich",
-    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m hours to reply. If you do not reply, you risk losing your bond.": "Sei geduldig, während die Roboter das Buch ansehen. Diese Box läutet 🔊, sobald ein Roboter deine Order annimmt, dann hast du {{deposit_timer_hours}} Stunden {{deposit_timer_minutes}} Minuten Zeit zu antworten. Wenn du nicht antwortest, riskierst du den Verlust deiner Kaution.",
+    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m to reply. If you do not reply, you risk losing your bond.": "Sei geduldig, während die Roboter das Buch ansehen. Diese Box läutet 🔊, sobald ein Roboter deine Order annimmt, dann hast du {{deposit_timer_hours}} Stunden {{deposit_timer_minutes}} Minuten Zeit zu antworten. Wenn du nicht antwortest, riskierst du den Verlust deiner Kaution.",
     "If the order expires untaken, your bond will return to you (no action needed).":"Wenn die Order nicht angenommen wird und abläuft, erhältst du die Kaution zurück (keine Aktion erforderlich).",
     "Enable Telegram Notifications":"Telegram-Benachrichtigungen aktivieren",
     "Enable TG Notifications":"Aktiviere TG-Benachrichtigungen",

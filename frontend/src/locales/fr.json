@@ -258,7 +258,7 @@
     "Your maker bond was unlocked":"Votre obligation de createur a été déverrouillée",
     "Your taker bond was unlocked":"Votre obligation de preneur a été déverrouillée",
     "Your order is public":"Votre ordre est publique",
-    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{invoice_escrow_duration}} hours to reply. If you do not reply, you risk losing your bond.":"Soyez patient pendant que les robots vérifient le livre. Cette case sonnera 🔊 dès qu'un robot prendra votre ordre, puis vous aurez {{invoice_escrow_duration}} heures pour répondre. Si vous ne répondez pas, vous risquez de perdre votre caution",
+    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{invoice_escrow_duration}} to reply. If you do not reply, you risk losing your bond.":"Soyez patient pendant que les robots vérifient le livre. Cette case sonnera 🔊 dès qu'un robot prendra votre ordre, puis vous aurez {{invoice_escrow_duration}} heures pour répondre. Si vous ne répondez pas, vous risquez de perdre votre caution",
     "If the order expires untaken, your bond will return to you (no action needed).":"Si l'ordre expire sans être prise, votre caution vous sera rendue (aucune action n'est nécessaire).",
     "Enable Telegram Notifications":"Activer les notifications Telegram",
     "Enable TG Notifications":"Activer notifications TG",

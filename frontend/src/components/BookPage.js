@@ -23,21 +23,23 @@ class BookPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      orders: new Array({id:0,}),
-      loading: true,
       pageSize: 6,
     };
-    this.getOrderDetails(2, 0)
+
+    if(this.props.orders.length == 0){
+      this.getOrderDetails(2, 0)
+    }
   }
 
   getOrderDetails(type, currency) {
+    this.props.setAppState({bookLoading: true});
     fetch('/api/book' + '?currency=' + currency + "&type=" + type)
       .then((response) => response.json())
-      .then((data) => this.setState({
-        orders: data,
-        not_found: data.not_found,
-        loading: false,
-      }));
+      .then((data) => (this.props.setAppState({
+        bookNotFound: data.not_found,
+        bookLoading: false,
+        bookOrders: data,
+      })));
   }
 
   handleRowClick=(e)=>{
@@ -83,7 +85,7 @@ class BookPage extends Component {
       <div style={{ height: 422, width: '100%' }}>
       <DataGrid
         rows={
-            this.state.orders.filter(order => order.type == this.props.type || this.props.type == 2)
+            this.props.orders.filter(order => order.type == this.props.type || this.props.type == 2)
             .filter(order => order.currency == this.props.currency || this.props.currency == 0)
             .map((order) =>
             ({id: order.id,
@@ -101,7 +103,7 @@ class BookPage extends Component {
               premium: order.premium,
             })
           )}
-        loading={this.state.loading}
+        loading={this.props.loading}
         columns={[
           // { field: 'id', headerName: 'ID', width: 40 },
           { field: 'robot', headerName: t("Robot"), width: 240, 
@@ -164,7 +166,7 @@ class BookPage extends Component {
             </Stack>
           )
         }}
-        pageSize={this.state.loading ? 0 : this.state.pageSize}
+        pageSize={this.props.loading ? 0 : this.state.pageSize}
         rowsPerPageOptions={[6,20,50]}
         onPageSizeChange={(newPageSize) => this.setState({pageSize:newPageSize})}
         onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
@@ -178,9 +180,9 @@ class BookPage extends Component {
     return (
       <div style={{ height: 422, width: '100%' }}>
       <DataGrid
-        loading={this.state.loading}
+        loading={this.props.loading}
         rows={
-          this.state.orders.filter(order => order.type == this.props.type || this.props.type == 2)
+          this.props.orders.filter(order => order.type == this.props.type || this.props.type == 2)
           .filter(order => order.currency == this.props.currency || this.props.currency == 0)
           .map((order) =>
             ({id: order.id,
@@ -265,7 +267,7 @@ class BookPage extends Component {
             </Stack>
           )
         }}
-        pageSize={this.state.loading ? 0 : this.state.pageSize}
+        pageSize={this.props.loading ? 0 : this.state.pageSize}
         rowsPerPageOptions={[6,20,50]}
         onPageSizeChange={(newPageSize) => this.setState({pageSize:newPageSize})}
         onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
@@ -401,7 +403,7 @@ class BookPage extends Component {
               </Select>
             </FormControl>
           </Grid>
-        { this.state.not_found ? "" :
+        { this.props.notFound ? "" :
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
                {this.props.type == 0 ? 
@@ -417,7 +419,7 @@ class BookPage extends Component {
           </Grid>
           }
 
-        { this.state.not_found ?
+        { this.props.notFound ?
           <this.NoOrdersFound/>
           : 
           <Grid item xs={12} align="center">

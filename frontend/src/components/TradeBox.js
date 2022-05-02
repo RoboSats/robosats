@@ -400,7 +400,7 @@ class TradeBox extends Component {
           <Divider/>
             <ListItem>
               <Typography component="body2" variant="body2" align="left">
-                <p>{t("Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m hours to reply. If you do not reply, you risk losing your bond.", this.depositHoursMinutes() )} </p>
+                <p>{t("Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m to reply. If you do not reply, you risk losing your bond.", this.depositHoursMinutes() )} </p>
                 <p>{t("If the order expires untaken, your bond will return to you (no action needed).")}</p>
               </Typography>
             </ListItem>
