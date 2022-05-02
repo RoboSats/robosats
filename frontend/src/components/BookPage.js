@@ -63,7 +63,7 @@ class BookPage extends Component {
     }
   }
 
-  
+
   // Colors for the status badges
   statusBadgeColor(status){
     if(status=='Active'){return("success")}
@@ -90,7 +90,7 @@ class BookPage extends Component {
             .map((order) =>
             ({id: order.id,
               avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
-              robot: order.maker_nick, 
+              robot: order.maker_nick,
               robot_status: order.maker_status,
               type: order.type ? t("Seller"): t("Buyer"),
               amount: order.amount,
@@ -106,17 +106,17 @@ class BookPage extends Component {
         loading={this.props.bookLoading}
         columns={[
           // { field: 'id', headerName: 'ID', width: 40 },
-          { field: 'robot', headerName: t("Robot"), width: 240, 
+          { field: 'robot', headerName: t("Robot"), width: 240,
             renderCell: (params) => {return (
               <ListItemButton style={{ cursor: "pointer" }}>
                 <ListItemAvatar>
-                <Tooltip placement="right" enterTouchDelay="0" title={t(params.row.robot_status)}>
+                <Tooltip placement="right" enterTouchDelay={0} title={t(params.row.robot_status)}>
                   <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(params.row.robot_status)}>
                   <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"11px", top:"2px"}}> {params.row.type == t("Buyer") ? <SendReceiveIcon sx={{transform: "scaleX(-1)",height:"20px",width:"20px"}} color="secondary"/> : <SendReceiveIcon sx={{height:"20px",width:"20px"}} color="primary"/>}</div>}>
                     <div style={{ width: 45, height: 45 }}>
-                      <Image className='bookAvatar' 
-                          disableError='true'
-                          disableSpinner='true'
+                      <Image className='bookAvatar'
+                          disableError={true}
+                          disableSpinner={true}
                           color='null'
                           alt={params.row.robot}
                           src={params.row.avatar}
@@ -135,7 +135,7 @@ class BookPage extends Component {
           renderCell: (params) => {return (
             <div style={{ cursor: "pointer" }}>{this.amountToString(params.row.amount,params.row.has_range, params.row.min_amount, params.row.max_amount)}</div>
           )}},
-          { field: 'currency', headerName: t("Currency"), width: 100, 
+          { field: 'currency', headerName: t("Currency"), width: 100,
           renderCell: (params) => {return (
             <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>{params.row.currency+" "}{getFlags(params.row.currency)}</div>)
           }},
@@ -152,7 +152,7 @@ class BookPage extends Component {
               <div style={{ cursor: "pointer" }}>{parseFloat(parseFloat(params.row.premium).toFixed(4))+"%" }</div>
             )} },
           ]}
-        
+
         components={{
           NoRowsOverlay: () => (
             <Stack height="100%" alignItems="center" justifyContent="center">
@@ -187,7 +187,7 @@ class BookPage extends Component {
           .map((order) =>
             ({id: order.id,
               avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
-              robot: order.maker_nick, 
+              robot: order.maker_nick,
               robot_status: order.maker_status,
               type: order.type ? t("Seller"): t("Buyer"),
               amount: order.amount,
@@ -203,14 +203,14 @@ class BookPage extends Component {
 
         columns={[
           // { field: 'id', headerName: 'ID', width: 40 },
-          { field: 'robot', headerName: t("Robot"), width: 64, 
+          { field: 'robot', headerName: t("Robot"), width: 64,
             renderCell: (params) => {return (
               <div style={{ position: "relative", left: "-5px" }}>
-                <Tooltip placement="right" enterTouchDelay="0" title={params.row.robot+" ("+t(params.row.robot_status)+")"}>
+                <Tooltip placement="right" enterTouchDelay={0} title={params.row.robot+" ("+t(params.row.robot_status)+")"}>
                   <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(params.row.robot_status)}>
                   <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"11px", top:"2px"}}> {params.row.type == t("Buyer") ? <SendReceiveIcon sx={{transform: "scaleX(-1)",height:"20px",width:"20px"}} color="secondary"/> : <SendReceiveIcon sx={{height:"20px",width:"20px"}} color="primary"/>}</div>}>
                     <div style={{ width: 45, height: 45 }}>
-                      <Image className='bookAvatar' 
+                      <Image className='bookAvatar'
                           disableError='true'
                           disableSpinner='true'
                           color='null'
@@ -225,15 +225,15 @@ class BookPage extends Component {
             );
           } },
           { field: 'type', headerName: t("Is"), width: 60, hide:'true'},
-          { field: 'amount', headerName: t("Amount"), type: 'number', width: 84, 
+          { field: 'amount', headerName: t("Amount"), type: 'number', width: 84,
           renderCell: (params) => {return (
-            <Tooltip placement="right" enterTouchDelay="0" title={t(params.row.type)}>
+            <Tooltip placement="right" enterTouchDelay={0} title={t(params.row.type)}>
               <div style={{ cursor: "pointer" }}>{this.amountToString(params.row.amount,params.row.has_range, params.row.min_amount, params.row.max_amount)}</div>
             </Tooltip>
           )} },
-          { field: 'currency', headerName: t("Currency"), width: 85, 
+          { field: 'currency', headerName: t("Currency"), width: 85,
           renderCell: (params) => {return (
-            // <Tooltip placement="left" enterTouchDelay="0" title={params.row.payment_method}>
+            // <Tooltip placement="left" enterTouchDelay={0} title={params.row.payment_method}>
               <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>{params.row.currency+" "}{getFlags(params.row.currency)}</div>
             // </Tooltip>
           )} },
@@ -248,12 +248,12 @@ class BookPage extends Component {
           )} },
           { field: 'premium', headerName: t("Premium"), type: 'number', width: 85,
             renderCell: (params) => {return (
-              <Tooltip placement="left" enterTouchDelay="0" title={pn(params.row.price) + " " +params.row.currency+ "/BTC" }>
+              <Tooltip placement="left" enterTouchDelay={0} title={pn(params.row.price) + " " +params.row.currency+ "/BTC" }>
               <div style={{ cursor: "pointer" }}>{parseFloat(parseFloat(params.row.premium).toFixed(4))+"%" }</div>
               </Tooltip>
             )} },
           ]}
-        
+
         components={{
           NoRowsOverlay: () => (
             <Stack height="100%" alignItems="center" justifyContent="center">
@@ -347,9 +347,9 @@ class BookPage extends Component {
                       control={<Checkbox defaultChecked={true} icon={<BuySatsIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<BuySatsCheckedIcon sx={{width:"30px",height:"30px"}} color="primary"/>}/>}
                       label={
                         <div style={{position:"relative",top:"-13px"}}>
-                          {this.props.buyChecked ? 
+                          {this.props.buyChecked ?
                             <Typography variant="caption" color="primary"><b>{t("Buy")}</b></Typography>
-                            : 
+                            :
                             <Typography variant="caption" color="text.secondary">{t("Buy")}</Typography>
                           }
                         </div>
@@ -363,9 +363,9 @@ class BookPage extends Component {
                       control={<Checkbox defaultChecked={true} icon={<SellSatsIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<SellSatsCheckedIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
                       label={
                         <div style={{position:"relative",top:"-13px"}}>
-                          {this.props.sellChecked ? 
+                          {this.props.sellChecked ?
                             <Typography variant="caption" color="secondary"><b>{t("Sell")}</b></Typography>
-                            :  
+                            :
                             <Typography variant="caption" color="text.secondary">{t("Sell")}</Typography>
                           }
                         </div>
@@ -389,8 +389,8 @@ class BookPage extends Component {
                   //autoWidth={true}
                   sx={{width:120}}
                   label={t("Select Payment Currency")}
-                  required="true" 
-                  value={this.props.bookCurrency} 
+                  required={true}
+                  value={this.props.bookCurrency}
                   inputProps={{
                       style: {textAlign:"center"}
                   }}
@@ -398,7 +398,7 @@ class BookPage extends Component {
               >     <MenuItem value={0}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags('ANY')}{" "+t("ANY_currency")}</div></MenuItem>
                     {
                       Object.entries(currencyDict)
-                      .map( ([key, value]) => <MenuItem value={parseInt(key)}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div></MenuItem> )
+                      .map( ([key, value]) => <MenuItem key={key} value={parseInt(key)}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div></MenuItem> )
                     }
               </Select>
             </FormControl>
@@ -406,22 +406,22 @@ class BookPage extends Component {
         { this.props.bookNotFound ? "" :
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
-               {this.props.bookType == 0 ? 
-                t("You are SELLING BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode}) 
-               : 
-                (this.props.bookType == 1 ? 
+               {this.props.bookType == 0 ?
+                t("You are SELLING BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode})
+               :
+                (this.props.bookType == 1 ?
                   t("You are BUYING BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode})
                 :
                   t("You are looking at all")
                 )
-               } 
+               }
             </Typography>
           </Grid>
           }
 
         { this.props.bookNotFound ?
           <this.NoOrdersFound/>
-          : 
+          :
           <Grid item xs={12} align="center">
             {/* Desktop Book */}
             <MediaQuery minWidth={930}>
@@ -445,7 +445,7 @@ class BookPage extends Component {
           </Grid>
         </Grid>
     );
-  };
+  }
 }
 
 export default withTranslation()(BookPage);

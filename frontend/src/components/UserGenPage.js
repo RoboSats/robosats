@@ -19,25 +19,28 @@ class UserGenPage extends Component {
     this.state = {
       openInfo: false,
       tokenHasChanged: false,
+      token: ""
     };
 
     this.refCode = this.props.match.params.refCode;
+  }
 
+  componentDidMount() {
     // Checks in parent HomePage if there is already a nick and token
     // Displays the existing one
     if (this.props.nickname != null){
-      this.state = {
+      this.setState({
         nickname: this.props.nickname,
         token: this.props.token? this.props.token : null,
         avatar_url: '/static/assets/avatars/' + this.props.nickname + '.png',
         loadingRobot: false
-      }
+      });
     }
     else{
       var newToken = this.genBase62Token(36)
-      this.state = {
+      this.setState({
         token: newToken
-      };
+      });
       this.getGeneratedUser(newToken);
     }
   }
@@ -78,12 +81,12 @@ class UserGenPage extends Component {
           token: token,
           avatarLoaded: false,
         })) & writeCookie("robot_token",token))
-        & 
+        &
         // If the robot has been found (recovered) we assume the token is backed up
         (data.found ? this.props.setAppState({copiedToken:true}) : null)
      });
   }
-  
+
   delGeneratedUser() {
     const requestOptions = {
       method: 'DELETE',
@@ -127,7 +130,7 @@ class UserGenPage extends Component {
   InfoDialog =() =>{
     return(
       <Dialog
-        open={this.state.openInfo}
+        open={Boolean(this.state.openInfo)}
         onClose={this.handleCloseInfo}
         aria-labelledby="info-dialog-title"
         aria-describedby="info-dialog-description"
@@ -158,13 +161,13 @@ class UserGenPage extends Component {
                 </Typography>
               </Grid>
               <Grid item xs={12} align="center">
-              <Tooltip enterTouchDelay="0" title={t("This is your trading avatar")}>
+              <Tooltip enterTouchDelay={0} title={t("This is your trading avatar")}>
                 <div style={{ maxWidth: 200, maxHeight: 200 }}>
                   <Image className='newAvatar'
-                    disableError='true'
-                    cover='true'
+                    disableError={true}
+                    cover={true}
                     color='null'
-                    src={this.state.avatar_url}
+                    src={this.state.avatar_url || ""}
                   />
                 </div>
                 </Tooltip><br/>
@@ -187,7 +190,7 @@ class UserGenPage extends Component {
               <TextField sx={{maxWidth: 280}}
                 error={this.state.bad_request}
                 label={t("Store your token safely")}
-                required='true'
+                required={true}
                 value={this.state.token}
                 variant='standard'
                 helperText={this.state.bad_request}
@@ -200,13 +203,13 @@ class UserGenPage extends Component {
                 }}
                 InputProps={{
                   startAdornment:
-                  <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+                  <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
                     <IconButton  onClick= {()=> (navigator.clipboard.writeText(this.state.token) & this.props.setAppState({copiedToken:true}))}>
                       <ContentCopy color={this.props.avatarLoaded & !this.props.copiedToken & !this.state.bad_request ? 'primary' : 'inherit' } sx={{width:18, height:18}}/>
                     </IconButton>
                   </Tooltip>,
                   endAdornment:
-                  <Tooltip enterTouchDelay="250" title={t("Generate a new token")}>
+                  <Tooltip enterTouchDelay={250} title={t("Generate a new token")}>
                     <IconButton onClick={this.handleClickNewRandomToken}><CasinoIcon/></IconButton>
                   </Tooltip>,
                   }}
@@ -220,7 +223,7 @@ class UserGenPage extends Component {
               <span> {t("Generate Robot")}</span>
             </Button>
             :
-            <Tooltip enterTouchDelay="0" enterDelay="500" enterNextDelay="2000" title={t("You must enter a new token first")}>
+            <Tooltip enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t("You must enter a new token first")}>
               <div>
               <Button disabled={true} type="submit" size='small' >
                 <SmartToyIcon sx={{width:18, height:18}} />
@@ -239,12 +242,12 @@ class UserGenPage extends Component {
             </ButtonGroup>
           </Grid>
 
-          <Grid item xs={12} align="center" spacing={2} sx={{width:370}}>
+          <Grid item xs={12} align="center" sx={{width:370}}>
             <Grid item>
               <div style={{height:40}}/>
             </Grid>
             <div style={{width:370, left:30}}>
-              <Grid container xs={12} align="center">
+              <Grid container align="center">
                 <Grid item xs={0.8}/>
                 <Grid item xs={7.5} align="right">
                   <Typography component="h5" variant="h5">

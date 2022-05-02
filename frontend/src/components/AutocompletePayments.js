@@ -44,7 +44,7 @@ const InputWrapper = styled('div')(
   display: flex;
   flex-wrap: wrap;
   overflow-y:auto;
-  
+
   &:hover {
     border-color: ${theme.palette.mode === 'dark' ? (error? '#f44336':'#ffffff') : (error? '#dd0000' :'#2f2f2f')};
   }
@@ -233,7 +233,7 @@ export default function AutocompletePayments(props) {
     if(a || a == null){props.onAutocompleteChange(optionsToString(value))}
     return false
   };
-  
+
   return (
     <Root>
       <div style={{height:'5px'}}></div>
@@ -252,7 +252,7 @@ export default function AutocompletePayments(props) {
                 <ListHeader ><i>{props.listHeaderText+" "} </i> </ListHeader>
             </div>
           {groupedOptions.map((option, index) => (
-            <li {...getOptionProps({ option, index })}>
+            <li key={option.name} {...getOptionProps({ option, index })}>
               <Button fullWidth={true} color='inherit' size="small" sx={{textTransform: "none"}} style={{justifyContent: "flex-start"}}>
                   <div style={{position:'relative', right: '4px', top:'4px'}}>
                     <AddIcon style={{color : '#1976d2'}} sx={{width:18,height:18}} />
@@ -268,7 +268,7 @@ export default function AutocompletePayments(props) {
               :null)
             :null}
         </Listbox>
-      ) : 
+      ) :
       //Here goes what happens if there is no groupedOptions
       (getInputProps().value.length > 0 ?
         <Listbox {...getListboxProps()}>

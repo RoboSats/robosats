@@ -205,7 +205,7 @@ class TradeBox extends Component {
           <Box sx={{bgcolor:'#ffffff', width:'315px', position:'relative', left:'-5px'}} >
             <QRCode value={this.props.data.bond_invoice} size={305} style={{position:'relative', top:'3px'}}/>
           </Box>
-          <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+          <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
             <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.bond_invoice)}} align="center"> <ContentCopy/>{t("Copy to clipboard")}</Button>
           </Tooltip>
         </Grid>
@@ -283,7 +283,7 @@ class TradeBox extends Component {
           <Box sx={{bgcolor:'#ffffff', width:'315px', position:'relative', left:'-5px'}} >
             <QRCode value={this.props.data.escrow_invoice} size={305} style={{position:'relative', top:'3px'}}/>
           </Box>
-          <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+          <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
             <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.escrow_invoice)}} align="center"> <ContentCopy/>{t("Copy to clipboard")}</Button>
           </Tooltip>
         </Grid>

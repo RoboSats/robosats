@@ -62,8 +62,12 @@ class BottomBar extends Component {
             showRewardsSpinner: false,
             withdrawn: false,
         };
+    }
+
+    componentDidMount() {
+        console.log("mount fernando");
         this.getInfo();
-      }
+    }
 
     getInfo() {
         this.setState(null)
@@ -336,7 +340,7 @@ class BottomBar extends Component {
                         size='small'
                         InputProps={{
                             endAdornment:
-                            <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+                            <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
                                 <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
                                     <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
                                 </IconButton>
@@ -371,7 +375,7 @@ class BottomBar extends Component {
                             size='small'
                             InputProps={{
                                 endAdornment:
-                                <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+                                <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
                                     <IconButton onClick= {()=>navigator.clipboard.writeText('http://'+this.getHost()+'/ref/'+this.state.referral_code)}>
                                         <ContentCopy />
                                     </IconButton>
@@ -543,7 +547,7 @@ bottomBarDesktop =()=>{
                             <this.LangSelect/>
                         </Grid>
                         <Grid item xs={3}>
-                        <Tooltip enterTouchDelay="250" title={t("Show community and support links")}>
+                        <Tooltip enterTouchDelay={250} title={t("Show community and support links")}>
                             <IconButton
                             color="primary"
                             aria-label="Community"
@@ -553,7 +557,7 @@ bottomBarDesktop =()=>{
                         </Tooltip>
                         </Grid>
                         <Grid item xs={3}>
-                            <Tooltip enterTouchDelay="250" title={t("Show stats for nerds")}>
+                            <Tooltip enterTouchDelay={250} title={t("Show stats for nerds")}>
                                 <IconButton color="primary"
                                     aria-label="Stats for Nerds"
                                     onClick={this.handleClickOpenStatsForNerds} >
@@ -736,7 +740,7 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
-                        <Tooltip enterTouchDelay="300" title={t("Number of public BUY orders")}>
+                        <Tooltip enterTouchDelay={300} title={t("Number of public BUY orders")}>
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.num_public_buy_orders}  color="action">
                                 <InventoryIcon />
@@ -746,7 +750,7 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
-                        <Tooltip enterTouchDelay="300" title={t("Number of public SELL orders")}>
+                        <Tooltip enterTouchDelay={300} title={t("Number of public SELL orders")}>
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.num_public_sell_orders}  color="action">
                                 <SellIcon />
@@ -756,7 +760,7 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
-                        <Tooltip enterTouchDelay="300" title={t("Today active robots")}>
+                        <Tooltip enterTouchDelay={300} title={t("Today active robots")}>
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.active_robots_today}  color="action">
                                 <SmartToyIcon />
@@ -766,7 +770,7 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.8} align="center">
-                        <Tooltip enterTouchDelay="300" title={t("24h non-KYC bitcoin premium")}>
+                        <Tooltip enterTouchDelay={300} title={t("24h non-KYC bitcoin premium")}>
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.last_day_nonkyc_btc_premium+"%"}  color="action">
                                 <PriceChangeIcon />
@@ -780,7 +784,7 @@ bottomBarPhone =()=>{
                             <this.LangSelect/>
                         </Grid>
                         <Grid item xs={3}>
-                        <Tooltip enterTouchDelay="250" title={t("Show community and support links")}>
+                        <Tooltip enterTouchDelay={250} title={t("Show community and support links")}>
                             <IconButton
                             color="primary"
                             aria-label="Community"
@@ -790,7 +794,7 @@ bottomBarPhone =()=>{
                         </Tooltip>
                         </Grid>
                         <Grid item xs={3}>
-                        <Tooltip enterTouchDelay="250" title={t("Show stats for nerds")}>
+                        <Tooltip enterTouchDelay={250} title={t("Show stats for nerds")}>
                             <IconButton color="primary"
                                 aria-label="Stats for Nerds"
                                 onClick={this.handleClickOpenStatsForNerds} >
@@ -819,4 +823,5 @@ bottomBarPhone =()=>{
         )
     }
 }
+
 export default withTranslation()(BottomBar);

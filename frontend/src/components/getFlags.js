@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Flags from 'country-flag-icons/react/3x2'
 import SwapCallsIcon from '@mui/icons-material/SwapCalls';
 import GoldIcon from './icons/GoldIcon';
@@ -7,7 +7,7 @@ import EarthIcon from './icons/EarthIcon'
 export default function getFlags(code){
     const props = {width:20,height:20}
     var flag = "";
-    
+
     if(code == 'AUD') flag = <Flags.AU {...props}/>;
     if(code == 'ARS') flag = <Flags.AR {...props}/>;
     if(code == 'BRL') flag = <Flags.BR {...props}/>;
@@ -75,4 +75,4 @@ export default function getFlags(code){
     if(code == 'XAU') flag = <GoldIcon {...props}/>;
     if(code == 'BTC') flag = <SwapCallsIcon color="primary"/>;
     return <div style={{width:28, height: 20}}>{flag}</div>;
-};
+}

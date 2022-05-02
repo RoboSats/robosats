@@ -182,7 +182,7 @@ class OrderPage extends Component {
           <this.InactiveMakerDialog/>
           <this.StoreTokenDialog/>
           <div style={{maxWidth:120}}>
-          <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title={t("Enter amount of fiat to exchange for bitcoin")}>
+          <Tooltip placement="top" enterTouchDelay={500} enterDelay={700} enterNextDelay={2000} title={t("Enter amount of fiat to exchange for bitcoin")}>
             <Paper elevation={5} sx={{maxHeight:40}}>
               <TextField
                   error={(this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount) & this.state.takeAmount != "" }
@@ -190,7 +190,7 @@ class OrderPage extends Component {
                   label={t("Amount {{currencyCode}}", {currencyCode: this.state.currencyCode})}
                   size="small"
                   type="number"
-                  required="true"
+                  required={true}
                   value={this.state.takeAmount}
                   inputProps={{
                       min:this.state.min_amount ,
@@ -203,7 +203,7 @@ class OrderPage extends Component {
           </Tooltip>
           </div>
           <div style={{height:38, top:'1px', position:'relative', display: (this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount || this.state.takeAmount == "" || this.state.takeAmount == null) ? '':'none'}}>
-            <Tooltip placement="top" enterTouchDelay="0" enterDelay="500" enterNextDelay="1200" title={t("You must specify an amount first")}>
+            <Tooltip placement="top" enterTouchDelay={0} enterDelay={500} enterNextDelay={1200} title={t("You must specify an amount first")}>
               <Paper elevation={4}>
                 <Button sx={{height:38}} variant='contained' color='primary'
                   disabled={true}>
@@ -243,7 +243,7 @@ class OrderPage extends Component {
       return ( <this.takeOrderButton/>);
     } else{
       return(
-      <Tooltip enterTouchDelay="0" title={t("Wait until you can take an order")}><div>
+      <Tooltip enterTouchDelay={0} title={t("Wait until you can take an order")}><div>
       <Button disabled={true} variant='contained' color='primary'>{t("Take Order")}</Button>
       </div></Tooltip>)
     }
@@ -558,7 +558,7 @@ class OrderPage extends Component {
           <List dense="true">
             <ListItem >
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
-              <Tooltip placement="top" enterTouchDelay="0" title={t(this.state.maker_status)} >
+              <Tooltip placement="top" enterTouchDelay={0} title={t(this.state.maker_status)} >
                 <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.maker_status)}>
                 <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"12px", top:"4px"}}> {!this.state.type ? <SendReceiveIcon sx={{transform: "scaleX(-1)"}} color="secondary"/> : <SendReceiveIcon color="primary"/>}</div>}>
                   <Avatar className="flippedSmallAvatar"
@@ -580,7 +580,7 @@ class OrderPage extends Component {
                     <ListItem align="left">
                       <ListItemText primary={this.state.taker_nick + (this.state.type ? " "+t("(Buyer)") : " "+t("(Seller)"))} secondary={t("Order taker")}/>
                       <ListItemAvatar >
-                        <Tooltip enterTouchDelay="0" title={t(this.state.taker_status)} >
+                        <Tooltip enterTouchDelay={0} title={t(this.state.taker_status)} >
                           <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
                           <Badge overlap="circular" anchorOrigin={{horizontal: 'left', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", right:"12px", top:"4px"}}> {this.state.type ? <SendReceiveIcon color="secondary"/> : <SendReceiveIcon sx={{transform: "scaleX(-1)"}} color="primary"/> }</div>}>
                             <Avatar className="smallAvatar"

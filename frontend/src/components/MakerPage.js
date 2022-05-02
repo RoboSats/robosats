@@ -262,7 +262,7 @@ class MakerPage extends Component {
         const { t } = this.props;
         return(
             <Paper elevation={12} style={{ padding: 8, width:'260px', align:'center'}}>
-            <Grid item xs={12} align="center" spacing={1}>
+            <Grid item xs={12} align="center">
                 <div style={{position:'relative', left:'5px'}}>
                 <FormControl component="fieldset">
                     <FormHelperText sx={{textAlign:"center"}}>
@@ -287,9 +287,9 @@ class MakerPage extends Component {
                 </div>
             </Grid>
 
-            <Grid containter xs={12} alignItems="stretch" style={{ display: "flex" }}>
+            <Grid containter alignItems="stretch" style={{ display: "flex" }}>
                     <div style={{maxWidth:150}}>
-                    <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title={t("Amount of fiat to exchange for bitcoin")}>
+                    <Tooltip placement="top" enterTouchDelay={500} enterDelay={700} enterNextDelay={2000} title={t("Amount of fiat to exchange for bitcoin")}>
                         <TextField
                             disabled = {this.state.enableAmountRange}
                             variant = {this.state.enableAmountRange ? 'filled' : 'outlined'}
@@ -297,7 +297,7 @@ class MakerPage extends Component {
                             helperText={this.state.amount <= 0 & this.state.amount != "" ? t("Invalid") : null}
                             label={t("Amount")}
                             type="number"
-                            required="true"
+                            required={true}
                             value={this.state.amount}
                             inputProps={{
                                 min:0 ,
@@ -310,14 +310,14 @@ class MakerPage extends Component {
                         <div >
                             <Select
                                 sx={{width:'120px'}}
-                                required="true"
+                                required={true}
                                 defaultValue={this.defaultCurrency}
                                 inputProps={{
                                     style: {textAlign:"center"}
                                 }}
                                 onChange={this.handleCurrencyChange}>
                                     {Object.entries(currencyDict)
-                                    .map( ([key, value]) => <MenuItem value={parseInt(key)}>
+                                    .map( ([key, value]) => <MenuItem key={key} value={parseInt(key)}>
                                         <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div>
                                         </MenuItem> )}
                             </Select>
@@ -325,7 +325,7 @@ class MakerPage extends Component {
 
             </Grid>
             <Grid item xs={12} align="center">
-                <Tooltip placement="top" enterTouchDelay="300" enterDelay="700" enterNextDelay="2000" title={t("Enter your preferred fiat payment methods. Fast methods are highly recommended.")}>
+                <Tooltip placement="top" enterTouchDelay={300} enterDelay={700} enterNextDelay={2000} title={t("Enter your preferred fiat payment methods. Fast methods are highly recommended.")}>
                     <AutocompletePayments
                         onAutocompleteChange={this.handlePaymentMethodChange}
                         optionsType={this.state.currency==1000 ? "swap":"fiat"}
@@ -346,7 +346,7 @@ class MakerPage extends Component {
                         </div>
                     </FormHelperText>
                     <RadioGroup row defaultValue="relative">
-                    <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title={t("Let the price move with the market")}>
+                    <Tooltip placement="top" enterTouchDelay={0} enterDelay={1000} enterNextDelay={2000} title={t("Let the price move with the market")}>
                         <FormControlLabel
                         value="relative"
                         control={<Radio color="primary"/>}
@@ -355,7 +355,7 @@ class MakerPage extends Component {
                         onClick={this.handleClickRelative}
                         />
                     </Tooltip>
-                    <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title={t("Set a fix amount of satoshis")}>
+                    <Tooltip placement="top" enterTouchDelay={0} enterDelay={1000} enterNextDelay={2000} title={t("Set a fix amount of satoshis")}>
                         <FormControlLabel
                         disabled={this.state.enableAmountRange}
                         value="explicit"
@@ -377,7 +377,7 @@ class MakerPage extends Component {
                             error={this.state.badSatoshis}
                             helperText={this.state.badSatoshis}
                             type="number"
-                            required="true"
+                            required={true}
                             value={this.state.satoshis}
                             inputProps={{
                                 min:this.minTradeSats ,
@@ -544,12 +544,12 @@ class MakerPage extends Component {
         return(
             <Paper elevation={12} style={{ padding: 8, width:'280px', align:'center'}}>
 
-            <Grid container xs={12}  spacing={1}>
+            <Grid container spacing={1}>
 
-            <Grid item xs={12} align="center" spacing={1}>
+            <Grid item xs={12} align="center">
                 <FormControl align="center">
                         <FormHelperText>
-                            <Tooltip enterTouchDelay="0" placement="top" align="center" title={t("Let the taker chose an amount within the range")}>
+                            <Tooltip enterTouchDelay={0} placement="top" align="center" title={t("Let the taker chose an amount within the range")}>
                             <div align="center" style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
                                 <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked, is_explicit: false})}/>
                                 {this.state.enableAmountRange & this.state.minAmount != null? <this.rangeText/> : t("Enable Amount Range")}
@@ -582,14 +582,14 @@ class MakerPage extends Component {
                     </FormControl>
                 </Grid>
 
-                <Grid item xs={12} align="center" spacing={1}>
+                <Grid item xs={12} align="center">
                     <Accordion elevation={0} sx={{width:'280px', position:'relative', left:'-12px'}}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon color="primary"/>}>
                             <Typography sx={{flexGrow: 1, textAlign: "center"}} color="text.secondary">{t("Expiry Timers")}</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                        <Grid container xs={12}  spacing={1}>
-                            <Grid item xs={12} align="center" spacing={1}>
+                        <Grid container spacing={1}>
+                            <Grid item xs={12} align="center">
                                 <LocalizationProvider dateAdapter={DateFnsUtils}>
                                     <TimePicker
                                         sx={{width:210, align:"center"}}
@@ -617,8 +617,8 @@ class MakerPage extends Component {
                                     />
                                 </LocalizationProvider>
                             </Grid>
-                            
-                            <Grid item xs={12} align="center" spacing={1}>
+
+                            <Grid item xs={12} align="center">
                                 <LocalizationProvider dateAdapter={DateFnsUtils}>
                                     <TimePicker
                                         sx={{width:210, align:"center"}}
@@ -652,9 +652,9 @@ class MakerPage extends Component {
                 </Grid>
 
 
-                <Grid item xs={12} align="center" spacing={1}>
+                <Grid item xs={12} align="center">
                     <FormControl align="center">
-                    <Tooltip enterDelay="800" enterTouchDelay="0" placement="top" title={t("Set the skin-in-the-game, increase for higher safety assurance")}>
+                    <Tooltip enterDelay={800} enterTouchDelay={0} placement="top" title={t("Set the skin-in-the-game, increase for higher safety assurance")}>
                         <FormHelperText>
                                 <div align="center" style={{display:'flex',flexWrap:'wrap', transform: 'translate(20%, 0)'}}>
                                     {t("Fidelity Bond Size")} <LockIcon sx={{height:20,width:20}}/>
@@ -677,8 +677,8 @@ class MakerPage extends Component {
                     </FormControl>
                 </Grid>
 
-                <Grid item xs={12} align="center" spacing={1}>
-                    <Tooltip enterTouchDelay="0" title={t("COMING SOON - High risk! Limited to {{limitSats}}K Sats",{ limitSats: this.maxBondlessSats/1000})}>
+                <Grid item xs={12} align="center">
+                    <Tooltip enterTouchDelay={0} title={t("COMING SOON - High risk! Limited to {{limitSats}}K Sats",{ limitSats: this.maxBondlessSats/1000})}>
                         <FormControlLabel
                             label={t("Allow bondless takers")}
                             control={
@@ -700,7 +700,7 @@ class MakerPage extends Component {
 
     StoreTokenDialog = () =>{
         const { t } = this.props;
-        
+
         // If there is a robot cookie, prompt user to store it
         // Else, prompt user to generate a robot
         if (getCookie("robot_token")){
@@ -781,7 +781,7 @@ class MakerPage extends Component {
                         </Tabs>
                     </Box>
 
-                    <Grid item xs={12} align="center" spacing={1}>
+                    <Grid item xs={12} align="center">
                         <div style={{ display: this.state.showAdvanced == false ? '':'none'}}>
                             <this.StandardMakerOptions/>
                         </div>
@@ -795,7 +795,7 @@ class MakerPage extends Component {
   render() {
     const { t } = this.props;
     return (
-            <Grid container xs={12} align="center" spacing={1} sx={{minWidth:380}}>
+            <Grid container align="center" spacing={1} sx={{minWidth:380}}>
                 {/* <Grid item xs={12} align="center" sx={{minWidth:380}}>
                     <Typography component="h4" variant="h4">
                         ORDER MAKER
@@ -815,12 +815,12 @@ class MakerPage extends Component {
                     (this.state.is_explicit & (this.state.badSatoshis != null || this.state.satoshis == null)) ||
                     (!this.state.is_explicit & this.state.badPremium != null))
                     ?
-                    <Tooltip enterTouchDelay="0" title={t("You must fill the order correctly")}>
+                    <Tooltip enterTouchDelay={0} title={t("You must fill the order correctly")}>
                         <div><Button disabled color="primary" variant="contained">{t("Create Order")}</Button></div>
                     </Tooltip>
                     :
-                    <Button color="primary" 
-                        variant="contained" 
+                    <Button color="primary"
+                        variant="contained"
                         onClick={this.props.copiedToken ? this.handleCreateOfferButtonPressed : (() => this.setState({openStoreToken:true}))}
                         >
                         {t("Create Order")}
@@ -830,11 +830,11 @@ class MakerPage extends Component {
             </Grid>
             <Grid item xs={12} align="center">
                 {this.state.badRequest ?
-                <Typography component="subtitle2" variant="subtitle2" color="secondary">
+                <Typography component="h2" variant="subtitle2" color="secondary">
                     {this.state.badRequest} <br/>
                 </Typography>
                 : ""}
-                <Typography component="subtitle2" variant="subtitle2">
+                <Typography component="h2" variant="subtitle2">
                     <div align='center'>
                         {this.state.type==0 ?
                             t("Create a BTC buy order for ")

@@ -75,7 +75,7 @@ class Chat extends Component {
         message: this.state.value,
         nick: this.props.ur_nick,
       }));
-      this.state.value = ''
+      this.setState({value: ""});
     }
     e.preventDefault();
   }
@@ -107,13 +107,13 @@ class Chat extends Component {
               {this.state.messages.map(message => <>
               <Card elevation={5} align="left" >
               {/* If message sender is not our nick, gray color, if it is our nick, green color */}
-              {message.userNick == this.props.ur_nick ? 
+              {message.userNick == this.props.ur_nick ?
                 <CardHeader sx={{color: '#111111'}}
                   avatar={
                     <Badge variant="dot" overlap="circular" badgeContent="" color={this.state.connected ? "success" : "error"}>
                       <Avatar className="flippedSmallAvatar"
                         alt={message.userNick}
-                        src={window.location.origin +'/static/assets/avatars/' + message.userNick + '.png'} 
+                        src={window.location.origin +'/static/assets/avatars/' + message.userNick + '.png'}
                         />
                     </Badge>
                   }
@@ -128,7 +128,7 @@ class Chat extends Component {
                     <Badge variant="dot" overlap="circular" badgeContent="" color={this.state.peer_connected ? "success" : "error"}>
                       <Avatar className="flippedSmallAvatar"
                         alt={message.userNick}
-                        src={window.location.origin +'/static/assets/avatars/' + message.userNick + '.png'} 
+                        src={window.location.origin +'/static/assets/avatars/' + message.userNick + '.png'}
                         />
                     </Badge>
                   }
@@ -136,7 +136,7 @@ class Chat extends Component {
                   title={message.userNick}
                   subheader={message.msg}
                   subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444'}}}
-                />} 
+                />}
                 </Card>
               </>)}
               <div style={{ float:"left", clear: "both" }} ref={(el) => { this.messagesEnd = el; }}></div>
