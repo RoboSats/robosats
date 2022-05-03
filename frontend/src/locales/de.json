@@ -17,7 +17,7 @@
     "You must enter a new token first":"Du musst zuerst einen neuen Token eingeben",
     "Make Order":"Erstellen",
     "Info":"Info",
-    "View Book":"Durchsuchen",
+    "View Book":"Annehmen",
 
 
     "MAKER PAGE - MakerPage.js": "Dies ist die Seite, auf der Benutzer neue Angebote erstellen können",
@@ -33,7 +33,7 @@
     "Must be shorter than 65 characters":"Muss kürzer als 65 Zeichen sein",
     "Swap Destination(s)":"austausch Ziel(e)",
     "Fiat Payment Method(s)":"Fiat Zahlungsmethode(n)",
-    "You can add any method":"Du kannst jede Methode hinzufügen",
+    "You can add new methods":"Du kannst neue Methoden hinzufügen",
     "Add New":"Neu hinzufügen",
     "Choose a Pricing Method":"Wähle eine Preismethode",
     "Relative":"Relativ",
@@ -42,11 +42,17 @@
     "Explicit":"Explizit",
     "Set a fix amount of satoshis":"Setze eine feste Anzahl an Satoshis",
     "Satoshis":"Satoshis",
+    "Fixed price:":"Fixer Preis:",
+    "Order current rate:":"Aktueller Order-Kurs:",
+    "Your order fixed exchange rate":"Dein fixierter Order-Kurs",
+    "Your order's current exchange rate. Rate will move with the market.":"Der aktuelle Wechselkurs für deine Order. Der Kurs wird sich mit dem Markt verändern.",
     "Let the taker chose an amount within the range":"Lasse den Taker einen Betrag innerhalb der Spanne wählen",
     "Enable Amount Range":"Betragsbereich einschalten",
     "From": "Von",
     "to":"bis",
+    "Expiry Timers":"Ablauf-Timer",
     "Public Duration (HH:mm)":"Angebotslaufzeit (HH:mm)",
+    "Escrow Deposit Time-Out (HH:mm)":"Treuhand-Einzahlungs-Timeout (HH:mm)",
     "Set the skin-in-the-game, increase for higher safety assurance":"Lege die Kaution fest, erhöhen für mehr Sicherheit",
     "Fidelity Bond Size":"Höhe der Kaution",
     "Allow bondless takers":"Erlaube kautionslose Taker",
@@ -65,7 +71,6 @@
     "Must be less than {{maxSats}": "Muss weniger sein als {{maxSats}}",
     "Must be more than {{minSats}}": "Muss mehr sein als {{minSats}}",
 
-    
     "PAYMENT METHODS - autocompletePayments.js": "Payment method strings",
     "not specified":"Nicht definiert",
     "Instant SEPA":"Instant SEPA",
@@ -100,6 +105,7 @@
     "You are looking at all":"Alle werden angezeigt",
     "No orders found to sell BTC for {{currencyCode}}":"Keine BTC-Verkaufsangebote für {{currencyCode}} gefunden",
     "No orders found to buy BTC for {{currencyCode}}":"Keine BTC-Kaufsangebote für {{currencyCode}} gefunden",
+    "Filter has no results":"Filter hat keine Ergebnisse",
     "Be the first one to create an order":"Sei der Erste, der ein Angebot erstellt",
 
 
@@ -199,12 +205,13 @@
     "Amount of Satoshis":"Anzahl Satoshis",
     "Premium over market price":"Aufschlag über dem Marktpreis",
     "Order ID":"Order-ID",
-
+    "Deposit timer":"Einzahlungstimer",
     "Expires in":"Läuft ab in",
     "{{nickname}} is asking for a collaborative cancel":"{{nickname}} bittet um gemeinsamen Abbruch",
     "You asked for a collaborative cancellation":"Du hast um einen gemeinsamen Abbruch gebeten",
     "Invoice expired. You did not confirm publishing the order in time. Make a new order.":"Die Invoice ist abgelaufen. Du hast die Veröffentlichung der Order nicht rechtzeitig bestätigt. Erstelle eine neue Order.",
     "This order has been cancelled by the maker":"Diese Order wurde vom Maker storniert",
+    "Invoice expired. You did not confirm taking the order in time.":"Die Invoice ist abgelaufen. Du hast die Annahme der Order nicht rechtzeitig bestätigt.",
     "Penalty lifted, good to go!":"Die Strafe ist aufgehoben, es kann losgehen!",
     "You cannot take an order yet! Wait {{timeMin}}m {{timeSec}}s":"Du kannst noch keine Order annehmen! Warte {{timeMin}}m {{timeSec}}s",
     "Too low":"Zu niedrig",
@@ -324,6 +331,13 @@
     "You can claim the dispute resolution amount (escrow and fidelity bond) from your profile rewards. If there is anything the staff can help with, do not hesitate to contact to robosats@protonmail.com (or via your provided burner contact method).":"Du kannst die Satoshis (Sicherheit und Kaution) in deinem Profil finden. Wenn unser Team dir bei etwas helfen kann, zögere nicht, uns zu kontaktieren: robosats@protonmail.com (oder über deine Wegwerf-Kontaktdaten).",
     "You have lost the dispute":"Du hast den Fall verloren",
     "Unfortunately you have lost the dispute. If you think this is a mistake you can ask to re-open the case via email to robosats@protonmail.com. However, chances of it being investigated again are low.":"Leider hast du diesen Fall verloren. Falls du denkst, dies war ein Fehler, kontaktieren uns über robosats@protonmail.com. Aber die Chancen, dass der Fall neu eröfffnet wird, sind gering.",
+    "Expired not taken":"Abgelaufen, nicht angenommen",
+    "Maker bond not locked":"Maker-Kaution nicht gesperrt",
+    "Escrow not locked":"Treuhandkonto nicht gesperrt",
+    "Invoice not submitted":"Invoice nicht eingereicht",
+    "Neither escrow locked or invoice submitted":"Weder Treuhandkonto gesperrt noch Invoice eingereicht",
+    "Renew Order":"Order erneuern",
+
 
     "INFO DIALOG - InfoDiagog.js":"App information and clarifications and terms of use",
     "Close":"Schließen",
