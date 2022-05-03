@@ -379,7 +379,7 @@ class OrderPage extends Component {
             'action':'cancel',
           }),
       };
-      fetch('/api/order/' + '?order_id=' + this.state.state.orderId, requestOptions)
+      fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
       .then((response) => response.json())
       .then(() => (this.getOrderDetails(this.state.orderId) & this.setState({status:4})));
     this.handleClickCloseCollaborativeCancelDialog();
