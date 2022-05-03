@@ -73,11 +73,14 @@ class UserGenPage extends Component {
           avatarLoaded: false,
         })
         :
-        (console.log(token) & this.props.setAppState({
+        (this.props.setAppState({
           nickname: data.nickname,
           token: token,
           avatarLoaded: false,
-      })) & writeCookie("robot_token",token))
+        })) & writeCookie("robot_token",token))
+        & 
+        // If the robot has been found (recovered) we assume the token is backed up
+        (data.found ? this.props.setAppState({copiedToken:true}) : null)
      });
   }
   

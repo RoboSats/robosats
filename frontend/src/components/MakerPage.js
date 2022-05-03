@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withTranslation } from "react-i18next";
-import { InputAdornment, LinearProgress, Accordion, AccordionDetails, AccordionSummary, Checkbox, Slider, Box, Tab, Tabs, SliderThumb, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
+import { InputAdornment, LinearProgress, Dialog, IconButton, DialogActions, DialogContent, DialogContentText, DialogTitle, Accordion, AccordionDetails, AccordionSummary, Checkbox, Slider, Box, Tab, Tabs, SliderThumb, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
 import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link as LinkRouter } from 'react-router-dom'
@@ -18,6 +18,7 @@ import BuySatsIcon from "./icons/BuySatsIcon";
 import BuySatsCheckedIcon from "./icons/BuySatsCheckedIcon";
 import SellSatsIcon from "./icons/SellSatsIcon";
 import SellSatsCheckedIcon from "./icons/SellSatsCheckedIcon";
+import ContentCopy from "@mui/icons-material/ContentCopy";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -232,6 +233,7 @@ class MakerPage extends Component {
         .then((response) => response.json())
         .then((data) => (this.setState({badRequest:data.bad_request})
              & (data.id ? this.props.history.push('/order/' + data.id) :"")));
+        this.setState({openStoreToken:false});
     }
 
     getCurrencyCode(val){
@@ -696,6 +698,73 @@ class MakerPage extends Component {
         )
     }
 
+    StoreTokenDialog = () =>{
+        const { t } = this.props;
+        
+        // If there is a robot cookie, prompt user to store it
+        // Else, prompt user to generate a robot
+        if (getCookie("robot_token")){
+            return(
+                <Dialog
+                open={this.state.openStoreToken}
+                onClose={() => this.setState({openStoreToken:false})}
+                >
+                    <DialogTitle >
+                    {t("Store your robot token")}
+                    </DialogTitle>
+                    <DialogContent>
+                    <DialogContentText>
+                        {t("You might need to recover your robot avatar in the future: store it safely. You can simply copy it into another application.")}
+                    </DialogContentText>
+                    <br/>
+                    <Grid align="center">
+                        <TextField
+                            sx={{width:"100%", maxWidth:"550px"}}
+                            disabled
+                            label={t("Back it up!")}
+                            value={getCookie("robot_token") }
+                            variant='filled'
+                            size='small'
+                            InputProps={{
+                                endAdornment:
+                                <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+                                    <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
+                                        <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
+                                    </IconButton>
+                                </Tooltip>,
+                                }}
+                            />
+                    </Grid>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => this.setState({openStoreToken:false})} autoFocus>{t("Go back")}</Button>
+                        <Button onClick={this.handleCreateOfferButtonPressed}>{t("Done")}</Button>
+                    </DialogActions>
+                </Dialog>
+            )
+        }else{
+            return(
+                <Dialog
+                open={this.state.openStoreToken}
+                onClose={() => this.setState({openStoreToken:false})}
+                >
+                    <DialogTitle>
+                        {t("You do not have a robot avatar")}
+                    </DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            {t("You need to generate a robot avatar in order to become an order maker")}
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => this.setState({openStoreToken:false})} autoFocus>{t("Go back")}</Button>
+                        <Button onClick={() => this.setState({openStoreToken:false})} to="/" component={LinkRouter}>{t("Generate Robot")}</Button>
+                    </DialogActions>
+                </Dialog>
+            )
+        }
+  }
+
     makeOrderBox=()=>{
         const [value, setValue] = React.useState(this.state.showAdvanced);
         const { t } = this.props;
@@ -732,6 +801,8 @@ class MakerPage extends Component {
                         ORDER MAKER
                     </Typography>
                 </Grid> */}
+                <this.StoreTokenDialog/>
+
                 <Grid item xs={12} align="center">
                 <this.makeOrderBox/>
                 </Grid>
@@ -745,10 +816,15 @@ class MakerPage extends Component {
                     (!this.state.is_explicit & this.state.badPremium != null))
                     ?
                     <Tooltip enterTouchDelay="0" title={t("You must fill the order correctly")}>
-                        <div><Button disabled color="primary" variant="contained" onClick={this.handleCreateOfferButtonPressed}>{t("Create Order")}</Button></div>
+                        <div><Button disabled color="primary" variant="contained">{t("Create Order")}</Button></div>
                     </Tooltip>
                     :
-                    <Button color="primary" variant="contained" onClick={this.handleCreateOfferButtonPressed}>{t("Create Order")}</Button>
+                    <Button color="primary" 
+                        variant="contained" 
+                        onClick={this.props.copiedToken ? this.handleCreateOfferButtonPressed : (() => this.setState({openStoreToken:true}))}
+                        >
+                        {t("Create Order")}
+                    </Button>
                     }
 
             </Grid>

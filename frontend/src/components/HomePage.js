@@ -40,9 +40,9 @@ export default class HomePage extends Component {
                     <Switch>
                         <Route exact path='/' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
                         <Route path='/ref/:refCode' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
-                        <Route path='/make' component={MakerPage}/>
+                        <Route path='/make' render={(props) => <MakerPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
                         <Route path='/book' render={(props) => <BookPage {...props} {...this.state} setAppState={this.setAppState} />}/>
-                        <Route path="/order/:orderId" component={OrderPage}/>
+                        <Route path="/order/:orderId" render={(props) => <OrderPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
                     </Switch>
                   </div>
                   <div className='bottomBar'>
