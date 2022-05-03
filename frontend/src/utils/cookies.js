@@ -13,3 +13,7 @@ export const getCookie = (name) => {
   }
   return cookieValue;
 };
+
+export const writeCookie = (key,value) => {
+  document.cookie=key+"="+value;
+}

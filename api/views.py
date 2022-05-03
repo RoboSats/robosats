@@ -384,15 +384,17 @@ class OrderView(viewsets.ViewSet):
                 # Add invoice amount once again if invoice was expired.
                 data["invoice_amount"] = Logics.payout_amount(order,request.user)[1]["invoice_amount"]
 
-        # 10) If status is 'Expired', add expiry reason.
-        elif (order.status == Order.Status.EXP):
-            data["expiry_reason"] = order.expiry_reason
-            data["expiry_message"] = Order.ExpiryReasons(order.expiry_reason).label
-            # other pieces of info useful to renew an identical order
+        # 10) If status is 'Expired', "Sending", "Finished" or "failed routing", add info for renewal:
+        elif order.status in [Order.Status.EXP, Order.Status.SUC, Order.Status.PAY,  Order.Status.FAI]:
             data["public_duration"] = order.public_duration
             data["bond_size"] = order.bond_size
             data["bondless_taker"] = order.bondless_taker
 
+            # If status is 'Expired' add expiry reason
+            if order.status == Order.Status.EXP:
+                data["expiry_reason"] = order.expiry_reason
+                data["expiry_message"] = Order.ExpiryReasons(order.expiry_reason).label
+            
         return Response(data, status.HTTP_200_OK)
 
     def take_update_confirm_dispute_cancel(self, request, format=None):

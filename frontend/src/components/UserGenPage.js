@@ -11,7 +11,7 @@ import ContentCopy from "@mui/icons-material/ContentCopy";
 import RoboSatsNoTextIcon from "./icons/RoboSatsNoTextIcon"
 import BoltIcon from '@mui/icons-material/Bolt';
 
-import { getCookie } from "../utils/cookies";
+import { getCookie, writeCookie } from "../utils/cookies";
 
 class UserGenPage extends Component {
   constructor(props) {
@@ -37,7 +37,7 @@ class UserGenPage extends Component {
       var newToken = this.genBase62Token(36)
       this.state = {
         token: newToken
-      }
+      };
       this.getGeneratedUser(newToken);
     }
   }
@@ -73,14 +73,14 @@ class UserGenPage extends Component {
           avatarLoaded: false,
         })
         :
-        this.props.setAppState({
+        (console.log(token) & this.props.setAppState({
           nickname: data.nickname,
-          token: this.state.token,
+          token: token,
           avatarLoaded: false,
-      }));
-      });
+      })) & writeCookie("robot_token",token))
+     });
   }
-
+  
   delGeneratedUser() {
     const requestOptions = {
       method: 'DELETE',
@@ -91,11 +91,12 @@ class UserGenPage extends Component {
   }
 
   handleClickNewRandomToken=()=>{
+    var token = this.genBase62Token(36);
     this.setState({
-      token: this.genBase62Token(36),
+      token: token,
       tokenHasChanged: true,
-      copied: true,
     });
+    this.props.setAppState({copiedToken: true})
   }
 
   handleChangeToken=(e)=>{
@@ -108,8 +109,8 @@ class UserGenPage extends Component {
   handleClickSubmitToken=()=>{
     this.delGeneratedUser();
     this.getGeneratedUser(this.state.token);
-    this.setState({loadingRobot: true, tokenHasChanged: false, copied: false});
-    this.props.setAppState({avatarLoaded: false, nickname: null, token: null});
+    this.setState({loadingRobot: true, tokenHasChanged: false});
+    this.props.setAppState({avatarLoaded: false, nickname: null, token: null, copiedToken: false});
   }
 
   handleClickOpenInfo = () => {
@@ -196,9 +197,9 @@ class UserGenPage extends Component {
                 }}
                 InputProps={{
                   startAdornment:
-                  <Tooltip disableHoverListener open={this.state.copied} enterTouchDelay="0" title={t("Copied!")}>
-                    <IconButton  onClick= {()=> (navigator.clipboard.writeText(this.state.token) & this.setState({copied:true}))}>
-                      <ContentCopy color={this.props.avatarLoaded & !this.state.copied & !this.state.bad_request ? 'primary' : 'inherit' } sx={{width:18, height:18}}/>
+                  <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+                    <IconButton  onClick= {()=> (navigator.clipboard.writeText(this.state.token) & this.props.setAppState({copiedToken:true}))}>
+                      <ContentCopy color={this.props.avatarLoaded & !this.props.copiedToken & !this.state.bad_request ? 'primary' : 'inherit' } sx={{width:18, height:18}}/>
                     </IconButton>
                   </Tooltip>,
                   endAdornment:

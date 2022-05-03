@@ -13,6 +13,7 @@ export default class HomePage extends Component {
       this.state = {
         nickname: null,
         token: null,
+        copiedToken: false,
         avatarLoaded: false,
         buyChecked: false,
         sellChecked: false,
@@ -40,7 +41,7 @@ export default class HomePage extends Component {
                         <Route exact path='/' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
                         <Route path='/ref/:refCode' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
                         <Route path='/make' component={MakerPage}/>
-                        <Route path='/book' render={(props) => <BookPage {...props} buyChecked={this.state.buyChecked} sellChecked={this.state.sellChecked} orders={this.state.bookOrders} loading={this.state.bookLoading} notFound={this.state.bookNotFound} type={this.state.bookType} currencyCode={this.state.bookCurrencyCode} currency={this.state.bookCurrency} setAppState={this.setAppState} />}/>
+                        <Route path='/book' render={(props) => <BookPage {...props} {...this.state} setAppState={this.setAppState} />}/>
                         <Route path="/order/:orderId" component={OrderPage}/>
                     </Switch>
                   </div>

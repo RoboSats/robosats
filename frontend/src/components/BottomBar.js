@@ -326,18 +326,18 @@ class BottomBar extends Component {
                         <PasswordIcon/>
                     </ListItemIcon>
                     <ListItemText secondary={t("Your token (will not remain here)")}>
-                    {this.props.token ?
+                    {getCookie("robot_token") ?
                     <TextField
                         disabled
                         label={t("Back it up!")}
-                        value={this.props.token }
+                        value={getCookie("robot_token") }
                         variant='filled'
                         size='small'
                         InputProps={{
                             endAdornment:
                             <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
-                                <IconButton onClick= {()=>navigator.clipboard.writeText(this.props.token)}>
-                                    <ContentCopy />
+                                <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
+                                    <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
                                 </IconButton>
                             </Tooltip>,
                             }}

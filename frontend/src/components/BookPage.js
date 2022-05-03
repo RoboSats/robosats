@@ -26,7 +26,7 @@ class BookPage extends Component {
       pageSize: 6,
     };
 
-    if(this.props.orders.length == 0){
+    if(this.props.bookOrders.length == 0){
       this.getOrderDetails(2, 0)
     }
   }
@@ -85,8 +85,8 @@ class BookPage extends Component {
       <div style={{ height: 422, width: '100%' }}>
       <DataGrid
         rows={
-            this.props.orders.filter(order => order.type == this.props.type || this.props.type == 2)
-            .filter(order => order.currency == this.props.currency || this.props.currency == 0)
+            this.props.bookOrders.filter(order => order.type == this.props.bookType || this.props.bookType == 2)
+            .filter(order => order.currency == this.props.bookCurrency || this.props.bookCurrency == 0)
             .map((order) =>
             ({id: order.id,
               avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
@@ -103,7 +103,7 @@ class BookPage extends Component {
               premium: order.premium,
             })
           )}
-        loading={this.props.loading}
+        loading={this.props.bookLoading}
         columns={[
           // { field: 'id', headerName: 'ID', width: 40 },
           { field: 'robot', headerName: t("Robot"), width: 240, 
@@ -166,7 +166,7 @@ class BookPage extends Component {
             </Stack>
           )
         }}
-        pageSize={this.props.loading ? 0 : this.state.pageSize}
+        pageSize={this.props.bookLoading ? 0 : this.state.pageSize}
         rowsPerPageOptions={[6,20,50]}
         onPageSizeChange={(newPageSize) => this.setState({pageSize:newPageSize})}
         onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
@@ -180,10 +180,10 @@ class BookPage extends Component {
     return (
       <div style={{ height: 422, width: '100%' }}>
       <DataGrid
-        loading={this.props.loading}
+        loading={this.props.bookLoading}
         rows={
-          this.props.orders.filter(order => order.type == this.props.type || this.props.type == 2)
-          .filter(order => order.currency == this.props.currency || this.props.currency == 0)
+          this.props.bookOrders.filter(order => order.type == this.props.bookType || this.props.bookType == 2)
+          .filter(order => order.currency == this.props.bookCurrency || this.props.bookCurrency == 0)
           .map((order) =>
             ({id: order.id,
               avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
@@ -267,7 +267,7 @@ class BookPage extends Component {
             </Stack>
           )
         }}
-        pageSize={this.props.loading ? 0 : this.state.pageSize}
+        pageSize={this.props.bookLoading ? 0 : this.state.pageSize}
         rowsPerPageOptions={[6,20,50]}
         onPageSizeChange={(newPageSize) => this.setState({pageSize:newPageSize})}
         onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
@@ -308,10 +308,10 @@ class BookPage extends Component {
       <Grid item xs={12} align="center">
         <Grid item xs={12} align="center">
           <Typography component="h5" variant="h5">
-            {this.props.type == 0 ?
-              t("No orders found to sell BTC for {{currencyCode}}",{currencyCode:this.props.currencyCode})
+            {this.props.bookType == 0 ?
+              t("No orders found to sell BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode})
             :
-              t("No orders found to buy BTC for {{currencyCode}}",{currencyCode:this.props.currencyCode})
+              t("No orders found to buy BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode})
             }
           </Typography>
         </Grid>
@@ -382,7 +382,7 @@ class BookPage extends Component {
             <FormControl align="center">
               <FormHelperText align="center">
                 <div style={{textAlign:"center", position:"relative", left:"-5px"}}>
-                  {this.props.type == 0 ? t("and receive") : (this.props.type == 1 ? t("and pay with") : t("and use") )}
+                  {this.props.bookType == 0 ? t("and receive") : (this.props.bookType == 1 ? t("and pay with") : t("and use") )}
                 </div>
               </FormHelperText>
               <Select
@@ -390,7 +390,7 @@ class BookPage extends Component {
                   sx={{width:120}}
                   label={t("Select Payment Currency")}
                   required="true" 
-                  value={this.props.currency} 
+                  value={this.props.bookCurrency} 
                   inputProps={{
                       style: {textAlign:"center"}
                   }}
@@ -403,14 +403,14 @@ class BookPage extends Component {
               </Select>
             </FormControl>
           </Grid>
-        { this.props.notFound ? "" :
+        { this.props.bookNotFound ? "" :
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
-               {this.props.type == 0 ? 
-                t("You are SELLING BTC for {{currencyCode}}",{currencyCode:this.props.currencyCode}) 
+               {this.props.bookType == 0 ? 
+                t("You are SELLING BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode}) 
                : 
-                (this.props.type == 1 ? 
-                  t("You are BUYING BTC for {{currencyCode}}",{currencyCode:this.props.currencyCode})
+                (this.props.bookType == 1 ? 
+                  t("You are BUYING BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode})
                 :
                   t("You are looking at all")
                 )
@@ -419,7 +419,7 @@ class BookPage extends Component {
           </Grid>
           }
 
-        { this.props.notFound ?
+        { this.props.bookNotFound ?
           <this.NoOrdersFound/>
           : 
           <Grid item xs={12} align="center">

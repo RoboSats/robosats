@@ -276,7 +276,7 @@ class MakerPage extends Component {
                         />
                         <FormControlLabel
                             value="1"
-                            control={<Radio icon={<SellSatsIcon sx={{width:"30px",height:"30px"}} color="text.secondary"/>} checkedIcon={<SellSatsCheckedIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
+                            control={<Radio color="secondary" icon={<SellSatsIcon sx={{width:"30px",height:"30px"}} color="text.secondary"/>} checkedIcon={<SellSatsCheckedIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
                             label={this.state.type == 1 ? <Typography color="secondary"><b>{t("Sell")}</b></Typography>: <Typography color="text.secondary">{t("Sell")}</Typography>}
                             labelPlacement="end"
                         />

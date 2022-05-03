@@ -446,7 +446,7 @@ class TradeBox extends Component {
               <ListItemIcon>
                 <PercentIcon/>
               </ListItemIcon>
-                <ListItemText primary={t("Premium rank") +" "+Number(this.props.data.premium_percentile*100).toPrecision(2)+"%"}
+                <ListItemText primary={t("Premium rank") +" "+parseInt(this.props.data.premium_percentile*100)+"%"}
                   secondary={t("Among public {{currencyCode}} orders (higher is cheaper)",{ currencyCode: this.props.data.currencyCode })}/>
               </ListItem>
             <Divider/>
@@ -984,6 +984,8 @@ handleRatingRobosatsChange=(e)=>{
 
   showRateSelect(){
     const { t } = this.props;
+    var show_renew = this.props.data.is_maker;
+
     return(
       <Grid container spacing={1}>
         {/* Make confirmation sound for Chat Open. */}
@@ -1028,6 +1030,17 @@ handleRatingRobosatsChange=(e)=>{
         <Grid item xs={12} align="center">
           <Button color='primary' onClick={() => {this.props.push('/')}}>{t("Start Again")}</Button>
         </Grid>
+
+        {show_renew ?
+          <Grid item xs={12} align="center">
+          {this.state.renewLoading ?
+              <CircularProgress/>
+            :
+              <Button color='primary' onClick={this.handleRenewOrderButtonPressed}>{t("Renew Order")}</Button>
+          }
+          </Grid>
+        : null}
+
       {this.showBondIsReturned()}
     </Grid>
     )
