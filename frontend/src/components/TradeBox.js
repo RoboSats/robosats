@@ -271,7 +271,7 @@ class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
-        <this.Sound soundFileName="locked-invoice"/>
+        {this.Sound(soundFileName="locked-invoice")}
         <Grid item xs={12} align="center">
           <Typography color="green" component="subtitle1" variant="subtitle1">
             <b>
@@ -308,7 +308,7 @@ class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         {/* Make bell sound when taker is found */}
-        <this.Sound soundFileName="taker-found"/>
+        {this.Sound(soundFileName="taker-found")}
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
             <b>{t("A taker has been found!")}</b> {" " + this.stepXofY()}
@@ -387,8 +387,8 @@ class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
-        <this.Sound soundFileName="locked-invoice"/>
-        <this.EnableTelegramDialog/>
+        {this.Sound(soundFileName="locked-invoice")}
+        {this.EnableTelegramDialog()}
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
             <b> {t("Your order is public")} </b> {" " + this.stepXofY()}
@@ -566,7 +566,7 @@ class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           {/* Make confirmation sound for HTLC received. */}
-          <this.Sound soundFileName="locked-invoice"/>
+          {this.Sound(soundFileName="locked-invoice")}
           <Typography color="primary" component="subtitle1" variant="subtitle1">
             <b> {t("Submit an invoice for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}
             </b> {" " + this.stepXofY()}
@@ -762,7 +762,7 @@ class TradeBox extends Component {
     return(
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
-        <this.Sound soundFileName="locked-invoice"/>
+        {this.Sound(soundFileName="locked-invoice")}
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
             <b>{t("The trade collateral is locked!")}</b> {" " + this.stepXofY()}
@@ -945,7 +945,7 @@ handleRatingRobosatsChange=(e)=>{
     return(
       <Grid container spacing={1}>
         {/* Make confirmation sound for Chat Open. */}
-        <this.Sound soundFileName="chat-open"/>
+        {this.Sound(soundFileName="chat-open")}
         <Grid item xs={12} align="center">
           <Typography component="subtitle1" variant="subtitle1">
             <b> {this.props.data.is_seller ? t("Chat with the buyer"): t("Chat with the seller")}</b> {" " + this.stepXofY()}
@@ -989,7 +989,7 @@ handleRatingRobosatsChange=(e)=>{
     return(
       <Grid container spacing={1}>
         {/* Make confirmation sound for Chat Open. */}
-        <this.Sound soundFileName="successful"/>
+        {this.Sound(soundFileName="successful")}
         <Grid item xs={12} align="center">
           <Typography component="h6" variant="h6">
             {t("🎉Trade finished!🥳")}
@@ -1152,8 +1152,8 @@ handleRatingRobosatsChange=(e)=>{
     const { t } = this.props;
     return (
       <Grid container spacing={1} style={{ width:this.props.width}}>
-        <this.ConfirmDisputeDialog/>
-        <this.ConfirmFiatReceivedDialog/>
+        {this.ConfirmDisputeDialog()}
+        {this.ConfirmFiatReceivedDialog()}
         <Grid item xs={12} align="center">
           <MediaQuery minWidth={920}>
             <Typography component="h5" variant="h5">

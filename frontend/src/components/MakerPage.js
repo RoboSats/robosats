@@ -38,6 +38,7 @@ class MakerPage extends Component {
   constructor(props) {
     super(props);
     this.state={
+        tabValue: 0,
         is_explicit: false,
         type: 0,
         currency: this.defaultCurrency,
@@ -552,7 +553,7 @@ class MakerPage extends Component {
                             <Tooltip enterTouchDelay={0} placement="top" align="center" title={t("Let the taker chose an amount within the range")}>
                             <div align="center" style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
                                 <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked, is_explicit: false})}/>
-                                {this.state.enableAmountRange & this.state.minAmount != null? <this.rangeText/> : t("Enable Amount Range")}
+                                {this.state.enableAmountRange & this.state.minAmount != null? this.rangeText() : t("Enable Amount Range")}
                             </div>
                             </Tooltip>
                         </FormHelperText>
@@ -560,30 +561,30 @@ class MakerPage extends Component {
                                 <LinearProgress />
                             </div>
                             <div style={{ display: this.state.loadingLimits == false ? '':'none'}}>
-                            <this.RangeSlider
-                                disableSwap={true}
-                                sx={{width:200, align:"center"}}
-                                disabled={!this.state.enableAmountRange || this.state.loadingLimits}
-                                value={[this.state.minAmount, this.state.maxAmount]}
-                                step={(this.getMaxAmount()-this.getMinAmount())/5000}
-                                valueLabelDisplay="auto"
-                                components={{ Thumb: this.RangeThumbComponent }}
-                                valueLabelFormat={(x) => (parseFloat(Number(x).toPrecision(x < 100 ? 2 : 3))+" "+this.state.currencyCode)}
-                                marks={this.state.limits == null?
+                            {/* {this.RangeSlider(
+                                disableSwap=true,
+                                sx={width:200, align:"center"},
+                                disabled=(!this.state.enableAmountRange || this.state.loadingLimits),
+                                value=([this.state.minAmount, this.state.maxAmount]),
+                                step=((this.getMaxAmount()-this.getMinAmount())/5000),
+                                valueLabelDisplay="auto",
+                                components=({ Thumb: this.RangeThumbComponent }),
+                                valueLabelFormat=((x) => (parseFloat(Number(x).toPrecision(x < 100 ? 2 : 3))+" "+this.state.currencyCode)),
+                                marks=(this.state.limits == null?
                                     null
                                     :
                                     [{value: this.getMinAmount(),label: this.getMinAmount()+" "+ this.state.currencyCode},
-                                    {value: this.getMaxAmount(),label: this.getMaxAmount()+" "+this.state.currencyCode}]}
-                                min={this.getMinAmount()}
-                                max={this.getMaxAmount()}
-                                onChange={this.handleRangeAmountChange}
-                            />
+                                    {value: this.getMaxAmount(),label: this.getMaxAmount()+" "+this.state.currencyCode}]),
+                                min=this.getMinAmount(),
+                                max=this.getMaxAmount(),
+                                onChange=this.handleRangeAmountChange)
+                            } */}
                             </div>
                     </FormControl>
                 </Grid>
 
                 <Grid item xs={12} align="center">
-                    <Accordion elevation={0} sx={{width:'280px', position:'relative', left:'-12px'}}>
+                    <Accordion elevation={0} sx={{width:'280px', position:'relative', left:'-8px'}}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon color="primary"/>}>
                             <Typography sx={{flexGrow: 1, textAlign: "center"}} color="text.secondary">{t("Expiry Timers")}</Typography>
                         </AccordionSummary>
@@ -766,32 +767,27 @@ class MakerPage extends Component {
   }
 
     makeOrderBox=()=>{
-        const [value, setValue] = React.useState(this.state.showAdvanced);
         const { t } = this.props;
-        const handleChange = (event, newValue) => {
-        this.setState({showAdvanced:newValue})
-        setValue(newValue);
-        };
         return(
-            <Box sx={{width: this.state.showAdvanced? '270px':'252px'}}>
+            <Box sx={{width: this.state.tabValue==1? '270px':'252px'}}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider', position:'relative',left:'5px'}}>
-                        <Tabs value={value? value:0} onChange={handleChange} variant="fullWidth" >
-                            <Tab label={t("Order")} {...this.a11yProps(0)} />
-                            <Tab label={t("Customize")} {...this.a11yProps(1)} />
+                        <Tabs value={this.state.tabValue} variant="fullWidth" >
+                            <Tab label={t("Order")} {...this.a11yProps(0)} onClick={() => this.setState({tabValue:0})}/>
+                            <Tab label={t("Customize")} {...this.a11yProps(1)} onClick={() => this.setState({tabValue:1})}/>
                         </Tabs>
                     </Box>
-
                     <Grid item xs={12} align="center">
-                        <div style={{ display: this.state.showAdvanced == false ? '':'none'}}>
-                            <this.StandardMakerOptions/>
+                        <div style={{ display: this.state.tabValue == 0 ? '':'none'}}>
+                            {this.StandardMakerOptions()}
                         </div>
-                        <div style={{ display: this.state.showAdvanced == true ? '':'none'}}>
-                            <this.AdvancedMakerOptions/>
+                        <div style={{ display: this.state.tabValue == 1 ? '':'none'}}>
+                            {this.AdvancedMakerOptions()}
                         </div>
                     </Grid>
                 </Box>
         )
     }
+
   render() {
     const { t } = this.props;
     return (
@@ -804,7 +800,7 @@ class MakerPage extends Component {
                 <this.StoreTokenDialog/>
 
                 <Grid item xs={12} align="center">
-                <this.makeOrderBox/>
+                    {this.makeOrderBox()}
                 </Grid>
 
             <Grid item xs={12} align="center">

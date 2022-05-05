@@ -447,10 +447,10 @@ bottomBarDesktop =()=>{
     const { t } = this.props;
     return(
         <Paper elevation={6} style={{height:40}}>
-                <this.StatsDialog/>
-                <this.CommunityDialog/>
-                <this.dialogProfile/>
-                <this.exchangeSummaryDialog/>
+                {this.StatsDialog()}
+                {this.CommunityDialog()}
+                {this.dialogProfile()}
+                {this.exchangeSummaryDialog()}
                 <Grid container xs={12}>
 
                     <Grid item xs={1.9}>
@@ -544,7 +544,7 @@ bottomBarDesktop =()=>{
 
                     <Grid container item xs={1}>
                         <Grid item xs={6}>
-                            <this.LangSelect/>
+                            {this.LangSelect()}
                         </Grid>
                         <Grid item xs={3}>
                         <Tooltip enterTouchDelay={250} title={t("Show community and support links")}>
@@ -711,10 +711,10 @@ bottomBarPhone =()=>{
     const { t } = this.props;
     return(
         <Paper elevation={6} style={{height:40}}>
-                <this.StatsDialog/>
-                <this.CommunityDialog/>
-                <this.exchangeSummaryDialog/>
-                <this.dialogProfile/>
+                {this.StatsDialog()}
+                {this.CommunityDialog()}
+                {this.exchangeSummaryDialog()}
+                {this.dialogProfile()}
                 <Grid container xs={12}>
 
                     <Grid item xs={1.6}>
@@ -781,7 +781,7 @@ bottomBarPhone =()=>{
 
                     <Grid container item xs={3.8}>
                         <Grid item xs={6}>
-                            <this.LangSelect/>
+                            {this.LangSelect()}
                         </Grid>
                         <Grid item xs={3}>
                         <Tooltip enterTouchDelay={250} title={t("Show community and support links")}>
@@ -813,11 +813,11 @@ bottomBarPhone =()=>{
         return (
             <div>
                 <MediaQuery minWidth={1200}>
-                    <this.bottomBarDesktop/>
+                    {this.bottomBarDesktop()}
                 </MediaQuery>
 
                 <MediaQuery maxWidth={1199}>
-                    <this.bottomBarPhone/>
+                    {this.bottomBarPhone()}
                 </MediaQuery>
             </div>
         )
