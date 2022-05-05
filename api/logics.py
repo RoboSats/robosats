@@ -620,13 +620,25 @@ class Logics:
             order.save()
             return True, None
 
-            # 2) When maker cancels after bond
+            # 2.a) When maker cancels after bond
             """The order dissapears from book and goes to cancelled. If strict, maker is charged the bond 
             to prevent DDOS on the LN node and order book. If not strict, maker is returned
             the bond (more user friendly)."""
         elif order.status in [Order.Status.PUB, Order.Status.PAU] and order.maker == user:
             # Return the maker bond (Maker gets returned the bond for cancelling public order)
-            if cls.return_bond(order.maker_bond):  # strict cancellation: cls.settle_bond(order.maker_bond):
+            if cls.return_bond(order.maker_bond):  
+                order.status = Order.Status.UCA
+                order.save()
+                send_message.delay(order.id,'public_order_cancelled')
+                return True, None
+
+            # 2.b) When maker cancels after bond and before taker bond is locked
+            """The order dissapears from book and goes to cancelled.
+            The bond maker bond is returned."""
+        elif order.status == Order.Status.TAK and order.maker == user:
+            # Return the maker bond (Maker gets returned the bond for cancelling public order)
+            if cls.return_bond(order.maker_bond): 
+                cls.cancel_bond(order.taker_bond)
                 order.status = Order.Status.UCA
                 order.save()
                 send_message.delay(order.id,'public_order_cancelled')
@@ -649,7 +661,7 @@ class Logics:
 
             # 4.a) When maker cancel after bond (before escrow)
             """The order into cancelled status if maker cancels."""
-        elif (order.status in [Order.Status.TAK, Order.Status.WF2,Order.Status.WFE] and order.maker == user):
+        elif (order.status in [Order.Status.WF2,Order.Status.WFE] and order.maker == user):
             # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)  # returns taker bond

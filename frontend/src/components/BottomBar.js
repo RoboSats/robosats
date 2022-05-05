@@ -329,6 +329,7 @@ class BottomBar extends Component {
                     {getCookie("robot_token") ?
                     <TextField
                         disabled
+                        sx={{width:"100%", maxWidth:"450px"}}
                         label={t("Back it up!")}
                         value={getCookie("robot_token") }
                         variant='filled'
