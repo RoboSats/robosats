@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
-import { withTranslation, Trans} from "react-i18next";
+import { withTranslation } from "react-i18next";
 import {FormControlLabel, Link, Switch, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
 import { Link as LinkRouter } from 'react-router-dom'
-import Flags from 'country-flag-icons/react/3x2'
 
 // Icons
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -16,7 +15,7 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import BoltIcon from '@mui/icons-material/Bolt';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
-import SendIcon from '@mui/icons-material/Send';
+
 import PublicIcon from '@mui/icons-material/Public';
 import NumbersIcon from '@mui/icons-material/Numbers';
 import PasswordIcon from '@mui/icons-material/Password';
@@ -28,6 +27,8 @@ import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AmbossIcon from "./icons/AmbossIcon";
 import FavoriteIcon from '@mui/icons-material/Favorite';
+
+import CommunityDialog from './CommunityDialog';
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -65,7 +66,6 @@ class BottomBar extends Component {
     }
 
     componentDidMount() {
-        console.log("mount fernando");
         this.getInfo();
     }
 
@@ -180,62 +180,6 @@ class BottomBar extends Component {
     handleClickCloseCommunity = () => {
         this.setState({openCommuniy: false});
     };
-
-    CommunityDialog =() =>{
-        const { t } = this.props;
-
-        return(
-        <Dialog
-        open={this.state.openCommuniy}
-        onClose={this.handleClickCloseCommunity}
-        aria-labelledby="community-dialog-title"
-        aria-describedby="community-description"
-        >
-        <DialogContent>
-            <Typography component="h5" variant="h5">{t("Community")}</Typography>
-            <Typography component="body2" variant="body2">
-                <p>{t("Support is only offered via public channels. Join our Telegram community if you have questions or want to hang out with other cool robots. Please, use our Github Issues if you find a bug or want to see new features!")}</p>
-            </Typography>
-            <List>
-                <Divider/>
-
-                <ListItemButton component="a" target="_blank" href="https://t.me/robosats">
-                    <ListItemIcon><SendIcon/></ListItemIcon>
-                    <ListItemText primary={t("Join the RoboSats group")}
-                    secondary={t("Telegram (English / Main)")}/>
-                </ListItemButton>
-                <Divider/>
-
-                <ListItem>
-                    <ListItemIcon><SendIcon/></ListItemIcon>
-                    <ListItemText secondary={t("RoboSats Telegram Communities")}>
-                        <Tooltip title={t("Join RoboSats Spanish speaking community!")}>
-                            <IconButton component="a" target="_blank" href="https://t.me/robosats_es"><Flags.ES width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
-                        </Tooltip>
-                        <Tooltip title={t("Join RoboSats Russian speaking community!")}>
-                            <IconButton component="a" target="_blank" href="https://t.me/robosats_ru"><Flags.RU width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
-                        </Tooltip>
-                        <Tooltip title={t("Join RoboSats Chinese speaking community!")}>
-                            <IconButton component="a" target="_blank" href="https://t.me/robosats_cn"><Flags.CN width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
-                        </Tooltip>
-                        <Tooltip title={t("Join RoboSats English speaking community!")}>
-                            <IconButton component="a" target="_blank" href="https://t.me/robosats"><Flags.US width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
-                        </Tooltip>
-                    </ListItemText>
-                </ListItem>
-                <Divider/>
-
-                <ListItemButton component="a" target="_blank" href="https://github.com/Reckless-Satoshi/robosats/issues">
-                    <ListItemIcon><GitHubIcon/></ListItemIcon>
-                    <ListItemText primary={t("Tell us about a new feature or a bug")}
-                    secondary={t("Github Issues - The Robotic Satoshis Open Source Project")}/>
-                </ListItemButton>
-
-            </List>
-            </DialogContent>
-        </Dialog>
-    )
-    }
 
     handleClickOpenProfile = () => {
         this.getInfo();
@@ -448,7 +392,6 @@ bottomBarDesktop =()=>{
     return(
         <Paper elevation={6} style={{height:40}}>
                 {this.StatsDialog()}
-                {this.CommunityDialog()}
                 {this.dialogProfile()}
                 {this.exchangeSummaryDialog()}
                 <Grid container xs={12}>
@@ -709,7 +652,6 @@ bottomBarPhone =()=>{
     return(
         <Paper elevation={6} style={{height:40}}>
                 {this.StatsDialog()}
-                {this.CommunityDialog()}
                 {this.exchangeSummaryDialog()}
                 {this.dialogProfile()}
                 <Grid container xs={12}>
@@ -806,6 +748,10 @@ bottomBarPhone =()=>{
     render() {
         return (
             <div>
+                <CommunityDialog
+                    isOpen={this.state.openCommuniy}
+                    handleClickCloseCommunity={this.handleClickCloseCommunity}
+                />
                 <MediaQuery minWidth={1200}>
                     {this.bottomBarDesktop()}
                 </MediaQuery>
