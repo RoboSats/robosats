@@ -354,7 +354,7 @@ class BottomBar extends Component {
 
                 <Divider/>
 
-                <Grid spacing={1} align="center">
+                <Grid spacing={1} align="center" container>
                     <FormControlLabel labelPlacement="start"control={
                         <Switch
                         checked={this.state.showRewards}
@@ -457,8 +457,6 @@ bottomBarDesktop =()=>{
                         <div style={{display: this.props.avatarLoaded ? '':'none'}}>
                         <ListItemButton onClick={this.handleClickOpenProfile} >
                             <Tooltip open={this.state.earned_rewards > 0 ? true: false} title={t("You can claim satoshis!")}>
-                            <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
-                                        title={t("You have an active order")}>
                                 <ListItemAvatar sx={{ width: 30, height: 30 }} >
                                     <Badge badgeContent={(this.state.active_order_id > 0 & !this.state.profileShown) ? "": null} color="primary">
                                     <Avatar className='flippedSmallAvatar' sx={{margin: 0, top: -13}}
@@ -470,7 +468,6 @@ bottomBarDesktop =()=>{
                                     />
                                     </Badge>
                                 </ListItemAvatar>
-                            </Tooltip>
                             </Tooltip>
                             <ListItemText primary={this.props.nickname}/>
                         </ListItemButton>
@@ -720,8 +717,6 @@ bottomBarPhone =()=>{
                     <Grid item xs={1.6}>
                     <div style={{display: this.props.avatarLoaded ? '':'none'}}>
                     <Tooltip open={this.state.earned_rewards > 0 ? true: false} title={t("You can claim satoshis!")}>
-                        <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
-                                    title={t("You have an active order")}>
                         <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, bottom: 17, right: 8}} >
                             <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "": null} color="primary">
                                 <Avatar className='phoneFlippedSmallAvatar'
@@ -734,7 +729,6 @@ bottomBarPhone =()=>{
                                 />
                             </Badge>
                         </IconButton>
-                    </Tooltip>
                     </Tooltip>
                     </div>
                     </Grid>
