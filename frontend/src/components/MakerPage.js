@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { withTranslation } from "react-i18next";
 import { InputAdornment, LinearProgress, Dialog, IconButton, DialogActions, DialogContent, DialogContentText, DialogTitle, Accordion, AccordionDetails, AccordionSummary, Checkbox, Slider, Box, Tab, Tabs, SliderThumb, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
+import RangeSlider from "./RangeSlider";
 import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link as LinkRouter } from 'react-router-dom'
-import { styled } from '@mui/material/styles';
 
 import getFlags from './getFlags';
 import AutocompletePayments from './AutocompletePayments';
@@ -461,36 +461,6 @@ class MakerPage extends Component {
         return parseFloat(Number(min_amount*1.1).toPrecision(2))
     }
 
-    RangeSlider = styled(Slider)(({ theme }) => ({
-        color: 'primary',
-        height: 3,
-        padding: '13px 0',
-        '& .MuiSlider-thumb': {
-          height: 27,
-          width: 27,
-          backgroundColor: '#fff',
-          border: '1px solid currentColor',
-          '&:hover': {
-            boxShadow: '0 0 0 8px rgba(58, 133, 137, 0.16)',
-          },
-          '& .range-bar': {
-            height: 9,
-            width: 1,
-            backgroundColor: 'currentColor',
-            marginLeft: 1,
-            marginRight: 1,
-          },
-        },
-        '& .MuiSlider-track': {
-          height: 3,
-        },
-        '& .MuiSlider-rail': {
-          color: theme.palette.mode === 'dark' ? '#bfbfbf' : '#d8d8d8',
-          opacity: theme.palette.mode === 'dark' ? undefined : 1,
-          height: 3,
-        },
-      }));
-
     RangeThumbComponent(props) {
         const { children, ...other } = props;
         return (
@@ -561,24 +531,24 @@ class MakerPage extends Component {
                                 <LinearProgress />
                             </div>
                             <div style={{ display: this.state.loadingLimits == false ? '':'none'}}>
-                            {/* {this.RangeSlider(
-                                disableSwap=true,
-                                sx={width:200, align:"center"},
-                                disabled=(!this.state.enableAmountRange || this.state.loadingLimits),
-                                value=([this.state.minAmount, this.state.maxAmount]),
-                                step=((this.getMaxAmount()-this.getMinAmount())/5000),
-                                valueLabelDisplay="auto",
-                                components=({ Thumb: this.RangeThumbComponent }),
-                                valueLabelFormat=((x) => (parseFloat(Number(x).toPrecision(x < 100 ? 2 : 3))+" "+this.state.currencyCode)),
-                                marks=(this.state.limits == null?
+                            <RangeSlider
+                                disableSwap={true}
+                                sx={{width:200, align:"center"}}
+                                disabled={!this.state.enableAmountRange || this.state.loadingLimits}
+                                value={[this.state.minAmount, this.state.maxAmount]}
+                                step={(this.getMaxAmount()-this.getMinAmount())/5000}
+                                valueLabelDisplay="auto"
+                                components={{ Thumb: this.RangeThumbComponent }}
+                                valueLabelFormat={(x) => (parseFloat(Number(x).toPrecision(x < 100 ? 2 : 3))+" "+this.state.currencyCode)}
+                                marks={this.state.limits == null?
                                     null
                                     :
                                     [{value: this.getMinAmount(),label: this.getMinAmount()+" "+ this.state.currencyCode},
-                                    {value: this.getMaxAmount(),label: this.getMaxAmount()+" "+this.state.currencyCode}]),
-                                min=this.getMinAmount(),
-                                max=this.getMaxAmount(),
-                                onChange=this.handleRangeAmountChange)
-                            } */}
+                                    {value: this.getMaxAmount(),label: this.getMaxAmount()+" "+this.state.currencyCode}]}
+                                min={this.getMinAmount()}
+                                max={this.getMaxAmount()}
+                                onChange={this.handleRangeAmountChange}
+                            />
                             </div>
                     </FormControl>
                 </Grid>
