@@ -7,7 +7,7 @@ import currencyDict from '../../static/assets/currencies.json';
 
 import MediaQuery from 'react-responsive'
 import Image from 'material-ui-image'
-import getFlags from './getFlags'
+import FlagWithProps from './FlagWithProps'
 import { pn } from "../utils/prettyNumbers";
 import PaymentText from './PaymentText'
 
@@ -137,7 +137,11 @@ class BookPage extends Component {
           )}},
           { field: 'currency', headerName: t("Currency"), width: 100,
           renderCell: (params) => {return (
-            <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>{params.row.currency+" "}{getFlags(params.row.currency)}</div>)
+            <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+              {params.row.currency+" "}
+              <FlagWithProps code={params.row.currency} />
+            </div>
+          )
           }},
           { field: 'payment_method', headerName: t("Payment Method"), width: 180 ,
           renderCell: (params) => {return (
@@ -234,7 +238,10 @@ class BookPage extends Component {
           { field: 'currency', headerName: t("Currency"), width: 85,
           renderCell: (params) => {return (
             // <Tooltip placement="left" enterTouchDelay={0} title={params.row.payment_method}>
-              <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>{params.row.currency+" "}{getFlags(params.row.currency)}</div>
+              <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+                {params.row.currency+" "}
+                <FlagWithProps code={params.row.currency} />
+              </div>
             // </Tooltip>
           )} },
           { field: 'payment_method', headerName: t("Payment Method"), width: 180, hide:'true'},
@@ -395,10 +402,10 @@ class BookPage extends Component {
                       style: {textAlign:"center"}
                   }}
                   onChange={this.handleCurrencyChange}
-              >     <MenuItem value={0}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags('ANY')}{" "+t("ANY_currency")}</div></MenuItem>
+              >     <MenuItem value={0}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}><FlagWithProps code="ANY" />{" "+t("ANY_currency")}</div></MenuItem>
                     {
                       Object.entries(currencyDict)
-                      .map( ([key, value]) => <MenuItem key={key} value={parseInt(key)}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div></MenuItem> )
+                      .map( ([key, value]) => <MenuItem key={key} value={parseInt(key)}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}><FlagWithProps code={value} />{" "+value}</div></MenuItem> )
                     }
               </Select>
             </FormControl>

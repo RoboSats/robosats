@@ -6,7 +6,7 @@ import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link as LinkRouter } from 'react-router-dom'
 
-import getFlags from './getFlags';
+import FlagWithProps from './FlagWithProps';
 import AutocompletePayments from './AutocompletePayments';
 import currencyDict from '../../static/assets/currencies.json';
 
@@ -57,7 +57,12 @@ class MakerPage extends Component {
         minAmount: null,
         maxAmount: null,
         loadingLimits: true,
+        amount: "",
+        badPaymentMethod: false,
+        }
     }
+
+    componentDidMount() {
     this.getLimits()
   }
 
@@ -319,7 +324,7 @@ class MakerPage extends Component {
                                 onChange={this.handleCurrencyChange}>
                                     {Object.entries(currencyDict)
                                     .map( ([key, value]) => <MenuItem key={key} value={parseInt(key)}>
-                                        <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{getFlags(value)}{" "+value}</div>
+                                        <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}><FlagWithProps code={value}/>{" "+value}</div>
                                         </MenuItem> )}
                             </Select>
                         </div>
@@ -404,7 +409,7 @@ class MakerPage extends Component {
                             />
                     </div>
                 <Grid item>
-                <Tooltip placement="top" enterTouchDelay="0" enterDelay="1000" enterNextDelay="2000" title={this.state.is_explicit? t("Your order fixed exchange rate"): t("Your order's current exchange rate. Rate will move with the market.")}>
+                <Tooltip placement="top" enterTouchDelay={0} enterDelay={1000} enterNextDelay={2000} title={this.state.is_explicit? t("Your order fixed exchange rate"): t("Your order's current exchange rate. Rate will move with the market.")}>
                     <Typography variant="caption" color="text.secondary">
                         {(this.state.is_explicit ? t("Order rate:"): t("Order current rate:"))+" "+pn(this.priceNow())+" "+this.state.currencyCode+"/BTC"}
                     </Typography>

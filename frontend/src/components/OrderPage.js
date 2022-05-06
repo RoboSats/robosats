@@ -9,7 +9,7 @@ import { Link as LinkRouter } from 'react-router-dom'
 
 import PaymentText from './PaymentText'
 import TradeBox from "./TradeBox";
-import getFlags from './getFlags'
+import FlagWithProps from './FlagWithProps'
 import { t } from "i18next";
 
 // icons
@@ -588,7 +588,7 @@ class OrderPage extends Component {
             <ListItem>
               <ListItemIcon>
                 <div style={{zoom:1.25,opacity: 0.7, '-ms-zoom': 1.25, '-webkit-zoom': 1.25,'-moz-transform':  'scale(1.25,1.25)', '-moz-transform-origin': 'left center'}}>
-                  {getFlags(this.state.currencyCode)}
+                  <FlagWithProps code={this.state.currencyCode} />
                 </div>
               </ListItemIcon>
               {this.state.has_range & this.state.amount == null ?
