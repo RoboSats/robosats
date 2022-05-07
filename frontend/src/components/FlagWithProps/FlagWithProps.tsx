@@ -1,3 +1,4 @@
+import React from "react";
 import Flags from 'country-flag-icons/react/3x2'
 import SwapCallsIcon from '@mui/icons-material/SwapCalls';
 import GoldIcon from '../icons/GoldIcon';
@@ -77,6 +78,7 @@ const FlagWithProps = ({ code }: Props): JSX.Element => {
   if(code === 'TWD') flag = <Flags.TW {...defaultProps}/>;
   if(code === 'TZS') flag = <Flags.TZ {...defaultProps}/>;
   if(code === 'XAF') flag = <Flags.CM {...defaultProps}/>;
+  if(code === 'UAH') flag = <Flags.UA {...defaultProps}/>;
   if(code === 'ANY') flag = <EarthIcon {...defaultProps}/>;
   if(code === 'XAU') flag = <GoldIcon {...defaultProps}/>;
   if(code === 'BTC') flag = <SwapCallsIcon color="primary"/>;

@@ -335,7 +335,7 @@ class BottomBar extends Component {
                         </ListItemIcon>
                         {!this.state.openClaimRewards ?
                         <ListItemText secondary={t("Your earned rewards")}>
-                            <Grid container xs={12}>
+                            <Grid container>
                                 <Grid item xs={9}>
                                     <Typography>{this.state.earned_rewards+" Sats"}</Typography>
                                 </Grid>
@@ -389,17 +389,23 @@ class BottomBar extends Component {
 
 bottomBarDesktop =()=>{
     const { t } = this.props;
+    var hasRewards = this.state.earned_rewards > 0 ? true: false;
+    var hasOrder = this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded ? true : false;
+
     return(
         <Paper elevation={6} style={{height:40}}>
                 {this.StatsDialog()}
                 {this.dialogProfile()}
                 {this.exchangeSummaryDialog()}
-                <Grid container xs={12}>
+                <Grid container>
 
                     <Grid item xs={1.9}>
                         <div style={{display: this.props.avatarLoaded ? '':'none'}}>
                         <ListItemButton onClick={this.handleClickOpenProfile} >
-                            <Tooltip open={this.state.earned_rewards > 0 ? true: false} title={t("You can claim satoshis!")}>
+                            <Tooltip 
+                                open={hasRewards || hasOrder} 
+                                title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
+                                    (hasOrder ? t("You have an active order"):"")}>
                                 <ListItemAvatar sx={{ width: 30, height: 30 }} >
                                     <Badge badgeContent={(this.state.active_order_id > 0 & !this.state.profileShown) ? "": null} color="primary">
                                     <Avatar className='flippedSmallAvatar' sx={{margin: 0, top: -13}}
@@ -621,7 +627,7 @@ bottomBarDesktop =()=>{
                     <ListItemIcon size="small">
                         <PercentIcon/>
                     </ListItemIcon>
-                    <Grid container xs={12}>
+                    <Grid container >
                         <Grid item xs={6}>
                             <ListItemText
                                 primaryTypographyProps={{fontSize: '14px'}}
@@ -649,16 +655,20 @@ bottomBarDesktop =()=>{
 
 bottomBarPhone =()=>{
     const { t } = this.props;
+    var hasRewards = this.state.earned_rewards > 0 ? true: false;
+    var hasOrder = this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded ? true : false;
     return(
         <Paper elevation={6} style={{height:40}}>
                 {this.StatsDialog()}
                 {this.exchangeSummaryDialog()}
                 {this.dialogProfile()}
-                <Grid container xs={12}>
+                <Grid container>
 
                     <Grid item xs={1.6}>
                     <div style={{display: this.props.avatarLoaded ? '':'none'}}>
-                    <Tooltip open={this.state.earned_rewards > 0 ? true: false} title={t("You can claim satoshis!")}>
+                    <Tooltip open={hasRewards || hasOrder} 
+                            title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
+                                (hasOrder ? t("You have an active order"):"")}>
                         <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, bottom: 17, right: 8}} >
                             <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "": null} color="primary">
                                 <Avatar className='phoneFlippedSmallAvatar'

@@ -39,13 +39,14 @@ class MakerPage extends Component {
     super(props);
     this.state={
         tabValue: 0,
+        openStoreToken: false,
         is_explicit: false,
         type: 0,
         currency: this.defaultCurrency,
         currencyCode: this.defaultCurrencyCode,
         payment_method: this.defaultPaymentMethod,
         premium: 0,
-        satoshis: null,
+        satoshis: "",
         showAdvanced: false,
         allowBondless: false,
         publicExpiryTime: new Date(0, 0, 0, 23, 59),
@@ -54,11 +55,11 @@ class MakerPage extends Component {
         minAmount: null,
         bondSize: 1,
         limits: null,
-        minAmount: null,
-        maxAmount: null,
+        minAmount: "",
+        maxAmount: "",
         loadingLimits: true,
         amount: "",
-        badPaymentMethod: false,
+        badPaymentMethod: "",
         }
     }
 
@@ -275,15 +276,15 @@ class MakerPage extends Component {
                         {t("Buy or Sell Bitcoin?")}
                     </FormHelperText>
 
-                    <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
+                    <RadioGroup row defaultValue={0} onChange={this.handleTypeChange}>
                         <FormControlLabel
-                            value="0"
+                            value={0}
                             control={<Radio icon={<BuySatsIcon sx={{width:"30px",height:"30px"}} color="text.secondary"/>} checkedIcon={<BuySatsCheckedIcon sx={{width:"30px",height:"30px"}} color="primary"/>}/>}
                             label={this.state.type == 0 ? <Typography color="primary"><b>{t("Buy")}</b></Typography>: <Typography color="text.secondary">{t("Buy")}</Typography>}
                             labelPlacement="end"
                         />
                         <FormControlLabel
-                            value="1"
+                            value={1}
                             control={<Radio color="secondary" icon={<SellSatsIcon sx={{width:"30px",height:"30px"}} color="text.secondary"/>} checkedIcon={<SellSatsCheckedIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
                             label={this.state.type == 1 ? <Typography color="secondary"><b>{t("Sell")}</b></Typography>: <Typography color="text.secondary">{t("Sell")}</Typography>}
                             labelPlacement="end"
@@ -293,13 +294,13 @@ class MakerPage extends Component {
                 </div>
             </Grid>
 
-            <Grid containter alignItems="stretch" style={{ display: "flex" }}>
+            <Grid alignItems="stretch" style={{ display: "flex" }}>
                     <div style={{maxWidth:150}}>
                     <Tooltip placement="top" enterTouchDelay={500} enterDelay={700} enterNextDelay={2000} title={t("Amount of fiat to exchange for bitcoin")}>
                         <TextField
                             disabled = {this.state.enableAmountRange}
                             variant = {this.state.enableAmountRange ? 'filled' : 'outlined'}
-                            error={this.state.amount <= 0 & this.state.amount != "" }
+                            error={this.state.amount <= 0 & this.state.amount != ""? true : false}
                             helperText={this.state.amount <= 0 & this.state.amount != "" ? t("Invalid") : null}
                             label={t("Amount")}
                             type="number"
@@ -703,7 +704,7 @@ class MakerPage extends Component {
                             size='small'
                             InputProps={{
                                 endAdornment:
-                                <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+                                <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
                                     <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
                                         <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
                                     </IconButton>
