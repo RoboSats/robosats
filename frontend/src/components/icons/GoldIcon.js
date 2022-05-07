@@ -3,7 +3,7 @@ import { SvgIcon } from "@mui/material"
 
 export default function GoldIcon(props) {
     return (
-      <SvgIcon x="0px" y="0px" viewBox="0 0 511.882 511.882">
+      <SvgIcon {...props} x="0px" y="0px" viewBox="0 0 511.882 511.882">
         <polygon style={{fill:"#F6BB42"}} points="350.216,176.572 278.374,158.615 37.038,264.123 0,338.207 125.753,374.324 386.13,258.531 
           "/>
         <polygon style={{fill:"#FFCE54"}} points="350.216,176.572 107.756,284.345 125.753,374.324 386.13,258.531 "/>

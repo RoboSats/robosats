@@ -127,20 +127,6 @@ class UserGenPage extends Component {
     this.setState({openInfo: false});
   };
 
-  InfoDialog =() =>{
-    return(
-      <Dialog
-        open={Boolean(this.state.openInfo)}
-        onClose={this.handleCloseInfo}
-        aria-labelledby="info-dialog-title"
-        aria-describedby="info-dialog-description"
-        scroll="paper"
-      >
-        <InfoDialog handleCloseInfo = {this.handleCloseInfo}/>
-      </Dialog>
-    )
-  }
-
   render() {
     const { t, i18n} = this.props;
     return (
@@ -237,7 +223,7 @@ class UserGenPage extends Component {
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
               <Button disabled={this.state.loadingRobot} color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
               <Button color='inherit' style={{color: '#111111'}} onClick={this.handleClickOpenInfo}>{t("Info")}</Button>
-              {this.InfoDialog()}
+              <InfoDialog open={Boolean(this.state.openInfo)} onClose = {this.handleCloseInfo}/>
               <Button disabled={this.state.loadingRobot} color='secondary' to='/book/' component={Link}>{t("View Book")}</Button>
             </ButtonGroup>
           </Grid>

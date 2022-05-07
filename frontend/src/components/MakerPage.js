@@ -52,7 +52,6 @@ class MakerPage extends Component {
         publicExpiryTime: new Date(0, 0, 0, 23, 59),
         escrowExpiryTime: new Date(0, 0, 0, 3, 0),
         enableAmountRange: false,
-        minAmount: null,
         bondSize: 1,
         limits: null,
         minAmount: "",
@@ -541,7 +540,7 @@ class MakerPage extends Component {
                                 disableSwap={true}
                                 sx={{width:200, align:"center"}}
                                 disabled={!this.state.enableAmountRange || this.state.loadingLimits}
-                                value={[this.state.minAmount, this.state.maxAmount]}
+                                value={[Number(this.state.minAmount), Number(this.state.maxAmount)]}
                                 step={(this.getMaxAmount()-this.getMinAmount())/5000}
                                 valueLabelDisplay="auto"
                                 components={{ Thumb: this.RangeThumbComponent }}
@@ -705,9 +704,9 @@ class MakerPage extends Component {
                             InputProps={{
                                 endAdornment:
                                 <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                                    <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
+                                    {/* <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
                                         <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
-                                    </IconButton>
+                                    </IconButton> */}
                                 </Tooltip>,
                                 }}
                             />
