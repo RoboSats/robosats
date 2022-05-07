@@ -136,3 +136,9 @@ input[type=number] {
 }
 
 .MuiButton-textInherit {color : '#111111';}
+
+@media (max-width: 929px) {
+  .MuiDataGrid-columnHeaders + div {
+    width: auto !important;
+  }
+}
