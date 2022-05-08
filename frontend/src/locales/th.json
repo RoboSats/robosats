@@ -106,7 +106,7 @@
     "You are looking at all":"คุณกำลังดูรายการทั้งหมด",
     "No orders found to sell BTC for {{currencyCode}}":"ไม่มีรายการขาย BTC เป็นเงิน {{currencyCode}}",
     "No orders found to buy BTC for {{currencyCode}}":"ไม่มีรายการซื้อ BTC เป็นเงิน {{currencyCode}}",
-    "Be the first one to create an order":"Be the first one to create an order",
+    "Be the first one to create an order":"มาเป็นคนสร้างรายการซื้อขายคนแรก",
 
 
     "BOTTOM BAR AND MISC - BottomBar.js":"Bottom Bar user profile and miscellaneous dialogs",
