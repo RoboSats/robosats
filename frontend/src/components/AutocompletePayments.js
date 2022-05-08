@@ -2,15 +2,16 @@ import React, { useState } from "react";
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useAutocomplete } from '@mui/base/AutocompleteUnstyled';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/material/styles';
-import PaymentIcon from './payment-methods/Icons'
-import {Button} from "@mui/material";
+import { Button}  from "@mui/material";
 import { paymentMethods, swapDestinations } from "./payment-methods/Methods";
 
+// Icons
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 import AddIcon from '@mui/icons-material/Add';
+import PaymentIcon from './payment-methods/Icons'
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 const Root = styled('div')(
   ({ theme }) => `
@@ -191,7 +192,7 @@ const Listbox = styled('ul')(
 );
 
 export default function AutocompletePayments(props) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const {
     getRootProps,
     getInputLabelProps,

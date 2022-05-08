@@ -28,7 +28,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AmbossIcon from "./icons/AmbossIcon";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
-import CommunityDialog from './CommunityDialog';
+import { CommunityDialog } from './Dialogs';
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -409,12 +409,12 @@ bottomBarDesktop =()=>{
                                 <ListItemAvatar sx={{ width: 30, height: 30 }} >
                                     <Badge badgeContent={(this.state.active_order_id > 0 & !this.state.profileShown) ? "": null} color="primary">
                                     <Avatar className='flippedSmallAvatar' sx={{margin: 0, top: -13}}
-                                    alt={this.props.nickname}
-                                    imgProps={{
-                                        onLoad:() => this.props.setAppState({avatarLoaded: true}),
-                                    }}
-                                    src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null}
-                                    />
+                                        alt={this.props.nickname}
+                                        imgProps={{
+                                            onLoad:() => this.props.setAppState({avatarLoaded: true}),
+                                        }}
+                                        src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null}
+                                        />
                                     </Badge>
                                 </ListItemAvatar>
                             </Tooltip>

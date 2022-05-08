@@ -40,7 +40,7 @@ class TradeBox extends Component {
 
 
 
-  Sound = ({soundFileName}) => (
+  Sound = (soundFileName) => (
     // Four filenames: "locked-invoice", "taker-found", "open-chat", "successful"
     <audio autoPlay src={`/static/assets/sounds/${soundFileName}.mp3`} />
   )
@@ -182,19 +182,19 @@ class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Typography component="body2" variant="body2">
+          <Typography  variant="body2">
             {t("Robots show commitment to their peers")}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           {this.props.data.is_maker ?
-          <Typography color="primary" component="subtitle1" variant="subtitle1">
+          <Typography color="primary" variant="subtitle1">
             <b>
               {t("Lock {{amountSats}} Sats to PUBLISH order", {amountSats: pn(this.props.data.bond_satoshis)})}
             </b> {" " + this.stepXofY()}
           </Typography>
           :
-          <Typography color="primary" component="subtitle1" variant="subtitle1">
+          <Typography color="primary" variant="subtitle1">
             <b>
               {t("Lock {{amountSats}} Sats to TAKE order", {amountSats: pn(this.props.data.bond_satoshis)})}
             </b> {" " + this.stepXofY()}
@@ -215,7 +215,7 @@ class TradeBox extends Component {
             variant="standard"
             size="small"
             defaultValue={this.props.data.bond_invoice}
-            disabled="true"
+            disabled={true}
             helperText={t("This is a hold invoice, it will freeze in your wallet. It will be charged only if you cancel or lose a dispute.")}
             color = "secondary"
           />
@@ -228,7 +228,7 @@ class TradeBox extends Component {
     const {t} = this.props
     return (
         <Grid item xs={12} align="center">
-          <Typography color="primary" component="subtitle1" variant="subtitle1" align="center">
+          <Typography color="primary" variant="subtitle1" align="center">
             <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}>
               <LockIcon/>
               {this.props.data.is_maker ? t("Your maker bond is locked") : t("Your taker bond is locked")}
@@ -242,7 +242,7 @@ class TradeBox extends Component {
     const { t } = this.props;
     return (
         <Grid item xs={12} align="center">
-          <Typography color="error" component="subtitle1" variant="subtitle1" align="center">
+          <Typography color="error" variant="subtitle1" align="center">
                 <div style={{display:'flex',alignItems:'center', justifyContent:'center', flexWrap:'wrap', align:"center"}} align="center">
                     <BalanceIcon/>
                     {this.props.data.is_maker ? t("Your maker bond was settled") : t("Your taker bond was settled")}
@@ -256,7 +256,7 @@ class TradeBox extends Component {
     const { t } = this.props;
     return (
         <Grid item xs={12} align="center">
-          <Typography color="green" component="subtitle1" variant="subtitle1" align="center">
+          <Typography color="green" variant="subtitle1" align="center">
             <div style={{display:'flex',alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}>
               <LockOpenIcon/>
               {this.props.data.is_maker ? t("Your maker bond was unlocked") : t("Your taker bond was unlocked")}
@@ -271,9 +271,9 @@ class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
-        {this.Sound(soundFileName="locked-invoice")}
+        {this.Sound("locked-invoice")}
         <Grid item xs={12} align="center">
-          <Typography color="green" component="subtitle1" variant="subtitle1">
+          <Typography color="green" variant="subtitle1">
             <b>
               {t("Lock {{amountSats}} Sats as collateral", {amountSats:pn(this.props.data.escrow_satoshis)})}
             </b>{" " + this.stepXofY()}
@@ -293,7 +293,7 @@ class TradeBox extends Component {
             variant="filled"
             size="small"
             defaultValue={this.props.data.escrow_invoice}
-            disabled="true"
+            disabled={true}
             helperText={t("This is a hold invoice, it will freeze in your wallet. It will be released to the buyer once you confirm to have received the {{currencyCode}}.",{currencyCode: this.props.data.currencyCode})}
             color = "secondary"
           />
@@ -308,15 +308,15 @@ class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         {/* Make bell sound when taker is found */}
-        {this.Sound(soundFileName="taker-found")}
+        {this.Sound("taker-found")}
         <Grid item xs={12} align="center">
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography variant="subtitle1">
             <b>{t("A taker has been found!")}</b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Divider/>
         <Grid item xs={12} align="center">
-          <Typography component="body2" variant="body2">
+          <Typography  variant="body2">
             {t("Please wait for the taker to lock a bond. If the taker does not lock a bond in time, the order will be made public again.")}
           </Typography>
         </Grid>
@@ -387,21 +387,26 @@ class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
-        {this.Sound(soundFileName="locked-invoice")}
+        {this.Sound("locked-invoice")}
         {this.EnableTelegramDialog()}
         <Grid item xs={12} align="center">
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography variant="subtitle1">
             <b> {t("Your order is public")} </b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
 
-        <List dense="true">
+        <List dense={true}>
           <Divider/>
             <ListItem>
-              <Typography component="body2" variant="body2" align="left">
-                <p>{t("Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m to reply. If you do not reply, you risk losing your bond.", this.depositHoursMinutes() )} </p>
-                <p>{t("If the order expires untaken, your bond will return to you (no action needed).")}</p>
+              <Typography  variant="body2" align="left">
+                {t("Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m to reply. If you do not reply, you risk losing your bond.", this.depositHoursMinutes() )}
+              </Typography>
+            </ListItem>
+            
+            <ListItem>
+              <Typography  variant="body2" align="left">
+                {t("If the order expires untaken, your bond will return to you (no action needed).")}
               </Typography>
             </ListItem>
 
@@ -431,7 +436,7 @@ class TradeBox extends Component {
                   {this.props.pauseLoading ?
                   <CircularProgress sx={{width:"30px",height:"30px"}}/>
                   :
-                  <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title={t("Pause the public order")}>
+                  <Tooltip placement="top" enterTouchDelay={500} enterDelay={700} enterNextDelay={2000} title={t("Pause the public order")}>
                     <Button color="primary" onClick={this.handleClickPauseOrder}>
                       <PauseCircleIcon sx={{width:"36px",height:"36px"}}/>
                     </Button>
@@ -464,16 +469,16 @@ class TradeBox extends Component {
       <Grid container align="center" spacing={1}>
 
         <Grid item xs={12} align="center">
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography variant="subtitle1">
             <b> {t("Your order is paused")} </b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
 
         <Grid item xs={12} align="center">
-          <List dense="true">
+          <List dense={true}>
             <Divider/>
               <ListItem>
-              <Typography component="body2" variant="body2" align="left">
+              <Typography  variant="body2" align="left">
                 {t("Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.")}
               </Typography>
             </ListItem>
@@ -566,14 +571,14 @@ class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           {/* Make confirmation sound for HTLC received. */}
-          {this.Sound(soundFileName="locked-invoice")}
-          <Typography color="primary" component="subtitle1" variant="subtitle1">
+          {this.Sound("locked-invoice")}
+          <Typography color="primary" variant="subtitle1">
             <b> {t("Submit an invoice for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}
             </b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="left">
-          <Typography component="body2" variant="body2">
+          <Typography variant="body2">
             {t("The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC. Please provide a valid invoice for {{amountSats}} Satoshis.",
             {amountFiat: parseFloat(parseFloat(this.props.data.amount).toFixed(4)),
               currencyCode: this.props.data.currencyCode,
@@ -627,12 +632,12 @@ class TradeBox extends Component {
       return (
         <Grid container spacing={1}>
           <Grid item xs={12} align="center">
-            <Typography color="primary" component="subtitle1" variant="subtitle1">
+            <Typography color="primary" variant="subtitle1">
               <b> {t("We have received your statement")} </b>
             </Typography>
           </Grid>
           <Grid item xs={12} align="left">
-            <Typography component="body2" variant="body2">
+            <Typography  variant="body2">
               <p>{t("We are waiting for your trade counterpart statement. If you are hesitant about the state of the dispute or want to add more information, contact robosats@protonmail.com.")}</p>
               <p>{t("Please, save the information needed to identify your order and your payments: order ID; payment hashes of the bonds or escrow (check on your lightning wallet); exact amount of satoshis; and robot nickname. You will have to identify yourself as the user involved in this trade via email (or other contact methods).")}</p>
             </Typography>
@@ -647,12 +652,12 @@ class TradeBox extends Component {
 
         <Grid container spacing={1}>
           <Grid item xs={12} align="center">
-            <Typography color="primary" component="subtitle1" variant="subtitle1">
+            <Typography color="primary"  variant="subtitle1">
               <b> {t("A dispute has been opened")} </b>
             </Typography>
           </Grid>
           <Grid item xs={12} align="left">
-            <Typography component="body2" variant="body2">
+            <Typography  variant="body2">
             {t("Please, submit your statement. Be clear and specific about what happened and provide the necessary evidence. You MUST provide a contact method: burner email, XMPP or telegram username to follow up with the staff. Disputes are solved at the discretion of real robots (aka humans), so be as helpful as possible to ensure a fair outcome. Max 5000 chars.")}
             </Typography>
           </Grid>
@@ -684,12 +689,12 @@ class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Typography color="primary" component="subtitle1" variant="subtitle1">
+          <Typography color="primary"  variant="subtitle1">
             <b> {t("We have the statements")} </b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="left">
-          <Typography component="body2" variant="body2">
+          <Typography  variant="body2">
             <p>{t("Both statements have been received, wait for the staff to resolve the dispute. If you are hesitant about the state of the dispute or want to add more information, contact robosats@protonmail.com. If you did not provide a contact method, or are unsure whether you wrote it right, write us immediately.")} </p>
             <p>{t("Please, save the information needed to identify your order and your payments: order ID; payment hashes of the bonds or escrow (check on your lightning wallet); exact amount of satoshis; and robot nickname. You will have to identify yourself as the user involved in this trade via email (or other contact methods).")}</p>
           </Typography>
@@ -704,12 +709,12 @@ class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Typography color="primary" component="subtitle1" variant="subtitle1">
+          <Typography color="primary"  variant="subtitle1">
             <b> {t("You have won the dispute")} </b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="left">
-          <Typography component="body2" variant="body2">
+          <Typography  variant="body2">
             {t("You can claim the dispute resolution amount (escrow and fidelity bond) from your profile rewards. If there is anything the staff can help with, do not hesitate to contact to robosats@protonmail.com (or via your provided burner contact method).")}
           </Typography>
         </Grid>
@@ -723,12 +728,12 @@ class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Typography color="error" component="subtitle1" variant="subtitle1">
+          <Typography color="error"  variant="subtitle1">
             <b> {t("You have lost the dispute")} </b>
           </Typography>
         </Grid>
         <Grid item xs={12} align="left">
-          <Typography component="body2" variant="body2">
+          <Typography  variant="body2">
           {t("Unfortunately you have lost the dispute. If you think this is a mistake you can ask to re-open the case via email to robosats@protonmail.com. However, chances of it being investigated again are low.")}
           </Typography>
         </Grid>
@@ -742,12 +747,12 @@ class TradeBox extends Component {
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography  variant="subtitle1">
             <b>{t("Your invoice looks good!")}</b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          <Typography component="body2" variant="body2" align="left">
+          <Typography  variant="body2" align="left">
             <p>{t("We are waiting for the seller lock the trade amount.")}</p>
             <p>{t("Just hang on for a moment. If the seller does not deposit, you will get your bond back automatically. In addition, you will receive a compensation (check the rewards in your profile).")}</p>
           </Typography>
@@ -762,14 +767,14 @@ class TradeBox extends Component {
     return(
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
-        {this.Sound(soundFileName="locked-invoice")}
+        {this.Sound("locked-invoice")}
         <Grid item xs={12} align="center">
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography  variant="subtitle1">
             <b>{t("The trade collateral is locked!")}</b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          <Typography component="body2" variant="body2" align="left">
+          <Typography  variant="body2" align="left">
             <p>{t("We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.")} </p>
             <p>{t("Just hang on for a moment. If the buyer does not cooperate, you will get back the trade collateral and your bond automatically. In addition, you will receive a compensation (check the rewards in your profile).")}</p>
           </Typography>
@@ -892,13 +897,13 @@ handleRatingRobosatsChange=(e)=>{
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography  variant="subtitle1">
             <b>{t("The order has expired")}</b>
           </Typography>
         </Grid>
 
         <Grid item xs={12} align="center">
-          <Typography component="body2" variant="body2">
+          <Typography  variant="body2">
             {t(this.props.data.expiry_message)}
           </Typography>
         </Grid>
@@ -945,15 +950,15 @@ handleRatingRobosatsChange=(e)=>{
     return(
       <Grid container spacing={1}>
         {/* Make confirmation sound for Chat Open. */}
-        {this.Sound(soundFileName="chat-open")}
+        {this.Sound("chat-open")}
         <Grid item xs={12} align="center">
-          <Typography component="subtitle1" variant="subtitle1">
+          <Typography variant="subtitle1">
             <b> {this.props.data.is_seller ? t("Chat with the buyer"): t("Chat with the seller")}</b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
           {this.props.data.is_seller ?
-          <Typography component="body2" variant="body2"  align="center">
+          <Typography variant="body2"  align="center">
             {this.props.data.status == 9?
             t("Say hi! Be helpful and concise. Let them know how to send you {{currencyCode}}.",{currencyCode: this.props.data.currencyCode})
             :
@@ -961,7 +966,7 @@ handleRatingRobosatsChange=(e)=>{
             }
           </Typography>
           :
-          <Typography component="body2" variant="body2" align="center">
+          <Typography  variant="body2" align="center">
             {this.props.data.status == 9?
             t("Say hi! Ask for payment details and click 'Confirm Sent' as soon as the payment is sent.")
             :
@@ -989,14 +994,14 @@ handleRatingRobosatsChange=(e)=>{
     return(
       <Grid container spacing={1}>
         {/* Make confirmation sound for Chat Open. */}
-        {this.Sound(soundFileName="successful")}
+        {this.Sound("successful")}
         <Grid item xs={12} align="center">
           <Typography component="h6" variant="h6">
             {t("🎉Trade finished!🥳")}
           </Typography>
         </Grid>
         {/* <Grid item xs={12} align="center">
-          <Typography component="body2" variant="body2" align="center">
+          <Typography  variant="body2" align="center">
             What do you think of ⚡<b>{this.props.data.is_maker ? this.props.data.taker_nick : this.props.data.maker_nick}</b>⚡?
           </Typography>
         </Grid>
@@ -1004,7 +1009,7 @@ handleRatingRobosatsChange=(e)=>{
           <Rating name="size-large" defaultValue={0} size="large" onChange={this.handleRatingUserChange} />
         </Grid> */}
         <Grid item xs={12} align="center">
-          <Typography component="body2" variant="body2" align="center">
+          <Typography  variant="body2" align="center">
             <Trans i18nKey="rate_robosats">What do you think of 🤖<b>RoboSats</b>⚡?</Trans>
           </Typography>
         </Grid>
@@ -1013,7 +1018,7 @@ handleRatingRobosatsChange=(e)=>{
         </Grid>
         {this.state.rating_platform==5 ?
         <Grid item xs={12} align="center">
-          <Typography component="body2" variant="body2" align="center">
+          <Typography  variant="body2" align="center">
             <p><b>{t("Thank you! RoboSats loves you too ❤️")}</b></p>
             <p>{t("RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!")}</p>
           </Typography>
@@ -1021,7 +1026,7 @@ handleRatingRobosatsChange=(e)=>{
         : null}
         {this.state.rating_platform!=5 & this.state.rating_platform!=null ?
         <Grid item xs={12} align="center">
-          <Typography component="body2" variant="body2" align="center">
+          <Typography  variant="body2" align="center">
             <p><b>{t("Thank you for using Robosats!")}</b></p>
             <p><Trans i18nKey="let_us_know_hot_to_improve">Let us know how the platform could improve (<Link target='_blank' href="https://t.me/robosats">Telegram</Link> / <Link target='_blank' href="https://github.com/Reckless-Satoshi/robosats/issues">Github</Link>)</Trans></p>
           </Typography>
@@ -1056,7 +1061,7 @@ handleRatingRobosatsChange=(e)=>{
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          <Typography component="body2" variant="body2" align="center">
+          <Typography  variant="body2" align="center">
             {t("RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must be online in order to receive payments.")}
           </Typography>
         <br/>
@@ -1093,13 +1098,13 @@ handleRatingRobosatsChange=(e)=>{
             </Typography>
           </Grid>
           <Grid item xs={12} align="center">
-            <Typography component="body2" variant="body2" align="center">
+            <Typography  variant="body2" align="center">
               {t("Your invoice has expired or more than 3 payment attempts have been made. Muun wallet is not recommended. ")}
               <Link href="https://github.com/Reckless-Satoshi/robosats/issues/44"> {t("Check the list of compatible wallets")}</Link>
             </Typography>
           </Grid>
           <Grid item xs={12} align="center">
-            <Typography color="primary" component="subtitle1" variant="subtitle1">
+            <Typography color="primary" variant="subtitle1">
               <b> {t("Submit an invoice for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}</b>
             </Typography>
           </Grid>
@@ -1133,7 +1138,7 @@ handleRatingRobosatsChange=(e)=>{
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          <Typography component="body2" variant="body2" align="center">
+          <Typography  variant="body2" align="center">
             {t("RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.")}
           </Typography>
           <List>

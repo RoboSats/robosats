@@ -39,7 +39,6 @@ class OrderPage extends Component {
         tabValue: 1,
         orderId: this.props.match.params.orderId,
     };
-    this.getOrderDetails(this.props.match.params.orderId);
 
     // Refresh delays according to Order status
     this.statusToDelay = {
@@ -89,7 +88,6 @@ class OrderPage extends Component {
   }
 
   getOrderDetails =(id)=> {
-    this.setState(null)
     this.setState({orderId:id})
     fetch('/api/order' + '?order_id=' + id)
       .then((response) => response.json())
@@ -98,8 +96,10 @@ class OrderPage extends Component {
 
   // These are used to refresh the data
   componentDidMount() {
+    this.getOrderDetails(this.props.match.params.orderId);
     this.interval = setInterval(this.tick, this.state.delay);
   }
+
   componentDidUpdate() {
     clearInterval(this.interval);
       this.interval = setInterval(this.tick, this.state.delay);
@@ -179,7 +179,7 @@ class OrderPage extends Component {
     const { t } = this.props;
     if(this.state.has_range){
     return(
-        <Grid container xs={12} align="center" alignItems="stretch" justifyContent="center" style={{ display: "flex"}}>
+        <Grid container align="center" alignItems="stretch" justifyContent="center" style={{ display: "flex"}}>
           <this.InactiveMakerDialog/>
           <this.StoreTokenDialog/>
           <div style={{maxWidth:120}}>
@@ -533,7 +533,7 @@ class OrderPage extends Component {
             </Typography>
           </MediaQuery>
           <Paper elevation={12} style={{ padding: 8,}}>
-          <List dense="true">
+          <List dense={true}>
             <ListItem >
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
               <Tooltip placement="top" enterTouchDelay={0} title={t(this.state.maker_status)} >
@@ -587,7 +587,7 @@ class OrderPage extends Component {
 
             <ListItem>
               <ListItemIcon>
-                <div style={{zoom:1.25,opacity: 0.7, '-ms-zoom': 1.25, '-webkit-zoom': 1.25,'-moz-transform':  'scale(1.25,1.25)', '-moz-transform-origin': 'left center'}}>
+                <div style={{zoom:1.25,opacity: 0.7, msZoom: 1.25, WebkitZoom: 1.25, MozTransform:  'scale(1.25,1.25)', MozTransformOrigin: 'left center'}}>
                   <FlagWithProps code={this.state.currencyCode} />
                 </div>
               </ListItemIcon>
@@ -631,7 +631,7 @@ class OrderPage extends Component {
             <ListItemIcon>
                 <NumbersIcon/>
               </ListItemIcon>
-            <Grid container xs={12}>
+            <Grid container>
                 <Grid item xs={4.5}>
                   <ListItemText primary={this.state.orderId} secondary={t("Order ID")}/>
                 </Grid>
@@ -726,7 +726,7 @@ class OrderPage extends Component {
 
   doubleOrderPageDesktop=()=>{
     return(
-      <Grid container xs={12} align="center" spacing={2} >
+      <Grid container align="center" spacing={2} >
         <Grid item xs={6} align="left" style={{ width:330}} >
             {this.orderBox()}
         </Grid>
@@ -774,7 +774,7 @@ class OrderPage extends Component {
     return(
       this.state.bad_request ?
         <div align='center'>
-          <Typography component="subtitle2" variant="subtitle2" color="secondary" >
+          <Typography variant="subtitle2" color="secondary" >
             {/* IMPLEMENT I18N for bad_request */}
             {t(this.state.bad_request)}<br/>
           </Typography>

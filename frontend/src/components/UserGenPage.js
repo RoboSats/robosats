@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { withTranslation } from "react-i18next";
-import { Button , Tooltip, Dialog, Grid, Typography, TextField, ButtonGroup, CircularProgress, IconButton} from "@mui/material"
+import { Button , Tooltip, Grid, Typography, TextField, ButtonGroup, CircularProgress, IconButton} from "@mui/material"
 import { Link } from 'react-router-dom'
 import Image from 'material-ui-image'
-import InfoDialog from './InfoDialog'
+import { InfoDialog } from './Dialogs'
 
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CasinoIcon from '@mui/icons-material/Casino';
@@ -31,7 +31,7 @@ class UserGenPage extends Component {
     if (this.props.nickname != null){
       this.setState({
         nickname: this.props.nickname,
-        token: this.props.token? this.props.token : null,
+        token: this.props.token? this.props.token : "",
         avatar_url: '/static/assets/avatars/' + this.props.nickname + '.png',
         loadingRobot: false
       });

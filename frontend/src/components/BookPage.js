@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { withTranslation, Trans} from "react-i18next";
+import { withTranslation } from "react-i18next";
 import { Badge, Tooltip, Stack, Paper, Button, FormControlLabel, Checkbox, RadioGroup, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, ListItemText, ListItemAvatar, IconButton, CircularProgress} from "@mui/material";
 import { Link } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid';
@@ -215,9 +215,9 @@ class BookPage extends Component {
                   <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"11px", top:"2px"}}> {params.row.type == t("Buyer") ? <SendReceiveIcon sx={{transform: "scaleX(-1)",height:"20px",width:"20px"}} color="secondary"/> : <SendReceiveIcon sx={{height:"20px",width:"20px"}} color="primary"/>}</div>}>
                     <div style={{ width: 45, height: 45 }}>
                       <Image className='bookAvatar'
-                          disableError='true'
-                          disableSpinner='true'
-                          color='null'
+                          disableError={true}
+                          disableSpinner={true}
+                          color={null}
                           alt={params.row.robot}
                           src={params.row.avatar}
                       />
@@ -311,6 +311,7 @@ class BookPage extends Component {
 
   NoOrdersFound=()=>{
     const { t } = this.props;
+
     return(
       <Grid item xs={12} align="center">
         <Grid item xs={12} align="center">
@@ -326,7 +327,7 @@ class BookPage extends Component {
         <Grid item>
           <Button size="large" variant="contained" color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
         </Grid>
-          <Typography color="primary" component="body1" variant="body1">
+          <Typography color="primary" variant="body1">
             {t("Be the first one to create an order")}
             <br/>
             <br/>
@@ -345,13 +346,13 @@ class BookPage extends Component {
 
           <Grid item xs={6} align="right">
             <FormControl align="center">
-              <FormHelperText align="center">
-                <div style={{position:"relative", left:"10px", textAlign:"center"}}>{t("I want to")} </div>
+              <FormHelperText align="center" sx={{position:"relative", left:"10px", textAlign:"center"}}>
+                {t("I want to")}
               </FormHelperText>
               <RadioGroup row>
                 <div style={{position:"relative", left:"20px"}}>
                   <FormControlLabel
-                      control={<Checkbox defaultChecked={true} icon={<BuySatsIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<BuySatsCheckedIcon sx={{width:"30px",height:"30px"}} color="primary"/>}/>}
+                      control={<Checkbox icon={<BuySatsIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<BuySatsCheckedIcon sx={{width:"30px",height:"30px"}} color="primary"/>}/>}
                       label={
                         <div style={{position:"relative",top:"-13px"}}>
                           {this.props.buyChecked ?
@@ -367,7 +368,7 @@ class BookPage extends Component {
                   />
                 </div>
                   <FormControlLabel
-                      control={<Checkbox defaultChecked={true} icon={<SellSatsIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<SellSatsCheckedIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
+                      control={<Checkbox icon={<SellSatsIcon sx={{width:"30px",height:"30px"}} color="inherit"/>} checkedIcon={<SellSatsCheckedIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
                       label={
                         <div style={{position:"relative",top:"-13px"}}>
                           {this.props.sellChecked ?
@@ -387,10 +388,8 @@ class BookPage extends Component {
 
           <Grid item xs={6} align="left">
             <FormControl align="center">
-              <FormHelperText align="center">
-                <div style={{textAlign:"center", position:"relative", left:"-5px"}}>
+              <FormHelperText align="center" sx={{textAlign:"center", position:"relative", left:"-5px"}}>
                   {this.props.bookType == 0 ? t("and receive") : (this.props.bookType == 1 ? t("and pay with") : t("and use") )}
-                </div>
               </FormHelperText>
               <Select
                   //autoWidth={true}

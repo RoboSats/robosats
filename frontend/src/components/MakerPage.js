@@ -346,10 +346,8 @@ class MakerPage extends Component {
 
             <Grid item xs={12} align="center">
                 <FormControl component="fieldset">
-                    <FormHelperText >
-                        <div align='center'>
-                            {t("Choose a Pricing Method")}
-                        </div>
+                    <FormHelperText sx={{textAlign:"center"}}>
+                        {t("Choose a Pricing Method")}
                     </FormHelperText>
                     <RadioGroup row defaultValue="relative">
                     <Tooltip placement="top" enterTouchDelay={0} enterDelay={1000} enterNextDelay={2000} title={t("Let the price move with the market")}>
@@ -524,37 +522,35 @@ class MakerPage extends Component {
 
             <Grid item xs={12} align="center">
                 <FormControl align="center">
-                        <FormHelperText>
-                            <Tooltip enterTouchDelay={0} placement="top" align="center" title={t("Let the taker chose an amount within the range")}>
-                            <div align="center" style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                                <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked, is_explicit: false})}/>
-                                {this.state.enableAmountRange & this.state.minAmount != null? this.rangeText() : t("Enable Amount Range")}
-                            </div>
-                            </Tooltip>
+                    <Tooltip enterTouchDelay={0} placement="top" align="center" title={t("Let the taker chose an amount within the range")}>
+                        <FormHelperText align="center" style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+                            <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked, is_explicit: false})}/>
+                            {this.state.enableAmountRange & this.state.minAmount != null? this.rangeText() : t("Enable Amount Range")}
                         </FormHelperText>
-                            <div style={{ display: this.state.loadingLimits == true ? '':'none'}}>
-                                <LinearProgress />
-                            </div>
-                            <div style={{ display: this.state.loadingLimits == false ? '':'none'}}>
-                            <RangeSlider
-                                disableSwap={true}
-                                sx={{width:200, align:"center"}}
-                                disabled={!this.state.enableAmountRange || this.state.loadingLimits}
-                                value={[Number(this.state.minAmount), Number(this.state.maxAmount)]}
-                                step={(this.getMaxAmount()-this.getMinAmount())/5000}
-                                valueLabelDisplay="auto"
-                                components={{ Thumb: this.RangeThumbComponent }}
-                                valueLabelFormat={(x) => (parseFloat(Number(x).toPrecision(x < 100 ? 2 : 3))+" "+this.state.currencyCode)}
-                                marks={this.state.limits == null?
-                                    null
-                                    :
-                                    [{value: this.getMinAmount(),label: this.getMinAmount()+" "+ this.state.currencyCode},
-                                    {value: this.getMaxAmount(),label: this.getMaxAmount()+" "+this.state.currencyCode}]}
-                                min={this.getMinAmount()}
-                                max={this.getMaxAmount()}
-                                onChange={this.handleRangeAmountChange}
-                            />
-                            </div>
+                    </Tooltip>
+                    <div style={{ display: this.state.loadingLimits == true ? '':'none'}}>
+                        <LinearProgress />
+                    </div>
+                    <div style={{ display: this.state.loadingLimits == false ? '':'none'}}>
+                        <RangeSlider
+                            disableSwap={true}
+                            sx={{width:200, align:"center"}}
+                            disabled={!this.state.enableAmountRange || this.state.loadingLimits}
+                            value={[Number(this.state.minAmount), Number(this.state.maxAmount)]}
+                            step={(this.getMaxAmount()-this.getMinAmount())/5000}
+                            valueLabelDisplay="auto"
+                            components={{ Thumb: this.RangeThumbComponent }}
+                            valueLabelFormat={(x) => (parseFloat(Number(x).toPrecision(x < 100 ? 2 : 3))+" "+this.state.currencyCode)}
+                            marks={this.state.limits == null?
+                                null
+                                :
+                                [{value: this.getMinAmount(),label: this.getMinAmount()+" "+ this.state.currencyCode},
+                                {value: this.getMaxAmount(),label: this.getMaxAmount()+" "+this.state.currencyCode}]}
+                            min={this.getMinAmount()}
+                            max={this.getMaxAmount()}
+                            onChange={this.handleRangeAmountChange}
+                        />
+                    </div>
                     </FormControl>
                 </Grid>
 
@@ -627,15 +623,12 @@ class MakerPage extends Component {
                     </Accordion>
                 </Grid>
 
-
                 <Grid item xs={12} align="center">
                     <FormControl align="center">
                     <Tooltip enterDelay={800} enterTouchDelay={0} placement="top" title={t("Set the skin-in-the-game, increase for higher safety assurance")}>
-                        <FormHelperText>
-                                <div align="center" style={{display:'flex',flexWrap:'wrap', transform: 'translate(20%, 0)'}}>
-                                    {t("Fidelity Bond Size")} <LockIcon sx={{height:20,width:20}}/>
-                                </div>
-                        </FormHelperText>
+                            <FormHelperText align="center" sx={{display:'flex',flexWrap:'wrap', transform: 'translate(20%, 0)'}}>
+                                {t("Fidelity Bond Size")} <LockIcon sx={{height:20,width:20}}/>
+                            </FormHelperText>
                         </Tooltip>
                         <Slider
                             sx={{width:220, align:"center"}}
@@ -704,9 +697,9 @@ class MakerPage extends Component {
                             InputProps={{
                                 endAdornment:
                                 <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                                    {/* <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
+                                    <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
                                         <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
-                                    </IconButton> */}
+                                    </IconButton>
                                 </Tooltip>,
                                 }}
                             />
