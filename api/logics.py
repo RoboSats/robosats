@@ -73,7 +73,7 @@ class Logics:
 
         # Edge case when the user is in an order that is failing payment and he is the buyer
         queryset = Order.objects.filter(Q(maker=user) | Q(taker=user),
-                                        status=Order.Status.FAI)
+                                        status__in=[Order.Status.FAI,Order.Status.PAY])
         if queryset.exists():
             order = queryset[0]
             if cls.is_buyer(order, user):
