@@ -36,6 +36,7 @@ class OrderPage extends Component {
         openCancel: false,
         openCollaborativeCancel: false,
         openInactiveMaker: false,
+        openStoreToken: false,
         tabValue: 1,
         orderId: this.props.match.params.orderId,
     };
@@ -180,8 +181,8 @@ class OrderPage extends Component {
     if(this.state.has_range){
     return(
         <Grid container align="center" alignItems="stretch" justifyContent="center" style={{ display: "flex"}}>
-          <this.InactiveMakerDialog/>
-          <this.StoreTokenDialog/>
+          {this.InactiveMakerDialog()}
+          {this.StoreTokenDialog()}
           <div style={{maxWidth:120}}>
           <Tooltip placement="top" enterTouchDelay={500} enterDelay={700} enterNextDelay={2000} title={t("Enter amount of fiat to exchange for bitcoin")}>
             <Paper elevation={5} sx={{maxHeight:40}}>
@@ -226,8 +227,8 @@ class OrderPage extends Component {
     }else{
       return(
         <>
-        <this.InactiveMakerDialog/>
-        <this.StoreTokenDialog/>
+        {this.InactiveMakerDialog()}
+        {this.StoreTokenDialog()}
         <Button sx={{height:38}} variant='contained' color='primary'
                 onClick={this.props.copiedToken ? (this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder) : (() => this.setState({openStoreToken:true}))}>
                 {t("Take Order")}
@@ -383,7 +384,7 @@ class OrderPage extends Component {
                         size='small'
                         InputProps={{
                             endAdornment:
-                            <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+                            <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
                                 <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
                                     <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
                                 </IconButton>
@@ -532,7 +533,7 @@ class OrderPage extends Component {
               {t("Order Box")}
             </Typography>
           </MediaQuery>
-          <Paper elevation={12} style={{ padding: 8,}}>
+          <Paper elevation={12} >
           <List dense={true}>
             <ListItem >
               <ListItemAvatar sx={{ width: 56, height: 56 }}>

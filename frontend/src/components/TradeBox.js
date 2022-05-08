@@ -636,11 +636,21 @@ class TradeBox extends Component {
               <b> {t("We have received your statement")} </b>
             </Typography>
           </Grid>
-          <Grid item xs={12} align="left">
-            <Typography  variant="body2">
-              <p>{t("We are waiting for your trade counterpart statement. If you are hesitant about the state of the dispute or want to add more information, contact robosats@protonmail.com.")}</p>
-              <p>{t("Please, save the information needed to identify your order and your payments: order ID; payment hashes of the bonds or escrow (check on your lightning wallet); exact amount of satoshis; and robot nickname. You will have to identify yourself as the user involved in this trade via email (or other contact methods).")}</p>
-            </Typography>
+          <Grid item xs={12} align="center">
+            <List dense={true}>
+              <Divider/>
+              <ListItem>
+                <Typography  variant="body2">
+                  {t("We are waiting for your trade counterpart statement. If you are hesitant about the state of the dispute or want to add more information, contact robosats@protonmail.com.")}
+                </Typography>
+              </ListItem>
+              <ListItem>
+                <Typography  variant="body2">
+                  {t("Please, save the information needed to identify your order and your payments: order ID; payment hashes of the bonds or escrow (check on your lightning wallet); exact amount of satoshis; and robot nickname. You will have to identify yourself as the user involved in this trade via email (or other contact methods).")}
+                </Typography>
+              </ListItem>
+              <Divider/>
+            </List>
           </Grid>
           {this.showBondIsSettled()}
         </Grid>
@@ -752,10 +762,20 @@ class TradeBox extends Component {
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          <Typography  variant="body2" align="left">
-            <p>{t("We are waiting for the seller lock the trade amount.")}</p>
-            <p>{t("Just hang on for a moment. If the seller does not deposit, you will get your bond back automatically. In addition, you will receive a compensation (check the rewards in your profile).")}</p>
-          </Typography>
+          <List dense={true}>
+            <Divider/>
+            <ListItem>
+              <Typography  variant="body2" align="left">
+                {t("We are waiting for the seller lock the trade amount.")}
+              </Typography>
+            </ListItem>
+            <ListItem>
+              <Typography  variant="body2" align="left">
+                {t("Just hang on for a moment. If the seller does not deposit, you will get your bond back automatically. In addition, you will receive a compensation (check the rewards in your profile).")}
+              </Typography>
+            </ListItem>
+            <Divider/>
+          </List>
         </Grid>
         {this.showBondIsLocked()}
       </Grid>
@@ -774,10 +794,21 @@ class TradeBox extends Component {
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          <Typography  variant="body2" align="left">
-            <p>{t("We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.")} </p>
-            <p>{t("Just hang on for a moment. If the buyer does not cooperate, you will get back the trade collateral and your bond automatically. In addition, you will receive a compensation (check the rewards in your profile).")}</p>
-          </Typography>
+          <List dense={true}>
+            <Divider/>
+            <ListItem>
+              <Typography  variant="body2" align="left">
+                {t("We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.")}
+              </Typography>
+            </ListItem>
+
+            <ListItem>
+              <Typography  variant="body2" align="left">
+                {t("Just hang on for a moment. If the buyer does not cooperate, you will get back the trade collateral and your bond automatically. In addition, you will receive a compensation (check the rewards in your profile).")}
+              </Typography>
+            </ListItem>
+            <Divider/>
+          </List>
         </Grid>
         {this.showBondIsLocked()}
       </Grid>
