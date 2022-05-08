@@ -31,6 +31,13 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 
 - **[Vollständiges how to use RoboSats (German)](https://github.com/Reckless-Satoshi/robosats/blob/main/docs/how-to-use_de.md)**
 
+**Short video-walktrough**
+
+https://user-images.githubusercontent.com/90936742/167310017-dc211a05-dd5e-4ef4-b93f-250f80bc5bca.mp4
+
+**Video tutorial** by Ben from BTCsessions (YouTube)
+[![ROBOSATS - Buy and Sell Bitcoin With No ID (Youtube)](https://user-images.githubusercontent.com/90936742/167309821-79be8570-fcd1-4677-b43f-fb1aedc896bb.png)](https://www.youtube.com/watch?v=XW_wzRz_BDI)
+
 ## How it works
 
 Alice wants to buy satoshis privately:
