@@ -2,14 +2,14 @@ import React, { Component } from "react";
 import { withTranslation} from "react-i18next";
 import {TextField,Chip, Tooltip, IconButton, Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import Countdown, { zeroPad } from 'react-countdown';
-import LinearDeterminate from './LinearDeterminate';
-import MediaQuery from 'react-responsive'
-import currencyDict from '../../static/assets/currencies.json';
-import { Link as LinkRouter } from 'react-router-dom'
+import { StoreTokenDialog, NoRobotDialog } from "./Dialogs";
 
+import currencyDict from '../../static/assets/currencies.json';
 import PaymentText from './PaymentText'
 import TradeBox from "./TradeBox";
 import FlagWithProps from './FlagWithProps'
+import LinearDeterminate from './LinearDeterminate';
+import MediaQuery from 'react-responsive'
 import { t } from "i18next";
 
 // icons
@@ -20,7 +20,6 @@ import PaymentsIcon from '@mui/icons-material/Payments';
 import ArticleIcon from '@mui/icons-material/Article';
 import SendReceiveIcon from "./icons/SendReceiveIcon";
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
-import ContentCopy from "@mui/icons-material/ContentCopy";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -182,7 +181,7 @@ class OrderPage extends Component {
     return(
         <Grid container align="center" alignItems="stretch" justifyContent="center" style={{ display: "flex"}}>
           {this.InactiveMakerDialog()}
-          {this.StoreTokenDialog()}
+          {this.tokenDialog()}
           <div style={{maxWidth:120}}>
           <Tooltip placement="top" enterTouchDelay={500} enterDelay={700} enterNextDelay={2000} title={t("Enter amount of fiat to exchange for bitcoin")}>
             <Paper elevation={5} sx={{maxHeight:40}}>
@@ -228,7 +227,7 @@ class OrderPage extends Component {
       return(
         <>
         {this.InactiveMakerDialog()}
-        {this.StoreTokenDialog()}
+        {this.tokenDialog()}
         <Button sx={{height:38}} variant='contained' color='primary'
                 onClick={this.props.copiedToken ? (this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder) : (() => this.setState({openStoreToken:true}))}>
                 {t("Take Order")}
@@ -355,72 +354,26 @@ class OrderPage extends Component {
     )
   }
 
-  StoreTokenDialog = () =>{
-    const { t } = this.props;
-
-    // If there is a robot cookie, prompt user to store it
-    // Else, prompt user to generate a robot
-    if (getCookie("robot_token")){
-        return(
-            <Dialog
-            open={this.state.openStoreToken}
-            onClose={() => this.setState({openStoreToken:false})}
-            >
-                <DialogTitle >
-                {t("Store your robot token")}
-                </DialogTitle>
-                <DialogContent>
-                <DialogContentText>
-                    {t("You might need to recover your robot avatar in the future: store it safely. You can simply copy it into another application.")}
-                </DialogContentText>
-                <br/>
-                <Grid align="center">
-                    <TextField
-                        sx={{width:"100%", maxWidth:"550px"}}
-                        disabled
-                        label={t("Back it up!")}
-                        value={getCookie("robot_token") }
-                        variant='filled'
-                        size='small'
-                        InputProps={{
-                            endAdornment:
-                            <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                                <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
-                                    <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
-                                </IconButton>
-                            </Tooltip>,
-                            }}
-                        />
-                </Grid>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => this.setState({openStoreToken:false})} autoFocus>{t("Go back")}</Button>
-                    <Button onClick={() => this.setState({openStoreToken:false}) & (this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog() : this.takeOrder())}>{t("Done")}</Button>
-                </DialogActions>
-            </Dialog>
-        )
-    }else{
-        return(
-            <Dialog
-            open={this.state.openStoreToken}
-            onClose={() => this.setState({openStoreToken:false})}
-            >
-                <DialogTitle>
-                    {t("You do not have a robot avatar")}
-                </DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        {t("You need to generate a robot avatar in order to become an order maker")}
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => this.setState({openStoreToken:false})} autoFocus>{t("Go back")}</Button>
-                    <Button onClick={() => this.setState({openStoreToken:false})} to="/" component={LinkRouter}>{t("Generate Robot")}</Button>
-                </DialogActions>
-            </Dialog>
-        )
-    }
-}
+  tokenDialog = () =>{
+    return(getCookie("robot_token") ?
+      <StoreTokenDialog
+        open={this.state.openStoreToken}
+        onClose={() => this.setState({openStoreToken:false})}
+        onClickCopy={()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}
+        copyIconColor={this.props.copiedToken ? "inherit" : "primary"}
+        onClickBack={() => this.setState({openStoreToken:false})}
+        onClickDone={() => this.setState({openStoreToken:false}) & 
+            (this.state.maker_status=='Inactive' ? 
+            this.handleClickOpenInactiveMakerDialog() 
+            : this.takeOrder())
+          }/>
+      :
+      <NoRobotDialog
+        open={this.state.openStoreToken}
+        onClose={() => this.setState({openStoreToken:false})}
+        />
+    )
+  }
 
   handleClickConfirmCollaborativeCancelButton=()=>{
       const requestOptions = {

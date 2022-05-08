@@ -5,6 +5,7 @@ import RangeSlider from "./RangeSlider";
 import { LocalizationProvider, TimePicker}  from '@mui/lab';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link as LinkRouter } from 'react-router-dom'
+import { StoreTokenDialog, NoRobotDialog } from "./Dialogs";
 
 import FlagWithProps from './FlagWithProps';
 import AutocompletePayments from './AutocompletePayments';
@@ -18,7 +19,6 @@ import BuySatsIcon from "./icons/BuySatsIcon";
 import BuySatsCheckedIcon from "./icons/BuySatsCheckedIcon";
 import SellSatsIcon from "./icons/SellSatsIcon";
 import SellSatsCheckedIcon from "./icons/SellSatsCheckedIcon";
-import ContentCopy from "@mui/icons-material/ContentCopy";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -667,73 +667,6 @@ class MakerPage extends Component {
         )
     }
 
-    StoreTokenDialog = () =>{
-        const { t } = this.props;
-
-        // If there is a robot cookie, prompt user to store it
-        // Else, prompt user to generate a robot
-        if (getCookie("robot_token")){
-            return(
-                <Dialog
-                open={this.state.openStoreToken}
-                onClose={() => this.setState({openStoreToken:false})}
-                >
-                    <DialogTitle >
-                    {t("Store your robot token")}
-                    </DialogTitle>
-                    <DialogContent>
-                    <DialogContentText>
-                        {t("You might need to recover your robot avatar in the future: store it safely. You can simply copy it into another application.")}
-                    </DialogContentText>
-                    <br/>
-                    <Grid align="center">
-                        <TextField
-                            sx={{width:"100%", maxWidth:"550px"}}
-                            disabled
-                            label={t("Back it up!")}
-                            value={getCookie("robot_token") }
-                            variant='filled'
-                            size='small'
-                            InputProps={{
-                                endAdornment:
-                                <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                                    <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
-                                        <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
-                                    </IconButton>
-                                </Tooltip>,
-                                }}
-                            />
-                    </Grid>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => this.setState({openStoreToken:false})} autoFocus>{t("Go back")}</Button>
-                        <Button onClick={this.handleCreateOfferButtonPressed}>{t("Done")}</Button>
-                    </DialogActions>
-                </Dialog>
-            )
-        }else{
-            return(
-                <Dialog
-                open={this.state.openStoreToken}
-                onClose={() => this.setState({openStoreToken:false})}
-                >
-                    <DialogTitle>
-                        {t("You do not have a robot avatar")}
-                    </DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            {t("You need to generate a robot avatar in order to become an order maker")}
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => this.setState({openStoreToken:false})} autoFocus>{t("Go back")}</Button>
-                        <Button onClick={() => this.setState({openStoreToken:false})} to="/" component={LinkRouter}>{t("Generate Robot")}</Button>
-                    </DialogActions>
-                </Dialog>
-            )
-        }
-  }
-
     makeOrderBox=()=>{
         const { t } = this.props;
         return(
@@ -759,17 +692,26 @@ class MakerPage extends Component {
   render() {
     const { t } = this.props;
     return (
-            <Grid container align="center" spacing={1} sx={{minWidth:380}}>
-                {/* <Grid item xs={12} align="center" sx={{minWidth:380}}>
-                    <Typography component="h4" variant="h4">
-                        ORDER MAKER
-                    </Typography>
-                </Grid> */}
-                <this.StoreTokenDialog/>
+        <Grid container align="center" spacing={1} sx={{minWidth:380}}>
+            {getCookie("robot_token") ?
+                <StoreTokenDialog
+                    open={this.state.openStoreToken}
+                    onClose={() => this.setState({openStoreToken:false})}
+                    onClickCopy={()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}
+                    copyIconColor={this.props.copiedToken ? "inherit" : "primary"}
+                    onClickBack={() => this.setState({openStoreToken:false})}
+                    onClickDone={this.handleCreateOfferButtonPressed}
+                    />
+                :
+                <NoRobotDialog
+                    open={this.state.openStoreToken}
+                    onClose={() => this.setState({openStoreToken:false})}
+                    />
+            }
 
-                <Grid item xs={12} align="center">
-                    {this.makeOrderBox()}
-                </Grid>
+            <Grid item xs={12} align="center">
+                {this.makeOrderBox()}
+            </Grid>
 
             <Grid item xs={12} align="center">
                 {/* conditions to disable the make button */}
