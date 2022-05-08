@@ -1,4 +1,4 @@
-FROM lightninglabs/lnd:v0.14.2-beta
+FROM lightninglabs/lnd:v0.14.3-beta
 
 ARG LOCAL_USER_ID=9999
 ARG LOCAL_GROUP_ID=9999
@@ -15,4 +15,5 @@ RUN apk --no-cache --no-progress add shadow=~4 sudo=~1 gettext=~0.21 && \
 USER root
 COPY entrypoint.sh /root/entrypoint.sh
 COPY lnd.conf /tmp/lnd.conf
+
 ENTRYPOINT [ "/root/entrypoint.sh" ]

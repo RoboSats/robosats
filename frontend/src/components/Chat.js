@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
-import {Button, Badge, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, FormHelperText, Typography} from "@mui/material";
+import { withTranslation, Trans} from "react-i18next";
+import {Button, Link, Badge, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, FormHelperText, Typography} from "@mui/material";
 import ReconnectingWebSocket from 'reconnecting-websocket';
+import * as openpgp from 'openpgp/lightweight';
 
-export default class Chat extends Component {
+class Chat extends Component {
   constructor(props) {
     super(props);
   }
@@ -79,33 +81,34 @@ export default class Chat extends Component {
   }
 
   render() {
+    const { t } = this.props;
     return (
       <Container component="main" maxWidth="xs" >
             <Grid container xs={12} spacing={0.5}>
               <Grid item xs={0.3}/>
               <Grid item xs={5.5}>
                 <Paper elevation={1} style={this.state.connected ? {backgroundColor: '#e8ffe6'}: {backgroundColor: '#FFF1C5'}}>
-                  <Typography variant='caption' >
-                    You: {this.state.connected ? 'connected': 'disconnected'}
+                  <Typography variant='caption' sx={{color: '#111111'}}>
+                    {t("You")+": "}{this.state.connected ? t("connected"): t("disconnected")}
                   </Typography>
                 </Paper>
               </Grid>
               <Grid item xs={0.4}/>
               <Grid item xs={5.5}>
                 <Paper elevation={1} style={this.state.peer_connected ? {backgroundColor: '#e8ffe6'}: {backgroundColor: '#FFF1C5'}}>
-                  <Typography variant='caption'>
-                    Peer: {this.state.peer_connected ? 'connected': 'disconnected'}
+                  <Typography variant='caption' sx={{color: '#111111'}}>
+                  {t("Peer")+": "}{this.state.peer_connected ? t("connected"): t("disconnected")}
                   </Typography>
                 </Paper>
               </Grid>
               <Grid item xs={0.3}/>
             </Grid>
-            <Paper elevation={1} style={{ height: 300, maxHeight: 300, width:280,overflow: 'auto', backgroundColor: '#F7F7F7' }}>
+            <Paper elevation={1} style={{ height: '300px', maxHeight: '300px' , width: '280px' ,overflow: 'auto', backgroundColor: '#F7F7F7' }}>
               {this.state.messages.map(message => <>
               <Card elevation={5} align="left" >
               {/* If message sender is not our nick, gray color, if it is our nick, green color */}
               {message.userNick == this.props.ur_nick ? 
-                <CardHeader
+                <CardHeader sx={{color: '#111111'}}
                   avatar={
                     <Badge variant="dot" overlap="circular" badgeContent="" color={this.state.connected ? "success" : "error"}>
                       <Avatar className="flippedSmallAvatar"
@@ -117,10 +120,10 @@ export default class Chat extends Component {
                   style={{backgroundColor: '#eeeeee'}}
                   title={message.userNick}
                   subheader={message.msg}
-                  subheaderTypographyProps={{sx: {wordWrap: "break-word", width: 200}}}
+                  subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444'}}}
                 />
                 :
-                <CardHeader
+                <CardHeader sx={{color: '#111111'}}
                   avatar={
                     <Badge variant="dot" overlap="circular" badgeContent="" color={this.state.peer_connected ? "success" : "error"}>
                       <Avatar className="flippedSmallAvatar"
@@ -132,7 +135,7 @@ export default class Chat extends Component {
                   style={{backgroundColor: '#fafafa'}}
                   title={message.userNick}
                   subheader={message.msg}
-                  subheaderTypographyProps={{sx: {wordWrap: "break-word", width: 200}}}
+                  subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444'}}}
                 />} 
                 </Card>
               </>)}
@@ -142,10 +145,10 @@ export default class Chat extends Component {
               <Grid containter alignItems="stretch" style={{ display: "flex" }}>
                 <Grid item alignItems="stretch" style={{ display: "flex"}}>
                   <TextField
-                    label="Type a message"
+                    label={t("Type a message")}
                     variant="standard"
                     size="small"
-                    helperText={this.state.connected ? null : "Connecting..."}
+                    helperText={this.state.connected ? null : t("Connecting...")}
                     value={this.state.value}
                     onChange={e => {
                       this.setState({ value: e.target.value });
@@ -155,14 +158,16 @@ export default class Chat extends Component {
                   />
                 </Grid>
                 <Grid item alignItems="stretch" style={{ display: "flex" }}>
-                  <Button disabled={!this.state.connected} type="submit" variant="contained" color="primary" > Send </Button>
+                  <Button sx={{'width':68}} disabled={!this.state.connected} type="submit" variant="contained" color="primary">{t("Send")} </Button>
                 </Grid>
               </Grid>
             </form>
             <FormHelperText>
-              The chat has no memory: if you leave, messages are lost. <a target="_blank" href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/sensitive-data-PGP-guide.md/"> Learn easy PGP encryption.</a>
+              {t("The chat has no memory: if you leave, messages are lost.")} <Link target="_blank" href={t("PGP_guide_url")}> {t("Learn easy PGP encryption.")}</Link>
             </FormHelperText>
       </Container>
     )
   }
 }
+
+export default withTranslation()(Chat);

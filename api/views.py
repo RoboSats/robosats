@@ -30,6 +30,9 @@ from decouple import config
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
+PUBLIC_DURATION = 60*60*int(config("DEFAULT_PUBLIC_ORDER_DURATION"))-1
+ESCROW_DURATION = 60 * int(config("INVOICE_AND_ESCROW_DURATION"))
+BOND_SIZE = int(config("DEFAULT_BOND_SIZE"))
 
 avatar_path = Path(settings.AVATAR_ROOT)
 avatar_path.mkdir(parents=True, exist_ok=True)
@@ -64,35 +67,79 @@ class MakerView(CreateAPIView):
                 },
                 status.HTTP_400_BAD_REQUEST,
             )
+        # Only allow users who are not already engaged in an order
+        valid, context, _ = Logics.validate_already_maker_or_taker(request.user)
+        if not valid:
+            return Response(context, status.HTTP_409_CONFLICT)
 
         type = serializer.data.get("type")
         currency = serializer.data.get("currency")
         amount = serializer.data.get("amount")
+        has_range = serializer.data.get("has_range")
+        min_amount = serializer.data.get("min_amount")
+        max_amount = serializer.data.get("max_amount")
         payment_method = serializer.data.get("payment_method")
         premium = serializer.data.get("premium")
         satoshis = serializer.data.get("satoshis")
         is_explicit = serializer.data.get("is_explicit")
+        public_duration = serializer.data.get("public_duration")
+        escrow_duration = serializer.data.get("escrow_duration")
+        bond_size = serializer.data.get("bond_size")
+        bondless_taker = serializer.data.get("bondless_taker")
 
-        valid, context, _ = Logics.validate_already_maker_or_taker(
-            request.user)
-        if not valid:
-            return Response(context, status.HTTP_409_CONFLICT)
+        # Optional params
+        if public_duration == None: public_duration = PUBLIC_DURATION
+        if escrow_duration == None: escrow_duration = ESCROW_DURATION
+        if bond_size == None: bond_size = BOND_SIZE
+        if bondless_taker == None: bondless_taker = False
+        if has_range == None: has_range = False
+
+        # An order can either have an amount or a range (min_amount and max_amount)
+        if has_range:
+            amount = None
+        else:
+            min_amount = None
+            max_amount = None
+
+        # Either amount or min_max has to be specified.
+        if has_range and (min_amount == None or max_amount == None):
+            return Response(
+                {
+                    "bad_request":
+                    "You must specify min_amount and max_amount for a range order"
+                },
+                status.HTTP_400_BAD_REQUEST,
+            )
+        elif not has_range and amount == None:
+            return Response(
+                {
+                    "bad_request":
+                    "You must specify an order amount"
+                },
+                status.HTTP_400_BAD_REQUEST,
+            )
 
         # Creates a new order
         order = Order(
             type=type,
             currency=Currency.objects.get(id=currency),
             amount=amount,
+            has_range=has_range,
+            min_amount=min_amount,
+            max_amount=max_amount,
             payment_method=payment_method,
             premium=premium,
             satoshis=satoshis,
             is_explicit=is_explicit,
             expires_at=timezone.now() + timedelta(
-                seconds=EXP_MAKER_BOND_INVOICE),  # TODO Move to class method
+                seconds=EXP_MAKER_BOND_INVOICE),
             maker=request.user,
+            public_duration=public_duration,
+            escrow_duration=escrow_duration,
+            bond_size=bond_size,
+            bondless_taker=bondless_taker,
         )
 
-        # TODO move to Order class method when new instance is created!
         order.last_satoshis = order.t0_satoshis = Logics.satoshis_now(order)
 
         valid, context = Logics.validate_order_size(order)
@@ -155,7 +202,7 @@ class OrderView(viewsets.ViewSet):
             )
 
         data = ListOrderSerializer(order).data
-        data["total_secs_exp"] = Order.t_to_expire[order.status]
+        data["total_secs_exp"] = order.t_to_expire(order.status)
 
         # if user is under a limit (penalty), inform him.
         is_penalized, time_out = Logics.is_penalized(request.user)
@@ -195,9 +242,9 @@ class OrderView(viewsets.ViewSet):
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
             data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
 
-            # 3. c) If maker and Public, add num robots in book, premium percentile 
+            # 3. c) If maker and Public/Paused, add premium percentile 
             # num similar orders, and maker information to enable telegram notifications.
-            if data["is_maker"] and order.status == Order.Status.PUB:
+            if data["is_maker"] and order.status in [Order.Status.PUB, Order.Status.PAU]:
                 data["premium_percentile"] = compute_premium_percentile(order)
                 data["num_similar_orders"] = len(
                     Order.objects.filter(currency=order.currency,
@@ -329,8 +376,7 @@ class OrderView(viewsets.ViewSet):
               and order.payout.receiver == request.user
               ):  # might not be the buyer if after a dispute where winner wins
             data["retries"] = order.payout.routing_attempts
-            data[
-                "next_retry_time"] = order.payout.last_routing_time + timedelta(
+            data["next_retry_time"] = order.payout.last_routing_time + timedelta(
                     minutes=RETRY_TIME)
 
             if order.payout.status == LNPayment.Status.EXPIRE:
@@ -338,6 +384,17 @@ class OrderView(viewsets.ViewSet):
                 # Add invoice amount once again if invoice was expired.
                 data["invoice_amount"] = Logics.payout_amount(order,request.user)[1]["invoice_amount"]
 
+        # 10) If status is 'Expired', "Sending", "Finished" or "failed routing", add info for renewal:
+        elif order.status in [Order.Status.EXP, Order.Status.SUC, Order.Status.PAY,  Order.Status.FAI]:
+            data["public_duration"] = order.public_duration
+            data["bond_size"] = order.bond_size
+            data["bondless_taker"] = order.bondless_taker
+
+            # If status is 'Expired' add expiry reason
+            if order.status == Order.Status.EXP:
+                data["expiry_reason"] = order.expiry_reason
+                data["expiry_message"] = Order.ExpiryReasons(order.expiry_reason).label
+            
         return Response(data, status.HTTP_200_OK)
 
     def take_update_confirm_dispute_cancel(self, request, format=None):
@@ -367,7 +424,17 @@ class OrderView(viewsets.ViewSet):
                     request.user)
                 if not valid:
                     return Response(context, status=status.HTTP_409_CONFLICT)
-                valid, context = Logics.take(order, request.user)
+
+                # For order with amount range, set the amount now.
+                if order.has_range:
+                    amount = float(serializer.data.get("amount"))
+                    valid, context = Logics.validate_amount_within_range(order, amount)
+                    if not valid:
+                        return Response(context, status=status.HTTP_400_BAD_REQUEST)
+
+                    valid, context = Logics.take(order, request.user, amount)
+                else:
+                    valid, context = Logics.take(order, request.user)
                 if not valid:
                     return Response(context, status=status.HTTP_403_FORBIDDEN)
 
@@ -424,9 +491,15 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 6) If action is rate_platform
+        # 7) If action is rate_platform
         elif action == "rate_platform" and rating:
             valid, context = Logics.rate_platform(request.user, rating)
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        # 8) If action is rate_platform
+        elif action == "pause":
+            valid, context = Logics.pause_unpause_public_order(order, request.user)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
@@ -673,7 +746,7 @@ class InfoView(ListAPIView):
             lifetime_volume = 0
 
         context["last_day_nonkyc_btc_premium"] = round(avg_premium, 2)
-        context["last_day_volume"] = total_volume *100000000
+        context["last_day_volume"] = total_volume
         context["lifetime_volume"] = lifetime_volume
         context["lnd_version"] = get_lnd_version()
         context["robosats_running_commit_hash"] = get_commit_robosats()
@@ -684,11 +757,11 @@ class InfoView(ListAPIView):
         context["network"] = config("NETWORK")
         context["maker_fee"] = float(config("FEE"))*float(config("MAKER_FEE_SPLIT"))
         context["taker_fee"] = float(config("FEE"))*(1 - float(config("MAKER_FEE_SPLIT")))
-        context["bond_size"] = float(config("BOND_SIZE"))
+        context["bond_size"] = float(config("DEFAULT_BOND_SIZE"))
 
         if request.user.is_authenticated:
             context["nickname"] = request.user.username
-            context["referral_link"] = str(config('HOST_NAME'))+'/ref/'+str(request.user.profile.referral_code)
+            context["referral_code"] = str(request.user.profile.referral_code)
             context["earned_rewards"] = request.user.profile.earned_rewards
             has_no_active_order, _, order = Logics.validate_already_maker_or_taker(
                 request.user)
@@ -747,5 +820,30 @@ class PriceView(CreateAPIView):
                 }
             except:
                 payload[code] = None
+
+        return Response(payload, status.HTTP_200_OK)
+
+class LimitView(ListAPIView):
+
+    def get(self, request):
+        
+        # Trade limits as BTC
+        min_trade = float(config('MIN_TRADE')) / 100000000
+        max_trade = float(config('MAX_TRADE')) / 100000000
+        max_bondless_trade = float(config('MAX_TRADE_BONDLESS_TAKER')) / 100000000
+
+        payload = {}
+        queryset = Currency.objects.all().order_by('currency')
+
+        for currency in queryset:
+            code = Currency.currency_dict[str(currency.currency)]
+            exchange_rate = float(currency.exchange_rate)
+            payload[currency.currency] = {
+                'code': code,
+                'price': exchange_rate,
+                'min_amount': min_trade * exchange_rate,
+                'max_amount': max_trade * exchange_rate,
+                'max_bondless_amount': max_bondless_trade * exchange_rate,
+            }
 
         return Response(payload, status.HTTP_200_OK)

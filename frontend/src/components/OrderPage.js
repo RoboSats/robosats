@@ -1,10 +1,15 @@
 import React, { Component } from "react";
-import { Chip, Tooltip, Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { withTranslation} from "react-i18next";
+import {TextField,Chip, Tooltip, IconButton, Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
 import MediaQuery from 'react-responsive'
+import currencyDict from '../../static/assets/currencies.json';
+import { Link as LinkRouter } from 'react-router-dom'
 
+import PaymentText from './PaymentText'
 import TradeBox from "./TradeBox";
 import getFlags from './getFlags'
+import { t } from "i18next";
 
 // icons
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -12,54 +17,34 @@ import NumbersIcon from '@mui/icons-material/Numbers';
 import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import ArticleIcon from '@mui/icons-material/Article';
+import SendReceiveIcon from "./icons/SendReceiveIcon";
+import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import ContentCopy from "@mui/icons-material/ContentCopy";
 
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          // Does this cookie string begin with the name we want?
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
-          }
-      }
-  }
-  return cookieValue;
-}
-const csrftoken = getCookie('csrftoken');
+import { getCookie } from "../utils/cookies";
+import { pn } from "../utils/prettyNumbers";
 
-// pretty numbers
-function pn(x) {
-  var parts = x.toString().split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return parts.join(".");
-}
-
-export default class OrderPage extends Component {
+class OrderPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
         is_explicit: false,
         delay: 60000, // Refresh every 60 seconds by default
-        currencies_dict: {"1":"USD"},
         total_secs_exp: 300,
         loading: true,
         openCancel: false,
         openCollaborativeCancel: false,
         openInactiveMaker: false,
         showContractBox: 1,
+        orderId: this.props.match.params.orderId,
     };
-    this.orderId = this.props.match.params.orderId;
-    this.getCurrencyDict();
-    this.getOrderDetails();
+    this.getOrderDetails(this.props.match.params.orderId);
 
     // Refresh delays according to Order status
     this.statusToDelay = {
       "0": 2000,    //'Waiting for maker bond'
       "1": 25000,   //'Public'
-      "2": 999999,  //'Deleted'
+      "2": 90000,   //'Paused'
       "3": 2000,    //'Waiting for taker bond'
       "4": 999999,  //'Cancelled'
       "5": 999999,  //'Expired'
@@ -85,10 +70,12 @@ export default class OrderPage extends Component {
     // otherStateVars will fail to assign values
     if (newStateVars.currency == null){
       newStateVars.currency = this.state.currency
+      newStateVars.amount = this.state.amount
       newStateVars.status = this.state.status
     }
 
     var otherStateVars = {
+      amount: newStateVars.amount ? newStateVars.amount : null,
       loading: false,
       delay: this.setDelay(newStateVars.status),
       currencyCode: this.getCurrencyCode(newStateVars.currency),
@@ -100,11 +87,12 @@ export default class OrderPage extends Component {
     this.setState(completeStateVars);
   }
 
-  getOrderDetails() {
+  getOrderDetails =(id)=> {
     this.setState(null)
-    fetch('/api/order' + '?order_id=' + this.orderId)
+    this.setState({orderId:id})
+    fetch('/api/order' + '?order_id=' + id)
       .then((response) => response.json())
-      .then((data) => this.completeSetState(data));
+      .then((data) => (this.completeSetState(data) & this.setState({pauseLoading:false})));
   }
 
   // These are used to refresh the data
@@ -120,17 +108,18 @@ export default class OrderPage extends Component {
     clearInterval(this.interval);
   }
   tick = () => {
-    this.getOrderDetails();
+    this.getOrderDetails(this.state.orderId);
   }
 
-  // Countdown Renderer callback with condition 
+  // Countdown Renderer callback with condition
   countdownRenderer = ({ total, hours, minutes, seconds, completed }) => {
+    const { t } = this.props;
   if (completed) {
     // Render a completed state
-    return (<span> The order has expired</span>);
+    return (<span> {t("The order has expired")}</span>);
 
   } else {
-    var col = 'black'
+    var col = 'inherit'
     var fraction_left = (total/1000) / this.state.total_secs_exp
     // Make orange at 25% of time left
     if (fraction_left < 0.25){col = 'orange'}
@@ -144,52 +133,125 @@ export default class OrderPage extends Component {
   }
   };
 
-  // Countdown Renderer callback with condition 
+  timerRenderer(seconds){
+    var hours = parseInt(seconds/3600);
+    var minutes = parseInt((seconds-hours*3600)/60);
+    return(
+      <span>{hours>0 ? hours+"h":""} {minutes>0 ? zeroPad(minutes)+"m":""} </span>
+    )
+  }
+
+  // Countdown Renderer callback with condition
   countdownPenaltyRenderer = ({ minutes, seconds, completed }) => {
+    const { t } = this.props;
     if (completed) {
       // Render a completed state
-      return (<span> Penalty lifted, good to go!</span>);
-  
+      return (<span> {t("Penalty lifted, good to go!")}</span>);
+
     } else {
       return (
-        <span> You cannot take an order yet! Wait {zeroPad(minutes)}m {zeroPad(seconds)}s </span>
+        <span> {t("You cannot take an order yet! Wait {{timeMin}}m {{timeSec}}s",{timeMin: zeroPad(minutes), timeSec: zeroPad(seconds) })} </span>
       );
     }
     };
-  
-  countdownTakeOrderRenderer = ({ seconds, completed }) => {
-    if(isNaN(seconds)){
-      return (
-      <>
-        <this.InactiveMakerDialog/>
-        <Button variant='contained' color='primary' 
-            onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}>
-            Take Order
-          </Button>
-      </>)
+
+  handleTakeAmountChange = (e) => {
+    if (e.target.value != "" & e.target.value != null){
+      this.setState({takeAmount: parseFloat(e.target.value)})
+    }else{
+      this.setState({takeAmount: e.target.value})
     }
+  }
+
+  amountHelperText=()=>{
+    const { t } = this.props;
+    if(this.state.takeAmount < this.state.min_amount & this.state.takeAmount != ""){
+      return t("Too low")
+    }else if (this.state.takeAmount > this.state.max_amount & this.state.takeAmount != ""){
+      return t("Too high")
+    }else{
+      return null
+    }
+  }
+
+  takeOrderButton = () => {
+    const { t } = this.props;
+    if(this.state.has_range){
+    return(
+        <Grid container xs={12} align="center" alignItems="stretch" justifyContent="center" style={{ display: "flex"}}>
+          <this.InactiveMakerDialog/>
+          <this.StoreTokenDialog/>
+          <div style={{maxWidth:120}}>
+          <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title={t("Enter amount of fiat to exchange for bitcoin")}>
+            <Paper elevation={5} sx={{maxHeight:40}}>
+              <TextField
+                  error={(this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount) & this.state.takeAmount != "" }
+                  helperText={this.amountHelperText()}
+                  label={t("Amount {{currencyCode}}", {currencyCode: this.state.currencyCode})}
+                  size="small"
+                  type="number"
+                  required="true"
+                  value={this.state.takeAmount}
+                  inputProps={{
+                      min:this.state.min_amount ,
+                      max:this.state.max_amount ,
+                      style: {textAlign:"center"}
+                  }}
+                  onChange={this.handleTakeAmountChange}
+              />
+            </Paper>
+          </Tooltip>
+          </div>
+          <div style={{height:38, top:'1px', position:'relative', display: (this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount || this.state.takeAmount == "" || this.state.takeAmount == null) ? '':'none'}}>
+            <Tooltip placement="top" enterTouchDelay="0" enterDelay="500" enterNextDelay="1200" title={t("You must specify an amount first")}>
+              <Paper elevation={4}>
+                <Button sx={{height:38}} variant='contained' color='primary'
+                  disabled={true}>
+                  {t("Take Order")}
+                </Button>
+              </Paper>
+            </Tooltip>
+          </div>
+          <div style={{height:38, top:'1px', position:'relative', display: (this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount || this.state.takeAmount == "" || this.state.takeAmount == null) ? 'none':''}}>
+          <Paper elevation={4}>
+              <Button sx={{height:38}} variant='contained' color='primary'
+                onClick={this.props.copiedToken ? (this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder) : (() => this.setState({openStoreToken:true}))}>
+                {t("Take Order")}
+              </Button>
+            </Paper>
+          </div>
+        </Grid>
+      )
+    }else{
+      return(
+        <>
+        <this.InactiveMakerDialog/>
+        <this.StoreTokenDialog/>
+        <Button sx={{height:38}} variant='contained' color='primary'
+                onClick={this.props.copiedToken ? (this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder) : (() => this.setState({openStoreToken:true}))}>
+                {t("Take Order")}
+              </Button>
+        </>
+      )
+    }
+  }
+
+  countdownTakeOrderRenderer = ({ seconds, completed }) => {
+    if(isNaN(seconds)){return (<this.takeOrderButton/>)}
     if (completed) {
       // Render a completed state
-      return (
-        <>
-          <this.InactiveMakerDialog/>
-          <Button variant='contained' color='primary' 
-            onClick={this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder}>
-            Take Order
-          </Button>
-        </>
-      );
+      return ( <this.takeOrderButton/>);
     } else{
       return(
-      <Tooltip enterTouchDelay="0" title="Wait until you can take an order"><div>
-      <Button disabled={true} variant='contained' color='primary' onClick={this.takeOrder}>Take Order</Button>
+      <Tooltip enterTouchDelay="0" title={t("Wait until you can take an order")}><div>
+      <Button disabled={true} variant='contained' color='primary'>{t("Take Order")}</Button>
       </div></Tooltip>)
     }
   };
 
   LinearDeterminate =()=> {
     const [progress, setProgress] = React.useState(0);
-  
+
     React.useEffect(() => {
       const timer = setInterval(() => {
         setProgress((oldProgress) => {
@@ -197,12 +259,12 @@ export default class OrderPage extends Component {
           return (left / this.state.total_secs_exp) * 100;
         });
       }, 1000);
-  
+
       return () => {
         clearInterval(timer);
       };
     }, []);
-  
+
     return (
       <Box sx={{ width: '100%' }}>
         <LinearProgress variant="determinate" value={progress} />
@@ -212,35 +274,26 @@ export default class OrderPage extends Component {
 
   takeOrder=()=>{
     this.setState({loading:true})
-
     const requestOptions = {
         method: 'POST',
         headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
         body: JSON.stringify({
           'action':'take',
+          'amount':this.state.takeAmount,
         }),
       };
-      fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+      fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
       .then((response) => response.json())
       .then((data) => this.completeSetState(data));
   }
 
-  getCurrencyDict() {
-    fetch('/static/assets/currencies.json')
-      .then((response) => response.json())
-      .then((data) => 
-      this.setState({
-        currencies_dict: data
-      }));
-  }
-  
   // set delay to the one matching the order status. If null order status, delay goes to 9999999.
   setDelay = (status)=>{
     return status >= 0 ? this.statusToDelay[status.toString()] : 99999999;
   }
 
   getCurrencyCode(val){
-    let code = val ? this.state.currencies_dict[val.toString()] : "" 
+    let code = val ? currencyDict[val.toString()] : ""
     return code
   }
 
@@ -253,9 +306,9 @@ export default class OrderPage extends Component {
           'action':'cancel',
         }),
     };
-    fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+    fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
     .then((response) => response.json())
-    .then((data) => this.getOrderDetails(data.id));
+    .then(() => (this.getOrderDetails(this.state.orderId) & this.setState({status:4})));
     this.handleClickCloseConfirmCancelDialog();
   }
 
@@ -267,6 +320,7 @@ export default class OrderPage extends Component {
   };
 
   CancelDialog =() =>{
+    const { t } = this.props;
   return(
       <Dialog
       open={this.state.openCancel}
@@ -275,16 +329,16 @@ export default class OrderPage extends Component {
       aria-describedby="cancel-dialog-description"
       >
         <DialogTitle id="cancel-dialog-title">
-          {"Cancel the order?"}
+          {t("Cancel the order?")}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="cancel-dialog-description">
-            If the order is cancelled now you will lose your bond.
+           {t("If the order is cancelled now you will lose your bond.")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.handleClickCloseConfirmCancelDialog} autoFocus>Go back</Button>
-          <Button onClick={this.handleClickConfirmCancelButton}> Confirm Cancel </Button>
+          <Button onClick={this.handleClickCloseConfirmCancelDialog} autoFocus>{t("Go back")}</Button>
+          <Button onClick={this.handleClickConfirmCancelButton}>{t("Confirm Cancel")}</Button>
         </DialogActions>
       </Dialog>
     )
@@ -298,6 +352,7 @@ export default class OrderPage extends Component {
   };
 
   InactiveMakerDialog =() =>{
+    const { t } = this.props;
   return(
       <Dialog
       open={this.state.openInactiveMaker}
@@ -306,21 +361,88 @@ export default class OrderPage extends Component {
       aria-describedby="inactive-maker-description"
       >
         <DialogTitle id="inactive-maker-dialog-title">
-          {"The maker is away"}
+          {t("The maker is away")}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="cancel-dialog-description">
-            By taking this order you risk wasting your time. 
-            If the maker does not proceed in time, you will be compensated in satoshis for 50% of the maker bond.
+            {t("By taking this order you risk wasting your time. If the maker does not proceed in time, you will be compensated in satoshis for 50% of the maker bond.")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.handleClickCloseInactiveMakerDialog} autoFocus>Go back</Button>
-          <Button onClick={this.takeOrder}> Take Order </Button>
+          <Button onClick={this.handleClickCloseInactiveMakerDialog} autoFocus>{t("Go back")}</Button>
+          <Button onClick={this.takeOrder}>{t("Take Order")}</Button>
         </DialogActions>
       </Dialog>
     )
   }
+
+  StoreTokenDialog = () =>{
+    const { t } = this.props;
+    
+    // If there is a robot cookie, prompt user to store it
+    // Else, prompt user to generate a robot
+    if (getCookie("robot_token")){
+        return(
+            <Dialog
+            open={this.state.openStoreToken}
+            onClose={() => this.setState({openStoreToken:false})}
+            >
+                <DialogTitle >
+                {t("Store your robot token")}
+                </DialogTitle>
+                <DialogContent>
+                <DialogContentText>
+                    {t("You might need to recover your robot avatar in the future: store it safely. You can simply copy it into another application.")}
+                </DialogContentText>
+                <br/>
+                <Grid align="center">
+                    <TextField
+                        sx={{width:"100%", maxWidth:"550px"}}
+                        disabled
+                        label={t("Back it up!")}
+                        value={getCookie("robot_token") }
+                        variant='filled'
+                        size='small'
+                        InputProps={{
+                            endAdornment:
+                            <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+                                <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
+                                    <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
+                                </IconButton>
+                            </Tooltip>,
+                            }}
+                        />
+                </Grid>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => this.setState({openStoreToken:false})} autoFocus>{t("Go back")}</Button>
+                    <Button onClick={() => this.setState({openStoreToken:false}) & (this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog() : this.takeOrder())}>{t("Done")}</Button>
+                </DialogActions>
+            </Dialog>
+        )
+    }else{
+        return(
+            <Dialog
+            open={this.state.openStoreToken}
+            onClose={() => this.setState({openStoreToken:false})}
+            >
+                <DialogTitle>
+                    {t("You do not have a robot avatar")}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        {t("You need to generate a robot avatar in order to become an order maker")}
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => this.setState({openStoreToken:false})} autoFocus>{t("Go back")}</Button>
+                    <Button onClick={() => this.setState({openStoreToken:false})} to="/" component={LinkRouter}>{t("Generate Robot")}</Button>
+                </DialogActions>
+            </Dialog>
+        )
+    }
+}
+
   handleClickConfirmCollaborativeCancelButton=()=>{
       const requestOptions = {
           method: 'POST',
@@ -329,9 +451,9 @@ export default class OrderPage extends Component {
             'action':'cancel',
           }),
       };
-      fetch('/api/order/' + '?order_id=' + this.orderId, requestOptions)
+      fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
       .then((response) => response.json())
-      .then((data) => this.getOrderDetails(data.id));
+      .then(() => (this.getOrderDetails(this.state.orderId) & this.setState({status:4})));
     this.handleClickCloseCollaborativeCancelDialog();
   }
 
@@ -343,6 +465,7 @@ export default class OrderPage extends Component {
   };
 
   CollaborativeCancelDialog =() =>{
+    const { t } = this.props;
   return(
       <Dialog
       open={this.state.openCollaborativeCancel}
@@ -351,41 +474,41 @@ export default class OrderPage extends Component {
       aria-describedby="collaborative-cancel-dialog-description"
       >
         <DialogTitle id="cancel-dialog-title">
-          {"Collaborative cancel the order?"}
+          {t("Collaborative cancel the order?")}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="cancel-dialog-description">
-            The trade escrow has been posted. The order can be cancelled only if both, maker and 
-            taker, agree to cancel. 
+            {t("The trade escrow has been posted. The order can be cancelled only if both, maker and taker, agree to cancel.")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.handleClickCloseCollaborativeCancelDialog} autoFocus>Go back</Button>
-          <Button onClick={this.handleClickConfirmCollaborativeCancelButton}> Ask for Cancel </Button>
+          <Button onClick={this.handleClickCloseCollaborativeCancelDialog} autoFocus>{t("Go back")}</Button>
+          <Button onClick={this.handleClickConfirmCollaborativeCancelButton}>{t("Ask for Cancel")}</Button>
         </DialogActions>
       </Dialog>
     )
   }
 
   BackButton = () => {
+    const { t } = this.props;
     // If order has expired, show back button.
     if (this.state.status == 5){
       return(
         <Grid item xs={12} align="center">
-          <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>Back</Button>
+          <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>{t("Back")}</Button>
         </Grid>
       )}
     return(null)
   }
 
   CancelButton = () => {
-
+    const { t } = this.props;
     // If maker and Waiting for Bond. Or if taker and Waiting for bond.
-    // Simply allow to cancel without showing the cancel dialog. 
-    if ((this.state.is_maker & [0,1].includes(this.state.status)) || this.state.is_taker & this.state.status == 3){
+    // Simply allow to cancel without showing the cancel dialog.
+    if ((this.state.is_maker & [0,1,2].includes(this.state.status)) || this.state.is_taker & this.state.status == 3){
       return(
         <Grid item xs={12} align="center">
-          <Button variant='contained' color='secondary' onClick={this.handleClickConfirmCancelButton}>Cancel</Button>
+          <Button variant='contained' color='secondary' onClick={this.handleClickConfirmCancelButton}>{t("Cancel")}</Button>
         </Grid>
       )}
     // If the order does not yet have an escrow deposited. Show dialog
@@ -395,18 +518,18 @@ export default class OrderPage extends Component {
         <div id="openDialogCancelButton">
           <Grid item xs={12} align="center">
             <this.CancelDialog/>
-            <Button variant='contained' color='secondary' onClick={this.handleClickOpenConfirmCancelDialog}>Cancel</Button>
+            <Button variant='contained' color='secondary' onClick={this.handleClickOpenConfirmCancelDialog}>{t("Cancel")}</Button>
           </Grid>
         </div>
       )}
-    
+
     // If the escrow is Locked, show the collaborative cancel button.
-  
+
     if ([8,9].includes(this.state.status)){
       return(
         <Grid item xs={12} align="center">
           <this.CollaborativeCancelDialog/>
-          <Button variant='contained' color='secondary' onClick={this.handleClickOpenCollaborativeCancelDialog}>Collaborative Cancel</Button>
+          <Button variant='contained' color='secondary' onClick={this.handleClickOpenCollaborativeCancelDialog}>{t("Collaborative Cancel")}</Button>
         </Grid>
       )}
 
@@ -422,28 +545,31 @@ export default class OrderPage extends Component {
   }
 
   orderBox=()=>{
+    const { t } = this.props;
     return(
       <Grid container spacing={1} >
         <Grid item xs={12} align="center">
           <MediaQuery minWidth={920}>
             <Typography component="h5" variant="h5">
-              Order Box
+              {t("Order Box")}
             </Typography>
           </MediaQuery>
           <Paper elevation={12} style={{ padding: 8,}}>
           <List dense="true">
             <ListItem >
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
-              <Tooltip placement="top" enterTouchDelay="0" title={this.state.maker_status} >
+              <Tooltip placement="top" enterTouchDelay="0" title={t(this.state.maker_status)} >
                 <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.maker_status)}>
+                <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"12px", top:"4px"}}> {!this.state.type ? <SendReceiveIcon sx={{transform: "scaleX(-1)"}} color="secondary"/> : <SendReceiveIcon color="primary"/>}</div>}>
                   <Avatar className="flippedSmallAvatar"
-                    alt={this.state.maker_nick} 
-                    src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'} 
+                    alt={this.state.maker_nick}
+                    src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'}
                     />
+                </Badge>
                 </Badge>
               </Tooltip>
               </ListItemAvatar>
-              <ListItemText primary={this.state.maker_nick + (this.state.type ? " (Seller)" : " (Buyer)")} secondary="Order maker" align="right"/>
+              <ListItemText primary={this.state.maker_nick + (this.state.type ? " "+t("(Seller)") : " "+t("(Buyer)") )} secondary={t("Order maker")} align="right"/>
             </ListItem>
 
             {this.state.is_participant ?
@@ -452,46 +578,57 @@ export default class OrderPage extends Component {
                   <>
                     <Divider />
                     <ListItem align="left">
-                      <ListItemText primary={this.state.taker_nick + (this.state.type ? " (Buyer)" : " (Seller)")} secondary="Order taker"/>
-                      <ListItemAvatar > 
-                      <Tooltip enterTouchDelay="0" title={this.state.taker_status} >
-                        <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
-                          <Avatar className="smallAvatar"
-                            alt={this.state.taker_nick} 
-                            src={window.location.origin +'/static/assets/avatars/' + this.state.taker_nick + '.png'}
-                            />
-                        </Badge>
+                      <ListItemText primary={this.state.taker_nick + (this.state.type ? " "+t("(Buyer)") : " "+t("(Seller)"))} secondary={t("Order taker")}/>
+                      <ListItemAvatar >
+                        <Tooltip enterTouchDelay="0" title={t(this.state.taker_status)} >
+                          <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
+                          <Badge overlap="circular" anchorOrigin={{horizontal: 'left', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", right:"12px", top:"4px"}}> {this.state.type ? <SendReceiveIcon color="secondary"/> : <SendReceiveIcon sx={{transform: "scaleX(-1)"}} color="primary"/> }</div>}>
+                            <Avatar className="smallAvatar"
+                              alt={this.state.taker_nick}
+                              src={window.location.origin +'/static/assets/avatars/' + this.state.taker_nick + '.png'}
+                              />
+                          </Badge>
+                          </Badge>
                         </Tooltip>
                       </ListItemAvatar>
-                    </ListItem>           
-                  </>: 
+                    </ListItem>
+                  </>:
                   ""
                   }
-                  <Divider><Chip label='Order Details'/></Divider>
+                  <Divider><Chip label={t("Order Details")}/></Divider>
                   <ListItem>
                     <ListItemIcon>
                       <ArticleIcon/>
                     </ListItemIcon>
-                    <ListItemText primary={this.state.status_message} secondary="Order status"/>
+                    <ListItemText primary={t(this.state.status_message)} secondary={t("Order status")}/>
                   </ListItem>
                   <Divider/>
               </>
-            :<Divider><Chip label='Order Details'/></Divider>
+            :<Divider><Chip label={t("Order Details")}/></Divider>
             }
-            
+
             <ListItem>
               <ListItemIcon>
-               {getFlags(this.state.currencyCode)}
+                <div style={{zoom:1.25,opacity: 0.7, '-ms-zoom': 1.25, '-webkit-zoom': 1.25,'-moz-transform':  'scale(1.25,1.25)', '-moz-transform-origin': 'left center'}}>
+                  {getFlags(this.state.currencyCode)}
+                </div>
               </ListItemIcon>
-              <ListItemText primary={parseFloat(parseFloat(this.state.amount).toFixed(4))
-                +" "+this.state.currencyCode} secondary="Amount"/>
+              {this.state.has_range & this.state.amount == null ?
+              <ListItemText primary={pn(parseFloat(Number(this.state.min_amount).toPrecision(4)))
+                +"-" + pn(parseFloat(Number(this.state.max_amount).toPrecision(4))) +" "+this.state.currencyCode} secondary={t("Amount range")}/>
+              :
+              <ListItemText primary={pn(parseFloat(parseFloat(this.state.amount).toFixed(4)))
+                +" "+this.state.currencyCode} secondary={t("Amount")}/>
+              }
+
             </ListItem>
             <Divider />
+
             <ListItem>
               <ListItemIcon>
                 <PaymentsIcon/>
               </ListItemIcon>
-              <ListItemText primary={this.state.payment_method} secondary={this.state.currency==1000 ? "Swap destination":"Accepted payment methods"}/>
+              <ListItemText primary={<PaymentText size={20} othersText={t("Others")} verbose={true} text={this.state.payment_method}/>} secondary={this.state.currency==1000 ? t("Swap destination"):t("Accepted payment methods")}/>
             </ListItem>
             <Divider />
 
@@ -500,89 +637,107 @@ export default class OrderPage extends Component {
               <ListItemIcon>
                 <PriceChangeIcon/>
               </ListItemIcon>
-            {this.state.price_now? 
-                <ListItemText primary={pn(this.state.price_now)+" "+this.state.currencyCode+"/BTC - Premium: "+this.state.premium_now+"%"} secondary="Price and Premium"/>
+            {this.state.price_now?
+                <ListItemText primary={t("{{price}} {{currencyCode}}/BTC - Premium: {{premium}}%", {price: pn(this.state.price_now), currencyCode:this.state.currencyCode, premium: this.state.premium_now})} secondary={t("Price and Premium")}/>
             :
-              (this.state.is_explicit ? 
-                <ListItemText primary={pn(this.state.satoshis)} secondary="Amount of Satoshis"/>
+              (this.state.is_explicit ?
+                <ListItemText primary={pn(this.state.satoshis)} secondary={t("Amount of Satoshis")}/>
                 :
-                <ListItemText primary={parseFloat(parseFloat(this.state.premium).toFixed(2))+"%"} secondary="Premium over market price"/>
+                <ListItemText primary={parseFloat(parseFloat(this.state.premium).toFixed(2))+"%"} secondary={t("Premium over market price")}/>
               )
-            } 
+            }
             </ListItem>
             <Divider />
 
-            <ListItem>
-              <ListItemIcon>
+            <ListItem >
+            <ListItemIcon>
                 <NumbersIcon/>
               </ListItemIcon>
-              <ListItemText primary={this.orderId} secondary="Order ID"/>
+            <Grid container xs={12}>
+                <Grid item xs={4.5}>
+                  <ListItemText primary={this.state.orderId} secondary={t("Order ID")}/>
+                </Grid>
+                <Grid item xs={7.5}>
+                  <Grid container>
+                  <Grid item xs={2}>
+                    <ListItemIcon sx={{position:"relative",top:"12px",left:"-5px"}}><HourglassTopIcon/></ListItemIcon>
+                    </Grid>
+                    <Grid item xs={10}>
+                    <ListItemText
+                      primary={this.timerRenderer(this.state.escrow_duration)}
+                      secondary={t("Deposit timer")}>
+                    </ListItemText>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
             </ListItem>
+
             <Divider />
             <ListItem>
               <ListItemIcon>
                 <AccessTimeIcon/>
               </ListItemIcon>
-              <ListItemText secondary="Expires in">
+              <ListItemText secondary={t("Expires in")}>
                 <Countdown date={new Date(this.state.expires_at)} renderer={this.countdownRenderer} />
               </ListItemText>
             </ListItem>
             <this.LinearDeterminate />
             </List>
-            
+
             {/* If the user has a penalty/limit */}
-            {this.state.penalty ? 
+            {this.state.penalty ?
             <>
               <Divider />
               <Grid item xs={12} align="center">
                 <Alert severity="warning" sx={{maxWidth:360}}>
                    <Countdown date={new Date(this.state.penalty)} renderer={this.countdownPenaltyRenderer} />
-                </Alert>  
+                </Alert>
               </Grid>
             </>
-            : null} 
-            
+            : null}
+
             {/* If the counterparty asked for collaborative cancel */}
-            {this.state.pending_cancel ? 
+            {this.state.pending_cancel ?
             <>
               <Divider />
               <Grid item xs={12} align="center">
                 <Alert severity="warning" sx={{maxWidth:360}}>
-                  {this.state.is_maker ? this.state.taker_nick : this.state.maker_nick} is asking for a collaborative cancel
-                </Alert>  
+                  {t("{{nickname}} is asking for a collaborative cancel", {nickname: this.state.is_maker ? this.state.taker_nick : this.state.maker_nick})}
+                </Alert>
               </Grid>
             </>
-            : null} 
+            : null}
 
             {/* If the user has asked for a collaborative cancel */}
-            {this.state.asked_for_cancel ? 
+            {this.state.asked_for_cancel ?
             <>
               <Divider />
               <Grid item xs={12} align="center">
                 <Alert severity="warning" sx={{maxWidth:360}}>
-                  You asked for a collaborative cancellation
-                </Alert>  
+                  {t("You asked for a collaborative cancellation")}
+                </Alert>
               </Grid>
             </>
-            : null} 
+            : null}
 
           </Paper>
         </Grid>
-        
+
         <Grid item xs={12} align="center">
           {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}
           {this.state.is_participant ?
             <>
               <this.CancelButton/>
               <this.BackButton/>
-            </> 
+            </>
           :
             <Grid container spacing={1}>
               <Grid item xs={12} align="center">
                 <Countdown date={new Date(this.state.penalty)} renderer={this.countdownTakeOrderRenderer} />
               </Grid>
               <Grid item xs={12} align="center">
-                <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>Back</Button>
+                <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>{t("Back")}</Button>
               </Grid>
             </Grid>
             }
@@ -590,7 +745,7 @@ export default class OrderPage extends Component {
       </Grid>
     )
   }
-  
+
   doubleOrderPageDesktop=()=>{
     return(
       <Grid container xs={12} align="center" spacing={2} >
@@ -598,12 +753,12 @@ export default class OrderPage extends Component {
             {this.orderBox()}
         </Grid>
         <Grid item xs={6} align="left">
-          <TradeBox push={this.props.history.push} width={330} data={this.state} completeSetState={this.completeSetState} />
+          <TradeBox push={this.props.history.push} getOrderDetails={this.getOrderDetails} pauseLoading={this.state.pauseLoading} width={330} data={this.state} completeSetState={this.completeSetState} />
         </Grid>
       </Grid>
     )
   }
-  
+
   a11yProps(index) {
     return {
       id: `simple-tab-${index}`,
@@ -612,7 +767,7 @@ export default class OrderPage extends Component {
   }
 
   doubleOrderPagePhone=()=>{
-
+    const { t } = this.props;
     const [value, setValue] = React.useState(this.state.showContractBox);
 
     const handleChange = (event, newValue) => {
@@ -621,11 +776,11 @@ export default class OrderPage extends Component {
     };
 
     return(
-      <Box sx={{ width: '100%' }}>
+      <Box sx={{ width: '100%'}}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={value} onChange={handleChange} variant="fullWidth" >
-            <Tab label="Order" {...this.a11yProps(0)} />
-            <Tab label="Contract" {...this.a11yProps(1)} />
+            <Tab label={t("Order")} {...this.a11yProps(0)} />
+            <Tab label={t("Contract")} {...this.a11yProps(1)} />
           </Tabs>
         </Box>
         <Grid container spacing={2}>
@@ -634,7 +789,7 @@ export default class OrderPage extends Component {
                 {this.orderBox()}
             </div>
             <div style={{display: this.state.showContractBox == 1 ? '':'none'}}>
-              <TradeBox push={this.props.history.push} width={330} data={this.state} completeSetState={this.completeSetState} />
+              <TradeBox push={this.props.history.push} getOrderDetails={this.getOrderDetails} pauseLoading={this.state.pauseLoading} width={330} data={this.state} completeSetState={this.completeSetState} />
             </div>
           </Grid>
         </Grid>
@@ -643,16 +798,18 @@ export default class OrderPage extends Component {
   }
 
   orderDetailsPage (){
+    const { t } = this.props;
     return(
       this.state.bad_request ?
         <div align='center'>
           <Typography component="subtitle2" variant="subtitle2" color="secondary" >
-            {this.state.bad_request}<br/>
+            {/* IMPLEMENT I18N for bad_request */}
+            {t(this.state.bad_request)}<br/>
           </Typography>
-          <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>Back</Button>
+          <Button variant='contained' color='secondary' onClick={this.props.history.goBack}>{t("Back")}</Button>
         </div>
         :
-        (this.state.is_participant ? 
+        (this.state.is_participant ?
           <>
             {/* Desktop View */}
             <MediaQuery minWidth={920}>
@@ -672,9 +829,11 @@ export default class OrderPage extends Component {
   }
 
   render (){
-    return ( 
+    return (
       // Only so nothing shows while requesting the first batch of data
       this.state.loading ? <CircularProgress /> : this.orderDetailsPage()
     );
   }
 }
+
+export default withTranslation()(OrderPage);

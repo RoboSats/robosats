@@ -143,7 +143,7 @@ We can create the order exactly has we want it. But mind that you need to publis
 
 In the maker page you are only required to enter the currency, order type (buy/sell) and amount. However, it is best practice to specify the payment methods you allow. It might be also helpful to set a premium/discount for your order to be taken faster. Remember that as a seller you can incentivze buyers to take your order by lowering the premium. If there are too many buyers, however, you can increase the premium to have a trading profit. Alternatively, you can set a fixed amount of Satoshis.
 
-*Limits: in Robosats v0.1.0 an order cannot be smaller than 20.000 Satoshis. It cannot be larger than 800.000 Satoshis in order to avoid lightning routing failures. This limit will be increased in the future.*
+*Limits: in Robosats v0.1.0 an order cannot be smaller than 20.000 Satoshis. It cannot be larger than 1,200,000 Satoshis in order to avoid lightning routing failures. This limit will be increased in the future.*
 
 <div align="center">
 <img src="images/how-to-use/contract-box-7.png"  width="370" />

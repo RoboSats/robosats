@@ -1,7 +1,43 @@
 # Set up
-*Attention: to use RoboSats you do not need to run the stack, simply visit the webapp. This setup guide is intended for developer cotributors and platform operators.*
-# The easy way
-## With Docker (-dev containers running on testnet)
+*Attention: to use RoboSats you do not need to run the stack, simply visit the website and that's it! This setup guide is intended for developer contributors and platform operators.*
+
+# Frontend Development Only
+
+Running the full stack is not easy, since RoboSats needs of many services. However, contributing to the frontend development can be done with a minimal setup!
+
+*Set up time ~10 min. Tested in Chromium and Firefox in Ubuntu.*
+
+------------------------
+
+0 - `git clone {robosats-project}`
+
+1 - `cd robosats/frontend`
+
+2 - `npm install`
+
+3 - `npm run dev` (leave it running)
+
+4 - On another terminal `npm install -g http-server`
+
+5 - Then run `http-server "robosats/frontend/static/frontend/`
+
+6 - Install [Requestly](https://requestly.io/) extension in your browser, it's a lightweight proxy. We want to use it so our browser grabs our local `main.js` instead of the remote. There are many alternatives to Requestly (be aware that Requestly might not respect your privacy. Didn't research it).
+
+7 - Pick a RoboSats backend to test the new frontend: e.g. "robosats.onion.moe", or "unsafe.testnet.robosats.com". You can also use the onion services also if you are using Brave or Tor Browser (untested!)
+
+8 - Open Requestly extension and add a new redirect rule. Make  "{robosats-site}/static/frontend/main.js" redirect to "127.0.0.1:8080/main.js" and save the changes.
+
+-------------------
+
+**You are ready to go!** Edit the frontend code in `/frontend/src/` to make the changes you want. Within a few seconds, the `npm run dev` process will pack the code into the local `main.js`. Visit your selected {robosats-site} and you will see your new awesome frontend! :)
+
+Every time you save changes to files in `/frontend/src` you will be able to see them in your browser after a few seconds using force refresh (Ctrl+Shift+R). If you need to edit CSS or other static files, simply add them to Requestly in the same way.
+
+# Full Stack Development
+## The Easy Way: Docker-compose (-dev containers running on testnet)
+
+*Set up time, anywhere between ~45 min and 1 full day (depending on experience, whether you have a copy of the testnet blockchain, etc). Tested in Ubuntu.
+
 Spinning up docker for the first time
 ```
 docker-compose build --no-cache
@@ -11,10 +47,10 @@ docker exec -it django-dev python3 manage.py migrate
 docker exec -it django-dev python3 manage.py createsuperuser
 docker-compose restart
 ```
-Copy the `.env-sample` file into `.env` and check the settings are of your liking.
+Copy the `.env-sample` file into `.env` and check the environmental variables are right for your development.
 
 ### (optional, if error) Install LND python dependencies
-Depending on your setup your environment is good to go. But it might happen that mounting when "." into "/src/usr/robosats" in the docker-compose.yml, it deletes the lnd grpc files that where generated during the docker build. If that is the case, run the following:
+Depending on your system your dev setup might already be good to start working. However, it might happen that when mounting "." into "/src/usr/robosats" in the docker-compose.yml, it deletes the lnd grpc files that where previously generated during the docker build. If this is the case, run the following:
 ```
 cd api/lightning
 pip install grpcio grpcio-tools googleapis-common-protos
@@ -38,40 +74,45 @@ sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/lightning_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/invoices_pb2_grpc.py
 ```
 
-All set!
+**All set!**
 
-Spinning up any other time:
+Commands you will need to startup:
+
+* Spinning up the docker orchestration:
 `docker-compose up -d`
 
-Then monitor in a terminal the Django dev docker service
+* Then monitor in a terminal the Django dev docker service
 `docker attach django-dev`
 
-And the NPM dev docker service
+* And the NPM dev docker service
 `docker attach npm-dev`
 
-You could also just check all services logs
+* You could also just check all services logs
 `docker-compose logs -f`
 
-Ready to roll! But maybe you also are interested on these:
+You will need these commands also often or eventually:
 
-Unlock or 'create' the lnd node
+* Unlock or 'create' the lnd node
 `docker exec -it lnd-dev lncli unlock`
 
-Create p2wkh addresses
+* Create p2wkh addresses
 `docker exec -it lnd-dev lncli --network=testnet newaddress p2wkh`
 
-Wallet balance
+* Wallet balance
 `docker exec -it lnd-dev lncli --network=testnet walletbalance`
 
-Connect
+* Connect to peer
 `docker exec -it lnd-dev lncli --network=testnet connect node_id@ip:9735`
 
-Open channel
+* Open channel
 `docker exec -it lnd-dev lncli --network=testnet openchannel node_id --local_amt LOCAL_AMT --push_amt PUSH_AMT`
 
-RoboSats webapp should be accessible on localhost:8000
-# The harder way
-## Django development environment
+**RoboSats development site should be accessible on localhost:8000**
+
+
+## The harder way (deprecated)
+Setting up the stack on your base system is not supported by this guide anymore. Without dockerization of all services there is a thin chance you manage to have the platform running in less than 2 full days of work. These are legacy instructions, avoid them.
+### Django development environment
 ### Install Python and pip
 `sudo apt install python3 python3 pip`
 

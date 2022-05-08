@@ -14,12 +14,17 @@ class ListOrderSerializer(serializers.ModelSerializer):
             "type",
             "currency",
             "amount",
+            "has_range",
+            "min_amount",
+            "max_amount",
             "payment_method",
             "is_explicit",
             "premium",
             "satoshis",
+            "bondless_taker",
             "maker",
             "taker",
+            "escrow_duration",
         )
 
 
@@ -31,12 +36,18 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "type",
             "currency",
             "amount",
+            "has_range",
+            "min_amount",
+            "max_amount",
             "payment_method",
             "is_explicit",
             "premium",
             "satoshis",
+            "public_duration",
+            "escrow_duration",
+            "bond_size",
+            "bondless_taker",
         )
-
 
 class UpdateOrderSerializer(serializers.Serializer):
     invoice = serializers.CharField(max_length=2000,
@@ -49,6 +60,7 @@ class UpdateOrderSerializer(serializers.Serializer):
                                       default=None)
     action = serializers.ChoiceField(
         choices=(
+            "pause",
             "take",
             "update_invoice",
             "submit_statement",
@@ -66,6 +78,7 @@ class UpdateOrderSerializer(serializers.Serializer):
         allow_blank=True,
         default=None,
     )
+    amount = serializers.DecimalField(max_digits=18, decimal_places=8, allow_null=True, required=False, default=None)
 
 class ClaimRewardSerializer(serializers.Serializer):
     invoice = serializers.CharField(max_length=2000,

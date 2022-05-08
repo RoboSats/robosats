@@ -45,11 +45,19 @@ class Command(BaseCommand):
                     except:
                         print(f'No profile with token {token}')
                         continue
-                    profile.telegram_chat_id = result['message']['from']['id']
-                    profile.telegram_lang_code = result['message']['from']['language_code']
-                    self.telegram.welcome(profile.user)
-                    profile.telegram_enabled = True
-                    profile.save()
+                    
+                    attempts = 5
+                    while attempts >= 0:
+                        try:
+                            profile.telegram_chat_id = result['message']['from']['id']
+                            profile.telegram_lang_code = result['message']['from']['language_code']
+                            self.telegram.welcome(profile.user)
+                            profile.telegram_enabled = True
+                            profile.save()
+                            break
+                        except:
+                            time.sleep(5)
+                            attempts = attempts - 1
 
             offset = response['result'][-1]['update_id']
 

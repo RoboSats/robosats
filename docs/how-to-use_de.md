@@ -146,7 +146,7 @@ Wir können das Angebot genau so erstellen, wie wir es haben wollen. Aber denke 
 
 Auf der Maker Seite musst du nur die Währung, die Angebotsart (Kauf/Verkauf) und den Betrag eingeben. Es empfiehlt sich jedoch, die zulässigen Zahlungsarten anzugeben. Es könnte auch hilfreich sein, einen Aufschlag/Rabatt festzulegen, damit dein Angebot schneller angenommen wird. Denke daran, dass du als Verkäufer einen Anreiz für Käufer schaffen kannst, dein Angebot anzunehmen, indem du die Prämie senkst. Wenn es jedoch zu viele Käufer gibt, kannst du die Prämie erhöhen, um einen Handelsgewinn zu erzielen. Alternativ kannst du auch einen festen Betrag an Satoshis festlegen.
 
-*Limits: in Robosats v0.1.0 kann ein Angebot nicht kleiner als 20.000 Satoshis sein ubd es kann nicht größer als 800.000 Satoshis sein, um Fehler beim weiterleiten der Lightning-Zahlung zu vermeiden. Dieses Limit wird in Zukunft erhöht werden.
+*Limits: in Robosats v0.1.0 kann ein Angebot nicht kleiner als 20.000 Satoshis sein ubd es kann nicht größer als 1.200.000 Satoshis sein, um Fehler beim weiterleiten der Lightning-Zahlung zu vermeiden. Dieses Limit wird in Zukunft erhöht werden.
 
 <div align="center">
 <img src="images/how-to-use/contract-box-7.png"  width="370" />
