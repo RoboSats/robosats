@@ -29,15 +29,18 @@ class MakerPage extends Component {
   defaultCurrencyCode = 'USD';
   defaultPaymentMethod = "not specified";
   defaultPremium = 0;
-  minTradeSats = 20000;
-  maxTradeSats = 1200000;
-  maxBondlessSats = 50000;
+  defaultMinTradeSats = 20000;
+  defaultMaxTradeSats = 1200000;
+  defaultMaxBondlessSats = 50000;
   maxRangeAmountMultiple = 4.8;
   minRangeAmountMultiple = 1.6;
 
   constructor(props) {
     super(props);
     this.state={
+        minTradeSats: this.defaultMinTradeSats,
+        maxTradeSats: this.defaultMaxTradeSats,
+        maxBondlessSats: this.defaultMaxBondlessSats,
         is_explicit: false,
         type: 0,
         currency: this.defaultCurrency,
@@ -69,6 +72,9 @@ class MakerPage extends Component {
           loadingLimits:false,
           minAmount: this.state.amount ? parseFloat((this.state.amount/2).toPrecision(2)) : parseFloat(Number(data[this.state.currency]['max_amount']*0.25).toPrecision(2)),
           maxAmount: this.state.amount ? this.state.amount : parseFloat(Number(data[this.state.currency]['max_amount']*0.75).toPrecision(2)),
+          minTradeSats: data["1000"]['min_amount']*100000000,
+          maxTradeSats: data["1000"]['max_amount']*100000000,
+          maxBondlessSats: data["1000"]['max_bondless_amount']*100000000,
         }));
   }
 
@@ -179,11 +185,11 @@ class MakerPage extends Component {
 
     handleSatoshisChange=(e)=>{
         const { t } = this.props;
-        if(e.target.value > this.maxTradeSats){
-            var bad_sats = t("Must be less than {{maxSats}",{maxSats: pn(this.maxTradeSats)})
+        if(e.target.value > this.state.maxTradeSats){
+            var bad_sats = t("Must be less than {{maxSats}",{maxSats: pn(this.state.maxTradeSats)})
         }
-        if(e.target.value < this.minTradeSats){
-            var bad_sats = t("Must be more than {{minSats}}",{minSats: pn(this.minTradeSats)})
+        if(e.target.value < this.state.minTradeSats){
+            var bad_sats = t("Must be more than {{minSats}}",{minSats: pn(this.state.minTradeSats)})
         }
 
         this.setState({
@@ -293,8 +299,9 @@ class MakerPage extends Component {
                         <TextField
                             disabled = {this.state.enableAmountRange}
                             variant = {this.state.enableAmountRange ? 'filled' : 'outlined'}
-                            error={this.state.amount <= 0 & this.state.amount != "" }
-                            helperText={this.state.amount <= 0 & this.state.amount != "" ? t("Invalid") : null}
+                            error={(this.state.amount <= this.getMinAmount() || this.state.amount >= this.getMaxAmount()) & this.state.amount != "" }
+                            helperText={this.state.amount <= this.getMinAmount() & this.state.amount != "" ? t("Too low") 
+                                : (this.state.amount >= this.getMaxAmount() & this.state.amount != "" ? t("Too high") : null)}
                             label={t("Amount")}
                             type="number"
                             required="true"
@@ -380,8 +387,8 @@ class MakerPage extends Component {
                             required="true"
                             value={this.state.satoshis}
                             inputProps={{
-                                min:this.minTradeSats ,
-                                max:this.maxTradeSats ,
+                                min:this.state.minTradeSats ,
+                                max:this.state.maxTradeSats ,
                                 style: {textAlign:"center"}
                             }}
                             onChange={this.handleSatoshisChange}
@@ -678,7 +685,7 @@ class MakerPage extends Component {
                 </Grid>
 
                 <Grid item xs={12} align="center" spacing={1}>
-                    <Tooltip enterTouchDelay="0" title={t("COMING SOON - High risk! Limited to {{limitSats}}K Sats",{ limitSats: this.maxBondlessSats/1000})}>
+                    <Tooltip enterTouchDelay="0" title={t("COMING SOON - High risk! Limited to {{limitSats}}K Sats",{ limitSats: this.state.maxBondlessSats/1000})}>
                         <FormControlLabel
                             label={t("Allow bondless takers")}
                             control={
