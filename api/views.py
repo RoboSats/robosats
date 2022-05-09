@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 
 from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer
 from api.models import LNPayment, MarketTick, Order, Currency, Profile
+from control.models import AccountingDay
 from api.logics import Logics
 from api.messages import Telegram
 from secrets import token_urlsafe
@@ -844,6 +845,19 @@ class LimitView(ListAPIView):
                 'min_amount': min_trade * exchange_rate,
                 'max_amount': max_trade * exchange_rate,
                 'max_bondless_amount': max_bondless_trade * exchange_rate,
+            }
+
+        return Response(payload, status.HTTP_200_OK)
+
+class HistoricalView(ListAPIView):
+    def get(self, request):
+        payload = {}
+        queryset = AccountingDay.objects.all().order_by('day')
+
+        for accounting_day in queryset:
+            payload[str(accounting_day.day)] = {
+                'volume': accounting_day.contracted,
+                'num_contracts': accounting_day.num_contracts,
             }
 
         return Response(payload, status.HTTP_200_OK)
