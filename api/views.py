@@ -1,6 +1,6 @@
 import os
 from re import T
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from rest_framework import status, viewsets
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
@@ -768,6 +768,10 @@ class InfoView(ListAPIView):
                 request.user)
             if not has_no_active_order:
                 context["active_order_id"] = order.id
+            else:
+                last_order = Order.objects.filter(Q(maker=request.user) | Q(taker=request.user)).last()
+                if last_order:
+                    context["last_order_id"] = last_order.id
 
         return Response(context, status.HTTP_200_OK)
 

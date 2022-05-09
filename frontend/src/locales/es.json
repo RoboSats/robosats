@@ -172,7 +172,9 @@
     "Taker fee":"Comisión del tomador",
     "Number of public BUY orders": "Nº de órdenes públicas de COMPRA",
     "Number of public SELL orders": "Nº de órdenes públicas de VENTA",
-    
+    "Your last order #{{orderID}}":"Tu última orden #{{orderID}}",
+    "Inactive order":"Orden inactiva",
+    "You do not have previous orders":"No tienes órdenes previas",
 
     "ORDER PAGE - OrderPage.js": "Order details page",
     "Order Box": "Orden",

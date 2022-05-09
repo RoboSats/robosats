@@ -69,7 +69,9 @@ class BottomBar extends Component {
         this.setState(null)
         fetch('/api/info/')
           .then((response) => response.json())
-          .then((data) => this.setState(data) & this.setState({active_order_id: data.active_order_id ? data.active_order_id : null})
+          .then((data) => this.setState(data) 
+          & this.setState({active_order_id: data.active_order_id ? data.active_order_id : null,
+            last_order_id: data.last_order_id ? data.last_order_id : null})
           & this.props.setAppState({nickname:data.nickname, loading:false}));
       }
 
@@ -305,6 +307,7 @@ class BottomBar extends Component {
                 </ListItem>
 
                 <Divider/>
+
                 {this.state.active_order_id ?
                 <ListItemButton onClick={this.handleClickCloseProfile} to={'/order/'+this.state.active_order_id} component={LinkRouter}>
                     <ListItemIcon>
@@ -315,10 +318,20 @@ class BottomBar extends Component {
                     <ListItemText primary={t("One active order #{{orderID}}",{orderID: this.state.active_order_id})} secondary={t("Your current order")}/>
                 </ListItemButton>
                 :
-                <ListItem>
-                    <ListItemIcon><NumbersIcon/></ListItemIcon>
-                    <ListItemText primary={t("No active orders")} secondary={t("Your current order")}/>
-                </ListItem>
+
+                this.state.last_order_id ?
+                    <ListItemButton onClick={this.handleClickCloseProfile} to={'/order/'+this.state.last_order_id} component={LinkRouter}>
+                        <ListItemIcon>
+                            <NumbersIcon color="primary"/>
+                        </ListItemIcon>
+                    <ListItemText primary={t("Your last order #{{orderID}}",{orderID: this.state.last_order_id})} secondary={t("Inactive order")}/>
+                    </ListItemButton>
+                    :
+                    <ListItem>
+                        <ListItemIcon><NumbersIcon/></ListItemIcon>
+                        <ListItemText primary={t("No active orders")} secondary={t("You do not have previous orders")}/>
+                    </ListItem>
+
                 }
 
                 <ListItem>
