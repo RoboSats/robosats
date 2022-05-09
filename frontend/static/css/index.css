@@ -142,7 +142,7 @@ input[type=number] {
     width: auto !important;
   }
 
-  .appCenter:has(>div.MuiGrid-root:first-child) {
+  .appCenter:has(>div.MuiGrid-root:first-child, >div.MuiBox-root:first-child) {
     overflow-y: scroll;
     margin-top: 12px;
     padding-bottom: 25px;
