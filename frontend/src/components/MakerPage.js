@@ -331,17 +331,16 @@ class MakerPage extends Component {
 
             </Grid>
             <Grid item xs={12} align="center">
-                <Tooltip placement="top" enterTouchDelay={300} enterDelay={700} enterNextDelay={2000} title={t("Enter your preferred fiat payment methods. Fast methods are highly recommended.")}>
                     <AutocompletePayments
                         onAutocompleteChange={this.handlePaymentMethodChange}
                         optionsType={this.state.currency==1000 ? "swap":"fiat"}
                         error={this.state.badPaymentMethod}
                         helperText={this.state.badPaymentMethod ? t("Must be shorter than 65 characters"):""}
                         label={this.state.currency==1000 ? t("Swap Destination(s)") : t("Fiat Payment Method(s)")}
+                        tooltipTitle={t("Enter your preferred fiat payment methods. Fast methods are highly recommended.")}
                         listHeaderText={t("You can add new methods")}
                         addNewButtonText={t("Add New")}
                         />
-                </Tooltip>
             </Grid>
 
             <Grid item xs={12} align="center">

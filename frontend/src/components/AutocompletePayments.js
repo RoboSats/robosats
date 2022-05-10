@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useAutocomplete } from '@mui/base/AutocompleteUnstyled';
 import { styled } from '@mui/material/styles';
-import { Button}  from "@mui/material";
+import { Button, Tooltip }  from "@mui/material";
 import { paymentMethods, swapDestinations } from "./payment-methods/Methods";
 
 // Icons
@@ -238,15 +238,17 @@ export default function AutocompletePayments(props) {
   return (
     <Root>
       <div style={{height:'5px'}}></div>
-      <div {...getRootProps()} >
-        <Label {...getInputLabelProps()} error={props.error}>{props.label}</Label>
-        <InputWrapper ref={setAnchorEl} error={props.error} className={focused ? 'focused' : ''}>
-          {value.map((option, index) => (
-            <StyledTag label={t(option.name)} icon={option.icon} {...getTagProps({ index })} />
-          ))}
-          <input {...getInputProps()} value={val}/>
-        </InputWrapper>
-      </div>
+      <Tooltip placement="top" enterTouchDelay={300} enterDelay={700} enterNextDelay={2000} title={props.tooltipTitle}>
+        <div {...getRootProps()} >
+          <Label {...getInputLabelProps()} error={props.error ? "error" : null}> {props.label}</Label>
+          <InputWrapper ref={setAnchorEl} error={props.error ? "error" : null} className={focused ? 'focused' : ''}>
+            {value.map((option, index) => (
+              <StyledTag label={t(option.name)} icon={option.icon} {...getTagProps({ index })} />
+            ))}
+            <input {...getInputProps()} value={val ? val :""}/>
+          </InputWrapper>
+        </div>
+      </Tooltip>
       {groupedOptions.length > 0 ? (
         <Listbox {...getListboxProps()}>
             <div style={{position:'fixed', minHeight:'20px',  marginLeft: 120-props.listHeaderText.length*3, marginTop: '-13px'}}>

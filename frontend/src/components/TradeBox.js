@@ -666,11 +666,13 @@ class TradeBox extends Component {
               <b> {t("A dispute has been opened")} </b>
             </Typography>
           </Grid>
-          <Grid item xs={12} align="left">
-            <Typography  variant="body2">
-            {t("Please, submit your statement. Be clear and specific about what happened and provide the necessary evidence. You MUST provide a contact method: burner email, XMPP or telegram username to follow up with the staff. Disputes are solved at the discretion of real robots (aka humans), so be as helpful as possible to ensure a fair outcome. Max 5000 chars.")}
-            </Typography>
-          </Grid>
+          <List dense={true}>
+            <Divider/>
+            <ListItem>
+              <Typography  variant="body2">
+              {t("Please, submit your statement. Be clear and specific about what happened and provide the necessary evidence. You MUST provide a contact method: burner email, XMPP or telegram username to follow up with the staff. Disputes are solved at the discretion of real robots (aka humans), so be as helpful as possible to ensure a fair outcome. Max 5000 chars.")}
+              </Typography>
+            </ListItem>
 
           <Grid item xs={12} align="center">
             <TextField
@@ -689,6 +691,8 @@ class TradeBox extends Component {
           <Grid item xs={12} align="center">
             <Button onClick={this.handleClickSubmitStatementButton} variant='contained' color='primary'>Submit</Button>
           </Grid>
+        
+        </List>
         {this.showBondIsSettled()}
       </Grid>
       )}
@@ -703,11 +707,21 @@ class TradeBox extends Component {
             <b> {t("We have the statements")} </b>
           </Typography>
         </Grid>
-        <Grid item xs={12} align="left">
-          <Typography  variant="body2">
-            <p>{t("Both statements have been received, wait for the staff to resolve the dispute. If you are hesitant about the state of the dispute or want to add more information, contact robosats@protonmail.com. If you did not provide a contact method, or are unsure whether you wrote it right, write us immediately.")} </p>
-            <p>{t("Please, save the information needed to identify your order and your payments: order ID; payment hashes of the bonds or escrow (check on your lightning wallet); exact amount of satoshis; and robot nickname. You will have to identify yourself as the user involved in this trade via email (or other contact methods).")}</p>
-          </Typography>
+        <Grid item xs={12} align="center">
+          <List dense={true}>
+            <Divider/>
+            <ListItem>
+              <Typography  variant="body2">
+                {t("Both statements have been received, wait for the staff to resolve the dispute. If you are hesitant about the state of the dispute or want to add more information, contact robosats@protonmail.com. If you did not provide a contact method, or are unsure whether you wrote it right, write us immediately.")}
+              </Typography>
+            </ListItem>
+            <ListItem>
+              <Typography  variant="body2">
+                {t("Please, save the information needed to identify your order and your payments: order ID; payment hashes of the bonds or escrow (check on your lightning wallet); exact amount of satoshis; and robot nickname. You will have to identify yourself as the user involved in this trade via email (or other contact methods).")}
+              </Typography>
+            </ListItem>
+            <Divider/>
+          </List>
         </Grid>
         {this.showBondIsSettled()}
       </Grid>

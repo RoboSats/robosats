@@ -298,7 +298,7 @@ class BottomBar extends Component {
 
                 <Divider/>
 
-                <Grid spacing={1} align="center" container>
+                <Grid item align="center">
                     <FormControlLabel labelPlacement="start"control={
                         <Switch
                         checked={this.state.showRewards}
@@ -405,7 +405,8 @@ bottomBarDesktop =()=>{
                             <Tooltip 
                                 open={hasRewards || hasOrder} 
                                 title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
-                                    (hasOrder ? t("You have an active order"):"")}>
+                                    (hasOrder ? t("You have an active order"):"")}
+                                >
                                 <ListItemAvatar sx={{ width: 30, height: 30 }} >
                                     <Badge badgeContent={(this.state.active_order_id > 0 & !this.state.profileShown) ? "": null} color="primary">
                                     <Avatar className='flippedSmallAvatar' sx={{margin: 0, top: -13}}

@@ -171,7 +171,7 @@ class BookPage extends Component {
           )
         }}
         pageSize={this.props.bookLoading ? 0 : this.state.pageSize}
-        rowsPerPageOptions={[6,20,50]}
+        rowsPerPageOptions={[0,6,20,50]}
         onPageSizeChange={(newPageSize) => this.setState({pageSize:newPageSize})}
         onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
       />
@@ -275,7 +275,7 @@ class BookPage extends Component {
           )
         }}
         pageSize={this.props.bookLoading ? 0 : this.state.pageSize}
-        rowsPerPageOptions={[6,20,50]}
+        rowsPerPageOptions={[0,6,20,50]}
         onPageSizeChange={(newPageSize) => this.setState({pageSize:newPageSize})}
         onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
 
