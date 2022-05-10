@@ -21,7 +21,7 @@ class PaymentText extends Component {
             if(this.props.text.includes(method.name)){
                 custom_methods = custom_methods.replace(method.name,'')
                 rows.push(
-                    <Tooltip placement="top" enterTouchDelay="0" title={t(method.name)}>
+                    <Tooltip key={`${method.name}-${i}`} placement="top" enterTouchDelay={0} title={t(method.name)}>
                         <div style={{display: 'inline-block', width: this.props.size+2, height: this.props.size}}>
                             <PaymentIcon width={this.props.size} height={this.props.size} icon={method.icon}/>
                         </div>
@@ -32,9 +32,9 @@ class PaymentText extends Component {
 
         // Adds a Custom icon if there are words that do not match
         var chars_left = custom_methods.replace('   ','').replace('  ','').replace(' ','').replace(' ','').replace(' ','')
-        
+
         if(chars_left.length > 0){rows.push(
-            <Tooltip placement="top" enterTouchDelay="0" title={this.props.verbose ? this.props.othersText: this.props.othersText+": "+ custom_methods} >
+            <Tooltip key={"pushed"}  placement="top" enterTouchDelay={0} title={this.props.verbose ? this.props.othersText: this.props.othersText+": "+ custom_methods} >
                 <div style={{position:'relative', display: 'inline-block',width: this.props.size+2, maxHeight: this.props.size, top:'-1px'}}>
                     <PaymentIcon width={this.props.size*1.1} height={this.props.size*1.1} icon={"custom"}/>
                 </div>
@@ -49,12 +49,12 @@ class PaymentText extends Component {
     }
 
     render() {
-      return ( 
+      return (
         <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
             {this.parseText()}
         </div>
       )
     }
-};
+}
 
 export default withTranslation()(PaymentText);

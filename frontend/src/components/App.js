@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { render } from "react-dom";
+import ReactDOM from 'react-dom/client';
 import HomePage from "./HomePage";
 import { CssBaseline, IconButton} from "@mui/material";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -46,5 +46,8 @@ export default class App extends Component {
   }
 }
 
-const appDiv = document.getElementById("app");
-render(<App />, appDiv);
+const root = ReactDOM.createRoot(
+  document.getElementById("app")
+);
+
+root.render(<App />);

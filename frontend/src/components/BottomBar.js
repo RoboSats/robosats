@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
-import { withTranslation, Trans} from "react-i18next";
+import { withTranslation } from "react-i18next";
 import {FormControlLabel, Link, Switch, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
 import MediaQuery from 'react-responsive'
 import { Link as LinkRouter } from 'react-router-dom'
-import Flags from 'country-flag-icons/react/3x2'
 
 // Icons
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -16,7 +15,7 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import BoltIcon from '@mui/icons-material/Bolt';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
-import SendIcon from '@mui/icons-material/Send';
+
 import PublicIcon from '@mui/icons-material/Public';
 import NumbersIcon from '@mui/icons-material/Numbers';
 import PasswordIcon from '@mui/icons-material/Password';
@@ -28,6 +27,8 @@ import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AmbossIcon from "./icons/AmbossIcon";
 import FavoriteIcon from '@mui/icons-material/Favorite';
+
+import { CommunityDialog } from './Dialogs';
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -62,8 +63,11 @@ class BottomBar extends Component {
             showRewardsSpinner: false,
             withdrawn: false,
         };
+    }
+
+    componentDidMount() {
         this.getInfo();
-      }
+    }
 
     getInfo() {
         this.setState(null)
@@ -179,62 +183,6 @@ class BottomBar extends Component {
         this.setState({openCommuniy: false});
     };
 
-    CommunityDialog =() =>{
-        const { t } = this.props;
-
-        return(
-        <Dialog
-        open={this.state.openCommuniy}
-        onClose={this.handleClickCloseCommunity}
-        aria-labelledby="community-dialog-title"
-        aria-describedby="community-description"
-        >
-        <DialogContent>
-            <Typography component="h5" variant="h5">{t("Community")}</Typography>
-            <Typography component="body2" variant="body2">
-                <p>{t("Support is only offered via public channels. Join our Telegram community if you have questions or want to hang out with other cool robots. Please, use our Github Issues if you find a bug or want to see new features!")}</p>
-            </Typography>
-            <List>
-                <Divider/>
-
-                <ListItemButton component="a" target="_blank" href="https://t.me/robosats">
-                    <ListItemIcon><SendIcon/></ListItemIcon>
-                    <ListItemText primary={t("Join the RoboSats group")}
-                    secondary={t("Telegram (English / Main)")}/>
-                </ListItemButton>
-                <Divider/>
-
-                <ListItem>
-                    <ListItemIcon><SendIcon/></ListItemIcon>
-                    <ListItemText secondary={t("RoboSats Telegram Communities")}>
-                        <Tooltip title={t("Join RoboSats Spanish speaking community!")}>
-                            <IconButton component="a" target="_blank" href="https://t.me/robosats_es"><Flags.ES width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
-                        </Tooltip>
-                        <Tooltip title={t("Join RoboSats Russian speaking community!")}>
-                            <IconButton component="a" target="_blank" href="https://t.me/robosats_ru"><Flags.RU width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
-                        </Tooltip>
-                        <Tooltip title={t("Join RoboSats Chinese speaking community!")}>
-                            <IconButton component="a" target="_blank" href="https://t.me/robosats_cn"><Flags.CN width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
-                        </Tooltip>
-                        <Tooltip title={t("Join RoboSats English speaking community!")}>
-                            <IconButton component="a" target="_blank" href="https://t.me/robosats"><Flags.US width={30} height={30} style={{filter: 'drop-shadow(2px 2px 2px #444444)'}}/></IconButton>
-                        </Tooltip>
-                    </ListItemText>
-                </ListItem>
-                <Divider/>
-
-                <ListItemButton component="a" target="_blank" href="https://github.com/Reckless-Satoshi/robosats/issues">
-                    <ListItemIcon><GitHubIcon/></ListItemIcon>
-                    <ListItemText primary={t("Tell us about a new feature or a bug")}
-                    secondary={t("Github Issues - The Robotic Satoshis Open Source Project")}/>
-                </ListItemButton>
-
-            </List>
-            </DialogContent>
-        </Dialog>
-    )
-    }
-
     handleClickOpenProfile = () => {
         this.getInfo();
         this.setState({openProfile: true, profileShown: true});
@@ -349,7 +297,7 @@ class BottomBar extends Component {
                         size='small'
                         InputProps={{
                             endAdornment:
-                            <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+                            <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
                                 <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
                                     <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
                                 </IconButton>
@@ -363,7 +311,7 @@ class BottomBar extends Component {
 
                 <Divider/>
 
-                <Grid spacing={1} align="center">
+                <Grid item align="center">
                     <FormControlLabel labelPlacement="start"control={
                         <Switch
                         checked={this.state.showRewards}
@@ -384,7 +332,7 @@ class BottomBar extends Component {
                             size='small'
                             InputProps={{
                                 endAdornment:
-                                <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
+                                <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
                                     <IconButton onClick= {()=>navigator.clipboard.writeText('http://'+this.getHost()+'/ref/'+this.state.referral_code)}>
                                         <ContentCopy />
                                     </IconButton>
@@ -400,7 +348,7 @@ class BottomBar extends Component {
                         </ListItemIcon>
                         {!this.state.openClaimRewards ?
                         <ListItemText secondary={t("Your earned rewards")}>
-                            <Grid container xs={12}>
+                            <Grid container>
                                 <Grid item xs={9}>
                                     <Typography>{this.state.earned_rewards+" Sats"}</Typography>
                                 </Grid>
@@ -454,32 +402,35 @@ class BottomBar extends Component {
 
 bottomBarDesktop =()=>{
     const { t } = this.props;
+    var hasRewards = this.state.earned_rewards > 0 ? true: false;
+    var hasOrder = this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded ? true : false;
+
     return(
         <Paper elevation={6} style={{height:40}}>
-                <this.StatsDialog/>
-                <this.CommunityDialog/>
-                <this.dialogProfile/>
-                <this.exchangeSummaryDialog/>
-                <Grid container xs={12}>
+                {this.StatsDialog()}
+                {this.dialogProfile()}
+                {this.exchangeSummaryDialog()}
+                <Grid container>
 
                     <Grid item xs={1.9}>
                         <div style={{display: this.props.avatarLoaded ? '':'none'}}>
                         <ListItemButton onClick={this.handleClickOpenProfile} >
-                            <Tooltip open={this.state.earned_rewards > 0 ? true: false} title={t("You can claim satoshis!")}>
-                            <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
-                                        title={t("You have an active order")}>
+                            <Tooltip 
+                                open={hasRewards || hasOrder} 
+                                title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
+                                    (hasOrder ? t("You have an active order"):"")}
+                                >
                                 <ListItemAvatar sx={{ width: 30, height: 30 }} >
                                     <Badge badgeContent={(this.state.active_order_id > 0 & !this.state.profileShown) ? "": null} color="primary">
                                     <Avatar className='flippedSmallAvatar' sx={{margin: 0, top: -13}}
-                                    alt={this.props.nickname}
-                                    imgProps={{
-                                        onLoad:() => this.props.setAppState({avatarLoaded: true}),
-                                    }}
-                                    src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null}
-                                    />
+                                        alt={this.props.nickname}
+                                        imgProps={{
+                                            onLoad:() => this.props.setAppState({avatarLoaded: true}),
+                                        }}
+                                        src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null}
+                                        />
                                     </Badge>
                                 </ListItemAvatar>
-                            </Tooltip>
                             </Tooltip>
                             <ListItemText primary={this.props.nickname}/>
                         </ListItemButton>
@@ -553,10 +504,10 @@ bottomBarDesktop =()=>{
 
                     <Grid container item xs={1}>
                         <Grid item xs={6}>
-                            <this.LangSelect/>
+                            {this.LangSelect()}
                         </Grid>
                         <Grid item xs={3}>
-                        <Tooltip enterTouchDelay="250" title={t("Show community and support links")}>
+                        <Tooltip enterTouchDelay={250} title={t("Show community and support links")}>
                             <IconButton
                             color="primary"
                             aria-label="Community"
@@ -566,7 +517,7 @@ bottomBarDesktop =()=>{
                         </Tooltip>
                         </Grid>
                         <Grid item xs={3}>
-                            <Tooltip enterTouchDelay="250" title={t("Show stats for nerds")}>
+                            <Tooltip enterTouchDelay={250} title={t("Show stats for nerds")}>
                                 <IconButton color="primary"
                                     aria-label="Stats for Nerds"
                                     onClick={this.handleClickOpenStatsForNerds} >
@@ -690,7 +641,7 @@ bottomBarDesktop =()=>{
                     <ListItemIcon size="small">
                         <PercentIcon/>
                     </ListItemIcon>
-                    <Grid container xs={12}>
+                    <Grid container >
                         <Grid item xs={6}>
                             <ListItemText
                                 primaryTypographyProps={{fontSize: '14px'}}
@@ -718,19 +669,20 @@ bottomBarDesktop =()=>{
 
 bottomBarPhone =()=>{
     const { t } = this.props;
+    var hasRewards = this.state.earned_rewards > 0 ? true: false;
+    var hasOrder = this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded ? true : false;
     return(
         <Paper elevation={6} style={{height:40}}>
-                <this.StatsDialog/>
-                <this.CommunityDialog/>
-                <this.exchangeSummaryDialog/>
-                <this.dialogProfile/>
-                <Grid container xs={12}>
+                {this.StatsDialog()}
+                {this.exchangeSummaryDialog()}
+                {this.dialogProfile()}
+                <Grid container>
 
                     <Grid item xs={1.6}>
                     <div style={{display: this.props.avatarLoaded ? '':'none'}}>
-                    <Tooltip open={this.state.earned_rewards > 0 ? true: false} title={t("You can claim satoshis!")}>
-                        <Tooltip open={(this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded) ? true: false}
-                                    title={t("You have an active order")}>
+                    <Tooltip open={hasRewards || hasOrder} 
+                            title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
+                                (hasOrder ? t("You have an active order"):"")}>
                         <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, bottom: 17, right: 8}} >
                             <Badge badgeContent={(this.state.active_order_id >0 & !this.state.profileShown) ? "": null} color="primary">
                                 <Avatar className='phoneFlippedSmallAvatar'
@@ -744,12 +696,11 @@ bottomBarPhone =()=>{
                             </Badge>
                         </IconButton>
                     </Tooltip>
-                    </Tooltip>
                     </div>
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
-                        <Tooltip enterTouchDelay="300" title={t("Number of public BUY orders")}>
+                        <Tooltip enterTouchDelay={300} title={t("Number of public BUY orders")}>
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.num_public_buy_orders}  color="action">
                                 <InventoryIcon />
@@ -759,7 +710,7 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
-                        <Tooltip enterTouchDelay="300" title={t("Number of public SELL orders")}>
+                        <Tooltip enterTouchDelay={300} title={t("Number of public SELL orders")}>
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.num_public_sell_orders}  color="action">
                                 <SellIcon />
@@ -769,7 +720,7 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
-                        <Tooltip enterTouchDelay="300" title={t("Today active robots")}>
+                        <Tooltip enterTouchDelay={300} title={t("Today active robots")}>
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.active_robots_today}  color="action">
                                 <SmartToyIcon />
@@ -779,7 +730,7 @@ bottomBarPhone =()=>{
                     </Grid>
 
                     <Grid item xs={1.8} align="center">
-                        <Tooltip enterTouchDelay="300" title={t("24h non-KYC bitcoin premium")}>
+                        <Tooltip enterTouchDelay={300} title={t("24h non-KYC bitcoin premium")}>
                             <IconButton onClick={this.handleClickOpenExchangeSummary} >
                             <Badge badgeContent={this.state.last_day_nonkyc_btc_premium+"%"}  color="action">
                                 <PriceChangeIcon />
@@ -790,10 +741,10 @@ bottomBarPhone =()=>{
 
                     <Grid container item xs={3.8}>
                         <Grid item xs={6}>
-                            <this.LangSelect/>
+                            {this.LangSelect()}
                         </Grid>
                         <Grid item xs={3}>
-                        <Tooltip enterTouchDelay="250" title={t("Show community and support links")}>
+                        <Tooltip enterTouchDelay={250} title={t("Show community and support links")}>
                             <IconButton
                             color="primary"
                             aria-label="Community"
@@ -803,7 +754,7 @@ bottomBarPhone =()=>{
                         </Tooltip>
                         </Grid>
                         <Grid item xs={3}>
-                        <Tooltip enterTouchDelay="250" title={t("Show stats for nerds")}>
+                        <Tooltip enterTouchDelay={250} title={t("Show stats for nerds")}>
                             <IconButton color="primary"
                                 aria-label="Stats for Nerds"
                                 onClick={this.handleClickOpenStatsForNerds} >
@@ -821,15 +772,20 @@ bottomBarPhone =()=>{
     render() {
         return (
             <div>
+                <CommunityDialog
+                    isOpen={this.state.openCommuniy}
+                    handleClickCloseCommunity={this.handleClickCloseCommunity}
+                />
                 <MediaQuery minWidth={1200}>
-                    <this.bottomBarDesktop/>
+                    {this.bottomBarDesktop()}
                 </MediaQuery>
 
                 <MediaQuery maxWidth={1199}>
-                    <this.bottomBarPhone/>
+                    {this.bottomBarPhone()}
                 </MediaQuery>
             </div>
         )
     }
 }
+
 export default withTranslation()(BottomBar);

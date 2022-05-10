@@ -1,14 +1,15 @@
 import React, { Component } from "react";
 import { withTranslation} from "react-i18next";
 import {TextField,Chip, Tooltip, IconButton, Badge, Tab, Tabs, Alert, Paper, CircularProgress, Button , Grid, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemAvatar, Avatar, Divider, Box, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
-import Countdown, { zeroPad, calcTimeDelta } from 'react-countdown';
-import MediaQuery from 'react-responsive'
-import currencyDict from '../../static/assets/currencies.json';
-import { Link as LinkRouter } from 'react-router-dom'
+import Countdown, { zeroPad } from 'react-countdown';
+import { StoreTokenDialog, NoRobotDialog } from "./Dialogs";
 
+import currencyDict from '../../static/assets/currencies.json';
 import PaymentText from './PaymentText'
 import TradeBox from "./TradeBox";
-import getFlags from './getFlags'
+import FlagWithProps from './FlagWithProps'
+import LinearDeterminate from './LinearDeterminate';
+import MediaQuery from 'react-responsive'
 import { t } from "i18next";
 
 // icons
@@ -19,7 +20,6 @@ import PaymentsIcon from '@mui/icons-material/Payments';
 import ArticleIcon from '@mui/icons-material/Article';
 import SendReceiveIcon from "./icons/SendReceiveIcon";
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
-import ContentCopy from "@mui/icons-material/ContentCopy";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -35,10 +35,10 @@ class OrderPage extends Component {
         openCancel: false,
         openCollaborativeCancel: false,
         openInactiveMaker: false,
-        showContractBox: 1,
+        openStoreToken: false,
+        tabValue: 1,
         orderId: this.props.match.params.orderId,
     };
-    this.getOrderDetails(this.props.match.params.orderId);
 
     // Refresh delays according to Order status
     this.statusToDelay = {
@@ -88,7 +88,6 @@ class OrderPage extends Component {
   }
 
   getOrderDetails =(id)=> {
-    this.setState(null)
     this.setState({orderId:id})
     fetch('/api/order' + '?order_id=' + id)
       .then((response) => response.json())
@@ -97,8 +96,10 @@ class OrderPage extends Component {
 
   // These are used to refresh the data
   componentDidMount() {
+    this.getOrderDetails(this.props.match.params.orderId);
     this.interval = setInterval(this.tick, this.state.delay);
   }
+
   componentDidUpdate() {
     clearInterval(this.interval);
       this.interval = setInterval(this.tick, this.state.delay);
@@ -178,11 +179,11 @@ class OrderPage extends Component {
     const { t } = this.props;
     if(this.state.has_range){
     return(
-        <Grid container xs={12} align="center" alignItems="stretch" justifyContent="center" style={{ display: "flex"}}>
-          <this.InactiveMakerDialog/>
-          <this.StoreTokenDialog/>
+        <Grid container align="center" alignItems="stretch" justifyContent="center" style={{ display: "flex"}}>
+          {this.InactiveMakerDialog()}
+          {this.tokenDialog()}
           <div style={{maxWidth:120}}>
-          <Tooltip placement="top" enterTouchDelay="500" enterDelay="700" enterNextDelay="2000" title={t("Enter amount of fiat to exchange for bitcoin")}>
+          <Tooltip placement="top" enterTouchDelay={500} enterDelay={700} enterNextDelay={2000} title={t("Enter amount of fiat to exchange for bitcoin")}>
             <Paper elevation={5} sx={{maxHeight:40}}>
               <TextField
                   error={(this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount) & this.state.takeAmount != "" }
@@ -190,7 +191,7 @@ class OrderPage extends Component {
                   label={t("Amount {{currencyCode}}", {currencyCode: this.state.currencyCode})}
                   size="small"
                   type="number"
-                  required="true"
+                  required={true}
                   value={this.state.takeAmount}
                   inputProps={{
                       min:this.state.min_amount ,
@@ -203,7 +204,7 @@ class OrderPage extends Component {
           </Tooltip>
           </div>
           <div style={{height:38, top:'1px', position:'relative', display: (this.state.takeAmount < this.state.min_amount || this.state.takeAmount > this.state.max_amount || this.state.takeAmount == "" || this.state.takeAmount == null) ? '':'none'}}>
-            <Tooltip placement="top" enterTouchDelay="0" enterDelay="500" enterNextDelay="1200" title={t("You must specify an amount first")}>
+            <Tooltip placement="top" enterTouchDelay={0} enterDelay={500} enterNextDelay={1200} title={t("You must specify an amount first")}>
               <Paper elevation={4}>
                 <Button sx={{height:38}} variant='contained' color='primary'
                   disabled={true}>
@@ -225,8 +226,8 @@ class OrderPage extends Component {
     }else{
       return(
         <>
-        <this.InactiveMakerDialog/>
-        <this.StoreTokenDialog/>
+        {this.InactiveMakerDialog()}
+        {this.tokenDialog()}
         <Button sx={{height:38}} variant='contained' color='primary'
                 onClick={this.props.copiedToken ? (this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog : this.takeOrder) : (() => this.setState({openStoreToken:true}))}>
                 {t("Take Order")}
@@ -237,40 +238,17 @@ class OrderPage extends Component {
   }
 
   countdownTakeOrderRenderer = ({ seconds, completed }) => {
-    if(isNaN(seconds)){return (<this.takeOrderButton/>)}
+    if(isNaN(seconds)){return (this.takeOrderButton())}
     if (completed) {
       // Render a completed state
-      return ( <this.takeOrderButton/>);
+      return this.takeOrderButton();
     } else{
       return(
-      <Tooltip enterTouchDelay="0" title={t("Wait until you can take an order")}><div>
+      <Tooltip enterTouchDelay={0} title={t("Wait until you can take an order")}><div>
       <Button disabled={true} variant='contained' color='primary'>{t("Take Order")}</Button>
       </div></Tooltip>)
     }
   };
-
-  LinearDeterminate =()=> {
-    const [progress, setProgress] = React.useState(0);
-
-    React.useEffect(() => {
-      const timer = setInterval(() => {
-        setProgress((oldProgress) => {
-          var left = calcTimeDelta( new Date(this.state.expires_at)).total /1000;
-          return (left / this.state.total_secs_exp) * 100;
-        });
-      }, 1000);
-
-      return () => {
-        clearInterval(timer);
-      };
-    }, []);
-
-    return (
-      <Box sx={{ width: '100%' }}>
-        <LinearProgress variant="determinate" value={progress} />
-      </Box>
-    );
-  }
 
   takeOrder=()=>{
     this.setState({loading:true})
@@ -376,72 +354,26 @@ class OrderPage extends Component {
     )
   }
 
-  StoreTokenDialog = () =>{
-    const { t } = this.props;
-    
-    // If there is a robot cookie, prompt user to store it
-    // Else, prompt user to generate a robot
-    if (getCookie("robot_token")){
-        return(
-            <Dialog
-            open={this.state.openStoreToken}
-            onClose={() => this.setState({openStoreToken:false})}
-            >
-                <DialogTitle >
-                {t("Store your robot token")}
-                </DialogTitle>
-                <DialogContent>
-                <DialogContentText>
-                    {t("You might need to recover your robot avatar in the future: store it safely. You can simply copy it into another application.")}
-                </DialogContentText>
-                <br/>
-                <Grid align="center">
-                    <TextField
-                        sx={{width:"100%", maxWidth:"550px"}}
-                        disabled
-                        label={t("Back it up!")}
-                        value={getCookie("robot_token") }
-                        variant='filled'
-                        size='small'
-                        InputProps={{
-                            endAdornment:
-                            <Tooltip disableHoverListener enterTouchDelay="0" title={t("Copied!")}>
-                                <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
-                                    <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
-                                </IconButton>
-                            </Tooltip>,
-                            }}
-                        />
-                </Grid>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => this.setState({openStoreToken:false})} autoFocus>{t("Go back")}</Button>
-                    <Button onClick={() => this.setState({openStoreToken:false}) & (this.state.maker_status=='Inactive' ? this.handleClickOpenInactiveMakerDialog() : this.takeOrder())}>{t("Done")}</Button>
-                </DialogActions>
-            </Dialog>
-        )
-    }else{
-        return(
-            <Dialog
-            open={this.state.openStoreToken}
-            onClose={() => this.setState({openStoreToken:false})}
-            >
-                <DialogTitle>
-                    {t("You do not have a robot avatar")}
-                </DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        {t("You need to generate a robot avatar in order to become an order maker")}
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => this.setState({openStoreToken:false})} autoFocus>{t("Go back")}</Button>
-                    <Button onClick={() => this.setState({openStoreToken:false})} to="/" component={LinkRouter}>{t("Generate Robot")}</Button>
-                </DialogActions>
-            </Dialog>
-        )
-    }
-}
+  tokenDialog = () =>{
+    return(getCookie("robot_token") ?
+      <StoreTokenDialog
+        open={this.state.openStoreToken}
+        onClose={() => this.setState({openStoreToken:false})}
+        onClickCopy={()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}
+        copyIconColor={this.props.copiedToken ? "inherit" : "primary"}
+        onClickBack={() => this.setState({openStoreToken:false})}
+        onClickDone={() => this.setState({openStoreToken:false}) & 
+            (this.state.maker_status=='Inactive' ? 
+            this.handleClickOpenInactiveMakerDialog() 
+            : this.takeOrder())
+          }/>
+      :
+      <NoRobotDialog
+        open={this.state.openStoreToken}
+        onClose={() => this.setState({openStoreToken:false})}
+        />
+    )
+  }
 
   handleClickConfirmCollaborativeCancelButton=()=>{
       const requestOptions = {
@@ -517,7 +449,7 @@ class OrderPage extends Component {
       return(
         <div id="openDialogCancelButton">
           <Grid item xs={12} align="center">
-            <this.CancelDialog/>
+            {this.CancelDialog()}
             <Button variant='contained' color='secondary' onClick={this.handleClickOpenConfirmCancelDialog}>{t("Cancel")}</Button>
           </Grid>
         </div>
@@ -528,7 +460,7 @@ class OrderPage extends Component {
     if ([8,9].includes(this.state.status)){
       return(
         <Grid item xs={12} align="center">
-          <this.CollaborativeCancelDialog/>
+          {this.CollaborativeCancelDialog()}
           <Button variant='contained' color='secondary' onClick={this.handleClickOpenCollaborativeCancelDialog}>{t("Collaborative Cancel")}</Button>
         </Grid>
       )}
@@ -554,11 +486,11 @@ class OrderPage extends Component {
               {t("Order Box")}
             </Typography>
           </MediaQuery>
-          <Paper elevation={12} style={{ padding: 8,}}>
-          <List dense="true">
+          <Paper elevation={12} >
+          <List dense={true}>
             <ListItem >
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
-              <Tooltip placement="top" enterTouchDelay="0" title={t(this.state.maker_status)} >
+              <Tooltip placement="top" enterTouchDelay={0} title={t(this.state.maker_status)} >
                 <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.maker_status)}>
                 <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"12px", top:"4px"}}> {!this.state.type ? <SendReceiveIcon sx={{transform: "scaleX(-1)"}} color="secondary"/> : <SendReceiveIcon color="primary"/>}</div>}>
                   <Avatar className="flippedSmallAvatar"
@@ -580,7 +512,7 @@ class OrderPage extends Component {
                     <ListItem align="left">
                       <ListItemText primary={this.state.taker_nick + (this.state.type ? " "+t("(Buyer)") : " "+t("(Seller)"))} secondary={t("Order taker")}/>
                       <ListItemAvatar >
-                        <Tooltip enterTouchDelay="0" title={t(this.state.taker_status)} >
+                        <Tooltip enterTouchDelay={0} title={t(this.state.taker_status)} >
                           <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
                           <Badge overlap="circular" anchorOrigin={{horizontal: 'left', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", right:"12px", top:"4px"}}> {this.state.type ? <SendReceiveIcon color="secondary"/> : <SendReceiveIcon sx={{transform: "scaleX(-1)"}} color="primary"/> }</div>}>
                             <Avatar className="smallAvatar"
@@ -609,8 +541,8 @@ class OrderPage extends Component {
 
             <ListItem>
               <ListItemIcon>
-                <div style={{zoom:1.25,opacity: 0.7, '-ms-zoom': 1.25, '-webkit-zoom': 1.25,'-moz-transform':  'scale(1.25,1.25)', '-moz-transform-origin': 'left center'}}>
-                  {getFlags(this.state.currencyCode)}
+                <div style={{zoom:1.25,opacity: 0.7, msZoom: 1.25, WebkitZoom: 1.25, MozTransform:  'scale(1.25,1.25)', MozTransformOrigin: 'left center'}}>
+                  <FlagWithProps code={this.state.currencyCode} />
                 </div>
               </ListItemIcon>
               {this.state.has_range & this.state.amount == null ?
@@ -653,7 +585,7 @@ class OrderPage extends Component {
             <ListItemIcon>
                 <NumbersIcon/>
               </ListItemIcon>
-            <Grid container xs={12}>
+            <Grid container>
                 <Grid item xs={4.5}>
                   <ListItemText primary={this.state.orderId} secondary={t("Order ID")}/>
                 </Grid>
@@ -682,7 +614,7 @@ class OrderPage extends Component {
                 <Countdown date={new Date(this.state.expires_at)} renderer={this.countdownRenderer} />
               </ListItemText>
             </ListItem>
-            <this.LinearDeterminate />
+              <LinearDeterminate key={this.state.expires_at} total_secs_exp={this.state.total_secs_exp} expires_at={this.state.expires_at}/>
             </List>
 
             {/* If the user has a penalty/limit */}
@@ -728,8 +660,8 @@ class OrderPage extends Component {
           {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}
           {this.state.is_participant ?
             <>
-              <this.CancelButton/>
-              <this.BackButton/>
+              {this.CancelButton()}
+              {this.BackButton()}
             </>
           :
             <Grid container spacing={1}>
@@ -748,7 +680,7 @@ class OrderPage extends Component {
 
   doubleOrderPageDesktop=()=>{
     return(
-      <Grid container xs={12} align="center" spacing={2} >
+      <Grid container align="center" spacing={2} >
         <Grid item xs={6} align="left" style={{ width:330}} >
             {this.orderBox()}
         </Grid>
@@ -768,27 +700,21 @@ class OrderPage extends Component {
 
   doubleOrderPagePhone=()=>{
     const { t } = this.props;
-    const [value, setValue] = React.useState(this.state.showContractBox);
-
-    const handleChange = (event, newValue) => {
-      this.setState({showContractBox:newValue})
-      setValue(newValue);
-    };
 
     return(
       <Box sx={{ width: '100%'}}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={value} onChange={handleChange} variant="fullWidth" >
-            <Tab label={t("Order")} {...this.a11yProps(0)} />
-            <Tab label={t("Contract")} {...this.a11yProps(1)} />
+          <Tabs value={this.state.tabValue} variant="fullWidth" >
+            <Tab label={t("Order")} {...this.a11yProps(0)} onClick={() => this.setState({tabValue:0})}/>
+            <Tab label={t("Contract")} {...this.a11yProps(1)} onClick={() => this.setState({tabValue:1})}/>
           </Tabs>
         </Box>
         <Grid container spacing={2}>
           <Grid item >
-            <div style={{ width:330, display: this.state.showContractBox == 0 ? '':'none'}}>
+            <div style={{ width:330, display: this.state.tabValue == 0 ? '':'none'}}>
                 {this.orderBox()}
             </div>
-            <div style={{display: this.state.showContractBox == 1 ? '':'none'}}>
+            <div style={{display: this.state.tabValue == 1 ? '':'none'}}>
               <TradeBox push={this.props.history.push} getOrderDetails={this.getOrderDetails} pauseLoading={this.state.pauseLoading} width={330} data={this.state} completeSetState={this.completeSetState} />
             </div>
           </Grid>
@@ -802,7 +728,7 @@ class OrderPage extends Component {
     return(
       this.state.bad_request ?
         <div align='center'>
-          <Typography component="subtitle2" variant="subtitle2" color="secondary" >
+          <Typography variant="subtitle2" color="secondary" >
             {/* IMPLEMENT I18N for bad_request */}
             {t(this.state.bad_request)}<br/>
           </Typography>
@@ -813,12 +739,12 @@ class OrderPage extends Component {
           <>
             {/* Desktop View */}
             <MediaQuery minWidth={920}>
-              <this.doubleOrderPageDesktop/>
+              {this.doubleOrderPageDesktop()}
             </MediaQuery>
 
             {/* SmarPhone View */}
             <MediaQuery maxWidth={919}>
-              <this.doubleOrderPagePhone/>
+              {this.doubleOrderPagePhone()}
             </MediaQuery>
           </>
           :
