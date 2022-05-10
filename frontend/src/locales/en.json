@@ -60,6 +60,7 @@
     "You must fill the order correctly":"You must fill the order correctly",
     "Create Order":"Create Order",
     "Back":"Back",
+    "Create an order for ":"Create an order for ",
     "Create a BTC buy order for ":"Create a BTC buy order for ",
     "Create a BTC sell order for ":"Create a BTC sell order for ",
     " of {{satoshis}} Satoshis":" of {{satoshis}} Satoshis",
@@ -170,7 +171,10 @@
     "Taker fee":"Taker fee",
     "Number of public BUY orders":"Number of public BUY orders",
     "Number of public SELL orders":"Number of public SELL orders",
-    
+    "Your last order #{{orderID}}":"Your last order #{{orderID}}",
+    "Inactive order":"Inactive order",
+    "You do not have previous orders":"You do not have previous orders",
+
 
     "ORDER PAGE - OrderPage.js": "Order details page",
     "Order Box":"Order Box",

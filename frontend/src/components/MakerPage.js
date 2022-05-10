@@ -42,7 +42,7 @@ class MakerPage extends Component {
         maxTradeSats: this.defaultMaxTradeSats,
         maxBondlessSats: this.defaultMaxBondlessSats,
         is_explicit: false,
-        type: 0,
+        type: null,
         currency: this.defaultCurrency,
         currencyCode: this.defaultCurrencyCode,
         payment_method: this.defaultPaymentMethod,
@@ -275,7 +275,7 @@ class MakerPage extends Component {
                         {t("Buy or Sell Bitcoin?")}
                     </FormHelperText>
 
-                    <RadioGroup row defaultValue="0" onChange={this.handleTypeChange}>
+                    <RadioGroup row value={this.state.type} onChange={this.handleTypeChange}>
                         <FormControlLabel
                             value="0"
                             control={<Radio icon={<BuySatsIcon sx={{width:"30px",height:"30px"}} color="text.secondary"/>} checkedIcon={<BuySatsCheckedIcon sx={{width:"30px",height:"30px"}} color="primary"/>}/>}
@@ -816,7 +816,8 @@ class MakerPage extends Component {
 
             <Grid item xs={12} align="center">
                 {/* conditions to disable the make button */}
-                {(this.state.amount == null & (this.state.enableAmountRange == false || this.state.loadingLimits) ||
+                {(this.state.type == null ||
+                    this.state.amount == null & (this.state.enableAmountRange == false || this.state.loadingLimits) ||
                     this.state.enableAmountRange & (this.minAmountError() || this.maxAmountError()) ||
                     this.state.amount <= 0 & !this.state.enableAmountRange ||
                     (this.state.is_explicit & (this.state.badSatoshis != null || this.state.satoshis == null)) ||
@@ -843,10 +844,14 @@ class MakerPage extends Component {
                 : ""}
                 <Typography component="subtitle2" variant="subtitle2">
                     <div align='center'>
-                        {this.state.type==0 ?
-                            t("Create a BTC buy order for ")
+                        {this.state.type==null ?
+                            t("Create an order for ")
                         :
-                            t("Create a BTC sell order for ")
+                            (this.state.type==0 ?
+                                t("Create a BTC buy order for ")
+                            :
+                                t("Create a BTC sell order for ")
+                            )
                         }
                         {this.state.enableAmountRange & this.state.minAmount != null?
                             this.state.minAmount+"-"+this.state.maxAmount
