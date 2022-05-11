@@ -82,8 +82,6 @@
     "not specified":"Sense especificar",
     "Instant SEPA":"SEPA Instantània",
     "Amazon GiftCard":"Targeta Regal d'Amazon",
-    "Amazon ES GiftCard":"Targeta Regal d'Amazon ES",
-    "Amazon MX GiftCard":"Targeta Regal d'Amazon MX",
     "Google Play Gift Code":"Targeta Regal de Google Play",
     "Cash F2F":"Efectiu en persona",
     "On-Chain BTC":"On-Chain BTC",
@@ -177,6 +175,7 @@
     "Inactive order":"Ordre inactiva",
     "You do not have previous orders":"No tens ordres prèvies",
     
+  
     "ORDER PAGE - OrderPage.js": "Order details page",
     "Order Box":"Ordre",
     "Contract":"Contracte",
@@ -352,7 +351,6 @@
     "Your order is paused":"La teva ordre està pausada",
     "Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.":"La teva ordre pública va ser pausada. Ara mateix, l'ordre no pot ser vista ni presa per altres robots. Pots tornar a activarla quan desitgis.",
     "Unpause Order":"Activar Ordre",
-  
 
     "INFO DIALOG - InfoDiagog.js":"App information and clarifications and terms of use",
     "Close":"Tancar",
