@@ -60,6 +60,7 @@
     "You must fill the order correctly":"Has d'omplir l'ordre correctament",
     "Create Order":"Crear ordre",
     "Back":"Tornar",
+    "Create an order for ":"Crear una ordre per ",
     "Create a BTC buy order for ":"Crear ordre de compra de bitcoin per ",
     "Create a BTC sell order for ":"Crear ordre de venta de bitcoin per ",
     " of {{satoshis}} Satoshis":" de {{satoshis}} Sats",
@@ -81,6 +82,8 @@
     "not specified":"Sense especificar",
     "Instant SEPA":"SEPA Instantània",
     "Amazon GiftCard":"Targeta Regal d'Amazon",
+    "Amazon ES GiftCard":"Targeta Regal d'Amazon ES",
+    "Amazon MX GiftCard":"Targeta Regal d'Amazon MX",
     "Google Play Gift Code":"Targeta Regal de Google Play",
     "Cash F2F":"Efectiu en persona",
     "On-Chain BTC":"On-Chain BTC",
@@ -169,9 +172,11 @@
     "Maker fee":"Comissió del creador",
     "Taker fee":"Comissió del prenedor",
     "Number of public BUY orders":"Nº d'ordres públiques de COMPRA",
-    "Number of public SELL orders":"Nº d'ordres públiques de VENTA",
+    "Number of public SELL orders":"Nº d'ordres públiques de VENDA",
+    "Your last order #{{orderID}}":"La teva última ordre #{{orderID}}",
+    "Inactive order":"Ordre inactiva",
+    "You do not have previous orders":"No tens ordres prèvies",
     
-
     "ORDER PAGE - OrderPage.js": "Order details page",
     "Order Box":"Ordre",
     "Contract":"Contracte",
@@ -347,6 +352,7 @@
     "Your order is paused":"La teva ordre està pausada",
     "Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.":"La teva ordre pública va ser pausada. Ara mateix, l'ordre no pot ser vista ni presa per altres robots. Pots tornar a activarla quan desitgis.",
     "Unpause Order":"Activar Ordre",
+  
 
     "INFO DIALOG - InfoDiagog.js":"App information and clarifications and terms of use",
     "Close":"Tancar",
