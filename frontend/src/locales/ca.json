@@ -1,8 +1,8 @@
 {
     "UNSAFE ALERT - UnsafeAlert.js": "Alert that shows on top when browsing from the unsafe clearnet sites",
     "You are not using RoboSats privately": "No estàs emprant RoboSats de forma privada",
-    "desktop_unsafe_alert": "Algunes funcions (com el xat) estan deshabilitades per protegir i sense elles no podràs completar un intercanvi. Per protegir la teva privacitat i habilitar RoboSats per complet, fes servir el <1>Tor Browser</1> and visit the <3>Onion</3> site.",
-    "phone_unsafe_alert": "No podràs completar un intercanvi. Fes servir el <1>Tor Browser</1> and visit the <3>Onion</3> site.",
+    "desktop_unsafe_alert": "Algunes funcions (com el xat) estan deshabilitades per protegir i sense elles no podràs completar un intercanvi. Per protegir la teva privacitat i habilitar RoboSats per complet, fes servir <1>Tor Browser</1> i visita el <3>Onion</3> site.",
+    "phone_unsafe_alert": "No podràs completar un intercanvi. Fes servir <1>Tor Browser</1> i vista el <3>Onion</3> site.",
     "Hide":"Amagar",
 
 
@@ -62,7 +62,7 @@
     "Back":"Tornar",
     "Create an order for ":"Crear una ordre per ",
     "Create a BTC buy order for ":"Crear ordre de compra de bitcoin per ",
-    "Create a BTC sell order for ":"Crear ordre de venta de bitcoin per ",
+    "Create a BTC sell order for ":"Crear ordre de venda de bitcoin per ",
     " of {{satoshis}} Satoshis":" de {{satoshis}} Sats",
     " at market price":" a preu de mercat",
     " at a {{premium}}% premium":" amb una prima del {{premium}}%",
@@ -155,7 +155,7 @@
     "You have an active order":"Tens una ordre activa",
     "You can claim satoshis!":"Pots retirar Sats!",
     "Public Buy Orders":"Ordres de compra",
-    "Public Sell Orders":"Ordres de venta",
+    "Public Sell Orders":"Ordres de venda",
     "Today Active Robots":"Robots actius avui",
     "24h Avg Premium":"Prima mitjana en 24h",
     "Trade Fee":"Comissió",
