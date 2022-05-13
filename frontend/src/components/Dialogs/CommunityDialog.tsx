@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import SendIcon from '@mui/icons-material/Send';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import TwitterIcon from '@mui/icons-material/Twitter';
 import Flags from 'country-flag-icons/react/3x2'
 
 type Props = {
@@ -31,6 +32,7 @@ const CommunityDialog = ({
   const flagProps = {
     width: 30,
     height: 30,
+    opacity: 0.85,
     style: {
       filter: "drop-shadow(2px 2px 2px #444444)",
     },
@@ -58,16 +60,16 @@ const CommunityDialog = ({
           <ListItemButton
             component="a"
             target="_blank"
-            href="https://t.me/robosats"
+            href="https://twitter.com/robosats"
             rel="noreferrer"
           >
             <ListItemIcon>
-              <SendIcon/>
+              <TwitterIcon color="primary"/>
             </ListItemIcon>
 
             <ListItemText
-              primary={t("Join the RoboSats group")}
-              secondary={t("Telegram (English / Main)")}
+              primary={t("Follow RoboSats in Twitter")}
+              secondary={t("Twitter Official Account")}
             />
           </ListItemButton>
 
