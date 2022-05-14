@@ -1,3 +1,14 @@
+---
+layout: single
+title: RoboSats - Fiat Best Practices
+permalink: /docs/fiat-payment-best-practices/
+toc: true
+toc_stickly: true
+sidebar:
+  title: "Fiat Best Practices"
+  nav: docs
+---
+
 # Fiat payment method
 
 Currently, there are no restrictions on the fiat payment method. You can pay with any method that both you and your peer agree on. This includes the higher risk method such as PayPal, Venmo, and Cash apps. However, the payment method with lower risk is recommended, you can learn more details about the characteristics and differences of each fiat payment method from <a href =  "https://bisq.wiki/Payment_methods#Payment_method_guides">Bisq wiki</a>.
@@ -48,20 +59,20 @@ If you are a buyer and you need to use “send money to a friend or family membe
 In PayPal desktop, it is located below the drop-down currency list, it should be labeled as "Sending to a friend".
 If it is labeled otherwise, you'll need to click "Change" on the right to change the payment type.
 <div align="center">
-<img src="images/fiat-payment-methods/PayPal-main-desktop.png" width="370"/>
+<img src="/assets/images/fiat-payment-methods/PayPal-main-desktop.png" width="370"/>
 </div>
 Then select "Sending to a friend" in the payment type choosing page.
 <div align="center">
-<img src="images/fiat-payment-methods/PayPal-choose-desktop.png" width="370"/>
+<img src="/assets/images/fiat-payment-methods/PayPal-choose-desktop.png" width="370"/>
 </div>
 
 #### PayPal Mobile
 In PayPal mobile, it is located below the payment method (In this case is VISA), it should be labeled as "Friends or Family".
 If it is labeled otherwise, you'll need to tab ">" on the right to change the payment type.
 <div align="center">
-<img src="images/fiat-payment-methods/PayPal-main-phone.png" width="230"/>
+<img src="/assets/images/fiat-payment-methods/PayPal-main-phone.png" width="230"/>
 </div>
 Then select "Friends or Family" in the payment type choosing page.
 <div align="center">
-<img src="images/fiat-payment-methods/PayPal-choose-phone.png" width="230"/>
+<img src="/assets/images/fiat-payment-methods/PayPal-choose-phone.png" width="230"/>
 </div>

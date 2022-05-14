@@ -1,14 +1,22 @@
 main:
-  - title: "Documentation"
-    url: /docs/quick-start-guide/
+  - title: "Docs"
+    url: /docs/how-to-use/
   - title: "Tutorials"
     url: /docs/tutorials/
+  - title: "Contribute"
+    url: /contribute/
+  - title: "Blog"
+    url: /blog/
 
 docs:
-  - title: "Quick-Start-Guide"
-    url: /docs/quick-start-guide/
+  - title: "Docs"
+    url: /docs/how-to-use/
     children:
-      - title: "Overview"
-        url: /docs/quick-start-guide/
-      - title: "How-to-use"
+      - title: "How to use"
         url: /docs/how-to-use/
+      - title: "Easy PGP Encryption"
+        url: /docs/pgp-encryption/
+      - title: "Fiat Best Practices"
+        url: /docs/fiat-payment-best-practices/
+      - title: "Wallets"
+        url: /docs/wallets/
