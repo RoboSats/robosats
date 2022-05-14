@@ -1,0 +1,22 @@
+main:
+  - title: "Docs"
+    url: /docs/how-to-use/
+  - title: "Tutorials"
+    url: /docs/tutorials/
+  - title: "Contribute"
+    url: /contribute/
+  - title: "Blog"
+    url: /blog/
+
+docs:
+  - title: "Docs"
+    url: /docs/how-to-use/
+    children:
+      - title: "How to use"
+        url: /docs/how-to-use/
+      - title: "Easy PGP Encryption"
+        url: /docs/pgp-encryption/
+      - title: "Fiat Best Practices"
+        url: /docs/fiat-payment-best-practices/
+      - title: "Wallets"
+        url: /docs/wallets/
