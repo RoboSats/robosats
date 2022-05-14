@@ -5,8 +5,8 @@ services:
     container_name: pages
     restart: always
     volumes:
-      - ./docs:/usr/src/docs
-    command: bash -c "cd /usr/src/docs/site/
+      - .:/usr/src/robosats
+    command: bash -c "cd /usr/src/robosats/docs/
             && bundle install 
             && bundle exec jekyll serve --force_polling -H 0.0.0.0 -P 4000"
     ports:

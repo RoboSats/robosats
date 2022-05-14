@@ -1,0 +1,14 @@
+main:
+  - title: "Documentation"
+    url: /docs/quick-start-guide/
+  - title: "Tutorials"
+    url: /docs/tutorials/
+
+docs:
+  - title: "Quick-Start-Guide"
+    url: /docs/quick-start-guide/
+    children:
+      - title: "Overview"
+        url: /docs/quick-start-guide/
+      - title: "How-to-use"
+        url: /docs/how-to-use/
