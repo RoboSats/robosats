@@ -12,13 +12,13 @@
 
 # theme                  : "minimal-mistakes-jekyll"
 # remote_theme           : "mmistakes/minimal-mistakes"
-minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
+minimal_mistakes_skin    : "robosats_dark" # "default", "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
 
 # Site Settings
 locale                   : "en-US"
 title                    : "Learn RoboSats"
 title_separator          : "-"
-subtitle                 : "Simple and Private LN P2P Exchange" # site tagline that appears below site title in masthead
+subtitle                 : "A Simple and Private Lightning P2P Exchange" # site tagline that appears below site title in masthead
 name                     : "RoboSats"
 description              : "Documentation, Guides and Tutorials of the RoboSats Exchange"
 url                      : https://docs.robosats.com # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
@@ -103,7 +103,7 @@ analytics:
 # Site Author
 author:
   name             : "Reckless_Satoshi"
-  avatar           : # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
+  avatar           : "/assets/images/misc/recksato.png" # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
   bio              : "PGP: B4AB 5F19 113D 4125 DDF2 1773 9C45 85B5 6131 5571"
   location         : "Somewhere in the world"
   email            :
@@ -112,7 +112,7 @@ author:
       icon: "fab fa-fw fa-twitter-square"
       url: "https://twitter.com/recksato"
     - label: "Telegram"
-      icon: "fa fa-telegram"
+      icon: "fa-brands fa-telegram"
       url: "https://t.me/Reckless_Satoshi"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
@@ -125,7 +125,7 @@ footer:
       icon: "fab fa-fw fa-twitter-square"
       url: "https://twitter.com/robosats"
     - label: "Telegram"
-      icon: "fa fa-telegram"
+      icon: "fa-brands fa-telegram"
       url: "https://t.me/robosats"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"

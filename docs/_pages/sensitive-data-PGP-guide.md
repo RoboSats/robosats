@@ -1,15 +1,15 @@
 ---
 layout: single
-title: RoboSats - Easy PGP Encryption
+title: Easy PGP Encryption
 permalink: /docs/pgp-encryption/
 toc: true
 toc_stickly: true
 sidebar:
-  title: "Easy PGP"
+  title: "<i class='fa-solid fa-fingerprint'></i> Easy PGP Encryption"
   nav: docs
 ---
 
-# How to use OpenKeychain for cipher sensible data during RoboSats trade.
+Learn how to use OpenKeychain to cipher sensible data during RoboSats trade.
 
 ## Why encryption is needed?
 

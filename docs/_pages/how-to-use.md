@@ -1,15 +1,13 @@
 ---
 layout: single
-title: RoboSats - How to Use
+title: How to Use (v0.1.0)
 permalink: /docs/how-to-use/
 toc: true
 toc_stickly: true
 sidebar:
-  title: "How to use"
+  title: "<i class='fa-solid fa-chalkboard-user'></i> How to use"
   nav: docs
----
-
-# How to use RoboSats (v0.1.0)
+--- 
 
 RoboSats is focused on user friendliness. The platform is totally self-explanatory, so one could say a tutorial is really not necessary. However, it really helps to feel comfortable when trading if you already know what are the next steps to come so nothing surprises you. After all, bitcoin p2p exchanges are very intimidating! Fear no more, RoboSats keeps it really simple and you simply cannot do things wrong! :D
 

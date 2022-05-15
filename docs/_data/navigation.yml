@@ -1,22 +1,22 @@
 main:
-  - title: "Docs"
+  - title: "<i class='fa-solid fa-book'></i> Docs"
     url: /docs/how-to-use/
-  - title: "Tutorials"
+  - title: "<i class='fa-solid fa-circle-play'></i> Tutorials"
     url: /docs/tutorials/
-  - title: "Contribute"
+  - title: "<i class='fa-solid fa-handshake-angle'></i> Contribute"
     url: /contribute/
-  - title: "Blog"
+  - title: "<i class='fa-solid fa-blog'></i> Blog"
     url: /blog/
 
 docs:
   - title: "Docs"
     url: /docs/how-to-use/
     children:
-      - title: "How to use"
+      - title: "<i class='fa-solid fa-chalkboard-user'></i> How to use"
         url: /docs/how-to-use/
-      - title: "Easy PGP Encryption"
+      - title: "<i class='fa-solid fa-fingerprint'></i> Easy PGP Encryption"
         url: /docs/pgp-encryption/
-      - title: "Fiat Best Practices"
+      - title: "<i class='fa-solid fa-hand-peace'></i> Fiat Best Practices"
         url: /docs/fiat-payment-best-practices/
-      - title: "Wallets"
+      - title: "<i class='fa-solid fa-wallet'></i> Wallets"
         url: /docs/wallets/

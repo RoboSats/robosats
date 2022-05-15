@@ -1,15 +1,13 @@
 ---
 layout: single
-title: RoboSats - Fiat Best Practices
+title: Fiat Best Practices
 permalink: /docs/fiat-payment-best-practices/
 toc: true
 toc_stickly: true
 sidebar:
-  title: "Fiat Best Practices"
+  title: "<i class='fa-solid fa-hand-peace'></i> Fiat Best Practices"
   nav: docs
 ---
-
-# Fiat payment method
 
 Currently, there are no restrictions on the fiat payment method. You can pay with any method that both you and your peer agree on. This includes the higher risk method such as PayPal, Venmo, and Cash apps. However, the payment method with lower risk is recommended, you can learn more details about the characteristics and differences of each fiat payment method from <a href =  "https://bisq.wiki/Payment_methods#Payment_method_guides">Bisq wiki</a>.
 
