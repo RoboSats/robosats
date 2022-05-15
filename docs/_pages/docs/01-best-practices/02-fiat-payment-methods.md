@@ -3,7 +3,7 @@ layout: single
 title: Fiat Best Practices
 permalink: /docs/fiat-payment-best-practices/
 toc: true
-toc_stickly: true
+toc_sticky: true
 sidebar:
   title: "<i class='fa-solid fa-hand-peace'></i> Fiat Best Practices"
   nav: docs

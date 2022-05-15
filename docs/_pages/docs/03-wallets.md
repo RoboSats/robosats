@@ -1,10 +1,9 @@
 ---
 layout: single
-classes: wide
 title: Wallets
 permalink: /docs/wallets/
 toc: true
-toc_stickly: true
+toc_sticky: true
 sidebar:
   title: "<i class='fa-solid fa-wallet'></i> Wallets"
   nav: docs
@@ -21,10 +20,11 @@ remote: "<i class='fa-solid fa-house fa-xl'></i>"
 thumbsup: "<i style='color:#4caf50' class='fa-solid fa-thumbs-up fa-2xl'></i>"
 thumbsdown: "<i style='color:#ef5350' class='fa-solid fa-thumbs-down fa-2xl'></i>"
 unclear: "<i style='color:#ff9800' class='fa-solid fa-question fa-2xl'></i>"
+bitcoin: "<i class='fa-solid fa-bitcoin-sign'></i>"
 --- 
 ## Wallet Compatibility Table 
 
-| Wallet | Version | Device | UX<sup>1</sup> | Bonds<sup>2</sup> | Payout<sup>3</sup> | Compatible<sup>4</sup> | Recommended<sup>5</sup> |
+| Wallet | Version | Device | UX<sup>1</sup> | Bonds<sup>2</sup> | Payout<sup>3</sup> | Comp<sup>4</sup> | Total<sup>5</sup> |
 |---|---|---|---|---|---|---|---|
 |[Blixt](#blixt-androidios-lnd-light-backend-on-device)|[v0.4.1](https://github.com/hsjoberg/blixt-wallet)|{{page.phone}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Electrum](#electrum-desktop)|[4.1.4](https://github.com/spesmilo/electrum)|{{page.laptop}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.soso}}|{{page.unclear}}||
@@ -32,17 +32,17 @@ unclear: "<i style='color:#ff9800' class='fa-solid fa-question fa-2xl'></i>"
 |[Zeus](#zeus-mobile-lnd-remote-backend)|[v0.6.0-rc3](https://github.com/ZeusLN/zeus)|{{page.phone}}{{page.remote}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[SBW](#wallet-compatibility-table)|[2.4.27](https://github.com/btcontract/wallet/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Muun](https://muun.com/)|[47.3](https://muun.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.bad}}|{{page.bad}}|{{page.thumbsdown}}|
-|[lntxbot](https://github.com/Reckless-Satoshi/robosats/issues/44#issuecomment-1054607956)|[NA](https://t.me/lntxbot)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | {{page.thumbsup}}  [(info)](https://github.com/Reckless-Satoshi/robosats/issues/44#issuecomment-1054607956)|
-|[BlueWallet](https://bluewallet.io/)|[1.4.4](https://bluewallet.io/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.unclear}}  (buggy)|
-|[WalletOfSatoshi](#wallet-compatibility-table)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
+|[lntxbot](https://github.com/Reckless-Satoshi/robosats/issues/44#issuecomment-1054607956)|[NA](https://t.me/lntxbot)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | [{{page.thumbsup}}](https://github.com/Reckless-Satoshi/robosats/issues/44#issuecomment-1054607956)|
+|[Blue](https://bluewallet.io/)|[1.4.4](https://bluewallet.io/)|{{page.phone}}|{{page.good}}|{{page.unclear}}|{{page.unclear}}|{{page.good}}|{{page.unclear}}|
+|[WoS](#wallet-compatibility-table)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.bad}}|{{page.good}}|{{page.bad}}|{{page.thumbsdown}}|
-|[Bitcoin Beach](#phoenix-mobile)|[v1.7.7](https://galoy.io/bitcoin-beach-wallet/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}  [(info)](https://github.com/Reckless-Satoshi/robosats/issues/44#issuecomment-1126318591)|
+|[{{page.bitcoin}} Beach](#phoenix-mobile)|[v1.7.7](https://galoy.io/bitcoin-beach-wallet/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |[{{page.thumbsup}}](https://github.com/Reckless-Satoshi/robosats/issues/44#issuecomment-1126318591)|
 
 1. **UX:** Does the wallet convey clearly that there is an "ongoing" payment (hodl invoice)?
 2. **Bonds:** Can the wallet lock the invoices with long expiry time needed for the bonds?
 3. **Payout:** Can the wallet receive payouts from RoboSats after the user buys Sats?
 4. **Compatible:** Is the wallet overally compatible end-to-end with RoboSats?
-5. **Recommended:** Is the wallet compatible and stable enough to be used consistently without issues?
+5. **Total:** Is the wallet compatible and stable enough to be used consistently without issues?
 
 
 ### Blixt (Android/iOS, LND light backend on device)

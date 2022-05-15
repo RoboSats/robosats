@@ -3,7 +3,7 @@ layout: single
 title: Easy PGP Encryption
 permalink: /docs/pgp-encryption/
 toc: true
-toc_stickly: true
+toc_sticky: true
 sidebar:
   title: "<i class='fa-solid fa-fingerprint'></i> Easy PGP Encryption"
   nav: docs

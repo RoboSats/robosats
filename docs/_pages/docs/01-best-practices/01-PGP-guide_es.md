@@ -1,4 +1,14 @@
-# Cómo usar OpenKeychain para cifrar datos sensibles al usar RoboSats.
+---
+layout: single
+title: Fácil Encriptación PGP
+permalink: /es/docs/pgp-encryption/
+toc: true
+toc_sticky: true
+sidebar:
+  title: "<i class='fa-solid fa-fingerprint'></i> Fácil Encriptación PGP"
+  nav: docs
+---
+Cómo usar OpenKeychain para cifrar datos sensibles al usar RoboSats.
 
 ## ¿Por qué es necesaria la encriptación?
 
@@ -9,7 +19,7 @@ Dado que RoboSats funciona a través de la red Tor, todas las comunicaciones est
 OpenKeychain es una aplicación de Android de código abierto que permite crear y administrar pares de claves criptográficas y firmar y/o cifrar/descifrar texto y archivos. OpenKeychain se basa en el estándar OpenPGP que hace que el cifrado sea compatible en todos los dispositivos y sistemas. Puedes consultar una lista de software compatible para Windows, Mac OS y otros sistemas operativos, en este enlace: [openpgp.org/software/](https://openpgp.org/software/). Ya que el concepto es el mismo, este método se puede replicar utilizando cualquier otra aplicación. La aplicación OpenKeychain se puede encontrar en F-droid.org [[Link]](https://f-droid.org/packages/org.sufficientlysecure.keychain/) o en Google play store [[Link]](https://play.google.com/store/apps/details?id=org.sufficientlysecure.keychain)
 
 <div align="center">
-    <img src="images/sensitive-data-PGP-guide_es/OpenKeychain-logo.png" width="150"/>
+    <img src="/assets/images/sensitive-data-PGP-guide_es/OpenKeychain-logo.png" width="150"/>
 </div>
 
 ## Esquema de cifrado.
@@ -17,7 +27,7 @@ OpenKeychain es una aplicación de Android de código abierto que permite crear 
 En la mayoría de los casos, la información confidencial que queremos proteger es la información de pago en moneda fiat del vendedor, es decir: el número de teléfono, la cuenta de PayPal, etc. La imagen a continuación muestra el esquema de encriptación que garantiza que la información de pago del vendedor solo pueda ser leída por el comprador.
 
 <div align="center">
-    <img src="images/sensitive-data-PGP-guide_es/encrypted-communication-schema_es.png" width="900"/>
+    <img src="/assets/images/sensitive-data-PGP-guide_es/encrypted-communication-schema_es.png" width="900"/>
 </div>
 
 El proceso de intercambio de datos se ha dividido en 3 sencillos pasos:
@@ -37,7 +47,7 @@ El primer paso para garantizar la confidencialidad de los datos es crear un par 
 <br/>
 
 <div align="center">
-    <img src="images/sensitive-data-PGP-guide_es/PGP-keys-creation-steps_es.png" width="900"/>
+    <img src="/assets/images/sensitive-data-PGP-guide_es/PGP-keys-creation-steps_es.png" width="900"/>
 </div>
 
 <br/>
@@ -49,7 +59,7 @@ Ahora el comprador tiene dos claves: la clave privada sólo debe ser conocida po
 <br/>
 
 <div align="center">
-    <img src="images/sensitive-data-PGP-guide_es/pub-key-sharing-steps_es.png" width="900"/>
+    <img src="/assets/images/sensitive-data-PGP-guide_es/pub-key-sharing-steps_es.png" width="900"/>
 </div>
 
 <br/>
@@ -63,7 +73,7 @@ Una vez que el vendedor tiene la clave pública del comprador, se puede aplicar 
 <br/>
 
 <div align="center">
-    <img src="images/sensitive-data-PGP-guide_es/encrypted-data-sharing-steps_es.png" width="900"/>
+    <img src="/assets/images/sensitive-data-PGP-guide_es/encrypted-data-sharing-steps_es.png" width="900"/>
 </div>
 
 <br/>

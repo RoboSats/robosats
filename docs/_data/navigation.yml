@@ -1,22 +1,64 @@
 main:
-  - title: "<i class='fa-solid fa-book'></i> Docs"
-    url: /docs/how-to-use/
+  - title: "<i class='fa-solid fa-rocket'></i> Quick-Start"
+    url: /docs/quick-start/
   - title: "<i class='fa-solid fa-circle-play'></i> Tutorials"
-    url: /docs/tutorials/
+    url: /watch/en/
   - title: "<i class='fa-solid fa-handshake-angle'></i> Contribute"
     url: /contribute/
   - title: "<i class='fa-solid fa-blog'></i> Blog"
     url: /blog/
 
 docs:
-  - title: "Docs"
-    url: /docs/how-to-use/
+  - title: "<i class='fa-solid fa-rocket'></i> Quick Start"
+    url: /docs/quick-start/
     children:
-      - title: "<i class='fa-solid fa-chalkboard-user'></i> How to use"
-        url: /docs/how-to-use/
-      - title: "<i class='fa-solid fa-fingerprint'></i> Easy PGP Encryption"
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-bolt'></i> Lightning Network</span>"
+        url: /docs/lightning/
+      - title: "<span>&nbsp;    &thinsp;<img style='width:16px;height:16px' src='/assets/vector/tor.svg'/> TOR Network</span>"
+        url: /docs/tor/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-up-right-from-square'></i> Access</span>"
+        url: /docs/access/
+        
+  - title: "<i class='fa-solid fa-hand-piece'></i> Best Practices" 
+    url: /docs/best-practices/
+    children:
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-fingerprint'></i> PGP Encryption</span>"
         url: /docs/pgp-encryption/
-      - title: "<i class='fa-solid fa-hand-peace'></i> Fiat Best Practices"
-        url: /docs/fiat-payment-best-practices/
-      - title: "<i class='fa-solid fa-wallet'></i> Wallets"
-        url: /docs/wallets/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-money-bill-1-wave'></i> Payment Methods</span>"
+        url: /docs/fiat-payment-methods/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-route'></i> Proxy Wallets</span>"
+        url: /docs/proxy-wallet/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-circle-nodes'></i> Lightning Channels</span>"
+        url: /docs/channels/
+
+  - title: "<i class='fa-solid fa-uniform-martial-arts'></i> Features"
+    url: /docs/features/
+    children:
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-user-ninja'></i> Private</span>"
+        url: /docs/privacy/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-receipt'></i> Bonds & Escrow</span>"
+        url: /docs/bonds-escrow/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-right-arrow-left'></i> Swaps</span>"
+        url: /docs/swaps/
+
+  - title: "<i class='fa-solid fa-wallet'></i> Wallets"
+    url: /docs/wallets/
+
+tutorial:
+  - title: "<i class='fa-solid fa-circle-play'></i> Watch"
+    children:
+    - title: "<span>&nbsp;    &thinsp;<img style='width:22px;height:21px' src='/assets/vector/english.svg'/> English</span>"
+      url: "/watch/en/"
+    - title: "<span>&nbsp;    &thinsp;<img style='width:22px;height:13px' src='/assets/vector/spanish.svg'/> Español</span>"
+      url: "/watch/es/"
+    - title: "<span>&nbsp;    &thinsp;<img style='width:22px;height:13px' src='/assets/vector/portuguese.svg'/> Portuguese</span>"
+      url: "/watch/pt/"
+  - title: "<i class='fa-brands fa-readme'></i> Read"
+    children:
+    - title: "<span>&nbsp;    &thinsp;<img style='width:22px;height:21px' src='/assets/vector/english.svg'/> English</span>"
+      url: "/read/en/"
+    - title: "<span>&nbsp;    &thinsp;<img style='width:22px;height:13px' src='/assets/vector/spanish.svg'/> Español</span>"
+      url: "/read/es/"
+    - title: "<span>&nbsp;    &thinsp;<img style='width:22px;height:13px' src='/assets/vector/german.svg'/> Deutsch</span>"
+      url: "/read/de/"
+      
