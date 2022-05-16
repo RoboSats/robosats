@@ -18,10 +18,11 @@ import BalanceIcon from '@mui/icons-material/Balance';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import PauseCircleIcon from '@mui/icons-material/PauseCircle';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import NewTabIcon from "./icons/NewTabIcon";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
-import { t } from "i18next";
 
 class TradeBox extends Component {
   invoice_escrow_duration = 3;
@@ -181,11 +182,11 @@ class TradeBox extends Component {
     const { t } = this.props;
     return (
       <Grid container spacing={1}>
-        <Grid item xs={12} align="center">
+        {/* <Grid item xs={12} align="center">
           <Typography  variant="body2">
             {t("Robots show commitment to their peers")}
           </Typography>
-        </Grid>
+        </Grid> */}
         <Grid item xs={12} align="center">
           {this.props.data.is_maker ?
           <Typography color="primary" variant="subtitle1">
@@ -201,6 +202,11 @@ class TradeBox extends Component {
           </Typography>
           }
         </Grid>
+
+        <Grid item xs={12} align="center">
+          {this.compatibleWalletsButton()}
+        </Grid>
+
         <Grid item xs={12} align="center">
           <Box sx={{bgcolor:'#ffffff', width:'315px', position:'relative', left:'-5px'}} >
             <QRCode value={this.props.data.bond_invoice} size={305} style={{position:'relative', top:'3px'}}/>
@@ -568,6 +574,17 @@ class TradeBox extends Component {
   handleQRbutton = () => {
     this.setState({qrscanner: !this.state.qrscanner});
   }
+  compatibleWalletsButton = () =>{
+    const { t } = this.props;
+
+    return(
+      <Button color="primary" component={Link} href={"https://learn.robosats.com/docs/wallets/"} target="_blank" align="center"> 
+        <AccountBalanceWalletIcon/>
+          {t("See Compatible Wallets")}
+        <NewTabIcon sx={{width:16,height:16}}/>
+      </Button>
+    )
+  }
 
   showInputInvoice(){
     const { t } = this.props;
@@ -581,7 +598,8 @@ class TradeBox extends Component {
             <b> {t("Submit an invoice for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}
             </b> {" " + this.stepXofY()}
           </Typography>
-        </Grid>
+        </Grid> 
+        
         <Grid item xs={12} align="left">
           <Typography variant="body2">
             {t("The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC. Please provide a valid invoice for {{amountSats}} Satoshis.",
@@ -591,6 +609,10 @@ class TradeBox extends Component {
               )
             }
           </Typography>
+        </Grid>
+
+        <Grid item xs={12} align="center">
+          {this.compatibleWalletsButton()}
         </Grid>
 
         <Grid item xs={12} align="center">

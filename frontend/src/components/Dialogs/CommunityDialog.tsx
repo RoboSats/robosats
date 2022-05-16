@@ -77,7 +77,7 @@ const CommunityDialog = ({
 
           <ListItem>
             <ListItemIcon>
-              <SendIcon/>
+              <SendIcon color="primary"/>
             </ListItemIcon>
 
             <ListItemText secondary={t("RoboSats Telegram Communities")}>
@@ -136,7 +136,7 @@ const CommunityDialog = ({
             rel="noreferrer"
           >
             <ListItemIcon>
-              <GitHubIcon/>
+              <GitHubIcon color="primary"/>
             </ListItemIcon>
 
             <ListItemText

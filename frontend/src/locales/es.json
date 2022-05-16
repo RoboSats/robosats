@@ -351,8 +351,8 @@
     "Your order is paused":"Tu orden está en pausa",
     "Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.":"Tu orden pública fue pausada. Ahora mismo, la orden no puede ser vista ni tomada por otros robots. Puedes volver a activarla cuando desees.",
     "Unpause Order":"Activar Orden",
-    "You risk losing your bond if you do not lock the collateral. Total time to available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.":"Si no bloqueas el deposito de confianza te arriesgas a perder tu fianza. Dispones en total de {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.",
-
+    "You risk losing your bond if you do not lock the collateral. Total time to available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.":"Si no bloqueas el colateral te arriesgas a perder tu fianza. Dispones en total de {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.",
+    "See Compatible Wallets":"Ver billeteras compatibles",
 
     "INFO DIALOG - InfoDiagog.js": "App information and clarifications and terms of use",
     "Close": "Cerrar",

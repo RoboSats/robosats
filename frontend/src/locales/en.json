@@ -352,7 +352,7 @@
     "Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.":"Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.",
     "Unpause Order":"Unpause Order",
     "You risk losing your bond if you do not lock the collateral. Total time to available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.":"You risk losing your bond if you do not lock the collateral. Total time to available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.",
-
+    "See Compatible Wallets":"See Compatible Wallets",
 
     "INFO DIALOG - InfoDiagog.js":"App information and clarifications and terms of use",
     "Close":"Close",
