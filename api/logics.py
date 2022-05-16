@@ -379,6 +379,14 @@ class Logics:
         # for unresolved HTLCs) Dispute winner will have to submit a 
         # new invoice for value of escrow + bond.
 
+        valid_status_open_disppute = [
+            Order.Status.CHA,
+            Order.Status.FSE,
+        ]
+
+        if order.status in valid_status_open_disppute:
+            return False, {"bad_request": "You cannot open a dispute of this order at this stage"}
+        
         if not order.trade_escrow.status == LNPayment.Status.SETLED:
             cls.settle_escrow(order)
             cls.settle_bond(order.maker_bond)

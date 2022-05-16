@@ -9,23 +9,23 @@ sidebar:
   nav: docs
 
 # Icons
-good: "<i style='color:#4caf50' class='fa-solid fa-square-check fa-2xl'></i>"
-soso: "<i style='color:#ff9800' class='fa fa-triangle-exclamation fa-2xl'></i>"
+good: "<i style='color:#1976d2' class='fa-solid fa-square-check fa-2xl'></i>"
+soso: "<i style='color:#9c27b0' class='fa fa-triangle-exclamation fa-2xl'></i>"
 bad: "<i style='color:#ef5350' class='fa-solid fa-xmark fa-3x'></i>"
 phone: "<i class='fa-solid fa-mobile-screen fa-xl'></i>"
 laptop: "<i class='fa-solid fa-laptop fa-xl'></i>"
 cli: "<i class='fa-solid fa-terminal fa-xl'></i>"
 laptop_phone: "<i class='fa-solid fa-laptop-mobile fa-xl'></i>" 
 remote: "<i class='fa-solid fa-house fa-xl'></i>"
-thumbsup: "<i style='color:#4caf50' class='fa-solid fa-thumbs-up fa-2xl'></i>"
-thumbsdown: "<i style='color:#ef5350' class='fa-solid fa-thumbs-down fa-2xl'></i>"
+thumbsup: "<i style='color:#1976d2' class='fa-solid fa-thumbs-up fa-2xl'></i>"
+thumbsdown: "<i style='color:#9c27b0' class='fa-solid fa-thumbs-down fa-2xl'></i>"
 unclear: "<i style='color:#ff9800' class='fa-solid fa-question fa-2xl'></i>"
 bitcoin: "<i class='fa-solid fa-bitcoin-sign'></i>"
 --- 
 ## Wallet Compatibility Table 
 
 | Wallet | Version | Device | UX<sup>1</sup> | Bonds<sup>2</sup> | Payout<sup>3</sup> | Comp<sup>4</sup> | Total<sup>5</sup> |
-|---|---|---|---|---|---|---|---|
+|:---|:---|:--:|:--:|:--:|:--:|:--:|:--:|
 |[Blixt](#blixt-androidios-lnd-light-backend-on-device)|[v0.4.1](https://github.com/hsjoberg/blixt-wallet)|{{page.phone}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Electrum](#electrum-desktop)|[4.1.4](https://github.com/spesmilo/electrum)|{{page.laptop}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.soso}}|{{page.unclear}}||
 |[LND](#zeus-mobile-lnd-remote-backend)|[v0.14.2](https://github.com/LightningNetwork/lnd)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
