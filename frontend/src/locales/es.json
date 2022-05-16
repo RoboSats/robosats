@@ -18,8 +18,11 @@
     "Make Order":"Crear orden",
     "Info": "Info",
     "View Book": "Ver libro",
+    "Tutorials and Documentation":"Tutoriales y Documentación",
+    "You are about to visit 'Learn.RoboSats' page. This is a community built site hosting tutorials and documentation to help you learn to use RoboSats and understand how it works.":"Vas a visitar la página 'Learn.RoboSats'. Ha sido construida por la comunidad y tiene tutoriales y documentación que te ayudará a aprender como se usa RoboSats y a entender como funciona.",
+    "Let's go!":"¡Vamos!",
 
-
+    
     "MAKER PAGE - MakerPage.js": "This is the page where users can create new orders",
     "Order":"Orden",
     "Customize":"Personalizar",
