@@ -1171,10 +1171,15 @@ handleRatingRobosatsChange=(e)=>{
           </Grid>
           <Grid item xs={12} align="center">
             <Typography  variant="body2" align="center">
-              {t("Your invoice has expired or more than 3 payment attempts have been made. Muun wallet is not recommended. ")}
+              {t("Your invoice has expired or more than 3 payment attempts have been made.")}
               <Link href="https://github.com/Reckless-Satoshi/robosats/issues/44"> {t("Check the list of compatible wallets")}</Link>
             </Typography>
           </Grid>
+
+          <Grid item xs={12} align="center">
+            {this.compatibleWalletsButton()}
+          </Grid>
+
           <Grid item xs={12} align="center">
             <Typography color="primary" variant="subtitle1">
               <b> {t("Submit an invoice for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}</b>

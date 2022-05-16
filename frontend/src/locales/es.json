@@ -22,7 +22,7 @@
     "You are about to visit 'Learn.RoboSats' page. This is a community built site hosting tutorials and documentation to help you learn to use RoboSats and understand how it works.":"Vas a visitar la página 'Learn.RoboSats'. Ha sido construida por la comunidad y tiene tutoriales y documentación que te ayudará a aprender como se usa RoboSats y a entender como funciona.",
     "Let's go!":"¡Vamos!",
 
-    
+
     "MAKER PAGE - MakerPage.js": "This is the page where users can create new orders",
     "Order":"Orden",
     "Customize":"Personalizar",
@@ -324,7 +324,7 @@
     "RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must be online in order to receive payments.": "RoboSats está intentando pagar tu factura de Lightning. Recuerda que los nodos Lightning deben estar en línea para recibir pagos.",
     "Retrying!": "¡Reintentando!",
     "Lightning Routing Failed": "Fallo en el enrutamiento de Lightning",
-    "Your invoice has expired or more than 3 payment attempts have been made. Muun wallet is not recommended. ": "Tu factura ha expirado o se han hecho más de 3 intentos de pago. La cartera Muun no está recomendada. ",
+    "Your invoice has expired or more than 3 payment attempts have been made.": "Tu factura ha expirado o se han hecho más de 3 intentos de pago.",
     "Check the list of compatible wallets": "Mira la lista de carteras compatibles",
     "RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.": "RoboSats intentará pagar tu factura 3 veces cada 5 minutos. Si sigue fallando, podrás presentar una nueva factura. Comprueba si tienes suficiente liquidez entrante. Recuerda que los nodos de Lightning tienen que estar en línea para poder recibir pagos.",
     "Next attempt in": "Próximo intento en",

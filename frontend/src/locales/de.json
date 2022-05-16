@@ -311,7 +311,7 @@
     "RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must be online in order to receive payments.":"RoboSats versucht deine Lightning-Invoice zu bezahlen. Denk daran, dass deine Lightning-Node erreichbar sein muss, um die Zahlung zu erhalten.",
     "Retrying!":"Erneut versuchen!",
     "Lightning Routing Failed":"Lightning-Weiterleitung fehlgeschlagen",
-    "Your invoice has expired or more than 3 payment attempts have been made. Muun wallet is not recommended. ":"Deine Invoice ist abgelaufen oder mehr als drei Zahlungs-Versuche sind fehlgeschlagen. Muun-Wallet wird nicht empfohlen. ",
+    "Your invoice has expired or more than 3 payment attempts have been made.":"Deine Invoice ist abgelaufen oder mehr als drei Zahlungs-Versuche sind fehlgeschlagen. Muun-Wallet wird nicht empfohlen. ",
     "Check the list of compatible wallets":"Prüfe die Liste mit kompatiblen Wallets",
     "RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.":"RoboSats wird alle 5 Minuten 3 mal versuchen, deine Invoice auszuzahlen. Wenn es weiter fehlschlägt, kannst du eine neue Invoice einfügen. Prüfe deine Inbound-Liquidität. Denk daran, dass deine Lightning-Node erreichbar sein muss, um die Zahlung zu erhalten.Denk daran, dass deine Lightning-Node erreichbar sein muss, um die Zahlung zu erhalten.",
     "Next attempt in":"Nächster Versuch in",

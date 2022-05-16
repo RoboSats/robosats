@@ -40,7 +40,7 @@ export default class App extends Component {
         <ThemeProvider theme={this.state.dark ? this.darkTheme : this.lightTheme}>
           <CssBaseline/>
           <LearnDialog open={this.state.openLearn} onClose={()=> this.setState({openLearn:false})}/>
-          <IconButton sx={{position:'fixed',right:'30px'}} onClick={()=> this.setState({openLearn:true})}><SchoolIcon/></IconButton>
+          <IconButton sx={{position:'fixed',right:'34px'}} onClick={()=> this.setState({openLearn:true})}><SchoolIcon/></IconButton>
           <IconButton sx={{position:'fixed',right:'0px'}} onClick={()=>this.setState({dark:!this.state.dark})}>
             {this.state.dark ? <LightModeIcon/>:<DarkModeIcon/>}
           </IconButton>
