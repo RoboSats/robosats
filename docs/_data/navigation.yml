@@ -14,12 +14,12 @@ docs:
     children:
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-bolt'></i> Lightning Network</span>"
         url: /docs/lightning/
-      - title: "<span>&nbsp;    &thinsp;<img style='width:16px;height:16px' src='/assets/vector/tor.svg'/> TOR Network</span>"
+      - title: "<span>&nbsp;    &thinsp;<img style='width:14px;height:14px' src='/assets/vector/tor.svg'/>TOR Network</span>"
         url: /docs/tor/
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-up-right-from-square'></i> Access</span>"
         url: /docs/access/
         
-  - title: "<i class='fa-solid fa-hand-piece'></i> Best Practices" 
+  - title: "<i class='fa-solid fa-bars-staggered'></i> Best Practices" 
     url: /docs/best-practices/
     children:
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-fingerprint'></i> PGP Encryption</span>"
@@ -31,12 +31,12 @@ docs:
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-circle-nodes'></i> Lightning Channels</span>"
         url: /docs/channels/
 
-  - title: "<i class='fa-solid fa-uniform-martial-arts'></i> Features"
+  - title: "<i class='fa-solid fa-bars-staggered'></i> Features"
     url: /docs/features/
     children:
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-user-ninja'></i> Private</span>"
         url: /docs/privacy/
-      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-receipt'></i> Bonds & Escrow</span>"
+      - title: "<span>&thinsp;    &thinsp;&thinsp;<i class='fa-solid fa-receipt'></i>&thinsp;&thinsp;Bonds & Escrow</span>"
         url: /docs/bonds-escrow/
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-right-arrow-left'></i> Swaps</span>"
         url: /docs/swaps/

@@ -7,7 +7,7 @@ This page is under construction. Learn.RoboSats is a joint effort of the RoboSat
 
 ### <i class="fa-solid fa-seedling"></i> You can complete this page!
 
-**ProTip:** You can directly edit [the content of this page <i class="fa-brands fa-github-alt"></i>]({{page.src}}) and open a [Pull Request <i class="fa-solid fa-code-pull-request"/>](https://github.com/Reckless-Satoshi/robosats/pulls), your changes will show right here.
+**ProTip:** You can directly edit [the content of this page <i class="fa-brands fa-github-alt"></i>](https://github.com/Reckless-Satoshi/robosats/blob/main/docs/{{page.src}}) and open a [Pull Request <i class="fa-solid fa-code-pull-request"/>](https://github.com/Reckless-Satoshi/robosats/pulls), your changes will show right here.
 {: .notice--primary}
 
 If you have already used RoboSats, you are an expert! If you understand how it works behind the scenes, you are a master! Please, consider contributing to the Learn.RoboSats' guides and platform documentation. 
