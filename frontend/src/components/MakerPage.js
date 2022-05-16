@@ -66,8 +66,13 @@ class MakerPage extends Component {
     }
 
     componentDidMount() {
-    this.getLimits()
-  }
+        this.getLimits()
+        // if currency or type have changed in HomePage state, change in MakerPage state too.
+        this.setState({
+            currency: !this.props.currency === 0 ? this.props.currency : this.state.currency,
+            type: !this.props.type === 2 ? this.props.type : this.state.type,
+        })
+    }
 
   getLimits() {
     this.setState({loadingLimits:true})
@@ -94,13 +99,26 @@ class MakerPage extends Component {
   handleTypeChange=(e)=>{
       this.setState({
           type: e.target.value,
-      });
+      })
+      // Share state with HomePage and OrderPage
+      this.props.setAppState({
+        type: e.target.value,
+        buyChecked: e.target.value == 0 ? true: false,
+        sellChecked: e.target.value == 1 ? true: false,
+      })
+      ;
   }
   handleCurrencyChange=(e)=>{
+    var currencyCode = this.getCurrencyCode(e.target.value)
     this.setState({
         currency: e.target.value,
-        currencyCode: this.getCurrencyCode(e.target.value),
+        currencyCode: currencyCode,
     });
+    this.props.setAppState({
+        type: e.target.value,
+        currency: e.target.value,
+        bookCurrencyCode: currencyCode,
+      })
     if(this.state.enableAmountRange){
         this.setState({
             minAmount: parseFloat(Number(this.state.limits[e.target.value]['max_amount']*0.25).toPrecision(2)),
@@ -231,7 +249,7 @@ class MakerPage extends Component {
                 has_range: this.state.enableAmountRange,
                 min_amount: this.state.minAmount,
                 max_amount: this.state.maxAmount,
-                payment_method: this.state.payment_method,
+                payment_method: this.state.payment_method === ""? this.defaultPaymentMethod: this.state.payment_method,
                 is_explicit: this.state.is_explicit,
                 premium: this.state.is_explicit ? null: this.state.premium,
                 satoshis: this.state.is_explicit ? this.state.satoshis: null,
@@ -384,7 +402,7 @@ class MakerPage extends Component {
                     <TextField
                             sx={{width:240}}
                             label={t("Satoshis")}
-                            error={this.state.badSatoshis}
+                            error={this.state.badSatoshis ? true : false}
                             helperText={this.state.badSatoshis}
                             type="number"
                             required={true}
@@ -493,7 +511,7 @@ class MakerPage extends Component {
         const { t } = this.props;
         return (
             <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                <span style={{width: 40}}>{t("From")}</span>
+                <span style={{width: t("From").length*8+2, textAlign:"left"}}>{t("From")}</span>
                 <TextField
                     variant="standard"
                     type="number"
@@ -503,7 +521,7 @@ class MakerPage extends Component {
                     error={this.minAmountError()}
                     sx={{width: this.state.minAmount.toString().length * 9, maxWidth: 40}}
                   />
-                <span style={{width: t("to").length*8, align:"center"}}>{t("to")}</span>
+                <span style={{width: t("to").length*8, textAlign:"center"}}>{t("to")}</span>
                 <TextField
                     variant="standard"
                     size="small"
@@ -513,7 +531,7 @@ class MakerPage extends Component {
                     onChange={this.handleMaxAmountChange}
                     sx={{width: this.state.maxAmount.toString().length * 9, maxWidth: 50}}
                   />
-                <span style={{width: this.state.currencyCode.length*9+4, align:"right"}}>{this.state.currencyCode}</span>
+                <span style={{width: this.state.currencyCode.length*9+3, textAlign:"right"}}>{this.state.currencyCode}</span>
             </div>
             )
 

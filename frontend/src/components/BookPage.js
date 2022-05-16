@@ -49,7 +49,7 @@ class BookPage extends Component {
   handleCurrencyChange=(e)=>{
     var currency = e.target.value;
     this.props.setAppState({
-      bookCurrency: currency,
+      currency: currency,
       bookCurrencyCode: this.getCurrencyCode(currency),
     })
   }
@@ -85,8 +85,8 @@ class BookPage extends Component {
       <div style={{ height: 422, width: '100%' }}>
       <DataGrid
         rows={
-            this.props.bookOrders.filter(order => order.type == this.props.bookType || this.props.bookType == 2)
-            .filter(order => order.currency == this.props.bookCurrency || this.props.bookCurrency == 0)
+            this.props.bookOrders.filter(order => order.type == this.props.type || this.props.type == 2)
+            .filter(order => order.currency == this.props.currency || this.props.currency == 0)
             .map((order) =>
             ({id: order.id,
               avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
@@ -186,8 +186,8 @@ class BookPage extends Component {
       <DataGrid
         loading={this.props.bookLoading}
         rows={
-          this.props.bookOrders.filter(order => order.type == this.props.bookType || this.props.bookType == 2)
-          .filter(order => order.currency == this.props.bookCurrency || this.props.bookCurrency == 0)
+          this.props.bookOrders.filter(order => order.type == this.props.type || this.props.type == 2)
+          .filter(order => order.currency == this.props.currency || this.props.currency == 0)
           .map((order) =>
             ({id: order.id,
               avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
@@ -294,7 +294,7 @@ class BookPage extends Component {
     } else if (sellChecked) {
       var type = 0
     }
-    this.props.setAppState({bookType: type})
+    this.props.setAppState({type: type})
   }
 
   handleClickBuy=(e)=>{
@@ -316,7 +316,7 @@ class BookPage extends Component {
       <Grid item xs={12} align="center">
         <Grid item xs={12} align="center">
           <Typography component="h5" variant="h5">
-            {this.props.bookType == 0 ?
+            {this.props.type == 0 ?
               t("No orders found to sell BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode})
             :
               t("No orders found to buy BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode})
@@ -328,7 +328,7 @@ class BookPage extends Component {
           <Button size="large" variant="contained" color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
         </Grid>
           <Typography color="primary" variant="body1">
-            {t("Be the first one to create an order")}
+            <b>{t("Be the first one to create an order")}</b>
             <br/>
             <br/>
           </Typography>
@@ -389,14 +389,14 @@ class BookPage extends Component {
           <Grid item xs={6} align="left">
             <FormControl align="center">
               <FormHelperText align="center" sx={{textAlign:"center", position:"relative", left:"-5px"}}>
-                  {this.props.bookType == 0 ? t("and receive") : (this.props.bookType == 1 ? t("and pay with") : t("and use") )}
+                  {this.props.type == 0 ? t("and receive") : (this.props.type == 1 ? t("and pay with") : t("and use") )}
               </FormHelperText>
               <Select
                   //autoWidth={true}
                   sx={{width:120}}
                   label={t("Select Payment Currency")}
                   required={true}
-                  value={this.props.bookCurrency}
+                  value={this.props.currency}
                   inputProps={{
                       style: {textAlign:"center"}
                   }}
@@ -412,10 +412,10 @@ class BookPage extends Component {
         { this.props.bookNotFound ? "" :
           <Grid item xs={12} align="center">
             <Typography component="h5" variant="h5">
-               {this.props.bookType == 0 ?
+               {this.props.type == 0 ?
                 t("You are SELLING BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode})
                :
-                (this.props.bookType == 1 ?
+                (this.props.type == 1 ?
                   t("You are BUYING BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode})
                 :
                   t("You are looking at all")
@@ -426,7 +426,7 @@ class BookPage extends Component {
           }
 
         { this.props.bookNotFound ?
-          <this.NoOrdersFound/>
+          this.NoOrdersFound()
           :
           <Grid item xs={12} align="center">
             {/* Desktop Book */}
@@ -445,9 +445,13 @@ class BookPage extends Component {
            </Grid>
           }
           <Grid item xs={12} align="center">
-              <Button color="secondary" variant="contained" to="/" component={Link}>
-                  {t("Back")}
-              </Button>
+            { !this.props.bookNotFound ?
+            <Button variant="contained" color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
+            : null
+            }
+            <Button color="secondary" variant="contained" to="/" component={Link}>
+                {t("Back")}
+            </Button>
           </Grid>
         </Grid>
     );
