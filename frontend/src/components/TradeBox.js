@@ -273,10 +273,15 @@ class TradeBox extends Component {
         {/* Make confirmation sound for HTLC received. */}
         {this.Sound("locked-invoice")}
         <Grid item xs={12} align="center">
-          <Typography color="green" variant="subtitle1">
+          <Typography color="orange" variant="subtitle1">
             <b>
               {t("Lock {{amountSats}} Sats as collateral", {amountSats:pn(this.props.data.escrow_satoshis)})}
             </b>{" " + this.stepXofY()}
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Typography variant="body2">
+            {t("You risk losing your bond if you do not lock the collateral. Total time to available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.", this.depositHoursMinutes() )}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
