@@ -5,7 +5,7 @@ header:
   overlay_color: "#5e616c"
   overlay_image: /assets/images/misc/learn-robosats-home.png
   cta_label: "<i class='fa-solid fa-lines-leaning'></i> Learn How to Use Now"
-  cta_url: "/docs/how-to-use/"
+  cta_url: "/watch/en/"
   caption:
 excerpt: 'A simple and private way to exchange bitcoin for national currencies.<br /> <i class="fa-solid fa-bolt"></i> <small><a href="https://robosats.com">Use RoboSats with Tor Browser</a></small> <br/> <i class="fa-brands fa-github-alt"></i> <small><a href="https://github.com/reckless-satoshi/robosats">GitHub Project Page</a></small>'
 feature_row:

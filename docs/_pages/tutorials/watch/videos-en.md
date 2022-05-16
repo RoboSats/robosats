@@ -11,3 +11,6 @@ sidebar:
 
 ### BTCSessions: Buy and Sell BTC with no ID
 <iframe width="560" height="315" src="https://www.youtube.com/embed/XW_wzRz_BDI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
+### [How to Use Guide](/read/en/)

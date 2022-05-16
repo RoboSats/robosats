@@ -4,6 +4,7 @@ title: How to Use (v0.1.0)
 permalink: /read/en/
 toc: true
 toc_sticky: true
+excerpt: "Guide: How to use RoboSats. A complete walkthrough RoboSats P2P Exchange"
 sidebar:
   title: "<i class='fa-solid fa-chalkboard-user'></i> How to use"
   nav: tutorial
@@ -90,7 +91,7 @@ You can also tap on any order to see the full order page:
 
 Every order has an expiration counter. By default, in RoboSats v0.1.0 new orders will stay public in the book for 6 hours.
 
-### Walktrough-1: Taking an order as a buyer
+### Walkthrough-1: Taking an order as a buyer
 
 When you are decided for an order to take simply tap the "Take Order" button. You will see the contract box. Follow the contract box indications until you complete the trade! :) 
 
@@ -136,7 +137,7 @@ As soon as you have sent the fiat, you should tap on "Confirm fiat sent" button.
 
 Rating the platform and leaving tips for improvement in our Telegram group or Github Issues is super appreciated!
 
-### Walktrough-2: Making an order as a seller
+### Walkthrough-2: Making an order as a seller
 
 It might happen that there are no active orders for the positioning and currency you want. In this case, there is no orders to SELL bitcoin for GBP.
  
