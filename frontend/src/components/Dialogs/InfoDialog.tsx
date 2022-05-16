@@ -45,7 +45,7 @@ const InfoDialog = ({
               </p>
             </Typography>
           </Grid>
-          <Grid item xs={4} align="center">
+          <Grid item xs={4}>
             <Image className='newAvatar'
               disableError={true}
               cover={true}

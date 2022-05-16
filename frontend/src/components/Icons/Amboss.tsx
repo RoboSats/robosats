@@ -10,7 +10,7 @@ export default function AmbossIcon(props) {
               <stop  offset="0" style={{stopColor:'#925bc9'}}/>
               <stop  offset="1" style={{stopColor:'#ff59ac'}}/>
             </linearGradient>
-            <path class="amboss" d="M55.3,84.9V61.3h-15v23.6H0V0h95.7v84.9H55.3z M55.3,28.1h-15v17.1h15V28.1z"/>
+            <path className={"amboss"} d="M55.3,84.9V61.3h-15v23.6H0V0h95.7v84.9H55.3z M55.3,28.1h-15v17.1h15V28.1z"/>
           </g>
         </g>
       </SvgIcon>

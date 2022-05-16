@@ -18,8 +18,8 @@ import NumbersIcon from '@mui/icons-material/Numbers';
 import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import ArticleIcon from '@mui/icons-material/Article';
-import SendReceiveIcon from "./icons/SendReceiveIcon";
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import { SendReceiveIcon } from "./Icons";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";

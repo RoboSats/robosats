@@ -25,8 +25,8 @@ import WebIcon from '@mui/icons-material/Web';
 import BookIcon from '@mui/icons-material/Book';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import AmbossIcon from "./icons/AmbossIcon";
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import { AmbossIcon , BitcoinSignIcon} from "./Icons";
 
 import { CommunityDialog } from './Dialogs';
 
@@ -148,13 +148,23 @@ class BottomBar extends Component {
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><EqualizerIcon/></ListItemIcon>
-                    <ListItemText primary={pn(this.state.last_day_volume)+" BTC"} secondary={t("24h contracted volume")}/>
+                    <ListItemText secondary={t("24h contracted volume")}>
+                        <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+                            {pn(this.state.last_day_volume)}
+                            <BitcoinSignIcon sx={{width:14,height:14}} color={"text.secondary"}/>
+                        </div>
+                    </ListItemText>
                 </ListItem>
 
                 <Divider/>
                 <ListItem>
                     <ListItemIcon><EqualizerIcon/></ListItemIcon>
-                    <ListItemText primary={pn(this.state.lifetime_volume)+" BTC"} secondary={t("Lifetime contracted volume")}/>
+                    <ListItemText secondary={t("Lifetime contracted volume")}>
+                        <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+                            {pn(this.state.lifetime_volume)}
+                            <BitcoinSignIcon sx={{width:14,height:14}} color={"text.secondary"}/>
+                        </div>
+                    </ListItemText>
                 </ListItem>
 
                 <Divider/>

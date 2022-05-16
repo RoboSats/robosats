@@ -19,7 +19,7 @@ import ContentCopy from "@mui/icons-material/ContentCopy";
 import PauseCircleIcon from '@mui/icons-material/PauseCircle';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import NewTabIcon from "./icons/NewTabIcon";
+import { NewTabIcon } from "./Icons";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";

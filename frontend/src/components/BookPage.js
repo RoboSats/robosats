@@ -13,11 +13,7 @@ import PaymentText from './PaymentText'
 
 // Icons
 import RefreshIcon from '@mui/icons-material/Refresh';
-import SendReceiveIcon from "./icons/SendReceiveIcon";
-import BuySatsIcon from "./icons/BuySatsIcon";
-import BuySatsCheckedIcon from "./icons/BuySatsCheckedIcon";
-import SellSatsIcon from "./icons/SellSatsIcon";
-import SellSatsCheckedIcon from "./icons/SellSatsCheckedIcon";
+import { SendReceiveIcon, BuySatsCheckedIcon, BuySatsIcon, SellSatsCheckedIcon, SellSatsIcon} from "./Icons";
 
 class BookPage extends Component {
   constructor(props) {

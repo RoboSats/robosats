@@ -15,10 +15,7 @@ import currencyDict from '../../static/assets/currencies.json';
 import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import BuySatsIcon from "./icons/BuySatsIcon";
-import BuySatsCheckedIcon from "./icons/BuySatsCheckedIcon";
-import SellSatsIcon from "./icons/SellSatsIcon";
-import SellSatsCheckedIcon from "./icons/SellSatsCheckedIcon";
+import { BuySatsCheckedIcon, BuySatsIcon, SellSatsCheckedIcon, SellSatsIcon} from "./Icons";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";

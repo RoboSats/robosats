@@ -8,8 +8,8 @@ import { InfoDialog } from './Dialogs'
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CasinoIcon from '@mui/icons-material/Casino';
 import ContentCopy from "@mui/icons-material/ContentCopy";
-import RoboSatsNoTextIcon from "./icons/RoboSatsNoTextIcon"
 import BoltIcon from '@mui/icons-material/Bolt';
+import { RoboSatsNoTextIcon } from "./Icons";
 
 import { getCookie, writeCookie } from "../utils/cookies";
 
