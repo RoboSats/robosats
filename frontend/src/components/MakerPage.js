@@ -248,7 +248,7 @@ class MakerPage extends Component {
                 max_amount: this.state.maxAmount,
                 payment_method: this.state.payment_method === ""? this.defaultPaymentMethod: this.state.payment_method,
                 is_explicit: this.state.is_explicit,
-                premium: this.state.is_explicit ? null: this.state.premium,
+                premium: this.state.is_explicit ? null: (this.state.premium==""? 0:this.state.premium),
                 satoshis: this.state.is_explicit ? this.state.satoshis: null,
                 public_duration: this.state.publicDuration,
                 escrow_duration: this.state.escrowDuration,
