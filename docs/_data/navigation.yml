@@ -62,3 +62,22 @@ tutorial:
     - title: "<span>&nbsp;    &thinsp;<img style='width:22px;height:13px' src='/assets/vector/german.svg'/> Deutsch</span>"
       url: "/read/de/"
       
+contribute:
+  - title: "<i class='fa-solid fa-handshake-angle'></i> Contribute"
+    url: /contribute/
+    children:
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-code'></i> Code</span>"
+        url: /contribute/code/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-language'></i> Translations</span>"
+        url: /contribute/languages/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-up-right-from-square'></i> LN liquidity</span>"
+        url: /contribute/liquidity/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-up-right-from-square'></i> Guides</span>"
+        url: /contribute/guides/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-up-right-from-square'></i> Art</span>"
+        url: /contribute/art/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-up-right-from-square'></i> Outreach</span>"
+        url: /contribute/outreach/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-up-right-from-square'></i> Donate</span>"
+        url: /contribute/funding/
+

@@ -27,12 +27,12 @@ const LearnDialog = ({
       onClose={onClose}
       >
       <DialogTitle>
-        {t("Tutorials and Documentation")}
+        {t("Learn RoboSats")}
       </DialogTitle>
 
       <DialogContent>
         <DialogContentText>
-          {t("You are about to visit 'Learn.RoboSats' page. This is a community built site hosting tutorials and documentation to help you learn to use RoboSats and understand how it works.")}
+          {t("You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.")}
         </DialogContentText>
       </DialogContent>
 

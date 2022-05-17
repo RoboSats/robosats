@@ -27,9 +27,11 @@ Take it for granted: if you use that link, you are being spied on. However, most
 
 In order to more easily remember how to access, we have set up robosats.com . If you are using Tor Browser, it will directly take you to the Onion Site. Otherwise, it will take you to the unsafe site.
 
-> [robosats.com](https://robosats.com)
+> [<span style="font-size:larger;">robosats.com</span>](https://robosats.com)
 
-#### Testnet
+
+## Others
+### Testnet
 You can practice and test all of the functionalities in RoboSats without of losing funds by using [Testnet Bitcoin](https://en.bitcoin.it/wiki/Testnet). All you need is a Testnet Lightning wallet and access the testnet platform
 
 > [<b>robotest</b>agw3dcxmd66r4rgksb4nmmr43fh7<br/>7bzn2ia2eucduyeafnyd.onion](http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion/)
@@ -38,7 +40,7 @@ Or unsafely on the testnet clearnet bridge.
 
 > [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com)
 
-#### Clearnet Mirrors
+### Clearnet Mirrors
 There are several tor2web services that serve as mirrors in case one of them is unavailable
 
 > [unsafe.robosats.com](https://unsafe.robosats.com/) <br/>
