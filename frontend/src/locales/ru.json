@@ -128,7 +128,7 @@
     "Your earned rewards":"Your earned rewards",
     "Claim":"Claim",
     "Invoice for {{amountSats}} Sats":"Invoice for {{amountSats}} Sats",
-    "Submit":"Отправить,
+    "Submit":"Отправить",
     "There it goes, thank you!🥇":"There it goes, thank you!🥇",
     "You have an active order":"У вас есть активный заказ",
     "You can claim satoshis!":"You can claim satoshis!",
@@ -153,7 +153,7 @@
 
     "ORDER PAGE - OrderPage.js": "Order details page",
     "Order Box":"Order Box",
-    "Contract":"Contract",
+    "Contract":"Контракт",
     "Active":"Active",
     "Seen recently":"Seen recently",
     "Inactive":"Inactive",
