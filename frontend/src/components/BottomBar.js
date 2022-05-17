@@ -28,7 +28,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { AmbossIcon , BitcoinSignIcon} from "./Icons";
 
-import { CommunityDialog } from './Dialogs';
+import { CommunityDialog, ExchangeSummaryDialog } from './Dialogs';
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -73,7 +73,7 @@ class BottomBar extends Component {
         this.setState(null)
         fetch('/api/info/')
           .then((response) => response.json())
-          .then((data) => this.setState(data) 
+          .then((data) => this.setState(data)
           & this.setState({active_order_id: data.active_order_id ? data.active_order_id : null,
             last_order_id: data.last_order_id ? data.last_order_id : null})
           & this.props.setAppState({nickname:data.nickname, loading:false}));
@@ -419,14 +419,13 @@ bottomBarDesktop =()=>{
         <Paper elevation={6} style={{height:40}}>
                 {this.StatsDialog()}
                 {this.dialogProfile()}
-                {this.exchangeSummaryDialog()}
                 <Grid container>
 
                     <Grid item xs={1.9}>
                         <div style={{display: this.props.avatarLoaded ? '':'none'}}>
                         <ListItemButton onClick={this.handleClickOpenProfile} >
-                            <Tooltip 
-                                open={hasRewards || hasOrder} 
+                            <Tooltip
+                                open={hasRewards || hasOrder}
                                 title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
                                     (hasOrder ? t("You have an active order"):"")}
                                 >
@@ -576,108 +575,6 @@ bottomBarDesktop =()=>{
         this.setState({openExchangeSummary: false});
     };
 
-    exchangeSummaryDialog =() =>{
-        const { t } = this.props;
-        return(
-        <Dialog
-        open={this.state.openExchangeSummary}
-        onClose={this.handleClickCloseExchangeSummary}
-        aria-labelledby="exchange-summary-title"
-        aria-describedby="exchange-summary-description"
-        >
-        <DialogContent>
-            <Typography component="h5" variant="h5">{t("Exchange Summary")}</Typography>
-            <List dense>
-                <ListItem >
-                    <ListItemIcon size="small">
-                        <InventoryIcon/>
-                    </ListItemIcon>
-                    <ListItemText
-                        primaryTypographyProps={{fontSize: '14px'}}
-                        secondaryTypographyProps={{fontSize: '12px'}}
-                        primary={this.state.num_public_buy_orders}
-                        secondary={t("Public buy orders")} />
-                </ListItem>
-                <Divider/>
-
-                <ListItem >
-                    <ListItemIcon size="small">
-                        <SellIcon/>
-                    </ListItemIcon>
-                    <ListItemText
-                        primaryTypographyProps={{fontSize: '14px'}}
-                        secondaryTypographyProps={{fontSize: '12px'}}
-                        primary={this.state.num_public_sell_orders}
-                        secondary={t("Public sell orders")} />
-                </ListItem>
-                <Divider/>
-
-                <ListItem >
-                    <ListItemIcon size="small">
-                        <BookIcon/>
-                    </ListItemIcon>
-                    <ListItemText
-                        primaryTypographyProps={{fontSize: '14px'}}
-                        secondaryTypographyProps={{fontSize: '12px'}}
-                        primary={pn(this.state.book_liquidity)+" Sats"}
-                        secondary={t("Book liquidity")}/>
-                </ListItem>
-                <Divider/>
-
-                <ListItem >
-                    <ListItemIcon size="small">
-                        <SmartToyIcon/>
-                    </ListItemIcon>
-                    <ListItemText
-                        primaryTypographyProps={{fontSize: '14px'}}
-                        secondaryTypographyProps={{fontSize: '12px'}}
-                        primary={this.state.active_robots_today}
-                        secondary={t("Today active robots")} />
-                </ListItem>
-                <Divider/>
-
-                <ListItem >
-                    <ListItemIcon size="small">
-                        <PriceChangeIcon/>
-                    </ListItemIcon>
-                    <ListItemText
-                        primaryTypographyProps={{fontSize: '14px'}}
-                        secondaryTypographyProps={{fontSize: '12px'}}
-                        primary={this.state.last_day_nonkyc_btc_premium+"%"}
-                        secondary={t("24h non-KYC bitcoin premium")} />
-                </ListItem>
-                <Divider/>
-
-                <ListItem >
-                    <ListItemIcon size="small">
-                        <PercentIcon/>
-                    </ListItemIcon>
-                    <Grid container >
-                        <Grid item xs={6}>
-                            <ListItemText
-                                primaryTypographyProps={{fontSize: '14px'}}
-                                secondaryTypographyProps={{fontSize: '12px'}}
-                                secondary={t("Maker fee")}>
-                                {(this.state.maker_fee*100).toFixed(3)}%
-                            </ListItemText>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <ListItemText
-                                primaryTypographyProps={{fontSize: '14px'}}
-                                secondaryTypographyProps={{fontSize: '12px'}}
-                                secondary={t("Taker fee")}>
-                                {(this.state.taker_fee*100).toFixed(3)}%
-                            </ListItemText>
-                        </Grid>
-                    </Grid>
-                </ListItem>
-                </List>
-
-            </DialogContent>
-        </Dialog>
-    )
-    }
-
 bottomBarPhone =()=>{
     const { t } = this.props;
     var hasRewards = this.state.earned_rewards > 0 ? true: false;
@@ -685,13 +582,12 @@ bottomBarPhone =()=>{
     return(
         <Paper elevation={6} style={{height:40}}>
                 {this.StatsDialog()}
-                {this.exchangeSummaryDialog()}
                 {this.dialogProfile()}
                 <Grid container>
 
                     <Grid item xs={1.6}>
                     <div style={{display: this.props.avatarLoaded ? '':'none'}}>
-                    <Tooltip open={hasRewards || hasOrder} 
+                    <Tooltip open={hasRewards || hasOrder}
                             title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
                                 (hasOrder ? t("You have an active order"):"")}>
                         <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, bottom: 17, right: 8}} >
@@ -787,6 +683,19 @@ bottomBarPhone =()=>{
                     isOpen={this.state.openCommuniy}
                     handleClickCloseCommunity={this.handleClickCloseCommunity}
                 />
+
+                <ExchangeSummaryDialog
+                    isOpen={this.state.openExchangeSummary}
+                    handleClickCloseExchangeSummary={this.handleClickCloseExchangeSummary}
+                    numPublicBuyOrders={this.state.num_public_buy_orders}
+                    numPublicSellOrders={this.state.num_public_sell_orders}
+                    bookLiquidity={this.state.book_liquidity}
+                    activeRobotsToday={this.state.active_robots_today}
+                    lastDayNonkycBtcPremium={this.state.last_day_nonkyc_btc_premium}
+                    makerFee={this.state.maker_fee}
+                    takerFee={this.state.taker_fee}
+                />
+
                 <MediaQuery minWidth={1200}>
                     {this.bottomBarDesktop()}
                 </MediaQuery>
