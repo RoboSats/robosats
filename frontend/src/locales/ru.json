@@ -2,7 +2,7 @@
     "UNSAFE ALERT - UnsafeAlert.js": "Alert that shows on top when browsing from the unsafe clearnet sites",
     "You are not using RoboSats privately": "Вы не используете RoboSats приватно",
     "desktop_unsafe_alert": "Некоторые функции отключены для вышей безопасности (чат) и без них у вас не будет возможности завершить сделку. Чтобы защитить вашу приватность и полностью включить RoboSats, используйте <1>Tor Browser</1> и посетите <3>Onion</3> сайт.",
-    "phone_unsafe_alert": "У ыас нк будеь возможности завершить сделку. Используйте <1>Tor Browser</1> и посетите <3>Onion</3> сайт.",
+    "phone_unsafe_alert": "У вас не будет возможности завершить сделку. Используйте <1>Tor Browser</1> и посетите <3>Onion</3> сайт.",
     "Hide":"Скрыть",
 
 
