@@ -32,9 +32,9 @@ docs:
   - title: "<i class='fa-solid fa-lightbulb'></i> Understand"
     url: /docs/understand/
     children:
-      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-timeline'></i> Trade Pipeline</span>"
+      - title: "<span>&nbsp;  &thinsp;<i class='fa-solid fa-timeline'></i>&thinsp;Trade Pipeline</span>"
         url: /docs/trade-pipeline/
-      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-percent'></i> Premium</span>"
+      - title: "<span>&nbsp; &thinsp;&thinsp;<i class='fa-solid fa-percent'></i> Premium</span>"
         url: /docs/premium/
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-ticket-simple'></i> Bonds</span>"
         url: /docs/bonds/

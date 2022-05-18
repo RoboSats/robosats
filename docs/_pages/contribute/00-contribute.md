@@ -8,7 +8,7 @@ sidebar:
 src: "_pages/contribute/00-contribute.md"
 --- 
 
-You can help RoboSats get better:
+RoboSats is a fully community driven project. You can help RoboSats get better in many different ways.
 
 1. [Development](/contribute/code/)
 2. [Translations](/contribute/languages/)
