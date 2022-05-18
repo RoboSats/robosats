@@ -22,13 +22,16 @@ import PasswordIcon from '@mui/icons-material/Password';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import DnsIcon from '@mui/icons-material/Dns';
 import WebIcon from '@mui/icons-material/Web';
-import BookIcon from '@mui/icons-material/Book';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { AmbossIcon , BitcoinSignIcon} from "./Icons";
 
-import { CommunityDialog, ExchangeSummaryDialog } from './Dialogs';
+import {
+    CommunityDialog,
+    ExchangeSummaryDialog,
+    ProfileDialog,
+} from './Dialogs';
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -201,7 +204,7 @@ class BottomBar extends Component {
         this.setState({openProfile: false});
     };
 
-    handleSubmitInvoiceClicked=()=>{
+    handleSubmitInvoiceClicked=(rewardInvoice)=>{
         this.setState({
             badInvoice:false,
             showRewardsSpinner: true,
@@ -211,7 +214,7 @@ class BottomBar extends Component {
             method: 'POST',
             headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
             body: JSON.stringify({
-              'invoice': this.state.rewardInvoice,
+              'invoice': rewardInvoice,
             }),
         };
         fetch('/api/reward/', requestOptions)
@@ -230,186 +233,6 @@ class BottomBar extends Component {
         return url.split('/')[2]
       }
 
-    dialogProfile =() =>{
-        const { t } = this.props;
-        return(
-        <Dialog
-        open={this.state.openProfile}
-        onClose={this.handleClickCloseProfile}
-        aria-labelledby="profile-title"
-        aria-describedby="profile-description"
-        >
-            <DialogContent>
-            <Typography component="h5" variant="h5">{t("Your Profile")}</Typography>
-            <List>
-                <Divider/>
-                <ListItem className="profileNickname">
-                    <ListItemText secondary={t("Your robot")}>
-                    <Typography component="h6" variant="h6">
-                    {this.props.nickname ?
-                    <div style={{position:'relative',left:'-7px'}}>
-                    <div style={{display:'flex', alignItems:'center', justifyContent:'left', flexWrap:'wrap', width:300}}>
-                        <BoltIcon sx={{ color: "#fcba03", height: '28px',width: '24px'}}/><a>{this.props.nickname}</a><BoltIcon sx={{ color: "#fcba03", height: '28px',width: '24px'}}/>
-                    </div>
-                    </div>
-                    : ""}
-                    </Typography>
-                    </ListItemText>
-                    <ListItemAvatar>
-                    <Avatar className='profileAvatar'
-                        sx={{ width: 65, height:65 }}
-                        alt={this.props.nickname}
-                        src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null}
-                        />
-                    </ListItemAvatar>
-                </ListItem>
-
-                <Divider/>
-
-                {this.state.active_order_id ?
-                <ListItemButton onClick={this.handleClickCloseProfile} to={'/order/'+this.state.active_order_id} component={LinkRouter}>
-                    <ListItemIcon>
-                        <Badge badgeContent="" color="primary">
-                            <NumbersIcon color="primary"/>
-                        </Badge>
-                    </ListItemIcon>
-                    <ListItemText primary={t("One active order #{{orderID}}",{orderID: this.state.active_order_id})} secondary={t("Your current order")}/>
-                </ListItemButton>
-                :
-
-                this.state.last_order_id ?
-                    <ListItemButton onClick={this.handleClickCloseProfile} to={'/order/'+this.state.last_order_id} component={LinkRouter}>
-                        <ListItemIcon>
-                            <NumbersIcon color="primary"/>
-                        </ListItemIcon>
-                    <ListItemText primary={t("Your last order #{{orderID}}",{orderID: this.state.last_order_id})} secondary={t("Inactive order")}/>
-                    </ListItemButton>
-                    :
-                    <ListItem>
-                        <ListItemIcon><NumbersIcon/></ListItemIcon>
-                        <ListItemText primary={t("No active orders")} secondary={t("You do not have previous orders")}/>
-                    </ListItem>
-
-                }
-
-                <ListItem>
-                    <ListItemIcon>
-                        <PasswordIcon/>
-                    </ListItemIcon>
-                    <ListItemText secondary={t("Your token (will not remain here)")}>
-                    {getCookie("robot_token") ?
-                    <TextField
-                        disabled
-                        sx={{width:"100%", maxWidth:"450px"}}
-                        label={t("Back it up!")}
-                        value={getCookie("robot_token") }
-                        variant='filled'
-                        size='small'
-                        InputProps={{
-                            endAdornment:
-                            <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                                <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
-                                    <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
-                                </IconButton>
-                            </Tooltip>,
-                            }}
-                        />
-                    :
-                    t("Cannot remember")}
-                </ListItemText>
-                </ListItem>
-
-                <Divider/>
-
-                <Grid item align="center">
-                    <FormControlLabel labelPlacement="start"control={
-                        <Switch
-                        checked={this.state.showRewards}
-                        onChange={()=> this.setState({showRewards: !this.state.showRewards})}/>}
-                        label={t("Rewards and compensations")}
-                        />
-                </Grid>
-
-                <div style={{ display: this.state.showRewards ? '':'none'}}>
-                    <ListItem>
-                        <ListItemIcon>
-                            <PersonAddAltIcon/>
-                        </ListItemIcon>
-                        <ListItemText secondary={t("Share to earn 100 Sats per trade")}>
-                        <TextField
-                            label={t("Your referral link")}
-                            value={this.getHost()+'/ref/'+this.state.referral_code}
-                            size='small'
-                            InputProps={{
-                                endAdornment:
-                                <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                                    <IconButton onClick= {()=>navigator.clipboard.writeText('http://'+this.getHost()+'/ref/'+this.state.referral_code)}>
-                                        <ContentCopy />
-                                    </IconButton>
-                                </Tooltip>,
-                                }}
-                            />
-                    </ListItemText>
-                    </ListItem>
-
-                    <ListItem>
-                        <ListItemIcon>
-                            <EmojiEventsIcon/>
-                        </ListItemIcon>
-                        {!this.state.openClaimRewards ?
-                        <ListItemText secondary={t("Your earned rewards")}>
-                            <Grid container>
-                                <Grid item xs={9}>
-                                    <Typography>{this.state.earned_rewards+" Sats"}</Typography>
-                                </Grid>
-                                <Grid item xs={3}>
-                                    <Button disabled={this.state.earned_rewards==0? true : false} onClick={() => this.setState({openClaimRewards:true})} variant="contained" size="small">{t("Claim")}</Button>
-                                </Grid>
-                            </Grid>
-                        </ListItemText>
-                        :
-                        <form style={{maxWidth: 270}}>
-                            <Grid alignItems="stretch" style={{ display: "flex"}} align="center">
-                                <Grid item alignItems="stretch" style={{ display: "flex" }} align="center">
-                                <TextField
-                                    error={this.state.badInvoice}
-                                    helperText={this.state.badInvoice ? this.state.badInvoice : "" }
-                                    label={t("Invoice for {{amountSats}} Sats", {amountSats: this.state.earned_rewards})}
-                                    size="small"
-                                    value={this.state.rewardInvoice}
-                                    onChange={e => {
-                                    this.setState({ rewardInvoice: e.target.value });
-                                    }}
-                                />
-                                </Grid>
-                                <Grid item alignItems="stretch" style={{ display: "flex" }}>
-                                    <Button sx={{maxHeight:38}} onClick={this.handleSubmitInvoiceClicked} variant="contained" color="primary" size="small">{t("Submit")}</Button>
-                                </Grid>
-                            </Grid>
-                        </form>
-                        }
-                    </ListItem>
-
-                    {this.state.showRewardsSpinner?
-                    <div style={{display: 'flex', justifyContent: 'center'}}>
-                        <CircularProgress/>
-                    </div>
-                    :""}
-
-                    {this.state.withdrawn?
-                    <div style={{display: 'flex', justifyContent: 'center'}}>
-                        <Typography color="primary" variant="body2"><b>{t("There it goes, thank you!🥇")}</b></Typography>
-                    </div>
-                    :""}
-
-                </div>
-            </List>
-            </DialogContent>
-
-        </Dialog>
-    )
-    }
-
 bottomBarDesktop =()=>{
     const { t } = this.props;
     var hasRewards = this.state.earned_rewards > 0 ? true: false;
@@ -418,7 +241,6 @@ bottomBarDesktop =()=>{
     return(
         <Paper elevation={6} style={{height:40}}>
                 {this.StatsDialog()}
-                {this.dialogProfile()}
                 <Grid container>
 
                     <Grid item xs={1.9}>
@@ -582,7 +404,6 @@ bottomBarPhone =()=>{
     return(
         <Paper elevation={6} style={{height:40}}>
                 {this.StatsDialog()}
-                {this.dialogProfile()}
                 <Grid container>
 
                     <Grid item xs={1.6}>
@@ -694,6 +515,22 @@ bottomBarPhone =()=>{
                     lastDayNonkycBtcPremium={this.state.last_day_nonkyc_btc_premium}
                     makerFee={this.state.maker_fee}
                     takerFee={this.state.taker_fee}
+                />
+
+                <ProfileDialog
+                    isOpen={this.state.openProfile}
+                    handleClickCloseProfile={this.handleClickCloseProfile}
+                    nickname={this.props.nickname}
+                    activeOrderId={this.state.active_order_id}
+                    lastOrderId={this.state.last_order_id}
+                    referralCode={this.state.referral_code}
+                    handleSubmitInvoiceClicked={this.handleSubmitInvoiceClicked}
+                    host={this.getHost()}
+                    showRewardsSpinner={this.state.showRewardsSpinner}
+                    withdrawn={this.state.withdrawn}
+                    badInvoice={this.state.badInvoice}
+                    earnedRewards={this.state.earned_rewards}
+                    setAppState={this.props.setAppState}
                 />
 
                 <MediaQuery minWidth={1200}>
