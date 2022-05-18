@@ -12,21 +12,21 @@ feature_row:
   - image_path: /assets/images/misc/feature-fast.png
     alt: "fast"
     title: "Lightning Fast"
-    excerpt: "Exchanging P2P has never been faster!<br/> LN Hodl invoices serve as bonds & escrows for high assurance and speed. A trade can happen faster than then next block is mined!"
-    url: "/docs/lightning-features/"
+    excerpt: "Exchanging P2P has never been faster!<br/> LN Hodl invoices serve as bonds & escrows for high assurance and speed. From start to finish before the next block is mined!"
+    url: "/docs/fast/"
     btn_class: "btn--primary"
     btn_label: "Learn more"
   - image_path: /assets/images/misc/feature-private.png
     alt: "private"
     title: "Absolutely Private"
-    excerpt: "Best privacy practice by default.<br/> Simple and KYC-free. You will generate a random Robot avatar for a single use. The exchange is Tor-only.<br/>"
-    url: "/docs/privacy-features/"
+    excerpt: "Best privacy practices by default.<br/> Simple and KYC-free. You will generate a random Robot avatar for a single use. The exchange is Tor-only.<br/>"
+    url: "/docs/private/"
     btn_class: "btn--primary"
     btn_label: "Learn more"
   - image_path: /assets/images/misc/feature-open-source.png
     alt: "FLOSS"
     title: "Open Source"
-    excerpt: 'RoboSats is fully open source and will always be. Built by Robots just like you!{::nomarkdown}<p style="margin-top: -5px;margin-bottom: 0px"><iframe style="display: inline-block;" src="https://ghbtns.com/github-btn.html?user=reckless-satoshi&repo=robosats&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px"></iframe><iframe style="display: inline-block;" src="https://ghbtns.com/github-btn.html?user=reckless-satoshi&repo=robosats&type=fork&count=true&size=large" frameborder="0" scrolling="0" width="158px" height="30px"></iframe></p>{:/nomarkdown}'
+    excerpt: 'RoboSats is fully open source and will always be. Built by Robots just like you!{::nomarkdown}<div style="content-align:center"><p style="margin-top: -5px;margin-bottom: 0px"><iframe style="display: inline-block;" src="https://ghbtns.com/github-btn.html?user=reckless-satoshi&repo=robosats&type=star&count=true&size=large" frameborder="0" scrolling="0" width="150px" height="30px"></iframe><iframe style="display: inline-block;" src="https://ghbtns.com/github-btn.html?user=reckless-satoshi&repo=robosats&type=fork&count=true&size=large" frameborder="0" scrolling="0" width="150px" height="30px"></iframe></p></div>{:/nomarkdown}'
     url: "https://github.com/Reckless-Satoshi/robosats/blob/main/LICENSE"
     btn_class: "btn--primary"
     btn_label: "See License" 

@@ -7,7 +7,9 @@ toc_sticky: true
 sidebar:
   title: "<i class='fa-solid fa-fingerprint'></i> Fácil Encriptación PGP"
   nav: docs
----
+src: "_pages/docs/01-best-practices/01-PGP-guide_es.md"
+--- 
+
 Cómo usar OpenKeychain para cifrar datos sensibles al usar RoboSats.
 
 ## ¿Por qué es necesaria la encriptación?
@@ -81,3 +83,5 @@ Una vez que el vendedor tiene la clave pública del comprador, se puede aplicar 
 Los datos cifrados deben copiarse incluyendo el encabezado `(-----BEGIN PGP MESSAGE-----)` y el pie de página `(-----END PGP MESSAGE-----)` para el funcionamiento correcto de la aplicación. Si el comprador visualiza correctamente en la app los datos del vendedor significa que el intercambio ha sido exitoso y la confidencialidad de los datos está asegurada ya que la única clave que puede descifrarlos es la clave privada del comprador.
 
 Si quieres leer un tutorial sobre cómo usar OpenKeychain para uso general, consulta [As Easy as P,G,P](https://diverter.hostyourown.tools/as-easy-as-pgp/)
+
+{% include improve %}

@@ -71,5 +71,5 @@ The hodl invoice shows as a grey icon while waiting. Need to tap the back obviou
 
 
 ## <i class="fa-solid fa-code-pull-request"></i> Help keep this page updated
-There are many wallets and all of them keep improving at lightning speed. You can contribute to the RoboSats Open Source Project by testing wallets, editing [the content of this page](https://github.com/Reckless-Satoshi/robosats/tree/main/docs/_pages/wallets.md) and opening a [Pull Request](https://github.com/Reckless-Satoshi/robosats/pulls)
+There are many wallets and all of them keep improving at lightning speed. You can contribute to the RoboSats Open Source Project by testing wallets, editing [the content of this page](https://github.com/Reckless-Satoshi/robosats/tree/main/docs/_pages/docs/03-understand/06-wallets.md) and opening a [Pull Request](https://github.com/Reckless-Satoshi/robosats/pulls)
 

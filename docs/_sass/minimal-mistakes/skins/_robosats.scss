@@ -7,12 +7,12 @@ $background-color: #ffffff !default;
 $text-color: #2c2c2c !default;
 $muted-text-color: #393e46 !default;
 $primary-color: #1976d2 !default;
-$primary-color-light: #42a5f5 !default;
-$primary-color-dark: #1565c0 !default;
+$primary-light-color: #42a5f5 !default;
+$primary-dark-color: #1565c0 !default;
 $secondary-color: #9c27b0 !default;
 $border-color: mix(#fff, #393e46, 75%) !default;
 $footer-background-color: $primary-color !default;
-$link-color: $primary-color-light !default;
+$link-color: $primary-light-color !default;
 $masthead-link-color: $text-color !default;
 $masthead-link-color-hover: $primary-color !default;
 $navicon-link-color-hover: mix(#fff, $text-color, 80%) !default;
@@ -22,7 +22,7 @@ $warning-color              : #ed6c02 !default;
 $danger-color               : #d32f2f !default;
 $info-color                 : #0288d1 !default;
 
-$notice-background-mix: 50% !default;
+$notice-background-mix: 70% !default;
 
 .page__footer {
   color: #fff !important; // override

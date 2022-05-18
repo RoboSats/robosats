@@ -80,6 +80,17 @@
   @include notice($primary-color);
 }
 
+.notice--primary-light {
+  @include notice($primary-light-color);
+}
+
+/* Secondary notice */
+
+.notice--secondary {
+  @include notice($secondary-color);
+}
+
+
 /* Info notice */
 
 .notice--info {

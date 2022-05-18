@@ -18,31 +18,48 @@ docs:
         url: /docs/tor/
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-up-right-from-square'></i> Access</span>"
         url: /docs/access/
-        
-  - title: "<i class='fa-solid fa-bars-staggered'></i> Best Practices" 
-    url: /docs/best-practices/
-    children:
-      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-fingerprint'></i> PGP Encryption</span>"
-        url: /docs/pgp-encryption/
-      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-money-bill-1-wave'></i> Payment Methods</span>"
-        url: /docs/fiat-payment-methods/
-      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-route'></i> Proxy Wallets</span>"
-        url: /docs/proxy-wallet/
-      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-circle-nodes'></i> Lightning Channels</span>"
-        url: /docs/channels/
 
   - title: "<i class='fa-solid fa-bars-staggered'></i> Features"
     url: /docs/features/
     children:
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-user-ninja'></i> Private</span>"
-        url: /docs/privacy/
-      - title: "<span>&thinsp;    &thinsp;&thinsp;<i class='fa-solid fa-receipt'></i>&thinsp;&thinsp;Bonds & Escrow</span>"
-        url: /docs/bonds-escrow/
+        url: /docs/private/
+      - title: "<span>&thinsp;    &thinsp;<i class='fa-solid fa-jet-fighter'></i> Fast</span>"
+        url: /docs/fast/
+      - title: "<span>&thinsp;    &thinsp;<i class='fa-solid fa-shield'></i>&thinsp; Bonds & Escrow</span>"
+        url: /docs/safe/
+
+  - title: "<i class='fa-solid fa-lightbulb'></i> Understand"
+    url: /docs/understand/
+    children:
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-timeline'></i> Trade Pipeline</span>"
+        url: /docs/trade-pipeline/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-percent'></i> Premium</span>"
+        url: /docs/premium/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-ticket-simple'></i> Bonds</span>"
+        url: /docs/bonds/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-money-bill-transfer'></i> Trade Escrow</span>"
+        url: /docs/trade-escrow/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-life-ring'></i> Disputes</span>"
+        url: /docs/disputes/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-wallet'></i> Wallets</span>"
+        url: /docs/wallets/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-gauge-high'></i> Limits</span>"
+        url: /docs/limits/
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-right-arrow-left'></i> Swaps</span>"
         url: /docs/swaps/
 
-  - title: "<i class='fa-solid fa-wallet'></i> Wallets"
-    url: /docs/wallets/
+  - title: "<i class='fa-solid fa-hand-peace'></i> Best Practices" 
+    url: /docs/best-practices/
+    children:
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-fingerprint'></i> PGP Encryption</span>"
+        url: /docs/pgp-encryption/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-money-bill-1-wave'></i> Payment Methods</span>"
+        url: /docs/fiat-payment-best-practices/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-route'></i> Proxy Wallets</span>"
+        url: /docs/proxy-wallet/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-circle-nodes'></i> Lightning Channels</span>"
+        url: /docs/channels/
 
 tutorial:
   - title: "<i class='fa-solid fa-circle-play'></i> Watch"
