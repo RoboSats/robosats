@@ -5,4 +5,5 @@ export { default as NoRobotDialog } from "./NoRobot";
 export { default as StoreTokenDialog } from "./StoreToken";
 export { default as ExchangeSummaryDialog } from "./ExchangeSummaryDialog";
 export { default as ProfileDialog } from "./ProfileDialog";
+export { default as StatsDialog } from "./StatsDialog";
 

@@ -1,8 +1,7 @@
 import React, { Component } from 'react'
 import { withTranslation } from "react-i18next";
-import {FormControlLabel, Link, Switch, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import { Badge, Tooltip, ListItemAvatar, Avatar,Paper, Grid, IconButton, Select, MenuItem, ListItemText, ListItem, ListItemIcon, ListItemButton } from "@mui/material";
 import MediaQuery from 'react-responsive'
-import { Link as LinkRouter } from 'react-router-dom'
 
 // Icons
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -12,29 +11,15 @@ import SellIcon from '@mui/icons-material/Sell';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PercentIcon from '@mui/icons-material/Percent';
 import PriceChangeIcon from '@mui/icons-material/PriceChange';
-import BoltIcon from '@mui/icons-material/Bolt';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import EqualizerIcon from '@mui/icons-material/Equalizer';
-
-import PublicIcon from '@mui/icons-material/Public';
-import NumbersIcon from '@mui/icons-material/Numbers';
-import PasswordIcon from '@mui/icons-material/Password';
-import ContentCopy from "@mui/icons-material/ContentCopy";
-import DnsIcon from '@mui/icons-material/Dns';
-import WebIcon from '@mui/icons-material/Web';
-import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import { AmbossIcon , BitcoinSignIcon} from "./Icons";
 
 import {
     CommunityDialog,
     ExchangeSummaryDialog,
     ProfileDialog,
+    StatsDialog,
 } from './Dialogs';
 
 import { getCookie } from "../utils/cookies";
-import { pn } from "../utils/prettyNumbers";
 
 class BottomBar extends Component {
     constructor(props) {
@@ -90,105 +75,6 @@ class BottomBar extends Component {
         this.setState({openStatsForNerds: false});
     };
 
-    StatsDialog =() =>{
-        const { t } = this.props;
-    return(
-        <Dialog
-        open={this.state.openStatsForNerds}
-        onClose={this.handleClickCloseStatsForNerds}
-        aria-labelledby="stats-for-nerds-dialog-title"
-        aria-describedby="stats-for-nerds-description"
-        >
-        <DialogContent>
-            <Typography component="h5" variant="h5">{t("Stats For Nerds")}</Typography>
-            <List dense>
-                <Divider/>
-                <ListItem>
-                    <ListItemIcon><BoltIcon/></ListItemIcon>
-                    <ListItemText primary={this.state.lnd_version} secondary={t("LND version")}/>
-                </ListItem>
-
-                <Divider/>
-                {this.state.network == 'testnet'?
-                <ListItem>
-                    <ListItemIcon><DnsIcon/></ListItemIcon>
-                    <ListItemText secondary={this.state.node_alias}>
-                         <Link target="_blank" href={"https://1ml.com/testnet/node/"
-                        + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (1ML)"}
-                        </Link>
-                    </ListItemText>
-                </ListItem>
-                :
-                <ListItem>
-                    <ListItemIcon><AmbossIcon/></ListItemIcon>
-                    <ListItemText secondary={this.state.node_alias}>
-                            <Link target="_blank" href={"https://amboss.space/node/"
-                        + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (AMBOSS)"}
-                        </Link>
-                    </ListItemText>
-                </ListItem>
-                }
-
-                <Divider/>
-                <ListItem>
-                    <ListItemIcon><WebIcon/></ListItemIcon>
-                    <ListItemText secondary={this.state.alternative_name}>
-                        <Link target="_blank" href={"http://"+this.state.alternative_site}>{this.state.alternative_site.slice(0, 12)+"...onion"}
-                        </Link>
-                    </ListItemText>
-                </ListItem>
-
-                <Divider/>
-                <ListItem>
-                    <ListItemIcon><GitHubIcon/></ListItemIcon>
-                    <ListItemText secondary={t("Currently running commit hash")}>
-                        <Link target="_blank" href={"https://github.com/Reckless-Satoshi/robosats/tree/"
-                        + this.state.robosats_running_commit_hash}>{this.state.robosats_running_commit_hash.slice(0, 12)+"..."}
-                        </Link>
-                    </ListItemText>
-                </ListItem>
-
-                <Divider/>
-                <ListItem>
-                    <ListItemIcon><EqualizerIcon/></ListItemIcon>
-                    <ListItemText secondary={t("24h contracted volume")}>
-                        <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                            {pn(this.state.last_day_volume)}
-                            <BitcoinSignIcon sx={{width:14,height:14}} color={"text.secondary"}/>
-                        </div>
-                    </ListItemText>
-                </ListItem>
-
-                <Divider/>
-                <ListItem>
-                    <ListItemIcon><EqualizerIcon/></ListItemIcon>
-                    <ListItemText secondary={t("Lifetime contracted volume")}>
-                        <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                            {pn(this.state.lifetime_volume)}
-                            <BitcoinSignIcon sx={{width:14,height:14}} color={"text.secondary"}/>
-                        </div>
-                    </ListItemText>
-                </ListItem>
-
-                <Divider/>
-                <ListItem>
-                    <ListItemIcon><PublicIcon/></ListItemIcon>
-                    <ListItemText primary={
-                        <div style={{display:'flex', alignItems:'center', justifyContent:'left', flexWrap:'wrap'}}>
-                            <span>{t("Made with")+" "}</span>
-                            <FavoriteIcon sx={{ color: "#FF0000", height: '22px',width: '22px'}}/>
-                            <span>{" "+t("and")+" "}</span>
-                            <BoltIcon sx={{ color: "#fcba03", height: '23px',width: '23px'}}/>
-                        </div>}
-                        secondary={t("... somewhere on Earth!")}/>
-                </ListItem>
-            </List>
-
-            </DialogContent>
-        </Dialog>
-    )
-    }
-
     handleClickOpenCommunity = () => {
         this.setState({openCommuniy: true});
     };
@@ -240,7 +126,6 @@ bottomBarDesktop =()=>{
 
     return(
         <Paper elevation={6} style={{height:40}}>
-                {this.StatsDialog()}
                 <Grid container>
 
                     <Grid item xs={1.9}>
@@ -403,7 +288,6 @@ bottomBarPhone =()=>{
     var hasOrder = this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded ? true : false;
     return(
         <Paper elevation={6} style={{height:40}}>
-                {this.StatsDialog()}
                 <Grid container>
 
                     <Grid item xs={1.6}>
@@ -531,6 +415,20 @@ bottomBarPhone =()=>{
                     badInvoice={this.state.badInvoice}
                     earnedRewards={this.state.earned_rewards}
                     setAppState={this.props.setAppState}
+                />
+
+                <StatsDialog
+                    isOpen={this.state.openStatsForNerds}
+                    handleClickCloseStatsForNerds={this.handleClickCloseStatsForNerds}
+                    lndVersion={this.state.lnd_version}
+                    network={this.state.network}
+                    nodeAlias={this.state.node_alias}
+                    nodeId={this.state.node_id}
+                    alternativeName={this.state.alternativeName}
+                    alternativeSite={this.state.alternative_site}
+                    robosatsRunningCommitHash={this.state.robosats_running_commit_hash}
+                    lastDayVolume={this.state.last_day_volume}
+                    lifetimeVolume={this.state.lifetime_volume}
                 />
 
                 <MediaQuery minWidth={1200}>
