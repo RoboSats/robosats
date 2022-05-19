@@ -18,8 +18,8 @@ import NumbersIcon from '@mui/icons-material/Numbers';
 import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import ArticleIcon from '@mui/icons-material/Article';
-import SendReceiveIcon from "./icons/SendReceiveIcon";
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import { SendReceiveIcon } from "./Icons";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
@@ -362,9 +362,9 @@ class OrderPage extends Component {
         onClickCopy={()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}
         copyIconColor={this.props.copiedToken ? "inherit" : "primary"}
         onClickBack={() => this.setState({openStoreToken:false})}
-        onClickDone={() => this.setState({openStoreToken:false}) & 
-            (this.state.maker_status=='Inactive' ? 
-            this.handleClickOpenInactiveMakerDialog() 
+        onClickDone={() => this.setState({openStoreToken:false}) &
+            (this.state.maker_status=='Inactive' ?
+            this.handleClickOpenInactiveMakerDialog()
             : this.takeOrder())
           }/>
       :
@@ -614,7 +614,7 @@ class OrderPage extends Component {
                 <Countdown date={new Date(this.state.expires_at)} renderer={this.countdownRenderer} />
               </ListItemText>
             </ListItem>
-              <LinearDeterminate key={this.state.expires_at} total_secs_exp={this.state.total_secs_exp} expires_at={this.state.expires_at}/>
+              <LinearDeterminate totalSecsExp={this.state.total_secs_exp} expiresAt={this.state.expires_at}/>
             </List>
 
             {/* If the user has a penalty/limit */}

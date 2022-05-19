@@ -1,0 +1,10 @@
+language: ruby
+cache: bundler
+gemfile: docs/Gemfile
+script:
+  - bundle exec jekyll algolia --source docs --destination docs/_site --config docs/_config.yml
+branches:
+  only:
+    - main
+rvm:
+ - 2.4
