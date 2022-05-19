@@ -124,6 +124,18 @@ const CommunityDialog = ({
                   <Flags.US {...flagProps} />
                 </IconButton>
               </Tooltip>
+
+              <Tooltip title={t("Join RoboSats Portuguese speaking community!") || ""}>
+                <IconButton
+                  component="a"
+                  target="_blank"
+                  href="https://t.me/robosats_pt"
+                  rel="noreferrer"
+                >
+                  <Flags.BR {...flagProps} />
+                </IconButton>
+              </Tooltip>
+
             </ListItemText>
           </ListItem>
 
@@ -134,7 +146,7 @@ const CommunityDialog = ({
             target="_blank"
             href="https://github.com/Reckless-Satoshi/robosats/issues"
             rel="noreferrer"
-          >
+            >
             <ListItemIcon>
               <GitHubIcon color="primary"/>
             </ListItemIcon>
