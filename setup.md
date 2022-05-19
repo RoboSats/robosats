@@ -19,19 +19,24 @@ Running the full stack is not easy, since RoboSats needs of many services. Howev
 
 4 - On another terminal `npm install -g http-server`
 
-5 - Then run `http-server "robosats/frontend/static/frontend/`
+5 - Then run `http-server "robosats/frontend/static/`
 
 6 - Install [Requestly](https://requestly.io/) extension in your browser, it's a lightweight proxy. We want to use it so our browser grabs our local `main.js` instead of the remote. There are many alternatives to Requestly (be aware that Requestly might not respect your privacy. Didn't research it).
 
 7 - Pick a RoboSats backend to test the new frontend: e.g. "robosats.onion.moe", or "unsafe.testnet.robosats.com". You can also use the onion services also if you are using Brave or Tor Browser (untested!)
 
-8 - Open Requestly extension and add a new redirect rule. Make  "{robosats-site}/static/frontend/main.js" redirect to "127.0.0.1:8080/main.js" and save the changes.
+8 - Open Requestly extension and add a new redirect rule. Make  "{robosats-site}/static/frontend/main.js" redirect to "127.0.0.1:8080/frontend/main.js" and save the changes.
 
 -------------------
 
 **You are ready to go!** Edit the frontend code in `/frontend/src/` to make the changes you want. Within a few seconds, the `npm run dev` process will pack the code into the local `main.js`. Visit your selected {robosats-site} and you will see your new awesome frontend! :)
 
-Every time you save changes to files in `/frontend/src` you will be able to see them in your browser after a few seconds using force refresh (Ctrl+Shift+R). If you need to edit CSS or other static files, simply add them to Requestly in the same way.
+Every time you save changes to files in `/frontend/src` you will be able to see them in your browser after a few seconds using force refresh (Ctrl+Shift+R). 
+
+If you need to edit CSS or other static files in `/frontend/static`, simply add them to Requestly in the same way.
+
+i.e: index.css 
+Make "{robosats-site}/static/css/index.css" redirect to "127.0.0.1:8080/css/index.css"
 
 # Full Stack Development
 ## The Easy Way: Docker-compose (-dev containers running on testnet)

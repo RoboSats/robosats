@@ -23,6 +23,7 @@ thumbsdown: "<i style='color:#9c27b0' class='fa-solid fa-thumbs-down fa-2xl'></i
 unclear: "<i style='color:#ff9800' class='fa-solid fa-question fa-2xl'></i>"
 bitcoin: "<i class='fa-solid fa-bitcoin-sign'></i>"
 --- 
+This is a non-exhaustive compilation based on past experience of users. We have not tested every wallet, if you test a wallet that is not yet covered, please [report here](https://github.com/Reckless-Satoshi/robosats/issues/44).
 
 | Wallet | Version | Device | UX<sup>1</sup> | Bonds<sup>2</sup> | Payout<sup>3</sup> | Comp<sup>4</sup> | Total<sup>5</sup> |
 |:---|:---|:--:|:--:|:--:|:--:|:--:|:--:|

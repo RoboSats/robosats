@@ -50,6 +50,8 @@ docs:
         url: /docs/limits/
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-right-arrow-left'></i> Swaps</span>"
         url: /docs/swaps/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-brands fa-telegram'></i> Telegram</span>"
+        url: /docs/telegram/
 
   - title: "<i class='fa-solid fa-hand-peace'></i> Best Practices" 
     url: /docs/best-practices/
