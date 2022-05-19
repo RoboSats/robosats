@@ -60,6 +60,7 @@
     "You must fill the order correctly":"Du musst die Order korrekt ausfüllen",
     "Create Order":"Order erstellen",
     "Back":"Zurück",
+    "Create an order for ":"Erstelle eine Order für ",
     "Create a BTC buy order for ":"Erstelle ein BTC-Kaufangebot für ",
     "Create a BTC sell order for ":"Erstelle ein BTC-Verkaufsaufangebot für ",
     " of {{satoshis}} Satoshis":" für {{satoshis}} Satoshis",
@@ -70,6 +71,12 @@
     "Must be more than {{min}}%":"Muss mehr sein als {{min}}%",
     "Must be less than {{maxSats}": "Muss weniger sein als {{maxSats}}",
     "Must be more than {{minSats}}": "Muss mehr sein als {{minSats}}",
+    "Store your robot token":"Speicher Roboter-Token",
+    "You might need to recover your robot avatar in the future: store it safely. You can simply copy it into another application.":"Vielleicht musst du deinen Roboter-Avatar in Zukunft wiederherstellen: Bewahre ihn sicher auf. Du kannst ihn einfach in eine andere Anwendung kopieren.",
+    "Done":"Fertig",
+    "You do not have a robot avatar":"Du hast keinen Roboter-Avatar",
+    "You need to generate a robot avatar in order to become an order maker":"Du musst einen Roboter-Avatar erstellen, um ein Maker zu werden.",
+
 
     "PAYMENT METHODS - autocompletePayments.js": "Payment method strings",
     "not specified":"Nicht definiert",
@@ -164,7 +171,10 @@
     "Taker fee":"Takergebühr",
     "Number of public BUY orders":"Anzahl der öffentlichen KAUF-Angebote",
     "Number of public SELL orders":"Anzahl der öffentlichen VERKAUFS-Angebote",
-    
+    "Your last order #{{orderID}}":"Deine letzte Order #{{orderID}}",
+    "Inactive order":"Inaktive Order",
+    "You do not have previous orders":"Du hast keine vorherige Order",
+ 
 
     "ORDER PAGE - OrderPage.js": "Order details page",
     "Order Box":"Angebots-Box",
@@ -337,7 +347,10 @@
     "Invoice not submitted":"Invoice nicht eingereicht",
     "Neither escrow locked or invoice submitted":"Weder Treuhandkonto gesperrt noch Invoice eingereicht",
     "Renew Order":"Order erneuern",
-
+    "Pause the public order":"Order pausieren",
+    "Your order is paused":"Deine Order ist pausiert",
+    "Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.":"Deine öffentliche Order wurde pausiert. Im Moment kann sie von anderen Robotern weder gesehen noch angenommen werden. Du kannst sie jederzeit wieder aktivieren.",
+    "Unpause Order":"Order aktivieren",
 
     "INFO DIALOG - InfoDiagog.js":"App information and clarifications and terms of use",
     "Close":"Schließen",
