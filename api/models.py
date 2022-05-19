@@ -75,6 +75,14 @@ class LNPayment(models.Model):
         SUCCED = 8, "Succeeded"
         FAILRO = 9, "Routing failed"
 
+    class FailureReason(models.IntegerChoices):
+        NOTYETF = 0, "Payment isn't failed (yet)"
+        TIMEOUT = 1, "There are more routes to try, but the payment timeout was exceeded."
+        NOROUTE = 2, "All possible routes were tried and failed permanently. Or there were no routes to the destination at all."
+        NONRECO = 3, "A non-recoverable error has occurred."
+        INCORRE = 4, "Payment details are incorrect (unknown hash, invalid amount or invalid final CLTV delta)."
+        NOBALAN = 5, "Insufficient unlocked balance in RoboSats' node."
+
     # payment use details
     type = models.PositiveSmallIntegerField(choices=Types.choices,
                                             null=False,
@@ -85,6 +93,9 @@ class LNPayment(models.Model):
     status = models.PositiveSmallIntegerField(choices=Status.choices,
                                               null=False,
                                               default=Status.INVGEN)
+    failure_reason = models.PositiveSmallIntegerField(choices=FailureReason.choices,
+                                              null=True,
+                                              default=None)
 
     # payment info
     payment_hash = models.CharField(max_length=100,

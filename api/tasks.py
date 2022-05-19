@@ -115,6 +115,7 @@ def follow_send_payment(hash):
                 lnpayment.status = LNPayment.Status.FAILRO
                 lnpayment.last_routing_time = timezone.now()
                 lnpayment.routing_attempts += 1
+                lnpayment.failure_reason = response.failure_reason
                 lnpayment.in_flight = False
                 if lnpayment.routing_attempts > 2:
                     lnpayment.status = LNPayment.Status.EXPIRE
@@ -140,6 +141,7 @@ def follow_send_payment(hash):
                 print("SUCCEEDED")
                 lnpayment.status = LNPayment.Status.SUCCED
                 lnpayment.fee = float(response.fee_msat)/1000
+                lnpayment.preimage = response.payment_preimage
                 lnpayment.save()
                 order.status = Order.Status.SUC
                 order.expires_at = timezone.now() + timedelta(

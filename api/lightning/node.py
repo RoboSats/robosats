@@ -255,6 +255,7 @@ class LNNode:
                 5	Insufficient local balance.
                 """
                 failure_reason = cls.payment_failure_context[response.failure_reason]
+                lnpayment.failure_reason = response.failure_reason
                 lnpayment.status = LNPayment.Status.FAILRO
                 lnpayment.save()
                 return False, failure_reason
@@ -262,6 +263,7 @@ class LNNode:
             if response.status == 2:  # STATUS 'SUCCEEDED'
                 lnpayment.status = LNPayment.Status.SUCCED
                 lnpayment.fee = float(response.fee_msat)/1000
+                lnpayment.preimage = response.payment_preimage
                 lnpayment.save()
                 return True, None
 

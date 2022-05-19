@@ -379,6 +379,8 @@ class OrderView(viewsets.ViewSet):
             data["retries"] = order.payout.routing_attempts
             data["next_retry_time"] = order.payout.last_routing_time + timedelta(
                     minutes=RETRY_TIME)
+            if order.payout.failure_reason:
+                data["failure_reason"] = LNPayment.FailureReason(order.payout.failure_reason).label
 
             if order.payout.status == LNPayment.Status.EXPIRE:
                 data["invoice_expired"] = True
