@@ -324,7 +324,7 @@
     "RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must be online in order to receive payments.": "RoboSats está intentando pagar tu factura de Lightning. Recuerda que los nodos Lightning deben estar en línea para recibir pagos.",
     "Retrying!": "¡Reintentando!",
     "Lightning Routing Failed": "Fallo en el enrutamiento de Lightning",
-    "Your invoice has expired or more than 3 payment attempts have been made.": "Tu factura ha expirado o se han hecho más de 3 intentos de pago.",
+    "Your invoice has expired or more than 3 payment attempts have been made. Submit a new invoice.": "Tu factura ha expirado o se han hecho más de 3 intentos de pago. Entrega una nueva factura.",
     "Check the list of compatible wallets": "Mira la lista de carteras compatibles",
     "RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.": "RoboSats intentará pagar tu factura 3 veces cada 5 minutos. Si sigue fallando, podrás presentar una nueva factura. Comprueba si tienes suficiente liquidez entrante. Recuerda que los nodos de Lightning tienen que estar en línea para poder recibir pagos.",
     "Next attempt in": "Próximo intento en",
@@ -356,6 +356,14 @@
     "Unpause Order":"Activar Orden",
     "You risk losing your bond if you do not lock the collateral. Total time to available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.":"Si no bloqueas el colateral te arriesgas a perder tu fianza. Dispones en total de {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.",
     "See Compatible Wallets":"Ver billeteras compatibles",
+    "Failure reason:":"Razón del fallo:",
+    "Payment isn't failed (yet)":"El pago no ha fallado aún",
+    "There are more routes to try, but the payment timeout was exceeded.":"Quedan rutas por probar, pero el tiempo máximo del intento ha sido excedido.",
+    "All possible routes were tried and failed permanently. Or there were no routes to the destination at all.":"Todas las rutas posibles han sido probadas y han fallado de forma permanente. O quizá no había ninguna ruta.",
+    "A non-recoverable error has occurred.":"A non-recoverable error has occurred.",
+    "Payment details are incorrect (unknown hash, invalid amount or invalid final CLTV delta).":"Los detalles del pago son incorrectos (hash desconocido, cantidad inválida o CLTV delta final inválido).",
+    "Insufficient unlocked balance in RoboSats' node.":"Balance libre de ser usado en el nodo de RoboSats insuficiente.",
+
 
     "INFO DIALOG - InfoDiagog.js": "App information and clarifications and terms of use",
     "Close": "Cerrar",

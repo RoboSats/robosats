@@ -1164,7 +1164,7 @@ handleRatingRobosatsChange=(e)=>{
     return(
       <Grid item xs={12} align="center">
         <Typography  variant="body2" align="center">
-          <b>{"Failure reason:"}</b>
+          <b>{t("Failure reason:")}</b>
         </Typography>
         <Typography  variant="body2" align="center">
           {t(this.props.data.failure_reason)}
@@ -1183,13 +1183,14 @@ handleRatingRobosatsChange=(e)=>{
             {t("Lightning Routing Failed")}
             </Typography>
           </Grid>
-          <Grid item xs={12} align="center">
-            <Typography  variant="body2" align="center">
-              {t("Your invoice has expired or more than 3 payment attempts have been made.")}
-            </Typography>
-          </Grid>
 
           {this.props.data.failure_reason ? this.failureReason():null}
+
+          <Grid item xs={12} align="center">
+            <Typography  variant="body2" align="center">
+              {t("Your invoice has expired or more than 3 payment attempts have been made. Submit a new invoice.")}
+            </Typography>
+          </Grid>
 
           <Grid item xs={12} align="center">
             {this.compatibleWalletsButton()}
@@ -1231,7 +1232,7 @@ handleRatingRobosatsChange=(e)=>{
         </Grid>
 
         {this.props.data.failure_reason ? this.failureReason():null}
-        
+
         <Grid item xs={12} align="center">
           <Typography  variant="body2" align="center">
             {t("RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.")}
