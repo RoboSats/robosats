@@ -1,13 +1,13 @@
 ---
 layout: single
-title: Fácil Encriptación PGP
-permalink: /es/docs/pgp-encryption/
+title: Encriptación fácil con PGP
+permalink: /docs/pgp-encryption/es/
 toc: true
 toc_sticky: true
 sidebar:
-  title: "<i class='fa-solid fa-fingerprint'></i> Fácil Encriptación PGP"
+  title: "<i class='fa-solid fa-fingerprint'></i> Encriptación PGP"
   nav: docs
-src: "_pages/docs/01-best-practices/01-PGP-guide_es.md"
+src: "_pages/docs/01-best-practices/01-pgp-guide_es.md"
 --- 
 
 Cómo usar OpenKeychain para cifrar datos sensibles al usar RoboSats.

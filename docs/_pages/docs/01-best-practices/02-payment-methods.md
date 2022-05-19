@@ -1,13 +1,14 @@
 ---
 layout: single
 title: Fiat Best Practices
-permalink: /docs/fiat-payment-best-practices/
+permalink: /docs/payment-methods/
 toc: true
 toc_sticky: true
 sidebar:
   title: "<i class='fa-solid fa-hand-peace'></i> Fiat Best Practices"
   nav: docs
----
+src: "_pages/docs/01-best-practices/02-payment-methods.md"
+--- 
 
 Currently, there are no restrictions on the fiat payment method. You can pay with any method that both you and your peer agree on. This includes the higher risk method such as PayPal, Venmo, and Cash apps. However, the payment method with lower risk is recommended, you can learn more details about the characteristics and differences of each fiat payment method from <a href =  "https://bisq.wiki/Payment_methods#Payment_method_guides">Bisq wiki</a>.
 
@@ -74,3 +75,5 @@ Then select "Friends or Family" in the payment type choosing page.
 <div align="center">
 <img src="/assets/images/fiat-payment-methods/PayPal-choose-phone.png" width="230"/>
 </div>
+
+{% include improve %}

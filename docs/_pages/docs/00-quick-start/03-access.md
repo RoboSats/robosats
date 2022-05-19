@@ -15,13 +15,19 @@ The safest and most private way to use RoboSats is through the Onion address. Yo
 
 > [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion/)
 
+**Private:** your connection will be encrypted end-to-end and relaid by several layers of nodes making tracking harder.
+{: .notice--primary}
 
-## <i class="fa-solid fa-window-maximize"></i> Unsafe in Clearnet
-There is an unsafe way to view RoboSats without TOR that relies on third party tor2web services. With this URL you can access RoboSats from any browser, but using this URL is highly unrecommended!
+
+## <i class="fa-solid fa-window-maximize"></i> Unsafely in Clearnet
+There is an unsafe way to view RoboSats without TOR that relies on third party tor2web services. With this URL you can access RoboSats from any browser, but using this URL is **highly unrecommended!**
 
 > [unsafe.robosats.com](https://unsafe.robosats.com)
 
-Take it for granted: if you use that link, you are being spied on. However, most sensitive tools will be disabled (e.g. the chat) to avoid users giving away sensitive personal data.
+**Unsafe:** your privacy can be compromised if you use the unsafe clearnet url in a regular web browser.
+{: .notice--secondary}
+
+TIf you use the clearnet url, you should assume are being spied on. However, most sensitive RoboSats features are disabled (e.g. the chat) so users cannot give away sensitive personal data. Use this URL only to have a quick look to the book orders. Never use it for trading or logging into active Robot avatars.
 
 ## <i class="fa-solid fa-person-dots-from-line"></i> All in one
 

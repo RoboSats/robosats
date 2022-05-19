@@ -7,7 +7,7 @@ toc_sticky: true
 sidebar:
   title: "<i class='fa-solid fa-fingerprint'></i> Easy PGP Encryption"
   nav: docs
-src: "_pages/docs/01-best-practices/01-PGP-guide.md"
+src: "_pages/docs/01-best-practices/01-pgp-guide.md"
 --- 
 Learn how to use OpenKeychain to cipher sensible data during RoboSats trade.
 

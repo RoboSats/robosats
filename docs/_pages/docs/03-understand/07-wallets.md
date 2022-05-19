@@ -1,12 +1,13 @@
 ---
 layout: single
-title: Wallets
+title: Wallets Compatibility with RoboSats 
 permalink: /docs/wallets/
 toc: true
 toc_sticky: true
 sidebar:
   title: "<i class='fa-solid fa-wallet'></i> Wallets"
   nav: docs
+src: "_pages/docs/03-understand/07-wallets.md"
 
 # Icons
 good: "<i style='color:#1976d2' class='fa-solid fa-square-check fa-2xl'></i>"
@@ -22,7 +23,6 @@ thumbsdown: "<i style='color:#9c27b0' class='fa-solid fa-thumbs-down fa-2xl'></i
 unclear: "<i style='color:#ff9800' class='fa-solid fa-question fa-2xl'></i>"
 bitcoin: "<i class='fa-solid fa-bitcoin-sign'></i>"
 --- 
-## Wallet Compatibility Table 
 
 | Wallet | Version | Device | UX<sup>1</sup> | Bonds<sup>2</sup> | Payout<sup>3</sup> | Comp<sup>4</sup> | Total<sup>5</sup> |
 |:---|:---|:--:|:--:|:--:|:--:|:--:|:--:|
@@ -71,5 +71,5 @@ The hodl invoice shows as a grey icon while waiting. Need to tap the back obviou
 
 
 ## <i class="fa-solid fa-code-pull-request"></i> Help keep this page updated
-There are many wallets and all of them keep improving at lightning speed. You can contribute to the RoboSats Open Source Project by testing wallets, editing [the content of this page](https://github.com/Reckless-Satoshi/robosats/tree/main/docs/_pages/docs/03-understand/06-wallets.md) and opening a [Pull Request](https://github.com/Reckless-Satoshi/robosats/pulls)
+There are many wallets and all of them keep improving at lightning speed. You can contribute to the RoboSats Open Source Project by testing wallets, editing [the content of this page](https://github.com/Reckless-Satoshi/robosats/tree/main/docs/{page.src}}) and opening a [Pull Request](https://github.com/Reckless-Satoshi/robosats/pulls)
 

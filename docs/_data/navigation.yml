@@ -26,7 +26,7 @@ docs:
         url: /docs/private/
       - title: "<span>&thinsp;    &thinsp;<i class='fa-solid fa-jet-fighter'></i> Fast</span>"
         url: /docs/fast/
-      - title: "<span>&thinsp;    &thinsp;<i class='fa-solid fa-shield'></i>&thinsp; Bonds & Escrow</span>"
+      - title: "<span>&thinsp;    &thinsp;<i class='fa-solid fa-shield'></i>&thinsp; Safe</span>"
         url: /docs/safe/
 
   - title: "<i class='fa-solid fa-lightbulb'></i> Understand"
@@ -34,12 +34,14 @@ docs:
     children:
       - title: "<span>&nbsp;  &thinsp;<i class='fa-solid fa-timeline'></i>&thinsp;Trade Pipeline</span>"
         url: /docs/trade-pipeline/
+      - title: "<span>&nbsp; &thinsp;<i class='fa-solid fa-robot'></i>&thinsp;Robots</span>"
+        url: /docs/robots/
       - title: "<span>&nbsp; &thinsp;&thinsp;<i class='fa-solid fa-percent'></i> Premium</span>"
         url: /docs/premium/
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-ticket-simple'></i> Bonds</span>"
         url: /docs/bonds/
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-money-bill-transfer'></i> Trade Escrow</span>"
-        url: /docs/trade-escrow/
+        url: /docs/escrow/
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-life-ring'></i> Disputes</span>"
         url: /docs/disputes/
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-wallet'></i> Wallets</span>"
@@ -55,9 +57,9 @@ docs:
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-fingerprint'></i> PGP Encryption</span>"
         url: /docs/pgp-encryption/
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-money-bill-1-wave'></i> Payment Methods</span>"
-        url: /docs/fiat-payment-best-practices/
+        url: /docs/payment-methods/
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-route'></i> Proxy Wallets</span>"
-        url: /docs/proxy-wallet/
+        url: /docs/proxy-wallets/
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-circle-nodes'></i> Lightning Channels</span>"
         url: /docs/channels/
 
@@ -68,8 +70,10 @@ tutorial:
       url: "/watch/en/"
     - title: "<span>&nbsp;    &thinsp;<img style='width:22px;height:13px' src='/assets/vector/spanish.svg'/> Español</span>"
       url: "/watch/es/"
-    - title: "<span>&nbsp;    &thinsp;<img style='width:22px;height:13px' src='/assets/vector/portuguese.svg'/> Portuguese</span>"
+    - title: "<span>&nbsp;    &thinsp;<img style='width:22px;height:13px' src='/assets/vector/portuguese.svg'/> Português</span>"
       url: "/watch/pt/"
+    - title: "<span>&nbsp;    &thinsp;<img style='width:22px;height:13px' src='/assets/vector/french.svg'/> Français</span>"
+      url: "/watch/fr/"
   - title: "<i class='fa-brands fa-readme'></i> Read"
     children:
     - title: "<span>&nbsp;    &thinsp;<img style='width:22px;height:21px' src='/assets/vector/english.svg'/> English</span>"
@@ -85,16 +89,16 @@ contribute:
     children:
       - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-code'></i> Code</span>"
         url: /contribute/code/
-      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-language'></i> Translations</span>"
+      - title: "<span>&thinsp;  &thinsp;<i class='fa-solid fa-language'></i>&thinsp;Translations</span>"
         url: /contribute/languages/
-      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-up-right-from-square'></i> LN liquidity</span>"
+      - title: "<span>&nbsp;   &nbsp;<i class='fa-solid fa-circle-nodes'></i>&nbsp;LN liquidity</span>"
         url: /contribute/liquidity/
-      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-up-right-from-square'></i> Guides</span>"
+      - title: "<span>&nbsp; &thinsp;<i class='fa-solid fa-graduation-cap'></i>&thinsp;Guides</span>"
         url: /contribute/guides/
-      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-up-right-from-square'></i> Art</span>"
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-palette'></i> Art</span>"
         url: /contribute/art/
-      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-up-right-from-square'></i> Outreach</span>"
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-bullhorn'></i> Outreach</span>"
         url: /contribute/outreach/
-      - title: "<span>&nbsp;    &thinsp;<i class='fa-solid fa-arrow-up-right-from-square'></i> Donate</span>"
-        url: /contribute/funding/
+      - title: "<span>&nbsp;    &thinsp;<i class='fa-brands fa-bitcoin'></i> Donate</span>"
+        url: /contribute/donate/
 
