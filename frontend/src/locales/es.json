@@ -18,6 +18,9 @@
     "Make Order":"Crear orden",
     "Info": "Info",
     "View Book": "Ver libro",
+    "Learn RoboSats":"Aprende RoboSats",
+    "You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.":"Vas a visitar la página Learn RoboSats. Ha sido construida por la comunidad y contiene tutoriales y documentación que te ayudará a aprender como se usa RoboSats y a entender como funciona.",
+    "Let's go!":"¡Vamos!",
 
 
     "MAKER PAGE - MakerPage.js": "This is the page where users can create new orders",
@@ -129,9 +132,8 @@
     "... somewhere on Earth!": "... en algún lugar de la tierra!",
     "Community":"Comunidad",
     "Support is only offered via public channels. Join our Telegram community if you have questions or want to hang out with other cool robots. Please, use our Github Issues if you find a bug or want to see new features!": "Sólo se ofrece soporte a través de canales públicos. Únete a nuestra comunidad de Telegram si tienes preguntas o quieres pasar el rato con otros Robots geniales. Por favor, utiliza nuestro GitHub para notificar un error o proponer nuevas funcionalidades.",
-    "Join the RoboSats group": "Únete al grupo de RoboSats",
-    "Telegram (English / Main)":"Telegram (Inglés / Principal)",
-    "RoboSats Telegram Communities":"Comunidades de RoboSats",
+    "Follow RoboSats in Twitter":"Sigue a RoboSats ",
+    "Twitter Official Account":"Cuenta oficial en Twitter",
     "Join RoboSats Spanish speaking community!": "¡Únete a la comunidad de RoboSats en español!",
     "Join RoboSats Russian speaking community!": "¡Únete a la comunidad de RoboSats en ruso!",
     "Join RoboSats Chinese speaking community!": "¡Únete a la comunidad de RoboSats en chino!",
@@ -322,7 +324,7 @@
     "RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must be online in order to receive payments.": "RoboSats está intentando pagar tu factura de Lightning. Recuerda que los nodos Lightning deben estar en línea para recibir pagos.",
     "Retrying!": "¡Reintentando!",
     "Lightning Routing Failed": "Fallo en el enrutamiento de Lightning",
-    "Your invoice has expired or more than 3 payment attempts have been made. Muun wallet is not recommended. ": "Tu factura ha expirado o se han hecho más de 3 intentos de pago. La cartera Muun no está recomendada. ",
+    "Your invoice has expired or more than 3 payment attempts have been made.": "Tu factura ha expirado o se han hecho más de 3 intentos de pago.",
     "Check the list of compatible wallets": "Mira la lista de carteras compatibles",
     "RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.": "RoboSats intentará pagar tu factura 3 veces cada 5 minutos. Si sigue fallando, podrás presentar una nueva factura. Comprueba si tienes suficiente liquidez entrante. Recuerda que los nodos de Lightning tienen que estar en línea para poder recibir pagos.",
     "Next attempt in": "Próximo intento en",
@@ -352,7 +354,8 @@
     "Your order is paused":"Tu orden está en pausa",
     "Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.":"Tu orden pública fue pausada. Ahora mismo, la orden no puede ser vista ni tomada por otros robots. Puedes volver a activarla cuando desees.",
     "Unpause Order":"Activar Orden",
-
+    "You risk losing your bond if you do not lock the collateral. Total time to available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.":"Si no bloqueas el colateral te arriesgas a perder tu fianza. Dispones en total de {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.",
+    "See Compatible Wallets":"Ver billeteras compatibles",
 
     "INFO DIALOG - InfoDiagog.js": "App information and clarifications and terms of use",
     "Close": "Cerrar",

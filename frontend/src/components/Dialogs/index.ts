@@ -1,4 +1,6 @@
-export { default as CommunityDialog } from "./CommunityDialog";
-export { default as InfoDialog } from "./InfoDialog";
-export { default as StoreTokenDialog } from "./StoreTokenDialog";
-export { default as NoRobotDialog } from "./NoRobotDialog";
+export { default as CommunityDialog } from "./Community";
+export { default as InfoDialog } from "./Info";
+export { default as LearnDialog } from "./Learn";
+export { default as NoRobotDialog } from "./NoRobot";
+export { default as StoreTokenDialog } from "./StoreToken";
+

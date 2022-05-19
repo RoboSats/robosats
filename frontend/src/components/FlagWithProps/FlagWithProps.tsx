@@ -1,8 +1,7 @@
 import React from "react";
 import Flags from 'country-flag-icons/react/3x2'
 import SwapCallsIcon from '@mui/icons-material/SwapCalls';
-import GoldIcon from '../icons/GoldIcon';
-import EarthIcon from '../icons/EarthIcon'
+import { GoldIcon, EarthIcon } from "../Icons";
 
 type Props = {
   code: string;

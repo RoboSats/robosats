@@ -18,10 +18,11 @@ import BalanceIcon from '@mui/icons-material/Balance';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import PauseCircleIcon from '@mui/icons-material/PauseCircle';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import { NewTabIcon } from "./Icons";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
-import { t } from "i18next";
 
 class TradeBox extends Component {
   invoice_escrow_duration = 3;
@@ -181,11 +182,11 @@ class TradeBox extends Component {
     const { t } = this.props;
     return (
       <Grid container spacing={1}>
-        <Grid item xs={12} align="center">
+        {/* <Grid item xs={12} align="center">
           <Typography  variant="body2">
             {t("Robots show commitment to their peers")}
           </Typography>
-        </Grid>
+        </Grid> */}
         <Grid item xs={12} align="center">
           {this.props.data.is_maker ?
           <Typography color="primary" variant="subtitle1">
@@ -201,6 +202,11 @@ class TradeBox extends Component {
           </Typography>
           }
         </Grid>
+
+        <Grid item xs={12} align="center">
+          {this.compatibleWalletsButton()}
+        </Grid>
+
         <Grid item xs={12} align="center">
           <Box sx={{bgcolor:'#ffffff', width:'315px', position:'relative', left:'-5px'}} >
             <QRCode value={this.props.data.bond_invoice} size={305} style={{position:'relative', top:'3px'}}/>
@@ -273,10 +279,15 @@ class TradeBox extends Component {
         {/* Make confirmation sound for HTLC received. */}
         {this.Sound("locked-invoice")}
         <Grid item xs={12} align="center">
-          <Typography color="green" variant="subtitle1">
+          <Typography color="orange" variant="subtitle1">
             <b>
               {t("Lock {{amountSats}} Sats as collateral", {amountSats:pn(this.props.data.escrow_satoshis)})}
             </b>{" " + this.stepXofY()}
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <Typography variant="body2">
+            {t("You risk losing your bond if you do not lock the collateral. Total time to available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.", this.depositHoursMinutes() )}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -563,6 +574,17 @@ class TradeBox extends Component {
   handleQRbutton = () => {
     this.setState({qrscanner: !this.state.qrscanner});
   }
+  compatibleWalletsButton = () =>{
+    const { t } = this.props;
+
+    return(
+      <Button color="primary" component={Link} href={"https://learn.robosats.com/docs/wallets/"} target="_blank" align="center"> 
+        <AccountBalanceWalletIcon/>
+          {t("See Compatible Wallets")}
+        <NewTabIcon sx={{width:16,height:16}}/>
+      </Button>
+    )
+  }
 
   showInputInvoice(){
     const { t } = this.props;
@@ -576,7 +598,8 @@ class TradeBox extends Component {
             <b> {t("Submit an invoice for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}
             </b> {" " + this.stepXofY()}
           </Typography>
-        </Grid>
+        </Grid> 
+        
         <Grid item xs={12} align="left">
           <Typography variant="body2">
             {t("The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC. Please provide a valid invoice for {{amountSats}} Satoshis.",
@@ -586,6 +609,10 @@ class TradeBox extends Component {
               )
             }
           </Typography>
+        </Grid>
+
+        <Grid item xs={12} align="center">
+          {this.compatibleWalletsButton()}
         </Grid>
 
         <Grid item xs={12} align="center">
@@ -1144,10 +1171,15 @@ handleRatingRobosatsChange=(e)=>{
           </Grid>
           <Grid item xs={12} align="center">
             <Typography  variant="body2" align="center">
-              {t("Your invoice has expired or more than 3 payment attempts have been made. Muun wallet is not recommended. ")}
+              {t("Your invoice has expired or more than 3 payment attempts have been made.")}
               <Link href="https://github.com/Reckless-Satoshi/robosats/issues/44"> {t("Check the list of compatible wallets")}</Link>
             </Typography>
           </Grid>
+
+          <Grid item xs={12} align="center">
+            {this.compatibleWalletsButton()}
+          </Grid>
+
           <Grid item xs={12} align="center">
             <Typography color="primary" variant="subtitle1">
               <b> {t("Submit an invoice for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}</b>

@@ -18,6 +18,10 @@
     "Make Order":"Make Order",
     "Info":"Info",
     "View Book":"View Book",
+    "Learn RoboSats":"Learn RoboSats",
+    "You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.":"You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.",
+    "Let's go!":"Let's go!",
+
 
 
     "MAKER PAGE - MakerPage.js": "This is the page where users can create new orders",
@@ -127,8 +131,8 @@
     "... somewhere on Earth!":"... somewhere on Earth!",
     "Community":"Community",
     "Support is only offered via public channels. Join our Telegram community if you have questions or want to hang out with other cool robots. Please, use our Github Issues if you find a bug or want to see new features!":"Support is only offered via public channels. Join our Telegram community if you have questions or want to hang out with other cool robots. Please, use our Github Issues if you find a bug or want to see new features!",
-    "Join the RoboSats group":"Join the RoboSats group",
-    "Telegram (English / Main)":"Telegram (English / Main)",
+    "Follow RoboSats in Twitter":"Follow RoboSats in Twitter",
+    "Twitter Official Account":"Twitter Official Account",
     "RoboSats Telegram Communities":"RoboSats Telegram Communities",
     "Join RoboSats Spanish speaking community!":"Join RoboSats Spanish speaking community!",
     "Join RoboSats Russian speaking community!":"Join RoboSats Russian speaking community!",
@@ -321,7 +325,7 @@
     "RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must be online in order to receive payments.":"RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must be online in order to receive payments.",
     "Retrying!":"Retrying!",
     "Lightning Routing Failed":"Lightning Routing Failed",
-    "Your invoice has expired or more than 3 payment attempts have been made. Muun wallet is not recommended. ":"Your invoice has expired or more than 3 payment attempts have been made. Muun wallet is not recommended. ",
+    "Your invoice has expired or more than 3 payment attempts have been made.":"Your invoice has expired or more than 3 payment attempts have been made.",
     "Check the list of compatible wallets":"Check the list of compatible wallets",
     "RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.":"RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.",
     "Next attempt in":"Next attempt in",
@@ -351,6 +355,8 @@
     "Your order is paused":"Your order is paused",
     "Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.":"Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.",
     "Unpause Order":"Unpause Order",
+    "You risk losing your bond if you do not lock the collateral. Total time to available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.":"You risk losing your bond if you do not lock the collateral. Total time to available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.",
+    "See Compatible Wallets":"See Compatible Wallets",
 
     "INFO DIALOG - InfoDiagog.js":"App information and clarifications and terms of use",
     "Close":"Close",
