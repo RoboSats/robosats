@@ -67,7 +67,7 @@ class MakerPage extends Component {
         // if currency or type have changed in HomePage state, change in MakerPage state too.
         this.setState({
             currency: !this.props.currency === 0 ? this.props.currency : this.state.currency,
-            type: !this.props.type === 2 ? this.props.type : this.state.type,
+            type: !this.props.type == 2 ? (this.props.type == 1 ? 0 : 1) : this.state.type,
         })
     }
 
@@ -99,7 +99,8 @@ class MakerPage extends Component {
       })
       // Share state with HomePage and OrderPage
       this.props.setAppState({
-        type: e.target.value,
+        // maker and book page type values 0:1 are reversed
+        type: (e.target.value == 1 ? 0 : 1),
         buyChecked: e.target.value == 0 ? true: false,
         sellChecked: e.target.value == 1 ? true: false,
       })
