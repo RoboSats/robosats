@@ -292,7 +292,7 @@
     "The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC. Please provide a valid invoice for {{amountSats}} Satoshis.":"El prenedor està compromès! Abans de deixar-te enviar {{amountFiat}} {{currencyCode}}, volem assegurar-nos que pots rebre en Lightning. Si us plau proporciona una factura vàlida per {{amountSats}} Satoshis.",
     "Payout Lightning Invoice":"Factura Lightning",
     "Your invoice looks good!":"La teva factura és bona!",
-    "We are waiting for the seller lock the trade amount.":"Esperant a que el venedor bloquegi el col·lateral.",
+    "We are waiting for the seller to lock the trade amount.":"Esperant a que el venedor bloquegi el col·lateral.",
     "Just hang on for a moment. If the seller does not deposit, you will get your bond back automatically. In addition, you will receive a compensation (check the rewards in your profile).":"Espera un moment. Si el venedor no deposita, recuperaràs la teva fiança automàticament. A més, rebràs una compensació (comprova les recompenses al teu perfil).",
     "The trade collateral is locked!":"El col·lateral està bloquejat!",
     "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.":"Estem esperant a que el comprador enviï una factura Lightning. Quan ho faci, podràs comunicar-li directament els detalls del pagament en fiat.",

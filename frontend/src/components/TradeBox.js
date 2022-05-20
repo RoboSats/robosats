@@ -287,7 +287,7 @@ class TradeBox extends Component {
         </Grid>
         <Grid item xs={12} align="center">
           <Typography variant="body2">
-            {t("You risk losing your bond if you do not lock the collateral. Total time to available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.", this.depositHoursMinutes() )}
+            {t("You risk losing your bond if you do not lock the collateral. Total time available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.", this.depositHoursMinutes() )}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -807,7 +807,7 @@ class TradeBox extends Component {
             <Divider/>
             <ListItem>
               <Typography  variant="body2" align="left">
-                {t("We are waiting for the seller lock the trade amount.")}
+                {t("We are waiting for the seller to lock the trade amount.")}
               </Typography>
             </ListItem>
             <ListItem>

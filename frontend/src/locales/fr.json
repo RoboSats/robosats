@@ -275,7 +275,7 @@
     "The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC. Please provide a valid invoice for {{amountSats}} Satoshis.":"Le preneur est engagé! Avant de vous laisser envoyer {{amountFiat}} {{currencyCode}}, nous voulons nous assurer que vous êtes en mesure de recevoir le BTC. Veuillez fournir une facture valide de {{amountSats}} Satoshis.",
     "Payout Lightning Invoice":"Facture lightning de paiement",
     "Your invoice looks good!":"Votre facture est correcte!",
-    "We are waiting for the seller lock the trade amount.":"Nous attendons que le vendeur verrouille le montant de la transaction.",
+    "We are waiting for the seller to lock the trade amount.":"Nous attendons que le vendeur verrouille le montant de la transaction.",
     "Just hang on for a moment. If the seller does not deposit, you will get your bond back automatically. In addition, you will receive a compensation (check the rewards in your profile).":"Patientez un instant. Si le vendeur n'effectue pas de dépôt, vous récupérez automatiquement votre caution. En outre, vous recevrez une compensation (vérifiez les récompenses dans votre profil).",
     "The trade collateral is locked!":"La garantie est verrouillée!",
     "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.":"Nous attendons que l'acheteur dépose une facture lightning. Dès qu'il l'aura fait, vous pourrez communiquer directement les détails du paiement fiat.",
