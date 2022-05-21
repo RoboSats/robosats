@@ -5,7 +5,7 @@ permalink: /read/de/
 toc: true
 toc_sticky: true
 sidebar:
-  title: "<i class='fa-solid fa-chalkboard-user'></i> Wie benutzt"
+  title: '<img id="side-icon-verybig" src="/assets/vector/chalkboard-user.svg"/>Wie benutzt'
   nav: tutorial
 --- 
 

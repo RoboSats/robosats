@@ -571,3 +571,30 @@
     padding-left: 3.25rem
   }
 }
+
+.side-bar-item:hover {
+  color: $primary-dark-color;
+}
+#side-icon-small {
+  width:26px;
+  height:16px;
+  vertical-align:middle;
+}
+#side-icon-big {
+  width:26px;
+  height:18px;
+  vertical-align:middle;
+}
+#side-icon-verybig {
+  width:40px;
+  height:24px;
+  vertical-align:middle;
+  position:relative;
+  top:-2px;
+}
+.side-bar-item:hover #side-icon-small {
+  filter: invert(28%) sepia(100%) saturate(1394%) hue-rotate(194deg) brightness(88%) contrast(86%)
+}
+.side-bar-item:hover #side-icon-big {
+  filter: invert(28%) sepia(100%) saturate(1394%) hue-rotate(194deg) brightness(88%) contrast(86%)
+}

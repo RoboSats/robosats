@@ -240,7 +240,7 @@
     "Send":"Envoyer",
     "The chat has no memory: if you leave, messages are lost.":"Le chat n'a pas de mémoire : si vous le quittez, les messages sont perdus.",
     "Learn easy PGP encryption.":"Apprenez facilement le cryptage PGP.",
-    "PGP_guide_url":"https://github.com/Reckless-Satoshi/robosats/blob/main/docs/sensitive-data-PGP-guide.md/",
+    "PGP_guide_url":"https://learn.robosats.com/docs/pgp-encryption/",
 
     "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
     "Contract Box":"Boîte de contrat",

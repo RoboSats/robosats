@@ -5,7 +5,7 @@ permalink: /docs/wallets/
 toc: true
 toc_sticky: true
 sidebar:
-  title: "<i class='fa-solid fa-wallet'></i> Wallets"
+  title: '<img id="side-icon-verybig" src="/assets/vector/wallet.svg"/>Wallets'
   nav: docs
 src: "_pages/docs/03-understand/07-wallets.md"
 

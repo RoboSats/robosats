@@ -4,7 +4,7 @@ classes: wide
 title: "Donate to the RoboSats Open Source Project"
 permalink: /contribute/donate/
 sidebar:
-  title: "<i class='fa-brands fa-bitcoin'></i> Donate"
+  title: '<img id="side-icon-verybig" src="/assets/vector/bitcoin.svg"/>Donate'
   nav: contribute
 src: "_pages/contribute/07-donate.md"
 --- 
@@ -19,6 +19,6 @@ You can donate in three ways:
 
  2. **Tip the node and platform operator via KeySend** to RoboSats node: [{{site.robosats.node_id}}](https://amboss.space/node/{{site.robosats.node_id}})
  
- 3. **Send an on-chain** transaction to: {{site.robosats.donation_address}} . 
+ 3. **Send an on-chain** transaction to: *{{site.robosats.donation_address}}* 
  
  You can tip anonymously or send us a message so we can acknowledge your contribution!

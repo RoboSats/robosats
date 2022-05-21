@@ -257,7 +257,7 @@
     "Send":"Enviar",
     "The chat has no memory: if you leave, messages are lost.":"Xat sense memòria: si el tanques, els missatges es perden.",
     "Learn easy PGP encryption.":"Aprèn encriptació PGP fàcilment.",
-    "PGP_guide_url":"https://github.com/Reckless-Satoshi/robosats/blob/main/docs/sensitive-data-PGP-guide.md/",
+    "PGP_guide_url":"https://learn.robosats.com/docs/pgp-encryption/es/",
 
     "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
     "Contract Box":"Contracte",

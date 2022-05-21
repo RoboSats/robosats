@@ -31,7 +31,7 @@ masthead_title           : # overrides the website title displayed in the masthe
 words_per_minute         : 
 robosats:
   node_id                : 0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e              
-  donation_address       : bc1q2xu8y3gyys3u7nm8qrsw7tndp9lvjzvuudlnhh
+  donation_address       : bc1q3cpp7ww92n6zp04hv40kd3eyy5avgughx6xqnx
   maker_fee              : 0.025     # In percent (%)
   taker_fee              : 0.175     # In percent (%)
   total_fee              : 0.2       # In percent (%)

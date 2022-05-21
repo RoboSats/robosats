@@ -6,7 +6,7 @@ toc: true
 toc_sticky: true
 excerpt: "Guide: How to use RoboSats. A complete walkthrough RoboSats P2P Exchange"
 sidebar:
-  title: "<i class='fa-solid fa-chalkboard-user'></i> How to use"
+  title: '<img id="side-icon-verybig" src="/assets/vector/chalkboard-user.svg"/>How to use'
   nav: tutorial
 --- 
 

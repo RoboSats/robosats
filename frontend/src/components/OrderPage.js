@@ -549,7 +549,7 @@ class OrderPage extends Component {
               <ListItemText primary={pn(parseFloat(Number(this.state.min_amount).toPrecision(4)))
                 +"-" + pn(parseFloat(Number(this.state.max_amount).toPrecision(4))) +" "+this.state.currencyCode} secondary={t("Amount range")}/>
               :
-              <ListItemText primary={pn(parseFloat(parseFloat(this.state.amount).toFixed(4)))
+              <ListItemText primary={pn(parseFloat(parseFloat(this.state.amount).toFixed(this.state.currency==1000? 8 : 4 )))
                 +" "+this.state.currencyCode} secondary={t("Amount")}/>
               }
 

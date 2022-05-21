@@ -5,7 +5,7 @@ permalink: /docs/access/
 toc: true
 toc_sticky: true
 sidebar:
-  title: "<i class='fa-solid fa-arrow-up-right-from-square'></i> Access"
+  title: '<img id="side-icon-verybig" src="/assets/vector/arrow-up-right-from-square.svg"/>Access'
   nav: docs
 src: "_pages/docs/00-quick-start/03-access.md"
 --- 

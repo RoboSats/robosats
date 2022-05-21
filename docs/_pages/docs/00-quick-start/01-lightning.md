@@ -3,7 +3,7 @@ layout: single
 title: "The Lightning Network"
 permalink: /docs/lightning/
 sidebar:
-  title: "<i class='fa-solid fa-bolt'></i> Lightning Network</span>"
+  title: '<img id="side-icon-verybig" src="/assets/vector/bolt.svg"/>Lightning Network'
   nav: docs
 src: "_pages/docs/00-quick-start/01-lightning.md"
 --- 

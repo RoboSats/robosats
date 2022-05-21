@@ -3,11 +3,11 @@ layout: single
 title: "Translate RoboSats"
 permalink: /contribute/languages/
 sidebar:
-  title: "<i class='fa-solid fa-language'></i> Translation"
+  title: '<img id="side-icon-verybig" src="/assets/vector/language.svg"/>Translation'
   nav: contribute
 toc: true
 toc_sticky: true
-src: "_pages/contribute/02-translations.md"
+src: "_pages/contribute/02-languages.md"
 --- 
 
 

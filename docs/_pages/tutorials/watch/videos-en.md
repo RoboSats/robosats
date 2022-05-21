@@ -5,7 +5,7 @@ permalink: /watch/en/
 toc: true
 toc_sticky: true
 sidebar:
-  title: "Tutorials"
+  title: '<img id="side-icon-verybig" src="/assets/vector/circle-play.svg"/>Tutorials'
   nav: tutorial
 src: "_pages/docs/tutorials/videos-en.md"
 ---

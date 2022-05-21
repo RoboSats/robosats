@@ -3,7 +3,7 @@ layout: single
 title: "Contribute"
 permalink: /contribute/
 sidebar:
-  title: "<i class='fa-solid fa-handshake-angle'></i> Contribute"
+  title: '<img id="side-icon-verybig" src="/assets/vector/handshake-angle.svg"/>Contribute'
   nav: contribute
 src: "_pages/contribute/00-contribute.md"
 --- 
