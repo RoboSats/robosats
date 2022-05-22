@@ -11,7 +11,10 @@ import ContentCopy from "@mui/icons-material/ContentCopy";
 import BoltIcon from '@mui/icons-material/Bolt';
 import { RoboSatsNoTextIcon } from "./Icons";
 
+import { sha256 } from 'js-sha256';
+import { genBase62Token, tokenStrength } from "../utils/token";
 import { getCookie, writeCookie } from "../utils/cookies";
+
 
 class UserGenPage extends Component {
   constructor(props) {
@@ -37,7 +40,7 @@ class UserGenPage extends Component {
       });
     }
     else{
-      var newToken = this.genBase62Token(36)
+      var newToken = genBase62Token(36)
       this.setState({
         token: newToken
       });
@@ -45,19 +48,10 @@ class UserGenPage extends Component {
     }
   }
 
-  // sort of cryptographically strong function to generate Base62 token client-side
-  genBase62Token(length)
-  {
-      return window.btoa(Array.from(
-        window.crypto.getRandomValues(
-          new Uint8Array(length * 2)))
-          .map((b) => String.fromCharCode(b))
-          .join("")).replace(/[+/]/g, "")
-          .substring(0, length);
-  }
-
   getGeneratedUser=(token)=>{
-    fetch('/api/user' + '?token=' + token + '&ref_code=' + this.refCode)
+    var strength = tokenStrength(token)
+
+    fetch('/api/user' + '?token_sha256=' + sha256(token) + '&unique_values=' + strength.uniqueValues +'&counts=' + strength.counts +'&length=' + token.length + '&ref_code=' + this.refCode)
       .then((response) => response.json())
       .then((data) => {
         this.setState({
@@ -97,7 +91,7 @@ class UserGenPage extends Component {
   }
 
   handleClickNewRandomToken=()=>{
-    var token = this.genBase62Token(36);
+    var token = genBase62Token(36);
     this.setState({
       token: token,
       tokenHasChanged: true,

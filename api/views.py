@@ -551,26 +551,84 @@ class UserView(APIView):
                     "bad_request"] = f"You are already logged in as {request.user} and have an active order"
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        token = request.GET.get("token")
+        # Deprecated, kept temporarily for legacy reasons
+        token = request.GET.get("token")                
+                
+        # The old way to generate a robot and login. Soon deprecated
+        # Only for login. No new users allowed. Only using API endpoint.
+        # Frontend does not support it anymore.
+        if token:
+            value, counts = np.unique(list(token), return_counts=True)
+            shannon_entropy = entropy(counts, base=62)
+            bits_entropy = log2(len(value)**len(token))
+
+            # Hash the token, only 1 iteration.
+            hash = hashlib.sha256(str.encode(token)).hexdigest()
+
+            # Generate nickname deterministically
+            nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0]
+            context["nickname"] = nickname
+            
+            # Payload
+            context = {
+                "token_shannon_entropy": shannon_entropy,
+                "token_bits_entropy": bits_entropy,
+            }
+
+            # Do not generate a new user for the old method! Only allow login.
+            if len(User.objects.filter(username=nickname)) == 1:
+                user = authenticate(request, username=nickname, password=token)
+                if user is not None:
+                    login(request, user)
+                    # Sends the welcome back message, only if created +3 mins ago
+                    if request.user.date_joined < (timezone.now() -
+                                                timedelta(minutes=3)):
+                        context["found"] = "We found your Robot avatar. Welcome back!"
+                    return Response(context, status=status.HTTP_202_ACCEPTED)
+                else:
+                    # It is unlikely, but maybe the nickname is taken (1 in 20 Billion change)
+                    context["found"] = "Bad luck, this nickname is taken"
+                    context["bad_request"] = "Enter a different token"
+                    return Response(context, status.HTTP_403_FORBIDDEN)
+
+            elif len(User.objects.filter(username=nickname)) == 0:
+                context["bad_request"] = "User Generation with explicit token deprecated. Only token_sha256 allowed."
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        # The new way. The token is never sent. Only its SHA256
+        token_sha256 = request.GET.get("token_sha256")  # New way to gen users and get credentials
         ref_code = request.GET.get("ref_code")
 
-        # Compute token entropy
-        value, counts = np.unique(list(token), return_counts=True)
-        shannon_entropy = entropy(counts, base=62)
-        bits_entropy = log2(len(value)**len(token))
-        # Payload
-        context = {
-            "token_shannon_entropy": shannon_entropy,
-            "token_bits_entropy": bits_entropy,
-        }
+        # Now the server only receives a hash of the token. So server trusts the client 
+        # with computing length, counts and unique_values to confirm the high entropy of the token
+        # In any case, it is up to the client if they want to create a bad high entropy token.
 
-        # Deny user gen if entropy below 128 bits or 0.7 shannon heterogeneity
-        if bits_entropy < 128 or shannon_entropy < 0.7:
-            context["bad_request"] = "The token does not have enough entropy"
-            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+        # Supplying the pieces of info about the token to compute entropy is not mandatory
+        # If not supply, users can be created with garbage entropy token. Frontend will always supply.
+        try:
+            unique_values = int(request.GET.get("unique_values"))
+            counts = request.GET.get("counts").split(",")
+            counts = [int(x) for x in counts]
+            length = int(request.GET.get("length"))
 
-        # Hash the token, only 1 iteration.
-        hash = hashlib.sha256(str.encode(token)).hexdigest()
+            shannon_entropy = entropy(counts, base=62)
+            bits_entropy = log2(unique_values**length)
+
+            # Payload
+            context = {
+                "token_shannon_entropy": shannon_entropy,
+                "token_bits_entropy": bits_entropy,
+            }
+
+            # Deny user gen if entropy below 128 bits or 0.7 shannon heterogeneity
+            if bits_entropy < 128 or shannon_entropy < 0.7:
+                context["bad_request"] = "The token does not have enough entropy"
+                return Response(context, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            pass
+
+        # Hash the token_sha256, only 1 iteration. (this is the second SHA256 of the user token)
+        hash = hashlib.sha256(str.encode(token_sha256)).hexdigest()
 
         # Generate nickname deterministically
         nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0]
@@ -586,14 +644,12 @@ class UserView(APIView):
             with open(image_path, "wb") as f:
                 rh.img.save(f, format="png")
 
-        
-
         # Create new credentials and login if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname,
-                                     password=token,
+                                     password=token_sha256,
                                      is_staff=False)
-            user = authenticate(request, username=nickname, password=token)
+            user = authenticate(request, username=nickname, password=token_sha256)
             login(request, user)
 
             context['referral_code'] = token_urlsafe(8)
@@ -610,7 +666,7 @@ class UserView(APIView):
             return Response(context, status=status.HTTP_201_CREATED)
 
         else:
-            user = authenticate(request, username=nickname, password=token)
+            user = authenticate(request, username=nickname, password=token_sha256)
             if user is not None:
                 login(request, user)
                 # Sends the welcome back message, only if created +3 mins ago
