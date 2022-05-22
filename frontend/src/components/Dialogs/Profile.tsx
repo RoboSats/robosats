@@ -41,7 +41,7 @@ type Props = {
   activeOrderId: string | number;
   lastOrderId: string | number;
   referralCode: string;
-  handleSubmitInvoiceClicked: (invoice: string) => void;
+  handleSubmitInvoiceClicked: (e:any, invoice: string) => void;
   host: string;
   showRewardsSpinner: boolean;
   withdrawn: boolean;
@@ -273,9 +273,9 @@ const ProfileDialog = ({
                     </Grid>
                   </ListItemText>
                 ) : (
-                  <form style={{maxWidth: 270}}>
-                    <Grid container alignItems="stretch" style={{ display: "flex"}}>
-                      <Grid item style={{ display: "flex" }}>
+                  <form noValidate style={{maxWidth: 270}}>
+                    <Grid container style={{ display: "flex", alignItems: "stretch"}}>
+                      <Grid item style={{ display: "flex", maxWidth:160}} >
                         <TextField
                           error={badInvoice ? true : false}
                           helperText={badInvoice ? badInvoice : "" }
@@ -288,13 +288,14 @@ const ProfileDialog = ({
                         />
                       </Grid>
 
-                      <Grid item alignItems="stretch" style={{ display: "flex" }}>
+                      <Grid item alignItems="stretch" style={{ display: "flex", maxWidth:80}}>
                         <Button
                           sx={{maxHeight:38}}
-                          onClick={() => handleSubmitInvoiceClicked(rewardInvoice)}
+                          onClick={(e) => handleSubmitInvoiceClicked(e, rewardInvoice)}
                           variant="contained"
                           color="primary"
                           size="small"
+                          type="submit"
                         >
                           {t("Submit")}
                         </Button>

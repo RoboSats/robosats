@@ -90,7 +90,7 @@ class BottomBar extends Component {
         this.setState({openProfile: false});
     };
 
-    handleSubmitInvoiceClicked=(rewardInvoice)=>{
+    handleSubmitInvoiceClicked=(e, rewardInvoice)=>{
         this.setState({
             badInvoice:false,
             showRewardsSpinner: true,
@@ -112,6 +112,7 @@ class BottomBar extends Component {
             withdrawn: data.successful_withdrawal ? true : false,
             showRewardsSpinner: false,
         }));
+        e.preventDefault();
     }
 
     getHost(){
