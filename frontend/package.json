@@ -52,6 +52,7 @@
     "i18next-browser-languagedetector": "^6.1.4",
     "i18next-http-backend": "^1.4.0",
     "i18next-xhr-backend": "^3.2.2",
+    "js-sha256": "^0.9.0",
     "material-ui-image": "^3.3.2",
     "openpgp": "^5.2.1",
     "react": "^18.0.0",
