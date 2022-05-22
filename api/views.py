@@ -597,7 +597,13 @@ class UserView(APIView):
 
         # The new way. The token is never sent. Only its SHA256
         token_sha256 = request.GET.get("token_sha256")  # New way to gen users and get credentials
+        public_key = request.GET.get("pub")
+        encrypted_private_key = request.GET.get("enc_priv")
         ref_code = request.GET.get("ref_code")
+        
+        if not public_key or not encrypted_private_key:
+            context["bad_request"] = "Must provide valid 'pub' and 'enc_priv' PGP keys"
+            return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # Now the server only receives a hash of the token. So server trusts the client 
         # with computing length, counts and unique_values to confirm the high entropy of the token
@@ -655,14 +661,19 @@ class UserView(APIView):
             context['referral_code'] = token_urlsafe(8)
             user.profile.referral_code = context['referral_code']
             user.profile.avatar = "static/assets/avatars/" + nickname + ".png"
+            user.profile.public_key = public_key
+            user.profile.encrypted_private_key = encrypted_private_key
 
             # If the ref_code was created by another robot, this robot was referred.
             queryset = Profile.objects.filter(referral_code=ref_code)
             if len(queryset) == 1:
                 user.profile.is_referred = True
                 user.profile.referred_by = queryset[0]
-            
+
             user.profile.save()
+            
+            context["public_key"] = public_key
+            context["encrypted_private_key"] = encrypted_private_key
             return Response(context, status=status.HTTP_201_CREATED)
 
         else:
@@ -673,6 +684,8 @@ class UserView(APIView):
                 if request.user.date_joined < (timezone.now() -
                                                timedelta(minutes=3)):
                     context["found"] = "We found your Robot avatar. Welcome back!"
+                    context["public_key"] = request.user.profile.public_key
+                    context["encrypted_private_key"] = request.user.profile.encrypted_private_key
                 return Response(context, status=status.HTTP_202_ACCEPTED)
             else:
                 # It is unlikely, but maybe the nickname is taken (1 in 20 Billion change)

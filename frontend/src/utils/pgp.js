@@ -1,7 +1,7 @@
 import * as openpgp from 'openpgp/lightweight';
 
 // Generate KeyPair. Private Key is encrypted with the highEntropyToken
-export async function genKeys(highEntropyToken) {
+export async function genKey(highEntropyToken) {
 
   const keyPair = await openpgp.generateKey({
     type: 'ecc', // Type of the key, defaults to ECC
@@ -10,13 +10,8 @@ export async function genKeys(highEntropyToken) {
     passphrase: highEntropyToken,
     format: 'armored'
   })
-  
-  console.log(keyPair)
-  
-  const publicKeyArmored = keyPair.publicKey;
-  const privateKeyArmored = keyPair.privateKey; // encrypted private key
 
-  return {publicKeyArmored: publicKeyArmored, privateKeyArmored: privateKeyArmored}
+  return {publicKeyArmored: keyPair.publicKey, encryptedPrivateKeyArmored: keyPair.privateKey}
 };
 
 // Encrypt and sign a message

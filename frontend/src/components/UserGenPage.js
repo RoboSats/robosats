@@ -13,6 +13,7 @@ import { RoboSatsNoTextIcon } from "./Icons";
 
 import { sha256 } from 'js-sha256';
 import { genBase62Token, tokenStrength } from "../utils/token";
+import { genKey } from "../utils/pgp";
 import { getCookie, writeCookie } from "../utils/cookies";
 
 
@@ -49,36 +50,46 @@ class UserGenPage extends Component {
   }
 
   getGeneratedUser=(token)=>{
-    var strength = tokenStrength(token)
 
-    fetch('/api/user' + '?token_sha256=' + sha256(token) + '&unique_values=' + strength.uniqueValues +'&counts=' + strength.counts +'&length=' + token.length + '&ref_code=' + this.refCode)
-      .then((response) => response.json())
-      .then((data) => {
-        this.setState({
+    var strength = tokenStrength(token);
+
+    genKey(token).then((key) =>
+      fetch('/api/user' +
+      '?token_sha256=' + sha256(token) +
+      '&pub=' + key.publicKeyArmored +
+      '&enc_priv=' + key.encryptedPrivateKeyArmored +
+      '&unique_values=' + strength.uniqueValues +
+      '&counts=' + strength.counts +
+      '&length=' + token.length +
+      '&ref_code=' + this.refCode)
+        .then((response) => response.json())
+        .then((data) => {
+          this.setState({
+              nickname: data.nickname,
+              bit_entropy: data.token_bits_entropy,
+              avatar_url: '/static/assets/avatars/' + data.nickname + '.png',
+              shannon_entropy: data.token_shannon_entropy,
+              bad_request: data.bad_request,
+              found: data.found,
+              loadingRobot:false,
+          })
+          &
+          // Add nick and token to App state (token only if not a bad request)
+          (data.bad_request ? this.props.setAppState({
             nickname: data.nickname,
-            bit_entropy: data.token_bits_entropy,
-            avatar_url: '/static/assets/avatars/' + data.nickname + '.png',
-            shannon_entropy: data.token_shannon_entropy,
-            bad_request: data.bad_request,
-            found: data.found,
-            loadingRobot:false,
+            avatarLoaded: false,
+          })
+          :
+          (this.props.setAppState({
+            nickname: data.nickname,
+            token: token,
+            avatarLoaded: false,
+          })) & writeCookie("robot_token",token) & writeCookie("pub_key",data.public_key) & writeCookie("enc_priv_key",data.encrypted_private_key))
+          &
+          // If the robot has been found (recovered) we assume the token is backed up
+          (data.found ? this.props.setAppState({copiedToken:true}) : null)
         })
-        &
-        // Add nick and token to App state (token only if not a bad request)
-        (data.bad_request ? this.props.setAppState({
-          nickname: data.nickname,
-          avatarLoaded: false,
-        })
-        :
-        (this.props.setAppState({
-          nickname: data.nickname,
-          token: token,
-          avatarLoaded: false,
-        })) & writeCookie("robot_token",token))
-        &
-        // If the robot has been found (recovered) we assume the token is backed up
-        (data.found ? this.props.setAppState({copiedToken:true}) : null)
-     });
+    );
   }
 
   delGeneratedUser() {
