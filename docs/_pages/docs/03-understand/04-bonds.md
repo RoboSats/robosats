@@ -3,7 +3,7 @@ layout: single
 title: Maker and Taker Bonds
 permalink: /docs/bonds/
 sidebar:
-  title: "<i class='fa-solid fa-ticket-simple'></i> Bonds"
+  title: '<img id="side-icon-verybig" src="/assets/vector/ticket-simple.svg"/>Bonds'
   nav: docs
 src: "_pages/docs/03-understand/04-bonds.md"
 ---

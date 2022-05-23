@@ -287,7 +287,7 @@ class TradeBox extends Component {
         </Grid>
         <Grid item xs={12} align="center">
           <Typography variant="body2">
-            {t("You risk losing your bond if you do not lock the collateral. Total time to available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.", this.depositHoursMinutes() )}
+            {t("You risk losing your bond if you do not lock the collateral. Total time available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.", this.depositHoursMinutes() )}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -807,7 +807,7 @@ class TradeBox extends Component {
             <Divider/>
             <ListItem>
               <Typography  variant="body2" align="left">
-                {t("We are waiting for the seller lock the trade amount.")}
+                {t("We are waiting for the seller to lock the trade amount.")}
               </Typography>
             </ListItem>
             <ListItem>
@@ -1158,6 +1158,20 @@ handleRatingRobosatsChange=(e)=>{
       );
     }
     };
+  
+  failureReason=()=>{
+    const { t } = this.props;
+    return(
+      <Grid item xs={12} align="center">
+        <Typography  variant="body2" align="center">
+          <b>{t("Failure reason:")}</b>
+        </Typography>
+        <Typography  variant="body2" align="center">
+          {t(this.props.data.failure_reason)}
+        </Typography>
+      </Grid>
+    )
+  }
 
   showRoutingFailed=()=>{
     const { t } = this.props;
@@ -1169,10 +1183,12 @@ handleRatingRobosatsChange=(e)=>{
             {t("Lightning Routing Failed")}
             </Typography>
           </Grid>
+
+          {this.props.data.failure_reason ? this.failureReason():null}
+
           <Grid item xs={12} align="center">
             <Typography  variant="body2" align="center">
-              {t("Your invoice has expired or more than 3 payment attempts have been made.")}
-              <Link href="https://github.com/Reckless-Satoshi/robosats/issues/44"> {t("Check the list of compatible wallets")}</Link>
+              {t("Your invoice has expired or more than 3 payment attempts have been made. Submit a new invoice.")}
             </Typography>
           </Grid>
 
@@ -1214,6 +1230,9 @@ handleRatingRobosatsChange=(e)=>{
             {t("Lightning Routing Failed")}
           </Typography>
         </Grid>
+
+        {this.props.data.failure_reason ? this.failureReason():null}
+
         <Grid item xs={12} align="center">
           <Typography  variant="body2" align="center">
             {t("RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.")}

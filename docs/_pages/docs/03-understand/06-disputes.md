@@ -3,7 +3,7 @@ layout: single
 title: Disputes
 permalink: /docs/disputes/
 sidebar:
-  title: "<i class='fa-solid fa-life-ring'></i> Disputes"
+  title: '<img id="side-icon-verybig" src="/assets/vector/life-ring.svg"/>Disputes'
   nav: docs
 src: "_pages/docs/03-understand/06-disputes.md"
 ---

@@ -5,7 +5,7 @@ permalink: /read/es/
 toc: true
 toc_sticky: true
 sidebar:
-  title: "<i class='fa-solid fa-chalkboard-user'></i> Tutorial"
+  title: '<img id="side-icon-verybig" src="/assets/vector/chalkboard-user.svg"/>Tutorial'
   nav: tutorial
 --- 
 Uno de los puntos en los que se centra RoboSats es la facilidad de uso. La plataforma es totalmente autoexplicativa, por lo que se podría decir que no es necesario un tutorial. Sin embargo, este tutorial te ayudará a sentirse más cómodo. Después de todo, las plataformas p2p de bitcoin intimidan muchísimo. ¡Sin miedo! RoboSats es superfácil y con este tutorial serás todo un experto :D

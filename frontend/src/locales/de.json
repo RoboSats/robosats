@@ -261,7 +261,7 @@
     "Send":"Senden",
     "The chat has no memory: if you leave, messages are lost.":"Der Chat hat keinen Speicher: Wenn du ihn verlässt, sind die Nachrichten weg.",
     "Learn easy PGP encryption.":"Lerne einfache PGP-Verschlüsselung kennen.",
-    "PGP_guide_url":"https://github.com/Reckless-Satoshi/robosats/blob/main/docs/sensitive-data-PGP-guide.md/",
+    "PGP_guide_url":"https://learn.robosats.com/docs/pgp-encryption/",
 
     "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
     "Contract Box":"Vertrags-Box",
@@ -296,7 +296,7 @@
     "The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC. Please provide a valid invoice for {{amountSats}} Satoshis.":"Der Taker ist bereit! Bevor du {{amountFiat}} {{currencyCode}} sendest, möchten wir sicherstellen, dass du in der Lage bist, die BTC zu erhalten. Bitte füge eine gültige Invoice über {{amountSats}} Satoshis ein",
     "Payout Lightning Invoice":"Lightning-Auszahlungs-Invoice",
     "Your invoice looks good!":"Deine Invoice sieht gut aus!",
-    "We are waiting for the seller lock the trade amount.":"Wir warten darauf, dass der Verkäufer den Handelsbetrag sperrt.",
+    "We are waiting for the seller to lock the trade amount.":"Wir warten darauf, dass der Verkäufer den Handelsbetrag sperrt.",
     "Just hang on for a moment. If the seller does not deposit, you will get your bond back automatically. In addition, you will receive a compensation (check the rewards in your profile).":"Warte einen Moment. Wenn der Verkäufer den Handelsbetrag nicht hinterlegt, bekommst du deine Kaution automatisch zurück. Darüber hinaus erhältst du eine Entschädigung (siehe die Belohnungen in deinem Profil).",
     "The trade collateral is locked!":"Der Handelsbetrag ist gesperrt!",
     "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.":"Wir warten darauf, dass der Käufer eine Lightning-Invoice einreicht. Sobald er dies tut, kannst du ihm die Details der Fiat-Zahlung mitteilen.",

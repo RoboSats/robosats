@@ -5,7 +5,7 @@ permalink: /watch/pt/
 toc: true
 toc_sticky: true
 sidebar:
-  title: "<img style='width:22px;height:13px' src='/assets/vector/portuguese.svg'/><i class='fa-solid fa-circle-play'></i> Tutoriais"
+  title: '<img id="side-icon-verybig" src="/assets/vector/circle-play.svg"/>Tutoriais'
   nav: tutorial
 src: "_pages/docs/tutorials/videos-pt.md"
 ---

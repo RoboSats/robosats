@@ -3,7 +3,7 @@ layout: single
 title: P2P Swaps
 permalink: /docs/swaps/
 sidebar:
-  title: "<i class='fa-solid fa-arrow-right-arrow-left'></i> Swaps"
+  title: '<img id="side-icon-verybig" src="/assets/vector/arrow-right-arrow-left.svg"/>Swaps'
   nav: docs
 src: "_pages/docs/03-understand/09-swaps.md"
 ---

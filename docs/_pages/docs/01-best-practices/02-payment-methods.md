@@ -5,7 +5,7 @@ permalink: /docs/payment-methods/
 toc: true
 toc_sticky: true
 sidebar:
-  title: "<i class='fa-solid fa-hand-peace'></i> Fiat Best Practices"
+  title: '<img id="side-icon-verybig" src="/assets/vector/hand-peace.svg"/>Fiat Best Practices'
   nav: docs
 src: "_pages/docs/01-best-practices/02-payment-methods.md"
 --- 

@@ -1,8 +1,7 @@
 import React, { Component } from 'react'
 import { withTranslation } from "react-i18next";
-import {FormControlLabel, Link, Switch, CircularProgress, Badge, Tooltip, TextField, ListItemAvatar, Button, Avatar,Paper, Grid, IconButton, Typography, Select, MenuItem, List, ListItemText, ListItem, ListItemIcon, ListItemButton, Divider, Dialog, DialogContent} from "@mui/material";
+import { Badge, Tooltip, ListItemAvatar, Avatar,Paper, Grid, IconButton, Select, MenuItem, ListItemText, ListItem, ListItemIcon, ListItemButton } from "@mui/material";
 import MediaQuery from 'react-responsive'
-import { Link as LinkRouter } from 'react-router-dom'
 
 // Icons
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -12,26 +11,15 @@ import SellIcon from '@mui/icons-material/Sell';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PercentIcon from '@mui/icons-material/Percent';
 import PriceChangeIcon from '@mui/icons-material/PriceChange';
-import BoltIcon from '@mui/icons-material/Bolt';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import EqualizerIcon from '@mui/icons-material/Equalizer';
 
-import PublicIcon from '@mui/icons-material/Public';
-import NumbersIcon from '@mui/icons-material/Numbers';
-import PasswordIcon from '@mui/icons-material/Password';
-import ContentCopy from "@mui/icons-material/ContentCopy";
-import DnsIcon from '@mui/icons-material/Dns';
-import WebIcon from '@mui/icons-material/Web';
-import BookIcon from '@mui/icons-material/Book';
-import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import { AmbossIcon , BitcoinSignIcon} from "./Icons";
-
-import { CommunityDialog } from './Dialogs';
+import {
+    CommunityDialog,
+    ExchangeSummaryDialog,
+    ProfileDialog,
+    StatsDialog,
+} from './Dialogs';
 
 import { getCookie } from "../utils/cookies";
-import { pn } from "../utils/prettyNumbers";
 
 class BottomBar extends Component {
     constructor(props) {
@@ -73,7 +61,7 @@ class BottomBar extends Component {
         this.setState(null)
         fetch('/api/info/')
           .then((response) => response.json())
-          .then((data) => this.setState(data) 
+          .then((data) => this.setState(data)
           & this.setState({active_order_id: data.active_order_id ? data.active_order_id : null,
             last_order_id: data.last_order_id ? data.last_order_id : null})
           & this.props.setAppState({nickname:data.nickname, loading:false}));
@@ -86,105 +74,6 @@ class BottomBar extends Component {
     handleClickCloseStatsForNerds = () => {
         this.setState({openStatsForNerds: false});
     };
-
-    StatsDialog =() =>{
-        const { t } = this.props;
-    return(
-        <Dialog
-        open={this.state.openStatsForNerds}
-        onClose={this.handleClickCloseStatsForNerds}
-        aria-labelledby="stats-for-nerds-dialog-title"
-        aria-describedby="stats-for-nerds-description"
-        >
-        <DialogContent>
-            <Typography component="h5" variant="h5">{t("Stats For Nerds")}</Typography>
-            <List dense>
-                <Divider/>
-                <ListItem>
-                    <ListItemIcon><BoltIcon/></ListItemIcon>
-                    <ListItemText primary={this.state.lnd_version} secondary={t("LND version")}/>
-                </ListItem>
-
-                <Divider/>
-                {this.state.network == 'testnet'?
-                <ListItem>
-                    <ListItemIcon><DnsIcon/></ListItemIcon>
-                    <ListItemText secondary={this.state.node_alias}>
-                         <Link target="_blank" href={"https://1ml.com/testnet/node/"
-                        + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (1ML)"}
-                        </Link>
-                    </ListItemText>
-                </ListItem>
-                :
-                <ListItem>
-                    <ListItemIcon><AmbossIcon/></ListItemIcon>
-                    <ListItemText secondary={this.state.node_alias}>
-                            <Link target="_blank" href={"https://amboss.space/node/"
-                        + this.state.node_id}>{this.state.node_id.slice(0, 12)+"... (AMBOSS)"}
-                        </Link>
-                    </ListItemText>
-                </ListItem>
-                }
-
-                <Divider/>
-                <ListItem>
-                    <ListItemIcon><WebIcon/></ListItemIcon>
-                    <ListItemText secondary={this.state.alternative_name}>
-                        <Link target="_blank" href={"http://"+this.state.alternative_site}>{this.state.alternative_site.slice(0, 12)+"...onion"}
-                        </Link>
-                    </ListItemText>
-                </ListItem>
-
-                <Divider/>
-                <ListItem>
-                    <ListItemIcon><GitHubIcon/></ListItemIcon>
-                    <ListItemText secondary={t("Currently running commit hash")}>
-                        <Link target="_blank" href={"https://github.com/Reckless-Satoshi/robosats/tree/"
-                        + this.state.robosats_running_commit_hash}>{this.state.robosats_running_commit_hash.slice(0, 12)+"..."}
-                        </Link>
-                    </ListItemText>
-                </ListItem>
-
-                <Divider/>
-                <ListItem>
-                    <ListItemIcon><EqualizerIcon/></ListItemIcon>
-                    <ListItemText secondary={t("24h contracted volume")}>
-                        <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                            {pn(this.state.last_day_volume)}
-                            <BitcoinSignIcon sx={{width:14,height:14}} color={"text.secondary"}/>
-                        </div>
-                    </ListItemText>
-                </ListItem>
-
-                <Divider/>
-                <ListItem>
-                    <ListItemIcon><EqualizerIcon/></ListItemIcon>
-                    <ListItemText secondary={t("Lifetime contracted volume")}>
-                        <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                            {pn(this.state.lifetime_volume)}
-                            <BitcoinSignIcon sx={{width:14,height:14}} color={"text.secondary"}/>
-                        </div>
-                    </ListItemText>
-                </ListItem>
-
-                <Divider/>
-                <ListItem>
-                    <ListItemIcon><PublicIcon/></ListItemIcon>
-                    <ListItemText primary={
-                        <div style={{display:'flex', alignItems:'center', justifyContent:'left', flexWrap:'wrap'}}>
-                            <span>{t("Made with")+" "}</span>
-                            <FavoriteIcon sx={{ color: "#FF0000", height: '22px',width: '22px'}}/>
-                            <span>{" "+t("and")+" "}</span>
-                            <BoltIcon sx={{ color: "#fcba03", height: '23px',width: '23px'}}/>
-                        </div>}
-                        secondary={t("... somewhere on Earth!")}/>
-                </ListItem>
-            </List>
-
-            </DialogContent>
-        </Dialog>
-    )
-    }
 
     handleClickOpenCommunity = () => {
         this.setState({openCommuniy: true});
@@ -201,7 +90,7 @@ class BottomBar extends Component {
         this.setState({openProfile: false});
     };
 
-    handleSubmitInvoiceClicked=()=>{
+    handleSubmitInvoiceClicked=(e, rewardInvoice)=>{
         this.setState({
             badInvoice:false,
             showRewardsSpinner: true,
@@ -211,7 +100,7 @@ class BottomBar extends Component {
             method: 'POST',
             headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
             body: JSON.stringify({
-              'invoice': this.state.rewardInvoice,
+              'invoice': rewardInvoice,
             }),
         };
         fetch('/api/reward/', requestOptions)
@@ -223,192 +112,13 @@ class BottomBar extends Component {
             withdrawn: data.successful_withdrawal ? true : false,
             showRewardsSpinner: false,
         }));
+        e.preventDefault();
     }
 
     getHost(){
         var url = (window.location != window.parent.location) ? this.getHost(document.referrer) : document.location.href;
         return url.split('/')[2]
       }
-
-    dialogProfile =() =>{
-        const { t } = this.props;
-        return(
-        <Dialog
-        open={this.state.openProfile}
-        onClose={this.handleClickCloseProfile}
-        aria-labelledby="profile-title"
-        aria-describedby="profile-description"
-        >
-            <DialogContent>
-            <Typography component="h5" variant="h5">{t("Your Profile")}</Typography>
-            <List>
-                <Divider/>
-                <ListItem className="profileNickname">
-                    <ListItemText secondary={t("Your robot")}>
-                    <Typography component="h6" variant="h6">
-                    {this.props.nickname ?
-                    <div style={{position:'relative',left:'-7px'}}>
-                    <div style={{display:'flex', alignItems:'center', justifyContent:'left', flexWrap:'wrap', width:300}}>
-                        <BoltIcon sx={{ color: "#fcba03", height: '28px',width: '24px'}}/><a>{this.props.nickname}</a><BoltIcon sx={{ color: "#fcba03", height: '28px',width: '24px'}}/>
-                    </div>
-                    </div>
-                    : ""}
-                    </Typography>
-                    </ListItemText>
-                    <ListItemAvatar>
-                    <Avatar className='profileAvatar'
-                        sx={{ width: 65, height:65 }}
-                        alt={this.props.nickname}
-                        src={this.props.nickname ? window.location.origin +'/static/assets/avatars/' + this.props.nickname + '.png' : null}
-                        />
-                    </ListItemAvatar>
-                </ListItem>
-
-                <Divider/>
-
-                {this.state.active_order_id ?
-                <ListItemButton onClick={this.handleClickCloseProfile} to={'/order/'+this.state.active_order_id} component={LinkRouter}>
-                    <ListItemIcon>
-                        <Badge badgeContent="" color="primary">
-                            <NumbersIcon color="primary"/>
-                        </Badge>
-                    </ListItemIcon>
-                    <ListItemText primary={t("One active order #{{orderID}}",{orderID: this.state.active_order_id})} secondary={t("Your current order")}/>
-                </ListItemButton>
-                :
-
-                this.state.last_order_id ?
-                    <ListItemButton onClick={this.handleClickCloseProfile} to={'/order/'+this.state.last_order_id} component={LinkRouter}>
-                        <ListItemIcon>
-                            <NumbersIcon color="primary"/>
-                        </ListItemIcon>
-                    <ListItemText primary={t("Your last order #{{orderID}}",{orderID: this.state.last_order_id})} secondary={t("Inactive order")}/>
-                    </ListItemButton>
-                    :
-                    <ListItem>
-                        <ListItemIcon><NumbersIcon/></ListItemIcon>
-                        <ListItemText primary={t("No active orders")} secondary={t("You do not have previous orders")}/>
-                    </ListItem>
-
-                }
-
-                <ListItem>
-                    <ListItemIcon>
-                        <PasswordIcon/>
-                    </ListItemIcon>
-                    <ListItemText secondary={t("Your token (will not remain here)")}>
-                    {getCookie("robot_token") ?
-                    <TextField
-                        disabled
-                        sx={{width:"100%", maxWidth:"450px"}}
-                        label={t("Back it up!")}
-                        value={getCookie("robot_token") }
-                        variant='filled'
-                        size='small'
-                        InputProps={{
-                            endAdornment:
-                            <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                                <IconButton onClick= {()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}>
-                                    <ContentCopy color={this.props.copiedToken ? "inherit" : "primary"}/>
-                                </IconButton>
-                            </Tooltip>,
-                            }}
-                        />
-                    :
-                    t("Cannot remember")}
-                </ListItemText>
-                </ListItem>
-
-                <Divider/>
-
-                <Grid item align="center">
-                    <FormControlLabel labelPlacement="start"control={
-                        <Switch
-                        checked={this.state.showRewards}
-                        onChange={()=> this.setState({showRewards: !this.state.showRewards})}/>}
-                        label={t("Rewards and compensations")}
-                        />
-                </Grid>
-
-                <div style={{ display: this.state.showRewards ? '':'none'}}>
-                    <ListItem>
-                        <ListItemIcon>
-                            <PersonAddAltIcon/>
-                        </ListItemIcon>
-                        <ListItemText secondary={t("Share to earn 100 Sats per trade")}>
-                        <TextField
-                            label={t("Your referral link")}
-                            value={this.getHost()+'/ref/'+this.state.referral_code}
-                            size='small'
-                            InputProps={{
-                                endAdornment:
-                                <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                                    <IconButton onClick= {()=>navigator.clipboard.writeText('http://'+this.getHost()+'/ref/'+this.state.referral_code)}>
-                                        <ContentCopy />
-                                    </IconButton>
-                                </Tooltip>,
-                                }}
-                            />
-                    </ListItemText>
-                    </ListItem>
-
-                    <ListItem>
-                        <ListItemIcon>
-                            <EmojiEventsIcon/>
-                        </ListItemIcon>
-                        {!this.state.openClaimRewards ?
-                        <ListItemText secondary={t("Your earned rewards")}>
-                            <Grid container>
-                                <Grid item xs={9}>
-                                    <Typography>{this.state.earned_rewards+" Sats"}</Typography>
-                                </Grid>
-                                <Grid item xs={3}>
-                                    <Button disabled={this.state.earned_rewards==0? true : false} onClick={() => this.setState({openClaimRewards:true})} variant="contained" size="small">{t("Claim")}</Button>
-                                </Grid>
-                            </Grid>
-                        </ListItemText>
-                        :
-                        <form style={{maxWidth: 270}}>
-                            <Grid alignItems="stretch" style={{ display: "flex"}} align="center">
-                                <Grid item alignItems="stretch" style={{ display: "flex" }} align="center">
-                                <TextField
-                                    error={this.state.badInvoice}
-                                    helperText={this.state.badInvoice ? this.state.badInvoice : "" }
-                                    label={t("Invoice for {{amountSats}} Sats", {amountSats: this.state.earned_rewards})}
-                                    size="small"
-                                    value={this.state.rewardInvoice}
-                                    onChange={e => {
-                                    this.setState({ rewardInvoice: e.target.value });
-                                    }}
-                                />
-                                </Grid>
-                                <Grid item alignItems="stretch" style={{ display: "flex" }}>
-                                    <Button sx={{maxHeight:38}} onClick={this.handleSubmitInvoiceClicked} variant="contained" color="primary" size="small">{t("Submit")}</Button>
-                                </Grid>
-                            </Grid>
-                        </form>
-                        }
-                    </ListItem>
-
-                    {this.state.showRewardsSpinner?
-                    <div style={{display: 'flex', justifyContent: 'center'}}>
-                        <CircularProgress/>
-                    </div>
-                    :""}
-
-                    {this.state.withdrawn?
-                    <div style={{display: 'flex', justifyContent: 'center'}}>
-                        <Typography color="primary" variant="body2"><b>{t("There it goes, thank you!🥇")}</b></Typography>
-                    </div>
-                    :""}
-
-                </div>
-            </List>
-            </DialogContent>
-
-        </Dialog>
-    )
-    }
 
 bottomBarDesktop =()=>{
     const { t } = this.props;
@@ -417,16 +127,13 @@ bottomBarDesktop =()=>{
 
     return(
         <Paper elevation={6} style={{height:40}}>
-                {this.StatsDialog()}
-                {this.dialogProfile()}
-                {this.exchangeSummaryDialog()}
                 <Grid container>
 
                     <Grid item xs={1.9}>
                         <div style={{display: this.props.avatarLoaded ? '':'none'}}>
                         <ListItemButton onClick={this.handleClickOpenProfile} >
-                            <Tooltip 
-                                open={hasRewards || hasOrder} 
+                            <Tooltip
+                                open={hasRewards || hasOrder}
                                 title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
                                     (hasOrder ? t("You have an active order"):"")}
                                 >
@@ -576,122 +283,17 @@ bottomBarDesktop =()=>{
         this.setState({openExchangeSummary: false});
     };
 
-    exchangeSummaryDialog =() =>{
-        const { t } = this.props;
-        return(
-        <Dialog
-        open={this.state.openExchangeSummary}
-        onClose={this.handleClickCloseExchangeSummary}
-        aria-labelledby="exchange-summary-title"
-        aria-describedby="exchange-summary-description"
-        >
-        <DialogContent>
-            <Typography component="h5" variant="h5">{t("Exchange Summary")}</Typography>
-            <List dense>
-                <ListItem >
-                    <ListItemIcon size="small">
-                        <InventoryIcon/>
-                    </ListItemIcon>
-                    <ListItemText
-                        primaryTypographyProps={{fontSize: '14px'}}
-                        secondaryTypographyProps={{fontSize: '12px'}}
-                        primary={this.state.num_public_buy_orders}
-                        secondary={t("Public buy orders")} />
-                </ListItem>
-                <Divider/>
-
-                <ListItem >
-                    <ListItemIcon size="small">
-                        <SellIcon/>
-                    </ListItemIcon>
-                    <ListItemText
-                        primaryTypographyProps={{fontSize: '14px'}}
-                        secondaryTypographyProps={{fontSize: '12px'}}
-                        primary={this.state.num_public_sell_orders}
-                        secondary={t("Public sell orders")} />
-                </ListItem>
-                <Divider/>
-
-                <ListItem >
-                    <ListItemIcon size="small">
-                        <BookIcon/>
-                    </ListItemIcon>
-                    <ListItemText
-                        primaryTypographyProps={{fontSize: '14px'}}
-                        secondaryTypographyProps={{fontSize: '12px'}}
-                        primary={pn(this.state.book_liquidity)+" Sats"}
-                        secondary={t("Book liquidity")}/>
-                </ListItem>
-                <Divider/>
-
-                <ListItem >
-                    <ListItemIcon size="small">
-                        <SmartToyIcon/>
-                    </ListItemIcon>
-                    <ListItemText
-                        primaryTypographyProps={{fontSize: '14px'}}
-                        secondaryTypographyProps={{fontSize: '12px'}}
-                        primary={this.state.active_robots_today}
-                        secondary={t("Today active robots")} />
-                </ListItem>
-                <Divider/>
-
-                <ListItem >
-                    <ListItemIcon size="small">
-                        <PriceChangeIcon/>
-                    </ListItemIcon>
-                    <ListItemText
-                        primaryTypographyProps={{fontSize: '14px'}}
-                        secondaryTypographyProps={{fontSize: '12px'}}
-                        primary={this.state.last_day_nonkyc_btc_premium+"%"}
-                        secondary={t("24h non-KYC bitcoin premium")} />
-                </ListItem>
-                <Divider/>
-
-                <ListItem >
-                    <ListItemIcon size="small">
-                        <PercentIcon/>
-                    </ListItemIcon>
-                    <Grid container >
-                        <Grid item xs={6}>
-                            <ListItemText
-                                primaryTypographyProps={{fontSize: '14px'}}
-                                secondaryTypographyProps={{fontSize: '12px'}}
-                                secondary={t("Maker fee")}>
-                                {(this.state.maker_fee*100).toFixed(3)}%
-                            </ListItemText>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <ListItemText
-                                primaryTypographyProps={{fontSize: '14px'}}
-                                secondaryTypographyProps={{fontSize: '12px'}}
-                                secondary={t("Taker fee")}>
-                                {(this.state.taker_fee*100).toFixed(3)}%
-                            </ListItemText>
-                        </Grid>
-                    </Grid>
-                </ListItem>
-                </List>
-
-            </DialogContent>
-        </Dialog>
-    )
-    }
-
 bottomBarPhone =()=>{
     const { t } = this.props;
     var hasRewards = this.state.earned_rewards > 0 ? true: false;
     var hasOrder = this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded ? true : false;
     return(
         <Paper elevation={6} style={{height:40}}>
-                {this.StatsDialog()}
-                {this.exchangeSummaryDialog()}
-                {this.dialogProfile()}
                 <Grid container>
 
                     <Grid item xs={1.6}>
                     <div style={{display: this.props.avatarLoaded ? '':'none'}}>
-                    <Tooltip open={hasRewards || hasOrder} 
+                    <Tooltip open={hasRewards || hasOrder}
                             title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
                                 (hasOrder ? t("You have an active order"):"")}>
                         <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, bottom: 17, right: 8}} >
@@ -787,6 +389,49 @@ bottomBarPhone =()=>{
                     isOpen={this.state.openCommuniy}
                     handleClickCloseCommunity={this.handleClickCloseCommunity}
                 />
+
+                <ExchangeSummaryDialog
+                    isOpen={this.state.openExchangeSummary}
+                    handleClickCloseExchangeSummary={this.handleClickCloseExchangeSummary}
+                    numPublicBuyOrders={this.state.num_public_buy_orders}
+                    numPublicSellOrders={this.state.num_public_sell_orders}
+                    bookLiquidity={this.state.book_liquidity}
+                    activeRobotsToday={this.state.active_robots_today}
+                    lastDayNonkycBtcPremium={this.state.last_day_nonkyc_btc_premium}
+                    makerFee={this.state.maker_fee}
+                    takerFee={this.state.taker_fee}
+                />
+
+                <ProfileDialog
+                    isOpen={this.state.openProfile}
+                    handleClickCloseProfile={this.handleClickCloseProfile}
+                    nickname={this.props.nickname}
+                    activeOrderId={this.state.active_order_id}
+                    lastOrderId={this.state.last_order_id}
+                    referralCode={this.state.referral_code}
+                    handleSubmitInvoiceClicked={this.handleSubmitInvoiceClicked}
+                    host={this.getHost()}
+                    showRewardsSpinner={this.state.showRewardsSpinner}
+                    withdrawn={this.state.withdrawn}
+                    badInvoice={this.state.badInvoice}
+                    earnedRewards={this.state.earned_rewards}
+                    setAppState={this.props.setAppState}
+                />
+
+                <StatsDialog
+                    isOpen={this.state.openStatsForNerds}
+                    handleClickCloseStatsForNerds={this.handleClickCloseStatsForNerds}
+                    lndVersion={this.state.lnd_version}
+                    network={this.state.network}
+                    nodeAlias={this.state.node_alias}
+                    nodeId={this.state.node_id}
+                    alternativeName={this.state.alternativeName}
+                    alternativeSite={this.state.alternative_site}
+                    robosatsRunningCommitHash={this.state.robosats_running_commit_hash}
+                    lastDayVolume={this.state.last_day_volume}
+                    lifetimeVolume={this.state.lifetime_volume}
+                />
+
                 <MediaQuery minWidth={1200}>
                     {this.bottomBarDesktop()}
                 </MediaQuery>

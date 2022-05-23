@@ -5,7 +5,7 @@ permalink: /docs/pgp-encryption/es/
 toc: true
 toc_sticky: true
 sidebar:
-  title: "<i class='fa-solid fa-fingerprint'></i> Encriptación PGP"
+  title: '<img id="side-icon-verybig" src="/assets/vector/fingerprint.svg"/>Encriptación PGP'
   nav: docs
 src: "_pages/docs/01-best-practices/01-pgp-guide_es.md"
 --- 

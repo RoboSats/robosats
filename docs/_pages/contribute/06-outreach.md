@@ -3,7 +3,7 @@ layout: single
 title: "Outreach"
 permalink: /contribute/outreach/
 sidebar:
-  title: "<i class='fa-solid bullhorn'></i> Outreach"
+  title: '<img id="side-icon-verybig" src="/assets/vector/bullhorn.svg"/>Outreach'
   nav: contribute
 src: "_pages/contribute/06-outreach.md"
 --- 

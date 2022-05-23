@@ -3,7 +3,7 @@ layout: single
 title: Telegram Notifications, Alert and Groups
 permalink: /docs/telegram/
 sidebar:
-  title: "<i class='fa-brands fa-telegram'></i> Telegram"
+  title: '<img id="side-icon-verybig" src="/assets/vector/telegram.svg"/>Telegram'
   nav: docs
 src: "_pages/docs/03-understand/10-telegram.md"
 ---

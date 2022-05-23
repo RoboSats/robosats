@@ -3,7 +3,7 @@ layout: single
 title: "Quick Start Guide"
 permalink: /docs/quick-start/
 sidebar:
-  title: "<i class='fa-solid fa-rocket'></i> Quick Start"
+  title: '<img id="side-icon-verybig" src="/assets/vector/rocket.svg"/>Quick Start'
   nav: docs
 --- 
 RoboSats is an easy way to privately exchange Bitcoin for national currencies It simplifies the peer-to-peer experience and makes use lightning hold invoices to minimize custody and trust requirements.

@@ -4,7 +4,7 @@ classes: wide
 title: "Trade Pipeline"
 permalink: /docs/trade-pipeline/
 sidebar:
-  title: "<i class='fa-solid fa-timeline'></i> Trade Pipeline"
+  title: '<img id="side-icon-verybig" src="/assets/vector/timeline.svg"/>Trade Pipeline'
   nav: docs
 src: "_pages/docs/03-understand/01-trade-pipeline.md"
 --- 
@@ -23,6 +23,5 @@ Alice wants to buy Sats privately. This is step-by-step what happens when she bu
 9. Bob's trade hold invoice is charged and the satoshis are sent to Alice.
 10. Bob and Alice's bonds return automatically, since they complied by the rules.
 11. The bonds would be charged (lost) in case of unilateral cancellation or cheating (lost dispute).
-
 
 {% include improve %}
