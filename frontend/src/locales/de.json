@@ -325,7 +325,7 @@
     "RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must be online in order to receive payments.":"RoboSats versucht deine Lightning-Invoice zu bezahlen. Denk daran, dass deine Lightning-Node erreichbar sein muss, um die Zahlung zu erhalten.",
     "Retrying!":"Erneut versuchen!",
     "Lightning Routing Failed":"Lightning-Weiterleitung fehlgeschlagen",
-    "Your invoice has expired or more than 3 payment attempts have been made.":"Deine Invoice ist abgelaufen oder mehr als 3 Zahlungs-Versuche sind fehlgeschlagen.",
+    "Your invoice has expired or more than 3 payment attempts have been made.":"Deine Invoice ist abgelaufen oder mehr als 3 Zahlungs-Versuche sind fehlgeschlagen. Reiche eine neue Invoice ein",
     "Check the list of compatible wallets":"Prüfe die Liste mit kompatiblen Wallets",
     "RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.":"RoboSats wird alle 5 Minuten 3 mal versuchen, deine Invoice auszuzahlen. Wenn es weiter fehlschlägt, kannst du eine neue Invoice einfügen. Prüfe deine Inbound-Liquidität. Denk daran, dass deine Lightning-Node erreichbar sein muss, um die Zahlung zu erhalten.Denk daran, dass deine Lightning-Node erreichbar sein muss, um die Zahlung zu erhalten.",
     "Next attempt in":"Nächster Versuch in",
@@ -357,6 +357,14 @@
     "Unpause Order":"Order aktivieren",
     "You risk losing your bond if you do not lock the collateral. Total time to available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.":"Du riskierst den Verlust deiner Kaution, wenn du die Sicherheiten nicht sperrst. Die insgesamt zur Verfügung stehende Zeit beträgt {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.",
     "See Compatible Wallets":"Kompatible Wallets ansehen",
+    "Failure reason:":"Fehlerursache:",
+    "Payment isn't failed (yet)":"Zahlung ist (noch) nicht gescheitert",
+    "There are more routes to try, but the payment timeout was exceeded.":"Es gibt noch weitere Routen, aber das Zeitlimit für die Zahlung wurde überschritten.",
+    "All possible routes were tried and failed permanently. Or there were no routes to the destination at all.":"Alle möglichen Routen wurden ausprobiert und scheiterten permanent. Oder es gab überhaupt keine Routen zum Ziel.",
+    "A non-recoverable error has occurred.":"Es ist ein nicht behebbarer Fehler aufgetreten.",
+    "Payment details are incorrect (unknown hash, invalid amount or invalid final CLTV delta).":"Die Zahlungsdetails sind falsch (unbekannter Hash, ungültiger Betrag oder ungültiges CLTV-Delta).",
+    "Insufficient unlocked balance in RoboSats' node.":"Unzureichendes freigeschaltetes Guthaben auf der Node von RoboSats.",
+
 
     "INFO DIALOG - InfoDiagog.js":"App information and clarifications and terms of use",
     "Close":"Schließen",
