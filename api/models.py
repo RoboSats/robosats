@@ -426,13 +426,13 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     # PGP keys, used for E2E chat encrytion. Priv key is encrypted with user's passphrase (highEntropyToken)
-    public_key = models.CharField(
+    public_key = models.TextField(
         max_length=999,
         null=True,
         default=None,
         blank=True,
     )
-    encrypted_private_key = models.CharField(
+    encrypted_private_key = models.TextField(
         max_length=999,
         null=True,
         default=None,

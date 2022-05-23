@@ -13,7 +13,7 @@ import { RoboSatsNoTextIcon } from "./Icons";
 
 import { sha256 } from 'js-sha256';
 import { genBase62Token, tokenStrength } from "../utils/token";
-import { genKey } from "../utils/pgp";
+import { genKey , encryptMessage , decryptMessage} from "../utils/pgp";
 import { getCookie, writeCookie } from "../utils/cookies";
 
 
@@ -51,19 +51,31 @@ class UserGenPage extends Component {
 
   getGeneratedUser=(token)=>{
 
-    var strength = tokenStrength(token);
+    const strength = tokenStrength(token);
+    const refCode = this.refCode
 
-    genKey(token).then((key) =>
-      fetch('/api/user' +
-      '?token_sha256=' + sha256(token) +
-      '&pub=' + key.publicKeyArmored +
-      '&enc_priv=' + key.encryptedPrivateKeyArmored +
-      '&unique_values=' + strength.uniqueValues +
-      '&counts=' + strength.counts +
-      '&length=' + token.length +
-      '&ref_code=' + this.refCode)
+    const requestOptions = genKey(token).then(function(key) {
+      return {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+        body: JSON.stringify({
+            token_sha256: sha256(token),
+            public_key: key.publicKeyArmored,
+            encrypted_private_key: key.encryptedPrivateKeyArmored,
+            unique_values: strength.uniqueValues,
+            counts: strength.counts,
+            length: token.length,
+            ref_code: refCode,
+        })
+      }}
+    );
+
+    console.log(requestOptions)
+    
+    requestOptions.then((options) =>
+      fetch("/api/user/",options)
         .then((response) => response.json())
-        .then((data) => {
+        .then((data) => { console.log(data) &
           this.setState({
               nickname: data.nickname,
               bit_entropy: data.token_bits_entropy,
@@ -84,11 +96,13 @@ class UserGenPage extends Component {
             nickname: data.nickname,
             token: token,
             avatarLoaded: false,
-          })) & writeCookie("robot_token",token) & writeCookie("pub_key",data.public_key) & writeCookie("enc_priv_key",data.encrypted_private_key))
+          })) & writeCookie("robot_token",token) 
+              & writeCookie("pub_key",data.public_key.split('\n').join('\\')) 
+              & writeCookie("enc_priv_key",data.encrypted_private_key.split('\n').join('\\')))
           &
           // If the robot has been found (recovered) we assume the token is backed up
           (data.found ? this.props.setAppState({copiedToken:true}) : null)
-        })
+      })
     );
   }
 
@@ -108,6 +122,18 @@ class UserGenPage extends Component {
       tokenHasChanged: true,
     });
     this.props.setAppState({copiedToken: true})
+
+    // Encryption decryption test
+    console.log(encryptMessage('Example text to encrypt!', 
+        getCookie('pub_key').split('\\').join('\n'), 
+        getCookie('enc_priv_key').split('\\').join('\n'), 
+        getCookie('robot_token'))
+        .then((encryptedMessage)=> decryptMessage(
+          encryptedMessage,
+          getCookie('pub_key').split('\\').join('\n'), 
+          getCookie('enc_priv_key').split('\\').join('\n'), 
+          getCookie('robot_token'))
+        ))
   }
 
   handleChangeToken=(e)=>{
@@ -169,7 +195,7 @@ class UserGenPage extends Component {
           {
             this.state.found ?
               <Grid item xs={12} align="center">
-                <Typography component="subtitle2" variant="subtitle2" color='primary'>
+                <Typography variant="subtitle2" color='primary'>
                   {this.state.found ? t("A robot avatar was found, welcome back!"):null}<br/>
                 </Typography>
               </Grid>
@@ -179,7 +205,7 @@ class UserGenPage extends Component {
           <Grid container align="center">
             <Grid item xs={12} align="center">
               <TextField sx={{maxWidth: 280}}
-                error={this.state.bad_request}
+                error={this.state.bad_request ? true : false}
                 label={t("Store your token safely")}
                 required={true}
                 value={this.state.token}
