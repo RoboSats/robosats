@@ -14,7 +14,7 @@ import {
   Link,
 } from "@mui/material"
 
-import { saveAsJson, saveAsTxt } from "../../utils/saveFile";
+import { saveAsJson } from "../../utils/saveFile";
 
 // Icons
 import KeyIcon from '@mui/icons-material/Key';
@@ -53,120 +53,130 @@ const AuditPGPDialog = ({
       onClose={onClose}
       >
       <DialogTitle >
-        {t("This chat is PGP Encrypted")}
+        {t("Do not trust, verify!")}
       </DialogTitle>
 
       <DialogContent>
         <DialogContentText>
-          {t("Your communication is end-to-end encrypted with OpenPGP. You can verify the privacy of this chat using any third party tool based on the OpenPGP standard.")}
+          {t("Your communication is end-to-end encrypted with OpenPGP. You can verify the privacy of this chat using any tool based on the OpenPGP standard.")}
         </DialogContentText>
         <Grid container spacing={1} align="center">
 
           <Grid item align="center" xs={12}>
-            <Button component={Link} target="_blank" href="https://learn.robosats.com/docs/pgp-encryption">{t("Learn how to audit")}</Button>
+            <Button component={Link} target="_blank" href="https://learn.robosats.com/docs/pgp-encryption">{t("Learn how to verify")}</Button>
           </Grid>
 
           <Grid item align="center" xs={12}>
-            <TextField
-              sx={{width:"100%", maxWidth:"550px"}}
-              disabled
-              label={<b>{t("Your public key")}</b>}
-              value={own_pub_key}
-              variant='filled'
-              size='small'
-              InputProps={{
-                endAdornment:
-                  <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                    <IconButton onClick={()=> navigator.clipboard.writeText(own_pub_key)}>
-                      <ContentCopy/>
-                    </IconButton>
-                  </Tooltip>,
-                }}
-              />
+            <Tooltip placement="top" enterTouchDelay={0} enterDelay={0} title={t("Your PGP public key. Your peer uses it to encrypt messages only you can read.")}>
+              <TextField
+                sx={{width:"100%", maxWidth:"550px"}}
+                disabled
+                label={<b>{t("Your public key")}</b>}
+                value={own_pub_key}
+                variant='filled'
+                size='small'
+                InputProps={{
+                  endAdornment:
+                    <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
+                      <IconButton onClick={()=> navigator.clipboard.writeText(own_pub_key)}>
+                        <ContentCopy/>
+                      </IconButton>
+                    </Tooltip>,
+                  }}
+                />
+            </Tooltip>
           </Grid>
 
           <Grid item align="center" xs={12}>
-            <TextField
-              sx={{width:"100%", maxWidth:"550px"}}
-              disabled
-              label={<b>{t("Peer public key")}</b>}
-              value={peer_pub_key}
-              variant='filled'
-              size='small'
-              InputProps={{
-                endAdornment:
-                  <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                    <IconButton onClick={()=> navigator.clipboard.writeText(peer_pub_key)}>
-                      <ContentCopy/>
-                    </IconButton>
-                  </Tooltip>,
-                }}
-              />
+            <Tooltip placement="top" enterTouchDelay={0} enterDelay={0} title={t("Your peer PGP public key. You use it to encrypt messages only he can read.and to verify your peer signed the incoming messages.")}>
+              <TextField
+                sx={{width:"100%", maxWidth:"550px"}}
+                disabled
+                label={<b>{t("Peer public key")}</b>}
+                value={peer_pub_key}
+                variant='filled'
+                size='small'
+                InputProps={{
+                  endAdornment:
+                    <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
+                      <IconButton onClick={()=> navigator.clipboard.writeText(peer_pub_key)}>
+                        <ContentCopy/>
+                      </IconButton>
+                    </Tooltip>,
+                  }}
+                />
+            </Tooltip>
           </Grid>
 
           <Grid item align="center" xs={12}>
-            <TextField
-              sx={{width:"100%", maxWidth:"550px"}}
-              disabled
-              label={<b>{t("Your encrypted private key")}</b>}
-              value={own_enc_priv_key}
-              variant='filled'
-              size='small'
-              InputProps={{
-                endAdornment:
-                  <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                    <IconButton onClick={()=> navigator.clipboard.writeText(own_enc_priv_key)}>
-                      <ContentCopy/>
-                    </IconButton>
-                  </Tooltip>,
-                }}
-              />
+            <Tooltip placement="top" enterTouchDelay={0} enterDelay={0} title={t("Your encrypted private key. You use it to decrypt the messages that your peer encrypted for you. You also use it to sign the messages you send.")}>
+              <TextField
+                sx={{width:"100%", maxWidth:"550px"}}
+                disabled
+                label={<b>{t("Your encrypted private key")}</b>}
+                value={own_enc_priv_key}
+                variant='filled'
+                size='small'
+                InputProps={{
+                  endAdornment:
+                    <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
+                      <IconButton onClick={()=> navigator.clipboard.writeText(own_enc_priv_key)}>
+                        <ContentCopy/>
+                      </IconButton>
+                    </Tooltip>,
+                  }}
+                />
+            </Tooltip>
           </Grid>
 
           <Grid item align="center" xs={12}>
-            <TextField
-              sx={{width:"100%", maxWidth:"550px"}}
-              disabled
-              label={<b>{t("Your private key passphrase (keep secure!)")}</b>}
-              value={passphrase}
-              variant='filled'
-              size='small'
-              InputProps={{
-                endAdornment:
-                  <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                    <IconButton onClick={()=> navigator.clipboard.writeText(passphrase)}>
-                      <ContentCopy/>
-                    </IconButton>
-                  </Tooltip>,
-                }}
-              />
+            <Tooltip placement="top" enterTouchDelay={0} enterDelay={0} title={t("The passphrase to decrypt your private key. Only you know it! Do not share. It is also your robot avatar user token.")}>
+              <TextField
+                sx={{width:"100%", maxWidth:"550px"}}
+                disabled
+                label={<b>{t("Your private key passphrase (keep secure!)")}</b>}
+                value={passphrase}
+                variant='filled'
+                size='small'
+                InputProps={{
+                  endAdornment:
+                    <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
+                      <IconButton onClick={()=> navigator.clipboard.writeText(passphrase)}>
+                        <ContentCopy/>
+                      </IconButton>
+                    </Tooltip>,
+                  }}
+                />
+            </Tooltip>
           </Grid>
 
             <br/>
             <Grid item xs={6}>
-              <Button 
-                size="small" 
-                color="primary" 
-                variant="contained" 
-                onClick={()=>saveAsJson(
-                    'keys_'+orderId+'.json', 
-                    {"own_public_key": own_pub_key,
-                      "peer_public_key":peer_pub_key,
-                      "encrypted_private_key":own_enc_priv_key,
-                      "passphrase":passphrase
-                    })}>
-                <div style={{width:26,height:18}}>
-                  <ExportIcon sx={{width:18,height:18}}/>
-                </div>
-                {t("Keys")}
-                <div style={{width:26,height:20}}>
-                  <KeyIcon sx={{width:20,height:20}}/>
-                </div>
-              </Button>
+              <Tooltip placement="top" enterTouchDelay={0} enterDelay={1000} enterNextDelay={2000} title={t("Save credentials as a JSON file")}>
+                <Button 
+                  size="small" 
+                  color="primary" 
+                  variant="contained" 
+                  onClick={()=>saveAsJson(
+                      'keys_'+orderId+'.json', 
+                      {"own_public_key": own_pub_key,
+                        "peer_public_key":peer_pub_key,
+                        "encrypted_private_key":own_enc_priv_key,
+                        "passphrase":passphrase
+                      })}>
+                  <div style={{width:26,height:18}}>
+                    <ExportIcon sx={{width:18,height:18}}/>
+                  </div>
+                  {t("Keys")}
+                  <div style={{width:26,height:20}}>
+                    <KeyIcon sx={{width:20,height:20}}/>
+                  </div>
+                </Button>
+              </Tooltip>
             </Grid>
             
             <Grid item xs={6}>
-              {/* <ToolTip placement="top" enterTouchDelay={0} enterDelay={1000} enterNextDelay={2000} title={t("Save local messages and credentials as a JSON file")}> */}
+              <Tooltip placement="top" enterTouchDelay={0} enterDelay={1000} enterNextDelay={2000} title={t("Save messages as a JSON file")}>
                 <Button 
                   size="small" 
                   color="primary" 
@@ -182,7 +192,7 @@ const AuditPGPDialog = ({
                   <ForumIcon sx={{width:20,height:20}}/>
                   </div>
                 </Button>
-              {/* </ToolTip> */}
+              </Tooltip>
 
           </Grid>
 

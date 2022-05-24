@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
 import { withTranslation } from "react-i18next";
-import {Button, Badge, Tooltip, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, Typography} from "@mui/material";
+import {Button, IconButton, Badge, Tooltip, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, Typography} from "@mui/material";
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import { encryptMessage , decryptMessage} from "../utils/pgp";
 import { getCookie } from "../utils/cookies";
-import { saveAsJson, saveAsTxt } from "../utils/saveFile";
+import { saveAsJson } from "../utils/saveFile";
 import { AuditPGPDialog } from "./Dialogs"
 
 // Icons
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import ContentCopy from "@mui/icons-material/ContentCopy";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import KeyIcon from '@mui/icons-material/Key';
 import { ExportIcon } from './Icons';
@@ -193,7 +193,24 @@ class Chat extends Component {
                   </Badge>
                 }
                 style={{backgroundColor: '#eeeeee'}}
-                title={<div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>{message.userNick}{message.validSignature ? <CheckIcon sx={{height:16, display: "inline-block"}} color="success"/> : <CloseIcon sx={{height:16, display:"inline-block"}} color="error"/> }</div>}
+                title={
+                  <Tooltip placement="top" enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t(message.validSignature ? "Verified signature by {{nickname}}": "Invalid signature! Not sent by {{nickname}}",{"nickname": message.userNick})}>
+                    <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+                      {message.userNick}
+                      {message.validSignature ?
+                        <CheckIcon sx={{height:16}} color="success"/>
+                      : 
+                        <CloseIcon sx={{height:16}} color="error"/> 
+                      }
+                      <div style={{width:20}}>
+                        <IconButton sx={{height:16}}><VisibilityIcon sx={{height:16}}/></IconButton>
+                      </div>
+                      <div style={{width:20}}>
+                        <IconButton sx={{height:16}}><ContentCopy sx={{height:16}}/></IconButton>
+                      </div>
+                    </div>
+                  </Tooltip>
+                }
                 subheader={this.state.audit ? message.encryptedMessage : message.plainTextMessage}
                 subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444'}}}
               />
@@ -209,15 +226,21 @@ class Chat extends Component {
                 }
                 style={{backgroundColor: '#fafafa'}}
                 title={
-                  <Tooltip placement="top" enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t(message.validSignature ? "Verified signature by {{sender}}": "Invalid signature",{"sender": message.userNick})}>
-                  <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                    {message.userNick}
-                    {message.validSignature ?
-                      <CheckIcon sx={{height:16, display: "inline-block"}} color="success"/>
-                    : 
-                      <CloseIcon sx={{height:16, display:"inline-block"}} color="error"/> 
-                    }
-                  </div>
+                  <Tooltip placement="top" enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t(message.validSignature ? "Verified signature by {{nickname}}": "Invalid signature! Not sent by {{nickname}}",{"nickname": message.userNick})}>
+                    <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+                      {message.userNick}
+                      {message.validSignature ?
+                        <CheckIcon sx={{height:16}} color="success"/>
+                      : 
+                        <CloseIcon sx={{height:16}} color="error"/> 
+                      }
+                      <div style={{width:20}}>
+                        <IconButton sx={{height:16}}><VisibilityIcon sx={{height:16}}/></IconButton>
+                      </div>
+                      <div style={{width:20}}>
+                        <IconButton sx={{height:16}}><ContentCopy sx={{height:16}}/></IconButton>
+                      </div>
+                    </div>
                   </Tooltip>}
                 subheader={this.state.audit ? message.encryptedMessage : message.plainTextMessage}
                 subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444'}}}
@@ -268,7 +291,7 @@ class Chat extends Component {
           </Grid>
           
           <Grid item xs={6}>
-            <Tooltip placement="bottom" enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t("Save messages and credentials as a JSON file")}>
+            <Tooltip placement="bottom" enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t("Save full log as a JSON file (messages and credentials)")}>
               <Button size="small" color="primary" variant="outlined" onClick={()=>saveAsJson('chat_'+this.props.orderId+'.json', this.createJsonFile())}><div style={{width:28,height:20}}><ExportIcon sx={{width:20,height:20}}/></div> {t("Export")} </Button>
             </Tooltip>
           </Grid>
