@@ -40,7 +40,7 @@ def users_cleansing():
     return results
 
 @shared_task(name="give_rewards")
-def users_cleansing():
+def give_rewards():
     """
     Referral rewards go from pending to earned.
     Happens asynchronously so the referral program cannot be easily used to spy.
@@ -63,7 +63,7 @@ def users_cleansing():
     return results
 
 @shared_task(name="follow_send_payment")
-def follow_send_payment(lnpayment):
+def follow_send_payment(hash):
     """Sends sats to buyer, continuous update"""
 
     from decouple import config
@@ -73,6 +73,7 @@ def follow_send_payment(lnpayment):
     from api.lightning.node import LNNode, MACAROON
     from api.models import LNPayment, Order
 
+    lnpayment = LNPayment.objects.get(payment_hash=hash)
     fee_limit_sat = int(
         max(
             lnpayment.num_satoshis *
@@ -92,13 +93,19 @@ def follow_send_payment(lnpayment):
                                                             ("macaroon",
                                                              MACAROON.hex())
                                                         ]):
+                                                        
+            lnpayment.in_flight = True
+            lnpayment.save()
+                
             if response.status == 0:  # Status 0 'UNKNOWN'
                 # Not sure when this status happens
-                pass
+                lnpayment.in_flight = False
+                lnpayment.save()
 
             if response.status == 1:  # Status 1 'IN_FLIGHT'
                 print("IN_FLIGHT")
                 lnpayment.status = LNPayment.Status.FLIGHT
+                lnpayment.in_flight = True
                 lnpayment.save()
                 order.status = Order.Status.PAY
                 order.save()
@@ -108,22 +115,33 @@ def follow_send_payment(lnpayment):
                 lnpayment.status = LNPayment.Status.FAILRO
                 lnpayment.last_routing_time = timezone.now()
                 lnpayment.routing_attempts += 1
+                lnpayment.failure_reason = response.failure_reason
+                lnpayment.in_flight = False
+                if lnpayment.routing_attempts > 2:
+                    lnpayment.status = LNPayment.Status.EXPIRE
+                    lnpayment.routing_attempts = 0
                 lnpayment.save()
+
                 order.status = Order.Status.FAI
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.FAI))
                 order.save()
                 context = {
                     "routing_failed":
-                    LNNode.payment_failure_context[response.failure_reason]
+                    LNNode.payment_failure_context[response.failure_reason],
+                    "IN_FLIGHT":False,
                 }
                 print(context)
+
+                # If failed, reset mission control. (This won't scale well, just a temporary fix)
+                LNNode.resetmc()
                 return False, context
 
             if response.status == 2:  # Status 2 'SUCCEEDED'
                 print("SUCCEEDED")
                 lnpayment.status = LNPayment.Status.SUCCED
                 lnpayment.fee = float(response.fee_msat)/1000
+                lnpayment.preimage = response.payment_preimage
                 lnpayment.save()
                 order.status = Order.Status.SUC
                 order.expires_at = timezone.now() + timedelta(
@@ -136,6 +154,7 @@ def follow_send_payment(lnpayment):
             print("INVOICE EXPIRED")
             lnpayment.status = LNPayment.Status.EXPIRE
             lnpayment.last_routing_time = timezone.now()
+            lnpayment.in_flight = False
             lnpayment.save()
             order.status = Order.Status.FAI
             order.expires_at = timezone.now() + timedelta(
@@ -157,8 +176,7 @@ def cache_market():
     exchange_rates = get_exchange_rates(currency_codes)
 
     results = {}
-    for i in range(len(Currency.currency_dict.values())
-                   ):  # currecies are indexed starting at 1 (USD)
+    for i in range(len(Currency.currency_dict.values())):  # currencies are indexed starting at 1 (USD)
 
         rate = exchange_rates[i]
         results[i] = {currency_codes[i], rate}
@@ -218,4 +236,8 @@ def send_message(order_id, message):
     
     elif message == 'order_taken_confirmed':
         telegram.order_taken_confirmed(order)
+    
+    elif message == 'fiat_exchange_starts':
+        telegram.fiat_exchange_starts(order)
+
     return

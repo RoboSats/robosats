@@ -22,10 +22,10 @@ Discussion about code changes happens in GitHub issues and pull requests.
 All RoboSats contributors submit changes via pull requests. The workflow is as follows:
 
  - Fork the repository
- - Create a topic branch from the `master` branch
+ - Create a topic branch from the `main` branch
  - Commit patches
  - Squash redundant or unnecessary commits
- - Submit a pull request from your topic branch back to the `master` branch of the main repository
+ - Submit a pull request from your topic branch back to the `main` branch of the main repository
  - Make changes to the pull request if reviewers request them and request a re-review
 
 Pull requests should be focused on a single change. Do not mix, for example, refactorings with a bug fix or implementation of a new feature. This practice makes it easier for fellow contributors to review each pull request.
@@ -45,9 +45,17 @@ Anyone may participate in peer review which is expressed by comments in the pull
 
 Please note that Pull Requests marked `NACK` and/or GitHub's `Change requested` are closed after 30 days if not addressed.
 
-## Compensation
+## Developer Compensation (Pilot Program)
 
-At the moment RoboSats is a young and unfunded project. However, when launched it might be able to fund development with fee revenue. Please contact the team lead for development (@reckless-satoshi) upfront if you want to get compensated for your contributions.
+At the moment RoboSats is a young and unfunded project. However, since launch, it has shown the ability to generate revenue, although it barely covers the running costs. A developer compensation program is the the best way to ensure the sustained support of the code base. For the time being, code contributions to the core project will be given small rewards: more akin to kudos than a meaningful monetary compensation. The pilot procedure for compensated development:
+
+1) The developer opens a PR with the description of the work that will be done, optionally including the amount of Sats he thinks the work deserves.
+2) An offer/negotiation takes place to set an amount of Sats until agreement. Everyone is welcome to express opinion on whether the compensation is right for the PR.
+3) The work happens: buidl, buidl, buidl!
+4) The review takes place. Once maintainers give the OK for the merge...
+5) The developer submits a LN invoice (with a long expiration time). The invoice is paid at merge. 
+
+Every step (negotiation, code submission, review and invoice submission) must take place publicly in GitHub (i.e., no private messaging). Please contact the team lead for development (@reckless-satoshi) upfront if you have doubts whether your contribution is suitable for compensation. Currently, only contributions to the frontend or backend core functionality and maintainence are eligible for compensations (that excludes, for the time being, art, translations, etc...).
 
 ## Style and Coding Conventions
 

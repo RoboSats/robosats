@@ -1,16 +1,19 @@
 import os
 from re import T
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from rest_framework import status, viewsets
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from django.contrib.auth import authenticate, login, logout
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 
-from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer
+from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer
 from api.models import LNPayment, MarketTick, Order, Currency, Profile
+from control.models import AccountingDay
 from api.logics import Logics
 from api.messages import Telegram
 from secrets import token_urlsafe
@@ -31,6 +34,7 @@ from decouple import config
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
 PUBLIC_DURATION = 60*60*int(config("DEFAULT_PUBLIC_ORDER_DURATION"))-1
+ESCROW_DURATION = 60 * int(config("INVOICE_AND_ESCROW_DURATION"))
 BOND_SIZE = int(config("DEFAULT_BOND_SIZE"))
 
 avatar_path = Path(settings.AVATAR_ROOT)
@@ -82,11 +86,13 @@ class MakerView(CreateAPIView):
         satoshis = serializer.data.get("satoshis")
         is_explicit = serializer.data.get("is_explicit")
         public_duration = serializer.data.get("public_duration")
+        escrow_duration = serializer.data.get("escrow_duration")
         bond_size = serializer.data.get("bond_size")
         bondless_taker = serializer.data.get("bondless_taker")
 
         # Optional params
         if public_duration == None: public_duration = PUBLIC_DURATION
+        if escrow_duration == None: escrow_duration = ESCROW_DURATION
         if bond_size == None: bond_size = BOND_SIZE
         if bondless_taker == None: bondless_taker = False
         if has_range == None: has_range = False
@@ -132,6 +138,7 @@ class MakerView(CreateAPIView):
                 seconds=EXP_MAKER_BOND_INVOICE),
             maker=request.user,
             public_duration=public_duration,
+            escrow_duration=escrow_duration,
             bond_size=bond_size,
             bondless_taker=bondless_taker,
         )
@@ -238,9 +245,9 @@ class OrderView(viewsets.ViewSet):
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
             data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
 
-            # 3. c) If maker and Public, add num robots in book, premium percentile 
+            # 3. c) If maker and Public/Paused, add premium percentile 
             # num similar orders, and maker information to enable telegram notifications.
-            if data["is_maker"] and order.status == Order.Status.PUB:
+            if data["is_maker"] and order.status in [Order.Status.PUB, Order.Status.PAU]:
                 data["premium_percentile"] = compute_premium_percentile(order)
                 data["num_similar_orders"] = len(
                     Order.objects.filter(currency=order.currency,
@@ -372,15 +379,27 @@ class OrderView(viewsets.ViewSet):
               and order.payout.receiver == request.user
               ):  # might not be the buyer if after a dispute where winner wins
             data["retries"] = order.payout.routing_attempts
-            data[
-                "next_retry_time"] = order.payout.last_routing_time + timedelta(
+            data["next_retry_time"] = order.payout.last_routing_time + timedelta(
                     minutes=RETRY_TIME)
+            if order.payout.failure_reason:
+                data["failure_reason"] = LNPayment.FailureReason(order.payout.failure_reason).label
 
             if order.payout.status == LNPayment.Status.EXPIRE:
                 data["invoice_expired"] = True
                 # Add invoice amount once again if invoice was expired.
                 data["invoice_amount"] = Logics.payout_amount(order,request.user)[1]["invoice_amount"]
 
+        # 10) If status is 'Expired', "Sending", "Finished" or "failed routing", add info for renewal:
+        elif order.status in [Order.Status.EXP, Order.Status.SUC, Order.Status.PAY,  Order.Status.FAI]:
+            data["public_duration"] = order.public_duration
+            data["bond_size"] = order.bond_size
+            data["bondless_taker"] = order.bondless_taker
+
+            # If status is 'Expired' add expiry reason
+            if order.status == Order.Status.EXP:
+                data["expiry_reason"] = order.expiry_reason
+                data["expiry_message"] = Order.ExpiryReasons(order.expiry_reason).label
+            
         return Response(data, status.HTTP_200_OK)
 
     def take_update_confirm_dispute_cancel(self, request, format=None):
@@ -389,10 +408,6 @@ class OrderView(viewsets.ViewSet):
         That is: take, confim, cancel, dispute, update_invoice or rate.
         """
         order_id = request.GET.get(self.lookup_url_kwarg)
-
-        import sys
-        sys.stdout.write('AAAAAA')
-        print('BBBBB1')
 
         serializer = UpdateOrderSerializer(data=request.data)
         if not serializer.is_valid():
@@ -481,9 +496,15 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # 6) If action is rate_platform
+        # 7) If action is rate_platform
         elif action == "rate_platform" and rating:
             valid, context = Logics.rate_platform(request.user, rating)
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        # 8) If action is rate_platform
+        elif action == "pause":
+            valid, context = Logics.pause_unpause_public_order(order, request.user)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
@@ -501,7 +522,6 @@ class OrderView(viewsets.ViewSet):
 
         return self.get(request)
 
-
 class UserView(APIView):
     NickGen = NickGenerator(lang="English",
                             use_adv=False,
@@ -509,9 +529,15 @@ class UserView(APIView):
                             use_noun=True,
                             max_num=999)
 
-    # Probably should be turned into a post method
+    serializer_class = UserGenSerializer
+
     def get(self, request, format=None):
         """
+        DEPRECATED
+        The old way to generate a robot and login.
+        Only for login. No new users allowed. Only available using API endpoint.
+        Frontend does not support it anymore.
+
         Get a new user derived from a high entropy token
 
         - Request has a high-entropy token,
@@ -519,6 +545,77 @@ class UserView(APIView):
         - Creates login credentials (new User object)
         Response with Avatar and Nickname.
         """
+        context = {}
+        # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
+        if request.user.is_authenticated:
+            context = {"nickname": request.user.username}
+            not_participant, _, _ = Logics.validate_already_maker_or_taker(
+                request.user)
+
+            # Does not allow this 'mistake' if an active order
+            if not not_participant:
+                context[
+                    "bad_request"] = f"You are already logged in as {request.user} and have an active order"
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        # Deprecated, kept temporarily for legacy reasons
+        token = request.GET.get("token")                
+                
+        value, counts = np.unique(list(token), return_counts=True)
+        shannon_entropy = entropy(counts, base=62)
+        bits_entropy = log2(len(value)**len(token))
+
+        # Hash the token, only 1 iteration.
+        hash = hashlib.sha256(str.encode(token)).hexdigest()
+
+        # Generate nickname deterministically
+        nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0]
+        context["nickname"] = nickname
+        
+        # Payload
+        context = {
+            "token_shannon_entropy": shannon_entropy,
+            "token_bits_entropy": bits_entropy,
+        }
+
+        # Do not generate a new user for the old method! Only allow login.
+        if len(User.objects.filter(username=nickname)) == 1:
+            user = authenticate(request, username=nickname, password=token)
+            if user is not None:
+                login(request, user)
+                # Sends the welcome back message, only if created +3 mins ago
+                if request.user.date_joined < (timezone.now() -
+                                            timedelta(minutes=3)):
+                    context["found"] = "We found your Robot avatar. Welcome back!"
+                return Response(context, status=status.HTTP_202_ACCEPTED)
+            else:
+                # It is unlikely, but maybe the nickname is taken (1 in 20 Billion change)
+                context["found"] = "Bad luck, this nickname is taken"
+                context["bad_request"] = "Enter a different token"
+                return Response(context, status.HTTP_403_FORBIDDEN)
+
+        elif len(User.objects.filter(username=nickname)) == 0:
+            context["bad_request"] = "User Generation with explicit token deprecated. Only token_sha256 allowed."
+            return Response(context, status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request, format=None):
+        """
+        Get a new user derived from a high entropy token
+
+        - Request has a hash of a high-entropy token
+        - Request includes pubKey and encrypted privKey
+        - Generates new nickname and avatar.
+        - Creates login credentials (new User object)
+
+        Response with Avatar, Nickname, pubKey, privKey.
+        """
+        context = {}
+        serializer = self.serializer_class(data=request.data)
+
+        # Return bad request if serializer is not valid         
+        if not serializer.is_valid():
+            context = {"bad_request": "Invalid serializer"}
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
         # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
         if request.user.is_authenticated:
@@ -532,26 +629,45 @@ class UserView(APIView):
                     "bad_request"] = f"You are already logged in as {request.user} and have an active order"
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        token = request.GET.get("token")
-        ref_code = request.GET.get("ref_code")
+        # The new way. The token is never sent. Only its SHA256
+        token_sha256 = serializer.data.get("token_sha256")
+        public_key = serializer.data.get("public_key")
+        encrypted_private_key = serializer.data.get("encrypted_private_key")
+        ref_code = serializer.data.get("ref_code")
+        
+        if not public_key or not encrypted_private_key:
+            context["bad_request"] = "Must provide valid 'pub' and 'enc_priv' PGP keys"
+            return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # Compute token entropy
-        value, counts = np.unique(list(token), return_counts=True)
-        shannon_entropy = entropy(counts, base=62)
-        bits_entropy = log2(len(value)**len(token))
-        # Payload
-        context = {
-            "token_shannon_entropy": shannon_entropy,
-            "token_bits_entropy": bits_entropy,
-        }
+        # Now the server only receives a hash of the token. So server trusts the client 
+        # with computing length, counts and unique_values to confirm the high entropy of the token
+        # In any case, it is up to the client if they want to create a bad high entropy token.
 
-        # Deny user gen if entropy below 128 bits or 0.7 shannon heterogeneity
-        if bits_entropy < 128 or shannon_entropy < 0.7:
-            context["bad_request"] = "The token does not have enough entropy"
-            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+        # Submitting the three params needed to compute token entropy is not mandatory
+        # If not submitted, avatars can be created with garbage entropy token. Frontend will always submit them.
+        try:
+            unique_values = serializer.data.get("unique_values")
+            counts = serializer.data.get("counts")
+            length = serializer.data.get("length")
 
-        # Hash the token, only 1 iteration.
-        hash = hashlib.sha256(str.encode(token)).hexdigest()
+            shannon_entropy = entropy(counts, base=62)
+            bits_entropy = log2(unique_values**length)
+
+            # Payload
+            context = {
+                "token_shannon_entropy": shannon_entropy,
+                "token_bits_entropy": bits_entropy,
+            }
+
+            # Deny user gen if entropy below 128 bits or 0.7 shannon heterogeneity
+            if bits_entropy < 128 or shannon_entropy < 0.7:
+                context["bad_request"] = "The token does not have enough entropy"
+                return Response(context, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            pass
+
+        # Hash the token_sha256, only 1 iteration. (this is the second SHA256 of the user token)
+        hash = hashlib.sha256(str.encode(token_sha256)).hexdigest()
 
         # Generate nickname deterministically
         nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0]
@@ -567,40 +683,46 @@ class UserView(APIView):
             with open(image_path, "wb") as f:
                 rh.img.save(f, format="png")
 
-        
-
         # Create new credentials and login if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname,
-                                     password=token,
+                                     password=token_sha256,
                                      is_staff=False)
-            user = authenticate(request, username=nickname, password=token)
+            user = authenticate(request, username=nickname, password=token_sha256)
             login(request, user)
 
             context['referral_code'] = token_urlsafe(8)
             user.profile.referral_code = context['referral_code']
             user.profile.avatar = "static/assets/avatars/" + nickname + ".png"
+            user.profile.public_key = public_key
+            user.profile.encrypted_private_key = encrypted_private_key
 
             # If the ref_code was created by another robot, this robot was referred.
             queryset = Profile.objects.filter(referral_code=ref_code)
             if len(queryset) == 1:
                 user.profile.is_referred = True
                 user.profile.referred_by = queryset[0]
-            
+
             user.profile.save()
+
+            context["public_key"] = user.profile.public_key
+            context["encrypted_private_key"] = user.profile.encrypted_private_key
             return Response(context, status=status.HTTP_201_CREATED)
 
+        # log in user and return pub/priv keys if existing
         else:
-            user = authenticate(request, username=nickname, password=token)
+            user = authenticate(request, username=nickname, password=token_sha256)
             if user is not None:
                 login(request, user)
                 # Sends the welcome back message, only if created +3 mins ago
                 if request.user.date_joined < (timezone.now() -
                                                timedelta(minutes=3)):
                     context["found"] = "We found your Robot avatar. Welcome back!"
+                    context["public_key"] = user.profile.public_key
+                    context["encrypted_private_key"] = user.profile.encrypted_private_key
                 return Response(context, status=status.HTTP_202_ACCEPTED)
             else:
-                # It is unlikely, but maybe the nickname is taken (1 in 20 Billion change)
+                # It is unlikely, but maybe the nickname is taken (1 in 20 Billion chance)
                 context["found"] = "Bad luck, this nickname is taken"
                 context["bad_request"] = "Enter a different token"
                 return Response(context, status.HTTP_403_FORBIDDEN)
@@ -730,7 +852,7 @@ class InfoView(ListAPIView):
             lifetime_volume = 0
 
         context["last_day_nonkyc_btc_premium"] = round(avg_premium, 2)
-        context["last_day_volume"] = total_volume *100000000
+        context["last_day_volume"] = total_volume
         context["lifetime_volume"] = lifetime_volume
         context["lnd_version"] = get_lnd_version()
         context["robosats_running_commit_hash"] = get_commit_robosats()
@@ -751,6 +873,10 @@ class InfoView(ListAPIView):
                 request.user)
             if not has_no_active_order:
                 context["active_order_id"] = order.id
+            else:
+                last_order = Order.objects.filter(Q(maker=request.user) | Q(taker=request.user)).last()
+                if last_order:
+                    context["last_order_id"] = last_order.id
 
         return Response(context, status.HTTP_200_OK)
 
@@ -824,9 +950,23 @@ class LimitView(ListAPIView):
             exchange_rate = float(currency.exchange_rate)
             payload[currency.currency] = {
                 'code': code,
+                'price': exchange_rate,
                 'min_amount': min_trade * exchange_rate,
                 'max_amount': max_trade * exchange_rate,
                 'max_bondless_amount': max_bondless_trade * exchange_rate,
+            }
+
+        return Response(payload, status.HTTP_200_OK)
+
+class HistoricalView(ListAPIView):
+    def get(self, request):
+        payload = {}
+        queryset = AccountingDay.objects.all().order_by('day')
+
+        for accounting_day in queryset:
+            payload[str(accounting_day.day)] = {
+                'volume': accounting_day.contracted,
+                'num_contracts': accounting_day.num_contracts,
             }
 
         return Response(payload, status.HTTP_200_OK)

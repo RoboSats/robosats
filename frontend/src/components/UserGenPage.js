@@ -1,32 +1,21 @@
 import React, { Component } from "react";
 import { withTranslation } from "react-i18next";
-import { Button , Tooltip, Dialog, Grid, Typography, TextField, ButtonGroup, CircularProgress, IconButton} from "@mui/material"
+import { Button , Tooltip, Grid, Typography, TextField, ButtonGroup, CircularProgress, IconButton} from "@mui/material"
 import { Link } from 'react-router-dom'
 import Image from 'material-ui-image'
-import InfoDialog from './InfoDialog'
+import { InfoDialog } from './Dialogs'
 
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CasinoIcon from '@mui/icons-material/Casino';
 import ContentCopy from "@mui/icons-material/ContentCopy";
-import RoboSatsNoTextIcon from "./icons/RoboSatsNoTextIcon"
 import BoltIcon from '@mui/icons-material/Bolt';
+import { RoboSatsNoTextIcon } from "./Icons";
 
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          // Does this cookie string begin with the name we want?
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
-          }
-      }
-  }
-  return cookieValue;
-}
-const csrftoken = getCookie('csrftoken');
+import { sha256 } from 'js-sha256';
+import { genBase62Token, tokenStrength } from "../utils/token";
+import { genKey } from "../utils/pgp";
+import { getCookie, writeCookie } from "../utils/cookies";
+
 
 class UserGenPage extends Component {
   constructor(props) {
@@ -34,66 +23,87 @@ class UserGenPage extends Component {
     this.state = {
       openInfo: false,
       tokenHasChanged: false,
+      token: ""
     };
 
     this.refCode = this.props.match.params.refCode;
+  }
 
+  componentDidMount() {
     // Checks in parent HomePage if there is already a nick and token
     // Displays the existing one
     if (this.props.nickname != null){
-      this.state = {
+      this.setState({
         nickname: this.props.nickname,
-        token: this.props.token? this.props.token : null,
+        token: this.props.token? this.props.token : "",
         avatar_url: '/static/assets/avatars/' + this.props.nickname + '.png',
         loadingRobot: false
-      }
+      });
     }
     else{
-      var newToken = this.genBase62Token(36)
-      this.state = {
+      var newToken = genBase62Token(36)
+      this.setState({
         token: newToken
-      }
+      });
       this.getGeneratedUser(newToken);
     }
   }
 
-  // sort of cryptographically strong function to generate Base62 token client-side
-  genBase62Token(length)
-  {   
-      return window.btoa(Array.from(
-        window.crypto.getRandomValues(
-          new Uint8Array(length * 2)))
-          .map((b) => String.fromCharCode(b))
-          .join("")).replace(/[+/]/g, "")
-          .substring(0, length);
-  }
-
   getGeneratedUser=(token)=>{
-    fetch('/api/user' + '?token=' + token + '&ref_code=' + this.refCode)
-      .then((response) => response.json())
-      .then((data) => {
-        this.setState({
+
+    const strength = tokenStrength(token);
+    const refCode = this.refCode
+
+    const requestOptions = genKey(token).then(function(key) {
+      return {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+        body: JSON.stringify({
+            token_sha256: sha256(token),
+            public_key: key.publicKeyArmored,
+            encrypted_private_key: key.encryptedPrivateKeyArmored,
+            unique_values: strength.uniqueValues,
+            counts: strength.counts,
+            length: token.length,
+            ref_code: refCode,
+        })
+      }}
+    );
+
+    console.log(requestOptions)
+    
+    requestOptions.then((options) =>
+      fetch("/api/user/",options)
+        .then((response) => response.json())
+        .then((data) => { console.log(data) &
+          this.setState({
+              nickname: data.nickname,
+              bit_entropy: data.token_bits_entropy,
+              avatar_url: '/static/assets/avatars/' + data.nickname + '.png',
+              shannon_entropy: data.token_shannon_entropy,
+              bad_request: data.bad_request,
+              found: data.found,
+              loadingRobot:false,
+          })
+          &
+          // Add nick and token to App state (token only if not a bad request)
+          (data.bad_request ? this.props.setAppState({
             nickname: data.nickname,
-            bit_entropy: data.token_bits_entropy,
-            avatar_url: '/static/assets/avatars/' + data.nickname + '.png',
-            shannon_entropy: data.token_shannon_entropy,
-            bad_request: data.bad_request,
-            found: data.found,
-            loadingRobot:false,
-        })
-        &
-        // Add nick and token to App state (token only if not a bad request)
-        (data.bad_request ? this.props.setAppState({
-          nickname: data.nickname,
-          avatarLoaded: false,
-        })
-        :
-        this.props.setAppState({
-          nickname: data.nickname,
-          token: this.state.token,
-          avatarLoaded: false,
-      }));
-      });
+            avatarLoaded: false,
+          })
+          :
+          (this.props.setAppState({
+            nickname: data.nickname,
+            token: token,
+            avatarLoaded: false,
+          })) & writeCookie("robot_token",token) 
+              & writeCookie("pub_key",data.public_key.split('\n').join('\\')) 
+              & writeCookie("enc_priv_key",data.encrypted_private_key.split('\n').join('\\')))
+          &
+          // If the robot has been found (recovered) we assume the token is backed up
+          (data.found ? this.props.setAppState({copiedToken:true}) : null)
+      })
+    );
   }
 
   delGeneratedUser() {
@@ -106,11 +116,12 @@ class UserGenPage extends Component {
   }
 
   handleClickNewRandomToken=()=>{
+    var token = genBase62Token(36);
     this.setState({
-      token: this.genBase62Token(36),
+      token: token,
       tokenHasChanged: true,
-      copied: true,
     });
+    this.props.setAppState({copiedToken: true})
   }
 
   handleChangeToken=(e)=>{
@@ -123,8 +134,8 @@ class UserGenPage extends Component {
   handleClickSubmitToken=()=>{
     this.delGeneratedUser();
     this.getGeneratedUser(this.state.token);
-    this.setState({loadingRobot: true, tokenHasChanged: false, copied: false});
-    this.props.setAppState({avatarLoaded: false, nickname: null, token: null});
+    this.setState({loadingRobot: true, tokenHasChanged: false});
+    this.props.setAppState({avatarLoaded: false, nickname: null, token: null, copiedToken: false});
   }
 
   handleClickOpenInfo = () => {
@@ -134,20 +145,6 @@ class UserGenPage extends Component {
   handleCloseInfo = () => {
     this.setState({openInfo: false});
   };
-
-  InfoDialog =() =>{
-    return(
-      <Dialog
-        open={this.state.openInfo}
-        onClose={this.handleCloseInfo}
-        aria-labelledby="info-dialog-title"
-        aria-describedby="info-dialog-description"
-        scroll="paper"
-      >
-        <InfoDialog handleCloseInfo = {this.handleCloseInfo}/>
-      </Dialog>
-    )
-  }
 
   render() {
     const { t, i18n} = this.props;
@@ -161,7 +158,7 @@ class UserGenPage extends Component {
             <div>
               <Grid item xs={12} align="center">
                 <Typography component="h5" variant="h5">
-                  <b>{this.state.nickname ? 
+                  <b>{this.state.nickname ?
                     <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap', height:'45px'}}>
                       <BoltIcon sx={{ color: "#fcba03", height: '33px',width: '33px'}}/><a>{this.state.nickname}</a><BoltIcon sx={{ color: "#fcba03", height: '33px',width: '33px'}}/>
                     </div>
@@ -169,13 +166,13 @@ class UserGenPage extends Component {
                 </Typography>
               </Grid>
               <Grid item xs={12} align="center">
-              <Tooltip enterTouchDelay="0" title={t("This is your trading avatar")}>
+              <Tooltip enterTouchDelay={0} title={t("This is your trading avatar")}>
                 <div style={{ maxWidth: 200, maxHeight: 200 }}>
                   <Image className='newAvatar'
-                    disableError='true'
-                    cover='true'
+                    disableError={true}
+                    cover={true}
                     color='null'
-                    src={this.state.avatar_url}
+                    src={this.state.avatar_url || ""}
                   />
                 </div>
                 </Tooltip><br/>
@@ -186,7 +183,7 @@ class UserGenPage extends Component {
           {
             this.state.found ?
               <Grid item xs={12} align="center">
-                <Typography component="subtitle2" variant="subtitle2" color='primary'>
+                <Typography variant="subtitle2" color='primary'>
                   {this.state.found ? t("A robot avatar was found, welcome back!"):null}<br/>
                 </Typography>
               </Grid>
@@ -196,9 +193,9 @@ class UserGenPage extends Component {
           <Grid container align="center">
             <Grid item xs={12} align="center">
               <TextField sx={{maxWidth: 280}}
-                error={this.state.bad_request}
+                error={this.state.bad_request ? true : false}
                 label={t("Store your token safely")}
-                required='true'
+                required={true}
                 value={this.state.token}
                 variant='standard'
                 helperText={this.state.bad_request}
@@ -211,13 +208,13 @@ class UserGenPage extends Component {
                 }}
                 InputProps={{
                   startAdornment:
-                  <Tooltip disableHoverListener open={this.state.copied} enterTouchDelay="0" title={t("Copied!")}>
-                    <IconButton  onClick= {()=> (navigator.clipboard.writeText(this.state.token) & this.setState({copied:true}))}>
-                      <ContentCopy color={this.props.avatarLoaded & !this.state.copied & !this.state.bad_request ? 'primary' : 'inherit' } sx={{width:18, height:18}}/>
+                  <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
+                    <IconButton  onClick= {()=> (navigator.clipboard.writeText(this.state.token) & this.props.setAppState({copiedToken:true}))}>
+                      <ContentCopy color={this.props.avatarLoaded & !this.props.copiedToken & !this.state.bad_request ? 'primary' : 'inherit' } sx={{width:18, height:18}}/>
                     </IconButton>
                   </Tooltip>,
                   endAdornment:
-                  <Tooltip enterTouchDelay="250" title={t("Generate a new token")}>
+                  <Tooltip enterTouchDelay={250} title={t("Generate a new token")}>
                     <IconButton onClick={this.handleClickNewRandomToken}><CasinoIcon/></IconButton>
                   </Tooltip>,
                   }}
@@ -231,7 +228,7 @@ class UserGenPage extends Component {
               <span> {t("Generate Robot")}</span>
             </Button>
             :
-            <Tooltip enterTouchDelay="0" enterDelay="500" enterNextDelay="2000" title={t("You must enter a new token first")}>
+            <Tooltip enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t("You must enter a new token first")}>
               <div>
               <Button disabled={true} type="submit" size='small' >
                 <SmartToyIcon sx={{width:18, height:18}} />
@@ -244,18 +241,18 @@ class UserGenPage extends Component {
           <Grid item xs={12} align="center">
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
               <Button disabled={this.state.loadingRobot} color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
-              <Button color='inherit' onClick={this.handleClickOpenInfo}>{t("Info")}</Button>
-              <this.InfoDialog/>
+              <Button color='inherit' style={{color: '#111111'}} onClick={this.handleClickOpenInfo}>{t("Info")}</Button>
+              <InfoDialog open={Boolean(this.state.openInfo)} onClose = {this.handleCloseInfo}/>
               <Button disabled={this.state.loadingRobot} color='secondary' to='/book/' component={Link}>{t("View Book")}</Button>
             </ButtonGroup>
           </Grid>
 
-          <Grid item xs={12} align="center" spacing={2} sx={{width:370}}>
+          <Grid item xs={12} align="center" sx={{width:370}}>
             <Grid item>
               <div style={{height:40}}/>
             </Grid>
             <div style={{width:370, left:30}}>
-              <Grid container xs={12} align="center">
+              <Grid container align="center">
                 <Grid item xs={0.8}/>
                 <Grid item xs={7.5} align="right">
                   <Typography component="h5" variant="h5">

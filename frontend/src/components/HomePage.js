@@ -13,13 +13,18 @@ export default class HomePage extends Component {
       this.state = {
         nickname: null,
         token: null,
+        copiedToken: false,
         avatarLoaded: false,
-        bookType:2,
-        bookCurrency:0,
+        buyChecked: false,
+        sellChecked: false,
+        type:2,
+        currency:0,
         bookCurrencyCode:'ANY',
+        bookOrders:new Array(),
+        bookLoading: true,
       }
     }
-  
+
     setAppState=(newState)=>{
       this.setState(newState)
     }
@@ -35,9 +40,9 @@ export default class HomePage extends Component {
                     <Switch>
                         <Route exact path='/' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
                         <Route path='/ref/:refCode' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
-                        <Route path='/make' component={MakerPage}/>
-                        <Route path='/book' render={(props) => <BookPage {...props} type={this.state.bookType} currencyCode={this.state.bookCurrencyCode} currency={this.state.bookCurrency} setAppState={this.setAppState} />}/>
-                        <Route path="/order/:orderId" component={OrderPage}/>
+                        <Route path='/make' render={(props) => <MakerPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
+                        <Route path='/book' render={(props) => <BookPage {...props} {...this.state} setAppState={this.setAppState} />}/>
+                        <Route path="/order/:orderId" render={(props) => <OrderPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
                     </Switch>
                   </div>
                   <div className='bottomBar'>

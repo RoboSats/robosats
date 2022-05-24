@@ -24,6 +24,7 @@ class ListOrderSerializer(serializers.ModelSerializer):
             "bondless_taker",
             "maker",
             "taker",
+            "escrow_duration",
         )
 
 
@@ -43,6 +44,7 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "premium",
             "satoshis",
             "public_duration",
+            "escrow_duration",
             "bond_size",
             "bondless_taker",
         )
@@ -58,6 +60,7 @@ class UpdateOrderSerializer(serializers.Serializer):
                                       default=None)
     action = serializers.ChoiceField(
         choices=(
+            "pause",
             "take",
             "update_invoice",
             "submit_statement",
@@ -76,6 +79,43 @@ class UpdateOrderSerializer(serializers.Serializer):
         default=None,
     )
     amount = serializers.DecimalField(max_digits=18, decimal_places=8, allow_null=True, required=False, default=None)
+
+class UserGenSerializer(serializers.Serializer):
+    # Mandatory fields
+    token_sha256 = serializers.CharField(max_length=64,
+                                    allow_null=False,
+                                    allow_blank=False,
+                                    required=True,
+                                    help_text="SHA256 of user secret")
+    public_key = serializers.CharField(max_length=999,
+                                      allow_null=False,
+                                      allow_blank=False,
+                                      required=True,
+                                      help_text="Armored ASCII PGP public key block")
+    encrypted_private_key = serializers.CharField(max_length=999,
+                                      allow_null=False,
+                                      allow_blank=False,
+                                      required=True,
+                                      help_text="Armored ASCII PGP encrypted private key block")
+
+    # Optional fields
+    ref_code = serializers.CharField(max_length=30,
+                                      allow_null=True,
+                                      allow_blank=True,
+                                      required=False,
+                                      default=None)
+    counts = serializers.ListField(child=serializers.IntegerField(),
+                                      allow_null=True,
+                                      required=False,
+                                      default=None)
+    length = serializers.IntegerField(allow_null=True,
+                                      default=None,
+                                      required=False,
+                                      min_value=1)
+    unique_values = serializers.IntegerField(allow_null=True,
+                                      default=None,
+                                      required=False,
+                                      min_value=1)
 
 class ClaimRewardSerializer(serializers.Serializer):
     invoice = serializers.CharField(max_length=2000,
