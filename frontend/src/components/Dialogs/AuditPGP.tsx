@@ -158,7 +158,7 @@ const AuditPGPDialog = ({
                 <div style={{width:26,height:18}}>
                   <ExportIcon sx={{width:18,height:18}}/>
                 </div>
-                {t("Export Keys")}
+                {t("Keys")}
                 <div style={{width:26,height:20}}>
                   <KeyIcon sx={{width:20,height:20}}/>
                 </div>
@@ -177,7 +177,7 @@ const AuditPGPDialog = ({
                   <div style={{width:28,height:20}}>
                     <ExportIcon sx={{width:18,height:18}}/>
                   </div>
-                  {t("Export Chat")}
+                  {t("Messages")}
                   <div style={{width:26,height:20}}>
                   <ForumIcon sx={{width:20,height:20}}/>
                   </div>
