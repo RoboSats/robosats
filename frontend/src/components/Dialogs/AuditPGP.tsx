@@ -20,7 +20,7 @@ import { saveAsJson } from "../../utils/saveFile";
 import KeyIcon from '@mui/icons-material/Key';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import ForumIcon from '@mui/icons-material/Forum';
-import { ExportIcon } from '../Icons';
+import { ExportIcon, NewTabIcon } from '../Icons';
 
 type Props = {
   open: boolean;
@@ -53,7 +53,7 @@ const AuditPGPDialog = ({
       onClose={onClose}
       >
       <DialogTitle >
-        {t("Do not trust, verify!")}
+        {t("Don't trust, verify")}
       </DialogTitle>
 
       <DialogContent>
@@ -63,7 +63,7 @@ const AuditPGPDialog = ({
         <Grid container spacing={1} align="center">
 
           <Grid item align="center" xs={12}>
-            <Button component={Link} target="_blank" href="https://learn.robosats.com/docs/pgp-encryption">{t("Learn how to verify")}</Button>
+            <Button component={Link} target="_blank" href="https://learn.robosats.com/docs/pgp-encryption">{t("Learn how to verify")} <NewTabIcon sx={{width:16,height:16}}/></Button>
           </Grid>
 
           <Grid item align="center" xs={12}>
