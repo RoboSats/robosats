@@ -577,7 +577,7 @@ class MakerPage extends Component {
                 </Grid>
 
                 <Grid item xs={12} align="center">
-                    <Accordion elevation={0} sx={{width:'280px', position:'relative', left:'-8px'}}>
+                    <Accordion defaultExpanded={true} elevation={0} sx={{width:'280px', position:'relative', left:'-8px'}}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon color="primary"/>}>
                             <Typography sx={{flexGrow: 1, textAlign: "center"}} color="text.secondary">{t("Expiry Timers")}</Typography>
                         </AccordionSummary>

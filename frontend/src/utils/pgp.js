@@ -6,7 +6,7 @@ export async function genKey(highEntropyToken) {
   const keyPair = await openpgp.generateKey({
     type: 'ecc', // Type of the key, defaults to ECC
     curve: 'curve25519', // ECC curve name, defaults to curve25519
-    userIDs: [{name: 'RoboSats Avatar'}],
+    userIDs: [{name: 'RoboSats Avatar ID'+ parseInt(Math.random() * 1000000)}], //Just for identification. Ideally it would be the avatar nickname, but the nickname is generated only after submission
     passphrase: highEntropyToken,
     format: 'armored'
   })

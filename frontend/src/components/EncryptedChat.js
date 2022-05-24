@@ -1,10 +1,19 @@
 import React, { Component } from 'react';
 import { withTranslation } from "react-i18next";
-import {Button, Badge, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, Typography} from "@mui/material";
+import {Button, Badge, ToolTip, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, Typography} from "@mui/material";
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import { encryptMessage , decryptMessage} from "../utils/pgp";
 import { getCookie } from "../utils/cookies";
-import { saveAsTxt } from "../utils/saveFile";
+import { saveAsJson, saveAsTxt } from "../utils/saveFile";
+import { AuditPGPDialog } from "./Dialogs"
+
+// Icons
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import KeyIcon from '@mui/icons-material/Key';
+import { ExportIcon } from './Icons';
 
 class Chat extends Component {
   constructor(props) {
@@ -65,7 +74,12 @@ class Chat extends Component {
 
         // If we receive a public key other than ours (our peer key!)
         if (dataFromServer.message.substring(0,36) == `-----BEGIN PGP PUBLIC KEY BLOCK-----` & dataFromServer.message != this.state.own_pub_key) {
-          console.log("PEER KEY RECEIVED!!")
+          if (dataFromServer.message == this.state.peer_pub_key){
+            console.log("PEER HAS RECONNECTED USING HIS PREVIOUSLY KNOWN PUBKEY")
+          } else if (dataFromServer.message != this.state.peer_pub_key & this.state.peer_pub_key != null){
+            console.log("PEER PUBKEY HAS CHANGED")
+          }
+          console.log("PEER KEY PUBKEY RECEIVED!!")
           this.setState({peer_pub_key:dataFromServer.message})
         } else
 
@@ -85,6 +99,7 @@ class Chat extends Component {
                 plainTextMessage: decryptedData.decryptedMessage,
                 validSignature: decryptedData.validSignature,           
                 userNick: dataFromServer.user_nick,
+                showPGP: false,
                 time: dataFromServer.time
               }],
             })
@@ -102,18 +117,6 @@ class Chat extends Component {
     this.rws.addEventListener('error', () => {
       console.error('Socket encountered error: Closing socket');
     });
-
-    // Encryption/Decryption Example
-    // console.log(encryptMessage('Example text to encrypt!', 
-    //   getCookie('pub_key').split('\\').join('\n'), 
-    //   getCookie('enc_priv_key').split('\\').join('\n'), 
-    //   getCookie('robot_token'))
-    //   .then((encryptedMessage)=> decryptMessage(
-    //     encryptedMessage,
-    //     getCookie('pub_key').split('\\').join('\n'), 
-    //     getCookie('enc_priv_key').split('\\').join('\n'), 
-    //     getCookie('robot_token'))
-    //   ))
   }
 
   componentDidUpdate() {
@@ -138,6 +141,17 @@ class Chat extends Component {
       );
     }
     e.preventDefault();
+  }
+
+  createJsonFile = () => {
+    return ({
+      "credentials": {
+        "own_public_key": this.state.own_pub_key,
+        "peer_public_key":this.state.peer_pub_key,
+        "encrypted_private_key":this.state.own_enc_priv_key,
+        "passphrase":this.state.token},
+      "messages": this.state.messages,
+    })
   }
 
   render() {
@@ -195,7 +209,7 @@ class Chat extends Component {
                 }
                 style={{backgroundColor: '#fafafa'}}
                 title={message.userNick}
-                subheader={this.state.audit ? message.plaintTextEncrypted : message.plainTextMessage}
+                subheader={this.state.audit ? message.encryptedMessage : message.plainTextMessage}
                 subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444'}}}
               />}
               </Card>
@@ -223,15 +237,30 @@ class Chat extends Component {
             </Grid>
           </Grid>
         </form>
-        <Grid>
-          <Button color="info" variant="contained" onClick={()=>this.setState({audit:!this.state.audit})}>{t("Audit")} </Button>
+        <div style={{height:4}}/>
+        <Grid container spacing={0}>
+          <AuditPGPDialog
+            open={this.state.audit}
+            onClose={() => this.setState({audit:false})}
+            orderId={Number(this.props.orderId)}
+            messages={this.state.messages}
+            own_pub_key={this.state.own_pub_key}
+            own_enc_priv_key={this.state.own_enc_priv_key}
+            peer_pub_key={this.state.peer_pub_key ? this.state.peer_pub_key : "Not received yet"}
+            passphrase={this.state.token}
+            onClickBack={() => this.setState({audit:false})}
+          />
+          <Grid item xs={6}>
+            <Button size="small" color="primary" variant="outlined" onClick={()=>this.setState({audit:!this.state.audit})}><KeyIcon/>{t("Audit PGP")} </Button>
+          </Grid>
+          
+          <Grid item xs={6}>
+            {/* <ToolTip placement="top" enterTouchDelay={0} enterDelay={1000} enterNextDelay={2000} title={t("Save local messages and credentials as a JSON file")}> */}
+              <Button size="small" color="primary" variant="outlined" onClick={()=>saveAsJson('chat_'+this.props.orderId+'.json', this.createJsonFile())}><div style={{width:28,height:20}}><ExportIcon sx={{width:20,height:20}}/></div> {t("Export All")} </Button>
+            {/* </ToolTip> */}
+          </Grid>
         </Grid>
-        <Grid>
-          <Button size="small" color="inherit" variant="contained" onClick={()=>saveAsTxt('messages.txt', this.state.messages)}>{t("Save Messages")} </Button>
-        </Grid>
-        <Grid>
-          <Button size="small" color="inherit" variant="contained" onClick={()=>saveAsTxt('keys.txt', {"own_public_key":this.state.own_pub_key,"peer_public_key":this.state.peer_pub_key,"encrypted_private_key":this.state.own_enc_priv_key,"passphrase":this.state.token})}>{t("Save Keys")} </Button>
-        </Grid>
+
       </Container>
     )
   }
