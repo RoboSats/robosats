@@ -15,17 +15,18 @@ export async function genKey(highEntropyToken) {
 };
 
 // Encrypt and sign a message
-export async function encryptMessage(plainMessage, publicKeyArmored, privateKeyArmored, passphrase) {
+export async function encryptMessage(plaintextMessage, ownPublicKeyArmored, peerPublicKeyArmored, privateKeyArmored, passphrase) {
 
-  const publicKey = await openpgp.readKey({ armoredKey: publicKeyArmored });
+  const ownPublicKey = await openpgp.readKey({ armoredKey: ownPublicKeyArmored });
+  const peerPublicKey = await openpgp.readKey({ armoredKey: peerPublicKeyArmored });
   const privateKey = await openpgp.decryptKey({
       privateKey: await openpgp.readPrivateKey({ armoredKey: privateKeyArmored }),
       passphrase
   });
 
   const encryptedMessage = await openpgp.encrypt({
-      message: await openpgp.createMessage({ text: plainMessage }), // input as Message object, message must be string
-      encryptionKeys: publicKey,
+      message: await openpgp.createMessage({ text: plaintextMessage }), // input as Message object, message must be string
+      encryptionKeys: [ ownPublicKey, peerPublicKey ],
       signingKeys: privateKey // optional
   });
 

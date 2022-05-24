@@ -1,21 +1,26 @@
 import React, { Component } from 'react';
-import { withTranslation, Trans} from "react-i18next";
-import {Button, Link, Badge, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, FormHelperText, Typography} from "@mui/material";
+import { withTranslation } from "react-i18next";
+import {Button, Badge, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, Typography} from "@mui/material";
 import ReconnectingWebSocket from 'reconnecting-websocket';
+import { encryptMessage , decryptMessage} from "../utils/pgp";
+import { getCookie } from "../utils/cookies";
+import { saveAsTxt } from "../utils/saveFile";
 
 class Chat extends Component {
-  // Deprecated chat component
-  // Will still be used for ~1 week, until users change to robots with PGP keys
-  
   constructor(props) {
     super(props);
   }
 
   state = {
+    own_pub_key: getCookie('pub_key').split('\\').join('\n'), 
+    own_enc_priv_key: getCookie('enc_priv_key').split('\\').join('\n'),
+    peer_pub_key: null,
+    token: getCookie('robot_token'),
     messages: [],
     value:'',
     connected: false,
     peer_connected: false,
+    audit: false,
   };
 
   rws = new ReconnectingWebSocket('ws://' + window.location.host + '/ws/chat/' + this.props.orderId + '/');
@@ -24,9 +29,16 @@ class Chat extends Component {
     this.rws.addEventListener('open', () => {
       console.log('Connected!');
       this.setState({connected: true});
+      if ( this.state.peer_pub_key == null){
+        this.rws.send(JSON.stringify({
+          type: "message",
+          message: "----PLEASE SEND YOUR PUBKEY----",
+          nick: this.props.ur_nick,
+        }));
+      }
       this.rws.send(JSON.stringify({
         type: "message",
-        message: 'just-connected',
+        message: this.state.own_pub_key,
         nick: this.props.ur_nick,
       }));
     });
@@ -37,16 +49,46 @@ class Chat extends Component {
       console.log('Got reply!', dataFromServer.type);
 
       if (dataFromServer){
-        if (dataFromServer.message != 'just-connected' & dataFromServer.message != 'peer-disconnected'){
-          this.setState((state) =>
-          ({
-            messages: [...state.messages,
-            {
-              msg: dataFromServer.message,
-              userNick: dataFromServer.user_nick,
-            }],
-          })
-          )
+        console.log(dataFromServer)
+        
+        // If we receive our own key on a message
+        if (dataFromServer.message == this.state.own_pub_key){console.log("ECHO OF OWN PUB KEY RECEIVED!!")}
+
+        // If we receive a request to send our public key
+        if (dataFromServer.message == `----PLEASE SEND YOUR PUBKEY----`) {
+          this.rws.send(JSON.stringify({
+            type: "message",
+            message: this.state.own_pub_key,
+            nick: this.props.ur_nick,
+          })); 
+        } else
+
+        // If we receive a public key other than ours (our peer key!)
+        if (dataFromServer.message.substring(0,36) == `-----BEGIN PGP PUBLIC KEY BLOCK-----` & dataFromServer.message != this.state.own_pub_key) {
+          console.log("PEER KEY RECEIVED!!")
+          this.setState({peer_pub_key:dataFromServer.message})
+        } else
+
+        // If we receive an encrypted message
+        if (dataFromServer.message.substring(0,27) == `-----BEGIN PGP MESSAGE-----`){
+          decryptMessage(
+            dataFromServer.message.split('\\').join('\n'), 
+            dataFromServer.user_nick == this.props.ur_nick ? this.state.own_pub_key : this.state.peer_pub_key, 
+            this.state.own_enc_priv_key, 
+            this.state.token)
+          .then((decryptedData) =>
+            this.setState((state) => 
+            ({
+              messages: [...state.messages,
+              {
+                encryptedMessage: dataFromServer.message.split('\\').join('\n'),
+                plainTextMessage: decryptedData.decryptedMessage,
+                validSignature: decryptedData.validSignature,           
+                userNick: dataFromServer.user_nick,
+                time: dataFromServer.time
+              }],
+            })
+          ));
         }
         this.setState({peer_connected: dataFromServer.peer_connected})
       }
@@ -60,6 +102,18 @@ class Chat extends Component {
     this.rws.addEventListener('error', () => {
       console.error('Socket encountered error: Closing socket');
     });
+
+    // Encryption/Decryption Example
+    // console.log(encryptMessage('Example text to encrypt!', 
+    //   getCookie('pub_key').split('\\').join('\n'), 
+    //   getCookie('enc_priv_key').split('\\').join('\n'), 
+    //   getCookie('robot_token'))
+    //   .then((encryptedMessage)=> decryptMessage(
+    //     encryptedMessage,
+    //     getCookie('pub_key').split('\\').join('\n'), 
+    //     getCookie('enc_priv_key').split('\\').join('\n'), 
+    //     getCookie('robot_token'))
+    //   ))
   }
 
   componentDidUpdate() {
@@ -72,12 +126,16 @@ class Chat extends Component {
 
   onButtonClicked = (e) => {
     if(this.state.value!=''){
-      this.rws.send(JSON.stringify({
-        type: "message",
-        message: this.state.value,
-        nick: this.props.ur_nick,
-      }));
-      this.setState({value: ""});
+      encryptMessage(this.state.value, this.state.own_pub_key, this.state.peer_pub_key, this.state.own_enc_priv_key, this.state.token)
+      .then((encryptedMessage) =>
+        console.log("Sending Encrypted MESSAGE    "+encryptedMessage) &
+        this.rws.send(JSON.stringify({
+          type: "message",
+          message: encryptedMessage.split('\n').join('\\'),
+          nick: this.props.ur_nick,
+        }) 
+       ) & this.setState({value: ""})
+      );
     }
     e.preventDefault();
   }
@@ -122,7 +180,7 @@ class Chat extends Component {
                 }
                 style={{backgroundColor: '#eeeeee'}}
                 title={message.userNick}
-                subheader={message.msg}
+                subheader={this.state.audit ? message.encryptedMessage : message.plainTextMessage}
                 subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444'}}}
               />
               :
@@ -137,7 +195,7 @@ class Chat extends Component {
                 }
                 style={{backgroundColor: '#fafafa'}}
                 title={message.userNick}
-                subheader={message.msg}
+                subheader={this.state.audit ? message.plaintTextEncrypted : message.plainTextMessage}
                 subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444'}}}
               />}
               </Card>
@@ -165,9 +223,15 @@ class Chat extends Component {
             </Grid>
           </Grid>
         </form>
-        <FormHelperText>
-          {t("The chat has no memory: if you leave, messages are lost.")} <Link target="_blank" href={t("PGP_guide_url")}> {t("Learn easy PGP encryption.")}</Link>
-        </FormHelperText>
+        <Grid>
+          <Button color="info" variant="contained" onClick={()=>this.setState({audit:!this.state.audit})}>{t("Audit")} </Button>
+        </Grid>
+        <Grid>
+          <Button size="small" color="inherit" variant="contained" onClick={()=>saveAsTxt('messages.txt', this.state.messages)}>{t("Save Messages")} </Button>
+        </Grid>
+        <Grid>
+          <Button size="small" color="inherit" variant="contained" onClick={()=>saveAsTxt('keys.txt', {"own_public_key":this.state.own_pub_key,"peer_public_key":this.state.peer_pub_key,"encrypted_private_key":this.state.own_enc_priv_key,"passphrase":this.state.token})}>{t("Save Keys")} </Button>
+        </Grid>
       </Container>
     )
   }

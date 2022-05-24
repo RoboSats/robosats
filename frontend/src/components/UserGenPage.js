@@ -13,7 +13,7 @@ import { RoboSatsNoTextIcon } from "./Icons";
 
 import { sha256 } from 'js-sha256';
 import { genBase62Token, tokenStrength } from "../utils/token";
-import { genKey , encryptMessage , decryptMessage} from "../utils/pgp";
+import { genKey } from "../utils/pgp";
 import { getCookie, writeCookie } from "../utils/cookies";
 
 
@@ -122,18 +122,6 @@ class UserGenPage extends Component {
       tokenHasChanged: true,
     });
     this.props.setAppState({copiedToken: true})
-
-    // Encryption decryption test
-    console.log(encryptMessage('Example text to encrypt!', 
-        getCookie('pub_key').split('\\').join('\n'), 
-        getCookie('enc_priv_key').split('\\').join('\n'), 
-        getCookie('robot_token'))
-        .then((encryptedMessage)=> decryptMessage(
-          encryptedMessage,
-          getCookie('pub_key').split('\\').join('\n'), 
-          getCookie('enc_priv_key').split('\\').join('\n'), 
-          getCookie('robot_token'))
-        ))
   }
 
   handleChangeToken=(e)=>{
