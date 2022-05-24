@@ -259,9 +259,32 @@
     "Type a message":"Type a message",
     "Connecting...":"Connecting...",
     "Send":"Send",
-    "The chat has no memory: if you leave, messages are lost.":"The chat has no memory: if you leave, messages are lost.",
-    "Learn easy PGP encryption.":"Learn easy PGP encryption.",
-    "PGP_guide_url":"https://learn.robosats.com/docs/pgp-encryption/",
+    "Verify your privacy":"Verify your privacy",
+    "Audit PGP":"Audit PGP",
+    "Save full log as a JSON file (messages and credentials)":"Save full log as a JSON file (messages and credentials)",
+    "Export":"Export",
+    "Don't trust, verify":"Don't trust, verify",
+    "Your communication is end-to-end encrypted with OpenPGP. You can verify the privacy of this chat using any tool based on the OpenPGP standard.":"Your communication is end-to-end encrypted with OpenPGP. You can verify the privacy of this chat using any tool based on the OpenPGP standard.",
+    "Learn how to verify":"Learn how to verify",
+    "Your PGP public key. Your peer uses it to encrypt messages only you can read.":"Your PGP public key. Your peer uses it to encrypt messages only you can read.",
+    "Your public key":"Your public key",
+    "Your peer PGP public key. You use it to encrypt messages only he can read and to verify your peer signed the incoming messages.":"Your peer PGP public key. You use it to encrypt messages only he can read.and to verify your peer signed the incoming messages.",
+    "Peer public key":"Peer public key",
+    "Your encrypted private key. You use it to decrypt the messages that your peer encrypted for you. You also use it to sign the messages you send.":"Your encrypted private key. You use it to decrypt the messages that your peer encrypted for you. You also use it to sign the messages you send.",
+    "Your encrypted private key":"Your encrypted private key",
+    "The passphrase to decrypt your private key. Only you know it! Do not share. It is also your robot token.":"The passphrase to decrypt your private key. Only you know it! Do not share. It is also your robot avatar user token.",
+    "Your private key passphrase (keep secure!)":"Your private key passphrase (keep secure!)",
+    "Save credentials as a JSON file":"Save credentials as a JSON file",
+    "Keys":"Keys",
+    "Save messages as a JSON file":"Save messages as a JSON file",
+    "Messages":"Messages",
+
+
+
+
+
+
+    
 
     "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
     "Contract Box":"Contract Box",

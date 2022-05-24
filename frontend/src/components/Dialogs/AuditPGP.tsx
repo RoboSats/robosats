@@ -22,6 +22,31 @@ import ContentCopy from "@mui/icons-material/ContentCopy";
 import ForumIcon from '@mui/icons-material/Forum';
 import { ExportIcon, NewTabIcon } from '../Icons';
 
+function CredentialTextfield(props){
+  return(
+    <Grid item align="center" xs={12}>
+      <Tooltip placement="top" enterTouchDelay={200} enterDelay={200} title={props.tooltipTitle}>
+        <TextField
+          sx={{width:"100%", maxWidth:"550px"}}
+          disabled
+          label={<b>{props.label}</b>}
+          value={props.value}
+          variant='filled'
+          size='small'
+          InputProps={{
+            endAdornment:
+              <Tooltip disableHoverListener enterTouchDelay={0} title={props.copiedTitle}>
+                <IconButton onClick={()=> navigator.clipboard.writeText(props.value)}>
+                  <ContentCopy/>
+                </IconButton>
+              </Tooltip>,
+            }}
+          />
+      </Tooltip>
+    </Grid>
+  )
+}
+
 type Props = {
   open: boolean;
   onClose: () => void;
@@ -66,89 +91,29 @@ const AuditPGPDialog = ({
             <Button component={Link} target="_blank" href="https://learn.robosats.com/docs/pgp-encryption">{t("Learn how to verify")} <NewTabIcon sx={{width:16,height:16}}/></Button>
           </Grid>
 
-          <Grid item align="center" xs={12}>
-            <Tooltip placement="top" enterTouchDelay={0} enterDelay={0} title={t("Your PGP public key. Your peer uses it to encrypt messages only you can read.")}>
-              <TextField
-                sx={{width:"100%", maxWidth:"550px"}}
-                disabled
-                label={<b>{t("Your public key")}</b>}
-                value={own_pub_key}
-                variant='filled'
-                size='small'
-                InputProps={{
-                  endAdornment:
-                    <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                      <IconButton onClick={()=> navigator.clipboard.writeText(own_pub_key)}>
-                        <ContentCopy/>
-                      </IconButton>
-                    </Tooltip>,
-                  }}
-                />
-            </Tooltip>
-          </Grid>
+          <CredentialTextfield 
+            tooltipTitle={t("Your PGP public key. Your peer uses it to encrypt messages only you can read.")}
+            label={t("Your public key")}
+            value={own_pub_key}
+            copiedTitle={t("Copied!")}/>
 
-          <Grid item align="center" xs={12}>
-            <Tooltip placement="top" enterTouchDelay={0} enterDelay={0} title={t("Your peer PGP public key. You use it to encrypt messages only he can read.and to verify your peer signed the incoming messages.")}>
-              <TextField
-                sx={{width:"100%", maxWidth:"550px"}}
-                disabled
-                label={<b>{t("Peer public key")}</b>}
-                value={peer_pub_key}
-                variant='filled'
-                size='small'
-                InputProps={{
-                  endAdornment:
-                    <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                      <IconButton onClick={()=> navigator.clipboard.writeText(peer_pub_key)}>
-                        <ContentCopy/>
-                      </IconButton>
-                    </Tooltip>,
-                  }}
-                />
-            </Tooltip>
-          </Grid>
+          <CredentialTextfield 
+            tooltipTitle={t("Your peer PGP public key. You use it to encrypt messages only he can read and to verify your peer signed the incoming messages.")}
+            label={t("Peer public key")}
+            value={peer_pub_key}
+            copiedTitle={t("Copied!")}/>
 
-          <Grid item align="center" xs={12}>
-            <Tooltip placement="top" enterTouchDelay={0} enterDelay={0} title={t("Your encrypted private key. You use it to decrypt the messages that your peer encrypted for you. You also use it to sign the messages you send.")}>
-              <TextField
-                sx={{width:"100%", maxWidth:"550px"}}
-                disabled
-                label={<b>{t("Your encrypted private key")}</b>}
-                value={own_enc_priv_key}
-                variant='filled'
-                size='small'
-                InputProps={{
-                  endAdornment:
-                    <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                      <IconButton onClick={()=> navigator.clipboard.writeText(own_enc_priv_key)}>
-                        <ContentCopy/>
-                      </IconButton>
-                    </Tooltip>,
-                  }}
-                />
-            </Tooltip>
-          </Grid>
+          <CredentialTextfield 
+            tooltipTitle={t("Your encrypted private key. You use it to decrypt the messages that your peer encrypted for you. You also use it to sign the messages you send.")}
+            label={t("Your encrypted private key")}
+            value={own_enc_priv_key}
+            copiedTitle={t("Copied!")}/>
 
-          <Grid item align="center" xs={12}>
-            <Tooltip placement="top" enterTouchDelay={0} enterDelay={0} title={t("The passphrase to decrypt your private key. Only you know it! Do not share. It is also your robot avatar user token.")}>
-              <TextField
-                sx={{width:"100%", maxWidth:"550px"}}
-                disabled
-                label={<b>{t("Your private key passphrase (keep secure!)")}</b>}
-                value={passphrase}
-                variant='filled'
-                size='small'
-                InputProps={{
-                  endAdornment:
-                    <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                      <IconButton onClick={()=> navigator.clipboard.writeText(passphrase)}>
-                        <ContentCopy/>
-                      </IconButton>
-                    </Tooltip>,
-                  }}
-                />
-            </Tooltip>
-          </Grid>
+          <CredentialTextfield 
+            tooltipTitle={t("The passphrase to decrypt your private key. Only you know it! Do not share. It is also your robot token.")}
+            label={t("Your private key passphrase (keep secure!)")}
+            value={passphrase}
+            copiedTitle={t("Copied!")}/>
 
             <br/>
             <Grid item xs={6}>

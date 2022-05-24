@@ -241,102 +241,12 @@ class Chat extends Component {
         <Paper elevation={1} style={{ height: '300px', maxHeight: '300px' , width: '280px' ,overflow: 'auto', backgroundColor: '#F7F7F7' }}>
           {this.state.messages.map((message, index) =>
           <li style={{listStyleType:"none"}} key={index}>
-            {/* If message sender is not our nick, gray color, if it is our nick, green color */}
             {message.userNick == this.props.ur_nick ?
               <this.messageCard message={message} index={index} cardColor={'#eeeeee'} userConnected={this.state.connected}/>
               :
               <this.messageCard message={message} index={index} cardColor={'#fafafa'} userConnected={this.state.peer_connected}/>
             }
-              {/* // <CardHeader sx={{color: '#333333'}}
-              //   avatar={
-              //     <Badge variant="dot" overlap="circular" badgeContent="" color={this.state.connected ? "success" : "error"}>
-              //       <Avatar className="flippedSmallAvatar"
-              //         alt={message.userNick}
-              //         src={window.location.origin +'/static/assets/avatars/' + message.userNick + '.png'}
-              //         />
-              //     </Badge>
-              //   }
-              //   style={{backgroundColor: '#eeeeee'}}
-              //   title={
-              //     <Tooltip placement="top" enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t(message.validSignature ? "Verified signature by {{nickname}}": "Invalid signature! Not sent by {{nickname}}",{"nickname": message.userNick})}>
-              //       <div style={{display:'flex',alignItems:'center', flexWrap:'wrap', position:'relative',left:-5, width:210}}>
-              //         <div style={{width:168,display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-              //           {message.userNick}
-              //           {message.validSignature ?
-              //             <CheckIcon sx={{height:16}} color="success"/>
-              //           : 
-              //             <CloseIcon sx={{height:16}} color="error"/> 
-              //           }
-              //         </div>
-              //         <div style={{width:20}}>
-              //           <IconButton sx={{height:18,width:18}}
-              //            onClick={()=>
-              //             this.setState(prevState => {
-              //               const newShowPGP = [...prevState.showPGP];
-              //               newShowPGP[index] = !newShowPGP[index];
-              //               return {showPGP: newShowPGP};
-              //           })}>
-              //             <VisibilityIcon color={this.state.showPGP[index]? "primary":"inherit"} sx={{height:16,width:16,color:this.state.showPGP[index]? "primary":"#333333"}}/>
-              //           </IconButton>
-              //         </div>
-              //         <div style={{width:20}}>
-              //           <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-              //             <IconButton sx={{height:18,width:18}}
-              //               onClick={()=> navigator.clipboard.writeText(this.state.showPGP[index] ? message.encryptedMessage : message.plainTextMessage)}>
-              //               <ContentCopy sx={{height:16,width:16,color:'#333333'}}/>
-              //             </IconButton>
-              //           </Tooltip>
-              //         </div>
-              //       </div>
-              //     </Tooltip>
-              //   }
-              //   subheader={this.state.showPGP[index] ? message.encryptedMessage : message.plainTextMessage}
-              //   subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444', fontSize: this.state.showPGP[index]? 11 : null }}}
-              // />
-              // :
-              // <CardHeader sx={{color: '#333333'}}
-              //   avatar={
-              //     <Badge variant="dot" overlap="circular" badgeContent="" color={this.state.peer_connected ? "success" : "error"}>
-              //       <Avatar className="flippedSmallAvatar"
-              //         alt={message.userNick}
-              //         src={window.location.origin +'/static/assets/avatars/' + message.userNick + '.png'}
-              //         />
-              //     </Badge>
-              //   }
-              //   style={{backgroundColor: '#fafafa'}}
-              //   title={
-              //     <Tooltip placement="top" enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t(message.validSignature ? "Verified signature by {{nickname}}": "Invalid signature! Not sent by {{nickname}}",{"nickname": message.userNick})}>
-              //       <div style={{display:'flex',alignItems:'center', flexWrap:'wrap', position:'relative',left:-5, width:210}}>
-              //         <div style={{width:168,display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-              //           {message.userNick}
-              //           {message.validSignature ?
-              //             <CheckIcon sx={{height:16}} color="success"/>
-              //           : 
-              //             <CloseIcon sx={{height:16}} color="error"/> 
-              //           }
-              //         </div>
-              //         <div style={{width:20}}>
-              //           <IconButton sx={{height:18,width:18}}
-              //            onClick={()=>
-              //             this.setState(prevState => {
-              //               const newShowPGP = [...prevState.showPGP];
-              //               newShowPGP[index] = !newShowPGP[index];
-              //               return {showPGP: newShowPGP};
-              //           })}>
-              //             <VisibilityIcon color={this.state.showPGP[index]? "primary":"inherit"} sx={{height:16,width:16,color:this.state.showPGP[index]? "primary":"#333333"}}/>
-              //           </IconButton>
-              //         </div>
-              //         <div style={{width:20}}>
-              //           <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-              //             <IconButton sx={{height:18,width:18}}
-              //               onClick={()=> navigator.clipboard.writeText(this.state.showPGP[index] ? message.encryptedMessage : message.plainTextMessage)}>
-              //               <ContentCopy sx={{height:16,width:16,color:'#333333'}}/>
-              //             </IconButton>
-              //           </Tooltip>
-              //         </div>
-              //       </div>
-              //     </Tooltip> */}
-            </li>)}
+          </li>)}
           <div style={{ float:"left", clear: "both" }} ref={(el) => { this.messagesEnd = el; }}></div>
         </Paper>
         <form noValidate onSubmit={this.onButtonClicked}>
