@@ -3,7 +3,7 @@ import { withTranslation, Trans} from "react-i18next";
 import { IconButton, Box, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
 import Countdown, { zeroPad} from 'react-countdown';
-import Chat from "./Chat"
+import Chat from "./EncryptedChat"
 import MediaQuery from 'react-responsive'
 import QrReader from 'react-qr-reader'
 

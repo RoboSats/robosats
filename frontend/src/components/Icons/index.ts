@@ -12,3 +12,5 @@ export { default as RoboSatsTextIcon } from "./RoboSatsText";
 export { default as SellSatsCheckedIcon } from "./SellSatsChecked";
 export { default as SellSatsIcon } from "./SellSats";
 export { default as SendReceiveIcon } from "./SendReceive";
+export { default as ExportIcon } from "./Export";
+

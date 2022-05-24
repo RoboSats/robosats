@@ -2,6 +2,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from api.models import Order
 from chat.models import ChatRoom
+from django.utils import timezone
 
 import json
 
@@ -131,6 +132,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
             "message": message,
             "user_nick": nick,
             "peer_connected": peer_connected,
+            "time":str(timezone.now()),
         }))
 
     pass

@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import { withTranslation, Trans} from "react-i18next";
 import {Button, Link, Badge, TextField, Grid, Container, Card, CardHeader, Paper, Avatar, FormHelperText, Typography} from "@mui/material";
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import * as openpgp from 'openpgp/lightweight';
 
 class Chat extends Component {
+  // Deprecated chat component
+  // Will still be used for ~1 week, until users change to robots with PGP keys
+  
   constructor(props) {
     super(props);
   }
