@@ -9,12 +9,14 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CasinoIcon from '@mui/icons-material/Casino';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import BoltIcon from '@mui/icons-material/Bolt';
+import DownloadIcon from '@mui/icons-material/Download';
 import { RoboSatsNoTextIcon } from "./Icons";
 
 import { sha256 } from 'js-sha256';
 import { genBase62Token, tokenStrength } from "../utils/token";
 import { genKey } from "../utils/pgp";
 import { getCookie, writeCookie } from "../utils/cookies";
+import { saveAsJson } from "../utils/saveFile";
 
 
 class UserGenPage extends Component {
@@ -146,6 +148,16 @@ class UserGenPage extends Component {
     this.setState({openInfo: false});
   };
 
+  createJsonFile = () => {
+    return ({
+      "token":getCookie('robot_token'),
+      "token_shannon_entropy": this.state.shannon_entropy,
+      "token_bit_entropy": this.state.bit_entropy,
+      "public_key": getCookie('pub_key').split('\\').join('\n'), 
+      "encrypted_private_key": getCookie('enc_priv_key').split('\\').join('\n'),
+    })
+  }
+
   render() {
     const { t, i18n} = this.props;
     return (
@@ -208,11 +220,24 @@ class UserGenPage extends Component {
                 }}
                 InputProps={{
                   startAdornment:
-                  <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                    <IconButton  onClick= {()=> (navigator.clipboard.writeText(this.state.token) & this.props.setAppState({copiedToken:true}))}>
-                      <ContentCopy color={this.props.avatarLoaded & !this.props.copiedToken & !this.state.bad_request ? 'primary' : 'inherit' } sx={{width:18, height:18}}/>
-                    </IconButton>
-                  </Tooltip>,
+                  <div style={{width:50, minWidth:50, position:'relative',left:-6}}>
+                    <Grid container xs={12}>
+                    <Grid item xs={6}>
+                        <Tooltip enterTouchDelay={250} title={t("Save token and PGP credentials to file")}>
+                          <IconButton  color="primary" disabled={getCookie('robot_token')==null || !this.props.avatarLoaded} onClick= {()=> saveAsJson(this.state.nickname+'.json', this.createJsonFile())}>
+                            <DownloadIcon sx={{width:22, height:22}}/>
+                          </IconButton>
+                        </Tooltip>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
+                          <IconButton  onClick= {()=> (navigator.clipboard.writeText(this.state.token) & this.props.setAppState({copiedToken:true}))}>
+                            <ContentCopy color={this.props.avatarLoaded & !this.props.copiedToken & !this.state.bad_request ? 'primary' : 'inherit' } sx={{width:18, height:18}}/>
+                          </IconButton>
+                        </Tooltip>
+                      </Grid>
+                    </Grid>
+                  </div>,
                   endAdornment:
                   <Tooltip enterTouchDelay={250} title={t("Generate a new token")}>
                     <IconButton onClick={this.handleClickNewRandomToken}><CasinoIcon/></IconButton>

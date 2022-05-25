@@ -208,7 +208,7 @@ class Chat extends Component {
               </div>
             </Tooltip>
           }
-          subheader={this.state.showPGP[props.index] ? props.message.encryptedMessage : props.message.plainTextMessage}
+          subheader={this.state.showPGP[props.index] ? <a> {props.message.time} <br/> {"Valid signature: " + props.message.validSignature} <br/>  {props.message.encryptedMessage} </a> : props.message.plainTextMessage}
           subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444', fontSize: this.state.showPGP[props.index]? 11 : null }}}
         />
       </Card>
@@ -256,7 +256,7 @@ class Chat extends Component {
                 label={t("Type a message")}
                 variant="standard"
                 size="small"
-                helperText={this.state.connected ? null : t("Connecting...")}
+                helperText={this.state.connected ? (this.state.peer_pub_key ? null : t("Waiting for peer public key...")) : t("Connecting...")}
                 value={this.state.value}
                 onChange={e => {
                   this.setState({ value: e.target.value });
@@ -266,7 +266,7 @@ class Chat extends Component {
               />
             </Grid>
             <Grid item alignItems="stretch" style={{ display: "flex" }}>
-              <Button sx={{'width':68}} disabled={!this.state.connected || this.state.waitingEcho} type="submit" variant="contained" color="primary">
+              <Button sx={{'width':68}} disabled={!this.state.connected || this.state.waitingEcho || this.state.peer_pub_key == null} type="submit" variant="contained" color="primary">
                 {this.state.waitingEcho ?
                   <div style={{display:'flex',alignItems:'center', flexWrap:'wrap', minWidth:68, width:68, position:"relative",left:15}}>
                     <div style={{width:20}}><KeyIcon sx={{width:18}}/></div>
@@ -301,7 +301,7 @@ class Chat extends Component {
           
           <Grid item xs={6}>
             <Tooltip placement="bottom" enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t("Save full log as a JSON file (messages and credentials)")}>
-              <Button size="small" color="primary" variant="outlined" onClick={()=>saveAsJson('chat_'+this.props.orderId+'.json', this.createJsonFile())}><div style={{width:28,height:20}}><ExportIcon sx={{width:20,height:20}}/></div> {t("Export")} </Button>
+              <Button size="small" color="primary" variant="outlined" onClick={()=>saveAsJson('complete_log_chat_'+this.props.orderId+'.json', this.createJsonFile())}><div style={{width:28,height:20}}><ExportIcon sx={{width:20,height:20}}/></div> {t("Export")} </Button>
             </Tooltip>
           </Grid>
         </Grid>
