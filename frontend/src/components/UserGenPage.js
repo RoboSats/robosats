@@ -9,9 +9,15 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CasinoIcon from '@mui/icons-material/Casino';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import BoltIcon from '@mui/icons-material/Bolt';
+import DownloadIcon from '@mui/icons-material/Download';
 import { RoboSatsNoTextIcon } from "./Icons";
 
+import { sha256 } from 'js-sha256';
+import { genBase62Token, tokenStrength } from "../utils/token";
+import { genKey } from "../utils/pgp";
 import { getCookie, writeCookie } from "../utils/cookies";
+import { saveAsJson } from "../utils/saveFile";
+
 
 class UserGenPage extends Component {
   constructor(props) {
@@ -37,7 +43,7 @@ class UserGenPage extends Component {
       });
     }
     else{
-      var newToken = this.genBase62Token(36)
+      var newToken = genBase62Token(36)
       this.setState({
         token: newToken
       });
@@ -45,46 +51,61 @@ class UserGenPage extends Component {
     }
   }
 
-  // sort of cryptographically strong function to generate Base62 token client-side
-  genBase62Token(length)
-  {
-      return window.btoa(Array.from(
-        window.crypto.getRandomValues(
-          new Uint8Array(length * 2)))
-          .map((b) => String.fromCharCode(b))
-          .join("")).replace(/[+/]/g, "")
-          .substring(0, length);
-  }
-
   getGeneratedUser=(token)=>{
-    fetch('/api/user' + '?token=' + token + '&ref_code=' + this.refCode)
-      .then((response) => response.json())
-      .then((data) => {
-        this.setState({
+
+    const strength = tokenStrength(token);
+    const refCode = this.refCode
+
+    const requestOptions = genKey(token).then(function(key) {
+      return {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+        body: JSON.stringify({
+            token_sha256: sha256(token),
+            public_key: key.publicKeyArmored,
+            encrypted_private_key: key.encryptedPrivateKeyArmored,
+            unique_values: strength.uniqueValues,
+            counts: strength.counts,
+            length: token.length,
+            ref_code: refCode,
+        })
+      }}
+    );
+
+    console.log(requestOptions)
+    
+    requestOptions.then((options) =>
+      fetch("/api/user/",options)
+        .then((response) => response.json())
+        .then((data) => { console.log(data) &
+          this.setState({
+              nickname: data.nickname,
+              bit_entropy: data.token_bits_entropy,
+              avatar_url: '/static/assets/avatars/' + data.nickname + '.png',
+              shannon_entropy: data.token_shannon_entropy,
+              bad_request: data.bad_request,
+              found: data.found,
+              loadingRobot:false,
+          })
+          &
+          // Add nick and token to App state (token only if not a bad request)
+          (data.bad_request ? this.props.setAppState({
             nickname: data.nickname,
-            bit_entropy: data.token_bits_entropy,
-            avatar_url: '/static/assets/avatars/' + data.nickname + '.png',
-            shannon_entropy: data.token_shannon_entropy,
-            bad_request: data.bad_request,
-            found: data.found,
-            loadingRobot:false,
-        })
-        &
-        // Add nick and token to App state (token only if not a bad request)
-        (data.bad_request ? this.props.setAppState({
-          nickname: data.nickname,
-          avatarLoaded: false,
-        })
-        :
-        (this.props.setAppState({
-          nickname: data.nickname,
-          token: token,
-          avatarLoaded: false,
-        })) & writeCookie("robot_token",token))
-        &
-        // If the robot has been found (recovered) we assume the token is backed up
-        (data.found ? this.props.setAppState({copiedToken:true}) : null)
-     });
+            avatarLoaded: false,
+          })
+          :
+          (this.props.setAppState({
+            nickname: data.nickname,
+            token: token,
+            avatarLoaded: false,
+          })) & writeCookie("robot_token",token) 
+              & writeCookie("pub_key",data.public_key.split('\n').join('\\')) 
+              & writeCookie("enc_priv_key",data.encrypted_private_key.split('\n').join('\\')))
+          &
+          // If the robot has been found (recovered) we assume the token is backed up
+          (data.found ? this.props.setAppState({copiedToken:true}) : null)
+      })
+    );
   }
 
   delGeneratedUser() {
@@ -97,7 +118,7 @@ class UserGenPage extends Component {
   }
 
   handleClickNewRandomToken=()=>{
-    var token = this.genBase62Token(36);
+    var token = genBase62Token(36);
     this.setState({
       token: token,
       tokenHasChanged: true,
@@ -126,6 +147,16 @@ class UserGenPage extends Component {
   handleCloseInfo = () => {
     this.setState({openInfo: false});
   };
+
+  createJsonFile = () => {
+    return ({
+      "token":getCookie('robot_token'),
+      "token_shannon_entropy": this.state.shannon_entropy,
+      "token_bit_entropy": this.state.bit_entropy,
+      "public_key": getCookie('pub_key').split('\\').join('\n'), 
+      "encrypted_private_key": getCookie('enc_priv_key').split('\\').join('\n'),
+    })
+  }
 
   render() {
     const { t, i18n} = this.props;
@@ -164,7 +195,7 @@ class UserGenPage extends Component {
           {
             this.state.found ?
               <Grid item xs={12} align="center">
-                <Typography component="subtitle2" variant="subtitle2" color='primary'>
+                <Typography variant="subtitle2" color='primary'>
                   {this.state.found ? t("A robot avatar was found, welcome back!"):null}<br/>
                 </Typography>
               </Grid>
@@ -174,7 +205,7 @@ class UserGenPage extends Component {
           <Grid container align="center">
             <Grid item xs={12} align="center">
               <TextField sx={{maxWidth: 280}}
-                error={this.state.bad_request}
+                error={this.state.bad_request ? true : false}
                 label={t("Store your token safely")}
                 required={true}
                 value={this.state.token}
@@ -189,11 +220,24 @@ class UserGenPage extends Component {
                 }}
                 InputProps={{
                   startAdornment:
-                  <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                    <IconButton  onClick= {()=> (navigator.clipboard.writeText(this.state.token) & this.props.setAppState({copiedToken:true}))}>
-                      <ContentCopy color={this.props.avatarLoaded & !this.props.copiedToken & !this.state.bad_request ? 'primary' : 'inherit' } sx={{width:18, height:18}}/>
-                    </IconButton>
-                  </Tooltip>,
+                  <div style={{width:50, minWidth:50, position:'relative',left:-6}}>
+                    <Grid container xs={12}>
+                    <Grid item xs={6}>
+                        <Tooltip enterTouchDelay={250} title={t("Save token and PGP credentials to file")}>
+                          <IconButton  color="primary" disabled={getCookie('robot_token')==null || !this.props.avatarLoaded} onClick= {()=> saveAsJson(this.state.nickname+'.json', this.createJsonFile())}>
+                            <DownloadIcon sx={{width:22, height:22}}/>
+                          </IconButton>
+                        </Tooltip>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
+                          <IconButton  onClick= {()=> (navigator.clipboard.writeText(this.state.token) & this.props.setAppState({copiedToken:true}))}>
+                            <ContentCopy color={this.props.avatarLoaded & !this.props.copiedToken & !this.state.bad_request ? 'primary' : 'inherit' } sx={{width:18, height:18}}/>
+                          </IconButton>
+                        </Tooltip>
+                      </Grid>
+                    </Grid>
+                  </div>,
                   endAdornment:
                   <Tooltip enterTouchDelay={250} title={t("Generate a new token")}>
                     <IconButton onClick={this.handleClickNewRandomToken}><CasinoIcon/></IconButton>

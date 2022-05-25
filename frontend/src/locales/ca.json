@@ -275,7 +275,7 @@
     "Your maker bond was unlocked":"La teva fiança s'ha desbloquejat",
     "Your taker bond was unlocked":"La teva fiança s'ha desbloquejat",
     "Your order is public":"La teva ordre és pública",
-    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m to reply. If you do not reply, you risk losing your bond.":"Sigues pacient fins que un robot prengui la teva ordre. Aquesta finestra sonarà 🔊 un cop algun robot prengui la teva ordre. Llavors tindràs {{invoice_escrow_duration}} hores per respondre, si no respons t'arrisques a perdre la fiança.",
+    "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m to reply. If you do not reply, you risk losing your bond.":"Sigues pacient fins que un robot prengui la teva ordre. Aquesta finestra sonarà 🔊 un cop algun robot prengui la teva ordre. Llavors tindràs {{deposit_timer_hours}}h {{deposit_timer_minutes}}m per respondre, si no respons t'arrisques a perdre la fiança.",
     "If the order expires untaken, your bond will return to you (no action needed).":"Si la teva oferta expira sense ser presa, la teva fiança serà desbloquejada a la teva cartera automàticament.",
     "Enable Telegram Notifications":"Notificar en Telegram",
     "Enable TG Notifications":"Activar Notificacions TG",
