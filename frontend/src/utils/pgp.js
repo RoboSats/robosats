@@ -8,6 +8,7 @@ import {
     createMessage,
     readMessage
 } from 'openpgp/lightweight';
+import { sha256 } from 'js-sha256';
 
 // Generate KeyPair. Private Key is encrypted with the highEntropyToken
 export async function genKey(highEntropyToken) {
@@ -15,7 +16,7 @@ export async function genKey(highEntropyToken) {
   const keyPair = await generateKey({
     type: 'ecc', // Type of the key, defaults to ECC
     curve: 'curve25519', // ECC curve name, defaults to curve25519
-    userIDs: [{name: 'RoboSats Avatar ID'+ parseInt(Math.random() * 1000000)}], //Just for identification. Ideally it would be the avatar nickname, but the nickname is generated only after submission
+    userIDs: [{name: 'RoboSats ID '+ sha256(sha256(highEntropyToken))}], //Ideally it would be the avatar nickname, but the nickname is generated only after submission. The second SHA256 can be converted into the Nickname using nick_generator package.
     passphrase: highEntropyToken,
     format: 'armored'
   })
