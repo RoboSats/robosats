@@ -628,7 +628,7 @@ class TradeBox extends Component {
               }}
               multiline
               minRows={5}
-              maxRows={this.state.qrscanner ? 5 : 14}
+              maxRows={this.state.qrscanner ? 5 : 10}
               onChange={this.handleInputInvoiceChanged}
           />
         </Grid>

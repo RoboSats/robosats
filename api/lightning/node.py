@@ -190,6 +190,33 @@ class LNNode:
             }
             return payout
 
+        ## Some wallet providers (e.g. Muun) force routing through a private channel with high fees >1500ppm
+        ## These payments will fail. So it is best to let the user know in advance this invoice is not valid.
+        route_hints = payreq_decoded.route_hints
+
+        # Max amount RoboSats will pay for routing
+        max_routing_fee_sats = max(num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")), float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")))
+
+        if route_hints:
+            routes_cost = []
+            # For every hinted route...
+            for hinted_route in route_hints:
+                route_cost = 0
+                # ...add up the cost of every hinted hop...
+                for hop_hint in hinted_route.hop_hints:
+                    route_cost += hop_hint.fee_base_msat / 1000
+                    route_cost += hop_hint.fee_proportional_millionths * num_satoshis / 1000000
+
+                # ...and store the cost of the route to the array
+                routes_cost.append(route_cost)
+
+            # If the cheapest possible private route is more expensive than what RoboSats is willing to pay
+            if min(routes_cost) >=  max_routing_fee_sats :
+                payout["context"] = {
+                "bad_invoice": "The invoice submitted only has expensive routing hints, you are using an incompatible wallet (probably Muun?). Check the wallet compatibility guide at wallets.robosats.com"
+                }
+                return payout
+
         if payreq_decoded.num_satoshis == 0:
             payout["context"] = {
                 "bad_invoice": "The invoice provided has no explicit amount"
