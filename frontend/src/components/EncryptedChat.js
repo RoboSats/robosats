@@ -105,7 +105,6 @@ class Chat extends Component {
                 plainTextMessage: decryptedData.decryptedMessage,
                 validSignature: decryptedData.validSignature,           
                 userNick: dataFromServer.user_nick,
-                showPGP: false,
                 time: dataFromServer.time
               }],
             })
