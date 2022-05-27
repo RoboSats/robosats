@@ -380,6 +380,10 @@
     "A non-recoverable error has occurred.":"A non-recoverable error has occurred.",
     "Payment details are incorrect (unknown hash, invalid amount or invalid final CLTV delta).":"Los detalles del pago son incorrectos (hash desconocido, cantidad inválida o CLTV delta final inválido).",
     "Insufficient unlocked balance in RoboSats' node.":"Balance libre de ser usado en el nodo de RoboSats insuficiente.",
+    "The invoice submitted only has expensive routing hints, you are using an incompatible wallet (probably Muun?). Check the wallet compatibility guide at wallets.robosats.com":"La factura entregada parece solo tener rutas ocultas muy caras, estas usando una billetera incomptable(¿Quizás Muun?). Echa un vistazo a la lista de billeteras compatibles en wallets.robosats.com",
+    "The invoice provided has no explicit amount":"La factura entregada no contiene una cantidad explícita",
+    "Does not look like a valid lightning invoice":"No parece ser una factura lightning válida",
+    "The invoice provided has already expired":"La factura que has entregado ya ha caducado",
 
 
     "INFO DIALOG - InfoDiagog.js": "App information and clarifications and terms of use",

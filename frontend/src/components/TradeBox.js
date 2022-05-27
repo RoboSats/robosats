@@ -618,7 +618,7 @@ class TradeBox extends Component {
         <Grid item xs={12} align="center">
           <TextField
               error={this.state.badInvoice}
-              helperText={this.state.badInvoice ? this.state.badInvoice : "" }
+              helperText={this.state.badInvoice ? t(this.state.badInvoice) : "" }
               label={t("Payout Lightning Invoice")}
               required
               value={this.state.invoice}
@@ -1204,7 +1204,7 @@ handleRatingRobosatsChange=(e)=>{
           <Grid item xs={12} align="center">
             <TextField
                 error={this.state.badInvoice}
-                helperText={this.state.badInvoice ? this.state.badInvoice : "" }
+                helperText={this.state.badInvoice ? t(this.state.badInvoice) : "" }
                 label={t("Payout Lightning Invoice")}
                 required
                 inputProps={{
