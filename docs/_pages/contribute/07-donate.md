@@ -17,8 +17,14 @@ You can donate in three ways:
 
  1. **Directly tip the developer working on the features you like.** Check the [active PRs](https://github.com/Reckless-Satoshi/robosats/pulls) and show your support to the developers with via Lightning tips. Simply write a message, for example "@developer_name, I would like to fund your development of this feature with 6000 Sats". The developer should reply with a LN invoice with a long expiration time.
 
- 2. **Tip the node and platform operator via KeySend** to RoboSats node: [{{site.robosats.node_id}}](https://amboss.space/node/{{site.robosats.node_id}})
- 
+ 2. **Tip the platform node via KeySend** to RoboSats node: [{{site.robosats.node_id}}](https://amboss.space/node/{{site.robosats.node_id}})
+
  3. **Send an on-chain** transaction to: *{{site.robosats.donation_address}}* 
+ 4. **Tip the lead developer**
+  <div>
+    <lightning-widget name="Reckless Satoshi (Lead Dev)" accent="#9c27b0" to="02ce13573f6ab577088cead4379dc64f300ffbeca2ae040beee9f3541ccc4427c7" image="https://pbs.twimg.com/profile_images/1501319536477282305/M7De9qEE_400x400.jpg"/>
+    <script src="https://embed.twentyuno.net/js/app.js"></script>
+  </div>
  
  You can tip anonymously or send us a message so we can acknowledge your contribution!
+
