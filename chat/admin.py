@@ -25,12 +25,13 @@ class MessageAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     list_display = (
         "id",
         "chatroom_link",
+        "index",
         "order_link",
         "sender_link",
         "receiver_link",
         "created_at",
     )
     change_links = ["chatroom","order","sender","receiver"]
-    search_fields = ["id","order"]
-    ordering = ("-index", ) 
+    search_fields = ["id","index"]
+    ordering = ["-chatroom_id","-index"]
     list_filter = ("chatroom",)

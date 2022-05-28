@@ -47,7 +47,10 @@ class ChatRoom(models.Model):
         return f"Chat:{str(self.order.id)}"
 
 class Message(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    class Meta:
+        get_latest_by = 'index'
+
+    # id = models.PositiveBigIntegerField(primary_key=True, default=uuid.uuid4, editable=False)
     order = models.ForeignKey(
         Order,
         related_name="message",
@@ -67,6 +70,12 @@ class Message(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         default=None)
+    receiver = models.ForeignKey(
+        User,
+        related_name="message_receiver",
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None)
 
     PGP_message = models.TextField(max_length=5000,
                                        null=True,
@@ -76,4 +85,4 @@ class Message(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Chat:{str(self.order.id)}-Index:{self.order.index}"
+        return f"Chat:{str(self.order.id)} - Idx:{self.index}"
