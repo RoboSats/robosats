@@ -84,7 +84,7 @@ class Chat extends Component {
           } else if (dataFromServer.message != this.state.peer_pub_key & this.state.peer_pub_key != null){
             console.log("PEER PUBKEY HAS CHANGED")
           }
-          console.log("PEER KEY PUBKEY RECEIVED!!")
+          console.log("PEER PUBKEY RECEIVED!!")
           this.setState({peer_pub_key:dataFromServer.message})
         } else
 
