@@ -46,6 +46,16 @@ Or unsafely on the testnet clearnet bridge.
 
 > [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com)
 
+### Onion Mirrors
+
+It is possible to access the **testnet** platform on the port 8001 of the mainnet onion
+
+> [robosats6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion:8001](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion:8001)
+
+It is also possible to access the **mainnet** platform on the port 8001 of the testnet onion
+
+> [robotestagw3dcxmd66r4rgksb4nmmr43fh7<br/>7bzn2ia2eucduyeafnyd.onion:8001](http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion:8001)
+
 ### Clearnet Mirrors
 There are several tor2web services that serve as mirrors in case one of them is unavailable
 
@@ -54,5 +64,6 @@ There are several tor2web services that serve as mirrors in case one of them is 
 > [unsafe3.robosats.com](https://unsafe3.robosats.com/) <br/>
 > [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com/) <br/>
 > [unsafe2.testnet.robosats.com](http://unsafe2.testnet.robosats.com/) 
+
 
 {% include improve %}

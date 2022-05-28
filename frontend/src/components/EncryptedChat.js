@@ -86,6 +86,13 @@ class Chat extends Component {
           }
           console.log("PEER PUBKEY RECEIVED!!")
           this.setState({peer_pub_key:dataFromServer.message})
+
+          // After receiving the peer pubkey we ask the server for the historic messages if any
+          this.rws.send(JSON.stringify({
+              type: "message",
+              message: `-----SERVE HISTORY-----`,
+              nick: this.props.ur_nick,
+            }))
         } else
 
         // If we receive an encrypted message
@@ -110,7 +117,10 @@ class Chat extends Component {
                 validSignature: decryptedData.validSignature,           
                 userNick: dataFromServer.user_nick,
                 time: dataFromServer.time
-              }],
+              }].sort(function(a,b) {
+                // order the message array by their index (increasing)
+                return a.index - b.index
+              }),
             })
           ));
         }
