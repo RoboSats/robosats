@@ -459,7 +459,7 @@ class OrderView(viewsets.ViewSet):
             )
 
         # 2) If action is 'update invoice'
-        if action == "update_invoice" and invoice:
+        if action == "update_invoice":
             valid, context = Logics.update_invoice(order, request.user,
                                                    invoice)
             if not valid:
