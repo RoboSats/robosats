@@ -1,6 +1,7 @@
 from django.db import models
 from api.models import User, Order
-
+from django.utils import timezone
+import uuid
 
 class ChatRoom(models.Model):
     '''
@@ -10,7 +11,7 @@ class ChatRoom(models.Model):
     id = models.PositiveBigIntegerField(primary_key=True, null=False,default=None, blank=True)
     order = models.ForeignKey(
         Order,
-        related_name="order",
+        related_name="chatroom",
         on_delete=models.SET_NULL,
         null=True,
         default=None)
@@ -41,3 +42,38 @@ class ChatRoom(models.Model):
         default=None,
         blank=True,
     )
+
+    def __str__(self):
+        return f"Chat:{str(self.order.id)}"
+
+class Message(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(
+        Order,
+        related_name="message",
+        on_delete=models.CASCADE,
+        null=True,
+        default=None)
+    chatroom = models.ForeignKey(
+        ChatRoom,
+        related_name="chatroom",
+        on_delete=models.CASCADE,
+        null=True,
+        default=None)
+    index = models.PositiveIntegerField(null=False,default=None, blank=True)
+    sender = models.ForeignKey(
+        User,
+        related_name="message_sender",
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None)
+
+    PGP_message = models.TextField(max_length=5000,
+                                       null=True,
+                                       default=None,
+                                       blank=True)
+
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Chat:{str(self.order.id)}-Index:{self.order.index}"

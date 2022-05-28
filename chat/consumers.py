@@ -1,7 +1,7 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from api.models import Order
-from chat.models import ChatRoom
+from chat.models import ChatRoom, Message
 from django.utils import timezone
 
 import json
@@ -47,6 +47,30 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         return None
 
     @database_sync_to_async
+    def save_new_message(self):
+        '''Creates a Message object'''
+
+        order = Order.objects.get(id=self.order_id)
+        chatroom = ChatRoom.objects.get(order=order)
+
+        index = 0
+        last_message = Message.objects.filter(order=order).latest()
+        if last_message:
+            index = last_message.index + 1
+
+        sender = self.scope["user"]
+
+        Message.objects.create(
+                order=order,
+                chatroom=chatroom,
+                index=index,
+                sender = sender,
+                PGP_message=self.PGP_message,
+                )
+
+        return None
+
+    @database_sync_to_async
     def save_disconnect_user(self):
         '''Creates or updates the ChatRoom object'''
         
@@ -69,7 +93,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def is_peer_connected(self):
-        '''Creates or updates the ChatRoom object'''
+        '''Returns whether the consumer's peer is connected'''
 
         chatroom = ChatRoom.objects.get(id=self.order_id)
 
@@ -111,6 +135,11 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
+
+        # Encrypted messages are stored. They are served later when a user reconnects.
+        if message[0,27] == '-----BEGIN PGP MESSAGE-----': 
+            self.PGP_message = message
+            await self.save_new_message()
         
         peer_connected = await self.is_peer_connected()
         await self.channel_layer.group_send(
