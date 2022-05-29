@@ -98,7 +98,7 @@
     "I want to":"Я хочу",
     "Select Order Type":"Выбрать тип ордера",
     "ANY_type":"Любой тип",
-    "ANY_currency":"Любую валюта",
+    "ANY_currency":"Любую валюту",
     "BUY":"Купить",
     "SELL":"Продать",
     "and receive":"и получить",
@@ -178,7 +178,7 @@
     "Number of public SELL orders":"Количество публичных ордеров на ПРОДАЖУ",
     "Your last order #{{orderID}}":"Ваш последний заказ #{{orderID}}",
     "Inactive order":"Неактивный ордер",
-    "You do not have previous orders":"У Вас нет предыдущих заказов",
+    "You do not have previous orders":"У Вас нет предыдущих ордеров",
     
 
     "ORDER PAGE - OrderPage.js": "Order details page",
@@ -213,7 +213,7 @@
     "Taker lost dispute":"Тейкер проиграл диспут",
     "Amount range":"Диапазон сумм",
     "Swap destination":"Поменять место назначения",
-    "Accepted payment methods":"Приемлемые способы оплаты",
+    "Accepted payment methods":"Способы оплаты",
     "Others":"Другие",
     "{{price}} {{currencyCode}}/BTC - Premium: {{premium}}%":"{{price}} {{currencyCode}}/BTC - Наценка: {{premium}}%",
     "Price and Premium":"Цена и Наценка",
