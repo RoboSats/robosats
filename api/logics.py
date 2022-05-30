@@ -102,12 +102,12 @@ class Logics:
         try:
             import_pub_result = gpg.import_keys(pub_key)
             pub_key = gpg.export_keys(import_pub_result.fingerprints[0])
-        except:
+        except Exception as e:
             return (
                 False,
                 {
                     "bad_request":
-                    "Your PGP public key does not seem valid"
+                    f"Your PGP public key does not seem valid. Exception: {str(e)}"
                 }, 
                 None, 
                 None)
@@ -115,12 +115,12 @@ class Logics:
         # Try to import the encrypted private key (without passphrase)
         try:
             import_priv_result = gpg.import_keys(enc_priv_key)
-        except:
+        except Exception as e:
             return (
                 False,
                 {
                     "bad_request":
-                    "Your PGP private key does not seem valid"
+                    f"Your PGP private key does not seem valid. Exception: {str(e)}"
                 }, 
                 None, 
                 None)

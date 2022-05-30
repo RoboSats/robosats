@@ -227,7 +227,7 @@ class UserGenPage extends Component {
                           <span>
                           <IconButton  
                             color="primary" 
-                            disabled={!(getCookie('robot_token')==this.state.token)  || !this.props.avatarLoaded} 
+                            disabled={!(getCookie('robot_token')==this.state.token) || !this.props.avatarLoaded} 
                             onClick={()=> saveAsJson(this.state.nickname+'.json', this.createJsonFile())}
                             >
                             <DownloadIcon sx={{width:22, height:22}}/>
@@ -238,7 +238,7 @@ class UserGenPage extends Component {
                       <Grid item xs={6}>
                         <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
                           <IconButton 
-                            color="primary" 
+                            color={this.props.copiedToken ? "inherit":"primary"}
                             disabled={!(getCookie('robot_token')==this.state.token) || !this.props.avatarLoaded} 
                             onClick={()=> (navigator.clipboard.writeText(getCookie('robot_token')) & this.props.setAppState({copiedToken:true}))}
                             >
@@ -275,10 +275,10 @@ class UserGenPage extends Component {
           </Grid>
           <Grid item xs={12} align="center">
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
-              <Button disabled={this.state.loadingRobot} color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
+              <Button disabled={this.state.loadingRobot || !(getCookie('robot_token')==this.props.token)} color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
               <Button color='inherit' style={{color: '#111111'}} onClick={this.handleClickOpenInfo}>{t("Info")}</Button>
               <InfoDialog open={Boolean(this.state.openInfo)} onClose = {this.handleCloseInfo}/>
-              <Button disabled={this.state.loadingRobot} color='secondary' to='/book/' component={Link}>{t("View Book")}</Button>
+              <Button disabled={this.state.loadingRobot || !(getCookie('robot_token')==this.props.token)} color='secondary' to='/book/' component={Link}>{t("View Book")}</Button>
             </ButtonGroup>
           </Grid>
 

@@ -61,7 +61,7 @@ class BottomBar extends Component {
         this.setState(null)
         fetch('/api/info/')
           .then((response) => response.json())
-          .then((data) => this.setState(data)
+          .then((data) => this.setState(data) & console.log(data)
           & this.setState({active_order_id: data.active_order_id ? data.active_order_id : null,
             last_order_id: data.last_order_id ? data.last_order_id : null})
           & this.props.setAppState({nickname:data.nickname, loading:false}));
@@ -130,7 +130,7 @@ bottomBarDesktop =()=>{
                 <Grid container>
 
                     <Grid item xs={1.9}>
-                        <div style={{display: this.props.avatarLoaded ? '':'none'}}>
+                        <div style={{display: this.props.avatarLoaded && getCookie('robot_token')==this.props.token ? '':'none'}}>
                         <ListItemButton onClick={this.handleClickOpenProfile} >
                             <Tooltip
                                 open={hasRewards || hasOrder}
@@ -292,7 +292,7 @@ bottomBarPhone =()=>{
                 <Grid container>
 
                     <Grid item xs={1.6}>
-                    <div style={{display: this.props.avatarLoaded ? '':'none'}}>
+                    <div style={{display: this.props.avatarLoaded && getCookie('robot_token')==this.props.token ? '':'none'}}>
                     <Tooltip open={hasRewards || hasOrder}
                             title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
                                 (hasOrder ? t("You have an active order"):"")}>
