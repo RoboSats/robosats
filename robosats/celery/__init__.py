@@ -35,13 +35,17 @@ app.conf.beat_schedule = {
         "task": "users_cleansing",
         "schedule": crontab(hour=0, minute=0),
     },
+    "chatrooms-cleansing": { # Cleans 3+ days old encrypted messages and chatrooms at midnight
+        "task": "chatrooms_cleansing",
+        "schedule": crontab(hour=0, minute=0),
+    },
     "give-rewards": {  # Referral rewards go from 'pending' to 'earned' at midnight
         "task": "give_rewards",
         "schedule": crontab(hour=0, minute=0),
     },
     "do-accounting": {  # Does accounting for the last day
         "task": "do_accounting",
-        "schedule": crontab(hour=23, minute=55),
+        "schedule": crontab(hour=23, minute=59),
     },
     "cache-market-prices": {  # Cache market prices every minute
         "task": "cache_external_market_prices",

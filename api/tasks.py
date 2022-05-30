@@ -1,6 +1,5 @@
 from celery import shared_task
 
-
 @shared_task(name="users_cleansing")
 def users_cleansing():
     """
@@ -8,7 +7,7 @@ def users_cleansing():
     """
     from django.contrib.auth.models import User
     from django.db.models import Q
-    from .logics import Logics
+    from api.logics import Logics
     from datetime import timedelta
     from django.utils import timezone
 
@@ -162,7 +161,6 @@ def follow_send_payment(hash):
             order.save()
             context = {"routing_failed": "The payout invoice has expired"}
             return False, context
-
 
 @shared_task(name="cache_external_market_prices", ignore_result=True)
 def cache_market():

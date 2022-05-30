@@ -396,11 +396,11 @@ class Order(models.Model):
             11: 1 * 24 * 60 * 60,                               # 'In dispute'
             12: 0,                                              # 'Collaboratively cancelled'
             13: 10 * 24 * 60 * 60,                              # 'Sending satoshis to buyer'
-            14: 10 * 24 * 60 * 60,                              # 'Sucessful trade'
+            14: 1 * 24 * 60 * 60,                               # 'Sucessful trade'
             15: 10 * 24 * 60 * 60,                              # 'Failed lightning network routing'
             16: 10 * 24 * 60 * 60,                              # 'Wait for dispute resolution'
-            17: 10 * 24 * 60 * 60,                              # 'Maker lost dispute'
-            18: 10 * 24 * 60 * 60,                              # 'Taker lost dispute'
+            17: 1 * 24 * 60 * 60,                               # 'Maker lost dispute'
+            18: 1 * 24 * 60 * 60,                               # 'Taker lost dispute'
         }
         
         return t_to_expire[status]

@@ -94,7 +94,7 @@ class Logics:
         ''' Validates PGP valid keys. Formats them in a way understandable by the frontend '''
         gpg = gnupg.GPG()
 
-        # Uniform format as linux linebreaks. Windows users submitting their own keys have \r\n breaks.
+        # Standarize format with linux linebreaks '\n'. Windows users submitting their own keys have '\r\n' breaking communication.
         enc_priv_key = enc_priv_key.replace('\r\n', '\n')
         pub_key = pub_key.replace('\r\n', '\n')
 
