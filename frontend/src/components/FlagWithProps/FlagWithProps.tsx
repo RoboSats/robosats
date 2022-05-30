@@ -18,10 +18,12 @@ const FlagWithProps = ({ code }: Props): JSX.Element => {
   if(code === 'AUD') flag = <Flags.AU {...defaultProps}/>;
   if(code === 'ARS') flag = <Flags.AR {...defaultProps}/>;
   if(code === 'BRL') flag = <Flags.BR {...defaultProps}/>;
+  if(code === 'BYN') flag = <Flags.BY {...defaultProps}/>;
   if(code === 'CAD') flag = <Flags.CA {...defaultProps}/>;
   if(code === 'CHF') flag = <Flags.CH {...defaultProps}/>;
   if(code === 'CLP') flag = <Flags.CL {...defaultProps}/>;
   if(code === 'CNY') flag = <Flags.CN {...defaultProps}/>;
+  if(code === 'EGP') flag = <Flags.EG {...defaultProps}/>;
   if(code === 'EUR') flag = <Flags.EU {...defaultProps}/>;
   if(code === 'HRK') flag = <Flags.HR {...defaultProps}/>;
   if(code === 'CZK') flag = <Flags.CZ {...defaultProps}/>;
@@ -33,6 +35,8 @@ const FlagWithProps = ({ code }: Props): JSX.Element => {
   if(code === 'ISK') flag = <Flags.IS {...defaultProps}/>;
   if(code === 'JPY') flag = <Flags.JP {...defaultProps}/>;
   if(code === 'KRW') flag = <Flags.KR {...defaultProps}/>;
+  if(code === 'LKR') flag = <Flags.LK {...defaultProps}/>;
+  if(code === 'MAD') flag = <Flags.MA {...defaultProps}/>;
   if(code === 'MXN') flag = <Flags.MX {...defaultProps}/>;
   if(code === 'NOK') flag = <Flags.NO {...defaultProps}/>;
   if(code === 'NZD') flag = <Flags.NZ {...defaultProps}/>;
