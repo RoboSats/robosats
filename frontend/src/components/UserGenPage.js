@@ -225,7 +225,11 @@ class UserGenPage extends Component {
                     <Grid item xs={6}>
                         <Tooltip enterTouchDelay={250} title={t("Save token and PGP credentials to file")}>
                           <span>
-                          <IconButton  color="primary" disabled={getCookie('robot_token')==null || !this.props.avatarLoaded} onClick= {()=> saveAsJson(this.state.nickname+'.json', this.createJsonFile())}>
+                          <IconButton  
+                            color="primary" 
+                            disabled={!(getCookie('robot_token')==this.state.token)  || !this.props.avatarLoaded} 
+                            onClick={()=> saveAsJson(this.state.nickname+'.json', this.createJsonFile())}
+                            >
                             <DownloadIcon sx={{width:22, height:22}}/>
                           </IconButton>
                           </span>
@@ -233,8 +237,12 @@ class UserGenPage extends Component {
                       </Grid>
                       <Grid item xs={6}>
                         <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                          <IconButton  onClick= {()=> (navigator.clipboard.writeText(this.state.token) & this.props.setAppState({copiedToken:true}))}>
-                            <ContentCopy color={this.props.avatarLoaded & !this.props.copiedToken & !this.state.bad_request ? 'primary' : 'inherit' } sx={{width:18, height:18}}/>
+                          <IconButton 
+                            color="primary" 
+                            disabled={!(getCookie('robot_token')==this.state.token) || !this.props.avatarLoaded} 
+                            onClick={()=> (navigator.clipboard.writeText(getCookie('robot_token')) & this.props.setAppState({copiedToken:true}))}
+                            >
+                            <ContentCopy sx={{width:18, height:18}}/>
                           </IconButton>
                         </Tooltip>
                       </Grid>

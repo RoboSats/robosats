@@ -10,8 +10,8 @@ djangorestframework==3.13.1
 channels==3.0.4
 channels-redis==3.3.1
 celery==5.2.3
-googleapis-common-protos==1.53.0
 grpcio==1.43.0
+googleapis-common-protos==1.53.0
 grpcio-tools==1.43.0
 numpy==1.22.2
 Pillow==7.0.0
@@ -25,3 +25,4 @@ psycopg2==2.9.3
 SQLAlchemy==1.4.31
 django-import-export==2.7.1
 requests[socks]
+python-gnupg==0.4.9

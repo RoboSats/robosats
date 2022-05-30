@@ -635,6 +635,10 @@ class UserView(APIView):
         encrypted_private_key = serializer.data.get("encrypted_private_key")
         ref_code = serializer.data.get("ref_code")
         
+        valid, bad_keys_context, public_key, encrypted_private_key = Logics.validate_pgp_keys(public_key, encrypted_private_key)
+        if not valid:
+            return Response(bad_keys_context, status.HTTP_400_BAD_REQUEST)
+
         if not public_key or not encrypted_private_key:
             context["bad_request"] = "Must provide valid 'pub' and 'enc_priv' PGP keys"
             return Response(context, status.HTTP_400_BAD_REQUEST)
