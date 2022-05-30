@@ -82,17 +82,19 @@ class UpdateOrderSerializer(serializers.Serializer):
 
 class UserGenSerializer(serializers.Serializer):
     # Mandatory fields
-    token_sha256 = serializers.CharField(max_length=64,
+    token_sha256 = serializers.CharField(
+                                    min_length=64,
+                                    max_length=64,
                                     allow_null=False,
                                     allow_blank=False,
                                     required=True,
                                     help_text="SHA256 of user secret")
-    public_key = serializers.CharField(max_length=999,
+    public_key = serializers.CharField(max_length=2000,
                                       allow_null=False,
                                       allow_blank=False,
                                       required=True,
                                       help_text="Armored ASCII PGP public key block")
-    encrypted_private_key = serializers.CharField(max_length=999,
+    encrypted_private_key = serializers.CharField(max_length=2000,
                                       allow_null=False,
                                       allow_blank=False,
                                       required=True,
