@@ -34,6 +34,7 @@ class Chat extends Component {
     showPGP: new Array,
     waitingEcho: false,
     lastSent: '---BLANK---',
+    latestIndex: 0,
   };
 
   rws = new ReconnectingWebSocket('ws://' + window.location.host + '/ws/chat/' + this.props.orderId + '/');
@@ -42,13 +43,13 @@ class Chat extends Component {
     this.rws.addEventListener('open', () => {
       console.log('Connected!');
       this.setState({connected: true});
-      if ( this.state.peer_pub_key == null){
-        this.rws.send(JSON.stringify({
-          type: "message",
-          message: "----PLEASE SEND YOUR PUBKEY----",
-          nick: this.props.ur_nick,
-        }));
-      }
+      // if ( this.state.peer_pub_key == null){
+      //   this.rws.send(JSON.stringify({
+      //     type: "message",
+      //     message: "----PLEASE SEND YOUR PUBKEY----",
+      //     nick: this.props.ur_nick,
+      //   }));
+      // }
       this.rws.send(JSON.stringify({
         type: "message",
         message: this.state.own_pub_key,
@@ -60,35 +61,43 @@ class Chat extends Component {
 
       const dataFromServer = JSON.parse(message.data);
       console.log('Got reply!', dataFromServer.type);
-
+      console.log('PGP message index', dataFromServer.index, ' latestIndex ',this.state.latestIndex);
       if (dataFromServer){
         console.log(dataFromServer)
         
         // If we receive our own key on a message
-        if (dataFromServer.message == this.state.own_pub_key){console.log("ECHO OF OWN PUB KEY RECEIVED!!")}
+        if (dataFromServer.message == this.state.own_pub_key){console.log("OWN PUB KEY RECEIVED!!")}
 
         // If we receive a request to send our public key
-        if (dataFromServer.message == `----PLEASE SEND YOUR PUBKEY----`) {
-          this.rws.send(JSON.stringify({
-            type: "message",
-            message: this.state.own_pub_key,
-            nick: this.props.ur_nick,
-          })); 
-        } else
+        // if (dataFromServer.message == `----PLEASE SEND YOUR PUBKEY----`) {
+        //   this.rws.send(JSON.stringify({
+        //     type: "message",
+        //     message: this.state.own_pub_key,
+        //     nick: this.props.ur_nick,
+        //   })); 
+        // } else
 
         // If we receive a public key other than ours (our peer key!)
-        if (dataFromServer.message.substring(0,36) == `-----BEGIN PGP PUBLIC KEY BLOCK-----` & dataFromServer.message != this.state.own_pub_key) {
+        if (dataFromServer.message.substring(0,36) == `-----BEGIN PGP PUBLIC KEY BLOCK-----` && dataFromServer.message != this.state.own_pub_key) {
           if (dataFromServer.message == this.state.peer_pub_key){
             console.log("PEER HAS RECONNECTED USING HIS PREVIOUSLY KNOWN PUBKEY")
           } else if (dataFromServer.message != this.state.peer_pub_key & this.state.peer_pub_key != null){
             console.log("PEER PUBKEY HAS CHANGED")
           }
-          console.log("PEER KEY PUBKEY RECEIVED!!")
+          console.log("PEER PUBKEY RECEIVED!!")
           this.setState({peer_pub_key:dataFromServer.message})
+
+          // After receiving the peer pubkey we ask the server for the historic messages if any
+          this.rws.send(JSON.stringify({
+              type: "message",
+              message: `-----SERVE HISTORY-----`,
+              nick: this.props.ur_nick,
+            }))
         } else
 
         // If we receive an encrypted message
-        if (dataFromServer.message.substring(0,27) == `-----BEGIN PGP MESSAGE-----`){
+        if (dataFromServer.message.substring(0,27) == `-----BEGIN PGP MESSAGE-----` && dataFromServer.index > this.state.latestIndex){
+
           decryptMessage(
             dataFromServer.message.split('\\').join('\n'), 
             dataFromServer.user_nick == this.props.ur_nick ? this.state.own_pub_key : this.state.peer_pub_key, 
@@ -99,15 +108,19 @@ class Chat extends Component {
             ({
               waitingEcho: this.state.waitingEcho == true ? (decryptedData.decryptedMessage == this.state.lastSent ? false: true ) : false,
               lastSent: decryptedData.decryptedMessage == this.state.lastSent ? '----BLANK----': this.state.lastSent,
+              latestIndex: dataFromServer.index > this.state.latestIndex ? dataFromServer.index : this.state.latestIndex,
               messages: [...state.messages,
-              {
+              { 
+                index: dataFromServer.index,
                 encryptedMessage: dataFromServer.message.split('\\').join('\n'),
                 plainTextMessage: decryptedData.decryptedMessage,
                 validSignature: decryptedData.validSignature,           
                 userNick: dataFromServer.user_nick,
-                showPGP: false,
                 time: dataFromServer.time
-              }],
+              }].sort(function(a,b) {
+                // order the message array by their index (increasing)
+                return a.index - b.index
+              }),
             })
           ));
         }

@@ -21,6 +21,7 @@
     "Learn RoboSats":"Learn RoboSats",
     "You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.":"You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.",
     "Let's go!":"Let's go!",
+    "Save token and PGP credentials to file":"Save token and PGP credentials to file",
 
 
 
@@ -278,13 +279,7 @@
     "Keys":"Keys",
     "Save messages as a JSON file":"Save messages as a JSON file",
     "Messages":"Messages",
-
-
-
-
-
-
-    
+   
 
     "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
     "Contract Box":"Contract Box",
@@ -387,6 +382,10 @@
     "A non-recoverable error has occurred.":"A non-recoverable error has occurred.",
     "Payment details are incorrect (unknown hash, invalid amount or invalid final CLTV delta).":"Payment details are incorrect (unknown hash, invalid amount or invalid final CLTV delta).",
     "Insufficient unlocked balance in RoboSats' node.":"Insufficient unlocked balance in RoboSats' node.",
+    "The invoice submitted only has expensive routing hints, you are using an incompatible wallet (probably Muun?). Check the wallet compatibility guide at wallets.robosats.com":"The invoice submitted only has expensive routing hints, you are using an incompatible wallet (probably Muun?). Check the wallet compatibility guide at wallets.robosats.com",
+    "The invoice provided has no explicit amount":"The invoice provided has no explicit amount",
+    "Does not look like a valid lightning invoice":"Does not look like a valid lightning invoice",
+    "The invoice provided has already expired":"The invoice provided has already expired",
 
 
     "INFO DIALOG - InfoDiagog.js":"App information and clarifications and terms of use",

@@ -459,7 +459,7 @@ class OrderView(viewsets.ViewSet):
             )
 
         # 2) If action is 'update invoice'
-        if action == "update_invoice" and invoice:
+        if action == "update_invoice":
             valid, context = Logics.update_invoice(order, request.user,
                                                    invoice)
             if not valid:
@@ -666,8 +666,8 @@ class UserView(APIView):
         except:
             pass
 
-        # Hash the token_sha256, only 1 iteration. (this is the second SHA256 of the user token)
-        hash = hashlib.sha256(str.encode(token_sha256)).hexdigest()
+        # Hash the token_sha256, only 1 iteration. (this is the second SHA256 of the user token, aka RoboSats ID)
+        hash = hashlib.sha256(token_sha256.encode('utf-8')).hexdigest()
 
         # Generate nickname deterministically
         nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0]

@@ -484,9 +484,14 @@ class Logics:
 
     @classmethod
     def update_invoice(cls, order, user, invoice):
-
+        
+        # Empty invoice?
+        if not invoice:
+            return False, {
+                "bad_invoice":
+                "You submitted an empty invoice"
+            }
         # only the buyer can post a buyer invoice
-
         if not cls.is_buyer(order, user):
             return False, {
                 "bad_request":

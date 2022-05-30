@@ -221,12 +221,14 @@ class UserGenPage extends Component {
                 InputProps={{
                   startAdornment:
                   <div style={{width:50, minWidth:50, position:'relative',left:-6}}>
-                    <Grid container xs={12}>
+                    <Grid container>
                     <Grid item xs={6}>
                         <Tooltip enterTouchDelay={250} title={t("Save token and PGP credentials to file")}>
+                          <span>
                           <IconButton  color="primary" disabled={getCookie('robot_token')==null || !this.props.avatarLoaded} onClick= {()=> saveAsJson(this.state.nickname+'.json', this.createJsonFile())}>
                             <DownloadIcon sx={{width:22, height:22}}/>
                           </IconButton>
+                          </span>
                         </Tooltip>
                       </Grid>
                       <Grid item xs={6}>
