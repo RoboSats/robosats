@@ -7,9 +7,10 @@ from api.models import Order, LNPayment, MarketTick, User, Currency
 from api.tasks import send_message
 from decouple import config
 
+import gnupg
+
 import math
 import ast
-import time
 
 FEE = float(config("FEE"))
 MAKER_FEE_SPLIT = float(config("MAKER_FEE_SPLIT"))
@@ -31,6 +32,7 @@ FIAT_EXCHANGE_DURATION = int(config("FIAT_EXCHANGE_DURATION"))
 
 
 class Logics:
+
     @classmethod
     def validate_already_maker_or_taker(cls, user):
         """Validates if a use is already not part of an active order"""
@@ -87,6 +89,44 @@ class Logics:
                 )
 
         return True, None, None
+
+    def validate_pgp_keys(pub_key, enc_priv_key):
+        ''' Validates PGP valid keys. Formats them in a way understandable by the frontend '''
+        gpg = gnupg.GPG()
+
+        # Uniform format as linux linebreaks. Windows users submitting their own keys have \r\n breaks.
+        enc_priv_key = enc_priv_key.replace('\r\n', '\n')
+        pub_key = pub_key.replace('\r\n', '\n')
+
+        # Try to import and export the public key (without passphrase)
+        try:
+            import_pub_result = gpg.import_keys(pub_key)
+            pub_key = gpg.export_keys(import_pub_result.fingerprints[0])
+        except:
+            return (
+                False,
+                {
+                    "bad_request":
+                    "Your PGP public key does not seem valid"
+                }, 
+                None, 
+                None)
+
+        # Try to import the encrypted private key (without passphrase)
+        try:
+            import_priv_result = gpg.import_keys(enc_priv_key)
+        except:
+            return (
+                False,
+                {
+                    "bad_request":
+                    "Your PGP private key does not seem valid"
+                }, 
+                None, 
+                None)
+
+
+        return True, None, pub_key, enc_priv_key
 
     @classmethod
     def validate_order_size(cls, order):
