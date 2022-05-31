@@ -162,6 +162,44 @@ def follow_send_payment(hash):
             context = {"routing_failed": "The payout invoice has expired"}
             return False, context
 
+@shared_task(name="lnpayments_cleansing")
+def lnpayments_cleansing():
+    """
+    Deletes cancelled lnpayments (hodl invoices never locked) that 
+    belong to orders expired more than 3 days ago
+    """
+
+    from django.db.models import Q
+    from api.models import LNPayment
+    from datetime import timedelta
+    from django.utils import timezone
+
+    # Orders that have expired more than -3 days ago
+    # Usually expiry is 1 day for every finished order. So ~4 days until
+    # a never locked hodl invoice is removed.
+    finished_time = timezone.now() - timedelta(days=3)
+    queryset = LNPayment.objects.filter(Q(status=LNPayment.Status.CANCEL),
+                                        Q(order_made__expires_at__lt=finished_time)|
+                                        Q(order_taken__expires_at__lt=finished_time))
+
+
+    # And do not have an active trade, any past contract or any reward.
+    deleted_lnpayments = []
+    for lnpayment in queryset:
+        # Try an except. In case some chatroom is already missing.
+        try:
+            name = str(lnpayment)
+            lnpayment.delete()
+            deleted_lnpayments.append(name)
+        except:
+            pass
+
+    results = {
+        "num_deleted": len(deleted_lnpayments),
+        "deleted_lnpayments": deleted_lnpayments,
+    }
+    return results
+
 @shared_task(name="cache_external_market_prices", ignore_result=True)
 def cache_market():
 

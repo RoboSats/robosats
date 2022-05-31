@@ -39,6 +39,10 @@ app.conf.beat_schedule = {
         "task": "chatrooms_cleansing",
         "schedule": crontab(hour=0, minute=0),
     },
+    "lnpayments-cleansing": { # Cleans 3+ days old unlocked hodl invoices
+        "task": "lnpayments_cleansing",
+        "schedule": crontab(hour=0, minute=0),
+    },
     "give-rewards": {  # Referral rewards go from 'pending' to 'earned' at midnight
         "task": "give_rewards",
         "schedule": crontab(hour=0, minute=0),
