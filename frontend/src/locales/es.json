@@ -179,6 +179,8 @@
     "Your last order #{{orderID}}":"Tu última orden #{{orderID}}",
     "Inactive order":"Orden inactiva",
     "You do not have previous orders":"No tienes órdenes previas",
+    "Join RoboSats' Subreddit":"Únete al subreddit de RoboSats",
+    "RoboSats in Reddit":"RoboSats en Reddit",
 
     "ORDER PAGE - OrderPage.js": "Order details page",
     "Order Box": "Orden",

@@ -126,6 +126,9 @@ author:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/reckless-satoshi"
+    - label: "Reddit"
+      icon: "fa-brands fa-reddit-square"
+      url: "https://reddit.com/u/reckless_satoshi"
 
 # Site Footer
 footer:
@@ -133,6 +136,9 @@ footer:
     - label: "Twitter"
       icon: "fab fa-fw fa-twitter-square"
       url: "https://twitter.com/robosats"
+    - label: "Reddit"
+      icon: "fa-brands fa-reddit-square"
+      url: "https://reddit.com/r/robosats"
     - label: "Telegram"
       icon: "fa-brands fa-telegram"
       url: "https://t.me/robosats"

@@ -16,6 +16,7 @@ import {
 import SendIcon from '@mui/icons-material/Send';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
+import RedditIcon from '@mui/icons-material/Reddit';
 import Flags from 'country-flag-icons/react/3x2'
 
 type Props = {
@@ -54,7 +55,7 @@ const CommunityDialog = ({
           <p>{t("Support is only offered via public channels. Join our Telegram community if you have questions or want to hang out with other cool robots. Please, use our Github Issues if you find a bug or want to see new features!")}</p>
         </Typography>
 
-        <List>
+        <List dense>
           <Divider/>
 
           <ListItemButton
@@ -64,7 +65,7 @@ const CommunityDialog = ({
             rel="noreferrer"
           >
             <ListItemIcon>
-              <TwitterIcon color="primary"/>
+              <TwitterIcon color="primary" sx={{height:32,width:32}}/>
             </ListItemIcon>
 
             <ListItemText
@@ -75,9 +76,27 @@ const CommunityDialog = ({
 
           <Divider/>
 
+          <ListItemButton
+            component="a"
+            target="_blank"
+            href="https://reddit.com/r/robosats"
+            rel="noreferrer"
+          >
+            <ListItemIcon>
+              <RedditIcon color="primary" sx={{height:35,width:35}}/>
+            </ListItemIcon>
+
+            <ListItemText
+              primary={t("Join RoboSats' Subreddit")}
+              secondary={t("RoboSats in Reddit")}
+            />
+          </ListItemButton>
+
+          <Divider/>
+
           <ListItem>
             <ListItemIcon>
-              <SendIcon color="primary"/>
+              <SendIcon color="primary" sx={{height:32,width:32}}/>
             </ListItemIcon>
 
             <ListItemText secondary={t("RoboSats Telegram Communities")}>
@@ -148,7 +167,7 @@ const CommunityDialog = ({
             rel="noreferrer"
             >
             <ListItemIcon>
-              <GitHubIcon color="primary"/>
+              <GitHubIcon color="primary" sx={{height:32,width:32}}/>
             </ListItemIcon>
 
             <ListItemText
