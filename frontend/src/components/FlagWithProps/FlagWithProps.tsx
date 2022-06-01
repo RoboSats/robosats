@@ -15,6 +15,7 @@ const FlagWithProps = ({ code }: Props): JSX.Element => {
 
   let flag: JSX.Element | null = null;
 
+  if(code === 'AED') flag = <Flags.AE {...defaultProps}/>;
   if(code === 'AUD') flag = <Flags.AU {...defaultProps}/>;
   if(code === 'ARS') flag = <Flags.AR {...defaultProps}/>;
   if(code === 'BRL') flag = <Flags.BR {...defaultProps}/>;
