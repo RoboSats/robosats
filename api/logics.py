@@ -103,11 +103,12 @@ class Logics:
             import_pub_result = gpg.import_keys(pub_key)
             pub_key = gpg.export_keys(import_pub_result.fingerprints[0])
         except Exception as e:
+            e = "Your system time might be in the future " if str(e)=="list index out of range" else str(e)
             return (
                 False,
                 {
                     "bad_request":
-                    f"Your PGP public key does not seem valid. Exception: {str(e)}"
+                    f"Your PGP public key does not seem valid. Error: {str(e)}"
                 }, 
                 None, 
                 None)
