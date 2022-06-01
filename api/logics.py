@@ -1,4 +1,5 @@
 from datetime import timedelta
+from tkinter import N
 from django.utils import timezone
 from api.lightning.node import LNNode
 from django.db.models import Q
@@ -98,34 +99,41 @@ class Logics:
         enc_priv_key = enc_priv_key.replace('\r\n', '\n')
         pub_key = pub_key.replace('\r\n', '\n')
 
-        # Try to import and export the public key (without passphrase)
-        try:
-            import_pub_result = gpg.import_keys(pub_key)
-            pub_key = gpg.export_keys(import_pub_result.fingerprints[0])
-        except Exception as e:
-            e = "Your system time might be in the future " if str(e)=="list index out of range" else str(e)
+        # Try to import the public key
+        import_pub_result = gpg.import_keys(pub_key)
+        if not import_pub_result.imported == 1:
             return (
                 False,
                 {
                     "bad_request":
-                    f"Your PGP public key does not seem valid. Error: {str(e)}"
+                    f"Your PGP public key does not seem valid.\n"+ 
+                    f"Stderr: {str(import_pub_result.stderr)}\n"+
+                    f"ReturnCode: {str(import_pub_result.returncode)}\n"+
+                    f"Summary: {str(import_pub_result.summary)}\n"+
+                    f"Results: {str(import_pub_result.results)}\n"+
+                    f"Imported: {str(import_pub_result.imported)}\n"
                 }, 
                 None, 
                 None)
+        # Exports the public key again for uniform formatting.
+        pub_key = gpg.export_keys(import_pub_result.fingerprints[0])
 
         # Try to import the encrypted private key (without passphrase)
-        try:
-            import_priv_result = gpg.import_keys(enc_priv_key)
-        except Exception as e:
+        import_priv_result = gpg.import_keys(enc_priv_key)
+        if not import_priv_result.sec_imported == 1:
             return (
                 False,
                 {
                     "bad_request":
-                    f"Your PGP private key does not seem valid. Exception: {str(e)}"
+                    f"Your PGP encrypted private key does not seem valid.\n"+ 
+                    f"Stderr: {str(import_priv_result.stderr)}\n"+
+                    f"ReturnCode: {str(import_priv_result.returncode)}\n"+
+                    f"Summary: {str(import_priv_result.summary)}\n"+
+                    f"Results: {str(import_priv_result.results)}\n"+
+                    f"Sec Imported: {str(import_priv_result.sec_imported)}\n"
                 }, 
                 None, 
                 None)
-
 
         return True, None, pub_key, enc_priv_key
 

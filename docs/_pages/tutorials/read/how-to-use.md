@@ -95,7 +95,7 @@ Every order has an expiration counter. By default, in RoboSats v0.1.0 new orders
 
 When you are decided for an order to take simply tap the "Take Order" button. You will see the contract box. Follow the contract box indications until you complete the trade! :) 
 
-First thing is to lock a small fidelity bond (just 1% of the trade amount), so the seller knows you can be trusted. The satoshis in this bond will just freeze in your wallet. If you try to cheat or cancel unilaterally, you will lose the satoshis locked in the bond.
+First thing is to lock a small fidelity bond (just 3% of the trade amount by default), so the seller knows you can be trusted. The satoshis in this bond will just freeze in your wallet. If you try to cheat or cancel unilaterally, you will lose the satoshis locked in the bond.
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-1.png"  width="370" />

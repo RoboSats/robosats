@@ -52,7 +52,7 @@ class MakerPage extends Component {
         publicExpiryTime: new Date(0, 0, 0, 23, 59),
         escrowExpiryTime: new Date(0, 0, 0, 3, 0),
         enableAmountRange: false,
-        bondSize: 1,
+        bondSize: 3,
         limits: null,
         minAmount: "",
         maxAmount: "",
@@ -655,12 +655,12 @@ class MakerPage extends Component {
                         <Slider
                             sx={{width:220, align:"center"}}
                             aria-label="Bond Size (%)"
-                            defaultValue={1}
+                            defaultValue={3}
                             valueLabelDisplay="auto"
                             valueLabelFormat={(x) => (x+'%')}
                             step={0.25}
-                            marks={[{value: 1,label: '1%'},{value: 5,label: '5%'},{value: 10,label: '10%'},{value: 15,label: '15%'}]}
-                            min={1}
+                            marks={[{value: 2,label: '2%'},{value: 5,label: '5%'},{value: 10,label: '10%'},{value: 15,label: '15%'}]}
+                            min={2}
                             max={15}
                             onChange={(e) => this.setState({bondSize: e.target.value})}
                         />

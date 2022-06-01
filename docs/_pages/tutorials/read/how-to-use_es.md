@@ -159,7 +159,7 @@ Al crear una orden, solo es requerido especificar la moneda, el tipo de orden (c
 <img src="/assets/images/how-to-use/contract-box-7.png" width="370" />
 </div>
 
-Debes copiar o escanear la factura con tu billetera lightning para bloquear tu fianza de fidelidad como creador (1% del valor total de la transacción). Al bloquear esta fianza, los compradores perciben que eres de fiar y se comprometen a seguir con el intercambio. En tu billetera puede mostrarse como un pago en tránsito, congelarse o incluso aparentemente romper tu billetera. Siempre debes verificar en la web de RoboSats si el depósito ha sido bloqueado (¡tu billetera probablemente no te lo dirá! Comprueba la [lista de compatibilidad de billeteras](https://github.com/Reckless-Satoshi/robosats/issues/44))
+Debes copiar o escanear la factura con tu billetera lightning para bloquear tu fianza de fidelidad como creador (3% del valor total de la transacción por defecto). Al bloquear esta fianza, los compradores perciben que eres de fiar y se comprometen a seguir con el intercambio. En tu billetera puede mostrarse como un pago en tránsito, congelarse o incluso aparentemente romper tu billetera. Siempre debes verificar en la web de RoboSats si el depósito ha sido bloqueado (¡tu billetera probablemente no te lo dirá! Comprueba la [lista de compatibilidad de billeteras](https://github.com/Reckless-Satoshi/robosats/issues/44))
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-8.png" width="370" />

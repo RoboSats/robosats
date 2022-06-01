@@ -97,7 +97,7 @@ Jedes Angebot hat einen Verfallszähler. In RoboSats v0.1.0 bleiben neue Angebot
 
 Wenn du dich für ein Angebot entschieden hast, tippe einfach auf die Schaltfläche "Take Order". Du siehst dann die Kontraktbox. Folge den Anweisungen der Kontraktbox, bis du den Handel abgeschlossen hast! :) 
 
-Als erstes musst du eine kleine Kaution hinterlegen (nur 1% des Handelsbetrags), damit der Verkäufer weiß, dass du vertrauenswürdig bist. Die Satoshis in dieser Kaution werden einfach in deiner Wallet eingefroren. Wenn du versuchst zu betrügen oder einseitig zu kündigen, verlierst du die in der Kaution enthaltenen Satoshis.
+Als erstes musst du eine kleine Kaution hinterlegen (nur 3% des Handelsbetrags), damit der Verkäufer weiß, dass du vertrauenswürdig bist. Die Satoshis in dieser Kaution werden einfach in deiner Wallet eingefroren. Wenn du versuchst zu betrügen oder einseitig zu kündigen, verlierst du die in der Kaution enthaltenen Satoshis.
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-1.png"  width="370" />
