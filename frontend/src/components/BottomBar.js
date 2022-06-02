@@ -61,7 +61,7 @@ class BottomBar extends Component {
         this.setState(null)
         fetch('/api/info/')
           .then((response) => response.json())
-          .then((data) => this.setState(data) & console.log(data)
+          .then((data) => this.setState(data)
           & this.setState({active_order_id: data.active_order_id ? data.active_order_id : null,
             last_order_id: data.last_order_id ? data.last_order_id : null})
           & this.props.setAppState({nickname:data.nickname, loading:false}));
@@ -105,7 +105,7 @@ class BottomBar extends Component {
         };
         fetch('/api/reward/', requestOptions)
         .then((response) => response.json())
-        .then((data) => console.log(data) & this.setState({
+        .then((data) => this.setState({
             badInvoice:data.bad_invoice,
             openClaimRewards: data.successful_withdrawal ? false : true,
             earned_rewards: data.successful_withdrawal ? 0 : this.state.earned_rewards,

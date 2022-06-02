@@ -458,6 +458,7 @@ class Logics:
                     profile.orders_disputes_started).append(str(order.id))
             profile.save()
 
+        send_message.delay(order.id,'dispute_opened')
         return True, None
 
     def dispute_statement(order, user, statement):
@@ -790,6 +791,7 @@ class Logics:
         cls.return_escrow(order)
         order.status = Order.Status.CCA
         order.save()
+        send_message.delay(order.id,'collaborative_cancelled')
         return
 
     @classmethod

@@ -276,4 +276,10 @@ def send_message(order_id, message):
     elif message == 'fiat_exchange_starts':
         telegram.fiat_exchange_starts(order)
 
+    elif message == 'dispute_opened':
+        telegram.dispute_opened(order)
+
+    elif message == 'collaborative_cancelled':
+        telegram.collaborative_cancelled(order)
+
     return

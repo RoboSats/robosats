@@ -177,6 +177,34 @@ class Telegram():
         self.send_message(user, text)
         return
 
+    def collaborative_cancelled(self, order):
+        user = order.maker
+        if not user.profile.telegram_enabled:
+            return
+
+        lang = user.profile.telegram_lang_code
+        if lang == 'es':
+            text = f'La orden con ID {str(order.id)} fue cancelada colaborativamente.'
+        else:
+            text = f'Your order with ID {str(order.id)} has been collaboratively cancelled.'
+        
+        self.send_message(user, text)
+        return
+    
+    def dispute_opened(self, order):
+        user = order.maker
+        if not user.profile.telegram_enabled:
+            return
+
+        lang = user.profile.telegram_lang_code
+        if lang == 'es':
+            text = f'La orden con ID {str(order.id)} ha entrado en disputa.'
+        else:
+            text = f'A dispute has been opened on your order with ID {str(order.id)}.'
+        
+        self.send_message(user, text)
+        return
+
     def order_published(self, order):
 
         time.sleep(1) # Just so this message always arrives after the previous two
