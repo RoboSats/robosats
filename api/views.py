@@ -635,13 +635,13 @@ class UserView(APIView):
         encrypted_private_key = serializer.data.get("encrypted_private_key")
         ref_code = serializer.data.get("ref_code")
         
-        valid, bad_keys_context, public_key, encrypted_private_key = Logics.validate_pgp_keys(public_key, encrypted_private_key)
-        if not valid:
-            return Response(bad_keys_context, status.HTTP_400_BAD_REQUEST)
-
         if not public_key or not encrypted_private_key:
             context["bad_request"] = "Must provide valid 'pub' and 'enc_priv' PGP keys"
             return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        valid, bad_keys_context, public_key, encrypted_private_key = Logics.validate_pgp_keys(public_key, encrypted_private_key)
+        if not valid:
+            return Response(bad_keys_context, status.HTTP_400_BAD_REQUEST)
 
         # Now the server only receives a hash of the token. So server trusts the client 
         # with computing length, counts and unique_values to confirm the high entropy of the token
@@ -698,8 +698,13 @@ class UserView(APIView):
             context['referral_code'] = token_urlsafe(8)
             user.profile.referral_code = context['referral_code']
             user.profile.avatar = "static/assets/avatars/" + nickname + ".png"
-            user.profile.public_key = public_key
-            user.profile.encrypted_private_key = encrypted_private_key
+            
+            # Noticed some PGP keys replaced at re-login. Should not happen. 
+            # Let's implement this sanity check "If profile has not keys..."
+            if not user.profile.public_key:
+                user.profile.public_key = public_key
+            if not user.profile.encrypted_private_key:
+                user.profile.encrypted_private_key = encrypted_private_key
 
             # If the ref_code was created by another robot, this robot was referred.
             queryset = Profile.objects.filter(referral_code=ref_code)
@@ -805,10 +810,7 @@ class BookView(ListAPIView):
                 order)
             data["maker_status"] = Logics.user_activity_status(
                 order.maker_last_seen)
-            for key in (
-                    "status",
-                    "taker",
-            ):  # Non participants should not see the status or who is the taker
+            for key in ("status","taker"):  # Non participants should not see the status or who is the taker
                 del data[key]
 
             book_data.append(data)

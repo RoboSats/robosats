@@ -44,7 +44,7 @@ class ChatRoom(models.Model):
     )
 
     def __str__(self):
-        return f"Chat:{str(self.order.id)}"
+        return f"Chat:{str(self.id)}"
 
 class Message(models.Model):
     class Meta:
@@ -85,4 +85,4 @@ class Message(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Chat:{str(self.order.id)} - Idx:{self.index}"
+        return f"Chat:{str(self.chatroom.id)} - Idx:{self.index}"

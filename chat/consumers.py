@@ -11,9 +11,15 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def allow_in_chatroom(self):
         order = Order.objects.get(id=self.order_id)
+        
+        if not order.status in [Order.Status.CCA, Order.Status.FSE]:
+            print("Order not in chat status")
+            return False            
+        
         if not (order.maker == self.user or order.taker == self.user):
             print("Not allowed in this chat")
             return False
+        
         return True
 
     @database_sync_to_async
@@ -165,21 +171,6 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                 },
             )
 
-            # If there is any stored message, serve them.
-            msgs = await self.get_all_PGP_messages()
-            for msg in msgs:
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        "type": "PGP_message",
-                        "index": msg['index'],
-                        "time": msg['time'],
-                        "message": msg['message'],
-                        "nick": msg['nick'],
-                        "peer_connected": None,
-                    },
-                )
-
     async def disconnect(self, close_code):
         await self.save_disconnect_user()
         await self.channel_layer.group_discard(self.room_group_name,
@@ -198,7 +189,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
         peer_connected = await self.is_peer_connected()
-
+        
         # Encrypted messages are stored. They are served later when a user reconnects.
         if message[0:27] == '-----BEGIN PGP MESSAGE-----': 
             # save to database
@@ -219,7 +210,23 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                     "peer_connected": peer_connected,
                 },
             )
-
+        
+        # Encrypted messages are served when the user requests them
+        elif message[0:23] == '-----SERVE HISTORY-----': 
+            # If there is any stored message, serve them.
+            msgs = await self.get_all_PGP_messages()
+            for msg in msgs:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "PGP_message",
+                        "index": msg['index'],
+                        "time": msg['time'],
+                        "message": msg['message'],
+                        "nick": msg['nick'],
+                        "peer_connected": None,
+                    },
+                )
         else:
             await self.channel_layer.group_send(
                 self.room_group_name,
