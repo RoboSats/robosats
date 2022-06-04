@@ -35,6 +35,7 @@ class Chat extends Component {
     waitingEcho: false,
     lastSent: '---BLANK---',
     latestIndex: 0,
+    scrollNow:false,
   };
 
   rws = new ReconnectingWebSocket('ws://' + window.location.host + '/ws/chat/' + this.props.orderId + '/');
@@ -43,13 +44,6 @@ class Chat extends Component {
     this.rws.addEventListener('open', () => {
       console.log('Connected!');
       this.setState({connected: true});
-      // if ( this.state.peer_pub_key == null){
-      //   this.rws.send(JSON.stringify({
-      //     type: "message",
-      //     message: "----PLEASE SEND YOUR PUBKEY----",
-      //     nick: this.props.ur_nick,
-      //   }));
-      // }
       this.rws.send(JSON.stringify({
         type: "message",
         message: this.state.own_pub_key,
@@ -64,18 +58,10 @@ class Chat extends Component {
       console.log('PGP message index', dataFromServer.index, ' latestIndex ',this.state.latestIndex);
       if (dataFromServer){
         console.log(dataFromServer)
-        
+        this.setState({peer_connected: dataFromServer.peer_connected})
+
         // If we receive our own key on a message
         if (dataFromServer.message == this.state.own_pub_key){console.log("OWN PUB KEY RECEIVED!!")}
-
-        // If we receive a request to send our public key
-        // if (dataFromServer.message == `----PLEASE SEND YOUR PUBKEY----`) {
-        //   this.rws.send(JSON.stringify({
-        //     type: "message",
-        //     message: this.state.own_pub_key,
-        //     nick: this.props.ur_nick,
-        //   })); 
-        // } else
 
         // If we receive a public key other than ours (our peer key!)
         if (dataFromServer.message.substring(0,36) == `-----BEGIN PGP PUBLIC KEY BLOCK-----` && dataFromServer.message != this.state.own_pub_key) {
@@ -106,6 +92,7 @@ class Chat extends Component {
           .then((decryptedData) =>
             this.setState((state) => 
             ({
+              scrollNow: true,
               waitingEcho: this.state.waitingEcho == true ? (decryptedData.decryptedMessage == this.state.lastSent ? false: true ) : false,
               lastSent: decryptedData.decryptedMessage == this.state.lastSent ? '----BLANK----': this.state.lastSent,
               latestIndex: dataFromServer.index > this.state.latestIndex ? dataFromServer.index : this.state.latestIndex,
@@ -124,7 +111,6 @@ class Chat extends Component {
             })
           ));
         }
-        this.setState({peer_connected: dataFromServer.peer_connected})
       }
     });
 
@@ -139,7 +125,10 @@ class Chat extends Component {
   }
 
   componentDidUpdate() {
-    this.scrollToBottom();
+    if (this.state.scrollNow){
+      this.scrollToBottom();
+      this.setState({scrollNow:false})
+    }
   }
 
   scrollToBottom = () => {
@@ -190,7 +179,7 @@ class Chat extends Component {
           style={{backgroundColor: props.cardColor}}
           title={
             <Tooltip placement="top" enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t(props.message.validSignature ? "Verified signature by {{nickname}}": "Invalid signature! Not sent by {{nickname}}",{"nickname": props.message.userNick})}>
-              <div style={{display:'flex',alignItems:'center', flexWrap:'wrap', position:'relative',left:-5, width:210}}>
+              <div style={{display:'flex',alignItems:'center', flexWrap:'wrap', position:'relative',left:-5, width:220}}>
                 <div style={{width:168,display:'flex',alignItems:'center', flexWrap:'wrap'}}>
                   {props.message.userNick}
                   {props.message.validSignature ?
@@ -222,7 +211,7 @@ class Chat extends Component {
             </Tooltip>
           }
           subheader={this.state.showPGP[props.index] ? <a> {props.message.time} <br/> {"Valid signature: " + props.message.validSignature} <br/>  {props.message.encryptedMessage} </a> : props.message.plainTextMessage}
-          subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444', fontSize: this.state.showPGP[props.index]? 11 : null }}}
+          subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '215px', color: '#444444', fontSize: this.state.showPGP[props.index]? 11 : null }}}
         />
       </Card>
     )
@@ -231,7 +220,7 @@ class Chat extends Component {
   render() {
     const { t } = this.props;
     return (
-      <Container component="main" maxWidth="xs" >
+      <Container component="main">
         <Grid container spacing={0.5}>
           <Grid item xs={0.3}/>
           <Grid item xs={5.5}>
@@ -251,48 +240,52 @@ class Chat extends Component {
           </Grid>
           <Grid item xs={0.3}/>
         </Grid>
-        <Paper elevation={1} style={{ height: '300px', maxHeight: '300px' , width: '280px' ,overflow: 'auto', backgroundColor: '#F7F7F7' }}>
-          {this.state.messages.map((message, index) =>
-          <li style={{listStyleType:"none"}} key={index}>
-            {message.userNick == this.props.ur_nick ?
-              <this.messageCard message={message} index={index} cardColor={'#eeeeee'} userConnected={this.state.connected}/>
-              :
-              <this.messageCard message={message} index={index} cardColor={'#fafafa'} userConnected={this.state.peer_connected}/>
-            }
-          </li>)}
-          <div style={{ float:"left", clear: "both" }} ref={(el) => { this.messagesEnd = el; }}></div>
-        </Paper>
-        <form noValidate onSubmit={this.onButtonClicked}>
-          <Grid alignItems="stretch" style={{ display: "flex" }}>
-            <Grid item alignItems="stretch" style={{ display: "flex"}}>
-              <TextField
-                label={t("Type a message")}
-                variant="standard"
-                size="small"
-                helperText={this.state.connected ? (this.state.peer_pub_key ? null : t("Waiting for peer public key...")) : t("Connecting...")}
-                value={this.state.value}
-                onChange={e => {
-                  this.setState({ value: e.target.value });
-                  this.value = this.state.value;
-                }}
-                sx={{width: 214}}
-              />
-            </Grid>
-            <Grid item alignItems="stretch" style={{ display: "flex" }}>
-              <Button sx={{'width':68}} disabled={!this.state.connected || this.state.waitingEcho || this.state.peer_pub_key == null} type="submit" variant="contained" color="primary">
-                {this.state.waitingEcho ?
-                  <div style={{display:'flex',alignItems:'center', flexWrap:'wrap', minWidth:68, width:68, position:"relative",left:15}}>
-                    <div style={{width:20}}><KeyIcon sx={{width:18}}/></div>
-                    <div style={{width:18}}><CircularProgress size={16} thickness={5}/></div>
-                  </div>
+        <div style={{position:'relative', left:'-8px', margin:'0px'}}>
+          <Paper elevation={1} style={{height: '300px', maxHeight: '300px' , width: '300px' ,overflow: 'auto', backgroundColor: '#F7F7F7' }}>
+            {this.state.messages.map((message, index) =>
+            <li style={{listStyleType:"none"}} key={index}>
+              {message.userNick == this.props.ur_nick ?
+                <this.messageCard message={message} index={index} cardColor={'#eeeeee'} userConnected={this.state.connected}/>
                 :
-                t("Send")
-                } 
-              </Button>
+                <this.messageCard message={message} index={index} cardColor={'#fafafa'} userConnected={this.state.peer_connected}/>
+              }
+            </li>)}
+            <div style={{ float:"left", clear: "both" }} ref={(el) => { this.messagesEnd = el; }}></div>
+          </Paper>
+          <form noValidate onSubmit={this.onButtonClicked}>
+            <Grid alignItems="stretch" style={{ display: "flex" }}>
+              <Grid item alignItems="stretch" style={{ display: "flex"}}>
+                <TextField
+                  label={t("Type a message")}
+                  variant="standard"
+                  size="small"
+                  helperText={this.state.connected ? (this.state.peer_pub_key ? null : t("Waiting for peer public key...")) : t("Connecting...")}
+                  value={this.state.value}
+                  onChange={e => {
+                    this.setState({ value: e.target.value });
+                    this.value = this.state.value;
+                  }}
+                  sx={{width: 232}}
+                />
+              </Grid>
+              <Grid item alignItems="stretch" style={{ display: "flex" }}>
+                <Button sx={{'width':68}} disabled={!this.state.connected || this.state.waitingEcho || this.state.peer_pub_key == null} type="submit" variant="contained" color="primary">
+                  {this.state.waitingEcho ?
+                    <div style={{display:'flex',alignItems:'center', flexWrap:'wrap', minWidth:68, width:68, position:"relative",left:15}}>
+                      <div style={{width:20}}><KeyIcon sx={{width:18}}/></div>
+                      <div style={{width:18}}><CircularProgress size={16} thickness={5}/></div>
+                    </div>
+                  :
+                  t("Send")
+                  } 
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
-        </form>
+          </form>
+        </div>
+
         <div style={{height:4}}/>
+
         <Grid container spacing={0}>
           <AuditPGPDialog
             open={this.state.audit}

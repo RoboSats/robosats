@@ -275,10 +275,10 @@ class UserGenPage extends Component {
           </Grid>
           <Grid item xs={12} align="center">
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
-              <Button disabled={this.state.loadingRobot || !(getCookie('robot_token')==this.props.token)} color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
+              <Button disabled={this.state.loadingRobot || !(this.props.token ? getCookie('robot_token')==this.props.token : true )} color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
               <Button color='inherit' style={{color: '#111111'}} onClick={this.handleClickOpenInfo}>{t("Info")}</Button>
               <InfoDialog open={Boolean(this.state.openInfo)} onClose = {this.handleCloseInfo}/>
-              <Button disabled={this.state.loadingRobot || !(getCookie('robot_token')==this.props.token)} color='secondary' to='/book/' component={Link}>{t("View Book")}</Button>
+              <Button disabled={this.state.loadingRobot || !(this.props.token ? getCookie('robot_token')==this.props.token : true )} color='secondary' to='/book/' component={Link}>{t("View Book")}</Button>
             </ButtonGroup>
           </Grid>
 

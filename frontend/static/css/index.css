@@ -137,6 +137,22 @@ input[type=number] {
 
 .MuiButton-textInherit {color : '#111111';}
 
+::-webkit-scrollbar
+  {
+    width: 6px;  /* for vertical scrollbars */
+    height: 6px; /* for horizontal scrollbars */
+  }
+  
+  ::-webkit-scrollbar-track
+  {
+    background: rgba(0, 0, 0, 0.1);
+  }
+  
+  ::-webkit-scrollbar-thumb
+  {
+    background: rgba(0, 0, 0, 0.5);
+  }
+  
 @media (max-width: 929px) {
   .MuiDataGrid-columnHeaders + div {
     width: auto !important;

@@ -2,7 +2,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from api.models import Order
 from chat.models import ChatRoom, Message
-from django.utils import timezone
 
 import json
 
@@ -11,15 +10,14 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def allow_in_chatroom(self):
         order = Order.objects.get(id=self.order_id)
-        
-        if not order.status in [Order.Status.CCA, Order.Status.FSE]:
-            print("Order not in chat status")
-            return False            
-        
+
+        if not order.status in [Order.Status.CHA, Order.Status.FSE]:
+            print("Order is not in chat status")
+            return False
+
         if not (order.maker == self.user or order.taker == self.user):
             print("Not allowed in this chat")
             return False
-        
         return True
 
     @database_sync_to_async
@@ -161,13 +159,14 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
 
             # Send peer PGP public keys
             peer_public_key = await self.get_peer_PGP_public_key()
+            peer_connected = await self.is_peer_connected()
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     "type": "chatroom_message",
                     "message": peer_public_key,
                     "nick": self.scope["user"].username,
-                    "peer_connected": None,
+                    "peer_connected": peer_connected,
                 },
             )
 
@@ -215,6 +214,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         elif message[0:23] == '-----SERVE HISTORY-----': 
             # If there is any stored message, serve them.
             msgs = await self.get_all_PGP_messages()
+            peer_connected = await self.is_peer_connected()
             for msg in msgs:
                 await self.channel_layer.group_send(
                     self.room_group_name,
@@ -224,7 +224,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                         "time": msg['time'],
                         "message": msg['message'],
                         "nick": msg['nick'],
-                        "peer_connected": None,
+                        "peer_connected": peer_connected,
                     },
                 )
         else:

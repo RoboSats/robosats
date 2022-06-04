@@ -6,7 +6,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 class Chat extends Component {
   // Deprecated chat component
   // Will still be used for ~1 week, until users change to robots with PGP keys
-  
+
   constructor(props) {
     super(props);
   }
@@ -105,7 +105,7 @@ class Chat extends Component {
           </Grid>
           <Grid item xs={0.3}/>
         </Grid>
-        <Paper elevation={1} style={{ height: '300px', maxHeight: '300px' , width: '280px' ,overflow: 'auto', backgroundColor: '#F7F7F7' }}>
+        <Paper elevation={1} style={{ height: '300px', maxHeight: '300px' , width: '310px' ,overflow: 'auto', backgroundColor: '#F7F7F7' }}>
           {this.state.messages.map((message, index) =>
           <li style={{listStyleType:"none"}} key={index}>
             <Card elevation={5} align="left" >
@@ -157,7 +157,7 @@ class Chat extends Component {
                   this.setState({ value: e.target.value });
                   this.value = this.state.value;
                 }}
-                sx={{width: 214}}
+                sx={{width: 244}}
               />
             </Grid>
             <Grid item alignItems="stretch" style={{ display: "flex" }}>

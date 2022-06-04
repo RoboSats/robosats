@@ -130,7 +130,7 @@ bottomBarDesktop =()=>{
                 <Grid container>
 
                     <Grid item xs={1.9}>
-                        <div style={{display: this.props.avatarLoaded && getCookie('robot_token')==this.props.token ? '':'none'}}>
+                        <div style={{display: this.props.avatarLoaded && (this.props.token ? getCookie('robot_token')==this.props.token : true ) ? '':'none'}}>
                         <ListItemButton onClick={this.handleClickOpenProfile} >
                             <Tooltip
                                 open={hasRewards || hasOrder}
@@ -292,7 +292,7 @@ bottomBarPhone =()=>{
                 <Grid container>
 
                     <Grid item xs={1.6}>
-                    <div style={{display: this.props.avatarLoaded && getCookie('robot_token')==this.props.token ? '':'none'}}>
+                    <div style={{display: this.props.avatarLoaded && (this.props.token ? getCookie('robot_token')==this.props.token : true ) ? '':'none'}}>
                     <Tooltip open={hasRewards || hasOrder}
                             title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
                                 (hasOrder ? t("You have an active order"):"")}>
