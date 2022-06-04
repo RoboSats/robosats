@@ -13,11 +13,13 @@ import Image from 'material-ui-image'
 import MediaQuery from 'react-responsive'
 
 type Props = {
+  maxAmount: string;
   open: boolean;
   onClose: () => void;
 }
 
 const InfoDialog = ({
+  maxAmount,
   open, 
   onClose,
 }: Props): JSX.Element => {
@@ -76,9 +78,9 @@ const InfoDialog = ({
 
           <p>{t("At no point, AnonymousAlice01 and BafflingBob02 have to entrust the bitcoin funds to each other. In case they have a conflict, RoboSats staff will help resolving the dispute.")}
             {t("You can find a step-by-step description of the trade pipeline in ")}
-            <Link href='https://github.com/Reckless-Satoshi/robosats/blob/main/README.md#how-it-works'>{t("How it works")}</Link>.
+            <Link target="_blank" href='https://learn.robosats.com/docs/trade-pipeline/'>{t("How it works")}</Link>.
             {" "+t("You can also check the full guide in ")}
-            <Link href='https://github.com/Reckless-Satoshi/robosats/blob/main/docs/how-to-use.md'>{t("How to use")}</Link>.</p>
+            <Link target="_blank" href='https://learn.robosats.com/read/en'>{t("How to use")}</Link>.</p>
         </Typography>
 
         <Typography component="h5" variant="h5">{t("What payment methods are accepted?")}</Typography>
@@ -88,7 +90,7 @@ const InfoDialog = ({
 
         <Typography component="h5" variant="h5">{t("Are there trade limits?")}</Typography>
         <Typography component="div" variant="body2">
-          <p>{t("Maximum single trade size is {{maxAmount}} Satoshis to minimize lightning routing failure. There is no limits to the number of trades per day. A robot can only have one order at a time. However, you can use multiple robots simultaneously in different browsers (remember to back up your robot tokens!).", {maxAmount: '1,200,000'})} </p>
+          <p>{t("Maximum single trade size is {{maxAmount}} Satoshis to minimize lightning routing failure. There is no limits to the number of trades per day. A robot can only have one order at a time. However, you can use multiple robots simultaneously in different browsers (remember to back up your robot tokens!).", {maxAmount: maxAmount})} </p>
         </Typography>
 
         <Typography component="h5" variant="h5">{t("Is RoboSats private?")}</Typography>

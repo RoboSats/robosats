@@ -88,7 +88,7 @@ Directamente, puedes entrar a ver la página con la información completa de la 
 <img src="/assets/images/how-to-use/order-page-1.png" width="370" />
 </div>
 
-Todas las órdenes públicas tienen un tiempo de expiración. Por defecto, en RoboSats versión 0.1.0 las órdenes estarán públicas durante 6 horas, y si nadie las toma desaparecerán.
+Todas las órdenes públicas tienen un tiempo de expiración. Por defecto, en RoboSats versión 0.1.0 las órdenes estarán públicas durante {{site.robosats.hours_public_default}} horas, y si nadie las toma desaparecerán.
 
 ### Walktrough-1: Tomando una orden como comprador
 
@@ -127,7 +127,7 @@ Como comprador, tendrás que pedirle al vendedor los detalles para enviar el pag
 <img src="/assets/images/how-to-use/contract-box-5.png" width="370" />
 </div>
 
-Hay un limite de tiempo de 4 horas para completar el intercambio de fiat. Si el tiempo se acaba, la orden expirará y se abrirá una disputa automáticamente. Para evitar que la orden expire, **usa siempre metodos de pago fiat instantáneos**. Por ejemplo, enviar dinero por correo ordinario es tan lento que siempre desencadenará una disputa en la versión 0.1.0, en versiones futuras un tiempo de expiración mayor será posible.
+Hay un limite de tiempo de {{site.robosats.hours_fiat_exchange}} horas para completar el intercambio de fiat. Si el tiempo se acaba, la orden expirará y se abrirá una disputa automáticamente. Para evitar que la orden expire, **usa siempre metodos de pago fiat instantáneos**. Por ejemplo, enviar dinero por correo ordinario es tan lento que siempre desencadenará una disputa en la versión 0.1.0, en versiones futuras un tiempo de expiración mayor será posible.
 
 ¡En cuanto hayas enviado el pago fiat, debes clicar el botón "Confirm fiat sent"! Después de eso, el vendedor deberá confirmar que recibió tu pago. Tan pronto como lo confirme, la operación habrá finalizado y recibirás los sats en tu billetera lightning. Es posible que veas el mensaje "sending satoshis to buyer" (enviando satoshis al comprador), pero generalmente es tan rápido que simplemente verás esta pantalla (“Trade finished!”). ¡Disfruta de tus sats!
 
@@ -153,19 +153,19 @@ Puedes crear una orden que se adapte a tus condiciones. Pero ten en cuenta que e
 
 Al crear una orden, solo es requerido especificar la moneda, el tipo de orden (compra/venta) y el monto. Sin embargo, es una buena práctica especificar los métodos de pago que permites. También puede ser útil establecer una prima/descuento para que tu orden sea más interesante para los tomadores. Recuerda que, como vendedor, puedes incentivar a los compradores a tomar tu orden al reducir la prima. Sin embargo, si hay demasiados compradores, puedes aumentar la prima para obtener un mayor margen de beneficio. Como alternativa, puedes establecer una cantidad fija de Satoshis.
 
-*Límites: en la versión 0.1.0 de Robosats una orden no puede ser inferior a 10.000 Satoshis. Para evitar fallos de enrutamiento no puede ser mayor a 1.200.000 Satoshis. Este límite se incrementará en el futuro.*
+*Límites: en la versión 0.1.0 de Robosats una orden no puede ser inferior a {{site.robosats.min_trade_limit}} Satoshis. Para evitar fallos de enrutamiento no puede ser mayor a {{site.robosats.max_trade_limit}}. Este límite se incrementará en el futuro.*
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-7.png" width="370" />
 </div>
 
-Debes copiar o escanear la factura con tu billetera lightning para bloquear tu fianza de fidelidad como creador (3% del valor total de la transacción por defecto). Al bloquear esta fianza, los compradores perciben que eres de fiar y se comprometen a seguir con el intercambio. En tu billetera puede mostrarse como un pago en tránsito, congelarse o incluso aparentemente romper tu billetera. Siempre debes verificar en la web de RoboSats si el depósito ha sido bloqueado (¡tu billetera probablemente no te lo dirá! Comprueba la [lista de compatibilidad de billeteras](https://github.com/Reckless-Satoshi/robosats/issues/44))
+Debes copiar o escanear la factura con tu billetera lightning para bloquear tu fianza de fidelidad como creador ({{site.robosats.default_bond_size}}% del valor total de la transacción por defecto). Al bloquear esta fianza, los compradores perciben que eres de fiar y se comprometen a seguir con el intercambio. En tu billetera puede mostrarse como un pago en tránsito, congelarse o incluso aparentemente romper tu billetera. Siempre debes verificar en la web de RoboSats si el depósito ha sido bloqueado (¡tu billetera probablemente no te lo dirá! Comprueba la [lista de compatibilidad de billeteras](https://github.com/Reckless-Satoshi/robosats/issues/44))
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-8.png" width="370" />
 </div>
 
-Tu orden permanecerá publicada durante 6 horas. Puedes comprobar cuánto tiempo le queda consultando la pestaña "Order". Se puede cancelar en cualquier momento sin penalización antes de que otro robot tome tu orden. Mantén abierta la pestaña del contrato para recibir notificaciones [con este sonido](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3). Es aconsejable hacer esto en un ordenador o portátil con el volumen encendido para enterarte cuando alguien tome tu orden porque puede transcurrir bastante tiempo. ¡Quizás incluso olvides que tienes publicada una orden! También puedes activar las notificaciones de telegram. Simplemente pulsa en "Enable Telegram Notifications" y presiona "Start" en la conversación con el bot de RoboSats. Te llegará un mensaje de bienvenida y cuando alguien tome la orden te avisará con un mensaje. 
+Tu orden permanecerá publicada durante {{site.robosats.hours_public_default}} horas por defecto. Puedes comprobar cuánto tiempo le queda consultando la pestaña "Order". Se puede cancelar en cualquier momento sin penalización antes de que otro robot tome tu orden. Mantén abierta la pestaña del contrato para recibir notificaciones [con este sonido](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3). Es aconsejable hacer esto en un ordenador o portátil con el volumen encendido para enterarte cuando alguien tome tu orden porque puede transcurrir bastante tiempo. ¡Quizás incluso olvides que tienes publicada una orden! También puedes activar las notificaciones de telegram. Simplemente pulsa en "Enable Telegram Notifications" y presiona "Start" en la conversación con el bot de RoboSats. Te llegará un mensaje de bienvenida y cuando alguien tome la orden te avisará con un mensaje. 
 
 *Nota: Si no estás pendiente de tu orden y un robot la toma y bloquea su fianza, corres el riesgo de perder tu fianza por no cumplir con los siguientes pasos del contrato.*
 

@@ -91,13 +91,13 @@ Du kannst auch auf einen beliebiges Angebot tippen, um die komplette Angebotssei
 <img src="/assets/images/how-to-use/order-page-1.png"  width="370" />
 </div>
 
-Jedes Angebot hat einen Verfallszähler. In RoboSats v0.1.0 bleiben neue Angebote standardmäßig 24 Stunden lang öffentlich im Buch.
+Jedes Angebot hat einen Verfallszähler. In RoboSats v0.1.0 bleiben neue Angebote standardmäßig {{site.robosats.hours_public_default}} Stunden lang öffentlich im Buch.
 
 ### Beispiel-1: Ein Angebot als Käufer annehmen
 
 Wenn du dich für ein Angebot entschieden hast, tippe einfach auf die Schaltfläche "Take Order". Du siehst dann die Kontraktbox. Folge den Anweisungen der Kontraktbox, bis du den Handel abgeschlossen hast! :) 
 
-Als erstes musst du eine kleine Kaution hinterlegen (nur 3% des Handelsbetrags), damit der Verkäufer weiß, dass du vertrauenswürdig bist. Die Satoshis in dieser Kaution werden einfach in deiner Wallet eingefroren. Wenn du versuchst zu betrügen oder einseitig zu kündigen, verlierst du die in der Kaution enthaltenen Satoshis.
+Als erstes musst du eine kleine Kaution hinterlegen (nur {{site.robosats.default_bond_size}}% des Handelsbetrags), damit der Verkäufer weiß, dass du vertrauenswürdig bist. Die Satoshis in dieser Kaution werden einfach in deiner Wallet eingefroren. Wenn du versuchst zu betrügen oder einseitig zu kündigen, verlierst du die in der Kaution enthaltenen Satoshis.
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-1.png"  width="370" />
@@ -129,7 +129,7 @@ Sobald der Verkäufer die Satoshis sperrt, ist es sicher, die Fiat-Währung zu s
 <img src="/assets/images/how-to-use/contract-box-5.png"  width="370" />
 </div>
 
-Es gibt ein Zeitlimit von 24 Stunden, um den Fiat-Austausch abzuschließen. Wenn die Zeit abläuft, wird die Bestellung ablaufen und ein Streitfall wird automatisch eröffnet werden. Um den Ablauf der Bestellung zu vermeiden, **verwenden Sie immer sofortige Fiat-Zahlungsmethoden**. Der Versand von Bargeld per Post ist zum Beispiel langsam und wird in v0.1.0 immer einen Disput auslösen. In Zukunft werden längere Verfallszeiten möglich sein.
+Es gibt ein Zeitlimit von {{site.robosats.hours_fiat_exchange}} Stunden, um den Fiat-Austausch abzuschließen. Wenn die Zeit abläuft, wird die Bestellung ablaufen und ein Streitfall wird automatisch eröffnet werden. Um den Ablauf der Bestellung zu vermeiden, **verwenden Sie immer sofortige Fiat-Zahlungsmethoden**. Der Versand von Bargeld per Post ist zum Beispiel langsam und wird in v0.1.0 immer einen Disput auslösen. In Zukunft werden längere Verfallszeiten möglich sein.
 
 Sobald du das Fiat versendet hast, solltest du auf die Schaltfläche "Confirm fiat sent" tippen. Danach muss der Verkäufer bestätigen, dass er die Fiat erhalten hat. Sobald er dies bestätigt, ist der Handel abgeschlossen und du erhältst eine Auszahlung auf dein Lightning Wallet. Du wirst vielleicht sehen, dass "Satoshis an den Käufer gesendet" wird, aber normalerweise geht es so schnell, dass du nur diesen Bildschirm siehst. Viel Spaß mit deinen Satoshis!
 
@@ -155,7 +155,7 @@ Wir können das Angebot genau so erstellen, wie wir es haben wollen. Aber denke 
 
 Auf der Maker Seite musst du nur die Währung, die Angebotsart (Kauf/Verkauf) und den Betrag eingeben. Es empfiehlt sich jedoch, die zulässigen Zahlungsarten anzugeben. Es könnte auch hilfreich sein, einen Aufschlag/Rabatt festzulegen, damit dein Angebot schneller angenommen wird. Denke daran, dass du als Verkäufer einen Anreiz für Käufer schaffen kannst, dein Angebot anzunehmen, indem du die Prämie senkst. Wenn es jedoch zu viele Käufer gibt, kannst du die Prämie erhöhen, um einen Handelsgewinn zu erzielen. Alternativ kannst du auch einen festen Betrag an Satoshis festlegen.
 
-*Limits: in Robosats v0.1.0 kann ein Angebot nicht kleiner als 20.000 Satoshis sein ubd es kann nicht größer als 1.200.000 Satoshis sein, um Fehler beim weiterleiten der Lightning-Zahlung zu vermeiden. Dieses Limit wird in Zukunft erhöht werden.
+*Limits: in Robosats v0.1.0 kann ein Angebot nicht kleiner als {{site.robosats.min_trade_limit}} Satoshis sein ubd es kann nicht größer als {{site.robosats.max_trade_limit}} Satoshis sein, um Fehler beim weiterleiten der Lightning-Zahlung zu vermeiden. Dieses Limit wird in Zukunft erhöht werden.
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-7.png"  width="370" />
@@ -167,7 +167,7 @@ Du musst die Invoice mit deinem Lightning Wallet kopieren oder scannen, um deine
 <img src="/assets/images/how-to-use/contract-box-8.png"  width="370" />
 </div>
 
-Dein Angebot ist 24 Stunden lang öffentlich zugänglich. Du kannst die verbleibende Zeit bis zum Ablauf überprüfen, indem du die Registerkarte "Order" anklickst. Du kannst das Angebot jederzeit stornieren, bevor es von einem anderen Roboter angenommen wird. Lasse die Registerkarte " Order " offen, um [mit diesem Ton](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3) benachrichtigt zu werden. Am besten ist es, wenn du dies auf einem Desktop-Computer machst und die Lautstärke einstellst, damit du nicht verpasst, wenn dein Auftrag angenommen wird. Das kann lange dauern! Vielleicht vergisst du es sogar! Du kannst auch Telegram-Benachrichtigungen aktivieren, indem du auf "Enable Telegram Notification" und dann im Chat auf "Start" drückst. Du erhältst eine Willkommensnachricht als Bestätigung der aktivierten Benachrichtigungen. Eine weitere Nachricht wird gesendet, sobald ein Abnehmer für dein Angebot gefunden ist.
+Dein Angebot ist {{site.robosats.hours_public_default}} Stunden lang öffentlich zugänglich. Du kannst die verbleibende Zeit bis zum Ablauf überprüfen, indem du die Registerkarte "Order" anklickst. Du kannst das Angebot jederzeit stornieren, bevor es von einem anderen Roboter angenommen wird. Lasse die Registerkarte " Order " offen, um [mit diesem Ton](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3) benachrichtigt zu werden. Am besten ist es, wenn du dies auf einem Desktop-Computer machst und die Lautstärke einstellst, damit du nicht verpasst, wenn dein Auftrag angenommen wird. Das kann lange dauern! Vielleicht vergisst du es sogar! Du kannst auch Telegram-Benachrichtigungen aktivieren, indem du auf "Enable Telegram Notification" und dann im Chat auf "Start" drückst. Du erhältst eine Willkommensnachricht als Bestätigung der aktivierten Benachrichtigungen. Eine weitere Nachricht wird gesendet, sobald ein Abnehmer für dein Angebot gefunden ist.
 
 *Hinweis: Wenn du dein Angebot vergisst und es ein Roboter annimmt und seine Kaution sperrt, riskierst du, deine eigene Kaution zu verlieren, weil du die nächsten Schritte des Handels nicht erfüllst.
 

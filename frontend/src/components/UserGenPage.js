@@ -277,7 +277,7 @@ class UserGenPage extends Component {
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
               <Button disabled={this.state.loadingRobot || !(this.props.token ? getCookie('robot_token')==this.props.token : true )} color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
               <Button color='inherit' style={{color: '#111111'}} onClick={this.handleClickOpenInfo}>{t("Info")}</Button>
-              <InfoDialog open={Boolean(this.state.openInfo)} onClose = {this.handleCloseInfo}/>
+              <InfoDialog open={Boolean(this.state.openInfo)} maxAmount='1,500,000' onClose = {this.handleCloseInfo}/>
               <Button disabled={this.state.loadingRobot || !(this.props.token ? getCookie('robot_token')==this.props.token : true )} color='secondary' to='/book/' component={Link}>{t("View Book")}</Button>
             </ButtonGroup>
           </Grid>
