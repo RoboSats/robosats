@@ -786,6 +786,8 @@ class Logics:
 
     @classmethod
     def collaborative_cancel(cls, order):
+        if not order.status in [Order.Status.WFI, Order.Status.CHA]:
+            return
         cls.return_bond(order.maker_bond)
         cls.return_bond(order.taker_bond)
         cls.return_escrow(order)

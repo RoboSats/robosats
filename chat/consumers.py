@@ -227,6 +227,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                         "peer_connected": peer_connected,
                     },
                 )
+        # Unencrypted messages are not stored, just echoed.
         else:
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -243,6 +244,8 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         nick = event["nick"]
         peer_connected = event["peer_connected"]
 
+        print(message)
+        
         await self.send(text_data=json.dumps({
             "message": message,
             "user_nick": nick,

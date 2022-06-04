@@ -110,7 +110,26 @@ class Chat extends Component {
               }),
             })
           ));
-        }
+          
+        } else
+
+        // We allow plaintext communication. The user must write # to start
+        // If we receive an plaintext message
+        if (dataFromServer.message.substring(0,1) == "#"){
+          console.log("Got plaintext message", dataFromServer.message)
+          this.setState((state) => 
+            ({
+              scrollNow: true,
+              messages: [...state.messages,
+              { 
+                index: this.state.latestIndex + 0.001,
+                encryptedMessage: dataFromServer.message,
+                plainTextMessage: dataFromServer.message,
+                validSignature: false,           
+                userNick: dataFromServer.user_nick,
+                time: (new Date).toString(),
+              }]}));
+          } 
       }
     });
 
@@ -125,6 +144,8 @@ class Chat extends Component {
   }
 
   componentDidUpdate() {
+
+    // Only fire the scroll when the reason for Update is a new message
     if (this.state.scrollNow){
       this.scrollToBottom();
       this.setState({scrollNow:false})
@@ -136,17 +157,26 @@ class Chat extends Component {
   }
 
   onButtonClicked = (e) => {
-    if(this.state.value!=''){
-      this.setState({waitingEcho:true, lastSent:this.state.value});
+    if(this.state.value.substring(0,1)=='#'){
+        this.rws.send(JSON.stringify({
+          type: "message",
+          message: this.state.value,
+          nick: this.props.ur_nick,
+        }));
+        this.setState({value: ""});
+    }
+    
+    else if(this.state.value!=''){
+      this.setState({value: "", waitingEcho: true, lastSent:this.state.value})
       encryptMessage(this.state.value, this.state.own_pub_key, this.state.peer_pub_key, this.state.own_enc_priv_key, this.state.token)
       .then((encryptedMessage) =>
-        console.log("Sending Encrypted MESSAGE    "+encryptedMessage) &
+        console.log("Sending Encrypted MESSAGE", encryptedMessage) &
         this.rws.send(JSON.stringify({
           type: "message",
           message: encryptedMessage.split('\n').join('\\'),
           nick: this.props.ur_nick,
         }) 
-       ) & this.setState({value: "", waitingEcho: false})
+       )
       );
     }
     e.preventDefault();
@@ -179,8 +209,8 @@ class Chat extends Component {
           style={{backgroundColor: props.cardColor}}
           title={
             <Tooltip placement="top" enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t(props.message.validSignature ? "Verified signature by {{nickname}}": "Invalid signature! Not sent by {{nickname}}",{"nickname": props.message.userNick})}>
-              <div style={{display:'flex',alignItems:'center', flexWrap:'wrap', position:'relative',left:-5, width:220}}>
-                <div style={{width:168,display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+              <div style={{display:'flex',alignItems:'center', flexWrap:'wrap', position:'relative',left:-5, width:240}}>
+                <div style={{width:173,display:'flex',alignItems:'center', flexWrap:'wrap'}}>
                   {props.message.userNick}
                   {props.message.validSignature ?
                     <CheckIcon sx={{height:16}} color="success"/>
@@ -240,8 +270,8 @@ class Chat extends Component {
           </Grid>
           <Grid item xs={0.3}/>
         </Grid>
-        <div style={{position:'relative', left:'-8px', margin:'0px'}}>
-          <Paper elevation={1} style={{height: '300px', maxHeight: '300px' , width: '300px' ,overflow: 'auto', backgroundColor: '#F7F7F7' }}>
+        <div style={{position:'relative', left:'-2px', margin:'0 auto', width: '285px'}}>
+          <Paper elevation={1} style={{height: '300px', maxHeight: '300px' , width: '285px' ,overflow: 'auto', backgroundColor: '#F7F7F7' }}>
             {this.state.messages.map((message, index) =>
             <li style={{listStyleType:"none"}} key={index}>
               {message.userNick == this.props.ur_nick ?
@@ -265,7 +295,7 @@ class Chat extends Component {
                     this.setState({ value: e.target.value });
                     this.value = this.state.value;
                   }}
-                  sx={{width: 232}}
+                  sx={{width: 219}}
                 />
               </Grid>
               <Grid item alignItems="stretch" style={{ display: "flex" }}>
