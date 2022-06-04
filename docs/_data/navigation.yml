@@ -75,22 +75,24 @@ tutorial:
   - title: '<span class="side-bar-item"><img id="side-icon-big" src="/assets/vector/circle-play.svg"/>Watch</span>'
     url: "/watch/en/"
     children:
-    - title: "<span>&nbsp;&nbsp;<img style='width:22px;height:21px' src='/assets/vector/english.svg'/> English</span>"
+    - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:21px" src="/assets/vector/english.svg"/> English</span>'
       url: "/watch/en/"
-    - title: "<span>&nbsp;&nbsp;<img style='width:22px;height:13px' src='/assets/vector/spanish.svg'/> Español</span>"
+    - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/spanish.svg"/> Español</span>'
       url: "/watch/es/"
-    - title: "<span>&nbsp;&nbsp;<img style='width:22px;height:13px' src='/assets/vector/portuguese.svg'/> Português</span>"
+    - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/portuguese.svg"/> Português</span>'
       url: "/watch/pt/"
-    - title: "<span>&nbsp;&nbsp;<img style='width:22px;height:13px' src='/assets/vector/french.svg'/> Français</span>"
+    - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/french.svg"/> Français</span>'
       url: "/watch/fr/"
+    - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/polish.svg"/> Polski</span>'
+      url: "/watch/pl/"
   - title: '<span class="side-bar-item"><img id="side-icon-big" src="/assets/vector/readme.svg"/>Read</span>'
     url: "/watch/en/"
     children:
-    - title: "<span>&nbsp;&nbsp;<img style='width:22px;height:21px' src='/assets/vector/english.svg'/> English</span>"
+    - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:21px" src="/assets/vector/english.svg"/> English</span>'
       url: "/read/en/"
-    - title: "<span>&nbsp;&nbsp;<img style='width:22px;height:13px' src='/assets/vector/spanish.svg'/> Español</span>"
+    - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/spanish.svg"/> Español</span>'
       url: "/read/es/"
-    - title: "<span>&nbsp;&nbsp;<img style='width:22px;height:13px' src='/assets/vector/german.svg'/> Deutsch</span>"
+    - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/german.svg"/> Deutsch</span>'
       url: "/read/de/"
       
 contribute:
