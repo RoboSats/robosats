@@ -244,8 +244,6 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         nick = event["nick"]
         peer_connected = event["peer_connected"]
 
-        print(message)
-        
         await self.send(text_data=json.dumps({
             "message": message,
             "user_nick": nick,

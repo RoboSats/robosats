@@ -179,7 +179,7 @@
     "Your last order #{{orderID}}":"Your last order #{{orderID}}",
     "Inactive order":"Inactive order",
     "You do not have previous orders":"You do not have previous orders",
-    "Join RoboSat's Subreddit":"Join RoboSat's Subreddit",
+    "Join RoboSats' Subreddit":"Join RoboSats' Subreddit",
     "RoboSats in Reddit":"RoboSats in Reddit",
 
     "ORDER PAGE - OrderPage.js": "Order details page",
@@ -280,6 +280,8 @@
     "Keys":"Keys",
     "Save messages as a JSON file":"Save messages as a JSON file",
     "Messages":"Messages",
+    "Verified signature by {{nickname}}":"Verified signature by {{nickname}}",
+    "Cannot verify signature of {{nickname}}":"Cannot verify signature of {{nickname}}",
    
 
     "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
@@ -387,6 +389,7 @@
     "The invoice provided has no explicit amount":"The invoice provided has no explicit amount",
     "Does not look like a valid lightning invoice":"Does not look like a valid lightning invoice",
     "The invoice provided has already expired":"The invoice provided has already expired",
+    "Make sure to EXPORT the chat log. The staff might request your exported chat log JSON in order to solve discrepancies. It is your responsibility to store it.":"Make sure to EXPORT the chat log. The staff might request your exported chat log JSON in order to solve discrepancies. It is your responsibility to store it.",
 
 
     "INFO DIALOG - InfoDiagog.js":"App information and clarifications and terms of use",

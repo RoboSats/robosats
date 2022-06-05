@@ -208,9 +208,9 @@ class Chat extends Component {
           }
           style={{backgroundColor: props.cardColor}}
           title={
-            <Tooltip placement="top" enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t(props.message.validSignature ? "Verified signature by {{nickname}}": "Invalid signature! Not sent by {{nickname}}",{"nickname": props.message.userNick})}>
+            <Tooltip placement="top" enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t(props.message.validSignature ? "Verified signature by {{nickname}}": "Cannot verify signature of {{nickname}}",{"nickname": props.message.userNick})}>
               <div style={{display:'flex',alignItems:'center', flexWrap:'wrap', position:'relative',left:-5, width:240}}>
-                <div style={{width:173,display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+                <div style={{width:168,display:'flex',alignItems:'center', flexWrap:'wrap'}}>
                   {props.message.userNick}
                   {props.message.validSignature ?
                     <CheckIcon sx={{height:16}} color="success"/>

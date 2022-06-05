@@ -132,8 +132,9 @@ class TradeBox extends Component {
           <DialogContentText id="alert-dialog-description">
             {t("The RoboSats staff will examine the statements and evidence provided. You need to build a complete case, as the staff cannot read the chat. It is best to provide a burner contact method with your statement. The satoshis in the trade escrow will be sent to the dispute winner, while the dispute loser will lose the bond.")}
           </DialogContentText>
+          <br/>
           <DialogContentText id="alert-dialog-description">
-            {t("Make sure to EXPORT the chat log using the button. Staff might request your chat log in order to solve discrepancies. It is your responsibility to store it.")}
+            {t("Make sure to EXPORT the chat log. The staff might request your exported chat log JSON in order to solve discrepancies. It is your responsibility to store it.")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

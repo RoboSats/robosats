@@ -86,6 +86,13 @@ class MakerPage extends Component {
         }));
   }
 
+  recalcBounds = () =>{
+    this.setState({
+        minAmount: this.state.amount ? parseFloat((this.state.amount/2).toPrecision(2)) : parseFloat(Number(this.state.limits[this.state.currency]['max_amount']*0.25).toPrecision(2)),
+        maxAmount: this.state.amount ? this.state.amount : parseFloat(Number(this.state.limits[this.state.currency]['max_amount']*0.75).toPrecision(2)),
+    });
+  }
+
   a11yProps(index) {
     return {
       id: `simple-tab-${index}`,
@@ -321,9 +328,9 @@ class MakerPage extends Component {
                         <TextField
                             disabled = {this.state.enableAmountRange}
                             variant = {this.state.enableAmountRange ? 'filled' : 'outlined'}
-                            error={(this.state.amount <= this.getMinAmount() || this.state.amount >= this.getMaxAmount()) & this.state.amount != "" ? true : false}
-                            helperText={this.state.amount <= this.getMinAmount() & this.state.amount != "" ? t("Too low") 
-                                : (this.state.amount >= this.getMaxAmount() & this.state.amount != "" ? t("Too high") : null)}
+                            error={(this.state.amount < this.getMinAmount() || this.state.amount > this.getMaxAmount()) & this.state.amount != "" ? true : false}
+                            helperText={this.state.amount < this.getMinAmount() & this.state.amount != "" ? t("Must be more than {{minAmount}}",{minAmount:this.getMinAmount()})
+                                : (this.state.amount > this.getMaxAmount() & this.state.amount != "" ? t("Must be less than {{maxAmount}}",{maxAmount:this.getMaxAmount()}) : null)}
                             label={t("Amount")}
                             type="number"
                             required={true}
@@ -546,7 +553,7 @@ class MakerPage extends Component {
                 <FormControl align="center">
                     <Tooltip enterTouchDelay={0} placement="top" align="center" title={t("Let the taker chose an amount within the range")}>
                         <FormHelperText align="center" style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                            <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked, is_explicit: false})}/>
+                            <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked, is_explicit: false}) & this.recalcBounds()}/>
                             {this.state.enableAmountRange & this.state.minAmount != null? this.rangeText() : t("Enable Amount Range")}
                         </FormHelperText>
                     </Tooltip>

@@ -12,7 +12,7 @@ import { sha256 } from 'js-sha256';
 
 // Generate KeyPair. Private Key is encrypted with the highEntropyToken
 export async function genKey(highEntropyToken) {
-  var d = new Date();
+  const d = new Date();
   const keyPair = await generateKey({
     type: 'ecc', // Type of the key, defaults to ECC
     curve: 'curve25519', // ECC curve name, defaults to curve25519
@@ -35,10 +35,12 @@ export async function encryptMessage(plaintextMessage, ownPublicKeyArmored, peer
       passphrase
   });
 
+  const d = new Date();
   const encryptedMessage = await encrypt({
       message: await createMessage({ text: plaintextMessage }), // input as Message object, message must be string
       encryptionKeys: [ ownPublicKey, peerPublicKey ],
-      signingKeys: privateKey // optional
+      signingKeys: privateKey, // optional
+      date: d.setDate(d.getDate()-1)  // One day of offset, avoids verification issue due to clock mismatch
   });
 
   return encryptedMessage; // '-----BEGIN PGP MESSAGE ... END PGP MESSAGE-----'
@@ -61,7 +63,7 @@ export async function decryptMessage(encryptedMessage, publicKeyArmored, private
       verificationKeys: publicKey, // optional
       decryptionKeys: privateKey
   });
-  
+
   // check signature validity (signed messages only)
   try {
     await signatures[0].verified; // throws on invalid signature
