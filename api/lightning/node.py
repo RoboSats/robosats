@@ -238,7 +238,7 @@ class LNNode:
 
         if payout["expires_at"] < timezone.now():
             payout["context"] = {
-                "bad_invoice": f"The invoice provided has already expired"
+                "bad_invoice": "The invoice provided has already expired"
             }
             return payout
 
@@ -257,9 +257,10 @@ class LNNode:
                 lnpayment.num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
                 float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
             ))  # 200 ppm or 10 sats
+        timeout_seconds = int(config("PAYOUT_TIMEOUT_SECONDS"))
         request = routerrpc.SendPaymentRequest(payment_request=lnpayment.invoice,
                                                fee_limit_sat=fee_limit_sat,
-                                               timeout_seconds=30)
+                                               timeout_seconds=timeout_seconds)
 
         for response in cls.routerstub.SendPaymentV2(request,
                                                      metadata=[("macaroon",
