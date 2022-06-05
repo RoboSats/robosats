@@ -1,5 +1,5 @@
 from django.contrib import admin
-from control.models import AccountingDay, AccountingMonth, Dispute
+from control.models import AccountingDay, AccountingMonth, BalanceLog
 from import_export.admin import ImportExportModelAdmin
 
 # Register your models here.
@@ -51,3 +51,34 @@ class AccountingMonthAdmin(ImportExportModelAdmin):
     )
     change_links = ["month"]
     search_fields = ["month"]
+
+
+@admin.register(BalanceLog)
+class BalanceLogAdmin(ImportExportModelAdmin):
+
+    list_display = (
+        "time",
+        "total",
+        "onchain_fraction",
+        "onchain_total",
+        "onchain_confirmed",
+        "onchain_unconfirmed",
+        "ln_local",
+        "ln_remote",
+        "ln_local_unsettled",
+        "ln_remote_unsettled",
+    )
+    readonly_fields = [
+        "time",
+        "total",
+        "onchain_fraction",
+        "onchain_total",
+        "onchain_confirmed",
+        "onchain_unconfirmed",
+        "ln_local",
+        "ln_remote",
+        "ln_local_unsettled",
+        "ln_remote_unsettled",
+    ]
+    change_links = ["time"]
+    search_fields = ["time"]

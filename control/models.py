@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 
+from api.lightning.node import LNNode
+
 class AccountingDay(models.Model):
     day = models.DateTimeField(primary_key=True, auto_now=False, auto_now_add=False)
 
@@ -36,8 +38,6 @@ class AccountingDay(models.Model):
     # Rewards claimed on day
     rewards_claimed = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
 
-
-
 class AccountingMonth(models.Model):
     month = models.DateTimeField(primary_key=True, auto_now=False, auto_now_add=False)
 
@@ -72,6 +72,20 @@ class AccountingMonth(models.Model):
     pending_disputes = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
     # Rewards claimed on day
     rewards_claimed = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
+
+class BalanceLog(models.Model):
+    time = models.DateTimeField(primary_key=True, default=timezone.now)
+
+    # Every field is denominated in Sats
+    total = models.PositiveBigIntegerField(default=lambda : LNNode.wallet_balance()['total_balance'] + LNNode.channel_balance()['local_balance'])
+    onchain_fraction = models.DecimalField(max_digits=5, decimal_places=5, default=lambda : (LNNode.wallet_balance()['total_balance'] + LNNode.channel_balance()['local_balance']) / LNNode.wallet_balance()['total_balance'])
+    onchain_total = models.PositiveBigIntegerField(default=lambda : LNNode.wallet_balance()['total_balance'])
+    onchain_confirmed = models.PositiveBigIntegerField(default=lambda : LNNode.wallet_balance()['confirmed_balance'])
+    onchain_unconfirmed = models.PositiveBigIntegerField(default=lambda : LNNode.wallet_balance()['unconfirmed_balance'])
+    ln_local = models.PositiveBigIntegerField(default=lambda : LNNode.channel_balance()['local_balance'])
+    ln_remote = models.PositiveBigIntegerField(default=lambda : LNNode.channel_balance()['remote_balance'])
+    ln_local_unsettled = models.PositiveBigIntegerField(default=lambda : LNNode.channel_balance()['unsettled_local_balance'])
+    ln_remote_unsettled = models.PositiveBigIntegerField(default=lambda : LNNode.channel_balance()['unsettled_remote_balance'])
 
 class Dispute(models.Model):
     pass

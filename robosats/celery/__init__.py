@@ -55,6 +55,10 @@ app.conf.beat_schedule = {
         "task": "cache_external_market_prices",
         "schedule": timedelta(seconds=60),
     },
+    "compute-node-balance": { # Logs LND channel and wallet balance
+        "task":"compute_node_balance",
+        "schedule": timedelta(minutes=15),
+    }
 }
 
 app.conf.timezone = "UTC"

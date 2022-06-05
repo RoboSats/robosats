@@ -1,16 +1,17 @@
 from celery import shared_task
-from api.models import Order, LNPayment, Profile, MarketTick
-from control.models import AccountingDay, AccountingMonth
-from django.utils import timezone
-from datetime import timedelta
-from django.db.models import Sum
-from decouple import config
 
 @shared_task(name="do_accounting")
 def do_accounting():
     '''
     Does all accounting from the beginning of time
     '''
+
+    from api.models import Order, LNPayment, Profile, MarketTick
+    from control.models import AccountingDay
+    from django.utils import timezone
+    from datetime import timedelta
+    from django.db.models import Sum
+    from decouple import config
 
     all_payments = LNPayment.objects.all()
     all_ticks = MarketTick.objects.all()
@@ -110,3 +111,14 @@ def do_accounting():
         day = day + timedelta(days=1)
 
     return result
+
+@shared_task(name="compute_node_balance", ignore_result=True)
+def compute_node_balance():
+    '''
+    Queries LND for channel and wallet balance
+    '''
+    from control.models import BalanceLog
+
+    BalanceLog.objects.create()
+
+    return

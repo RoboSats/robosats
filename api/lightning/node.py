@@ -1,4 +1,4 @@
-import grpc, os, hashlib, secrets
+import grpc, os, hashlib, secrets, ring
 from . import lightning_pb2 as lnrpc, lightning_pb2_grpc as lightningstub
 from . import invoices_pb2 as invoicesrpc, invoices_pb2_grpc as invoicesstub
 from . import router_pb2 as routerrpc, router_pb2_grpc as routerstub
@@ -8,7 +8,6 @@ from base64 import b64decode
 
 from datetime import timedelta, datetime
 from django.utils import timezone
-
 from api.models import LNPayment
 
 #######
@@ -66,6 +65,52 @@ class LNNode:
                                                   metadata=[("macaroon",
                                                              MACAROON.hex())])
         return response
+
+    @classmethod
+    def estimate_fee(cls, amount_sats, target_conf=2, min_confs=1):
+        """Returns estimated fee for onchain payouts"""
+
+        # We assume segwit. Use robosats donation address (shortcut so there is no need to have user input)
+        request = lnrpc.EstimateFeeRequest(AddrToAmount={'bc1q3cpp7ww92n6zp04hv40kd3eyy5avgughx6xqnx':amount_sats}, 
+                                            target_conf=target_conf,
+                                            min_confs=min_confs,
+                                            spend_unconfirmed=False)
+
+        response = cls.lightningstub.EstimateFee(request,
+                                                  metadata=[("macaroon",
+                                                             MACAROON.hex())])
+
+        return {'mining_fee_sats': response.fee_sat, 'mining_fee_rate': response.sat_per_vbyte}
+
+    wallet_balance_cache = {}
+    @ring.dict(wallet_balance_cache, expire=10)  # keeps in cache for 10 seconds
+    @classmethod
+    def wallet_balance(cls):
+        """Returns onchain balance"""
+        request = lnrpc.WalletBalanceRequest()
+        response = cls.lightningstub.WalletBalance(request,
+                                                  metadata=[("macaroon",
+                                                             MACAROON.hex())])
+        print(response)
+        return {'total_balance': response.total_balance, 
+            'confirmed_balance': response.confirmed_balance,
+            'unconfirmed_balance': response.unconfirmed_balance}
+
+    channel_balance_cache = {}
+    @ring.dict(channel_balance_cache, expire=10)  # keeps in cache for 10 seconds
+    @classmethod
+    def channel_balance(cls):
+        """Returns channels balance"""
+        request = lnrpc.ChannelBalanceRequest()
+        response = cls.lightningstub.ChannelBalance(request,
+                                                  metadata=[("macaroon",
+                                                             MACAROON.hex())])
+
+        print(response)
+        return {'local_balance': response.local_balance.sat, 
+            'remote_balance': response.remote_balance.sat,
+            'unsettled_local_balance': response.unsettled_local_balance.sat,
+            'unsettled_remote_balance': response.unsettled_remote_balance.sat}
 
     @classmethod
     def cancel_return_hold_invoice(cls, payment_hash):
