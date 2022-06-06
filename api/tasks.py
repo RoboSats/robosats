@@ -132,8 +132,10 @@ def follow_send_payment(hash):
                 }
                 print(context)
 
-                # If failed, reset mission control. (This won't scale well, just a temporary fix)
-                LNNode.resetmc()
+                # If failed due to not route, reset mission control. (This won't scale well, just a temporary fix)
+                if response.failure_reason==2:
+                    LNNode.resetmc()
+
                 return False, context
 
             if response.status == 2:  # Status 2 'SUCCEEDED'

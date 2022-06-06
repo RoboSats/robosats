@@ -241,7 +241,7 @@ class Chat extends Component {
             </Tooltip>
           }
           subheader={this.state.showPGP[props.index] ? <a> {props.message.time} <br/> {"Valid signature: " + props.message.validSignature} <br/>  {props.message.encryptedMessage} </a> : props.message.plainTextMessage}
-          subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '215px', color: '#444444', fontSize: this.state.showPGP[props.index]? 11 : null }}}
+          subheaderTypographyProps={{sx: {wordWrap: "break-word", width: '200px', color: '#444444', fontSize: this.state.showPGP[props.index]? 11 : null }}}
         />
       </Card>
     )
