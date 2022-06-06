@@ -219,10 +219,11 @@ class OnchainPayment(models.Model):
                                                     blank=False)
 
     # platform onchain/channels balance at creattion, swap fee rate as percent of total volume
-    node_balance = models.ForeignKey(BalanceLog, 
-                                    related_name="balance", 
-                                    on_delete=models.SET_NULL,
-                                    null=True)
+    balance = models.ForeignKey(BalanceLog, 
+                                related_name="balance", 
+                                on_delete=models.SET_NULL,
+                                default=BalanceLog.objects.create)
+
     swap_fee_rate = models.DecimalField(max_digits=4, 
                                         decimal_places=2, 
                                         default=2, 
@@ -452,7 +453,16 @@ class Order(models.Model):
     # buyer payment LN invoice
     payout = models.OneToOneField(
         LNPayment,
-        related_name="order_paid",
+        related_name="order_paid_LN",
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None,
+        blank=True,
+    )
+
+    payout_tx = models.OneToOneField(
+        OnchainPayment,
+        related_name="order_paid_TX",
         on_delete=models.SET_NULL,
         null=True,
         default=None,

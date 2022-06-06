@@ -54,6 +54,10 @@ class UpdateOrderSerializer(serializers.Serializer):
                                     allow_null=True,
                                     allow_blank=True,
                                     default=None)
+    address = serializers.CharField(max_length=100,
+                                    allow_null=True,
+                                    allow_blank=True,
+                                    default=None)
     statement = serializers.CharField(max_length=10000,
                                       allow_null=True,
                                       allow_blank=True,
@@ -63,6 +67,7 @@ class UpdateOrderSerializer(serializers.Serializer):
             "pause",
             "take",
             "update_invoice",
+            "update_address",
             "submit_statement",
             "dispute",
             "cancel",
@@ -79,6 +84,7 @@ class UpdateOrderSerializer(serializers.Serializer):
         default=None,
     )
     amount = serializers.DecimalField(max_digits=18, decimal_places=8, allow_null=True, required=False, default=None)
+    mining_fee_rate = serializers.DecimalField(max_digits=6, decimal_places=3, allow_null=True, required=False, default=None)
 
 class UserGenSerializer(serializers.Serializer):
     # Mandatory fields

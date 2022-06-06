@@ -4,7 +4,7 @@ from django.utils import timezone
 from api.lightning.node import LNNode
 from django.db.models import Q
 
-from api.models import Order, LNPayment, MarketTick, User, Currency
+from api.models import OnchainPayment, Order, LNPayment, MarketTick, User, Currency
 from api.tasks import send_message
 from decouple import config
 
@@ -494,10 +494,46 @@ class Logics:
         order.save()
         return True, None
 
+    def compute_swap_fee_rate(balance):
+        shape = str(config('SWAP_FEE_SHAPE'))
+
+        if shape == "linear":
+            MIN_SWAP_FEE = float(config('MIN_SWAP_FEE'))
+            MIN_POINT = float(config('MIN_POINT'))
+            MAX_SWAP_FEE = float(config('MAX_SWAP_FEE'))
+            MAX_POINT = float(config('MAX_POINT'))
+            if balance.onchain_fraction > MIN_POINT:
+                swap_fee_rate = MIN_SWAP_FEE
+            else:
+                slope = (MAX_SWAP_FEE - MIN_SWAP_FEE) / (MAX_POINT - MIN_POINT)
+                swap_fee_rate = slope * (balance.onchain_fraction - MAX_POINT) + MAX_SWAP_FEE
+
+        return swap_fee_rate
+
+    @classmethod
+    def create_onchain_payment(cls, order, estimate_sats):
+        '''
+        Creates an empty OnchainPayment for order.payout_tx.
+        It sets the fees to be applied to this order if onchain Swap is used.
+        If the user submits a LN invoice instead. The returned OnchainPayment goes unused.
+        '''
+        onchain_payment = OnchainPayment.objects.create()
+        onchain_payment.suggested_mining_fee_rate = LNNode.estimate_fee(amount_sats=estimate_sats)
+        onchain_payment.swap_fee_rate = cls.compute_swap_fee_rate(onchain_payment.balance)
+        onchain_payment.save()
+
+        order.payout_tx = onchain_payment
+        order.save()
+        return True, None
+
     @classmethod
     def payout_amount(cls, order, user):
         """Computes buyer invoice amount. Uses order.last_satoshis,
-        that is the final trade amount set at Taker Bond time"""
+        that is the final trade amount set at Taker Bond time
+        Adds context for onchain swap.
+        """
+        if not cls.is_buyer(order, user):
+            return False, None
 
         if user == order.maker:
             fee_fraction = FEE * MAKER_FEE_SPLIT
@@ -508,10 +544,25 @@ class Logics:
 
         reward_tip = int(config('REWARD_TIP')) if user.profile.is_referred else 0
 
-        if cls.is_buyer(order, user):
-            invoice_amount = round(order.last_satoshis - fee_sats - reward_tip)  # Trading fee to buyer is charged here.
+        context = {}
+        # context necessary for the user to submit a LN invoice
+        context["invoice_amount"] = round(order.last_satoshis - fee_sats - reward_tip)  # Trading fee to buyer is charged here.
 
-        return True, {"invoice_amount": invoice_amount}
+        # context necessary for the user to submit an onchain address
+        MIN_SWAP_AMOUNT = int(config("MIN_SWAP_AMOUNT"))
+
+        if context["invoice_amount"] < MIN_SWAP_AMOUNT:
+            context["swap_allowed"] = False
+            return True, context
+
+        if order.payout_tx == None:
+            cls.create_onchain_payment(order, estimate_sats=context["invoice_amount"])
+
+        context["swap_allowed"] = True
+        context["suggested_mining_fee_rate"] = order.payout_tx.suggested_mining_fee_rate
+        context["swap_fee_rate"] = order.payout_tx.swap_fee_rate
+
+        return True, context
 
     @classmethod
     def escrow_amount(cls, order, user):

@@ -420,6 +420,7 @@ class OrderView(viewsets.ViewSet):
         action = serializer.data.get("action")
         invoice = serializer.data.get("invoice")
         address = serializer.data.get("address")
+        mining_fee_rate = serializer.data.get("mining_fee_rate")
         statement = serializer.data.get("statement")
         rating = serializer.data.get("rating")
 
@@ -469,7 +470,7 @@ class OrderView(viewsets.ViewSet):
         # 2.b) If action is 'update invoice'
         if action == "update_address":
             valid, context = Logics.update_address(order, request.user,
-                                                   address)
+                                                   address, mining_fee_rate)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 

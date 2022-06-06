@@ -305,7 +305,7 @@ class LNNode:
                 lnpayment.num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
                 float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
             ))  # 200 ppm or 10 sats
-        timeout_seconds = int(config("PAYOUT_TIMEOUT_SECONDS"))
+        timeout_seconds = int(config("REWARDS_TIMEOUT_SECONDS"))
         request = routerrpc.SendPaymentRequest(payment_request=lnpayment.invoice,
                                                fee_limit_sat=fee_limit_sat,
                                                timeout_seconds=timeout_seconds)
