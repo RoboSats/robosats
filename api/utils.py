@@ -1,8 +1,7 @@
 import requests, ring, os
 from decouple import config
 import numpy as np
-import requests
-
+import coinaddrvalidator as addr
 from api.models import Order
 
 def get_tor_session():
@@ -11,6 +10,24 @@ def get_tor_session():
     session.proxies = {'http':  'socks5://127.0.0.1:9050',
                        'https': 'socks5://127.0.0.1:9050'}
     return session
+
+def validate_onchain_address(address):
+    '''
+    Validates an onchain address
+    '''
+    
+    validation = addr.validate('btc', address.encode('utf-8'))
+
+    if not validation.valid:
+        return False
+
+    NETWORK = str(config('NETWORK'))
+    if NETWORK == 'mainnet':
+        if validation.network == 'main':
+            return True
+    elif NETWORK == 'testnet':
+        if validation.network == 'test':
+            return True
 
 market_cache = {}
 @ring.dict(market_cache, expire=3)  # keeps in cache for 3 seconds

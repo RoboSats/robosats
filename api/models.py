@@ -17,8 +17,11 @@ from decouple import config
 from pathlib import Path
 import json
 
+from control.models import BalanceLog
+
 MIN_TRADE = int(config("MIN_TRADE"))
 MAX_TRADE = int(config("MAX_TRADE"))
+MIN_SWAP_AMOUNT = int(config("MIN_SWAP_AMOUNT"))
 FEE = float(config("FEE"))
 DEFAULT_BOND_SIZE = float(config("DEFAULT_BOND_SIZE"))
 
@@ -118,7 +121,7 @@ class LNPayment(models.Model):
                                    blank=True)
     num_satoshis = models.PositiveBigIntegerField(validators=[
         MinValueValidator(100),
-        MaxValueValidator(MAX_TRADE * (1 + DEFAULT_BOND_SIZE + FEE)),
+        MaxValueValidator(1.5 * MAX_TRADE),
     ])
     # Fee in sats with mSats decimals fee_msat
     fee = models.DecimalField(max_digits=10, decimal_places=3, default=0, null=False, blank=False)
@@ -163,6 +166,96 @@ class LNPayment(models.Model):
         # We created a truncated property for display 'hash'
         return truncatechars(self.payment_hash, 10)
 
+class OnchainPayment(models.Model):
+
+    class Concepts(models.IntegerChoices):
+        PAYBUYER = 3, "Payment to buyer"
+
+    class Status(models.IntegerChoices):
+        CREAT = 0, "Created"        # User was given platform fees and suggested mining fees
+        VALID = 1, "Valid"          # Valid onchain address submitted
+        MEMPO = 2, "In mempool"     # Tx is sent to mempool
+        CONFI = 3, "Confirmed"      # Tx is confirme +2 blocks
+
+    # payment use details
+    concept = models.PositiveSmallIntegerField(choices=Concepts.choices,
+                                               null=False,
+                                               default=Concepts.PAYBUYER)
+    status = models.PositiveSmallIntegerField(choices=Status.choices,
+                                              null=False,
+                                              default=Status.VALID)
+
+    # payment info
+    address = models.CharField(max_length=100,
+                                    unique=False,
+                                    default=None,
+                                    null=True,
+                                    blank=True)
+        
+    txid = models.CharField(max_length=64,
+                                unique=True,
+                                null=True,
+                                default=None,
+                                blank=True)
+
+    num_satoshis = models.PositiveBigIntegerField(validators=[
+        MinValueValidator(0.7 * MIN_SWAP_AMOUNT),
+        MaxValueValidator(1.5 * MAX_TRADE),
+    ])
+
+    # fee in sats/vbyte with mSats decimals fee_msat
+    suggested_mining_fee_rate = models.DecimalField(max_digits=6, 
+                                                    decimal_places=3, 
+                                                    default=1.05, 
+                                                    null=False, 
+                                                    blank=False)
+    mining_fee_rate = models.DecimalField(max_digits=6, 
+                                        decimal_places=3, 
+                                        default=1.05, 
+                                        null=False, 
+                                        blank=False)
+    mining_fee_sats = models.PositiveBigIntegerField(default=0, 
+                                                    null=False, 
+                                                    blank=False)
+
+    # platform onchain/channels balance at creattion, swap fee rate as percent of total volume
+    node_balance = models.ForeignKey(BalanceLog, 
+                                    related_name="balance", 
+                                    on_delete=models.SET_NULL,
+                                    null=True)
+    swap_fee_rate = models.DecimalField(max_digits=4, 
+                                        decimal_places=2, 
+                                        default=2, 
+                                        null=False, 
+                                        blank=False)
+
+    created_at = models.DateTimeField(default=timezone.now)
+
+    # involved parties
+    receiver = models.ForeignKey(User,
+                                 related_name="tx_receiver",
+                                 on_delete=models.SET_NULL,
+                                 null=True,
+                                 default=None)
+
+    def __str__(self):
+        if self.txid:
+            txname = str(self.txid)[:8]
+        else:
+            txname = str(self.id)
+
+        return f"TX-{txname}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}"
+
+    class Meta:
+        verbose_name = "Lightning payment"
+        verbose_name_plural = "Lightning payments"
+
+    @property
+    def hash(self):
+        # Payment hash is the primary key of LNpayments
+        # However it is too long for the admin panel.
+        # We created a truncated property for display 'hash'
+        return truncatechars(self.payment_hash, 10)
 
 class Order(models.Model):
 

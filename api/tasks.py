@@ -79,7 +79,7 @@ def follow_send_payment(hash):
             float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
             float(config("MIN_FLAT_ROUTING_FEE_LIMIT")),
         ))  # 1000 ppm or 10 sats
-    timeout_seconds = int(config("REWARRDS_TIMEOUT_SECONDS"))
+    timeout_seconds = int(config("REWARDS_TIMEOUT_SECONDS"))
 
     request = LNNode.routerrpc.SendPaymentRequest(
         payment_request=lnpayment.invoice,

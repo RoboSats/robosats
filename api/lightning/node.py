@@ -8,7 +8,7 @@ from base64 import b64decode
 
 from datetime import timedelta, datetime
 from django.utils import timezone
-from api.models import LNPayment
+
 
 #######
 # Should work with LND (c-lightning in the future if there are features that deserve the work)
@@ -176,6 +176,8 @@ class LNNode:
     @classmethod
     def validate_hold_invoice_locked(cls, lnpayment):
         """Checks if hold invoice is locked"""
+        from api.models import LNPayment
+
         request = invoicesrpc.LookupInvoiceMsg(
             payment_hash=bytes.fromhex(lnpayment.payment_hash))
         response = cls.invoicesstub.LookupInvoiceV2(request,
@@ -296,7 +298,8 @@ class LNNode:
     @classmethod
     def pay_invoice(cls, lnpayment):
         """Sends sats. Used for rewards payouts"""
-
+        from api.models import LNPayment
+        
         fee_limit_sat = int(
             max(
                 lnpayment.num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),

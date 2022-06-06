@@ -416,9 +416,10 @@ class OrderView(viewsets.ViewSet):
         order = Order.objects.get(id=order_id)
 
         # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice'
-        # 6)'submit_statement' (in dispute), 7)'rate_user' , 'rate_platform'
+        # 5.b)'update_address' 6)'submit_statement' (in dispute), 7)'rate_user' , 8)'rate_platform'
         action = serializer.data.get("action")
         invoice = serializer.data.get("invoice")
+        address = serializer.data.get("address")
         statement = serializer.data.get("statement")
         rating = serializer.data.get("rating")
 
@@ -462,6 +463,13 @@ class OrderView(viewsets.ViewSet):
         if action == "update_invoice":
             valid, context = Logics.update_invoice(order, request.user,
                                                    invoice)
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+        
+        # 2.b) If action is 'update invoice'
+        if action == "update_address":
+            valid, context = Logics.update_address(order, request.user,
+                                                   address)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 

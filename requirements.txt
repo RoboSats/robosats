@@ -26,3 +26,4 @@ SQLAlchemy==1.4.31
 django-import-export==2.7.1
 requests[socks]
 python-gnupg==0.4.9
+coinaddrvalidator==1.1.3
