@@ -74,18 +74,41 @@ class AccountingMonth(models.Model):
     rewards_claimed = models.DecimalField(max_digits=15, decimal_places=3, default=0, null=False, blank=False)
 
 class BalanceLog(models.Model):
+   
+    def get_total():
+        return LNNode.wallet_balance()['total_balance'] + LNNode.channel_balance()['local_balance']
+    def get_frac():
+        return (LNNode.wallet_balance()['total_balance'] + LNNode.channel_balance()['local_balance']) / LNNode.wallet_balance()['total_balance']
+    def get_oc_total(): 
+        return LNNode.wallet_balance()['total_balance']
+    def get_oc_conf(): 
+        return LNNode.wallet_balance()['confirmed_balance']
+    def get_oc_unconf():
+        return LNNode.wallet_balance()['unconfirmed_balance']
+    def get_ln_local():
+        return LNNode.channel_balance()['local_balance']
+    def get_ln_remote():
+        return LNNode.channel_balance()['remote_balance']
+    def get_ln_local_unsettled():
+        return LNNode.channel_balance()['unsettled_local_balance']
+    def get_ln_remote_unsettled():
+        return LNNode.channel_balance()['unsettled_remote_balance']
+
     time = models.DateTimeField(primary_key=True, default=timezone.now)
 
     # Every field is denominated in Sats
-    total = models.PositiveBigIntegerField(default=lambda : LNNode.wallet_balance()['total_balance'] + LNNode.channel_balance()['local_balance'])
-    onchain_fraction = models.DecimalField(max_digits=5, decimal_places=5, default=lambda : (LNNode.wallet_balance()['total_balance'] + LNNode.channel_balance()['local_balance']) / LNNode.wallet_balance()['total_balance'])
-    onchain_total = models.PositiveBigIntegerField(default=lambda : LNNode.wallet_balance()['total_balance'])
-    onchain_confirmed = models.PositiveBigIntegerField(default=lambda : LNNode.wallet_balance()['confirmed_balance'])
-    onchain_unconfirmed = models.PositiveBigIntegerField(default=lambda : LNNode.wallet_balance()['unconfirmed_balance'])
-    ln_local = models.PositiveBigIntegerField(default=lambda : LNNode.channel_balance()['local_balance'])
-    ln_remote = models.PositiveBigIntegerField(default=lambda : LNNode.channel_balance()['remote_balance'])
-    ln_local_unsettled = models.PositiveBigIntegerField(default=lambda : LNNode.channel_balance()['unsettled_local_balance'])
-    ln_remote_unsettled = models.PositiveBigIntegerField(default=lambda : LNNode.channel_balance()['unsettled_remote_balance'])
+    total = models.PositiveBigIntegerField(default=get_total)
+    onchain_fraction = models.DecimalField(max_digits=6, decimal_places=5, default=get_frac)
+    onchain_total = models.PositiveBigIntegerField(default=get_oc_total)
+    onchain_confirmed = models.PositiveBigIntegerField(default=get_oc_conf)
+    onchain_unconfirmed = models.PositiveBigIntegerField(default=get_oc_unconf)
+    ln_local = models.PositiveBigIntegerField(default=get_ln_local)
+    ln_remote = models.PositiveBigIntegerField(default=get_ln_remote)
+    ln_local_unsettled = models.PositiveBigIntegerField(default=get_ln_local_unsettled)
+    ln_remote_unsettled = models.PositiveBigIntegerField(default=get_ln_remote_unsettled)
+
+    def __str__(self):
+        return f"Balance at {self.time.strftime('%d/%m/%Y %H:%M:%S')}"
 
 class Dispute(models.Model):
     pass

@@ -176,6 +176,11 @@ class OnchainPayment(models.Model):
         VALID = 1, "Valid"          # Valid onchain address submitted
         MEMPO = 2, "In mempool"     # Tx is sent to mempool
         CONFI = 3, "Confirmed"      # Tx is confirme +2 blocks
+        CANCE = 4, "Cancelled"      # Cancelled tx
+
+    def get_balance():
+        balance = BalanceLog.objects.create()
+        return balance.time
 
     # payment use details
     concept = models.PositiveSmallIntegerField(choices=Concepts.choices,
@@ -218,11 +223,12 @@ class OnchainPayment(models.Model):
                                                     null=False, 
                                                     blank=False)
 
-    # platform onchain/channels balance at creattion, swap fee rate as percent of total volume
+    # platform onchain/channels balance at creation, swap fee rate as percent of total volume
     balance = models.ForeignKey(BalanceLog, 
                                 related_name="balance", 
                                 on_delete=models.SET_NULL,
-                                default=BalanceLog.objects.create)
+                                null=True,
+                                default=get_balance)
 
     swap_fee_rate = models.DecimalField(max_digits=4, 
                                         decimal_places=2, 
@@ -248,15 +254,13 @@ class OnchainPayment(models.Model):
         return f"TX-{txname}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}"
 
     class Meta:
-        verbose_name = "Lightning payment"
-        verbose_name_plural = "Lightning payments"
+        verbose_name = "Onchain payment"
+        verbose_name_plural = "Onchain payments"
 
     @property
     def hash(self):
-        # Payment hash is the primary key of LNpayments
-        # However it is too long for the admin panel.
-        # We created a truncated property for display 'hash'
-        return truncatechars(self.payment_hash, 10)
+        # Display txid as 'hash' truncated
+        return truncatechars(self.txid, 10)
 
 class Order(models.Model):
 
@@ -460,14 +464,14 @@ class Order(models.Model):
         blank=True,
     )
 
-    payout_tx = models.OneToOneField(
-        OnchainPayment,
-        related_name="order_paid_TX",
-        on_delete=models.SET_NULL,
-        null=True,
-        default=None,
-        blank=True,
-    )
+    # payout_tx = models.OneToOneField(
+    #     OnchainPayment,
+    #     related_name="order_paid_TX",
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     default=None,
+    #     blank=True,
+    # )
 
     # ratings
     maker_rated = models.BooleanField(default=False, null=False)

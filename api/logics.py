@@ -2,7 +2,7 @@ from datetime import timedelta
 from tkinter import N
 from django.utils import timezone
 from api.lightning.node import LNNode
-from django.db.models import Q
+from django.db.models import Q, Sum
 
 from api.models import OnchainPayment, Order, LNPayment, MarketTick, User, Currency
 from api.tasks import send_message
@@ -495,6 +495,8 @@ class Logics:
         return True, None
 
     def compute_swap_fee_rate(balance):
+
+
         shape = str(config('SWAP_FEE_SHAPE'))
 
         if shape == "linear":
@@ -508,23 +510,40 @@ class Logics:
                 slope = (MAX_SWAP_FEE - MIN_SWAP_FEE) / (MAX_POINT - MIN_POINT)
                 swap_fee_rate = slope * (balance.onchain_fraction - MAX_POINT) + MAX_SWAP_FEE
 
+        elif shape == "exponential":
+            MIN_SWAP_FEE = float(config('MIN_SWAP_FEE'))
+            MAX_SWAP_FEE = float(config('MAX_SWAP_FEE'))
+            SWAP_LAMBDA = float(config('SWAP_LAMBDA'))
+            swap_fee_rate = MIN_SWAP_FEE + (MAX_SWAP_FEE - MIN_SWAP_FEE) * math.exp(-SWAP_LAMBDA * balance.onchain_fraction)
+
         return swap_fee_rate
 
     @classmethod
-    def create_onchain_payment(cls, order, estimate_sats):
+    def create_onchain_payment(cls, order, preliminary_amount):
         '''
         Creates an empty OnchainPayment for order.payout_tx.
         It sets the fees to be applied to this order if onchain Swap is used.
         If the user submits a LN invoice instead. The returned OnchainPayment goes unused.
         '''
         onchain_payment = OnchainPayment.objects.create()
-        onchain_payment.suggested_mining_fee_rate = LNNode.estimate_fee(amount_sats=estimate_sats)
-        onchain_payment.swap_fee_rate = cls.compute_swap_fee_rate(onchain_payment.balance)
+        
+        # Compute a safer available  onchain liquidity: (confirmed_utxos - reserve - pending_outgoing_txs))
+        # Accounts for already committed outgoing TX for previous users.
+        confirmed = onchain_payment.balance.onchain_confirmed
+        reserve = 0.01 * onchain_payment.balance.total  # We assume a reserve of 1%
+        pending_txs = OnchainPayment.objects.filter(status=OnchainPayment.Status.VALID).aggregate(Sum('num_satoshis'))['num_satoshis__sum']
+
+        available_onchain = confirmed - reserve - pending_txs
+        if preliminary_amount > available_onchain:  # Not enough onchain balance to commit for this swap.
+            return False
+
+        onchain_payment.suggested_mining_fee_rate = LNNode.estimate_fee(amount_sats=preliminary_amount)
+        onchain_payment.swap_fee_rate = cls.compute_swap_fee_rate(onchain_payment.preliminary_amount)
         onchain_payment.save()
 
         order.payout_tx = onchain_payment
         order.save()
-        return True, None
+        return True
 
     @classmethod
     def payout_amount(cls, order, user):
@@ -553,10 +572,16 @@ class Logics:
 
         if context["invoice_amount"] < MIN_SWAP_AMOUNT:
             context["swap_allowed"] = False
+            context["swap_failure_reason"] = "Order amount is too small to be eligible for a swap"
             return True, context
 
         if order.payout_tx == None:
-            cls.create_onchain_payment(order, estimate_sats=context["invoice_amount"])
+            # Creates the OnchainPayment object and checks node balance
+            valid, _ = cls.create_onchain_payment(order, preliminary_amount=context["invoice_amount"])
+            if not valid:
+                context["swap_allowed"] = False
+                context["swap_failure_reason"] = "Not enough onchain liquidity available to offer swaps"
+                return True, context
 
         context["swap_allowed"] = True
         context["suggested_mining_fee_rate"] = order.payout_tx.suggested_mining_fee_rate

@@ -1,9 +1,13 @@
 FROM python:3.10.2-bullseye
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN mkdir -p /usr/src/robosats
 
 # specifying the working dir inside the container
 WORKDIR /usr/src/robosats
+
+RUN apt-get update
+RUN apt-get install -y postgresql-client
 
 RUN python -m pip install --upgrade pip
 
