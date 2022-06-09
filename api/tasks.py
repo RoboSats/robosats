@@ -82,8 +82,8 @@ def follow_send_payment(hash):
     request = LNNode.routerrpc.SendPaymentRequest(
         payment_request=lnpayment.invoice,
         fee_limit_sat=fee_limit_sat,
-        timeout_seconds=60,
-    )  # time out payment in 60 seconds
+        timeout_seconds=75,
+    )  # time out payment in 75 seconds
 
     order = lnpayment.order_paid
     try:
@@ -133,8 +133,9 @@ def follow_send_payment(hash):
                 print(context)
 
                 # If failed due to not route, reset mission control. (This won't scale well, just a temporary fix)
-                if response.failure_reason==2:
-                    LNNode.resetmc()
+                # ResetMC deactivate temporary for tests
+                #if response.failure_reason==2:
+                #    LNNode.resetmc()
 
                 return False, context
 

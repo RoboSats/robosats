@@ -1239,7 +1239,7 @@ handleRatingRobosatsChange=(e)=>{
 
         <Grid item xs={12} align="center">
           <Typography  variant="body2" align="center">
-            {t("RoboSats will try to pay your invoice 3 times every 5 minutes. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.")}
+            {t("RoboSats will try to pay your invoice 3 times with a one minute pause in between. If it keeps failing, you will be able to submit a new invoice. Check whether you have enough inbound liquidity. Remember that lightning nodes must be online in order to receive payments.")}
           </Typography>
           <List>
             <Divider/>
