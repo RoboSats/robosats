@@ -116,7 +116,9 @@ def compute_premium_percentile(order):
 def compute_avg_premium(queryset):
     weighted_premiums = []
     volumes = []
-    for tick in queryset:
+
+    # We exclude BTC, as LN <-> BTC swap premiums should not be  mixed with FIAT.
+    for tick in queryset.exclude(currency=1000):
         weighted_premiums.append(tick.premium * tick.volume)
         volumes.append(tick.volume)
 

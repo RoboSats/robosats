@@ -1,16 +1,19 @@
 import os
 from re import T
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from rest_framework import status, viewsets
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from django.contrib.auth import authenticate, login, logout
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 
-from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer
+from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer
 from api.models import LNPayment, MarketTick, Order, Currency, Profile
+from control.models import AccountingDay
 from api.logics import Logics
 from api.messages import Telegram
 from secrets import token_urlsafe
@@ -378,6 +381,8 @@ class OrderView(viewsets.ViewSet):
             data["retries"] = order.payout.routing_attempts
             data["next_retry_time"] = order.payout.last_routing_time + timedelta(
                     minutes=RETRY_TIME)
+            if order.payout.failure_reason:
+                data["failure_reason"] = LNPayment.FailureReason(order.payout.failure_reason).label
 
             if order.payout.status == LNPayment.Status.EXPIRE:
                 data["invoice_expired"] = True
@@ -454,7 +459,7 @@ class OrderView(viewsets.ViewSet):
             )
 
         # 2) If action is 'update invoice'
-        if action == "update_invoice" and invoice:
+        if action == "update_invoice":
             valid, context = Logics.update_invoice(order, request.user,
                                                    invoice)
             if not valid:
@@ -517,7 +522,6 @@ class OrderView(viewsets.ViewSet):
 
         return self.get(request)
 
-
 class UserView(APIView):
     NickGen = NickGenerator(lang="English",
                             use_adv=False,
@@ -525,9 +529,15 @@ class UserView(APIView):
                             use_noun=True,
                             max_num=999)
 
-    # Probably should be turned into a post method
+    serializer_class = UserGenSerializer
+
     def get(self, request, format=None):
         """
+        DEPRECATED
+        The old way to generate a robot and login.
+        Only for login. No new users allowed. Only available using API endpoint.
+        Frontend does not support it anymore.
+
         Get a new user derived from a high entropy token
 
         - Request has a high-entropy token,
@@ -535,6 +545,77 @@ class UserView(APIView):
         - Creates login credentials (new User object)
         Response with Avatar and Nickname.
         """
+        context = {}
+        # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
+        if request.user.is_authenticated:
+            context = {"nickname": request.user.username}
+            not_participant, _, _ = Logics.validate_already_maker_or_taker(
+                request.user)
+
+            # Does not allow this 'mistake' if an active order
+            if not not_participant:
+                context[
+                    "bad_request"] = f"You are already logged in as {request.user} and have an active order"
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        # Deprecated, kept temporarily for legacy reasons
+        token = request.GET.get("token")                
+                
+        value, counts = np.unique(list(token), return_counts=True)
+        shannon_entropy = entropy(counts, base=62)
+        bits_entropy = log2(len(value)**len(token))
+
+        # Hash the token, only 1 iteration.
+        hash = hashlib.sha256(str.encode(token)).hexdigest()
+
+        # Generate nickname deterministically
+        nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0]
+        context["nickname"] = nickname
+        
+        # Payload
+        context = {
+            "token_shannon_entropy": shannon_entropy,
+            "token_bits_entropy": bits_entropy,
+        }
+
+        # Do not generate a new user for the old method! Only allow login.
+        if len(User.objects.filter(username=nickname)) == 1:
+            user = authenticate(request, username=nickname, password=token)
+            if user is not None:
+                login(request, user)
+                # Sends the welcome back message, only if created +3 mins ago
+                if request.user.date_joined < (timezone.now() -
+                                            timedelta(minutes=3)):
+                    context["found"] = "We found your Robot avatar. Welcome back!"
+                return Response(context, status=status.HTTP_202_ACCEPTED)
+            else:
+                # It is unlikely, but maybe the nickname is taken (1 in 20 Billion change)
+                context["found"] = "Bad luck, this nickname is taken"
+                context["bad_request"] = "Enter a different token"
+                return Response(context, status.HTTP_403_FORBIDDEN)
+
+        elif len(User.objects.filter(username=nickname)) == 0:
+            context["bad_request"] = "User Generation with explicit token deprecated. Only token_sha256 allowed."
+            return Response(context, status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request, format=None):
+        """
+        Get a new user derived from a high entropy token
+
+        - Request has a hash of a high-entropy token
+        - Request includes pubKey and encrypted privKey
+        - Generates new nickname and avatar.
+        - Creates login credentials (new User object)
+
+        Response with Avatar, Nickname, pubKey, privKey.
+        """
+        context = {}
+        serializer = self.serializer_class(data=request.data)
+
+        # Return bad request if serializer is not valid         
+        if not serializer.is_valid():
+            context = {"bad_request": "Invalid serializer"}
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
         # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
         if request.user.is_authenticated:
@@ -548,26 +629,49 @@ class UserView(APIView):
                     "bad_request"] = f"You are already logged in as {request.user} and have an active order"
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        token = request.GET.get("token")
-        ref_code = request.GET.get("ref_code")
+        # The new way. The token is never sent. Only its SHA256
+        token_sha256 = serializer.data.get("token_sha256")
+        public_key = serializer.data.get("public_key")
+        encrypted_private_key = serializer.data.get("encrypted_private_key")
+        ref_code = serializer.data.get("ref_code")
+        
+        if not public_key or not encrypted_private_key:
+            context["bad_request"] = "Must provide valid 'pub' and 'enc_priv' PGP keys"
+            return Response(context, status.HTTP_400_BAD_REQUEST)
 
-        # Compute token entropy
-        value, counts = np.unique(list(token), return_counts=True)
-        shannon_entropy = entropy(counts, base=62)
-        bits_entropy = log2(len(value)**len(token))
-        # Payload
-        context = {
-            "token_shannon_entropy": shannon_entropy,
-            "token_bits_entropy": bits_entropy,
-        }
+        valid, bad_keys_context, public_key, encrypted_private_key = Logics.validate_pgp_keys(public_key, encrypted_private_key)
+        if not valid:
+            return Response(bad_keys_context, status.HTTP_400_BAD_REQUEST)
 
-        # Deny user gen if entropy below 128 bits or 0.7 shannon heterogeneity
-        if bits_entropy < 128 or shannon_entropy < 0.7:
-            context["bad_request"] = "The token does not have enough entropy"
-            return Response(context, status=status.HTTP_400_BAD_REQUEST)
+        # Now the server only receives a hash of the token. So server trusts the client 
+        # with computing length, counts and unique_values to confirm the high entropy of the token
+        # In any case, it is up to the client if they want to create a bad high entropy token.
 
-        # Hash the token, only 1 iteration.
-        hash = hashlib.sha256(str.encode(token)).hexdigest()
+        # Submitting the three params needed to compute token entropy is not mandatory
+        # If not submitted, avatars can be created with garbage entropy token. Frontend will always submit them.
+        try:
+            unique_values = serializer.data.get("unique_values")
+            counts = serializer.data.get("counts")
+            length = serializer.data.get("length")
+
+            shannon_entropy = entropy(counts, base=62)
+            bits_entropy = log2(unique_values**length)
+
+            # Payload
+            context = {
+                "token_shannon_entropy": shannon_entropy,
+                "token_bits_entropy": bits_entropy,
+            }
+
+            # Deny user gen if entropy below 128 bits or 0.7 shannon heterogeneity
+            if bits_entropy < 128 or shannon_entropy < 0.7:
+                context["bad_request"] = "The token does not have enough entropy"
+                return Response(context, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            pass
+
+        # Hash the token_sha256, only 1 iteration. (this is the second SHA256 of the user token, aka RoboSats ID)
+        hash = hashlib.sha256(token_sha256.encode('utf-8')).hexdigest()
 
         # Generate nickname deterministically
         nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0]
@@ -583,40 +687,50 @@ class UserView(APIView):
             with open(image_path, "wb") as f:
                 rh.img.save(f, format="png")
 
-        
-
         # Create new credentials and login if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
             User.objects.create_user(username=nickname,
-                                     password=token,
+                                     password=token_sha256,
                                      is_staff=False)
-            user = authenticate(request, username=nickname, password=token)
+            user = authenticate(request, username=nickname, password=token_sha256)
             login(request, user)
 
             context['referral_code'] = token_urlsafe(8)
             user.profile.referral_code = context['referral_code']
             user.profile.avatar = "static/assets/avatars/" + nickname + ".png"
+            
+            # Noticed some PGP keys replaced at re-login. Should not happen. 
+            # Let's implement this sanity check "If profile has not keys..."
+            if not user.profile.public_key:
+                user.profile.public_key = public_key
+            if not user.profile.encrypted_private_key:
+                user.profile.encrypted_private_key = encrypted_private_key
 
             # If the ref_code was created by another robot, this robot was referred.
             queryset = Profile.objects.filter(referral_code=ref_code)
             if len(queryset) == 1:
                 user.profile.is_referred = True
                 user.profile.referred_by = queryset[0]
-            
+
             user.profile.save()
+
+            context["public_key"] = user.profile.public_key
+            context["encrypted_private_key"] = user.profile.encrypted_private_key
             return Response(context, status=status.HTTP_201_CREATED)
 
+        # log in user and return pub/priv keys if existing
         else:
-            user = authenticate(request, username=nickname, password=token)
+            user = authenticate(request, username=nickname, password=token_sha256)
             if user is not None:
                 login(request, user)
+                context["public_key"] = user.profile.public_key
+                context["encrypted_private_key"] = user.profile.encrypted_private_key
                 # Sends the welcome back message, only if created +3 mins ago
-                if request.user.date_joined < (timezone.now() -
-                                               timedelta(minutes=3)):
+                if request.user.date_joined < (timezone.now() - timedelta(minutes=3)):
                     context["found"] = "We found your Robot avatar. Welcome back!"
                 return Response(context, status=status.HTTP_202_ACCEPTED)
             else:
-                # It is unlikely, but maybe the nickname is taken (1 in 20 Billion change)
+                # It is unlikely, but maybe the nickname is taken (1 in 20 Billion chance)
                 context["found"] = "Bad luck, this nickname is taken"
                 context["bad_request"] = "Enter a different token"
                 return Response(context, status.HTTP_403_FORBIDDEN)
@@ -696,10 +810,7 @@ class BookView(ListAPIView):
                 order)
             data["maker_status"] = Logics.user_activity_status(
                 order.maker_last_seen)
-            for key in (
-                    "status",
-                    "taker",
-            ):  # Non participants should not see the status or who is the taker
+            for key in ("status","taker"):  # Non participants should not see the status or who is the taker
                 del data[key]
 
             book_data.append(data)
@@ -767,6 +878,10 @@ class InfoView(ListAPIView):
                 request.user)
             if not has_no_active_order:
                 context["active_order_id"] = order.id
+            else:
+                last_order = Order.objects.filter(Q(maker=request.user) | Q(taker=request.user)).last()
+                if last_order:
+                    context["last_order_id"] = last_order.id
 
         return Response(context, status.HTTP_200_OK)
 
@@ -844,6 +959,19 @@ class LimitView(ListAPIView):
                 'min_amount': min_trade * exchange_rate,
                 'max_amount': max_trade * exchange_rate,
                 'max_bondless_amount': max_bondless_trade * exchange_rate,
+            }
+
+        return Response(payload, status.HTTP_200_OK)
+
+class HistoricalView(ListAPIView):
+    def get(self, request):
+        payload = {}
+        queryset = AccountingDay.objects.all().order_by('day')
+
+        for accounting_day in queryset:
+            payload[str(accounting_day.day)] = {
+                'volume': accounting_day.contracted,
+                'num_contracts': accounting_day.num_contracts,
             }
 
         return Response(payload, status.HTTP_200_OK)

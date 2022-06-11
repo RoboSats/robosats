@@ -132,6 +132,7 @@ class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     change_links = ["user"]
     readonly_fields = ["avatar_tag"]
     search_fields = ["user__username","id"]
+    readonly_fields = ("public_key", "encrypted_private_key")
 
 
 @admin.register(Currency)

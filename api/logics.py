@@ -1,4 +1,5 @@
 from datetime import timedelta
+from tkinter import N
 from django.utils import timezone
 from api.lightning.node import LNNode
 from django.db.models import Q
@@ -7,9 +8,10 @@ from api.models import Order, LNPayment, MarketTick, User, Currency
 from api.tasks import send_message
 from decouple import config
 
+import gnupg
+
 import math
 import ast
-import time
 
 FEE = float(config("FEE"))
 MAKER_FEE_SPLIT = float(config("MAKER_FEE_SPLIT"))
@@ -31,6 +33,7 @@ FIAT_EXCHANGE_DURATION = int(config("FIAT_EXCHANGE_DURATION"))
 
 
 class Logics:
+
     @classmethod
     def validate_already_maker_or_taker(cls, user):
         """Validates if a use is already not part of an active order"""
@@ -73,7 +76,7 @@ class Logics:
 
         # Edge case when the user is in an order that is failing payment and he is the buyer
         queryset = Order.objects.filter(Q(maker=user) | Q(taker=user),
-                                        status=Order.Status.FAI)
+                                        status__in=[Order.Status.FAI,Order.Status.PAY])
         if queryset.exists():
             order = queryset[0]
             if cls.is_buyer(order, user):
@@ -87,6 +90,52 @@ class Logics:
                 )
 
         return True, None, None
+
+    def validate_pgp_keys(pub_key, enc_priv_key):
+        ''' Validates PGP valid keys. Formats them in a way understandable by the frontend '''
+        gpg = gnupg.GPG()
+
+        # Standarize format with linux linebreaks '\n'. Windows users submitting their own keys have '\r\n' breaking communication.
+        enc_priv_key = enc_priv_key.replace('\r\n', '\n')
+        pub_key = pub_key.replace('\r\n', '\n')
+
+        # Try to import the public key
+        import_pub_result = gpg.import_keys(pub_key)
+        if not import_pub_result.imported == 1:
+            return (
+                False,
+                {
+                    "bad_request":
+                    f"Your PGP public key does not seem valid.\n"+ 
+                    f"Stderr: {str(import_pub_result.stderr)}\n"+
+                    f"ReturnCode: {str(import_pub_result.returncode)}\n"+
+                    f"Summary: {str(import_pub_result.summary)}\n"+
+                    f"Results: {str(import_pub_result.results)}\n"+
+                    f"Imported: {str(import_pub_result.imported)}\n"
+                }, 
+                None, 
+                None)
+        # Exports the public key again for uniform formatting.
+        pub_key = gpg.export_keys(import_pub_result.fingerprints[0])
+
+        # Try to import the encrypted private key (without passphrase)
+        import_priv_result = gpg.import_keys(enc_priv_key)
+        if not import_priv_result.sec_imported == 1:
+            return (
+                False,
+                {
+                    "bad_request":
+                    f"Your PGP encrypted private key does not seem valid.\n"+ 
+                    f"Stderr: {str(import_priv_result.stderr)}\n"+
+                    f"ReturnCode: {str(import_priv_result.returncode)}\n"+
+                    f"Summary: {str(import_priv_result.summary)}\n"+
+                    f"Results: {str(import_priv_result.results)}\n"+
+                    f"Sec Imported: {str(import_priv_result.sec_imported)}\n"
+                }, 
+                None, 
+                None)
+
+        return True, None, pub_key, enc_priv_key
 
     @classmethod
     def validate_order_size(cls, order):
@@ -379,6 +428,14 @@ class Logics:
         # for unresolved HTLCs) Dispute winner will have to submit a 
         # new invoice for value of escrow + bond.
 
+        valid_status_open_dispute = [
+            Order.Status.CHA,
+            Order.Status.FSE,
+        ]
+
+        if order.status not in valid_status_open_dispute:
+            return False, {"bad_request": "You cannot open a dispute of this order at this stage"}
+        
         if not order.trade_escrow.status == LNPayment.Status.SETLED:
             cls.settle_escrow(order)
             cls.settle_bond(order.maker_bond)
@@ -401,6 +458,7 @@ class Logics:
                     profile.orders_disputes_started).append(str(order.id))
             profile.save()
 
+        send_message.delay(order.id,'dispute_opened')
         return True, None
 
     def dispute_statement(order, user, statement):
@@ -476,9 +534,14 @@ class Logics:
 
     @classmethod
     def update_invoice(cls, order, user, invoice):
-
+        
+        # Empty invoice?
+        if not invoice:
+            return False, {
+                "bad_invoice":
+                "You submitted an empty invoice"
+            }
         # only the buyer can post a buyer invoice
-
         if not cls.is_buyer(order, user):
             return False, {
                 "bad_request":
@@ -723,11 +786,14 @@ class Logics:
 
     @classmethod
     def collaborative_cancel(cls, order):
+        if not order.status in [Order.Status.WFI, Order.Status.CHA]:
+            return
         cls.return_bond(order.maker_bond)
         cls.return_bond(order.taker_bond)
         cls.return_escrow(order)
         order.status = Order.Status.CCA
         order.save()
+        send_message.delay(order.id,'collaborative_cancelled')
         return
 
     @classmethod

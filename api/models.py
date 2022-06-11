@@ -75,6 +75,14 @@ class LNPayment(models.Model):
         SUCCED = 8, "Succeeded"
         FAILRO = 9, "Routing failed"
 
+    class FailureReason(models.IntegerChoices):
+        NOTYETF = 0, "Payment isn't failed (yet)"
+        TIMEOUT = 1, "There are more routes to try, but the payment timeout was exceeded."
+        NOROUTE = 2, "All possible routes were tried and failed permanently. Or there were no routes to the destination at all."
+        NONRECO = 3, "A non-recoverable error has occurred."
+        INCORRE = 4, "Payment details are incorrect (unknown hash, invalid amount or invalid final CLTV delta)."
+        NOBALAN = 5, "Insufficient unlocked balance in RoboSats' node."
+
     # payment use details
     type = models.PositiveSmallIntegerField(choices=Types.choices,
                                             null=False,
@@ -85,6 +93,9 @@ class LNPayment(models.Model):
     status = models.PositiveSmallIntegerField(choices=Status.choices,
                                               null=False,
                                               default=Status.INVGEN)
+    failure_reason = models.PositiveSmallIntegerField(choices=FailureReason.choices,
+                                              null=True,
+                                              default=None)
 
     # payment info
     payment_hash = models.CharField(max_length=100,
@@ -372,24 +383,24 @@ class Order(models.Model):
 
         t_to_expire = {
             0: int(config("EXP_MAKER_BOND_INVOICE")),           # 'Waiting for maker bond'
-            1: self.public_duration,  # 'Public'
+            1: self.public_duration,                            # 'Public'
             2: 0,                                               # 'Deleted'
             3: int(config("EXP_TAKER_BOND_INVOICE")),           # 'Waiting for taker bond'
             4: 0,                                               # 'Cancelled'
             5: 0,                                               # 'Expired'
-            6: self.escrow_duration,                               # 'Waiting for trade collateral and buyer invoice'
+            6: self.escrow_duration,                            # 'Waiting for trade collateral and buyer invoice'
             7: 60 * int(config("INVOICE_AND_ESCROW_DURATION")), # 'Waiting only for seller trade collateral'
             8: 60 * int(config("INVOICE_AND_ESCROW_DURATION")), # 'Waiting only for buyer invoice'
             9: 60 * 60 * int(config("FIAT_EXCHANGE_DURATION")), # 'Sending fiat - In chatroom'
             10: 60 * 60 * int(config("FIAT_EXCHANGE_DURATION")),# 'Fiat sent - In chatroom'
             11: 1 * 24 * 60 * 60,                               # 'In dispute'
             12: 0,                                              # 'Collaboratively cancelled'
-            13: 24 * 60 * 60,                                   # 'Sending satoshis to buyer'
-            14: 24 * 60 * 60,                                   # 'Sucessful trade'
-            15: 24 * 60 * 60,                                   # 'Failed lightning network routing'
+            13: 10 * 24 * 60 * 60,                              # 'Sending satoshis to buyer'
+            14: 1 * 24 * 60 * 60,                               # 'Sucessful trade'
+            15: 10 * 24 * 60 * 60,                              # 'Failed lightning network routing'
             16: 10 * 24 * 60 * 60,                              # 'Wait for dispute resolution'
-            17: 24 * 60 * 60,                                   # 'Maker lost dispute'
-            18: 24 * 60 * 60,                                   # 'Taker lost dispute'
+            17: 1 * 24 * 60 * 60,                               # 'Maker lost dispute'
+            18: 1 * 24 * 60 * 60,                               # 'Taker lost dispute'
         }
         
         return t_to_expire[status]
@@ -413,6 +424,21 @@ def delete_lnpayment_at_order_deletion(sender, instance, **kwargs):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    # PGP keys, used for E2E chat encryption. Priv key is encrypted with user's passphrase (highEntropyToken)
+    public_key = models.TextField(
+        # Actualy only 400-500 characters for ECC, but other types might be longer
+        max_length=2000,
+        null=True,
+        default=None,
+        blank=True,
+    )
+    encrypted_private_key = models.TextField(
+        max_length=2000,
+        null=True,
+        default=None,
+        blank=True,
+    )
 
     # Total trades
     total_contracts = models.PositiveIntegerField(null=False, default=0)

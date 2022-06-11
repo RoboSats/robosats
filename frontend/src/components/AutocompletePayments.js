@@ -2,15 +2,16 @@ import React, { useState } from "react";
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useAutocomplete } from '@mui/base/AutocompleteUnstyled';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/material/styles';
-import PaymentIcon from './payment-methods/Icons'
-import {Button} from "@mui/material";
+import { Button, Tooltip }  from "@mui/material";
 import { paymentMethods, swapDestinations } from "./payment-methods/Methods";
 
+// Icons
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 import AddIcon from '@mui/icons-material/Add';
+import PaymentIcon from './payment-methods/Icons'
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 const Root = styled('div')(
   ({ theme }) => `
@@ -44,7 +45,7 @@ const InputWrapper = styled('div')(
   display: flex;
   flex-wrap: wrap;
   overflow-y:auto;
-  
+
   &:hover {
     border-color: ${theme.palette.mode === 'dark' ? (error? '#f44336':'#ffffff') : (error? '#dd0000' :'#2f2f2f')};
   }
@@ -191,7 +192,7 @@ const Listbox = styled('ul')(
 );
 
 export default function AutocompletePayments(props) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const {
     getRootProps,
     getInputLabelProps,
@@ -233,26 +234,28 @@ export default function AutocompletePayments(props) {
     if(a || a == null){props.onAutocompleteChange(optionsToString(value))}
     return false
   };
-  
+
   return (
     <Root>
       <div style={{height:'5px'}}></div>
-      <div {...getRootProps()} >
-        <Label {...getInputLabelProps()} error={props.error}>{props.label}</Label>
-        <InputWrapper ref={setAnchorEl} error={props.error} className={focused ? 'focused' : ''}>
-          {value.map((option, index) => (
-            <StyledTag label={t(option.name)} icon={option.icon} {...getTagProps({ index })} />
-          ))}
-          <input {...getInputProps()} value={val}/>
-        </InputWrapper>
-      </div>
+      <Tooltip placement="top" enterTouchDelay={300} enterDelay={700} enterNextDelay={2000} title={props.tooltipTitle}>
+        <div {...getRootProps()} >
+          <Label {...getInputLabelProps()} error={props.error ? "error" : null}> {props.label}</Label>
+          <InputWrapper ref={setAnchorEl} error={props.error ? "error" : null} className={focused ? 'focused' : ''}>
+            {value.map((option, index) => (
+              <StyledTag label={t(option.name)} icon={option.icon} {...getTagProps({ index })} />
+            ))}
+            <input {...getInputProps()} value={val ? val :""}/>
+          </InputWrapper>
+        </div>
+      </Tooltip>
       {groupedOptions.length > 0 ? (
         <Listbox {...getListboxProps()}>
             <div style={{position:'fixed', minHeight:'20px',  marginLeft: 120-props.listHeaderText.length*3, marginTop: '-13px'}}>
                 <ListHeader ><i>{props.listHeaderText+" "} </i> </ListHeader>
             </div>
           {groupedOptions.map((option, index) => (
-            <li {...getOptionProps({ option, index })}>
+            <li key={option.name} {...getOptionProps({ option, index })}>
               <Button fullWidth={true} color='inherit' size="small" sx={{textTransform: "none"}} style={{justifyContent: "flex-start"}}>
                   <div style={{position:'relative', right: '4px', top:'4px'}}>
                     <AddIcon style={{color : '#1976d2'}} sx={{width:18,height:18}} />
@@ -268,7 +271,7 @@ export default function AutocompletePayments(props) {
               :null)
             :null}
         </Listbox>
-      ) : 
+      ) :
       //Here goes what happens if there is no groupedOptions
       (getInputProps().value.length > 0 ?
         <Listbox {...getListboxProps()}>

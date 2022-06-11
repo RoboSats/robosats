@@ -17,14 +17,14 @@ export default class HomePage extends Component {
         avatarLoaded: false,
         buyChecked: false,
         sellChecked: false,
-        bookType:2,
-        bookCurrency:0,
+        type:2,
+        currency:0,
         bookCurrencyCode:'ANY',
         bookOrders:new Array(),
         bookLoading: true,
       }
     }
-  
+
     setAppState=(newState)=>{
       this.setState(newState)
     }

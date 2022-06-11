@@ -1,5 +1,17 @@
 version: '3.9'
 services:
+  jekyll:
+    image: jekyll/jekyll:4.0
+    container_name: pages
+    restart: always
+    volumes:
+      - .:/usr/src/robosats
+    command: bash -c "cd /usr/src/robosats/docs/
+            && bundle install 
+            && bundle exec jekyll serve --force_polling -H 0.0.0.0 -P 4000"
+    ports:
+      - 4000:4000
+
   redis:
     image: redis:6.2.6
     container_name: redis
@@ -22,6 +34,7 @@ services:
       - .:/usr/src/robosats
       - /mnt/development/lnd:/lnd
     network_mode: service:tor
+    command: python3 -u manage.py runserver 0.0.0.0:8000
 
   frontend:
     build: ./frontend
