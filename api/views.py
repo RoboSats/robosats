@@ -337,7 +337,7 @@ class OrderView(viewsets.ViewSet):
         elif data["is_buyer"] and (order.status == Order.Status.WF2
                                    or order.status == Order.Status.WFI):
 
-            # If the two bonds are locked, reply with an AMOUNT so he can send the buyer invoice.
+            # If the two bonds are locked, reply with an AMOUNT and onchain swap cost so he can send the buyer invoice/address
             if (order.maker_bond.status == order.taker_bond.status ==
                     LNPayment.Status.LOCKED):
                 valid, context = Logics.payout_amount(order, request.user)

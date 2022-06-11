@@ -128,7 +128,7 @@ class UserGenPage extends Component {
 
   handleChangeToken=(e)=>{
     this.setState({
-      token: e.target.value,
+      token: e.target.value.split(' ').join(''),
       tokenHasChanged: true,
     })
   }

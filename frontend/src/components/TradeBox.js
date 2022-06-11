@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { withTranslation, Trans} from "react-i18next";
-import { IconButton, Box, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { Tabs, Tab, IconButton, Box, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
 import Countdown, { zeroPad} from 'react-countdown';
 import Chat from "./EncryptedChat"
@@ -18,6 +18,8 @@ import BalanceIcon from '@mui/icons-material/Balance';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import PauseCircleIcon from '@mui/icons-material/PauseCircle';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import BoltIcon from '@mui/icons-material/Bolt';
+import LinkIcon from '@mui/icons-material/Link';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import { NewTabIcon } from "./Icons";
 
@@ -33,6 +35,7 @@ class TradeBox extends Component {
       openConfirmFiatReceived: false,
       openConfirmDispute: false,
       openEnableTelegram: false,
+      receiveTab: 0,
       badInvoice: false,
       badStatement: false,
       qrscanner: false,
@@ -599,57 +602,133 @@ class TradeBox extends Component {
           {/* Make confirmation sound for HTLC received. */}
           {this.Sound("locked-invoice")}
           <Typography color="primary" variant="subtitle1">
-            <b> {t("Submit an invoice for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}
+            <b> {t("Submit payout info for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}
             </b> {" " + this.stepXofY()}
           </Typography>
         </Grid> 
+        <List dense={true}>
+          <Divider/>
+
+          <ListItem>
+            <Typography variant="body2">
+              {t("The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.",
+              {amountFiat: parseFloat(parseFloat(this.props.data.amount).toFixed(4)),
+                currencyCode: this.props.data.currencyCode})}
+            </Typography>
+          </ListItem>
+
+          <ListItem>
+            <Paper elevation={2}>
+              <Tabs value={this.state.receiveTab} variant="fullWidth">
+                <Tab disableRipple={true} label={<div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><BoltIcon/> Lightning</div>} onClick={() => this.setState({receiveTab:0})}/>
+                <Tab label={<div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><LinkIcon/> Onchain</div>} disabled={!this.props.data.swap_allowed} onClick={() => this.setState({receiveTab:1})} />
+              </Tabs>
+            </Paper>
+            
+            {/* LIGHTNING PAYOUT TAB */}
+            <div style={{display: this.state.receiveTab == 0 ? '':'none'}}>
+              <div style={{height:15}}/>
+              <Grid container spacing={1}>
+                <Grid item xs={12} align="center">
+                  <Typography variant="body2">
+                    {t("Submit a valid invoice for {{amountSats}} Satoshis.",
+                    {amountSats: pn(this.props.data.invoice_amount)})}
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={12} align="center">
+                  {this.compatibleWalletsButton()}
+                </Grid>
+
+                <Grid item xs={12} align="center">
+                  <TextField
+                      error={this.state.badInvoice}
+                      helperText={this.state.badInvoice ? t(this.state.badInvoice) : "" }
+                      label={t("Payout Lightning Invoice")}
+                      required
+                      value={this.state.invoice}
+                      inputProps={{
+                          style: {textAlign:"center"},
+                          maxHeight: 200,
+                      }}
+                      multiline
+                      minRows={4}
+                      maxRows={this.state.qrscanner ? 4 : 8}
+                      onChange={this.handleInputInvoiceChanged}
+                  />
+                </Grid>
+                {this.state.qrscanner ?
+                <Grid item xs={12} align="center">
+                  <QrReader
+                      delay={300}
+                      onError={this.handleError}
+                      onScan={this.handleScan}
+                      style={{ width: '75%' }}
+                    />
+                  </Grid>
+                  : null }
+                <Grid item xs={12} align="center">
+                  <IconButton><QrCodeScannerIcon onClick={this.handleQRbutton}/></IconButton>
+                  <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>{t("Submit")}</Button>
+                </Grid>
+              </Grid>
+            </div>
         
-        <Grid item xs={12} align="left">
-          <Typography variant="body2">
-            {t("The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC. Please provide a valid invoice for {{amountSats}} Satoshis.",
-            {amountFiat: parseFloat(parseFloat(this.props.data.amount).toFixed(4)),
-              currencyCode: this.props.data.currencyCode,
-              amountSats: pn(this.props.data.invoice_amount)}
-              )
-            }
-          </Typography>
-        </Grid>
+            {/* ONCHAIN PAYOUT TAB */}
+            <div style={{display: this.state.receiveTab == 1 ? '':'none'}}>
+              <div style={{height:15}}/>
+              <Grid container spacing={1}>
+                <Grid item xs={12} align="left">
+                  <Typography variant="body2">
+                    {t("RoboSats will perform an on-the-fly reverse submarine swap and send to an onchain address for a fee. Submit onchain address. Preliminary {{amountSats}} Sats, swap allowed {{swapAllowed}}, swap fee {{swapFee}}%, mining fee suggested {{suggestedMiningFee}} Sats/vbyte",
+                    {amountSats: this.props.data.invoice_amount,
+                      swapAllowed: this.props.data.swap_allowed,
+                      swapFee: this.props.data.swap_fee_rate ,
+                      suggestedMiningFee: this.props.data.suggested_mining_fee_rate}
+                      )
+                    }
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} align="left">
+                  <Typography variant="body2">
+                    {t("Swap fee: {{swapFeeSats}}Sats ({{swapFeeRate}}%)",
+                    {swapFeeSats: this.props.data.invoice_amount * this.state.swap_fee_rate/100,
+                      swapFeeRate: this.state.swap_fee_rate})
+                    }
+                  </Typography>
+                  <Typography variant="body2">
+                    {t("Mining fee: {{miningFee}}Sats ({{swapFeeRate}}%)",
+                    {miningFee: this.props.data.suggestedMiningFee * 141})}
+                  </Typography>
+                  <Typography variant="body2">
+                    {t("You receive: {{onchainAmount}}Sats)",
+                    {onchainAmount: pn(parseInt(this.props.data.invoice_amount - (this.props.data.suggestedMiningFee * 141) - (this.props.data.invoice_amount * this.state.swap_fee_rate/100)))})}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} align="center">
+                  <TextField
+                      error={this.state.badAddress}
+                      helperText={this.state.badAddress ? t(this.state.badAddress) : "" }
+                      label={t("Payout Lightning Invoice")}
+                      required
+                      value={this.state.invoice}
+                      inputProps={{
+                          style: {textAlign:"center"},
+                          maxHeight: 240,
+                      }}
+                      onChange={null}
+                  />
+                </Grid>
 
-        <Grid item xs={12} align="center">
-          {this.compatibleWalletsButton()}
-        </Grid>
+                <Grid item xs={12} align="center">
+                  <Button onClick={null} variant='contained' color='primary'>{t("Submit")}</Button>
+                </Grid>
 
-        <Grid item xs={12} align="center">
-          <TextField
-              error={this.state.badInvoice}
-              helperText={this.state.badInvoice ? t(this.state.badInvoice) : "" }
-              label={t("Payout Lightning Invoice")}
-              required
-              value={this.state.invoice}
-              inputProps={{
-                  style: {textAlign:"center"},
-                  maxHeight: 200,
-              }}
-              multiline
-              minRows={5}
-              maxRows={this.state.qrscanner ? 5 : 10}
-              onChange={this.handleInputInvoiceChanged}
-          />
-        </Grid>
-        {this.state.qrscanner ?
-        <Grid item xs={12} align="center">
-          <QrReader
-              delay={300}
-              onError={this.handleError}
-              onScan={this.handleScan}
-              style={{ width: '75%' }}
-            />
-          </Grid>
-          : null }
-        <Grid item xs={12} align="center">
-          <IconButton><QrCodeScannerIcon onClick={this.handleQRbutton}/></IconButton>
-          <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>{t("Submit")}</Button>
-        </Grid>
+              </Grid>
+            </div>
+          </ListItem>
+          <Divider/>
+        </List>
 
         {this.showBondIsLocked()}
       </Grid>

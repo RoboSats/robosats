@@ -78,7 +78,7 @@ class BalanceLog(models.Model):
     def get_total():
         return LNNode.wallet_balance()['total_balance'] + LNNode.channel_balance()['local_balance']
     def get_frac():
-        return (LNNode.wallet_balance()['total_balance'] + LNNode.channel_balance()['local_balance']) / LNNode.wallet_balance()['total_balance']
+        return LNNode.wallet_balance()['total_balance'] / (LNNode.wallet_balance()['total_balance'] + LNNode.channel_balance()['local_balance'])
     def get_oc_total(): 
         return LNNode.wallet_balance()['total_balance']
     def get_oc_conf(): 

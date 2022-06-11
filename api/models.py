@@ -188,7 +188,7 @@ class OnchainPayment(models.Model):
                                                default=Concepts.PAYBUYER)
     status = models.PositiveSmallIntegerField(choices=Status.choices,
                                               null=False,
-                                              default=Status.VALID)
+                                              default=Status.CREAT)
 
     # payment info
     address = models.CharField(max_length=100,
@@ -203,10 +203,11 @@ class OnchainPayment(models.Model):
                                 default=None,
                                 blank=True)
 
-    num_satoshis = models.PositiveBigIntegerField(validators=[
-        MinValueValidator(0.7 * MIN_SWAP_AMOUNT),
-        MaxValueValidator(1.5 * MAX_TRADE),
-    ])
+    num_satoshis = models.PositiveBigIntegerField(null=True, 
+                                                validators=[
+                                                    MinValueValidator(0.7 * MIN_SWAP_AMOUNT),
+                                                    MaxValueValidator(1.5 * MAX_TRADE),
+                                                ])
 
     # fee in sats/vbyte with mSats decimals fee_msat
     suggested_mining_fee_rate = models.DecimalField(max_digits=6, 
@@ -232,7 +233,7 @@ class OnchainPayment(models.Model):
 
     swap_fee_rate = models.DecimalField(max_digits=4, 
                                         decimal_places=2, 
-                                        default=2, 
+                                        default=float(config("MIN_SWAP_FEE"))*100, 
                                         null=False, 
                                         blank=False)
 
@@ -454,6 +455,8 @@ class Order(models.Model):
         default=None,
         blank=True,
     )
+    # is buyer payout a LN invoice (false) or on chain address (true)
+    is_swap = models.BooleanField(default=False, null=False)
     # buyer payment LN invoice
     payout = models.OneToOneField(
         LNPayment,
@@ -463,15 +466,15 @@ class Order(models.Model):
         default=None,
         blank=True,
     )
-
-    # payout_tx = models.OneToOneField(
-    #     OnchainPayment,
-    #     related_name="order_paid_TX",
-    #     on_delete=models.SET_NULL,
-    #     null=True,
-    #     default=None,
-    #     blank=True,
-    # )
+    # buyer payment address
+    payout_tx = models.OneToOneField(
+        OnchainPayment,
+        related_name="order_paid_TX",
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None,
+        blank=True,
+    )
 
     # ratings
     maker_rated = models.BooleanField(default=False, null=False)
