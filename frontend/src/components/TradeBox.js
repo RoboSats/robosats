@@ -36,7 +36,10 @@ class TradeBox extends Component {
       openConfirmDispute: false,
       openEnableTelegram: false,
       receiveTab: 0,
+      address: '',
+      miningFee: 1.05,
       badInvoice: false,
+      badAddress: false,
       badStatement: false,
       qrscanner: false,
     }
@@ -543,6 +546,42 @@ class TradeBox extends Component {
       & this.props.completeSetState(data));
   }
 
+  handleInputAddressChanged=(e)=>{
+    this.setState({
+        address: e.target.value,
+        badAddress: false,
+    });
+  }
+
+  handleMiningFeeChanged=(e)=>{
+    var fee = e.target.value
+    if (fee > 50){
+      fee = 50
+    }
+
+    this.setState({
+        miningFee: fee,
+    });
+  }
+
+  handleClickSubmitAddressButton=()=>{
+    this.setState({badInvoice:false});
+
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+        body: JSON.stringify({
+          'action':'update_address',
+          'address': this.state.address,
+          'mining_fee_rate': Math.max(1, this.state.miningFee),
+        }),
+    };
+    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+    .then((response) => response.json())
+    .then((data) => this.setState({badAddress:data_address})
+    & this.props.completeSetState(data));
+}
+
   handleInputDisputeChanged=(e)=>{
     this.setState({
         statement: e.target.value,
@@ -608,7 +647,6 @@ class TradeBox extends Component {
         </Grid> 
         <List dense={true}>
           <Divider/>
-
           <ListItem>
             <Typography variant="body2">
               {t("The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.",
@@ -616,15 +654,17 @@ class TradeBox extends Component {
                 currencyCode: this.props.data.currencyCode})}
             </Typography>
           </ListItem>
-
+        
           <ListItem>
             <Paper elevation={2}>
-              <Tabs value={this.state.receiveTab} variant="fullWidth">
+              <Tabs value={this.state.receiveTab} variant="fullWidth" sx={{width:290}}>
                 <Tab disableRipple={true} label={<div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><BoltIcon/> Lightning</div>} onClick={() => this.setState({receiveTab:0})}/>
-                <Tab label={<div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><LinkIcon/> Onchain</div>} disabled={!this.props.data.swap_allowed} onClick={() => this.setState({receiveTab:1})} />
+                <Tab label={<div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><LinkIcon/> Onchain</div>} disabled={!this.props.data.swap_allowed} onClick={() => this.setState({receiveTab:1, miningFee: this.props.data.suggested_mining_fee_rate})} />
               </Tabs>
             </Paper>
-            
+          </ListItem>
+          </List>
+
             {/* LIGHTNING PAYOUT TAB */}
             <div style={{display: this.state.receiveTab == 0 ? '':'none'}}>
               <div style={{height:15}}/>
@@ -674,59 +714,73 @@ class TradeBox extends Component {
               </Grid>
             </div>
         
-            {/* ONCHAIN PAYOUT TAB */}
-            <div style={{display: this.state.receiveTab == 1 ? '':'none'}}>
-              <div style={{height:15}}/>
-              <Grid container spacing={1}>
-                <Grid item xs={12} align="left">
-                  <Typography variant="body2">
-                    {t("RoboSats will perform an on-the-fly reverse submarine swap and send to an onchain address for a fee. Submit onchain address. Preliminary {{amountSats}} Sats, swap allowed {{swapAllowed}}, swap fee {{swapFee}}%, mining fee suggested {{suggestedMiningFee}} Sats/vbyte",
-                    {amountSats: this.props.data.invoice_amount,
-                      swapAllowed: this.props.data.swap_allowed,
-                      swapFee: this.props.data.swap_fee_rate ,
-                      suggestedMiningFee: this.props.data.suggested_mining_fee_rate}
-                      )
-                    }
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} align="left">
-                  <Typography variant="body2">
-                    {t("Swap fee: {{swapFeeSats}}Sats ({{swapFeeRate}}%)",
-                    {swapFeeSats: this.props.data.invoice_amount * this.state.swap_fee_rate/100,
-                      swapFeeRate: this.state.swap_fee_rate})
-                    }
-                  </Typography>
-                  <Typography variant="body2">
-                    {t("Mining fee: {{miningFee}}Sats ({{swapFeeRate}}%)",
-                    {miningFee: this.props.data.suggestedMiningFee * 141})}
-                  </Typography>
-                  <Typography variant="body2">
-                    {t("You receive: {{onchainAmount}}Sats)",
-                    {onchainAmount: pn(parseInt(this.props.data.invoice_amount - (this.props.data.suggestedMiningFee * 141) - (this.props.data.invoice_amount * this.state.swap_fee_rate/100)))})}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} align="center">
-                  <TextField
-                      error={this.state.badAddress}
-                      helperText={this.state.badAddress ? t(this.state.badAddress) : "" }
-                      label={t("Payout Lightning Invoice")}
-                      required
-                      value={this.state.invoice}
-                      inputProps={{
-                          style: {textAlign:"center"},
-                          maxHeight: 240,
-                      }}
-                      onChange={null}
-                  />
-                </Grid>
+          {/* ONCHAIN PAYOUT TAB */}
+          <div style={{display: this.state.receiveTab == 1 ? '':'none'}}>
+            <List dense={true}>
+              <ListItem>
+                <Typography variant="body2">
+                  {t("RoboSats will do a swap and send the Sats to your onchain address for a fee.")}
+                </Typography>
+              </ListItem>
+                
+              <Divider/>
 
-                <Grid item xs={12} align="center">
-                  <Button onClick={null} variant='contained' color='primary'>{t("Submit")}</Button>
-                </Grid>
+                <ListItem>
+                  <ListItemText 
+                    primary={pn(parseInt(this.props.data.invoice_amount * this.props.data.swap_fee_rate/100)) + " Sats (" + this.props.data.swap_fee_rate + "%)"} 
+                    secondary={t("Swap fee")}/>
+                </ListItem>
 
+                <Divider/>
+                
+                <ListItem>
+                  <ListItemText 
+                    primary={pn(parseInt(Math.max(1 , this.state.miningFee) * 141)) + " Sats (" + Math.max(1, this.state.miningFee) + " Sats/vByte)"} 
+                    secondary={t("Mining fee")}/>
+                </ListItem>
+
+                <Divider/>
+
+                <ListItem>
+                  <ListItemText 
+                    primary={<b>{pn(parseInt(this.props.data.invoice_amount - (Math.max(1, this.state.miningFee) * 141) - (this.props.data.invoice_amount * this.props.data.swap_fee_rate/100)))+ " Sats"}</b>}
+                    secondary={t("Final amount you will receive")}/>
+                </ListItem>
+              </List>
+                <TextField
+                    error={this.state.badAddress}
+                    helperText={this.state.badAddress ? t(this.state.badAddress) : "" }
+                    label={t("Bitcoin Address")}
+                    required
+                    value={this.state.invoice}
+                    sx={{width:170}}
+                    inputProps={{
+                        style: {textAlign:"center"},
+                    }}
+                    onChange={this.handleInputAddressChanged}
+                />
+                <TextField
+                    error={this.state.miningFee <  1 || this.state.miningFee > 50}
+                    helperText={this.state.miningFee <  1 || this.state.miningFee > 50 ? "Invalid" : ''}
+                    label={t("Mining Fee")}
+                    required
+                    sx={{width:110}}
+                    value={this.state.miningFee}
+                    type="number"
+                    inputProps={{
+                        max:50,
+                        min:1,
+                        style: {textAlign:"center"},
+                    }}
+                    onChange={this.handleMiningFeeChanged}
+                />
+              <div style={{height:10}}/>
+
+              <Grid item xs={12} align="center">
+                <Button onClick={null} variant='contained' color='primary'>{t("Submit")}</Button>
               </Grid>
-            </div>
-          </ListItem>
+          </div>
+        <List>
           <Divider/>
         </List>
 
