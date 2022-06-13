@@ -578,7 +578,7 @@ class TradeBox extends Component {
     };
     fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
     .then((response) => response.json())
-    .then((data) => this.setState({badAddress:data_address})
+    .then((data) => this.setState({badAddress:data.bad_address})
     & this.props.completeSetState(data));
 }
 
@@ -659,7 +659,7 @@ class TradeBox extends Component {
             <Paper elevation={2}>
               <Tabs value={this.state.receiveTab} variant="fullWidth" sx={{width:290}}>
                 <Tab disableRipple={true} label={<div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><BoltIcon/> Lightning</div>} onClick={() => this.setState({receiveTab:0})}/>
-                <Tab label={<div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><LinkIcon/> Onchain</div>} disabled={!this.props.data.swap_allowed} onClick={() => this.setState({receiveTab:1, miningFee: this.props.data.suggested_mining_fee_rate})} />
+                <Tab label={<div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><LinkIcon/> Onchain</div>} disabled={!this.props.data.swap_allowed} onClick={() => this.setState({receiveTab:1, miningFee: parseFloat(this.props.data.suggested_mining_fee_rate)})} />
               </Tabs>
             </Paper>
           </ListItem>
@@ -777,7 +777,7 @@ class TradeBox extends Component {
               <div style={{height:10}}/>
 
               <Grid item xs={12} align="center">
-                <Button onClick={null} variant='contained' color='primary'>{t("Submit")}</Button>
+                <Button onClick={this.handleClickSubmitAddressButton} variant='contained' color='primary'>{t("Submit")}</Button>
               </Grid>
           </div>
         <List>

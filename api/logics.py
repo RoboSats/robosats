@@ -1,5 +1,5 @@
 from datetime import timedelta
-from tkinter import N
+from tkinter import N, ON
 from django.utils import timezone
 from api.lightning.node import LNNode
 from django.db.models import Q, Sum
@@ -7,6 +7,7 @@ from django.db.models import Q, Sum
 from api.models import OnchainPayment, Order, LNPayment, MarketTick, User, Currency
 from api.tasks import send_message
 from decouple import config
+from api.utils import validate_onchain_address
 
 import gnupg
 
@@ -550,7 +551,7 @@ class Logics:
         if suggested_mining_fee_rate > 50:
             suggested_mining_fee_rate = 50
 
-        onchain_payment.suggested_mining_fee_rate = LNNode.estimate_fee(amount_sats=preliminary_amount)["mining_fee_rate"]
+        onchain_payment.suggested_mining_fee_rate = max(1.05, LNNode.estimate_fee(amount_sats=preliminary_amount)["mining_fee_rate"])
         onchain_payment.swap_fee_rate = cls.compute_swap_fee_rate(onchain_payment.balance)
         onchain_payment.save()
 
@@ -622,6 +623,67 @@ class Logics:
         return True, {"escrow_amount": escrow_amount}
 
     @classmethod
+    def update_address(cls, order, user, address, mining_fee_rate):
+        
+        # Empty address?
+        if not address:
+            return False, {
+                "bad_address":
+                "You submitted an empty invoice"
+            }
+        # only the buyer can post a buyer address
+        if not cls.is_buyer(order, user):
+            return False, {
+                "bad_request":
+                "Only the buyer of this order can provide a payout address."
+            }
+        # not the right time to submit
+        if (not (order.taker_bond.status == order.maker_bond.status ==
+                 LNPayment.Status.LOCKED)
+                and not order.status == Order.Status.FAI):
+            return False, {
+                "bad_request":
+                "You cannot submit an adress are not locked."
+            }
+        # not a valid address (does not accept Taproot as of now)
+        if not validate_onchain_address(address):
+            return False, {
+                "bad_address":
+                "Does not look like a valid address"
+            }
+        if mining_fee_rate:
+            # not a valid mining fee
+            if float(mining_fee_rate) <= 1:
+                return False, {
+                    "bad_address":
+                    "The mining fee is too low."
+                }
+            elif float(mining_fee_rate) > 50:
+                return False, {
+                    "bad_address":
+                    "The mining fee is too high."
+                }
+            order.payout_tx.mining_fee_rate = float(mining_fee_rate)
+        # If not mining ee provider use backend's suggested fee rate
+        else:
+            order.payout_tx.mining_fee_rate = order.payout_tx.suggested_mining_fee_rate
+
+        tx = order.payout_tx
+        tx.address = address
+        tx.mining_fee_sats = int(tx.mining_fee_rate * 141)
+        tx.num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
+        tx.sent_satoshis = int(float(tx.num_satoshis) - float(tx.num_satoshis) * float(tx.swap_fee_rate)/100 - float(tx.mining_fee_sats))
+        tx.status = OnchainPayment.Status.VALID
+        tx.save()
+
+        order.is_swap = True
+        order.save()
+
+        cls.move_state_updated_payout_method(order)
+
+        return True, None
+
+    @classmethod
     def update_invoice(cls, order, user, invoice):
         
         # Empty invoice?
@@ -677,6 +739,15 @@ class Logics:
             },
         )
 
+        order.is_swap = False
+        order.save()
+
+        cls.move_state_updated_payout_method(order)
+
+        return True, None
+
+    @classmethod
+    def move_state_updated_payout_method(cls,order):
         # If the order status is 'Waiting for invoice'. Move forward to 'chat'
         if order.status == Order.Status.WFI:
             order.status = Order.Status.CHA
@@ -706,10 +777,9 @@ class Logics:
                 order.payout.status = LNPayment.Status.FLIGHT
                 order.payout.routing_attempts = 0
                 order.payout.save()
-                order.save()
-
+                
         order.save()
-        return True, None
+        return True
 
     def add_profile_rating(profile, rating):
         """adds a new rating to a user profile"""

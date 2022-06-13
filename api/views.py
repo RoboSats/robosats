@@ -337,7 +337,7 @@ class OrderView(viewsets.ViewSet):
         elif data["is_buyer"] and (order.status == Order.Status.WF2
                                    or order.status == Order.Status.WFI):
 
-            # If the two bonds are locked, reply with an AMOUNT and onchain swap cost so he can send the buyer invoice/address
+            # If the two bonds are locked, reply with an AMOUNT and onchain swap cost so he can send the buyer invoice/address.
             if (order.maker_bond.status == order.taker_bond.status ==
                     LNPayment.Status.LOCKED):
                 valid, context = Logics.payout_amount(order, request.user)
@@ -467,7 +467,7 @@ class OrderView(viewsets.ViewSet):
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
         
-        # 2.b) If action is 'update invoice'
+        # 2.b) If action is 'update address'
         if action == "update_address":
             valid, context = Logics.update_address(order, request.user,
                                                    address, mining_fee_rate)

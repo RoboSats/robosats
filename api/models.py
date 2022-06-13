@@ -205,10 +205,14 @@ class OnchainPayment(models.Model):
 
     num_satoshis = models.PositiveBigIntegerField(null=True, 
                                                 validators=[
-                                                    MinValueValidator(0.7 * MIN_SWAP_AMOUNT),
+                                                    MinValueValidator(0.5 * MIN_SWAP_AMOUNT),
                                                     MaxValueValidator(1.5 * MAX_TRADE),
                                                 ])
-
+    sent_satoshis = models.PositiveBigIntegerField(null=True, 
+                                                validators=[
+                                                    MinValueValidator(0.5 * MIN_SWAP_AMOUNT),
+                                                    MaxValueValidator(1.5 * MAX_TRADE),
+                                                ])
     # fee in sats/vbyte with mSats decimals fee_msat
     suggested_mining_fee_rate = models.DecimalField(max_digits=6, 
                                                     decimal_places=3, 
