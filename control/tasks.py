@@ -71,21 +71,18 @@ def do_accounting():
         payouts = day_payments.filter(type=LNPayment.Types.NORM,concept=LNPayment.Concepts.PAYBUYER, status=LNPayment.Status.SUCCED)
         escrows_settled = 0
         payouts_paid = 0
-        routing_cost = 0
+        costs = 0
         for payout in payouts:
             escrows_settled += payout.order_paid_LN.trade_escrow.num_satoshis
             payouts_paid += payout.num_satoshis
-            routing_cost += payout.fee
+            costs += payout.fee
         
         # Same for orders that use onchain payments.
         payouts_tx = day_onchain_payments.filter(status__in=[OnchainPayment.Status.MEMPO,OnchainPayment.Status.CONFI])
-        escrows_settled = 0
-        payouts_tx_paid = 0
-        mining_cost = 0
         for payout_tx in payouts_tx:
             escrows_settled += payout_tx.order_paid_TX.trade_escrow.num_satoshis
-            payouts_tx_paid += payout_tx.sent_satoshis
-            mining_cost += payout_tx.fee
+            payouts_paid += payout_tx.sent_satoshis
+            costs += payout_tx.fee
 
 
         # account for those orders where bonds were lost
@@ -98,7 +95,7 @@ def do_accounting():
             collected_slashed_bonds = 0
         
         accounted_day.net_settled = escrows_settled + collected_slashed_bonds
-        accounted_day.net_paid = payouts_paid + routing_cost
+        accounted_day.net_paid = payouts_paid + costs
         accounted_day.net_balance = float(accounted_day.net_settled) - float(accounted_day.net_paid)
 
         # Differential accounting based on change of outstanding states and disputes unreslved
