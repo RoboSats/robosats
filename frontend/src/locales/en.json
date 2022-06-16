@@ -181,6 +181,7 @@
     "You do not have previous orders":"You do not have previous orders",
     "Join RoboSats' Subreddit":"Join RoboSats' Subreddit",
     "RoboSats in Reddit":"RoboSats in Reddit",
+    "Current onchain payout fee":"Current onchain payout fee",
 
     "ORDER PAGE - OrderPage.js": "Order details page",
     "Order Box":"Order Box",
@@ -316,7 +317,7 @@
     "Submit an invoice for {{amountSats}} Sats":"Submit an invoice for {{amountSats}} Sats",
     "The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC. Please provide a valid invoice for {{amountSats}} Satoshis.":"The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC. Please provide a valid invoice for {{amountSats}} Satoshis.",
     "Payout Lightning Invoice":"Payout Lightning Invoice",
-    "Your invoice looks good!":"Your invoice looks good!",
+    "Your info looks good!":"Your info looks good!",
     "We are waiting for the seller to lock the trade amount.":"We are waiting for the seller to lock the trade amount.",
     "Just hang on for a moment. If the seller does not deposit, you will get your bond back automatically. In addition, you will receive a compensation (check the rewards in your profile).":"Just hang on for a moment. If the seller does not deposit, you will get your bond back automatically. In addition, you will receive a compensation (check the rewards in your profile).",
     "The trade collateral is locked!":"The trade collateral is locked!",

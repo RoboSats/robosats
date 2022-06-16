@@ -936,7 +936,7 @@ class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography  variant="subtitle1">
-            <b>{t("Your invoice looks good!")}</b> {" " + this.stepXofY()}
+            <b>{t("Your info looks good!")}</b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">

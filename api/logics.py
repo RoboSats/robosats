@@ -725,7 +725,7 @@ class Logics:
             concept=LNPayment.Concepts.PAYBUYER,
             type=LNPayment.Types.NORM,
             sender=User.objects.get(username=ESCROW_USERNAME),
-            order_paid=
+            order_paid_LN=
             order,  # In case this user has other payouts, update the one related to this order.
             receiver=user,
             # if there is a LNPayment matching these above, it updates that one with defaults below.

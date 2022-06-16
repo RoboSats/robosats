@@ -87,7 +87,7 @@ def follow_send_payment(hash):
         timeout_seconds=timeout_seconds,
     )
 
-    order = lnpayment.order_paid
+    order = lnpayment.order_paid_LN
     try:
         for response in LNNode.routerstub.SendPaymentV2(request,
                                                         metadata=[

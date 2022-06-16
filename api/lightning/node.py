@@ -93,7 +93,7 @@ class LNNode:
         response = cls.lightningstub.WalletBalance(request,
                                                   metadata=[("macaroon",
                                                              MACAROON.hex())])
-        print(response)
+
         return {'total_balance': response.total_balance, 
             'confirmed_balance': response.confirmed_balance,
             'unconfirmed_balance': response.unconfirmed_balance}
@@ -108,7 +108,7 @@ class LNNode:
                                                   metadata=[("macaroon",
                                                              MACAROON.hex())])
 
-        print(response)
+
         return {'local_balance': response.local_balance.sat, 
             'remote_balance': response.remote_balance.sat,
             'unsettled_local_balance': response.unsettled_local_balance.sat,
@@ -208,22 +208,17 @@ class LNNode:
                                                     metadata=[("macaroon",
                                                                MACAROON.hex())
                                                               ])
-        print("status here")
-        print(response.state)
 
-        # TODO ERROR HANDLING
         # Will fail if 'unable to locate invoice'. Happens if invoice expiry
         # time has passed (but these are 15% padded at the moment). Should catch it
         # and report back that the invoice has expired (better robustness)
         if response.state == 0:  # OPEN
-            print("STATUS: OPEN")
             pass
         if response.state == 1:  # SETTLED
             pass
         if response.state == 2:  # CANCELLED
             pass
         if response.state == 3:  # ACCEPTED (LOCKED)
-            print("STATUS: ACCEPTED")
             lnpayment.expiry_height = response.htlcs[0].expiry_height
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save()
@@ -254,7 +249,6 @@ class LNNode:
 
         try:
             payreq_decoded = cls.decode_payreq(invoice)
-            print(payreq_decoded)
         except:
             payout["context"] = {
                 "bad_invoice": "Does not look like a valid lightning invoice"
