@@ -57,7 +57,7 @@ app.conf.beat_schedule = {
     },
     "compute-node-balance": { # Logs LND channel and wallet balance
         "task":"compute_node_balance",
-        "schedule": timedelta(minutes=15),
+        "schedule": timedelta(minutes=60),
     }
 }
 

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { withTranslation, Trans} from "react-i18next";
-import { Tabs, Tab, IconButton, Box, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { Alert, AlertTitle, Tabs, Tab, IconButton, Box, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
 import Countdown, { zeroPad} from 'react-countdown';
 import Chat from "./EncryptedChat"
@@ -719,7 +719,7 @@ class TradeBox extends Component {
             <List dense={true}>
               <ListItem>
                 <Typography variant="body2">
-                  {t("RoboSats will do a swap and send the Sats to your onchain address for a fee.")}
+                  <b>{t("EXPERIMENTAL: ")}</b>{t("RoboSats will do a swap and send the Sats to your onchain address.")}
                 </Typography>
               </ListItem>
                 
@@ -1248,13 +1248,19 @@ handleRatingRobosatsChange=(e)=>{
 
         {/* SHOW TXID IF USER RECEIVES ONCHAIN */}
         {this.props.data.txid ?
-          <Grid item xs={12} align="center">
-            <Typography  variant="body2" align="center">
-              <b>{t("Your TXID:")}</b>
-            </Typography>
-            <Typography  variant="body2" align="center">
-              <Link target='_blank' href={"http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/tx/"+this.props.data.txid}>{this.props.data.txid}</Link>
-            </Typography>
+          <Grid item xs={12} align="left">
+            <Alert severity="success">
+              <AlertTitle>{t("Your TXID")}
+                <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
+                  <IconButton color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.txid)}}>
+                    <ContentCopy sx={{width:16,height:16}}/>
+                  </IconButton>
+                </Tooltip>
+              </AlertTitle>
+              <Typography  variant="body2" align="center" sx={{ wordWrap: "break-word", width:220}}>
+                <Link target='_blank' href={"http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/"+(this.props.data.network =="testnet"? "testnet/": "")+"tx/"+this.props.data.txid}>{this.props.data.txid}</Link>
+              </Typography>
+            </Alert>
           </Grid>
         : null}
 

@@ -400,6 +400,7 @@ bottomBarPhone =()=>{
                     lastDayNonkycBtcPremium={this.state.last_day_nonkyc_btc_premium}
                     makerFee={this.state.maker_fee}
                     takerFee={this.state.taker_fee}
+                    swapFeeRate={this.state.current_swap_fee_rate}
                 />
 
                 <ProfileDialog

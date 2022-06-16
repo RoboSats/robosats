@@ -516,10 +516,6 @@ class Logics:
             MAX_SWAP_FEE = float(config('MAX_SWAP_FEE'))
             SWAP_LAMBDA = float(config('SWAP_LAMBDA'))
             swap_fee_rate = MIN_SWAP_FEE + (MAX_SWAP_FEE - MIN_SWAP_FEE) * math.exp(-SWAP_LAMBDA * float(balance.onchain_fraction))
-            print("MIN_SWAP_FEE",MIN_SWAP_FEE)
-            print("MAX_SWAP_FEE",MAX_SWAP_FEE)
-            print("SWAP_LAMBDA",SWAP_LAMBDA)
-            print("swap_fee_rate",swap_fee_rate)
 
         return swap_fee_rate * 100
 
@@ -589,7 +585,7 @@ class Logics:
             context["swap_failure_reason"] = "Order amount is too small to be eligible for a swap"
             return True, context
 
-        if not bool(config("DISABLE_ONCHAIN")):
+        if config("DISABLE_ONCHAIN", cast=bool):
             context["swap_allowed"] = False
             context["swap_failure_reason"] = "On-the-fly submarine swaps are dissabled"
             return True, context
@@ -1316,7 +1312,7 @@ class Logics:
     @classmethod
     def pay_buyer(cls, order):
         '''Pays buyer invoice or onchain address'''
-        
+
         # Pay to buyer invoice
         if not order.is_swap:
             ##### Background process "follow_invoices" will try to pay this invoice until success
@@ -1331,6 +1327,8 @@ class Logics:
         else:
             valid = LNNode.pay_onchain(order.payout_tx)
             if valid:
+                order.payout_tx.status = OnchainPayment.Status.MEMPO
+                order.payout_tx.save()
                 order.status = Order.Status.SUC
                 order.save()
                 send_message.delay(order.id,'trade_successful')

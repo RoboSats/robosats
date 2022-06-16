@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 
 from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer
 from api.models import LNPayment, MarketTick, OnchainPayment, Order, Currency, Profile
-from control.models import AccountingDay
+from control.models import AccountingDay, BalanceLog
 from api.logics import Logics
 from api.messages import Telegram
 from secrets import token_urlsafe
@@ -410,6 +410,7 @@ class OrderView(viewsets.ViewSet):
                         data["sent_satoshis"] = order.payout_tx.sent_satoshis
                         if order.payout_tx.status in [OnchainPayment.Status.MEMPO, OnchainPayment.Status.CONFI]:
                             data["txid"] = order.payout_tx.txid
+                            data["network"] = str(config("NETWORK"))
                             
 
             
@@ -891,6 +892,8 @@ class InfoView(ListAPIView):
         context["maker_fee"] = float(config("FEE"))*float(config("MAKER_FEE_SPLIT"))
         context["taker_fee"] = float(config("FEE"))*(1 - float(config("MAKER_FEE_SPLIT")))
         context["bond_size"] = float(config("DEFAULT_BOND_SIZE"))
+
+        context["current_swap_fee_rate"] = Logics.compute_swap_fee_rate(BalanceLog.objects.latest('time'))
 
         if request.user.is_authenticated:
             context["nickname"] = request.user.username

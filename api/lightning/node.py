@@ -1,6 +1,6 @@
 import grpc, os, hashlib, secrets, ring
 
-from robosats.api.models import OnchainPayment
+
 from . import lightning_pb2 as lnrpc, lightning_pb2_grpc as lightningstub
 from . import invoices_pb2 as invoicesrpc, invoices_pb2_grpc as invoicesstub
 from . import router_pb2 as routerrpc, router_pb2_grpc as routerstub
@@ -118,7 +118,7 @@ class LNNode:
     def pay_onchain(cls, onchainpayment):
         """Send onchain transaction for buyer payouts"""
 
-        if bool(config("DISABLE_ONCHAIN")):
+        if config("DISABLE_ONCHAIN", cast=bool):
             return False
 
         request = lnrpc.SendCoinsRequest(addr=onchainpayment.address,
@@ -126,13 +126,12 @@ class LNNode:
                                         sat_per_vbyte=int(onchainpayment.mining_fee_rate),
                                         label=str("Payout order #" + str(onchainpayment.order_paid_TX.id)),
                                         spend_unconfirmed=True)
+
         response = cls.lightningstub.SendCoins(request,
                                                 metadata=[("macaroon",
                                                             MACAROON.hex())])
 
-        print(response)
         onchainpayment.txid = response.txid
-        onchainpayment.status = OnchainPayment.Status.MEMPO
         onchainpayment.save()
 
         return True
