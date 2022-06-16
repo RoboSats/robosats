@@ -1228,19 +1228,36 @@ handleRatingRobosatsChange=(e)=>{
         {this.state.rating_platform==5 ?
         <Grid item xs={12} align="center">
           <Typography  variant="body2" align="center">
-            <p><b>{t("Thank you! RoboSats loves you too ❤️")}</b></p>
-            <p>{t("RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!")}</p>
+            <b>{t("Thank you! RoboSats loves you too ❤️")}</b>
+          </Typography>
+          <Typography  variant="body2" align="center">
+            {t("RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!")}
           </Typography>
         </Grid>
         : null}
         {this.state.rating_platform!=5 & this.state.rating_platform!=null ?
         <Grid item xs={12} align="center">
           <Typography  variant="body2" align="center">
-            <p><b>{t("Thank you for using Robosats!")}</b></p>
-            <p><Trans i18nKey="let_us_know_hot_to_improve">Let us know how the platform could improve (<Link target='_blank' href="https://t.me/robosats">Telegram</Link> / <Link target='_blank' href="https://github.com/Reckless-Satoshi/robosats/issues">Github</Link>)</Trans></p>
+            <b>{t("Thank you for using Robosats!")}</b>
+          </Typography>
+          <Typography  variant="body2" align="center">
+            <Trans i18nKey="let_us_know_hot_to_improve">Let us know how the platform could improve (<Link target='_blank' href="https://t.me/robosats">Telegram</Link> / <Link target='_blank' href="https://github.com/Reckless-Satoshi/robosats/issues">Github</Link>)</Trans>
           </Typography>
         </Grid>
         : null}
+
+        {/* SHOW TXID IF USER RECEIVES ONCHAIN */}
+        {this.props.data.txid ?
+          <Grid item xs={12} align="center">
+            <Typography  variant="body2" align="center">
+              <b>{t("Your TXID:")}</b>
+            </Typography>
+            <Typography  variant="body2" align="center">
+              <Link target='_blank' href={"http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/tx/"+this.props.data.txid}>{this.props.data.txid}</Link>
+            </Typography>
+          </Grid>
+        : null}
+
         <Grid item xs={12} align="center">
           <Button color='primary' onClick={() => {this.props.push('/')}}>{t("Start Again")}</Button>
         </Grid>

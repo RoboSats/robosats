@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 
 from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer
-from api.models import LNPayment, MarketTick, Order, Currency, Profile
+from api.models import LNPayment, MarketTick, OnchainPayment, Order, Currency, Profile
 from control.models import AccountingDay
 from api.logics import Logics
 from api.messages import Telegram
@@ -399,6 +399,19 @@ class OrderView(viewsets.ViewSet):
             if order.status == Order.Status.EXP:
                 data["expiry_reason"] = order.expiry_reason
                 data["expiry_message"] = Order.ExpiryReasons(order.expiry_reason).label
+
+            # If status is 'Succes' add final stats and txid if it is a swap
+            if order.status == Order.Status.SUC:
+                # TODO: add summary of order for buyer/sellers: sats in/out, fee paid, total time? etc
+                # If buyer and is a swap, add TXID
+                if Logics.is_buyer(order,request.user):
+                    if order.is_swap:
+                        data["num_satoshis"] = order.payout_tx.num_satoshis
+                        data["sent_satoshis"] = order.payout_tx.sent_satoshis
+                        if order.payout_tx.status in [OnchainPayment.Status.MEMPO, OnchainPayment.Status.CONFI]:
+                            data["txid"] = order.payout_tx.txid
+                            
+
             
         return Response(data, status.HTTP_200_OK)
 

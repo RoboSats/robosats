@@ -589,12 +589,17 @@ class Logics:
             context["swap_failure_reason"] = "Order amount is too small to be eligible for a swap"
             return True, context
 
+        if not bool(config("DISABLE_ONCHAIN")):
+            context["swap_allowed"] = False
+            context["swap_failure_reason"] = "On-the-fly submarine swaps are dissabled"
+            return True, context
+
         if order.payout_tx == None:
             # Creates the OnchainPayment object and checks node balance
             valid = cls.create_onchain_payment(order, user, preliminary_amount=context["invoice_amount"])
             if not valid:
                 context["swap_allowed"] = False
-                context["swap_failure_reason"] = "Not enough onchain liquidity available to offer swaps"
+                context["swap_failure_reason"] = "Not enough onchain liquidity available to offer a SWAP"
                 return True, context
 
         context["swap_allowed"] = True
@@ -1246,7 +1251,6 @@ class Logics:
 
     def settle_escrow(order):
         """Settles the trade escrow hold invoice"""
-        # TODO ERROR HANDLING
         if LNNode.settle_hold_invoice(order.trade_escrow.preimage):
             order.trade_escrow.status = LNPayment.Status.SETLED
             order.trade_escrow.save()
@@ -1254,7 +1258,6 @@ class Logics:
 
     def settle_bond(bond):
         """Settles the bond hold invoice"""
-        # TODO ERROR HANDLING
         if LNNode.settle_hold_invoice(bond.preimage):
             bond.status = LNPayment.Status.SETLED
             bond.save()
@@ -1311,6 +1314,30 @@ class Logics:
                 raise e
 
     @classmethod
+    def pay_buyer(cls, order):
+        '''Pays buyer invoice or onchain address'''
+        
+        # Pay to buyer invoice
+        if not order.is_swap:
+            ##### Background process "follow_invoices" will try to pay this invoice until success
+            order.status = Order.Status.PAY
+            order.payout.status = LNPayment.Status.FLIGHT
+            order.payout.save()
+            order.save()
+            send_message.delay(order.id,'trade_successful')
+            return True
+
+        # Pay onchain to address
+        else:
+            valid = LNNode.pay_onchain(order.payout_tx)
+            if valid:
+                order.status = Order.Status.SUC
+                order.save()
+                send_message.delay(order.id,'trade_successful')
+                return True
+            return False
+
+    @classmethod
     def confirm_fiat(cls, order, user):
         """If Order is in the CHAT states:
         If user is buyer: fiat_sent goes to true.
@@ -1318,7 +1345,7 @@ class Logics:
 
         if (order.status == Order.Status.CHA
                 or order.status == Order.Status.FSE
-            ):  # TODO Alternatively, if all collateral is locked? test out
+            ):
 
             # If buyer, settle escrow and mark fiat sent
             if cls.is_buyer(order, user):
@@ -1334,30 +1361,24 @@ class Logics:
                     }
 
                 # Make sure the trade escrow is at least as big as the buyer invoice
-                if order.trade_escrow.num_satoshis <= order.payout.num_satoshis:
+                num_satoshis = order.payout_tx.num_satoshis if order.is_swap else order.payout.num_satoshis
+                if order.trade_escrow.num_satoshis <= num_satoshis:
                     return False, {
                         "bad_request":
                         "Woah, something broke badly. Report in the public channels, or open a Github Issue."
                     }
-
-                if cls.settle_escrow(
-                        order
-                ):  ##### !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
+                
+                # !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
+                if cls.settle_escrow(order):  
                     order.trade_escrow.status = LNPayment.Status.SETLED
 
                 # Double check the escrow is settled.
-                if LNNode.double_check_htlc_is_settled(
-                        order.trade_escrow.payment_hash):
-                    # RETURN THE BONDS // Probably best also do it even if payment failed
+                if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash):
+                    # RETURN THE BONDS 
                     cls.return_bond(order.taker_bond)
                     cls.return_bond(order.maker_bond)
                     ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
-                    ##### Background process "follow_invoices" will try to pay this invoice until success
-                    order.status = Order.Status.PAY
-                    order.payout.status = LNPayment.Status.FLIGHT
-                    order.payout.save()
-                    order.save()
-                    send_message.delay(order.id,'trade_successful')
+                    cls.pay_buyer(order)
 
                     # Add referral rewards (safe)
                     try:

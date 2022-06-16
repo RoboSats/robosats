@@ -1,4 +1,6 @@
 import grpc, os, hashlib, secrets, ring
+
+from robosats.api.models import OnchainPayment
 from . import lightning_pb2 as lnrpc, lightning_pb2_grpc as lightningstub
 from . import invoices_pb2 as invoicesrpc, invoices_pb2_grpc as invoicesstub
 from . import router_pb2 as routerrpc, router_pb2_grpc as routerstub
@@ -70,7 +72,7 @@ class LNNode:
     def estimate_fee(cls, amount_sats, target_conf=2, min_confs=1):
         """Returns estimated fee for onchain payouts"""
 
-        # We assume segwit. Use robosats donation address (shortcut so there is no need to have user input)
+        # We assume segwit. Use robosats donation address as shortcut so there is no need of user inputs
         request = lnrpc.EstimateFeeRequest(AddrToAmount={'bc1q3cpp7ww92n6zp04hv40kd3eyy5avgughx6xqnx':amount_sats}, 
                                             target_conf=target_conf,
                                             min_confs=min_confs,
@@ -111,6 +113,29 @@ class LNNode:
             'remote_balance': response.remote_balance.sat,
             'unsettled_local_balance': response.unsettled_local_balance.sat,
             'unsettled_remote_balance': response.unsettled_remote_balance.sat}
+
+    @classmethod
+    def pay_onchain(cls, onchainpayment):
+        """Send onchain transaction for buyer payouts"""
+
+        if bool(config("DISABLE_ONCHAIN")):
+            return False
+
+        request = lnrpc.SendCoinsRequest(addr=onchainpayment.address,
+                                        amount=int(onchainpayment.sent_satoshis),
+                                        sat_per_vbyte=int(onchainpayment.mining_fee_rate),
+                                        label=str("Payout order #" + str(onchainpayment.order_paid_TX.id)),
+                                        spend_unconfirmed=True)
+        response = cls.lightningstub.SendCoins(request,
+                                                metadata=[("macaroon",
+                                                            MACAROON.hex())])
+
+        print(response)
+        onchainpayment.txid = response.txid
+        onchainpayment.status = OnchainPayment.Status.MEMPO
+        onchainpayment.save()
+
+        return True
 
     @classmethod
     def cancel_return_hold_invoice(cls, payment_hash):

@@ -220,7 +220,7 @@ class OnchainPayment(models.Model):
                                                     null=False, 
                                                     blank=False)
     mining_fee_rate = models.DecimalField(max_digits=6, 
-                                        decimal_places=3, 
+                                        decimal_places=3,
                                         default=1.05, 
                                         null=False, 
                                         blank=False)
