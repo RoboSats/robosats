@@ -78,14 +78,16 @@ def follow_send_payment(hash):
             lnpayment.num_satoshis *
             float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
             float(config("MIN_FLAT_ROUTING_FEE_LIMIT")),
-        ))  # 200 ppm or 10 sats
+        ))  # 1000 ppm or 10 sats
+    timeout_seconds = int(config("PAYOUT_TIMEOUT_SECONDS"))
+
     request = LNNode.routerrpc.SendPaymentRequest(
         payment_request=lnpayment.invoice,
         fee_limit_sat=fee_limit_sat,
-        timeout_seconds=75,
-    )  # time out payment in 75 seconds
+        timeout_seconds=timeout_seconds,
+    )
 
-    order = lnpayment.order_paid
+    order = lnpayment.order_paid_LN
     try:
         for response in LNNode.routerstub.SendPaymentV2(request,
                                                         metadata=[

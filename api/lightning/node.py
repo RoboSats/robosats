@@ -1,4 +1,6 @@
-import grpc, os, hashlib, secrets
+import grpc, os, hashlib, secrets, ring
+
+
 from . import lightning_pb2 as lnrpc, lightning_pb2_grpc as lightningstub
 from . import invoices_pb2 as invoicesrpc, invoices_pb2_grpc as invoicesstub
 from . import router_pb2 as routerrpc, router_pb2_grpc as routerstub
@@ -9,7 +11,6 @@ from base64 import b64decode
 from datetime import timedelta, datetime
 from django.utils import timezone
 
-from api.models import LNPayment
 
 #######
 # Should work with LND (c-lightning in the future if there are features that deserve the work)
@@ -66,6 +67,74 @@ class LNNode:
                                                   metadata=[("macaroon",
                                                              MACAROON.hex())])
         return response
+
+    @classmethod
+    def estimate_fee(cls, amount_sats, target_conf=2, min_confs=1):
+        """Returns estimated fee for onchain payouts"""
+
+        # We assume segwit. Use robosats donation address as shortcut so there is no need of user inputs
+        request = lnrpc.EstimateFeeRequest(AddrToAmount={'bc1q3cpp7ww92n6zp04hv40kd3eyy5avgughx6xqnx':amount_sats}, 
+                                            target_conf=target_conf,
+                                            min_confs=min_confs,
+                                            spend_unconfirmed=False)
+
+        response = cls.lightningstub.EstimateFee(request,
+                                                  metadata=[("macaroon",
+                                                             MACAROON.hex())])
+
+        return {'mining_fee_sats': response.fee_sat, 'mining_fee_rate': response.sat_per_vbyte}
+
+    wallet_balance_cache = {}
+    @ring.dict(wallet_balance_cache, expire=10)  # keeps in cache for 10 seconds
+    @classmethod
+    def wallet_balance(cls):
+        """Returns onchain balance"""
+        request = lnrpc.WalletBalanceRequest()
+        response = cls.lightningstub.WalletBalance(request,
+                                                  metadata=[("macaroon",
+                                                             MACAROON.hex())])
+
+        return {'total_balance': response.total_balance, 
+            'confirmed_balance': response.confirmed_balance,
+            'unconfirmed_balance': response.unconfirmed_balance}
+
+    channel_balance_cache = {}
+    @ring.dict(channel_balance_cache, expire=10)  # keeps in cache for 10 seconds
+    @classmethod
+    def channel_balance(cls):
+        """Returns channels balance"""
+        request = lnrpc.ChannelBalanceRequest()
+        response = cls.lightningstub.ChannelBalance(request,
+                                                  metadata=[("macaroon",
+                                                             MACAROON.hex())])
+
+
+        return {'local_balance': response.local_balance.sat, 
+            'remote_balance': response.remote_balance.sat,
+            'unsettled_local_balance': response.unsettled_local_balance.sat,
+            'unsettled_remote_balance': response.unsettled_remote_balance.sat}
+
+    @classmethod
+    def pay_onchain(cls, onchainpayment):
+        """Send onchain transaction for buyer payouts"""
+
+        if config("DISABLE_ONCHAIN", cast=bool):
+            return False
+
+        request = lnrpc.SendCoinsRequest(addr=onchainpayment.address,
+                                        amount=int(onchainpayment.sent_satoshis),
+                                        sat_per_vbyte=int(onchainpayment.mining_fee_rate),
+                                        label=str("Payout order #" + str(onchainpayment.order_paid_TX.id)),
+                                        spend_unconfirmed=True)
+
+        response = cls.lightningstub.SendCoins(request,
+                                                metadata=[("macaroon",
+                                                            MACAROON.hex())])
+
+        onchainpayment.txid = response.txid
+        onchainpayment.save()
+
+        return True
 
     @classmethod
     def cancel_return_hold_invoice(cls, payment_hash):
@@ -131,28 +200,25 @@ class LNNode:
     @classmethod
     def validate_hold_invoice_locked(cls, lnpayment):
         """Checks if hold invoice is locked"""
+        from api.models import LNPayment
+
         request = invoicesrpc.LookupInvoiceMsg(
             payment_hash=bytes.fromhex(lnpayment.payment_hash))
         response = cls.invoicesstub.LookupInvoiceV2(request,
                                                     metadata=[("macaroon",
                                                                MACAROON.hex())
                                                               ])
-        print("status here")
-        print(response.state)
 
-        # TODO ERROR HANDLING
         # Will fail if 'unable to locate invoice'. Happens if invoice expiry
         # time has passed (but these are 15% padded at the moment). Should catch it
         # and report back that the invoice has expired (better robustness)
         if response.state == 0:  # OPEN
-            print("STATUS: OPEN")
             pass
         if response.state == 1:  # SETTLED
             pass
         if response.state == 2:  # CANCELLED
             pass
         if response.state == 3:  # ACCEPTED (LOCKED)
-            print("STATUS: ACCEPTED")
             lnpayment.expiry_height = response.htlcs[0].expiry_height
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save()
@@ -183,7 +249,6 @@ class LNNode:
 
         try:
             payreq_decoded = cls.decode_payreq(invoice)
-            print(payreq_decoded)
         except:
             payout["context"] = {
                 "bad_invoice": "Does not look like a valid lightning invoice"
@@ -238,7 +303,7 @@ class LNNode:
 
         if payout["expires_at"] < timezone.now():
             payout["context"] = {
-                "bad_invoice": f"The invoice provided has already expired"
+                "bad_invoice": "The invoice provided has already expired"
             }
             return payout
 
@@ -251,15 +316,17 @@ class LNNode:
     @classmethod
     def pay_invoice(cls, lnpayment):
         """Sends sats. Used for rewards payouts"""
-
+        from api.models import LNPayment
+        
         fee_limit_sat = int(
             max(
                 lnpayment.num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
                 float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
             ))  # 200 ppm or 10 sats
+        timeout_seconds = int(config("REWARDS_TIMEOUT_SECONDS"))
         request = routerrpc.SendPaymentRequest(payment_request=lnpayment.invoice,
                                                fee_limit_sat=fee_limit_sat,
-                                               timeout_seconds=30)
+                                               timeout_seconds=timeout_seconds)
 
         for response in cls.routerstub.SendPaymentV2(request,
                                                      metadata=[("macaroon",

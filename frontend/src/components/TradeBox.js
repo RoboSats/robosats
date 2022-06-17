@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { withTranslation, Trans} from "react-i18next";
-import { IconButton, Box, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { Alert, AlertTitle, ToggleButtonGroup, ToggleButton, IconButton, Box, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
 import Countdown, { zeroPad} from 'react-countdown';
 import Chat from "./EncryptedChat"
@@ -18,6 +18,8 @@ import BalanceIcon from '@mui/icons-material/Balance';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import PauseCircleIcon from '@mui/icons-material/PauseCircle';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import BoltIcon from '@mui/icons-material/Bolt';
+import LinkIcon from '@mui/icons-material/Link';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import { NewTabIcon } from "./Icons";
 
@@ -33,7 +35,11 @@ class TradeBox extends Component {
       openConfirmFiatReceived: false,
       openConfirmDispute: false,
       openEnableTelegram: false,
+      receiveTab: 0,
+      address: '',
+      miningFee: 1.05,
       badInvoice: false,
+      badAddress: false,
       badStatement: false,
       qrscanner: false,
     }
@@ -540,6 +546,42 @@ class TradeBox extends Component {
       & this.props.completeSetState(data));
   }
 
+  handleInputAddressChanged=(e)=>{
+    this.setState({
+        address: e.target.value,
+        badAddress: false,
+    });
+  }
+
+  handleMiningFeeChanged=(e)=>{
+    var fee = e.target.value
+    if (fee > 50){
+      fee = 50
+    }
+
+    this.setState({
+        miningFee: fee,
+    });
+  }
+
+  handleClickSubmitAddressButton=()=>{
+    this.setState({badInvoice:false});
+
+    const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+        body: JSON.stringify({
+          'action':'update_address',
+          'address': this.state.address,
+          'mining_fee_rate': Math.max(1, this.state.miningFee),
+        }),
+    };
+    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+    .then((response) => response.json())
+    .then((data) => this.setState({badAddress:data.bad_address})
+    & this.props.completeSetState(data));
+}
+
   handleInputDisputeChanged=(e)=>{
     this.setState({
         statement: e.target.value,
@@ -599,57 +641,153 @@ class TradeBox extends Component {
           {/* Make confirmation sound for HTLC received. */}
           {this.Sound("locked-invoice")}
           <Typography color="primary" variant="subtitle1">
-            <b> {t("Submit an invoice for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}
+            <b> {t("Submit payout info for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}
             </b> {" " + this.stepXofY()}
           </Typography>
         </Grid> 
+        <List dense={true}>
+          <Divider/>
+          <ListItem>
+            <Typography variant="body2">
+              {t("Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.",
+              {amountFiat: parseFloat(parseFloat(this.props.data.amount).toFixed(4)),
+                currencyCode: this.props.data.currencyCode})}
+            </Typography>
+          </ListItem>
+        </List>
         
-        <Grid item xs={12} align="left">
-          <Typography variant="body2">
-            {t("The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC. Please provide a valid invoice for {{amountSats}} Satoshis.",
-            {amountFiat: parseFloat(parseFloat(this.props.data.amount).toFixed(4)),
-              currencyCode: this.props.data.currencyCode,
-              amountSats: pn(this.props.data.invoice_amount)}
-              )
-            }
-          </Typography>
+        <Grid item xs={12} align="center">
+          <ToggleButtonGroup 
+            value={this.state.receiveTab} 
+            exclusive >
+              <ToggleButton value={0} disableRipple={true} onClick={() => this.setState({receiveTab:0})}>
+                <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><BoltIcon/> {t("Lightning")}</div>
+              </ToggleButton>
+              <ToggleButton value={1} disabled={!this.props.data.swap_allowed} onClick={() => this.setState({receiveTab:1, miningFee: parseFloat(this.props.data.suggested_mining_fee_rate)})} >
+                <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><LinkIcon/> {t("Onchain")}</div>
+              </ToggleButton>
+          </ToggleButtonGroup>
         </Grid>
+        
 
-        <Grid item xs={12} align="center">
-          {this.compatibleWalletsButton()}
-        </Grid>
+            {/* LIGHTNING PAYOUT TAB */}
+            <div style={{display: this.state.receiveTab == 0 ? '':'none'}}>
+              <div style={{height:15}}/>
+              <Grid container spacing={1}>
+                <Grid item xs={12} align="center">
+                  <Typography variant="body2">
+                    {t("Submit a valid invoice for {{amountSats}} Satoshis.",
+                    {amountSats: pn(this.props.data.invoice_amount)})}
+                  </Typography>
+                </Grid>
 
-        <Grid item xs={12} align="center">
-          <TextField
-              error={this.state.badInvoice}
-              helperText={this.state.badInvoice ? t(this.state.badInvoice) : "" }
-              label={t("Payout Lightning Invoice")}
-              required
-              value={this.state.invoice}
-              inputProps={{
-                  style: {textAlign:"center"},
-                  maxHeight: 200,
-              }}
-              multiline
-              minRows={5}
-              maxRows={this.state.qrscanner ? 5 : 10}
-              onChange={this.handleInputInvoiceChanged}
-          />
-        </Grid>
-        {this.state.qrscanner ?
-        <Grid item xs={12} align="center">
-          <QrReader
-              delay={300}
-              onError={this.handleError}
-              onScan={this.handleScan}
-              style={{ width: '75%' }}
-            />
-          </Grid>
-          : null }
-        <Grid item xs={12} align="center">
-          <IconButton><QrCodeScannerIcon onClick={this.handleQRbutton}/></IconButton>
-          <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>{t("Submit")}</Button>
-        </Grid>
+                <Grid item xs={12} align="center">
+                  {this.compatibleWalletsButton()}
+                </Grid>
+
+                <Grid item xs={12} align="center">
+                  <TextField
+                      error={this.state.badInvoice}
+                      helperText={this.state.badInvoice ? t(this.state.badInvoice) : "" }
+                      label={t("Payout Lightning Invoice")}
+                      required
+                      value={this.state.invoice}
+                      inputProps={{
+                          style: {textAlign:"center"},
+                          maxHeight: 200,
+                      }}
+                      multiline
+                      minRows={4}
+                      maxRows={this.state.qrscanner ? 4 : 8}
+                      onChange={this.handleInputInvoiceChanged}
+                  />
+                </Grid>
+                {this.state.qrscanner ?
+                <Grid item xs={12} align="center">
+                  <QrReader
+                      delay={300}
+                      onError={this.handleError}
+                      onScan={this.handleScan}
+                      style={{ width: '75%' }}
+                    />
+                  </Grid>
+                  : null }
+                <Grid item xs={12} align="center">
+                  <IconButton><QrCodeScannerIcon onClick={this.handleQRbutton}/></IconButton>
+                  <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>{t("Submit")}</Button>
+                </Grid>
+              </Grid>
+            </div>
+        
+          {/* ONCHAIN PAYOUT TAB */}
+          <div style={{display: this.state.receiveTab == 1 ? '':'none'}}>
+            <List dense={true}>
+              <ListItem>
+                <Typography variant="body2">
+                  <b>{t("EXPERIMENTAL: ")}</b>{t("RoboSats will do a swap and send the Sats to your onchain address.")}
+                </Typography>
+              </ListItem>
+                
+              <Divider/>
+
+                <ListItem>
+                  <ListItemText 
+                    primary={pn(parseInt(this.props.data.invoice_amount * this.props.data.swap_fee_rate/100)) + " Sats (" + this.props.data.swap_fee_rate + "%)"} 
+                    secondary={t("Swap fee")}/>
+                </ListItem>
+
+                <Divider/>
+                
+                <ListItem>
+                  <ListItemText 
+                    primary={pn(parseInt(Math.max(1 , this.state.miningFee) * 141)) + " Sats (" + Math.max(1, this.state.miningFee) + " Sats/vByte)"} 
+                    secondary={t("Mining fee")}/>
+                </ListItem>
+
+                <Divider/>
+
+                <ListItem>
+                  <ListItemText 
+                    primary={<b>{pn(parseInt(this.props.data.invoice_amount - (Math.max(1, this.state.miningFee) * 141) - (this.props.data.invoice_amount * this.props.data.swap_fee_rate/100)))+ " Sats"}</b>}
+                    secondary={t("Final amount you will receive")}/>
+                </ListItem>
+              </List>
+                <TextField
+                    error={this.state.badAddress}
+                    helperText={this.state.badAddress ? t(this.state.badAddress) : "" }
+                    label={t("Bitcoin Address")}
+                    required
+                    value={this.state.invoice}
+                    sx={{width:170}}
+                    inputProps={{
+                        style: {textAlign:"center"},
+                    }}
+                    onChange={this.handleInputAddressChanged}
+                />
+                <TextField
+                    error={this.state.miningFee <  1 || this.state.miningFee > 50}
+                    helperText={this.state.miningFee <  1 || this.state.miningFee > 50 ? "Invalid" : ''}
+                    label={t("Mining Fee")}
+                    required
+                    sx={{width:110}}
+                    value={this.state.miningFee}
+                    type="number"
+                    inputProps={{
+                        max:50,
+                        min:1,
+                        style: {textAlign:"center"},
+                    }}
+                    onChange={this.handleMiningFeeChanged}
+                />
+              <div style={{height:10}}/>
+
+              <Grid item xs={12} align="center">
+                <Button onClick={this.handleClickSubmitAddressButton} variant='contained' color='primary'>{t("Submit")}</Button>
+              </Grid>
+          </div>
+        <List>
+          <Divider/>
+        </List>
 
         {this.showBondIsLocked()}
       </Grid>
@@ -803,7 +941,7 @@ class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Typography  variant="subtitle1">
-            <b>{t("Your invoice looks good!")}</b> {" " + this.stepXofY()}
+            <b>{t("Your info looks good!")}</b> {" " + this.stepXofY()}
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -1095,19 +1233,42 @@ handleRatingRobosatsChange=(e)=>{
         {this.state.rating_platform==5 ?
         <Grid item xs={12} align="center">
           <Typography  variant="body2" align="center">
-            <p><b>{t("Thank you! RoboSats loves you too ❤️")}</b></p>
-            <p>{t("RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!")}</p>
+            <b>{t("Thank you! RoboSats loves you too ❤️")}</b>
+          </Typography>
+          <Typography  variant="body2" align="center">
+            {t("RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!")}
           </Typography>
         </Grid>
         : null}
         {this.state.rating_platform!=5 & this.state.rating_platform!=null ?
         <Grid item xs={12} align="center">
           <Typography  variant="body2" align="center">
-            <p><b>{t("Thank you for using Robosats!")}</b></p>
-            <p><Trans i18nKey="let_us_know_hot_to_improve">Let us know how the platform could improve (<Link target='_blank' href="https://t.me/robosats">Telegram</Link> / <Link target='_blank' href="https://github.com/Reckless-Satoshi/robosats/issues">Github</Link>)</Trans></p>
+            <b>{t("Thank you for using Robosats!")}</b>
+          </Typography>
+          <Typography  variant="body2" align="center">
+            <Trans i18nKey="let_us_know_hot_to_improve">Let us know how the platform could improve (<Link target='_blank' href="https://t.me/robosats">Telegram</Link> / <Link target='_blank' href="https://github.com/Reckless-Satoshi/robosats/issues">Github</Link>)</Trans>
           </Typography>
         </Grid>
         : null}
+
+        {/* SHOW TXID IF USER RECEIVES ONCHAIN */}
+        {this.props.data.txid ?
+          <Grid item xs={12} align="left">
+            <Alert severity="success">
+              <AlertTitle>{t("Your TXID")}
+                <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
+                  <IconButton color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.txid)}}>
+                    <ContentCopy sx={{width:16,height:16}}/>
+                  </IconButton>
+                </Tooltip>
+              </AlertTitle>
+              <Typography  variant="body2" align="center" sx={{ wordWrap: "break-word", width:220}}>
+                <Link target='_blank' href={"http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/"+(this.props.data.network =="testnet"? "testnet/": "")+"tx/"+this.props.data.txid}>{this.props.data.txid}</Link>
+              </Typography>
+            </Alert>
+          </Grid>
+        : null}
+
         <Grid item xs={12} align="center">
           <Button color='primary' onClick={() => {this.props.push('/')}}>{t("Start Again")}</Button>
         </Grid>

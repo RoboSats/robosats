@@ -12,8 +12,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 
 from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer
-from api.models import LNPayment, MarketTick, Order, Currency, Profile
-from control.models import AccountingDay
+from api.models import LNPayment, MarketTick, OnchainPayment, Order, Currency, Profile
+from control.models import AccountingDay, BalanceLog
 from api.logics import Logics
 from api.messages import Telegram
 from secrets import token_urlsafe
@@ -337,7 +337,7 @@ class OrderView(viewsets.ViewSet):
         elif data["is_buyer"] and (order.status == Order.Status.WF2
                                    or order.status == Order.Status.WFI):
 
-            # If the two bonds are locked, reply with an AMOUNT so he can send the buyer invoice.
+            # If the two bonds are locked, reply with an AMOUNT and onchain swap cost so he can send the buyer invoice/address.
             if (order.maker_bond.status == order.taker_bond.status ==
                     LNPayment.Status.LOCKED):
                 valid, context = Logics.payout_amount(order, request.user)
@@ -399,6 +399,20 @@ class OrderView(viewsets.ViewSet):
             if order.status == Order.Status.EXP:
                 data["expiry_reason"] = order.expiry_reason
                 data["expiry_message"] = Order.ExpiryReasons(order.expiry_reason).label
+
+            # If status is 'Succes' add final stats and txid if it is a swap
+            if order.status == Order.Status.SUC:
+                # TODO: add summary of order for buyer/sellers: sats in/out, fee paid, total time? etc
+                # If buyer and is a swap, add TXID
+                if Logics.is_buyer(order,request.user):
+                    if order.is_swap:
+                        data["num_satoshis"] = order.payout_tx.num_satoshis
+                        data["sent_satoshis"] = order.payout_tx.sent_satoshis
+                        if order.payout_tx.status in [OnchainPayment.Status.MEMPO, OnchainPayment.Status.CONFI]:
+                            data["txid"] = order.payout_tx.txid
+                            data["network"] = str(config("NETWORK"))
+                            
+
             
         return Response(data, status.HTTP_200_OK)
 
@@ -416,9 +430,11 @@ class OrderView(viewsets.ViewSet):
         order = Order.objects.get(id=order_id)
 
         # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice'
-        # 6)'submit_statement' (in dispute), 7)'rate_user' , 'rate_platform'
+        # 5.b)'update_address' 6)'submit_statement' (in dispute), 7)'rate_user' , 8)'rate_platform'
         action = serializer.data.get("action")
         invoice = serializer.data.get("invoice")
+        address = serializer.data.get("address")
+        mining_fee_rate = serializer.data.get("mining_fee_rate")
         statement = serializer.data.get("statement")
         rating = serializer.data.get("rating")
 
@@ -462,6 +478,13 @@ class OrderView(viewsets.ViewSet):
         if action == "update_invoice":
             valid, context = Logics.update_invoice(order, request.user,
                                                    invoice)
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+        
+        # 2.b) If action is 'update address'
+        if action == "update_address":
+            valid, context = Logics.update_address(order, request.user,
+                                                   address, mining_fee_rate)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
@@ -869,6 +892,8 @@ class InfoView(ListAPIView):
         context["maker_fee"] = float(config("FEE"))*float(config("MAKER_FEE_SPLIT"))
         context["taker_fee"] = float(config("FEE"))*(1 - float(config("MAKER_FEE_SPLIT")))
         context["bond_size"] = float(config("DEFAULT_BOND_SIZE"))
+
+        context["current_swap_fee_rate"] = Logics.compute_swap_fee_rate(BalanceLog.objects.latest('time'))
 
         if request.user.is_authenticated:
             context["nickname"] = request.user.username

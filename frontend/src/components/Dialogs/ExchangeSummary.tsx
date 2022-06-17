@@ -19,6 +19,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PercentIcon from '@mui/icons-material/Percent';
 import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import BookIcon from '@mui/icons-material/Book';
+import LinkIcon from '@mui/icons-material/Link';
 
 import { pn } from "../../utils/prettyNumbers";
 
@@ -32,6 +33,7 @@ type Props = {
   lastDayNonkycBtcPremium: number;
   makerFee: number;
   takerFee: number;
+  swapFeeRate: number;
 }
 
 const ExchangeSummaryDialog = ({
@@ -44,8 +46,12 @@ const ExchangeSummaryDialog = ({
   lastDayNonkycBtcPremium,
   makerFee,
   takerFee,
+  swapFeeRate,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
+  if (swapFeeRate === null || swapFeeRate === undefined) {
+    swapFeeRate = 0
+  }
 
   return (
     <Dialog
@@ -160,6 +166,22 @@ const ExchangeSummaryDialog = ({
               </Grid>
             </Grid>
           </ListItem>
+
+          <Divider />
+
+          <ListItem >
+            <ListItemIcon>
+              <LinkIcon />
+            </ListItemIcon>
+
+            <ListItemText
+              primaryTypographyProps={{fontSize: '14px'}}
+              secondaryTypographyProps={{fontSize: '12px'}}
+              primary={`${swapFeeRate.toPrecision(3)}%`}
+              secondary={t("Current onchain payout fee")}
+            />
+          </ListItem>
+
         </List>
       </DialogContent>
     </Dialog>

@@ -1,12 +1,14 @@
 from datetime import timedelta
-from tkinter import N
+from tkinter import N, ON
+from tokenize import Octnumber
 from django.utils import timezone
 from api.lightning.node import LNNode
-from django.db.models import Q
+from django.db.models import Q, Sum
 
-from api.models import Order, LNPayment, MarketTick, User, Currency
+from api.models import OnchainPayment, Order, LNPayment, MarketTick, User, Currency
 from api.tasks import send_message
 from decouple import config
+from api.utils import validate_onchain_address
 
 import gnupg
 
@@ -494,10 +496,78 @@ class Logics:
         order.save()
         return True, None
 
+    def compute_swap_fee_rate(balance):
+
+
+        shape = str(config('SWAP_FEE_SHAPE'))
+
+        if shape == "linear":
+            MIN_SWAP_FEE = float(config('MIN_SWAP_FEE'))
+            MIN_POINT = float(config('MIN_POINT'))
+            MAX_SWAP_FEE = float(config('MAX_SWAP_FEE'))
+            MAX_POINT = float(config('MAX_POINT'))
+            if float(balance.onchain_fraction) > MIN_POINT:
+                swap_fee_rate = MIN_SWAP_FEE
+            else:
+                slope = (MAX_SWAP_FEE - MIN_SWAP_FEE) / (MAX_POINT - MIN_POINT)
+                swap_fee_rate = slope * (balance.onchain_fraction - MAX_POINT) + MAX_SWAP_FEE
+
+        elif shape == "exponential":
+            MIN_SWAP_FEE = float(config('MIN_SWAP_FEE'))
+            MAX_SWAP_FEE = float(config('MAX_SWAP_FEE'))
+            SWAP_LAMBDA = float(config('SWAP_LAMBDA'))
+            swap_fee_rate = MIN_SWAP_FEE + (MAX_SWAP_FEE - MIN_SWAP_FEE) * math.exp(-SWAP_LAMBDA * float(balance.onchain_fraction))
+
+        return swap_fee_rate * 100
+
+    @classmethod
+    def create_onchain_payment(cls, order, user, preliminary_amount):
+        '''
+        Creates an empty OnchainPayment for order.payout_tx.
+        It sets the fees to be applied to this order if onchain Swap is used.
+        If the user submits a LN invoice instead. The returned OnchainPayment goes unused.
+        '''
+        # Make sure no invoice payout is attached to order
+        order.payout = None
+
+        # Create onchain_payment
+        onchain_payment = OnchainPayment.objects.create(receiver=user)
+        
+        # Compute a safer available  onchain liquidity: (confirmed_utxos - reserve - pending_outgoing_txs))
+        # Accounts for already committed outgoing TX for previous users.
+        confirmed = onchain_payment.balance.onchain_confirmed
+        reserve = 0.01 * onchain_payment.balance.total  # We assume a reserve of 1%
+        pending_txs = OnchainPayment.objects.filter(status=OnchainPayment.Status.VALID).aggregate(Sum('num_satoshis'))['num_satoshis__sum']
+        
+        if pending_txs == None:
+            pending_txs = 0
+        
+        available_onchain = confirmed - reserve - pending_txs
+        if preliminary_amount > available_onchain:  # Not enough onchain balance to commit for this swap.
+            return False
+
+        suggested_mining_fee_rate = LNNode.estimate_fee(amount_sats=preliminary_amount)["mining_fee_rate"]
+
+        # Hardcap mining fee suggested at 50 sats/vbyte
+        if suggested_mining_fee_rate > 50:
+            suggested_mining_fee_rate = 50
+
+        onchain_payment.suggested_mining_fee_rate = max(1.05, LNNode.estimate_fee(amount_sats=preliminary_amount)["mining_fee_rate"])
+        onchain_payment.swap_fee_rate = cls.compute_swap_fee_rate(onchain_payment.balance)
+        onchain_payment.save()
+
+        order.payout_tx = onchain_payment
+        order.save()
+        return True
+
     @classmethod
     def payout_amount(cls, order, user):
         """Computes buyer invoice amount. Uses order.last_satoshis,
-        that is the final trade amount set at Taker Bond time"""
+        that is the final trade amount set at Taker Bond time
+        Adds context for onchain swap.
+        """
+        if not cls.is_buyer(order, user):
+            return False, None
 
         if user == order.maker:
             fee_fraction = FEE * MAKER_FEE_SPLIT
@@ -508,10 +578,36 @@ class Logics:
 
         reward_tip = int(config('REWARD_TIP')) if user.profile.is_referred else 0
 
-        if cls.is_buyer(order, user):
-            invoice_amount = round(order.last_satoshis - fee_sats - reward_tip)  # Trading fee to buyer is charged here.
+        context = {}
+        # context necessary for the user to submit a LN invoice
+        context["invoice_amount"] = round(order.last_satoshis - fee_sats - reward_tip)  # Trading fee to buyer is charged here.
 
-        return True, {"invoice_amount": invoice_amount}
+        # context necessary for the user to submit an onchain address
+        MIN_SWAP_AMOUNT = int(config("MIN_SWAP_AMOUNT"))
+
+        if context["invoice_amount"] < MIN_SWAP_AMOUNT:
+            context["swap_allowed"] = False
+            context["swap_failure_reason"] = "Order amount is too small to be eligible for a swap"
+            return True, context
+
+        if config("DISABLE_ONCHAIN", cast=bool):
+            context["swap_allowed"] = False
+            context["swap_failure_reason"] = "On-the-fly submarine swaps are dissabled"
+            return True, context
+
+        if order.payout_tx == None:
+            # Creates the OnchainPayment object and checks node balance
+            valid = cls.create_onchain_payment(order, user, preliminary_amount=context["invoice_amount"])
+            if not valid:
+                context["swap_allowed"] = False
+                context["swap_failure_reason"] = "Not enough onchain liquidity available to offer a SWAP"
+                return True, context
+
+        context["swap_allowed"] = True
+        context["suggested_mining_fee_rate"] = order.payout_tx.suggested_mining_fee_rate
+        context["swap_fee_rate"] = order.payout_tx.swap_fee_rate
+
+        return True, context
 
     @classmethod
     def escrow_amount(cls, order, user):
@@ -531,6 +627,66 @@ class Logics:
             escrow_amount = round(order.last_satoshis + fee_sats + reward_tip)  # Trading fee to seller is charged here.
 
         return True, {"escrow_amount": escrow_amount}
+
+    @classmethod
+    def update_address(cls, order, user, address, mining_fee_rate):
+        
+        # Empty address?
+        if not address:
+            return False, {
+                "bad_address":
+                "You submitted an empty invoice"
+            }
+        # only the buyer can post a buyer address
+        if not cls.is_buyer(order, user):
+            return False, {
+                "bad_request":
+                "Only the buyer of this order can provide a payout address."
+            }
+        # not the right time to submit
+        if (not (order.taker_bond.status == order.maker_bond.status ==
+                 LNPayment.Status.LOCKED)
+                and not order.status == Order.Status.FAI):
+            return False, {
+                "bad_request":
+                "You cannot submit an adress are not locked."
+            }
+        # not a valid address (does not accept Taproot as of now)
+        valid, context = validate_onchain_address(address)
+        if not valid:
+            return False, context
+
+        if mining_fee_rate:
+            # not a valid mining fee
+            if float(mining_fee_rate) <= 1:
+                return False, {
+                    "bad_address":
+                    "The mining fee is too low."
+                }
+            elif float(mining_fee_rate) > 50:
+                return False, {
+                    "bad_address":
+                    "The mining fee is too high."
+                }
+            order.payout_tx.mining_fee_rate = float(mining_fee_rate)
+        # If not mining ee provider use backend's suggested fee rate
+        else:
+            order.payout_tx.mining_fee_rate = order.payout_tx.suggested_mining_fee_rate
+
+        tx = order.payout_tx
+        tx.address = address
+        tx.mining_fee_sats = int(tx.mining_fee_rate * 141)
+        tx.num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
+        tx.sent_satoshis = int(float(tx.num_satoshis) - float(tx.num_satoshis) * float(tx.swap_fee_rate)/100 - float(tx.mining_fee_sats))
+        tx.status = OnchainPayment.Status.VALID
+        tx.save()
+
+        order.is_swap = True
+        order.save()
+
+        cls.move_state_updated_payout_method(order)
+
+        return True, None
 
     @classmethod
     def update_invoice(cls, order, user, invoice):
@@ -563,6 +719,11 @@ class Logics:
                     "You cannot submit an invoice only after expiration or 3 failed attempts"
                 }
 
+        # cancel onchain_payout if existing
+        if order.payout_tx:
+            order.payout_tx.status = OnchainPayment.Status.CANCE
+            order.payout_tx.save()
+
         num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
         payout = LNNode.validate_ln_invoice(invoice, num_satoshis)
 
@@ -573,7 +734,7 @@ class Logics:
             concept=LNPayment.Concepts.PAYBUYER,
             type=LNPayment.Types.NORM,
             sender=User.objects.get(username=ESCROW_USERNAME),
-            order_paid=
+            order_paid_LN=
             order,  # In case this user has other payouts, update the one related to this order.
             receiver=user,
             # if there is a LNPayment matching these above, it updates that one with defaults below.
@@ -588,6 +749,15 @@ class Logics:
             },
         )
 
+        order.is_swap = False
+        order.save()
+
+        cls.move_state_updated_payout_method(order)
+
+        return True, None
+
+    @classmethod
+    def move_state_updated_payout_method(cls,order):
         # If the order status is 'Waiting for invoice'. Move forward to 'chat'
         if order.status == Order.Status.WFI:
             order.status = Order.Status.CHA
@@ -617,10 +787,9 @@ class Logics:
                 order.payout.status = LNPayment.Status.FLIGHT
                 order.payout.routing_attempts = 0
                 order.payout.save()
-                order.save()
-
+                
         order.save()
-        return True, None
+        return True
 
     def add_profile_rating(profile, rating):
         """adds a new rating to a user profile"""
@@ -1087,7 +1256,6 @@ class Logics:
 
     def settle_escrow(order):
         """Settles the trade escrow hold invoice"""
-        # TODO ERROR HANDLING
         if LNNode.settle_hold_invoice(order.trade_escrow.preimage):
             order.trade_escrow.status = LNPayment.Status.SETLED
             order.trade_escrow.save()
@@ -1095,7 +1263,6 @@ class Logics:
 
     def settle_bond(bond):
         """Settles the bond hold invoice"""
-        # TODO ERROR HANDLING
         if LNNode.settle_hold_invoice(bond.preimage):
             bond.status = LNPayment.Status.SETLED
             bond.save()
@@ -1152,6 +1319,35 @@ class Logics:
                 raise e
 
     @classmethod
+    def pay_buyer(cls, order):
+        '''Pays buyer invoice or onchain address'''
+
+        # Pay to buyer invoice
+        if not order.is_swap:
+            ##### Background process "follow_invoices" will try to pay this invoice until success
+            order.status = Order.Status.PAY
+            order.payout.status = LNPayment.Status.FLIGHT
+            order.payout.save()
+            order.save()
+            send_message.delay(order.id,'trade_successful')
+            return True
+
+        # Pay onchain to address
+        else:
+            if not order.payout_tx.status == OnchainPayment.Status.VALID:
+                return False
+
+            valid = LNNode.pay_onchain(order.payout_tx)
+            if valid:
+                order.payout_tx.status = OnchainPayment.Status.MEMPO
+                order.payout_tx.save()
+                order.status = Order.Status.SUC
+                order.save()
+                send_message.delay(order.id,'trade_successful')
+                return True
+            return False
+
+    @classmethod
     def confirm_fiat(cls, order, user):
         """If Order is in the CHAT states:
         If user is buyer: fiat_sent goes to true.
@@ -1159,7 +1355,7 @@ class Logics:
 
         if (order.status == Order.Status.CHA
                 or order.status == Order.Status.FSE
-            ):  # TODO Alternatively, if all collateral is locked? test out
+            ):
 
             # If buyer, settle escrow and mark fiat sent
             if cls.is_buyer(order, user):
@@ -1175,30 +1371,24 @@ class Logics:
                     }
 
                 # Make sure the trade escrow is at least as big as the buyer invoice
-                if order.trade_escrow.num_satoshis <= order.payout.num_satoshis:
+                num_satoshis = order.payout_tx.num_satoshis if order.is_swap else order.payout.num_satoshis
+                if order.trade_escrow.num_satoshis <= num_satoshis:
                     return False, {
                         "bad_request":
                         "Woah, something broke badly. Report in the public channels, or open a Github Issue."
                     }
-
-                if cls.settle_escrow(
-                        order
-                ):  ##### !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
+                
+                # !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
+                if cls.settle_escrow(order):  
                     order.trade_escrow.status = LNPayment.Status.SETLED
 
                 # Double check the escrow is settled.
-                if LNNode.double_check_htlc_is_settled(
-                        order.trade_escrow.payment_hash):
-                    # RETURN THE BONDS // Probably best also do it even if payment failed
+                if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash):
+                    # RETURN THE BONDS 
                     cls.return_bond(order.taker_bond)
                     cls.return_bond(order.maker_bond)
                     ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
-                    ##### Background process "follow_invoices" will try to pay this invoice until success
-                    order.status = Order.Status.PAY
-                    order.payout.status = LNPayment.Status.FLIGHT
-                    order.payout.save()
-                    order.save()
-                    send_message.delay(order.id,'trade_successful')
+                    cls.pay_buyer(order)
 
                     # Add referral rewards (safe)
                     try:

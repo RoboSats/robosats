@@ -1,5 +1,5 @@
 from django.contrib import admin
-from control.models import AccountingDay, AccountingMonth, Dispute
+from control.models import AccountingDay, BalanceLog
 from import_export.admin import ImportExportModelAdmin
 
 # Register your models here.
@@ -17,6 +17,7 @@ class AccountingDayAdmin(ImportExportModelAdmin):
         "inflow",
         "outflow",
         "routing_fees",
+        "mining_fees",
         "cashflow",
         "outstanding_earned_rewards",
         "outstanding_pending_disputes",
@@ -28,26 +29,32 @@ class AccountingDayAdmin(ImportExportModelAdmin):
     change_links = ["day"]
     search_fields = ["day"]
 
-@admin.register(AccountingMonth)
-class AccountingMonthAdmin(ImportExportModelAdmin):
+@admin.register(BalanceLog)
+class BalanceLogAdmin(ImportExportModelAdmin):
 
     list_display = (
-        "month",
-        "contracted",
-        "num_contracts",
-        "net_settled",
-        "net_paid",
-        "net_balance",
-        "inflow",
-        "outflow",
-        "routing_fees",
-        "cashflow",
-        "outstanding_earned_rewards",
-        "outstanding_pending_disputes",
-        "lifetime_rewards_claimed",
-        "outstanding_earned_rewards",
-        "pending_disputes",
-        "rewards_claimed",
+        "time",
+        "total",
+        "onchain_fraction",
+        "onchain_total",
+        "onchain_confirmed",
+        "onchain_unconfirmed",
+        "ln_local",
+        "ln_remote",
+        "ln_local_unsettled",
+        "ln_remote_unsettled",
     )
-    change_links = ["month"]
-    search_fields = ["month"]
+    readonly_fields = [
+        "time",
+        "total",
+        "onchain_fraction",
+        "onchain_total",
+        "onchain_confirmed",
+        "onchain_unconfirmed",
+        "ln_local",
+        "ln_remote",
+        "ln_local_unsettled",
+        "ln_remote_unsettled",
+    ]
+    change_links = ["time"]
+    search_fields = ["time"]
