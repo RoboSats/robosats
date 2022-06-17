@@ -271,8 +271,7 @@
     "Learn how to verify":"Impara come verificare",
     "Your PGP public key. Your peer uses it to encrypt messages only you can read.":"La tua chiave PGP pubblica. Il tuo pari la utilizza per cifrare i messaggi che solo tu puoi leggere.",
     "Your public key":"La tua chiave pubblica",
-    "Your peer PGP public key. You use it to encrypt messages only he can read and to verify your peer signed the incoming messages.":"La chiave PGP pubblica del tuo pari. La utilizzi per cifrare i messaggi che solo il tuo pari può leggere e per verificare che la firma del tuo pari nei messaggi che ricevi.
-	",
+    "Your peer PGP public key. You use it to encrypt messages only he can read and to verify your peer signed the incoming messages.":"La chiave PGP pubblica del tuo pari. La utilizzi per cifrare i messaggi che solo il tuo pari può leggere e per verificare che la firma del tuo pari nei messaggi che ricevi.",
     "Peer public key":"La chiave pubblica del tuo pari",
     "Your encrypted private key. You use it to decrypt the messages that your peer encrypted for you. You also use it to sign the messages you send.":"La tua chiave privata cifrata. La utilizzi per decifrare i messaggi che il tuo pari ha cifrato per te. La usi anche quando firmi i messaggi che invii.",
     "Your encrypted private key":"La tua chiave privata cifrata",

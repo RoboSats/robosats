@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { withTranslation } from "react-i18next";
 import { Badge, Tooltip, ListItemAvatar, Avatar,Paper, Grid, IconButton, Select, MenuItem, ListItemText, ListItem, ListItemIcon, ListItemButton } from "@mui/material";
 import MediaQuery from 'react-responsive'
+import Flags from 'country-flag-icons/react/3x2'
 
 // Icons
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -255,6 +256,10 @@ bottomBarDesktop =()=>{
 
     LangSelect = () => {
         const { i18n} = this.props;
+        const flagProps = {
+            width: 20,
+            height: 20,
+          };
         return(
             <Select
                 size = 'small'
@@ -262,15 +267,17 @@ bottomBarDesktop =()=>{
                 inputProps={{
                     style: {textAlign:"center"}
                 }}
+                renderValue={(value)=>value.toUpperCase()}
                 onChange={this.handleChangeLang}>
-                    <MenuItem value={'en'}>EN</MenuItem>
-                    <MenuItem value={'es'}>ES</MenuItem>
-                    <MenuItem value={'de'}>DE</MenuItem>
-                    <MenuItem value={'pl'}>PL</MenuItem>
-                    <MenuItem value={'fr'}>FR</MenuItem>
-                    <MenuItem value={'ca'}>CA</MenuItem>
-                    <MenuItem value={'ru'}>RU</MenuItem>
-                    <MenuItem disabled={true} value={'zh'}>ZH</MenuItem>
+                    <MenuItem value={'en'}><div style={{width:24,position:"relative",top:3}}><Flags.US {...flagProps}/></div>EN</MenuItem>
+                    <MenuItem value={'es'}><div style={{width:24,position:"relative",top:3}}><Flags.ES {...flagProps}/></div>ES</MenuItem>
+                    <MenuItem value={'de'}><div style={{width:24,position:"relative",top:3}}><Flags.DE {...flagProps}/></div>DE</MenuItem>
+                    <MenuItem value={'pl'}><div style={{width:24,position:"relative",top:3}}><Flags.PL {...flagProps}/></div>PL</MenuItem>
+                    <MenuItem value={'fr'}><div style={{width:24,position:"relative",top:3}}><Flags.FR {...flagProps}/></div>FR</MenuItem>
+                    <MenuItem value={'ru'}><div style={{width:24,position:"relative",top:3}}><Flags.RU {...flagProps}/></div>RU</MenuItem>
+                    <MenuItem value={'it'}><div style={{width:24,position:"relative",top:3}}><Flags.IT {...flagProps}/></div>IT</MenuItem>
+                    <MenuItem disabled={true} value={'zh'}><div style={{width:24,position:"relative",top:3}}><Flags.CN {...flagProps}/></div>ZH</MenuItem>
+                    <MenuItem value={'ca'}>CAT</MenuItem>
                 </Select>
         )
     }

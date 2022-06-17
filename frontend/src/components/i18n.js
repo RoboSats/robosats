@@ -11,6 +11,7 @@ import translationRU from "../locales/ru.json";
 import translationPL from "../locales/pl.json";
 import translationFR from "../locales/fr.json";
 import translationCA from "../locales/ca.json";
+import translationIT from "../locales/it.json";
 
 i18n
   .use(HttpApi)
@@ -26,6 +27,7 @@ i18n
     pl: {translations: translationPL},
     fr: {translations: translationFR},
     ca: {translations: translationCA},
+    it: {translations: translationIT},
   },
   
   fallbackLng: "en",

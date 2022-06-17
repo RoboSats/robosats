@@ -436,11 +436,17 @@ class MakerPage extends Component {
                             />
                     </div>
                 <Grid item>
-                <Tooltip placement="top" enterTouchDelay={0} enterDelay={1000} enterNextDelay={2000} title={this.state.is_explicit? t("Your order fixed exchange rate"): t("Your order's current exchange rate. Rate will move with the market.")}>
-                    <Typography variant="caption" color="text.secondary">
-                        {(this.state.is_explicit ? t("Order rate:"): t("Order current rate:"))+" "+pn(this.priceNow())+" "+this.state.currencyCode+"/BTC"}
-                    </Typography>
-                </Tooltip>
+                    <div style={{ display: this.state.loadingLimits == true ? '':'none'}}>
+                        <div style={{height:4}}/>
+                        <LinearProgress />
+                    </div>
+                    <div style={{ display: this.state.loadingLimits == false ? '':'none'}}>
+                        <Tooltip placement="top" enterTouchDelay={0} enterDelay={1000} enterNextDelay={2000} title={this.state.is_explicit? t("Your order fixed exchange rate"): t("Your order's current exchange rate. Rate will move with the market.")}>
+                            <Typography variant="caption" color="text.secondary">
+                                {(this.state.is_explicit ? t("Order rate:"): t("Order current rate:"))+" "+pn(this.priceNow())+" "+this.state.currencyCode+"/BTC"}
+                            </Typography>
+                        </Tooltip>
+                    </div>
                 </Grid>
                 </Grid>
             </Paper>
