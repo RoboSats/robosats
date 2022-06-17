@@ -19,15 +19,28 @@ def validate_onchain_address(address):
     validation = addr.validate('btc', address.encode('utf-8'))
 
     if not validation.valid:
-        return False
+        return False, {
+                "bad_address":
+                "Does not look like a valid address"
+            }
 
     NETWORK = str(config('NETWORK'))
     if NETWORK == 'mainnet':
         if validation.network == 'main':
-            return True
+            return True, None
+        else:
+            return False, {
+                "bad_address":
+                "This is not a bitcoin mainnet address"
+            }
     elif NETWORK == 'testnet':
         if validation.network == 'test':
-            return True
+            return True, None
+        else:
+            return False, {
+                "bad_address":
+                "This is not a bitcoin testnet address"
+            }
 
 market_cache = {}
 @ring.dict(market_cache, expire=3)  # keeps in cache for 3 seconds

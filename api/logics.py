@@ -1,5 +1,6 @@
 from datetime import timedelta
 from tkinter import N, ON
+from tokenize import Octnumber
 from django.utils import timezone
 from api.lightning.node import LNNode
 from django.db.models import Q, Sum
@@ -526,6 +527,10 @@ class Logics:
         It sets the fees to be applied to this order if onchain Swap is used.
         If the user submits a LN invoice instead. The returned OnchainPayment goes unused.
         '''
+        # Make sure no invoice payout is attached to order
+        order.payout = None
+
+        # Create onchain_payment
         onchain_payment = OnchainPayment.objects.create(receiver=user)
         
         # Compute a safer available  onchain liquidity: (confirmed_utxos - reserve - pending_outgoing_txs))
@@ -647,11 +652,10 @@ class Logics:
                 "You cannot submit an adress are not locked."
             }
         # not a valid address (does not accept Taproot as of now)
-        if not validate_onchain_address(address):
-            return False, {
-                "bad_address":
-                "Does not look like a valid address"
-            }
+        valid, context = validate_onchain_address(address)
+        if not valid:
+            return False, context
+
         if mining_fee_rate:
             # not a valid mining fee
             if float(mining_fee_rate) <= 1:
@@ -714,6 +718,11 @@ class Logics:
                     "bad_request":
                     "You cannot submit an invoice only after expiration or 3 failed attempts"
                 }
+
+        # cancel onchain_payout if existing
+        if order.payout_tx:
+            order.payout_tx.status = OnchainPayment.Status.CANCE
+            order.payout_tx.save()
 
         num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
         payout = LNNode.validate_ln_invoice(invoice, num_satoshis)
@@ -1325,6 +1334,9 @@ class Logics:
 
         # Pay onchain to address
         else:
+            if not order.payout_tx.status == OnchainPayment.Status.VALID:
+                return False
+
             valid = LNNode.pay_onchain(order.payout_tx)
             if valid:
                 order.payout_tx.status = OnchainPayment.Status.MEMPO

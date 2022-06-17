@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { withTranslation, Trans} from "react-i18next";
-import { Alert, AlertTitle, Tabs, Tab, IconButton, Box, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import { Alert, AlertTitle, ToggleButtonGroup, ToggleButton, IconButton, Box, Link, Paper, Rating, Button, Tooltip, CircularProgress, Grid, Typography, TextField, List, ListItem, ListItemText, Divider, ListItemIcon, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
 import QRCode from "react-qr-code";
 import Countdown, { zeroPad} from 'react-countdown';
 import Chat from "./EncryptedChat"
@@ -654,16 +654,21 @@ class TradeBox extends Component {
                 currencyCode: this.props.data.currencyCode})}
             </Typography>
           </ListItem>
+        </List>
         
-          <ListItem>
-            <Paper elevation={2}>
-              <Tabs value={this.state.receiveTab} variant="fullWidth" sx={{width:290}}>
-                <Tab disableRipple={true} label={<div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><BoltIcon/> Lightning</div>} onClick={() => this.setState({receiveTab:0})}/>
-                <Tab label={<div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><LinkIcon/> Onchain</div>} disabled={!this.props.data.swap_allowed} onClick={() => this.setState({receiveTab:1, miningFee: parseFloat(this.props.data.suggested_mining_fee_rate)})} />
-              </Tabs>
-            </Paper>
-          </ListItem>
-          </List>
+        <Grid item xs={12} align="center">
+          <ToggleButtonGroup 
+            value={this.state.receiveTab} 
+            exclusive >
+              <ToggleButton value={0} disableRipple={true} onClick={() => this.setState({receiveTab:0})}>
+                <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><BoltIcon/> Lightning</div>
+              </ToggleButton>
+              <ToggleButton value={1} disabled={!this.props.data.swap_allowed} onClick={() => this.setState({receiveTab:1, miningFee: parseFloat(this.props.data.suggested_mining_fee_rate)})} >
+                <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><LinkIcon/> Onchain</div>
+              </ToggleButton>
+          </ToggleButtonGroup>
+        </Grid>
+        
 
             {/* LIGHTNING PAYOUT TAB */}
             <div style={{display: this.state.receiveTab == 0 ? '':'none'}}>
