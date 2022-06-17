@@ -182,8 +182,7 @@
     "Join RoboSats' Subreddit":"Únete al subreddit de RoboSats",
     "RoboSats in Reddit":"RoboSats en Reddit",
     "Current onchain payout fee":"Coste actual de recibir onchain",
-    "Lightning":"Lightning",
-    "Onchain":"Onchain",
+
 
     "ORDER PAGE - OrderPage.js": "Order details page",
     "Order Box": "Orden",
@@ -255,6 +254,7 @@
     "This order has been cancelled collaborativelly":"Esta orden se ha cancelado colaborativamente",
     "You are not allowed to see this order": "No tienes permiso para ver esta orden",
     "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues": "Los Satoshis Robóticos del almacén no te entendieron. Por favor rellena un Bug Issue en Github https://github.com/reckless-satoshi/robosats/issues",
+
 
     "CHAT BOX - Chat.js": "Ventana del chat",
     "You": "Tú",
@@ -395,7 +395,7 @@
     "This is not a bitcoin testnet address":"No es una dirección de testnet",
     "Submit payout info for {{amountSats}} Sats":"Envia info para recibir {{amountSats}} Sats",
     "Submit a valid invoice for {{amountSats}} Satoshis.": "Envía una factura por {{amountSats}} Sats",
-    "Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.":"Antes de dejarte enviar {{amountFiat}} {{currencyCode}}, queremos asegurarnos de que puedes recibir el Bitcoin.",
+    "Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.":"Antes de dejarte enviar {{amountFiat}} {{currencyCode}}, queremos asegurarnos de que puedes recibir BTC.",
     "RoboSats will do a swap and send the Sats to your onchain address.":"RoboSats hará un swap y enviará los Sats a tu dirección en la cadena.",
     "Swap fee":"Comisión del swap",
     "Mining fee":"Comisión minera",
@@ -403,7 +403,8 @@
     "Final amount you will receive":"Monto final que vas a recibir",
     "Bitcoin Address":"Dirección Bitcoin",
     "Your TXID":"Tu TXID",
-
+    "Lightning":"Lightning",
+    "Onchain":"Onchain",
 
     "INFO DIALOG - InfoDiagog.js": "App information and clarifications and terms of use",
     "Close": "Cerrar",

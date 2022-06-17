@@ -657,7 +657,8 @@ class TradeBox extends Component {
         </List>
         
         <Grid item xs={12} align="center">
-          <ToggleButtonGroup 
+          <ToggleButtonGroup
+            size="small" 
             value={this.state.receiveTab} 
             exclusive >
               <ToggleButton value={0} disableRipple={true} onClick={() => this.setState({receiveTab:0})}>
