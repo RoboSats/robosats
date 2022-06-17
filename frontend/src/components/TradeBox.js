@@ -649,7 +649,7 @@ class TradeBox extends Component {
           <Divider/>
           <ListItem>
             <Typography variant="body2">
-              {t("The taker is committed! Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.",
+              {t("Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.",
               {amountFiat: parseFloat(parseFloat(this.props.data.amount).toFixed(4)),
                 currencyCode: this.props.data.currencyCode})}
             </Typography>
@@ -661,10 +661,10 @@ class TradeBox extends Component {
             value={this.state.receiveTab} 
             exclusive >
               <ToggleButton value={0} disableRipple={true} onClick={() => this.setState({receiveTab:0})}>
-                <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><BoltIcon/> Lightning</div>
+                <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><BoltIcon/> {t("Lightning")}</div>
               </ToggleButton>
               <ToggleButton value={1} disabled={!this.props.data.swap_allowed} onClick={() => this.setState({receiveTab:1, miningFee: parseFloat(this.props.data.suggested_mining_fee_rate)})} >
-                <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><LinkIcon/> Onchain</div>
+                <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap'}}><LinkIcon/> {t("Onchain")}</div>
               </ToggleButton>
           </ToggleButtonGroup>
         </Grid>
