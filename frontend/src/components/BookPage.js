@@ -108,7 +108,7 @@ class BookPage extends Component {
                 <ListItemAvatar>
                 <Tooltip placement="right" enterTouchDelay={0} title={t(params.row.robot_status)}>
                   <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(params.row.robot_status)}>
-                  <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"11px", top:"2px"}}> {params.row.type == t("Buyer") ? <SendReceiveIcon sx={{transform: "scaleX(-1)",height:"20px",width:"20px"}} color="secondary"/> : <SendReceiveIcon sx={{height:"20px",width:"20px"}} color="primary"/>}</div>}>
+                  <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"6px", top:"1px"}}> {params.row.type == t("Buyer") ? <SendReceiveIcon sx={{transform: "scaleX(-1)",height:"18px",width:"18px"}} color="secondary"/> : <SendReceiveIcon sx={{height:"20px",width:"20px"}} color="primary"/>}</div>}>
                     <div style={{ width: 45, height: 45 }}>
                       <Image className='bookAvatar'
                           disableError={true}
@@ -208,7 +208,7 @@ class BookPage extends Component {
               <div style={{ position: "relative", left: "-5px" }}>
                 <Tooltip placement="right" enterTouchDelay={0} title={params.row.robot+" ("+t(params.row.robot_status)+")"}>
                   <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(params.row.robot_status)}>
-                  <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"11px", top:"2px"}}> {params.row.type == t("Buyer") ? <SendReceiveIcon sx={{transform: "scaleX(-1)",height:"20px",width:"20px"}} color="secondary"/> : <SendReceiveIcon sx={{height:"20px",width:"20px"}} color="primary"/>}</div>}>
+                  <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"6px", top:"1px"}}> {params.row.type == t("Buyer") ? <SendReceiveIcon sx={{transform: "scaleX(-1)",height:"18px",width:"18px"}} color="secondary"/> : <SendReceiveIcon sx={{height:"20px",width:"20px"}} color="primary"/>}</div>}>
                     <div style={{ width: 45, height: 45 }}>
                       <Image className='bookAvatar'
                           disableError={true}
