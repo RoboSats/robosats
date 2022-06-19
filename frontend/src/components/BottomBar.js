@@ -3,9 +3,10 @@ import { withTranslation } from "react-i18next";
 import { Badge, Tooltip, ListItemAvatar, Avatar,Paper, Grid, IconButton, Select, MenuItem, ListItemText, ListItem, ListItemIcon, ListItemButton } from "@mui/material";
 import MediaQuery from 'react-responsive'
 import Flags from 'country-flag-icons/react/3x2'
+import { Link as LinkRouter } from "react-router-dom";
 
 // Icons
-import SettingsIcon from '@mui/icons-material/Settings';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import PeopleIcon from '@mui/icons-material/People';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import SellIcon from '@mui/icons-material/Sell';
@@ -158,7 +159,13 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <IconButton onClick={this.handleClickOpenExchangeSummary}><InventoryIcon/></IconButton>
+                                <IconButton
+                                    color="primary" 
+                                    onClick={()=> this.props.setAppState({buyChecked: false, sellChecked: true, type:0}) && this.getInfo()}
+                                    to={`/book/`}
+                                    component={LinkRouter} >
+                                    <InventoryIcon/>
+                                </IconButton>
                             </ListItemIcon>
                             <ListItemText
                                 primaryTypographyProps={{fontSize: '14px'}}
@@ -171,7 +178,13 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                            <IconButton onClick={this.handleClickOpenExchangeSummary}><SellIcon/></IconButton>
+                                <IconButton 
+                                    color="primary" 
+                                    onClick={()=> this.props.setAppState({buyChecked: true, sellChecked: false, type:1}) && this.getInfo()}
+                                    to={`/book/`}
+                                    component={LinkRouter} >
+                                    <SellIcon/>
+                                </IconButton>
                             </ListItemIcon>
                             <ListItemText
                                 primaryTypographyProps={{fontSize: '14px'}}
@@ -184,7 +197,12 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                            <IconButton onClick={this.handleClickOpenExchangeSummary}><SmartToyIcon/></IconButton>
+                                <IconButton color="primary" 
+                                    onClick={()=> this.getInfo()}
+                                    to={`/`}
+                                    component={LinkRouter} >
+                                    <SmartToyIcon/>
+                                </IconButton>
                             </ListItemIcon>
                             <ListItemText
                                 primaryTypographyProps={{fontSize: '14px'}}
@@ -197,7 +215,10 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <IconButton onClick={this.handleClickOpenExchangeSummary}><PriceChangeIcon/></IconButton>
+                                <IconButton color="primary"
+                                    onClick={this.handleClickOpenExchangeSummary}>
+                                    <PriceChangeIcon/>
+                                </IconButton>
                             </ListItemIcon>
                             <ListItemText
                                 primaryTypographyProps={{fontSize: '14px'}}
@@ -210,7 +231,10 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.5}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                            <   IconButton onClick={this.handleClickOpenExchangeSummary}><PercentIcon/></IconButton>
+                                <IconButton color="primary"
+                                    onClick={this.handleClickOpenExchangeSummary}>
+                                    <PercentIcon/>
+                                </IconButton>
                             </ListItemIcon>
                             <ListItemText
                                 primaryTypographyProps={{fontSize: '14px'}}
@@ -239,7 +263,7 @@ bottomBarDesktop =()=>{
                                 <IconButton color="primary"
                                     aria-label="Stats for Nerds"
                                     onClick={this.handleClickOpenStatsForNerds} >
-                                    <SettingsIcon />
+                                    <BarChartIcon />
                                 </IconButton>
                             </Tooltip>
                         </Grid>
@@ -321,40 +345,52 @@ bottomBarPhone =()=>{
 
                     <Grid item xs={1.6} align="center">
                         <Tooltip enterTouchDelay={300} title={t("Number of public BUY orders")}>
-                            <IconButton onClick={this.handleClickOpenExchangeSummary} >
-                            <Badge badgeContent={this.state.num_public_buy_orders}  color="action">
-                                <InventoryIcon />
-                            </Badge>
+                            <IconButton
+                                color="primary" 
+                                onClick={()=> this.props.setAppState({buyChecked: false, sellChecked: true, type:0}) && this.getInfo()}
+                                to={`/book/`}
+                                component={LinkRouter} >
+                                <Badge badgeContent={this.state.num_public_buy_orders}  color="action">
+                                    <InventoryIcon/>
+                                </Badge>
                             </IconButton>
                         </Tooltip>
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
                         <Tooltip enterTouchDelay={300} title={t("Number of public SELL orders")}>
-                            <IconButton onClick={this.handleClickOpenExchangeSummary} >
-                            <Badge badgeContent={this.state.num_public_sell_orders}  color="action">
-                                <SellIcon />
-                            </Badge>
+                            <IconButton 
+                                color="primary" 
+                                onClick={()=> this.props.setAppState({buyChecked: true, sellChecked: false, type:1}) && this.getInfo()}
+                                to={`/book/`}
+                                component={LinkRouter} >
+                                    <Badge badgeContent={this.state.num_public_sell_orders}  color="action">
+                                        <SellIcon/>
+                                    </Badge>
                             </IconButton>
                         </Tooltip>
                     </Grid>
 
                     <Grid item xs={1.6} align="center">
                         <Tooltip enterTouchDelay={300} title={t("Today active robots")}>
-                            <IconButton onClick={this.handleClickOpenExchangeSummary} >
-                            <Badge badgeContent={this.state.active_robots_today}  color="action">
-                                <SmartToyIcon />
-                            </Badge>
+                            <IconButton color="primary" 
+                                onClick={()=> this.getInfo()}
+                                to={`/`}
+                                component={LinkRouter} >
+                                <Badge badgeContent={this.state.active_robots_today}  color="action">
+                                    <SmartToyIcon />
+                                </Badge>
                             </IconButton>
                         </Tooltip>
                     </Grid>
 
                     <Grid item xs={1.8} align="center">
                         <Tooltip enterTouchDelay={300} title={t("24h non-KYC bitcoin premium")}>
-                            <IconButton onClick={this.handleClickOpenExchangeSummary} >
-                            <Badge badgeContent={this.state.last_day_nonkyc_btc_premium+"%"}  color="action">
-                                <PriceChangeIcon />
-                            </Badge>
+                            <IconButton color="primary"
+                                onClick={this.handleClickOpenExchangeSummary} >
+                                <Badge badgeContent={this.state.last_day_nonkyc_btc_premium+"%"}  color="action">
+                                    <PriceChangeIcon />
+                                </Badge>
                             </IconButton>
                         </Tooltip>
                     </Grid>
@@ -378,7 +414,7 @@ bottomBarPhone =()=>{
                             <IconButton color="primary"
                                 aria-label="Stats for Nerds"
                                 onClick={this.handleClickOpenStatsForNerds} >
-                                <SettingsIcon />
+                                <BarChartIcon />
                             </IconButton>
                         </Tooltip>
                         </Grid>
