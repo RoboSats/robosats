@@ -475,14 +475,14 @@ class OrderView(viewsets.ViewSet):
             )
 
         # 2) If action is 'update invoice'
-        if action == "update_invoice":
+        elif action == "update_invoice":
             valid, context = Logics.update_invoice(order, request.user,
                                                    invoice)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
         
         # 2.b) If action is 'update address'
-        if action == "update_address":
+        elif action == "update_address":
             valid, context = Logics.update_address(order, request.user,
                                                    address, mining_fee_rate)
             if not valid:

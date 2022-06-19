@@ -95,7 +95,7 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "order_made_link",
         "order_taken_link",
         "order_escrow_link",
-        "order_paid_link",
+        "order_paid_LN_link",
     )
     list_display_links = ("hash", "concept")
     change_links = (
@@ -104,7 +104,7 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "order_made",
         "order_taken",
         "order_escrow",
-        "order_paid",
+        "order_paid_LN",
     )
     list_filter = ("type", "concept", "status")
     ordering = ("-expires_at", )

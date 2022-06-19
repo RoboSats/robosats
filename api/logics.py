@@ -766,7 +766,7 @@ class Logics:
             send_message.delay(order.id,'fiat_exchange_starts')
 
         # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow'
-        if order.status == Order.Status.WF2:
+        elif order.status == Order.Status.WF2:
             # If the escrow does not exist, or is not locked move to WFE.
             if order.trade_escrow == None:
                 order.status = Order.Status.WFE
@@ -780,7 +780,7 @@ class Logics:
                 order.status = Order.Status.WFE
 
         # If the order status is 'Failed Routing'. Retry payment.
-        if order.status == Order.Status.FAI:
+        elif order.status == Order.Status.FAI:
             if LNNode.double_check_htlc_is_settled(
                     order.trade_escrow.payment_hash):
                 order.status = Order.Status.PAY
