@@ -1,0 +1,12 @@
+db
+docs
+docker
+.editorconfig
+.env-sample
+CONTRIBUTING.md
+django
+README.md
+setup.md
+docker-compose.yml
+.github
+.git

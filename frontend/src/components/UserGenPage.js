@@ -38,7 +38,7 @@ class UserGenPage extends Component {
       this.setState({
         nickname: this.props.nickname,
         token: this.props.token? this.props.token : "",
-        avatar_url: '/static/assets/avatars/' + this.props.nickname + '.png',
+        avatarUrl: '/static/assets/avatars/' + this.props.nickname + '.png',
         loadingRobot: false
       });
     }
@@ -81,7 +81,7 @@ class UserGenPage extends Component {
           this.setState({
               nickname: data.nickname,
               bit_entropy: data.token_bits_entropy,
-              avatar_url: '/static/assets/avatars/' + data.nickname + '.png',
+              avatarUrl: '/static/assets/avatars/' + data.nickname + '.png',
               shannon_entropy: data.token_shannon_entropy,
               bad_request: data.bad_request,
               found: data.found,
@@ -146,7 +146,12 @@ class UserGenPage extends Component {
     this.delGeneratedUser();
     this.getGeneratedUser(this.state.token);
     this.setState({loadingRobot: true, tokenHasChanged: false});
-    this.props.setAppState({avatarLoaded: false, nickname: null, token: null, copiedToken: false});
+    this.props.setAppState({avatarLoaded: false, 
+      nickname: null, 
+      token: null, 
+      copiedToken: false, 
+      lastOrderId: null,
+      activeOrderId: null});
   }
 
   handleClickOpenInfo = () => {
@@ -194,7 +199,7 @@ class UserGenPage extends Component {
                     disableError={true}
                     cover={true}
                     color='null'
-                    src={getCookie("sessionid") ? this.state.avatar_url || "" : ""}
+                    src={getCookie("sessionid") ? this.state.avatarUrl || "" : ""}
                   />
                 </div>
                 </Tooltip><br/>

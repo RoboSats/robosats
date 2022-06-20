@@ -140,7 +140,7 @@ bottomBarDesktop =()=>{
                         <div style={{display: this.showProfileButton() ? '':'none'}}>
                         <ListItemButton onClick={this.handleClickOpenProfile} >
                             <Tooltip
-                                open={hasRewards || hasOrder}
+                                open={(hasRewards || hasOrder) && this.showProfileButton()}
                                 title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
                                     (hasOrder ? t("You have an active order"):"")}
                                 >
@@ -333,7 +333,7 @@ bottomBarPhone =()=>{
 
                     <Grid item xs={1.6}>
                     <div style={{display: this.showProfileButton() ? '':'none'}}>
-                    <Tooltip open={hasRewards || hasOrder}
+                    <Tooltip open={(hasRewards || hasOrder) && this.showProfileButton()}
                             title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
                                 (hasOrder ? t("You have an active order"):"")}>
                         <IconButton onClick={this.handleClickOpenProfile} sx={{margin: 0, bottom: 17, right: 8}} >
