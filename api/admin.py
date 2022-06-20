@@ -122,9 +122,11 @@ class OnchainPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "swap_fee_rate",
         "mining_fee_sats",
         "balance_link",
+        "order_paid_TX_link",
     )
     change_links = (
         "balance",
+        "order_paid_TX",
     )
     list_display_links = ("id","address", "concept")
     list_filter = ("concept", "status")
