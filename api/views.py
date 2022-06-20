@@ -572,13 +572,13 @@ class UserView(APIView):
         # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
         if request.user.is_authenticated:
             context = {"nickname": request.user.username}
-            not_participant, _, _ = Logics.validate_already_maker_or_taker(
+            not_participant, _, order = Logics.validate_already_maker_or_taker(
                 request.user)
 
             # Does not allow this 'mistake' if an active order
             if not not_participant:
-                context[
-                    "bad_request"] = f"You are already logged in as {request.user} and have an active order"
+                context["active_order_id"] = order.id
+                context["bad_request"] = f"You are already logged in as {request.user} and have an active order"
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # Deprecated, kept temporarily for legacy reasons
@@ -643,13 +643,13 @@ class UserView(APIView):
         # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
         if request.user.is_authenticated:
             context = {"nickname": request.user.username}
-            not_participant, _, _ = Logics.validate_already_maker_or_taker(
+            not_participant, _, order = Logics.validate_already_maker_or_taker(
                 request.user)
 
             # Does not allow this 'mistake' if an active order
             if not not_participant:
-                context[
-                    "bad_request"] = f"You are already logged in as {request.user} and have an active order"
+                context["active_order_id"] = order.id
+                context["bad_request"] = f"You are already logged in as {request.user} and have an active order"
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # The new way. The token is never sent. Only its SHA256
@@ -748,6 +748,16 @@ class UserView(APIView):
                 login(request, user)
                 context["public_key"] = user.profile.public_key
                 context["encrypted_private_key"] = user.profile.encrypted_private_key
+
+                # return active order or last made order if any
+                has_no_active_order, _, order = Logics.validate_already_maker_or_taker(request.user)
+                if not has_no_active_order:
+                    context["active_order_id"] = order.id
+                else:
+                    last_order = Order.objects.filter(Q(maker=request.user) | Q(taker=request.user)).last()
+                    if last_order:
+                        context["last_order_id"] = last_order.id
+                        
                 # Sends the welcome back message, only if created +3 mins ago
                 if request.user.date_joined < (timezone.now() - timedelta(minutes=3)):
                     context["found"] = "We found your Robot avatar. Welcome back!"

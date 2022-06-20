@@ -64,9 +64,10 @@ class BottomBar extends Component {
         fetch('/api/info/')
           .then((response) => response.json())
           .then((data) => this.setState(data)
-          & this.setState({active_order_id: data.active_order_id ? data.active_order_id : null,
-            last_order_id: data.last_order_id ? data.last_order_id : null})
-          & this.props.setAppState({nickname:data.nickname, loading:false}));
+          & this.props.setAppState({nickname:data.nickname, 
+                                    loading:false,
+                                    activeOrderId: data.active_order_id ? data.active_order_id : null,
+                                    lastOrderId: data.last_order_id ? data.last_order_id : null}));
       }
 
     handleClickOpenStatsForNerds = () => {
@@ -129,7 +130,7 @@ class BottomBar extends Component {
 bottomBarDesktop =()=>{
     const { t } = this.props;
     var hasRewards = this.state.earned_rewards > 0 ? true: false;
-    var hasOrder = this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded ? true : false;
+    var hasOrder = this.props.activeOrderId > 0 & !this.state.profileShown & this.props.avatarLoaded ? true : false;
 
     return(
         <Paper elevation={6} style={{height:40}}>
@@ -144,7 +145,7 @@ bottomBarDesktop =()=>{
                                     (hasOrder ? t("You have an active order"):"")}
                                 >
                                 <ListItemAvatar sx={{ width: 30, height: 30 }} >
-                                    <Badge badgeContent={(this.state.active_order_id > 0 & !this.state.profileShown) ? "": null} color="primary">
+                                    <Badge badgeContent={(this.props.activeOrderId > 0 & !this.props.profileShown) ? "": null} color="primary">
                                     <Avatar className='flippedSmallAvatar' sx={{margin: 0, top: -13}}
                                         alt={this.props.nickname}
                                         imgProps={{
@@ -163,7 +164,8 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <IconButton
+                                <IconButton 
+                                    disabled={!this.showProfileButton()}
                                     color="primary" 
                                     onClick={()=> this.props.setAppState({buyChecked: false, sellChecked: true, type:0}) & this.getInfo()}
                                     to={`/book/`}
@@ -183,6 +185,7 @@ bottomBarDesktop =()=>{
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
                                 <IconButton 
+                                    disabled={!this.showProfileButton()}
                                     color="primary" 
                                     onClick={()=> this.props.setAppState({buyChecked: true, sellChecked: false, type:1}) & this.getInfo()}
                                     to={`/book/`}
@@ -201,7 +204,9 @@ bottomBarDesktop =()=>{
                     <Grid item xs={1.9}>
                         <ListItem className="bottomItem">
                             <ListItemIcon size="small">
-                                <IconButton color="primary" 
+                                <IconButton 
+                                    disabled={!this.showProfileButton()}
+                                    color="primary" 
                                     onClick={()=> this.getInfo()}
                                     to={`/`}
                                     component={LinkRouter} >
@@ -350,6 +355,7 @@ bottomBarPhone =()=>{
                     <Grid item xs={1.6} align="center">
                         <Tooltip enterTouchDelay={300} title={t("Number of public BUY orders")}>
                             <IconButton
+                                disabled={!this.showProfileButton()}
                                 color="primary" 
                                 onClick={()=> this.props.setAppState({buyChecked: false, sellChecked: true, type:0}) & this.getInfo()}
                                 to={`/book/`}
@@ -364,6 +370,7 @@ bottomBarPhone =()=>{
                     <Grid item xs={1.6} align="center">
                         <Tooltip enterTouchDelay={300} title={t("Number of public SELL orders")}>
                             <IconButton 
+                                disabled={!this.showProfileButton()}
                                 color="primary" 
                                 onClick={()=> this.props.setAppState({buyChecked: true, sellChecked: false, type:1}) & this.getInfo()}
                                 to={`/book/`}
@@ -377,7 +384,9 @@ bottomBarPhone =()=>{
 
                     <Grid item xs={1.6} align="center">
                         <Tooltip enterTouchDelay={300} title={t("Today active robots")}>
-                            <IconButton color="primary" 
+                            <IconButton 
+                                disabled={!this.showProfileButton()}
+                                color="primary" 
                                 onClick={()=> this.getInfo()}
                                 to={`/`}
                                 component={LinkRouter} >
@@ -453,8 +462,8 @@ bottomBarPhone =()=>{
                     isOpen={this.state.openProfile}
                     handleClickCloseProfile={this.handleClickCloseProfile}
                     nickname={this.props.nickname}
-                    activeOrderId={this.state.active_order_id}
-                    lastOrderId={this.state.last_order_id}
+                    activeOrderId={this.props.activeOrderId}
+                    lastOrderId={this.props.lastOrderId}
                     referralCode={this.state.referral_code}
                     handleSubmitInvoiceClicked={this.handleSubmitInvoiceClicked}
                     host={this.getHost()}

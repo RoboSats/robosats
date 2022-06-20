@@ -15,7 +15,7 @@ export const getCookie = (name) => {
 };
 
 export const writeCookie = (key,value) => {
-  document.cookie=`${key}=${value};path=/`;
+  document.cookie=`${key}=${value};path=/;SameSite=Strict`;
 }
 
 export const deleteCookie = (name) => {

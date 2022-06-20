@@ -251,12 +251,7 @@ class OnchainPayment(models.Model):
                                  default=None)
 
     def __str__(self):
-        if self.txid:
-            txname = str(self.txid)[:8]
-        else:
-            txname = str(self.id)
-
-        return f"TX-{txname}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}"
+        return f"TX-{str(self.id)}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}"
 
     class Meta:
         verbose_name = "Onchain payment"

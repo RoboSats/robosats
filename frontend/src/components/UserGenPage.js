@@ -91,13 +91,17 @@ class UserGenPage extends Component {
           // Add nick and token to App state (token only if not a bad request)
           (data.bad_request ? this.props.setAppState({
             nickname: data.nickname,
-            avatarLoaded: false,
+            avatarLoaded: false, 
+            activeOrderId: data.active_order_id ? data.active_order_id : null,
+            lastOrderId: data.last_order_id ? data.last_order_id : null,
           })
           :
           (this.props.setAppState({
             nickname: data.nickname,
             token: token,
             avatarLoaded: false,
+            activeOrderId: data.active_order_id ? data.active_order_id : null,
+            lastOrderId: data.last_order_id ? data.last_order_id : null,
           })) & writeCookie("robot_token",token) 
               & writeCookie("pub_key",data.public_key.split('\n').join('\\')) 
               & writeCookie("enc_priv_key",data.encrypted_private_key.split('\n').join('\\')))
@@ -175,7 +179,7 @@ class UserGenPage extends Component {
             <div>
               <Grid item xs={12} align="center">
                 <Typography component="h5" variant="h5">
-                  <b>{this.state.nickname ?
+                  <b>{this.state.nickname && getCookie("sessionid") ?
                     <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap', height:'45px'}}>
                       <BoltIcon sx={{ color: "#fcba03", height: '33px',width: '33px'}}/><a>{this.state.nickname}</a><BoltIcon sx={{ color: "#fcba03", height: '33px',width: '33px'}}/>
                     </div>
@@ -185,11 +189,12 @@ class UserGenPage extends Component {
               <Grid item xs={12} align="center">
               <Tooltip enterTouchDelay={0} title={t("This is your trading avatar")}>
                 <div style={{ maxWidth: 200, maxHeight: 200 }}>
-                  <Image className='newAvatar'
+                  <Image 
+                    className='newAvatar'
                     disableError={true}
                     cover={true}
                     color='null'
-                    src={this.state.avatar_url || ""}
+                    src={getCookie("sessionid") ? this.state.avatar_url || "" : ""}
                   />
                 </div>
                 </Tooltip><br/>

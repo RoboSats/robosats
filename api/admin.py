@@ -70,7 +70,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "taker_bond",
         "trade_escrow",
     )
-    list_filter = ("is_disputed", "is_fiat_sent", "type", "currency", "status")
+    list_filter = ("is_disputed", "is_fiat_sent", "is_swap","type", "currency", "status")
     search_fields = ["id","amount","min_amount","max_amount"]
 
     def amt(self, obj):

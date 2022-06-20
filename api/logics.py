@@ -293,6 +293,10 @@ class Logics:
             Order.Status.MLD,
         ]
 
+        # in any case, if order is_swap and there is an onchain_payment, cancel it.
+        if not order.status in does_not_expire:
+            cls.cancel_onchain_payment(order)
+
         if order.status in does_not_expire:
             return False
 
@@ -600,7 +604,7 @@ class Logics:
             valid = cls.create_onchain_payment(order, user, preliminary_amount=context["invoice_amount"])
             if not valid:
                 context["swap_allowed"] = False
-                context["swap_failure_reason"] = "Not enough onchain liquidity available to offer a SWAP"
+                context["swap_failure_reason"] = "Not enough onchain liquidity available to offer a swap"
                 return True, context
 
         context["swap_allowed"] = True
@@ -720,9 +724,7 @@ class Logics:
                 }
 
         # cancel onchain_payout if existing
-        if order.payout_tx:
-            order.payout_tx.status = OnchainPayment.Status.CANCE
-            order.payout_tx.save()
+        cls.cancel_onchain_payment(order)
 
         num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
         payout = LNNode.validate_ln_invoice(invoice, num_satoshis)
@@ -894,9 +896,12 @@ class Logics:
             # 4.a) When maker cancel after bond (before escrow)
             """The order into cancelled status if maker cancels."""
         elif (order.status in [Order.Status.WF2,Order.Status.WFE] and order.maker == user):
+            # cancel onchain payment if existing
+            cls.cancel_onchain_payment(order)
             # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)  # returns taker bond
+
             if valid:
                 order.status = Order.Status.UCA
                 order.save()
@@ -905,9 +910,11 @@ class Logics:
                 return True, None
 
             # 4.b) When taker cancel after bond (before escrow)
-            """The order into cancelled status if maker cancels."""
+            """The order into cancelled status if mtker cancels."""
         elif (order.status in [Order.Status.WF2, Order.Status.WFE]
               and order.taker == user):
+            # cancel onchain payment if existing
+            cls.cancel_onchain_payment(order)
             # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.taker_bond)
             if valid:
@@ -957,6 +964,8 @@ class Logics:
     def collaborative_cancel(cls, order):
         if not order.status in [Order.Status.WFI, Order.Status.CHA]:
             return
+        # cancel onchain payment if existing
+        cls.cancel_onchain_payment(order)
         cls.return_bond(order.maker_bond)
         cls.return_bond(order.taker_bond)
         cls.return_escrow(order)
@@ -1299,6 +1308,16 @@ class Logics:
                 return True
             else:
                 raise e
+
+    def cancel_onchain_payment(order):
+        ''' Cancel onchain_payment if existing '''
+
+        if order.payout_tx:
+            order.payout_tx.status = OnchainPayment.Status.CANCE
+            order.payout_tx.save()
+            return True
+        else:
+            return False
 
     def cancel_bond(bond):
         """cancel a bond"""
