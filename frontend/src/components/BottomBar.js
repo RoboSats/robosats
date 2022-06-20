@@ -122,6 +122,10 @@ class BottomBar extends Component {
         return url.split('/')[2]
       }
 
+    showProfileButton = () =>{
+        return (this.props.avatarLoaded && (this.props.token ? getCookie('robot_token')==this.props.token : true ) && (getCookie('sessionid')))
+    }
+
 bottomBarDesktop =()=>{
     const { t } = this.props;
     var hasRewards = this.state.earned_rewards > 0 ? true: false;
@@ -132,7 +136,7 @@ bottomBarDesktop =()=>{
                 <Grid container>
 
                     <Grid item xs={1.9}>
-                        <div style={{display: this.props.avatarLoaded && (this.props.token ? getCookie('robot_token')==this.props.token : true ) ? '':'none'}}>
+                        <div style={{display: this.showProfileButton() ? '':'none'}}>
                         <ListItemButton onClick={this.handleClickOpenProfile} >
                             <Tooltip
                                 open={hasRewards || hasOrder}
@@ -161,7 +165,7 @@ bottomBarDesktop =()=>{
                             <ListItemIcon size="small">
                                 <IconButton
                                     color="primary" 
-                                    onClick={()=> this.props.setAppState({buyChecked: false, sellChecked: true, type:0}) && this.getInfo()}
+                                    onClick={()=> this.props.setAppState({buyChecked: false, sellChecked: true, type:0}) & this.getInfo()}
                                     to={`/book/`}
                                     component={LinkRouter} >
                                     <InventoryIcon/>
@@ -180,7 +184,7 @@ bottomBarDesktop =()=>{
                             <ListItemIcon size="small">
                                 <IconButton 
                                     color="primary" 
-                                    onClick={()=> this.props.setAppState({buyChecked: true, sellChecked: false, type:1}) && this.getInfo()}
+                                    onClick={()=> this.props.setAppState({buyChecked: true, sellChecked: false, type:1}) & this.getInfo()}
                                     to={`/book/`}
                                     component={LinkRouter} >
                                     <SellIcon/>
@@ -323,7 +327,7 @@ bottomBarPhone =()=>{
                 <Grid container>
 
                     <Grid item xs={1.6}>
-                    <div style={{display: this.props.avatarLoaded && (this.props.token ? getCookie('robot_token')==this.props.token : true ) ? '':'none'}}>
+                    <div style={{display: this.showProfileButton() ? '':'none'}}>
                     <Tooltip open={hasRewards || hasOrder}
                             title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
                                 (hasOrder ? t("You have an active order"):"")}>
@@ -347,7 +351,7 @@ bottomBarPhone =()=>{
                         <Tooltip enterTouchDelay={300} title={t("Number of public BUY orders")}>
                             <IconButton
                                 color="primary" 
-                                onClick={()=> this.props.setAppState({buyChecked: false, sellChecked: true, type:0}) && this.getInfo()}
+                                onClick={()=> this.props.setAppState({buyChecked: false, sellChecked: true, type:0}) & this.getInfo()}
                                 to={`/book/`}
                                 component={LinkRouter} >
                                 <Badge badgeContent={this.state.num_public_buy_orders}  color="action">
@@ -361,7 +365,7 @@ bottomBarPhone =()=>{
                         <Tooltip enterTouchDelay={300} title={t("Number of public SELL orders")}>
                             <IconButton 
                                 color="primary" 
-                                onClick={()=> this.props.setAppState({buyChecked: true, sellChecked: false, type:1}) && this.getInfo()}
+                                onClick={()=> this.props.setAppState({buyChecked: true, sellChecked: false, type:1}) & this.getInfo()}
                                 to={`/book/`}
                                 component={LinkRouter} >
                                     <Badge badgeContent={this.state.num_public_sell_orders}  color="action">
@@ -418,7 +422,6 @@ bottomBarPhone =()=>{
                             </IconButton>
                         </Tooltip>
                         </Grid>
-
                     </Grid>
                 </Grid>
             </Paper>

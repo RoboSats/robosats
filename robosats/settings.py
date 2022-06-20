@@ -43,6 +43,9 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
+# Allows Session Cookie to be read by Javascript on Client side.
+SESSION_COOKIE_HTTPONLY = False
+
 # Application definition
 
 INSTALLED_APPS = [

@@ -15,7 +15,7 @@ import { RoboSatsNoTextIcon } from "./Icons";
 import { sha256 } from 'js-sha256';
 import { genBase62Token, tokenStrength } from "../utils/token";
 import { genKey } from "../utils/pgp";
-import { getCookie, writeCookie } from "../utils/cookies";
+import { getCookie, writeCookie, deleteCookie } from "../utils/cookies";
 import { saveAsJson } from "../utils/saveFile";
 
 
@@ -115,6 +115,11 @@ class UserGenPage extends Component {
     };
     fetch("/api/user", requestOptions)
       .then((response) => response.json());
+
+    deleteCookie("sessionid");
+    deleteCookie("robot_token");
+    deleteCookie("pub_key");
+    deleteCookie("enc_priv_key");
   }
 
   handleClickNewRandomToken=()=>{
