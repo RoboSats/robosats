@@ -202,9 +202,8 @@ def payments_cleansing():
             pass
     
     # same for onchain payments
-    queryset = OnchainPayment.objects.filter(Q(status=OnchainPayment.Status.CANCEL),
+    queryset = OnchainPayment.objects.filter(Q(status=OnchainPayment.Status.CANCE),
                                         Q(order_paid_TX__expires_at__lt=finished_time))
-
 
     # And do not have an active trade, any past contract or any reward.
     deleted_onchainpayments = []
