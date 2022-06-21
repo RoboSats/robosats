@@ -93,6 +93,8 @@ class UserGenPage extends Component {
             nickname: data.nickname,
             avatarLoaded: false, 
             activeOrderId: data.active_order_id ? data.active_order_id : null,
+            referralCode: data.referral_code,
+            earnedRewards: data.earned_rewards,
             lastOrderId: data.last_order_id ? data.last_order_id : null,
           })
           :
@@ -102,6 +104,8 @@ class UserGenPage extends Component {
             avatarLoaded: false,
             activeOrderId: data.active_order_id ? data.active_order_id : null,
             lastOrderId: data.last_order_id ? data.last_order_id : null,
+            referralCode: data.referral_code,
+            earnedRewards: data.earned_rewards,
           })) & writeCookie("robot_token",token) 
               & writeCookie("pub_key",data.public_key.split('\n').join('\\')) 
               & writeCookie("enc_priv_key",data.encrypted_private_key.split('\n').join('\\')))

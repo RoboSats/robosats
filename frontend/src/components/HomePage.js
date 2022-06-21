@@ -24,6 +24,8 @@ export default class HomePage extends Component {
         bookLoading: true,
         activeOrderId: null,
         lastOrderId: null,
+        earnedRewards: 0,
+        referralCode:'',
       }
     }
 

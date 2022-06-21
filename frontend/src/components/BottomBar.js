@@ -46,8 +46,6 @@ class BottomBar extends Component {
             alternative_site: 'robosats...',
             node_id: '00000000',
             showRewards: false,
-            referral_code: '',
-            earned_rewards: 0,
             rewardInvoice: null,
             badInvoice: false,
             showRewardsSpinner: false,
@@ -67,7 +65,9 @@ class BottomBar extends Component {
           & this.props.setAppState({nickname:data.nickname, 
                                     loading:false,
                                     activeOrderId: data.active_order_id ? data.active_order_id : null,
-                                    lastOrderId: data.last_order_id ? data.last_order_id : null}));
+                                    lastOrderId: data.last_order_id ? data.last_order_id : null,
+                                    referralCode: data.referral_code,
+                                    earnedRewards: data.earned_rewards,}));
       }
 
     handleClickOpenStatsForNerds = () => {
@@ -111,10 +111,13 @@ class BottomBar extends Component {
         .then((data) => this.setState({
             badInvoice:data.bad_invoice,
             openClaimRewards: data.successful_withdrawal ? false : true,
-            earned_rewards: data.successful_withdrawal ? 0 : this.state.earned_rewards,
             withdrawn: data.successful_withdrawal ? true : false,
             showRewardsSpinner: false,
-        }));
+        })
+        & this.props.setAppState({
+            earnedRewards: data.successful_withdrawal ? 0 : this.props.earnedRewards,
+        })
+        );
         e.preventDefault();
     }
 
@@ -129,7 +132,7 @@ class BottomBar extends Component {
 
 bottomBarDesktop =()=>{
     const { t } = this.props;
-    var hasRewards = this.state.earned_rewards > 0 ? true: false;
+    var hasRewards = this.props.earnedRewards > 0 ? true: false;
     var hasOrder = this.props.activeOrderId > 0 & !this.state.profileShown & this.props.avatarLoaded ? true : false;
 
     return(
@@ -316,7 +319,10 @@ bottomBarDesktop =()=>{
     }
 
     handleClickOpenExchangeSummary = () => {
-        this.getInfo();
+        // avoid calling getInfo while sessionid not yet set. Temporary fix.
+        if(getCookie('sessionid')){
+            this.getInfo();
+        }
         this.setState({openExchangeSummary: true});
     };
     handleClickCloseExchangeSummary = () => {
@@ -325,7 +331,7 @@ bottomBarDesktop =()=>{
 
 bottomBarPhone =()=>{
     const { t } = this.props;
-    var hasRewards = this.state.earned_rewards > 0 ? true: false;
+    var hasRewards = this.props.earnedRewards > 0 ? true: false;
     var hasOrder = this.state.active_order_id > 0 & !this.state.profileShown & this.props.avatarLoaded ? true : false;
     return(
         <Paper elevation={6} style={{height:40}}>
@@ -464,13 +470,13 @@ bottomBarPhone =()=>{
                     nickname={this.props.nickname}
                     activeOrderId={this.props.activeOrderId}
                     lastOrderId={this.props.lastOrderId}
-                    referralCode={this.state.referral_code}
+                    referralCode={this.props.referralCode}
                     handleSubmitInvoiceClicked={this.handleSubmitInvoiceClicked}
                     host={this.getHost()}
                     showRewardsSpinner={this.state.showRewardsSpinner}
                     withdrawn={this.state.withdrawn}
                     badInvoice={this.state.badInvoice}
-                    earnedRewards={this.state.earned_rewards}
+                    earnedRewards={this.props.earnedRewards}
                     setAppState={this.props.setAppState}
                 />
 

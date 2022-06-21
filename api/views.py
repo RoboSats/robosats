@@ -748,6 +748,8 @@ class UserView(APIView):
                 login(request, user)
                 context["public_key"] = user.profile.public_key
                 context["encrypted_private_key"] = user.profile.encrypted_private_key
+                context["earned_rewards"] = user.profile.earned_rewards
+                context["referral_code"] = str(user.profile.referral_code)
 
                 # return active order or last made order if any
                 has_no_active_order, _, order = Logics.validate_already_maker_or_taker(request.user)
