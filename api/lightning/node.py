@@ -278,7 +278,7 @@ class LNNode:
             # If the cheapest possible private route is more expensive than what RoboSats is willing to pay
             if min(routes_cost) >=  max_routing_fee_sats :
                 payout["context"] = {
-                "bad_invoice": "The invoice submitted only has expensive routing hints, you are using an incompatible wallet (probably Muun?). Check the wallet compatibility guide at wallets.robosats.com"
+                "bad_invoice": "The invoice submitted only has a trick on the routing hints, you might be using an incompatible wallet (probably Muun? Use an onchain address instead!). Check the wallet compatibility guide at wallets.robosats.com"
                 }
                 return payout
 
