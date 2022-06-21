@@ -11,7 +11,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 
-from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer
+from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer, TickSerializer
 from api.models import LNPayment, MarketTick, OnchainPayment, Order, Currency, Profile
 from control.models import AccountingDay, BalanceLog
 from api.logics import Logics
@@ -974,6 +974,15 @@ class PriceView(CreateAPIView):
                 payload[code] = None
 
         return Response(payload, status.HTTP_200_OK)
+
+class TickView(CreateAPIView):
+
+    queryset = MarketTick.objects.all()
+    serializer_class = TickSerializer
+
+    def get(self, request):
+        data = self.serializer_class(self.queryset.all(), many=True, read_only=True).data
+        return Response(data, status=status.HTTP_200_OK)
 
 class LimitView(ListAPIView):
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Order
+from .models import MarketTick, Order
 
 
 class ListOrderSerializer(serializers.ModelSerializer):
@@ -133,3 +133,17 @@ class ClaimRewardSerializer(serializers.Serializer):
 
 class PriceSerializer(serializers.Serializer):
     pass
+
+class TickSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = MarketTick
+        fields = (
+            "timestamp",
+            "currency",
+            "volume",
+            "price",
+            "premium",
+            "fee",
+        )
+        depth = 1

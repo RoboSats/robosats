@@ -82,7 +82,7 @@ def do_accounting():
         for payout_tx in payouts_tx:
             escrows_settled += payout_tx.order_paid_TX.trade_escrow.num_satoshis
             payouts_paid += payout_tx.sent_satoshis
-            costs += payout_tx.fee
+            costs += payout_tx.mining_fee_sats
 
 
         # account for those orders where bonds were lost
