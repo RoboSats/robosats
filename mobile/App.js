@@ -1,13 +1,10 @@
-import React from 'react';
+import React from "react";
 import type {Node} from 'react';
-// import { WebView } from 'react-native-webview';
+import { WebView } from 'react-native-webview';
 // import Tor from "react-native-tor";
 import {
   SafeAreaView,
-  ScrollView,
-  StatusBar,
   Text,
-  useColorScheme,
 } from 'react-native';
 
 // Initialize the module
@@ -27,16 +24,27 @@ import {
 // }
 
 const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-  //const info = makeTorRequest()
+  const uri = 'http://unsafe2.robosats.com'
+  const local = 'file://android_asset/frontend/index.html'
   return (
-    <SafeAreaView>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
-        <Text>This app is running! Next steps: user react-native-webview and react-native-tor to load the webapp.</Text>
-        {/* <Text>{info}</Text> */}
-        {/* <WebView source={{ uri: 'http://unsafe.robosats.com/' }} /> */}
-      </ScrollView>
+    <SafeAreaView style={{ flex: 1 }}>
+      <WebView
+        source={{
+          uri: uri,
+        }}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+        sharedCookiesEnabled={true}
+        originWhitelist={["*"]}
+        scalesPageToFit={true}
+        startInLoadingState={true}
+        mixedContentMode={"always"}
+        allowsInlineMediaPlayback={true}
+        allowsFullscreenVideo={true}
+        allowsBackForwardNavigationGestures={true}
+        allowsLinkPreview={false}
+        renderLoading={() => <Text>Loading RoboSats Webview</Text>}
+      />
     </SafeAreaView>
   );
 };
