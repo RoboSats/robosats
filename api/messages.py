@@ -128,7 +128,7 @@ class Telegram():
 
         lang = user.profile.telegram_lang_code
         if lang == 'es':
-            text = f'¡Tu orden con ID {order.id} ha finalizado exitosamente!⚡ Unase a @robosats_es y ayudanos a mejorar.'
+            text = f'¡Tu orden con ID {order.id} ha finalizado exitosamente!⚡ Únete a nosotros en @robosats_es y ayúdanos a mejorar.'
         else:
             text = f'Your order with ID {order.id} has finished successfully!⚡ Join us @robosats and help us improve.'
         
