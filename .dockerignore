@@ -1,6 +1,7 @@
 db
 docs
 docker
+mobile
 .editorconfig
 .env-sample
 CONTRIBUTING.md
