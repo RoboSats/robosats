@@ -90,6 +90,15 @@ services:
       - /mnt/development/lnd:/lnd
     network_mode: service:tor
 
+  i2p:
+    image: geti2p/i2p
+    container_name: i2p-dev
+    volumes:
+      - ./docker/i2p/i2pconfig:/i2p/.i2p
+      - ./docker/i2p/i2ptorrents:/i2psnark
+    restart: unless-stopped
+    network_mode: service:tor
+
   tor:
     build: ./docker/tor
     container_name: tor-dev
@@ -102,6 +111,10 @@ services:
       - /mnt/development/tor/config:/etc/tor
     ports:
       - 8000:8000
+      - 4444:4444
+      # - 8215:12345
+      - 7658:7658
+      - 8001:7657
 
   lnd:
     build: ./docker/lnd
