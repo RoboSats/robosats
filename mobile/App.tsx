@@ -20,17 +20,21 @@ import {SafeAreaView, Text} from 'react-native';
 // }
 
 const App = () => {
-  const uri = 'https://unsafe2.robosats.com'
+  // Webview with local html/js in a single location for andrid/iOS
+  // https://yelotofu.com/react-native-load-local-static-site-inside-webview-2b93eb1c4225
+  const htmlPath = "file:///android_asset/Web.bundle/index.html";
+  const uri = 'https://robosats.onion.moe'
+  const onion = 'http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion'
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <WebView
         source={{
-          uri: uri,
+          uri: 'uri',
         }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         sharedCookiesEnabled={true}
-        originWhitelist={[uri]}
+        originWhitelist={['*']} //originWhitelist={[uri,uri2]}
         scalesPageToFit={true}
         startInLoadingState={true}
         mixedContentMode={"always"}
@@ -43,6 +47,7 @@ const App = () => {
         mediaPlaybackRequiresUserAction={false}
         allowsLinkPreview={false}
         renderLoading={() => <Text>Loading RoboSats</Text>}
+        onError={(syntheticEvent) => <Text>{syntheticEvent}</Text>}
       />
     </SafeAreaView>
   );
