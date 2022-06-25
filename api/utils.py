@@ -192,8 +192,3 @@ def compute_avg_premium(queryset):
                                 values_sorted=False)
 
     return weighted_median_premium, total_volume
-
-    total_volume = sum(volumes)
-    # Avg_premium is the weighted average of the premiums by volume
-    avg_premium = sum(weighted_premiums) / total_volume
-    return avg_premium, total_volume
