@@ -1,6 +1,6 @@
 import React from 'react';
 import { WebView, WebViewMessageEvent } from "react-native-webview";
-import {SafeAreaView, Text} from 'react-native';
+import {SafeAreaView, Text, Platform} from 'react-native';
 // import Tor from "react-native-tor";
 
 // Initialize the module
@@ -22,14 +22,15 @@ import {SafeAreaView, Text} from 'react-native';
 const App = () => {
   // Webview with local html/js in a single location for andrid/iOS
   // https://yelotofu.com/react-native-load-local-static-site-inside-webview-2b93eb1c4225
-  const htmlPath = "file:///android_asset/Web.bundle/index.html";
+  const htmlPath = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html?';
   const uri = 'https://robosats.onion.moe'
   const onion = 'http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion'
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <WebView
         source={{
-          uri: 'uri',
+          uri: uri,
+          //baseUrl: uri,
         }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
