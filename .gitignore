@@ -644,6 +644,9 @@ django
 # Postgres
 db
 
+# docker
+docker/i2p
+
 # robosats
 frontend/static/assets/avatars*
 api/lightning/lightning*

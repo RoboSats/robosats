@@ -90,6 +90,13 @@ services:
       - /mnt/development/lnd:/lnd
     network_mode: service:tor
 
+  i2p:
+    image: geti2p/i2p
+    container_name: i2p-dev
+    network_mode: host
+    volumes:
+      - ./docker/i2p/i2pconfig:/i2p/.i2p
+
   tor:
     build: ./docker/tor
     container_name: tor-dev
