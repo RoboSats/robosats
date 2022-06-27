@@ -43,14 +43,17 @@ def do_accounting():
         contracted = day_ticks.aggregate(Sum('volume'))['volume__sum']
         num_contracts = day_ticks.count()
         inflow = day_payments.filter(type=LNPayment.Types.HOLD,status=LNPayment.Status.SETLED).aggregate(Sum('num_satoshis'))['num_satoshis__sum']
-        outflow = day_payments.filter(type=LNPayment.Types.NORM,status=LNPayment.Status.SUCCED).aggregate(Sum('num_satoshis'))['num_satoshis__sum'] + day_onchain_payments.filter(status__in=[OnchainPayment.Status.MEMPO,OnchainPayment.Status.CONFI]).aggregate(Sum('sent_satoshis'))['sent_satoshis__sum']
+        onchain_outflow = day_onchain_payments.filter(status__in=[OnchainPayment.Status.MEMPO,OnchainPayment.Status.CONFI]).aggregate(Sum('sent_satoshis'))['sent_satoshis__sum']
+        onchain_outflow = 0 if onchain_outflow == None else int(onchain_outflow)
+        offchain_outflow = day_payments.filter(type=LNPayment.Types.NORM,status=LNPayment.Status.SUCCED).aggregate(Sum('num_satoshis'))['num_satoshis__sum']
+        offchain_outflow = 0 if offchain_outflow == None else int(offchain_outflow)
         routing_fees = day_payments.filter(type=LNPayment.Types.NORM,status=LNPayment.Status.SUCCED).aggregate(Sum('fee'))['fee__sum']
         mining_fees = day_onchain_payments.filter(status__in=[OnchainPayment.Status.MEMPO,OnchainPayment.Status.CONFI]).aggregate(Sum('mining_fee_sats'))['mining_fee_sats__sum']
         rewards_claimed = day_payments.filter(type=LNPayment.Types.NORM,concept=LNPayment.Concepts.WITHREWA,status=LNPayment.Status.SUCCED).aggregate(Sum('num_satoshis'))['num_satoshis__sum']
 
         contracted = 0 if contracted == None else contracted
         inflow = 0 if inflow == None else inflow
-        outflow = 0 if outflow == None else outflow
+        outflow = offchain_outflow + onchain_outflow
         routing_fees  = 0 if routing_fees == None else routing_fees
         rewards_claimed = 0 if rewards_claimed == None else rewards_claimed
 
@@ -73,16 +76,16 @@ def do_accounting():
         payouts_paid = 0
         costs = 0
         for payout in payouts:
-            escrows_settled += payout.order_paid_LN.trade_escrow.num_satoshis
-            payouts_paid += payout.num_satoshis
-            costs += payout.fee
+            escrows_settled += int(payout.order_paid_LN.trade_escrow.num_satoshis)
+            payouts_paid += int(payout.num_satoshis)
+            costs += int(payout.fee)
         
         # Same for orders that use onchain payments.
         payouts_tx = day_onchain_payments.filter(status__in=[OnchainPayment.Status.MEMPO,OnchainPayment.Status.CONFI])
         for payout_tx in payouts_tx:
-            escrows_settled += payout_tx.order_paid_TX.trade_escrow.num_satoshis
-            payouts_paid += payout_tx.sent_satoshis
-            costs += payout_tx.mining_fee_sats
+            escrows_settled += int(payout_tx.order_paid_TX.trade_escrow.num_satoshis)
+            payouts_paid += int(payout_tx.sent_satoshis)
+            costs += int(payout_tx.mining_fee_sats)
 
 
         # account for those orders where bonds were lost
