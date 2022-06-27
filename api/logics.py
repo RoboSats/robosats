@@ -662,15 +662,15 @@ class Logics:
 
         if mining_fee_rate:
             # not a valid mining fee
-            if float(mining_fee_rate) <= 1:
+            if float(mining_fee_rate) < 1:
                 return False, {
                     "bad_address":
-                    "The mining fee is too low."
+                    "The mining fee is too low, must be higher than 1 Sat/vbyte"
                 }
             elif float(mining_fee_rate) > 50:
                 return False, {
                     "bad_address":
-                    "The mining fee is too high."
+                    "The mining fee is too high, must be less than 50 Sats/vbyte"
                 }
             order.payout_tx.mining_fee_rate = float(mining_fee_rate)
         # If not mining ee provider use backend's suggested fee rate
