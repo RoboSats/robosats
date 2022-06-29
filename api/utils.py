@@ -179,8 +179,8 @@ def compute_avg_premium(queryset):
     # We exclude BTC, as LN <-> BTC swap premiums should not be  mixed with FIAT.
 
     for tick in queryset.exclude(currency=1000):
-        premiums.append(tick.premium)
-        volumes.append(tick.volume)
+        premiums.append(float(tick.premium))
+        volumes.append(float(tick.volume))
 
     total_volume = sum(volumes)
 
