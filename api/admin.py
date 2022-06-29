@@ -70,6 +70,15 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "taker_bond",
         "trade_escrow",
     )
+    raw_id_fields = (
+        "maker",
+        "taker",
+        "payout_tx",
+        "payout",
+        "maker_bond",
+        "taker_bond",
+        "trade_escrow",
+    )
     list_filter = ("is_disputed", "is_fiat_sent", "is_swap","type", "currency", "status")
     search_fields = ["id","amount","min_amount","max_amount"]
 
