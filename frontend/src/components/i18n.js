@@ -12,6 +12,8 @@ import translationPL from "../locales/pl.json";
 import translationFR from "../locales/fr.json";
 import translationCA from "../locales/ca.json";
 import translationIT from "../locales/it.json";
+import translationPT from "../locales/pt.json";
+import translationEU from "../locales/eu.json";
 
 i18n
   .use(HttpApi)
@@ -28,6 +30,8 @@ i18n
     fr: {translations: translationFR},
     ca: {translations: translationCA},
     it: {translations: translationIT},
+    pt: {translations: translationPT},
+    eu: {translations: translationEU},
   },
   
   fallbackLng: "en",

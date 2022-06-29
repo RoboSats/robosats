@@ -14,6 +14,9 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PercentIcon from '@mui/icons-material/Percent';
 import PriceChangeIcon from '@mui/icons-material/PriceChange';
 
+// Missing flags
+import { CataloniaFlag, BasqueCountryFlag} from "./Icons";
+
 import {
     CommunityDialog,
     ExchangeSummaryDialog,
@@ -312,8 +315,10 @@ bottomBarDesktop =()=>{
                     <MenuItem value={'fr'}><div style={{width:24,position:"relative",top:3}}><Flags.FR {...flagProps}/></div>FR</MenuItem>
                     <MenuItem value={'ru'}><div style={{width:24,position:"relative",top:3}}><Flags.RU {...flagProps}/></div>RU</MenuItem>
                     <MenuItem value={'it'}><div style={{width:24,position:"relative",top:3}}><Flags.IT {...flagProps}/></div>IT</MenuItem>
+                    <MenuItem value={'pt'}><div style={{width:24,position:"relative",top:3}}><Flags.BR {...flagProps}/></div>PT</MenuItem>
                     <MenuItem disabled={true} value={'zh'}><div style={{width:24,position:"relative",top:3}}><Flags.CN {...flagProps}/></div>ZH</MenuItem>
-                    <MenuItem value={'ca'}>CAT</MenuItem>
+                    <MenuItem value={'ca'}><div style={{width:24,position:"relative",top:3}}><CataloniaFlag {...flagProps}/></div>CA</MenuItem>
+                    <MenuItem value={'eu'}><div style={{width:24,position:"relative",top:3}}><BasqueCountryFlag {...flagProps}/></div>EU</MenuItem>
                 </Select>
         )
     }
