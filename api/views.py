@@ -220,7 +220,7 @@ class OrderView(viewsets.ViewSet):
         # 3.a) If not a participant and order is not public, forbid.
         if not data["is_participant"] and order.status != Order.Status.PUB:
             return Response(
-                {"bad_request": "You are not allowed to see this order"},
+                {"bad_request": "This order is not available"},
                 status.HTTP_403_FORBIDDEN,
             )
 
@@ -951,7 +951,7 @@ class RewardView(CreateAPIView):
 
         return Response({"successful_withdrawal": True}, status.HTTP_200_OK)
 
-class PriceView(CreateAPIView):
+class PriceView(ListAPIView):
 
     serializer_class = PriceSerializer
 
@@ -975,7 +975,7 @@ class PriceView(CreateAPIView):
 
         return Response(payload, status.HTTP_200_OK)
 
-class TickView(CreateAPIView):
+class TickView(ListAPIView):
 
     queryset = MarketTick.objects.all()
     serializer_class = TickSerializer
