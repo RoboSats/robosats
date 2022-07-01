@@ -191,5 +191,5 @@ def compute_avg_premium(queryset):
                                     quantiles=0.5,
                                     values_sorted=False)
     else:
-        weighted_median_premium = 0
+        weighted_median_premium = 0.0
     return weighted_median_premium, total_volume
