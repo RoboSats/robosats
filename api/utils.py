@@ -185,10 +185,11 @@ def compute_avg_premium(queryset):
     total_volume = sum(volumes)
 
     # weighted_median_premium is the weighted median of the premiums by volume
-
-    weighted_median_premium = weighted_median(values=premiums,
-                                sample_weight=volumes,
-                                quantiles=0.5,
-                                values_sorted=False)
-
+    if len(premiums) > 0 and len(volumes)>0:
+        weighted_median_premium = weighted_median(values=premiums,
+                                    sample_weight=volumes,
+                                    quantiles=0.5,
+                                    values_sorted=False)
+    else:
+        weighted_median_premium = 0.0
     return weighted_median_premium, total_volume
