@@ -605,16 +605,22 @@ class OrderPage extends Component {
               </Grid>
             </ListItem>
 
-            <Divider />
-            <ListItem>
-              <ListItemIcon>
-                <AccessTimeIcon/>
-              </ListItemIcon>
-              <ListItemText secondary={t("Expires in")}>
-                <Countdown date={new Date(this.state.expires_at)} renderer={this.countdownRenderer} />
-              </ListItemText>
-            </ListItem>
-              <LinearDeterminate key={this.state.total_secs_exp} totalSecsExp={this.state.total_secs_exp} expiresAt={this.state.expires_at}/>
+            {/* if order is in a status that does not expire, do not show countdown */}
+            {[4,12,13,14,15,16,17,18].includes(this.state.status)? null :
+              <>
+                <Divider />
+                <ListItem>
+                  <ListItemIcon>
+                    <AccessTimeIcon/>
+                  </ListItemIcon>
+                  <ListItemText secondary={t("Expires in")}>
+                    <Countdown date={new Date(this.state.expires_at)} renderer={this.countdownRenderer} />
+                  </ListItemText>
+                </ListItem>
+                <LinearDeterminate key={this.state.total_secs_exp} totalSecsExp={this.state.total_secs_exp} expiresAt={this.state.expires_at}/>
+              </>
+            }
+
             </List>
 
             {/* If the user has a penalty/limit */}

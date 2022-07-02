@@ -892,8 +892,8 @@ class InfoView(ListAPIView):
             lifetime_volume = 0
 
         context["last_day_nonkyc_btc_premium"] = round(avg_premium, 2)
-        context["last_day_volume"] = total_volume
-        context["lifetime_volume"] = lifetime_volume
+        context["last_day_volume"] = round(total_volume, 8)
+        context["lifetime_volume"] = round(lifetime_volume, 8)
         context["lnd_version"] = get_lnd_version()
         context["robosats_running_commit_hash"] = get_commit_robosats()
         context["alternative_site"] = config("ALTERNATIVE_SITE")

@@ -1159,7 +1159,7 @@ handleRatingRobosatsChange=(e)=>{
     return(
       <Grid container spacing={1}>
         {/* Make confirmation sound for Chat Open. */}
-        {this.Sound("chat-open")}
+        {this.Sound("locked-invoice")}
         <Grid item xs={12} align="center">
           <Typography variant="subtitle1">
             <b> {this.props.data.is_seller ? t("Chat with the buyer"): t("Chat with the seller")}</b> {" " + this.stepXofY()}

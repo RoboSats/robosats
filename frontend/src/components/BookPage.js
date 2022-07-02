@@ -21,10 +21,10 @@ class BookPage extends Component {
     this.state = {
       pageSize: 6,
     };
+  }
 
-    if(this.props.bookOrders.length == 0){
-      this.getOrderDetails(2, 0)
-    }
+  componentDidMount() {
+    this.getOrderDetails(2, 0)
   }
 
   getOrderDetails(type, currency) {
