@@ -144,11 +144,13 @@ class Chat extends Component {
   }
 
   componentDidUpdate() {
-
-    // Only fire the scroll when the reason for Update is a new message
+    
+    // Only fire the scroll and audio when the reason for Update is a new message
     if (this.state.scrollNow){
+      const audio = new Audio(`/static/assets/sounds/chat-open.mp3`)
+      audio.play();
       this.scrollToBottom();
-      this.setState({scrollNow:false})
+      this.setState({scrollNow:false});
     }
   }
 

@@ -52,12 +52,6 @@ class TradeBox extends Component {
     <audio autoPlay src={`/static/assets/sounds/${soundFileName}.mp3`} />
   )
 
-  togglePlay = () => {
-    this.setState({ playSound: !this.state.playSound }, () => {
-      this.state.playSound ? this.audio.play() : this.audio.pause();
-    });
-  }
-
   stepXofY = () => {
     // set y value
     var x = null
@@ -286,8 +280,8 @@ class TradeBox extends Component {
     const { t } = this.props;
     return (
       <Grid container spacing={1}>
-        {/* Make confirmation sound for HTLC received. */}
-        {this.Sound("locked-invoice")}
+        {/* Make sound for Taker found or HTLC received. */}
+        {this.props.data.is_maker ? this.Sound("taker-found") : this.Sound("locked-invoice")}
         <Grid item xs={12} align="center">
           <Typography color="orange" variant="subtitle1">
             <b>
@@ -328,8 +322,8 @@ class TradeBox extends Component {
     const { t } = this.props;
     return (
       <Grid container spacing={1}>
-        {/* Make bell sound when taker is found */}
-        {this.Sound("taker-found")}
+        {/* Make bell sound when taker is found. SUPRESSED: It's annoying, not the right moment! Play only after taker locks bon */}
+        {/* {this.Sound("taker-found")} */} 
         <Grid item xs={12} align="center">
           <Typography variant="subtitle1">
             <b>{t("A taker has been found!")}</b> {" " + this.stepXofY()}
@@ -638,8 +632,8 @@ class TradeBox extends Component {
 
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          {/* Make confirmation sound for HTLC received. */}
-          {this.Sound("locked-invoice")}
+          {/* Make sound for Taker found or HTLC received. */}
+          {this.props.data.is_maker ? this.Sound("taker-found") : this.Sound("locked-invoice")}
           <Typography color="primary" variant="subtitle1">
             <b> {t("Submit payout info for {{amountSats}} Sats",{amountSats: pn(this.props.data.invoice_amount)})}
             </b> {" " + this.stepXofY()}
