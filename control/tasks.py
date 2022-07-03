@@ -56,6 +56,7 @@ def do_accounting():
         outflow = offchain_outflow + onchain_outflow
         routing_fees  = 0 if routing_fees == None else routing_fees
         rewards_claimed = 0 if rewards_claimed == None else rewards_claimed
+        mining_fees = 0 if mining_fees == None else mining_fees
 
         accounted_day = AccountingDay.objects.create(
             day = day,
