@@ -11,13 +11,17 @@ src: "_pages/docs/00-quick-start/03-access.md"
 --- 
 
 ## <img style='width:32px;height:32px' src='/assets/vector/tor.svg'/> Privately with TOR
-The safest and most private way to use RoboSats is through the Onion address. You need [Tor Browser](/docs/tor/).
+A safe and very private way to use RoboSats is through the Onion address. You need [Tor Browser](/docs/tor/).
 
 > [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion/)
 
 **Private:** your connection will be encrypted end-to-end and relaid by several layers of nodes making tracking harder.
 {: .notice--primary}
 
+## <img style='width:36px;height:38px;-webkit-filter:grayscale(1);filter:grayscale(1);' src='/assets/vector/Itoopie.svg'/> Privately with I2P
+I2P is another safe and private way to use RoboSats. You need to install [I2P](https://geti2p.com/en/download).
+
+> [<b>robosats.i2p</b>?i2paddresshelper=r7r4sckft<br/>6ptmk4r2jajiuqbowqyxiwsle4iyg4fijtoordc6z7a.b32.i2p](http://robosats.i2p?i2paddresshelper=r7r4sckft6ptmk4r2jajiuqbowqyxiwsle4iyg4fijtoordc6z7a.b32.i2p)
 
 ## <i class="fa-solid fa-window-maximize"></i> Unsafely in Clearnet
 There is an unsafe way to view RoboSats without TOR that relies on third party tor2web services. With this URL you can access RoboSats from any browser, but using this URL is **highly unrecommended!**
