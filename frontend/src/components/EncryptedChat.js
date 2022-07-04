@@ -5,6 +5,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import { encryptMessage , decryptMessage} from "../utils/pgp";
 import { getCookie } from "../utils/cookies";
 import { saveAsJson } from "../utils/saveFile";
+import { copyToClipboard } from "../utils/clipboard";
 import { AuditPGPDialog } from "./Dialogs"
 
 // Icons
@@ -234,7 +235,7 @@ class Chat extends Component {
                 <div style={{width:20}}>
                   <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
                     <IconButton sx={{height:18,width:18}}
-                      onClick={()=> navigator.clipboard.writeText(this.state.showPGP[props.index] ? props.message.encryptedMessage : props.message.plainTextMessage)}>
+                      onClick={()=> copyToClipboard(this.state.showPGP[props.index] ? props.message.encryptedMessage : props.message.plainTextMessage)}>
                       <ContentCopy sx={{height:16,width:16,color:'#333333'}}/>
                     </IconButton>
                   </Tooltip>

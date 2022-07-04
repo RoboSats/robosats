@@ -23,6 +23,7 @@ import { SendReceiveIcon } from "./Icons";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
+import { copyToClipboard } from "../utils/clipboard";
 
 class OrderPage extends Component {
   constructor(props) {
@@ -359,7 +360,7 @@ class OrderPage extends Component {
       <StoreTokenDialog
         open={this.state.openStoreToken}
         onClose={() => this.setState({openStoreToken:false})}
-        onClickCopy={()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}
+        onClickCopy={()=> (copyToClipboard(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}
         copyIconColor={this.props.copiedToken ? "inherit" : "primary"}
         onClickBack={() => this.setState({openStoreToken:false})}
         onClickDone={() => this.setState({openStoreToken:false}) &

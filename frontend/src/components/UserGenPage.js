@@ -17,7 +17,7 @@ import { genBase62Token, tokenStrength } from "../utils/token";
 import { genKey } from "../utils/pgp";
 import { getCookie, writeCookie, deleteCookie } from "../utils/cookies";
 import { saveAsJson } from "../utils/saveFile";
-
+import { copyToClipboard } from "../utils/clipboard";
 
 class UserGenPage extends Component {
   constructor(props) {
@@ -259,7 +259,7 @@ class UserGenPage extends Component {
                           <IconButton 
                             color={this.props.copiedToken ? "inherit":"primary"}
                             disabled={!(getCookie('robot_token')==this.state.token) || !this.props.avatarLoaded} 
-                            onClick={()=> (navigator.clipboard.writeText(getCookie('robot_token')) & this.props.setAppState({copiedToken:true}))}
+                            onClick={()=> (copyToClipboard(getCookie('robot_token')) & this.props.setAppState({copiedToken:true}))}
                             >
                             <ContentCopy sx={{width:18, height:18}}/>
                           </IconButton>

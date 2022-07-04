@@ -15,6 +15,7 @@ import {
 } from "@mui/material"
 
 import { saveAsJson } from "../../utils/saveFile";
+import { copyToClipboard } from "../../utils/clipboard";
 
 // Icons
 import KeyIcon from '@mui/icons-material/Key';
@@ -36,7 +37,7 @@ function CredentialTextfield(props){
           InputProps={{
             endAdornment:
               <Tooltip disableHoverListener enterTouchDelay={0} title={props.copiedTitle}>
-                <IconButton onClick={()=> navigator.clipboard.writeText(props.value)}>
+                <IconButton onClick={()=> copyToClipboard(props.value)}>
                   <ContentCopy/>
                 </IconButton>
               </Tooltip>,

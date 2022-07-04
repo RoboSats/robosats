@@ -6,6 +6,7 @@ import Countdown, { zeroPad} from 'react-countdown';
 import Chat from "./EncryptedChat"
 import MediaQuery from 'react-responsive'
 import QrReader from 'react-qr-reader'
+import { copyToClipboard } from "../utils/clipboard";
 
 // Icons
 import PercentIcon from '@mui/icons-material/Percent';
@@ -216,7 +217,7 @@ class TradeBox extends Component {
             <QRCode value={this.props.data.bond_invoice} size={305} style={{position:'relative', top:'3px'}}/>
           </Box>
           <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-            <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.bond_invoice)}} align="center"> <ContentCopy/>{t("Copy to clipboard")}</Button>
+            <Button size="small" color="inherit" onClick={() => {copyToClipboard(this.props.data.bond_invoice)}} align="center"> <ContentCopy/>{t("Copy to clipboard")}</Button>
           </Tooltip>
         </Grid>
         <Grid item xs={12} align="center">
@@ -299,7 +300,7 @@ class TradeBox extends Component {
             <QRCode value={this.props.data.escrow_invoice} size={305} style={{position:'relative', top:'3px'}}/>
           </Box>
           <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-            <Button size="small" color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.escrow_invoice)}} align="center"> <ContentCopy/>{t("Copy to clipboard")}</Button>
+            <Button size="small" color="inherit" onClick={() => {copyToClipboard(this.props.data.escrow_invoice)}} align="center"> <ContentCopy/>{t("Copy to clipboard")}</Button>
           </Tooltip>
         </Grid>
         <Grid item xs={12} align="center">
@@ -1252,7 +1253,7 @@ handleRatingRobosatsChange=(e)=>{
             <Alert severity="success">
               <AlertTitle>{t("Your TXID")}
                 <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
-                  <IconButton color="inherit" onClick={() => {navigator.clipboard.writeText(this.props.data.txid)}}>
+                  <IconButton color="inherit" onClick={() => {copyToClipboard(this.props.data.txid)}}>
                     <ContentCopy sx={{width:16,height:16}}/>
                   </IconButton>
                 </Tooltip>
