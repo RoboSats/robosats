@@ -81,6 +81,8 @@ tutorial:
       url: "/watch/en/"
     - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/spanish.svg"/> Español</span>'
       url: "/watch/es/"
+    - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/german.svg"/> Deutsch</span>'
+      url: "/watch/de/"
     - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/portuguese.svg"/> Português</span>'
       url: "/watch/pt/"
     - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/french.svg"/> Français</span>'
