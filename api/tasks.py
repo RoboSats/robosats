@@ -172,7 +172,7 @@ def payments_cleansing():
     """
     Deletes cancelled payments (hodl invoices never locked) that 
     belong to orders expired more than 3 days ago.
-    Deletes cancelled onchain_payments 
+    Deletes 'cancelled' or 'create' onchain_payments 
     """
 
     from django.db.models import Q
@@ -202,7 +202,7 @@ def payments_cleansing():
             pass
     
     # same for onchain payments
-    queryset = OnchainPayment.objects.filter(Q(status=OnchainPayment.Status.CANCE),
+    queryset = OnchainPayment.objects.filter(Q(status__in=[OnchainPayment.Status.CANCE, OnchainPayment.Status.CREAT]),
                                         Q(order_paid_TX__expires_at__lt=finished_time))
 
     # And do not have an active trade, any past contract or any reward.
