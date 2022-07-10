@@ -492,7 +492,7 @@ bottomBarPhone =()=>{
                     network={this.state.network}
                     nodeAlias={this.state.node_alias}
                     nodeId={this.state.node_id}
-                    alternativeName={this.state.alternativeName}
+                    alternativeName={this.state.alternative_name}
                     alternativeSite={this.state.alternative_site}
                     robosatsRunningCommitHash={this.state.robosats_running_commit_hash}
                     lastDayVolume={this.state.last_day_volume}

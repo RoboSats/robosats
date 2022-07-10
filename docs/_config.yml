@@ -35,7 +35,7 @@ robosats:
   maker_fee              : 0.025        # In percent (%)
   taker_fee              : 0.175        # In percent (%)
   total_fee              : 0.2          # In percent (%)
-  max_trade_limit        : "2,200,000"  # In Satoshis
+  max_trade_limit        : "3,000,000"  # In Satoshis
   min_trade_limit        : "20,000"     # In Satoshis
   hours_public_default   : 24           # In hours
   hours_fiat_exchange    : 24           # In hours
