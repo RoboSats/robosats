@@ -59,7 +59,7 @@
     "react-countdown": "^2.3.2",
     "react-dom": "^18.1.0",
     "react-i18next": "^11.16.2",
-    "react-native": "^0.66.4",
+    "react-native": "^0.69.1",
     "react-native-svg": "^12.3.0",
     "react-qr-code": "^2.0.3",
     "react-qr-reader": "^2.2.1",
