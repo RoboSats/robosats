@@ -12,13 +12,14 @@ on:
   pull_request:
     branches: [ "main" ]
     paths: [ "mobile", "frontend" ]
-    
+
 jobs:
   build-android:
     runs-on: ubuntu-latest
     steps: 
       - name: 'Checkout'
         uses: actions/checkout@v3
+
       - name: 'Download main.js Artifact'
         uses: dawidd6/action-download-artifact@v2
         with:
@@ -26,9 +27,12 @@ jobs:
           workflow_conclusion: success
           name: main-js
           path: mobile/html/Web.bundle/js/
-      - name: 'Install npm dependencies'
+
+      - name: 'Install npm Dependencies'
         run: |
+          cd mobile
           npm install
+
       - name: 'Build Android Release'
         run: |
           cd mobile/android
