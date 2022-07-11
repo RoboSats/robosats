@@ -22,16 +22,23 @@ import {SafeAreaView, Text, Platform} from 'react-native';
 const App = () => {
   // Webview with local html/js in a single location for andrid/iOS
   // https://yelotofu.com/react-native-load-local-static-site-inside-webview-2b93eb1c4225
-  const htmlPath = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html?';
+  const htmlPath = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html';
+
   const uri = 'https://robosats.onion.moe'
   const onion = 'http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion'
+
+  const runFirst = `
+      // document.body.style.backgroundColor = 'red';
+      // const currentLocation = window.location;
+      // setTimeout(function() { window.alert(currentLocation) }, 000);
+      // true; // note: this is required, or you'll sometimes get silent failures
+    `;
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <WebView
-        source={{
-          uri: uri,
-          //baseUrl: uri,
-        }}
+        source={{ uri: uri }}
+        // source={{ baseUrl: 'file:///android_asset/Web.bundle/' }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         sharedCookiesEnabled={true}
@@ -47,6 +54,7 @@ const App = () => {
         allowsBackForwardNavigationGestures={false}
         mediaPlaybackRequiresUserAction={false}
         allowsLinkPreview={false}
+        injectedJavaScript={runFirst}
         renderLoading={() => <Text>Loading RoboSats</Text>}
         onError={(syntheticEvent) => <Text>{syntheticEvent}</Text>}
       />
