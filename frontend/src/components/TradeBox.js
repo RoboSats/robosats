@@ -1060,12 +1060,26 @@ handleRatingRobosatsChange=(e)=>{
     )
   }
 
+  disputeCountdownRenderer = ({ hours, minutes}) => {
+    return (<span>{hours}h {zeroPad(minutes)}m </span>);
+  };
+
   showOpenDisputeButton(){
     const { t } = this.props;
+    let now = Date.now();
+    var expires_at = new Date(this.props.data.expires_at);
+    // open dispute button enables 12h before expiry
+    expires_at.setHours(expires_at.getHours() - 12);
     return(
+      <Tooltip 
+        disableHoverListener={now>expires_at}
+        disableTouchListener={now>expires_at} 
+        enterTouchDelay={0} 
+        title={<Trans i18nKey="open_dispute">To open a dispute you need to wait <Countdown date={expires_at} renderer={this.disputeCountdownRenderer}/></Trans>}>
         <Grid item xs={12} align="center">
-          <Button color="inherit" onClick={this.handleClickOpenConfirmDispute}>{t("Open Dispute")}</Button>
+          <Button disabled={now<expires_at} color="inherit" onClick={this.handleClickOpenConfirmDispute}>{t("Open Dispute")}</Button>
         </Grid>
+      </Tooltip>
     )
   }
 
@@ -1318,7 +1332,7 @@ handleRatingRobosatsChange=(e)=>{
         <span>{zeroPad(minutes)}m {zeroPad(seconds)}s </span>
       );
     }
-    };
+  };
   
   failureReason=()=>{
     const { t } = this.props;

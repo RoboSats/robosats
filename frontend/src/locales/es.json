@@ -405,6 +405,8 @@
     "Your TXID":"Tu TXID",
     "Lightning":"Lightning",
     "Onchain":"Onchain",
+    "open_dispute":"Para abrir una disputa debes esperar <1><1/>",
+
 
     "INFO DIALOG - InfoDiagog.js": "App information and clarifications and terms of use",
     "Close": "Cerrar",
