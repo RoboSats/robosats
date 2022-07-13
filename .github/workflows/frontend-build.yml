@@ -1,4 +1,4 @@
-name: Frontend Tests
+name: Frontend Test & Build
 
 on:
   workflow_dispatch:
@@ -20,8 +20,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      DEVELOPMENT: 1
 
     steps:
     - name: 'Checkout'
@@ -35,8 +33,17 @@ jobs:
     - name: 'Install NPM Dependencies'
       run: |
         cd frontend
-        npm install 
-    - name:  'Tests'
+        npm ci
+    - name:  'Test'
       run: |
         cd frontend
         npm test
+    - name:  'Build'
+      run: |
+        cd frontend
+        npm run build
+    - name: 'Archive Built Results'
+      uses: actions/upload-artifact@v3
+      with:
+        name: main-js
+        path: frontend/static/frontend/main.js
