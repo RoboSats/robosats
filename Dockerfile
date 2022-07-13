@@ -17,8 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # copy current dir's content to container's WORKDIR root i.e. all the contents of the robosats app
 COPY . .
 
-# fit lnd grpc services
-RUN	pip install grpcio grpcio-tools googleapis-common-protos
+# install lnd grpc services
 RUN cd api/lightning && git clone https://github.com/googleapis/googleapis.git
 RUN cd api/lightning && curl -o lightning.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/lightning.proto
 RUN cd api/lightning && python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. lightning.proto
