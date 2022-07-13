@@ -1,6 +1,7 @@
 name: Django Tests
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
     paths: ["api", "chat", "control", "robosats"]
@@ -23,7 +24,8 @@ jobs:
         python-version: ["3.10.2"]
 
     steps:
-    - uses: actions/checkout@v3
+    - name: 'Checkout'
+      uses: actions/checkout@v3
     - name: 'Set up Python ${{ matrix.python-version }}'
       uses: actions/setup-python@v3
       with:

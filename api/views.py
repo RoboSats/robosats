@@ -708,7 +708,7 @@ class UserView(APIView):
         image_path = avatar_path.joinpath(nickname + ".png")
         if not image_path.exists():
             with open(image_path, "wb") as f:
-                rh.img.save(f, format="png")
+                rh.img.save(f, format="png", optimize=True)
 
         # Create new credentials and login if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
