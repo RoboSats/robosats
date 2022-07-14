@@ -15,5 +15,9 @@ export const getCookie = (name) => {
 };
 
 export const writeCookie = (key,value) => {
-  document.cookie=key+"="+value;
+  document.cookie=`${key}=${value};path=/;SameSite=Strict`;
+}
+
+export const deleteCookie = (name) => {
+  document.cookie = `${name}= ; expires = Thu, 01 Jan 1970 00:00:00 GMT`
 }

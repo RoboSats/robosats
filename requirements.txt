@@ -1,4 +1,4 @@
-django==3.2.13
+django==3.2.14
 django-admin-relation-links==0.2.5
 django-celery-beat==2.2.1
 django-celery-results==2.2.0
@@ -27,3 +27,4 @@ django-import-export==2.7.1
 requests[socks]
 python-gnupg==0.4.9
 daphne==3.0.2
+coinaddrvalidator==1.1.3

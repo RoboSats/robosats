@@ -22,6 +22,10 @@ export default class HomePage extends Component {
         bookCurrencyCode:'ANY',
         bookOrders:new Array(),
         bookLoading: true,
+        activeOrderId: null,
+        lastOrderId: null,
+        earnedRewards: 0,
+        referralCode:'',
       }
     }
 

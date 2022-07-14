@@ -33,6 +33,7 @@ import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 
 import { getCookie } from "../../utils/cookies";
+import { copyToClipboard } from "../../utils/clipboard";
 
 type Props = {
   isOpen: boolean;
@@ -75,13 +76,13 @@ const ProfileDialog = ({
     const robotToken = getCookie("robot_token");
 
     if (robotToken) {
-      navigator.clipboard.writeText(robotToken);
+      copyToClipboard(robotToken);
       setAppState({copiedToken:true});
     }
   };
 
   const copyReferralCodeHandler = () => {
-    navigator.clipboard.writeText(`http://${host}/ref/${referralCode}`);
+    copyToClipboard(`http://${host}/ref/${referralCode}`);
   };
 
   return (

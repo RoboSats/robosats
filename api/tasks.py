@@ -78,14 +78,16 @@ def follow_send_payment(hash):
             lnpayment.num_satoshis *
             float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
             float(config("MIN_FLAT_ROUTING_FEE_LIMIT")),
-        ))  # 200 ppm or 10 sats
+        ))  # 1000 ppm or 10 sats
+    timeout_seconds = int(config("PAYOUT_TIMEOUT_SECONDS"))
+
     request = LNNode.routerrpc.SendPaymentRequest(
         payment_request=lnpayment.invoice,
         fee_limit_sat=fee_limit_sat,
-        timeout_seconds=75,
-    )  # time out payment in 75 seconds
+        timeout_seconds=timeout_seconds,
+    )
 
-    order = lnpayment.order_paid
+    order = lnpayment.order_paid_LN
     try:
         for response in LNNode.routerstub.SendPaymentV2(request,
                                                         metadata=[
@@ -165,15 +167,17 @@ def follow_send_payment(hash):
             context = {"routing_failed": "The payout invoice has expired"}
             return False, context
 
-@shared_task(name="lnpayments_cleansing")
-def lnpayments_cleansing():
+@shared_task(name="payments_cleansing")
+def payments_cleansing():
     """
-    Deletes cancelled lnpayments (hodl invoices never locked) that 
-    belong to orders expired more than 3 days ago
+    Deletes cancelled payments (hodl invoices never locked) that 
+    belong to orders expired more than 3 days ago.
+    Deletes 'cancelled' or 'create' onchain_payments 
     """
 
     from django.db.models import Q
     from api.models import LNPayment
+    from api.models import OnchainPayment
     from datetime import timedelta
     from django.utils import timezone
 
@@ -189,17 +193,34 @@ def lnpayments_cleansing():
     # And do not have an active trade, any past contract or any reward.
     deleted_lnpayments = []
     for lnpayment in queryset:
-        # Try an except. In case some chatroom is already missing.
+        # Try and except. In case some payment is already missing.
         try:
             name = str(lnpayment)
             lnpayment.delete()
             deleted_lnpayments.append(name)
         except:
             pass
+    
+    # same for onchain payments
+    queryset = OnchainPayment.objects.filter(Q(status__in=[OnchainPayment.Status.CANCE, OnchainPayment.Status.CREAT]),
+                                        Q(order_paid_TX__expires_at__lt=finished_time))
+
+    # And do not have an active trade, any past contract or any reward.
+    deleted_onchainpayments = []
+    for onchainpayment in queryset:
+        # Try and except. In case some payment is already missing.
+        try:
+            name = str(onchainpayment)
+            onchainpayment.delete()
+            deleted_onchainpayments.append(name)
+        except:
+            pass
 
     results = {
-        "num_deleted": len(deleted_lnpayments),
+        "num_lnpayments_deleted": len(deleted_lnpayments),
         "deleted_lnpayments": deleted_lnpayments,
+        "num_onchainpayments_deleted": len(deleted_onchainpayments),
+        "deleted_onchainpayments": deleted_onchainpayments,
     }
     return results
 

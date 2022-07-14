@@ -5,6 +5,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import { encryptMessage , decryptMessage} from "../utils/pgp";
 import { getCookie } from "../utils/cookies";
 import { saveAsJson } from "../utils/saveFile";
+import { copyToClipboard } from "../utils/clipboard";
 import { AuditPGPDialog } from "./Dialogs"
 
 // Icons
@@ -144,11 +145,13 @@ class Chat extends Component {
   }
 
   componentDidUpdate() {
-
-    // Only fire the scroll when the reason for Update is a new message
+    
+    // Only fire the scroll and audio when the reason for Update is a new message
     if (this.state.scrollNow){
+      const audio = new Audio(`/static/assets/sounds/chat-open.mp3`)
+      audio.play();
       this.scrollToBottom();
-      this.setState({scrollNow:false})
+      this.setState({scrollNow:false});
     }
   }
 
@@ -232,7 +235,7 @@ class Chat extends Component {
                 <div style={{width:20}}>
                   <Tooltip disableHoverListener enterTouchDelay={0} title={t("Copied!")}>
                     <IconButton sx={{height:18,width:18}}
-                      onClick={()=> navigator.clipboard.writeText(this.state.showPGP[props.index] ? props.message.encryptedMessage : props.message.plainTextMessage)}>
+                      onClick={()=> copyToClipboard(this.state.showPGP[props.index] ? props.message.encryptedMessage : props.message.plainTextMessage)}>
                       <ContentCopy sx={{height:16,width:16,color:'#333333'}}/>
                     </IconButton>
                   </Tooltip>

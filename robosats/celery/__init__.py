@@ -40,7 +40,7 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=0, minute=0),
     },
     "lnpayments-cleansing": { # Cleans 3+ days old unlocked hodl invoices
-        "task": "lnpayments_cleansing",
+        "task": "payments_cleansing",
         "schedule": crontab(hour=0, minute=0),
     },
     "give-rewards": {  # Referral rewards go from 'pending' to 'earned' at midnight
@@ -55,6 +55,10 @@ app.conf.beat_schedule = {
         "task": "cache_external_market_prices",
         "schedule": timedelta(seconds=60),
     },
+    "compute-node-balance": { # Logs LND channel and wallet balance
+        "task":"compute_node_balance",
+        "schedule": timedelta(minutes=60),
+    }
 }
 
 app.conf.timezone = "UTC"

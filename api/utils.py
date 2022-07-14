@@ -1,8 +1,7 @@
 import requests, ring, os
 from decouple import config
 import numpy as np
-import requests
-
+import coinaddrvalidator as addr
 from api.models import Order
 
 def get_tor_session():
@@ -11,6 +10,37 @@ def get_tor_session():
     session.proxies = {'http':  'socks5://127.0.0.1:9050',
                        'https': 'socks5://127.0.0.1:9050'}
     return session
+
+def validate_onchain_address(address):
+    '''
+    Validates an onchain address
+    '''
+    
+    validation = addr.validate('btc', address.encode('utf-8'))
+
+    if not validation.valid:
+        return False, {
+                "bad_address":
+                "Does not look like a valid address"
+            }
+
+    NETWORK = str(config('NETWORK'))
+    if NETWORK == 'mainnet':
+        if validation.network == 'main':
+            return True, None
+        else:
+            return False, {
+                "bad_address":
+                "This is not a bitcoin mainnet address"
+            }
+    elif NETWORK == 'testnet':
+        if validation.network == 'test':
+            return True, None
+        else:
+            return False, {
+                "bad_address":
+                "This is not a bitcoin testnet address"
+            }
 
 market_cache = {}
 @ring.dict(market_cache, expire=3)  # keeps in cache for 3 seconds
@@ -113,16 +143,53 @@ def compute_premium_percentile(order):
     return round(np.sum(rates < order_rate) / len(rates), 2)
 
 
+def weighted_median(values, sample_weight=None, quantiles= 0.5, values_sorted=False):
+    """Very close to numpy.percentile, but it supports weights.
+    NOTE: quantiles should be in [0, 1]!
+    :param values: numpy.array with data
+    :param quantiles: array-like with many quantiles needed. For weighted median 0.5
+    :param sample_weight: array-like of the same length as `array`
+    :param values_sorted: bool, if True, then will avoid sorting of
+        initial array assuming array is already sorted
+    :return: numpy.array with computed quantiles.
+    """
+    values = np.array(values)
+    quantiles = np.array(quantiles)
+    if sample_weight is None:
+        sample_weight = np.ones(len(values))
+    sample_weight = np.array(sample_weight)
+    assert np.all(quantiles >= 0) and np.all(quantiles <= 1), \
+        'quantiles should be in [0, 1]'
+
+    if not values_sorted:
+        sorter = np.argsort(values)
+        values = values[sorter]
+        sample_weight = sample_weight[sorter]
+
+    weighted_quantiles = np.cumsum(sample_weight) - 0.5 * sample_weight
+    weighted_quantiles -= weighted_quantiles[0]
+    weighted_quantiles /= weighted_quantiles[-1]
+
+    return np.interp(quantiles, weighted_quantiles, values)
+
 def compute_avg_premium(queryset):
-    weighted_premiums = []
+    premiums = []
     volumes = []
 
     # We exclude BTC, as LN <-> BTC swap premiums should not be  mixed with FIAT.
+
     for tick in queryset.exclude(currency=1000):
-        weighted_premiums.append(tick.premium * tick.volume)
-        volumes.append(tick.volume)
+        premiums.append(float(tick.premium))
+        volumes.append(float(tick.volume))
 
     total_volume = sum(volumes)
-    # Avg_premium is the weighted average of the premiums by volume
-    avg_premium = sum(weighted_premiums) / total_volume
-    return avg_premium, total_volume
+
+    # weighted_median_premium is the weighted median of the premiums by volume
+    if len(premiums) > 0 and len(volumes)>0:
+        weighted_median_premium = weighted_median(values=premiums,
+                                    sample_weight=volumes,
+                                    quantiles=0.5,
+                                    values_sorted=False)
+    else:
+        weighted_median_premium = 0.0
+    return weighted_median_premium, total_volume

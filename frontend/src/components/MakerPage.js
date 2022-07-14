@@ -19,7 +19,7 @@ import { BuySatsCheckedIcon, BuySatsIcon, SellSatsCheckedIcon, SellSatsIcon} fro
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
-
+import { copyToClipboard } from "../utils/clipboard";
 
 class MakerPage extends Component {
   defaultCurrency = 1;
@@ -436,11 +436,17 @@ class MakerPage extends Component {
                             />
                     </div>
                 <Grid item>
-                <Tooltip placement="top" enterTouchDelay={0} enterDelay={1000} enterNextDelay={2000} title={this.state.is_explicit? t("Your order fixed exchange rate"): t("Your order's current exchange rate. Rate will move with the market.")}>
-                    <Typography variant="caption" color="text.secondary">
-                        {(this.state.is_explicit ? t("Order rate:"): t("Order current rate:"))+" "+pn(this.priceNow())+" "+this.state.currencyCode+"/BTC"}
-                    </Typography>
-                </Tooltip>
+                    <div style={{ display: this.state.loadingLimits == true ? '':'none'}}>
+                        <div style={{height:4}}/>
+                        <LinearProgress />
+                    </div>
+                    <div style={{ display: this.state.loadingLimits == false ? '':'none'}}>
+                        <Tooltip placement="top" enterTouchDelay={0} enterDelay={1000} enterNextDelay={2000} title={this.state.is_explicit? t("Your order fixed exchange rate"): t("Your order's current exchange rate. Rate will move with the market.")}>
+                            <Typography variant="caption" color="text.secondary">
+                                {(this.state.is_explicit ? t("Order rate:"): t("Order current rate:"))+" "+pn(this.priceNow())+" "+this.state.currencyCode+"/BTC"}
+                            </Typography>
+                        </Tooltip>
+                    </div>
                 </Grid>
                 </Grid>
             </Paper>
@@ -726,7 +732,7 @@ class MakerPage extends Component {
                 <StoreTokenDialog
                     open={this.state.openStoreToken}
                     onClose={() => this.setState({openStoreToken:false})}
-                    onClickCopy={()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}
+                    onClickCopy={()=> (copyToClipboard(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}
                     copyIconColor={this.props.copiedToken ? "inherit" : "primary"}
                     onClickBack={() => this.setState({openStoreToken:false})}
                     onClickDone={this.handleCreateOfferButtonPressed}

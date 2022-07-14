@@ -15,9 +15,9 @@ import { RoboSatsNoTextIcon } from "./Icons";
 import { sha256 } from 'js-sha256';
 import { genBase62Token, tokenStrength } from "../utils/token";
 import { genKey } from "../utils/pgp";
-import { getCookie, writeCookie } from "../utils/cookies";
+import { getCookie, writeCookie, deleteCookie } from "../utils/cookies";
 import { saveAsJson } from "../utils/saveFile";
-
+import { copyToClipboard } from "../utils/clipboard";
 
 class UserGenPage extends Component {
   constructor(props) {
@@ -38,7 +38,7 @@ class UserGenPage extends Component {
       this.setState({
         nickname: this.props.nickname,
         token: this.props.token? this.props.token : "",
-        avatar_url: '/static/assets/avatars/' + this.props.nickname + '.png',
+        avatarUrl: '/static/assets/avatars/' + this.props.nickname + '.png',
         loadingRobot: false
       });
     }
@@ -81,7 +81,7 @@ class UserGenPage extends Component {
           this.setState({
               nickname: data.nickname,
               bit_entropy: data.token_bits_entropy,
-              avatar_url: '/static/assets/avatars/' + data.nickname + '.png',
+              avatarUrl: '/static/assets/avatars/' + data.nickname + '.png',
               shannon_entropy: data.token_shannon_entropy,
               bad_request: data.bad_request,
               found: data.found,
@@ -91,13 +91,21 @@ class UserGenPage extends Component {
           // Add nick and token to App state (token only if not a bad request)
           (data.bad_request ? this.props.setAppState({
             nickname: data.nickname,
-            avatarLoaded: false,
+            avatarLoaded: false, 
+            activeOrderId: data.active_order_id ? data.active_order_id : null,
+            referralCode: data.referral_code,
+            earnedRewards: data.earned_rewards,
+            lastOrderId: data.last_order_id ? data.last_order_id : null,
           })
           :
           (this.props.setAppState({
             nickname: data.nickname,
             token: token,
             avatarLoaded: false,
+            activeOrderId: data.active_order_id ? data.active_order_id : null,
+            lastOrderId: data.last_order_id ? data.last_order_id : null,
+            referralCode: data.referral_code,
+            earnedRewards: data.earned_rewards,
           })) & writeCookie("robot_token",token) 
               & writeCookie("pub_key",data.public_key.split('\n').join('\\')) 
               & writeCookie("enc_priv_key",data.encrypted_private_key.split('\n').join('\\')))
@@ -115,6 +123,11 @@ class UserGenPage extends Component {
     };
     fetch("/api/user", requestOptions)
       .then((response) => response.json());
+
+    deleteCookie("sessionid");
+    deleteCookie("robot_token");
+    deleteCookie("pub_key");
+    deleteCookie("enc_priv_key");
   }
 
   handleClickNewRandomToken=()=>{
@@ -128,7 +141,7 @@ class UserGenPage extends Component {
 
   handleChangeToken=(e)=>{
     this.setState({
-      token: e.target.value,
+      token: e.target.value.split(' ').join(''),
       tokenHasChanged: true,
     })
   }
@@ -137,7 +150,12 @@ class UserGenPage extends Component {
     this.delGeneratedUser();
     this.getGeneratedUser(this.state.token);
     this.setState({loadingRobot: true, tokenHasChanged: false});
-    this.props.setAppState({avatarLoaded: false, nickname: null, token: null, copiedToken: false});
+    this.props.setAppState({avatarLoaded: false, 
+      nickname: null, 
+      token: null, 
+      copiedToken: false, 
+      lastOrderId: null,
+      activeOrderId: null});
   }
 
   handleClickOpenInfo = () => {
@@ -170,7 +188,7 @@ class UserGenPage extends Component {
             <div>
               <Grid item xs={12} align="center">
                 <Typography component="h5" variant="h5">
-                  <b>{this.state.nickname ?
+                  <b>{this.state.nickname && getCookie("sessionid") ?
                     <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap', height:'45px'}}>
                       <BoltIcon sx={{ color: "#fcba03", height: '33px',width: '33px'}}/><a>{this.state.nickname}</a><BoltIcon sx={{ color: "#fcba03", height: '33px',width: '33px'}}/>
                     </div>
@@ -180,11 +198,12 @@ class UserGenPage extends Component {
               <Grid item xs={12} align="center">
               <Tooltip enterTouchDelay={0} title={t("This is your trading avatar")}>
                 <div style={{ maxWidth: 200, maxHeight: 200 }}>
-                  <Image className='newAvatar'
+                  <Image 
+                    className='newAvatar'
                     disableError={true}
                     cover={true}
                     color='null'
-                    src={this.state.avatar_url || ""}
+                    src={getCookie("sessionid") ? this.state.avatarUrl || "" : ""}
                   />
                 </div>
                 </Tooltip><br/>
@@ -240,7 +259,7 @@ class UserGenPage extends Component {
                           <IconButton 
                             color={this.props.copiedToken ? "inherit":"primary"}
                             disabled={!(getCookie('robot_token')==this.state.token) || !this.props.avatarLoaded} 
-                            onClick={()=> (navigator.clipboard.writeText(getCookie('robot_token')) & this.props.setAppState({copiedToken:true}))}
+                            onClick={()=> (copyToClipboard(getCookie('robot_token')) & this.props.setAppState({copiedToken:true}))}
                             >
                             <ContentCopy sx={{width:18, height:18}}/>
                           </IconButton>
@@ -277,7 +296,7 @@ class UserGenPage extends Component {
             <ButtonGroup variant="contained" aria-label="outlined primary button group">
               <Button disabled={this.state.loadingRobot || !(this.props.token ? getCookie('robot_token')==this.props.token : true )} color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
               <Button color='inherit' style={{color: '#111111'}} onClick={this.handleClickOpenInfo}>{t("Info")}</Button>
-              <InfoDialog open={Boolean(this.state.openInfo)} maxAmount='1,500,000' onClose = {this.handleCloseInfo}/>
+              <InfoDialog open={Boolean(this.state.openInfo)} maxAmount='3,000,000' onClose = {this.handleCloseInfo}/>
               <Button disabled={this.state.loadingRobot || !(this.props.token ? getCookie('robot_token')==this.props.token : true )} color='secondary' to='/book/' component={Link}>{t("View Book")}</Button>
             </ButtonGroup>
           </Grid>

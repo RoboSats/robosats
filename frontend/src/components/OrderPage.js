@@ -23,6 +23,7 @@ import { SendReceiveIcon } from "./Icons";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
+import { copyToClipboard } from "../utils/clipboard";
 
 class OrderPage extends Component {
   constructor(props) {
@@ -359,7 +360,7 @@ class OrderPage extends Component {
       <StoreTokenDialog
         open={this.state.openStoreToken}
         onClose={() => this.setState({openStoreToken:false})}
-        onClickCopy={()=> (navigator.clipboard.writeText(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}
+        onClickCopy={()=> (copyToClipboard(getCookie("robot_token")) & this.props.setAppState({copiedToken:true}))}
         copyIconColor={this.props.copiedToken ? "inherit" : "primary"}
         onClickBack={() => this.setState({openStoreToken:false})}
         onClickDone={() => this.setState({openStoreToken:false}) &
@@ -492,7 +493,7 @@ class OrderPage extends Component {
               <ListItemAvatar sx={{ width: 56, height: 56 }}>
               <Tooltip placement="top" enterTouchDelay={0} title={t(this.state.maker_status)} >
                 <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.maker_status)}>
-                <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"12px", top:"4px"}}> {!this.state.type ? <SendReceiveIcon sx={{transform: "scaleX(-1)"}} color="secondary"/> : <SendReceiveIcon color="primary"/>}</div>}>
+                <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"5px", top:"2px"}}> {!this.state.type ? <SendReceiveIcon sx={{transform: "scaleX(-1)",height:"18px",width:"18px"}} color="secondary"/> : <SendReceiveIcon sx={{height:"18px",width:"18px"}} color="primary"/>}</div>}>
                   <Avatar className="flippedSmallAvatar"
                     alt={this.state.maker_nick}
                     src={window.location.origin +'/static/assets/avatars/' + this.state.maker_nick + '.png'}
@@ -514,7 +515,7 @@ class OrderPage extends Component {
                       <ListItemAvatar >
                         <Tooltip enterTouchDelay={0} title={t(this.state.taker_status)} >
                           <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(this.state.taker_status)}>
-                          <Badge overlap="circular" anchorOrigin={{horizontal: 'left', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", right:"12px", top:"4px"}}> {this.state.type ? <SendReceiveIcon color="secondary"/> : <SendReceiveIcon sx={{transform: "scaleX(-1)"}} color="primary"/> }</div>}>
+                          <Badge overlap="circular" anchorOrigin={{horizontal: 'left', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", right:"5px", top:"2px"}}> {this.state.type ? <SendReceiveIcon sx={{height:"18px",width:"18px"}} color="secondary"/> : <SendReceiveIcon sx={{transform: "scaleX(-1)",height:"18px",width:"18px"}} color="primary"/> }</div>}>
                             <Avatar className="smallAvatar"
                               alt={this.state.taker_nick}
                               src={window.location.origin +'/static/assets/avatars/' + this.state.taker_nick + '.png'}
@@ -605,16 +606,22 @@ class OrderPage extends Component {
               </Grid>
             </ListItem>
 
-            <Divider />
-            <ListItem>
-              <ListItemIcon>
-                <AccessTimeIcon/>
-              </ListItemIcon>
-              <ListItemText secondary={t("Expires in")}>
-                <Countdown date={new Date(this.state.expires_at)} renderer={this.countdownRenderer} />
-              </ListItemText>
-            </ListItem>
-              <LinearDeterminate totalSecsExp={this.state.total_secs_exp} expiresAt={this.state.expires_at}/>
+            {/* if order is in a status that does not expire, do not show countdown */}
+            {[4,12,13,14,15,16,17,18].includes(this.state.status)? null :
+              <>
+                <Divider />
+                <ListItem>
+                  <ListItemIcon>
+                    <AccessTimeIcon/>
+                  </ListItemIcon>
+                  <ListItemText secondary={t("Expires in")}>
+                    <Countdown date={new Date(this.state.expires_at)} renderer={this.countdownRenderer} />
+                  </ListItemText>
+                </ListItem>
+                <LinearDeterminate key={this.state.total_secs_exp} totalSecsExp={this.state.total_secs_exp} expiresAt={this.state.expires_at}/>
+              </>
+            }
+
             </List>
 
             {/* If the user has a penalty/limit */}

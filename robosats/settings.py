@@ -39,9 +39,14 @@ AVATAR_ROOT = STATIC_ROOT + "assets/avatars/"
 ALLOWED_HOSTS = [
     config("HOST_NAME"),
     config("HOST_NAME2"),
+    config("I2P_ALIAS"),
+    config("I2P_LONG"),
     config("LOCAL_ALIAS"),
     "127.0.0.1",
 ]
+
+# Allows Session Cookie to be read by Javascript on Client side.
+SESSION_COOKIE_HTTPONLY = False
 
 # Application definition
 

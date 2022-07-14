@@ -17,8 +17,11 @@ from decouple import config
 from pathlib import Path
 import json
 
+from control.models import BalanceLog
+
 MIN_TRADE = int(config("MIN_TRADE"))
 MAX_TRADE = int(config("MAX_TRADE"))
+MIN_SWAP_AMOUNT = int(config("MIN_SWAP_AMOUNT"))
 FEE = float(config("FEE"))
 DEFAULT_BOND_SIZE = float(config("DEFAULT_BOND_SIZE"))
 
@@ -118,7 +121,7 @@ class LNPayment(models.Model):
                                    blank=True)
     num_satoshis = models.PositiveBigIntegerField(validators=[
         MinValueValidator(100),
-        MaxValueValidator(MAX_TRADE * (1 + DEFAULT_BOND_SIZE + FEE)),
+        MaxValueValidator(1.5 * MAX_TRADE),
     ])
     # Fee in sats with mSats decimals fee_msat
     fee = models.DecimalField(max_digits=10, decimal_places=3, default=0, null=False, blank=False)
@@ -163,6 +166,101 @@ class LNPayment(models.Model):
         # We created a truncated property for display 'hash'
         return truncatechars(self.payment_hash, 10)
 
+class OnchainPayment(models.Model):
+
+    class Concepts(models.IntegerChoices):
+        PAYBUYER = 3, "Payment to buyer"
+
+    class Status(models.IntegerChoices):
+        CREAT = 0, "Created"        # User was given platform fees and suggested mining fees
+        VALID = 1, "Valid"          # Valid onchain address submitted
+        MEMPO = 2, "In mempool"     # Tx is sent to mempool
+        CONFI = 3, "Confirmed"      # Tx is confirme +2 blocks
+        CANCE = 4, "Cancelled"      # Cancelled tx
+
+    def get_balance():
+        balance = BalanceLog.objects.create()
+        return balance.time
+
+    # payment use details
+    concept = models.PositiveSmallIntegerField(choices=Concepts.choices,
+                                               null=False,
+                                               default=Concepts.PAYBUYER)
+    status = models.PositiveSmallIntegerField(choices=Status.choices,
+                                              null=False,
+                                              default=Status.CREAT)
+
+    # payment info
+    address = models.CharField(max_length=100,
+                                    unique=False,
+                                    default=None,
+                                    null=True,
+                                    blank=True)
+        
+    txid = models.CharField(max_length=64,
+                                unique=True,
+                                null=True,
+                                default=None,
+                                blank=True)
+
+    num_satoshis = models.PositiveBigIntegerField(null=True, 
+                                                validators=[
+                                                    MinValueValidator(0.5 * MIN_SWAP_AMOUNT),
+                                                    MaxValueValidator(1.5 * MAX_TRADE),
+                                                ])
+    sent_satoshis = models.PositiveBigIntegerField(null=True, 
+                                                validators=[
+                                                    MinValueValidator(0.5 * MIN_SWAP_AMOUNT),
+                                                    MaxValueValidator(1.5 * MAX_TRADE),
+                                                ])
+    # fee in sats/vbyte with mSats decimals fee_msat
+    suggested_mining_fee_rate = models.DecimalField(max_digits=6, 
+                                                    decimal_places=3, 
+                                                    default=1.05, 
+                                                    null=False, 
+                                                    blank=False)
+    mining_fee_rate = models.DecimalField(max_digits=6, 
+                                        decimal_places=3,
+                                        default=1.05, 
+                                        null=False, 
+                                        blank=False)
+    mining_fee_sats = models.PositiveBigIntegerField(default=0, 
+                                                    null=False, 
+                                                    blank=False)
+
+    # platform onchain/channels balance at creation, swap fee rate as percent of total volume
+    balance = models.ForeignKey(BalanceLog, 
+                                related_name="balance", 
+                                on_delete=models.SET_NULL,
+                                null=True,
+                                default=get_balance)
+
+    swap_fee_rate = models.DecimalField(max_digits=4, 
+                                        decimal_places=2, 
+                                        default=float(config("MIN_SWAP_FEE"))*100, 
+                                        null=False, 
+                                        blank=False)
+
+    created_at = models.DateTimeField(default=timezone.now)
+
+    # involved parties
+    receiver = models.ForeignKey(User,
+                                 related_name="tx_receiver",
+                                 on_delete=models.SET_NULL,
+                                 null=True,
+                                 default=None)
+
+    def __str__(self):
+        return f"TX-{str(self.id)}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}"
+
+    class Meta:
+        verbose_name = "Onchain payment"
+        verbose_name_plural = "Onchain payments"
+
+    @property
+    def hash(self):
+        # Display txid as 'hash' truncated
+        return truncatechars(self.txid, 10)
 
 class Order(models.Model):
 
@@ -356,10 +454,21 @@ class Order(models.Model):
         default=None,
         blank=True,
     )
+    # is buyer payout a LN invoice (false) or on chain address (true)
+    is_swap = models.BooleanField(default=False, null=False)
     # buyer payment LN invoice
     payout = models.OneToOneField(
         LNPayment,
-        related_name="order_paid",
+        related_name="order_paid_LN",
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None,
+        blank=True,
+    )
+    # buyer payment address
+    payout_tx = models.OneToOneField(
+        OnchainPayment,
+        related_name="order_paid_TX",
         on_delete=models.SET_NULL,
         null=True,
         default=None,
@@ -388,19 +497,19 @@ class Order(models.Model):
             3: int(config("EXP_TAKER_BOND_INVOICE")),           # 'Waiting for taker bond'
             4: 0,                                               # 'Cancelled'
             5: 0,                                               # 'Expired'
-            6: self.escrow_duration,                            # 'Waiting for trade collateral and buyer invoice'
+            6: int(self.escrow_duration),                       # 'Waiting for trade collateral and buyer invoice'
             7: 60 * int(config("INVOICE_AND_ESCROW_DURATION")), # 'Waiting only for seller trade collateral'
             8: 60 * int(config("INVOICE_AND_ESCROW_DURATION")), # 'Waiting only for buyer invoice'
             9: 60 * 60 * int(config("FIAT_EXCHANGE_DURATION")), # 'Sending fiat - In chatroom'
             10: 60 * 60 * int(config("FIAT_EXCHANGE_DURATION")),# 'Fiat sent - In chatroom'
             11: 1 * 24 * 60 * 60,                               # 'In dispute'
             12: 0,                                              # 'Collaboratively cancelled'
-            13: 10 * 24 * 60 * 60,                              # 'Sending satoshis to buyer'
-            14: 1 * 24 * 60 * 60,                               # 'Sucessful trade'
-            15: 10 * 24 * 60 * 60,                              # 'Failed lightning network routing'
-            16: 10 * 24 * 60 * 60,                              # 'Wait for dispute resolution'
-            17: 1 * 24 * 60 * 60,                               # 'Maker lost dispute'
-            18: 1 * 24 * 60 * 60,                               # 'Taker lost dispute'
+            13: 100 * 24 * 60 * 60,                             # 'Sending satoshis to buyer'
+            14: 100 * 24 * 60 * 60,                             # 'Sucessful trade'
+            15: 100 * 24 * 60 * 60,                             # 'Failed lightning network routing'
+            16: 100 * 24 * 60 * 60,                             # 'Wait for dispute resolution'
+            17: 100 * 24 * 60 * 60,                             # 'Maker lost dispute'
+            18: 100 * 24 * 60 * 60,                             # 'Taker lost dispute'
         }
         
         return t_to_expire[status]

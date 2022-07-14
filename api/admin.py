@@ -2,7 +2,7 @@ from django.contrib import admin
 from django_admin_relation_links import AdminChangeLinksMixin
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.admin import UserAdmin
-from api.models import Order, LNPayment, Profile, MarketTick, Currency
+from api.models import OnchainPayment, Order, LNPayment, Profile, MarketTick, Currency
 
 admin.site.unregister(Group)
 admin.site.unregister(User)
@@ -53,6 +53,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "is_fiat_sent",
         "created_at",
         "expires_at",
+        "payout_tx_link",
         "payout_link",
         "maker_bond_link",
         "taker_bond_link",
@@ -63,12 +64,22 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "maker",
         "taker",
         "currency",
+        "payout_tx",
         "payout",
         "maker_bond",
         "taker_bond",
         "trade_escrow",
     )
-    list_filter = ("is_disputed", "is_fiat_sent", "type", "currency", "status")
+    raw_id_fields = (
+        "maker",
+        "taker",
+        "payout_tx",
+        "payout",
+        "maker_bond",
+        "taker_bond",
+        "trade_escrow",
+    )
+    list_filter = ("is_disputed", "is_fiat_sent", "is_swap","type", "currency", "status")
     search_fields = ["id","amount","min_amount","max_amount"]
 
     def amt(self, obj):
@@ -93,7 +104,7 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "order_made_link",
         "order_taken_link",
         "order_escrow_link",
-        "order_paid_link",
+        "order_paid_LN_link",
     )
     list_display_links = ("hash", "concept")
     change_links = (
@@ -102,12 +113,33 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "order_made",
         "order_taken",
         "order_escrow",
-        "order_paid",
+        "order_paid_LN",
     )
     list_filter = ("type", "concept", "status")
     ordering = ("-expires_at", )
     search_fields = ["payment_hash","num_satoshis","sender__username","receiver__username","description"]
 
+@admin.register(OnchainPayment)
+class OnchainPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
+    list_display = (
+        "id",
+        "address",
+        "concept",
+        "status",
+        "num_satoshis",
+        "hash",
+        "swap_fee_rate",
+        "mining_fee_sats",
+        "balance_link",
+        "order_paid_TX_link",
+    )
+    change_links = (
+        "balance",
+        "order_paid_TX",
+    )
+    list_display_links = ("id","address", "concept")
+    list_filter = ("concept", "status")
+    search_fields = ["address","num_satoshis","receiver__username","txid"]
 
 @admin.register(Profile)
 class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
@@ -126,6 +158,10 @@ class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "avg_rating",
         "num_disputes",
         "lost_disputes",
+    )
+    raw_id_fields = (
+        "user",
+        "referred_by",
     )
     list_editable = ["pending_rewards", "earned_rewards"]
     list_display_links = ("avatar_tag", "id")

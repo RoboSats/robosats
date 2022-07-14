@@ -11,9 +11,9 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 
-from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer
-from api.models import LNPayment, MarketTick, Order, Currency, Profile
-from control.models import AccountingDay
+from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer, TickSerializer
+from api.models import LNPayment, MarketTick, OnchainPayment, Order, Currency, Profile
+from control.models import AccountingDay, BalanceLog
 from api.logics import Logics
 from api.messages import Telegram
 from secrets import token_urlsafe
@@ -220,7 +220,7 @@ class OrderView(viewsets.ViewSet):
         # 3.a) If not a participant and order is not public, forbid.
         if not data["is_participant"] and order.status != Order.Status.PUB:
             return Response(
-                {"bad_request": "You are not allowed to see this order"},
+                {"bad_request": "This order is not available"},
                 status.HTTP_403_FORBIDDEN,
             )
 
@@ -337,7 +337,7 @@ class OrderView(viewsets.ViewSet):
         elif data["is_buyer"] and (order.status == Order.Status.WF2
                                    or order.status == Order.Status.WFI):
 
-            # If the two bonds are locked, reply with an AMOUNT so he can send the buyer invoice.
+            # If the two bonds are locked, reply with an AMOUNT and onchain swap cost so he can send the buyer invoice/address.
             if (order.maker_bond.status == order.taker_bond.status ==
                     LNPayment.Status.LOCKED):
                 valid, context = Logics.payout_amount(order, request.user)
@@ -399,6 +399,20 @@ class OrderView(viewsets.ViewSet):
             if order.status == Order.Status.EXP:
                 data["expiry_reason"] = order.expiry_reason
                 data["expiry_message"] = Order.ExpiryReasons(order.expiry_reason).label
+
+            # If status is 'Succes' add final stats and txid if it is a swap
+            if order.status == Order.Status.SUC:
+                # TODO: add summary of order for buyer/sellers: sats in/out, fee paid, total time? etc
+                # If buyer and is a swap, add TXID
+                if Logics.is_buyer(order,request.user):
+                    if order.is_swap:
+                        data["num_satoshis"] = order.payout_tx.num_satoshis
+                        data["sent_satoshis"] = order.payout_tx.sent_satoshis
+                        if order.payout_tx.status in [OnchainPayment.Status.MEMPO, OnchainPayment.Status.CONFI]:
+                            data["txid"] = order.payout_tx.txid
+                            data["network"] = str(config("NETWORK"))
+                            
+
             
         return Response(data, status.HTTP_200_OK)
 
@@ -416,9 +430,11 @@ class OrderView(viewsets.ViewSet):
         order = Order.objects.get(id=order_id)
 
         # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice'
-        # 6)'submit_statement' (in dispute), 7)'rate_user' , 'rate_platform'
+        # 5.b)'update_address' 6)'submit_statement' (in dispute), 7)'rate_user' , 8)'rate_platform'
         action = serializer.data.get("action")
         invoice = serializer.data.get("invoice")
+        address = serializer.data.get("address")
+        mining_fee_rate = serializer.data.get("mining_fee_rate")
         statement = serializer.data.get("statement")
         rating = serializer.data.get("rating")
 
@@ -459,9 +475,16 @@ class OrderView(viewsets.ViewSet):
             )
 
         # 2) If action is 'update invoice'
-        if action == "update_invoice":
+        elif action == "update_invoice":
             valid, context = Logics.update_invoice(order, request.user,
                                                    invoice)
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+        
+        # 2.b) If action is 'update address'
+        elif action == "update_address":
+            valid, context = Logics.update_address(order, request.user,
+                                                   address, mining_fee_rate)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
@@ -549,13 +572,13 @@ class UserView(APIView):
         # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
         if request.user.is_authenticated:
             context = {"nickname": request.user.username}
-            not_participant, _, _ = Logics.validate_already_maker_or_taker(
+            not_participant, _, order = Logics.validate_already_maker_or_taker(
                 request.user)
 
             # Does not allow this 'mistake' if an active order
             if not not_participant:
-                context[
-                    "bad_request"] = f"You are already logged in as {request.user} and have an active order"
+                context["active_order_id"] = order.id
+                context["bad_request"] = f"You are already logged in as {request.user} and have an active order"
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # Deprecated, kept temporarily for legacy reasons
@@ -620,13 +643,13 @@ class UserView(APIView):
         # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
         if request.user.is_authenticated:
             context = {"nickname": request.user.username}
-            not_participant, _, _ = Logics.validate_already_maker_or_taker(
+            not_participant, _, order = Logics.validate_already_maker_or_taker(
                 request.user)
 
             # Does not allow this 'mistake' if an active order
             if not not_participant:
-                context[
-                    "bad_request"] = f"You are already logged in as {request.user} and have an active order"
+                context["active_order_id"] = order.id
+                context["bad_request"] = f"You are already logged in as {request.user} and have an active order"
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # The new way. The token is never sent. Only its SHA256
@@ -685,7 +708,7 @@ class UserView(APIView):
         image_path = avatar_path.joinpath(nickname + ".png")
         if not image_path.exists():
             with open(image_path, "wb") as f:
-                rh.img.save(f, format="png")
+                rh.img.save(f, format="png", optimize=True)
 
         # Create new credentials and login if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
@@ -725,6 +748,18 @@ class UserView(APIView):
                 login(request, user)
                 context["public_key"] = user.profile.public_key
                 context["encrypted_private_key"] = user.profile.encrypted_private_key
+                context["earned_rewards"] = user.profile.earned_rewards
+                context["referral_code"] = str(user.profile.referral_code)
+
+                # return active order or last made order if any
+                has_no_active_order, _, order = Logics.validate_already_maker_or_taker(request.user)
+                if not has_no_active_order:
+                    context["active_order_id"] = order.id
+                else:
+                    last_order = Order.objects.filter(Q(maker=request.user) | Q(taker=request.user)).last()
+                    if last_order:
+                        context["last_order_id"] = last_order.id
+                        
                 # Sends the welcome back message, only if created +3 mins ago
                 if request.user.date_joined < (timezone.now() - timedelta(minutes=3)):
                     context["found"] = "We found your Robot avatar. Welcome back!"
@@ -857,8 +892,8 @@ class InfoView(ListAPIView):
             lifetime_volume = 0
 
         context["last_day_nonkyc_btc_premium"] = round(avg_premium, 2)
-        context["last_day_volume"] = total_volume
-        context["lifetime_volume"] = lifetime_volume
+        context["last_day_volume"] = round(total_volume, 8)
+        context["lifetime_volume"] = round(lifetime_volume, 8)
         context["lnd_version"] = get_lnd_version()
         context["robosats_running_commit_hash"] = get_commit_robosats()
         context["alternative_site"] = config("ALTERNATIVE_SITE")
@@ -869,6 +904,8 @@ class InfoView(ListAPIView):
         context["maker_fee"] = float(config("FEE"))*float(config("MAKER_FEE_SPLIT"))
         context["taker_fee"] = float(config("FEE"))*(1 - float(config("MAKER_FEE_SPLIT")))
         context["bond_size"] = float(config("DEFAULT_BOND_SIZE"))
+
+        context["current_swap_fee_rate"] = Logics.compute_swap_fee_rate(BalanceLog.objects.latest('time'))
 
         if request.user.is_authenticated:
             context["nickname"] = request.user.username
@@ -914,7 +951,7 @@ class RewardView(CreateAPIView):
 
         return Response({"successful_withdrawal": True}, status.HTTP_200_OK)
 
-class PriceView(CreateAPIView):
+class PriceView(ListAPIView):
 
     serializer_class = PriceSerializer
 
@@ -937,6 +974,15 @@ class PriceView(CreateAPIView):
                 payload[code] = None
 
         return Response(payload, status.HTTP_200_OK)
+
+class TickView(ListAPIView):
+
+    queryset = MarketTick.objects.all()
+    serializer_class = TickSerializer
+
+    def get(self, request):
+        data = self.serializer_class(self.queryset.all(), many=True, read_only=True).data
+        return Response(data, status=status.HTTP_200_OK)
 
 class LimitView(ListAPIView):
 
