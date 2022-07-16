@@ -396,12 +396,12 @@ class BookPage extends Component {
                   inputProps={{
                       style: {textAlign:"center"}
                   }}
-                  onChange={this.handleCurrencyChange}
-              >     <MenuItem value={0}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}><FlagWithProps code="ANY" />{" "+t("ANY_currency")}</div></MenuItem>
-                    {
-                      Object.entries(currencyDict)
-                      .map( ([key, value]) => <MenuItem key={key} value={parseInt(key)}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}><FlagWithProps code={value} />{" "+value}</div></MenuItem> )
-                    }
+                  onChange={this.handleCurrencyChange}> 
+                  <MenuItem value={0}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}><FlagWithProps code="ANY" />{" "+t("ANY_currency")}</div></MenuItem>
+                  {Object.entries(currencyDict)
+                    .map( ([key, value]) => <MenuItem key={key} value={parseInt(key)}>
+                        <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}><FlagWithProps code={value}/>{" "+value}</div>
+                        </MenuItem> )}
               </Select>
             </FormControl>
           </Grid>
