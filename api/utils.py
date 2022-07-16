@@ -118,6 +118,11 @@ def get_commit_robosats():
     commit = os.popen('git log -n 1 --pretty=format:"%H"')
     commit_hash = commit.read()
 
+    # .git folder is included in .dockerignore. But automatic build will drop in a commit_sha.txt file on root
+    if commit_hash == None or commit_hash =="":
+        with open("commit_sha.txt") as f:
+            commit_hash = f.read()
+
     return commit_hash
 
 premium_percentile = {}
