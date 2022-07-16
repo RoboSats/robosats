@@ -1568,5 +1568,53 @@ class Logics:
             context['bad_invoice'] = failure_reason
             return False, context
 
+    @classmethod
+    def summarize_trade(cls, order, user):
+        '''
+        Summarizes a finished order. Returns a dict with
+        amounts, fees, costs, etc, for buyer and seller.
+        '''
+        if order.status != Order.Status.SUC:
+            return False, {'bad_summary':'Order has not finished yet'}
         
+        context = {}
 
+        users = {'taker': order.taker, 'maker': order.maker}
+        for order_user in users:
+
+            summary = {}
+            summary['trade_fee_percent'] = FEE * MAKER_FEE_SPLIT if order_user == 'maker' else FEE * (1 - MAKER_FEE_SPLIT)
+            summary['bond_size_sats'] = order.maker_bond.num_satoshis if order_user == 'maker' else order.taker_bond.num_satoshis
+            summary['bond_size_percent'] = order.bond_size
+            summary['is_buyer'] = cls.is_buyer(order, users[order_user])
+
+            if summary['is_buyer']:
+                summary['sent_fiat'] = order.amount
+                if order.is_swap:
+                    summary['received_sats'] = order.payout_tx.sent_satoshis
+                else:
+                    summary['received_sats'] = order.payout.num_satoshis
+                summary['trade_fee_sats'] = round(order.last_satoshis - summary['received_sats'])
+                # Only add context for swap costs if the user is the swap recipient. Peer should not know whether it was a swap
+                if users[order_user] == user and order.is_swap:
+                    summary['is_swap'] = order.is_swap
+                    summary['received_onchain_sats'] = order.payout_tx.sent_satoshis
+                    summary['mining_fee_sats'] = order.payout_tx.mining_fee_sats
+                    summary['swap_fee_sats'] = round(order.payout_tx.num_satoshis - order.payout_tx.mining_fee_sats - order.payout_tx.sent_satoshis)
+                    summary['swap_fee_percent'] = order.payout_tx.swap_fee_rate
+            else:
+                summary['sent_sats'] = order.trade_escrow.num_satoshis
+                summary['received_fiat'] = order.amount
+                summary['trade_fee_sats'] = round(summary['sent_sats'] - order.last_satoshis )
+            context[f'{order_user}_summary']=summary
+
+        platform_summary = {}
+        if not order.is_swap:
+            platform_summary['routing_fee_sats'] = order.payout.fee
+            platform_summary['trade_revenue_sats'] = int(order.trade_escrow.num_satoshis - order.payout.num_satoshis - order.payout.fee)
+        else:
+            platform_summary['routing_fee_sats'] = 0
+            platform_summary['trade_revenue_sats'] = int(order.trade_escrow.num_satoshis - order.payout_tx.num_satoshis)
+        context['platform_summary'] = platform_summary
+
+        return True, context

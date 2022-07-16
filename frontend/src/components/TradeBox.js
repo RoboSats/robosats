@@ -4,6 +4,7 @@ import { Alert, AlertTitle, ToggleButtonGroup, ToggleButton, IconButton, Box, Li
 import QRCode from "react-qr-code";
 import Countdown, { zeroPad} from 'react-countdown';
 import Chat from "./EncryptedChat"
+import TradeSummary from "./TradeSummary"
 import MediaQuery from 'react-responsive'
 import QrReader from 'react-qr-reader'
 import { copyToClipboard } from "../utils/clipboard";
@@ -22,6 +23,7 @@ import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import BoltIcon from '@mui/icons-material/Bolt';
 import LinkIcon from '@mui/icons-material/Link';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import { NewTabIcon } from "./Icons";
 
 import { getCookie } from "../utils/cookies";
@@ -1221,20 +1223,14 @@ handleRatingRobosatsChange=(e)=>{
         {this.Sound("successful")}
         <Grid item xs={12} align="center">
           <Typography component="h6" variant="h6">
-            {t("🎉Trade finished!🥳")}
-          </Typography>
-        </Grid>
-        {/* <Grid item xs={12} align="center">
-          <Typography  variant="body2" align="center">
-            What do you think of ⚡<b>{this.props.data.is_maker ? this.props.data.taker_nick : this.props.data.maker_nick}</b>⚡?
+            <div style={{display:'flex',alignItems:'center', flexWrap:'wrap', justifyContent:'center'}}>
+              <BoltIcon sx={{width:25,height:37}} color="warning"/>{t("Trade finished!")}<BoltIcon sx={{width:25,height:37}} color="warning"/>
+            </div>
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
-          <Rating name="size-large" defaultValue={0} size="large" onChange={this.handleRatingUserChange} />
-        </Grid> */}
-        <Grid item xs={12} align="center">
           <Typography  variant="body2" align="center">
-            <Trans i18nKey="rate_robosats">What do you think of 🤖<b>RoboSats</b>⚡?</Trans>
+            <Trans i18nKey="rate_robosats">What do you think of <b>RoboSats</b>?</Trans>
           </Typography>
         </Grid>
         <Grid item xs={12} align="center">
@@ -1242,9 +1238,9 @@ handleRatingRobosatsChange=(e)=>{
         </Grid>
         {this.state.rating_platform==5 ?
         <Grid item xs={12} align="center">
-          <Typography  variant="body2" align="center">
-            <b>{t("Thank you! RoboSats loves you too ❤️")}</b>
-          </Typography>
+          <div style={{display:'flex',alignItems:'center', flexWrap:'wrap', justifyContent:'center'}}>
+            <Typography  variant="body2" align="center"><b>{t("Thank you! RoboSats loves you too")}</b> </Typography><FavoriteIcon color="error"/>
+          </div>
           <Typography  variant="body2" align="center">
             {t("RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!")}
           </Typography>
@@ -1279,21 +1275,32 @@ handleRatingRobosatsChange=(e)=>{
           </Grid>
         : null}
 
-        <Grid item xs={12} align="center">
-          <Button color='primary' onClick={() => {this.props.push('/')}}>{t("Start Again")}</Button>
+        <Grid container>
+          <Grid item xs={show_renew? 6: 12} align="center">
+            <Button color='primary' onClick={() => {this.props.push('/')}}>{t("Start Again")}</Button>
+          </Grid>
+
+          {show_renew ?
+            <Grid item xs={6} align="center">
+            {this.state.renewLoading ?
+                <CircularProgress/>
+              :
+                <Button color='primary' onClick={this.handleRenewOrderButtonPressed}>{t("Renew Order")}</Button>
+            }
+            </Grid>
+          : null}
         </Grid>
 
-        {show_renew ?
-          <Grid item xs={12} align="center">
-          {this.state.renewLoading ?
-              <CircularProgress/>
-            :
-              <Button color='primary' onClick={this.handleRenewOrderButtonPressed}>{t("Renew Order")}</Button>
-          }
-          </Grid>
-        : null}
+      <TradeSummary
+        isMaker={this.props.data.is_maker}
+        makerNick={this.props.data.maker_nick}
+        takerNick={this.props.data.taker_nick}
+        currencyCode={this.props.data.currencyCode}
+        makerSummary={this.props.data.maker_summary}
+        takerSummary={this.props.data.taker_summary}
+        platformSummary={this.props.data.platform_summary}
+      />
 
-      {this.showBondIsReturned()}
     </Grid>
     )
   }
