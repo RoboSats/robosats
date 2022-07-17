@@ -24,6 +24,8 @@ import BoltIcon from '@mui/icons-material/Bolt';
 import LinkIcon from '@mui/icons-material/Link';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { NewTabIcon } from "./Icons";
 
 import { getCookie } from "../utils/cookies";
@@ -1275,9 +1277,9 @@ handleRatingRobosatsChange=(e)=>{
           </Grid>
         : null}
 
-        <Grid container>
+        <Grid item container spacing={3}>
           <Grid item xs={show_renew? 6: 12} align="center">
-            <Button color='primary' onClick={() => {this.props.push('/')}}>{t("Start Again")}</Button>
+            <Button color='primary' variant="outlined" onClick={() => {this.props.push('/')}}><RocketLaunchIcon/>{t("Start Again")}</Button>
           </Grid>
 
           {show_renew ?
@@ -1285,7 +1287,7 @@ handleRatingRobosatsChange=(e)=>{
             {this.state.renewLoading ?
                 <CircularProgress/>
               :
-                <Button color='primary' onClick={this.handleRenewOrderButtonPressed}>{t("Renew Order")}</Button>
+                <Button color='primary' variant="outlined" onClick={this.handleRenewOrderButtonPressed}><RefreshIcon/>{t("Renew Order")}</Button>
             }
             </Grid>
           : null}
@@ -1299,6 +1301,7 @@ handleRatingRobosatsChange=(e)=>{
         makerSummary={this.props.data.maker_summary}
         takerSummary={this.props.data.taker_summary}
         platformSummary={this.props.data.platform_summary}
+        orderId={this.props.data.orderId}
       />
 
     </Grid>
