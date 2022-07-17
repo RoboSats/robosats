@@ -294,15 +294,17 @@ bottomBarDesktop =()=>{
     }
 
     LangSelect = () => {
-        const { i18n} = this.props;
+        const { i18n } = this.props;
+        const lang = i18n.resolvedLanguage == null ? 'en' : i18n.resolvedLanguage.substring(0,2);
         const flagProps = {
             width: 20,
             height: 20,
           };
+
         return(
             <Select
                 size = 'small'
-                value = {i18n.resolvedLanguage.substring(0,2)}
+                value = {lang}
                 inputProps={{
                     style: {textAlign:"center"}
                 }}

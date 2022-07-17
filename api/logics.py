@@ -1574,7 +1574,7 @@ class Logics:
         Summarizes a finished order. Returns a dict with
         amounts, fees, costs, etc, for buyer and seller.
         '''
-        if order.status != Order.Status.SUC:
+        if not order.status in [Order.Status.EXP, Order.Status.SUC, Order.Status.PAY,  Order.Status.FAI]:
             return False, {'bad_summary':'Order has not finished yet'}
         
         context = {}
