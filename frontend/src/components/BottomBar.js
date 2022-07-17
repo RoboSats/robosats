@@ -319,6 +319,7 @@ bottomBarDesktop =()=>{
                     <MenuItem disabled={true} value={'zh'}><div style={{width:24,position:"relative",top:3}}><Flags.CN {...flagProps}/></div>ZH</MenuItem>
                     <MenuItem value={'ca'}><div style={{width:24,position:"relative",top:3}}><CataloniaFlag {...flagProps}/></div>CA</MenuItem>
                     <MenuItem value={'eu'}><div style={{width:24,position:"relative",top:3}}><BasqueCountryFlag {...flagProps}/></div>EU</MenuItem>
+                    <MenuItem value={'sv'}><div style={{width:24,position:"relative",top:3}}><Flags.SE {...flagProps}/></div>SV</MenuItem>
                 </Select>
         )
     }
