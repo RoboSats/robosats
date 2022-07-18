@@ -396,9 +396,10 @@ class OrderView(viewsets.ViewSet):
             data["bondless_taker"] = order.bondless_taker
 
             # Adds trade summary
-            valid, context = Logics.summarize_trade(order, request.user)
-            if valid:
-                data = {**data, **context}
+            if order.status in [Order.Status.SUC, Order.Status.PAY,  Order.Status.FAI]:
+                valid, context = Logics.summarize_trade(order, request.user)
+                if valid:
+                    data = {**data, **context}
 
             # If status is 'Expired' add expiry reason
             if order.status == Order.Status.EXP:

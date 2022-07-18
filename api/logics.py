@@ -982,6 +982,7 @@ class Logics:
         if order.has_range:
             order.amount = None
             order.last_satoshis = cls.satoshis_now(order)
+            order.last_satoshis_time = timezone.now()
         order.save()
         # send_message.delay(order.id,'order_published') # too spammy
         return
@@ -1019,6 +1020,7 @@ class Logics:
 
         # If there was no maker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
+        order.last_satoshis_time = timezone.now()
         bond_satoshis = int(order.last_satoshis * order.bond_size/100)
 
         description = f"RoboSats - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally."
@@ -1074,6 +1076,7 @@ class Logics:
         # THE TRADE AMOUNT IS FINAL WITH THE CONFIRMATION OF THE TAKER BOND!
         # (This is the last update to "last_satoshis", it becomes the escrow amount next)
         order.last_satoshis = cls.satoshis_now(order)
+        order.last_satoshis_time = timezone.now()
         order.taker_bond.status = LNPayment.Status.LOCKED
         order.taker_bond.save()
 
@@ -1129,6 +1132,7 @@ class Logics:
 
         # If there was no taker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
+        order.last_satoshis_time = timezone.now()
         bond_satoshis = int(order.last_satoshis * order.bond_size/100)
         pos_text = "Buying" if cls.is_buyer(order, user) else "Selling"
         description = (
@@ -1574,7 +1578,7 @@ class Logics:
         Summarizes a finished order. Returns a dict with
         amounts, fees, costs, etc, for buyer and seller.
         '''
-        if not order.status in [Order.Status.EXP, Order.Status.SUC, Order.Status.PAY,  Order.Status.FAI]:
+        if not order.status in [Order.Status.SUC, Order.Status.PAY,  Order.Status.FAI]:
             return False, {'bad_summary':'Order has not finished yet'}
         
         context = {}
@@ -1609,6 +1613,9 @@ class Logics:
             context[f'{order_user}_summary']=summary
 
         platform_summary = {}
+        platform_summary['contract_exchange_rate'] = float(order.amount) / (float(order.last_satoshis) / 100000000)
+        if order.last_satoshis_time != None:
+            platform_summary['contract_timestamp'] = order.last_satoshis_time
         if not order.is_swap:
             platform_summary['routing_fee_sats'] = order.payout.fee
             platform_summary['trade_revenue_sats'] = int(order.trade_escrow.num_satoshis - order.payout.num_satoshis - order.payout.fee)

@@ -22,6 +22,8 @@ import { saveAsJson } from "../utils/saveFile";
 
 // Icons
 import FlagWithProps from "./FlagWithProps";
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DownloadIcon from '@mui/icons-material/Download';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
@@ -60,7 +62,8 @@ const TradeSummary = ({
   const { t } = useTranslation();
   const [buttonValue, setButtonValue] = useState<number>(isMaker ? 0 : 2);
   var userSummary = buttonValue == 0 ? makerSummary : takerSummary;
-  
+  const contractTimestamp = new Date(platformSummary.contract_timestamp)
+
   return (
     <Grid item xs={12} align="center">
       <Accordion defaultExpanded={true} elevation={0} sx={{width:322, position:'relative', right:8}}>
@@ -186,24 +189,40 @@ const TradeSummary = ({
             </div>
             {/* Platform Summary */}
             <div style={{display: buttonValue == 1 ? '':'none'}}>
-                <List dense={true}>
+              <List dense={true}>
                 <ListItem>
-                    <ListItemIcon>
+                  <ListItemIcon>
+                    <PriceChangeIcon/>
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t("{{exchangeRate}} {{currencyCode}}/BTC",{exchangeRate:platformSummary.contract_exchange_rate.toPrecision(7),currencyCode:currencyCode})}
+                    secondary={t("Contract exchange rate")}/>
+                </ListItem>
+                <ListItem>
+                  <ListItemIcon>
+                    <ScheduleIcon/>
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={contractTimestamp.toString()}
+                    secondary={t("Contract timestamp")}/>
+                </ListItem>
+                <ListItem>
+                  <ListItemIcon>
                     <AccountBalanceIcon/>
-                    </ListItemIcon>
-                    <ListItemText 
+                  </ListItemIcon>
+                  <ListItemText 
                     primary={t("{{revenueSats}} Sats",{revenueSats:platformSummary.trade_revenue_sats})}
                     secondary={t("Platform trade revenue")}/>
                 </ListItem>
                 <ListItem>
-                    <ListItemIcon>
+                  <ListItemIcon>
                     <RouteIcon/>
-                    </ListItemIcon>
-                    <ListItemText 
+                  </ListItemIcon>
+                  <ListItemText 
                     primary={t("{{routingFeeSats}} MiliSats",{routingFeeSats:platformSummary.routing_fee_sats})}
                     secondary={t("Platform covered routing fee")}/>
                 </ListItem>
-                </List>
+              </List>
             </div>
         </AccordionDetails>
       </Accordion>
