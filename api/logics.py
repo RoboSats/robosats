@@ -1353,6 +1353,8 @@ class Logics:
             order.payout.save()
             order.save()
             send_message.delay(order.id,'trade_successful')
+            order.contract_finalization_time = timezone.now()
+            order.save()
             return True
 
         # Pay onchain to address
@@ -1367,6 +1369,8 @@ class Logics:
                 order.status = Order.Status.SUC
                 order.save()
                 send_message.delay(order.id,'trade_successful')
+                order.contract_finalization_time = timezone.now()
+                order.save()
                 return True
             return False
 
@@ -1616,6 +1620,7 @@ class Logics:
         platform_summary['contract_exchange_rate'] = float(order.amount) / (float(order.last_satoshis) / 100000000)
         if order.last_satoshis_time != None:
             platform_summary['contract_timestamp'] = order.last_satoshis_time
+            platform_summary['contract_total_time'] = order.contract_finalization_time - order.last_satoshis_time
         if not order.is_swap:
             platform_summary['routing_fee_sats'] = order.payout.fee
             platform_summary['trade_revenue_sats'] = int(order.trade_escrow.num_satoshis - order.payout.num_satoshis - order.payout.fee)

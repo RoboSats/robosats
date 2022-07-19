@@ -471,6 +471,10 @@
     "Platform trade revenue":"Beneficio de la plataforma",
     "{{routingFeeSats}} MiliSats":"{{routingFeeSats}} MiliSats",
     "Platform covered routing fee":"Coste de enrutado cubierto",
+    "Timestamp":"Marca de hora",
+    "Completed in":"Completado en",
+    "Contract exchange rate":"Tasa de cambio del contrato",
+
 
     "INFO DIALOG - InfoDiagog.js": "App information and clarifications and terms of use",
     "Close": "Cerrar",

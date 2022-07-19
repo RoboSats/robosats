@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import {
     Avatar,
@@ -59,10 +60,14 @@ const TradeSummary = ({
   platformSummary,
   orderId,
 }: Props): JSX.Element => {
-  const { t } = useTranslation();
+  const { t , i18n } = useTranslation();
   const [buttonValue, setButtonValue] = useState<number>(isMaker ? 0 : 2);
   var userSummary = buttonValue == 0 ? makerSummary : takerSummary;
   const contractTimestamp = new Date(platformSummary.contract_timestamp)
+  const total_time = platformSummary.contract_total_time
+  const hours = parseInt(total_time / 3600)
+  const mins = parseInt((total_time - hours * 3600) / 60)
+  const secs = parseInt(total_time - hours * 3600 - mins * 60)
 
   return (
     <Grid item xs={12} align="center">
@@ -156,7 +161,7 @@ const TradeSummary = ({
                     secondary={userSummary.is_buyer ? "BTC received" : "BTC sent"}/>
 
                 <ListItemText 
-                    primary={t("{{tradeFeeSats}} Sats ({{tradeFeePercent}}%)",{tradeFeeSats:userSummary.trade_fee_sats,tradeFeePercent:parseFloat((userSummary.trade_fee_percent*100).toPrecision(3))})}
+                    primary={t("{{tradeFeeSats}} Sats ({{tradeFeePercent}}%)",{tradeFeeSats:pn(userSummary.trade_fee_sats),tradeFeePercent:parseFloat((userSummary.trade_fee_percent*100).toPrecision(3))})}
                     secondary={"Trade fee"}/>
                 </ListItem>
                 
@@ -169,7 +174,7 @@ const TradeSummary = ({
                     primary={t("{{swapFeeSats}} Sats ({{swapFeePercent}}%)" , {swapFeeSats:pn(userSummary.swap_fee_sats), swapFeePercent:userSummary.swap_fee_percent})}
                     secondary={t("Onchain swap fee")}/>
                     <ListItemText 
-                    primary={t("{{miningFeeSats}} Sats",{miningFeeSats:userSummary.mining_fee_sats})}
+                    primary={t("{{miningFeeSats}} Sats",{miningFeeSats:pn(userSummary.mining_fee_sats)})}
                     secondary={t("Mining fee")}/>
                 </ListItem>
                 : null}
@@ -192,35 +197,41 @@ const TradeSummary = ({
               <List dense={true}>
                 <ListItem>
                   <ListItemIcon>
-                    <PriceChangeIcon/>
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary={t("{{exchangeRate}} {{currencyCode}}/BTC",{exchangeRate:platformSummary.contract_exchange_rate.toPrecision(7),currencyCode:currencyCode})}
-                    secondary={t("Contract exchange rate")}/>
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
-                    <ScheduleIcon/>
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary={contractTimestamp.toString()}
-                    secondary={t("Contract timestamp")}/>
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
                     <AccountBalanceIcon/>
                   </ListItemIcon>
                   <ListItemText 
-                    primary={t("{{revenueSats}} Sats",{revenueSats:platformSummary.trade_revenue_sats})}
+                    primary={t("{{revenueSats}} Sats",{revenueSats:pn(platformSummary.trade_revenue_sats)})}
                     secondary={t("Platform trade revenue")}/>
                 </ListItem>
+                
                 <ListItem>
                   <ListItemIcon>
                     <RouteIcon/>
                   </ListItemIcon>
                   <ListItemText 
-                    primary={t("{{routingFeeSats}} MiliSats",{routingFeeSats:platformSummary.routing_fee_sats})}
+                    primary={t("{{routingFeeSats}} MiliSats",{routingFeeSats:pn(platformSummary.routing_fee_sats)})}
                     secondary={t("Platform covered routing fee")}/>
+                </ListItem>
+
+                <ListItem>
+                  <ListItemIcon>
+                    <PriceChangeIcon/>
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={`${pn(platformSummary.contract_exchange_rate.toPrecision(7))} ${currencyCode}/BTC`}
+                    secondary={t("Contract exchange rate")}/>
+                </ListItem>
+                
+                <ListItem>
+                  <ListItemText 
+                    primary={format(contractTimestamp, "do LLL HH:mm:ss")}
+                    secondary={t("Timestamp")}/>
+                  <ListItemIcon>
+                    <ScheduleIcon/>
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={`${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`}
+                    secondary={t("Completed in")}/>
                 </ListItem>
               </List>
             </div>
