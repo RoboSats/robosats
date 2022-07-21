@@ -27,12 +27,11 @@ MAX_TRADE = int(config("MAX_TRADE"))
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 EXP_TAKER_BOND_INVOICE = int(config("EXP_TAKER_BOND_INVOICE"))
 
-BOND_EXPIRY = int(config("BOND_EXPIRY"))
-ESCROW_EXPIRY = int(config("ESCROW_EXPIRY"))
+BLOCK_TIME = float(config("BLOCK_TIME"))
+MAX_MINING_NETWORK_SPEEDUP_EXPECTED = float(config("MAX_MINING_NETWORK_SPEEDUP_EXPECTED"))
 
 INVOICE_AND_ESCROW_DURATION = int(config("INVOICE_AND_ESCROW_DURATION"))
 FIAT_EXCHANGE_DURATION = int(config("FIAT_EXCHANGE_DURATION"))
-
 
 class Logics:
 
@@ -987,6 +986,31 @@ class Logics:
         # send_message.delay(order.id,'order_published') # too spammy
         return
 
+    def compute_cltv_expiry_blocks(order, invoice_concept):
+        ''' Computes timelock CLTV expiry of the last hop in blocks for hodl invoices
+
+        invoice_concepts (str): maker_bond, taker_bond, trade_escrow
+        '''
+        # Every invoice_concept must be locked by at least the fiat exchange duration
+        cltv_expiry_secs = order.t_to_expire(Order.Status.CHA)
+
+        # Both fidelity bonds must also be locked for deposit_time (escrow duration or WFE status)
+        if invoice_concept in ["taker_bond", "maker_bond"]:
+            cltv_expiry_secs += order.t_to_expire(Order.Status.WFE)
+
+        # Maker bond must also be locked for the full public duration plus the taker bond locking time
+        if invoice_concept == "maker_bond":
+            cltv_expiry_secs += order.t_to_expire(Order.Status.PUB)
+            cltv_expiry_secs += order.t_to_expire(Order.Status.TAK)
+
+        # Add a safety marging by multiplying by the maxium expected mining network speed up
+        safe_cltv_expiry_secs = cltv_expiry_secs * MAX_MINING_NETWORK_SPEEDUP_EXPECTED
+        # Convert to blocks using assummed average block time (~8 mins/block)
+        cltv_expiry_blocks = int(safe_cltv_expiry_secs / (BLOCK_TIME * 60))
+        print(invoice_concept," cltv_expiry_hours:",cltv_expiry_secs/3600," cltv_expiry_blocks:",cltv_expiry_blocks)
+
+        return cltv_expiry_blocks
+
     @classmethod
     def is_maker_bond_locked(cls, order):
         if order.maker_bond.status == LNPayment.Status.LOCKED:
@@ -1031,7 +1055,7 @@ class Logics:
                 bond_satoshis,
                 description,
                 invoice_expiry=order.t_to_expire(Order.Status.WFB),
-                cltv_expiry_secs=BOND_EXPIRY * 3600,
+                cltv_expiry_blocks=cls.compute_cltv_expiry_blocks(order, "maker_bond")
             )
         except Exception as e:
             print(str(e))
@@ -1040,7 +1064,7 @@ class Logics:
                     "bad_request":
                     "The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware."
                 }
-            if "wallet locked" in str(e):
+            elif "wallet locked" in str(e):
                 return False, {
                     "bad_request":
                     "This is weird, RoboSats' lightning wallet is locked. Check in the Telegram group, maybe the staff has died."
@@ -1147,7 +1171,7 @@ class Logics:
                 bond_satoshis,
                 description,
                 invoice_expiry=order.t_to_expire(Order.Status.TAK),
-                cltv_expiry_secs=BOND_EXPIRY * 3600,
+                cltv_expiry_blocks=cls.compute_cltv_expiry_blocks(order, "taker_bond")
             )
 
         except Exception as e:
@@ -1235,7 +1259,7 @@ class Logics:
                 escrow_satoshis,
                 description,
                 invoice_expiry=order.t_to_expire(Order.Status.WF2),
-                cltv_expiry_secs=ESCROW_EXPIRY * 3600,
+                cltv_expiry_blocks=cls.compute_cltv_expiry_blocks(order, "trade_escrow")
             )
 
         except Exception as e:
@@ -1610,6 +1634,7 @@ class Logics:
                     summary['mining_fee_sats'] = order.payout_tx.mining_fee_sats
                     summary['swap_fee_sats'] = round(order.payout_tx.num_satoshis - order.payout_tx.mining_fee_sats - order.payout_tx.sent_satoshis)
                     summary['swap_fee_percent'] = order.payout_tx.swap_fee_rate
+                    summary['trade_fee_sats'] = round(order.last_satoshis - summary['received_sats'] - summary['mining_fee_sats'] - summary['swap_fee_sats'])
             else:
                 summary['sent_sats'] = order.trade_escrow.num_satoshis
                 summary['received_fiat'] = order.amount
