@@ -37,7 +37,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[lntxbot](https://github.com/Reckless-Satoshi/robosats/issues/44#issuecomment-1054607956)|[NA](https://t.me/lntxbot)|{{page.laptop}}{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} | [{{page.thumbsup}}](https://github.com/Reckless-Satoshi/robosats/issues/44#issuecomment-1054607956)|
 |[Blue](#bluewallet-mobile)|[1.4.4](https://bluewallet.io/)|{{page.phone}}|{{page.good}}|{{page.unclear}}|{{page.unclear}}|{{page.good}}|{{page.unclear}}|
 |[WoS](https://github.com/Reckless-Satoshi/robosats/issues/44#issue-1135544303)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
-|[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.bad}}|{{page.good}}|{{page.bad}}|{{page.thumbsdown}}|
+|[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.unclear}}|
 |[{{page.bitcoin}} Beach](#bitcoin-beach-mobile)|[v1.7.7](https://galoy.io/bitcoin-beach-wallet/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |[{{page.thumbsup}}](https://github.com/Reckless-Satoshi/robosats/issues/44#issuecomment-1126318591)|
 
 1. **UX:** Does the wallet convey clearly that there is an "ongoing" payment (hodl invoice)?
@@ -66,7 +66,7 @@ It is an interface to LND, CLN and Eclair. It works as expected. It is extremely
 Muun plays same nicely with hold invoices as Blixt or LND. You can be a seller in RoboSats using Muun and the user experience will be great. However, in order to be a buyer, you need to submit an onchain address for the payout, a lightning invoice won't work. Muun is _fee siphoning attacking_ any sender to Muun wallet. There is a mandatory hop trough a private channel with a fee of +1500ppm. RoboSats will strictly not route a buyer payout for a net loss. Given that RoboSats trading fees are 0.2% and it needs to cover the routing fees, **RoboSats will never find a suitable route to a Muun wallet user**. At the moment, RoboSats will scan your invoice for routing hints that can potentially encode a _fee siphoning attack_.If this trick is found, the invoice will be rejected: submit an onchain address instead for an on-the-fly swap.
 
 ### Phoenix (Mobile)
-Phoenix worked well when full trade pipeline was limited to 10 hours. Now that it is 24 hours of public order plus 24 hours for the fiat exchange step it will not allow users lock the bond (`Cannot add htlc (...) reason=expiry too big`). Might become compatible with RoboSats again once trades are shortened.
+Phoenix works very well as an order taker. Phoenix will also work well as an order maker as long as the order settings `public duration` + `deposit duration` are lower than 10 hours. Otherwise you might have problems locking the maker bond. If the total duraton of bonds/escrow invoices exceeds 450 blocks, Phoenix will not allow users to lock the bond (`Cannot add htlc (...) reason=expiry too big`). 
 
 ### Bluewallet (Mobile)
 It works well. But they are having issues in the custodial mode. Escrows that RoboSats returns are charged to users (so Bluewallet is keeping that balance?). Bonds that are slashed...are charged twice by Blue! More info once they reply to us. EDIT: Blue has confirmed they are working to soon solve these accounting bugs!
