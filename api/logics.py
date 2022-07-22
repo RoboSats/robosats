@@ -992,11 +992,9 @@ class Logics:
         invoice_concepts (str): maker_bond, taker_bond, trade_escrow
         '''
         # Every invoice_concept must be locked by at least the fiat exchange duration
+        # Every invoice must also be locked for deposit_time (order.escrow_duration or WFE status)
         cltv_expiry_secs = order.t_to_expire(Order.Status.CHA)
-
-        # Both fidelity bonds must also be locked for deposit_time (escrow duration or WFE status)
-        if invoice_concept in ["taker_bond", "maker_bond"]:
-            cltv_expiry_secs += order.t_to_expire(Order.Status.WFE)
+        cltv_expiry_secs += order.t_to_expire(Order.Status.WFE)
 
         # Maker bond must also be locked for the full public duration plus the taker bond locking time
         if invoice_concept == "maker_bond":
