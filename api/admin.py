@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group, User
 from django.contrib.auth.admin import UserAdmin
 from api.models import OnchainPayment, Order, LNPayment, Profile, MarketTick, Currency
 from api.logics import Logics
-
+from statistics import median
 admin.site.unregister(Group)
 admin.site.unregister(User)
 
@@ -82,7 +82,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     list_filter = ("is_disputed", "is_fiat_sent", "is_swap","type", "currency", "status")
     search_fields = ["id","amount","min_amount","max_amount"]
 
-    actions = ['maker_wins', 'taker_wins', 'return_everything']
+    actions = ['maker_wins', 'taker_wins', 'return_everything','compite_median_trade_time']
 
     @admin.action(description='Solve dispute: maker wins')
     def maker_wins(self, request, queryset):
@@ -156,6 +156,26 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
             else:
                 self.message_user(request,f"Order {order.id} is not in a disputed state", messages.ERROR)
 
+    @admin.action(description='Compute median trade completion time')
+    def compite_median_trade_time(self, request, queryset):
+        '''
+        Computes the median time from an order taken to finishing 
+        successfully for the set of selected orders.
+        '''
+        times = []
+        for order in queryset:
+            if order.contract_finalization_time:
+                timedelta = order.contract_finalization_time - order.last_satoshis_time
+                times.append(timedelta.total_seconds())
+                
+        if len(times) > 0:
+            median_time_secs = median(times)
+            mins = int(median_time_secs/60)
+            secs = int(median_time_secs - mins*60)
+            self.message_user(request, f"The median time to complete the trades is {mins}m {secs}s", messages.SUCCESS)
+        else:
+            self.message_user(request, "There is no successfully finished orders in the selection", messages.ERROR)
+              
     def amt(self, obj):
         if obj.has_range and obj.amount == None:
             return str(float(obj.min_amount))+"-"+ str(float(obj.max_amount))
