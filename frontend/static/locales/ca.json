@@ -419,7 +419,7 @@
     "Pause the public order":"Pausar l'ordre pública",
     "Your order is paused":"La teva ordre està pausada",
     "Your public order has been paused. At the moment it cannot be seen or taken by other robots. You can choose to unpause it at any time.":"La teva ordre pública va ser pausada. Ara mateix, l'ordre no pot ser vista ni presa per altres robots. Pots tornar a activarla quan desitgis.",
-    "Unpause Order":"Activar Ordre",--------------------------------------------------------------------
+    "Unpause Order":"Activar Ordre",
     "You risk losing your bond if you do not lock the collateral. Total time available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.":"Si no bloqueges el col·lateral t'arrisques a perdre la teva fiança. Disposes en total de {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.",
     "See Compatible Wallets":"Veure bitlleteres compatibles",
     "Failure reason:":"Raó de la fallada:",
