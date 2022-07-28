@@ -10,7 +10,7 @@ sidebar:
 src: "_pages/docs/01-best-practices/02-payment-methods.md"
 --- 
 
-Currently, there are no restrictions on the fiat payment method. You can pay with any method that both you and your peer agree on. This includes the higher risk method such as PayPal, Venmo, and Cash apps. However, the payment method with lower risk is recommended, you can learn more details about the characteristics and differences of each fiat payment method from <a href =  "https://bisq.wiki/Payment_methods#Payment_method_guides">Bisq wiki</a>.
+Currently, there are no restrictions on the fiat payment method. You can pay with any method that both you and your peer agree on. This includes the higher risk method such as PayPal, Venmo, and Cash apps. However, the payment method with lower risk is recommended, you can learn more details about the characteristics and differences of each fiat payment method from <a href =  "https://bisq.wiki/Payment_methods#Payment_method_guides">Bisq wiki</a>. The Bisq guidelines apply as the default guidelines for RoboSats.
 
 ## General recommendation
 
@@ -38,6 +38,17 @@ if the timer reaches the expiration, it could trigger a dispute and could lead t
   1. Confirm if the final amount of fiat received is correct.<br>
   2. Click "Confirm fiat receive" after you are 100% sure that fiat is successfully deposited in your account.<br>
   3. If you agree with the buyer to use the high-risk platform you will need special precautions to prevent chargeback (This'll be discussed later).<br>
+
+## Medium-low risk payment method
+
+### Amazon eGift Cards
+Amazon eGift Cards are one of the more private payment methods on RoboSats. They tend to be quick and convenient, but funds must be spent on Amazon.
+
+It is important to not share a giftcard code directly on the chat, as this might lead to difficult to solve disputes in case of fraud. As a seller, **do not accept a giftcard code on the chat**. Instead, the seller should provide an email in chat. The buyer should buy a new giftcard explicitly for the trade and have it sent to the email address of the seller. This way the seller knows he is the only one to have access to the redemeable code. This apprach also generates verifiable evidence that the giftcard was bought for the RoboSats trade in case of dispute.
+
+In case the buyer has an existing Amazon giftcard code, the buyer will first have to apply the code to his own account. Then buy a new Amazon giftcard for the seller email using the account balance.
+
+Find more details on [Amazon eGift card Bisq guidelines](https://bisq.wiki/Amazon_eGift_card)
 
 ## High-risk payment method
 
