@@ -172,11 +172,11 @@ class TradeBox extends Component {
       aria-describedby="fiat-received-dialog-description"
       >
         <DialogTitle id="open-dispute-dialog-title">
-          {t("Confirm you received {{currencyCode}}?", {currencyCode: this.props.data.currencyCode})}
+          {t("Confirm you received {{amount}} {{currencyCode}}?", {currencyCode: this.props.data.currencyCode, amount: pn(parseFloat(parseFloat(this.props.data.amount).toFixed(this.props.data.currency==1000? 8 : 4 )))})}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {t("Confirming that you received the fiat will finalize the trade. The satoshis in the escrow will be released to the buyer. Only confirm after the {{currencyCode}} has arrived to your account. In addition, if you have received {{currencyCode}} and do not confirm the receipt, you risk losing your bond.",{currencyCode: this.props.data.currencyCode})}
+            {t("Confirming that you received the fiat will finalize the trade. The satoshis in the escrow will be released to the buyer. Only confirm after the {{amount}} {{currencyCode}} have arrived to your account. In addition, if you have received the payment and do not confirm it, you risk losing your bond.",{currencyCode: this.props.data.currencyCode, amount: pn(parseFloat(parseFloat(this.props.data.amount).toFixed(this.props.data.currency==1000? 8 : 4 )))})}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -649,7 +649,7 @@ class TradeBox extends Component {
           <ListItem>
             <Typography variant="body2">
               {t("Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.",
-              {amountFiat: parseFloat(parseFloat(this.props.data.amount).toFixed(4)),
+              {amountFiat: pn(parseFloat(parseFloat(this.props.data.amount).toFixed(this.props.data.currency==1000? 8 : 4 ))),
                 currencyCode: this.props.data.currencyCode})}
             </Typography>
           </ListItem>
@@ -1049,7 +1049,7 @@ handleRatingRobosatsChange=(e)=>{
     return(
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
-          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickConfirmButton}>{t("Confirm {{currencyCode}} sent",{currencyCode: this.props.data.currencyCode})}</Button>
+          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickConfirmButton}>{t("Confirm {{amount}} {{currencyCode}} sent",{currencyCode: this.props.data.currencyCode, amount: pn(parseFloat(parseFloat(this.props.data.amount).toFixed(this.props.data.currency==1000? 8 : 4 )))})}</Button>
         </Grid>
       </Grid>
     )
@@ -1059,7 +1059,7 @@ handleRatingRobosatsChange=(e)=>{
     const { t } = this.props;
     return(
         <Grid item xs={12} align="center">
-          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickOpenConfirmFiatReceived}>{t("Confirm {{currencyCode}} received",{currencyCode: this.props.data.currencyCode})}</Button>
+          <Button defaultValue="confirm" variant='contained' color='secondary' onClick={this.handleClickOpenConfirmFiatReceived}>{t("Confirm {{amount}} {{currencyCode}} received",{currencyCode: this.props.data.currencyCode, amount: pn(parseFloat(parseFloat(this.props.data.amount).toFixed(this.props.data.currency==1000? 8 : 4 )))})}</Button>
         </Grid>
     )
   }
@@ -1076,6 +1076,10 @@ handleRatingRobosatsChange=(e)=>{
     expires_at.setHours(expires_at.getHours() - 12);
     return(
       <Tooltip 
+        placement="top"
+        componentsProps={{
+          tooltip:{sx:{position:"relative",top:42}}
+        }}
         disableHoverListener={now>expires_at}
         disableTouchListener={now>expires_at} 
         enterTouchDelay={0} 
@@ -1188,7 +1192,7 @@ handleRatingRobosatsChange=(e)=>{
           {this.props.data.is_seller ?
           <Typography variant="body2"  align="center">
             {this.props.data.status == 9?
-            t("Say hi! Be helpful and concise. Let them know how to send you {{currencyCode}}.",{currencyCode: this.props.data.currencyCode})
+            t("Say hi! Be helpful and concise. Let them know how to send you {{amount}} {{currencyCode}}.",{currencyCode: this.props.data.currencyCode, amount: pn(parseFloat(parseFloat(this.props.data.amount).toFixed(this.props.data.currency==1000? 8 : 4 )))})
             :
             t("The buyer has sent the fiat. Click 'Confirm Received' once you receive it.")
             }

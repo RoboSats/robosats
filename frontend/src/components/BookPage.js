@@ -69,9 +69,9 @@ class BookPage extends Component {
 
   amountToString = (amount,has_range,min_amount,max_amount) => {
     if (has_range){
-      return pn(parseFloat(Number(min_amount).toPrecision(2)))+'-'+pn(parseFloat(Number(max_amount).toPrecision(2)))
+      return pn(parseFloat(Number(min_amount).toPrecision(4)))+'-'+pn(parseFloat(Number(max_amount).toPrecision(4)))
     }else{
-      return pn(parseFloat(Number(amount).toPrecision(3)))
+      return pn(parseFloat(Number(amount).toPrecision(4)))
     }
   }
 
