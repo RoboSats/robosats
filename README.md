@@ -54,10 +54,10 @@ Alice wants to buy satoshis privately:
 
 
 ## Contribute to the Robotic Satoshis Open Source Project
-See [CONTRIBUTING.md](CONTRIBUTING.md)
+Check out our [Contribution Guide](https://learn.robosats.com/contribute/) to find how you can make RoboSats great.
 
-## Original idea
-The concept of a simple custody-minimized lightning exchange using hold invoices is heavily inspired in [P2PLNBOT](https://github.com/grunch/p2plnbot) by @grunch
+### ⚡Developer Rewards ⚡
+Check out the [Developer Rewards Panel](https://github.com/users/Reckless-Satoshi/projects/2/views/5) for tasks paid in Sats.
 
 ## License
 
