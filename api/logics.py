@@ -182,10 +182,10 @@ class Logics:
                     " Sats now, but the limit is " + "{:,}".format(MIN_TRADE) +
                     " Sats"
                 }
-            elif min_sats < max_sats/5:
+            elif min_sats < max_sats/8:
                 return False, {
                     "bad_request":
-                    f"Your order amount range is too large. Max amount can only be 5 times bigger than min amount"
+                    f"Your order amount range is too large. Max amount can only be 8 times bigger than min amount"
                 }
 
         return True, None

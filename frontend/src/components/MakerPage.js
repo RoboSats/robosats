@@ -29,7 +29,7 @@ class MakerPage extends Component {
   defaultMinTradeSats = 20000;
   defaultMaxTradeSats = 1200000;
   defaultMaxBondlessSats = 50000;
-  maxRangeAmountMultiple = 4.8;
+  maxRangeAmountMultiple = 7.8;
   minRangeAmountMultiple = 1.6;
 
   constructor(props) {
