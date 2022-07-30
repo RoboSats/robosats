@@ -59,6 +59,9 @@ Check out our [Contribution Guide](https://learn.robosats.com/contribute/) to fi
 ### ⚡Developer Rewards ⚡
 Check out the [Developer Rewards Panel](https://github.com/users/Reckless-Satoshi/projects/2/views/5) for tasks paid in Sats.
 
+## Inspiration
+The concept of a simple custody-minimized lightning exchange with hold invoices is inspired in [P2PLNBOT](https://github.com/grunch/p2plnbot) by @grunch
+
 ## License
 
 The Robotic Satoshis Open Source Project is released under the terms of the AGPL3.0 license. See [LICENSE](LICENSE) for more details.
