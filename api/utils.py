@@ -3,6 +3,8 @@ from decouple import config
 import numpy as np
 import coinaddrvalidator as addr
 from api.models import Order
+from btclib.base58 import b58decode
+from address_checker import decode as bech32_checker
 
 def get_tor_session():
     session = requests.session()
@@ -11,14 +13,69 @@ def get_tor_session():
                        'https': 'socks5://127.0.0.1:9050'}
     return session
 
+def check_if_valid_btc_address(incoming_btc_address: str):
+
+    info_about_address = {}
+    # check if the address is a legacy
+    if incoming_btc_address[0] == "1":
+        ## check if the base58 checksum is valid
+        try:
+            b58decode(incoming_btc_address.encode("ascii"))
+            info_about_address['valid_address'] = True
+            info_about_address['type'] = "main"
+        except:
+            info_about_address['valid_address'] = False
+            info_about_address['type'] = "N/A"
+    ## check if the address is a Pay to Script Hash (P2SH)
+    elif incoming_btc_address[0] == "3":
+        ## check if the base58 checksum is valid
+        try:
+            b58decode(incoming_btc_address.encode("ascii"))
+            info_about_address['valid_address'] = True
+            info_about_address['type'] = "main"
+        except:
+            info_about_address['valid_address'] = False
+            info_about_address['type'] = "N/A"
+    elif incoming_btc_address[:2] == "bc":
+        ## check if it a taproot address
+        hrp = "bc"
+        witver, witprog = bech32_checker(hrp, incoming_btc_address)
+        if witver is not None and witprog is not None:
+            info_about_address['valid_address'] = True
+            info_about_address['type'] = 'main'
+        else:
+            info_about_address['valid_address'] = False
+            info_about_address['type'] = 'N/A'
+    elif incoming_btc_address[:2] == "tb":
+        hrp = "tb"
+        witver, witprog = bech32_checker(hrp, incoming_btc_address)
+        if witver is not None and witprog is not None:
+            info_about_address['valid_address'] = True
+            info_about_address['type'] = 'test'
+        else:
+            info_about_address['valid_address'] = False
+            info_about_address['type'] = 'N/A'
+    elif incoming_btc_address[:1] == 'm' or incoming_btc_address[:1] == 'n':
+        try:
+            b58decode(incoming_btc_address.encode("ascii"))
+            info_about_address['valid_address'] = True
+            info_about_address['type'] = "test"
+        except:
+            info_about_address['valid_address'] = False
+            info_about_address['type'] = "N/A"
+    else:
+        info_about_address['valid_address'] = False
+        info_about_address['type'] = 'N/A'
+    return info_about_address
+
 def validate_onchain_address(address):
     '''
     Validates an onchain address
     '''
     
-    validation = addr.validate('btc', address.encode('utf-8'))
+    info_about_address = check_if_valid_btc_address(address)
 
-    if not validation.valid:
+    if not info_about_address['valid_address']:
         return False, {
                 "bad_address":
                 "Does not look like a valid address"
@@ -26,7 +83,7 @@ def validate_onchain_address(address):
 
     NETWORK = str(config('NETWORK'))
     if NETWORK == 'mainnet':
-        if validation.network == 'main':
+        if info_about_address['type'] == "main":
             return True, None
         else:
             return False, {
@@ -34,7 +91,7 @@ def validate_onchain_address(address):
                 "This is not a bitcoin mainnet address"
             }
     elif NETWORK == 'testnet':
-        if validation.network == 'test':
+        if info_about_address['type'] == "test":
             return True, None
         else:
             return False, {
