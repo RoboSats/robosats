@@ -28,3 +28,4 @@ requests[socks]
 python-gnupg==0.4.9
 daphne==3.0.2
 coinaddrvalidator==1.1.3
+btclib==2022.7.20
