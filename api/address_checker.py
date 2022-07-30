@@ -99,8 +99,5 @@ def decode(hrp, addr):
     return (data[0], decoded)
 
 
-if __name__ == "__main__":
-    hrp = "bc"
-    address = "bc1sw50qgdz25j"
-    p=decode(hrp, address)
-    print(p)
+
+
