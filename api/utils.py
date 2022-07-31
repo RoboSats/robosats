@@ -147,7 +147,7 @@ premium_percentile = {}
 def compute_premium_percentile(order):
 
     queryset = Order.objects.filter(
-        currency=order.currency, status=Order.Status.PUB).exclude(id=order.id)
+        currency=order.currency, status=Order.Status.PUB, type=order.type).exclude(id=order.id)
 
     print(len(queryset))
     if len(queryset) <= 1:
