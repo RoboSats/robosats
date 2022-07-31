@@ -188,7 +188,7 @@
     "Github Issues - The Robotic Satoshis Open Source Project":"Github Issues - The Robotic Satoshis Open Source Project",
     "Your Profile":"Your Profile",
     "Your robot":"Your robot",
-    "One active order #{{orderID}}":"One active order #{{orderID}}", 
+    "One active order #{{orderID}}":"One active order #{{orderID}}",
     "Your current order":"Your current order",
     "No active orders":"No active orders",
     "Your token (will not remain here)":"Your token (will not remain here)",
@@ -328,7 +328,7 @@
     "Messages":"Messages",
     "Verified signature by {{nickname}}":"Verified signature by {{nickname}}",
     "Cannot verify signature of {{nickname}}":"Cannot verify signature of {{nickname}}",
-   
+
 
     "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
     "Contract Box":"Contract Box",
@@ -434,9 +434,8 @@
     "Does not look like a valid lightning invoice":"Does not look like a valid lightning invoice",
     "The invoice provided has already expired":"The invoice provided has already expired",
     "Make sure to EXPORT the chat log. The staff might request your exported chat log JSON in order to solve discrepancies. It is your responsibility to store it.":"Make sure to EXPORT the chat log. The staff might request your exported chat log JSON in order to solve discrepancies. It is your responsibility to store it.",
-    "Does not look like a valid address":"Does not look like a valid address",
-    "This is not a bitcoin mainnet address":"This is not a bitcoin mainnet address",
-    "This is not a bitcoin testnet address":"This is not a bitcoin testnet address",
+    "Invalid address":"Invalid address",
+    "Unable to validate address, check bitcoind backend":"Unable to validate address, check bitcoind backend",
     "Submit payout info for {{amountSats}} Sats":"Submit payout info for {{amountSats}} Sats",
     "Submit a valid invoice for {{amountSats}} Satoshis.":"Submit a valid invoice for {{amountSats}} Satoshis.",
     "Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.":"Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.",
