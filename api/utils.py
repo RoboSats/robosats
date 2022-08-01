@@ -2,12 +2,12 @@ import json
 import os
 
 import numpy as np
-import requests
-import ring
+import requests, ring, logging
 from decouple import config
 
 from api.models import Order
 
+logger = logging.getLogger('api.utils')
 
 def get_tor_session():
     session = requests.session()
@@ -52,7 +52,8 @@ def validate_onchain_address(address):
         validation = bitcoind_rpc('validateaddress', [address])
         if not validation['isvalid']:
             return False, {"bad_address": "Invalid address"}
-    except:
+    except Exception as e:
+        logger.error(e)
         return False, {"bad_address": 'Unable to validate address, check bitcoind backend'}
 
     return True, None

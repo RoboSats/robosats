@@ -29,6 +29,7 @@ DEBUG = False
 STATIC_URL = "static/"
 STATIC_ROOT = "/usr/src/static/"
 
+
 # SECURITY WARNING: don't run with debug turned on in production!
 if os.environ.get("DEVELOPMENT"):
     DEBUG = True
@@ -47,6 +48,28 @@ ALLOWED_HOSTS = [
 
 # Allows Session Cookie to be read by Javascript on Client side.
 SESSION_COOKIE_HTTPONLY = False
+
+# Logging settings
+if os.environ.get("LOG_TO_CONSOLE"):
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+        },
+        'loggers': {
+            'api.utils': {
+                'handlers': ['console'],
+                'level': 'WARNING',
+            },
+        },
+    }
 
 # Application definition
 
