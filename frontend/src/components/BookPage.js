@@ -69,17 +69,71 @@ class BookPage extends Component {
 
   amountToString = (amount,has_range,min_amount,max_amount) => {
     if (has_range){
-      return pn(parseFloat(Number(min_amount).toPrecision(2)))+'-'+pn(parseFloat(Number(max_amount).toPrecision(2)))
+      return pn(parseFloat(Number(min_amount).toPrecision(4)))+'-'+pn(parseFloat(Number(max_amount).toPrecision(4)))
     }else{
-      return pn(parseFloat(Number(amount).toPrecision(3)))
+      return pn(parseFloat(Number(amount).toPrecision(4)))
+    }
+  }
+
+  dataGridLocaleText=()=> {
+    const { t } = this.props;
+    return {
+      MuiTablePagination:{labelRowsPerPage:t('Orders per page:')},
+      noRowsLabel:t('No rows'),
+      noResultsOverlayLabel:t('No results found.'),
+      errorOverlayDefaultLabel:t('An error occurred.'),
+      toolbarColumns:t('Columns'),
+      toolbarColumnsLabel:t('Select columns'),
+      columnsPanelTextFieldLabel:t('Find column'),
+      columnsPanelTextFieldPlaceholder:t('Column title'),
+      columnsPanelDragIconLabel:t('Reorder column'),
+      columnsPanelShowAllButton:t('Show all'),
+      columnsPanelHideAllButton:t('Hide all'),
+      filterPanelAddFilter:t('Add filter'),
+      filterPanelDeleteIconLabel:t('Delete'),
+      filterPanelLinkOperator:t('Logic operator'),
+      filterPanelOperators:t('Operator'), // TODO v6: rename to filterPanelOperator
+      filterPanelOperatorAnd:t('And'),
+      filterPanelOperatorOr:t('Or'),
+      filterPanelColumns:t('Columns'),
+      filterPanelInputLabel:t('Value'),
+      filterPanelInputPlaceholder:t('Filter value'),
+      filterOperatorContains:t('contains'),
+      filterOperatorEquals:t('equals'),
+      filterOperatorStartsWith:t('starts with'),
+      filterOperatorEndsWith:t('ends with'),
+      filterOperatorIs:t('is'),
+      filterOperatorNot:t('is not'),
+      filterOperatorAfter:t('is after'),
+      filterOperatorOnOrAfter:t('is on or after'),
+      filterOperatorBefore:t('is before'),
+      filterOperatorOnOrBefore:t('is on or before'),
+      filterOperatorIsEmpty:t('is empty'),
+      filterOperatorIsNotEmpty:t('is not empty'),
+      filterOperatorIsAnyOf:t('is any of'),
+      filterValueAny:t('any'),
+      filterValueTrue:t('true'),
+      filterValueFalse:t('false'),
+      columnMenuLabel:t('Menu'),
+      columnMenuShowColumns:t('Show columns'),
+      columnMenuFilter:t('Filter'),
+      columnMenuHideColumn:t('Hide'),
+      columnMenuUnsort:t('Unsort'),
+      columnMenuSortAsc:t('Sort by ASC'),
+      columnMenuSortDesc:t('Sort by DESC'),
+      columnHeaderFiltersLabel:t('Show filters'),
+      columnHeaderSortIconLabel:t('Sort'),
+      booleanCellTrueLabel:t('yes'),
+      booleanCellFalseLabel:t('no'),
     }
   }
 
   bookListTableDesktop=()=>{
     const { t } = this.props;
     return (
-      <div style={{ height: 422, width: '100%' }}>
+      <div style={{ height: 422, width:'100%'}}>
       <DataGrid
+        localeText={this.dataGridLocaleText()}
         rows={
             this.props.bookOrders.filter(order => order.type == this.props.type || this.props.type == 2)
             .filter(order => order.currency == this.props.currency || this.props.currency == 0)
@@ -180,6 +234,7 @@ class BookPage extends Component {
     return (
       <div style={{ height: 422, width: '100%' }}>
       <DataGrid
+        localeText={this.dataGridLocaleText()}
         loading={this.props.bookLoading}
         rows={
           this.props.bookOrders.filter(order => order.type == this.props.type || this.props.type == 2)
@@ -396,12 +451,12 @@ class BookPage extends Component {
                   inputProps={{
                       style: {textAlign:"center"}
                   }}
-                  onChange={this.handleCurrencyChange}
-              >     <MenuItem value={0}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}><FlagWithProps code="ANY" />{" "+t("ANY_currency")}</div></MenuItem>
-                    {
-                      Object.entries(currencyDict)
-                      .map( ([key, value]) => <MenuItem key={key} value={parseInt(key)}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}><FlagWithProps code={value} />{" "+value}</div></MenuItem> )
-                    }
+                  onChange={this.handleCurrencyChange}> 
+                  <MenuItem value={0}><div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}><FlagWithProps code="ANY" />{" "+t("ANY_currency")}</div></MenuItem>
+                  {Object.entries(currencyDict)
+                    .map( ([key, value]) => <MenuItem key={key} value={parseInt(key)}>
+                        <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}><FlagWithProps code={value}/>{" "+value}</div>
+                        </MenuItem> )}
               </Select>
             </FormControl>
           </Grid>

@@ -1,9 +1,10 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django_admin_relation_links import AdminChangeLinksMixin
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.admin import UserAdmin
 from api.models import OnchainPayment, Order, LNPayment, Profile, MarketTick, Currency
-
+from api.logics import Logics
+from statistics import median
 admin.site.unregister(Group)
 admin.site.unregister(User)
 
@@ -36,7 +37,6 @@ class EUserAdmin(AdminChangeLinksMixin, UserAdmin):
 
     def avatar_tag(self, obj):
         return obj.profile.avatar_tag()
-
 
 @admin.register(Order)
 class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
@@ -82,6 +82,100 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     list_filter = ("is_disputed", "is_fiat_sent", "is_swap","type", "currency", "status")
     search_fields = ["id","amount","min_amount","max_amount"]
 
+    actions = ['maker_wins', 'taker_wins', 'return_everything','compite_median_trade_time']
+
+    @admin.action(description='Solve dispute: maker wins')
+    def maker_wins(self, request, queryset):
+        '''
+        Solves a dispute on favor of the maker.
+        Adds Sats to compensations (earned_rewards) of the maker profile.
+        '''
+        for order in queryset:
+            if order.status in [Order.Status.DIS, Order.Status.WFR] and order.is_disputed:
+                own_bond_sats = order.maker_bond.num_satoshis
+                if Logics.is_buyer(order, order.maker):
+                    if order.is_swap:
+                        trade_sats = order.payout_tx.num_satoshis
+                    else:
+                        trade_sats = order.payout.num_satoshis
+                else:
+                    trade_sats = order.trade_escrow.num_satoshis
+
+                order.status = Order.Status.TLD
+                order.maker.profile.earned_rewards = own_bond_sats + trade_sats
+                order.maker.profile.save()
+                order.save()
+                self.message_user(request,f"Dispute of order {order.id} solved successfully on favor of the maker", messages.SUCCESS)
+
+            else:
+                self.message_user(request,f"Order {order.id} is not in a disputed state", messages.ERROR)
+
+    @admin.action(description='Solve dispute: taker wins')
+    def taker_wins(self, request, queryset):
+        '''
+        Solves a dispute on favor of the taker.
+        Adds Sats to compensations (earned_rewards) of the taker profile.
+        '''
+        for order in queryset:
+            if order.status in [Order.Status.DIS, Order.Status.WFR] and order.is_disputed:
+                own_bond_sats = order.maker_bond.num_satoshis
+                if Logics.is_buyer(order, order.taker):
+                    if order.is_swap:
+                        trade_sats = order.payout_tx.num_satoshis
+                    else:
+                        trade_sats = order.payout.num_satoshis
+                else:
+                    trade_sats = order.trade_escrow.num_satoshis
+
+                order.status = Order.Status.TLD
+                order.taker.profile.earned_rewards = own_bond_sats + trade_sats
+                order.taker.profile.save()
+                order.save()
+                self.message_user(request,f"Dispute of order {order.id} solved successfully on favor of the taker", messages.SUCCESS)
+
+            else:
+                self.message_user(request,f"Order {order.id} is not in a disputed state", messages.ERROR)
+
+    @admin.action(description='Solve dispute: return everything')
+    def return_everything(self, request, queryset):
+        '''
+        Solves a dispute by pushing back every bond and escrow to their sender.
+        '''
+        for order in queryset:
+            if order.status in [Order.Status.DIS, Order.Status.WFR] and order.is_disputed:
+                order.maker_bond.sender.profile.earned_rewards += order.maker_bond.num_satoshis
+                order.maker_bond.sender.profile.save()
+                order.taker_bond.sender.profile.earned_rewards += order.taker_bond.num_satoshis
+                order.taker_bond.sender.profile.save()
+                order.trade_escrow.sender.profile.earned_rewards += order.trade_escrow.num_satoshis
+                order.trade_escrow.sender.profile.save()
+                order.status = Order.Status.TLD
+                order.save()
+                self.message_user(request,f"Dispute of order {order.id} solved successfully, everything returned as compensations", messages.SUCCESS)
+
+            else:
+                self.message_user(request,f"Order {order.id} is not in a disputed state", messages.ERROR)
+
+    @admin.action(description='Compute median trade completion time')
+    def compite_median_trade_time(self, request, queryset):
+        '''
+        Computes the median time from an order taken to finishing 
+        successfully for the set of selected orders.
+        '''
+        times = []
+        for order in queryset:
+            if order.contract_finalization_time:
+                timedelta = order.contract_finalization_time - order.last_satoshis_time
+                times.append(timedelta.total_seconds())
+                
+        if len(times) > 0:
+            median_time_secs = median(times)
+            mins = int(median_time_secs/60)
+            secs = int(median_time_secs - mins*60)
+            self.message_user(request, f"The median time to complete the trades is {mins}m {secs}s", messages.SUCCESS)
+        else:
+            self.message_user(request, "There is no successfully finished orders in the selection", messages.ERROR)
+              
     def amt(self, obj):
         if obj.has_range and obj.amount == None:
             return str(float(obj.min_amount))+"-"+ str(float(obj.max_amount))

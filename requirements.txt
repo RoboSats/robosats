@@ -1,7 +1,7 @@
 django==3.2.14
 django-admin-relation-links==0.2.5
 django-celery-beat==2.2.1
-django-celery-results==2.2.0
+django-celery-results==2.4.0
 django-model-utils==4.2.0
 django-private-chat2==1.0.2
 django-redis==5.2.0
@@ -27,4 +27,3 @@ django-import-export==2.7.1
 requests[socks]
 python-gnupg==0.4.9
 daphne==3.0.2
-coinaddrvalidator==1.1.3

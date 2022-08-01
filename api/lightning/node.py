@@ -160,7 +160,7 @@ class LNNode:
 
     @classmethod
     def gen_hold_invoice(cls, num_satoshis, description, invoice_expiry,
-                         cltv_expiry_secs):
+                         cltv_expiry_blocks):
         """Generates hold invoice"""
 
         hold_payment = {}
@@ -170,8 +170,6 @@ class LNNode:
         # Its hash is used to generate the hold invoice
         r_hash = hashlib.sha256(preimage).digest()
 
-        # timelock expiry for the last hop, computed based on a 10 minutes block with 30% padding (~7 min block)
-        cltv_expiry_blocks = int(cltv_expiry_secs / (7 * 60))
         request = invoicesrpc.AddHoldInvoiceRequest(
             memo=description,
             value=num_satoshis,

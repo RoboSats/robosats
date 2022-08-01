@@ -392,7 +392,10 @@ class Order(models.Model):
                     MaxValueValidator(MAX_TRADE * 2)],
         blank=True,
     )  # sats last time checked. Weird if 2* trade max...
-
+    # timestamp of last_satoshis
+    last_satoshis_time = models.DateTimeField(null=True, default=None, blank=True)
+    # time the fiat exchange is confirmed and Sats released to buyer
+    contract_finalization_time = models.DateTimeField(null=True, default=None, blank=True)
     # order participants
     maker = models.ForeignKey(
         User,

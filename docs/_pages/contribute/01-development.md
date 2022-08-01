@@ -3,7 +3,7 @@ layout: single
 title: "Develop RoboSats"
 permalink: /contribute/code/
 sidebar:
-  title: "<i class='fa-solid fa-code'></i> Code"
+  title: '<img id="side-icon-verybig" src="/assets/vector/code.svg"/>Code'
   nav: contribute
 toc: true
 toc_sticky: true
@@ -57,7 +57,9 @@ Please note that Pull Requests marked `NACK` and/or GitHub's `Change requested` 
 
 ## Developer Compensation (Pilot Program)
 
-At the moment RoboSats is a young and unfunded project. However, since launch, it has shown the ability to generate revenue, although it barely covers the running costs. A developer compensation program is the the best way to ensure the sustained support of the code base. For the time being, code contributions to the core project will be given small rewards: more akin to kudos than a meaningful monetary compensation. The pilot procedure for compensated development:
+[Check the current state of the Developer Compensated tasks in the Github Project](https://github.com/users/Reckless-Satoshi/projects/2/views/5)
+
+At the moment RoboSats is a young and unfunded project. However, it has shown the ability to generate revenue, although it barely covers the running costs. A developer compensation program is the the best way to ensure the sustained support of the code base. For the time being, code contributions to the core project will be given small rewards: more akin to kudos than a meaningful monetary compensation. The pilot procedure for compensated development:
 
 1. The developer opens a PR with the description of the work that will be done, optionally including the amount of Sats he thinks the work deserves.
 2. An offer/negotiation takes place to set an amount of Sats until agreement. Everyone is welcome to express opinion on whether the compensation is right for the PR.

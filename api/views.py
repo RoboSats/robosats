@@ -395,6 +395,12 @@ class OrderView(viewsets.ViewSet):
             data["bond_size"] = order.bond_size
             data["bondless_taker"] = order.bondless_taker
 
+            # Adds trade summary
+            if order.status in [Order.Status.SUC, Order.Status.PAY,  Order.Status.FAI]:
+                valid, context = Logics.summarize_trade(order, request.user)
+                if valid:
+                    data = {**data, **context}
+
             # If status is 'Expired' add expiry reason
             if order.status == Order.Status.EXP:
                 data["expiry_reason"] = order.expiry_reason
@@ -402,7 +408,6 @@ class OrderView(viewsets.ViewSet):
 
             # If status is 'Succes' add final stats and txid if it is a swap
             if order.status == Order.Status.SUC:
-                # TODO: add summary of order for buyer/sellers: sats in/out, fee paid, total time? etc
                 # If buyer and is a swap, add TXID
                 if Logics.is_buyer(order,request.user):
                     if order.is_swap:

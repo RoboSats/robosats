@@ -1,0 +1,44 @@
+name: Android Build
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" , "android-webview-app-ts"]
+    paths: [ "mobile", "frontend" ]
+  pull_request:
+    branches: [ "main" , "android-webview-app-ts"]
+    paths: [ "mobile", "frontend" ]
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: 'Checkout'
+        uses: actions/checkout@v3
+
+      - name: 'Download main.js Artifact'
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: frontend-build.yml
+          workflow_conclusion: success
+          name: main-js
+          path: mobile/html/Web.bundle/js/
+
+      - name: 'Install npm Dependencies'
+        run: |
+          cd mobile
+          npm install
+
+      - name: 'Build Android Release'
+        run: |
+          cd mobile/android
+          ./gradlew assembleRelease
+
+      - name: 'Get Commit Hash'
+        id: commit
+        uses: pr-mpt/actions-commit-hash@v1
+
+      - name: 'Upload .apk Artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: robosats-${{ steps.commit.outputs.short }}.apk
+          path: mobile/android/app/build/outputs/apk/release/app-release.apk

@@ -294,15 +294,17 @@ bottomBarDesktop =()=>{
     }
 
     LangSelect = () => {
-        const { i18n} = this.props;
+        const { i18n } = this.props;
+        const lang = i18n.resolvedLanguage == null ? 'en' : i18n.resolvedLanguage.substring(0,2);
         const flagProps = {
             width: 20,
             height: 20,
           };
+
         return(
             <Select
                 size = 'small'
-                value = {i18n.resolvedLanguage.substring(0,2)}
+                value = {lang}
                 inputProps={{
                     style: {textAlign:"center"}
                 }}
@@ -319,6 +321,8 @@ bottomBarDesktop =()=>{
                     <MenuItem disabled={true} value={'zh'}><div style={{width:24,position:"relative",top:3}}><Flags.CN {...flagProps}/></div>ZH</MenuItem>
                     <MenuItem value={'ca'}><div style={{width:24,position:"relative",top:3}}><CataloniaFlag {...flagProps}/></div>CA</MenuItem>
                     <MenuItem value={'eu'}><div style={{width:24,position:"relative",top:3}}><BasqueCountryFlag {...flagProps}/></div>EU</MenuItem>
+                    <MenuItem value={'sv'}><div style={{width:24,position:"relative",top:3}}><Flags.SE {...flagProps}/></div>SV</MenuItem>
+                    <MenuItem value={'cs'}><div style={{width:24,position:"relative",top:3}}><Flags.CZ {...flagProps}/></div>CS</MenuItem>
                 </Select>
         )
     }

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component , Suspense } from "react";
 import ReactDOM from 'react-dom/client';
 import HomePage from "./HomePage";
 import { CssBaseline, IconButton , Link} from "@mui/material";
@@ -36,6 +36,7 @@ export default class App extends Component {
 
   render() {
     return (
+      <Suspense fallback="loading language">
       <I18nextProvider i18n={i18n}>
         <ThemeProvider theme={this.state.dark ? this.darkTheme : this.lightTheme}>
           <CssBaseline/>
@@ -48,6 +49,7 @@ export default class App extends Component {
           <HomePage/>
         </ThemeProvider>
       </I18nextProvider>
+      </Suspense>
     );
   }
 }

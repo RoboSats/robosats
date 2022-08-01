@@ -1,8 +1,13 @@
-import requests, ring, os
-from decouple import config
+import json
+import os
+
 import numpy as np
-import coinaddrvalidator as addr
+import requests, ring, logging
+from decouple import config
+
 from api.models import Order
+
+logger = logging.getLogger('api.utils')
 
 def get_tor_session():
     session = requests.session()
@@ -11,36 +16,48 @@ def get_tor_session():
                        'https': 'socks5://127.0.0.1:9050'}
     return session
 
+
+def bitcoind_rpc(method, params=None):
+    """
+    Makes a RPC call to bitcoin core daemon
+    :param method: RPC method to call
+    :param params: list of params required by the calling RPC method
+    :return:
+    """
+
+    BITCOIND_RPCURL = config('BITCOIND_RPCURL')
+    BITCOIND_RPCUSER = config('BITCOIND_RPCUSER')
+    BITCOIND_RPCPASSWORD = config('BITCOIND_RPCPASSWORD')
+
+    if params is None:
+        params = []
+
+    payload = json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "id": "robosats",
+            "method": method,
+            "params": params
+        }
+    )
+    return requests.post(BITCOIND_RPCURL, auth=(BITCOIND_RPCUSER, BITCOIND_RPCPASSWORD), data=payload).json()['result']
+
+
 def validate_onchain_address(address):
-    '''
+    """
     Validates an onchain address
-    '''
-    
-    validation = addr.validate('btc', address.encode('utf-8'))
+    """
 
-    if not validation.valid:
-        return False, {
-                "bad_address":
-                "Does not look like a valid address"
-            }
+    try:
+        validation = bitcoind_rpc('validateaddress', [address])
+        if not validation['isvalid']:
+            return False, {"bad_address": "Invalid address"}
+    except Exception as e:
+        logger.error(e)
+        return False, {"bad_address": 'Unable to validate address, check bitcoind backend'}
 
-    NETWORK = str(config('NETWORK'))
-    if NETWORK == 'mainnet':
-        if validation.network == 'main':
-            return True, None
-        else:
-            return False, {
-                "bad_address":
-                "This is not a bitcoin mainnet address"
-            }
-    elif NETWORK == 'testnet':
-        if validation.network == 'test':
-            return True, None
-        else:
-            return False, {
-                "bad_address":
-                "This is not a bitcoin testnet address"
-            }
+    return True, None
+
 
 market_cache = {}
 @ring.dict(market_cache, expire=3)  # keeps in cache for 3 seconds
@@ -118,6 +135,11 @@ def get_commit_robosats():
     commit = os.popen('git log -n 1 --pretty=format:"%H"')
     commit_hash = commit.read()
 
+    # .git folder is included in .dockerignore. But automatic build will drop in a commit_sha.txt file on root
+    if commit_hash == None or commit_hash =="":
+        with open("commit_sha.txt") as f:
+            commit_hash = f.read()
+
     return commit_hash
 
 premium_percentile = {}
@@ -125,7 +147,7 @@ premium_percentile = {}
 def compute_premium_percentile(order):
 
     queryset = Order.objects.filter(
-        currency=order.currency, status=Order.Status.PUB).exclude(id=order.id)
+        currency=order.currency, status=Order.Status.PUB, type=order.type).exclude(id=order.id)
 
     print(len(queryset))
     if len(queryset) <= 1:

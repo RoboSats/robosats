@@ -29,7 +29,7 @@ class MakerPage extends Component {
   defaultMinTradeSats = 20000;
   defaultMaxTradeSats = 1200000;
   defaultMaxBondlessSats = 50000;
-  maxRangeAmountMultiple = 4.8;
+  maxRangeAmountMultiple = 7.8;
   minRangeAmountMultiple = 1.6;
 
   constructor(props) {
@@ -199,6 +199,7 @@ class MakerPage extends Component {
         const { t } = this.props;
         var max = 999;
         var min = -100;
+        var premium = e.target.value
         if(e.target.value > 999){
             var bad_premium = t("Must be less than {{max}}%", {max:max})
         }
@@ -206,8 +207,13 @@ class MakerPage extends Component {
             var bad_premium = t("Must be more than {{min}}%", {min:min})
         }
 
+        if (premium == ""){
+            premium = 0
+        } else {
+            premium = Number(Math.round(premium +"e"+ 2) + "e-" + 2)
+        }
         this.setState({
-            premium: e.target.value,
+            premium: premium,
             badPremium: bad_premium,
         });
     }

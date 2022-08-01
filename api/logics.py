@@ -27,12 +27,11 @@ MAX_TRADE = int(config("MAX_TRADE"))
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 EXP_TAKER_BOND_INVOICE = int(config("EXP_TAKER_BOND_INVOICE"))
 
-BOND_EXPIRY = int(config("BOND_EXPIRY"))
-ESCROW_EXPIRY = int(config("ESCROW_EXPIRY"))
+BLOCK_TIME = float(config("BLOCK_TIME"))
+MAX_MINING_NETWORK_SPEEDUP_EXPECTED = float(config("MAX_MINING_NETWORK_SPEEDUP_EXPECTED"))
 
 INVOICE_AND_ESCROW_DURATION = int(config("INVOICE_AND_ESCROW_DURATION"))
 FIAT_EXCHANGE_DURATION = int(config("FIAT_EXCHANGE_DURATION"))
-
 
 class Logics:
 
@@ -183,10 +182,10 @@ class Logics:
                     " Sats now, but the limit is " + "{:,}".format(MIN_TRADE) +
                     " Sats"
                 }
-            elif min_sats < max_sats/5:
+            elif min_sats < max_sats/8:
                 return False, {
                     "bad_request":
-                    f"Your order amount range is too large. Max amount can only be 5 times bigger than min amount"
+                    f"Your order amount range is too large. Max amount can only be 8 times bigger than min amount"
                 }
 
         return True, None
@@ -982,9 +981,33 @@ class Logics:
         if order.has_range:
             order.amount = None
             order.last_satoshis = cls.satoshis_now(order)
+            order.last_satoshis_time = timezone.now()
         order.save()
         # send_message.delay(order.id,'order_published') # too spammy
         return
+
+    def compute_cltv_expiry_blocks(order, invoice_concept):
+        ''' Computes timelock CLTV expiry of the last hop in blocks for hodl invoices
+
+        invoice_concepts (str): maker_bond, taker_bond, trade_escrow
+        '''
+        # Every invoice_concept must be locked by at least the fiat exchange duration
+        # Every invoice must also be locked for deposit_time (order.escrow_duration or WFE status)
+        cltv_expiry_secs = order.t_to_expire(Order.Status.CHA)
+        cltv_expiry_secs += order.t_to_expire(Order.Status.WFE)
+
+        # Maker bond must also be locked for the full public duration plus the taker bond locking time
+        if invoice_concept == "maker_bond":
+            cltv_expiry_secs += order.t_to_expire(Order.Status.PUB)
+            cltv_expiry_secs += order.t_to_expire(Order.Status.TAK)
+
+        # Add a safety marging by multiplying by the maxium expected mining network speed up
+        safe_cltv_expiry_secs = cltv_expiry_secs * MAX_MINING_NETWORK_SPEEDUP_EXPECTED
+        # Convert to blocks using assummed average block time (~8 mins/block)
+        cltv_expiry_blocks = int(safe_cltv_expiry_secs / (BLOCK_TIME * 60))
+        print(invoice_concept," cltv_expiry_hours:",cltv_expiry_secs/3600," cltv_expiry_blocks:",cltv_expiry_blocks)
+
+        return cltv_expiry_blocks
 
     @classmethod
     def is_maker_bond_locked(cls, order):
@@ -1019,6 +1042,7 @@ class Logics:
 
         # If there was no maker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
+        order.last_satoshis_time = timezone.now()
         bond_satoshis = int(order.last_satoshis * order.bond_size/100)
 
         description = f"RoboSats - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally."
@@ -1029,7 +1053,7 @@ class Logics:
                 bond_satoshis,
                 description,
                 invoice_expiry=order.t_to_expire(Order.Status.WFB),
-                cltv_expiry_secs=BOND_EXPIRY * 3600,
+                cltv_expiry_blocks=cls.compute_cltv_expiry_blocks(order, "maker_bond")
             )
         except Exception as e:
             print(str(e))
@@ -1038,7 +1062,7 @@ class Logics:
                     "bad_request":
                     "The Lightning Network Daemon (LND) is down. Write in the Telegram group to make sure the staff is aware."
                 }
-            if "wallet locked" in str(e):
+            elif "wallet locked" in str(e):
                 return False, {
                     "bad_request":
                     "This is weird, RoboSats' lightning wallet is locked. Check in the Telegram group, maybe the staff has died."
@@ -1074,6 +1098,7 @@ class Logics:
         # THE TRADE AMOUNT IS FINAL WITH THE CONFIRMATION OF THE TAKER BOND!
         # (This is the last update to "last_satoshis", it becomes the escrow amount next)
         order.last_satoshis = cls.satoshis_now(order)
+        order.last_satoshis_time = timezone.now()
         order.taker_bond.status = LNPayment.Status.LOCKED
         order.taker_bond.save()
 
@@ -1129,6 +1154,7 @@ class Logics:
 
         # If there was no taker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
+        order.last_satoshis_time = timezone.now()
         bond_satoshis = int(order.last_satoshis * order.bond_size/100)
         pos_text = "Buying" if cls.is_buyer(order, user) else "Selling"
         description = (
@@ -1143,7 +1169,7 @@ class Logics:
                 bond_satoshis,
                 description,
                 invoice_expiry=order.t_to_expire(Order.Status.TAK),
-                cltv_expiry_secs=BOND_EXPIRY * 3600,
+                cltv_expiry_blocks=cls.compute_cltv_expiry_blocks(order, "taker_bond")
             )
 
         except Exception as e:
@@ -1231,7 +1257,7 @@ class Logics:
                 escrow_satoshis,
                 description,
                 invoice_expiry=order.t_to_expire(Order.Status.WF2),
-                cltv_expiry_secs=ESCROW_EXPIRY * 3600,
+                cltv_expiry_blocks=cls.compute_cltv_expiry_blocks(order, "trade_escrow")
             )
 
         except Exception as e:
@@ -1349,6 +1375,8 @@ class Logics:
             order.payout.save()
             order.save()
             send_message.delay(order.id,'trade_successful')
+            order.contract_finalization_time = timezone.now()
+            order.save()
             return True
 
         # Pay onchain to address
@@ -1363,6 +1391,8 @@ class Logics:
                 order.status = Order.Status.SUC
                 order.save()
                 send_message.delay(order.id,'trade_successful')
+                order.contract_finalization_time = timezone.now()
+                order.save()
                 return True
             return False
 
@@ -1568,5 +1598,58 @@ class Logics:
             context['bad_invoice'] = failure_reason
             return False, context
 
+    @classmethod
+    def summarize_trade(cls, order, user):
+        '''
+        Summarizes a finished order. Returns a dict with
+        amounts, fees, costs, etc, for buyer and seller.
+        '''
+        if not order.status in [Order.Status.SUC, Order.Status.PAY,  Order.Status.FAI]:
+            return False, {'bad_summary':'Order has not finished yet'}
         
+        context = {}
 
+        users = {'taker': order.taker, 'maker': order.maker}
+        for order_user in users:
+
+            summary = {}
+            summary['trade_fee_percent'] = FEE * MAKER_FEE_SPLIT if order_user == 'maker' else FEE * (1 - MAKER_FEE_SPLIT)
+            summary['bond_size_sats'] = order.maker_bond.num_satoshis if order_user == 'maker' else order.taker_bond.num_satoshis
+            summary['bond_size_percent'] = order.bond_size
+            summary['is_buyer'] = cls.is_buyer(order, users[order_user])
+
+            if summary['is_buyer']:
+                summary['sent_fiat'] = order.amount
+                if order.is_swap:
+                    summary['received_sats'] = order.payout_tx.sent_satoshis
+                else:
+                    summary['received_sats'] = order.payout.num_satoshis
+                summary['trade_fee_sats'] = round(order.last_satoshis - summary['received_sats'])
+                # Only add context for swap costs if the user is the swap recipient. Peer should not know whether it was a swap
+                if users[order_user] == user and order.is_swap:
+                    summary['is_swap'] = order.is_swap
+                    summary['received_onchain_sats'] = order.payout_tx.sent_satoshis
+                    summary['mining_fee_sats'] = order.payout_tx.mining_fee_sats
+                    summary['swap_fee_sats'] = round(order.payout_tx.num_satoshis - order.payout_tx.mining_fee_sats - order.payout_tx.sent_satoshis)
+                    summary['swap_fee_percent'] = order.payout_tx.swap_fee_rate
+                    summary['trade_fee_sats'] = round(order.last_satoshis - summary['received_sats'] - summary['mining_fee_sats'] - summary['swap_fee_sats'])
+            else:
+                summary['sent_sats'] = order.trade_escrow.num_satoshis
+                summary['received_fiat'] = order.amount
+                summary['trade_fee_sats'] = round(summary['sent_sats'] - order.last_satoshis )
+            context[f'{order_user}_summary']=summary
+
+        platform_summary = {}
+        platform_summary['contract_exchange_rate'] = float(order.amount) / (float(order.last_satoshis) / 100000000)
+        if order.last_satoshis_time != None:
+            platform_summary['contract_timestamp'] = order.last_satoshis_time
+            platform_summary['contract_total_time'] = order.contract_finalization_time - order.last_satoshis_time
+        if not order.is_swap:
+            platform_summary['routing_fee_sats'] = order.payout.fee
+            platform_summary['trade_revenue_sats'] = int(order.trade_escrow.num_satoshis - order.payout.num_satoshis - order.payout.fee)
+        else:
+            platform_summary['routing_fee_sats'] = 0
+            platform_summary['trade_revenue_sats'] = int(order.trade_escrow.num_satoshis - order.payout_tx.num_satoshis)
+        context['platform_summary'] = platform_summary
+
+        return True, context

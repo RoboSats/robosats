@@ -47,6 +47,7 @@ export const paymentMethods = [
     {name: "Airtel Money",icon:'airtel'},
     {name: "MTN Money",icon:'mtn'},
     {name: "M-Pesa",icon:'mpesa'},
+    {name: "UPI",icon:'upi'},
     {name: "MoMo",icon:'momo'},
     {name: "Tigo Pesa",icon:'tigopesa'},
     {name: "Cash F2F",icon:'cash'},

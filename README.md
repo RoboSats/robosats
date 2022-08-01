@@ -1,4 +1,6 @@
 ## RoboSats - Buy and sell Satoshis Privately
+[![Docker Image CI](https://github.com/Reckless-Satoshi/robosats/actions/workflows/docker-image.yml/badge.svg?branch=main)](https://github.com/Reckless-Satoshi/robosats/actions/workflows/docker-image.yml)
+[![Frontend Build](https://github.com/Reckless-Satoshi/robosats/actions/workflows/frontend-build.yml/badge.svg?branch=main)](https://github.com/Reckless-Satoshi/robosats/actions/workflows/frontend-build.yml)
 [![release](https://img.shields.io/badge/release-v0.1.0%20MVP-red)](https://github.com/Reckless-Satoshi/robosats/releases)
 [![AGPL-3.0 license](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/Reckless-Satoshi/robosats/blob/main/LICENSE)
 [![Telegram](https://img.shields.io/badge/chat-telegram-brightgreen)](https://t.me/robosats)
@@ -52,10 +54,13 @@ Alice wants to buy satoshis privately:
 
 
 ## Contribute to the Robotic Satoshis Open Source Project
-See [CONTRIBUTING.md](CONTRIBUTING.md)
+Check out our [Contribution Guide](https://learn.robosats.com/contribute/) to find how you can make RoboSats great.
 
-## Original idea
-The concept of a simple custody-minimized lightning exchange using hold invoices is heavily inspired in [P2PLNBOT](https://github.com/grunch/p2plnbot) by @grunch
+### ⚡Developer Rewards ⚡
+Check out the [Developer Rewards Panel](https://github.com/users/Reckless-Satoshi/projects/2/views/5) for tasks paid in Sats.
+
+## Inspiration
+The concept of a simple custody-minimized lightning exchange with hold invoices is inspired in [P2PLNBOT](https://github.com/grunch/p2plnbot) by @grunch
 
 ## License
 

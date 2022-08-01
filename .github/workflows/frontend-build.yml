@@ -47,3 +47,8 @@ jobs:
       with:
         name: main-js
         path: frontend/static/frontend/main.js
+    - name: 'Invoke Docker Build CI workflow'
+      uses: benc-uk/workflow-dispatch@v1
+      with:
+        workflow: 'Docker Image CI'
+        token: ${{ secrets.PERSONAL_TOKEN }}
