@@ -242,7 +242,7 @@
     "Order status":"สถานะรายการ",
     "Waiting for maker bond":"กำลังรอ maker bond",
     "Public":"สาธารณะ",
-    "Waiting for taker bond":”กำลังรอ taker bond",
+    "Waiting for taker bond":"กำลังรอ taker bond",
     "Cancelled":"ยกเลิกแล้ว",
     "Expired":"หมดอายุแล้ว",
     "Waiting for trade collateral and buyer invoice":"กำลังรอ Bitcoin ค้ำประกันจากผู้ขายและ invoice ผู้ซื้อ",
@@ -297,8 +297,7 @@
     "You must have a robot avatar to see the order details":"คุณต้องมีโรบอทก่อนจึงจะสามารถดูรายละเอียดรายการได้",
     "This order has been cancelled collaborativelly":"รายการนี้ถูกยกเลิกร่วมกับอีกฝ่าย",
     "This order is not available":"ไม่มีรายการนี้",
-    "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues":"โรบอทซาโตชิที่ทำงานในโกดังไม่สามารถเข้าใจคุณได้ กรุณารายงาน Bug 
-หรือปัญหาอื่นๆผ่านทาง Github https://github.com/reckless-satoshi/robosats/issues",
+    "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues":"โรบอทซาโตชิที่ทำงานในโกดังไม่สามารถเข้าใจคุณได้ กรุณารายงาน Bug หรือปัญหาอื่นๆผ่านทาง Github https://github.com/reckless-satoshi/robosats/issues",
 
     "CHAT BOX - Chat.js":"Chat Box",
     "You":"คุณ",
@@ -330,6 +329,7 @@
     "Verified signature by {{nickname}}":"ลายเซ็นต์ที่ถูกตรวจสอบแล้วโดย {{nickname}}",
     "Cannot verify signature of {{nickname}}":"ไม่สามารถตรวจสอบลายเซ็นต์ของ {{nickname}}",
 
+  
     "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
     "Contract Box":"Contract Box",
     "Robots show commitment to their peers": "โรบอทต้องแสดงความรับผิดชอบต่อคู่ค้าของตน",
