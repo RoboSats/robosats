@@ -9,11 +9,13 @@ from api.models import Order
 
 logger = logging.getLogger('api.utils')
 
+TOR_PROXY = config('TOR_PROXY', default='127.0.0.1:9050')
+
 def get_tor_session():
     session = requests.session()
     # Tor uses the 9050 port as the default socks port
-    session.proxies = {'http':  'socks5://127.0.0.1:9050',
-                       'https': 'socks5://127.0.0.1:9050'}
+    session.proxies = {'http':  'socks5://' + TOR_PROXY,
+                       'https': 'socks5://' + TOR_PROXY}
     return session
 
 
