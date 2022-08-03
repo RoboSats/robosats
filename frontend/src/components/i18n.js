@@ -13,9 +13,7 @@ import HttpApi from 'i18next-http-backend';
 // import translationCA from "../../static/locales/ca.json";
 // import translationIT from "../../static/locales/it.json";
 // import translationPT from "../../static/locales/pt.json";
-// import translationEU from "../../static/locales/eu.json";
-// import translationSV from "../../static/locales/sv.json";
-// import translationCS from "../../static/locales/cs.json";
+// import translationEU from "../../static/locales/th.json";
 
 i18n
   .use(HttpApi)
@@ -36,6 +34,7 @@ i18n
   //   eu: {translations: translationEU},
   //   sv: {translations: translationSV},
   //   cs: {translations: translationCS},
+  //   th: {translations: translationCS},
   // },
   
   backend:{
