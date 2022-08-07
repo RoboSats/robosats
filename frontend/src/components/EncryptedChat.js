@@ -160,7 +160,14 @@ class Chat extends Component {
   }
 
   onButtonClicked = (e) => {
-    if(this.state.value.substring(0,1)=='#'){
+    // If input string contains token. Do not set message
+    if(this.state.value.indexOf(this.state.token) !== -1){
+      alert(`Aye! You just sent your own robot token to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`)
+      this.setState({value: ""});
+    }
+
+    // If input string contains '#' send unencrypted and unlogged message
+    else if(this.state.value.substring(0,1)=='#'){
         this.rws.send(JSON.stringify({
           type: "message",
           message: this.state.value,
@@ -169,6 +176,7 @@ class Chat extends Component {
         this.setState({value: ""});
     }
     
+    // Else if message is not empty send message 
     else if(this.state.value!=''){
       this.setState({value: "", waitingEcho: true, lastSent:this.state.value})
       encryptMessage(this.state.value, this.state.own_pub_key, this.state.peer_pub_key, this.state.own_enc_priv_key, this.state.token)
