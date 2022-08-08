@@ -10,12 +10,14 @@ from api.models import Order
 logger = logging.getLogger('api.utils')
 
 TOR_PROXY = config('TOR_PROXY', default='127.0.0.1:9050')
+USE_TOR = config('USE_TOR', cast=bool, default=True)
 
-def get_tor_session():
+def get_session():
     session = requests.session()
     # Tor uses the 9050 port as the default socks port
-    session.proxies = {'http':  'socks5://' + TOR_PROXY,
-                       'https': 'socks5://' + TOR_PROXY}
+    if USE_TOR:
+        session.proxies = {'http':  'socks5://' + TOR_PROXY,
+                        'https': 'socks5://' + TOR_PROXY}
     return session
 
 
@@ -70,7 +72,7 @@ def get_exchange_rates(currencies):
     Returns the median price list.
     """
 
-    session = get_tor_session()
+    session = get_session()
 
     APIS = config("MARKET_PRICE_APIS",
                   cast=lambda v: [s.strip() for s in v.split(",")])

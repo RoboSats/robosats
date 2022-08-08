@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from api.models import Profile
 from api.messages import Telegram
-from api.utils import get_tor_session
+from api.utils import get_session
 from decouple import config
 import requests
 import time
@@ -15,7 +15,7 @@ class Command(BaseCommand):
     bot_token = config('TELEGRAM_TOKEN')
     updates_url = f'https://api.telegram.org/bot{bot_token}/getUpdates'
 
-    session = get_tor_session()
+    session = get_session()
     telegram = Telegram()
     def handle(self, *args, **options):
         """Infinite loop to check for telegram updates.

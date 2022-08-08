@@ -1,6 +1,4 @@
 from datetime import timedelta
-from tkinter import N, ON
-from tokenize import Octnumber
 from django.utils import timezone
 from api.lightning.node import LNNode
 from django.db.models import Q, Sum
