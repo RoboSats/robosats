@@ -89,7 +89,7 @@ You will need these commands also often or eventually:
 * Open channel
 `docker exec -it lnd-dev lncli --network=testnet openchannel node_id --local_amt LOCAL_AMT --push_amt PUSH_AMT`
 
-**RoboSats development site should be accessible on localhost:8000**
+**RoboSats development site should be accessible on 127.0.0.1:8000**
 
 
 ## The harder way (deprecated)
