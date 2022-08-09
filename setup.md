@@ -46,6 +46,8 @@ Make "{robosats-site}/static/css/index.css" redirect to "127.0.0.1:8080/css/inde
 Spinning up docker for the first time
 ```
 docker-compose build --no-cache
+# Install LND python dependencies into local repository
+docker run --mount type=bind,src=$(pwd),dst=/usr/src/robosats backend sh generate_grpc.sh
 docker-compose up -d
 docker exec -it django-dev python3 manage.py makemigrations
 docker exec -it django-dev python3 manage.py migrate
@@ -53,31 +55,6 @@ docker exec -it django-dev python3 manage.py createsuperuser
 docker-compose restart
 ```
 Copy the `.env-sample` file into `.env` and check the environmental variables are right for your development.
-
-### (optional, if error) Install LND python dependencies
-Depending on your system your dev setup might already be good to start working. However, it might happen that when mounting "." into "/src/usr/robosats" in the docker-compose.yml, it deletes the lnd grpc files that where previously generated during the docker build. If this is the case, run the following:
-```
-cd api/lightning
-pip install grpcio grpcio-tools googleapis-common-protos
-git clone https://github.com/googleapis/googleapis.git
-curl -o lightning.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/lightning.proto
-python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. lightning.proto
-```
-We also use the *Invoices* and *Router* subservices for invoice validation and payment routing.
-```
-curl -o invoices.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/invoicesrpc/invoices.proto
-python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. invoices.proto
-curl -o router.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/routerrpc/router.proto
-python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. router.proto
-```
-Generated files can be automatically patched for relative imports like this:
-```
-sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/router_pb2.py
-sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/invoices_pb2.py
-sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/router_pb2_grpc.py
-sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/lightning_pb2_grpc.py
-sed -i 's/^import .*_pb2 as/from . \0/' api/lightning/invoices_pb2_grpc.py
-```
 
 **All set!**
 
