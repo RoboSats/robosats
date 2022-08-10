@@ -652,6 +652,10 @@ class Profile(models.Model):
                                                   default=None,
                                                   blank=True)
 
+    # Stealth invoices
+    wants_stealth = models.BooleanField(default=False,
+                                        null=False)
+
     @receiver(post_save, sender=User)
     def create_user_profile(sender, instance, created, **kwargs):
         if created:
