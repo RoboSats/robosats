@@ -30,6 +30,7 @@ from datetime import timedelta, datetime
 from django.utils import timezone
 from django.conf import settings
 from decouple import config
+from uuid import uuid4
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
@@ -141,6 +142,7 @@ class MakerView(CreateAPIView):
             escrow_duration=escrow_duration,
             bond_size=bond_size,
             bondless_taker=bondless_taker,
+            reference=uuid4()
         )
 
         order.last_satoshis = order.t0_satoshis = Logics.satoshis_now(order)

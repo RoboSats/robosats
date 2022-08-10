@@ -297,6 +297,10 @@ class Order(models.Model):
         NESINV = 4, "Neither escrow locked or invoice submitted"
 
     # order info
+    reference = models.CharField(max_length=36,
+                                 null=True,
+                                 default="",
+                                 blank=True)
     status = models.PositiveSmallIntegerField(choices=Status.choices,
                                               null=False,
                                               default=Status.WFB)
