@@ -211,19 +211,21 @@ const ProfileDialog = ({
           <Divider/>
 
           <Grid container>
-            <Grid item>
-              <FormControlLabel
-                labelPlacement="start"
-                label={`${t("Use stealth invoices")}`}
-                control={
-                  <Switch
-                    checked={stealthInvoices}
-                    onChange={() => handleSetStealthInvoice(!stealthInvoices)
-                    }
-                  />
-                }
-              />
-            </Grid>
+            <Tooltip placement="top" enterTouchDelay={0} title={t("stealth_invoice_explaination")}>
+              <Grid item>
+                <FormControlLabel
+                  labelPlacement="start"
+                  label={`${t("Use stealth invoices")}`}
+                  control={
+                    <Switch
+                      checked={stealthInvoices}
+                      onChange={() => handleSetStealthInvoice(!stealthInvoices)
+                      }
+                    />
+                  }
+                />
+              </Grid>
+            </Tooltip>
           </Grid>
 
           <Grid container>
