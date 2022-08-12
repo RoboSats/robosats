@@ -1,4 +1,4 @@
-django==3.2.14
+django==3.2.15
 django-admin-relation-links==0.2.5
 django-celery-beat==2.2.1
 django-celery-results==2.4.0
