@@ -147,3 +147,6 @@ class TickSerializer(serializers.ModelSerializer):
             "fee",
         )
         depth = 1
+
+class StealthSerializer(serializers.Serializer):
+    wantsStealth = serializers.BooleanField()

@@ -1043,7 +1043,10 @@ class Logics:
         order.last_satoshis_time = timezone.now()
         bond_satoshis = int(order.last_satoshis * order.bond_size/100)
 
-        description = f"RoboSats - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally."
+        if user.profile.wants_stealth:
+            description = f"This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally. Payment reference: {order.reference}"
+        else:
+            description = f"RoboSats - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally."
 
         # Gen hold Invoice
         try:
@@ -1155,11 +1158,14 @@ class Logics:
         order.last_satoshis_time = timezone.now()
         bond_satoshis = int(order.last_satoshis * order.bond_size/100)
         pos_text = "Buying" if cls.is_buyer(order, user) else "Selling"
-        description = (
-            f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
-            +
-            " - Taker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally."
-        )
+        if user.profile.wants_stealth:
+            description = f"This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally. Payment reference: {order.reference}"
+        else:
+            description = (
+                f"RoboSats - Taking 'Order {order.id}' {pos_text} BTC for {str(float(order.amount)) + Currency.currency_dict[str(order.currency.currency)]}"
+                +
+                " - Taker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally."
+            )
 
         # Gen hold Invoice
         try:
@@ -1247,7 +1253,10 @@ class Logics:
 
         # If there was no taker_bond object yet, generate one
         escrow_satoshis = cls.escrow_amount(order, user)[1]["escrow_amount"] # Amount was fixed when taker bond was locked, fee applied here
-        description = f"RoboSats - Escrow amount for '{str(order)}' - It WILL FREEZE IN YOUR WALLET. It will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
+        if user.profile.wants_stealth:
+            description = f"This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally. Payment reference: {order.reference}"
+        else:
+            description = f"RoboSats - Escrow amount for '{str(order)}' - It WILL FREEZE IN YOUR WALLET. It will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
 
         # Gen hold Invoice
         try:

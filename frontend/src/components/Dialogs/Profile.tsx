@@ -48,6 +48,8 @@ type Props = {
   withdrawn: boolean;
   badInvoice: boolean | string;
   earnedRewards: number;
+  stealthInvoices: boolean;
+  handleSetStealthInvoice: (stealth: boolean) => void;
   setAppState: (state: any) => void; // TODO: move to a ContextProvider
 }
 
@@ -65,6 +67,8 @@ const ProfileDialog = ({
   badInvoice,
   earnedRewards,
   setAppState,
+  stealthInvoices,
+  handleSetStealthInvoice,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
 
@@ -205,6 +209,24 @@ const ProfileDialog = ({
           </ListItem>
 
           <Divider/>
+
+          <Grid container>
+            <Tooltip placement="top" enterTouchDelay={0} title={t("stealth_invoice_explaination")}>
+              <Grid item>
+                <FormControlLabel
+                  labelPlacement="start"
+                  label={`${t("Use stealth invoices")}`}
+                  control={
+                    <Switch
+                      checked={stealthInvoices}
+                      onChange={() => handleSetStealthInvoice(!stealthInvoices)
+                      }
+                    />
+                  }
+                />
+              </Grid>
+            </Tooltip>
+          </Grid>
 
           <Grid container>
             <Grid item>

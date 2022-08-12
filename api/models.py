@@ -297,6 +297,7 @@ class Order(models.Model):
         NESINV = 4, "Neither escrow locked or invoice submitted"
 
     # order info
+    reference = models.UUIDField(default = uuid.uuid4, editable = False)
     status = models.PositiveSmallIntegerField(choices=Status.choices,
                                               null=False,
                                               default=Status.WFB)
@@ -651,6 +652,10 @@ class Profile(models.Model):
     platform_rating = models.PositiveIntegerField(null=True,
                                                   default=None,
                                                   blank=True)
+
+    # Stealth invoices
+    wants_stealth = models.BooleanField(default=False,
+                                        null=False)
 
     @receiver(post_save, sender=User)
     def create_user_profile(sender, instance, created, **kwargs):

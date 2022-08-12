@@ -2,7 +2,7 @@ import os
 from re import T
 from django.db.models import Sum, Q
 from rest_framework import status, viewsets
-from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -11,7 +11,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 
-from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer, TickSerializer
+from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer, TickSerializer, StealthSerializer
 from api.models import LNPayment, MarketTick, OnchainPayment, Order, Currency, Profile
 from control.models import AccountingDay, BalanceLog
 from api.logics import Logics
@@ -740,10 +740,13 @@ class UserView(APIView):
                 user.profile.is_referred = True
                 user.profile.referred_by = queryset[0]
 
+            user.profile.wants_stealth = False
+
             user.profile.save()
 
             context["public_key"] = user.profile.public_key
             context["encrypted_private_key"] = user.profile.encrypted_private_key
+            context["wants_stealth"] = user.profile.wants_stealth
             return Response(context, status=status.HTTP_201_CREATED)
 
         # log in user and return pub/priv keys if existing
@@ -755,6 +758,7 @@ class UserView(APIView):
                 context["encrypted_private_key"] = user.profile.encrypted_private_key
                 context["earned_rewards"] = user.profile.earned_rewards
                 context["referral_code"] = str(user.profile.referral_code)
+                context["wants_stealth"] = user.profile.wants_stealth
 
                 # return active order or last made order if any
                 has_no_active_order, _, order = Logics.validate_already_maker_or_taker(request.user)
@@ -1026,3 +1030,29 @@ class HistoricalView(ListAPIView):
             }
 
         return Response(payload, status.HTTP_200_OK)
+
+class StealthView(UpdateAPIView):
+
+    serializer_class = StealthSerializer
+
+    def put(self, request):
+        serializer = self.serializer_class(data=request.data)
+
+        if not request.user.is_authenticated:
+            return Response(
+                {
+                    "bad_request":
+                    "Woops! It seems you do not have a robot avatar"
+                },
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        stealth = serializer.data.get("wantsStealth")
+
+        request.user.profile.wants_stealth = stealth
+        request.user.profile.save()
+
+        return Response({"wantsStealth": stealth})

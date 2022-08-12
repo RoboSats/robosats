@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MakerView, OrderView, UserView, BookView, InfoView, RewardView, PriceView, LimitView, HistoricalView, TickView
+from .views import MakerView, OrderView, UserView, BookView, InfoView, RewardView, PriceView, LimitView, HistoricalView, TickView, StealthView
 
 urlpatterns = [
     path("make/", MakerView.as_view()),
@@ -16,4 +16,5 @@ urlpatterns = [
     path("reward/", RewardView.as_view()),
     path("historical/", HistoricalView.as_view()),
     path("ticks/", TickView.as_view()),
+    path("stealth/", StealthView.as_view()),
 ]

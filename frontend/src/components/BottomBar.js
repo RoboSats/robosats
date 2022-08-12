@@ -124,6 +124,17 @@ class BottomBar extends Component {
         e.preventDefault();
     }
 
+    handleSetStealthInvoice = (wantsStealth) => {
+        const requestOptions = {
+            method: 'PUT',
+            headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+            body: JSON.stringify({wantsStealth: wantsStealth}),
+        };
+        fetch('/api/stealth/', requestOptions)
+          .then((response) => response.json())
+          .then((data) => this.props.setAppState({stealthInvoices: data.wantsStealth}));
+    }
+
     getHost(){
         var url = (window.location != window.parent.location) ? this.getHost(document.referrer) : document.location.href;
         return url.split('/')[2]
@@ -488,6 +499,8 @@ bottomBarPhone =()=>{
                     badInvoice={this.state.badInvoice}
                     earnedRewards={this.props.earnedRewards}
                     setAppState={this.props.setAppState}
+                    stealthInvoices={this.props.stealthInvoices}
+                    handleSetStealthInvoice={this.handleSetStealthInvoice}
                 />
 
                 <StatsDialog
