@@ -226,6 +226,8 @@
     "Join RoboSats' Subreddit":"Únete al subreddit de RoboSats",
     "RoboSats in Reddit":"RoboSats en Reddit",
     "Current onchain payout fee":"Coste actual de recibir onchain",
+    "Use stealth invoices":"Facturas sigilosas",
+    "Stealth lightning invoices do not contain details about the trade except an order reference. Enable this setting if you don't want to disclose details to a custodial lightning wallet.":"Las facturas sigilosas no contienen información sobre tu orden excepto una referencia a la misma. Activalas para no desvelar información a tu proveedor de wallet custodial.",
 
 
     "ORDER PAGE - OrderPage.js": "Order details page",

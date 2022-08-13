@@ -31,6 +31,7 @@ import PasswordIcon from "@mui/icons-material/Password";
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import { UserNinjaIcon, BitcoinIcon } from "../Icons";
 
 import { getCookie } from "../../utils/cookies";
 import { copyToClipboard } from "../../utils/clipboard";
@@ -210,29 +211,42 @@ const ProfileDialog = ({
 
           <Divider/>
 
-          <Grid container>
-            <Tooltip placement="top" enterTouchDelay={0} title={t("stealth_invoice_explaination")}>
-              <Grid item>
-                <FormControlLabel
-                  labelPlacement="start"
-                  label={`${t("Use stealth invoices")}`}
-                  control={
-                    <Switch
-                      checked={stealthInvoices}
-                      onChange={() => handleSetStealthInvoice(!stealthInvoices)
-                      }
-                    />
-                  }
-                />
-              </Grid>
-            </Tooltip>
-          </Grid>
+          <ListItem>
+            <ListItemIcon>
+              <UserNinjaIcon/>
+            </ListItemIcon>
 
-          <Grid container>
-            <Grid item>
+            <ListItemText>
+              <Tooltip placement="top" enterTouchDelay={0} title={t("Stealth lightning invoices do not contain details about the trade except an order reference. Enable this setting if you don't want to disclose details to a custodial lightning wallet.")}>
+                <Grid item>
+                  <FormControlLabel
+                    labelPlacement="end"
+                    label={t("Use stealth invoices")}
+                    control={
+                      <Switch
+                        checked={stealthInvoices}
+                        onChange={() => handleSetStealthInvoice(!stealthInvoices)
+                        }
+                      />
+                    }
+                  />
+                </Grid>
+              </Tooltip>
+            </ListItemText>
+          </ListItem>
+
+          <ListItem>
+            <ListItemIcon>
+              <BitcoinIcon/>
+            </ListItemIcon>
+
+            <ListItemText>
               <FormControlLabel
-                labelPlacement="start"
-                label={`${t("Rewards and compensations")}`}
+                labelPlacement="end"
+                label={
+                  <div style={{display:'flex', alignItems:'center'}}>
+                    {t("Rewards and compensations")}
+                  </div>}
                 control={
                   <Switch
                     checked={showRewards}
@@ -240,8 +254,8 @@ const ProfileDialog = ({
                   />
                 }
               />
-            </Grid>
-          </Grid>
+            </ListItemText>
+          </ListItem>
 
           {showRewards && (
             <>

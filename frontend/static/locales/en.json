@@ -228,7 +228,7 @@
     "RoboSats in Reddit":"RoboSats in Reddit",
     "Current onchain payout fee":"Current onchain payout fee",
     "Use stealth invoices":"Use stealth invoices",
-    "stealth_invoice_explaination":"Stealth invoices do not contain details about the trade except a payment reference. Enable this setting if you don't want to disclose details to a custodial lightning wallet.",
+    "Stealth lightning invoices do not contain details about the trade except an order reference. Enable this setting if you don't want to disclose details to a custodial lightning wallet.":"Stealth lightning invoices do not contain details about the trade except an order reference. Enable this setting if you don't want to disclose details to a custodial lightning wallet.",
 
     "ORDER PAGE - OrderPage.js": "Order details page",
     "Order Box":"Order Box",
