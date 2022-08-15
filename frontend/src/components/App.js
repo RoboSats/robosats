@@ -18,7 +18,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      dark: false,
+      dark: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
       openLearn: false,
     }
   }
