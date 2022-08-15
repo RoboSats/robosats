@@ -49,7 +49,7 @@ docker-compose build --no-cache
 # Install LND python dependencies into local repository
 docker run --mount type=bind,src=$(pwd),dst=/usr/src/robosats backend sh generate_grpc.sh
 docker-compose up -d
-docker exec -it django-dev python3 manage.py makemigrations
+docker exec -it django-dev python3 manage.py makemigrations api control chat
 docker exec -it django-dev python3 manage.py migrate
 docker exec -it django-dev python3 manage.py createsuperuser
 docker-compose restart
