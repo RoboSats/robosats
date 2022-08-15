@@ -10,7 +10,7 @@ export const paymentMethods = [
     {name: "Wise",icon:'wise'},
     {name: "Venmo",icon:'venmo'},
     {name: "Faster Payments",icon:'faster'},
-    {name: "Paypal",icon:'paypal'},
+    {name: "Paypal Friends & Family",icon:'paypal'},
     {name: "LINE Pay",icon:'linepay'},
     {name: "PromptPay",icon:'promptpay'},
     {name: "Bizum",icon:'bizum'},
