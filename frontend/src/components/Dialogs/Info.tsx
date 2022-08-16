@@ -126,6 +126,20 @@ const InfoDialog = ({
         <Accordion disableGutters={true}>
           <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
             <Typography>
+              {t("What are the fees?")}
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography component="div" variant="body2">
+              <p>{t("RoboSats total fee for an order is {{tradeFee}}%. This fee is split to be covered by both: the order maker ({{makerFee}}%) and the order taker ({{takerrFee}}%). In case an onchain address is used to received the Sats a variable swap fee applies. Check the exchange details by tapping on the bottom bar icon to see the current swap fee.",{tradeFee:"0.2", makerFee:"0.025", takerFee: "0.175"})} </p>
+              <p>{t("Be aware your fiat payment provider might charge extra fees. In any case, the buyer bears the costs of sending fiat. That includes banking charges, transfer fees and foreign exchange spreads. The seller must receive exactly the amount stated in the order details.")} </p>
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion disableGutters={true}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
+            <Typography>
               {t("Is RoboSats private?")}
             </Typography>
           </AccordionSummary>
