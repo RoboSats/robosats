@@ -1223,6 +1223,7 @@ class Logics:
     @classmethod
     def is_trade_escrow_locked(cls, order):
         if order.trade_escrow.status == LNPayment.Status.LOCKED:
+            cls.trade_escrow_received(order)
             return True
         elif LNNode.validate_hold_invoice_locked(order.trade_escrow):
             cls.trade_escrow_received(order)
