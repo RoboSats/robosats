@@ -127,7 +127,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 else:
                     trade_sats = order.trade_escrow.num_satoshis
 
-                order.status = Order.Status.TLD
+                order.status = Order.Status.MLD
                 order.taker.profile.earned_rewards = own_bond_sats + trade_sats
                 order.taker.profile.save()
                 order.save()
@@ -149,7 +149,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.taker_bond.sender.profile.save()
                 order.trade_escrow.sender.profile.earned_rewards += order.trade_escrow.num_satoshis
                 order.trade_escrow.sender.profile.save()
-                order.status = Order.Status.TLD
+                order.status = Order.Status.CCA
                 order.save()
                 self.message_user(request,f"Dispute of order {order.id} solved successfully, everything returned as compensations", messages.SUCCESS)
 
