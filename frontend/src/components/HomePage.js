@@ -42,11 +42,11 @@ export default class HomePage extends Component {
               <Router >
                   <div className='appCenter'>
                     <Switch>
-                        <Route exact path='/' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
-                        <Route path='/ref/:refCode' render={(props) => <UserGenPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
-                        <Route path='/make' render={(props) => <MakerPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
-                        <Route path='/book' render={(props) => <BookPage {...props} {...this.state} setAppState={this.setAppState} />}/>
-                        <Route path="/order/:orderId" render={(props) => <OrderPage {...props} {...this.state} setAppState={this.setAppState}/>}/>
+                        <Route exact path='/' render={(props) => <UserGenPage {...props} {...this.state} {...this.props} setAppState={this.setAppState}/>}/>
+                        <Route path='/ref/:refCode' render={(props) => <UserGenPage {...props} {...this.state} {...this.props} setAppState={this.setAppState}/>}/>
+                        <Route path='/make' render={(props) => <MakerPage {...props} {...this.state} {...this.props} setAppState={this.setAppState}/>}/>
+                        <Route path='/book' render={(props) => <BookPage {...props} {...this.state} {...this.props} setAppState={this.setAppState} />}/>
+                        <Route path="/order/:orderId" render={(props) => <OrderPage {...props} {...this.state} {...this.props} setAppState={this.setAppState}/>}/>
                     </Switch>
                   </div>
                   <div className='bottomBar'>

@@ -60,7 +60,7 @@ export default class App extends Component {
             {this.state.dark ? <LightModeIcon/>:<DarkModeIcon/>}
           </IconButton>
           <UnsafeAlert className="unsafeAlert"/>
-          <HomePage/>
+          <HomePage {...this.state}/>
         </ThemeProvider>
       </I18nextProvider>
       </Suspense>
