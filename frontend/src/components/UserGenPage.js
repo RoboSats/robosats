@@ -181,6 +181,7 @@ class UserGenPage extends Component {
 
   render() {
     const { t, i18n} = this.props;
+    const fontSize = this.props.theme.typography.fontSize;
     return (
       <Grid container spacing={1}>
         <Grid item>
@@ -200,6 +201,7 @@ class UserGenPage extends Component {
               </Grid>
               <Grid item xs={12} align="center">
               <Tooltip enterTouchDelay={0} title={t("This is your trading avatar")}>
+<<<<<<< HEAD
                 <div style={{ maxWidth: 200, maxHeight: 200 }}>
                   <SmoothImage
                     src={this.state.avatarUrl}
@@ -208,6 +210,16 @@ class UserGenPage extends Component {
                       filter: "drop-shadow(1px 1px 1px #000000)",
                       height: "195px",
                       width: "200px"}}
+=======
+                <div style={{ maxWidth: fontSize * 14.28, maxHeight: fontSize * 14.28, alignText: "center"}}>
+                  <Image 
+                    className='newAvatar'
+                    imageStyle={{height: fontSize * 14.28, width: fontSize * 14.28}} // factor = originalSize/default_fontSize = 200/14 = 14.28
+                    disableError={true}
+                    cover={true}
+                    color='null'
+                    src={getCookie("sessionid") ? this.state.avatarUrl || "" : ""}
+>>>>>>> Scale avatar width and R. Pass theme as prop to class components.
                   />
                 </div>
                 </Tooltip>
@@ -319,7 +331,9 @@ class UserGenPage extends Component {
                   </Typography>
                 </Grid>
                 <Grid item xs={2.5} align="left">
-                    <RoboSatsNoTextIcon color="primary" sx={{height:72, width:72}}/>
+                    <RoboSatsNoTextIcon color="primary" 
+                      sx={{height: fontSize * 5.14, width: fontSize * 5.14}} // factor = originalSize/default_fontSize = 272/14 = 5.14
+                      />
                 </Grid>
               </Grid>
             </div>

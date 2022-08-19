@@ -87,6 +87,12 @@ input[type=number] {
   left: -16px;
 }
 
+.newAvatar {
+  border-radius: 50%; 
+  border: 2px solid #555; 
+  filter: drop-shadow(1px 1px 1px #000000);
+}
+
 .profileAvatar {
   border: 0.5px solid #555; 
   filter: drop-shadow(0.5px 0.5px 0.5px #000000);
