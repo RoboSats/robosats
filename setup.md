@@ -5,7 +5,7 @@
 
 Running the full stack is not easy, since RoboSats needs of many services. However, contributing to the frontend development can be done with a minimal setup!
 
-*Set up time ~10 min. Tested in Chromium and Firefox in Ubuntu.*
+*Set up time ~10 min. Tested in Firefox in Ubuntu.* (Does not work in Chromium)
 
 ------------------------
 
