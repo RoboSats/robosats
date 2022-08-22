@@ -4,6 +4,8 @@
     "desktop_unsafe_alert": "Some features are disabled for your protection (e.g. chat) and you will not be able to complete a trade without them. To protect your privacy and fully enable RoboSats, use <1>Tor Browser</1> and visit the <3>Onion</3> site.",
     "phone_unsafe_alert": "You will not be able to complete a trade. Use <1>Tor Browser</1> and visit the <3>Onion</3> site.",
     "Hide":"Hide",
+    "You are self-hosting RoboSats":"You are self-hosting RoboSats",
+    "RoboSats is served from your own node granting you the strongest security and privacy.":"RoboSats is served from your own node granting you the strongest security and privacy.",
 
 
     "USER GENERATION PAGE - UserGenPage.js": "Landing Page and User Generation",
