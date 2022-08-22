@@ -56,10 +56,17 @@ jobs:
       run: |
         echo ${{ steps.commit.outputs.long }}>"commit_sha.txt"
 
+    - name: 'Set up QEMU'
+      uses: docker/setup-qemu-action@v2
+    
+    - name: 'Set up Docker Buildx'
+      uses: docker/setup-buildx-action@v2
+    
     - name: 'Build and push Docker image'
       uses: docker/build-push-action@v3
       with:
         context: ./nodeapp
+        platforms: linux/amd64,linux/arm64
         push: true
         tags: |
           recksato/robosats-client:${{ steps.commit.outputs.short }}
