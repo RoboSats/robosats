@@ -1,4 +1,4 @@
-name: RoboSats Client Node App Image CI/CD
+name: Client App Image CI/CD
 
 on:
   workflow_dispatch:
@@ -20,13 +20,18 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: 'Copy Static' # Only needed because Github actions does not support symlinks
+      run: |
+        rm nodeapp/static
+        cp -r frontend/static nodeapp/static
+
     - name: 'Download main.js Artifact'
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
         name: main-js
-        path: frontend/static/frontend/
+        path: nodeapp/static/frontend/
         
     - name: 'Log in to Docker Hub'
       uses: docker/login-action@v2
@@ -51,10 +56,6 @@ jobs:
     - name: 'Get Commit Hash'
       id: commit
       uses: pr-mpt/actions-commit-hash@v1
-
-    - name: 'Save Commit Long Hash to TXT File'
-      run: |
-        echo ${{ steps.commit.outputs.long }}>"commit_sha.txt"
 
     - name: 'Set up QEMU'
       uses: docker/setup-qemu-action@v2
