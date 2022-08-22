@@ -300,6 +300,9 @@
     "This order has been cancelled collaborativelly":"This order has been cancelled collaboratively",
     "This order is not available":"This order is not available",
     "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues":"The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues",
+    "WebNL Payment": "WebNL Payment",
+    "Payment not received, please check your WebNL wallet.": "Payment not received, please check your WebNL wallet.",
+    "Payment detected, you can close now your WebNL wallet popup.": "Payment detected, you can close now your WebNL wallet popup.",
 
     "CHAT BOX - Chat.js":"Chat Box",
     "You":"You",
