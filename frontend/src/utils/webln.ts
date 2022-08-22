@@ -1,7 +1,7 @@
-import { requestProvider, WebLNProvider } from "webln";
+import { requestProvider, WeblnProvider } from "webln";
 
-export const getWebLN = async (): Promise<WebLNProvider> => {
-  const resultPromise = new Promise<WebLNProvider>(async (resolve, reject) => {
+export const getWebln = async (): Promise<WeblnProvider> => {
+  const resultPromise = new Promise<WeblnProvider>(async (resolve, reject) => {
     try {
       const webln = await requestProvider()
       if (webln) { 
@@ -9,7 +9,7 @@ export const getWebLN = async (): Promise<WebLNProvider> => {
         resolve(webln)
       }
     } catch (err) {
-      console.log("Coulnd't connect to WebLN")
+      console.log("Coulnd't connect to Webln")
       reject()
     }
   })

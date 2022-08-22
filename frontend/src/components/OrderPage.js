@@ -24,7 +24,7 @@ import { SendReceiveIcon } from "./Icons";
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
 import { copyToClipboard } from "../utils/clipboard";
-import { getWebLN } from "../utils/webln";
+import { getWebln } from "../utils/webln";
 
 class OrderPage extends Component {
   constructor(props) {
@@ -37,8 +37,8 @@ class OrderPage extends Component {
         openCancel: false,
         openCollaborativeCancel: false,
         openInactiveMaker: false,
-        openWebLNDialog: false,
-        waitingWebLN: false,
+        openWeblnDialog: false,
+        waitingWebln: false,
         openStoreToken: false,
         tabValue: 1,
         orderId: this.props.match.params.orderId,
@@ -99,7 +99,7 @@ class OrderPage extends Component {
   }
 
   orderDetailsReceived = (data) =>{
-    if (data.status !== this.state.status) { this.handleWebLN(data) }
+    if (data.status !== this.state.status) { this.handleWebln(data) }
     this.completeSetState(data)
     this.setState({pauseLoading:false})
   }
@@ -122,23 +122,42 @@ class OrderPage extends Component {
     this.getOrderDetails(this.state.orderId);
   }
 
-  handleWebLN = (data) => {
-    getWebLN()
+  handleWebln = (data) => {
+    getWebln()
       .then((webln) => {
-        // If WebLN implements locked payments compatibility, this logic won't be necesary anymore
-        if (data.is_maker & (data.status == 0)) {
+        // If Webln implements locked payments compatibility, this logic won't be necesary anymore
+        if (data.is_maker & data.status == 0) {
           webln.sendPayment(data.bond_invoice);
-          this.setState({ waitingWebLN: true, openWebLNDialog: true});
+          this.setState({ waitingWebln: true, openWeblnDialog: true});
         } else if (data.is_taker & data.status == 3) {
           webln.sendPayment(data.bond_invoice);
-          this.setState({ waitingWebLN: true, openWebLNDialog: true});
+          this.setState({ waitingWebln: true, openWeblnDialog: true});
         } else if (data.is_seller & (data.status == 6 || data.status == 7 )) {
           webln.sendPayment(data.escrow_invoice);
-          this.setState({ waitingWebLN: true, openWebLNDialog: true});
+          this.setState({ waitingWebln: true, openWeblnDialog: true});
+        } else if (data.is_buyer & (data.status == 6 || data.status == 8 )) {
+          webln.makeInvoice(data.amount).then((invoice) => {
+            this.sendWeblnInvoice(invoice)
+          })
+          this.setState({ waitingWebln: true, openWeblnDialog: true});
         } else {
-          this.setState({ waitingWebLN: false });
+          this.setState({ waitingWebln: false });
         }
       });
+  }
+
+  sendWeblnInvoice = (invoice) => {
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+      body: JSON.stringify({
+        'action':'update_invoice',
+        'invoice': invoice,
+      }),
+    };
+    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+    .then((response) => response.json())
+    .then((data) => this.completeSetState(data));
   }
 
   // Countdown Renderer callback with condition
@@ -291,7 +310,7 @@ class OrderPage extends Component {
       };
       fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
       .then((response) => response.json())
-      .then((data) => this.handleWebLN(data) & this.completeSetState(data));
+      .then((data) => this.handleWebln(data) & this.completeSetState(data));
   }
 
   // set delay to the one matching the order status. If null order status, delay goes to 9999999.
@@ -772,7 +791,7 @@ class OrderPage extends Component {
         :
         (this.state.is_participant ?
           <>
-            {this.webLNDialog()}
+            {this.weblnDialog()}
             {/* Desktop View */}
             <MediaQuery minWidth={920}>
               {this.doubleOrderPageDesktop()}
@@ -790,35 +809,38 @@ class OrderPage extends Component {
     )
   }
 
-  handleCloseWebLNDialog = () => {
-    this.setState({openWebLNDialog: false});
+  handleCloseWeblnDialog = () => {
+    this.setState({openWeblnDialog: false});
   }
 
-  webLNDialog =() =>{
+  weblnDialog =() =>{
     const { t } = this.props;
 
     return(
       <Dialog
-        open={this.state.openWebLNDialog}
-        onClose={this.handleCloseWebLNDialog}
-        aria-labelledby="fiat-received-dialog-title"
-        aria-describedby="fiat-received-dialog-description"
+        open={this.state.openWeblnDialog}
+        onClose={this.handleCloseWeblnDialog}
+        aria-labelledby="webln-dialog-title"
+        aria-describedby="webln-dialog-description"
       >
-        <DialogTitle id="open-dispute-dialog-title">
-          {t("WebLN Payment")}
+        <DialogTitle id="webln-dialog-title">
+          {t("WebLN")}
         </DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            {this.state.waitingWebLN ? 
+          <DialogContentText id="webln-dialog-description">
+            {this.state.waitingWebln ? 
               <>
                 <CircularProgress size={16} thickness={5} style={{ marginRight: 10 }}/>
-                {t("Payment not received, please check your WebLN wallet.")}
+                {data.is_buyer ? t("Invoice not received, please check your WebLN wallet.") : t("Payment not received, please check your WebLN wallet.")} 
               </> 
-              : t("Payment detected, you can close now your WebLN wallet popup.")}
+              : <>
+                  {t("You can close now your WebLN wallet popup.")}
+                </>
+            }
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.handleCloseWebLNDialog} autoFocus>{t("Go back")}</Button>
+          <Button onClick={this.handleCloseWeblnDialog} autoFocus>{t("Go back")}</Button>
         </DialogActions>
       </Dialog>
     )

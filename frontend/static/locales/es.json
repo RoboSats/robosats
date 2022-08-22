@@ -300,9 +300,10 @@
     "This order has been cancelled collaborativelly":"Esta orden se ha cancelado colaborativamente",
     "This order is not available": "Esta orden no está disponible",
     "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues": "Los Satoshis Robóticos del almacén no te entendieron. Por favor rellena un Bug Issue en Github https://github.com/reckless-satoshi/robosats/issues",
-    "WebLN Payment": "Pago WebLN",
+    "WebLN": "WebLN",
     "Payment not received, please check your WebLN wallet.": "No se ha recibido el pago, echa un vistazo a tu wallet WebLN.",
-    "Payment detected, you can close now your WebLN wallet popup.": "Pago detectado, ahora puedes cerrar el popup de tu wallet WebLN.",
+    "Invoice not received, please check your WebLN wallet.": "No se ha recibido la factura, echa un vistazo a tu wallet WebLN.",
+    "You can close now your WebLN wallet popup.": "Ahora puedes cerrar el popup de tu wallet WebLN.",
 
     "CHAT BOX - Chat.js": "Ventana del chat",
     "You": "Tú",

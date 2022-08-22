@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { MouseEventHandler, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as LinkRouter } from "react-router-dom";
 
@@ -35,6 +35,7 @@ import { UserNinjaIcon, BitcoinIcon } from "../Icons";
 
 import { getCookie } from "../../utils/cookies";
 import { copyToClipboard } from "../../utils/clipboard";
+import { getWebln } from "../../utils/webln";
 
 type Props = {
   isOpen: boolean;
@@ -45,6 +46,7 @@ type Props = {
   referralCode: string;
   handleSubmitInvoiceClicked: (e:any, invoice: string) => void;
   host: string;
+  weblnEnabled: boolean;
   showRewardsSpinner: boolean;
   withdrawn: boolean;
   badInvoice: boolean | string;
@@ -63,6 +65,7 @@ const ProfileDialog = ({
   referralCode,
   handleSubmitInvoiceClicked,
   host,
+  weblnEnabled,
   showRewardsSpinner,
   withdrawn,
   badInvoice,
@@ -89,6 +92,18 @@ const ProfileDialog = ({
   const copyReferralCodeHandler = () => {
     copyToClipboard(`http://${host}/ref/${referralCode}`);
   };
+
+  const handleWeblnInvoiceClicked = (e: any) =>{
+    e.preventDefault();
+    if (earnedRewards) {
+      getWebln()
+        .then((webln) => {
+          webln.makeInvoice(earnedRewards).then((response) => {
+            handleSubmitInvoiceClicked(e, response.paymentRequest);
+          })
+        });
+    }
+  }
 
   return (
     <Dialog
@@ -324,7 +339,6 @@ const ProfileDialog = ({
                           }}
                         />
                       </Grid>
-
                       <Grid item alignItems="stretch" style={{ display: "flex", maxWidth:80}}>
                         <Button
                           sx={{maxHeight:38}}
@@ -338,6 +352,22 @@ const ProfileDialog = ({
                         </Button>
                       </Grid>
                     </Grid>
+                    {weblnEnabled && (
+                      <Grid container style={{ display: "flex", alignItems: "stretch"}}>
+                        <Grid item alignItems="stretch" style={{ display: "flex", maxWidth:240}}>
+                          <Button
+                            sx={{maxHeight:38, minWidth: 230}}
+                            onClick={(e) => handleWeblnInvoiceClicked(e)}
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            type="submit"
+                          >
+                            {t("Generate with Webln")}
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    )}
                   </form>
                 )}
               </ListItem>

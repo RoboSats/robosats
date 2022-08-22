@@ -489,6 +489,7 @@ bottomBarPhone =()=>{
                     isOpen={this.state.openProfile}
                     handleClickCloseProfile={this.handleClickCloseProfile}
                     nickname={this.props.nickname}
+                    weblnEnabled={this.props.weblnEnabled}
                     activeOrderId={this.props.activeOrderId}
                     lastOrderId={this.props.lastOrderId}
                     referralCode={this.props.referralCode}

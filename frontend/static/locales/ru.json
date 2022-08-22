@@ -300,9 +300,10 @@
     "This order has been cancelled collaborativelly":"Этот ордер был отменён совместно",
     "You are not allowed to see this order":"Вы не можете увидеть этот ордер",
     "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues":"Роботизированные Сатоши, работающие на складе, не поняли Вас. Пожалуйста, заполните вопрос об ошибке в Github https://github.com/reckless-satoshi/robosats/issues",
-    "WebLN Payment": "Оплата WebLN",
+    "WebLN": "WebLN",
     "Payment not received, please check your WebLN wallet.": "Платёж не получен. Пожалуйста, проверьте Ваш WebLN Кошелёк.",
-    "Payment detected, you can close now your WebLN wallet popup.": "Платёж получен. Вы можете закрыть всплывающее окно WebLN Кошелька",
+    "Invoice not received, please check your WebLN wallet.": "Платёж не получен. Пожалуйста, проверьте Ваш WebLN Кошелёк.",
+    "You can close now your WebLN wallet popup.": "Вы можете закрыть всплывающее окно WebLN Кошелька",
 
     "CHAT BOX - Chat.js":"Chat Box",
     "You":"Вы",
