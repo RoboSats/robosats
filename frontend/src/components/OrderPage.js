@@ -37,8 +37,8 @@ class OrderPage extends Component {
         openCancel: false,
         openCollaborativeCancel: false,
         openInactiveMaker: false,
-        openWebNLDialog: false,
-        waitingWebNL: false,
+        openWebLNDialog: false,
+        waitingWebLN: false,
         openStoreToken: false,
         tabValue: 1,
         orderId: this.props.match.params.orderId,
@@ -128,15 +128,15 @@ class OrderPage extends Component {
         // If WebLN implements locked payments compatibility, this logic won't be necesary anymore
         if (data.is_maker & (data.status == 0)) {
           webln.sendPayment(data.bond_invoice);
-          this.setState({ waitingWebNL: true, openWebNLDialog: true});
+          this.setState({ waitingWebLN: true, openWebLNDialog: true});
         } else if (data.is_taker & data.status == 3) {
           webln.sendPayment(data.bond_invoice);
-          this.setState({ waitingWebNL: true, openWebNLDialog: true});
+          this.setState({ waitingWebLN: true, openWebLNDialog: true});
         } else if (data.is_seller & (data.status == 6 || data.status == 7 )) {
           webln.sendPayment(data.escrow_invoice);
-          this.setState({ waitingWebNL: true, openWebNLDialog: true});
+          this.setState({ waitingWebLN: true, openWebLNDialog: true});
         } else {
-          this.setState({ waitingWebNL: false });
+          this.setState({ waitingWebLN: false });
         }
       });
   }
@@ -772,7 +772,7 @@ class OrderPage extends Component {
         :
         (this.state.is_participant ?
           <>
-            {this.webNLDialog()}
+            {this.webLNDialog()}
             {/* Desktop View */}
             <MediaQuery minWidth={920}>
               {this.doubleOrderPageDesktop()}
@@ -790,35 +790,35 @@ class OrderPage extends Component {
     )
   }
 
-  handleCloseWebNLDialog = () => {
-    this.setState({openWebNLDialog: false});
+  handleCloseWebLNDialog = () => {
+    this.setState({openWebLNDialog: false});
   }
 
-  webNLDialog =() =>{
+  webLNDialog =() =>{
     const { t } = this.props;
 
     return(
       <Dialog
-        open={this.state.openWebNLDialog}
-        onClose={this.handleCloseWebNLDialog}
+        open={this.state.openWebLNDialog}
+        onClose={this.handleCloseWebLNDialog}
         aria-labelledby="fiat-received-dialog-title"
         aria-describedby="fiat-received-dialog-description"
       >
         <DialogTitle id="open-dispute-dialog-title">
-          {t("WebNL Payment")}
+          {t("WebLN Payment")}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {this.state.waitingWebNL ? 
+            {this.state.waitingWebLN ? 
               <>
                 <CircularProgress size={16} thickness={5} style={{ marginRight: 10 }}/>
-                {t("Payment not received, please check your WebNL wallet.")}
+                {t("Payment not received, please check your WebLN wallet.")}
               </> 
-              : t("Payment detected, you can close now your WebNL wallet popup.")}
+              : t("Payment detected, you can close now your WebLN wallet popup.")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.handleCloseWebNLDialog} autoFocus>{t("Go back")}</Button>
+          <Button onClick={this.handleCloseWebLNDialog} autoFocus>{t("Go back")}</Button>
         </DialogActions>
       </Dialog>
     )
