@@ -45,6 +45,16 @@ services:
     volumes:
       - ./frontend:/usr/src/frontend
 
+  nodeapp: # Umbrel / Citadel app
+    build: ./nodeapp
+    container_name: nodeapp-dev
+    restart: always
+    environment:
+      TOR_PROXY_IP: 127.0.0.1
+      TOP_PROXY_PORT: 9050
+      ROBOSATS_ONION: robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion
+    network_mode: service:tor
+
   clean-orders:
     image: backend
     restart: always
@@ -108,7 +118,8 @@ services:
       - ./node/tor/data:/var/lib/tor
       - ./node/tor/config:/etc/tor
     ports:
-      - 8000:8000
+      - 8000:8000     # dev frontend build
+      - 12596:12596   # umbrel frontend
 
   lnd:
     build: ./docker/lnd
