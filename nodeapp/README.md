@@ -6,7 +6,7 @@ At the moment it has no special integration with your local lightning wallet (e.
 
 # How it works
 
-The container launches two processes: 1) A `socat` that will expose RoboSats coordinator API over HTTP on localhost:81 using the docker orchestration TOR socks proxy and 2) a `http-server` that serves all static files (including the Javascript client app) directly from your own node (should reduce loading times by a lot). Every request that cannot be served by your node http-server will be forwarded to the RoboSats coordinator (that is: API calls and Robot avatar images).
+The container launches two processes: 1) A `socat` that will expose RoboSats coordinator API over HTTP on localhost:81 using the docker orchestration TOR socks proxy and 2) a `http-server` that serves all static files (including the Javascript client app) directly from your own node (should reduce loading times by a lot). Every request that cannot be served by your node http-server will be forwarded to the RoboSats coordinator (that is: API calls and Robot avatar images). Nginx is used to bypass `http-server` for websockets directly into the `socat` bridge as `http-server` does not support websockets connections.
 
 # Why host your own RoboSats client
 
