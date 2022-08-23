@@ -39,7 +39,7 @@ class Chat extends Component {
     scrollNow:false,
   };
 
-  rws = new ReconnectingWebSocket('ws://' + window.location.host + '/ws/chat/' + this.props.orderId + '/');
+  rws = new ReconnectingWebSocket('ws://' + window.location.host + '/ws/chat/' + this.props.orderId + '/', [], {connectionTimeout: 15000});
   
   componentDidMount() {
     this.rws.addEventListener('open', () => {

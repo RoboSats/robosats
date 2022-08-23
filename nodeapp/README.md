@@ -1,4 +1,4 @@
-# RoboSats app for soverign nodes.
+# RoboSats client app for sovereign nodes
 
 RoboSats app for soverign nodes ( Umbrel, Citadel, Start9 ...). This app serves the RoboSats frontend app directly from your own node and redirects all API requests to RoboSats P2P market coordinator through your node's TOR proxy.
 
