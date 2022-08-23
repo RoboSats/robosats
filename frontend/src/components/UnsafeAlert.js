@@ -34,7 +34,6 @@ class UnsafeAlert extends Component {
   ]
 
   render() {
-    console.log('1111')
     const { t, i18n} = this.props;
 
     // If alert is hidden return null
