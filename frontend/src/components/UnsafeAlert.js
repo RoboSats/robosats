@@ -20,7 +20,7 @@ class UnsafeAlert extends Component {
 
   isSelfhosted(){
     var http = new XMLHttpRequest();
-    http.open('HEAD', '/selfhosted', false);
+    http.open('HEAD', `http://${this.getHost()}/selfhosted`, false);
     http.send();
     return http.status!=404;
   }
@@ -48,7 +48,7 @@ class UnsafeAlert extends Component {
               action={<Button color="success" onClick={() => this.setState({show:false})}>{t("Hide")}</Button>}
               >
               <AlertTitle>{t("You are self-hosting RoboSats")}</AlertTitle>
-              {t("RoboSats is served from your own node granting you the strongest security and privacy.")} 
+              {t("RoboSats client is served from your own node granting you the strongest security and privacy.")} 
             </Alert>
           </Paper>
         </div>
