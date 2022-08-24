@@ -6,7 +6,6 @@ import MakerPage from "./MakerPage";
 import BookPage from "./BookPage";
 import OrderPage from "./OrderPage";
 import BottomBar from "./BottomBar";
-import { getWebln } from "../utils/webln";
 
 export default class HomePage extends Component {
     constructor(props) {
@@ -27,14 +26,11 @@ export default class HomePage extends Component {
         lastOrderId: null,
         earnedRewards: 0,
         referralCode:'',
-        weblnEnabled: false
       }
     }
 
     setAppState=(newState)=>{
       this.setState(newState)
-      const webln = await getWebln();
-      this.setState({ weblnEnabled: webln !== undefined })
     }
 
     redirectTo(location) {

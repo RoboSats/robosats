@@ -46,7 +46,6 @@ type Props = {
   referralCode: string;
   handleSubmitInvoiceClicked: (e:any, invoice: string) => void;
   host: string;
-  weblnEnabled: boolean;
   showRewardsSpinner: boolean;
   withdrawn: boolean;
   badInvoice: boolean | string;
@@ -65,7 +64,6 @@ const ProfileDialog = ({
   referralCode,
   handleSubmitInvoiceClicked,
   host,
-  weblnEnabled,
   showRewardsSpinner,
   withdrawn,
   badInvoice,
@@ -79,6 +77,14 @@ const ProfileDialog = ({
   const [rewardInvoice, setRewardInvoice] = useState<string>("");
   const [showRewards, setShowRewards] = useState<boolean>(false);
   const [openClaimRewards, setOpenClaimRewards] = useState<boolean>(false);
+  const [weblnEnabled, setWeblnEnabled] = useState<boolean>(false)
+
+  useEffect(() => {
+    getWebln()
+      .then((webln) => {
+        setWeblnEnabled(webln !== undefined)
+      })
+  }, [])
 
   const copyTokenHandler = () => {
     const robotToken = getCookie("robot_token");

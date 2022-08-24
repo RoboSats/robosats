@@ -122,7 +122,7 @@ class OrderPage extends Component {
     this.getOrderDetails(this.state.orderId);
   }
 
-  handleWebln = (data) => {
+  handleWebln = async (data) => {
     const webln = await getWebln();
     // If Webln implements locked payments compatibility, this logic might be simplier
     if (data.is_maker & data.status == 0) {
@@ -135,9 +135,8 @@ class OrderPage extends Component {
       webln.sendPayment(data.escrow_invoice);
       this.setState({ waitingWebln: true, openWeblnDialog: true});
     } else if (data.is_buyer & (data.status == 6 || data.status == 8 )) {
-      webln.makeInvoice(data.amount).then((invoice) => {
-        this.sendWeblnInvoice(invoice)
-      })
+      const invoice = await webln.makeInvoice(data.trade_satoshis);
+      this.sendWeblnInvoice(invoice);
       this.setState({ waitingWebln: true, openWeblnDialog: true});
     } else {
       this.setState({ waitingWebln: false });
@@ -150,10 +149,10 @@ class OrderPage extends Component {
       headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
       body: JSON.stringify({
         'action':'update_invoice',
-        'invoice': invoice,
+        'invoice': invoice.paymentRequest,
       }),
     };
-    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
+    fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
     .then((response) => response.json())
     .then((data) => this.completeSetState(data));
   }
@@ -829,7 +828,7 @@ class OrderPage extends Component {
             {this.state.waitingWebln ? 
               <>
                 <CircularProgress size={16} thickness={5} style={{ marginRight: 10 }}/>
-                {data.is_buyer ? t("Invoice not received, please check your WebLN wallet.") : t("Payment not received, please check your WebLN wallet.")} 
+                {this.state.is_buyer ? t("Invoice not received, please check your WebLN wallet.") : t("Payment not received, please check your WebLN wallet.")} 
               </> 
               : <>
                   {t("You can close now your WebLN wallet popup.")}
@@ -838,7 +837,7 @@ class OrderPage extends Component {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.handleCloseWeblnDialog} autoFocus>{t("Go back")}</Button>
+          <Button onClick={this.handleCloseWeblnDialog} autoFocus>{t("Done")}</Button>
         </DialogActions>
       </Dialog>
     )
