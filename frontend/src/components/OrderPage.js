@@ -135,9 +135,15 @@ class OrderPage extends Component {
       webln.sendPayment(data.escrow_invoice);
       this.setState({ waitingWebln: true, openWeblnDialog: true});
     } else if (data.is_buyer & (data.status == 6 || data.status == 8 )) {
-      const invoice = await webln.makeInvoice(data.trade_satoshis);
-      this.sendWeblnInvoice(invoice);
-      this.setState({ waitingWebln: true, openWeblnDialog: true});
+      webln.makeInvoice(data.trade_satoshis)
+        .then((invoice) => {
+          if (invoice) {
+            this.sendWeblnInvoice(invoice.paymentRequest);
+            this.setState({ waitingWebln: true, openWeblnDialog: true});
+          }
+        }).catch(() => {
+          this.setState({ waitingWebln: false, openWeblnDialog: false });
+        });
     } else {
       this.setState({ waitingWebln: false });
     }
@@ -149,7 +155,7 @@ class OrderPage extends Component {
       headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
       body: JSON.stringify({
         'action':'update_invoice',
-        'invoice': invoice.paymentRequest,
+        'invoice': invoice,
       }),
     };
     fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)

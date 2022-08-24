@@ -4,7 +4,8 @@ export const getWebln = async (): Promise<WeblnProvider> => {
   const resultPromise = new Promise<WeblnProvider>(async (resolve, reject) => {
     try {
       const webln = await requestProvider()
-      if (webln) { 
+      if (webln) {
+        webln.enable() 
         resolve(webln)
       }
     } catch (err) {

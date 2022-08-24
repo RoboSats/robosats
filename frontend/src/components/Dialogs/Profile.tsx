@@ -1,4 +1,4 @@
-import React, { MouseEventHandler, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as LinkRouter } from "react-router-dom";
 
@@ -84,7 +84,7 @@ const ProfileDialog = ({
       .then((webln) => {
         setWeblnEnabled(webln !== undefined)
       })
-  }, [])
+  }, [showRewards])
 
   const copyTokenHandler = () => {
     const robotToken = getCookie("robot_token");
@@ -103,9 +103,11 @@ const ProfileDialog = ({
     e.preventDefault();
     if (earnedRewards) {
       const webln = await getWebln();
-      const response = await webln.makeInvoice(earnedRewards);
-
-      handleSubmitInvoiceClicked(e, response.paymentRequest)
+      const invoice = webln.makeInvoice(earnedRewards).then(() => {
+        if (invoice) {
+          handleSubmitInvoiceClicked(e, invoice.paymentRequest)
+        }
+      })
     }
   }
 
