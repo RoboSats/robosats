@@ -123,27 +123,25 @@ class OrderPage extends Component {
   }
 
   handleWebln = (data) => {
-    getWebln()
-      .then((webln) => {
-        // If Webln implements locked payments compatibility, this logic won't be necesary anymore
-        if (data.is_maker & data.status == 0) {
-          webln.sendPayment(data.bond_invoice);
-          this.setState({ waitingWebln: true, openWeblnDialog: true});
-        } else if (data.is_taker & data.status == 3) {
-          webln.sendPayment(data.bond_invoice);
-          this.setState({ waitingWebln: true, openWeblnDialog: true});
-        } else if (data.is_seller & (data.status == 6 || data.status == 7 )) {
-          webln.sendPayment(data.escrow_invoice);
-          this.setState({ waitingWebln: true, openWeblnDialog: true});
-        } else if (data.is_buyer & (data.status == 6 || data.status == 8 )) {
-          webln.makeInvoice(data.amount).then((invoice) => {
-            this.sendWeblnInvoice(invoice)
-          })
-          this.setState({ waitingWebln: true, openWeblnDialog: true});
-        } else {
-          this.setState({ waitingWebln: false });
-        }
-      });
+    const webln = await getWebln();
+    // If Webln implements locked payments compatibility, this logic might be simplier
+    if (data.is_maker & data.status == 0) {
+      webln.sendPayment(data.bond_invoice);
+      this.setState({ waitingWebln: true, openWeblnDialog: true});
+    } else if (data.is_taker & data.status == 3) {
+      webln.sendPayment(data.bond_invoice);
+      this.setState({ waitingWebln: true, openWeblnDialog: true});
+    } else if (data.is_seller & (data.status == 6 || data.status == 7 )) {
+      webln.sendPayment(data.escrow_invoice);
+      this.setState({ waitingWebln: true, openWeblnDialog: true});
+    } else if (data.is_buyer & (data.status == 6 || data.status == 8 )) {
+      webln.makeInvoice(data.amount).then((invoice) => {
+        this.sendWeblnInvoice(invoice)
+      })
+      this.setState({ waitingWebln: true, openWeblnDialog: true});
+    } else {
+      this.setState({ waitingWebln: false });
+    }
   }
 
   sendWeblnInvoice = (invoice) => {

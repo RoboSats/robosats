@@ -33,10 +33,8 @@ export default class HomePage extends Component {
 
     setAppState=(newState)=>{
       this.setState(newState)
-      getWebln()
-        .then((webln) => {
-          this.setState({ weblnEnabled: webln !== undefined })
-        });
+      const webln = await getWebln();
+      this.setState({ weblnEnabled: webln !== undefined })
     }
 
     redirectTo(location) {

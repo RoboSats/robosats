@@ -93,15 +93,13 @@ const ProfileDialog = ({
     copyToClipboard(`http://${host}/ref/${referralCode}`);
   };
 
-  const handleWeblnInvoiceClicked = (e: any) =>{
+  const handleWeblnInvoiceClicked = async (e: any) =>{
     e.preventDefault();
     if (earnedRewards) {
-      getWebln()
-        .then((webln) => {
-          webln.makeInvoice(earnedRewards).then((response) => {
-            handleSubmitInvoiceClicked(e, response.paymentRequest);
-          })
-        });
+      const webln = await getWebln();
+      const response = await webln.makeInvoice(earnedRewards);
+
+      handleSubmitInvoiceClicked(e, response.paymentRequest)
     }
   }
 
