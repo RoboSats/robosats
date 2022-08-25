@@ -14,12 +14,15 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import SchoolIcon from '@mui/icons-material/School';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       dark: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
+      expandedSettings: false,
       openLearn: false,
       theme: {typography: { fontSize: 14 }},
     }
@@ -36,12 +39,20 @@ export default class App extends Component {
     },
   });
 
-  onZoomOutClick = () => {
+  onSettingsClick = () => {
+    this.setState({
+      expandedSettings: ! this.state.expandedSettings
+    })
+  }
+
+  onZoomClick = (direction) => {
+    let zoomChange;
+    direction === "out" ? zoomChange = -1 : zoomChange = 1;
     this.setState(({theme}) => ({
       theme: { 
         ...theme,
         typography: {
-          fontSize: this.state.theme.typography.fontSize - 1,
+          fontSize: this.state.theme.typography.fontSize + zoomChange,
         },
       }
     }));
@@ -54,11 +65,13 @@ export default class App extends Component {
         <ThemeProvider theme={this.state.dark ? this.darkTheme : createTheme(this.state.theme)}>
           <CssBaseline/>
           <LearnDialog open={this.state.openLearn} onClose={()=> this.setState({openLearn:false})}/>
-          <IconButton sx={{position:'fixed',right:'68px'}} onClick={this.onZoomOutClick}><ZoomOutIcon/></IconButton>
-          <IconButton sx={{position:'fixed',right:'34px'}} onClick={()=> this.setState({openLearn:true})}><SchoolIcon/></IconButton>
-          <IconButton sx={{position:'fixed',right:'0px'}} onClick={()=>this.setState({dark:!this.state.dark})}>
+          <IconButton sx={{position:'fixed', right:'0px'}} onClick={()=> this.setState({expandedSettings: !this.state.expandedSettings})}><SettingsIcon/></IconButton>
+          <IconButton sx={{position:'fixed', right:'0px', top: '34px', display: this.state.expandedSettings ? '':'none'}} onClick={() => this.onZoomClick("in")}><ZoomInIcon/></IconButton>
+          <IconButton sx={{position:'fixed', right:'0px', top: '68px', display: this.state.expandedSettings ? '':'none'}} onClick={() => this.onZoomClick("out")}><ZoomOutIcon/></IconButton>
+          <IconButton sx={{position:'fixed', right:'0px', top: '102px', display: this.state.expandedSettings ? '':'none'}} onClick={()=>this.setState({dark:!this.state.dark})}>
             {this.state.dark ? <LightModeIcon/>:<DarkModeIcon/>}
           </IconButton>
+          <IconButton sx={{position:'fixed',right:'34px'}} onClick={()=> this.setState({openLearn:true})}><SchoolIcon/></IconButton>
           <UnsafeAlert className="unsafeAlert"/>
           <HomePage {...this.state}/>
         </ThemeProvider>
