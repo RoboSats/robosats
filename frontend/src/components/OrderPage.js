@@ -19,11 +19,13 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import ArticleIcon from '@mui/icons-material/Article';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import CheckIcon from '@mui/icons-material/Check';
 import { SendReceiveIcon } from "./Icons";
 
 import { getCookie } from "../utils/cookies";
 import { pn } from "../utils/prettyNumbers";
 import { copyToClipboard } from "../utils/clipboard";
+import { getWebln } from "../utils/webln";
 
 class OrderPage extends Component {
   constructor(props) {
@@ -36,6 +38,8 @@ class OrderPage extends Component {
         openCancel: false,
         openCollaborativeCancel: false,
         openInactiveMaker: false,
+        openWeblnDialog: false,
+        waitingWebln: false,
         openStoreToken: false,
         tabValue: 1,
         orderId: this.props.match.params.orderId,
@@ -92,7 +96,13 @@ class OrderPage extends Component {
     this.setState({orderId:id})
     fetch('/api/order' + '?order_id=' + id)
       .then((response) => response.json())
-      .then((data) => (this.completeSetState(data) & this.setState({pauseLoading:false})));
+      .then(this.orderDetailsReceived);
+  }
+
+  orderDetailsReceived = (data) =>{
+    if (data.status !== this.state.status) { this.handleWebln(data) }
+    this.completeSetState(data)
+    this.setState({pauseLoading:false})
   }
 
   // These are used to refresh the data
@@ -103,7 +113,7 @@ class OrderPage extends Component {
 
   componentDidUpdate() {
     clearInterval(this.interval);
-      this.interval = setInterval(this.tick, this.state.delay);
+    this.interval = setInterval(this.tick, this.state.delay);
   }
 
   componentWillUnmount() {
@@ -111,6 +121,48 @@ class OrderPage extends Component {
   }
   tick = () => {
     this.getOrderDetails(this.state.orderId);
+  }
+
+  handleWebln = async (data) => {
+    const webln = await getWebln();
+    // If Webln implements locked payments compatibility, this logic might be simplier
+    if (data.is_maker & data.status == 0) {
+      webln.sendPayment(data.bond_invoice);
+      this.setState({ waitingWebln: true, openWeblnDialog: true});
+    } else if (data.is_taker & data.status == 3) {
+      webln.sendPayment(data.bond_invoice);
+      this.setState({ waitingWebln: true, openWeblnDialog: true});
+    } else if (data.is_seller & (data.status == 6 || data.status == 7 )) {
+      webln.sendPayment(data.escrow_invoice);
+      this.setState({ waitingWebln: true, openWeblnDialog: true});
+    } else if (data.is_buyer & (data.status == 6 || data.status == 8 )) {
+      this.setState({ waitingWebln: true, openWeblnDialog: true});
+      webln.makeInvoice(data.trade_satoshis)
+        .then((invoice) => {
+          if (invoice) {
+            this.sendWeblnInvoice(invoice.paymentRequest);
+            this.setState({ waitingWebln: false, openWeblnDialog: false });
+          }
+        }).catch(() => {
+          this.setState({ waitingWebln: false, openWeblnDialog: false });
+        });
+    } else {
+      this.setState({ waitingWebln: false });
+    }
+  }
+
+  sendWeblnInvoice = (invoice) => {
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken'),},
+      body: JSON.stringify({
+        'action':'update_invoice',
+        'invoice': invoice,
+      }),
+    };
+    fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
+    .then((response) => response.json())
+    .then((data) => this.completeSetState(data));
   }
 
   // Countdown Renderer callback with condition
@@ -263,7 +315,7 @@ class OrderPage extends Component {
       };
       fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
       .then((response) => response.json())
-      .then((data) => this.completeSetState(data));
+      .then((data) => this.handleWebln(data) & this.completeSetState(data));
   }
 
   // set delay to the one matching the order status. If null order status, delay goes to 9999999.
@@ -744,6 +796,7 @@ class OrderPage extends Component {
         :
         (this.state.is_participant ?
           <>
+            {this.weblnDialog()}
             {/* Desktop View */}
             <MediaQuery minWidth={920}>
               {this.doubleOrderPageDesktop()}
@@ -758,6 +811,44 @@ class OrderPage extends Component {
           <Grid item xs={12} align="center" style={{ width:330}}>
             {this.orderBox()}
           </Grid>)
+    )
+  }
+
+  handleCloseWeblnDialog = () => {
+    this.setState({openWeblnDialog: false});
+  }
+
+  weblnDialog =() =>{
+    const { t } = this.props;
+
+    return(
+      <Dialog
+        open={this.state.openWeblnDialog}
+        onClose={this.handleCloseWeblnDialog}
+        aria-labelledby="webln-dialog-title"
+        aria-describedby="webln-dialog-description"
+      >
+        <DialogTitle id="webln-dialog-title">
+          {t("WebLN")}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="webln-dialog-description">
+            {this.state.waitingWebln ? 
+              <>
+                <CircularProgress size={16} thickness={5} style={{ marginRight: 10 }}/>
+                {this.state.is_buyer ? t("Invoice not received, please check your WebLN wallet.") : t("Payment not received, please check your WebLN wallet.")} 
+              </> 
+              : <>
+                  <CheckIcon color="success"/>
+                  {t("You can close now your WebLN wallet popup.")}
+                </>
+            }
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.handleCloseWeblnDialog} autoFocus>{t("Done")}</Button>
+        </DialogActions>
+      </Dialog>
     )
   }
 
