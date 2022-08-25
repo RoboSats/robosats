@@ -19,6 +19,7 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import ArticleIcon from '@mui/icons-material/Article';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import CheckIcon from '@mui/icons-material/Check';
 import { SendReceiveIcon } from "./Icons";
 
 import { getCookie } from "../utils/cookies";
@@ -135,11 +136,12 @@ class OrderPage extends Component {
       webln.sendPayment(data.escrow_invoice);
       this.setState({ waitingWebln: true, openWeblnDialog: true});
     } else if (data.is_buyer & (data.status == 6 || data.status == 8 )) {
+      this.setState({ waitingWebln: true, openWeblnDialog: true});
       webln.makeInvoice(data.trade_satoshis)
         .then((invoice) => {
           if (invoice) {
             this.sendWeblnInvoice(invoice.paymentRequest);
-            this.setState({ waitingWebln: true, openWeblnDialog: true});
+            this.setState({ waitingWebln: false, openWeblnDialog: false });
           }
         }).catch(() => {
           this.setState({ waitingWebln: false, openWeblnDialog: false });
@@ -837,6 +839,7 @@ class OrderPage extends Component {
                 {this.state.is_buyer ? t("Invoice not received, please check your WebLN wallet.") : t("Payment not received, please check your WebLN wallet.")} 
               </> 
               : <>
+                  <CheckIcon color="success"/>
                   {t("You can close now your WebLN wallet popup.")}
                 </>
             }
