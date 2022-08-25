@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { withTranslation } from "react-i18next";
-import { Badge, Tooltip, Stack, Paper, Button, FormControlLabel, Checkbox, RadioGroup, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, ListItemText, ListItemAvatar, IconButton, CircularProgress} from "@mui/material";
+import { Badge, Tooltip, Stack, Paper, Button, FormControlLabel, Checkbox, RadioGroup, ListItemButton, Typography, Grid, Select, MenuItem, FormControl, FormHelperText, ListItemText, ListItemAvatar, IconButton, ButtonGroup} from "@mui/material";
 import { Link } from 'react-router-dom'
 import { DataGrid } from '@mui/x-data-grid';
 import currencyDict from '../../static/assets/currencies.json';
@@ -10,6 +10,7 @@ import Image from 'material-ui-image'
 import FlagWithProps from './FlagWithProps'
 import { pn } from "../utils/prettyNumbers";
 import PaymentText from './PaymentText'
+import DepthChart from './Charts/DepthChart'
 
 // Icons
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -20,6 +21,7 @@ class BookPage extends Component {
     super(props);
     this.state = {
       pageSize: 6,
+      view: 'list'
     };
   }
 
@@ -354,6 +356,10 @@ class BookPage extends Component {
     this.handleTypeChange(buyChecked, sellChecked);
   }
 
+  handleClickView=()=>{
+    this.setState({ view: this.state.view == 'depth' ? 'list' : 'depth' })
+  }
+
   handleClickSell=(e)=>{
     var buyChecked = this.props.buyChecked
     var sellChecked = e.target.checked
@@ -386,6 +392,65 @@ class BookPage extends Component {
       </Grid>
     )
   }
+
+  mainView = () => {
+    if (this.props.bookNotFound) { return this.NoOrdersFound() }
+
+    const chartComponent = 
+      <div style={{ border: '1px solid rgba(81, 81, 81, 1)'}}>
+        <DepthChart 
+          bookLoading={this.props.bookLoading} 
+          bookOrders={this.props.bookOrders}
+          lastDayPremium={this.props.lastDayPremium}
+        />
+      </div>
+
+    const components = this.state.view == 'depth' ? [
+      chartComponent,
+      chartComponent
+    ] : [
+      this.bookListTableDesktop(),
+      this.bookListTablePhone()
+    ]
+
+    return (
+      <>
+        {/* Desktop */}
+        <MediaQuery minWidth={930}>
+          <Paper elevation={0} style={{width: 925, maxHeight: 500, overflow: 'auto'}}>
+              <div style={{ height: 422, width:'100%'}}>
+                {components[0]}
+              </div>
+          </Paper>
+        </MediaQuery>
+        {/* Smartphone */}
+        <MediaQuery maxWidth={929}>
+          <Paper elevation={0} style={{width: 395, maxHeight: 450, overflow: 'auto'}}>
+              <div style={{ height: 422, width:'100%'}}>
+                {components[1]}
+              </div>
+          </Paper>
+        </MediaQuery>
+      </>
+    )
+  }
+
+  getTitle = () => {
+    const { t } = this.props;
+
+    if (this.state.view == 'list') {
+      if (this.props.type == 0) { 
+        return t("You are SELLING BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode}) }
+      else if (this.props.type == 1) {
+        return t("You are BUYING BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode}) }
+      else {
+        return t("You are looking at all")
+      }
+    } else if (this.state.view == 'depth') {
+      return t("Depth chart")
+    }
+  }
+
   render() {
     const { t } = this.props;
       return (
@@ -460,49 +525,31 @@ class BookPage extends Component {
               </Select>
             </FormControl>
           </Grid>
-        { this.props.bookNotFound ? "" :
+          { this.props.bookNotFound ? <></> :
+            <Grid item xs={12} align="center">
+              <Typography component="h5" variant="h5">
+                {this.getTitle()}
+              </Typography>
+            </Grid>
+          }
           <Grid item xs={12} align="center">
-            <Typography component="h5" variant="h5">
-               {this.props.type == 0 ?
-                t("You are SELLING BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode})
-               :
-                (this.props.type == 1 ?
-                  t("You are BUYING BTC for {{currencyCode}}",{currencyCode:this.props.bookCurrencyCode})
-                :
-                  t("You are looking at all")
-                )
-               }
-            </Typography>
+            {this.mainView()}
           </Grid>
-          }
-
-        { this.props.bookNotFound ?
-          this.NoOrdersFound()
-          :
           <Grid item xs={12} align="center">
-            {/* Desktop Book */}
-            <MediaQuery minWidth={930}>
-              <Paper elevation={0} style={{width: 925, maxHeight: 500, overflow: 'auto'}}>
-                  {this.bookListTableDesktop()}
-              </Paper>
-            </MediaQuery>
-
-            {/* Smartphone Book */}
-            <MediaQuery maxWidth={929}>
-              <Paper elevation={0} style={{width: 395, maxHeight: 450, overflow: 'auto'}}>
-                  {this.bookListTablePhone()}
-              </Paper>
-            </MediaQuery>
-           </Grid>
-          }
-          <Grid item xs={12} align="center">
-            { !this.props.bookNotFound ?
-            <Button variant="contained" color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
-            : null
-            }
-            <Button color="secondary" variant="contained" to="/" component={Link}>
-                {t("Back")}
-            </Button>
+            <ButtonGroup variant="contained" aria-label="outlined primary button group">
+              { !this.props.bookNotFound ?
+                <>
+                  <Button variant="contained" color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
+                  <Button color='inherit' style={{color: '#111111'}} onClick={this.handleClickView}>
+                    { this.state.view == 'depth' ? t("List") : t("Depth") }
+                  </Button>
+                </>
+                : null
+              }
+              <Button color="secondary" variant="contained" to="/" component={Link}>
+                  {t("Back")}
+              </Button>
+            </ButtonGroup>
           </Grid>
         </Grid>
     );
