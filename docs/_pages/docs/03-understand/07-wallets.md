@@ -39,6 +39,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[WoS](https://github.com/Reckless-Satoshi/robosats/issues/44#issue-1135544303)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.unclear}}|
 |[{{page.bitcoin}} Beach](#bitcoin-beach-mobile)|[v1.7.7](https://galoy.io/bitcoin-beach-wallet/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |[{{page.thumbsup}}](https://github.com/Reckless-Satoshi/robosats/issues/44#issuecomment-1126318591)|
+|[Alby](#alby-browser-extension)|[v1.14.2](https://github.com/getAlby/lightning-browser-extension)|{{page.laptop}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 
 1. **UX:** Does the wallet convey clearly that there is an "ongoing" payment (hodl invoice)?
 2. **Bonds:** Can the wallet lock the invoices with long expiry time needed for the bonds?
@@ -46,6 +47,13 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 4. **Compatible:** Is the wallet overally compatible end-to-end with RoboSats?
 5. **Total:** Is the wallet compatible and stable enough to be used consistently without issues?
 
+### Alby (browser extension)
+Alby is a browser extension compatible with WebLN standard. Since RoboSats supports WebLN, the experience with Alby is probably best-in-class: you won't have to scan the QR codes or generate invoices, simply click on the Alby pop up to confirm the actions. You can connect the Alby extension to most of the popular nodes and wallets, or simply let Alby host a custodial wallet for you.
+
+Special instructions to install Alby in Tor Browser:
+1. Install the Alby extension from the [Firefox add-ons store](https://addons.mozilla.org/en-US/firefox/addon/alby/)
+2. Alby needs persistent memory, Tor Browser disables it by default. Go to `Settings`, type `"History"` on the search bar and uncheck `"Always use private browsing mode"`
+3. Click on the Alby extension and follow the prompts to setup your wallet.
 
 ### Blixt (Android/iOS, LND light backend on device)
 Most development testing for Robosats has been done using Blixt. This is one of the most complete lightning wallets around. However, it does lead to misunderstanding when hold invoices are locked, as it shows a spinner with payment in transit. The user needs to check on the website for confirmation. Blixt allows for multiple pending HTLCs, this is necessary as a seller since you need to lock a taker/maker bond and then a trade escrow (2 pending concurrent HTLCs). It might eventually also display as paid/charged invoices that are still pending, specially if the user force closes blixt and reopens it. Occasionally can display as charged fidelity bonds that have in fact been returned.
