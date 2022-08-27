@@ -6,15 +6,15 @@ import { DataGrid } from '@mui/x-data-grid';
 import currencyDict from '../../static/assets/currencies.json';
 
 import MediaQuery from 'react-responsive'
-import Image from 'material-ui-image'
 import FlagWithProps from './FlagWithProps'
-import { pn } from "../utils/prettyNumbers";
+import { pn, amountToString } from "../utils/prettyNumbers";
 import PaymentText from './PaymentText'
 import DepthChart from './Charts/DepthChart'
+import RobotAvatar from './Robots/RobotAvatar'
 
 // Icons
-import RefreshIcon from '@mui/icons-material/Refresh';
-import { SendReceiveIcon, BuySatsCheckedIcon, BuySatsIcon, SellSatsCheckedIcon, SellSatsIcon} from "./Icons";
+import { BarChart, FormatListBulleted, Refresh } from '@mui/icons-material';
+import { BuySatsCheckedIcon, BuySatsIcon, SellSatsCheckedIcon, SellSatsIcon} from "./Icons";
 
 class BookPage extends Component {
   constructor(props) {
@@ -67,14 +67,6 @@ class BookPage extends Component {
     if(status=='Active'){return("success")}
     if(status=='Seen recently'){return("warning")}
     if(status=='Inactive'){return('error')}
-  }
-
-  amountToString = (amount,has_range,min_amount,max_amount) => {
-    if (has_range){
-      return pn(parseFloat(Number(min_amount).toPrecision(4)))+'-'+pn(parseFloat(Number(max_amount).toPrecision(4)))
-    }else{
-      return pn(parseFloat(Number(amount).toPrecision(4)))
-    }
   }
 
   dataGridLocaleText=()=> {
@@ -137,77 +129,65 @@ class BookPage extends Component {
       <DataGrid
         localeText={this.dataGridLocaleText()}
         rows={
-            this.props.bookOrders.filter(order => order.type == this.props.type || this.props.type == 2)
-            .filter(order => order.currency == this.props.currency || this.props.currency == 0)
-            .map((order) =>
-            ({id: order.id,
-              avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
-              robot: order.maker_nick,
-              robot_status: order.maker_status,
-              type: order.type ? t("Seller"): t("Buyer"),
-              amount: order.amount,
-              has_range: order.has_range,
-              min_amount: order.min_amount,
-              max_amount: order.max_amount,
-              currency: this.getCurrencyCode(order.currency),
-              payment_method: order.payment_method,
-              price: order.price,
-              premium: order.premium,
-            })
-          )}
+          this.props.bookOrders
+              .filter(order => 
+                (order.type == this.props.type || this.props.type == 2) && 
+                (order.currency == this.props.currency || this.props.currency == 0)
+              )
+        }
         loading={this.props.bookLoading}
         columns={[
           // { field: 'id', headerName: 'ID', width: 40 },
-          { field: 'robot', headerName: t("Robot"), width: 240,
-            renderCell: (params) => {return (
-              <ListItemButton style={{ cursor: "pointer" }}>
-                <ListItemAvatar>
-                <Tooltip placement="right" enterTouchDelay={0} title={t(params.row.robot_status)}>
-                  <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(params.row.robot_status)}>
-                  <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"6px", top:"1px"}}> {params.row.type == t("Buyer") ? <SendReceiveIcon sx={{transform: "scaleX(-1)",height:"18px",width:"18px"}} color="secondary"/> : <SendReceiveIcon sx={{height:"20px",width:"20px"}} color="primary"/>}</div>}>
-                    <div style={{ width: 45, height: 45 }}>
-                      <Image className='bookAvatar'
-                          disableError={true}
-                          disableSpinner={true}
-                          color='null'
-                          alt={params.row.robot}
-                          src={params.row.avatar}
-                      />
-                    </div>
-                  </Badge>
-                  </Badge>
-                </Tooltip>
-                </ListItemAvatar>
-                <ListItemText primary={params.row.robot}/>
-              </ListItemButton>
-            );
-          } },
-          { field: 'type', headerName: t("Is"), width: 60 },
+          { 
+            field: 'maker_nick', headerName: t("Robot"), width: 240,
+            renderCell: (params) => {
+              return (
+                <ListItemButton style={{ cursor: "pointer" }}>
+                  <ListItemAvatar>
+                    <RobotAvatar order={params.row} />
+                  </ListItemAvatar>
+                  <ListItemText primary={params.row.maker_nick}/>
+                </ListItemButton>
+              );
+            }
+          },
+          { field: 'type', headerName: t("Is"), width: 60, renderCell: (params) => params.row.type ? t("Seller"): t("Buyer") },
           { field: 'amount', headerName: t("Amount"), type: 'number', width: 90,
-          renderCell: (params) => {return (
-            <div style={{ cursor: "pointer" }}>{this.amountToString(params.row.amount,params.row.has_range, params.row.min_amount, params.row.max_amount)}</div>
-          )}},
+            renderCell: (params) => {
+              return (
+                <div style={{ cursor: "pointer" }}>
+                  {amountToString(params.row.amount,params.row.has_range, params.row.min_amount, params.row.max_amount)}
+                </div>
+              )
+            }
+          },
           { field: 'currency', headerName: t("Currency"), width: 100,
-          renderCell: (params) => {return (
-            <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-              {params.row.currency+" "}
-              <FlagWithProps code={params.row.currency} />
-            </div>
-          )
-          }},
+            renderCell: (params) => {
+              const currencyCode = this.getCurrencyCode(params.row.currency)
+              return (
+                <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+                  {currencyCode + " "}
+                  <FlagWithProps code={currencyCode} />
+                </div>
+              )
+            }
+          },
           { field: 'payment_method', headerName: t("Payment Method"), width: 180 ,
-          renderCell: (params) => {return (
-            <div style={{ cursor: "pointer" }}><PaymentText othersText={t("Others")} verbose={true} size={24} text={params.row.payment_method}/></div>
-          )} },
+            renderCell: (params) => {
+              return (
+              <div style={{ cursor: "pointer" }}><PaymentText othersText={t("Others")} verbose={true} size={24} text={params.row.payment_method}/></div>
+            )} 
+          },
           { field: 'price', headerName: t("Price"), type: 'number', width: 140,
-          renderCell: (params) => {return (
-            <div style={{ cursor: "pointer" }}>{pn(params.row.price) + " " +params.row.currency+ "/BTC" }</div>
-          )} },
+            renderCell: (params) => {return (
+              <div style={{ cursor: "pointer" }}>{pn(params.row.price) + " " + params.row.currency + "/BTC" }</div>
+            )} 
+          },
           { field: 'premium', headerName: t("Premium"), type: 'number', width: 100,
             renderCell: (params) => {return (
               <div style={{ cursor: "pointer" }}>{parseFloat(parseFloat(params.row.premium).toFixed(4))+"%" }</div>
-            )} },
-          ]}
+            )} 
+          }]}
 
         components={{
           NoRowsOverlay: () => (
@@ -239,80 +219,60 @@ class BookPage extends Component {
         localeText={this.dataGridLocaleText()}
         loading={this.props.bookLoading}
         rows={
-          this.props.bookOrders.filter(order => order.type == this.props.type || this.props.type == 2)
-          .filter(order => order.currency == this.props.currency || this.props.currency == 0)
-          .map((order) =>
-            ({id: order.id,
-              avatar: window.location.origin +'/static/assets/avatars/' + order.maker_nick + '.png',
-              robot: order.maker_nick,
-              robot_status: order.maker_status,
-              type: order.type ? t("Seller"): t("Buyer"),
-              amount: order.amount,
-              has_range: order.has_range,
-              min_amount: order.min_amount,
-              max_amount: order.max_amount,
-              currency: this.getCurrencyCode(order.currency),
-              payment_method: order.payment_method,
-              price: order.price,
-              premium: order.premium,
-            })
-          )}
-
+          this.props.bookOrders.filter(order => 
+            (order.type == this.props.type || this.props.type == 2) && 
+            (order.currency == this.props.currency || this.props.currency == 0)
+          )
+        }
         columns={[
           // { field: 'id', headerName: 'ID', width: 40 },
-          { field: 'robot', headerName: t("Robot"), width: 64,
-            renderCell: (params) => {return (
-              <div style={{ position: "relative", left: "-5px" }}>
-                <Tooltip placement="right" enterTouchDelay={0} title={params.row.robot+" ("+t(params.row.robot_status)+")"}>
-                  <Badge variant="dot" overlap="circular" badgeContent="" color={this.statusBadgeColor(params.row.robot_status)}>
-                  <Badge overlap="circular" anchorOrigin={{horizontal: 'right', vertical: 'bottom'}} badgeContent={<div style={{position:"relative", left:"6px", top:"1px"}}> {params.row.type == t("Buyer") ? <SendReceiveIcon sx={{transform: "scaleX(-1)",height:"18px",width:"18px"}} color="secondary"/> : <SendReceiveIcon sx={{height:"20px",width:"20px"}} color="primary"/>}</div>}>
-                    <div style={{ width: 45, height: 45 }}>
-                      <Image className='bookAvatar'
-                          disableError={true}
-                          disableSpinner={true}
-                          color={null}
-                          alt={params.row.robot}
-                          src={params.row.avatar}
-                      />
-                    </div>
-                  </Badge>
-                  </Badge>
-                </Tooltip>
-              </div>
-            );
-          } },
-          { field: 'type', headerName: t("Is"), width: 60, hide:'true'},
+          { field: 'maker_nick', headerName: t("Robot"), width: 64,
+            renderCell: (params) => {
+              return (
+                <div style={{ position: "relative", left: "-5px" }}>
+                  <RobotAvatar order={params.row} />
+                </div>
+              )
+            }
+          },
           { field: 'amount', headerName: t("Amount"), type: 'number', width: 84,
-          renderCell: (params) => {return (
-            <Tooltip placement="right" enterTouchDelay={0} title={t(params.row.type)}>
-              <div style={{ cursor: "pointer" }}>{this.amountToString(params.row.amount,params.row.has_range, params.row.min_amount, params.row.max_amount)}</div>
-            </Tooltip>
-          )} },
+            renderCell: (params) => {return (
+              <Tooltip placement="right" enterTouchDelay={0} title={t(params.row.type)}>
+                <div style={{ cursor: "pointer" }}>
+                  {amountToString(params.row.amount, params.row.has_range, params.row.min_amount, params.row.max_amount)}
+                </div>
+              </Tooltip>
+            )} 
+          },
           { field: 'currency', headerName: t("Currency"), width: 85,
-          renderCell: (params) => {return (
-            // <Tooltip placement="left" enterTouchDelay={0} title={params.row.payment_method}>
-              <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                {params.row.currency+" "}
-                <FlagWithProps code={params.row.currency} />
-              </div>
-            // </Tooltip>
-          )} },
+            renderCell: (params) => { 
+              const currencyCode = this.getCurrencyCode(params.row.currency)
+              return (
+                <div style={{ cursor: "pointer", display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+                  {currencyCode + " "}
+                  <FlagWithProps code={currencyCode} />
+                </div>
+              )
+            } 
+          },
           { field: 'payment_method', headerName: t("Payment Method"), width: 180, hide:'true'},
           { field: 'payment_icons', headerName: t("Pay"), width: 75 ,
-          renderCell: (params) => {return (
-            <div style={{position:'relative', left:'-4px', cursor: "pointer", align:"center"}}><PaymentText othersText={t("Others")} size={16} text={params.row.payment_method}/></div>
-          )} },
+            renderCell: (params) => {return (
+              <div style={{position:'relative', left:'-4px', cursor: "pointer", align:"center"}}><PaymentText othersText={t("Others")} size={16} text={params.row.payment_method}/></div>
+            )} 
+          },
           { field: 'price', headerName: t("Price"), type: 'number', width: 140, hide:'true',
-          renderCell: (params) => {return (
-            <div style={{ cursor: "pointer" }}>{pn(params.row.price) + " " +params.row.currency+ "/BTC" }</div>
-          )} },
+            renderCell: (params) => {return (
+              <div style={{ cursor: "pointer" }}>{pn(params.row.price) + " " + params.row.currency+ "/BTC" }</div>
+            )} 
+          },
           { field: 'premium', headerName: t("Premium"), type: 'number', width: 85,
             renderCell: (params) => {return (
-              <Tooltip placement="left" enterTouchDelay={0} title={pn(params.row.price) + " " +params.row.currency+ "/BTC" }>
+              <Tooltip placement="left" enterTouchDelay={0} title={pn(params.row.price) + " " + params.row.currency + "/BTC" }>
               <div style={{ cursor: "pointer" }}>{parseFloat(parseFloat(params.row.premium).toFixed(4))+"%" }</div>
               </Tooltip>
-            )} },
-          ]}
+            )} 
+          }]}
 
         components={{
           NoRowsOverlay: () => (
@@ -400,8 +360,9 @@ class BookPage extends Component {
       <div style={{ border: '1px solid rgba(81, 81, 81, 1)'}}>
         <DepthChart 
           bookLoading={this.props.bookLoading} 
-          bookOrders={this.props.bookOrders}
+          orders={this.props.bookOrders}
           lastDayPremium={this.props.lastDayPremium}
+          currency={this.props.currency}
         />
       </div>
 
@@ -457,7 +418,7 @@ class BookPage extends Component {
         <Grid className='orderBook' container spacing={1} sx={{minWidth:400}}>
 
           <IconButton sx={{position:'fixed',right:'0px', top:'30px'}} onClick={()=>this.setState({loading: true}) & this.getOrderDetails(2, 0)}>
-            <RefreshIcon/>
+            <Refresh/>
           </IconButton>
 
           <Grid item xs={6} align="right">
@@ -541,7 +502,10 @@ class BookPage extends Component {
                 <>
                   <Button variant="contained" color='primary' to='/make/' component={Link}>{t("Make Order")}</Button>
                   <Button color='inherit' style={{color: '#111111'}} onClick={this.handleClickView}>
-                    { this.state.view == 'depth' ? t("List") : t("Depth") }
+                    { this.state.view == 'depth' ? 
+                      <><FormatListBulleted /> {t("List")}</> : 
+                      <><BarChart /> {t("Chart")}</>
+                    }
                   </Button>
                 </>
                 : null
