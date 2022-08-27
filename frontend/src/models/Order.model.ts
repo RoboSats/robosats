@@ -5,7 +5,7 @@ export interface Order {
   type: number,
   currency: number,
   amount: string,
-  base_price?: number,
+  base_amount?: number,
   has_range: boolean,
   min_amount: number,
   max_amount: number,

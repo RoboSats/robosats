@@ -45,7 +45,7 @@ export default class App extends Component {
           <IconButton sx={{position:'fixed',right:'0px'}} onClick={()=>this.setState({dark:!this.state.dark})}>
             {this.state.dark ? <LightModeIcon/>:<DarkModeIcon/>}
           </IconButton>
-          {/* <UnsafeAlert className="unsafeAlert"/> */}
+          <UnsafeAlert className="unsafeAlert"/>
           <HomePage/>
         </ThemeProvider>
       </I18nextProvider>
