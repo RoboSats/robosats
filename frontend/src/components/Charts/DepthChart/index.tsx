@@ -114,8 +114,7 @@ const DepthChart: React.FC<DepthChartProps> = ({ bookLoading, orders, lastDayPre
       const datum: Datum[] = [
         { // Vertical Line
           x: xType === 'base_amount' ?  order.base_amount : order.premium, 
-          y: lastSumOrders,
-          order: order
+          y: lastSumOrders
         },
         { // Order Point
           x: xType === 'base_amount' ?  order.base_amount : order.premium,
