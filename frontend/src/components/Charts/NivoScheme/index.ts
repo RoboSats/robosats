@@ -5,6 +5,10 @@ import { Theme as MuiTheme } from './createTheme'
 
 export const getNivoScheme: (theme: MuiTheme) => NivoTheme = (theme) => {
   const lightMode = {
+    markers: {
+      lineColor: "rgb(0, 0, 0)",
+      lineStrokeWidth: 1
+    },
     axis: {
       ticks: {
         line: {
@@ -22,6 +26,10 @@ export const getNivoScheme: (theme: MuiTheme) => NivoTheme = (theme) => {
   }
 
   const darkMode = {
+    markers: {
+      lineColor: "rgb(255, 255, 255)",
+      lineStrokeWidth: 1
+    },
     axis: {
       ticks: {
         text: {

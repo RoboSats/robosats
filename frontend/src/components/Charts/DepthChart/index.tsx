@@ -177,11 +177,11 @@ const DepthChart: React.FC<DepthChartProps> = ({
         },
       ])}
       fill="none"
-      stroke="rgb(255,255,255)"
-      strokeWidth={2}
+      stroke={getNivoScheme(theme).markers?.lineColor}
+      strokeWidth={getNivoScheme(theme).markers?.lineStrokeWidth}
     />
   )
-  
+
   const generateTooltip: React.FunctionComponent<PointTooltipProps> = (pointTooltip: PointTooltipProps) => {
     const order: Order = pointTooltip.point.data.order
     return order ? (
