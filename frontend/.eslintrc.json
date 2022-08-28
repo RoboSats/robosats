@@ -10,6 +10,7 @@
     "standard-with-typescript",
     "prettier"
   ],
+  "parser": "@babel/eslint-parser",
   "overrides": [],
   "parserOptions": {
     "ecmaVersion": "latest",
