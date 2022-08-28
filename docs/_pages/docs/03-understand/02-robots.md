@@ -10,8 +10,6 @@ sidebar:
 src: "_pages/docs/03-understand/02-robots.md"
 ---
 
-{% include wip %}
-
 # **Summary**
 
 Assume the identity of a robot with a corresponding private token. Use this anonymous identity to begin making and taking orders with RoboSats! It is not recommended to use the same robot twice as this degrades end-user privacy.
@@ -32,7 +30,7 @@ Privacy is extremely important for RoboSats; however, your transactions on RoboS
 
 ## **Robot Re-Use: Not Recommended**
 
-It is strongly recommended to generate a new, random robot after each trade to enhance your privacy. Robot re-use has the potential to expose end-user information if multiple orders can be linked to a single avatar.
+It is strongly recommended to generate a new, random robot after each trade to enhance your privacy. Robot re-use has the potential to expose end-user information since multiple orders can be linked to a single avatar.
 
 The unique token associated with each avatar is not intended for robot re-use; rather, it is intended to act like a password for accessing ongoing orders and resolving active disputes. Please safely store this token or risk never accessing that particular robot avatar again.
 
@@ -48,7 +46,7 @@ A token is automatically generated for you each time the RoboSats webpage is acc
 
 Under the hood, token creation in the RoboSats homepage is the process of generating and encrypting your PGP private key with your token on the client side of the app. The end-user requests from the RoboSats node an avatar and nickname generated from your encrypted token and returns to you the corresponding robot identity. See the graphic below:
 
-![RoboSats Identity Generation Pipeine](https://learn.robosats.com/assets/images/private/usergen-pipeline.png)
+![RoboSats Identity Generation Pipeline](https://learn.robosats.com/assets/images/private/usergen-pipeline.png)
 
 ## **Communicating With Your Fellow Robots**
 
