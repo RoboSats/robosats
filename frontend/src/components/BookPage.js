@@ -356,19 +356,24 @@ class BookPage extends Component {
   mainView = () => {
     if (this.props.bookNotFound) { return this.NoOrdersFound() }
 
-    const chartComponent = 
-      <div style={{ border: '1px solid rgba(81, 81, 81, 1)'}}>
+    const components = this.state.view == 'depth' ? [
         <DepthChart 
           bookLoading={this.props.bookLoading} 
           orders={this.props.bookOrders}
           lastDayPremium={this.props.lastDayPremium}
           currency={this.props.currency}
+          setAppState={this.props.setAppState}
+          limits={this.props.limits}
+        />,
+        <DepthChart 
+          bookLoading={this.props.bookLoading} 
+          orders={this.props.bookOrders}
+          lastDayPremium={this.props.lastDayPremium}
+          currency={this.props.currency}
+          compact={true}
+          setAppState={this.props.setAppState}
+          limits={this.props.limits}
         />
-      </div>
-
-    const components = this.state.view == 'depth' ? [
-      chartComponent,
-      chartComponent
     ] : [
       this.bookListTableDesktop(),
       this.bookListTablePhone()

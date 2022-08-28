@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
-import { ResponsiveLine, Serie, Datum, PointTooltipProps, PointMouseHandler, Point } from '@nivo/line'
-import { Avatar, Box, CircularProgress, Grid, IconButton, MenuItem, Paper, Select, useTheme } from "@mui/material"
+import { ResponsiveLine, Serie, Datum, PointTooltipProps, PointMouseHandler, Point, CustomLayer } from '@nivo/line'
+import { Box, CircularProgress, Grid, IconButton, MenuItem, Paper, Select, useTheme } from "@mui/material"
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom"
@@ -18,9 +18,14 @@ interface DepthChartProps {
   orders: Order[]
   lastDayPremium: number | undefined
   currency: number
+  setAppState: (state: object) => void
+  limits: LimitList
+  compact?: boolean
 }
 
-const DepthChart: React.FC<DepthChartProps> = ({ bookLoading, orders, lastDayPremium, currency }) => {
+const DepthChart: React.FC<DepthChartProps> = ({ 
+  bookLoading, orders, lastDayPremium, currency, setAppState, limits, compact
+}) => {
   const { t } = useTranslation()
   const history = useHistory()
   const theme = useTheme()
@@ -30,16 +35,24 @@ const DepthChart: React.FC<DepthChartProps> = ({ bookLoading, orders, lastDayPre
   const [xType, setXType] = useState<string>("premium")
   const [currencyCode, setCurrencyCode] = useState<number>(1)
   const [center, setCenter] = useState<number>(0)
-  const [limits, setLimits] = useState<LimitList>()
 
   useEffect(() => {
-    fetch('/api/limits/')
-      .then((response) => response.json())
-      .then(setLimits)
+    if (Object.keys(limits).length === 0) {
+      fetch('/api/limits/')
+        .then((response) => response.json())
+        .then((data) => {
+          setAppState({ limits: data })
+        })
+    }
   }, [])
+    
 
   useEffect(() => {
-    if (limits) {
+    setCurrencyCode(currency === 0 ? 1 : currency)
+  }, [currency])
+
+  useEffect(() => {
+    if (Object.keys(limits).length > 0) {
       const enriched = orders.map((order) => {
         // We need to transform all currencies to the same base (ex. USD), we don't have the exchange rate
         // for EUR -> USD, but we know the rate of both to BTC, so we get advantage of it and apply a
@@ -49,11 +62,7 @@ const DepthChart: React.FC<DepthChartProps> = ({ bookLoading, orders, lastDayPre
       })
       setEnrichedOrders(enriched)
     }
-  }, [limits, orders])
-
-  useEffect(() => {
-    setCurrencyCode(currency === 0 ? 1 : currency)
-  }, [currency])
+  }, [limits, orders, currencyCode])
 
   useEffect(() => {
     if (enrichedOrders.length > 0) { 
@@ -154,6 +163,78 @@ const DepthChart: React.FC<DepthChartProps> = ({ bookLoading, orders, lastDayPre
     return [...serie, endingPoint]
   }
 
+  const centerLine: CustomLayer = (props) => (
+    <path
+      key="center-line"
+      d={props.lineGenerator([
+        {
+          y: 0,
+          x: props.xScale(center)
+        },
+        {
+          y: props.innerHeight,
+          x: props.xScale(center)
+        },
+      ])}
+      fill="none"
+      stroke="rgb(255,255,255)"
+      strokeWidth={2}
+    />
+  )
+  
+  const generateTooltip: React.FunctionComponent<PointTooltipProps> = (pointTooltip: PointTooltipProps) => {
+    const order: Order = pointTooltip.point.data.order
+    return order ? (
+      <Paper elevation={12} style={{ padding: 10, width: 250 }}>
+        <Grid container justifyContent="space-between">
+          <Grid item xs={3}>
+            <Grid 
+              container
+              justifyContent="center"
+              alignItems="center"
+            >
+              <RobotAvatar order={order} />
+            </Grid>
+          </Grid>
+          <Grid item xs={8}>
+            <Grid 
+              container
+              direction="column"
+              justifyContent="center"
+              alignItems="flex-start"
+            >
+              <Box>
+                {order.maker_nick}
+              </Box>
+              <Box>
+                <Grid
+                  container
+                  direction="column"
+                  justifyContent="flex-start"
+                  alignItems="flex-start"
+                >
+                  <Grid item xs={12}>
+                    {amountToString(order.amount, order.has_range, order.min_amount, order.max_amount)}
+                    {' '}
+                    {currencyDict[order.currency]}
+                  </Grid>
+                  <Grid item xs={12}>
+                    <PaymentText 
+                      othersText={t("Others")} 
+                      verbose={true} 
+                      size={20} 
+                      text={order.payment_method}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Paper>
+    ) : <></>
+  }
+
   const formatAxisX = (value: number): string => {
     if (xType === 'base_amount') {
       return value.toString()
@@ -163,60 +244,6 @@ const DepthChart: React.FC<DepthChartProps> = ({ bookLoading, orders, lastDayPre
   const formatAxisY = (value: number): string => `${value}BTC`
 
   const rangeSteps = xType === 'base_amount' ? 200 : 0.5
-  
-  const generateTooltip: React.FunctionComponent<PointTooltipProps> = (pointTooltip: PointTooltipProps) => {
-    const order: Order = pointTooltip.point.data.order
-    return order ? (
-      <Paper elevation={12} style={{ padding: 10, width: 250 }}>
-        <Grid container justifyContent="space-between" xs={12}>
-        <Grid
-          xs={3}
-          container
-          direction="column"
-          justifyContent="center"
-          alignItems="flex-start"
-        >
-            <Box>
-              <RobotAvatar order={order} />
-            </Box>
-          </Grid>
-          <Grid 
-            container 
-            xs={8}
-            direction="column"
-            justifyContent="center"
-            alignItems="flex-start"
-          >
-            <Box>
-              {order.maker_nick}
-            </Box>
-            <Box>
-              <Grid
-                container
-                direction="column"
-                justifyContent="flex-start"
-                alignItems="flex-start"
-              >
-                <Grid item xs={12}>
-                  {amountToString(order.amount, order.has_range, order.min_amount, order.max_amount)}
-                  {' '}
-                  {currencyDict[order.currency]}
-                </Grid>
-                <Grid item xs={12}>
-                  <PaymentText 
-                    othersText={t("Others")} 
-                    verbose={true} 
-                    size={12} 
-                    text={order.payment_method}
-                  />
-                </Grid>
-              </Grid>
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
-    ) : <></>
-  }
 
   const handleOnClick: PointMouseHandler = (point: Point) => {
     history.push('/order/' + point.data?.order?.id);
@@ -235,7 +262,7 @@ const DepthChart: React.FC<DepthChartProps> = ({ bookLoading, orders, lastDayPre
         alignItems="flex-start"
         style={{ position: "absolute" }}
       >
-        <Grid container xs={12} justifyContent="flex-start" alignItems="flex-start" style={{ paddingLeft: 20 }}>
+        <Grid container justifyContent="flex-start" alignItems="flex-start" style={{ paddingLeft: 20 }}>
           <Select
             value={xType}
             onChange={(e) => setXType(e.target.value)}
@@ -281,9 +308,6 @@ const DepthChart: React.FC<DepthChartProps> = ({ bookLoading, orders, lastDayPre
         <ResponsiveLine 
           data={series} 
           enableArea={true}
-          enablePoints={false}
-          enableGridX={false}
-          enableGridY={false}
           useMesh={true}
           animate={false}
           crosshairType="cross"
@@ -299,18 +323,20 @@ const DepthChart: React.FC<DepthChartProps> = ({ bookLoading, orders, lastDayPre
           }}
           axisBottom={{
             tickSize: 5,
+            tickRotation: xType === 'base_amount' && compact ? 45 : 0,
             format: formatAxisX
           }}
-          margin={{ left: 65, right: 60, bottom: 25, top: 10 }}
+          margin={{ left: 65, right: 60, bottom: compact ? 36 : 25, top: 10 }}
           xFormat={(value) => Number(value).toFixed(0)}
           lineWidth={3}
           theme={getNivoScheme(theme)}
-          colors={['rgb(136, 252, 102)', 'rgb(255, 108, 57)']}
+          colors={[theme.palette.secondary.main,theme.palette.primary.main]}
           xScale={{
             type: 'linear',
             min: center - xRange,
             max: center + xRange
           }}
+          layers={['axes', 'areas', 'crosshair', 'lines', centerLine, 'slices', 'mesh']}
         />
       </Grid>
     </Grid>
