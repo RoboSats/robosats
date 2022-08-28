@@ -5,7 +5,7 @@ export const getCookie = (name) => {
     for (let i = 0; i < cookies.length; i++) {
       const cookie = cookies[i].trim();
       // Does this cookie string begin with the name we want?
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+      if (cookie.substring(0, name.length + 1) === name + '=') {
         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
         break;
       }
@@ -14,10 +14,10 @@ export const getCookie = (name) => {
   return cookieValue;
 };
 
-export const writeCookie = (key,value) => {
-  document.cookie=`${key}=${value};path=/;SameSite=Strict`;
-}
+export const writeCookie = (key, value) => {
+  document.cookie = `${key}=${value};path=/;SameSite=Strict`;
+};
 
 export const deleteCookie = (name) => {
-  document.cookie = `${name}= ; expires = Thu, 01 Jan 1970 00:00:00 GMT`
-}
+  document.cookie = `${name}= ; expires = Thu, 01 Jan 1970 00:00:00 GMT`;
+};
