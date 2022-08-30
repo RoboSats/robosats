@@ -9,3 +9,15 @@ export const pn = (value?: number | null): string | undefined => {
 
   return parts.join(".");
 };
+
+export const amountToString: (amount: string, has_range: boolean , min_amount: number, max_amount: number) => string = 
+  (amount, has_range, min_amount, max_amount) => {
+  if (has_range){
+    return pn(parseFloat(Number(min_amount).toPrecision(4))) + 
+           '-' + 
+           pn(parseFloat(Number(max_amount).toPrecision(4)))
+  }
+  return pn(parseFloat(Number(amount).toPrecision(4))) || ""
+}
+
+export default pn
