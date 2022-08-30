@@ -12,7 +12,7 @@ import {
   AccordionDetails,
   AccordionSummary,
 } from "@mui/material"
-import Image from 'material-ui-image'
+import SmoothImage from 'react-smooth-image'
 import MediaQuery from 'react-responsive'
 
 // Icons
@@ -54,11 +54,13 @@ const InfoDialog = ({
             </Typography>
           </Grid>
           <Grid item xs={4}>
-            <Image className='newAvatar'
-              disableError={true}
-              cover={true}
-              color='null'
+            <SmoothImage
               src={window.location.origin +'/static/assets/images/v0.1.2-04.png'}
+              imageStyles={{borderRadius: "50%",
+                border: "2px solid #555", 
+                filter: "drop-shadow(1px 1px 1px #000000)",
+                height: "170px",
+                width: "170px"}}
             />
           </Grid>
         </Grid>

@@ -6,13 +6,11 @@ import Countdown, { zeroPad} from 'react-countdown';
 import Chat from "./EncryptedChat"
 import TradeSummary from "./TradeSummary"
 import MediaQuery from 'react-responsive'
-import QrReader from 'react-qr-reader'
 import { copyToClipboard } from "../utils/clipboard";
 
 // Icons
 import PercentIcon from '@mui/icons-material/Percent';
 import BookIcon from '@mui/icons-material/Book';
-import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import SendIcon from '@mui/icons-material/Send';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
@@ -46,7 +44,6 @@ class TradeBox extends Component {
       badInvoice: false,
       badAddress: false,
       badStatement: false,
-      qrscanner: false,
     }
   }
 
@@ -616,9 +613,6 @@ class TradeBox extends Component {
     console.error(err)
   }
 
-  handleQRbutton = () => {
-    this.setState({qrscanner: !this.state.qrscanner});
-  }
   compatibleWalletsButton = () =>{
     const { t } = this.props;
 
@@ -698,22 +692,11 @@ class TradeBox extends Component {
                       }}
                       multiline
                       minRows={4}
-                      maxRows={this.state.qrscanner ? 4 : 8}
+                      maxRows={8}
                       onChange={this.handleInputInvoiceChanged}
                   />
                 </Grid>
-                {this.state.qrscanner ?
                 <Grid item xs={12} align="center">
-                  <QrReader
-                      delay={300}
-                      onError={this.handleError}
-                      onScan={this.handleScan}
-                      style={{ width: '75%' }}
-                    />
-                  </Grid>
-                  : null }
-                <Grid item xs={12} align="center">
-                  <IconButton><QrCodeScannerIcon onClick={this.handleQRbutton}/></IconButton>
                   <Button onClick={this.handleClickSubmitInvoiceButton} variant='contained' color='primary'>{t("Submit")}</Button>
                 </Grid>
               </Grid>

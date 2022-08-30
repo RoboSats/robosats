@@ -87,14 +87,6 @@ input[type=number] {
   left: -16px;
 }
 
-.newAvatar {
-  border-radius: 50%; 
-  border: 2px solid #555; 
-  filter: drop-shadow(1px 1px 1px #000000);
-  height: 200px;
-  width: 200px;
-}
-
 .profileAvatar {
   border: 0.5px solid #555; 
   filter: drop-shadow(0.5px 0.5px 0.5px #000000);
@@ -126,13 +118,6 @@ input[type=number] {
   border-radius: 50%; 
   border: 2.4px solid #1976d2; 
   box-shadow: inset 0px 0px 35px rgb(255, 255, 255);
-}
-
-.bookAvatar {
-  border-radius: 50%; 
-  transform: scaleX(-1);
-  border: 0.3px solid #555; 
-  filter: drop-shadow(0.5px 0.5px 0.5px #000000);
 }
 
 .MuiButton-textInherit {color : '#111111';}

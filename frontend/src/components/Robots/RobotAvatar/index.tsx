@@ -1,6 +1,6 @@
 import React from "react"
 import { Badge, Tooltip } from "@mui/material";
-import Image from 'material-ui-image'
+import SmoothImage from 'react-smooth-image'
 
 import Order from "../../../models/Order.model"
 import { useTranslation } from "react-i18next";
@@ -44,12 +44,12 @@ const RobotAvatar: React.FC<DepthChartProps> = ({ order }) => {
           badgeContent={statusBadge}
         >
           <div style={{ width: 45, height: 45 }}>
-            <Image className='bookAvatar'
-                disableError={true}
-                disableSpinner={true}
-                color='null'
-                alt={order.maker_nick}
-                src={avatarSrc}
+            <SmoothImage
+              src={avatarSrc}
+              imageStyles={{borderRadius: "50%", 
+                transform: "scaleX(-1)",
+                border: "0.3px solid #555", 
+                filter: "dropShadow(0.5px 0.5px 0.5px #000000)"}}
             />
           </div>
         </Badge>
