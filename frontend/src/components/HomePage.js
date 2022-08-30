@@ -26,6 +26,8 @@ export default class HomePage extends Component {
         lastOrderId: null,
         earnedRewards: 0,
         referralCode:'',
+        lastDayPremium: 0,
+        limits: {}
       }
     }
 

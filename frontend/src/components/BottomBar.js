@@ -70,7 +70,8 @@ class BottomBar extends Component {
                                     activeOrderId: data.active_order_id ? data.active_order_id : null,
                                     lastOrderId: data.last_order_id ? data.last_order_id : null,
                                     referralCode: data.referral_code,
-                                    earnedRewards: data.earned_rewards,}));
+                                    earnedRewards: data.earned_rewards,
+                                    lastDayPremium: data.last_day_nonkyc_btc_premium}));
       }
 
     handleClickOpenStatsForNerds = () => {

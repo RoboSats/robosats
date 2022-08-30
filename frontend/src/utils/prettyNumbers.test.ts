@@ -1,4 +1,4 @@
-import { pn } from "./prettyNumbers";
+import { pn, amountToString } from "./prettyNumbers";
 
 describe("prettyNumbers", () => {
   test("pn()", () => {
@@ -20,6 +20,25 @@ describe("prettyNumbers", () => {
       {input: 100000.00, output: "100,000"},
     ].forEach((it) => {
       const response = pn(it.input);
+      expect(response).toBe(it.output);
+    });
+  });
+})
+
+describe("amountToString", () => {
+  test("pn()", () => {
+    [
+      {input: null, output: "NaN"},
+      {input: undefined, output: "NaN"},
+      {input: ["", false, 50, 150] , output: "0"},
+      {input: ["100.00", false, 50, 150] , output: "100"},
+      {input: ["100.00", true, undefined, undefined] , output: "NaN-NaN"},
+      {input: ["100.00", true, undefined, 150] , output: "NaN-150"},
+      {input: ["100.00", true, 50, undefined] , output: "50-NaN"},
+      {input: ["100.00", true, 50, 150] , output: "50-150"},
+    ].forEach((it) => {
+      const params: any[] = it.input || []
+      const response = amountToString(params[0],params[1],params[2],params[3]);
       expect(response).toBe(it.output);
     });
   });
