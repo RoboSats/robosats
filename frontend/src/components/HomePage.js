@@ -40,9 +40,11 @@ export default class HomePage extends Component {
     }
 
     render() {
+        const fontSize = this.props.theme.typography.fontSize;
+        const fontSizeFactor = fontSize / 14; // default fontSize is 14
         return (
               <Router >
-                  <div className='appCenter'>
+                  <div className='appCenter' style={{height: window.innerHeight - 40*fontSizeFactor - 20, overflow:'auto'}}>
                     <Switch>
                         <Route exact path='/' render={(props) => <UserGenPage {...props} {...this.state} {...this.props} setAppState={this.setAppState}/>}/>
                         <Route path='/ref/:refCode' render={(props) => <UserGenPage {...props} {...this.state} {...this.props} setAppState={this.setAppState}/>}/>
@@ -51,8 +53,8 @@ export default class HomePage extends Component {
                         <Route path="/order/:orderId" render={(props) => <OrderPage {...props} {...this.state} {...this.props} setAppState={this.setAppState}/>}/>
                     </Switch>
                   </div>
-                  <div className='bottomBar'>
-                    <BottomBar redirectTo={this.redirectTo} {...this.state} setAppState={this.setAppState} />
+                  <div className='bottomBar' style={{height: `${40*fontSizeFactor}px`, width: window.innerWidth}}>
+                    <BottomBar redirectTo={this.redirectTo} {...this.state} {...this.props} setAppState={this.setAppState} />
                   </div>
               </Router>
           );
