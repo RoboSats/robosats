@@ -18,7 +18,7 @@ const Root = styled('div')(
   color: ${
     theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,.85)'
   };
-  font-size: 14px;
+  font-size: ${14/16}em;
 `,
 );
 
@@ -26,21 +26,20 @@ const Label = styled('label')(
     ({ theme , error}) => `
   color: ${theme.palette.mode === 'dark' ? (error? '#f44336': '#cfcfcf') :  (error? '#dd0000':'#717171')};
   align: center;
-  padding: 0 0 4px;
   line-height: 1.5; f44336
   display: block;
-  font-size: 13px;
+  font-size: ${13/16}em;
 `,
 );
 
 const InputWrapper = styled('div')(
   ({ theme , error}) => `
-  width: 244px;
-  min-height: 44px;
-  max-height: 124px;
+  width: ${244/16}em;
+  min-height: ${44/16}em;
+  max-height: ${124/16}em;
   border: 1px solid ${theme.palette.mode === 'dark' ? (error? '#f44336': '#434343') : (error? '#dd0000':'#c4c4c4')};
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
-  border-radius: 4px;
+  border-radius: ${4/16}em;
   padding: 1px;
   display: flex;
   flex-wrap: wrap;
@@ -59,17 +58,17 @@ const InputWrapper = styled('div')(
     color: ${
       theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,.85)'
     };
-    height: 30px;
+    height: ;${30/16}em
     box-sizing: border-box;
-    padding: 4px 6px;
+    padding: ${4/16}em ${6/16}em;
     width: 0;
-    min-width: 30px;
-    font-size: 15px;
+    min-width: ${30/16}em;
+    font-size: ${15/16}em;
     flex-grow: 1;
     border: 0;
     margin: 0;
     outline: 0;
-    max-height: 124px;
+    max-height: ${124/16}em;
   }
 `,
 );
@@ -78,8 +77,8 @@ function Tag(props) {
   const { label, icon, onDelete, ...other } = props;
   return (
     <div {...other}>
-        <div style={{position:'relative',left:'-5px',top:'4px'}}>
-          <PaymentIcon width={22} height={22} icon={icon}/>
+        <div style={{position:'relative',left: `-${5/16}em`,top: `${4/16}em`}}>
+          <PaymentIcon width={`22em`} height={`22em`} icon={icon}/>
         </div>
         <span style={{position:'relative',left:'2px'}}>{label}</span>
       <CloseIcon onClick={onDelete} />
@@ -97,16 +96,16 @@ const StyledTag = styled(Tag)(
   ({ theme }) => `
   display: flex;
   align-items: center;
-  height: 34px;
-  margin: 2px;
-  line-height: 22px;
+  height: ${34/16}em;
+  margin: ${2/16}em;
+  line-height: ${22/16}em;
   background-color: ${
     theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'
   };
   border: 1px solid ${theme.palette.mode === 'dark' ? '#303030' : '#e8e8e8'};
   border-radius: 2px;
   box-sizing: content-box;
-  padding: 0 4px 0 10px;
+  padding: 0 ${4/16}em 0 ${10/16}em;
   outline: 0;
   overflow: hidden;
 
@@ -119,13 +118,13 @@ const StyledTag = styled(Tag)(
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    font-size: 15px;
+    font-size: ${15/16}em;
   }
 
   & svg {
-    font-size: 15px;
+    font-size: ${15/16}em;
     cursor: pointer;
-    padding: 4px;
+    padding: ${4/16}em;
   }
 `,
 );
@@ -134,31 +133,31 @@ const ListHeader = styled('span')(
     ({ theme }) => `
   color: ${theme.palette.mode === 'dark' ? '#90caf9' : '#1976d2'};
   align: left;
-  line-height:10px;
-  max-height: 10px;
+  line-height: ${10/16}em;
+  max-height: ${10/16}em;
   display: inline-block;
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#ffffff'};
-  font-size: 12px;
+  font-size: ${12/16}em;
   pointer-events: none;
 `,
 );
 
 const Listbox = styled('ul')(
   ({ theme }) => `
-  width: 244px;
+  width: ${244/16}em;
   margin: 2px 0 0;
   padding: 0;
   position: absolute;
   list-style: none;
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
   overflow: auto;
-  max-height: 250px;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-height: ${250/16}em;
+  border-radius: ${4/16}em;
+  box-shadow: 0 ${2/16}em ${8/16}em rgba(0, 0, 0, 0.15);
   z-index: 999;
 
   & li {
-    padding: 5px 12px;
+    padding: ${5/16}em ${12/16}em;
     display: flex;
 
     & span {
@@ -205,7 +204,7 @@ export default function AutocompletePayments(props) {
     focused="true",
     setAnchorEl,
   } = useAutocomplete({
-    sx: {width:'200px', align:'left'},
+    sx: {width: `${200/16}em`, align:'left'},
     id: 'payment-methods',
     multiple: true,
     options: props.optionsType=="fiat" ? paymentMethods : swapDestinations,
@@ -237,7 +236,7 @@ export default function AutocompletePayments(props) {
 
   return (
     <Root>
-      <div style={{height:'5px'}}></div>
+      <div style={{height: `${5/16}em`}} />
       <Tooltip placement="top" enterTouchDelay={300} enterDelay={700} enterNextDelay={2000} title={props.tooltipTitle}>
         <div {...getRootProps()} >
           <Label {...getInputLabelProps()} error={props.error ? "error" : null}> {props.label}</Label>
@@ -251,23 +250,23 @@ export default function AutocompletePayments(props) {
       </Tooltip>
       {groupedOptions.length > 0 ? (
         <Listbox {...getListboxProps()}>
-            <div style={{position:'fixed', minHeight:'20px',  marginLeft: 120-props.listHeaderText.length*3, marginTop: '-13px'}}>
+            <div style={{position:'fixed', minHeight: `${20/16}em`,  marginLeft: `${(120-3*props.listHeaderText.length)/16}em`, marginTop: `-${13/16}em`}}>
                 <ListHeader ><i>{props.listHeaderText+" "} </i> </ListHeader>
             </div>
           {groupedOptions.map((option, index) => (
             <li key={option.name} {...getOptionProps({ option, index })}>
               <Button fullWidth={true} color='inherit' size="small" sx={{textTransform: "none"}} style={{justifyContent: "flex-start"}}>
-                  <div style={{position:'relative', right: '4px', top:'4px'}}>
-                    <AddIcon style={{color : '#1976d2'}} sx={{width:18,height:18}} />
+                  <div style={{position:'relative', right: `${4/16}em`, top: `${4/16}em`}}>
+                    <AddIcon style={{color : '#1976d2'}} sx={{width: `${18/24}em`, height: `${18/24}em`}} />
                   </div>
                   {t(option.name)}
               </Button>
-              <div style={{position:'relative', top: '5px'}}><CheckIcon/></div>
+              <div style={{position:'relative', top: `${5/16}em`}}><CheckIcon/></div>
             </li>
           ))}
           {val != null?
               (val.length > 2 ?
-                  <Button size="small" fullWidth={true} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:18,height:18}}/>{props.addNewButtonText}</Button>
+                  <Button size="small" fullWidth={true} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width: `${18/16}em`, height: `${18/16}em`}}/>{props.addNewButtonText}</Button>
               :null)
             :null}
         </Listbox>
@@ -275,7 +274,7 @@ export default function AutocompletePayments(props) {
       //Here goes what happens if there is no groupedOptions
       (getInputProps().value.length > 0 ?
         <Listbox {...getListboxProps()}>
-          <Button fullWidth={true} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width:20,height:20}}/>{props.addNewButtonText}</Button>
+          <Button fullWidth={true} onClick={() => handleAddNew(getInputProps())}><DashboardCustomizeIcon sx={{width: `${20/16}em`, height: `${20/16}em`}}/>{props.addNewButtonText}</Button>
         </Listbox>
         :null)
       }

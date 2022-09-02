@@ -302,9 +302,9 @@ class MakerPage extends Component {
     StandardMakerOptions = () => {
         const { t } = this.props;
         return(
-            <Paper elevation={12} style={{ padding: 8, width:'260px', align:'center'}}>
+            <Paper elevation={12} style={{ padding: 8, width: `${260/16}em`, align:'center'}}>
             <Grid item xs={12} align="center">
-                <div style={{position:'relative', left:'5px'}}>
+                <div style={{position:'relative'}}>
                 <FormControl component="fieldset">
                     <FormHelperText sx={{textAlign:"center"}}>
                         {t("Buy or Sell Bitcoin?")}
@@ -313,13 +313,13 @@ class MakerPage extends Component {
                     <RadioGroup row value={this.state.type} onChange={this.handleTypeChange}>
                         <FormControlLabel
                             value={0}
-                            control={<Radio icon={<BuySatsIcon sx={{width:"30px",height:"30px"}} color="text.secondary"/>} checkedIcon={<BuySatsCheckedIcon sx={{width:"30px",height:"30px"}} color="primary"/>}/>}
+                            control={<Radio icon={<BuySatsIcon sx={{width: `${30/24}em`, height: `${30/24}em`}} color="text.secondary"/>} checkedIcon={<BuySatsCheckedIcon sx={{width: `${30/24}em`, height: `${30/24}em`}} color="primary"/>}/>}
                             label={this.state.type == 0 ? <Typography color="primary"><b>{t("Buy")}</b></Typography>: <Typography color="text.secondary">{t("Buy")}</Typography>}
                             labelPlacement="end"
                         />
                         <FormControlLabel
                             value={1}
-                            control={<Radio color="secondary" icon={<SellSatsIcon sx={{width:"30px",height:"30px"}} color="text.secondary"/>} checkedIcon={<SellSatsCheckedIcon sx={{width:"30px",height:"30px"}} color="secondary"/>}/>}
+                            control={<Radio color="secondary" icon={<SellSatsIcon sx={{width: `${30/24}em`, height: `${30/24}em`}} color="text.secondary"/>} checkedIcon={<SellSatsCheckedIcon sx={{width: `${30/24}em`, height: `${30/24}em`}} color="secondary"/>}/>}
                             label={this.state.type == 1 ? <Typography color="secondary"><b>{t("Sell")}</b></Typography>: <Typography color="text.secondary">{t("Sell")}</Typography>}
                             labelPlacement="end"
                         />
@@ -329,7 +329,7 @@ class MakerPage extends Component {
             </Grid>
 
             <Grid alignItems="stretch" style={{ display: "flex" }}>
-                    <div style={{maxWidth:150}}>
+                    <div style={{}}>
                     <Tooltip placement="top" enterTouchDelay={500} enterDelay={700} enterNextDelay={2000} title={t("Amount of fiat to exchange for bitcoin")}>
                         <TextField
                             disabled = {this.state.enableAmountRange}
@@ -351,7 +351,7 @@ class MakerPage extends Component {
                         </div>
                         <div >
                             <Select
-                                sx={{width:'120px'}}
+                                sx={{width: `${120/16}em`}}
                                 required={true}
                                 defaultValue={this.defaultCurrency}
                                 inputProps={{
@@ -411,7 +411,7 @@ class MakerPage extends Component {
                 <Grid item xs={12} align="center">
                     <div style={{display: this.state.is_explicit ? '':'none'}}>
                     <TextField
-                            sx={{width:240}}
+                            sx={{width: `${240/16}em`}}
                             label={t("Satoshis")}
                             error={this.state.badSatoshis ? true : false}
                             helperText={this.state.badSatoshis}
@@ -428,7 +428,7 @@ class MakerPage extends Component {
                     </div>
                     <div style={{display: this.state.is_explicit ? 'none':''}}>
                         <TextField
-                                sx={{width:240}}
+                                sx={{width: `${240/16}em`}}
                                 error={this.state.badPremium}
                                 helperText={this.state.badPremium}
                                 label={t("Premium over Market (%)")}
@@ -527,8 +527,8 @@ class MakerPage extends Component {
     rangeText =()=> {
         const { t } = this.props;
         return (
-            <div style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
-                <span style={{width: t("From").length*8+2, textAlign:"left"}}>{t("From")}</span>
+            <div style={{display:'flex', alignItems:'center', flexWrap:'nowrap', justifyContent:'space-around'}}>
+                <span style={{ textAlign:"left" }}>{t("From ")}</span>
                 <TextField
                     variant="standard"
                     type="number"
@@ -536,9 +536,9 @@ class MakerPage extends Component {
                     value={this.state.minAmount}
                     onChange={this.handleMinAmountChange}
                     error={this.minAmountError()}
-                    sx={{width: this.state.minAmount.toString().length * 9, maxWidth: 40}}
+                    sx={{ px: "1em" }}
                   />
-                <span style={{width: t("to").length*8, textAlign:"center"}}>{t("to")}</span>
+                <span style={{ textAlign:"center" }}>{t("to")}</span>
                 <TextField
                     variant="standard"
                     size="small"
@@ -546,9 +546,9 @@ class MakerPage extends Component {
                     value={this.state.maxAmount}
                     error={this.maxAmountError()}
                     onChange={this.handleMaxAmountChange}
-                    sx={{width: this.state.maxAmount.toString().length * 9, maxWidth: 50}}
+                    sx={{ px: "1em" }}
                   />
-                <span style={{width: this.state.currencyCode.length*9+3, textAlign:"right"}}>{this.state.currencyCode}</span>
+                <span style={{ textAlign:"right" }}>{this.state.currencyCode}</span>
             </div>
             )
 
@@ -557,14 +557,14 @@ class MakerPage extends Component {
     AdvancedMakerOptions = () => {
         const { t } = this.props;
         return(
-            <Paper elevation={12} style={{ padding: 8, width:'280px', align:'center'}}>
+            <Paper elevation={12} style={{ padding: 8, width: `${280/16}em`, align:'center'}}>
 
             <Grid container spacing={1}>
 
             <Grid item xs={12} align="center">
                 <FormControl align="center">
                     <Tooltip enterTouchDelay={0} placement="top" align="center" title={t("Let the taker chose an amount within the range")}>
-                        <FormHelperText align="center" style={{display:'flex',alignItems:'center', flexWrap:'wrap'}}>
+                        <FormHelperText align="center" style={{display:'flex',alignItems:'center', flexWrap:'nowrap'}}>
                             <Checkbox onChange={(e)=>this.setState({enableAmountRange:e.target.checked, is_explicit: false}) & this.recalcBounds()}/>
                             {this.state.enableAmountRange & this.state.minAmount != null? this.rangeText() : t("Enable Amount Range")}
                         </FormHelperText>
@@ -575,7 +575,7 @@ class MakerPage extends Component {
                     <div style={{ display: this.state.loadingLimits == false ? '':'none'}}>
                         <RangeSlider
                             disableSwap={true}
-                            sx={{width:200, align:"center"}}
+                            sx={{width: `${200/16}em`, align:"center"}}
                             disabled={!this.state.enableAmountRange || this.state.loadingLimits}
                             value={[Number(this.state.minAmount), Number(this.state.maxAmount)]}
                             step={(this.getMaxAmount()-this.getMinAmount())/5000}
@@ -596,7 +596,7 @@ class MakerPage extends Component {
                 </Grid>
 
                 <Grid item xs={12} align="center">
-                    <Accordion defaultExpanded={true} elevation={0} sx={{width:'280px', position:'relative', left:'-8px'}}>
+                    <Accordion defaultExpanded={true} elevation={0} sx={{ position:'relative', left:'-8px'}}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon color="primary"/>}>
                             <Typography sx={{flexGrow: 1, textAlign: "center"}} color="text.secondary">{t("Expiry Timers")}</Typography>
                         </AccordionSummary>
@@ -605,7 +605,7 @@ class MakerPage extends Component {
                             <Grid item xs={12} align="center">
                                 <LocalizationProvider dateAdapter={DateFnsUtils}>
                                     <TimePicker
-                                        sx={{width:210, align:"center"}}
+                                        sx={{ align:"center"}}
                                         ampm={false}
                                         openTo="hours"
                                         views={['hours', 'minutes']}
@@ -634,7 +634,7 @@ class MakerPage extends Component {
                             <Grid item xs={12} align="center">
                                 <LocalizationProvider dateAdapter={DateFnsUtils}>
                                     <TimePicker
-                                        sx={{width:210, align:"center"}}
+                                        sx={{ align:"center" }}
                                         ampm={false}
                                         openTo="hours"
                                         views={['hours', 'minutes']}
@@ -668,11 +668,11 @@ class MakerPage extends Component {
                     <FormControl align="center">
                     <Tooltip enterDelay={800} enterTouchDelay={0} placement="top" title={t("Set the skin-in-the-game, increase for higher safety assurance")}>
                             <FormHelperText align="center" sx={{display:'flex',flexWrap:'wrap', transform: 'translate(20%, 0)'}}>
-                                {t("Fidelity Bond Size")} <LockIcon sx={{height:20,width:20}}/>
+                                {t("Fidelity Bond Size")} <LockIcon sx={{height: `${20/24}em` ,width: `${20/24}em`}}/>
                             </FormHelperText>
                         </Tooltip>
                         <Slider
-                            sx={{width:220, align:"center"}}
+                            sx={{width: `${220/16}em`, align:"center"}}
                             aria-label="Bond Size (%)"
                             defaultValue={3}
                             valueLabelDisplay="auto"
@@ -711,7 +711,7 @@ class MakerPage extends Component {
     makeOrderBox=()=>{
         const { t } = this.props;
         return(
-            <Box sx={{width: this.state.tabValue==1? '270px':'252px'}}>
+            <Box sx={{width: this.state.tabValue==1? `${270/16}em`: `${252/16}em`}}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider', position:'relative',left:'5px'}}>
                         <Tabs value={this.state.tabValue} variant="fullWidth" >
                             <Tab label={t("Order")} {...this.a11yProps(0)} onClick={() => this.setState({tabValue:0})}/>
@@ -733,7 +733,7 @@ class MakerPage extends Component {
   render() {
     const { t } = this.props;
     return (
-        <Grid container align="center" spacing={1} sx={{minWidth:380}}>
+        <Grid container align="center" spacing={1} sx={{minWidth: "60%"}}>
             {getCookie("robot_token") ?
                 <StoreTokenDialog
                     open={this.state.openStoreToken}
