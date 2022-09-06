@@ -13,6 +13,7 @@ export interface Order {
   is_explicit: false;
   premium: number;
   satoshis: number;
+  satoshis_now: number;
   bondless_taker: boolean;
   maker: number;
   escrow_duration: number;

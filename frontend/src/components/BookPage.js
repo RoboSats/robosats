@@ -246,9 +246,10 @@ class BookPage extends Component {
               type: 'number',
               width: 140,
               renderCell: (params) => {
+                const currencyCode = this.getCurrencyCode(params.row.currency);
                 return (
                   <div style={{ cursor: 'pointer' }}>
-                    {pn(params.row.price) + ' ' + params.row.currency + '/BTC'}
+                    {pn(params.row.price) + ' ' + currencyCode + '/BTC'}
                   </div>
                 );
               },
