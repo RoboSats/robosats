@@ -1,0 +1,26 @@
+{
+    "coordinator_1": {
+        "alias":"Maximalist",
+        "description": "Maximalist Robots. P2P for freedom. No trade limits, low fees.",
+        "cover_letter": "Hi! I am Mike. I'm a freedom activist based in TorLand. I have been running LN infrastructure since early 2019, long time FOSS contributor....",
+        "contact_methods": {
+            "email":"maximalist@bitcoin.p2p",
+            "telegram":"maximalist_robot",
+            ".....":"...."
+            },      
+        "color": "#FFFFFF",
+        "mainnet_onion":"robomaxim......onion",
+        "testnet_onion": null,
+        "mainnet_ln_nodes_pubkeys": [
+            "03e96as....",
+            "02aaecc...."
+            ],
+        "testnet_ln_nodes_pubkeys": [
+            "0284ff2...."
+            ],
+        "logo_svg_200x200": "<svg xmlns=\"http:\/\/www.w3.org\/2000\/svg\" version=\"1.1\" width=\"120\" height=\"120\"> <rect x=\"14\" y=\"23\" width=\"200\" height=\"50\" fill=\"lime\" stroke=\"black\" \/> <\/svg>"
+    },
+    "coordinator_2": {
+        "...":"..."   
+    }
+  }
