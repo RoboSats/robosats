@@ -153,11 +153,11 @@ input[type=number] {
     background: rgba(0, 0, 0, 0.5);
   }
   
+.MuiDataGrid-columnHeaders + div {
+  width: auto !important;
+}
+    
 @media (max-width: 929px) {
-  .MuiDataGrid-columnHeaders + div {
-    width: auto !important;
-  }
-
   .appCenter:has(>div.MuiGrid-root:first-child, >div.MuiBox-root:first-child) {
     overflow-y: scroll;
     margin-top: 12px;
