@@ -264,6 +264,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       >
         <Grid container justifyContent="flex-start" alignItems="flex-start" style={{ paddingLeft: 20 }}>
           <Select
+            variant="standard"
             value={xType}
             onChange={(e) => setXType(e.target.value)}
           > 

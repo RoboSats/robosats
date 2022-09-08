@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withTranslation } from "react-i18next";
 import { Button , Tooltip, Grid, Typography, TextField, ButtonGroup, CircularProgress, IconButton} from "@mui/material"
 import { Link } from 'react-router-dom'
-import Image from 'material-ui-image'
+import SmoothImage from 'react-smooth-image'
 import { InfoDialog } from './Dialogs'
 
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -187,7 +187,7 @@ class UserGenPage extends Component {
           <div className='clickTrough'/>
         </Grid>
         <Grid item xs={12} align="center" sx={{width:370, height:260}}>
-          {!this.state.loadingRobot ?
+          {!this.state.loadingRobot && this.state.avatarUrl ?
             <div>
               <Grid item xs={12} align="center">
                 <Typography component="h5" variant="h5">
@@ -201,15 +201,17 @@ class UserGenPage extends Component {
               <Grid item xs={12} align="center">
               <Tooltip enterTouchDelay={0} title={t("This is your trading avatar")}>
                 <div style={{ maxWidth: 200, maxHeight: 200 }}>
-                  <Image 
-                    className='newAvatar'
-                    disableError={true}
-                    cover={true}
-                    color='null'
-                    src={getCookie("sessionid") ? this.state.avatarUrl || "" : ""}
+                  <SmoothImage
+                    src={this.state.avatarUrl}
+                    imageStyles={{borderRadius: "50%",
+                      border: "2px solid #555", 
+                      filter: "drop-shadow(1px 1px 1px #000000)",
+                      height: "195px",
+                      width: "200px"}}
                   />
                 </div>
-                </Tooltip><br/>
+                </Tooltip>
+                <br/>
               </Grid>
             </div>
             : <CircularProgress sx={{position: 'relative', top: 100, }}/>}
