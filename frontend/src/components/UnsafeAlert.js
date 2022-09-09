@@ -20,7 +20,7 @@ class UnsafeAlert extends Component {
 
   isSelfhosted(){
     var http = new XMLHttpRequest();
-    http.open('HEAD', `http://${this.getHost()}/selfhosted`, false);
+    http.open('HEAD', `${location.protocol}//${this.getHost()}/selfhosted`, false);
     http.send();
     return http.status!=404;
   }
