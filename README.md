@@ -59,6 +59,11 @@ Check out our [Contribution Guide](https://learn.robosats.com/contribute/) to fi
 ### ⚡Developer Rewards ⚡
 Check out the [Developer Rewards Panel](https://github.com/users/Reckless-Satoshi/projects/2/views/5) for tasks paid in Sats.
 
+## Sponsors 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/docs/assets/images/sponsors/hrf.png" width="300px">
+</div>
+
 ## Inspiration
 The concept of a simple custody-minimized lightning exchange with hold invoices is inspired in [P2PLNBOT](https://github.com/grunch/p2plnbot) by @grunch
 

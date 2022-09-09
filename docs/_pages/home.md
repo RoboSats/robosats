@@ -57,3 +57,6 @@ feature_row:
     btn_label: "See License" 
 ---
 {% include feature_row %}
+
+#### Sponsors
+<img src="/assets/images/sponsors/hrf.png" width="300px"/>
