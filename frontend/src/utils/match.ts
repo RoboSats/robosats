@@ -4,4 +4,4 @@ export const median = (arr: number[]) => {
   return arr.length % 2 !== 0 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
 };
 
-export default median
+export default median;
