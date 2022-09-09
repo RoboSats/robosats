@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { withTranslation } from "react-i18next";
 import { InputAdornment, LinearProgress, Dialog, IconButton, DialogActions, DialogContent, DialogContentText, DialogTitle, Accordion, AccordionDetails, AccordionSummary, Checkbox, Slider, Box, Tab, Tabs, SliderThumb, Tooltip, Paper, Button , Grid, Typography, TextField, Select, FormHelperText, MenuItem, FormControl, Radio, FormControlLabel, RadioGroup} from "@mui/material"
 import RangeSlider from "./RangeSlider";
-import { LocalizationProvider, TimePicker}  from '@mui/lab';
+import { LocalizationProvider, TimePicker}  from '@mui/x-date-pickers';
 import DateFnsUtils from "@date-io/date-fns";
 import { Link as LinkRouter } from 'react-router-dom'
 import { StoreTokenDialog, NoRobotDialog } from "./Dialogs";
@@ -596,7 +596,7 @@ class MakerPage extends Component {
                 </Grid>
 
                 <Grid item xs={12} align="center">
-                    <Accordion defaultExpanded={true} elevation={0} sx={{ position:'relative', left:'-8px'}}>
+                    <Accordion defaultExpanded={true} elevation={0} sx={{width:'17.5em', position:'relative', left:'-8px'}}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon color="primary"/>}>
                             <Typography sx={{flexGrow: 1, textAlign: "center"}} color="text.secondary">{t("Expiry Timers")}</Typography>
                         </AccordionSummary>

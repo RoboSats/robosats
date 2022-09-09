@@ -44,7 +44,7 @@ export default class HomePage extends Component {
         const fontSizeFactor = fontSize / 14; // default fontSize is 14
         return (
               <Router >
-                  <div className='appCenter' style={{height: window.innerHeight - 40*fontSizeFactor - 20, overflow:'auto'}}>
+                  <div className='appCenter'>
                     <Switch>
                         <Route exact path='/' render={(props) => <UserGenPage {...props} {...this.state} {...this.props} setAppState={this.setAppState}/>}/>
                         <Route path='/ref/:refCode' render={(props) => <UserGenPage {...props} {...this.state} {...this.props} setAppState={this.setAppState}/>}/>
