@@ -39,7 +39,7 @@ interface Item {
   name: string;
 }
 
-type Props = {
+interface Props {
   isMaker: boolean;
   makerNick: string;
   takerNick: string;
@@ -48,7 +48,7 @@ type Props = {
   takerSummary: Record<string, Item>;
   platformSummary: Record<string, Item>;
   orderId: number;
-};
+}
 
 const TradeSummary = ({
   isMaker,
@@ -62,7 +62,7 @@ const TradeSummary = ({
 }: Props): JSX.Element => {
   const { t, i18n } = useTranslation();
   const [buttonValue, setButtonValue] = useState<number>(isMaker ? 0 : 2);
-  var userSummary = buttonValue == 0 ? makerSummary : takerSummary;
+  const userSummary = buttonValue == 0 ? makerSummary : takerSummary;
   const contractTimestamp = new Date(platformSummary.contract_timestamp);
   const total_time = platformSummary.contract_total_time;
   const hours = parseInt(total_time / 3600);

@@ -232,9 +232,9 @@ export default function AutocompletePayments(props) {
   const [val, setVal] = useState();
 
   function optionsToString(newValue) {
-    var str = '';
-    var arrayLength = newValue.length;
-    for (var i = 0; i < arrayLength; i++) {
+    let str = '';
+    const arrayLength = newValue.length;
+    for (let i = 0; i < arrayLength; i++) {
       str += newValue[i].name + ' ';
     }
     return str.slice(0, -1);
@@ -242,7 +242,7 @@ export default function AutocompletePayments(props) {
 
   function handleAddNew(inputProps) {
     paymentMethods.push({ name: inputProps.value, icon: 'custom' });
-    var a = value.push({ name: inputProps.value, icon: 'custom' });
+    const a = value.push({ name: inputProps.value, icon: 'custom' });
     setVal(() => '');
 
     if (a || a == null) {
@@ -274,7 +274,7 @@ export default function AutocompletePayments(props) {
             {value.map((option, index) => (
               <StyledTag label={t(option.name)} icon={option.icon} {...getTagProps({ index })} />
             ))}
-            <input {...getInputProps()} value={val ? val : ''} />
+            <input {...getInputProps()} value={val || ''} />
           </InputWrapper>
         </div>
       </Tooltip>
@@ -320,7 +320,7 @@ export default function AutocompletePayments(props) {
             ) : null
           ) : null}
         </Listbox>
-      ) : //Here goes what happens if there is no groupedOptions
+      ) : // Here goes what happens if there is no groupedOptions
       getInputProps().value.length > 0 ? (
         <Listbox {...getListboxProps()}>
           <Button fullWidth={true} onClick={() => handleAddNew(getInputProps())}>

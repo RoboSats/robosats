@@ -25,7 +25,7 @@ import { AmbossIcon, BitcoinSignIcon } from '../Icons';
 
 import { pn } from '../../utils/prettyNumbers';
 
-type Props = {
+interface Props {
   isOpen: boolean;
   handleClickCloseStatsForNerds: () => void;
   lndVersion: string;
@@ -37,7 +37,7 @@ type Props = {
   robosatsRunningCommitHash: string;
   lastDayVolume: number;
   lifetimeVolume: number;
-};
+}
 
 const StatsDialog = ({
   isOpen,

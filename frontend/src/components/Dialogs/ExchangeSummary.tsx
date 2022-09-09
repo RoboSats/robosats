@@ -23,7 +23,7 @@ import LinkIcon from '@mui/icons-material/Link';
 
 import { pn } from '../../utils/prettyNumbers';
 
-type Props = {
+interface Props {
   isOpen: boolean;
   handleClickCloseExchangeSummary: () => void;
   numPublicBuyOrders: number;
@@ -34,7 +34,7 @@ type Props = {
   makerFee: number;
   takerFee: number;
   swapFeeRate: number;
-};
+}
 
 const ExchangeSummaryDialog = ({
   isOpen,

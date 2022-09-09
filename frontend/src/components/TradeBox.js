@@ -80,9 +80,9 @@ class TradeBox extends Component {
 
   stepXofY = () => {
     // set y value
-    var x = null;
-    var y = null;
-    var status = this.props.data.status;
+    let x = null;
+    let y = null;
+    const status = this.props.data.status;
 
     if (this.props.data.is_maker) {
       y = 5;
@@ -128,6 +128,7 @@ class TradeBox extends Component {
   handleClickOpenConfirmDispute = () => {
     this.setState({ openConfirmDispute: true });
   };
+
   handleClickCloseConfirmDispute = () => {
     this.setState({ openConfirmDispute: false });
   };
@@ -186,6 +187,7 @@ class TradeBox extends Component {
   handleClickOpenConfirmFiatReceived = () => {
     this.setState({ openConfirmFiatReceived: true });
   };
+
   handleClickCloseConfirmFiatReceived = () => {
     this.setState({ openConfirmFiatReceived: false });
   };
@@ -482,6 +484,7 @@ class TradeBox extends Component {
   handleClickOpenTelegramDialog = () => {
     this.setState({ openEnableTelegram: true });
   };
+
   handleClickCloseEnableTelegramDialog = () => {
     this.setState({ openEnableTelegram: false });
   };
@@ -534,10 +537,11 @@ class TradeBox extends Component {
       </Dialog>
     );
   };
+
   depositHoursMinutes = () => {
-    var hours = parseInt(this.props.data.escrow_duration / 3600);
-    var minutes = parseInt((this.props.data.escrow_duration - hours * 3600) / 60);
-    var dict = { deposit_timer_hours: hours, deposit_timer_minutes: minutes };
+    const hours = parseInt(this.props.data.escrow_duration / 3600);
+    const minutes = parseInt((this.props.data.escrow_duration - hours * 3600) / 60);
+    const dict = { deposit_timer_hours: hours, deposit_timer_minutes: minutes };
     return dict;
   };
 
@@ -733,7 +737,7 @@ class TradeBox extends Component {
   };
 
   handleMiningFeeChanged = (e) => {
-    var fee = e.target.value;
+    let fee = e.target.value;
     if (fee > 50) {
       fee = 50;
     }
@@ -796,6 +800,7 @@ class TradeBox extends Component {
       });
     }
   };
+
   handleError = (err) => {
     console.error(err);
   };
@@ -1389,8 +1394,8 @@ class TradeBox extends Component {
 
   showOpenDisputeButton() {
     const { t } = this.props;
-    let now = Date.now();
-    var expires_at = new Date(this.props.data.expires_at);
+    const now = Date.now();
+    const expires_at = new Date(this.props.data.expires_at);
     // open dispute button enables 12h before expiry
     expires_at.setHours(expires_at.getHours() - 12);
     return (
@@ -1457,7 +1462,7 @@ class TradeBox extends Component {
 
   showOrderExpired = () => {
     const { t } = this.props;
-    var show_renew = this.props.data.is_maker;
+    const show_renew = this.props.data.is_maker;
 
     return (
       <Grid container spacing={1}>
@@ -1491,7 +1496,7 @@ class TradeBox extends Component {
 
   showChat = () => {
     const { t } = this.props;
-    //In Chatroom - No fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton)
+    // In Chatroom - No fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton)
     if (this.props.data.is_buyer & (this.props.data.status == 9)) {
       var showSendButton = true;
       var showReveiceButton = false;
@@ -1503,7 +1508,7 @@ class TradeBox extends Component {
       var showDisputeButton = true;
     }
 
-    //In Chatroom - Fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton)
+    // In Chatroom - Fiat sent - showChat(showSendButton, showReveiceButton, showDisputeButton)
     if (this.props.data.is_buyer & (this.props.data.status == 10)) {
       var showSendButton = false;
       var showReveiceButton = false;
@@ -1571,7 +1576,7 @@ class TradeBox extends Component {
 
   showRateSelect() {
     const { t } = this.props;
-    var show_renew = this.props.data.is_maker;
+    const show_renew = this.props.data.is_maker;
 
     return (
       <Grid container spacing={1}>

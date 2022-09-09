@@ -37,3 +37,6 @@ jobs:
         with:
           prettier: true
           prettier_dir: frontend
+          # Many linting errors
+          # eslint: true
+          # eslint_dir: frontend

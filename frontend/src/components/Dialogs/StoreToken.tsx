@@ -15,14 +15,14 @@ import {
 import { getCookie } from '../../utils/cookies';
 import ContentCopy from '@mui/icons-material/ContentCopy';
 
-type Props = {
+interface Props {
   open: boolean;
   onClose: () => void;
   copyIconColor: string;
   onClickCopy: () => void;
   onClickBack: () => void;
   onClickDone: () => void;
-};
+}
 
 const StoreTokenDialog = ({
   open,

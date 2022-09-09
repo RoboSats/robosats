@@ -14,8 +14,8 @@ class PaymentText extends Component {
 
   parseText() {
     const { t } = this.props;
-    var rows = [];
-    var custom_methods = this.props.text;
+    const rows = [];
+    let custom_methods = this.props.text;
     // Adds icons for each PaymentMethod that matches
     methods.forEach((method, i) => {
       if (this.props.text.includes(method.name)) {
@@ -42,7 +42,7 @@ class PaymentText extends Component {
     });
 
     // Adds a Custom icon if there are words that do not match
-    var chars_left = custom_methods
+    const chars_left = custom_methods
       .replace('   ', '')
       .replace('  ', '')
       .replace(' ', '')

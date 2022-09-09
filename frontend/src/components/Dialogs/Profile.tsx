@@ -37,7 +37,7 @@ import { getCookie } from '../../utils/cookies';
 import { copyToClipboard } from '../../utils/clipboard';
 import { getWebln } from '../../utils/webln';
 
-type Props = {
+interface Props {
   isOpen: boolean;
   handleClickCloseProfile: () => void;
   nickname: string;
@@ -53,7 +53,7 @@ type Props = {
   stealthInvoices: boolean;
   handleSetStealthInvoice: (stealth: boolean) => void;
   setAppState: (state: any) => void; // TODO: move to a ContextProvider
-};
+}
 
 const ProfileDialog = ({
   isOpen,
@@ -330,7 +330,7 @@ const ProfileDialog = ({
 
                       <Grid item xs={3}>
                         <Button
-                          disabled={earnedRewards === 0 ? true : false}
+                          disabled={earnedRewards === 0}
                           onClick={() => setOpenClaimRewards(true)}
                           variant='contained'
                           size='small'
@@ -345,8 +345,8 @@ const ProfileDialog = ({
                     <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
                       <Grid item style={{ display: 'flex', maxWidth: 160 }}>
                         <TextField
-                          error={badInvoice ? true : false}
-                          helperText={badInvoice ? badInvoice : ''}
+                          error={!!badInvoice}
+                          helperText={badInvoice || ''}
                           label={t('Invoice for {{amountSats}} Sats', {
                             amountSats: earnedRewards,
                           })}
@@ -375,7 +375,7 @@ const ProfileDialog = ({
                         <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 240 }}>
                           <Button
                             sx={{ maxHeight: 38, minWidth: 230 }}
-                            onClick={(e) => handleWeblnInvoiceClicked(e)}
+                            onClick={async (e) => await handleWeblnInvoiceClicked(e)}
                             variant='contained'
                             color='primary'
                             size='small'

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 
-let icons = {
+const icons = {
   airtel: {
     title: 'airtel',
     image:

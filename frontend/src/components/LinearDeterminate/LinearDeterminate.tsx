@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Box, LinearProgress } from '@mui/material';
 import { calcTimeDelta } from 'react-countdown';
 
-type Props = {
+interface Props {
   expiresAt: string;
   totalSecsExp: number;
-};
+}
 
 const LinearDeterminate = ({ expiresAt, totalSecsExp }: Props): JSX.Element => {
   const [progress, setProgress] = useState<number>(0);

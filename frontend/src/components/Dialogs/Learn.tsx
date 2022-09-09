@@ -10,10 +10,10 @@ import {
   Link,
 } from '@mui/material';
 
-type Props = {
+interface Props {
   open: boolean;
   onClose: () => void;
-};
+}
 
 const LearnDialog = ({ open, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();

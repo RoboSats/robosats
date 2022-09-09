@@ -9,7 +9,7 @@ import { LearnDialog } from './Dialogs';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 
-//Icons
+// Icons
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import SchoolIcon from '@mui/icons-material/School';

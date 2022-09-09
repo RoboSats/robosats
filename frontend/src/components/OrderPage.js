@@ -75,25 +75,25 @@ class OrderPage extends Component {
 
     // Refresh delays according to Order status
     this.statusToDelay = {
-      0: 2000, //'Waiting for maker bond'
-      1: 25000, //'Public'
-      2: 90000, //'Paused'
-      3: 2000, //'Waiting for taker bond'
-      4: 999999, //'Cancelled'
-      5: 999999, //'Expired'
-      6: 6000, //'Waiting for trade collateral and buyer invoice'
-      7: 8000, //'Waiting only for seller trade collateral'
-      8: 8000, //'Waiting only for buyer invoice'
-      9: 10000, //'Sending fiat - In chatroom'
-      10: 10000, //'Fiat sent - In chatroom'
-      11: 30000, //'In dispute'
-      12: 999999, //'Collaboratively cancelled'
-      13: 3000, //'Sending satoshis to buyer'
-      14: 999999, //'Sucessful trade'
-      15: 10000, //'Failed lightning network routing'
-      16: 180000, //'Wait for dispute resolution'
-      17: 180000, //'Maker lost dispute'
-      18: 180000, //'Taker lost dispute'
+      0: 2000, // 'Waiting for maker bond'
+      1: 25000, // 'Public'
+      2: 90000, // 'Paused'
+      3: 2000, // 'Waiting for taker bond'
+      4: 999999, // 'Cancelled'
+      5: 999999, // 'Expired'
+      6: 6000, // 'Waiting for trade collateral and buyer invoice'
+      7: 8000, // 'Waiting only for seller trade collateral'
+      8: 8000, // 'Waiting only for buyer invoice'
+      9: 10000, // 'Sending fiat - In chatroom'
+      10: 10000, // 'Fiat sent - In chatroom'
+      11: 30000, // 'In dispute'
+      12: 999999, // 'Collaboratively cancelled'
+      13: 3000, // 'Sending satoshis to buyer'
+      14: 999999, // 'Sucessful trade'
+      15: 10000, // 'Failed lightning network routing'
+      16: 180000, // 'Wait for dispute resolution'
+      17: 180000, // 'Maker lost dispute'
+      18: 180000, // 'Taker lost dispute'
     };
   }
 
@@ -107,7 +107,7 @@ class OrderPage extends Component {
       newStateVars.status = this.state.status;
     }
 
-    var otherStateVars = {
+    const otherStateVars = {
       amount: newStateVars.amount ? newStateVars.amount : null,
       loading: false,
       delay: this.setDelay(newStateVars.status),
@@ -116,7 +116,7 @@ class OrderPage extends Component {
       invoice_expired: newStateVars.invoice_expired, // in case invoice had expired, it goes back to null when it is valid again
     };
 
-    var completeStateVars = Object.assign({}, newStateVars, otherStateVars);
+    const completeStateVars = Object.assign({}, newStateVars, otherStateVars);
     this.setState(completeStateVars);
   };
 
@@ -149,6 +149,7 @@ class OrderPage extends Component {
   componentWillUnmount() {
     clearInterval(this.interval);
   }
+
   tick = () => {
     this.getOrderDetails(this.state.orderId);
   };
@@ -189,7 +190,7 @@ class OrderPage extends Component {
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
       body: JSON.stringify({
         action: 'update_invoice',
-        invoice: invoice,
+        invoice,
       }),
     };
     fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
@@ -204,8 +205,8 @@ class OrderPage extends Component {
       // Render a completed state
       return <span> {t('The order has expired')}</span>;
     } else {
-      var col = 'inherit';
-      var fraction_left = total / 1000 / this.state.total_secs_exp;
+      let col = 'inherit';
+      const fraction_left = total / 1000 / this.state.total_secs_exp;
       // Make orange at 25% of time left
       if (fraction_left < 0.25) {
         col = 'orange';
@@ -230,8 +231,8 @@ class OrderPage extends Component {
   };
 
   timerRenderer(seconds) {
-    var hours = parseInt(seconds / 3600);
-    var minutes = parseInt((seconds - hours * 3600) / 60);
+    const hours = parseInt(seconds / 3600);
+    const minutes = parseInt((seconds - hours * 3600) / 60);
     return (
       <span>
         {hours > 0 ? hours + 'h' : ''} {minutes > 0 ? zeroPad(minutes) + 'm' : ''}{' '}
@@ -447,7 +448,7 @@ class OrderPage extends Component {
   };
 
   getCurrencyCode(val) {
-    let code = val ? currencyDict[val.toString()] : '';
+    const code = val ? currencyDict[val.toString()] : '';
     return code;
   }
 
@@ -469,6 +470,7 @@ class OrderPage extends Component {
   handleClickOpenConfirmCancelDialog = () => {
     this.setState({ openCancel: true });
   };
+
   handleClickCloseConfirmCancelDialog = () => {
     this.setState({ openCancel: false });
   };
@@ -501,6 +503,7 @@ class OrderPage extends Component {
   handleClickOpenInactiveMakerDialog = () => {
     this.setState({ openInactiveMaker: true });
   };
+
   handleClickCloseInactiveMakerDialog = () => {
     this.setState({ openInactiveMaker: false });
   };
@@ -574,6 +577,7 @@ class OrderPage extends Component {
   handleClickOpenCollaborativeCancelDialog = () => {
     this.setState({ openCollaborativeCancel: true });
   };
+
   handleClickCloseCollaborativeCancelDialog = () => {
     this.setState({ openCollaborativeCancel: false });
   };

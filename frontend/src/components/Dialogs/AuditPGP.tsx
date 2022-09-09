@@ -37,7 +37,7 @@ function CredentialTextfield(props) {
           InputProps={{
             endAdornment: (
               <Tooltip disableHoverListener enterTouchDelay={0} title={props.copiedTitle}>
-                <IconButton onClick={() => copyToClipboard(props.value)}>
+                <IconButton onClick={async () => await copyToClipboard(props.value)}>
                   <ContentCopy />
                 </IconButton>
               </Tooltip>
@@ -49,7 +49,7 @@ function CredentialTextfield(props) {
   );
 }
 
-type Props = {
+interface Props {
   open: boolean;
   onClose: () => void;
   orderId: number;
@@ -59,7 +59,7 @@ type Props = {
   peer_pub_key: string;
   passphrase: string;
   onClickBack: () => void;
-};
+}
 
 const AuditPGPDialog = ({
   open,
@@ -149,7 +149,7 @@ const AuditPGPDialog = ({
                     own_public_key: own_pub_key,
                     peer_public_key: peer_pub_key,
                     encrypted_private_key: own_enc_priv_key,
-                    passphrase: passphrase,
+                    passphrase,
                   })
                 }
               >

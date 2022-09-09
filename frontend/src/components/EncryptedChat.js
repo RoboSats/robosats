@@ -132,9 +132,7 @@ class Chat extends Component {
               scrollNow: true,
               waitingEcho:
                 this.state.waitingEcho == true
-                  ? decryptedData.decryptedMessage == this.state.lastSent
-                    ? false
-                    : true
+                  ? decryptedData.decryptedMessage != this.state.lastSent
                   : false,
               lastSent:
                 decryptedData.decryptedMessage == this.state.lastSent

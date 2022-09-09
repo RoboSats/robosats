@@ -3,9 +3,9 @@ import Flags from 'country-flag-icons/react/3x2';
 import SwapCallsIcon from '@mui/icons-material/SwapCalls';
 import { GoldIcon, EarthIcon } from '../Icons';
 
-type Props = {
+interface Props {
   code: string;
-};
+}
 
 const FlagWithProps = ({ code }: Props): JSX.Element => {
   const defaultProps = {

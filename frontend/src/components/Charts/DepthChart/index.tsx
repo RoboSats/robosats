@@ -62,7 +62,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   useEffect(() => {
     if (Object.keys(limits).length === 0) {
       fetch('/api/limits/')
-        .then((response) => response.json())
+        .then(async (response) => await response.json())
         .then((data) => {
           setAppState({ limits: data });
         });
@@ -110,7 +110,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   };
 
   const generateSeries: () => void = () => {
-    let sortedOrders: Order[] =
+    const sortedOrders: Order[] =
       xType === 'base_amount'
         ? enrichedOrders.sort(
             (order1, order2) => (order1?.base_amount || 0) - (order2?.base_amount || 0),
@@ -158,7 +158,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
           // Order Point
           x: xType === 'base_amount' ? order.base_amount : order.premium,
           y: sumOrders,
-          order: order,
+          order,
         },
       ];
 

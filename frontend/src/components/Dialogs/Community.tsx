@@ -19,10 +19,10 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 import RedditIcon from '@mui/icons-material/Reddit';
 import Flags from 'country-flag-icons/react/3x2';
 
-type Props = {
+interface Props {
   isOpen: boolean;
   handleClickCloseCommunity: () => void;
-};
+}
 
 const CommunityDialog = ({ isOpen, handleClickCloseCommunity }: Props): JSX.Element => {
   const { t } = useTranslation();

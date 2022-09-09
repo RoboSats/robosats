@@ -42,7 +42,7 @@ import FlagWithProps from './FlagWithProps';
 import AutocompletePayments from './AutocompletePayments';
 import currencyDict from '../../static/assets/currencies.json';
 
-//icons
+// icons
 import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -112,13 +112,13 @@ class MakerPage extends Component {
           loadingLimits: false,
           minAmount: this.state.amount
             ? parseFloat((this.state.amount / 2).toPrecision(2))
-            : parseFloat(Number(data[this.state.currency]['max_amount'] * 0.25).toPrecision(2)),
+            : parseFloat(Number(data[this.state.currency].max_amount * 0.25).toPrecision(2)),
           maxAmount: this.state.amount
             ? this.state.amount
-            : parseFloat(Number(data[this.state.currency]['max_amount'] * 0.75).toPrecision(2)),
-          minTradeSats: data['1000']['min_amount'] * 100000000,
-          maxTradeSats: data['1000']['max_amount'] * 100000000,
-          maxBondlessSats: data['1000']['max_bondless_amount'] * 100000000,
+            : parseFloat(Number(data[this.state.currency].max_amount * 0.75).toPrecision(2)),
+          minTradeSats: data['1000'].min_amount * 100000000,
+          maxTradeSats: data['1000'].max_amount * 100000000,
+          maxBondlessSats: data['1000'].max_bondless_amount * 100000000,
         }),
       );
   }
@@ -128,12 +128,12 @@ class MakerPage extends Component {
       minAmount: this.state.amount
         ? parseFloat((this.state.amount / 2).toPrecision(2))
         : parseFloat(
-            Number(this.state.limits[this.state.currency]['max_amount'] * 0.25).toPrecision(2),
+            Number(this.state.limits[this.state.currency].max_amount * 0.25).toPrecision(2),
           ),
       maxAmount: this.state.amount
         ? this.state.amount
         : parseFloat(
-            Number(this.state.limits[this.state.currency]['max_amount'] * 0.75).toPrecision(2),
+            Number(this.state.limits[this.state.currency].max_amount * 0.75).toPrecision(2),
           ),
     });
   };
@@ -153,15 +153,16 @@ class MakerPage extends Component {
     this.props.setAppState({
       // maker and book page type values 0:1 are reversed
       type: e.target.value == 1 ? 0 : 1,
-      buyChecked: e.target.value == 0 ? true : false,
-      sellChecked: e.target.value == 1 ? true : false,
+      buyChecked: e.target.value == 0,
+      sellChecked: e.target.value == 1,
     });
   };
+
   handleCurrencyChange = (e) => {
-    var currencyCode = this.getCurrencyCode(e.target.value);
+    const currencyCode = this.getCurrencyCode(e.target.value);
     this.setState({
       currency: e.target.value,
-      currencyCode: currencyCode,
+      currencyCode,
     });
     this.props.setAppState({
       type: e.target.value,
@@ -171,24 +172,27 @@ class MakerPage extends Component {
     if (this.state.enableAmountRange) {
       this.setState({
         minAmount: parseFloat(
-          Number(this.state.limits[e.target.value]['max_amount'] * 0.25).toPrecision(2),
+          Number(this.state.limits[e.target.value].max_amount * 0.25).toPrecision(2),
         ),
         maxAmount: parseFloat(
-          Number(this.state.limits[e.target.value]['max_amount'] * 0.75).toPrecision(2),
+          Number(this.state.limits[e.target.value].max_amount * 0.75).toPrecision(2),
         ),
       });
     }
   };
+
   handleAmountChange = (e) => {
     this.setState({
       amount: e.target.value,
     });
   };
+
   handleMinAmountChange = (e) => {
     this.setState({
       minAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
     });
   };
+
   handleMaxAmountChange = (e) => {
     this.setState({
       maxAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
@@ -196,12 +200,12 @@ class MakerPage extends Component {
   };
 
   handleRangeAmountChange = (e, newValue, activeThumb) => {
-    var maxAmount = this.getMaxAmount();
-    var minAmount = this.getMinAmount();
-    var lowerValue = e.target.value[0];
-    var upperValue = e.target.value[1];
-    var minRange = this.minRangeAmountMultiple;
-    var maxRange = this.maxRangeAmountMultiple;
+    const maxAmount = this.getMaxAmount();
+    const minAmount = this.getMinAmount();
+    let lowerValue = e.target.value[0];
+    let upperValue = e.target.value[1];
+    const minRange = this.minRangeAmountMultiple;
+    const maxRange = this.maxRangeAmountMultiple;
 
     if (lowerValue > maxAmount / minRange) {
       lowerValue = maxAmount / minRange;
@@ -245,14 +249,14 @@ class MakerPage extends Component {
 
   handlePremiumChange = (e) => {
     const { t } = this.props;
-    var max = 999;
-    var min = -100;
-    var premium = e.target.value;
+    const max = 999;
+    const min = -100;
+    let premium = e.target.value;
     if (e.target.value > 999) {
-      var bad_premium = t('Must be less than {{max}}%', { max: max });
+      var bad_premium = t('Must be less than {{max}}%', { max });
     }
     if (e.target.value <= -100) {
-      var bad_premium = t('Must be more than {{min}}%', { min: min });
+      var bad_premium = t('Must be more than {{min}}%', { min });
     }
 
     if (premium == '') {
@@ -261,7 +265,7 @@ class MakerPage extends Component {
       premium = Number(Math.round(premium + 'e' + 2) + 'e-' + 2);
     }
     this.setState({
-      premium: premium,
+      premium,
       badPremium: bad_premium,
     });
   };
@@ -280,6 +284,7 @@ class MakerPage extends Component {
       badSatoshis: bad_sats,
     });
   };
+
   handleClickRelative = (e) => {
     this.setState({
       is_explicit: false,
@@ -345,7 +350,7 @@ class MakerPage extends Component {
         Number(this.state.amount / (this.state.satoshis / 100000000)).toPrecision(5),
       );
     } else if (!this.state.is_explicit) {
-      var price = this.state.limits[this.state.currency]['price'];
+      const price = this.state.limits[this.state.currency].price;
       return parseFloat(Number(price * (1 + this.state.premium / 100)).toPrecision(5));
     }
     return '...';
@@ -440,11 +445,9 @@ class MakerPage extends Component {
                 disabled={this.state.enableAmountRange}
                 variant={this.state.enableAmountRange ? 'filled' : 'outlined'}
                 error={
-                  (this.state.amount < this.getMinAmount() ||
+                  !!((this.state.amount < this.getMinAmount() ||
                     this.state.amount > this.getMaxAmount()) &
-                  (this.state.amount != '')
-                    ? true
-                    : false
+                  (this.state.amount != ''))
                 }
                 helperText={
                   (this.state.amount < this.getMinAmount()) & (this.state.amount != '')
@@ -549,7 +552,7 @@ class MakerPage extends Component {
             <TextField
               sx={{ width: `${240 / 16}em` }}
               label={t('Satoshis')}
-              error={this.state.badSatoshis ? true : false}
+              error={!!this.state.badSatoshis}
               helperText={this.state.badSatoshis}
               type='number'
               required={true}
@@ -611,11 +614,11 @@ class MakerPage extends Component {
   };
 
   handleChangePublicDuration = (date) => {
-    let d = new Date(date),
-      hours = d.getHours(),
-      minutes = d.getMinutes();
+    const d = new Date(date);
+      const hours = d.getHours();
+      const minutes = d.getMinutes();
 
-    var total_secs = hours * 60 * 60 + minutes * 60;
+    const total_secs = hours * 60 * 60 + minutes * 60;
 
     this.setState({
       publicExpiryTime: date,
@@ -624,11 +627,11 @@ class MakerPage extends Component {
   };
 
   handleChangeEscrowDuration = (date) => {
-    let d = new Date(date),
-      hours = d.getHours(),
-      minutes = d.getMinutes();
+    const d = new Date(date);
+      const hours = d.getHours();
+      const minutes = d.getMinutes();
 
-    var total_secs = hours * 60 * 60 + minutes * 60;
+    const total_secs = hours * 60 * 60 + minutes * 60;
 
     this.setState({
       escrowExpiryTime: date,
@@ -641,7 +644,7 @@ class MakerPage extends Component {
       var max_amount = null;
     } else {
       var max_amount =
-        this.state.limits[this.state.currency]['max_amount'] * (1 + this.state.premium / 100);
+        this.state.limits[this.state.currency].max_amount * (1 + this.state.premium / 100);
     }
     // times 0.98 to allow a bit of margin with respect to the backend minimum
     return parseFloat(Number(max_amount * 0.98).toPrecision(2));
@@ -652,7 +655,7 @@ class MakerPage extends Component {
       var min_amount = null;
     } else {
       var min_amount =
-        this.state.limits[this.state.currency]['min_amount'] * (1 + this.state.premium / 100);
+        this.state.limits[this.state.currency].min_amount * (1 + this.state.premium / 100);
     }
     // times 1.1 to allow a bit of margin with respect to the backend minimum
     return parseFloat(Number(min_amount * 1.1).toPrecision(2));
@@ -678,6 +681,7 @@ class MakerPage extends Component {
       this.state.minAmount * (this.minRangeAmountMultiple - 0.1) > this.state.maxAmount
     );
   };
+
   maxAmountError = () => {
     return (
       this.state.maxAmount > this.getMaxAmount() ||
@@ -915,7 +919,7 @@ class MakerPage extends Component {
                 control={
                   <Checkbox
                     disabled
-                    //disabled={this.state.type==0 || this.state.type === null}
+                    // disabled={this.state.type==0 || this.state.type === null}
                     color='secondary'
                     checked={this.state.allowBondless}
                     onChange={() => this.setState({ allowBondless: !this.state.allowBondless })}

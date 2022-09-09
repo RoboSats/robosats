@@ -14,5 +14,5 @@ export const getWebln = async (): Promise<WeblnProvider> => {
     }
   });
 
-  return resultPromise;
+  return await resultPromise;
 };

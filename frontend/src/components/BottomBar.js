@@ -99,6 +99,7 @@ class BottomBar extends Component {
   handleClickOpenCommunity = () => {
     this.setState({ openCommuniy: true });
   };
+
   handleClickCloseCommunity = () => {
     this.setState({ openCommuniy: false });
   };
@@ -107,6 +108,7 @@ class BottomBar extends Component {
     this.getInfo();
     this.setState({ openProfile: true, profileShown: true });
   };
+
   handleClickCloseProfile = () => {
     this.setState({ openProfile: false });
   };
@@ -130,8 +132,8 @@ class BottomBar extends Component {
         (data) =>
           this.setState({
             badInvoice: data.bad_invoice,
-            openClaimRewards: data.successful_withdrawal ? false : true,
-            withdrawn: data.successful_withdrawal ? true : false,
+            openClaimRewards: !data.successful_withdrawal,
+            withdrawn: !!data.successful_withdrawal,
             showRewardsSpinner: false,
           }) &
           this.props.setAppState({
@@ -145,7 +147,7 @@ class BottomBar extends Component {
     const requestOptions = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({ wantsStealth: wantsStealth }),
+      body: JSON.stringify({ wantsStealth }),
     };
     fetch('/api/stealth/', requestOptions)
       .then((response) => response.json())
@@ -153,7 +155,7 @@ class BottomBar extends Component {
   };
 
   getHost() {
-    var url =
+    const url =
       window.location != window.parent.location
         ? this.getHost(document.referrer)
         : document.location.href;
@@ -170,15 +172,13 @@ class BottomBar extends Component {
 
   bottomBarDesktop = () => {
     const { t } = this.props;
-    var hasRewards = this.props.earnedRewards > 0 ? true : false;
-    var hasOrder =
-      (this.props.activeOrderId > 0) & !this.state.profileShown & this.props.avatarLoaded
-        ? true
-        : false;
+    const hasRewards = this.props.earnedRewards > 0;
+    const hasOrder =
+      !!((this.props.activeOrderId > 0) & !this.state.profileShown & this.props.avatarLoaded);
     const fontSize = this.props.theme.typography.fontSize;
     const fontSizeFactor = fontSize / 14; // default fontSize is 14
     const typographyProps = {
-      primaryTypographyProps: { fontSize: fontSize },
+      primaryTypographyProps: { fontSize },
       secondaryTypographyProps: { fontSize: (fontSize * 12) / 14 },
     };
     return (
@@ -355,6 +355,7 @@ class BottomBar extends Component {
       </Paper>
     );
   };
+
   handleChangeLang = (e) => {
     const { i18n } = this.props;
     i18n.changeLanguage(e.target.value);
@@ -473,17 +474,16 @@ class BottomBar extends Component {
     }
     this.setState({ openExchangeSummary: true });
   };
+
   handleClickCloseExchangeSummary = () => {
     this.setState({ openExchangeSummary: false });
   };
 
   bottomBarPhone = () => {
     const { t } = this.props;
-    var hasRewards = this.props.earnedRewards > 0 ? true : false;
-    var hasOrder =
-      (this.state.active_order_id > 0) & !this.state.profileShown & this.props.avatarLoaded
-        ? true
-        : false;
+    const hasRewards = this.props.earnedRewards > 0;
+    const hasOrder =
+      !!((this.state.active_order_id > 0) & !this.state.profileShown & this.props.avatarLoaded);
     return (
       <Paper elevation={6} style={{ height: 40 }}>
         <Grid container>

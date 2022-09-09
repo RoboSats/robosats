@@ -67,9 +67,9 @@ class BookPage extends Component {
   };
 
   handleCurrencyChange = (e) => {
-    var currency = e.target.value;
+    const currency = e.target.value;
     this.props.setAppState({
-      currency: currency,
+      currency,
       bookCurrencyCode: this.getCurrencyCode(currency),
     });
   };
@@ -437,7 +437,7 @@ class BookPage extends Component {
   };
 
   handleTypeChange = (buyChecked, sellChecked) => {
-    this.props.setAppState({ buyChecked: buyChecked, sellChecked: sellChecked });
+    this.props.setAppState({ buyChecked, sellChecked });
 
     if (buyChecked & sellChecked || !buyChecked & !sellChecked) {
       var type = 2;
@@ -446,12 +446,12 @@ class BookPage extends Component {
     } else if (sellChecked) {
       var type = 0;
     }
-    this.props.setAppState({ type: type });
+    this.props.setAppState({ type });
   };
 
   handleClickBuy = (e) => {
-    var buyChecked = e.target.checked;
-    var sellChecked = this.props.sellChecked;
+    const buyChecked = e.target.checked;
+    const sellChecked = this.props.sellChecked;
     this.handleTypeChange(buyChecked, sellChecked);
   };
 
@@ -460,8 +460,8 @@ class BookPage extends Component {
   };
 
   handleClickSell = (e) => {
-    var buyChecked = this.props.buyChecked;
-    var sellChecked = e.target.checked;
+    const buyChecked = this.props.buyChecked;
+    const sellChecked = e.target.checked;
     this.handleTypeChange(buyChecked, sellChecked);
   };
 
@@ -659,7 +659,7 @@ class BookPage extends Component {
                 : t('and use')}
             </FormHelperText>
             <Select
-              //autoWidth={true}
+              // autoWidth={true}
               sx={{ width: 120 }}
               label={t('Select Payment Currency')}
               required={true}

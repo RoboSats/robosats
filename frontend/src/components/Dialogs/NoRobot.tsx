@@ -10,10 +10,10 @@ import {
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-type Props = {
+interface Props {
   open: boolean;
   onClose: () => void;
-};
+}
 
 const NoRobotDialog = ({ open, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();

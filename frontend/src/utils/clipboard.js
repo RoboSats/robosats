@@ -7,7 +7,7 @@ export function copyToClipboard(textToCopy) {
     return navigator.clipboard.writeText(textToCopy);
   } else {
     // text area method
-    let textArea = document.createElement('textarea');
+    const textArea = document.createElement('textarea');
     textArea.value = textToCopy;
     // make the textarea out of viewport
     textArea.style.position = 'fixed';

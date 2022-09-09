@@ -51,7 +51,7 @@ class UserGenPage extends Component {
         loadingRobot: false,
       });
     } else {
-      var newToken = genBase62Token(36);
+      const newToken = genBase62Token(36);
       this.setState({
         token: newToken,
       });
@@ -109,7 +109,7 @@ class UserGenPage extends Component {
                 })
               : this.props.setAppState({
                   nickname: data.nickname,
-                  token: token,
+                  token,
                   avatarLoaded: false,
                   activeOrderId: data.active_order_id ? data.active_order_id : null,
                   lastOrderId: data.last_order_id ? data.last_order_id : null,
@@ -140,9 +140,9 @@ class UserGenPage extends Component {
   }
 
   handleClickNewRandomToken = () => {
-    var token = genBase62Token(36);
+    const token = genBase62Token(36);
     this.setState({
-      token: token,
+      token,
       tokenHasChanged: true,
     });
     this.props.setAppState({ copiedToken: true });
@@ -275,7 +275,7 @@ class UserGenPage extends Component {
           <Grid item xs={12} align='center'>
             <TextField
               sx={{ maxWidth: 280 * fontSizeFactor }}
-              error={this.state.bad_request ? true : false}
+              error={!!this.state.bad_request}
               label={t('Store your token safely')}
               required={true}
               value={this.state.token}

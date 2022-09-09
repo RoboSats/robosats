@@ -13,7 +13,7 @@ class UnsafeAlert extends Component {
   }
 
   getHost() {
-    var url =
+    const url =
       window.location != window.parent.location
         ? this.getHost(document.referrer)
         : document.location.href;
@@ -21,7 +21,7 @@ class UnsafeAlert extends Component {
   }
 
   isSelfhosted() {
-    var http = new XMLHttpRequest();
+    const http = new XMLHttpRequest();
     http.open('HEAD', `${location.protocol}//${this.getHost()}/selfhosted`, false);
     http.send();
     return http.status != 404;
