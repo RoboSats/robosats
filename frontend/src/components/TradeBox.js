@@ -367,6 +367,9 @@ class TradeBox extends Component {
           {t("Enable TG Notifications")}
         </DialogTitle>
         <DialogContent>
+          <div style={{textAlign:"center"}}>
+            <QRCode value={"tg://resolve?domain="+this.props.data.tg_bot_name+"&start="+this.props.data.tg_token} size={275}/>
+          </div> 
           <DialogContentText id="alert-dialog-description">
             {t("You will be taken to a conversation with RoboSats telegram bot. Simply open the chat and press Start. Note that by enabling telegram notifications you might lower your level of anonymity.")}
           </DialogContentText>
