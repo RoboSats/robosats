@@ -45,6 +45,7 @@
     "@mui/material": "^5.9.0",
     "@mui/system": "^5.9.0",
     "@mui/x-data-grid": "^5.2.2",
+    "@mui/x-date-pickers": "^5.0.1",
     "@nivo/core": "^0.79.0",
     "@nivo/line": "^0.79.1",
     "country-flag-icons": "^1.4.25",

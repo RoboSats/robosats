@@ -149,11 +149,15 @@ bottomBarDesktop =()=>{
     const { t } = this.props;
     var hasRewards = this.props.earnedRewards > 0 ? true: false;
     var hasOrder = this.props.activeOrderId > 0 & !this.state.profileShown & this.props.avatarLoaded ? true : false;
-
+    const fontSize = this.props.theme.typography.fontSize;
+    const fontSizeFactor = fontSize / 14; // default fontSize is 14
+    const typographyProps = {
+        primaryTypographyProps: {fontSize: fontSize},
+        secondaryTypographyProps: {fontSize: fontSize * 12/14}
+    }
     return(
-        <Paper elevation={6} style={{height:40}}>
+        <Paper elevation={6} style={{height: 40*fontSizeFactor, width: window.innerWidth}}>
                 <Grid container>
-
                     <Grid item xs={1.9}>
                         <div style={{display: this.showProfileButton() ? '':'none'}}>
                         <ListItemButton onClick={this.handleClickOpenProfile} >
@@ -162,7 +166,7 @@ bottomBarDesktop =()=>{
                                 title={(hasRewards ? t("You can claim satoshis!")+" ": "" )+
                                     (hasOrder ? t("You have an active order"):"")}
                                 >
-                                <ListItemAvatar sx={{ width: 30, height: 30 }} >
+                                <ListItemAvatar sx={{ width: 30*fontSizeFactor, height: 30*fontSizeFactor }} >
                                     <Badge badgeContent={(this.props.activeOrderId > 0 & !this.props.profileShown) ? "": null} color="primary">
                                     <Avatar className='flippedSmallAvatar' sx={{margin: 0, top: -13}}
                                         alt={this.props.nickname}
@@ -192,8 +196,7 @@ bottomBarDesktop =()=>{
                                 </IconButton>
                             </ListItemIcon>
                             <ListItemText
-                                primaryTypographyProps={{fontSize: '14px'}}
-                                secondaryTypographyProps={{fontSize: '12px'}}
+                                {...typographyProps}
                                 primary={this.state.num_public_buy_orders}
                                 secondary={t("Public Buy Orders")} />
                         </ListItem>
@@ -212,8 +215,7 @@ bottomBarDesktop =()=>{
                                 </IconButton>
                             </ListItemIcon>
                             <ListItemText
-                                primaryTypographyProps={{fontSize: '14px'}}
-                                secondaryTypographyProps={{fontSize: '12px'}}
+                                {...typographyProps}
                                 primary={this.state.num_public_sell_orders}
                                 secondary={t("Public Sell Orders")} />
                         </ListItem>
@@ -232,8 +234,7 @@ bottomBarDesktop =()=>{
                                 </IconButton>
                             </ListItemIcon>
                             <ListItemText
-                                primaryTypographyProps={{fontSize: '14px'}}
-                                secondaryTypographyProps={{fontSize: '12px'}}
+                                {...typographyProps}
                                 primary={this.state.active_robots_today}
                                 secondary={t("Today Active Robots")}/>
                         </ListItem>
@@ -248,8 +249,7 @@ bottomBarDesktop =()=>{
                                 </IconButton>
                             </ListItemIcon>
                             <ListItemText
-                                primaryTypographyProps={{fontSize: '14px'}}
-                                secondaryTypographyProps={{fontSize: '12px'}}
+                                {...typographyProps}
                                 primary={this.state.last_day_nonkyc_btc_premium+"%"}
                                 secondary={t("24h Avg Premium")} />
                         </ListItem>
@@ -264,8 +264,7 @@ bottomBarDesktop =()=>{
                                 </IconButton>
                             </ListItemIcon>
                             <ListItemText
-                                primaryTypographyProps={{fontSize: '14px'}}
-                                secondaryTypographyProps={{fontSize: '12px'}}
+                                {...typographyProps}
                                 primary={(this.state.maker_fee + this.state.taker_fee)*100}
                                 secondary={t("Trade Fee")} />
                         </ListItem>

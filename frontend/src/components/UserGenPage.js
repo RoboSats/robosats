@@ -181,33 +181,37 @@ class UserGenPage extends Component {
 
   render() {
     const { t, i18n} = this.props;
+    const fontSize = this.props.theme.typography.fontSize;
+    const fontSizeFactor = fontSize / 14; // to scale sizes, default fontSize is 14
     return (
       <Grid container spacing={1}>
         <Grid item>
           <div className='clickTrough'/>
         </Grid>
-        <Grid item xs={12} align="center" sx={{width:370, height:260}}>
-          {!this.state.loadingRobot && this.state.avatarUrl ?
+        <Grid item xs={12} align="center" sx={{width:370 * fontSizeFactor, height: 260 * fontSizeFactor}}>
+        {!this.state.loadingRobot && this.state.avatarUrl ?
             <div>
               <Grid item xs={12} align="center">
                 <Typography component="h5" variant="h5">
                   <b>{this.state.nickname && getCookie("sessionid") ?
-                    <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap', height:'45px'}}>
-                      <BoltIcon sx={{ color: "#fcba03", height: '33px',width: '33px'}}/><a>{this.state.nickname}</a><BoltIcon sx={{ color: "#fcba03", height: '33px',width: '33px'}}/>
+                    <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap', height: 45 * fontSizeFactor}}>
+                      <BoltIcon sx={{ color: "#fcba03", height: 33 * fontSizeFactor, width: 33 * fontSizeFactor}}/>
+                      <a>{this.state.nickname}</a>
+                      <BoltIcon sx={{ color: "#fcba03", height: 33 * fontSizeFactor, width: 33 * fontSizeFactor}}/>
                     </div>
                     : ""}</b>
                 </Typography>
               </Grid>
               <Grid item xs={12} align="center">
               <Tooltip enterTouchDelay={0} title={t("This is your trading avatar")}>
-                <div style={{ maxWidth: 200, maxHeight: 200 }}>
-                  <SmoothImage
+                <div style={{ maxWidth: 200 * fontSizeFactor, maxHeight: 200 * fontSizeFactor}}>
+                <SmoothImage
                     src={this.state.avatarUrl}
                     imageStyles={{borderRadius: "50%",
                       border: "2px solid #555", 
                       filter: "drop-shadow(1px 1px 1px #000000)",
-                      height: "195px",
-                      width: "200px"}}
+                      height: `${195*fontSizeFactor}px`,
+                      width: `${200*fontSizeFactor}px`}}
                   />
                 </div>
                 </Tooltip>
@@ -228,7 +232,7 @@ class UserGenPage extends Component {
           }
           <Grid container align="center">
             <Grid item xs={12} align="center">
-              <TextField sx={{maxWidth: 280}}
+              <TextField sx={{maxWidth: 280 * fontSizeFactor}}
                 error={this.state.bad_request ? true : false}
                 label={t("Store your token safely")}
                 required={true}
@@ -244,7 +248,7 @@ class UserGenPage extends Component {
                 }}
                 InputProps={{
                   startAdornment:
-                  <div style={{width:50, minWidth:50, position:'relative',left:-6}}>
+                  <div style={{width: 50*fontSizeFactor, minWidth: 50*fontSizeFactor, position:'relative',left:-6}}>
                     <Grid container>
                     <Grid item xs={6}>
                         <Tooltip enterTouchDelay={250} title={t("Save token and PGP credentials to file")}>
@@ -254,7 +258,7 @@ class UserGenPage extends Component {
                             disabled={!(getCookie('robot_token')==this.state.token) || !this.props.avatarLoaded} 
                             onClick={()=> saveAsJson(this.state.nickname+'.json', this.createJsonFile())}
                             >
-                            <DownloadIcon sx={{width:22, height:22}}/>
+                            <DownloadIcon sx={{width: 22*fontSizeFactor, height: 22*fontSizeFactor}}/>
                           </IconButton>
                           </span>
                         </Tooltip>
@@ -266,7 +270,7 @@ class UserGenPage extends Component {
                             disabled={!(getCookie('robot_token')==this.state.token) || !this.props.avatarLoaded} 
                             onClick={()=> (copyToClipboard(getCookie('robot_token')) & this.props.setAppState({copiedToken:true}))}
                             >
-                            <ContentCopy sx={{width:18, height:18}}/>
+                            <ContentCopy sx={{width: 18*fontSizeFactor, height: 18*fontSizeFactor}}/>
                           </IconButton>
                         </Tooltip>
                       </Grid>
@@ -274,7 +278,9 @@ class UserGenPage extends Component {
                   </div>,
                   endAdornment:
                   <Tooltip enterTouchDelay={250} title={t("Generate a new token")}>
-                    <IconButton onClick={this.handleClickNewRandomToken}><CasinoIcon/></IconButton>
+                    <IconButton onClick={this.handleClickNewRandomToken}>
+                      <CasinoIcon sx={{width: 18*fontSizeFactor, height: 18*fontSizeFactor}}/>
+                    </IconButton>
                   </Tooltip>,
                   }}
               />
@@ -283,14 +289,14 @@ class UserGenPage extends Component {
           <Grid item xs={12} align="center">
             {this.state.tokenHasChanged ?
             <Button type="submit" size='small'  onClick= {this.handleClickSubmitToken}>
-              <SmartToyIcon sx={{width:18, height:18}} />
+              <SmartToyIcon sx={{width: 18*fontSizeFactor, height: 18*fontSizeFactor}} />
               <span> {t("Generate Robot")}</span>
             </Button>
             :
             <Tooltip enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={t("You must enter a new token first")}>
               <div>
               <Button disabled={true} type="submit" size='small' >
-                <SmartToyIcon sx={{width:18, height:18}} />
+                <SmartToyIcon sx={{width: 18*fontSizeFactor, height: 18*fontSizeFactor}} />
                 <span>{t("Generate Robot")}</span>
               </Button>
               </div>
@@ -306,11 +312,11 @@ class UserGenPage extends Component {
             </ButtonGroup>
           </Grid>
 
-          <Grid item xs={12} align="center" sx={{width:370}}>
+          <Grid item xs={12} align="center" sx={{width: 370*fontSizeFactor}}>
             <Grid item>
-              <div style={{height:40}}/>
+              <div style={{height: 30*fontSizeFactor}}/>
             </Grid>
-            <div style={{width:370, left:30}}>
+            <div style={{width: 370*fontSizeFactor, left: 30*fontSizeFactor}}>
               <Grid container align="center">
                 <Grid item xs={0.8}/>
                 <Grid item xs={7.5} align="right">
@@ -319,7 +325,9 @@ class UserGenPage extends Component {
                   </Typography>
                 </Grid>
                 <Grid item xs={2.5} align="left">
-                    <RoboSatsNoTextIcon color="primary" sx={{height:72, width:72}}/>
+                    <RoboSatsNoTextIcon color="primary" 
+                      sx={{height: 72 * fontSizeFactor, width: 72 * fontSizeFactor}}
+                      />
                 </Grid>
               </Grid>
             </div>
