@@ -132,11 +132,11 @@ android {
     ndkVersion rootProject.ext.ndkVersion
 
     compileSdkVersion rootProject.ext.compileSdkVersion
-    
-    sourceSets { 
-        main { assets.srcDirs = ['src/main/assets', '../../html'] } 
+
+    sourceSets {
+        main { assets.srcDirs = ['src/main/assets', '../../html'] }
     }
-    
+
     defaultConfig {
         applicationId "com.robosats"
         minSdkVersion rootProject.ext.minSdkVersion

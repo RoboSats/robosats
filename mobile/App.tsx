@@ -1,5 +1,5 @@
 import React from 'react';
-import { WebView, WebViewMessageEvent } from "react-native-webview";
+import {WebView, WebViewMessageEvent} from 'react-native-webview';
 import {SafeAreaView, Text, Platform} from 'react-native';
 // import Tor from "react-native-tor";
 
@@ -20,12 +20,13 @@ import {SafeAreaView, Text, Platform} from 'react-native';
 // }
 
 const App = () => {
-  // Webview with local html/js in a single location for andrid/iOS
-  // https://yelotofu.com/react-native-load-local-static-site-inside-webview-2b93eb1c4225
-  const htmlPath = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html';
+  // var uri =
+  //   (Platform.OS === 'android' ? 'file:///android_asset/' : '') +
+  //   'Web.bundle/index.html';
 
-  const uri = 'https://robosats.onion.moe'
-  const onion = 'http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion'
+  const uri = 'https://robosats.onion.moe';
+  const onion =
+    'http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion';
 
   const runFirst = `
       // document.body.style.backgroundColor = 'red';
@@ -35,17 +36,18 @@ const App = () => {
     `;
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{flex: 1}}>
       <WebView
-        source={{ uri: uri }}
-        // source={{ baseUrl: 'file:///android_asset/Web.bundle/' }}
+        source={{
+          uri: uri,
+        }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         sharedCookiesEnabled={true}
-        originWhitelist={['*']} //originWhitelist={[uri,uri2]}
+        originWhitelist={[uri, onion]}
         scalesPageToFit={true}
         startInLoadingState={true}
-        mixedContentMode={"always"}
+        mixedContentMode={'always'}
         allowsInlineMediaPlayback={true}
         allowsFullscreenVideo={false}
         setBuiltInZoomControls={false}
@@ -56,7 +58,7 @@ const App = () => {
         allowsLinkPreview={false}
         injectedJavaScript={runFirst}
         renderLoading={() => <Text>Loading RoboSats</Text>}
-        onError={(syntheticEvent) => <Text>{syntheticEvent}</Text>}
+        onError={syntheticEvent => <Text>{syntheticEvent}</Text>}
       />
     </SafeAreaView>
   );

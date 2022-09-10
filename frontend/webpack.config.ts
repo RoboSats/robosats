@@ -24,10 +24,21 @@ const config: Configuration = {
   resolve: {
     extensions: [".tsx", ".ts", ".jsx", ".js"],
   },
-  output: {
-    path: path.resolve(__dirname, "static/frontend"),
-    filename: "main.js",
-  },
 };
 
-export default config;
+var configWeb = Object.assign({}, config, {
+  name: "configWeb",
+  output: {
+      path: path.resolve(__dirname, "static/frontend"),
+      filename: "main.js",
+  },
+});
+var configMobile = Object.assign({}, config, {
+  name: "configMobile",
+  output: {
+      path: path.resolve(__dirname, "../mobile/html/Web.bundle/js"),
+      filename: "main.js",
+  },
+});
+
+export default [configWeb, configMobile];
