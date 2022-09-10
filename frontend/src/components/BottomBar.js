@@ -173,8 +173,11 @@ class BottomBar extends Component {
   bottomBarDesktop = () => {
     const { t } = this.props;
     const hasRewards = this.props.earnedRewards > 0;
-    const hasOrder =
-      !!((this.props.activeOrderId > 0) & !this.state.profileShown & this.props.avatarLoaded);
+    const hasOrder = !!(
+      (this.props.activeOrderId > 0) &
+      !this.state.profileShown &
+      this.props.avatarLoaded
+    );
     const fontSize = this.props.theme.typography.fontSize;
     const fontSizeFactor = fontSize / 14; // default fontSize is 14
     const typographyProps = {
@@ -482,8 +485,11 @@ class BottomBar extends Component {
   bottomBarPhone = () => {
     const { t } = this.props;
     const hasRewards = this.props.earnedRewards > 0;
-    const hasOrder =
-      !!((this.state.active_order_id > 0) & !this.state.profileShown & this.props.avatarLoaded);
+    const hasOrder = !!(
+      (this.state.active_order_id > 0) &
+      !this.state.profileShown &
+      this.props.avatarLoaded
+    );
     return (
       <Paper elevation={6} style={{ height: 40 }}>
         <Grid container>

@@ -202,7 +202,7 @@ class UserGenPage extends Component {
           align='center'
           sx={{ width: 370 * fontSizeFactor, height: 260 * fontSizeFactor }}
         >
-          {!this.state.loadingRobot && this.state.avatarUrl ? (
+          {this.props.avatarLoaded && this.state.avatarUrl ? (
             <div>
               <Grid item xs={12} align='center'>
                 <Typography component='h5' variant='h5'>

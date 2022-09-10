@@ -69,12 +69,14 @@ export default class App extends Component {
               onClose={() => this.setState({ openLearn: false })}
             />
             <IconButton
+              color='inherit'
               sx={{ position: 'fixed', right: '34px' }}
               onClick={() => this.setState({ openLearn: true })}
             >
               <SchoolIcon />
             </IconButton>
             <IconButton
+              color='inherit'
               sx={{ position: 'fixed', right: '0px' }}
               onClick={() => this.setState({ dark: !this.state.dark })}
             >

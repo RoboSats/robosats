@@ -445,9 +445,11 @@ class MakerPage extends Component {
                 disabled={this.state.enableAmountRange}
                 variant={this.state.enableAmountRange ? 'filled' : 'outlined'}
                 error={
-                  !!((this.state.amount < this.getMinAmount() ||
-                    this.state.amount > this.getMaxAmount()) &
-                  (this.state.amount != ''))
+                  !!(
+                    (this.state.amount < this.getMinAmount() ||
+                      this.state.amount > this.getMaxAmount()) &
+                    (this.state.amount != '')
+                  )
                 }
                 helperText={
                   (this.state.amount < this.getMinAmount()) & (this.state.amount != '')
@@ -615,8 +617,8 @@ class MakerPage extends Component {
 
   handleChangePublicDuration = (date) => {
     const d = new Date(date);
-      const hours = d.getHours();
-      const minutes = d.getMinutes();
+    const hours = d.getHours();
+    const minutes = d.getMinutes();
 
     const total_secs = hours * 60 * 60 + minutes * 60;
 
@@ -628,8 +630,8 @@ class MakerPage extends Component {
 
   handleChangeEscrowDuration = (date) => {
     const d = new Date(date);
-      const hours = d.getHours();
-      const minutes = d.getMinutes();
+    const hours = d.getHours();
+    const minutes = d.getMinutes();
 
     const total_secs = hours * 60 * 60 + minutes * 60;
 
