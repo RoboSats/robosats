@@ -58,7 +58,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const [xRange, setXRange] = useState<number>(8);
   const [xType, setXType] = useState<string>('premium');
   const [currencyCode, setCurrencyCode] = useState<number>(1);
-  const [center, setCenter] = useState<number>(0);
+  const [center, setCenter] = useState<number>();
 
   useEffect(() => {
     if (Object.keys(limits).length === 0) {
@@ -106,7 +106,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setCenter(medianValue);
       setXRange(maxRange);
       setRangeSteps(rangeSteps);
-    } else if (lastDayPremium) {
+    } else if (lastDayPremium != undefined) {
       setCenter(lastDayPremium);
       setXRange(8);
       setRangeSteps(0.5);
@@ -127,8 +127,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
     const buySerie: Datum[] = generateSerie(sortedBuyOrders);
     const sellSerie: Datum[] = generateSerie(sortedSellOrders);
 
-    const maxX: number = center + xRange;
-    const minX: number = center - xRange;
+    const maxX: number = (center || 0) + xRange;
+    const minX: number = (center || 0) - xRange;
 
     setSeries([
       {
@@ -143,7 +143,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   };
 
   const generateSerie = (orders: Order[]): Datum[] => {
-    if (!center) {
+    if (center == undefined) {
       return [];
     }
 
@@ -204,11 +204,11 @@ const DepthChart: React.FC<DepthChartProps> = ({
       d={props.lineGenerator([
         {
           y: 0,
-          x: props.xScale(center),
+          x: props.xScale(center || 0),
         },
         {
           y: props.innerHeight,
-          x: props.xScale(center),
+          x: props.xScale(center || 0),
         },
       ])}
       fill='none'
@@ -278,7 +278,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
     history.push('/order/' + point.data?.order?.id);
   };
 
-  return bookLoading || !center || enrichedOrders.length < 1 ? (
+  return bookLoading || center == undefined || enrichedOrders.length < 1 ? (
     <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 200, height: 420 }}>
       <CircularProgress />
     </div>
