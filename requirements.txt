@@ -27,3 +27,5 @@ django-import-export==2.7.1
 requests[socks]
 python-gnupg==0.4.9
 daphne==3.0.2
+drf-spectacular==0.23.1
+drf-spectacular-sidecar==2022.9.1

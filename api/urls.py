@@ -1,7 +1,10 @@
 from django.urls import path
 from .views import MakerView, OrderView, UserView, BookView, InfoView, RewardView, PriceView, LimitView, HistoricalView, TickView, StealthView
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 urlpatterns = [
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path("make/", MakerView.as_view()),
     path("order/",OrderView.as_view({
             "get": "get",

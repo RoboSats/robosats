@@ -1,6 +1,8 @@
 import os
 from re import T
 from django.db.models import Sum, Q
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import status, viewsets
 from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
 from rest_framework.views import APIView
@@ -11,7 +13,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 
-from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer, TickSerializer, StealthSerializer
+from api.serializers import InfoSerializer, ListOrderSerializer, MakeOrderSerializer, OrderPublicSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer, TickSerializer, StealthSerializer
 from api.models import LNPayment, MarketTick, OnchainPayment, Order, Currency, Profile
 from control.models import AccountingDay, BalanceLog
 from api.logics import Logics
@@ -818,12 +820,40 @@ class UserView(APIView):
 
 
 class BookView(ListAPIView):
-    serializer_class = ListOrderSerializer
+    serializer_class = OrderPublicSerializer
     queryset = Order.objects.filter(status=Order.Status.PUB)
 
+    @extend_schema(
+        summary='Get public orders',
+        description='Get public orders in the book.',
+        parameters=[
+            OpenApiParameter(
+                name='currency',
+                location=OpenApiParameter.QUERY,
+                description=(
+                    'The currency id to filter by. Currency IDs can be found [here]'
+                    '(https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/static/assets/currencies.json). '
+                    'Value of `0` means ANY currency'
+                ),
+                type=int,
+            ),
+            OpenApiParameter(
+                name='type',
+                location=OpenApiParameter.QUERY,
+                description=(
+                    'Order type to filter by\n'
+                    '- `0` - BUY\n'
+                    '- `1` - SELL\n'
+                    '- `2` - ALL'
+                ),
+                type=int,
+                enum=[0,1,2]
+            )
+        ]
+    )
     def get(self, request, format=None):
-        currency = request.GET.get("currency")
-        type = request.GET.get("type")
+        currency = request.GET.get("currency", 0)
+        type = request.GET.get("type", 2)
 
         queryset = Order.objects.filter(status=Order.Status.PUB)
 
@@ -863,6 +893,38 @@ class BookView(ListAPIView):
 
 class InfoView(ListAPIView):
 
+    serializer_class = InfoSerializer
+    import textwrap
+
+    @extend_schema(
+        summary='Get info',
+        description=textwrap.dedent(
+            """
+            Get general info (overview) about the exchange.
+
+            **Info**:
+            - Current market data
+              - num. of orders
+              - book liquidity
+              - 24h Active Robots 
+              - 24h Non-KYC Premium
+              - 24h Volume
+              - all time Volume
+            - Node info 
+              - lnd version
+              - node id
+              - node alias
+              - network
+            - Fees
+              - maker and taker fees
+              - on-chain swap fees
+            - Robot (If autheticated)
+              - nickname
+              - referral code
+              - earned rewards
+            """
+        )
+    )
     def get(self, request):
         context = {}
 
@@ -964,6 +1026,10 @@ class PriceView(ListAPIView):
 
     serializer_class = PriceSerializer
 
+    @extend_schema(
+        summary='Get last market prices',
+        description='Get the last market price for each currency. Returns the last trade info in each currency.'
+    )
     def get(self, request):
 
         payload = {}
@@ -989,12 +1055,22 @@ class TickView(ListAPIView):
     queryset = MarketTick.objects.all()
     serializer_class = TickSerializer
 
+    @extend_schema(
+        summary='Get market ticks',
+        description='Get all market ticks. Returns a list of all the market ticks since inception.\n'
+        'CEX price is also recorded for useful insight on the historical premium of Non-KYC BTC. '
+        'Price is set when taker bond is locked.',
+    )
     def get(self, request):
         data = self.serializer_class(self.queryset.all(), many=True, read_only=True).data
         return Response(data, status=status.HTTP_200_OK)
 
 class LimitView(ListAPIView):
 
+    @extend_schema(
+        summary='List order limits',
+        description='Get a list of order limits for every currency pair available.',
+    )
     def get(self, request):
         
         # Trade limits as BTC
@@ -1019,6 +1095,10 @@ class LimitView(ListAPIView):
         return Response(payload, status.HTTP_200_OK)
 
 class HistoricalView(ListAPIView):
+    @extend_schema(
+        summary='Get historical cxchange activity',
+        description='Get historical exchange activity. Currently, it lists each day\'s total contracts and their volume in BTC since inception.',
+    )
     def get(self, request):
         payload = {}
         queryset = AccountingDay.objects.all().order_by('day')
