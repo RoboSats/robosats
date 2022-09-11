@@ -822,8 +822,8 @@ class BookView(ListAPIView):
     queryset = Order.objects.filter(status=Order.Status.PUB)
 
     def get(self, request, format=None):
-        currency = request.GET.get("currency")
-        type = request.GET.get("type")
+        currency = request.GET.get("currency", 0)
+        type = request.GET.get("type", 2)
 
         queryset = Order.objects.filter(status=Order.Status.PUB)
 
