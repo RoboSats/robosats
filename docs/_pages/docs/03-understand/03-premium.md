@@ -2,13 +2,13 @@
 layout: single
 title: Premium over the Market
 permalink: /docs/premium/
+toc: true
+toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/percent.svg"/>Premium'
   nav: docs
 src: "_pages/docs/03-understand/03-premium.md"
 ---
-
-# **Summary**
 
 The premium associated with your peer-to-peer order is the price difference that exists over or under the going rate for bitcoin-fiat found on your typical centralized exchanges.
 

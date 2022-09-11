@@ -10,8 +10,6 @@ sidebar:
 src: "_pages/docs/03-understand/02-robots.md"
 ---
 
-# **Summary**
-
 Assume the identity of a robot with a corresponding private token. Use this anonymous identity to begin making and taking orders with RoboSats! It is not recommended to use the same robot twice as this degrades end-user privacy.
 
 Each new webpage visit to the RoboSats site will present the end-user with an automatically and randomly generated robot avatar and username to provide default privacy for the end-user.
