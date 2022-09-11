@@ -1071,6 +1071,7 @@ class OrderPage extends Component {
         </Grid>
         <Grid item xs={6} align='left'>
           <TradeBox
+            theme={this.props.theme}
             push={this.props.history.push}
             getOrderDetails={this.getOrderDetails}
             pauseLoading={this.state.pauseLoading}
@@ -1116,6 +1117,7 @@ class OrderPage extends Component {
             </div>
             <div style={{ display: this.state.tabValue == 1 ? '' : 'none' }}>
               <TradeBox
+                theme={this.props.theme}
                 push={this.props.history.push}
                 getOrderDetails={this.getOrderDetails}
                 pauseLoading={this.state.pauseLoading}

@@ -21,23 +21,57 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      dark: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
       expandedSettings: false,
       openLearn: false,
-      theme: { typography: { fontSize: 14 } },
+      theme: createTheme({
+        palette: {
+          mode:
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light',
+          background: {
+            default:
+              window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? '#070707'
+                : '#fff',
+          },
+        },
+      }),
     };
   }
 
-  lightTheme = createTheme({});
-
-  darkTheme = createTheme({
-    palette: {
-      mode: 'dark',
-      background: {
-        default: '#070707',
-      },
-    },
-  });
+  handleThemeChange = () => {
+    if (this.state.theme.palette.mode === 'light') {
+      this.setState(({ theme }) => ({
+        theme: createTheme({
+          typography: {
+            fontSize: theme.typography.fontSize,
+          },
+          palette: {
+            mode: 'dark',
+            background: {
+              default: '#070707',
+            },
+          },
+        }),
+      }));
+    }
+    if (this.state.theme.palette.mode === 'dark') {
+      this.setState(({ theme }) => ({
+        theme: createTheme({
+          typography: {
+            fontSize: theme.typography.fontSize,
+          },
+          palette: {
+            mode: 'light',
+            background: {
+              default: '#fff',
+            },
+          },
+        }),
+      }));
+    }
+  };
 
   onSettingsClick = () => {
     this.setState({
@@ -62,7 +96,7 @@ export default class App extends Component {
     return (
       <Suspense fallback='loading language'>
         <I18nextProvider i18n={i18n}>
-          <ThemeProvider theme={this.state.dark ? this.darkTheme : createTheme(this.state.theme)}>
+          <ThemeProvider theme={this.state.theme}>
             <CssBaseline />
             <LearnDialog
               open={this.state.openLearn}
@@ -78,9 +112,9 @@ export default class App extends Component {
             <IconButton
               color='inherit'
               sx={{ position: 'fixed', right: '0px' }}
-              onClick={() => this.setState({ dark: !this.state.dark })}
+              onClick={() => this.handleThemeChange()}
             >
-              {this.state.dark ? <LightModeIcon /> : <DarkModeIcon />}
+              {this.state.theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
             </IconButton>
             <IconButton
               sx={{ position: 'fixed', right: '34px' }}

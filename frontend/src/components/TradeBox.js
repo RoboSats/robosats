@@ -281,13 +281,12 @@ class TradeBox extends Component {
         </Grid>
 
         <Grid item xs={12} align='center'>
-          <Box sx={{ bgcolor: '#ffffff', width: '315px', position: 'relative', left: '-5px' }}>
-            <QRCode
-              value={this.props.data.bond_invoice}
-              size={305}
-              style={{ position: 'relative', top: '3px' }}
-            />
-          </Box>
+          <QRCode
+            bgColor={'rgba(255, 255, 255, 0)'}
+            fgColor={this.props.theme.palette.text.primary}
+            value={this.props.data.bond_invoice}
+            size={305}
+          />
           <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
             <Button
               size='small'
@@ -416,13 +415,12 @@ class TradeBox extends Component {
           </Typography>
         </Grid>
         <Grid item xs={12} align='center'>
-          <Box sx={{ bgcolor: '#ffffff', width: '315px', position: 'relative', left: '-5px' }}>
-            <QRCode
-              value={this.props.data.escrow_invoice}
-              size={305}
-              style={{ position: 'relative', top: '3px' }}
-            />
-          </Box>
+          <QRCode
+            bgColor={'rgba(255, 255, 255, 0)'}
+            fgColor={this.props.theme.palette.text.primary}
+            value={this.props.data.escrow_invoice}
+            size={305}
+          />
           <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
             <Button
               size='small'
@@ -512,6 +510,8 @@ class TradeBox extends Component {
         <DialogContent>
           <div style={{ textAlign: 'center' }}>
             <QRCode
+              bgColor={'rgba(255, 255, 255, 0)'}
+              fgColor={this.props.theme.palette.text.primary}
               value={
                 'tg://resolve?domain=' +
                 this.props.data.tg_bot_name +
