@@ -54,10 +54,11 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const theme = useTheme();
   const [enrichedOrders, setEnrichedOrders] = useState<Order[]>([]);
   const [series, setSeries] = useState<Serie[]>([]);
+  const [rangeSteps, setRangeSteps] = useState<number>(8);
   const [xRange, setXRange] = useState<number>(8);
   const [xType, setXType] = useState<string>('premium');
   const [currencyCode, setCurrencyCode] = useState<number>(1);
-  const [center, setCenter] = useState<number>(0);
+  const [center, setCenter] = useState<number>();
 
   useEffect(() => {
     if (Object.keys(limits).length === 0) {
@@ -96,18 +97,21 @@ const DepthChart: React.FC<DepthChartProps> = ({
   useEffect(() => {
     if (xType === 'base_amount') {
       const prices: number[] = enrichedOrders.map((order) => order?.base_amount || 0);
-      setCenter(~~median(prices));
-      setXRange(1500);
-    } else if (lastDayPremium) {
+
+      const medianValue = ~~median(prices);
+      const maxValue = prices.sort((a, b) => b - a).slice(0, 1)[0] || 1500;
+      const maxRange = maxValue - medianValue;
+      const rangeSteps = maxRange / 10;
+
+      setCenter(medianValue);
+      setXRange(maxRange);
+      setRangeSteps(rangeSteps);
+    } else if (lastDayPremium != undefined) {
       setCenter(lastDayPremium);
       setXRange(8);
+      setRangeSteps(0.5);
     }
   }, [enrichedOrders, xType, lastDayPremium, currencyCode]);
-
-  const calculateBtc = (order: Order): number => {
-    const amount = parseInt(order.amount) || order.max_amount;
-    return amount / order.price;
-  };
 
   const generateSeries: () => void = () => {
     const sortedOrders: Order[] =
@@ -123,8 +127,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
     const buySerie: Datum[] = generateSerie(sortedBuyOrders);
     const sellSerie: Datum[] = generateSerie(sortedSellOrders);
 
-    const maxX: number = center + xRange;
-    const minX: number = center - xRange;
+    const maxX: number = (center || 0) + xRange;
+    const minX: number = (center || 0) - xRange;
 
     setSeries([
       {
@@ -139,7 +143,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   };
 
   const generateSerie = (orders: Order[]): Datum[] => {
-    if (!center) {
+    if (center == undefined) {
       return [];
     }
 
@@ -147,7 +151,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
     let serie: Datum[] = [];
     orders.forEach((order) => {
       const lastSumOrders = sumOrders;
-      sumOrders += calculateBtc(order);
+      sumOrders += (order.satoshis_now || 0) / 100000000;
       const datum: Datum[] = [
         {
           // Vertical Line
@@ -200,11 +204,11 @@ const DepthChart: React.FC<DepthChartProps> = ({
       d={props.lineGenerator([
         {
           y: 0,
-          x: props.xScale(center),
+          x: props.xScale(center || 0),
         },
         {
           y: props.innerHeight,
-          x: props.xScale(center),
+          x: props.xScale(center || 0),
         },
       ])}
       fill='none'
@@ -270,14 +274,11 @@ const DepthChart: React.FC<DepthChartProps> = ({
     return `${value}%`;
   };
   const formatAxisY = (value: number): string => `${value}BTC`;
-
-  const rangeSteps = xType === 'base_amount' ? 200 : 0.5;
-
   const handleOnClick: PointMouseHandler = (point: Point) => {
     history.push('/order/' + point.data?.order?.id);
   };
 
-  return bookLoading || !center || enrichedOrders.length < 1 ? (
+  return bookLoading || center == undefined || enrichedOrders.length < 1 ? (
     <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 200, height: 420 }}>
       <CircularProgress />
     </div>
