@@ -822,8 +822,8 @@ class BookView(ListAPIView):
     queryset = Order.objects.filter(status=Order.Status.PUB)
 
     def get(self, request, format=None):
-        currency = request.GET.get("currency")
-        type = request.GET.get("type")
+        currency = request.GET.get("currency", 0)
+        type = request.GET.get("type", 2)
 
         queryset = Order.objects.filter(status=Order.Status.PUB)
 
@@ -849,6 +849,7 @@ class BookView(ListAPIView):
             data = ListOrderSerializer(order).data
             data["maker_nick"] = str(order.maker)
 
+            data["satoshis_now"] = Logics.satoshis_now(order)
             # Compute current premium for those orders that are explicitly priced.
             data["price"], data["premium"] = Logics.price_and_premium_now(
                 order)

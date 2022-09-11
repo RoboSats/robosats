@@ -1,1 +1,1 @@
-export { default } from "./FlagWithProps";
+export { default } from './FlagWithProps';

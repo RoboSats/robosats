@@ -1,5 +1,5 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
   Dialog,
@@ -11,7 +11,7 @@ import {
   ListItem,
   ListItemIcon,
   Typography,
-} from "@mui/material";
+} from '@mui/material';
 
 import InventoryIcon from '@mui/icons-material/Inventory';
 import SellIcon from '@mui/icons-material/Sell';
@@ -21,9 +21,9 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import BookIcon from '@mui/icons-material/Book';
 import LinkIcon from '@mui/icons-material/Link';
 
-import { pn } from "../../utils/prettyNumbers";
+import { pn } from '../../utils/prettyNumbers';
 
-type Props = {
+interface Props {
   isOpen: boolean;
   handleClickCloseExchangeSummary: () => void;
   numPublicBuyOrders: number;
@@ -50,106 +50,108 @@ const ExchangeSummaryDialog = ({
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   if (swapFeeRate === null || swapFeeRate === undefined) {
-    swapFeeRate = 0
+    swapFeeRate = 0;
   }
 
   return (
     <Dialog
       open={isOpen}
       onClose={handleClickCloseExchangeSummary}
-      aria-labelledby="exchange-summary-title"
-      aria-describedby="exchange-summary-description"
+      aria-labelledby='exchange-summary-title'
+      aria-describedby='exchange-summary-description'
     >
       <DialogContent>
-        <Typography component="h5" variant="h5">{t("Exchange Summary")}</Typography>
+        <Typography component='h5' variant='h5'>
+          {t('Exchange Summary')}
+        </Typography>
 
         <List dense>
-          <ListItem >
+          <ListItem>
             <ListItemIcon>
               <InventoryIcon />
             </ListItemIcon>
 
             <ListItemText
-              primaryTypographyProps={{fontSize: '14px'}}
-              secondaryTypographyProps={{fontSize: '12px'}}
+              primaryTypographyProps={{ fontSize: '14px' }}
+              secondaryTypographyProps={{ fontSize: '12px' }}
               primary={numPublicBuyOrders}
-              secondary={t("Public buy orders")}
+              secondary={t('Public buy orders')}
             />
           </ListItem>
 
           <Divider />
 
-          <ListItem >
+          <ListItem>
             <ListItemIcon>
               <SellIcon />
             </ListItemIcon>
 
             <ListItemText
-              primaryTypographyProps={{fontSize: '14px'}}
-              secondaryTypographyProps={{fontSize: '12px'}}
+              primaryTypographyProps={{ fontSize: '14px' }}
+              secondaryTypographyProps={{ fontSize: '12px' }}
               primary={numPublicSellOrders}
-              secondary={t("Public sell orders")}
+              secondary={t('Public sell orders')}
             />
           </ListItem>
 
-          <Divider/>
+          <Divider />
 
-          <ListItem >
+          <ListItem>
             <ListItemIcon>
               <BookIcon />
             </ListItemIcon>
 
             <ListItemText
-              primaryTypographyProps={{fontSize: '14px'}}
-              secondaryTypographyProps={{fontSize: '12px'}}
+              primaryTypographyProps={{ fontSize: '14px' }}
+              secondaryTypographyProps={{ fontSize: '12px' }}
               primary={`${pn(bookLiquidity)} Sats`}
-              secondary={t("Book liquidity")}
+              secondary={t('Book liquidity')}
             />
           </ListItem>
 
-          <Divider/>
+          <Divider />
 
-          <ListItem >
+          <ListItem>
             <ListItemIcon>
               <SmartToyIcon />
             </ListItemIcon>
 
             <ListItemText
-              primaryTypographyProps={{fontSize: '14px'}}
-              secondaryTypographyProps={{fontSize: '12px'}}
+              primaryTypographyProps={{ fontSize: '14px' }}
+              secondaryTypographyProps={{ fontSize: '12px' }}
               primary={activeRobotsToday}
-              secondary={t("Today active robots")}
+              secondary={t('Today active robots')}
             />
           </ListItem>
 
-          <Divider/>
+          <Divider />
 
-          <ListItem >
+          <ListItem>
             <ListItemIcon>
               <PriceChangeIcon />
             </ListItemIcon>
 
             <ListItemText
-              primaryTypographyProps={{fontSize: '14px'}}
-              secondaryTypographyProps={{fontSize: '12px'}}
+              primaryTypographyProps={{ fontSize: '14px' }}
+              secondaryTypographyProps={{ fontSize: '12px' }}
               primary={`${lastDayNonkycBtcPremium}%`}
-              secondary={t("24h non-KYC bitcoin premium")}
+              secondary={t('24h non-KYC bitcoin premium')}
             />
           </ListItem>
 
-          <Divider/>
+          <Divider />
 
-          <ListItem >
+          <ListItem>
             <ListItemIcon>
               <PercentIcon />
             </ListItemIcon>
 
-            <Grid container >
+            <Grid container>
               <Grid item xs={6}>
                 <ListItemText
-                  primaryTypographyProps={{fontSize: '14px'}}
-                  secondaryTypographyProps={{fontSize: '12px'}}
-                  secondary={t("Maker fee")}
+                  primaryTypographyProps={{ fontSize: '14px' }}
+                  secondaryTypographyProps={{ fontSize: '12px' }}
+                  secondary={t('Maker fee')}
                 >
                   {(makerFee * 100).toFixed(3)}%
                 </ListItemText>
@@ -157,9 +159,9 @@ const ExchangeSummaryDialog = ({
 
               <Grid item xs={6}>
                 <ListItemText
-                  primaryTypographyProps={{fontSize: '14px'}}
-                  secondaryTypographyProps={{fontSize: '12px'}}
-                  secondary={t("Taker fee")}
+                  primaryTypographyProps={{ fontSize: '14px' }}
+                  secondaryTypographyProps={{ fontSize: '12px' }}
+                  secondary={t('Taker fee')}
                 >
                   {(takerFee * 100).toFixed(3)}%
                 </ListItemText>
@@ -169,19 +171,18 @@ const ExchangeSummaryDialog = ({
 
           <Divider />
 
-          <ListItem >
+          <ListItem>
             <ListItemIcon>
               <LinkIcon />
             </ListItemIcon>
 
             <ListItemText
-              primaryTypographyProps={{fontSize: '14px'}}
-              secondaryTypographyProps={{fontSize: '12px'}}
+              primaryTypographyProps={{ fontSize: '14px' }}
+              secondaryTypographyProps={{ fontSize: '12px' }}
               primary={`${swapFeeRate.toPrecision(3)}%`}
-              secondary={t("Current onchain payout fee")}
+              secondary={t('Current onchain payout fee')}
             />
           </ListItem>
-
         </List>
       </DialogContent>
     </Dialog>

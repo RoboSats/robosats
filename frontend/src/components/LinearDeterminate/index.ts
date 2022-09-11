@@ -1,1 +1,1 @@
-export { default } from "./LinearDeterminate";
+export { default } from './LinearDeterminate';

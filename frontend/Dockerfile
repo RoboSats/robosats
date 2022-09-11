@@ -10,8 +10,8 @@ COPY package.json package.json
 COPY package-lock.json package-lock.json
 
 # packages we use
-
-RUN npm install
+# Remove --legacy-peer-deps once @nivo/core and @nivo/line are react18 compatible
+RUN npm install --legacy-peer-deps
 
 # launch
 
