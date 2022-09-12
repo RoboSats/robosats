@@ -12,6 +12,7 @@
   "dependencies": {
     "react": "^18.2.0",
     "react-native": "^0.69.1",
+    "react-native-tor": "^0.1.8",
     "react-native-webview": "^11.22.3"
   },
   "devDependencies": {
