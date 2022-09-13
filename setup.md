@@ -38,6 +38,15 @@ If you need to edit CSS or other static files in `/frontend/static`, simply add 
 i.e: index.css 
 Make "{robosats-site}/static/css/index.css" redirect to "127.0.0.1:8080/css/index.css"
 
+# Documentation Jekyll Site Only
+Simply run the de docker-compose within /docs/ in order to watch files, build and serve the Learn RoboSats site locally.
+```bash
+cd docs
+docker-compose up
+# press Ctrl+C to exit the process
+```
+Then visit `127.0.0.1:4000` on your browser. Once you save changes on a file it will take around 10s for the site to update (press <Ctrl+Shift+R> to force-refresh your browser).
+
 # Full Stack Development
 ## The Easy Way: Docker-compose (-dev containers running on testnet)
 
