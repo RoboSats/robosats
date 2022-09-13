@@ -33,6 +33,7 @@ import Chat from './EncryptedChat';
 import TradeSummary from './TradeSummary';
 import MediaQuery from 'react-responsive';
 import { copyToClipboard } from '../utils/clipboard';
+import { apiClient } from '../services/api';
 
 // Icons
 import PercentIcon from '@mui/icons-material/Percent';
@@ -134,16 +135,9 @@ class TradeBox extends Component {
   };
 
   handleClickAgreeDisputeButton = () => {
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        action: 'dispute',
-      }),
-    };
-    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
-      .then((response) => response.json())
-      .then((data) => this.props.completeSetState(data));
+    apiClient.post('/api/order?order_id=' + this.props.data.id, {
+      action: 'dispute',
+    }).then((data) => this.props.completeSetState(data));
     this.handleClickCloseConfirmDispute();
   };
 
@@ -547,16 +541,9 @@ class TradeBox extends Component {
 
   handleClickPauseOrder = () => {
     this.props.completeSetState({ pauseLoading: true });
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        action: 'pause',
-      }),
-    };
-    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
-      .then((response) => response.json())
-      .then((data) => this.props.getOrderDetails(data.id));
+    apiClient.post('/api/order?order_id=' + this.props.data.id, {
+      action: 'pause',
+    }).then((data) => this.props.getOrderDetails(data.id));
   };
 
   showMakerWait = () => {
@@ -713,17 +700,10 @@ class TradeBox extends Component {
   handleClickSubmitInvoiceButton = () => {
     this.setState({ badInvoice: false });
 
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        action: 'update_invoice',
-        invoice: this.state.invoice,
-      }),
-    };
-    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
-      .then((response) => response.json())
-      .then(
+    apiClient.post('/api/order?order_id=' + this.props.data.id, {
+      action: 'update_invoice',
+      invoice: this.state.invoice,
+    }).then(
         (data) =>
           this.setState({ badInvoice: data.bad_invoice }) & this.props.completeSetState(data),
       );
@@ -750,18 +730,11 @@ class TradeBox extends Component {
   handleClickSubmitAddressButton = () => {
     this.setState({ badInvoice: false });
 
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        action: 'update_address',
-        address: this.state.address,
-        mining_fee_rate: Math.max(1, this.state.miningFee),
-      }),
-    };
-    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
-      .then((response) => response.json())
-      .then(
+    apiClient.post('/api/order?order_id=' + this.props.data.id, {
+      action: 'update_address',
+      address: this.state.address,
+      mining_fee_rate: Math.max(1, this.state.miningFee),
+    }).then(
         (data) =>
           this.setState({ badAddress: data.bad_address }) & this.props.completeSetState(data),
       );
@@ -777,20 +750,13 @@ class TradeBox extends Component {
   handleClickSubmitStatementButton = () => {
     this.setState({ badInvoice: false });
 
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        action: 'submit_statement',
-        statement: this.state.statement,
-      }),
-    };
-    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
-      .then((response) => response.json())
-      .then(
-        (data) =>
-          this.setState({ badStatement: data.bad_statement }) & this.props.completeSetState(data),
-      );
+    apiClient.post('/api/order?order_id=' + this.props.data.id, {
+      action: 'submit_statement',
+      statement: this.state.statement,
+    }).then(
+      (data) =>
+        this.setState({ badStatement: data.bad_statement }) & this.props.completeSetState(data),
+    );
   };
 
   handleScan = (data) => {
@@ -1287,30 +1253,16 @@ class TradeBox extends Component {
   }
 
   handleClickConfirmButton = () => {
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        action: 'confirm',
-      }),
-    };
-    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
-      .then((response) => response.json())
-      .then((data) => this.props.completeSetState(data));
+    apiClient.post('/api/order?order_id=' + this.props.data.id, {
+      action: 'confirm',
+    }).then((data) => this.props.completeSetState(data));
   };
 
   handleRatingUserChange = (e) => {
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        action: 'rate_user',
-        rating: e.target.value,
-      }),
-    };
-    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
-      .then((response) => response.json())
-      .then((data) => this.props.completeSetState(data));
+    apiClient.post('/api/order?order_id=' + this.props.data.id, {
+      action: 'rate_user',
+      rating: e.target.value,
+    }).then((data) => this.props.completeSetState(data));
   };
 
   handleRatingRobosatsChange = (e) => {
@@ -1319,17 +1271,10 @@ class TradeBox extends Component {
     }
     this.setState({ rating_platform: e.target.value });
 
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        action: 'rate_platform',
-        rating: e.target.value,
-      }),
-    };
-    fetch('/api/order/' + '?order_id=' + this.props.data.id, requestOptions)
-      .then((response) => response.json())
-      .then((data) => this.props.completeSetState(data));
+    apiClient.post('/api/order?order_id=' + this.props.data.id, {
+      action: 'rate_platform',
+      rating: e.target.value,
+    }).then((data) => this.props.completeSetState(data));
   };
 
   showFiatSentButton() {
@@ -1429,28 +1374,23 @@ class TradeBox extends Component {
 
   handleRenewOrderButtonPressed = () => {
     this.setState({ renewLoading: true });
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        type: this.props.data.type,
-        currency: this.props.data.currency,
-        amount: this.props.data.has_range ? null : this.props.data.amount,
-        has_range: this.props.data.has_range,
-        min_amount: this.props.data.min_amount,
-        max_amount: this.props.data.max_amount,
-        payment_method: this.props.data.payment_method,
-        is_explicit: this.props.data.is_explicit,
-        premium: this.props.data.is_explicit ? null : this.props.data.premium,
-        satoshis: this.props.data.is_explicit ? this.props.data.satoshis : null,
-        public_duration: this.props.data.public_duration,
-        escrow_duration: this.props.data.escrow_duration,
-        bond_size: this.props.data.bond_size,
-        bondless_taker: this.props.data.bondless_taker,
-      }),
+    const body = {
+      type: this.props.data.type,
+      currency: this.props.data.currency,
+      amount: this.props.data.has_range ? null : this.props.data.amount,
+      has_range: this.props.data.has_range,
+      min_amount: this.props.data.min_amount,
+      max_amount: this.props.data.max_amount,
+      payment_method: this.props.data.payment_method,
+      is_explicit: this.props.data.is_explicit,
+      premium: this.props.data.is_explicit ? null : this.props.data.premium,
+      satoshis: this.props.data.is_explicit ? this.props.data.satoshis : null,
+      public_duration: this.props.data.public_duration,
+      escrow_duration: this.props.data.escrow_duration,
+      bond_size: this.props.data.bond_size,
+      bondless_taker: this.props.data.bondless_taker,
     };
-    fetch('/api/make/', requestOptions)
-      .then((response) => response.json())
+    apiClient.post('/api/make/', body)
       .then(
         (data) =>
           this.setState({ badRequest: data.bad_request }) &

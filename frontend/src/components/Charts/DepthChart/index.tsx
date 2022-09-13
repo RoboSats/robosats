@@ -29,6 +29,7 @@ import currencyDict from '../../../../static/assets/currencies.json';
 import PaymentText from '../../PaymentText';
 import getNivoScheme from '../NivoScheme';
 import median from '../../../utils/match';
+import { apiClient } from '../../../services/api/index';
 
 interface DepthChartProps {
   bookLoading: boolean;
@@ -62,8 +63,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
 
   useEffect(() => {
     if (Object.keys(limits).length === 0) {
-      fetch('/api/limits/')
-        .then(async (response) => await response.json())
+      apiClient.get('/api/limits/')
         .then((data) => {
           setAppState({ limits: data });
         });

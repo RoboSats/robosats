@@ -31,6 +31,7 @@ import { pn, amountToString } from '../utils/prettyNumbers';
 import PaymentText from './PaymentText';
 import DepthChart from './Charts/DepthChart';
 import RobotAvatar from './Robots/RobotAvatar';
+import { apiClient } from '../services/api/index';
 
 // Icons
 import { BarChart, FormatListBulleted, Refresh } from '@mui/icons-material';
@@ -51,8 +52,7 @@ class BookPage extends Component {
 
   getOrderDetails(type, currency) {
     this.props.setAppState({ bookLoading: true });
-    fetch('/api/book' + '?currency=' + currency + '&type=' + type)
-      .then((response) => response.json())
+    apiClient.get('/api/book?currency=' + currency + '&type=' + type)
       .then((data) =>
         this.props.setAppState({
           bookNotFound: data.not_found,

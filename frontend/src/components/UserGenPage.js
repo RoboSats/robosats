@@ -27,6 +27,7 @@ import { genKey } from '../utils/pgp';
 import { getCookie, writeCookie, deleteCookie } from '../utils/cookies';
 import { saveAsJson } from '../utils/saveFile';
 import { copyToClipboard } from '../utils/clipboard';
+import { apiClient } from '../services/api/index';
 
 class UserGenPage extends Component {
   constructor(props) {
@@ -63,27 +64,22 @@ class UserGenPage extends Component {
     const strength = tokenStrength(token);
     const refCode = this.refCode;
 
-    const requestOptions = genKey(token).then(function (key) {
+    const requestBody = genKey(token).then(function (key) {
       return {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-        body: JSON.stringify({
-          token_sha256: sha256(token),
-          public_key: key.publicKeyArmored,
-          encrypted_private_key: key.encryptedPrivateKeyArmored,
-          unique_values: strength.uniqueValues,
-          counts: strength.counts,
-          length: token.length,
-          ref_code: refCode,
-        }),
+        token_sha256: sha256(token),
+        public_key: key.publicKeyArmored,
+        encrypted_private_key: key.encryptedPrivateKeyArmored,
+        unique_values: strength.uniqueValues,
+        counts: strength.counts,
+        length: token.length,
+        ref_code: refCode,
       };
     });
 
-    console.log(requestOptions);
+    console.log(requestBody);
 
-    requestOptions.then((options) =>
-      fetch('/api/user/', options)
-        .then((response) => response.json())
+    requestBody.then((body) =>
+      apiClient.post('/api/user/', body)
         .then((data) => {
           console.log(data) &
             this.setState({
@@ -127,11 +123,7 @@ class UserGenPage extends Component {
   };
 
   delGeneratedUser() {
-    const requestOptions = {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-    };
-    fetch('/api/user', requestOptions).then((response) => response.json());
+    apiClient.delete('/api/user')
 
     deleteCookie('sessionid');
     deleteCookie('robot_token');
