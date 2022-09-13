@@ -1,5 +1,5 @@
-import React from 'react';
-import {WebView, WebViewMessageEvent} from 'react-native-webview';
+import React, {useRef} from 'react';
+import {WebView, WebViewMessageEvent, WebViewProps} from 'react-native-webview';
 import {SafeAreaView, Text, Platform} from 'react-native';
 import Tor from 'react-native-tor';
 
@@ -24,11 +24,12 @@ const makeTorRequest = async () => {
 makeTorRequest();
 
 const App = () => {
-  // var uri =
-  //   (Platform.OS === 'android' ? 'file:///android_asset/' : '') +
-  //   'Web.bundle/index.html';
+  const webViewRef = useRef<WebView>();
+  var uri =
+    (Platform.OS === 'android' ? 'file:///android_asset/' : '') +
+    'Web.bundle/index.html';
 
-  const uri = 'https://robosats.onion.moe';
+  // const uri = 'https://robosats.onion.moe';
   const onion =
     'http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion';
 
@@ -39,12 +40,26 @@ const App = () => {
       // true; // note: this is required, or you'll sometimes get silent failures
     `;
 
+  const onMessage = async (event: WebViewMessageEvent) => {
+    console.log(event);
+    webViewRef.current?.injectJavaScript(
+      `
+        (function() { 
+          window.nativeMessage({"detail": "TEST TO WEB"}); 
+        })();
+      `,
+    );
+  };
+
   return (
     <SafeAreaView style={{flex: 1}}>
       <WebView
         source={{
           uri: uri,
         }}
+        onMessage={onMessage}
+        // @ts-ignore
+        ref={ref => (webViewRef.current = ref)}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         sharedCookiesEnabled={true}

@@ -38,6 +38,12 @@ export default class HomePage extends Component {
     }
 
     render() {
+        window.nativeMessage = (event) => {
+            alert(event.detail)
+        };
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          title: 'TEST TO ANDROID'
+        }));
         return (
               <Router >
                   <div className='appCenter'>
