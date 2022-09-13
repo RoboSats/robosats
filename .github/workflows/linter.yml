@@ -30,7 +30,7 @@ jobs:
       - name: 'Install NPM Dependencies'
         run: |
           cd frontend
-          npm install -f
+          npm install
 
       - name: Run linters
         uses: wearerequired/lint-action@v2

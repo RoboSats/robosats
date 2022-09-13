@@ -33,8 +33,7 @@ jobs:
     - name: 'Install NPM Dependencies'
       run: |
         cd frontend
-        npm install --legacy-peer-deps 
-      # npm force install with legacy-peer-deps until new @nivo/core and @nivo/line support react 18
+        npm install
 
     - name:  'Test'
       run: |
