@@ -2,8 +2,21 @@
 *Attention: to use RoboSats you do not need to run the stack, simply visit the website and that's it! This setup guide is intended for developer contributors and platform operators.*
 
 # Frontend Development Only
-
 Running the full stack is not easy, since RoboSats needs of many services. However, contributing to the frontend development can be done with a minimal setup!
+## With Docker
+You can develop frontend-only features using the mainnet backend of the platform by simply running the sorverign node app locally and the `npm-dev` container. The orchestration in `/nodeapp/docker-compose.yml` will run a Tor proxy and torify all requests, as well as, watch for changes to the frontend source files, build it, and place it in the right `/static/`
+
+```bash
+cd nodeapp
+docker-compose up
+# Press Ctrl+C to exit the process
+# Visit 127.0.0.1:12596
+```
+
+You can edit the frontend code in `/frontend/src/` to make the changes you want. Within a few seconds, the `npm-dev` container process will pack the code into the local `main.js`. Visit `127.0.0.1:12596` and you will see your changes on the frontend.
+
+
+## Without Docker
 
 *Set up time ~10 min. Tested in Firefox in Ubuntu.* (Does not work in Chromium)
 
