@@ -90,16 +90,29 @@ services:
       - ./node/lnd:/lnd
     network_mode: service:tor
 
-  celery:
+  celery-worker:
     image: backend
-    container_name: cele-dev
+    container_name: cele-worker-dev
     restart: always
-    command: celery -A robosats worker --beat -l info -S django
     environment:
       REDIS_URL: redis://localhost:6379
     volumes:
       - .:/usr/src/robosats
       - ./node/lnd:/lnd
+    command: celery -A robosats worker --loglevel=WARNING
+    depends_on:
+      - redis
+    network_mode: service:tor
+
+  celery-beat:                                 
+    image: backend
+    container_name: cele-beat-dev
+    restart: always
+    environment:
+      REDIS_URL: redis://localhost:6379
+    command: celery -A robosats beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    depends_on:
+      - redis
     network_mode: service:tor
 
   i2p:
