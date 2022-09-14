@@ -123,7 +123,7 @@ class OrderPage extends Component {
 
   getOrderDetails = (id) => {
     this.setState({ orderId: id });
-    apiClient.get('/api/order?order_id=' + id)
+    apiClient.get('/api/order/?order_id=' + id)
       .then(this.orderDetailsReceived);
   };
 
@@ -185,7 +185,7 @@ class OrderPage extends Component {
   };
 
   sendWeblnInvoice = (invoice) => {
-    apiClient.post('/api/order?order_id=' + this.state.orderId, {
+    apiClient.post('/api/order/?order_id=' + this.state.orderId, {
       action: 'update_invoice',
       invoice,
     }).then((data) => this.completeSetState(data));
@@ -422,7 +422,7 @@ class OrderPage extends Component {
 
   takeOrder = () => {
     this.setState({ loading: true });
-    apiClient.post('/api/order?order_id=' + this.state.orderId, {
+    apiClient.post('/api/order/?order_id=' + this.state.orderId, {
       action: 'take',
       amount: this.state.takeAmount,
     })
@@ -441,7 +441,7 @@ class OrderPage extends Component {
 
   handleClickConfirmCancelButton = () => {
     this.setState({ loading: true });
-    apiClient.post('/api/order?order_id=' + this.state.orderId, {
+    apiClient.post('/api/order/?order_id=' + this.state.orderId, {
       action: 'cancel',
     }).then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
     this.handleClickCloseConfirmCancelDialog();
@@ -541,7 +541,7 @@ class OrderPage extends Component {
   };
 
   handleClickConfirmCollaborativeCancelButton = () => {
-    apiClient.post('/api/order?order_id=' + this.state.orderId, {
+    apiClient.post('/api/order/?order_id=' + this.state.orderId, {
       action: 'cancel',
     }).then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
     this.handleClickCloseCollaborativeCancelDialog();
