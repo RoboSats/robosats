@@ -1,0 +1,61 @@
+
+name: Main
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  django-test:
+    uses: recksato/robosats/.github/workflows/django-test.yml@main
+  
+  frontend-build:
+    uses: recksato/robosats/.github/workflows/frontend-build.yml@main
+  
+  docker-coordinator-image:
+    uses: recksato/robosats/.github/workflows/coordinator-image.yml@main
+    needs: [django-test, frontend-build]
+    with:
+      semver: {{ GET_SEM_VER FROM_TAG }}
+  
+  docker-client-image:
+    uses: recksato/robosats/.github/workflows/client-image.yml@main
+    needs: frontend-build
+    with:
+      semver: {{ GET_SEM_VER FROM_TAG }}
+  
+  android-build:
+    needs: frontend-build
+  
+  changelog:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Generate release changelog"
+        uses: heinrichreimer/github-changelog-generator-action@v2.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} 
+
+  release:
+    needs: [coordinator-image, client-image, android-build, changelog]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: {{ needs.changelog.outputs.changelog }}
+
+As Jobs:
+django-test
+frontend-build
+
+docker-image      | needs django-test and frontend-build
+node-client-image | needs frontend-build
+android-build     | needs frontend-build
+
+Release
+
+#npm install -g auto-changelog
+#auto-changelog
