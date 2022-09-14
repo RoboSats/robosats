@@ -24,7 +24,7 @@ class UnsafeAlert extends Component {
     const http = new XMLHttpRequest();
     http.open('HEAD', `${location.protocol}//${this.getHost()}/selfhosted`, false);
     http.send();
-    return http.status != 404;
+    return http.status == 200;
   }
 
   safe_urls = [
