@@ -285,7 +285,7 @@ const ProfileDialog = ({
 
             <ListItemText>
               <Tooltip
-                placement='top'
+                placement='bottom'
                 enterTouchDelay={0}
                 title={t(
                   "Stealth lightning invoices do not contain details about the trade except an order reference. Enable this setting if you don't want to disclose details to a custodial lightning wallet.",
