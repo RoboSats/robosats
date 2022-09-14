@@ -14,18 +14,16 @@ import {
 interface Props {
   open: boolean;
   onClose: () => void;
-  tg_bot_name: string;
-  tg_token: string;
-  onClickBack: () => void;
+  tgBotName: string;
+  tgToken: string;
   onClickEnable: () => void;
 }
 
 const EnableTelegramDialog = ({
   open,
   onClose,
-  tg_bot_name,
-  tg_token,
-  onClickBack,
+  tgBotName,
+  tgToken,
   onClickEnable,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
@@ -44,7 +42,7 @@ const EnableTelegramDialog = ({
           <QRCode
             bgColor={'rgba(255, 255, 255, 0)'}
             fgColor={theme.palette.text.primary}
-            value={'tg://resolve?domain=' + tg_bot_name + '&start=' + tg_token}
+            value={'tg://resolve?domain=' + tgBotName + '&start=' + tgToken}
             size={275}
           />
         </div>
@@ -55,7 +53,7 @@ const EnableTelegramDialog = ({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClickBack}> {t('Go back')} </Button>
+        <Button onClick={onClose}> {t('Go back')} </Button>
         <Button onClick={onClickEnable} autoFocus>
           {' '}
           {t('Enable')}{' '}

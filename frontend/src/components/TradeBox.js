@@ -27,7 +27,6 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material';
-import { EnableTelegramDialog } from './Dialogs';
 import QRCode from 'react-qr-code';
 import Countdown, { zeroPad } from 'react-countdown';
 import Chat from './EncryptedChat';
@@ -38,7 +37,6 @@ import { copyToClipboard } from '../utils/clipboard';
 // Icons
 import PercentIcon from '@mui/icons-material/Percent';
 import BookIcon from '@mui/icons-material/Book';
-import SendIcon from '@mui/icons-material/Send';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import BalanceIcon from '@mui/icons-material/Balance';
@@ -64,7 +62,6 @@ class TradeBox extends Component {
     this.state = {
       openConfirmFiatReceived: false,
       openConfirmDispute: false,
-      openEnableTelegram: false,
       receiveTab: 0,
       address: '',
       miningFee: 1.05,
@@ -480,24 +477,6 @@ class TradeBox extends Component {
     );
   };
 
-  handleClickOpenTelegramDialog = () => {
-    this.setState({ openEnableTelegram: true });
-  };
-
-  handleClickCloseEnableTelegramDialog = () => {
-    this.setState({ openEnableTelegram: false });
-  };
-
-  handleClickEnableTelegram = () => {
-    window
-      .open(
-        'https://t.me/' + this.props.data.tg_bot_name + '?start=' + this.props.data.tg_token,
-        '_blank',
-      )
-      .focus();
-    this.handleClickCloseEnableTelegramDialog();
-  };
-
   depositHoursMinutes = () => {
     const hours = parseInt(this.props.data.escrow_duration / 3600);
     const minutes = parseInt((this.props.data.escrow_duration - hours * 3600) / 60);
@@ -525,14 +504,6 @@ class TradeBox extends Component {
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
         {this.Sound('locked-invoice')}
-        <EnableTelegramDialog
-          open={this.state.openEnableTelegram}
-          onClose={this.handleClickCloseEnableTelegramDialog}
-          tg_bot_name={this.props.data.tg_bot_name}
-          tg_token={this.props.data.tg_token}
-          onClickBack={this.handleClickCloseEnableTelegramDialog}
-          onClickEnable={this.handleClickEnableTelegram}
-        />
         <Grid item xs={12} align='center'>
           <Typography variant='subtitle1'>
             <b> {t('Your order is public')} </b> {' ' + this.stepXofY()}
@@ -558,18 +529,6 @@ class TradeBox extends Component {
               </Typography>
             </ListItem>
 
-            <Grid item xs={12} align='center'>
-              {this.props.data.tg_enabled ? (
-                <Typography color='primary' component='h6' variant='h6' align='center'>
-                  {t('Telegram enabled')}
-                </Typography>
-              ) : (
-                <Button color='primary' onClick={this.handleClickOpenTelegramDialog}>
-                  <SendIcon />
-                  {t('Enable Telegram Notifications')}
-                </Button>
-              )}
-            </Grid>
             <Divider />
 
             <Grid container>

@@ -25,7 +25,9 @@ import {
   Typography,
 } from '@mui/material';
 
+import { EnableTelegramDialog } from '.';
 import BoltIcon from '@mui/icons-material/Bolt';
+import SendIcon from '@mui/icons-material/Send';
 import NumbersIcon from '@mui/icons-material/Numbers';
 import PasswordIcon from '@mui/icons-material/Password';
 import ContentCopy from '@mui/icons-material/ContentCopy';
@@ -44,6 +46,9 @@ interface Props {
   activeOrderId: string | number;
   lastOrderId: string | number;
   referralCode: string;
+  tgEnabled: boolean;
+  tgBotName: string;
+  tgToken: string;
   handleSubmitInvoiceClicked: (e: any, invoice: string) => void;
   host: string;
   showRewardsSpinner: boolean;
@@ -62,6 +67,9 @@ const ProfileDialog = ({
   activeOrderId,
   lastOrderId,
   referralCode,
+  tgEnabled,
+  tgBotName,
+  tgToken,
   handleSubmitInvoiceClicked,
   host,
   showRewardsSpinner,
@@ -78,6 +86,7 @@ const ProfileDialog = ({
   const [showRewards, setShowRewards] = useState<boolean>(false);
   const [openClaimRewards, setOpenClaimRewards] = useState<boolean>(false);
   const [weblnEnabled, setWeblnEnabled] = useState<boolean>(false);
+  const [openEnableTelegram, setOpenEnableTelegram] = useState<boolean>(false);
 
   useEffect(() => {
     getWebln().then((webln) => {
@@ -108,6 +117,11 @@ const ProfileDialog = ({
         }
       });
     }
+  };
+
+  const handleClickEnableTelegram = () => {
+    window.open('https://t.me/' + tgBotName + '?start=' + tgToken, '_blank').focus();
+    setOpenEnableTelegram(false);
   };
 
   return (
@@ -237,6 +251,32 @@ const ProfileDialog = ({
           </ListItem>
 
           <Divider />
+
+          <EnableTelegramDialog
+            open={openEnableTelegram}
+            onClose={() => setOpenEnableTelegram(false)}
+            tgBotName={tgBotName}
+            tgToken={tgToken}
+            onClickEnable={handleClickEnableTelegram}
+          />
+
+          <ListItem>
+            <ListItemIcon>
+              <SendIcon color='inherit' />
+            </ListItemIcon>
+
+            <ListItemText>
+              {tgEnabled ? (
+                <Typography color='inherit' component='h6' variant='h6' align='center'>
+                  {t('Telegram enabled')}
+                </Typography>
+              ) : (
+                <Button color='primary' onClick={() => setOpenEnableTelegram(true)}>
+                  {t('Enable Telegram Notifications')}
+                </Button>
+              )}
+            </ListItemText>
+          </ListItem>
 
           <ListItem>
             <ListItemIcon>
