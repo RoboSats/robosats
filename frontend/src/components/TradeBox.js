@@ -27,6 +27,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material';
+import { EnableTelegramDialog } from './Dialogs';
 import QRCode from 'react-qr-code';
 import Countdown, { zeroPad } from 'react-countdown';
 import Chat from './EncryptedChat';
@@ -497,47 +498,6 @@ class TradeBox extends Component {
     this.handleClickCloseEnableTelegramDialog();
   };
 
-  EnableTelegramDialog = () => {
-    const { t } = this.props;
-    return (
-      <Dialog
-        open={this.state.openEnableTelegram}
-        onClose={this.handleClickCloseEnableTelegramDialog}
-        aria-labelledby='enable-telegram-dialog-title'
-        aria-describedby='enable-telegram-dialog-description'
-      >
-        <DialogTitle id='open-dispute-dialog-title'>{t('Enable TG Notifications')}</DialogTitle>
-        <DialogContent>
-          <div style={{ textAlign: 'center' }}>
-            <QRCode
-              bgColor={'rgba(255, 255, 255, 0)'}
-              fgColor={this.props.theme.palette.text.primary}
-              value={
-                'tg://resolve?domain=' +
-                this.props.data.tg_bot_name +
-                '&start=' +
-                this.props.data.tg_token
-              }
-              size={275}
-            />
-          </div>
-          <DialogContentText id='alert-dialog-description'>
-            {t(
-              'You will be taken to a conversation with RoboSats telegram bot. Simply open the chat and press Start. Note that by enabling telegram notifications you might lower your level of anonymity.',
-            )}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={this.handleClickCloseEnableTelegramDialog}> {t('Go back')} </Button>
-          <Button onClick={this.handleClickEnableTelegram} autoFocus>
-            {' '}
-            {t('Enable')}{' '}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  };
-
   depositHoursMinutes = () => {
     const hours = parseInt(this.props.data.escrow_duration / 3600);
     const minutes = parseInt((this.props.data.escrow_duration - hours * 3600) / 60);
@@ -565,7 +525,14 @@ class TradeBox extends Component {
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
         {this.Sound('locked-invoice')}
-        {this.EnableTelegramDialog()}
+        <EnableTelegramDialog
+          open={this.state.openEnableTelegram}
+          onClose={this.handleClickCloseEnableTelegramDialog}
+          tg_bot_name={this.props.data.tg_bot_name}
+          tg_token={this.props.data.tg_token}
+          onClickBack={this.handleClickCloseEnableTelegramDialog}
+          onClickEnable={this.handleClickEnableTelegram}
+        />
         <Grid item xs={12} align='center'>
           <Typography variant='subtitle1'>
             <b> {t('Your order is public')} </b> {' ' + this.stepXofY()}
