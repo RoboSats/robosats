@@ -4,9 +4,11 @@ from django.db.models import Sum, Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import status, viewsets
+from rest_framework.exceptions import bad_request
 from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
+import textwrap
 
 from django.contrib.auth import authenticate, login, logout
 from django.utils.decorators import method_decorator
@@ -48,6 +50,44 @@ avatar_path.mkdir(parents=True, exist_ok=True)
 class MakerView(CreateAPIView):
     serializer_class = MakeOrderSerializer
 
+    @extend_schema(
+        summary='Create a maker order',
+        description=textwrap.dedent(
+            f"""
+            Create a new order as a maker.
+
+            
+            Default values for the following fields if not specified:
+            - `public_duration` - **{PUBLIC_DURATION}**
+            - `escrow_duration` - **{ESCROW_DURATION}**
+            - `bond_size` -  **{BOND_SIZE}**
+            - `bondless_taker` - **false**
+            - `has_range` - **false**
+            - `premium` - **0**
+            """
+        ),
+        responses={
+            201: ListOrderSerializer,
+            400: {
+                'type': 'object',
+                'properties': {
+                    'bad_request': {
+                        'type': 'string',
+                        'description': 'Reason for the failure',
+                    },
+                },
+            },
+            409: {
+                'type': 'object',
+                'properties': {
+                    'bad_request': {
+                        'type': 'string',
+                        'description': 'Reason for the failure',
+                    },
+                },
+            }
+        }
+    )
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
 
@@ -124,6 +164,7 @@ class MakerView(CreateAPIView):
                 status.HTTP_400_BAD_REQUEST,
             )
 
+
         # Creates a new order
         order = Order(
             type=type,
@@ -160,6 +201,53 @@ class OrderView(viewsets.ViewSet):
     serializer_class = UpdateOrderSerializer
     lookup_url_kwarg = "order_id"
 
+    @extend_schema(
+        summary='[WIP] Get order',
+        description=textwrap.dedent(
+            """
+            **NOT COMPLETE**
+            """
+        ),
+        parameters=[
+            OpenApiParameter(
+                name='order_id',
+                location=OpenApiParameter.QUERY,
+                required=True,
+                type=int,
+            ),
+        ],
+        responses={
+        #     201: ListOrderSerializer,
+            400: {
+                'type': 'object',
+                'properties': {
+                    'bad_request': {
+                        'type': 'string',
+                        'description': 'Reason for the failure',
+                    },
+                },
+            },
+            403: {
+                'type': 'object',
+                'properties': {
+                    'bad_request': {
+                        'type': 'string',
+                        'description': 'Reason for the failure',
+                        'default': 'This order is not available'
+                    },
+                },
+            },
+        #     409: {
+        #         'type': 'object',
+        #         'properties': {
+        #             'bad_request': {
+        #                 'type': 'string',
+        #                 'description': 'Reason for the failure',
+        #             },
+        #         },
+        #     }
+        }
+    )
     def get(self, request, format=None):
         """
         Full trade pipeline takes place while looking/refreshing the order page.
@@ -423,6 +511,53 @@ class OrderView(viewsets.ViewSet):
             
         return Response(data, status.HTTP_200_OK)
 
+    @extend_schema(
+        summary='[WIP] Update order',
+        description=textwrap.dedent(
+            """
+            **NOT COMPLETE**
+            """
+        ),
+        parameters=[
+            OpenApiParameter(
+                name='order_id',
+                location=OpenApiParameter.QUERY,
+                required=True,
+                type=int,
+            ),
+        ],
+        responses={
+        #     201: ListOrderSerializer,
+            400: {
+                'type': 'object',
+                'properties': {
+                    'bad_request': {
+                        'type': 'string',
+                        'description': 'Reason for the failure',
+                    },
+                },
+            },
+            403: {
+                'type': 'object',
+                'properties': {
+                    'bad_request': {
+                        'type': 'string',
+                        'description': 'Reason for the failure',
+                        'default': 'This order is not available'
+                    },
+                },
+            },
+        #     409: {
+        #         'type': 'object',
+        #         'properties': {
+        #             'bad_request': {
+        #                 'type': 'string',
+        #                 'description': 'Reason for the failure',
+        #             },
+        #         },
+        #     }
+        }
+    )
     def take_update_confirm_dispute_cancel(self, request, format=None):
         """
         Here takes place all of the updates to the order object.
@@ -552,6 +687,7 @@ class OrderView(viewsets.ViewSet):
 
         return self.get(request)
 
+
 class UserView(APIView):
     NickGen = NickGenerator(lang="English",
                             use_adv=False,
@@ -563,7 +699,7 @@ class UserView(APIView):
 
     def get(self, request, format=None):
         """
-        DEPRECATED
+        **[DEPRECATED]**
         The old way to generate a robot and login.
         Only for login. No new users allowed. Only available using API endpoint.
         Frontend does not support it anymore.
@@ -628,6 +764,152 @@ class UserView(APIView):
             context["bad_request"] = "User Generation with explicit token deprecated. Only token_sha256 allowed."
             return Response(context, status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(
+        summary='Create user',
+        description=textwrap.dedent(
+            """
+            Create a new Robot 🤖
+
+            `token_sha256` is the SHA256 hash of your token. Make sure you generate your token
+            using cryptographically secure methods. [Here's]() the function the Javascript
+            client uses to generate the tokens. Since the server only recieves the hash of the
+            token, it trusts the client with computing `length`, `counts` and `unique_values`
+            correctly. Check [here](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/src/utils/token.js#L13)
+            to see how the Javascript client copmutes these values. These values are optional,
+            but if provided, the api computes the entropy of the token adds two additional
+            fields to the response JSON - `token_shannon_entropy` and `token_bits_entropy`.
+
+            **Note: It is entirely the clients responsibilty to generate high entropy tokens, and the optional
+            parameters are provided to act as an aid to help determine sufficient entropy, but the server is happy
+            with just any sha256 hash you provide it**
+
+            `public_key` - PGP key associated with the user (Armored ASCII format)
+            `encrypted_private_key` - Private PGP key. This is only stored on the backend for later fetching by
+            the frontend and the key can't really be used by the server since it's protected by the token
+            that only the client knows. Will be made an optional parameter in a future release.
+            On the Javascript client, It's passphrase is set to be the secret token generated.
+
+            A gpg key can be created by:
+
+            ```shell
+            gpg --full-gen-key
+            ```
+
+            it's public key can be exported in ascii armored format with:
+
+            ```shell
+            gpg --export --armor <key-id | email | name>
+            ```
+
+            and it's private key can be exported in ascii armored format with:
+
+            ```shell
+            gpg --export-secret-keys --armor <key-id | email | name>
+            ```
+
+            """
+        ),
+        responses={
+            201: {
+                'type': 'object',
+                'properties': {
+                    'encrypted_private_key' : { 'type': 'string', 'description': 'Armored ASCII PGP private key block'},
+                    'nickname' : { 'type': 'string', 'description': 'Username generated (Robot name)'},
+                    'public_key' : { 'type': 'string', 'description': 'Armored ASCII PGP public key block'},
+                    'referral_code': { 'type': 'string', 'description': 'User\'s referral code'},
+                    'token_bits_entropy' : { 'type': 'integer'},
+                    'token_shannon_entropy' : { 'type': 'integer'},
+                    'wants_stealth': { 'type': 'boolean', 'default': False, 'description': 'Whether the user prefers stealth invoices'},
+                }
+            },
+            202: {
+                'type': 'object',
+                'properties': {
+                    'encrypted_private_key' : { 'type': 'string', 'description': 'Armored ASCII PGP private key block'},
+                    'nickname' : { 'type': 'string', 'description': 'Username generated (Robot name)'},
+                    'public_key' : { 'type': 'string', 'description': 'Armored ASCII PGP public key block'},
+                    'referral_code': { 'type': 'string', 'description': 'User\'s referral code'},
+                    'token_bits_entropy' : { 'type': 'integer'},
+                    'token_shannon_entropy' : { 'type': 'integer'},
+                    'wants_stealth': { 'type': 'boolean', 'default': False, 'description': 'Whether the user prefers stealth invoices'},
+                    'found': { 'type': 'string', 'description': 'Welcome back message' },
+                    'active_order_id': { 'type': 'integer', 'description': 'Active order id if present' },
+                    'last_order_id': { 'type': 'integer', 'description': 'Last order id if present' },
+                }
+            },
+            400: {
+                'oneOf': [
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'active_order_id': { 'type': 'string', 'description': 'Order id the robot is a maker/taker of'},
+                            'nickname': { 'type': 'string', 'description': 'Username (Robot name)'},
+                            'bad_request': {
+                                'type': 'string',
+                                'description': 'Reason for the failure',
+                                'default': 'You are already logged in as {nickname} and have an active order'
+                            },
+                        },
+                        'description': 'Response when you already authenticated and have an order'
+                    },
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'bad_request': {
+                                'type': 'string',
+                                'description': 'Reason for the failure',
+                            },
+                        },
+                    },
+                ]
+            },
+            403: {
+                'type': 'object',
+                'properties': {
+                    'bad_request': {
+                        'type': 'string',
+                        'description': 'Reason for the failure',
+                        'default': 'Enter a different token',
+                    },
+                    'found': { 'type': 'string', 'default': 'Bad luck, this nickname is taken' },
+                },
+            }
+        },
+        examples=[
+            OpenApiExample('Successfuly created user',
+                value={
+                    "token_shannon_entropy": 0.7714559798089662,
+                    "token_bits_entropy": 169.21582985307933,
+                    "nickname": "StackerMan420",
+                    "referral_code": "lfvv4-ppNi1",
+                    "public_key": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n......\n......",
+                    "encrypted_private_key": "-----BEGIN PGP PRIVATE KEY BLOCK-----\n\n......\n......",
+                    "wants_stealth": False
+                },
+                status_codes=[201]
+            ),
+            OpenApiExample('Already authenticated and have an order',
+                value={
+                    'active_order_id': '42069',
+                    'nickname': 'StackerMan210',
+                    'bad_request': 'You are already logged in as {nickname} and have an active order'
+                },
+                status_codes=[400]
+            ),
+            OpenApiExample('When required token entropy not met',
+                value={
+                    'bad_request': 'The token does not have enough entropy'
+                },
+                status_codes=[400]
+            ),
+            OpenApiExample('Invalid PGP public key provided',
+                value={
+                    'bad_request': 'Your PGP public key does not seem valid'
+                },
+                status_codes=[400]
+            ),
+        ],
+    )
     def post(self, request, format=None):
         """
         Get a new user derived from a high entropy token
@@ -781,6 +1063,36 @@ class UserView(APIView):
                 context["bad_request"] = "Enter a different token"
                 return Response(context, status.HTTP_403_FORBIDDEN)
 
+    @extend_schema(
+        summary='Delete user',
+        description=textwrap.dedent(
+            """
+            Delete a Robot. Deleting a robot is not allowed if the robot has an active order, has had completed trades or was created more than 30 mins ago.
+            Mainly used on the frontend to "Generate new Robot" without flooding the DB with discarded robots.
+            """
+        ),
+        responses={
+            403: {},
+            400: {
+                'type': 'object',
+                'properties': {
+                    'bad_request': {
+                        'type': 'string',
+                        'description': 'Reason for the failure',
+                    },
+                },
+            },
+            301: {
+                'type': 'object',
+                'properties': {
+                    'user_deleted': {
+                        'type': 'string',
+                        'default': 'User deleted permanently',
+                    },
+                },
+            }
+        }
+    )
     def delete(self, request):
         """Pressing "give me another" deletes the logged in user"""
         user = request.user
@@ -891,10 +1203,10 @@ class BookView(ListAPIView):
 
         return Response(book_data, status=status.HTTP_200_OK)
 
+
 class InfoView(ListAPIView):
 
     serializer_class = InfoSerializer
-    import textwrap
 
     @extend_schema(
         summary='Get info',
@@ -906,10 +1218,10 @@ class InfoView(ListAPIView):
             - Current market data
               - num. of orders
               - book liquidity
-              - 24h Active Robots 
-              - 24h Non-KYC Premium
-              - 24h Volume
-              - all time Volume
+              - 24h active robots 
+              - 24h non-KYC premium
+              - 24h volume
+              - all time volume
             - Node info 
               - lnd version
               - node id
@@ -997,6 +1309,58 @@ class InfoView(ListAPIView):
 class RewardView(CreateAPIView):
     serializer_class = ClaimRewardSerializer
 
+    @extend_schema(
+        summary='Withdraw reward',
+        description='Withdraw user reward by submitting an invoice',
+        responses={
+            200: {
+                'type': 'object',
+                'properties': {
+                    'successful_withdrawal' : { 'type': 'boolean', 'default': True}
+                }
+            },
+            400: {
+                'oneOf': [
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'successful_withdrawal' : { 'type': 'boolean', 'default': False},
+                            'bad_invoice': { 'type': 'string', 'description': 'More context for the reason of the failure'},
+                        }
+                    },
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'successful_withdrawal' : { 'type': 'boolean', 'default': False},
+                            'bad_request': { 'type': 'string', 'description': 'More context for the reason of the failure'},
+                        },
+                    },
+                ]
+            }
+        },
+        examples=[
+            OpenApiExample('User not authenticated',
+                value={
+                    'bad_request': 'Woops! It seems you do not have a robot avatar',
+                },
+                status_codes=[400]
+            ),
+            OpenApiExample('When no rewards earned',
+                value={
+                    'successful_withdrawal': False,
+                    'bad_invoice': 'You have not earned rewards',
+                },
+                status_codes=[400]
+            ),
+            OpenApiExample('Bad invoice or in case of payment failure',
+                value={
+                    'successful_withdrawal': False,
+                    'bad_invoice': 'Does not look like a valid lightning invoice',
+                },
+                status_codes=[400]
+            )
+        ],
+    )
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
 
@@ -1022,13 +1386,41 @@ class RewardView(CreateAPIView):
 
         return Response({"successful_withdrawal": True}, status.HTTP_200_OK)
 
+
 class PriceView(ListAPIView):
 
     serializer_class = PriceSerializer
 
     @extend_schema(
         summary='Get last market prices',
-        description='Get the last market price for each currency. Returns the last trade info in each currency.'
+        description='Get the last market price for each currency. Also, returns some more info about the last trade in each currency.',
+        responses={
+            200: {
+                'type': 'object',
+                'additionalProperties': {
+                    'type': 'object',
+                    'properties': {
+                        'price': {'type': 'integer'},
+                        'volume': {'type': 'integer'},
+                        'premium': {'type': 'integer'},
+                        'timestamp': {'type': 'string', 'format': 'date-time'},
+                    }
+                }
+            },
+        },
+        examples=[
+            OpenApiExample('Truncated example. Real response contains all the currencies',
+                value={
+                    "<currency symbol>": {
+                        "price": 21948.89,
+                        "volume": 0.01366812,
+                        "premium": 3.5,
+                        "timestamp": "2022-09-13T14:32:40.591774Z"
+                    },
+                },
+                status_codes=[200]
+            )
+        ],
     )
     def get(self, request):
 
@@ -1050,6 +1442,7 @@ class PriceView(ListAPIView):
 
         return Response(payload, status.HTTP_200_OK)
 
+
 class TickView(ListAPIView):
 
     queryset = MarketTick.objects.all()
@@ -1065,11 +1458,41 @@ class TickView(ListAPIView):
         data = self.serializer_class(self.queryset.all(), many=True, read_only=True).data
         return Response(data, status=status.HTTP_200_OK)
 
+
 class LimitView(ListAPIView):
 
     @extend_schema(
         summary='List order limits',
         description='Get a list of order limits for every currency pair available.',
+        responses={
+            200: {
+                'type': 'object',
+                'additionalProperties': {
+                    'type': 'object',
+                    'properties': {
+                        'code': {'type': 'string', 'description': 'Three letter currency symbol'},
+                        'price': {'type': 'integer'},
+                        'min_amount': {'type': 'integer', 'description': 'Minimum amount allowed in an order in the particular currency'},
+                        'max_amount': {'type': 'integer', 'description': 'Maximum amount allowed in an order in the particular currency'},
+                        'max_bondless_amount': {'type': 'integer', 'description': 'Maximum amount allowed in a bondless order'},
+                    }
+                }
+            },
+        },
+        examples=[
+            OpenApiExample('Truncated example. Real response contains all the currencies',
+                value={
+                    "<currency number>": {
+                        'code': 'USD',
+                        'price': '42069.69',
+                        'min_amount': '4.2',
+                        'max_amount': '420.69',
+                        'max_bondless_amount': '10.1',
+                    },
+                },
+                status_codes=[200]
+            )
+        ],
     )
     def get(self, request):
         
@@ -1094,10 +1517,38 @@ class LimitView(ListAPIView):
 
         return Response(payload, status.HTTP_200_OK)
 
+
 class HistoricalView(ListAPIView):
+
     @extend_schema(
         summary='Get historical cxchange activity',
         description='Get historical exchange activity. Currently, it lists each day\'s total contracts and their volume in BTC since inception.',
+        responses={
+            200: {
+                'type': 'object',
+                'additionalProperties': {
+                    'type': 'object',
+                    'properties': {
+                        'volume': {'type': 'integer', 'description': 'Total Volume traded on that particular date'},
+                        'num_contracts': {'type': 'number', 'description': 'Number of successful trades on that particular date'},
+                    }
+                }
+            },
+        },
+        examples=[
+            OpenApiExample('Truncated example',
+                value={
+                    "<date>": {
+                        'code': 'USD',
+                        'price': '42069.69',
+                        'min_amount': '4.2',
+                        'max_amount': '420.69',
+                        'max_bondless_amount': '10.1',
+                    },
+                },
+                status_codes=[200]
+            )
+        ],
     )
     def get(self, request):
         payload = {}
@@ -1111,10 +1562,26 @@ class HistoricalView(ListAPIView):
 
         return Response(payload, status.HTTP_200_OK)
 
+
 class StealthView(UpdateAPIView):
 
     serializer_class = StealthSerializer
-
+    @extend_schema(
+        summary='Update stealth option',
+        description='Update stealth invoice option for the user',
+        responses={
+            200: StealthSerializer,
+            400: {
+                'type': 'object',
+                'properties': {
+                    'bad_request': {
+                        'type': 'string',
+                        'description': 'Reason for the failure',
+                    },
+                },
+            },
+        },
+    )
     def put(self, request):
         serializer = self.serializer_class(data=request.data)
 
