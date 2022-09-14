@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@mui/material/styles';
 import { Link as LinkRouter } from 'react-router-dom';
 
 import {
@@ -81,6 +82,7 @@ const ProfileDialog = ({
   handleSetStealthInvoice,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   const [rewardInvoice, setRewardInvoice] = useState<string>('');
   const [showRewards, setShowRewards] = useState<boolean>(false);
@@ -262,13 +264,13 @@ const ProfileDialog = ({
 
           <ListItem>
             <ListItemIcon>
-              <SendIcon color='inherit' />
+              <SendIcon />
             </ListItemIcon>
 
             <ListItemText>
               {tgEnabled ? (
-                <Typography color='inherit' component='h6' variant='h6' align='center'>
-                  {t('Telegram enabled')}
+                <Typography color={theme.palette.success.main}>
+                  <b>{t('Telegram enabled')}</b>
                 </Typography>
               ) : (
                 <Button color='primary' onClick={() => setOpenEnableTelegram(true)}>

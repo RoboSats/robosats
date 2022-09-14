@@ -1335,7 +1335,7 @@ class TradeBox extends Component {
         enterTouchDelay={0}
         title={
           <Trans i18nKey='open_dispute'>
-            To open a dispute you need to wait{' '}
+            To open a dispute you need to wait
             <Countdown date={expires_at} renderer={this.disputeCountdownRenderer} />
           </Trans>
         }
