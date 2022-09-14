@@ -226,6 +226,7 @@ class OrderView(viewsets.ViewSet):
 
         # WRITE Update last_seen for maker and taker.
         # Note down that the taker/maker was here recently, so counterpart knows if the user is paying attention.
+        data["maker_nick"] = str(order.maker)
         if order.maker == request.user:
             order.maker_last_seen = timezone.now()
             order.save()
@@ -241,11 +242,15 @@ class OrderView(viewsets.ViewSet):
             data["maker_status"] = Logics.user_activity_status(
                 order.maker_last_seen)
 
-        # 3.b If order is between public and WF2
+        # 3.b) Non participants can view details (but only if PUB)
+        if not data["is_participant"] and order.status == Order.Status.PUB:
+            return Response(data, status=status.HTTP_200_OK)
+
+        # 4) If order is between public and WF2
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
             data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
 
-            # 3. c) If maker and Public/Paused, add premium percentile 
+            # 4. a) If maker and Public/Paused, add premium percentile 
             # num similar orders, and maker information to enable telegram notifications.
             if data["is_maker"] and order.status in [Order.Status.PUB, Order.Status.PAU]:
                 data["premium_percentile"] = compute_premium_percentile(order)
@@ -255,14 +260,9 @@ class OrderView(viewsets.ViewSet):
                 # Adds/generate telegram token and whether it is enabled
                 data = {**data,**Telegram.get_context(request.user)}
 
-        # 4) Non participants can view details (but only if PUB)
-        elif not data["is_participant"] and order.status == Order.Status.PUB:
-            return Response(data, status=status.HTTP_200_OK)
-
         # For participants add positions, nicks and status as a message and hold invoices status
         data["is_buyer"] = Logics.is_buyer(order, request.user)
         data["is_seller"] = Logics.is_seller(order, request.user)
-        data["maker_nick"] = str(order.maker)
         data["taker_nick"] = str(order.taker)
         data["status_message"] = Order.Status(order.status).label
         data["is_fiat_sent"] = order.is_fiat_sent
@@ -272,22 +272,19 @@ class OrderView(viewsets.ViewSet):
         # Add whether hold invoices are LOCKED (ACCEPTED)
         # Is there a maker bond? If so, True if locked, False otherwise
         if order.maker_bond:
-            data[
-                "maker_locked"] = order.maker_bond.status == LNPayment.Status.LOCKED
+            data["maker_locked"] = order.maker_bond.status == LNPayment.Status.LOCKED
         else:
             data["maker_locked"] = False
 
         # Is there a taker bond? If so, True if locked, False otherwise
         if order.taker_bond:
-            data[
-                "taker_locked"] = order.taker_bond.status == LNPayment.Status.LOCKED
+            data["taker_locked"] = order.taker_bond.status == LNPayment.Status.LOCKED
         else:
             data["taker_locked"] = False
 
         # Is there an escrow? If so, True if locked, False otherwise
         if order.trade_escrow:
-            data[
-                "escrow_locked"] = order.trade_escrow.status == LNPayment.Status.LOCKED
+            data["escrow_locked"] = order.trade_escrow.status == LNPayment.Status.LOCKED
         else:
             data["escrow_locked"] = False
 
