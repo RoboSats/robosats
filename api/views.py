@@ -256,7 +256,7 @@ class OrderView(viewsets.ViewSet):
                 data = {**data,**Telegram.get_context(request.user)}
 
         # 4) Non participants can view details (but only if PUB)
-        elif not data["is_participant"] and order.status != Order.Status.PUB:
+        elif not data["is_participant"] and order.status == Order.Status.PUB:
             return Response(data, status=status.HTTP_200_OK)
 
         # For participants add positions, nicks and status as a message and hold invoices status
