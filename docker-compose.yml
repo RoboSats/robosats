@@ -111,6 +111,8 @@ services:
     environment:
       REDIS_URL: redis://localhost:6379
     command: celery -A robosats beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/usr/src/robosats
     depends_on:
       - redis
     network_mode: service:tor

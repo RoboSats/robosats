@@ -272,9 +272,6 @@ def send_message(order_id, message):
 
     if message == 'welcome':
         telegram.welcome(order)
-
-    if message == 'order_taken':
-        telegram.order_taken(order)
         
     elif message == 'order_expired_untaken':
         telegram.order_expired_untaken(order)
@@ -287,9 +284,6 @@ def send_message(order_id, message):
 
     elif message == 'taker_expired_b4bond':
         telegram.taker_expired_b4bond(order)
-
-    elif message == 'taker_canceled_b4bond':
-        telegram.taker_canceled_b4bond(order)
 
     elif message == 'order_published':
         telegram.order_published(order)

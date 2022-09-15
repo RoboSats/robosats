@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@mui/material/styles';
 import { Link as LinkRouter } from 'react-router-dom';
 
 import {
@@ -25,7 +26,9 @@ import {
   Typography,
 } from '@mui/material';
 
+import { EnableTelegramDialog } from '.';
 import BoltIcon from '@mui/icons-material/Bolt';
+import SendIcon from '@mui/icons-material/Send';
 import NumbersIcon from '@mui/icons-material/Numbers';
 import PasswordIcon from '@mui/icons-material/Password';
 import ContentCopy from '@mui/icons-material/ContentCopy';
@@ -44,6 +47,9 @@ interface Props {
   activeOrderId: string | number;
   lastOrderId: string | number;
   referralCode: string;
+  tgEnabled: boolean;
+  tgBotName: string;
+  tgToken: string;
   handleSubmitInvoiceClicked: (e: any, invoice: string) => void;
   host: string;
   showRewardsSpinner: boolean;
@@ -62,6 +68,9 @@ const ProfileDialog = ({
   activeOrderId,
   lastOrderId,
   referralCode,
+  tgEnabled,
+  tgBotName,
+  tgToken,
   handleSubmitInvoiceClicked,
   host,
   showRewardsSpinner,
@@ -73,11 +82,13 @@ const ProfileDialog = ({
   handleSetStealthInvoice,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   const [rewardInvoice, setRewardInvoice] = useState<string>('');
   const [showRewards, setShowRewards] = useState<boolean>(false);
   const [openClaimRewards, setOpenClaimRewards] = useState<boolean>(false);
   const [weblnEnabled, setWeblnEnabled] = useState<boolean>(false);
+  const [openEnableTelegram, setOpenEnableTelegram] = useState<boolean>(false);
 
   useEffect(() => {
     getWebln().then((webln) => {
@@ -108,6 +119,11 @@ const ProfileDialog = ({
         }
       });
     }
+  };
+
+  const handleClickEnableTelegram = () => {
+    window.open('https://t.me/' + tgBotName + '?start=' + tgToken, '_blank').focus();
+    setOpenEnableTelegram(false);
   };
 
   return (
@@ -238,6 +254,32 @@ const ProfileDialog = ({
 
           <Divider />
 
+          <EnableTelegramDialog
+            open={openEnableTelegram}
+            onClose={() => setOpenEnableTelegram(false)}
+            tgBotName={tgBotName}
+            tgToken={tgToken}
+            onClickEnable={handleClickEnableTelegram}
+          />
+
+          <ListItem>
+            <ListItemIcon>
+              <SendIcon />
+            </ListItemIcon>
+
+            <ListItemText>
+              {tgEnabled ? (
+                <Typography color={theme.palette.success.main}>
+                  <b>{t('Telegram enabled')}</b>
+                </Typography>
+              ) : (
+                <Button color='primary' onClick={() => setOpenEnableTelegram(true)}>
+                  {t('Enable Telegram Notifications')}
+                </Button>
+              )}
+            </ListItemText>
+          </ListItem>
+
           <ListItem>
             <ListItemIcon>
               <UserNinjaIcon />
@@ -245,7 +287,7 @@ const ProfileDialog = ({
 
             <ListItemText>
               <Tooltip
-                placement='top'
+                placement='bottom'
                 enterTouchDelay={0}
                 title={t(
                   "Stealth lightning invoices do not contain details about the trade except an order reference. Enable this setting if you don't want to disclose details to a custodial lightning wallet.",

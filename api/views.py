@@ -257,8 +257,6 @@ class OrderView(viewsets.ViewSet):
                 data["num_similar_orders"] = len(
                     Order.objects.filter(currency=order.currency,
                                          status=Order.Status.PUB))
-                # Adds/generate telegram token and whether it is enabled
-                data = {**data,**Telegram.get_context(request.user)}
 
         # For participants add positions, nicks and status as a message and hold invoices status
         data["is_buyer"] = Logics.is_buyer(order, request.user)
@@ -918,6 +916,8 @@ class InfoView(ListAPIView):
             context["nickname"] = request.user.username
             context["referral_code"] = str(request.user.profile.referral_code)
             context["earned_rewards"] = request.user.profile.earned_rewards
+            # Adds/generate telegram token and whether it is enabled
+            context = {**context,**Telegram.get_context(request.user)}
             has_no_active_order, _, order = Logics.validate_already_maker_or_taker(
                 request.user)
             if not has_no_active_order:
