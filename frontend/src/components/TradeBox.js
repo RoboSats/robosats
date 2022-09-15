@@ -37,7 +37,6 @@ import { copyToClipboard } from '../utils/clipboard';
 // Icons
 import PercentIcon from '@mui/icons-material/Percent';
 import BookIcon from '@mui/icons-material/Book';
-import SendIcon from '@mui/icons-material/Send';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import BalanceIcon from '@mui/icons-material/Balance';
@@ -63,7 +62,6 @@ class TradeBox extends Component {
     this.state = {
       openConfirmFiatReceived: false,
       openConfirmDispute: false,
-      openEnableTelegram: false,
       receiveTab: 0,
       address: '',
       miningFee: 1.05,
@@ -479,65 +477,6 @@ class TradeBox extends Component {
     );
   };
 
-  handleClickOpenTelegramDialog = () => {
-    this.setState({ openEnableTelegram: true });
-  };
-
-  handleClickCloseEnableTelegramDialog = () => {
-    this.setState({ openEnableTelegram: false });
-  };
-
-  handleClickEnableTelegram = () => {
-    window
-      .open(
-        'https://t.me/' + this.props.data.tg_bot_name + '?start=' + this.props.data.tg_token,
-        '_blank',
-      )
-      .focus();
-    this.handleClickCloseEnableTelegramDialog();
-  };
-
-  EnableTelegramDialog = () => {
-    const { t } = this.props;
-    return (
-      <Dialog
-        open={this.state.openEnableTelegram}
-        onClose={this.handleClickCloseEnableTelegramDialog}
-        aria-labelledby='enable-telegram-dialog-title'
-        aria-describedby='enable-telegram-dialog-description'
-      >
-        <DialogTitle id='open-dispute-dialog-title'>{t('Enable TG Notifications')}</DialogTitle>
-        <DialogContent>
-          <div style={{ textAlign: 'center' }}>
-            <QRCode
-              bgColor={'rgba(255, 255, 255, 0)'}
-              fgColor={this.props.theme.palette.text.primary}
-              value={
-                'tg://resolve?domain=' +
-                this.props.data.tg_bot_name +
-                '&start=' +
-                this.props.data.tg_token
-              }
-              size={275}
-            />
-          </div>
-          <DialogContentText id='alert-dialog-description'>
-            {t(
-              'You will be taken to a conversation with RoboSats telegram bot. Simply open the chat and press Start. Note that by enabling telegram notifications you might lower your level of anonymity.',
-            )}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={this.handleClickCloseEnableTelegramDialog}> {t('Go back')} </Button>
-          <Button onClick={this.handleClickEnableTelegram} autoFocus>
-            {' '}
-            {t('Enable')}{' '}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  };
-
   depositHoursMinutes = () => {
     const hours = parseInt(this.props.data.escrow_duration / 3600);
     const minutes = parseInt((this.props.data.escrow_duration - hours * 3600) / 60);
@@ -565,7 +504,6 @@ class TradeBox extends Component {
       <Grid container spacing={1}>
         {/* Make confirmation sound for HTLC received. */}
         {this.Sound('locked-invoice')}
-        {this.EnableTelegramDialog()}
         <Grid item xs={12} align='center'>
           <Typography variant='subtitle1'>
             <b> {t('Your order is public')} </b> {' ' + this.stepXofY()}
@@ -591,18 +529,6 @@ class TradeBox extends Component {
               </Typography>
             </ListItem>
 
-            <Grid item xs={12} align='center'>
-              {this.props.data.tg_enabled ? (
-                <Typography color='primary' component='h6' variant='h6' align='center'>
-                  {t('Telegram enabled')}
-                </Typography>
-              ) : (
-                <Button color='primary' onClick={this.handleClickOpenTelegramDialog}>
-                  <SendIcon />
-                  {t('Enable Telegram Notifications')}
-                </Button>
-              )}
-            </Grid>
             <Divider />
 
             <Grid container>
@@ -1409,7 +1335,7 @@ class TradeBox extends Component {
         enterTouchDelay={0}
         title={
           <Trans i18nKey='open_dispute'>
-            To open a dispute you need to wait{' '}
+            To open a dispute you need to wait
             <Countdown date={expires_at} renderer={this.disputeCountdownRenderer} />
           </Trans>
         }

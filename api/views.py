@@ -246,14 +246,11 @@ class OrderView(viewsets.ViewSet):
             data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
 
             # 3. c) If maker and Public/Paused, add premium percentile 
-            # num similar orders, and maker information to enable telegram notifications.
             if data["is_maker"] and order.status in [Order.Status.PUB, Order.Status.PAU]:
                 data["premium_percentile"] = compute_premium_percentile(order)
                 data["num_similar_orders"] = len(
                     Order.objects.filter(currency=order.currency,
                                          status=Order.Status.PUB))
-                # Adds/generate telegram token and whether it is enabled
-                data = {**data,**Telegram.get_context(request.user)}
 
         # 4) Non participants can view details (but only if PUB)
         elif not data["is_participant"] and order.status != Order.Status.PUB:
@@ -921,6 +918,8 @@ class InfoView(ListAPIView):
             context["nickname"] = request.user.username
             context["referral_code"] = str(request.user.profile.referral_code)
             context["earned_rewards"] = request.user.profile.earned_rewards
+            # Adds/generate telegram token and whether it is enabled
+            context = {**context,**Telegram.get_context(request.user)}
             has_no_active_order, _, order = Logics.validate_already_maker_or_taker(
                 request.user)
             if not has_no_active_order:

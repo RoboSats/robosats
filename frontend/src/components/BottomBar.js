@@ -82,6 +82,9 @@ class BottomBar extends Component {
             activeOrderId: data.active_order_id ? data.active_order_id : null,
             lastOrderId: data.last_order_id ? data.last_order_id : null,
             referralCode: data.referral_code,
+            tgEnabled: data.tg_enabled,
+            tgBotName: data.tg_bot_name,
+            tgToken: data.tg_token,
             earnedRewards: data.earned_rewards,
             lastDayPremium: data.last_day_nonkyc_btc_premium,
           }),
@@ -658,6 +661,9 @@ class BottomBar extends Component {
           activeOrderId={this.props.activeOrderId}
           lastOrderId={this.props.lastOrderId}
           referralCode={this.props.referralCode}
+          tgEnabled={this.props.tgEnabled}
+          tgBotName={this.props.tgBotName}
+          tgToken={this.props.tgToken}
           handleSubmitInvoiceClicked={this.handleSubmitInvoiceClicked}
           host={this.getHost()}
           showRewardsSpinner={this.state.showRewardsSpinner}

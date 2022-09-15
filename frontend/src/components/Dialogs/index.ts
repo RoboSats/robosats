@@ -7,3 +7,4 @@ export { default as StoreTokenDialog } from './StoreToken';
 export { default as ExchangeSummaryDialog } from './ExchangeSummary';
 export { default as ProfileDialog } from './Profile';
 export { default as StatsDialog } from './Stats';
+export { default as EnableTelegramDialog } from './EnableTelegram';
