@@ -1521,7 +1521,7 @@ class LimitView(ListAPIView):
 class HistoricalView(ListAPIView):
 
     @extend_schema(
-        summary='Get historical cxchange activity',
+        summary='Get historical exchange activity',
         description='Get historical exchange activity. Currently, it lists each day\'s total contracts and their volume in BTC since inception.',
         responses={
             200: {
