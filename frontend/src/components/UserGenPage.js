@@ -76,8 +76,6 @@ class UserGenPage extends Component {
       };
     });
 
-    console.log(requestBody);
-
     requestBody.then((body) =>
       apiClient.post('/api/user/', body)
         .then((data) => {

@@ -29,7 +29,7 @@ class ApiWebClient implements ApiClient {
       method: 'DELETE',
       headers: this.getHeaders(),
     };
-    return fetch(path).then((response) => response.json())
+    return fetch(path, requestOptions).then((response) => response.json())
   }
 
   public get: (path: string) => Promise<object> = (path) => {
