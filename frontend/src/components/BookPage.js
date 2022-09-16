@@ -295,7 +295,7 @@ class BookPage extends Component {
           loading={this.props.bookLoading}
           rows={this.props.bookOrders.filter(
             (order) =>
-              (order.type == this.props.type || this.props.type == 2) &&
+              (order.type == this.props.type || this.props.type == null) &&
               (order.currency == this.props.currency || this.props.currency == 0),
           )}
           columns={[
