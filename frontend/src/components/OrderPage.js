@@ -123,8 +123,7 @@ class OrderPage extends Component {
 
   getOrderDetails = (id) => {
     this.setState({ orderId: id });
-    apiClient.get('/api/order/?order_id=' + id)
-      .then(this.orderDetailsReceived);
+    apiClient.get('/api/order/?order_id=' + id).then(this.orderDetailsReceived);
   };
 
   orderDetailsReceived = (data) => {
@@ -185,10 +184,12 @@ class OrderPage extends Component {
   };
 
   sendWeblnInvoice = (invoice) => {
-    apiClient.post('/api/order/?order_id=' + this.state.orderId, {
-      action: 'update_invoice',
-      invoice,
-    }).then((data) => this.completeSetState(data));
+    apiClient
+      .post('/api/order/?order_id=' + this.state.orderId, {
+        action: 'update_invoice',
+        invoice,
+      })
+      .then((data) => this.completeSetState(data));
   };
 
   // Countdown Renderer callback with condition
@@ -422,10 +423,11 @@ class OrderPage extends Component {
 
   takeOrder = () => {
     this.setState({ loading: true });
-    apiClient.post('/api/order/?order_id=' + this.state.orderId, {
-      action: 'take',
-      amount: this.state.takeAmount,
-    })
+    apiClient
+      .post('/api/order/?order_id=' + this.state.orderId, {
+        action: 'take',
+        amount: this.state.takeAmount,
+      })
       .then((data) => this.handleWebln(data) & this.completeSetState(data));
   };
 
@@ -441,9 +443,11 @@ class OrderPage extends Component {
 
   handleClickConfirmCancelButton = () => {
     this.setState({ loading: true });
-    apiClient.post('/api/order/?order_id=' + this.state.orderId, {
-      action: 'cancel',
-    }).then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
+    apiClient
+      .post('/api/order/?order_id=' + this.state.orderId, {
+        action: 'cancel',
+      })
+      .then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
     this.handleClickCloseConfirmCancelDialog();
   };
 
@@ -541,9 +545,11 @@ class OrderPage extends Component {
   };
 
   handleClickConfirmCollaborativeCancelButton = () => {
-    apiClient.post('/api/order/?order_id=' + this.state.orderId, {
-      action: 'cancel',
-    }).then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
+    apiClient
+      .post('/api/order/?order_id=' + this.state.orderId, {
+        action: 'cancel',
+      })
+      .then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
     this.handleClickCloseCollaborativeCancelDialog();
   };
 

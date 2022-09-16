@@ -72,23 +72,22 @@ class BottomBar extends Component {
 
   getInfo() {
     this.setState(null);
-    apiClient.get('/api/info/')
-      .then(
-        (data) =>
-          this.setState(data) &
-          this.props.setAppState({
-            nickname: data.nickname,
-            loading: false,
-            activeOrderId: data.active_order_id ? data.active_order_id : null,
-            lastOrderId: data.last_order_id ? data.last_order_id : null,
-            referralCode: data.referral_code,
-            tgEnabled: data.tg_enabled,
-            tgBotName: data.tg_bot_name,
-            tgToken: data.tg_token,
-            earnedRewards: data.earned_rewards,
-            lastDayPremium: data.last_day_nonkyc_btc_premium,
-          }),
-      );
+    apiClient.get('/api/info/').then(
+      (data) =>
+        this.setState(data) &
+        this.props.setAppState({
+          nickname: data.nickname,
+          loading: false,
+          activeOrderId: data.active_order_id ? data.active_order_id : null,
+          lastOrderId: data.last_order_id ? data.last_order_id : null,
+          referralCode: data.referral_code,
+          tgEnabled: data.tg_enabled,
+          tgBotName: data.tg_bot_name,
+          tgToken: data.tg_token,
+          earnedRewards: data.earned_rewards,
+          lastDayPremium: data.last_day_nonkyc_btc_premium,
+        }),
+    );
   }
 
   handleClickOpenStatsForNerds = () => {
@@ -122,9 +121,11 @@ class BottomBar extends Component {
       showRewardsSpinner: true,
     });
 
-    apiClient.post('/api/reward/', {
-      invoice: rewardInvoice,
-    }).then(
+    apiClient
+      .post('/api/reward/', {
+        invoice: rewardInvoice,
+      })
+      .then(
         (data) =>
           this.setState({
             badInvoice: data.bad_invoice,
@@ -140,7 +141,8 @@ class BottomBar extends Component {
   };
 
   handleSetStealthInvoice = (wantsStealth) => {
-    apiClient.put('/api/stealth/', { wantsStealth })
+    apiClient
+      .put('/api/stealth/', { wantsStealth })
       .then((data) => this.props.setAppState({ stealthInvoices: data.wantsStealth }));
   };
 

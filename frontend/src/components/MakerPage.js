@@ -3,12 +3,7 @@ import { withTranslation } from 'react-i18next';
 import {
   InputAdornment,
   LinearProgress,
-  Dialog,
-  IconButton,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
+  ButtonGroup,
   Accordion,
   AccordionDetails,
   AccordionSummary,
@@ -47,7 +42,6 @@ import currencyDict from '../../static/assets/currencies.json';
 import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { BuySatsCheckedIcon, BuySatsIcon, SellSatsCheckedIcon, SellSatsIcon } from './Icons';
 
 import { getCookie } from '../utils/cookies';
 import { pn } from '../utils/prettyNumbers';
@@ -99,28 +93,26 @@ class MakerPage extends Component {
     // if currency or type have changed in HomePage state, change in MakerPage state too.
     this.setState({
       currency: !this.props.currency === 0 ? this.props.currency : this.state.currency,
-      type: !this.props.type == 2 ? (this.props.type == 1 ? 0 : 1) : this.state.type,
     });
   }
 
   getLimits() {
     this.setState({ loadingLimits: true });
-    apiClient.get('/api/limits/')
-      .then((data) =>
-        this.setState({
-          limits: data,
-          loadingLimits: false,
-          minAmount: this.state.amount
-            ? parseFloat((this.state.amount / 2).toPrecision(2))
-            : parseFloat(Number(data[this.state.currency].max_amount * 0.25).toPrecision(2)),
-          maxAmount: this.state.amount
-            ? this.state.amount
-            : parseFloat(Number(data[this.state.currency].max_amount * 0.75).toPrecision(2)),
-          minTradeSats: data['1000'].min_amount * 100000000,
-          maxTradeSats: data['1000'].max_amount * 100000000,
-          maxBondlessSats: data['1000'].max_bondless_amount * 100000000,
-        }),
-      );
+    apiClient.get('/api/limits/').then((data) =>
+      this.setState({
+        limits: data,
+        loadingLimits: false,
+        minAmount: this.state.amount
+          ? parseFloat((this.state.amount / 2).toPrecision(2))
+          : parseFloat(Number(data[this.state.currency].max_amount * 0.25).toPrecision(2)),
+        maxAmount: this.state.amount
+          ? this.state.amount
+          : parseFloat(Number(data[this.state.currency].max_amount * 0.75).toPrecision(2)),
+        minTradeSats: data['1000'].min_amount * 100000000,
+        maxTradeSats: data['1000'].max_amount * 100000000,
+        maxBondlessSats: data['1000'].max_bondless_amount * 100000000,
+      }),
+    );
   }
 
   recalcBounds = () => {
@@ -144,19 +136,6 @@ class MakerPage extends Component {
       'aria-controls': `simple-tabpanel-${index}`,
     };
   }
-
-  handleTypeChange = (e) => {
-    this.setState({
-      type: e.target.value,
-    });
-    // Share state with HomePage and OrderPage
-    this.props.setAppState({
-      // maker and book page type values 0:1 are reversed
-      type: e.target.value == 1 ? 0 : 1,
-      buyChecked: e.target.value == 0,
-      sellChecked: e.target.value == 1,
-    });
-  };
 
   handleCurrencyChange = (e) => {
     const currencyCode = this.getCurrencyCode(e.target.value);
@@ -304,7 +283,7 @@ class MakerPage extends Component {
   handleCreateOfferButtonPressed = () => {
     this.state.amount == null ? this.setState({ amount: 0 }) : null;
     const body = {
-      type: this.state.type,
+      type: this.props.type == 0 ? 1 : 0,
       currency: this.state.currency,
       amount: this.state.has_range ? null : this.state.amount,
       has_range: this.state.enableAmountRange,
@@ -320,7 +299,8 @@ class MakerPage extends Component {
       bond_size: this.state.bondSize,
       bondless_taker: this.state.allowBondless,
     };
-    apiClient.post('/api/make/', body)
+    apiClient
+      .post('/api/make/', body)
       .then(
         (data) =>
           this.setState({ badRequest: data.bad_request }) &
@@ -356,79 +336,46 @@ class MakerPage extends Component {
     return (
       <Paper elevation={12} style={{ padding: 8, width: `${260 / 16}em`, align: 'center' }}>
         <Grid item xs={12} align='center'>
-          <div style={{ position: 'relative' }}>
-            <FormControl component='fieldset'>
-              <FormHelperText sx={{ textAlign: 'center' }}>
-                {t('Buy or Sell Bitcoin?')}
-              </FormHelperText>
-
-              <RadioGroup row value={this.state.type} onChange={this.handleTypeChange}>
-                <FormControlLabel
-                  value={0}
-                  control={
-                    <Radio
-                      icon={
-                        <BuySatsIcon
-                          sx={{ width: `${30 / 24}em`, height: `${30 / 24}em` }}
-                          color='text.secondary'
-                        />
-                      }
-                      checkedIcon={
-                        <BuySatsCheckedIcon
-                          sx={{ width: `${30 / 24}em`, height: `${30 / 24}em` }}
-                          color='primary'
-                        />
-                      }
-                    />
+          <FormControl component='fieldset'>
+            <FormHelperText sx={{ textAlign: 'center' }}>
+              {t('Buy or Sell Bitcoin?')}
+            </FormHelperText>
+            <div style={{ textAlign: 'center' }}>
+              <ButtonGroup>
+                <Button
+                  size='large'
+                  variant='contained'
+                  onClick={() =>
+                    this.props.setAppState({
+                      type: 1,
+                    })
                   }
-                  label={
-                    this.state.type == 0 ? (
-                      <Typography color='primary'>
-                        <b>{t('Buy')}</b>
-                      </Typography>
-                    ) : (
-                      <Typography color='text.secondary'>{t('Buy')}</Typography>
-                    )
+                  disableElevation={this.props.type == 1}
+                  color={this.props.type == 1 ? 'primary' : 'inherit'}
+                >
+                  {t('Buy')}
+                </Button>
+                <Button
+                  size='large'
+                  variant='contained'
+                  onClick={() =>
+                    this.props.setAppState({
+                      type: 0,
+                    })
                   }
-                  labelPlacement='end'
-                />
-                <FormControlLabel
-                  value={1}
-                  control={
-                    <Radio
-                      color='secondary'
-                      icon={
-                        <SellSatsIcon
-                          sx={{ width: `${30 / 24}em`, height: `${30 / 24}em` }}
-                          color='text.secondary'
-                        />
-                      }
-                      checkedIcon={
-                        <SellSatsCheckedIcon
-                          sx={{ width: `${30 / 24}em`, height: `${30 / 24}em` }}
-                          color='secondary'
-                        />
-                      }
-                    />
-                  }
-                  label={
-                    this.state.type == 1 ? (
-                      <Typography color='secondary'>
-                        <b>{t('Sell')}</b>
-                      </Typography>
-                    ) : (
-                      <Typography color='text.secondary'>{t('Sell')}</Typography>
-                    )
-                  }
-                  labelPlacement='end'
-                />
-              </RadioGroup>
-            </FormControl>
-          </div>
+                  disableElevation={this.props.type == 0}
+                  color={this.props.type == 0 ? 'secondary' : 'inherit'}
+                >
+                  {t('Sell')}
+                </Button>
+              </ButtonGroup>
+            </div>
+          </FormControl>
+          <div style={{ height: '1em' }} />
         </Grid>
 
         <Grid alignItems='stretch' style={{ display: 'flex' }}>
-          <div style={{}}>
+          <div>
             <Tooltip
               placement='top'
               enterTouchDelay={500}
@@ -501,11 +448,12 @@ class MakerPage extends Component {
             listHeaderText={t('You can add new methods')}
             addNewButtonText={t('Add New')}
           />
+          <div style={{ height: '0.3em' }} />
         </Grid>
 
         <Grid item xs={12} align='center'>
           <FormControl component='fieldset'>
-            <FormHelperText sx={{ textAlign: 'center' }}>
+            <FormHelperText sx={{ textAlign: 'center', position: 'relative', top: '0.5em' }}>
               {t('Choose a Pricing Method')}
             </FormHelperText>
             <RadioGroup row defaultValue='relative'>
@@ -916,7 +864,7 @@ class MakerPage extends Component {
                 control={
                   <Checkbox
                     disabled
-                    // disabled={this.state.type==0 || this.state.type === null}
+                    // disabled={this.props.type==0 || this.props.type === null}
                     color='secondary'
                     checked={this.state.allowBondless}
                     onChange={() => this.setState({ allowBondless: !this.state.allowBondless })}
@@ -989,7 +937,7 @@ class MakerPage extends Component {
 
         <Grid item xs={12} align='center'>
           {/* conditions to disable the make button */}
-          {this.state.type == null ||
+          {this.props.type == null ||
           (this.state.amount == null) &
             (this.state.enableAmountRange == false || this.state.loadingLimits) ||
           this.state.enableAmountRange & (this.minAmountError() || this.maxAmountError()) ||
@@ -1028,9 +976,9 @@ class MakerPage extends Component {
           )}
           <Typography component='h2' variant='subtitle2'>
             <div align='center'>
-              {this.state.type == null
+              {this.props.type == null
                 ? t('Create an order for ')
-                : this.state.type == 0
+                : this.props.type == 1
                 ? t('Create a BTC buy order for ')
                 : t('Create a BTC sell order for ')}
               {this.state.enableAmountRange & (this.state.minAmount != null)

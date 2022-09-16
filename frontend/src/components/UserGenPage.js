@@ -77,51 +77,49 @@ class UserGenPage extends Component {
     });
 
     requestBody.then((body) =>
-      apiClient.post('/api/user/', body)
-        .then((data) => {
-          console.log(data) &
-            this.setState({
-              nickname: data.nickname,
-              bit_entropy: data.token_bits_entropy,
-              avatarUrl: '/static/assets/avatars/' + data.nickname + '.png',
-              shannon_entropy: data.token_shannon_entropy,
-              bad_request: data.bad_request,
-              found: data.found,
-              loadingRobot: false,
-              stealthInvoices: data.wants_stealth,
-            }) &
-            // Add nick and token to App state (token only if not a bad request)
-            (data.bad_request
-              ? this.props.setAppState({
-                  nickname: data.nickname,
-                  avatarLoaded: false,
-                  activeOrderId: data.active_order_id ? data.active_order_id : null,
-                  referralCode: data.referral_code,
-                  earnedRewards: data.earned_rewards,
-                  lastOrderId: data.last_order_id ? data.last_order_id : null,
-                  stealthInvoices: data.wants_stealth,
-                })
-              : this.props.setAppState({
-                  nickname: data.nickname,
-                  token,
-                  avatarLoaded: false,
-                  activeOrderId: data.active_order_id ? data.active_order_id : null,
-                  lastOrderId: data.last_order_id ? data.last_order_id : null,
-                  referralCode: data.referral_code,
-                  earnedRewards: data.earned_rewards,
-                  stealthInvoices: data.wants_stealth,
-                }) &
-                writeCookie('robot_token', token) &
-                writeCookie('pub_key', data.public_key.split('\n').join('\\')) &
-                writeCookie('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'))) &
-            // If the robot has been found (recovered) we assume the token is backed up
-            (data.found ? this.props.setAppState({ copiedToken: true }) : null);
-        }),
+      apiClient.post('/api/user/', body).then((data) => {
+        this.setState({
+          nickname: data.nickname,
+          bit_entropy: data.token_bits_entropy,
+          avatarUrl: '/static/assets/avatars/' + data.nickname + '.png',
+          shannon_entropy: data.token_shannon_entropy,
+          bad_request: data.bad_request,
+          found: data.found,
+          loadingRobot: false,
+          stealthInvoices: data.wants_stealth,
+        }) &
+          // Add nick and token to App state (token only if not a bad request)
+          (data.bad_request
+            ? this.props.setAppState({
+                nickname: data.nickname,
+                avatarLoaded: false,
+                activeOrderId: data.active_order_id ? data.active_order_id : null,
+                referralCode: data.referral_code,
+                earnedRewards: data.earned_rewards,
+                lastOrderId: data.last_order_id ? data.last_order_id : null,
+                stealthInvoices: data.wants_stealth,
+              })
+            : this.props.setAppState({
+                nickname: data.nickname,
+                token,
+                avatarLoaded: false,
+                activeOrderId: data.active_order_id ? data.active_order_id : null,
+                lastOrderId: data.last_order_id ? data.last_order_id : null,
+                referralCode: data.referral_code,
+                earnedRewards: data.earned_rewards,
+                stealthInvoices: data.wants_stealth,
+              }) &
+              writeCookie('robot_token', token) &
+              writeCookie('pub_key', data.public_key.split('\n').join('\\')) &
+              writeCookie('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'))) &
+          // If the robot has been found (recovered) we assume the token is backed up
+          (data.found ? this.props.setAppState({ copiedToken: true }) : null);
+      }),
     );
   };
 
   delGeneratedUser() {
-    apiClient.delete('/api/user')
+    apiClient.delete('/api/user');
 
     deleteCookie('sessionid');
     deleteCookie('robot_token');

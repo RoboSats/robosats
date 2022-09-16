@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
 import { withTranslation } from 'react-i18next';
 import {
-  Badge,
   Tooltip,
   Stack,
   Paper,
   Button,
-  FormControlLabel,
-  Checkbox,
-  RadioGroup,
+  ToggleButtonGroup,
+  ToggleButton,
   ListItemButton,
   Typography,
   Grid,
@@ -35,7 +33,6 @@ import { apiClient } from '../services/api/index';
 
 // Icons
 import { BarChart, FormatListBulleted, Refresh } from '@mui/icons-material';
-import { BuySatsCheckedIcon, BuySatsIcon, SellSatsCheckedIcon, SellSatsIcon } from './Icons';
 
 class BookPage extends Component {
   constructor(props) {
@@ -52,14 +49,13 @@ class BookPage extends Component {
 
   getOrderDetails(type, currency) {
     this.props.setAppState({ bookLoading: true });
-    apiClient.get('/api/book?currency=' + currency + '&type=' + type)
-      .then((data) =>
-        this.props.setAppState({
-          bookNotFound: data.not_found,
-          bookLoading: false,
-          bookOrders: data,
-        }),
-      );
+    apiClient.get('/api/book/').then((data) =>
+      this.props.setAppState({
+        bookNotFound: data.not_found,
+        bookLoading: false,
+        bookOrders: data,
+      }),
+    );
   }
 
   handleRowClick = (e) => {
@@ -152,12 +148,12 @@ class BookPage extends Component {
   bookListTableDesktop = () => {
     const { t } = this.props;
     return (
-      <div style={{ height: 422, width: '100%' }}>
+      <div style={{ height: 424, width: '100%' }}>
         <DataGrid
           localeText={this.dataGridLocaleText()}
           rows={this.props.bookOrders.filter(
             (order) =>
-              (order.type == this.props.type || this.props.type == 2) &&
+              (order.type == this.props.type || this.props.type == null) &&
               (order.currency == this.props.currency || this.props.currency == 0),
           )}
           loading={this.props.bookLoading}
@@ -293,7 +289,7 @@ class BookPage extends Component {
   bookListTablePhone = () => {
     const { t } = this.props;
     return (
-      <div style={{ height: 422, width: '100%' }}>
+      <div style={{ height: 424, width: '100%' }}>
         <DataGrid
           localeText={this.dataGridLocaleText()}
           loading={this.props.bookLoading}
@@ -437,33 +433,12 @@ class BookPage extends Component {
     );
   };
 
-  handleTypeChange = (buyChecked, sellChecked) => {
-    this.props.setAppState({ buyChecked, sellChecked });
-
-    if (buyChecked & sellChecked || !buyChecked & !sellChecked) {
-      var type = 2;
-    } else if (buyChecked) {
-      var type = 1;
-    } else if (sellChecked) {
-      var type = 0;
-    }
-    this.props.setAppState({ type });
-  };
-
-  handleClickBuy = (e) => {
-    const buyChecked = e.target.checked;
-    const sellChecked = this.props.sellChecked;
-    this.handleTypeChange(buyChecked, sellChecked);
+  handleTypeChange = (mouseEvent, val) => {
+    this.props.setAppState({ type: val });
   };
 
   handleClickView = () => {
     this.setState({ view: this.state.view == 'depth' ? 'list' : 'depth' });
-  };
-
-  handleClickSell = (e) => {
-    const buyChecked = this.props.buyChecked;
-    const sellChecked = e.target.checked;
-    this.handleTypeChange(buyChecked, sellChecked);
   };
 
   NoOrdersFound = () => {
@@ -529,14 +504,14 @@ class BookPage extends Component {
       <>
         {/* Desktop */}
         <MediaQuery minWidth={930}>
-          <Paper elevation={0} style={{ width: 925, maxHeight: 500, overflow: 'auto' }}>
-            <div style={{ height: 422, width: '100%' }}>{components[0]}</div>
+          <Paper elevation={0} style={{ width: 925, maxHeight: 510, overflow: 'auto' }}>
+            <div style={{ height: 424, width: '100%' }}>{components[0]}</div>
           </Paper>
         </MediaQuery>
         {/* Smartphone */}
         <MediaQuery maxWidth={929}>
-          <Paper elevation={0} style={{ width: 395, maxHeight: 450, overflow: 'auto' }}>
-            <div style={{ height: 422, width: '100%' }}>{components[1]}</div>
+          <Paper elevation={0} style={{ width: 395, maxHeight: 460, overflow: 'auto' }}>
+            <div style={{ height: 424, width: '100%' }}>{components[1]}</div>
           </Paper>
         </MediaQuery>
       </>
@@ -576,74 +551,25 @@ class BookPage extends Component {
 
         <Grid item xs={6} align='right'>
           <FormControl align='center'>
-            <FormHelperText
-              align='center'
-              sx={{ position: 'relative', left: '10px', textAlign: 'center' }}
-            >
+            <FormHelperText align='center' sx={{ textAlign: 'center' }}>
               {t('I want to')}
             </FormHelperText>
-            <RadioGroup row>
-              <div style={{ position: 'relative', left: '20px' }}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      icon={<BuySatsIcon sx={{ width: '30px', height: '30px' }} color='inherit' />}
-                      checkedIcon={
-                        <BuySatsCheckedIcon
-                          sx={{ width: '30px', height: '30px' }}
-                          color='primary'
-                        />
-                      }
-                    />
-                  }
-                  label={
-                    <div style={{ position: 'relative', top: '-13px' }}>
-                      {this.props.buyChecked ? (
-                        <Typography variant='caption' color='primary'>
-                          <b>{t('Buy')}</b>
-                        </Typography>
-                      ) : (
-                        <Typography variant='caption' color='text.secondary'>
-                          {t('Buy')}
-                        </Typography>
-                      )}
-                    </div>
-                  }
-                  labelPlacement='bottom'
-                  checked={this.props.buyChecked}
-                  onChange={this.handleClickBuy}
-                />
-              </div>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    icon={<SellSatsIcon sx={{ width: '30px', height: '30px' }} color='inherit' />}
-                    checkedIcon={
-                      <SellSatsCheckedIcon
-                        sx={{ width: '30px', height: '30px' }}
-                        color='secondary'
-                      />
-                    }
-                  />
-                }
-                label={
-                  <div style={{ position: 'relative', top: '-13px' }}>
-                    {this.props.sellChecked ? (
-                      <Typography variant='caption' color='secondary'>
-                        <b>{t('Sell')}</b>
-                      </Typography>
-                    ) : (
-                      <Typography variant='caption' color='text.secondary'>
-                        {t('Sell')}
-                      </Typography>
-                    )}
-                  </div>
-                }
-                labelPlacement='bottom'
-                checked={this.props.sellChecked}
-                onChange={this.handleClickSell}
-              />
-            </RadioGroup>
+            <div style={{ textAlign: 'center' }}>
+              <ToggleButtonGroup
+                sx={{ height: '3.52em' }}
+                size='large'
+                exclusive={true}
+                value={this.props.type}
+                onChange={this.handleTypeChange}
+              >
+                <ToggleButton value={1} color={'primary'}>
+                  {t('Buy')}
+                </ToggleButton>
+                <ToggleButton value={0} color={'secondary'}>
+                  {t('Sell')}
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </div>
           </FormControl>
         </Grid>
 

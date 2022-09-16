@@ -24,7 +24,7 @@ export default class HomePage extends Component {
       avatarLoaded: false,
       buyChecked: false,
       sellChecked: false,
-      type: 2,
+      type: null,
       currency: 0,
       bookCurrencyCode: 'ANY',
       bookOrders: new Array(),

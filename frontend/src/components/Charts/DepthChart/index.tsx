@@ -63,10 +63,9 @@ const DepthChart: React.FC<DepthChartProps> = ({
 
   useEffect(() => {
     if (Object.keys(limits).length === 0) {
-      apiClient.get('/api/limits/')
-        .then((data) => {
-          setAppState({ limits: data });
-        });
+      apiClient.get('/api/limits/').then((data) => {
+        setAppState({ limits: data });
+      });
     }
   }, []);
 

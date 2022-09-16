@@ -133,9 +133,11 @@ class TradeBox extends Component {
   };
 
   handleClickAgreeDisputeButton = () => {
-    apiClient.post('/api/order/?order_id=' + this.props.data.id, {
-      action: 'dispute',
-    }).then((data) => this.props.completeSetState(data));
+    apiClient
+      .post('/api/order/?order_id=' + this.props.data.id, {
+        action: 'dispute',
+      })
+      .then((data) => this.props.completeSetState(data));
     this.handleClickCloseConfirmDispute();
   };
 
@@ -480,9 +482,11 @@ class TradeBox extends Component {
 
   handleClickPauseOrder = () => {
     this.props.completeSetState({ pauseLoading: true });
-    apiClient.post('/api/order/?order_id=' + this.props.data.id, {
-      action: 'pause',
-    }).then((data) => this.props.getOrderDetails(data.id));
+    apiClient
+      .post('/api/order/?order_id=' + this.props.data.id, {
+        action: 'pause',
+      })
+      .then((data) => this.props.getOrderDetails(data.id));
   };
 
   showMakerWait = () => {
@@ -626,10 +630,12 @@ class TradeBox extends Component {
   handleClickSubmitInvoiceButton = () => {
     this.setState({ badInvoice: false });
 
-    apiClient.post('/api/order/?order_id=' + this.props.data.id, {
-      action: 'update_invoice',
-      invoice: this.state.invoice,
-    }).then(
+    apiClient
+      .post('/api/order/?order_id=' + this.props.data.id, {
+        action: 'update_invoice',
+        invoice: this.state.invoice,
+      })
+      .then(
         (data) =>
           this.setState({ badInvoice: data.bad_invoice }) & this.props.completeSetState(data),
       );
@@ -656,11 +662,13 @@ class TradeBox extends Component {
   handleClickSubmitAddressButton = () => {
     this.setState({ badInvoice: false });
 
-    apiClient.post('/api/order/?order_id=' + this.props.data.id, {
-      action: 'update_address',
-      address: this.state.address,
-      mining_fee_rate: Math.max(1, this.state.miningFee),
-    }).then(
+    apiClient
+      .post('/api/order/?order_id=' + this.props.data.id, {
+        action: 'update_address',
+        address: this.state.address,
+        mining_fee_rate: Math.max(1, this.state.miningFee),
+      })
+      .then(
         (data) =>
           this.setState({ badAddress: data.bad_address }) & this.props.completeSetState(data),
       );
@@ -676,13 +684,15 @@ class TradeBox extends Component {
   handleClickSubmitStatementButton = () => {
     this.setState({ badInvoice: false });
 
-    apiClient.post('/api/order/?order_id=' + this.props.data.id, {
-      action: 'submit_statement',
-      statement: this.state.statement,
-    }).then(
-      (data) =>
-        this.setState({ badStatement: data.bad_statement }) & this.props.completeSetState(data),
-    );
+    apiClient
+      .post('/api/order/?order_id=' + this.props.data.id, {
+        action: 'submit_statement',
+        statement: this.state.statement,
+      })
+      .then(
+        (data) =>
+          this.setState({ badStatement: data.bad_statement }) & this.props.completeSetState(data),
+      );
   };
 
   handleScan = (data) => {
@@ -1179,16 +1189,20 @@ class TradeBox extends Component {
   }
 
   handleClickConfirmButton = () => {
-    apiClient.post('/api/order/?order_id=' + this.props.data.id, {
-      action: 'confirm',
-    }).then((data) => this.props.completeSetState(data));
+    apiClient
+      .post('/api/order/?order_id=' + this.props.data.id, {
+        action: 'confirm',
+      })
+      .then((data) => this.props.completeSetState(data));
   };
 
   handleRatingUserChange = (e) => {
-    apiClient.post('/api/order/?order_id=' + this.props.data.id, {
-      action: 'rate_user',
-      rating: e.target.value,
-    }).then((data) => this.props.completeSetState(data));
+    apiClient
+      .post('/api/order/?order_id=' + this.props.data.id, {
+        action: 'rate_user',
+        rating: e.target.value,
+      })
+      .then((data) => this.props.completeSetState(data));
   };
 
   handleRatingRobosatsChange = (e) => {
@@ -1197,10 +1211,12 @@ class TradeBox extends Component {
     }
     this.setState({ rating_platform: e.target.value });
 
-    apiClient.post('/api/order/?order_id=' + this.props.data.id, {
-      action: 'rate_platform',
-      rating: e.target.value,
-    }).then((data) => this.props.completeSetState(data));
+    apiClient
+      .post('/api/order/?order_id=' + this.props.data.id, {
+        action: 'rate_platform',
+        rating: e.target.value,
+      })
+      .then((data) => this.props.completeSetState(data));
   };
 
   showFiatSentButton() {
@@ -1316,7 +1332,8 @@ class TradeBox extends Component {
       bond_size: this.props.data.bond_size,
       bondless_taker: this.props.data.bondless_taker,
     };
-    apiClient.post('/api/make/', body)
+    apiClient
+      .post('/api/make/', body)
       .then(
         (data) =>
           this.setState({ badRequest: data.bad_request }) &
