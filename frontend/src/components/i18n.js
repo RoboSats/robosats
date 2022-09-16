@@ -15,6 +15,25 @@ import HttpApi from 'i18next-http-backend';
 // import translationPT from "../../static/locales/pt.json";
 // import translationEU from "../../static/locales/th.json";
 
+const loadJsonFile = async (path) => {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open('GET', path, true);
+    request.responseType = 'blob';
+
+    request.onload = () => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = err => reject(err);
+      reader.readAsDataURL(request.response);
+    };
+
+    request.send();
+  });
+}
+
+
 i18n
   .use(HttpApi)
   .use(LanguageDetector)
@@ -44,6 +63,28 @@ i18n
       withCredentials: false,
       overrideMimeType: false,
       reloadInterval: false, // can be used to reload resources in a specific interval (useful in server environments)
+      request: (
+        _options,
+        url,
+        _payload,
+        callback
+      ) => {
+        if (window.ReactNativeWebView) {
+          loadJsonFile(window.location.pathname.slice(0, -1) + url)
+            .then((response) => {
+              console.log(response)
+              const data = JSON.stringify(response)
+              callback(null, { status: 200, data })
+            })
+        } else {
+          fetch(url)
+            .then(async (response) => await response.json())
+            .then((response) => {
+              const data = JSON.stringify(response)
+              callback(null, { status: 200, data })
+            })
+        }
+      }
     },
 
     fallbackLng: 'en',

@@ -19,7 +19,6 @@ import MediaQuery from 'react-responsive';
 import Flags from 'country-flag-icons/react/3x2';
 import { Link as LinkRouter } from 'react-router-dom';
 import { apiClient } from '../services/api';
-import RobotAvatar from './Robots/RobotAvatar';
 
 // Icons
 import BarChartIcon from '@mui/icons-material/BarChart';
@@ -33,16 +32,9 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 // Missing flags
 import { CataloniaFlag, BasqueCountryFlag } from './Icons';
 
-import {
-  CommunityDialog,
-  ExchangeSummaryDialog,
-  ProfileDialog,
-  StatsDialog,
-  UpdateClientDialog,
-} from './Dialogs';
+import { CommunityDialog, ExchangeSummaryDialog, ProfileDialog, StatsDialog } from './Dialogs';
 
 import { getCookie } from '../utils/cookies';
-import checkVer from '../utils/checkVer';
 
 class BottomBar extends Component {
   constructor(props) {
@@ -52,7 +44,6 @@ class BottomBar extends Component {
       openCommuniy: false,
       openExchangeSummary: false,
       openClaimRewards: false,
-      openUpdateClient: false,
       num_public_buy_orders: 0,
       num_public_sell_orders: 0,
       book_liquidity: 0,
@@ -81,28 +72,22 @@ class BottomBar extends Component {
 
   getInfo() {
     this.setState(null);
-    apiClient.get('/api/info/').then((data) => {
-      const versionInfo = checkVer(data.version.major, data.version.minor, data.version.patch);
-      this.setState({
-        ...data,
-        openUpdateClient: versionInfo.updateAvailable,
-        coordinatorVersion: versionInfo.coordinatorVersion,
-        clientVersion: versionInfo.clientVersion,
-      });
-      this.props.setAppState({
-        nickname: data.nickname,
-        loading: false,
-        activeOrderId: data.active_order_id ? data.active_order_id : null,
-        lastOrderId: data.last_order_id ? data.last_order_id : null,
-        referralCode: data.referral_code,
-        tgEnabled: data.tg_enabled,
-        tgBotName: data.tg_bot_name,
-        tgToken: data.tg_token,
-        earnedRewards: data.earned_rewards,
-        lastDayPremium: data.last_day_nonkyc_btc_premium,
-        stealthInvoices: data.wants_stealth,
-      });
-    });
+    apiClient.get('/api/info/').then(
+      (data) =>
+        this.setState(data) &
+        this.props.setAppState({
+          nickname: data.nickname,
+          loading: false,
+          activeOrderId: data.active_order_id ? data.active_order_id : null,
+          lastOrderId: data.last_order_id ? data.last_order_id : null,
+          referralCode: data.referral_code,
+          tgEnabled: data.tg_enabled,
+          tgBotName: data.tg_bot_name,
+          tgToken: data.tg_token,
+          earnedRewards: data.earned_rewards,
+          lastDayPremium: data.last_day_nonkyc_btc_premium,
+        }),
+    );
   }
 
   handleClickOpenStatsForNerds = () => {
@@ -171,9 +156,10 @@ class BottomBar extends Component {
 
   showProfileButton = () => {
     return (
-      this.props.avatarLoaded &&
-      (this.props.token ? getCookie('robot_token') == this.props.token : true) &&
-      getCookie('sessionid')
+      this.props.avatarLoaded
+      // FIXME: Cookies not available on local dev
+      // (this.props.token ? getCookie('robot_token') == this.props.token : true) &&
+      // getCookie('sessionid')
     );
   };
 
@@ -205,16 +191,27 @@ class BottomBar extends Component {
                   }
                 >
                   <ListItemAvatar sx={{ width: 30 * fontSizeFactor, height: 30 * fontSizeFactor }}>
-                    <RobotAvatar
-                      style={{ marginTop: -13 }}
-                      statusColor={
-                        (this.props.activeOrderId > 0) & !this.props.profileShown
-                          ? 'primary'
-                          : undefined
+                    <Badge
+                      badgeContent={
+                        (this.props.activeOrderId > 0) & !this.props.profileShown ? '' : null
                       }
-                      nickname={this.props.nickname}
-                      onLoad={() => this.props.setAppState({ avatarLoaded: true })}
-                    />
+                      color='primary'
+                    >
+                      <Avatar
+                        className='flippedSmallAvatar'
+                        sx={{ margin: 0, top: -13 }}
+                        alt={this.props.nickname}
+                        imgProps={{
+                          // FIXME: Avatar src not working
+                          onLoad: () => this.props.setAppState({ avatarLoaded: true }),
+                        }}
+                        src={
+                          this.props.nickname
+                            ? 'https://robosats.onion.moe/static/assets/avatars/' + this.props.nickname + '.png'
+                            : null
+                        }
+                      />
+                    </Badge>
                   </ListItemAvatar>
                 </Tooltip>
                 <ListItemText primary={this.props.nickname} />
@@ -500,17 +497,29 @@ class BottomBar extends Component {
                   onClick={this.handleClickOpenProfile}
                   sx={{ margin: 0, bottom: 17, right: 8 }}
                 >
-                  <RobotAvatar
-                    style={{ width: 55, height: 55 }}
-                    avatarClass='phoneFlippedSmallAvatar'
-                    statusColor={
-                      (this.props.activeOrderId > 0) & !this.props.profileShown
-                        ? 'primary'
-                        : undefined
+                  <Badge
+                    badgeContent={
+                      (this.state.active_order_id > 0) & !this.state.profileShown ? '' : null
                     }
-                    nickname={this.props.nickname}
-                    onLoad={() => this.props.setAppState({ avatarLoaded: true })}
-                  />
+                    color='primary'
+                  >
+                    <Avatar
+                      className='phoneFlippedSmallAvatar'
+                      sx={{ width: 55, height: 55 }}
+                      alt={this.props.nickname}
+                      imgProps={{
+                        onLoad: () => this.props.setAppState({ avatarLoaded: true }),
+                      }}
+                      src={
+                        this.props.nickname
+                          ? window.location.origin +
+                            '/static/assets/avatars/' +
+                            this.props.nickname +
+                            '.png'
+                          : null
+                      }
+                    />
+                  </Badge>
                 </IconButton>
               </Tooltip>
             </div>
@@ -620,13 +629,6 @@ class BottomBar extends Component {
           handleClickCloseCommunity={this.handleClickCloseCommunity}
         />
 
-        <UpdateClientDialog
-          open={this.state.openUpdateClient}
-          coordinatorVersion={this.state.coordinatorVersion}
-          clientVersion={this.state.clientVersion}
-          handleClickClose={() => this.setState({ openUpdateClient: false })}
-        />
-
         <ExchangeSummaryDialog
           isOpen={this.state.openExchangeSummary}
           handleClickCloseExchangeSummary={this.handleClickCloseExchangeSummary}
@@ -664,15 +666,13 @@ class BottomBar extends Component {
         <StatsDialog
           isOpen={this.state.openStatsForNerds}
           handleClickCloseStatsForNerds={this.handleClickCloseStatsForNerds}
-          coordinatorVersion={this.state.coordinatorVersion}
-          clientVersion={this.state.clientVersion}
           lndVersion={this.state.lnd_version}
           network={this.state.network}
           nodeAlias={this.state.node_alias}
           nodeId={this.state.node_id}
           alternativeName={this.state.alternative_name}
           alternativeSite={this.state.alternative_site}
-          commitHash={this.state.robosats_running_commit_hash}
+          robosatsRunningCommitHash={this.state.robosats_running_commit_hash}
           lastDayVolume={this.state.last_day_volume}
           lifetimeVolume={this.state.lifetime_volume}
         />

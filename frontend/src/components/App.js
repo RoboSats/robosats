@@ -122,7 +122,7 @@ export default class App extends Component {
             >
               <SchoolIcon />
             </IconButton>
-            <UnsafeAlert className='unsafeAlert' />
+            {/* <UnsafeAlert className='unsafeAlert' /> */}
             <HomePage {...this.state} />
           </ThemeProvider>
         </I18nextProvider>

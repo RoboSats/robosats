@@ -48,7 +48,7 @@ class UserGenPage extends Component {
       this.setState({
         nickname: this.props.nickname,
         token: this.props.token ? this.props.token : '',
-        avatarUrl: '/static/assets/avatars/' + this.props.nickname + '.png',
+        avatarUrl: 'https://robosats.onion.moe/static/assets/avatars/' + this.props.nickname + '.png',
         loadingRobot: false,
       });
     } else {
@@ -75,13 +75,12 @@ class UserGenPage extends Component {
         ref_code: refCode,
       };
     });
-
     requestBody.then((body) =>
       apiClient.post('/api/user/', body).then((data) => {
         this.setState({
           nickname: data.nickname,
           bit_entropy: data.token_bits_entropy,
-          avatarUrl: '/static/assets/avatars/' + data.nickname + '.png',
+          avatarUrl: 'https://robosats.onion.moe/static/assets/avatars/' + data.nickname + '.png',
           shannon_entropy: data.token_shannon_entropy,
           bad_request: data.bad_request,
           found: data.found,
@@ -102,7 +101,8 @@ class UserGenPage extends Component {
             : this.props.setAppState({
                 nickname: data.nickname,
                 token,
-                avatarLoaded: false,
+                // FIXME: Avatar src not working
+                avatarLoaded: true,
                 activeOrderId: data.active_order_id ? data.active_order_id : null,
                 lastOrderId: data.last_order_id ? data.last_order_id : null,
                 referralCode: data.referral_code,
@@ -299,7 +299,9 @@ class UserGenPage extends Component {
                             <IconButton
                               color='primary'
                               disabled={
-                                !(getCookie('robot_token') == this.state.token) ||
+                                // FIXME: Cookies not available on local dev
+                                // https://github.com/react-native-webview/react-native-webview/issues/2643
+                                // !(getCookie('robot_token') == this.state.token) ||
                                 !this.props.avatarLoaded
                               }
                               onClick={() =>
@@ -318,7 +320,9 @@ class UserGenPage extends Component {
                           <IconButton
                             color={this.props.copiedToken ? 'inherit' : 'primary'}
                             disabled={
-                              !(getCookie('robot_token') == this.state.token) ||
+                              // FIXME: Cookies not available on local dev
+                              // https://github.com/react-native-webview/react-native-webview/issues/2643
+                              // !(getCookie('robot_token') == this.state.token) ||
                               !this.props.avatarLoaded
                             }
                             onClick={() =>
@@ -374,11 +378,13 @@ class UserGenPage extends Component {
           <ButtonGroup variant='contained' aria-label='outlined primary button group'>
             <Button
               disabled={
-                this.state.loadingRobot ||
-                !(this.props.token ? getCookie('robot_token') == this.props.token : true)
+                this.state.loadingRobot !== false
+                // FIXME: Cookies not available on local dev
+                // https://github.com/react-native-webview/react-native-webview/issues/2643
+                // !(this.props.token ? getCookie('robot_token') == this.props.token : true)
               }
               color='primary'
-              to='/make/'
+              to='/make'
               component={Link}
             >
               {t('Make Order')}
@@ -393,8 +399,10 @@ class UserGenPage extends Component {
             />
             <Button
               disabled={
-                this.state.loadingRobot ||
-                !(this.props.token ? getCookie('robot_token') == this.props.token : true)
+                this.state.loadingRobot !== false
+                // FIXME: Cookies not available on local dev
+                // https://github.com/react-native-webview/react-native-webview/issues/2643
+                // !(this.props.token ? getCookie('robot_token') == this.props.token : true)
               }
               color='secondary'
               to='/book/'
