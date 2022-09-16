@@ -735,7 +735,6 @@ class UserView(APIView):
                 user.profile.is_referred = True
                 user.profile.referred_by = queryset[0]
 
-            user.profile.wants_stealth = False
             user.profile.save()
 
             context["public_key"] = user.profile.public_key
