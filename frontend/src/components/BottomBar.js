@@ -18,6 +18,7 @@ import {
 import MediaQuery from 'react-responsive';
 import Flags from 'country-flag-icons/react/3x2';
 import { Link as LinkRouter } from 'react-router-dom';
+import { apiClient } from '../services/api';
 
 // Icons
 import BarChartIcon from '@mui/icons-material/BarChart';
@@ -71,8 +72,7 @@ class BottomBar extends Component {
 
   getInfo() {
     this.setState(null);
-    fetch('/api/info/')
-      .then((response) => response.json())
+    apiClient.get('/api/info/')
       .then(
         (data) =>
           this.setState(data) &
@@ -122,16 +122,9 @@ class BottomBar extends Component {
       showRewardsSpinner: true,
     });
 
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        invoice: rewardInvoice,
-      }),
-    };
-    fetch('/api/reward/', requestOptions)
-      .then((response) => response.json())
-      .then(
+    apiClient.post('/api/reward/', {
+      invoice: rewardInvoice,
+    }).then(
         (data) =>
           this.setState({
             badInvoice: data.bad_invoice,
@@ -147,13 +140,7 @@ class BottomBar extends Component {
   };
 
   handleSetStealthInvoice = (wantsStealth) => {
-    const requestOptions = {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({ wantsStealth }),
-    };
-    fetch('/api/stealth/', requestOptions)
-      .then((response) => response.json())
+    apiClient.put('/api/stealth/', { wantsStealth })
       .then((data) => this.props.setAppState({ stealthInvoices: data.wantsStealth }));
   };
 

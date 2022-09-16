@@ -37,6 +37,7 @@ import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { Link as LinkRouter } from 'react-router-dom';
 import { StoreTokenDialog, NoRobotDialog } from './Dialogs';
+import { apiClient } from '../services/api';
 
 import FlagWithProps from './FlagWithProps';
 import AutocompletePayments from './AutocompletePayments';
@@ -104,8 +105,7 @@ class MakerPage extends Component {
 
   getLimits() {
     this.setState({ loadingLimits: true });
-    fetch('/api/limits/')
-      .then((response) => response.json())
+    apiClient.get('/api/limits/')
       .then((data) =>
         this.setState({
           limits: data,
@@ -303,29 +303,24 @@ class MakerPage extends Component {
 
   handleCreateOfferButtonPressed = () => {
     this.state.amount == null ? this.setState({ amount: 0 }) : null;
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        type: this.state.type,
-        currency: this.state.currency,
-        amount: this.state.has_range ? null : this.state.amount,
-        has_range: this.state.enableAmountRange,
-        min_amount: this.state.minAmount,
-        max_amount: this.state.maxAmount,
-        payment_method:
-          this.state.payment_method === '' ? this.defaultPaymentMethod : this.state.payment_method,
-        is_explicit: this.state.is_explicit,
-        premium: this.state.is_explicit ? null : this.state.premium == '' ? 0 : this.state.premium,
-        satoshis: this.state.is_explicit ? this.state.satoshis : null,
-        public_duration: this.state.publicDuration,
-        escrow_duration: this.state.escrowDuration,
-        bond_size: this.state.bondSize,
-        bondless_taker: this.state.allowBondless,
-      }),
+    const body = {
+      type: this.state.type,
+      currency: this.state.currency,
+      amount: this.state.has_range ? null : this.state.amount,
+      has_range: this.state.enableAmountRange,
+      min_amount: this.state.minAmount,
+      max_amount: this.state.maxAmount,
+      payment_method:
+        this.state.payment_method === '' ? this.defaultPaymentMethod : this.state.payment_method,
+      is_explicit: this.state.is_explicit,
+      premium: this.state.is_explicit ? null : this.state.premium == '' ? 0 : this.state.premium,
+      satoshis: this.state.is_explicit ? this.state.satoshis : null,
+      public_duration: this.state.publicDuration,
+      escrow_duration: this.state.escrowDuration,
+      bond_size: this.state.bondSize,
+      bondless_taker: this.state.allowBondless,
     };
-    fetch('/api/make/', requestOptions)
-      .then((response) => response.json())
+    apiClient.post('/api/make/', body)
       .then(
         (data) =>
           this.setState({ badRequest: data.bad_request }) &

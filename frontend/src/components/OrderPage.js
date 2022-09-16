@@ -54,6 +54,7 @@ import { getCookie } from '../utils/cookies';
 import { pn } from '../utils/prettyNumbers';
 import { copyToClipboard } from '../utils/clipboard';
 import { getWebln } from '../utils/webln';
+import { apiClient } from '../services/api';
 
 class OrderPage extends Component {
   constructor(props) {
@@ -122,8 +123,7 @@ class OrderPage extends Component {
 
   getOrderDetails = (id) => {
     this.setState({ orderId: id });
-    fetch('/api/order' + '?order_id=' + id)
-      .then((response) => response.json())
+    apiClient.get('/api/order/?order_id=' + id)
       .then(this.orderDetailsReceived);
   };
 
@@ -185,17 +185,10 @@ class OrderPage extends Component {
   };
 
   sendWeblnInvoice = (invoice) => {
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        action: 'update_invoice',
-        invoice,
-      }),
-    };
-    fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
-      .then((response) => response.json())
-      .then((data) => this.completeSetState(data));
+    apiClient.post('/api/order/?order_id=' + this.state.orderId, {
+      action: 'update_invoice',
+      invoice,
+    }).then((data) => this.completeSetState(data));
   };
 
   // Countdown Renderer callback with condition
@@ -429,16 +422,10 @@ class OrderPage extends Component {
 
   takeOrder = () => {
     this.setState({ loading: true });
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        action: 'take',
-        amount: this.state.takeAmount,
-      }),
-    };
-    fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
-      .then((response) => response.json())
+    apiClient.post('/api/order/?order_id=' + this.state.orderId, {
+      action: 'take',
+      amount: this.state.takeAmount,
+    })
       .then((data) => this.handleWebln(data) & this.completeSetState(data));
   };
 
@@ -454,16 +441,9 @@ class OrderPage extends Component {
 
   handleClickConfirmCancelButton = () => {
     this.setState({ loading: true });
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        action: 'cancel',
-      }),
-    };
-    fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
-      .then((response) => response.json())
-      .then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
+    apiClient.post('/api/order/?order_id=' + this.state.orderId, {
+      action: 'cancel',
+    }).then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
     this.handleClickCloseConfirmCancelDialog();
   };
 
@@ -561,16 +541,9 @@ class OrderPage extends Component {
   };
 
   handleClickConfirmCollaborativeCancelButton = () => {
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({
-        action: 'cancel',
-      }),
-    };
-    fetch('/api/order/' + '?order_id=' + this.state.orderId, requestOptions)
-      .then((response) => response.json())
-      .then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
+    apiClient.post('/api/order/?order_id=' + this.state.orderId, {
+      action: 'cancel',
+    }).then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
     this.handleClickCloseCollaborativeCancelDialog();
   };
 
