@@ -736,7 +736,6 @@ class UserView(APIView):
                 user.profile.referred_by = queryset[0]
 
             user.profile.wants_stealth = False
-
             user.profile.save()
 
             context["public_key"] = user.profile.public_key
@@ -754,6 +753,9 @@ class UserView(APIView):
                 context["earned_rewards"] = user.profile.earned_rewards
                 context["referral_code"] = str(user.profile.referral_code)
                 context["wants_stealth"] = user.profile.wants_stealth
+
+                # Adds/generate telegram token and whether it is enabled
+                context = {**context,**Telegram.get_context(user)}
 
                 # return active order or last made order if any
                 has_no_active_order, _, order = Logics.validate_already_maker_or_taker(request.user)
