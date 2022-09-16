@@ -98,9 +98,6 @@ class UserGenPage extends Component {
                 earnedRewards: data.earned_rewards,
                 lastOrderId: data.last_order_id ? data.last_order_id : null,
                 stealthInvoices: data.wants_stealth,
-                tgEnabled: data.tg_enabled,
-                tgBotName: data.tg_bot_name,
-                tgToken: data.tg_token,
               })
             : this.props.setAppState({
                 nickname: data.nickname,
@@ -111,6 +108,9 @@ class UserGenPage extends Component {
                 referralCode: data.referral_code,
                 earnedRewards: data.earned_rewards,
                 stealthInvoices: data.wants_stealth,
+                tgEnabled: data.tg_enabled,
+                tgBotName: data.tg_bot_name,
+                tgToken: data.tg_token,
               }) &
               writeCookie('robot_token', token) &
               writeCookie('pub_key', data.public_key.split('\n').join('\\')) &

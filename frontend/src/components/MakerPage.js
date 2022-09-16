@@ -351,7 +351,13 @@ class MakerPage extends Component {
                     })
                   }
                   disableElevation={this.props.type == 1}
-                  color={this.props.type == 1 ? 'primary' : 'inherit'}
+                  sx={{
+                    backgroundColor: this.props.type == 1 ? 'primary.main' : 'background.paper',
+                    color: this.props.type == 1 ? 'background.paper' : 'text.secondary',
+                    ':hover': {
+                      color: 'background.paper',
+                    },
+                  }}
                 >
                   {t('Buy')}
                 </Button>
@@ -364,7 +370,14 @@ class MakerPage extends Component {
                     })
                   }
                   disableElevation={this.props.type == 0}
-                  color={this.props.type == 0 ? 'secondary' : 'inherit'}
+                  color='secondary'
+                  sx={{
+                    backgroundColor: this.props.type == 0 ? 'secondary.main' : 'background.paper',
+                    color: this.props.type == 0 ? 'background.secondary' : 'text.secondary',
+                    ':hover': {
+                      color: 'background.paper',
+                    },
+                  }}
                 >
                   {t('Sell')}
                 </Button>
