@@ -319,7 +319,11 @@ class BookPage extends Component {
               width: 84,
               renderCell: (params) => {
                 return (
-                  <Tooltip placement='right' enterTouchDelay={0} title={t(params.row.type)}>
+                  <Tooltip
+                    placement='right'
+                    enterTouchDelay={0}
+                    title={t(params.row.type ? 'Seller' : 'Buyer')}
+                  >
                     <div style={{ cursor: 'pointer' }}>
                       {amountToString(
                         params.row.amount,
