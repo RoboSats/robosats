@@ -144,7 +144,6 @@ class MakerPage extends Component {
       currencyCode,
     });
     this.props.setAppState({
-      type: e.target.value,
       currency: e.target.value,
       bookCurrencyCode: currencyCode,
     });
@@ -652,15 +651,8 @@ class MakerPage extends Component {
   rangeText = () => {
     const { t } = this.props;
     return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          flexWrap: 'nowrap',
-          justifyContent: 'space-around',
-        }}
-      >
-        <span style={{ textAlign: 'left' }}>{t('From')}</span>
+      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+        <span style={{ width: t('From').length * 8 + 2, textAlign: 'left' }}>{t('From')}</span>
         <TextField
           variant='standard'
           type='number'
@@ -668,9 +660,9 @@ class MakerPage extends Component {
           value={this.state.minAmount}
           onChange={this.handleMinAmountChange}
           error={this.minAmountError()}
-          sx={{ px: '1em' }}
+          sx={{ width: this.state.minAmount.toString().length * 9, maxWidth: 40 }}
         />
-        <span style={{ textAlign: 'center' }}>{t('to')}</span>
+        <span style={{ width: t('to').length * 8, textAlign: 'center' }}>{t('to')}</span>
         <TextField
           variant='standard'
           size='small'
@@ -678,9 +670,11 @@ class MakerPage extends Component {
           value={this.state.maxAmount}
           error={this.maxAmountError()}
           onChange={this.handleMaxAmountChange}
-          sx={{ px: '1em' }}
+          sx={{ width: this.state.maxAmount.toString().length * 9, maxWidth: 50 }}
         />
-        <span style={{ textAlign: 'right' }}>{this.state.currencyCode}</span>
+        <span style={{ width: this.state.currencyCode.length * 9 + 3, textAlign: 'right' }}>
+          {this.state.currencyCode}
+        </span>
       </div>
     );
   };
