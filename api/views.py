@@ -257,6 +257,9 @@ class OrderView(viewsets.ViewSet):
                 data["num_similar_orders"] = len(
                     Order.objects.filter(currency=order.currency,
                                          status=Order.Status.PUB))
+                # Adds/generate telegram token and whether it is enabled
+                # Deprecated
+                data = {**data,**Telegram.get_context(request.user)}
 
         # For participants add positions, nicks and status as a message and hold invoices status
         data["is_buyer"] = Logics.is_buyer(order, request.user)
@@ -554,73 +557,6 @@ class UserView(APIView):
 
     serializer_class = UserGenSerializer
 
-    def get(self, request, format=None):
-        """
-        DEPRECATED
-        The old way to generate a robot and login.
-        Only for login. No new users allowed. Only available using API endpoint.
-        Frontend does not support it anymore.
-
-        Get a new user derived from a high entropy token
-
-        - Request has a high-entropy token,
-        - Generates new nickname and avatar.
-        - Creates login credentials (new User object)
-        Response with Avatar and Nickname.
-        """
-        context = {}
-        # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
-        if request.user.is_authenticated:
-            context = {"nickname": request.user.username}
-            not_participant, _, order = Logics.validate_already_maker_or_taker(
-                request.user)
-
-            # Does not allow this 'mistake' if an active order
-            if not not_participant:
-                context["active_order_id"] = order.id
-                context["bad_request"] = f"You are already logged in as {request.user} and have an active order"
-                return Response(context, status.HTTP_400_BAD_REQUEST)
-
-        # Deprecated, kept temporarily for legacy reasons
-        token = request.GET.get("token")                
-                
-        value, counts = np.unique(list(token), return_counts=True)
-        shannon_entropy = entropy(counts, base=62)
-        bits_entropy = log2(len(value)**len(token))
-
-        # Hash the token, only 1 iteration.
-        hash = hashlib.sha256(str.encode(token)).hexdigest()
-
-        # Generate nickname deterministically
-        nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0]
-        context["nickname"] = nickname
-        
-        # Payload
-        context = {
-            "token_shannon_entropy": shannon_entropy,
-            "token_bits_entropy": bits_entropy,
-        }
-
-        # Do not generate a new user for the old method! Only allow login.
-        if len(User.objects.filter(username=nickname)) == 1:
-            user = authenticate(request, username=nickname, password=token)
-            if user is not None:
-                login(request, user)
-                # Sends the welcome back message, only if created +3 mins ago
-                if request.user.date_joined < (timezone.now() -
-                                            timedelta(minutes=3)):
-                    context["found"] = "We found your Robot avatar. Welcome back!"
-                return Response(context, status=status.HTTP_202_ACCEPTED)
-            else:
-                # It is unlikely, but maybe the nickname is taken (1 in 20 Billion change)
-                context["found"] = "Bad luck, this nickname is taken"
-                context["bad_request"] = "Enter a different token"
-                return Response(context, status.HTTP_403_FORBIDDEN)
-
-        elif len(User.objects.filter(username=nickname)) == 0:
-            context["bad_request"] = "User Generation with explicit token deprecated. Only token_sha256 allowed."
-            return Response(context, status.HTTP_400_BAD_REQUEST)
-
     def post(self, request, format=None):
         """
         Get a new user derived from a high entropy token
@@ -917,6 +853,7 @@ class InfoView(ListAPIView):
             context["nickname"] = request.user.username
             context["referral_code"] = str(request.user.profile.referral_code)
             context["earned_rewards"] = request.user.profile.earned_rewards
+            context["wants_stealth"] = request.user.profile.wants_stealth
             # Adds/generate telegram token and whether it is enabled
             context = {**context,**Telegram.get_context(request.user)}
             has_no_active_order, _, order = Logics.validate_already_maker_or_taker(

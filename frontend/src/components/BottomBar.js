@@ -86,6 +86,7 @@ class BottomBar extends Component {
           tgToken: data.tg_token,
           earnedRewards: data.earned_rewards,
           lastDayPremium: data.last_day_nonkyc_btc_premium,
+          stealthInvoices: data.wants_stealth,
         }),
     );
   }
