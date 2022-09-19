@@ -59,7 +59,7 @@ export default class HomePage extends Component {
           <Switch>
             <Route
               exact
-              path="/"
+              path='/'
               render={(props) => (
                 <UserGenPage
                   {...props}
@@ -70,7 +70,7 @@ export default class HomePage extends Component {
               )}
             />
             <Route
-              path="/ref/:refCode"
+              path='/ref/:refCode'
               render={(props) => (
                 <UserGenPage
                   {...props}
@@ -81,7 +81,7 @@ export default class HomePage extends Component {
               )}
             />
             <Route
-              path="/make"
+              path='/make'
               render={(props) => (
                 <MakerPage
                   {...props}
@@ -92,7 +92,7 @@ export default class HomePage extends Component {
               )}
             />
             <Route
-              path="/book"
+              path='/book'
               render={(props) => (
                 <BookPage
                   {...props}
@@ -103,7 +103,7 @@ export default class HomePage extends Component {
               )}
             />
             <Route
-              path="/order/:orderId"
+              path='/order/:orderId'
               render={(props) => (
                 <OrderPage
                   {...props}

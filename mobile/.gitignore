@@ -64,4 +64,3 @@ buck-out/
 
 # frontend js
 /html/Web.bundle/js*
-/html/Web.bundle/locales*

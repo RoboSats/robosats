@@ -384,7 +384,7 @@ class UserGenPage extends Component {
                 // !(this.props.token ? getCookie('robot_token') == this.props.token : true)
               }
               color='primary'
-              to='/make'
+              to='/make/'
               component={Link}
             >
               {t('Make Order')}

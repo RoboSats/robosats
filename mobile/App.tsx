@@ -1,7 +1,6 @@
 import React, {useRef} from 'react';
-import {WebView, WebViewMessageEvent, WebViewProps} from 'react-native-webview';
+import {WebView, WebViewMessageEvent} from 'react-native-webview';
 import {SafeAreaView, Text, Platform} from 'react-native';
-import Tor from 'react-native-tor';
 import {torClient} from './services/Tor';
 
 const App = () => {
@@ -10,9 +9,6 @@ const App = () => {
     (Platform.OS === 'android' ? 'file:///android_asset/' : '') +
     'Web.bundle/index.html';
   // const uri = 'https://robosats.onion.moe';
-
-  const onion =
-    'http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion';
 
   const injectMessage = (id: string, data: object) => {
     const json = JSON.stringify(data);
@@ -57,7 +53,7 @@ const App = () => {
         domStorageEnabled={true}
         sharedCookiesEnabled={true}
         thirdPartyCookiesEnabled={true}
-        originWhitelist={[uri, onion]}
+        originWhitelist={[uri]}
         scalesPageToFit={true}
         startInLoadingState={true}
         mixedContentMode={'always'}
