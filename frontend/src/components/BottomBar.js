@@ -32,9 +32,16 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 // Missing flags
 import { CataloniaFlag, BasqueCountryFlag } from './Icons';
 
-import { CommunityDialog, ExchangeSummaryDialog, ProfileDialog, StatsDialog } from './Dialogs';
+import {
+  CommunityDialog,
+  ExchangeSummaryDialog,
+  ProfileDialog,
+  StatsDialog,
+  UpdateClientDialog,
+} from './Dialogs';
 
 import { getCookie } from '../utils/cookies';
+import checkVer from '../utils/checkVer';
 
 class BottomBar extends Component {
   constructor(props) {
@@ -44,6 +51,7 @@ class BottomBar extends Component {
       openCommuniy: false,
       openExchangeSummary: false,
       openClaimRewards: false,
+      openUpdateClient: false,
       num_public_buy_orders: 0,
       num_public_sell_orders: 0,
       book_liquidity: 0,
@@ -72,23 +80,28 @@ class BottomBar extends Component {
 
   getInfo() {
     this.setState(null);
-    apiClient.get('/api/info/').then(
-      (data) =>
-        this.setState(data) &
-        this.props.setAppState({
-          nickname: data.nickname,
-          loading: false,
-          activeOrderId: data.active_order_id ? data.active_order_id : null,
-          lastOrderId: data.last_order_id ? data.last_order_id : null,
-          referralCode: data.referral_code,
-          tgEnabled: data.tg_enabled,
-          tgBotName: data.tg_bot_name,
-          tgToken: data.tg_token,
-          earnedRewards: data.earned_rewards,
-          lastDayPremium: data.last_day_nonkyc_btc_premium,
-          stealthInvoices: data.wants_stealth,
-        }),
-    );
+    apiClient.get('/api/info/').then((data) => {
+      const versionInfo = checkVer(data.version.major, data.version.minor, data.version.patch);
+      this.setState({
+        ...data,
+        openUpdateClient: versionInfo.updateAvailable,
+        coordinatorVersion: versionInfo.coordinatorVersion,
+        clientVersion: versionInfo.clientVersion,
+      });
+      this.props.setAppState({
+        nickname: data.nickname,
+        loading: false,
+        activeOrderId: data.active_order_id ? data.active_order_id : null,
+        lastOrderId: data.last_order_id ? data.last_order_id : null,
+        referralCode: data.referral_code,
+        tgEnabled: data.tg_enabled,
+        tgBotName: data.tg_bot_name,
+        tgToken: data.tg_token,
+        earnedRewards: data.earned_rewards,
+        lastDayPremium: data.last_day_nonkyc_btc_premium,
+        stealthInvoices: data.wants_stealth,
+      });
+    });
   }
 
   handleClickOpenStatsForNerds = () => {
@@ -629,6 +642,13 @@ class BottomBar extends Component {
         <CommunityDialog
           isOpen={this.state.openCommuniy}
           handleClickCloseCommunity={this.handleClickCloseCommunity}
+        />
+
+        <UpdateClientDialog
+          open={this.state.openUpdateClient}
+          coordinatorVersion={this.state.coordinatorVersion}
+          clientVersion={this.state.clientVersion}
+          handleClickClose={() => this.setState({ openUpdateClient: false })}
         />
 
         <ExchangeSummaryDialog

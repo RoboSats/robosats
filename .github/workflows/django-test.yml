@@ -2,6 +2,7 @@ name: Django Tests
 
 on:
   workflow_dispatch:
+  workflow_call:
   push:
     branches: [ "main" ]
     paths: ["api", "chat", "control", "robosats"]
@@ -9,9 +10,9 @@ on:
     branches: [ "main" ]
     paths: ["api", "chat", "control", "robosats"]
 
-concurrency:
-  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
-  cancel-in-progress: true
+# concurrency:
+#   group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+#   cancel-in-progress: true
   
 jobs:
   build:

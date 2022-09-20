@@ -13,13 +13,13 @@ body {
   .loaderSpinner {
     color: #90caf9;
   }
-  .loaderSpinner:before{
+  .loaderSpinner:before {
     background: rgb(0, 0, 0);
   }
-  .loaderSpinner:after{
+  .loaderSpinner:after {
     background: rgb(0, 0, 0);
   }
-  .slider{
+  .slider {
     color: #fff;
   }
 }
@@ -38,28 +38,32 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .appCenter {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%,-50%) translate(0,-20px);
+  transform: translate(-50%, -50%) translate(0, -20px);
 }
 
-.alertUnsafe{
+.alertUnsafe {
   position: absolute;
   width: 100%;
   z-index: 9999;
 }
 
-.hideAlertButton{
+.hideAlertButton {
   position: fixed;
 }
 
-.clickTrough{
+.clickTrough {
   height: 50px;
   pointer-events: none;
   z-index: 1;
@@ -71,22 +75,21 @@ input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-input[type=number] {
+input[type='number'] {
   -moz-appearance: textfield;
 }
-
 
 .bottomBar {
   position: fixed;
   bottom: 0;
 }
 
-.amboss{
-  fill:url(#SVGID_1_);
+.amboss {
+  fill: url(#SVGID_1_);
 }
 
-.advancedSwitch{
-  width: 20; 
+.advancedSwitch {
+  width: 20;
   left: 50%;
   transform: translate(62px, 0px);
   margin-right: 0;
@@ -104,68 +107,70 @@ input[type=number] {
 }
 
 .newAvatar {
-  border-radius: 50%; 
-  border: 2px solid #555; 
+  border-radius: 50%;
+  border: 2px solid #555;
   filter: drop-shadow(1px 1px 1px #000000);
 }
 
 .profileAvatar {
-  border: 0.5px solid #555; 
+  border: 0.5px solid #555;
   filter: drop-shadow(0.5px 0.5px 0.5px #000000);
   left: 35px;
 }
 
 .smallAvatar {
-  border: 0.5px solid #555; 
+  border: 0.5px solid #555;
   filter: drop-shadow(0.5px 0.5px 0.5px #000000);
 }
 
 .flippedSmallAvatar {
   transform: scaleX(-1);
-  border: 0.3px solid #555; 
+  border: 0.3px solid #555;
   filter: drop-shadow(0.5px 0.5px 0.5px #000000);
 }
 
-.phoneFlippedSmallAvatar img{
+.phoneFlippedSmallAvatar img {
   transform: scaleX(-1);
-  border: 1.3px solid #1976d2; 
+  border: 1.3px solid #1976d2;
   -webkit-filter: grayscale(100%);
-  filter: grayscale(100%) brightness(150%) contrast(150%)  drop-shadow(0.7px 0.7px 0.7px #000000);
+  filter: grayscale(100%) brightness(150%) contrast(150%) drop-shadow(0.7px 0.7px 0.7px #000000);
 }
 
 .phoneFlippedSmallAvatar:after {
   content: '';
   position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
-  border-radius: 50%; 
-  border: 2.4px solid #1976d2; 
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  border-radius: 50%;
+  border: 2.4px solid #1976d2;
   box-shadow: inset 0px 0px 35px rgb(255, 255, 255);
 }
 
-.MuiButton-textInherit {color : '#111111';}
+.MuiButton-textInherit {
+  color: '#111111';
+}
 
-::-webkit-scrollbar
-  {
-    width: 6px;  /* for vertical scrollbars */
-    height: 6px; /* for horizontal scrollbars */
-  }
-  
-  ::-webkit-scrollbar-track
-  {
-    background: rgba(0, 0, 0, 0.1);
-  }
-  
-  ::-webkit-scrollbar-thumb
-  {
-    background: rgba(0, 0, 0, 0.5);
-  }
-  
+::-webkit-scrollbar {
+  width: 6px; /* for vertical scrollbars */
+  height: 6px; /* for horizontal scrollbars */
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.5);
+}
+
 .MuiDataGrid-columnHeaders + div {
   width: auto !important;
 }
-    
+
 @media (max-width: 929px) {
-  .appCenter:has(>div.MuiGrid-root:first-child, >div.MuiBox-root:first-child) {
+  .appCenter:has(> div.MuiGrid-root:first-child, > div.MuiBox-root:first-child) {
     overflow-y: scroll;
     margin-top: 12px;
     padding-bottom: 25px;

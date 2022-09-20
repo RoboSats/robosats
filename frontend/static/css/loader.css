@@ -1,15 +1,14 @@
-
-.loaderCenter{
-    margin:0 auto;
-    position: absolute;
-    left:50%;
-    top:50%;
-    margin-top:-120px;
-    margin-left:-175px;
-    width:350px;
-    height:120px;
-    text-align: center;
-  }
+.loaderCenter {
+  margin: 0 auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-top: -120px;
+  margin-left: -175px;
+  width: 350px;
+  height: 120px;
+  text-align: center;
+}
 
 .loaderSpinner,
 .loaderSpinner:before,
