@@ -17,7 +17,8 @@ const App = () => {
     );
   };
 
-  const manageWebViewMessage = (data: any) => {
+  const onMessage = async (event: WebViewMessageEvent) => {
+    const data = JSON.parse(event.nativeEvent.data);
     if (data.category === 'http') {
       if (data.type === 'get') {
         torClient.get(data.path).then((response: object) => {
@@ -30,12 +31,11 @@ const App = () => {
             injectMessage(data.id, response);
           });
       }
+    } else if (data.type === 'delete') {
+      torClient.delete(data.path, data.headers).then((response: object) => {
+        injectMessage(data.id, response);
+      });
     }
-  };
-
-  const onMessage = async (event: WebViewMessageEvent) => {
-    const data = JSON.parse(event.nativeEvent.data);
-    manageWebViewMessage(data);
   };
 
   torClient.startDaemon();
@@ -66,7 +66,6 @@ const App = () => {
         mediaPlaybackRequiresUserAction={false}
         allowsLinkPreview={false}
         renderLoading={() => <Text>Loading RoboSats</Text>}
-        onError={syntheticEvent => <Text>{syntheticEvent}</Text>}
       />
     </SafeAreaView>
   );

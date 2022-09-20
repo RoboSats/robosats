@@ -12,20 +12,16 @@ class ApiNativeClient implements ApiClient {
   };
 
   public put: (path: string, body: object) => Promise<object | undefined> = async (path, body) => {
-    const requestOptions = {
-      method: 'PUT',
-      headers: this.getHeaders(),
-      body: JSON.stringify(body),
-    };
-    return await fetch('https://unsafe.robosats.com' + path, requestOptions).then(async (response) => await response.json());
+    return new Promise((res, _rej) => res({}))
   };
 
   public delete: (path: string) => Promise<object | undefined> = async (path) => {
-    const requestOptions = {
-      method: 'DELETE',
-      headers: this.getHeaders(),
-    };
-    return await fetch('https://unsafe.robosats.com' + path, requestOptions).then(async (response) => await response.json());
+    return window.NativeRobosats?.postMessage({
+      category: 'http',
+      type: 'delete',
+      path,
+      headers: this.getHeaders()
+    })
   };
 
   public post: (path: string, body: object) => Promise<object | undefined> = async (path, body) => {

@@ -31,6 +31,27 @@ class TorClient {
     });
   };
 
+  public delete: (path: string, headers: object) => Promise<object> = async (
+    path,
+    headers,
+  ) => {
+    await this.startDaemon();
+
+    return new Promise<object>(async (resolve, reject) => {
+      try {
+        const response = await this.daemon.delete(
+          `${this.baseUrl}${path}`,
+          '',
+          headers,
+        );
+
+        resolve(response.json);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
   public post: (
     path: string,
     body: object,

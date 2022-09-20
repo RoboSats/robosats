@@ -143,7 +143,7 @@ class BottomBar extends Component {
   handleSetStealthInvoice = (wantsStealth) => {
     apiClient
       .put('/api/stealth/', { wantsStealth })
-      .then((data) => this.props.setAppState({ stealthInvoices: data.wantsStealth }));
+      .then((data) => this.props.setAppState({ stealthInvoices: data?.wantsStealth }));
   };
 
   getHost() {
