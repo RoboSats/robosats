@@ -9,7 +9,7 @@
     "build": "webpack --mode production",
     "lint": "eslint src/**/*.{js,ts,tsx}",
     "lint:fix": "eslint --fix 'src/**/*.{js,ts,tsx}'",
-    "format": "prettier --write '*/**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
+    "format": "prettier --write '**/**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
   "keywords": [],
   "author": "",

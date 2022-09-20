@@ -13,13 +13,13 @@ body {
   .loaderSpinner {
     color: #90caf9;
   }
-  .loaderSpinner:before{
+  .loaderSpinner:before {
     background: rgb(0, 0, 0);
   }
-  .loaderSpinner:after{
+  .loaderSpinner:after {
     background: rgb(0, 0, 0);
   }
-  .slider{
+  .slider {
     color: #fff;
   }
 }
