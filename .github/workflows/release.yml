@@ -1,5 +1,5 @@
 
-name: Main
+name: Release
 
 on:
   push:
@@ -7,26 +7,51 @@ on:
       - "v*.*.*"
 
 jobs:
+  check-versions:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: olegtarasov/get-tag@v2.1
+      id: tagName
+    - name: 'Validate versions match (tag, backend, frontend, Android)'
+      id: validate
+      with:
+        tagname: ${{ steps.tagName.outputs.tag }}
+      run: |
+        sudo apt-get install jq
+        clientV=$(jq -r .version frontend/package.json)
+        coordinatorV=$(jq -r .major version.json).$(jq -r .minor version.json).$(jq -r .patch version.json)
+        tagV=$(echo ${{ needs.check-version.tagName.outputs.tag }} | sed 's/v//')
+        if [ "$coordinatorV" = "$clientV" ] && [ "$coordinatorV" = "$tagV" ] ; then
+            echo "Versions match"
+        else
+            echo "Versions do not match!"; exit $ERRCODE;
+        fi
+      
   django-test:
     uses: recksato/robosats/.github/workflows/django-test.yml@main
+    needs: check-versions
   
   frontend-build:
     uses: recksato/robosats/.github/workflows/frontend-build.yml@main
+    needs: check-versions
   
   docker-coordinator-image:
     uses: recksato/robosats/.github/workflows/coordinator-image.yml@main
     needs: [django-test, frontend-build]
     with:
-      semver: {{ GET_SEM_VER FROM_TAG }}
+      semver: ${{ needs.check-version.tagName.outputs.tag }}
   
   docker-client-image:
     uses: recksato/robosats/.github/workflows/client-image.yml@main
     needs: frontend-build
     with:
-      semver: {{ GET_SEM_VER FROM_TAG }}
+      semver: ${{ needs.check-version.tagName.outputs.tag }}
   
   android-build:
+    uses: recksato/robosats/.github/workflows/coordinator-image.yml@main
     needs: frontend-build
+    with:
+      semver: ${{ needs.check-version.tagName.outputs.tag }}
   
   changelog:
     runs-on: ubuntu-20.04
@@ -45,17 +70,4 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          body: {{ needs.changelog.outputs.changelog }}
-
-As Jobs:
-django-test
-frontend-build
-
-docker-image      | needs django-test and frontend-build
-node-client-image | needs frontend-build
-android-build     | needs frontend-build
-
-Release
-
-#npm install -g auto-changelog
-#auto-changelog
+          body: ${{ needs.changelog.outputs.changelog }}
