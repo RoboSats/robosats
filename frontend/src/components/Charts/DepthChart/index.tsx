@@ -216,6 +216,17 @@ const DepthChart: React.FC<DepthChartProps> = ({
     />
   );
 
+  const statusBadgeColor = (status: string) => {
+    if (status === 'Active') {
+      return 'success';
+    }
+    if (status === 'Seen recently') {
+      return 'warning';
+    }
+
+    return 'error';
+  };
+
   const generateTooltip: React.FunctionComponent<PointTooltipProps> = (
     pointTooltip: PointTooltipProps,
   ) => {
@@ -225,7 +236,12 @@ const DepthChart: React.FC<DepthChartProps> = ({
         <Grid container justifyContent='space-between'>
           <Grid item xs={3}>
             <Grid container justifyContent='center' alignItems='center'>
-              <RobotAvatar order={order} />
+              <RobotAvatar 
+                nickname={order.maker_nick} 
+                orderType={order.type} 
+                statusColor={statusBadgeColor(order.maker_status)}
+                tooltip={t(order.maker_status)}
+              />
             </Grid>
           </Grid>
           <Grid item xs={8}>

@@ -81,13 +81,13 @@ class BookPage extends Component {
 
   // Colors for the status badges
   statusBadgeColor(status) {
-    if (status == 'Active') {
+    if (status === 'Active') {
       return 'success';
     }
-    if (status == 'Seen recently') {
+    if (status === 'Seen recently') {
       return 'warning';
     }
-    if (status == 'Inactive') {
+    if (status === 'Inactive') {
       return 'error';
     }
   }
@@ -167,7 +167,12 @@ class BookPage extends Component {
                 return (
                   <ListItemButton style={{ cursor: 'pointer' }}>
                     <ListItemAvatar>
-                      <RobotAvatar order={params.row} />
+                      <RobotAvatar 
+                        nickname={params.row.maker_nick} 
+                        orderType={params.row.type} 
+                        statusColor={this.statusBadgeColor(params.row.maker_status)}
+                        tooltip={t(params.row.maker_status)}
+                      />
                     </ListItemAvatar>
                     <ListItemText primary={params.row.maker_nick} />
                   </ListItemButton>
@@ -307,7 +312,13 @@ class BookPage extends Component {
               renderCell: (params) => {
                 return (
                   <div style={{ position: 'relative', left: '-5px' }}>
-                    <RobotAvatar order={params.row} />
+                    <RobotAvatar 
+                      nickname={params.row.maker_nick} 
+                      smooth={true}
+                      orderType={params.row.type} 
+                      statusColor={this.statusBadgeColor(params.row.maker_status)}
+                      tooltip={t(params.row.maker_status)}
+                    />
                   </div>
                 );
               },

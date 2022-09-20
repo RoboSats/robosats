@@ -20,6 +20,7 @@ import { getCookie } from '../utils/cookies';
 import { saveAsJson } from '../utils/saveFile';
 import { copyToClipboard } from '../utils/clipboard';
 import { AuditPGPDialog } from './Dialogs';
+import RobotAvatar from './Robots/RobotAvatar';
 
 // Icons
 import CheckIcon from '@mui/icons-material/Check';
@@ -270,23 +271,10 @@ class Chat extends Component {
         <CardHeader
           sx={{ color: '#333333' }}
           avatar={
-            <Badge
-              variant='dot'
-              overlap='circular'
-              badgeContent=''
-              color={props.userConnected ? 'success' : 'error'}
-            >
-              <Avatar
-                className='flippedSmallAvatar'
-                alt={props.message.userNick}
-                src={
-                  window.location.origin +
-                  '/static/assets/avatars/' +
-                  props.message.userNick +
-                  '.png'
-                }
-              />
-            </Badge>
+            <RobotAvatar
+              statusColor={props.userConnected ? 'success' : 'error'}
+              nickname={props.message.userNick}
+            />
           }
           style={{ backgroundColor: props.cardColor }}
           title={

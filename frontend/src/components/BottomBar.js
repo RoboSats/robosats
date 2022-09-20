@@ -19,6 +19,7 @@ import MediaQuery from 'react-responsive';
 import Flags from 'country-flag-icons/react/3x2';
 import { Link as LinkRouter } from 'react-router-dom';
 import { apiClient } from '../services/api';
+import RobotAvatar from './Robots/RobotAvatar';
 
 // Icons
 import BarChartIcon from '@mui/icons-material/BarChart';
@@ -204,29 +205,12 @@ class BottomBar extends Component {
                   }
                 >
                   <ListItemAvatar sx={{ width: 30 * fontSizeFactor, height: 30 * fontSizeFactor }}>
-                    <Badge
-                      badgeContent={
-                        (this.props.activeOrderId > 0) & !this.props.profileShown ? '' : null
-                      }
-                      color='primary'
-                    >
-                      <Avatar
-                        className='flippedSmallAvatar'
-                        sx={{ margin: 0, top: -13 }}
-                        alt={this.props.nickname}
-                        imgProps={{
-                          onLoad: () => this.props.setAppState({ avatarLoaded: true }),
-                        }}
-                        src={
-                          this.props.nickname
-                            ? window.location.origin +
-                              '/static/assets/avatars/' +
-                              this.props.nickname +
-                              '.png'
-                            : null
-                        }
-                      />
-                    </Badge>
+                    <RobotAvatar
+                      style={{ marginTop: -13 }}
+                      statusColor={this.props.activeOrderId > 0 & !this.props.profileShown ? 'primary' : undefined}
+                      nickname={this.props.nickname}
+                      onLoad={() => this.props.setAppState({ avatarLoaded: true })}
+                    />
                   </ListItemAvatar>
                 </Tooltip>
                 <ListItemText primary={this.props.nickname} />
@@ -512,29 +496,13 @@ class BottomBar extends Component {
                   onClick={this.handleClickOpenProfile}
                   sx={{ margin: 0, bottom: 17, right: 8 }}
                 >
-                  <Badge
-                    badgeContent={
-                      (this.state.active_order_id > 0) & !this.state.profileShown ? '' : null
-                    }
-                    color='primary'
-                  >
-                    <Avatar
-                      className='phoneFlippedSmallAvatar'
-                      sx={{ width: 55, height: 55 }}
-                      alt={this.props.nickname}
-                      imgProps={{
-                        onLoad: () => this.props.setAppState({ avatarLoaded: true }),
-                      }}
-                      src={
-                        this.props.nickname
-                          ? window.location.origin +
-                            '/static/assets/avatars/' +
-                            this.props.nickname +
-                            '.png'
-                          : null
-                      }
-                    />
-                  </Badge>
+                  <RobotAvatar
+                    style={{ width: 55, height: 55 }}
+                    avatarClass="phoneFlippedSmallAvatar"
+                    statusColor={this.props.activeOrderId > 0 & !this.props.profileShown ? 'primary' : undefined}
+                    nickname={this.props.nickname}
+                    onLoad={() => this.props.setAppState({ avatarLoaded: true })}
+                  />
                 </IconButton>
               </Tooltip>
             </div>

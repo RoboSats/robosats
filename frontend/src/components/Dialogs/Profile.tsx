@@ -39,6 +39,7 @@ import { UserNinjaIcon, BitcoinIcon } from '../Icons';
 import { getCookie } from '../../utils/cookies';
 import { copyToClipboard } from '../../utils/clipboard';
 import { getWebln } from '../../utils/webln';
+import RobotAvatar from '../Robots/RobotAvatar';
 
 interface Props {
   isOpen: boolean;
@@ -167,13 +168,10 @@ const ProfileDialog = ({
             </ListItemText>
 
             <ListItemAvatar>
-              <Avatar
-                className='profileAvatar'
-                sx={{ width: 65, height: 65 }}
-                alt={nickname}
-                src={
-                  nickname ? `${window.location.origin}/static/assets/avatars/${nickname}.png` : ''
-                }
+              <RobotAvatar
+                avatarClass="profileAvatar"
+                style={{ width: 65, height: 65 }}
+                nickname={nickname}
               />
             </ListItemAvatar>
           </ListItem>
