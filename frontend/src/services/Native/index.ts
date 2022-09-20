@@ -23,7 +23,7 @@ class NativeRobosats {
     }
   }
 
-  public postMessage: (message: NativeWebViewMessage) => Promise<object> = (message) => {
+  public postMessage: (message: NativeWebViewMessage) => Promise<{[key: string]: any}> = (message) => {
     this.messageCounter += 1
     message.id = this.messageCounter
     const json = JSON.stringify(message)

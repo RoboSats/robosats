@@ -30,11 +30,15 @@ const App = () => {
           .then((response: object) => {
             injectMessage(data.id, response);
           });
+      } else if (data.type === 'delete') {
+        torClient.delete(data.path, data.headers).then((response: object) => {
+          injectMessage(data.id, response);
+        });
+      } else if (data.type === 'file') {
+        torClient.request(data.path).then((response: object) => {
+          injectMessage(data.id, response);
+        });
       }
-    } else if (data.type === 'delete') {
-      torClient.delete(data.path, data.headers).then((response: object) => {
-        injectMessage(data.id, response);
-      });
     }
   };
 

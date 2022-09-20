@@ -52,6 +52,24 @@ class TorClient {
     });
   };
 
+  public request: (path: string) => Promise<object> = async path => {
+    await this.startDaemon();
+
+    return new Promise<object>(async (resolve, reject) => {
+      try {
+        const response = await this.daemon
+          .request(`${this.baseUrl}${path}`, 'GET', '', {}, true)
+          .then(resp => {
+            resolve(resp);
+          });
+
+        resolve(response);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
   public post: (
     path: string,
     body: object,

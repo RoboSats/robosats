@@ -41,6 +41,16 @@ class ApiNativeClient implements ApiClient {
       path
     })
   };
+
+  public fileImageUrl: (path: string) => Promise<string | undefined> = async (path) => {
+    const fileB64 = await window.NativeRobosats?.postMessage({
+      category: 'http',
+      type: 'file',
+      path
+    })
+
+    return `data:image/png;base64,${fileB64?.b64Data}`
+  };
 }
 
 export default ApiNativeClient;
