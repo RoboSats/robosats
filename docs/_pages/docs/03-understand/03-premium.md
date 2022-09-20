@@ -12,9 +12,7 @@ src: "_pages/docs/03-understand/03-premium.md"
 
 The premium associated with your peer-to-peer order is the price difference that exists over or under the going rate for bitcoin-fiat found on your typical centralized exchanges.
 
-Order makers choose their desired premium when buying and selling bitcoin. This premium, expressed as a percentage, is priced relative to the current bitcoin-fiat market rate.
-
-Alternatively, the maker can pick a premium using the explicit pricing method with a fixed amount of satoshis in lieu of following the current market rate.
+When browsing the order book, the bitcoin exchange price of live orders are automatically adjusted to include the order's corresponding premium.
 
 At the bottom of the exchange interface is the price premium of the marketplace over the last 24 hours, generally around +5%, and is to be expected in a private, peer-to-peer environment.
 
