@@ -1,11 +1,16 @@
 name: Android Build
 on:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      semver:
+        required: true
+        type: string
   push:
-    branches: [ "main" , "android-webview-app-ts"]
+    branches: [ "main" ]
     paths: [ "mobile", "frontend" ]
   pull_request:
-    branches: [ "main" , "android-webview-app-ts"]
+    branches: [ "main" ]
     paths: [ "mobile", "frontend" ]
 
 jobs:
@@ -37,8 +42,40 @@ jobs:
         id: commit
         uses: pr-mpt/actions-commit-hash@v1
 
-      - name: 'Upload .apk Artifact'
+      - name: 'Upload .apk Artifact (for Release)'
         uses: actions/upload-artifact@v3
+        if: inputs.semver != ''  # If this workflow is called from release.yml
+        with:
+          name: robosats-${{ inputs.semver }}.apk
+          path: mobile/android/app/build/outputs/apk/release/app-release.apk
+
+      - name: 'Upload .apk Artifact (for Pre-release)'
+        uses: actions/upload-artifact@v3
+        if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
         with:
           name: robosats-${{ steps.commit.outputs.short }}.apk
           path: mobile/android/app/build/outputs/apk/release/app-release.apk
+
+      - name: 'Create Pre-release'
+        id: create_release
+        if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: android-${{ steps.commit.outputs.short }}
+          release_name: robosats-alpha-${{ steps.commit.outputs.short }}
+          draft: false
+          prerelease: true
+
+      - name: 'Upload Pre-release APK Asset'
+        id: upload-release-asset 
+        if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./mobile/android/app/build/outputs/apk/release/app-release.apk
+          asset_name: robosats-${{ steps.commit.outputs.short }}.apk
+          asset_content_type: application/apk

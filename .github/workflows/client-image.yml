@@ -2,6 +2,7 @@ name: Client App Image CI/CD
 
 on:
   workflow_dispatch:
+  workflow_call:
   push:
     branches: [ "main" ]
     paths: ["frontend", "nodeapp"]
@@ -9,9 +10,9 @@ on:
     branches: [ "main" ]
     paths: ["frontend", "nodeapp"]
 
-concurrency:
-  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
-  cancel-in-progress: true
+# concurrency:
+#   group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+#   cancel-in-progress: true
 
 jobs:
   push_to_registry:
@@ -20,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: 'Copy Static' # Only needed because Github actions does not support symlinks
+    - name: 'Copy Static' # Needed since Github actions does not support symlinks
       run: |
         rm nodeapp/static
         cp -r frontend/static nodeapp/static
@@ -47,12 +48,13 @@ jobs:
         tags: |
             type=ref,event=branch
             type=ref,event=pr
+            type=ref,event=tag
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=sha
+            type=sha,enable=true,priority=100,prefix=,suffix=,format=short
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
-
+            
     - name: 'Get Commit Hash'
       id: commit
       uses: pr-mpt/actions-commit-hash@v1
@@ -69,8 +71,6 @@ jobs:
         context: ./nodeapp
         platforms: linux/amd64,linux/arm64
         push: true
-        tags: |
-          recksato/robosats-client:${{ steps.commit.outputs.short }}
-          recksato/robosats-client:latest
+        tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
