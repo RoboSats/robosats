@@ -1,0 +1,79 @@
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  check-versions:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 'Checkout'
+      uses: actions/checkout@v3
+    - uses: olegtarasov/get-tag@v2.1
+      id: tagName
+    - name: 'Validate versions match (tag, backend, frontend, Android)'
+      id: validate
+      run: |
+        sudo apt-get install jq
+
+        clientV=$(jq -r .version frontend/package.json)
+        coordinatorV=$(jq -r .major version.json).$(jq -r .minor version.json).$(jq -r .patch version.json)
+        tagV=$(git describe --tags --abbrev=0 | sed 's/v//')
+
+        printf "Client version: ${clientV}\nCoordinator version: ${coordinatorV}\nGit tag version: ${tagV}\n"
+
+        if [ "$coordinatorV" = "$clientV" ] && [ "$coordinatorV" = "$tagV" ] ; then
+            echo "Versions match!"
+        else
+            echo "Versions do not match! You might have forgotten to update the version on a component."; exit $ERRCODE;
+        fi
+      
+  django-test:
+    uses: reckless-satoshi/robosats/.github/workflows/django-test.yml@main
+    needs: check-versions
+  
+  frontend-build:
+    uses: reckless-satoshi/robosats/.github/workflows/frontend-build.yml@main
+    needs: check-versions
+    with:
+      semver: ${{ needs.check-version.tagName.outputs.tag }}
+  
+  coordinator-image:
+    uses: reckless-satoshi/robosats/.github/workflows/coordinator-image.yml@main
+    needs: [django-test, frontend-build]
+    with:
+      semver: ${{ needs.check-version.tagName.outputs.tag }}
+  
+  client-image:
+    uses: reckless-satoshi/robosats/.github/workflows/client-image.yml@main
+    needs: frontend-build
+    with:
+      semver: ${{ needs.check-version.tagName.outputs.tag }}
+  
+  android-build:
+    uses: reckless-satoshi/robosats/.github/workflows/coordinator-image.yml@main
+    needs: frontend-build
+    with:
+      semver: ${{ needs.check-version.tagName.outputs.tag }}
+  
+  changelog:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Generate release changelog"
+        uses: heinrichreimer/github-changelog-generator-action@v2.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} 
+
+  release:
+    needs: [coordinator-image, client-image, android-build, changelog]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ needs.changelog.outputs.changelog }}

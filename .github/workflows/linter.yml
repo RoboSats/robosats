@@ -37,6 +37,7 @@ jobs:
         with:
           prettier: true
           prettier_dir: frontend
-          # Many linting errors
+          
+          ## Disabled due to error
           # eslint: true
           # eslint_dir: frontend

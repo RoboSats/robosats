@@ -2,6 +2,11 @@ name: Frontend Test & Build
 
 on:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      semver:
+        required: true
+        type: string
   push:
     branches: [ "main" ]
     paths: [ "frontend" ]
@@ -48,12 +53,15 @@ jobs:
       with:
         name: main-js
         path: frontend/static/frontend/main.js
+        
     - name: 'Invoke Backend Build CI workflow'
+      if: ${{ inputs.semver }} != ""
       uses: benc-uk/workflow-dispatch@v1
       with:
         workflow: 'Backend Image CI'
         token: ${{ secrets.PERSONAL_TOKEN }}
     - name: 'Invoke Client App Build CI/CD workflow'
+      if: ${{ inputs.semver }} != ""
       uses: benc-uk/workflow-dispatch@v1
       with:
         workflow: 'Client App Image CI/CD'

@@ -17,7 +17,7 @@ from control.models import AccountingDay, BalanceLog
 from api.logics import Logics
 from api.messages import Telegram
 from secrets import token_urlsafe
-from api.utils import get_lnd_version, get_commit_robosats, compute_premium_percentile, compute_avg_premium
+from api.utils import get_lnd_version, get_robosats_commit, get_robosats_version, compute_premium_percentile, compute_avg_premium
 
 from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
@@ -837,7 +837,8 @@ class InfoView(ListAPIView):
         context["last_day_volume"] = round(total_volume, 8)
         context["lifetime_volume"] = round(lifetime_volume, 8)
         context["lnd_version"] = get_lnd_version()
-        context["robosats_running_commit_hash"] = get_commit_robosats()
+        context["robosats_running_commit_hash"] = get_robosats_commit()
+        context["version"] = get_robosats_version()
         context["alternative_site"] = config("ALTERNATIVE_SITE")
         context["alternative_name"] = config("ALTERNATIVE_NAME")
         context["node_alias"] = config("NODE_ALIAS")
