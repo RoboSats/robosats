@@ -6,6 +6,24 @@ body {
   font-family: 'Roboto';
 }
 
+@media (prefers-color-scheme: dark) {
+  body {
+    background: rgb(0, 0, 0);
+  }
+  .loaderSpinner {
+    color: #90caf9;
+  }
+  .loaderSpinner:before{
+    background: rgb(0, 0, 0);
+  }
+  .loaderSpinner:after{
+    background: rgb(0, 0, 0);
+  }
+  .slider{
+    color: #fff;
+  }
+}
+
 #main {
   position: fixed;
   width: 100%;
