@@ -2,6 +2,7 @@ name: Django Tests
 
 on:
   workflow_dispatch:
+  workflow_call:
   push:
     branches: [ "main" ]
     paths: ["api", "chat", "control", "robosats"]

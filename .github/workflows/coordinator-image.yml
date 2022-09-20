@@ -1,13 +1,18 @@
-name: Client App Image CI/CD
+name: Coodinator Image CI
 
 on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
-    paths: ["frontend", "nodeapp"]
+    paths: ["api", "chat", "control", "robosats", "frontend"]
   pull_request:
     branches: [ "main" ]
-    paths: ["frontend", "nodeapp"]
+    paths: ["api", "chat", "control", "robosats", "frontend"]
+  workflow_call:
+    inputs:
+      semver:
+        required: true
+        type: string
 
 concurrency:
   group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
@@ -20,18 +25,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: 'Copy Static' # Only needed because Github actions does not support symlinks
-      run: |
-        rm nodeapp/static
-        cp -r frontend/static nodeapp/static
-
     - name: 'Download main.js Artifact'
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
         name: main-js
-        path: nodeapp/static/frontend/
+        path: frontend/static/frontend/
         
     - name: 'Log in to Docker Hub'
       uses: docker/login-action@v2
@@ -43,7 +43,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v4
       with:
-        images: recksato/robosats-client
+        images: recksato/robosats
         tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -57,20 +57,17 @@ jobs:
       id: commit
       uses: pr-mpt/actions-commit-hash@v1
 
-    - name: 'Set up QEMU'
-      uses: docker/setup-qemu-action@v2
-    
-    - name: 'Set up Docker Buildx'
-      uses: docker/setup-buildx-action@v2
-    
+    - name: 'Save Commit Long Hash to TXT File'
+      run: |
+        echo ${{ steps.commit.outputs.long }}>"commit_sha.txt"
+
     - name: 'Build and push Docker image'
       uses: docker/build-push-action@v3
       with:
-        context: ./nodeapp
-        platforms: linux/amd64,linux/arm64
+        context: .
         push: true
         tags: |
-          recksato/robosats-client:${{ steps.commit.outputs.short }}
-          recksato/robosats-client:latest
+          recksato/robosats:${{ steps.commit.outputs.short }}
+          recksato/robosats:latest
         labels: ${{ steps.meta.outputs.labels }}
 

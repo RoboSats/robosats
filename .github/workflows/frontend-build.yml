@@ -2,6 +2,11 @@ name: Frontend Test & Build
 
 on:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      semver:
+        required: true
+        type: string
   push:
     branches: [ "main" ]
     paths: [ "frontend" ]
@@ -48,6 +53,19 @@ jobs:
       with:
         name: main-js
         path: frontend/static/frontend/main.js
+
+  invoke-docker-builds:
+    if: inputs.semver == ''
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: PRINT SEMVER
+      shell: bash
+      run: |
+        echo "inputs.semver is: $SEMVER --"
+      env:
+        SEMVER: ${{ inputs.semver }}
+
     - name: 'Invoke Backend Build CI workflow'
       uses: benc-uk/workflow-dispatch@v1
       with:

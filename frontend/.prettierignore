@@ -1,1 +1,5 @@
 src/components/payment-methods/code/code.js
+static/rest_framework/**
+static/admin/**
+static/frontend/**
+static/import_export/**
