@@ -6,7 +6,7 @@
   "Hide": "Amagar",
   "You are self-hosting RoboSats": "Estàs hostejant RoboSats",
   "RoboSats client is served from your own node granting you the strongest security and privacy.": "El client RoboSats és servit pel teu propi node, gaudeixes de la major seguretat i privacitat.",
-   
+
   "USER GENERATION PAGE - UserGenPage.js": "Landing Page and User Generation",
   "Simple and Private LN P2P Exchange": "Intercanvi LN P2P Fàcil y Privat",
   "This is your trading avatar": "Aquest és el teu Robot de compravenda",
@@ -88,7 +88,7 @@
   "Google Play Gift Code": "Targeta Regal de Google Play",
   "Cash F2F": "Efectiu en persona",
   "On-Chain BTC": "On-Chain BTC",
-  
+
   "BOOK PAGE - BookPage.js": "The Book Order page",
   "Seller": "Ven",
   "Buyer": "Compra",
@@ -235,7 +235,7 @@
   "On your own sovereign node": "Al teu propi node sobirà",
   "Simply refresh your Tor Browser tab (or press Ctrl+Shift+R)": "Simplement actualitzeu la pestanya del navegador Tor (o premeu Ctrl+Shift+R)",
   "On remotely served client via web": "Al client servit de forma remota via web",
-  
+
   "ORDER PAGE - OrderPage.js": "Order details page",
   "Order Box": "Ordre",
   "Contract": "Contracte",
@@ -310,7 +310,7 @@
   "Payment not received, please check your WebLN wallet.": "No s'ha rebut el pagament, fes un cop d'ull a la teva wallet WebLN.",
   "Invoice not received, please check your WebLN wallet.": "No s'ha rebut la factura, fes un cop d'ull a la teva wallet WebLN.",
   "You can close now your WebLN wallet popup.": "Ara pots tancar el popup de la teva wallet WebLN.",
-  
+
   "CHAT BOX - Chat.js": "Finestra del xat",
   "You": "Tu",
   "Peer": "Ell",
@@ -446,7 +446,7 @@
   "The invoice provided has already expired": "La factura que has entregat ja ha caducat",
   "Make sure to EXPORT the chat log. The staff might request your exported chat log JSON in order to solve discrepancies. It is your responsibility to store it.": "Assegura't d' EXPORTAR el registre del xat. Els administradors poden demanar-te elregistre del xat en cas de discrepàncies. És la teva responsabilitat proveir-ho.",
   "Invalid address": "Direcció invàlida",
-  "Unable to validate address, check bitcoind backend": "No ha estat possible validar l'adreça, comprovar el backend bitcoind",  
+  "Unable to validate address, check bitcoind backend": "No ha estat possible validar l'adreça, comprovar el backend bitcoind",
   "Submit payout info for {{amountSats}} Sats": "Envia info per rebre {{amountSats}} Sats",
   "Submit a valid invoice for {{amountSats}} Satoshis.": "Envia una factura per {{amountSats}} Sats",
   "Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.": "Abans de deixar-te enviar {{amountFiat}} {{currencyCode}}, volem assegurar-nos que pots rebre BTC.",

@@ -97,5 +97,3 @@ jobs:
       #     asset_path: app-release.apk
       #     asset_name: robosats-${{ needs.check-versions.outputs.semver }}.apk
       #     asset_content_type: application/apk
-
-          

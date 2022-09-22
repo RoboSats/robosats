@@ -46,10 +46,8 @@ jobs:
       with:
         images: recksato/robosats-client
         tags: |
-            type=ref,event=branch
             type=ref,event=pr
             type=ref,event=tag
-            type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha,enable=true,priority=100,prefix=,suffix=,format=short
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
@@ -72,4 +70,3 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-

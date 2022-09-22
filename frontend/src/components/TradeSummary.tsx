@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { pn } from '../utils/prettyNumbers';
 import { saveAsJson } from '../utils/saveFile';
+import RobotAvatar from './Robots/RobotAvatar';
 
 // Icons
 import FlagWithProps from './FlagWithProps';
@@ -94,12 +95,7 @@ const TradeSummary = ({
           >
             <ToggleButtonGroup size='small' value={buttonValue} exclusive>
               <ToggleButton value={0} disableRipple={true} onClick={() => setButtonValue(0)}>
-                <Avatar
-                  className='flippedSmallAvatar'
-                  sx={{ height: 24, width: 24 }}
-                  alt={makerNick}
-                  src={window.location.origin + '/static/assets/avatars/' + makerNick + '.png'}
-                />
+                <RobotAvatar style={{ height: 24, width: 24 }} nickname={makerNick} />
                 &nbsp;
                 {t('Maker')}
               </ToggleButton>
@@ -109,11 +105,10 @@ const TradeSummary = ({
               <ToggleButton value={2} disableRipple={true} onClick={() => setButtonValue(2)}>
                 {t('Taker')}
                 &nbsp;
-                <Avatar
-                  className='smallAvatar'
-                  sx={{ height: 28, width: 28 }}
-                  alt={takerNick}
-                  src={window.location.origin + '/static/assets/avatars/' + takerNick + '.png'}
+                <RobotAvatar
+                  avatarClass='smallAvatar'
+                  style={{ height: 28, width: 28 }}
+                  nickname={takerNick}
                 />
               </ToggleButton>
             </ToggleButtonGroup>
