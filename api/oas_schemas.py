@@ -3,7 +3,7 @@ import textwrap
 from decouple import config
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter
 
-from api.serializers import ListOrderSerializer, StealthSerializer
+from api.serializers import ListOrderSerializer, OrderDetailSerializer, StealthSerializer
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
@@ -56,10 +56,72 @@ class MakerViewSchema:
 class OrderViewSchema:
 
     get = {
-        "summary": "[WIP] Get order",
+        "summary": "Get order details",
         "description": textwrap.dedent(
             """
-            **NOT COMPLETE**
+            Get the order details. Details include/exclude attributes according to what is the status of the order
+
+            The following fields are available irrespective of whether you are a participant or not (A participant is either a taker or a maker of an order)
+            All the other fields are only available when you are either the taker or the maker of the order:
+
+            - `id`
+            - `status`
+            - `created_at`
+            - `expires_at`
+            - `type`
+            - `currency`
+            - `amount`
+            - `has_range`
+            - `min_amount`
+            - `max_amount`
+            - `payment_method`
+            - `is_explicit`
+            - `premium`
+            - `satoshis`
+            - `bondless_taker`
+            - `maker`
+            - `taker`
+            - `escrow_duration`
+            - `total_secs_exp`
+            - `penalty`
+            - `is_maker`
+            - `is_taker`
+            - `is_participant`
+            - `maker_status`
+            - `taker_status`
+            - `price_now`
+
+            ### Order Status
+
+            The response of this route changes according to the status of the order. Some fields are documented below (check the 'Responses' section)
+            with the status code of when they are available and some or not. With v1 API we aim to simplify this
+            route to make it easier to understand which fields are available on which order status codes.
+
+            `status` specifies the status of the order. Below is a list of possible values (status codes) and what they mean:
+            - `0` "Waiting for maker bond"
+            - `1` "Public"
+            - `2` "Paused"
+            - `3` "Waiting for taker bond"
+            - `4` "Cancelled"
+            - `5` "Expired"
+            - `6` "Waiting for trade collateral and buyer invoice"
+            - `7` "Waiting only for seller trade collateral"
+            - `8` "Waiting only for buyer invoice"
+            - `9` "Sending fiat - In chatroom"
+            - `10` "Fiat sent - In chatroom"
+            - `11` "In dispute"
+            - `12` "Collaboratively cancelled"
+            - `13` "Sending satoshis to buyer"
+            - `14` "Sucessful trade"
+            - `15` "Failed lightning network routing"
+            - `16` "Wait for dispute resolution"
+            - `17` "Maker lost dispute"
+            - `18` "Taker lost dispute"
+
+
+            Notes:
+            - both `price_now` and `premium_now` are always calculated irrespective of whether `is_explicit` = true or false
+
             """
         ),
         "parameters": [
@@ -71,7 +133,7 @@ class OrderViewSchema:
             ),
         ],
         "responses": {
-            #     201: ListOrderSerializer,
+            200: OrderDetailSerializer,
             400: {
                 "type": "object",
                 "properties": {
@@ -101,20 +163,16 @@ class OrderViewSchema:
                     },
                 },
             },
-            #     409: {
-            #         'type': 'object',
-            #         'properties': {
-            #             'bad_request': {
-            #                 'type': 'string',
-            #                 'description': 'Reason for the failure',
-            #             },
-            #         },
-            #     }
         },
         "examples": [
             OpenApiExample(
                 "Order cancelled",
                 value={"bad_request": "This order has been cancelled by the maker"},
+                status_codes=[400],
+            ),
+            OpenApiExample(
+                "When the order is not public and you neither the taker nor maker",
+                value={"bad_request": "This order is not available"},
                 status_codes=[400],
             ),
             OpenApiExample(
