@@ -59,17 +59,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-    - name: PRINT SEMVER
-      shell: bash
-      run: |
-        echo "inputs.semver is: $SEMVER --"
-      env:
-        SEMVER: ${{ inputs.semver }}
-
-    - name: 'Invoke Backend Build CI workflow'
+    - name: 'Invoke Coodinator Image CI'
       uses: benc-uk/workflow-dispatch@v1
       with:
-        workflow: 'Backend Image CI'
+        workflow: 'Coodinator Image CI'
         token: ${{ secrets.PERSONAL_TOKEN }}
     - name: 'Invoke Client App Build CI/CD workflow'
       uses: benc-uk/workflow-dispatch@v1

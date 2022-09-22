@@ -10,9 +10,9 @@ on:
     branches: [ "main" ]
     paths: ["api", "chat", "control", "robosats"]
 
-concurrency:
-  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
-  cancel-in-progress: true
+# concurrency:
+#   group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+#   cancel-in-progress: true
   
 jobs:
   build:
