@@ -1,0 +1,99 @@
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  check-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      semver: ${{ steps.validate.outputs.semver }}
+    steps:
+    - name: 'Checkout'
+      uses: actions/checkout@v3
+    - name: 'Validate versions match (tag, backend, frontend, Android)'
+      id: validate
+      shell: bash
+      run: |
+        semver=$(git describe --tags --abbrev=0)
+        IFS=-
+        read -ra semverArray <<< $semver
+        tagV=$(echo ${semverArray[0]} | sed 's/v//')
+        clientV=$(jq -r .version frontend/package.json)
+        coordinatorV=$(jq -r .major version.json).$(jq -r .minor version.json).$(jq -r .patch version.json)
+
+        printf "Client version: ${clientV}\nCoordinator version: ${coordinatorV}\nGit tag version: ${tagV}\n"
+
+        if [ "$coordinatorV" = "$clientV" ] && [ "$coordinatorV" = "$tagV" ] ; then
+            echo "Versions match!"
+            echo '::set-output name=semver::'$semver
+        else
+            echo "Versions do not match! You might have forgotten to update the version on a component."; exit $ERRCODE;
+        fi
+      
+      
+  django-test:
+    uses: reckless-satoshi/robosats/.github/workflows/django-test.yml@main
+    needs: check-versions
+
+  frontend-build:
+    uses: reckless-satoshi/robosats/.github/workflows/frontend-build.yml@main
+    needs: check-versions
+    with:
+      semver: ${{ needs.check-versions.outputs.semver }}
+  
+  coordinator-image:
+    uses: reckless-satoshi/robosats/.github/workflows/coordinator-image.yml@main
+    needs: [django-test, frontend-build]
+    secrets: inherit
+  
+  client-image:
+    uses: reckless-satoshi/robosats/.github/workflows/client-image.yml@main
+    needs: frontend-build
+    secrets: inherit
+  
+  # Disabled until first Android APK release
+  # android-build:
+  #   uses: reckless-satoshi/robosats/.github/workflows/coordinator-image.yml@main
+  #   needs: frontend-build
+  #   with:
+  #     semver: ${{ needs.check-versions.outputs.semver }}
+  
+  release:
+    needs: [check-versions, coordinator-image, client-image] #, android-build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: "Generate Release Changelog"
+        id: changelog
+        uses: heinrichreimer/github-changelog-generator-action@v2.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Release
+        id: create-release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ steps.changelog.outputs.changelog }}
+
+      # Disabled until first Android APK release
+      # - name: 'Download APK Artifact'
+      #   uses: dawidd6/action-download-artifact@v2
+      #   with:
+      #     workflow: android-build.yml
+      #     workflow_conclusion: success
+      #     name: robosats-${{ needs.check-versions.outputs.semver }}.apk
+      #     path: .
+      # - name: 'Upload APK Asset'
+      #   id: upload-release-asset
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create-release.outputs.upload_url }}
+      #     asset_path: app-release.apk
+      #     asset_name: robosats-${{ needs.check-versions.outputs.semver }}.apk
+      #     asset_content_type: application/apk

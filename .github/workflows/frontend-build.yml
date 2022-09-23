@@ -2,6 +2,11 @@ name: Frontend Test & Build
 
 on:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      semver:
+        required: true
+        type: string
   push:
     branches: [ "main" ]
     paths: [ "frontend" ]
@@ -48,12 +53,17 @@ jobs:
       with:
         name: main-js
         path: frontend/static/frontend/main.js
-    - name: 'Invoke Backend Build CI workflow'
+
+    # Invoke pre-release image build if this was not a tag push
+    # Docker images tagged only with short commit hash
+    - name: 'Invoke Coodinator Image CI'
+      if: inputs.semver == ''
       uses: benc-uk/workflow-dispatch@v1
       with:
-        workflow: 'Backend Image CI'
+        workflow: 'Coodinator Image CI'
         token: ${{ secrets.PERSONAL_TOKEN }}
     - name: 'Invoke Client App Build CI/CD workflow'
+      if: inputs.semver == ''
       uses: benc-uk/workflow-dispatch@v1
       with:
         workflow: 'Client App Image CI/CD'

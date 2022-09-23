@@ -1,17 +1,12 @@
-name: Backend Image CI
+name: Coodinator Image CI
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
-    paths: ["api", "chat", "control", "robosats", "frontend"]
-  pull_request:
-    branches: [ "main" ]
-    paths: ["api", "chat", "control", "robosats", "frontend"]
+  workflow_call:
 
-concurrency:
-  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
-  cancel-in-progress: true
+# concurrency:
+#   group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+#   cancel-in-progress: true
 
 jobs:
   push_to_registry:
@@ -40,12 +35,10 @@ jobs:
       with:
         images: recksato/robosats
         tags: |
-            type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{version}}
+            type=ref,event=tag
             type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha
+            type=sha,enable=true,priority=100,prefix=,suffix=,format=short
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
 
     - name: 'Get Commit Hash'
@@ -61,8 +54,5 @@ jobs:
       with:
         context: .
         push: true
-        tags: |
-          recksato/robosats:${{ steps.commit.outputs.short }}
-          recksato/robosats:latest
+        tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-

@@ -1,24 +1,37 @@
 import React from 'react';
-import { Badge, Tooltip } from '@mui/material';
 import SmoothImage from 'react-smooth-image';
-
-import Order from '../../../models/Order.model';
+import { Avatar, Badge, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SendReceiveIcon } from '../../Icons';
 
 interface DepthChartProps {
-  order: Order;
+  nickname: string;
+  smooth?: boolean;
+  style?: object;
+  statusColor?: 'primary' | 'secondary' | 'default' | 'error' | 'info' | 'success' | 'warning';
+  orderType?: number;
+  tooltip?: string;
+  avatarClass?: string;
+  onLoad?: () => void;
 }
 
-const RobotAvatar: React.FC<DepthChartProps> = ({ order }) => {
+const RobotAvatar: React.FC<DepthChartProps> = ({
+  nickname,
+  orderType,
+  statusColor,
+  tooltip,
+  smooth = false,
+  style = {},
+  avatarClass = 'flippedSmallAvatar',
+  onLoad = () => {},
+}) => {
   const { t } = useTranslation();
 
-  const avatarSrc: string =
-    window.location.origin + '/static/assets/avatars/' + order?.maker_nick + '.png';
+  const avatarSrc: string = window.location.origin + '/static/assets/avatars/' + nickname + '.png';
 
   const statusBadge = (
     <div style={{ position: 'relative', left: '6px', top: '1px' }}>
-      {order?.type === 0 ? (
+      {orderType === 0 ? (
         <SendReceiveIcon
           sx={{ transform: 'scaleX(-1)', height: '18px', width: '18px' }}
           color='secondary'
@@ -29,45 +42,68 @@ const RobotAvatar: React.FC<DepthChartProps> = ({ order }) => {
     </div>
   );
 
-  const statusBadgeColor = () => {
-    if (!order) {
-      return;
-    }
-    if (order.maker_status === 'Active') {
-      return 'success';
-    }
-    if (order.maker_status === 'Seen recently') {
-      return 'warning';
-    }
-    if (order.maker_status === 'Inactive') {
-      return 'error';
+  const getAvatar = () => {
+    if (smooth) {
+      return (
+        <SmoothImage
+          className={avatarClass}
+          src={avatarSrc}
+          imageStyles={{
+            ...style,
+            borderRadius: '50%',
+            transform: 'scaleX(-1)',
+            border: '0.3px solid #555',
+            filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
+          }}
+        />
+      );
+    } else {
+      return (
+        <Avatar
+          className={avatarClass}
+          style={style}
+          alt={nickname}
+          src={avatarSrc}
+          imgProps={{
+            onLoad,
+          }}
+        />
+      );
     }
   };
 
-  return order ? (
-    <Tooltip placement='right' enterTouchDelay={0} title={t(order.maker_status) || ''}>
-      <Badge variant='dot' overlap='circular' badgeContent='' color={statusBadgeColor()}>
+  const getAvatarWithBadges = () => {
+    let component = getAvatar();
+
+    if (statusColor) {
+      component = (
+        <Badge variant='dot' overlap='circular' badgeContent='' color={statusColor}>
+          {component}
+        </Badge>
+      );
+    }
+
+    if (orderType !== undefined) {
+      component = (
         <Badge
           overlap='circular'
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
           badgeContent={statusBadge}
         >
-          <div style={{ width: 45, height: 45 }}>
-            <SmoothImage
-              src={avatarSrc}
-              imageStyles={{
-                borderRadius: '50%',
-                transform: 'scaleX(-1)',
-                border: '0.3px solid #555',
-                filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
-              }}
-            />
-          </div>
+          {component}
         </Badge>
-      </Badge>
+      );
+    }
+
+    return component;
+  };
+
+  return tooltip ? (
+    <Tooltip placement='right' enterTouchDelay={0} title={tooltip}>
+      {getAvatarWithBadges()}
     </Tooltip>
   ) : (
-    <></>
+    getAvatarWithBadges()
   );
 };
 

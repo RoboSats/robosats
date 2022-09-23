@@ -1,5 +1,5 @@
 ## RoboSats - Buy and sell Satoshis Privately
-[![Docker Image CI](https://github.com/Reckless-Satoshi/robosats/actions/workflows/docker-image.yml/badge.svg?branch=main)](https://github.com/Reckless-Satoshi/robosats/actions/workflows/docker-image.yml)
+[![Coordinator CI](https://github.com/Reckless-Satoshi/robosats/actions/workflows/coordinator-image.yml/badge.svg?branch=main)](https://github.com/Reckless-Satoshi/robosats/actions/workflows/coordinator-image.yml)
 [![Frontend Build](https://github.com/Reckless-Satoshi/robosats/actions/workflows/frontend-build.yml/badge.svg?branch=main)](https://github.com/Reckless-Satoshi/robosats/actions/workflows/frontend-build.yml)
 [![release](https://img.shields.io/badge/release-v0.1.0%20MVP-red)](https://github.com/Reckless-Satoshi/robosats/releases)
 [![AGPL-3.0 license](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/Reckless-Satoshi/robosats/blob/main/LICENSE)

@@ -55,6 +55,7 @@ import { pn } from '../utils/prettyNumbers';
 import { copyToClipboard } from '../utils/clipboard';
 import { getWebln } from '../utils/webln';
 import { apiClient } from '../services/api';
+import RobotAvatar from './Robots/RobotAvatar';
 
 class OrderPage extends Component {
   constructor(props) {
@@ -667,13 +668,13 @@ class OrderPage extends Component {
 
   // Colors for the status badges
   statusBadgeColor(status) {
-    if (status == 'Active') {
+    if (status === 'Active') {
       return 'success';
     }
-    if (status == 'Seen recently') {
+    if (status === 'Seen recently') {
       return 'warning';
     }
-    if (status == 'Inactive') {
+    if (status === 'Inactive') {
       return 'error';
     }
   }
@@ -692,46 +693,12 @@ class OrderPage extends Component {
             <List dense={true}>
               <ListItem>
                 <ListItemAvatar sx={{ width: 56, height: 56 }}>
-                  <Tooltip placement='top' enterTouchDelay={0} title={t(this.state.maker_status)}>
-                    <Badge
-                      variant='dot'
-                      overlap='circular'
-                      badgeContent=''
-                      color={this.statusBadgeColor(this.state.maker_status)}
-                    >
-                      <Badge
-                        overlap='circular'
-                        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                        badgeContent={
-                          <div style={{ position: 'relative', left: '5px', top: '2px' }}>
-                            {' '}
-                            {!this.state.type ? (
-                              <SendReceiveIcon
-                                sx={{ transform: 'scaleX(-1)', height: '18px', width: '18px' }}
-                                color='secondary'
-                              />
-                            ) : (
-                              <SendReceiveIcon
-                                sx={{ height: '18px', width: '18px' }}
-                                color='primary'
-                              />
-                            )}
-                          </div>
-                        }
-                      >
-                        <Avatar
-                          className='flippedSmallAvatar'
-                          alt={this.state.maker_nick}
-                          src={
-                            window.location.origin +
-                            '/static/assets/avatars/' +
-                            this.state.maker_nick +
-                            '.png'
-                          }
-                        />
-                      </Badge>
-                    </Badge>
-                  </Tooltip>
+                  <RobotAvatar
+                    statusColor={this.statusBadgeColor(this.state.maker_status)}
+                    nickname={this.state.maker_nick}
+                    tooltip={t(this.state.maker_status)}
+                    orderType={this.state.type}
+                  />
                 </ListItemAvatar>
                 <ListItemText
                   primary={
@@ -745,7 +712,7 @@ class OrderPage extends Component {
 
               {this.state.is_participant ? (
                 <>
-                  {this.state.taker_nick != 'None' ? (
+                  {this.state.taker_nick !== 'None' ? (
                     <>
                       <Divider />
                       <ListItem align='left'>
@@ -757,50 +724,13 @@ class OrderPage extends Component {
                           secondary={t('Order taker')}
                         />
                         <ListItemAvatar>
-                          <Tooltip enterTouchDelay={0} title={t(this.state.taker_status)}>
-                            <Badge
-                              variant='dot'
-                              overlap='circular'
-                              badgeContent=''
-                              color={this.statusBadgeColor(this.state.taker_status)}
-                            >
-                              <Badge
-                                overlap='circular'
-                                anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-                                badgeContent={
-                                  <div style={{ position: 'relative', right: '5px', top: '2px' }}>
-                                    {' '}
-                                    {this.state.type ? (
-                                      <SendReceiveIcon
-                                        sx={{ height: '18px', width: '18px' }}
-                                        color='secondary'
-                                      />
-                                    ) : (
-                                      <SendReceiveIcon
-                                        sx={{
-                                          transform: 'scaleX(-1)',
-                                          height: '18px',
-                                          width: '18px',
-                                        }}
-                                        color='primary'
-                                      />
-                                    )}
-                                  </div>
-                                }
-                              >
-                                <Avatar
-                                  className='smallAvatar'
-                                  alt={this.state.taker_nick}
-                                  src={
-                                    window.location.origin +
-                                    '/static/assets/avatars/' +
-                                    this.state.taker_nick +
-                                    '.png'
-                                  }
-                                />
-                              </Badge>
-                            </Badge>
-                          </Tooltip>
+                          <RobotAvatar
+                            avatarClass='smallAvatar'
+                            statusColor={this.statusBadgeColor(this.state.taker_status)}
+                            nickname={this.state.taker_nick}
+                            tooltip={t(this.state.taker_status)}
+                            orderType={this.state.type === 0 ? 1 : 0}
+                          />
                         </ListItemAvatar>
                       </ListItem>
                     </>
