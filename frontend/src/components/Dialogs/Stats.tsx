@@ -75,9 +75,16 @@ const StatsDialog = ({
 
           <ListItem>
             <ListItemIcon>
-              <RoboSatsNoTextIcon sx={{width:'1.4em',height:'1.4em',right:'0.2em', position:'relative'}}/>
+              <RoboSatsNoTextIcon
+                sx={{ width: '1.4em', height: '1.4em', right: '0.2em', position: 'relative' }}
+              />
             </ListItemIcon>
-            <ListItemText primary={`${t("Client")} ${clientVersion} - ${t("Coordinator")} ${coordinatorVersion}`} secondary={t('RoboSats version')} />
+            <ListItemText
+              primary={`${t('Client')} ${clientVersion} - ${t(
+                'Coordinator',
+              )} ${coordinatorVersion}`}
+              secondary={t('RoboSats version')}
+            />
           </ListItem>
 
           <Divider />
@@ -96,7 +103,7 @@ const StatsDialog = ({
               <ListItemIcon>
                 <DnsIcon />
               </ListItemIcon>
-              <ListItemText secondary={`${t("LN Node")}: ${nodeAlias}`}>
+              <ListItemText secondary={`${t('LN Node')}: ${nodeAlias}`}>
                 <Link
                   target='_blank'
                   href={`https://1ml.com/testnet/node/${nodeId}`}

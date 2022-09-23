@@ -53,7 +53,7 @@ const RobotAvatar: React.FC<DepthChartProps> = ({
               borderRadius: '50%',
               transform: 'scaleX(-1)',
               border: '0.3px solid #555',
-              filter: 'dropShadow(0.5px 0.5px 0.5px #000000)'
+              filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
             }}
           />
         </div>
