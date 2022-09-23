@@ -35,6 +35,14 @@ class ApiWebClient implements ApiClient {
   public get: (path: string) => Promise<object | undefined> = async (path) => {
     return await fetch(path).then(async (response) => await response.json());
   };
+
+  public fileImageUrl: (path: string) => Promise<string | undefined> = async (path) => {
+    if (!path) {
+      return '';
+    }
+    
+    return window.location.origin + path
+  };
 }
 
 export default ApiWebClient;

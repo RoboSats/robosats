@@ -6,6 +6,7 @@ export interface ApiClient {
   put: (path: string, body: object) => Promise<object | undefined>;
   get: (path: string) => Promise<object | undefined>;
   delete: (path: string) => Promise<object | undefined>;
+  fileImageUrl: (path: string) => Promise<string | undefined>;
 }
 
 export const apiClient: ApiClient = window.ReactNativeWebView ? new ApiNativeClient() : new ApiWebClient();

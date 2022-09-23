@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import SmoothImage from 'react-smooth-image';
 import { Avatar, Badge, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SendReceiveIcon } from '../../Icons';
+import { apiClient } from '../../../services/api';
 
 interface DepthChartProps {
   nickname: string;
@@ -27,7 +28,13 @@ const RobotAvatar: React.FC<DepthChartProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  const avatarSrc: string = window.location.origin + '/static/assets/avatars/' + nickname + '.png';
+  const [avatarSrc, setAvatarSrc] = useState<string>()
+
+  useEffect(() => {
+    if (nickname) {
+      apiClient.fileImageUrl('/static/assets/avatars/' + nickname + '.png').then(setAvatarSrc)
+    }
+  }, [nickname])
 
   const statusBadge = (
     <div style={{ position: 'relative', left: '6px', top: '1px' }}>

@@ -34,7 +34,7 @@ const App = () => {
         torClient.delete(data.path, data.headers).then((response: object) => {
           injectMessage(data.id, response);
         });
-      } else if (data.type === 'file') {
+      } else if (data.type === 'xhr') {
         torClient.request(data.path).then((response: object) => {
           injectMessage(data.id, response);
         });

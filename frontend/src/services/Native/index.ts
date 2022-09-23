@@ -5,9 +5,9 @@ class NativeRobosats {
     this.messageCounter = 0
   }
 
-  public messageCounter: number
+  private messageCounter: number
 
-  public pendingMessages: {[id:number]: NativeRobosatsPromise} = []
+  private pendingMessages: {[id:number]: NativeRobosatsPromise} = {}
 
   public onMessageResolve: (messageId: number, response?: object) => void = (messageId, response = {}) =>{
     if (this.pendingMessages[messageId]) {
