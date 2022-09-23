@@ -19,11 +19,38 @@ const config: Configuration = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.jsx', '.js'],
-  },
+  }
+};
+
+const configWeb: Configuration = {
+  ...config,
   output: {
     path: path.resolve(__dirname, 'static/frontend'),
     filename: 'main.js',
   },
 };
 
-export default config;
+const configMobile: Configuration = {
+  ...config,
+  module: {
+    ...config.module,
+    rules: [
+      ...(config?.module?.rules || []),
+      {
+        test: path.resolve(__dirname, 'src/components/i18n.js'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/components/i18n.Native.js'),
+          async: true,
+        }
+      }
+    ]
+  },
+  output: {
+    path: path.resolve(__dirname, '../mobile/html/Web.bundle/js'),
+    filename: 'main.js',
+  },
+};
+
+export default [configWeb, configMobile];
