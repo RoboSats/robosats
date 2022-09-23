@@ -45,17 +45,18 @@ const RobotAvatar: React.FC<DepthChartProps> = ({
   const getAvatar = () => {
     if (smooth) {
       return (
-        <SmoothImage
-          className={avatarClass}
-          src={avatarSrc}
-          imageStyles={{
-            ...style,
-            borderRadius: '50%',
-            transform: 'scaleX(-1)',
-            border: '0.3px solid #555',
-            filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
-          }}
-        />
+        <div style={style}>
+          <SmoothImage
+            className={avatarClass}
+            src={avatarSrc}
+            imageStyles={{
+              borderRadius: '50%',
+              transform: 'scaleX(-1)',
+              border: '0.3px solid #555',
+              filter: 'dropShadow(0.5px 0.5px 0.5px #000000)'
+            }}
+          />
+        </div>
       );
     } else {
       return (

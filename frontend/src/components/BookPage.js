@@ -169,6 +169,8 @@ class BookPage extends Component {
                     <ListItemAvatar>
                       <RobotAvatar
                         nickname={params.row.maker_nick}
+                        style={{ width: 45, height: 45 }}
+                        smooth={true}
                         orderType={params.row.type}
                         statusColor={this.statusBadgeColor(params.row.maker_status)}
                         tooltip={t(params.row.maker_status)}
@@ -315,6 +317,7 @@ class BookPage extends Component {
                     <RobotAvatar
                       nickname={params.row.maker_nick}
                       smooth={true}
+                      style={{ width: 45, height: 45 }}
                       orderType={params.row.type}
                       statusColor={this.statusBadgeColor(params.row.maker_status)}
                       tooltip={t(params.row.maker_status)}
