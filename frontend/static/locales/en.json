@@ -235,6 +235,10 @@
   "On your own sovereign node": "On your own sovereign node",
   "Simply refresh your Tor Browser tab (or press Ctrl+Shift+R)": "Simply refresh your Tor Browser tab (or press Ctrl+Shift+R)",
   "On remotely served client via web": "On remotely served client via web",
+  "Client":"Client",
+  "Coordinator":"Coordinator",
+  "RoboSats version":"RoboSats version",
+  "LN Node":"LN Node",
 
   "ORDER PAGE - OrderPage.js": "Order details page",
   "Order Box": "Order Box",

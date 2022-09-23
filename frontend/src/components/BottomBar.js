@@ -664,13 +664,15 @@ class BottomBar extends Component {
         <StatsDialog
           isOpen={this.state.openStatsForNerds}
           handleClickCloseStatsForNerds={this.handleClickCloseStatsForNerds}
+          coordinatorVersion={this.state.coordinatorVersion}
+          clientVersion={this.state.clientVersion}
           lndVersion={this.state.lnd_version}
           network={this.state.network}
           nodeAlias={this.state.node_alias}
           nodeId={this.state.node_id}
           alternativeName={this.state.alternative_name}
           alternativeSite={this.state.alternative_site}
-          robosatsRunningCommitHash={this.state.robosats_running_commit_hash}
+          commitHash={this.state.robosats_running_commit_hash}
           lastDayVolume={this.state.last_day_volume}
           lifetimeVolume={this.state.lifetime_volume}
         />

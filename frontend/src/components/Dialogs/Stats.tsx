@@ -21,7 +21,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 
-import { AmbossIcon, BitcoinSignIcon } from '../Icons';
+import { AmbossIcon, BitcoinSignIcon, RoboSatsNoTextIcon } from '../Icons';
 
 import { pn } from '../../utils/prettyNumbers';
 
@@ -29,12 +29,14 @@ interface Props {
   isOpen: boolean;
   handleClickCloseStatsForNerds: () => void;
   lndVersion: string;
+  coordinatorVersion: string;
+  clientVersion: string;
   network: string;
   nodeAlias: string;
   nodeId: string;
   alternativeName: string;
   alternativeSite: string;
-  robosatsRunningCommitHash: string;
+  commitHash: string;
   lastDayVolume: number;
   lifetimeVolume: number;
 }
@@ -43,12 +45,14 @@ const StatsDialog = ({
   isOpen,
   handleClickCloseStatsForNerds,
   lndVersion,
+  coordinatorVersion,
+  clientVersion,
   network,
   nodeAlias,
   nodeId,
   alternativeName,
   alternativeSite,
-  robosatsRunningCommitHash,
+  commitHash,
   lastDayVolume,
   lifetimeVolume,
 }: Props): JSX.Element => {
@@ -71,6 +75,15 @@ const StatsDialog = ({
 
           <ListItem>
             <ListItemIcon>
+              <RoboSatsNoTextIcon sx={{width:'1.4em',height:'1.4em',right:'0.2em', position:'relative'}}/>
+            </ListItemIcon>
+            <ListItemText primary={`${t("Client")} ${clientVersion} - ${t("Coordinator")} ${coordinatorVersion}`} secondary={t('RoboSats version')} />
+          </ListItem>
+
+          <Divider />
+
+          <ListItem>
+            <ListItemIcon>
               <BoltIcon />
             </ListItemIcon>
             <ListItemText primary={lndVersion} secondary={t('LND version')} />
@@ -83,7 +96,7 @@ const StatsDialog = ({
               <ListItemIcon>
                 <DnsIcon />
               </ListItemIcon>
-              <ListItemText secondary={nodeAlias}>
+              <ListItemText secondary={`${t("LN Node")}: ${nodeAlias}`}>
                 <Link
                   target='_blank'
                   href={`https://1ml.com/testnet/node/${nodeId}`}
@@ -125,13 +138,13 @@ const StatsDialog = ({
             <ListItemIcon>
               <GitHubIcon />
             </ListItemIcon>
-            <ListItemText secondary={t('Currently running commit hash')}>
+            <ListItemText secondary={t('Coordinator commit hash')}>
               <Link
                 target='_blank'
-                href={`https://github.com/Reckless-Satoshi/robosats/tree/${robosatsRunningCommitHash}`}
+                href={`https://github.com/Reckless-Satoshi/robosats/tree/${commitHash}`}
                 rel='noreferrer'
               >
-                {`${robosatsRunningCommitHash.slice(0, 12)}...`}
+                {`${commitHash.slice(0, 12)}...`}
               </Link>
             </ListItemText>
           </ListItem>
