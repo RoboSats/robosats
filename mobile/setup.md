@@ -36,7 +36,11 @@ Use the GUI of Android studio to create a new virtual devide. As of 23/06/2022 w
 
 If using a phone, start the USB debugging mode.
 
-Go to `/robosats/mobile/android/local.properties` and add `sdk.dir = /home/USERNAME/Android/Sdk` (create the file local.properties if it does not exist)
+Open or create `robosats/mobile/android/local.properties`:
+-  Add `sdk.dir = /Users/username/Library/Android/sdk` 
+
+You can check your SDK location on the GUI of Android studio: `Tools > SDK Manager`
+Make sure you have NDK installed : `Tools > SDK Manager > SDK Tools > NDK (Side by Side)`
 
 ## Launch app builder and 
 Point a terminal to `/robosats/mobile/`
@@ -71,9 +75,12 @@ brew install watchman
 Use the GUI of Android studio to create a new virtual devide, make sure you add enought internal storage (>= 2 GB). 
 As of 11/10/2022 we are using a Pixel 5 as template and System image R API level 30 Android 11.0
 
-Go to `robosats/mobile/android/local.properties` and add `sdk.dir = /Users/USERNAME/Library/Android/sdk` (create the file `local.properties` if it does not exist)
+Open or create `robosats/mobile/android/local.properties`:
+-  Add `sdk.dir = /Users/username/Library/Android/sdk` 
+-  M1 Users should also add `ndk.dir= /Users/username/Library/Android/sdk/ndk/{{ndkVersion}}`
 
 You can check your SDK location on the GUI of Android studio: `Tools > SDK Manager`
+Make sure you have NDK installed : `Tools > SDK Manager > SDK Tools > NDK (Side by Side)`
 
 ## Run app
 Point a terminal to `robosats/mobile/`

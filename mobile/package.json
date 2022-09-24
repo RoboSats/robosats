@@ -13,7 +13,9 @@
     "react": "^18.2.0",
     "react-native": "^0.69.1",
     "react-native-tor": "^0.1.8",
-    "react-native-webview": "^11.22.3"
+    "react-native-v8": "^1.5.0",
+    "react-native-webview": "^11.22.3",
+    "v8-android-jit": "^10.100.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
