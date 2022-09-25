@@ -33,6 +33,7 @@ import { apiClient } from '../services/api/index';
 
 // Icons
 import { BarChart, FormatListBulleted, Refresh } from '@mui/icons-material';
+import BookTable from './BookTable';
 
 class BookPage extends Component {
   constructor(props) {
@@ -145,153 +146,6 @@ class BookPage extends Component {
     };
   };
 
-  bookListTableDesktop = () => {
-    const { t } = this.props;
-    return (
-      <div style={{ height: 424, width: '100%' }}>
-        <DataGrid
-          localeText={this.dataGridLocaleText()}
-          rows={this.props.bookOrders.filter(
-            (order) =>
-              (order.type == this.props.type || this.props.type == null) &&
-              (order.currency == this.props.currency || this.props.currency == 0),
-          )}
-          loading={this.props.bookLoading}
-          columns={[
-            // { field: 'id', headerName: 'ID', width: 40 },
-            {
-              field: 'maker_nick',
-              headerName: t('Robot'),
-              width: 240,
-              renderCell: (params) => {
-                return (
-                  <ListItemButton style={{ cursor: 'pointer' }}>
-                    <ListItemAvatar>
-                      <RobotAvatar
-                        nickname={params.row.maker_nick}
-                        style={{ width: 45, height: 45 }}
-                        smooth={true}
-                        orderType={params.row.type}
-                        statusColor={this.statusBadgeColor(params.row.maker_status)}
-                        tooltip={t(params.row.maker_status)}
-                      />
-                    </ListItemAvatar>
-                    <ListItemText primary={params.row.maker_nick} />
-                  </ListItemButton>
-                );
-              },
-            },
-            {
-              field: 'type',
-              headerName: t('Is'),
-              width: 60,
-              renderCell: (params) => (params.row.type ? t('Seller') : t('Buyer')),
-            },
-            {
-              field: 'amount',
-              headerName: t('Amount'),
-              type: 'number',
-              width: 90,
-              renderCell: (params) => {
-                return (
-                  <div style={{ cursor: 'pointer' }}>
-                    {amountToString(
-                      params.row.amount,
-                      params.row.has_range,
-                      params.row.min_amount,
-                      params.row.max_amount,
-                    )}
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'currency',
-              headerName: t('Currency'),
-              width: 100,
-              renderCell: (params) => {
-                const currencyCode = this.getCurrencyCode(params.row.currency);
-                return (
-                  <div
-                    style={{
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    {currencyCode + ' '}
-                    <FlagWithProps code={currencyCode} />
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'payment_method',
-              headerName: t('Payment Method'),
-              width: 180,
-              renderCell: (params) => {
-                return (
-                  <div style={{ cursor: 'pointer' }}>
-                    <PaymentText
-                      othersText={t('Others')}
-                      verbose={true}
-                      size={24}
-                      text={params.row.payment_method}
-                    />
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'price',
-              headerName: t('Price'),
-              type: 'number',
-              width: 140,
-              renderCell: (params) => {
-                const currencyCode = this.getCurrencyCode(params.row.currency);
-                return (
-                  <div style={{ cursor: 'pointer' }}>
-                    {pn(params.row.price) + ' ' + currencyCode + '/BTC'}
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'premium',
-              headerName: t('Premium'),
-              type: 'number',
-              width: 100,
-              renderCell: (params) => {
-                return (
-                  <div style={{ cursor: 'pointer' }}>
-                    {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
-                  </div>
-                );
-              },
-            },
-          ]}
-          components={{
-            NoRowsOverlay: () => (
-              <Stack height='100%' alignItems='center' justifyContent='center'>
-                <div style={{ height: '220px' }} />
-                {this.NoOrdersFound()}
-              </Stack>
-            ),
-            NoResultsOverlay: () => (
-              <Stack height='100%' alignItems='center' justifyContent='center'>
-                {t('Filter has no results')}
-              </Stack>
-            ),
-          }}
-          pageSize={this.props.bookLoading ? 0 : this.state.pageSize}
-          rowsPerPageOptions={[0, 6, 20, 50]}
-          onPageSizeChange={(newPageSize) => this.setState({ pageSize: newPageSize })}
-          onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
-        />
-      </div>
-    );
-  };
 
   bookListTablePhone = () => {
     const { t } = this.props;
@@ -495,45 +349,28 @@ class BookPage extends Component {
       return this.NoOrdersFound();
     }
 
-    const components =
-      this.state.view == 'depth'
-        ? [
-            <DepthChart
-              bookLoading={this.props.bookLoading}
-              orders={this.props.bookOrders}
-              lastDayPremium={this.props.lastDayPremium}
-              currency={this.props.currency}
-              setAppState={this.props.setAppState}
-              limits={this.props.limits}
-            />,
-            <DepthChart
-              bookLoading={this.props.bookLoading}
-              orders={this.props.bookOrders}
-              lastDayPremium={this.props.lastDayPremium}
-              currency={this.props.currency}
-              compact={true}
-              setAppState={this.props.setAppState}
-              limits={this.props.limits}
-            />,
-          ]
-        : [this.bookListTableDesktop(), this.bookListTablePhone()];
-
-    return (
-      <>
-        {/* Desktop */}
-        <MediaQuery minWidth={930}>
-          <Paper elevation={0} style={{ width: 925, maxHeight: 510, overflow: 'auto' }}>
-            <div style={{ height: 424, width: '100%' }}>{components[0]}</div>
-          </Paper>
-        </MediaQuery>
-        {/* Smartphone */}
-        <MediaQuery maxWidth={929}>
-          <Paper elevation={0} style={{ width: 395, maxHeight: 460, overflow: 'auto' }}>
-            <div style={{ height: 424, width: '100%' }}>{components[1]}</div>
-          </Paper>
-        </MediaQuery>
-      </>
-    );
+    if (this.state.view === 'depth') {
+      return (
+        <DepthChart
+            bookLoading={this.props.bookLoading}
+            orders={this.props.bookOrders}
+            lastDayPremium={this.props.lastDayPremium}
+            currency={this.props.currency}
+            compact={true}
+            setAppState={this.props.setAppState}
+            limits={this.props.limits}
+          />
+      )
+    }else{
+        return(
+          <BookTable 
+            loading={this.props.bookLoading}
+            orders={this.props.bookOrders}
+            type={this.props.type}
+            currency={this.props.currency}
+          />
+        )
+      }
   };
 
   getTitle = () => {
