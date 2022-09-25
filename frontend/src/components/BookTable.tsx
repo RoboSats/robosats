@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from "react-router-dom";
+import { useHistory } from 'react-router-dom';
 import {
-  Tooltip,
   Paper,
   Stack,
   ListItemButton,
   ListItemText,
   ListItemAvatar,
+  useTheme,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import currencyDict from '../../static/assets/currencies.json';
@@ -39,7 +39,7 @@ function getCurrencyCode(val) {
   }
 }
 
-function localizeDataGrid(){
+function localizeDataGrid() {
   const { t } = useTranslation();
   return {
     MuiTablePagination: { labelRowsPerPage: t('Orders per page:') },
@@ -90,13 +90,15 @@ function localizeDataGrid(){
     booleanCellTrueLabel: t('yes'),
     booleanCellFalseLabel: t('no'),
   };
-};
+}
 
 interface Props {
   loading: boolean;
   orders: Order[];
-  type: Number;
-  currency: Number;
+  type: number;
+  currency: number;
+  maxWidth: number;
+  maxHeight: number;
 }
 
 const BookTable = ({
@@ -104,167 +106,255 @@ const BookTable = ({
   orders,
   type,
   currency,
+  maxWidth,
+  maxHeight,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const { history } = useHistory(); 
-  var pageSize = 6;
+  const theme = useTheme();
+  const history = useHistory();
 
-  const handleRowClick = (e) => {
-    history.push('/order/' + e);
-  };
+  const fontSize = theme.typography.fontSize;
+  // all sizes in 'em'
+  const verticalHeightFrame = 6.9075
+  const verticalHeightRow = 3.25
+  const defaultPageSize = Math.floor((maxHeight - verticalHeightFrame) / verticalHeightRow);
+  const height = defaultPageSize * verticalHeightRow + verticalHeightFrame
+  
+  const [pageSize, setPageSize] = useState(0);
+  const [useDefaultPageSize, setUseDefaultPageSize] = useState(true)
+  useEffect(() => {
+    if(useDefaultPageSize){
+      setPageSize(defaultPageSize)
+    }
+  });
 
-  // Use effect gets height and width and then adjusts the size of everything below!
+
+
+  console.log(pageSize)
+  
+
+  const colPriority={
+    'amount': 1,
+    'currency':2,
+    'premium':3,
+    'robot':4,
+    'payment_method':5,
+    'price':6,
+    'expires_at':7,
+    'escrow_duration':8,
+    'type':9,
+    'satoshis_now':10,
+    'id':11,
+  }
+
+  const robotCol = function(){
+    const width = 17.14
+
+    return {
+      field: 'maker_nick',
+      headerName: t('Robot'),
+      width: width*fontSize,
+      renderCell: (params) => {
+        return (
+          <ListItemButton style={{ cursor: 'pointer' }}>
+            <ListItemAvatar>
+              <RobotAvatar
+                nickname={params.row.maker_nick}
+                style={{ width: '3.215em', height: '3.215em'}}
+                smooth={true}
+                orderType={params.row.type}
+                statusColor={statusBadgeColor(params.row.maker_status)}
+                tooltip={t(params.row.maker_status)}
+              />
+            </ListItemAvatar>
+            <ListItemText primary={params.row.maker_nick} />
+          </ListItemButton>
+        );
+      },
+    }
+  }
+
+  const robotSmallCol = function(){
+    const width = 4.5715
+
+    return {
+      field: 'maker_nick',
+      headerName: t('Robot'),
+      width: width*fontSize,
+      renderCell: (params) => {
+        return (
+          <div style={{ position: 'relative', left: '-1.75em' }}>
+            <ListItemButton style={{ cursor: 'pointer' }}>
+            <RobotAvatar
+              nickname={params.row.maker_nick}
+              smooth={true}
+              style={{ width: '3.215em', height: '3.215em'}}
+              orderType={params.row.type}
+              statusColor={statusBadgeColor(params.row.maker_status)}
+              tooltip={t(params.row.maker_status)}
+            />
+            </ListItemButton>
+          </div>
+        );
+      }
+    }
+  }
+
+  const typeCol = function(){
+    return {
+      field: 'type',
+      headerName: t('Is'),
+      width: 60,
+      renderCell: (params) => (params.row.type ? t('Seller') : t('Buyer')),
+    }
+  }
+
+  const amountCol = function(){
+    return {
+      field: 'amount',
+      headerName: t('Amount'),
+      type: 'number',
+      width: 90,
+      renderCell: (params) => {
+        return (
+          <div style={{ cursor: 'pointer' }}>
+            {amountToString(
+              params.row.amount,
+              params.row.has_range,
+              params.row.min_amount,
+              params.row.max_amount,
+            )}
+          </div>
+        );
+      },
+    }
+  }
+
+  const currencyCol = function(){
+    return {
+      field: 'currency',
+      headerName: t('Currency'),
+      width: 100,
+      renderCell: (params) => {
+        const currencyCode = getCurrencyCode(params.row.currency);
+        return (
+          <div
+            style={{
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
+            {currencyCode + ' '}
+            <FlagWithProps code={currencyCode} />
+          </div>
+        );
+      },
+    }
+  }
+
+  const paymentCol = function(){
+    return {
+      field: 'payment_method',
+      headerName: t('Payment Method'),
+      width: 180,
+      renderCell: (params) => {
+        return (
+          <div style={{ cursor: 'pointer' }}>
+            <PaymentText
+              othersText={t('Others')}
+              verbose={true}
+              size={24}
+              text={params.row.payment_method}
+            />
+          </div>
+        );
+      },
+    }
+  }
+
+  const priceCol = function(){
+    return {
+      field: 'price',
+      headerName: t('Price'),
+      type: 'number',
+      width: 140,
+      renderCell: (params) => {
+        const currencyCode = getCurrencyCode(params.row.currency);
+        return (
+          <div style={{ cursor: 'pointer' }}>
+            {pn(params.row.price) + ' ' + currencyCode + '/BTC'}
+          </div>
+        );
+      },
+    }
+  }
+
+  const premiumCol = function(){
+    return {
+      field: 'premium',
+      headerName: t('Premium'),
+      type: 'number',
+      width: 100,
+      renderCell: (params) => {
+        return (
+          <div style={{ cursor: 'pointer' }}>
+            {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
+          </div>
+        );
+      },
+    }
+  }
+
+  const idCol = function(){
+    return { field: 'id', headerName: 'Order ID', width: 70 }
+  }
+
+  const columns=[
+    robotSmallCol(),
+    typeCol(),
+    amountCol(),
+    currencyCol(),
+    paymentCol(),
+    priceCol(),
+    premiumCol(),
+    idCol(),
+    ]
 
   return (
-    <Paper elevation={0} style={{ width: 925, maxHeight: 510, overflow: 'auto' }}>
-      <div style={{ height: 424, width: '100%' }}>
-        <DataGrid
-          localeText={localizeDataGrid()}
-          rows={orders.filter(
-            (order) =>
-              (order.type == type || type == null) &&
-              (order.currency == currency || currency == 0),
-          )}
-          loading={loading}
-          columns={[
-            // { field: 'id', headerName: 'ID', width: 40 },
-            {
-              field: 'maker_nick',
-              headerName: t('Robot'),
-              width: 240,
-              renderCell: (params) => {
-                return (
-                  <ListItemButton style={{ cursor: 'pointer' }}>
-                    <ListItemAvatar>
-                      <RobotAvatar
-                        nickname={params.row.maker_nick}
-                        style={{ width: 45, height: 45 }}
-                        smooth={true}
-                        orderType={params.row.type}
-                        statusColor={statusBadgeColor(params.row.maker_status)}
-                        tooltip={t(params.row.maker_status)}
-                      />
-                    </ListItemAvatar>
-                    <ListItemText primary={params.row.maker_nick} />
-                  </ListItemButton>
-                );
-              },
-            },
-            {
-              field: 'type',
-              headerName: t('Is'),
-              width: 60,
-              renderCell: (params) => (params.row.type ? t('Seller') : t('Buyer')),
-            },
-            {
-              field: 'amount',
-              headerName: t('Amount'),
-              type: 'number',
-              width: 90,
-              renderCell: (params) => {
-                return (
-                  <div style={{ cursor: 'pointer' }}>
-                    {amountToString(
-                      params.row.amount,
-                      params.row.has_range,
-                      params.row.min_amount,
-                      params.row.max_amount,
-                    )}
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'currency',
-              headerName: t('Currency'),
-              width: 100,
-              renderCell: (params) => {
-                const currencyCode = getCurrencyCode(params.row.currency);
-                return (
-                  <div
-                    style={{
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    {currencyCode + ' '}
-                    <FlagWithProps code={currencyCode} />
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'payment_method',
-              headerName: t('Payment Method'),
-              width: 180,
-              renderCell: (params) => {
-                return (
-                  <div style={{ cursor: 'pointer' }}>
-                    <PaymentText
-                      othersText={t('Others')}
-                      verbose={true}
-                      size={24}
-                      text={params.row.payment_method}
-                    />
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'price',
-              headerName: t('Price'),
-              type: 'number',
-              width: 140,
-              renderCell: (params) => {
-                const currencyCode = getCurrencyCode(params.row.currency);
-                return (
-                  <div style={{ cursor: 'pointer' }}>
-                    {pn(params.row.price) + ' ' + currencyCode + '/BTC'}
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'premium',
-              headerName: t('Premium'),
-              type: 'number',
-              width: 100,
-              renderCell: (params) => {
-                return (
-                  <div style={{ cursor: 'pointer' }}>
-                    {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
-                  </div>
-                );
-              },
-            },
-          ]}
-          components={{
-            NoRowsOverlay: () => (
-              <Stack height='100%' alignItems='center' justifyContent='center'>
-                <div style={{ height: '220px' }} />
-                {"this.NoOrdersFound()"}
-              </Stack>
-            ),
-            NoResultsOverlay: () => (
-              <Stack height='100%' alignItems='center' justifyContent='center'>
-                {t('Filter has no results')}
-              </Stack>
-            ),
-          }}
-          pageSize={loading ? 0 : pageSize}
-          rowsPerPageOptions={[0, 6, 20, 50]}
-          onPageSizeChange={(newPageSize) => { pageSize= newPageSize }}
-          onRowClick={(params) => handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
-        />
-        </div>
-      </Paper>
+    <Paper style={{ width: `${maxWidth}em`, height: `${height}em`, overflow: 'auto' }}>
+      <DataGrid
+        localeText={localizeDataGrid()}
+        rows={orders.filter(
+          (order) =>
+            (order.type == type || type == null) && (order.currency == currency || currency == 0),
+        )}
+        loading={loading}
+        columns={columns}
+        components={{
+          NoRowsOverlay: () => (
+            <Stack height='100%' alignItems='center' justifyContent='center'>
+              <div style={{ height: '220px' }} />
+              {'this.NoOrdersFound()'}
+            </Stack>
+          ),
+          NoResultsOverlay: () => (
+            <Stack height='100%' alignItems='center' justifyContent='center'>
+              {t('Filter has no results')}
+            </Stack>
+          ),
+        }}
+        pageSize={loading ? 0 : pageSize}
+        rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
+        onPageSizeChange={(newPageSize) => {setPageSize(newPageSize); setUseDefaultPageSize(false)}}
+        onRowClick={(params) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
+      />
+    </Paper>
   );
 };
 
 export default BookTable;
-
 
 // class BookPage extends Component {
 //   constructor(props) {
@@ -690,8 +780,6 @@ export default BookTable;
 //   handleClickView = () => {
 //     this.setState({ view: this.state.view == 'depth' ? 'list' : 'depth' });
 //   };
-
-
 
 //   mainView = () => {
 //     if (this.props.bookNotFound) {
