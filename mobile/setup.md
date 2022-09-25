@@ -37,7 +37,7 @@ Use the GUI of Android studio to create a new virtual devide. As of 23/06/2022 w
 If using a phone, start the USB debugging mode.
 
 Open or create `robosats/mobile/android/local.properties`:
--  Add `sdk.dir = /Users/username/Library/Android/sdk` 
+-  Add `sdk.dir = /home/<YOUR_USERNAME>/Android/Sdk` 
 
 You can check your SDK location on the GUI of Android studio: `Tools > SDK Manager`
 Make sure you have NDK installed : `Tools > SDK Manager > SDK Tools > NDK (Side by Side)`
@@ -76,8 +76,8 @@ Use the GUI of Android studio to create a new virtual devide, make sure you add 
 As of 11/10/2022 we are using a Pixel 5 as template and System image R API level 30 Android 11.0
 
 Open or create `robosats/mobile/android/local.properties`:
--  Add `sdk.dir = /Users/username/Library/Android/sdk` 
--  M1 Users should also add `ndk.dir= /Users/username/Library/Android/sdk/ndk/{{ndkVersion}}`
+-  Add `sdk.dir = /Users/<YOUR_USERNAME>//Library/Android/sdk` 
+-  M1 Users should also add `ndk.dir= /Users/<YOUR_USERNAME>//Library/Android/sdk/ndk/{{ndkVersion}}`
 
 You can check your SDK location on the GUI of Android studio: `Tools > SDK Manager`
 Make sure you have NDK installed : `Tools > SDK Manager > SDK Tools > NDK (Side by Side)`
