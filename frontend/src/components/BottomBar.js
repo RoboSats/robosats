@@ -171,10 +171,12 @@ class BottomBar extends Component {
 
   showProfileButton = () => {
     return (
-      this.props.avatarLoaded
-      // FIXME: Cookies not available on local dev
-      // (this.props.token ? getCookie('robot_token') == this.props.token : true) &&
-      // getCookie('sessionid')
+      this.props.avatarLoaded && (
+        window.NativeRobosats || (
+          (this.props.token ? getCookie('robot_token') === this.props.token : true) &&
+          getCookie('sessionid')
+        )
+      )
     );
   };
 

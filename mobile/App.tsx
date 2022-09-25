@@ -8,7 +8,6 @@ const App = () => {
   var uri =
     (Platform.OS === 'android' ? 'file:///android_asset/' : '') +
     'Web.bundle/index.html';
-  // const uri = 'https://robosats.onion.moe';
 
   const injectMessage = (id: string, data: object) => {
     const json = JSON.stringify(data);
@@ -70,6 +69,7 @@ const App = () => {
         mediaPlaybackRequiresUserAction={false}
         allowsLinkPreview={false}
         renderLoading={() => <Text>Loading RoboSats</Text>}
+        onError={syntheticEvent => <Text>{syntheticEvent.type}</Text>}
       />
     </SafeAreaView>
   );

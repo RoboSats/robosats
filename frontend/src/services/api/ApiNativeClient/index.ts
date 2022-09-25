@@ -7,7 +7,7 @@ class ApiNativeClient implements ApiClient {
     window.NativeRobosats = new NativeRobosats()
   }
 
-  private assetsCache : {[path:string]: string} = []
+  private assetsCache : {[path:string]: string} = {}
 
   private readonly getHeaders: () => HeadersInit = () => {
     return { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') || '' };

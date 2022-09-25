@@ -100,7 +100,7 @@ class UserGenPage extends Component {
             : this.props.setAppState({
                 nickname: data.nickname,
                 token,
-                avatarLoaded: true,
+                avatarLoaded: false,
                 activeOrderId: data.active_order_id ? data.active_order_id : null,
                 lastOrderId: data.last_order_id ? data.last_order_id : null,
                 referralCode: data.referral_code,
@@ -290,10 +290,10 @@ class UserGenPage extends Component {
                             <IconButton
                               color='primary'
                               disabled={
-                                // FIXME: Cookies not available on local dev
-                                // https://github.com/react-native-webview/react-native-webview/issues/2643
-                                // !(getCookie('robot_token') == this.state.token) ||
-                                !this.props.avatarLoaded
+                                !this.props.avatarLoaded || (
+                                  !window.NativeRobosats && 
+                                  !(getCookie('robot_token') === this.state.token)
+                                )
                               }
                               onClick={() =>
                                 saveAsJson(this.state.nickname + '.json', this.createJsonFile())
@@ -311,10 +311,10 @@ class UserGenPage extends Component {
                           <IconButton
                             color={this.props.copiedToken ? 'inherit' : 'primary'}
                             disabled={
-                              // FIXME: Cookies not available on local dev
-                              // https://github.com/react-native-webview/react-native-webview/issues/2643
-                              // !(getCookie('robot_token') == this.state.token) ||
-                              !this.props.avatarLoaded
+                              !this.props.avatarLoaded || (
+                                !window.NativeRobosats && 
+                                !(getCookie('robot_token') === this.state.token)
+                              )
                             }
                             onClick={() =>
                               copyToClipboard(getCookie('robot_token')) &
@@ -369,10 +369,10 @@ class UserGenPage extends Component {
           <ButtonGroup variant='contained' aria-label='outlined primary button group'>
             <Button
               disabled={
-                this.state.loadingRobot !== false
-                // FIXME: Cookies not available on local dev
-                // https://github.com/react-native-webview/react-native-webview/issues/2643
-                // !(this.props.token ? getCookie('robot_token') == this.props.token : true)
+                this.state.loadingRobot !== false || (
+                  !window.NativeRobosats &&
+                  !(this.props.token ? getCookie('robot_token') === this.props.token : true)
+                )
               }
               color='primary'
               to='/make/'
@@ -390,10 +390,10 @@ class UserGenPage extends Component {
             />
             <Button
               disabled={
-                this.state.loadingRobot !== false
-                // FIXME: Cookies not available on local dev
-                // https://github.com/react-native-webview/react-native-webview/issues/2643
-                // !(this.props.token ? getCookie('robot_token') == this.props.token : true)
+                this.state.loadingRobot !== false || (
+                  !window.NativeRobosats &&
+                  !(this.props.token ? getCookie('robot_token') === this.props.token : true)
+                )
               }
               color='secondary'
               to='/book/'
