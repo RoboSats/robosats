@@ -103,6 +103,8 @@ class MakerView(CreateAPIView):
         if bondless_taker == None: bondless_taker = False
         if has_range == None: has_range = False
 
+        # TODO add a check - if `is_explicit` is true then `satoshis` need to be specified
+
         # An order can either have an amount or a range (min_amount and max_amount)
         if has_range:
             amount = None
@@ -835,8 +837,8 @@ class BookView(ListAPIView):
 
     @extend_schema(**BookViewSchema.get)
     def get(self, request, format=None):
-        currency = request.GET.get("currency", 0)
-        type = request.GET.get("type", 2)
+        currency = request.GET.get("currency")
+        type = request.GET.get("type")
 
         queryset = Order.objects.filter(status=Order.Status.PUB)
 

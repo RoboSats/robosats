@@ -3,7 +3,11 @@ import textwrap
 from decouple import config
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter
 
-from api.serializers import ListOrderSerializer, OrderDetailSerializer, StealthSerializer
+from api.serializers import (
+    ListOrderSerializer,
+    OrderDetailSerializer,
+    StealthSerializer,
+)
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
@@ -54,7 +58,6 @@ class MakerViewSchema:
 
 
 class OrderViewSchema:
-
     get = {
         "summary": "Get order details",
         "description": textwrap.dedent(
@@ -198,10 +201,123 @@ class OrderViewSchema:
     }
 
     take_update_confirm_dispute_cancel = {
-        "summary": "[WIP] Update order",
+        "summary": "Update order",
         "description": textwrap.dedent(
             """
-            **NOT COMPLETE**
+            Update an order
+
+            `action` field is required and determines what is to be done. Below
+            is an explaination of what each action does:
+
+            - `take`
+              - If the order has not expired and is still public, on a
+                successful take, you get the same response as if `GET /order`
+                was called and the status of the order was `3` (waiting for
+                taker bond) which means `bond_satoshis` and `bond_invoice` are
+                present in the response as well. Once the `bond_invoice` is
+                paid, you successfully become the taker of the order and the
+                status of the order changes.
+            - `pause`
+              - Toggle the status of an order from `1` to `2` and vice versa. Allowed only if status is `1` (Public) or `2` (Paused)
+            - `update_invoice`
+              - This action only is valid if you are the buyer. The `invoice`
+                field needs to be present in the body and the value must be a
+                valid LN invoice. Make sure to perform this action only when
+                both the bonds are locked. i.e The status of your order is
+                atleast `6` (Waiting for trade collateral and buyer invoice)
+            - `update_address`
+              - This action is only valid if you are the buyer. This action is
+                used to set an on-chain payout address if you wish to have your
+                payout be recieved on-chain. This enables on-chain swap for the
+                order, so even if you earlier had submitted a LN invoice, it
+                will be ignored. You get to choose the `mining_fee_rate` as
+                well. Mining fee rate is specified in sats/vbyte.
+            - `cancel`
+              - This action is used to cancel an existing order. You cannot cancel an order if it's in one of the following states:
+                - `1` - Cancelled
+                - `5` - Expired
+                - `11` - In dispute
+                - `12` - Collaboratively cancelled
+                - `13` - Sending satoshis to buyer
+                - `14` - Sucessful trade
+                - `15` - Failed lightning network routing
+                - `17` - Maker lost dispute
+                - `18` - Taker lost dispute
+
+                Note that there are penalties involved for cancelling a order
+                mid-trade so use this action carefully:
+
+                - As a maker if you cancel an order after you have locked your
+                  maker bond, you are returend your bond. This may change in
+                  the future to prevent DDoSing the LN node and you won't be
+                  returend the maker bond.
+                - As a taker there is a time penalty involved if you `take` an
+                  order and cancel it without locking the taker bond.
+                - For both taker or maker, if you cancel the order when both
+                  have locked thier bonds (status = `6` or `7`), you loose your
+                  bond and a percent of it goes as "rewards" to your
+                  counterparty and some of it the platform keeps. This is to
+                  discourage wasting time and DDoSing the platform.
+                - For both taker or maker, if you cancel the order when the
+                  escrow is locked (status = `8` or `9`), you trigger a
+                  collaborative cancel request. This sets
+                  `(m|t)aker_asked_cancel` field to `true` depending on whether
+                  you are the maker or the taker respectively, so that your
+                  counterparty is informed that you asked for a cancel.
+                - For both taker or maker, and your counterparty asked for a
+                  cancel (i.e `(m|t)aker_asked_cancel` is true), and you cancel
+                  as well, a collaborative cancel takes place which returns
+                  both the bonds and escrow to the respective parties. Note
+                  that in the future there will be a cost for even
+                  collaborativelly cancelling orders for both parties.
+            - `confirm`
+              - This is a **crucial** action. This confirms the sending and
+                recieving of fiat depending on whether you are a buyer or
+                seller. There is not much RoboSats can do to actually confirm
+                and verify the fiat payment channel. It is up to you to make
+                sure of the correct amount was recieved before you confirm.
+                This action is only allowed when status is either `9` (Sending
+                fiat - In chatroom) or `10` (Fiat sent - In chatroom)
+                - If you are the buyer, it simply sets `fiat_sent` to `true`
+                  which means that you have sent the fiat using the payment
+                  method selected by the seller and signals the seller that the
+                  fiat payment was done.
+                - If you are the seller, be very careful and double check
+                  before perorming this action. Check that your fiat payment
+                  method was successful in recieving the funds and whether it
+                  was the correct amount. This action settles the escrow and
+                  pays the buyer and sets the the order status to `13` (Sending
+                  satohis to buyer) and eventually to `14` (successful trade).
+            - `dispute`
+              - This action is allowed only if status is `9` or `10`. It sets
+                the order status to `11` (In dispute) and sets `is_disputed` to
+                `true`. Both the bonds and the escrow are settled (i.e RoboSats
+                takes custody of the funds). Disputes can take long to resolve,
+                it might trigger force closure for unresolved HTLCs). Dispute
+                winner will have to submit a new invoice for value of escrow +
+                bond.
+            - `submit_statement`
+              - This action updates the dispute statement. Allowed only when
+                status is `11` (In dispute). `satement` must be sent in the
+                request body and should be a string. 100 chars < length of
+                `statement` < 5000 chars. You need to discribe the reason for
+                raising a dispute. The `(m|t)aker_statement` field is set
+                respectively. Only when both parties have submitted thier
+                dispute statement, the order status changes to `16` (Waiting
+                for dispute resolution)
+            - `rate_user`
+              - You can rate your counterparty using this action. You can rate
+                your user from `1-5` using the `rate` field in the request
+                body. Only allowed in the following states:
+                - `13` - Sending satoshis to buyer
+                - `14` - Sucessful trade
+                - `15` - Failed lightning network routing
+                - `17` - Maker lost dispute
+                - `18` - Taker lost dispute
+            - `rate_platform`
+              - Let us know how much you love (or hate 😢) RoboSats.
+                You can rate the platform from `1-5` using the `rate` field in the request body
+
             """
         ),
         "parameters": [
@@ -213,7 +329,17 @@ class OrderViewSchema:
             ),
         ],
         "responses": {
-            #     201: ListOrderSerializer,
+            200: {
+                "type": "object",
+                "additionalProperties": {
+                    "oneOf": [
+                        {"type": "str"},
+                        {"type": "number"},
+                        {"type": "object"},
+                        {"type": "boolean"},
+                    ],
+                },
+            },
             400: {
                 "type": "object",
                 "properties": {
@@ -223,26 +349,16 @@ class OrderViewSchema:
                     },
                 },
             },
-            403: {
-                "type": "object",
-                "properties": {
-                    "bad_request": {
-                        "type": "string",
-                        "description": "Reason for the failure",
-                        "default": "This order is not available",
-                    },
-                },
-            },
-            #     409: {
-            #         'type': 'object',
-            #         'properties': {
-            #             'bad_request': {
-            #                 'type': 'string',
-            #                 'description': 'Reason for the failure',
-            #             },
-            #         },
-            #     }
         },
+        "examples": [
+            OpenApiExample(
+                "User not authenticated",
+                value={
+                    "bad_request": "Woops! It seems you do not have a robot avatar",
+                },
+                status_codes=[400],
+            ),
+        ],
     }
 
 

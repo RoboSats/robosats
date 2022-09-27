@@ -451,30 +451,26 @@ class OrderPublicSerializer(serializers.ModelSerializer):
 
 class MakeOrderSerializer(serializers.ModelSerializer):
     currency = serializers.IntegerField(
-        help_text="Currency id. See [here](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/static/assets/currencies.json) for a list of all IDs"
+        required=True,
+        help_text="Currency id. See [here](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/static/assets/currencies.json) for a list of all IDs",
     )
     payment_method = serializers.CharField(
         max_length=70,
         default="not specified",
-        required=False
+        required=False,
+        help_text="Can be any string. The UI recognizes [these payment methods](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/src/components/payment-methods/Methods.js) and displays them with a logo."
     )
     is_explicit = serializers.BooleanField(
         default=False,
-        help_text='Whether the order is explicitly priced or not'
+        help_text='Whether the order is explicitly priced or not. If set to `true` then `satoshis` need to be specified'
     )
     has_range = serializers.BooleanField(
-        required=False,
-        help_text='Whether the order specifies a range of amount or a fixed amount.\n\nIf `true`, then `min_amount` and `max_amount` fields are **required**.\n\n If `false` then `amount` is **required**',
         default=False,
+        help_text='Whether the order specifies a range of amount or a fixed amount.\n\nIf `true`, then `min_amount` and `max_amount` fields are **required**.\n\n If `false` then `amount` is **required**',
     )
     bondless_taker = serializers.BooleanField(
-        required=False,
-        help_text='Whether bondless takers are allowed for this order or not',
         default=False,
-    )
-    satoshis = serializers.IntegerField(
-        required=True,
-        help_text='Satoshis to trade'
+        help_text='Whether bondless takers are allowed for this order or not',
     )
 
     class Meta:
