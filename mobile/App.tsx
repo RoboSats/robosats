@@ -1,13 +1,11 @@
-import React, {useRef} from 'react';
-import {WebView, WebViewMessageEvent} from 'react-native-webview';
-import {SafeAreaView, Text, Platform} from 'react-native';
-import {torClient} from './services/Tor';
+import React, { useRef } from 'react';
+import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import { SafeAreaView, Text, Platform } from 'react-native';
+import { torClient } from './services/Tor';
 
 const App = () => {
   const webViewRef = useRef<WebView>();
-  var uri =
-    (Platform.OS === 'android' ? 'file:///android_asset/' : '') +
-    'Web.bundle/index.html';
+  var uri = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html';
 
   const injectMessage = (id: string, data: object) => {
     const json = JSON.stringify(data);
@@ -24,11 +22,9 @@ const App = () => {
           injectMessage(data.id, response);
         });
       } else if (data.type === 'post') {
-        torClient
-          .post(data.path, data.body, data.headers)
-          .then((response: object) => {
-            injectMessage(data.id, response);
-          });
+        torClient.post(data.path, data.body, data.headers).then((response: object) => {
+          injectMessage(data.id, response);
+        });
       } else if (data.type === 'delete') {
         torClient.delete(data.path, data.headers).then((response: object) => {
           injectMessage(data.id, response);
@@ -44,14 +40,14 @@ const App = () => {
   torClient.startDaemon();
 
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <SafeAreaView style={{ flex: 1 }}>
       <WebView
         source={{
           uri: uri,
         }}
         onMessage={onMessage}
         // @ts-ignore
-        ref={ref => (webViewRef.current = ref)}
+        ref={(ref) => (webViewRef.current = ref)}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         sharedCookiesEnabled={true}
@@ -69,7 +65,7 @@ const App = () => {
         mediaPlaybackRequiresUserAction={false}
         allowsLinkPreview={false}
         renderLoading={() => <Text>Loading RoboSats</Text>}
-        onError={syntheticEvent => <Text>{syntheticEvent.type}</Text>}
+        onError={(syntheticEvent) => <Text>{syntheticEvent.type}</Text>}
       />
     </SafeAreaView>
   );

@@ -5,8 +5,7 @@ class TorClient {
   daemon: ReturnType<typeof Tor>;
 
   constructor() {
-    this.baseUrl =
-      'http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion';
+    this.baseUrl = 'http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion';
     this.daemon = Tor({
       stopDaemonOnBackground: false,
     });
@@ -16,7 +15,7 @@ class TorClient {
     await this.daemon.startIfNotStarted();
   };
 
-  public get: (path: string) => Promise<object> = async path => {
+  public get: (path: string) => Promise<object> = async (path) => {
     await this.startDaemon();
 
     return new Promise<object>(async (resolve, reject) => {
@@ -30,19 +29,12 @@ class TorClient {
     });
   };
 
-  public delete: (path: string, headers: object) => Promise<object> = async (
-    path,
-    headers,
-  ) => {
+  public delete: (path: string, headers: object) => Promise<object> = async (path, headers) => {
     await this.startDaemon();
 
     return new Promise<object>(async (resolve, reject) => {
       try {
-        const response = await this.daemon.delete(
-          `${this.baseUrl}${path}`,
-          '',
-          headers,
-        );
+        const response = await this.daemon.delete(`${this.baseUrl}${path}`, '', headers);
 
         resolve(response.json);
       } catch (error) {
@@ -51,14 +43,14 @@ class TorClient {
     });
   };
 
-  public request: (path: string) => Promise<object> = async path => {
+  public request: (path: string) => Promise<object> = async (path) => {
     await this.startDaemon();
 
     return new Promise<object>(async (resolve, reject) => {
       try {
         const response = await this.daemon
           .request(`${this.baseUrl}${path}`, 'GET', '', {}, true)
-          .then(resp => {
+          .then((resp) => {
             resolve(resp);
           });
 
@@ -69,21 +61,17 @@ class TorClient {
     });
   };
 
-  public post: (
-    path: string,
-    body: object,
-    headers: object,
-  ) => Promise<object> = async (path, body, headers) => {
+  public post: (path: string, body: object, headers: object) => Promise<object> = async (
+    path,
+    body,
+    headers,
+  ) => {
     await this.startDaemon();
 
     return new Promise<object>(async (resolve, reject) => {
       try {
         const json = JSON.stringify(body);
-        const response = await this.daemon.post(
-          `${this.baseUrl}${path}`,
-          json,
-          headers,
-        );
+        const response = await this.daemon.post(`${this.baseUrl}${path}`, json, headers);
 
         resolve(response.json);
       } catch (error) {
