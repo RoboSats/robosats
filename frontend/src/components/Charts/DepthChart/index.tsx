@@ -64,7 +64,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const [center, setCenter] = useState<number>();
 
   const height = maxHeight < 20 ? 20 : maxHeight;
-  const width = maxWidth < 20 ? 20 : maxWidth;
+  const width = maxWidth < 20 ? 20 : maxWidth > 72.8 ? 72.8 : maxWidth;
 
   useEffect(() => {
     if (Object.keys(limits).length === 0) {
@@ -299,104 +299,106 @@ const DepthChart: React.FC<DepthChartProps> = ({
 
   return (
     <Paper style={{ width: `${width}em`, maxHeight: `${height}em` }}>
-      {bookLoading || center == undefined || enrichedOrders.length < 1 ? (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            paddingTop: `${(height - 3) / 2 - 1}em`,
-            height: `${height - 3}em`,
-          }}
-        >
-          <CircularProgress />
-        </div>
-      ) : (
-        <Grid container style={{ paddingTop: 15 }}>
-          <Grid
-            container
-            direction='row'
-            justifyContent='space-around'
-            alignItems='flex-start'
-            style={{ position: 'absolute' }}
+      <Paper variant='outlined'>
+        {bookLoading || center == undefined || enrichedOrders.length < 1 ? (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              paddingTop: `${(height - 3) / 2 - 1}em`,
+              height: `${height - 3}em`,
+            }}
           >
+            <CircularProgress />
+          </div>
+        ) : (
+          <Grid container style={{ paddingTop: 15 }}>
             <Grid
               container
-              justifyContent='flex-start'
+              direction='row'
+              justifyContent='space-around'
               alignItems='flex-start'
-              style={{ paddingLeft: 20 }}
+              style={{ position: 'absolute' }}
             >
-              <Select variant='standard' value={xType} onChange={(e) => setXType(e.target.value)}>
-                <MenuItem value={'premium'}>
-                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                    {t('Premium')}
-                  </div>
-                </MenuItem>
-                <MenuItem value={'base_amount'}>
-                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                    {t('Price')}
-                  </div>
-                </MenuItem>
-              </Select>
-            </Grid>
-          </Grid>
-          <Grid container direction='row' justifyContent='center' alignItems='center'>
-            <Grid container justifyContent='center' alignItems='center'>
-              <Grid item>
-                <IconButton onClick={() => setXRange(xRange + rangeSteps)}>
-                  <RemoveCircleOutline />
-                </IconButton>
-              </Grid>
-              <Grid item>
-                <Box justifyContent='center'>
-                  {xType === 'base_amount'
-                    ? `${center} ${currencyDict[currencyCode]}`
-                    : `${center}%`}
-                </Box>
-              </Grid>
-              <Grid item>
-                <IconButton onClick={() => setXRange(xRange - rangeSteps)} disabled={xRange <= 1}>
-                  <AddCircleOutline />
-                </IconButton>
+              <Grid
+                container
+                justifyContent='flex-start'
+                alignItems='flex-start'
+                style={{ paddingLeft: 20 }}
+              >
+                <Select variant='standard' value={xType} onChange={(e) => setXType(e.target.value)}>
+                  <MenuItem value={'premium'}>
+                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                      {t('Premium')}
+                    </div>
+                  </MenuItem>
+                  <MenuItem value={'base_amount'}>
+                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                      {t('Price')}
+                    </div>
+                  </MenuItem>
+                </Select>
               </Grid>
             </Grid>
+            <Grid container direction='row' justifyContent='center' alignItems='center'>
+              <Grid container justifyContent='center' alignItems='center'>
+                <Grid item>
+                  <IconButton onClick={() => setXRange(xRange + rangeSteps)}>
+                    <RemoveCircleOutline />
+                  </IconButton>
+                </Grid>
+                <Grid item>
+                  <Box justifyContent='center'>
+                    {xType === 'base_amount'
+                      ? `${center} ${currencyDict[currencyCode]}`
+                      : `${center}%`}
+                  </Box>
+                </Grid>
+                <Grid item>
+                  <IconButton onClick={() => setXRange(xRange - rangeSteps)} disabled={xRange <= 1}>
+                    <AddCircleOutline />
+                  </IconButton>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid container style={{ height: `${height - 7}em`, padding: 15 }}>
+              <ResponsiveLine
+                data={series}
+                enableArea={true}
+                useMesh={true}
+                animate={false}
+                crosshairType='cross'
+                tooltip={generateTooltip}
+                onClick={handleOnClick}
+                axisRight={{
+                  tickSize: 5,
+                  format: formatAxisY,
+                }}
+                axisLeft={{
+                  tickSize: 5,
+                  format: formatAxisY,
+                }}
+                axisBottom={{
+                  tickSize: 5,
+                  tickRotation: xType === 'base_amount' && width < 40 ? 45 : 0,
+                  format: formatAxisX,
+                }}
+                margin={{ left: 65, right: 60, bottom: width < 40 ? 36 : 25, top: 10 }}
+                xFormat={(value) => Number(value).toFixed(0)}
+                lineWidth={3}
+                theme={getNivoScheme(theme)}
+                colors={[theme.palette.secondary.main, theme.palette.primary.main]}
+                xScale={{
+                  type: 'linear',
+                  min: center - xRange,
+                  max: center + xRange,
+                }}
+                layers={['axes', 'areas', 'crosshair', 'lines', centerLine, 'slices', 'mesh']}
+              />
+            </Grid>
           </Grid>
-          <Grid container style={{ height: `${height - 7}em`, padding: 15 }}>
-            <ResponsiveLine
-              data={series}
-              enableArea={true}
-              useMesh={true}
-              animate={false}
-              crosshairType='cross'
-              tooltip={generateTooltip}
-              onClick={handleOnClick}
-              axisRight={{
-                tickSize: 5,
-                format: formatAxisY,
-              }}
-              axisLeft={{
-                tickSize: 5,
-                format: formatAxisY,
-              }}
-              axisBottom={{
-                tickSize: 5,
-                tickRotation: xType === 'base_amount' && width < 40 ? 45 : 0,
-                format: formatAxisX,
-              }}
-              margin={{ left: 65, right: 60, bottom: width < 40 ? 36 : 25, top: 10 }}
-              xFormat={(value) => Number(value).toFixed(0)}
-              lineWidth={3}
-              theme={getNivoScheme(theme)}
-              colors={[theme.palette.secondary.main, theme.palette.primary.main]}
-              xScale={{
-                type: 'linear',
-                min: center - xRange,
-                max: center + xRange,
-              }}
-              layers={['axes', 'areas', 'crosshair', 'lines', centerLine, 'slices', 'mesh']}
-            />
-          </Grid>
-        </Grid>
-      )}
+        )}
+      </Paper>
     </Paper>
   );
 };
