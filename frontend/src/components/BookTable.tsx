@@ -451,7 +451,13 @@ const BookTable = ({
       headerName: 'Order ID',
       width: width * fontSize,
       renderCell: (params) => {
-        return <div style={{ cursor: 'pointer' }}>{pn(params.row.id)}</div>;
+        return (
+          <div style={{ cursor: 'pointer' }}>
+            <Typography variant='caption' color='text.secondary'>
+              {`#${params.row.id}`}
+            </Typography>
+          </div>
+        );
       },
     };
   };
@@ -547,9 +553,9 @@ const BookTable = ({
     },
     id: {
       priority: 11,
-      order: 3,
+      order: 12,
       normal: {
-        width: 5,
+        width: 4.8,
         object: idObj,
       },
     },
