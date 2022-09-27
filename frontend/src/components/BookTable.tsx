@@ -139,7 +139,10 @@ const BookTable = ({
   // all sizes in 'em'
   const verticalHeightFrame = 6.9075;
   const verticalHeightRow = 3.25;
-  const defaultPageSize = Math.floor((maxHeight - verticalHeightFrame) / verticalHeightRow);
+  const defaultPageSize = Math.max(
+    Math.floor((maxHeight - verticalHeightFrame) / verticalHeightRow),
+    1,
+  );
   const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
 
   const [pageSize, setPageSize] = useState(0);
@@ -553,13 +556,13 @@ const BookTable = ({
   };
 
   const filteredColumns = function (maxWidth: number) {
-    const small = maxWidth < 70;
+    const useSmall = maxWidth < 70;
     const selectedColumns: object[] = [];
     let width: number = 0;
 
     for (const [key, value] of Object.entries(columnSpecs)) {
-      const colWidth = small && value.small ? value.small.width : value.normal.width;
-      const colObject = small && value.small ? value.small.object : value.normal.object;
+      const colWidth = useSmall && value.small ? value.small.width : value.normal.width;
+      const colObject = useSmall && value.small ? value.small.object : value.normal.object;
 
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
