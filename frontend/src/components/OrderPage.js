@@ -56,6 +56,7 @@ import { copyToClipboard } from '../utils/clipboard';
 import { getWebln } from '../utils/webln';
 import { apiClient } from '../services/api';
 import RobotAvatar from './Robots/RobotAvatar';
+import statusBadgeColor from '../utils/statusBadgeColor';
 
 class OrderPage extends Component {
   constructor(props) {
@@ -666,19 +667,6 @@ class OrderPage extends Component {
     return null;
   };
 
-  // Colors for the status badges
-  statusBadgeColor(status) {
-    if (status === 'Active') {
-      return 'success';
-    }
-    if (status === 'Seen recently') {
-      return 'warning';
-    }
-    if (status === 'Inactive') {
-      return 'error';
-    }
-  }
-
   orderBox = () => {
     const { t } = this.props;
     return (
@@ -694,7 +682,7 @@ class OrderPage extends Component {
               <ListItem>
                 <ListItemAvatar sx={{ width: 56, height: 56 }}>
                   <RobotAvatar
-                    statusColor={this.statusBadgeColor(this.state.maker_status)}
+                    statusColor={statusBadgeColor(this.state.maker_status)}
                     nickname={this.state.maker_nick}
                     tooltip={t(this.state.maker_status)}
                     orderType={this.state.type}
@@ -726,7 +714,7 @@ class OrderPage extends Component {
                         <ListItemAvatar>
                           <RobotAvatar
                             avatarClass='smallAvatar'
-                            statusColor={this.statusBadgeColor(this.state.taker_status)}
+                            statusColor={statusBadgeColor(this.state.taker_status)}
                             nickname={this.state.taker_nick}
                             tooltip={t(this.state.taker_status)}
                             orderType={this.state.type === 0 ? 1 : 0}

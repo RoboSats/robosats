@@ -15,8 +15,8 @@ export const checkVer: (
   const patchAvailable = !updateAvailable && patch > Number(semver[2]);
 
   return {
-    updateAvailable: updateAvailable,
-    patchAvailable: patchAvailable,
+    updateAvailable,
+    patchAvailable,
     coordinatorVersion: `v${major}.${minor}.${patch}`,
     clientVersion: `v${semver[0]}.${semver[1]}.${semver[2]}`,
   };

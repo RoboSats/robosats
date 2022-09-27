@@ -1,38 +1,27 @@
 import React, { Component } from 'react';
 import { withTranslation } from 'react-i18next';
 import {
-  Tooltip,
-  Stack,
-  Paper,
   Button,
   ToggleButtonGroup,
   ToggleButton,
-  ListItemButton,
   Typography,
   Grid,
   Select,
   MenuItem,
   FormControl,
   FormHelperText,
-  ListItemText,
-  ListItemAvatar,
   IconButton,
   ButtonGroup,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { DataGrid } from '@mui/x-data-grid';
 import currencyDict from '../../static/assets/currencies.json';
-
-import MediaQuery from 'react-responsive';
 import FlagWithProps from './FlagWithProps';
-import { pn, amountToString } from '../utils/prettyNumbers';
-import PaymentText from './PaymentText';
 import DepthChart from './Charts/DepthChart';
-import RobotAvatar from './Robots/RobotAvatar';
 import { apiClient } from '../services/api/index';
 
 // Icons
 import { BarChart, FormatListBulleted, Refresh } from '@mui/icons-material';
+import BookTable from './BookTable';
 
 class BookPage extends Component {
   constructor(props) {
@@ -43,11 +32,11 @@ class BookPage extends Component {
     };
   }
 
-  componentDidMount() {
-    this.getOrderDetails(2, 0);
-  }
+  componentDidMount = () => {
+    this.getOrderDetails();
+  };
 
-  getOrderDetails(type, currency) {
+  getOrderDetails() {
     this.props.setAppState({ bookLoading: true });
     apiClient.get('/api/book/').then((data) =>
       this.props.setAppState({
@@ -78,378 +67,6 @@ class BookPage extends Component {
       return t('ANY_currency');
     }
   }
-
-  // Colors for the status badges
-  statusBadgeColor(status) {
-    if (status === 'Active') {
-      return 'success';
-    }
-    if (status === 'Seen recently') {
-      return 'warning';
-    }
-    if (status === 'Inactive') {
-      return 'error';
-    }
-  }
-
-  dataGridLocaleText = () => {
-    const { t } = this.props;
-    return {
-      MuiTablePagination: { labelRowsPerPage: t('Orders per page:') },
-      noRowsLabel: t('No rows'),
-      noResultsOverlayLabel: t('No results found.'),
-      errorOverlayDefaultLabel: t('An error occurred.'),
-      toolbarColumns: t('Columns'),
-      toolbarColumnsLabel: t('Select columns'),
-      columnsPanelTextFieldLabel: t('Find column'),
-      columnsPanelTextFieldPlaceholder: t('Column title'),
-      columnsPanelDragIconLabel: t('Reorder column'),
-      columnsPanelShowAllButton: t('Show all'),
-      columnsPanelHideAllButton: t('Hide all'),
-      filterPanelAddFilter: t('Add filter'),
-      filterPanelDeleteIconLabel: t('Delete'),
-      filterPanelLinkOperator: t('Logic operator'),
-      filterPanelOperators: t('Operator'), // TODO v6: rename to filterPanelOperator
-      filterPanelOperatorAnd: t('And'),
-      filterPanelOperatorOr: t('Or'),
-      filterPanelColumns: t('Columns'),
-      filterPanelInputLabel: t('Value'),
-      filterPanelInputPlaceholder: t('Filter value'),
-      filterOperatorContains: t('contains'),
-      filterOperatorEquals: t('equals'),
-      filterOperatorStartsWith: t('starts with'),
-      filterOperatorEndsWith: t('ends with'),
-      filterOperatorIs: t('is'),
-      filterOperatorNot: t('is not'),
-      filterOperatorAfter: t('is after'),
-      filterOperatorOnOrAfter: t('is on or after'),
-      filterOperatorBefore: t('is before'),
-      filterOperatorOnOrBefore: t('is on or before'),
-      filterOperatorIsEmpty: t('is empty'),
-      filterOperatorIsNotEmpty: t('is not empty'),
-      filterOperatorIsAnyOf: t('is any of'),
-      filterValueAny: t('any'),
-      filterValueTrue: t('true'),
-      filterValueFalse: t('false'),
-      columnMenuLabel: t('Menu'),
-      columnMenuShowColumns: t('Show columns'),
-      columnMenuFilter: t('Filter'),
-      columnMenuHideColumn: t('Hide'),
-      columnMenuUnsort: t('Unsort'),
-      columnMenuSortAsc: t('Sort by ASC'),
-      columnMenuSortDesc: t('Sort by DESC'),
-      columnHeaderFiltersLabel: t('Show filters'),
-      columnHeaderSortIconLabel: t('Sort'),
-      booleanCellTrueLabel: t('yes'),
-      booleanCellFalseLabel: t('no'),
-    };
-  };
-
-  bookListTableDesktop = () => {
-    const { t } = this.props;
-    return (
-      <div style={{ height: 424, width: '100%' }}>
-        <DataGrid
-          localeText={this.dataGridLocaleText()}
-          rows={this.props.bookOrders.filter(
-            (order) =>
-              (order.type == this.props.type || this.props.type == null) &&
-              (order.currency == this.props.currency || this.props.currency == 0),
-          )}
-          loading={this.props.bookLoading}
-          columns={[
-            // { field: 'id', headerName: 'ID', width: 40 },
-            {
-              field: 'maker_nick',
-              headerName: t('Robot'),
-              width: 240,
-              renderCell: (params) => {
-                return (
-                  <ListItemButton style={{ cursor: 'pointer' }}>
-                    <ListItemAvatar>
-                      <RobotAvatar
-                        nickname={params.row.maker_nick}
-                        style={{ width: 45, height: 45 }}
-                        smooth={true}
-                        orderType={params.row.type}
-                        statusColor={this.statusBadgeColor(params.row.maker_status)}
-                        tooltip={t(params.row.maker_status)}
-                      />
-                    </ListItemAvatar>
-                    <ListItemText primary={params.row.maker_nick} />
-                  </ListItemButton>
-                );
-              },
-            },
-            {
-              field: 'type',
-              headerName: t('Is'),
-              width: 60,
-              renderCell: (params) => (params.row.type ? t('Seller') : t('Buyer')),
-            },
-            {
-              field: 'amount',
-              headerName: t('Amount'),
-              type: 'number',
-              width: 90,
-              renderCell: (params) => {
-                return (
-                  <div style={{ cursor: 'pointer' }}>
-                    {amountToString(
-                      params.row.amount,
-                      params.row.has_range,
-                      params.row.min_amount,
-                      params.row.max_amount,
-                    )}
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'currency',
-              headerName: t('Currency'),
-              width: 100,
-              renderCell: (params) => {
-                const currencyCode = this.getCurrencyCode(params.row.currency);
-                return (
-                  <div
-                    style={{
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    {currencyCode + ' '}
-                    <FlagWithProps code={currencyCode} />
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'payment_method',
-              headerName: t('Payment Method'),
-              width: 180,
-              renderCell: (params) => {
-                return (
-                  <div style={{ cursor: 'pointer' }}>
-                    <PaymentText
-                      othersText={t('Others')}
-                      verbose={true}
-                      size={24}
-                      text={params.row.payment_method}
-                    />
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'price',
-              headerName: t('Price'),
-              type: 'number',
-              width: 140,
-              renderCell: (params) => {
-                const currencyCode = this.getCurrencyCode(params.row.currency);
-                return (
-                  <div style={{ cursor: 'pointer' }}>
-                    {pn(params.row.price) + ' ' + currencyCode + '/BTC'}
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'premium',
-              headerName: t('Premium'),
-              type: 'number',
-              width: 100,
-              renderCell: (params) => {
-                return (
-                  <div style={{ cursor: 'pointer' }}>
-                    {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
-                  </div>
-                );
-              },
-            },
-          ]}
-          components={{
-            NoRowsOverlay: () => (
-              <Stack height='100%' alignItems='center' justifyContent='center'>
-                <div style={{ height: '220px' }} />
-                {this.NoOrdersFound()}
-              </Stack>
-            ),
-            NoResultsOverlay: () => (
-              <Stack height='100%' alignItems='center' justifyContent='center'>
-                {t('Filter has no results')}
-              </Stack>
-            ),
-          }}
-          pageSize={this.props.bookLoading ? 0 : this.state.pageSize}
-          rowsPerPageOptions={[0, 6, 20, 50]}
-          onPageSizeChange={(newPageSize) => this.setState({ pageSize: newPageSize })}
-          onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
-        />
-      </div>
-    );
-  };
-
-  bookListTablePhone = () => {
-    const { t } = this.props;
-    return (
-      <div style={{ height: 424, width: '100%' }}>
-        <DataGrid
-          localeText={this.dataGridLocaleText()}
-          loading={this.props.bookLoading}
-          rows={this.props.bookOrders.filter(
-            (order) =>
-              (order.type == this.props.type || this.props.type == null) &&
-              (order.currency == this.props.currency || this.props.currency == 0),
-          )}
-          columns={[
-            // { field: 'id', headerName: 'ID', width: 40 },
-            {
-              field: 'maker_nick',
-              headerName: t('Robot'),
-              width: 64,
-              renderCell: (params) => {
-                return (
-                  <div style={{ position: 'relative', left: '-5px' }}>
-                    <RobotAvatar
-                      nickname={params.row.maker_nick}
-                      smooth={true}
-                      style={{ width: 45, height: 45 }}
-                      orderType={params.row.type}
-                      statusColor={this.statusBadgeColor(params.row.maker_status)}
-                      tooltip={t(params.row.maker_status)}
-                    />
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'amount',
-              headerName: t('Amount'),
-              type: 'number',
-              width: 84,
-              renderCell: (params) => {
-                return (
-                  <Tooltip
-                    placement='right'
-                    enterTouchDelay={0}
-                    title={t(params.row.type ? 'Seller' : 'Buyer')}
-                  >
-                    <div style={{ cursor: 'pointer' }}>
-                      {amountToString(
-                        params.row.amount,
-                        params.row.has_range,
-                        params.row.min_amount,
-                        params.row.max_amount,
-                      )}
-                    </div>
-                  </Tooltip>
-                );
-              },
-            },
-            {
-              field: 'currency',
-              headerName: t('Currency'),
-              width: 85,
-              renderCell: (params) => {
-                const currencyCode = this.getCurrencyCode(params.row.currency);
-                return (
-                  <div
-                    style={{
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    {currencyCode + ' '}
-                    <FlagWithProps code={currencyCode} />
-                  </div>
-                );
-              },
-            },
-            { field: 'payment_method', headerName: t('Payment Method'), width: 180, hide: 'true' },
-            {
-              field: 'payment_icons',
-              headerName: t('Pay'),
-              width: 75,
-              renderCell: (params) => {
-                return (
-                  <div
-                    style={{
-                      position: 'relative',
-                      left: '-4px',
-                      cursor: 'pointer',
-                      align: 'center',
-                    }}
-                  >
-                    <PaymentText
-                      othersText={t('Others')}
-                      size={16}
-                      text={params.row.payment_method}
-                    />
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'price',
-              headerName: t('Price'),
-              type: 'number',
-              width: 140,
-              hide: 'true',
-              renderCell: (params) => {
-                return (
-                  <div style={{ cursor: 'pointer' }}>
-                    {pn(params.row.price) + ' ' + params.row.currency + '/BTC'}
-                  </div>
-                );
-              },
-            },
-            {
-              field: 'premium',
-              headerName: t('Premium'),
-              type: 'number',
-              width: 85,
-              renderCell: (params) => {
-                return (
-                  <Tooltip
-                    placement='left'
-                    enterTouchDelay={0}
-                    title={pn(params.row.price) + ' ' + params.row.currency + '/BTC'}
-                  >
-                    <div style={{ cursor: 'pointer' }}>
-                      {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
-                    </div>
-                  </Tooltip>
-                );
-              },
-            },
-          ]}
-          components={{
-            NoRowsOverlay: () => (
-              <Stack height='100%' alignItems='center' justifyContent='center'>
-                <div style={{ height: '220px' }} />
-                {this.NoOrdersFound()}
-              </Stack>
-            ),
-            NoResultsOverlay: () => (
-              <Stack height='100%' alignItems='center' justifyContent='center'>
-                {t('Local filter returns no result')}
-              </Stack>
-            ),
-          }}
-          pageSize={this.props.bookLoading ? 0 : this.state.pageSize}
-          rowsPerPageOptions={[0, 6, 20, 50]}
-          onPageSizeChange={(newPageSize) => this.setState({ pageSize: newPageSize })}
-          onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
-        />
-      </div>
-    );
-  };
 
   handleTypeChange = (mouseEvent, val) => {
     this.props.setAppState({ type: val });
@@ -495,45 +112,32 @@ class BookPage extends Component {
       return this.NoOrdersFound();
     }
 
-    const components =
-      this.state.view == 'depth'
-        ? [
-            <DepthChart
-              bookLoading={this.props.bookLoading}
-              orders={this.props.bookOrders}
-              lastDayPremium={this.props.lastDayPremium}
-              currency={this.props.currency}
-              setAppState={this.props.setAppState}
-              limits={this.props.limits}
-            />,
-            <DepthChart
-              bookLoading={this.props.bookLoading}
-              orders={this.props.bookOrders}
-              lastDayPremium={this.props.lastDayPremium}
-              currency={this.props.currency}
-              compact={true}
-              setAppState={this.props.setAppState}
-              limits={this.props.limits}
-            />,
-          ]
-        : [this.bookListTableDesktop(), this.bookListTablePhone()];
-
-    return (
-      <>
-        {/* Desktop */}
-        <MediaQuery minWidth={930}>
-          <Paper elevation={0} style={{ width: 925, maxHeight: 510, overflow: 'auto' }}>
-            <div style={{ height: 424, width: '100%' }}>{components[0]}</div>
-          </Paper>
-        </MediaQuery>
-        {/* Smartphone */}
-        <MediaQuery maxWidth={929}>
-          <Paper elevation={0} style={{ width: 395, maxHeight: 460, overflow: 'auto' }}>
-            <div style={{ height: 424, width: '100%' }}>{components[1]}</div>
-          </Paper>
-        </MediaQuery>
-      </>
-    );
+    if (this.state.view === 'depth') {
+      return (
+        <DepthChart
+          bookLoading={this.props.bookLoading}
+          orders={this.props.bookOrders}
+          lastDayPremium={this.props.lastDayPremium}
+          currency={this.props.currency}
+          compact={true}
+          setAppState={this.props.setAppState}
+          limits={this.props.limits}
+          maxWidth={(this.props.windowWidth / this.props.theme.typography.fontSize) * 0.8} // EM units
+          maxHeight={(this.props.windowHeight / this.props.theme.typography.fontSize) * 0.8 - 11} // EM units
+        />
+      );
+    } else {
+      return (
+        <BookTable
+          loading={this.props.bookLoading}
+          orders={this.props.bookOrders}
+          type={this.props.type}
+          currency={this.props.currency}
+          maxWidth={(this.props.windowWidth / this.props.theme.typography.fontSize) * 0.97} // EM units
+          maxHeight={(this.props.windowHeight / this.props.theme.typography.fontSize) * 0.8 - 11} // EM units
+        />
+      );
+    }
   };
 
   getTitle = () => {
@@ -562,7 +166,7 @@ class BookPage extends Component {
       <Grid className='orderBook' container spacing={1} sx={{ minWidth: 400 }}>
         <IconButton
           sx={{ position: 'fixed', right: '0px', top: '30px' }}
-          onClick={() => this.setState({ loading: true }) & this.getOrderDetails(2, 0)}
+          onClick={() => this.setState({ loading: true }) & this.getOrderDetails()}
         >
           <Refresh />
         </IconButton>
@@ -631,15 +235,11 @@ class BookPage extends Component {
             </Select>
           </FormControl>
         </Grid>
-        {this.props.bookNotFound ? (
-          <></>
-        ) : (
-          <Grid item xs={12} align='center'>
-            <Typography component='h5' variant='h5'>
-              {this.getTitle()}
-            </Typography>
-          </Grid>
-        )}
+        <Grid item xs={12} align='center'>
+          <Typography component='h5' variant='h5'>
+            {this.getTitle()}
+          </Typography>
+        </Grid>
         <Grid item xs={12} align='center'>
           {this.mainView()}
         </Grid>

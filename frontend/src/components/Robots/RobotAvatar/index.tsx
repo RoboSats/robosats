@@ -4,7 +4,7 @@ import { Avatar, Badge, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SendReceiveIcon } from '../../Icons';
 
-interface DepthChartProps {
+interface Props {
   nickname: string;
   smooth?: boolean;
   style?: object;
@@ -15,7 +15,7 @@ interface DepthChartProps {
   onLoad?: () => void;
 }
 
-const RobotAvatar: React.FC<DepthChartProps> = ({
+const RobotAvatar: React.FC<Props> = ({
   nickname,
   orderType,
   statusColor,
