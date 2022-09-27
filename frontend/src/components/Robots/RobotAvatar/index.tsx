@@ -9,6 +9,7 @@ interface DepthChartProps {
   nickname: string;
   smooth?: boolean;
   style?: object;
+  imageStyle?: object;
   statusColor?: 'primary' | 'secondary' | 'default' | 'error' | 'info' | 'success' | 'warning';
   orderType?: number;
   tooltip?: string;
@@ -23,6 +24,7 @@ const RobotAvatar: React.FC<DepthChartProps> = ({
   tooltip,
   smooth = false,
   style = {},
+  imageStyle = {},
   avatarClass = 'flippedSmallAvatar',
   onLoad = () => {},
 }) => {
@@ -54,13 +56,13 @@ const RobotAvatar: React.FC<DepthChartProps> = ({
       return (
         <div style={style}>
           <SmoothImage
-            className={avatarClass}
             src={avatarSrc}
             imageStyles={{
               borderRadius: '50%',
               transform: 'scaleX(-1)',
               border: '0.3px solid #555',
               filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
+              ...imageStyle,
             }}
           />
         </div>

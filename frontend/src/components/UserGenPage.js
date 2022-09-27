@@ -232,8 +232,14 @@ class UserGenPage extends Component {
                 <RobotAvatar
                   nickname={this.state.nickname}
                   style={{ maxWidth: 200 * fontSizeFactor, maxHeight: 200 * fontSizeFactor }}
+                  imageStyle={{
+                    transform: '',
+                    border: '2px solid #555',
+                    filter: 'drop-shadow(1px 1px 1px #000000)',
+                    height: `${195 * fontSizeFactor}px`,
+                    width: `${200 * fontSizeFactor}px`,
+                  }}
                   smooth={true}
-                  avatarClass=""
                   tooltip={t('This is your trading avatar')}
                 />
                 <br />
