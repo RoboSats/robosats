@@ -304,8 +304,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
           style={{
             display: 'flex',
             justifyContent: 'center',
-            paddingTop: `${height / 2 - 1}em`,
-            height: `${height}em`,
+            paddingTop: `${(height - 3) / 2 - 1}em`,
+            height: `${height - 3}em`,
           }}
         >
           <CircularProgress />
