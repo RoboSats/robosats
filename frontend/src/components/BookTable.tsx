@@ -57,7 +57,7 @@ function mixColors(baseColor: string, accentColor: string, point: number) {
   const green = baseRGB[1] + greenDiff * point;
   const blueDiff = accentRGB[2] - baseRGB[2];
   const blue = baseRGB[2] + blueDiff * point;
-  return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)})`;
+  return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${0.7 + point*0.3})`;
 }
 
 function localizeDataGrid() {
@@ -158,7 +158,7 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params) => {
         return (
-          <ListItemButton style={{ cursor: 'pointer' }}>
+          <ListItemButton style={{ cursor: 'pointer', position: 'relative', left: '-1.3em'}}>
             <ListItemAvatar>
               <RobotAvatar
                 nickname={params.row.maker_nick}
@@ -184,7 +184,7 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params) => {
         return (
-          <div style={{ position: 'relative', left: '-1.75em' }}>
+          <div style={{ position: 'relative', left: '-1.5em' }}>
             <ListItemButton style={{ cursor: 'pointer' }}>
               <RobotAvatar
                 nickname={params.row.maker_nick}
@@ -341,7 +341,7 @@ const BookTable = ({
           premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
           fontColor = mixColors(
             theme.palette.text.primary,
-            theme.palette.secondary.main,
+            theme.palette.secondary.dark,
             premiumPoint,
           );
         } else {
@@ -349,7 +349,7 @@ const BookTable = ({
           premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
           fontColor = mixColors(
             theme.palette.text.primary,
-            theme.palette.primary.main,
+            theme.palette.primary.dark,
             premiumPoint,
           );
         }
@@ -377,8 +377,7 @@ const BookTable = ({
         const minutes = Math.round((params.row.escrow_duration - hours * 3600) / 60);
         return (
           <div style={{ cursor: 'pointer' }}>
-            {hours > 0 ? hours + 'h' : ''}{' '}
-            {minutes > 0 ? String(minutes).padStart(2, '0') + 'm' : ''}
+            {hours > 0 ? `${hours}h` : `${minutes}m`}
           </div>
         );
       },
@@ -471,7 +470,7 @@ const BookTable = ({
       priority: 2,
       order: 5,
       normal: {
-        width: 7,
+        width: 5.8,
         object: currencyObj,
       },
     },
@@ -491,7 +490,7 @@ const BookTable = ({
         object: robotObj,
       },
       small: {
-        width: 4.5,
+        width: 4.3,
         object: robotSmallObj,
       },
     },
@@ -527,7 +526,7 @@ const BookTable = ({
       priority: 8,
       order: 8,
       normal: {
-        width: 4,
+        width: 3.8,
         object: timerObj,
       },
     },

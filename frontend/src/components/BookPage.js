@@ -137,6 +137,8 @@ class BookPage extends Component {
           compact={true}
           setAppState={this.props.setAppState}
           limits={this.props.limits}
+          maxWidth={(this.state.windowWidth / this.props.theme.typography.fontSize) * 0.8} // EM units
+          maxHeight={(this.state.windowHeight / this.props.theme.typography.fontSize) * 0.8 - 11} // EM units
         />
       );
     } else {

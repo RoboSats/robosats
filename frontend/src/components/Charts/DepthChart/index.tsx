@@ -38,7 +38,8 @@ interface DepthChartProps {
   currency: number;
   setAppState: (state: object) => void;
   limits: LimitList;
-  compact?: boolean;
+  maxWidth: number;
+  maxHeight: number;
 }
 
 const DepthChart: React.FC<DepthChartProps> = ({
@@ -48,7 +49,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
   currency,
   setAppState,
   limits,
-  compact,
+  maxWidth,
+  maxHeight
 }) => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -60,6 +62,9 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const [xType, setXType] = useState<string>('premium');
   const [currencyCode, setCurrencyCode] = useState<number>(1);
   const [center, setCenter] = useState<number>();
+
+  const height = maxHeight < 20 ? 20 : maxHeight
+  const width = maxWidth < 20 ? 20 : maxWidth
 
   useEffect(() => {
     if (Object.keys(limits).length === 0) {
@@ -293,10 +298,9 @@ const DepthChart: React.FC<DepthChartProps> = ({
   };
 
   return (
-    <Paper elevation={2} style={{ width: 925, maxHeight: 510, overflow: 'auto' }}>
-      <div style={{ height: 424, width: '100%' }}>
+    <Paper style={{ width: `${width}em`, maxHeight: `${height}em` }}>
         {bookLoading || center == undefined || enrichedOrders.length < 1 ? (
-          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 200, height: 420 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: `${height/2-1}em`, height:  `${height}em`}}>
             <CircularProgress />
           </div>
         ) : (
@@ -349,7 +353,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 </Grid>
               </Grid>
             </Grid>
-            <Grid container style={{ height: 357, padding: 15 }}>
+            <Grid container style={{ height: `${height - 7}em`, padding: 15 }}>
               <ResponsiveLine
                 data={series}
                 enableArea={true}
@@ -368,10 +372,10 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 }}
                 axisBottom={{
                   tickSize: 5,
-                  tickRotation: xType === 'base_amount' && compact ? 45 : 0,
+                  tickRotation: xType === 'base_amount' && width < 40 ? 45 : 0,
                   format: formatAxisX,
                 }}
-                margin={{ left: 65, right: 60, bottom: compact ? 36 : 25, top: 10 }}
+                margin={{ left: 65, right: 60, bottom: width < 40 ? 36 : 25, top: 10 }}
                 xFormat={(value) => Number(value).toFixed(0)}
                 lineWidth={3}
                 theme={getNivoScheme(theme)}
@@ -386,7 +390,6 @@ const DepthChart: React.FC<DepthChartProps> = ({
             </Grid>
           </Grid>
         )}
-      </div>
     </Paper>
   );
 };
