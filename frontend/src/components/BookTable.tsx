@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import {
+  Box,
+  Typography,
   Paper,
   Stack,
   ListItemButton,
   ListItemText,
   ListItemAvatar,
   useTheme,
+  CircularProgress,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import currencyDict from '../../static/assets/currencies.json';
@@ -30,13 +33,31 @@ function statusBadgeColor(status) {
   }
 }
 
-function getCurrencyCode(val) {
-  const { t } = useTranslation();
-  if (val) {
-    return val == 0 ? t('ANY_currency') : currencyDict[val.toString()];
-  } else {
-    return t('ANY_currency');
+function hexToRgb(c: string) {
+  if (c.includes('rgb')) {
+    const vals = c.split('(')[1].split(')')[0];
+    return vals.split(',');
   }
+  if (/^#([a-f0-9]{3}){1,2}$/.test(c)) {
+    if (c.length == 4) {
+      c = '#' + [c[1], c[1], c[2], c[2], c[3], c[3]].join('');
+    }
+    c = '0x' + c.substring(1);
+    return [(c >> 16) & 255, (c >> 8) & 255, c & 255];
+  }
+  return '';
+}
+
+function mixColors(baseColor: string, accentColor: string, point: number) {
+  const baseRGB = hexToRgb(baseColor);
+  const accentRGB = hexToRgb(accentColor);
+  const redDiff = accentRGB[0] - baseRGB[0];
+  const red = baseRGB[0] + redDiff * point;
+  const greenDiff = accentRGB[1] - baseRGB[1];
+  const green = baseRGB[1] + greenDiff * point;
+  const blueDiff = accentRGB[2] - baseRGB[2];
+  const blue = baseRGB[2] + blueDiff * point;
+  return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)})`;
 }
 
 function localizeDataGrid() {
@@ -114,53 +135,34 @@ const BookTable = ({
   const history = useHistory();
 
   const fontSize = theme.typography.fontSize;
+
   // all sizes in 'em'
-  const verticalHeightFrame = 6.9075
-  const verticalHeightRow = 3.25
+  const verticalHeightFrame = 6.9075;
+  const verticalHeightRow = 3.25;
   const defaultPageSize = Math.floor((maxHeight - verticalHeightFrame) / verticalHeightRow);
-  const height = defaultPageSize * verticalHeightRow + verticalHeightFrame
-  
+  const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
+
   const [pageSize, setPageSize] = useState(0);
-  const [useDefaultPageSize, setUseDefaultPageSize] = useState(true)
+  const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
   useEffect(() => {
-    if(useDefaultPageSize){
-      setPageSize(defaultPageSize)
+    if (useDefaultPageSize) {
+      setPageSize(defaultPageSize);
     }
   });
 
-
-
-  console.log(pageSize)
-  
-
-  const colPriority={
-    'amount': 1,
-    'currency':2,
-    'premium':3,
-    'robot':4,
-    'payment_method':5,
-    'price':6,
-    'expires_at':7,
-    'escrow_duration':8,
-    'type':9,
-    'satoshis_now':10,
-    'id':11,
-  }
-
-  const robotCol = function(){
-    const width = 17.14
-
+  const robotObj = function (width: number, hide: boolean) {
     return {
+      hide: hide,
       field: 'maker_nick',
       headerName: t('Robot'),
-      width: width*fontSize,
+      width: width * fontSize,
       renderCell: (params) => {
         return (
           <ListItemButton style={{ cursor: 'pointer' }}>
             <ListItemAvatar>
               <RobotAvatar
                 nickname={params.row.maker_nick}
-                style={{ width: '3.215em', height: '3.215em'}}
+                style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
                 orderType={params.row.type}
                 statusColor={statusBadgeColor(params.row.maker_status)}
@@ -171,50 +173,51 @@ const BookTable = ({
           </ListItemButton>
         );
       },
-    }
-  }
+    };
+  };
 
-  const robotSmallCol = function(){
-    const width = 4.5715
-
+  const robotSmallObj = function (width: number, hide: boolean) {
     return {
+      hide: hide,
       field: 'maker_nick',
       headerName: t('Robot'),
-      width: width*fontSize,
+      width: width * fontSize,
       renderCell: (params) => {
         return (
           <div style={{ position: 'relative', left: '-1.75em' }}>
             <ListItemButton style={{ cursor: 'pointer' }}>
-            <RobotAvatar
-              nickname={params.row.maker_nick}
-              smooth={true}
-              style={{ width: '3.215em', height: '3.215em'}}
-              orderType={params.row.type}
-              statusColor={statusBadgeColor(params.row.maker_status)}
-              tooltip={t(params.row.maker_status)}
-            />
+              <RobotAvatar
+                nickname={params.row.maker_nick}
+                smooth={true}
+                style={{ width: '3.215em', height: '3.215em' }}
+                orderType={params.row.type}
+                statusColor={statusBadgeColor(params.row.maker_status)}
+                tooltip={t(params.row.maker_status)}
+              />
             </ListItemButton>
           </div>
         );
-      }
-    }
-  }
+      },
+    };
+  };
 
-  const typeCol = function(){
+  const typeObj = function (width: number, hide: boolean) {
     return {
+      hide: hide,
       field: 'type',
       headerName: t('Is'),
-      width: 60,
+      width: width * fontSize,
       renderCell: (params) => (params.row.type ? t('Seller') : t('Buyer')),
-    }
-  }
+    };
+  };
 
-  const amountCol = function(){
+  const amountObj = function (width: number, hide: boolean) {
     return {
+      hide: hide,
       field: 'amount',
       headerName: t('Amount'),
       type: 'number',
-      width: 90,
+      width: width * fontSize,
       renderCell: (params) => {
         return (
           <div style={{ cursor: 'pointer' }}>
@@ -227,16 +230,17 @@ const BookTable = ({
           </div>
         );
       },
-    }
-  }
+    };
+  };
 
-  const currencyCol = function(){
+  const currencyObj = function (width: number, hide: boolean) {
     return {
+      hide: hide,
       field: 'currency',
       headerName: t('Currency'),
-      width: 100,
+      width: width * fontSize,
       renderCell: (params) => {
-        const currencyCode = getCurrencyCode(params.row.currency);
+        const currencyCode = currencyDict[params.row.currency.toString()];
         return (
           <div
             style={{
@@ -251,79 +255,341 @@ const BookTable = ({
           </div>
         );
       },
-    }
-  }
+    };
+  };
 
-  const paymentCol = function(){
+  const paymentObj = function (width: number, hide: boolean) {
     return {
+      hide: hide,
       field: 'payment_method',
       headerName: t('Payment Method'),
-      width: 180,
+      width: width * fontSize,
       renderCell: (params) => {
         return (
           <div style={{ cursor: 'pointer' }}>
             <PaymentText
               othersText={t('Others')}
               verbose={true}
-              size={24}
+              size={1.7 * fontSize}
               text={params.row.payment_method}
             />
           </div>
         );
       },
-    }
-  }
+    };
+  };
 
-  const priceCol = function(){
+  const paymentSmallObj = function (width: number, hide: boolean) {
     return {
+      hide: hide,
+      field: 'payment_icons',
+      headerName: t('Pay'),
+      width: width * fontSize,
+      renderCell: (params) => {
+        return (
+          <div
+            style={{
+              position: 'relative',
+              left: '-4px',
+              cursor: 'pointer',
+              align: 'center',
+            }}
+          >
+            <PaymentText
+              othersText={t('Others')}
+              size={1.3 * fontSize}
+              text={params.row.payment_method}
+            />
+          </div>
+        );
+      },
+    };
+  };
+
+  const priceObj = function (width: number, hide: boolean) {
+    return {
+      hide: hide,
       field: 'price',
       headerName: t('Price'),
       type: 'number',
-      width: 140,
+      width: width * fontSize,
       renderCell: (params) => {
-        const currencyCode = getCurrencyCode(params.row.currency);
+        const currencyCode = currencyDict[params.row.currency.toString()];
         return (
-          <div style={{ cursor: 'pointer' }}>
-            {pn(params.row.price) + ' ' + currencyCode + '/BTC'}
-          </div>
+          <div style={{ cursor: 'pointer' }}>{`${pn(params.row.price)} ${currencyCode}/BTC`}</div>
         );
       },
-    }
-  }
+    };
+  };
 
-  const premiumCol = function(){
+  const premiumObj = function (width: number, hide: boolean) {
+    // coloring premium texts based on 4 params:
+    // Hardcoded: a sell order at 0% is an outstanding premium
+    // Hardcoded: a buy order at 10% is an outstanding premium
+    const sellStandardPremium = 10;
+    const buyOutstandingPremium = 10;
     return {
+      hide: hide,
       field: 'premium',
       headerName: t('Premium'),
       type: 'number',
-      width: 100,
+      width: width * fontSize,
       renderCell: (params) => {
+        let fontColor = `rgb(0,0,0)`;
+        if (params.row.type === 0) {
+          var premiumPoint = params.row.premium / buyOutstandingPremium;
+          premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
+          fontColor = mixColors(
+            theme.palette.text.primary,
+            theme.palette.secondary.main,
+            premiumPoint,
+          );
+        } else {
+          var premiumPoint = (sellStandardPremium - params.row.premium) / sellStandardPremium;
+          premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
+          fontColor = mixColors(
+            theme.palette.text.primary,
+            theme.palette.primary.main,
+            premiumPoint,
+          );
+        }
+        const fontWeight = 400 + Math.round(premiumPoint * 5) * 100;
         return (
           <div style={{ cursor: 'pointer' }}>
-            {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
+            <Typography variant='inherit' color={fontColor} sx={{ fontWeight: fontWeight }}>
+              {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
+            </Typography>
           </div>
         );
       },
+    };
+  };
+
+  const timerObj = function (width: number, hide: boolean) {
+    return {
+      hide: hide,
+      field: 'escrow_duration',
+      headerName: t('Timer'),
+      type: 'number',
+      width: width * fontSize,
+      renderCell: (params) => {
+        const hours = Math.round(params.row.escrow_duration / 3600);
+        const minutes = Math.round((params.row.escrow_duration - hours * 3600) / 60);
+        return (
+          <div style={{ cursor: 'pointer' }}>
+            {hours > 0 ? hours + 'h' : ''}{' '}
+            {minutes > 0 ? String(minutes).padStart(2, '0') + 'm' : ''}
+          </div>
+        );
+      },
+    };
+  };
+
+  const expiryObj = function (width: number, hide: boolean) {
+    return {
+      hide: hide,
+      field: 'expires_at',
+      headerName: t('Expiry'),
+      type: 'string',
+      width: width * fontSize,
+      renderCell: (params) => {
+        const expiresAt = new Date(params.row.expires_at);
+        const timeToExpiry = Math.abs(expiresAt - new Date());
+        const percent = Math.round((timeToExpiry / (24 * 60 * 60 * 1000)) * 100);
+        const hours = Math.round(timeToExpiry / (3600 * 1000));
+        const minutes = Math.round((timeToExpiry - hours * (3600 * 1000)) / 60);
+        return (
+          <Box sx={{ position: 'relative', display: 'inline-flex', left: '0.3em' }}>
+            <CircularProgress
+              value={percent}
+              color={percent < 15 ? 'error' : percent < 30 ? 'warning' : 'success'}
+              thickness={0.35 * fontSize}
+              size={2.5 * fontSize}
+              variant='determinate'
+            />
+            <Box
+              sx={{
+                top: 0,
+                left: 0,
+                bottom: 0,
+                right: 0,
+                position: 'absolute',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Typography variant='caption' component='div' color='text.secondary'>
+                {hours > 0 ? `${hours}h` : `${minutes}m`}
+              </Typography>
+            </Box>
+          </Box>
+        );
+      },
+    };
+  };
+
+  const satoshisObj = function (width: number, hide: boolean) {
+    return {
+      hide: hide,
+      field: 'satoshis_now',
+      headerName: t('Sats now'),
+      type: 'number',
+      width: width * fontSize,
+      renderCell: (params) => {
+        return (
+          <div style={{ cursor: 'pointer' }}>
+            {`${pn(Math.round(params.row.satoshis_now / 1000))}K`}
+          </div>
+        );
+      },
+    };
+  };
+
+  const idObj = function (width: number, hide: boolean) {
+    return {
+      hide: hide,
+      field: 'id',
+      headerName: 'Order ID',
+      width: width * fontSize,
+      renderCell: (params) => {
+        return <div style={{ cursor: 'pointer' }}>{pn(params.row.id)}</div>;
+      },
+    };
+  };
+
+  const columnSpecs = {
+    amount: {
+      priority: 1,
+      order: 4,
+      normal: {
+        width: 6.5,
+        object: amountObj,
+      },
+    },
+    currency: {
+      priority: 2,
+      order: 5,
+      normal: {
+        width: 7,
+        object: currencyObj,
+      },
+    },
+    premium: {
+      priority: 3,
+      order: 11,
+      normal: {
+        width: 6,
+        object: premiumObj,
+      },
+    },
+    robot: {
+      priority: 4,
+      order: 1,
+      normal: {
+        width: 17.14,
+        object: robotObj,
+      },
+      small: {
+        width: 4.5,
+        object: robotSmallObj,
+      },
+    },
+    paymentMethod: {
+      priority: 5,
+      order: 6,
+      normal: {
+        width: 12.85,
+        object: paymentObj,
+      },
+      small: {
+        width: 5.8,
+        object: paymentSmallObj,
+      },
+    },
+    price: {
+      priority: 6,
+      order: 10,
+      normal: {
+        width: 10,
+        object: priceObj,
+      },
+    },
+    expires_at: {
+      priority: 7,
+      order: 7,
+      normal: {
+        width: 5.8,
+        object: expiryObj,
+      },
+    },
+    escrow_duration: {
+      priority: 8,
+      order: 8,
+      normal: {
+        width: 4,
+        object: timerObj,
+      },
+    },
+    satoshisNow: {
+      priority: 9,
+      order: 9,
+      normal: {
+        width: 6,
+        object: satoshisObj,
+      },
+    },
+    type: {
+      priority: 10,
+      order: 2,
+      normal: {
+        width: 4.3,
+        object: typeObj,
+      },
+    },
+    id: {
+      priority: 11,
+      order: 3,
+      normal: {
+        width: 5,
+        object: idObj,
+      },
+    },
+  };
+
+  const filteredColumns = function (maxWidth: number) {
+    const small = maxWidth < 70;
+    const selectedColumns: object[] = [];
+    let width: number = 0;
+
+    for (const [key, value] of Object.entries(columnSpecs)) {
+      const colWidth = small && value.small ? value.small.width : value.normal.width;
+      const colObject = small && value.small ? value.small.object : value.normal.object;
+
+      if (width + colWidth < maxWidth || selectedColumns.length < 2) {
+        width = width + colWidth;
+        selectedColumns.push([colObject(colWidth, false), value.order]);
+      } else {
+        selectedColumns.push([colObject(colWidth, true), value.order]);
+      }
     }
-  }
 
-  const idCol = function(){
-    return { field: 'id', headerName: 'Order ID', width: 70 }
-  }
+    // sort columns by column.order value
+    selectedColumns.sort(function (first, second) {
+      return first[1] - second[1];
+    });
 
-  const columns=[
-    robotSmallCol(),
-    typeCol(),
-    amountCol(),
-    currencyCol(),
-    paymentCol(),
-    priceCol(),
-    premiumCol(),
-    idCol(),
-    ]
+    const columns = selectedColumns.map(function (item) {
+      return item[0];
+    });
+
+    return [columns, width * 0.875 + 0.15];
+  };
+
+  const [columns, width] = filteredColumns(maxWidth);
 
   return (
-    <Paper style={{ width: `${maxWidth}em`, height: `${height}em`, overflow: 'auto' }}>
+    <Paper style={{ width: `${width}em`, height: `${height}em`, overflow: 'auto' }}>
       <DataGrid
         localeText={localizeDataGrid()}
         rows={orders.filter(
@@ -333,12 +599,6 @@ const BookTable = ({
         loading={loading}
         columns={columns}
         components={{
-          NoRowsOverlay: () => (
-            <Stack height='100%' alignItems='center' justifyContent='center'>
-              <div style={{ height: '220px' }} />
-              {'this.NoOrdersFound()'}
-            </Stack>
-          ),
           NoResultsOverlay: () => (
             <Stack height='100%' alignItems='center' justifyContent='center'>
               {t('Filter has no results')}
@@ -347,7 +607,10 @@ const BookTable = ({
         }}
         pageSize={loading ? 0 : pageSize}
         rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
-        onPageSizeChange={(newPageSize) => {setPageSize(newPageSize); setUseDefaultPageSize(false)}}
+        onPageSizeChange={(newPageSize) => {
+          setPageSize(newPageSize);
+          setUseDefaultPageSize(false);
+        }}
         onRowClick={(params) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
       />
     </Paper>
@@ -355,613 +618,3 @@ const BookTable = ({
 };
 
 export default BookTable;
-
-// class BookPage extends Component {
-//   constructor(props) {
-//     super(props);
-//     this.state = {
-//       pageSize: 6,
-//       view: 'list',
-//     };
-//   }
-
-//   componentDidMount() {
-//     this.getOrderDetails(2, 0);
-//   }
-
-//   getOrderDetails(type, currency) {
-//     this.props.setAppState({ bookLoading: true });
-//     apiClient.get('/api/book/').then((data) =>
-//       this.props.setAppState({
-//         bookNotFound: data.not_found,
-//         bookLoading: false,
-//         bookOrders: data,
-//       }),
-//     );
-//   }
-
-//   handleRowClick = (e) => {
-//     this.props.history.push('/order/' + e);
-//   };
-
-//   handleCurrencyChange = (e) => {
-//     const currency = e.target.value;
-//     this.props.setAppState({
-//       currency,
-//       bookCurrencyCode: this.getCurrencyCode(currency),
-//     });
-//   };
-
-//   getCurrencyCode(val) {
-//     const { t } = this.props;
-//     if (val) {
-//       return val == 0 ? t('ANY_currency') : currencyDict[val.toString()];
-//     } else {
-//       return t('ANY_currency');
-//     }
-//   }
-
-//   // Colors for the status badges
-//   statusBadgeColor(status) {
-//     if (status === 'Active') {
-//       return 'success';
-//     }
-//     if (status === 'Seen recently') {
-//       return 'warning';
-//     }
-//     if (status === 'Inactive') {
-//       return 'error';
-//     }
-//   }
-
-//   dataGridLocaleText = () => {
-//     const { t } = this.props;
-//     return {
-//       MuiTablePagination: { labelRowsPerPage: t('Orders per page:') },
-//       noRowsLabel: t('No rows'),
-//       noResultsOverlayLabel: t('No results found.'),
-//       errorOverlayDefaultLabel: t('An error occurred.'),
-//       toolbarColumns: t('Columns'),
-//       toolbarColumnsLabel: t('Select columns'),
-//       columnsPanelTextFieldLabel: t('Find column'),
-//       columnsPanelTextFieldPlaceholder: t('Column title'),
-//       columnsPanelDragIconLabel: t('Reorder column'),
-//       columnsPanelShowAllButton: t('Show all'),
-//       columnsPanelHideAllButton: t('Hide all'),
-//       filterPanelAddFilter: t('Add filter'),
-//       filterPanelDeleteIconLabel: t('Delete'),
-//       filterPanelLinkOperator: t('Logic operator'),
-//       filterPanelOperators: t('Operator'), // TODO v6: rename to filterPanelOperator
-//       filterPanelOperatorAnd: t('And'),
-//       filterPanelOperatorOr: t('Or'),
-//       filterPanelColumns: t('Columns'),
-//       filterPanelInputLabel: t('Value'),
-//       filterPanelInputPlaceholder: t('Filter value'),
-//       filterOperatorContains: t('contains'),
-//       filterOperatorEquals: t('equals'),
-//       filterOperatorStartsWith: t('starts with'),
-//       filterOperatorEndsWith: t('ends with'),
-//       filterOperatorIs: t('is'),
-//       filterOperatorNot: t('is not'),
-//       filterOperatorAfter: t('is after'),
-//       filterOperatorOnOrAfter: t('is on or after'),
-//       filterOperatorBefore: t('is before'),
-//       filterOperatorOnOrBefore: t('is on or before'),
-//       filterOperatorIsEmpty: t('is empty'),
-//       filterOperatorIsNotEmpty: t('is not empty'),
-//       filterOperatorIsAnyOf: t('is any of'),
-//       filterValueAny: t('any'),
-//       filterValueTrue: t('true'),
-//       filterValueFalse: t('false'),
-//       columnMenuLabel: t('Menu'),
-//       columnMenuShowColumns: t('Show columns'),
-//       columnMenuFilter: t('Filter'),
-//       columnMenuHideColumn: t('Hide'),
-//       columnMenuUnsort: t('Unsort'),
-//       columnMenuSortAsc: t('Sort by ASC'),
-//       columnMenuSortDesc: t('Sort by DESC'),
-//       columnHeaderFiltersLabel: t('Show filters'),
-//       columnHeaderSortIconLabel: t('Sort'),
-//       booleanCellTrueLabel: t('yes'),
-//       booleanCellFalseLabel: t('no'),
-//     };
-//   };
-
-//   bookListTableDesktop = () => {
-//     const { t } = this.props;
-//     return (
-//       <div style={{ height: 424, width: '100%' }}>
-//         <DataGrid
-//           localeText={this.dataGridLocaleText()}
-//           rows={this.props.bookOrders.filter(
-//             (order) =>
-//               (order.type == this.props.type || this.props.type == null) &&
-//               (order.currency == this.props.currency || this.props.currency == 0),
-//           )}
-//           loading={this.props.bookLoading}
-//           columns={[
-//             // { field: 'id', headerName: 'ID', width: 40 },
-//             {
-//               field: 'maker_nick',
-//               headerName: t('Robot'),
-//               width: 240,
-//               renderCell: (params) => {
-//                 return (
-//                   <ListItemButton style={{ cursor: 'pointer' }}>
-//                     <ListItemAvatar>
-//                       <RobotAvatar
-//                         nickname={params.row.maker_nick}
-//                         style={{ width: 45, height: 45 }}
-//                         smooth={true}
-//                         orderType={params.row.type}
-//                         statusColor={this.statusBadgeColor(params.row.maker_status)}
-//                         tooltip={t(params.row.maker_status)}
-//                       />
-//                     </ListItemAvatar>
-//                     <ListItemText primary={params.row.maker_nick} />
-//                   </ListItemButton>
-//                 );
-//               },
-//             },
-//             {
-//               field: 'type',
-//               headerName: t('Is'),
-//               width: 60,
-//               renderCell: (params) => (params.row.type ? t('Seller') : t('Buyer')),
-//             },
-//             {
-//               field: 'amount',
-//               headerName: t('Amount'),
-//               type: 'number',
-//               width: 90,
-//               renderCell: (params) => {
-//                 return (
-//                   <div style={{ cursor: 'pointer' }}>
-//                     {amountToString(
-//                       params.row.amount,
-//                       params.row.has_range,
-//                       params.row.min_amount,
-//                       params.row.max_amount,
-//                     )}
-//                   </div>
-//                 );
-//               },
-//             },
-//             {
-//               field: 'currency',
-//               headerName: t('Currency'),
-//               width: 100,
-//               renderCell: (params) => {
-//                 const currencyCode = this.getCurrencyCode(params.row.currency);
-//                 return (
-//                   <div
-//                     style={{
-//                       cursor: 'pointer',
-//                       display: 'flex',
-//                       alignItems: 'center',
-//                       flexWrap: 'wrap',
-//                     }}
-//                   >
-//                     {currencyCode + ' '}
-//                     <FlagWithProps code={currencyCode} />
-//                   </div>
-//                 );
-//               },
-//             },
-//             {
-//               field: 'payment_method',
-//               headerName: t('Payment Method'),
-//               width: 180,
-//               renderCell: (params) => {
-//                 return (
-//                   <div style={{ cursor: 'pointer' }}>
-//                     <PaymentText
-//                       othersText={t('Others')}
-//                       verbose={true}
-//                       size={24}
-//                       text={params.row.payment_method}
-//                     />
-//                   </div>
-//                 );
-//               },
-//             },
-//             {
-//               field: 'price',
-//               headerName: t('Price'),
-//               type: 'number',
-//               width: 140,
-//               renderCell: (params) => {
-//                 const currencyCode = this.getCurrencyCode(params.row.currency);
-//                 return (
-//                   <div style={{ cursor: 'pointer' }}>
-//                     {pn(params.row.price) + ' ' + currencyCode + '/BTC'}
-//                   </div>
-//                 );
-//               },
-//             },
-//             {
-//               field: 'premium',
-//               headerName: t('Premium'),
-//               type: 'number',
-//               width: 100,
-//               renderCell: (params) => {
-//                 return (
-//                   <div style={{ cursor: 'pointer' }}>
-//                     {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
-//                   </div>
-//                 );
-//               },
-//             },
-//           ]}
-//           components={{
-//             NoRowsOverlay: () => (
-//               <Stack height='100%' alignItems='center' justifyContent='center'>
-//                 <div style={{ height: '220px' }} />
-//                 {this.NoOrdersFound()}
-//               </Stack>
-//             ),
-//             NoResultsOverlay: () => (
-//               <Stack height='100%' alignItems='center' justifyContent='center'>
-//                 {t('Filter has no results')}
-//               </Stack>
-//             ),
-//           }}
-//           pageSize={this.props.bookLoading ? 0 : this.state.pageSize}
-//           rowsPerPageOptions={[0, 6, 20, 50]}
-//           onPageSizeChange={(newPageSize) => this.setState({ pageSize: newPageSize })}
-//           onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
-//         />
-//       </div>
-//     );
-//   };
-
-//   bookListTablePhone = () => {
-//     const { t } = this.props;
-//     return (
-//       <div style={{ height: 424, width: '100%' }}>
-//         <DataGrid
-//           localeText={this.dataGridLocaleText()}
-//           loading={this.props.bookLoading}
-//           rows={this.props.bookOrders.filter(
-//             (order) =>
-//               (order.type == this.props.type || this.props.type == null) &&
-//               (order.currency == this.props.currency || this.props.currency == 0),
-//           )}
-//           columns={[
-//             // { field: 'id', headerName: 'ID', width: 40 },
-//             {
-//               field: 'maker_nick',
-//               headerName: t('Robot'),
-//               width: 64,
-//               renderCell: (params) => {
-//                 return (
-//                   <div style={{ position: 'relative', left: '-5px' }}>
-//                     <RobotAvatar
-//                       nickname={params.row.maker_nick}
-//                       smooth={true}
-//                       style={{ width: 45, height: 45 }}
-//                       orderType={params.row.type}
-//                       statusColor={this.statusBadgeColor(params.row.maker_status)}
-//                       tooltip={t(params.row.maker_status)}
-//                     />
-//                   </div>
-//                 );
-//               },
-//             },
-//             {
-//               field: 'amount',
-//               headerName: t('Amount'),
-//               type: 'number',
-//               width: 84,
-//               renderCell: (params) => {
-//                 return (
-//                   <Tooltip
-//                     placement='right'
-//                     enterTouchDelay={0}
-//                     title={t(params.row.type ? 'Seller' : 'Buyer')}
-//                   >
-//                     <div style={{ cursor: 'pointer' }}>
-//                       {amountToString(
-//                         params.row.amount,
-//                         params.row.has_range,
-//                         params.row.min_amount,
-//                         params.row.max_amount,
-//                       )}
-//                     </div>
-//                   </Tooltip>
-//                 );
-//               },
-//             },
-//             {
-//               field: 'currency',
-//               headerName: t('Currency'),
-//               width: 85,
-//               renderCell: (params) => {
-//                 const currencyCode = this.getCurrencyCode(params.row.currency);
-//                 return (
-//                   <div
-//                     style={{
-//                       cursor: 'pointer',
-//                       display: 'flex',
-//                       alignItems: 'center',
-//                       flexWrap: 'wrap',
-//                     }}
-//                   >
-//                     {currencyCode + ' '}
-//                     <FlagWithProps code={currencyCode} />
-//                   </div>
-//                 );
-//               },
-//             },
-//             { field: 'payment_method', headerName: t('Payment Method'), width: 180, hide: 'true' },
-//             {
-//               field: 'payment_icons',
-//               headerName: t('Pay'),
-//               width: 75,
-//               renderCell: (params) => {
-//                 return (
-//                   <div
-//                     style={{
-//                       position: 'relative',
-//                       left: '-4px',
-//                       cursor: 'pointer',
-//                       align: 'center',
-//                     }}
-//                   >
-//                     <PaymentText
-//                       othersText={t('Others')}
-//                       size={16}
-//                       text={params.row.payment_method}
-//                     />
-//                   </div>
-//                 );
-//               },
-//             },
-//             {
-//               field: 'price',
-//               headerName: t('Price'),
-//               type: 'number',
-//               width: 140,
-//               hide: 'true',
-//               renderCell: (params) => {
-//                 return (
-//                   <div style={{ cursor: 'pointer' }}>
-//                     {pn(params.row.price) + ' ' + params.row.currency + '/BTC'}
-//                   </div>
-//                 );
-//               },
-//             },
-//             {
-//               field: 'premium',
-//               headerName: t('Premium'),
-//               type: 'number',
-//               width: 85,
-//               renderCell: (params) => {
-//                 return (
-//                   <Tooltip
-//                     placement='left'
-//                     enterTouchDelay={0}
-//                     title={pn(params.row.price) + ' ' + params.row.currency + '/BTC'}
-//                   >
-//                     <div style={{ cursor: 'pointer' }}>
-//                       {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
-//                     </div>
-//                   </Tooltip>
-//                 );
-//               },
-//             },
-//           ]}
-//           components={{
-//             NoRowsOverlay: () => (
-//               <Stack height='100%' alignItems='center' justifyContent='center'>
-//                 <div style={{ height: '220px' }} />
-//                 {this.NoOrdersFound()}
-//               </Stack>
-//             ),
-//             NoResultsOverlay: () => (
-//               <Stack height='100%' alignItems='center' justifyContent='center'>
-//                 {t('Local filter returns no result')}
-//               </Stack>
-//             ),
-//           }}
-//           pageSize={this.props.bookLoading ? 0 : this.state.pageSize}
-//           rowsPerPageOptions={[0, 6, 20, 50]}
-//           onPageSizeChange={(newPageSize) => this.setState({ pageSize: newPageSize })}
-//           onRowClick={(params) => this.handleRowClick(params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
-//         />
-//       </div>
-//     );
-//   };
-
-//   handleTypeChange = (mouseEvent, val) => {
-//     this.props.setAppState({ type: val });
-//   };
-
-//   handleClickView = () => {
-//     this.setState({ view: this.state.view == 'depth' ? 'list' : 'depth' });
-//   };
-
-//   mainView = () => {
-//     if (this.props.bookNotFound) {
-//       return this.NoOrdersFound();
-//     }
-
-//     const components =
-//       this.state.view == 'depth'
-//         ? [
-//             <DepthChart
-//               bookLoading={this.props.bookLoading}
-//               orders={this.props.bookOrders}
-//               lastDayPremium={this.props.lastDayPremium}
-//               currency={this.props.currency}
-//               setAppState={this.props.setAppState}
-//               limits={this.props.limits}
-//             />,
-//             <DepthChart
-//               bookLoading={this.props.bookLoading}
-//               orders={this.props.bookOrders}
-//               lastDayPremium={this.props.lastDayPremium}
-//               currency={this.props.currency}
-//               compact={true}
-//               setAppState={this.props.setAppState}
-//               limits={this.props.limits}
-//             />,
-//           ]
-//         : [this.bookListTableDesktop(), this.bookListTablePhone()];
-
-//     return (
-//       <>
-//         {/* Desktop */}
-//         <MediaQuery minWidth={930}>
-//           <Paper elevation={0} style={{ width: 925, maxHeight: 510, overflow: 'auto' }}>
-//             <div style={{ height: 424, width: '100%' }}>{components[0]}</div>
-//           </Paper>
-//         </MediaQuery>
-//         {/* Smartphone */}
-//         <MediaQuery maxWidth={929}>
-//           <Paper elevation={0} style={{ width: 395, maxHeight: 460, overflow: 'auto' }}>
-//             <div style={{ height: 424, width: '100%' }}>{components[1]}</div>
-//           </Paper>
-//         </MediaQuery>
-//       </>
-//     );
-//   };
-
-//   getTitle = () => {
-//     const { t } = this.props;
-
-//     if (this.state.view == 'list') {
-//       if (this.props.type == 0) {
-//         return t('You are SELLING BTC for {{currencyCode}}', {
-//           currencyCode: this.props.bookCurrencyCode,
-//         });
-//       } else if (this.props.type == 1) {
-//         return t('You are BUYING BTC for {{currencyCode}}', {
-//           currencyCode: this.props.bookCurrencyCode,
-//         });
-//       } else {
-//         return t('You are looking at all');
-//       }
-//     } else if (this.state.view == 'depth') {
-//       return t('Depth chart');
-//     }
-//   };
-
-//   render() {
-//     const { t } = this.props;
-//     return (
-//       <Grid className='orderBook' container spacing={1} sx={{ minWidth: 400 }}>
-//         <IconButton
-//           sx={{ position: 'fixed', right: '0px', top: '30px' }}
-//           onClick={() => this.setState({ loading: true }) & this.getOrderDetails(2, 0)}
-//         >
-//           <Refresh />
-//         </IconButton>
-
-//         <Grid item xs={6} align='right'>
-//           <FormControl align='center'>
-//             <FormHelperText align='center' sx={{ textAlign: 'center' }}>
-//               {t('I want to')}
-//             </FormHelperText>
-//             <div style={{ textAlign: 'center' }}>
-//               <ToggleButtonGroup
-//                 sx={{ height: '3.52em' }}
-//                 size='large'
-//                 exclusive={true}
-//                 value={this.props.type}
-//                 onChange={this.handleTypeChange}
-//               >
-//                 <ToggleButton value={1} color={'primary'}>
-//                   {t('Buy')}
-//                 </ToggleButton>
-//                 <ToggleButton value={0} color={'secondary'}>
-//                   {t('Sell')}
-//                 </ToggleButton>
-//               </ToggleButtonGroup>
-//             </div>
-//           </FormControl>
-//         </Grid>
-
-//         <Grid item xs={6} align='left'>
-//           <FormControl align='center'>
-//             <FormHelperText
-//               align='center'
-//               sx={{ textAlign: 'center', position: 'relative', left: '-5px' }}
-//             >
-//               {this.props.type == 0
-//                 ? t('and receive')
-//                 : this.props.type == 1
-//                 ? t('and pay with')
-//                 : t('and use')}
-//             </FormHelperText>
-//             <Select
-//               // autoWidth={true}
-//               sx={{ width: 120 }}
-//               label={t('Select Payment Currency')}
-//               required={true}
-//               value={this.props.currency}
-//               inputProps={{
-//                 style: { textAlign: 'center' },
-//               }}
-//               onChange={this.handleCurrencyChange}
-//             >
-//               <MenuItem value={0}>
-//                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-//                   <FlagWithProps code='ANY' />
-//                   {' ' + t('ANY_currency')}
-//                 </div>
-//               </MenuItem>
-//               {Object.entries(currencyDict).map(([key, value]) => (
-//                 <MenuItem key={key} value={parseInt(key)}>
-//                   <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-//                     <FlagWithProps code={value} />
-//                     {' ' + value}
-//                   </div>
-//                 </MenuItem>
-//               ))}
-//             </Select>
-//           </FormControl>
-//         </Grid>
-//         {this.props.bookNotFound ? (
-//           <></>
-//         ) : (
-//           <Grid item xs={12} align='center'>
-//             <Typography component='h5' variant='h5'>
-//               {this.getTitle()}
-//             </Typography>
-//           </Grid>
-//         )}
-//         <Grid item xs={12} align='center'>
-//           {this.mainView()}
-//         </Grid>
-//         <Grid item xs={12} align='center'>
-//           <ButtonGroup variant='contained' aria-label='outlined primary button group'>
-//             {!this.props.bookNotFound ? (
-//               <>
-//                 <Button variant='contained' color='primary' to='/make/' component={Link}>
-//                   {t('Make Order')}
-//                 </Button>
-//                 <Button color='inherit' style={{ color: '#111111' }} onClick={this.handleClickView}>
-//                   {this.state.view == 'depth' ? (
-//                     <>
-//                       <FormatListBulleted /> {t('List')}
-//                     </>
-//                   ) : (
-//                     <>
-//                       <BarChart /> {t('Chart')}
-//                     </>
-//                   )}
-//                 </Button>
-//               </>
-//             ) : null}
-//             <Button color='secondary' variant='contained' to='/' component={Link}>
-//               {t('Back')}
-//             </Button>
-//           </ButtonGroup>
-//         </Grid>
-//       </Grid>h
-//     );
-//   }
-// }
-
-// export default withTranslation()(BookPage);

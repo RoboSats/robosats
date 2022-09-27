@@ -123,7 +123,6 @@ class BookPage extends Component {
   };
 
   mainView = () => {
-    console.log(this.state.windowWidth, this.state.windowHeight);
     if (this.props.bookNotFound) {
       return this.NoOrdersFound();
     }
@@ -147,10 +146,8 @@ class BookPage extends Component {
           orders={this.props.bookOrders}
           type={this.props.type}
           currency={this.props.currency}
-          maxWidth={(this.state.windowWidth * 0.8) / this.props.theme.typography.fontSize} // EM units
-          maxHeight={
-            (this.state.windowHeight * 0.9) / this.props.theme.typography.fontSize - 300 / 16
-          } // EM units
+          maxWidth={(this.state.windowWidth / this.props.theme.typography.fontSize) * 0.97} // EM units
+          maxHeight={(this.state.windowHeight / this.props.theme.typography.fontSize) * 0.8 - 11} // EM units
         />
       );
     }
