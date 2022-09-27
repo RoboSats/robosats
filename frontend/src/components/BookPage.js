@@ -34,21 +34,6 @@ class BookPage extends Component {
 
   componentDidMount = () => {
     this.getOrderDetails();
-
-    if (typeof window !== undefined) {
-      this.setState({ windowWidth: window.innerWidth, windowHeight: window.innerHeight });
-      window.addEventListener('resize', this.onResize);
-    }
-  };
-
-  componentWillUnmount = () => {
-    if (typeof window !== undefined) {
-      window.removeEventListener('resize', this.onResize);
-    }
-  };
-
-  onResize = () => {
-    this.setState({ windowWidth: window.innerWidth, windowHeight: window.innerHeight });
   };
 
   getOrderDetails() {
@@ -137,8 +122,8 @@ class BookPage extends Component {
           compact={true}
           setAppState={this.props.setAppState}
           limits={this.props.limits}
-          maxWidth={(this.state.windowWidth / this.props.theme.typography.fontSize) * 0.8} // EM units
-          maxHeight={(this.state.windowHeight / this.props.theme.typography.fontSize) * 0.8 - 11} // EM units
+          maxWidth={(this.props.windowWidth / this.props.theme.typography.fontSize) * 0.8} // EM units
+          maxHeight={(this.props.windowHeight / this.props.theme.typography.fontSize) * 0.8 - 11} // EM units
         />
       );
     } else {
@@ -148,8 +133,8 @@ class BookPage extends Component {
           orders={this.props.bookOrders}
           type={this.props.type}
           currency={this.props.currency}
-          maxWidth={(this.state.windowWidth / this.props.theme.typography.fontSize) * 0.97} // EM units
-          maxHeight={(this.state.windowHeight / this.props.theme.typography.fontSize) * 0.8 - 11} // EM units
+          maxWidth={(this.props.windowWidth / this.props.theme.typography.fontSize) * 0.97} // EM units
+          maxHeight={(this.props.windowHeight / this.props.theme.typography.fontSize) * 0.8 - 11} // EM units
         />
       );
     }

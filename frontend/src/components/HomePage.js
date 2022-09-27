@@ -31,6 +31,23 @@ export default class HomePage extends Component {
     };
   }
 
+  componentDidMount = () => {
+    if (typeof window !== undefined) {
+      this.setState({ windowWidth: window.innerWidth, windowHeight: window.innerHeight });
+      window.addEventListener('resize', this.onResize);
+    }
+  };
+
+  componentWillUnmount = () => {
+    if (typeof window !== undefined) {
+      window.removeEventListener('resize', this.onResize);
+    }
+  };
+
+  onResize = () => {
+    this.setState({ windowWidth: window.innerWidth, windowHeight: window.innerHeight });
+  };
+
   setAppState = (newState) => {
     this.setState(newState);
   };
@@ -106,7 +123,7 @@ export default class HomePage extends Component {
         </div>
         <div
           className='bottomBar'
-          style={{ height: `${40 * fontSizeFactor}px`, width: window.innerWidth }}
+          style={{ height: `${40 * fontSizeFactor}px`, width: this.state.windowWidth }}
         >
           <BottomBar
             redirectTo={this.redirectTo}
