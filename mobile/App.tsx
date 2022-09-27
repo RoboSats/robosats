@@ -5,7 +5,7 @@ import { torClient } from './services/Tor';
 
 const App = () => {
   const webViewRef = useRef<WebView>();
-  var uri = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html';
+  const uri = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html';
 
   const injectMessage = (id: string, data: object) => {
     const json = JSON.stringify(data);
@@ -43,10 +43,10 @@ const App = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <WebView
         source={{
-          uri: uri,
+          uri,
         }}
         onMessage={onMessage}
-        // @ts-ignore
+        // @ts-expect-error
         ref={(ref) => (webViewRef.current = ref)}
         javaScriptEnabled={true}
         domStorageEnabled={true}
