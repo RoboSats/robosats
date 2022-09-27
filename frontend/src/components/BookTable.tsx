@@ -20,49 +20,64 @@ import FlagWithProps from './FlagWithProps';
 import { pn, amountToString } from '../utils/prettyNumbers';
 import PaymentText from './PaymentText';
 import RobotAvatar from './Robots/RobotAvatar';
+import hexToRgb from '../utils/hexToRgb';
+import statusBadgeColor from '../utils/statusBadgeColor';
 
-function statusBadgeColor(status) {
-  if (status === 'Active') {
-    return 'success';
-  }
-  if (status === 'Seen recently') {
-    return 'warning';
-  }
-  if (status === 'Inactive') {
-    return 'error';
-  }
+interface Props {
+  loading: boolean;
+  orders: Order[];
+  type: number;
+  currency: number;
+  maxWidth: number;
+  maxHeight: number;
 }
 
-function hexToRgb(c: string) {
-  if (c.includes('rgb')) {
-    const vals = c.split('(')[1].split(')')[0];
-    return vals.split(',');
-  }
-  if (/^#([a-f0-9]{3}){1,2}$/.test(c)) {
-    if (c.length == 4) {
-      c = '#' + [c[1], c[1], c[2], c[2], c[3], c[3]].join('');
-    }
-    c = '0x' + c.substring(1);
-    return [(c >> 16) & 255, (c >> 8) & 255, c & 255];
-  }
-  return '';
-}
-
-function mixColors(baseColor: string, accentColor: string, point: number) {
-  const baseRGB = hexToRgb(baseColor);
-  const accentRGB = hexToRgb(accentColor);
-  const redDiff = accentRGB[0] - baseRGB[0];
-  const red = baseRGB[0] + redDiff * point;
-  const greenDiff = accentRGB[1] - baseRGB[1];
-  const green = baseRGB[1] + greenDiff * point;
-  const blueDiff = accentRGB[2] - baseRGB[2];
-  const blue = baseRGB[2] + blueDiff * point;
-  return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${0.7 + point * 0.3})`;
-}
-
-function localizeDataGrid() {
+const BookTable = ({
+  loading,
+  orders,
+  type,
+  currency,
+  maxWidth,
+  maxHeight,
+}: Props): JSX.Element => {
   const { t } = useTranslation();
-  return {
+  const theme = useTheme();
+  const history = useHistory();
+
+  const fontSize = theme.typography.fontSize;
+
+  // all sizes in 'em'
+  const verticalHeightFrame = 6.9075;
+  const verticalHeightRow = 3.25;
+  const defaultPageSize = Math.max(
+    Math.floor((maxHeight - verticalHeightFrame) / verticalHeightRow),
+    1,
+  );
+  const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
+
+  const [pageSize, setPageSize] = useState(0);
+  const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
+  useEffect(() => {
+    if (useDefaultPageSize) {
+      setPageSize(defaultPageSize);
+    }
+  });
+
+  const premiumColor = function (baseColor: string, accentColor: string, point: number) {
+    const baseRGB = hexToRgb(baseColor);
+    const accentRGB = hexToRgb(accentColor);
+    const redDiff = accentRGB[0] - baseRGB[0];
+    const red = baseRGB[0] + redDiff * point;
+    const greenDiff = accentRGB[1] - baseRGB[1];
+    const green = baseRGB[1] + greenDiff * point;
+    const blueDiff = accentRGB[2] - baseRGB[2];
+    const blue = baseRGB[2] + blueDiff * point;
+    return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${
+      0.7 + point * 0.3
+    })`;
+  };
+
+  const localeText = {
     MuiTablePagination: { labelRowsPerPage: t('Orders per page:') },
     noRowsLabel: t('No rows'),
     noResultsOverlayLabel: t('No results found.'),
@@ -111,47 +126,6 @@ function localizeDataGrid() {
     booleanCellTrueLabel: t('yes'),
     booleanCellFalseLabel: t('no'),
   };
-}
-
-interface Props {
-  loading: boolean;
-  orders: Order[];
-  type: number;
-  currency: number;
-  maxWidth: number;
-  maxHeight: number;
-}
-
-const BookTable = ({
-  loading,
-  orders,
-  type,
-  currency,
-  maxWidth,
-  maxHeight,
-}: Props): JSX.Element => {
-  const { t } = useTranslation();
-  const theme = useTheme();
-  const history = useHistory();
-
-  const fontSize = theme.typography.fontSize;
-
-  // all sizes in 'em'
-  const verticalHeightFrame = 6.9075;
-  const verticalHeightRow = 3.25;
-  const defaultPageSize = Math.max(
-    Math.floor((maxHeight - verticalHeightFrame) / verticalHeightRow),
-    1,
-  );
-  const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
-
-  const [pageSize, setPageSize] = useState(0);
-  const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
-  useEffect(() => {
-    if (useDefaultPageSize) {
-      setPageSize(defaultPageSize);
-    }
-  });
 
   const robotObj = function (width: number, hide: boolean) {
     return {
@@ -342,7 +316,7 @@ const BookTable = ({
         if (params.row.type === 0) {
           var premiumPoint = params.row.premium / buyOutstandingPremium;
           premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
-          fontColor = mixColors(
+          fontColor = premiumColor(
             theme.palette.text.primary,
             theme.palette.secondary.dark,
             premiumPoint,
@@ -350,7 +324,7 @@ const BookTable = ({
         } else {
           var premiumPoint = (sellStandardPremium - params.row.premium) / sellStandardPremium;
           premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
-          fontColor = mixColors(
+          fontColor = premiumColor(
             theme.palette.text.primary,
             theme.palette.primary.dark,
             premiumPoint,
@@ -395,7 +369,7 @@ const BookTable = ({
         const timeToExpiry = Math.abs(expiresAt - new Date());
         const percent = Math.round((timeToExpiry / (24 * 60 * 60 * 1000)) * 100);
         const hours = Math.round(timeToExpiry / (3600 * 1000));
-        const minutes = Math.round((timeToExpiry - hours * (3600 * 1000)) / 60);
+        const minutes = Math.round((timeToExpiry - hours * (3600 * 1000)) / 60000);
         return (
           <Box sx={{ position: 'relative', display: 'inline-flex', left: '0.3em' }}>
             <CircularProgress
@@ -595,7 +569,7 @@ const BookTable = ({
   return (
     <Paper style={{ width: `${width}em`, height: `${height}em`, overflow: 'auto' }}>
       <DataGrid
-        localeText={localizeDataGrid()}
+        localeText={localeText}
         rows={orders.filter(
           (order) =>
             (order.type == type || type == null) && (order.currency == currency || currency == 0),

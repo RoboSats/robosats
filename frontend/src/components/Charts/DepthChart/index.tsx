@@ -30,6 +30,7 @@ import PaymentText from '../../PaymentText';
 import getNivoScheme from '../NivoScheme';
 import median from '../../../utils/match';
 import { apiClient } from '../../../services/api/index';
+import statusBadgeColor from '../../../utils/statusBadgeColor';
 
 interface DepthChartProps {
   bookLoading: boolean;
@@ -220,16 +221,6 @@ const DepthChart: React.FC<DepthChartProps> = ({
       strokeWidth={getNivoScheme(theme).markers?.lineStrokeWidth}
     />
   );
-
-  const statusBadgeColor = (status: string) => {
-    if (status === 'Active') {
-      return 'success';
-    }
-    if (status === 'Seen recently') {
-      return 'warning';
-    }
-    return 'error';
-  };
 
   const generateTooltip: React.FunctionComponent<PointTooltipProps> = (
     pointTooltip: PointTooltipProps,
