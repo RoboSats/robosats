@@ -57,7 +57,7 @@ function mixColors(baseColor: string, accentColor: string, point: number) {
   const green = baseRGB[1] + greenDiff * point;
   const blueDiff = accentRGB[2] - baseRGB[2];
   const blue = baseRGB[2] + blueDiff * point;
-  return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${0.7 + point*0.3})`;
+  return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${0.7 + point * 0.3})`;
 }
 
 function localizeDataGrid() {
@@ -152,13 +152,13 @@ const BookTable = ({
 
   const robotObj = function (width: number, hide: boolean) {
     return {
-      hide: hide,
+      hide,
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params) => {
         return (
-          <ListItemButton style={{ cursor: 'pointer', position: 'relative', left: '-1.3em'}}>
+          <ListItemButton style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}>
             <ListItemAvatar>
               <RobotAvatar
                 nickname={params.row.maker_nick}
@@ -178,7 +178,7 @@ const BookTable = ({
 
   const robotSmallObj = function (width: number, hide: boolean) {
     return {
-      hide: hide,
+      hide,
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
@@ -203,7 +203,7 @@ const BookTable = ({
 
   const typeObj = function (width: number, hide: boolean) {
     return {
-      hide: hide,
+      hide,
       field: 'type',
       headerName: t('Is'),
       width: width * fontSize,
@@ -213,7 +213,7 @@ const BookTable = ({
 
   const amountObj = function (width: number, hide: boolean) {
     return {
-      hide: hide,
+      hide,
       field: 'amount',
       headerName: t('Amount'),
       type: 'number',
@@ -235,7 +235,7 @@ const BookTable = ({
 
   const currencyObj = function (width: number, hide: boolean) {
     return {
-      hide: hide,
+      hide,
       field: 'currency',
       headerName: t('Currency'),
       width: width * fontSize,
@@ -260,7 +260,7 @@ const BookTable = ({
 
   const paymentObj = function (width: number, hide: boolean) {
     return {
-      hide: hide,
+      hide,
       field: 'payment_method',
       headerName: t('Payment Method'),
       width: width * fontSize,
@@ -281,7 +281,7 @@ const BookTable = ({
 
   const paymentSmallObj = function (width: number, hide: boolean) {
     return {
-      hide: hide,
+      hide,
       field: 'payment_icons',
       headerName: t('Pay'),
       width: width * fontSize,
@@ -308,7 +308,7 @@ const BookTable = ({
 
   const priceObj = function (width: number, hide: boolean) {
     return {
-      hide: hide,
+      hide,
       field: 'price',
       headerName: t('Price'),
       type: 'number',
@@ -329,7 +329,7 @@ const BookTable = ({
     const sellStandardPremium = 10;
     const buyOutstandingPremium = 10;
     return {
-      hide: hide,
+      hide,
       field: 'premium',
       headerName: t('Premium'),
       type: 'number',
@@ -356,7 +356,7 @@ const BookTable = ({
         const fontWeight = 400 + Math.round(premiumPoint * 5) * 100;
         return (
           <div style={{ cursor: 'pointer' }}>
-            <Typography variant='inherit' color={fontColor} sx={{ fontWeight: fontWeight }}>
+            <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
               {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
             </Typography>
           </div>
@@ -367,7 +367,7 @@ const BookTable = ({
 
   const timerObj = function (width: number, hide: boolean) {
     return {
-      hide: hide,
+      hide,
       field: 'escrow_duration',
       headerName: t('Timer'),
       type: 'number',
@@ -375,18 +375,14 @@ const BookTable = ({
       renderCell: (params) => {
         const hours = Math.round(params.row.escrow_duration / 3600);
         const minutes = Math.round((params.row.escrow_duration - hours * 3600) / 60);
-        return (
-          <div style={{ cursor: 'pointer' }}>
-            {hours > 0 ? `${hours}h` : `${minutes}m`}
-          </div>
-        );
+        return <div style={{ cursor: 'pointer' }}>{hours > 0 ? `${hours}h` : `${minutes}m`}</div>;
       },
     };
   };
 
   const expiryObj = function (width: number, hide: boolean) {
     return {
-      hide: hide,
+      hide,
       field: 'expires_at',
       headerName: t('Expiry'),
       type: 'string',
@@ -430,7 +426,7 @@ const BookTable = ({
 
   const satoshisObj = function (width: number, hide: boolean) {
     return {
-      hide: hide,
+      hide,
       field: 'satoshis_now',
       headerName: t('Sats now'),
       type: 'number',
@@ -447,7 +443,7 @@ const BookTable = ({
 
   const idObj = function (width: number, hide: boolean) {
     return {
-      hide: hide,
+      hide,
       field: 'id',
       headerName: 'Order ID',
       width: width * fontSize,
