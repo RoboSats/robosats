@@ -8,6 +8,7 @@ class TorClient {
     this.baseUrl = 'http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion';
     this.daemon = Tor({
       stopDaemonOnBackground: false,
+      numberConcurrentRequests: 0,
     });
   }
 
