@@ -296,10 +296,9 @@ class UserGenPage extends Component {
                             <IconButton
                               color='primary'
                               disabled={
-                                !this.props.avatarLoaded || (
-                                  !window.NativeRobosats && 
-                                  !(getCookie('robot_token') === this.state.token)
-                                )
+                                !this.props.avatarLoaded ||
+                                (!window.NativeRobosats &&
+                                  !(getCookie('robot_token') === this.state.token))
                               }
                               onClick={() =>
                                 saveAsJson(this.state.nickname + '.json', this.createJsonFile())
@@ -317,10 +316,9 @@ class UserGenPage extends Component {
                           <IconButton
                             color={this.props.copiedToken ? 'inherit' : 'primary'}
                             disabled={
-                              !this.props.avatarLoaded || (
-                                !window.NativeRobosats && 
-                                !(getCookie('robot_token') === this.state.token)
-                              )
+                              !this.props.avatarLoaded ||
+                              (!window.NativeRobosats &&
+                                !(getCookie('robot_token') === this.state.token))
                             }
                             onClick={() =>
                               copyToClipboard(getCookie('robot_token')) &
@@ -375,10 +373,9 @@ class UserGenPage extends Component {
           <ButtonGroup variant='contained' aria-label='outlined primary button group'>
             <Button
               disabled={
-                this.state.loadingRobot !== false || (
-                  !window.NativeRobosats &&
-                  !(this.props.token ? getCookie('robot_token') === this.props.token : true)
-                )
+                this.state.loadingRobot !== false ||
+                (!window.NativeRobosats &&
+                  !(this.props.token ? getCookie('robot_token') === this.props.token : true))
               }
               color='primary'
               to='/make/'
@@ -396,10 +393,9 @@ class UserGenPage extends Component {
             />
             <Button
               disabled={
-                this.state.loadingRobot !== false || (
-                  !window.NativeRobosats &&
-                  !(this.props.token ? getCookie('robot_token') === this.props.token : true)
-                )
+                this.state.loadingRobot !== false ||
+                (!window.NativeRobosats &&
+                  !(this.props.token ? getCookie('robot_token') === this.props.token : true))
               }
               color='secondary'
               to='/book/'

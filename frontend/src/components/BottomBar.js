@@ -171,12 +171,10 @@ class BottomBar extends Component {
 
   showProfileButton = () => {
     return (
-      this.props.avatarLoaded && (
-        window.NativeRobosats || (
-          (this.props.token ? getCookie('robot_token') === this.props.token : true) &&
-          getCookie('sessionid')
-        )
-      )
+      this.props.avatarLoaded &&
+      (window.NativeRobosats ||
+        ((this.props.token ? getCookie('robot_token') === this.props.token : true) &&
+          getCookie('sessionid')))
     );
   };
 

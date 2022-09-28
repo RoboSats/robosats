@@ -30,13 +30,13 @@ const RobotAvatar: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation();
 
-  const [avatarSrc, setAvatarSrc] = useState<string>()
+  const [avatarSrc, setAvatarSrc] = useState<string>();
 
   useEffect(() => {
     if (nickname) {
-      apiClient.fileImageUrl('/static/assets/avatars/' + nickname + '.png').then(setAvatarSrc)
+      apiClient.fileImageUrl('/static/assets/avatars/' + nickname + '.png').then(setAvatarSrc);
     }
-  }, [nickname])
+  }, [nickname]);
 
   const statusBadge = (
     <div style={{ position: 'relative', left: '6px', top: '1px' }}>

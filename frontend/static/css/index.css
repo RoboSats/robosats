@@ -169,7 +169,7 @@ input[type='number'] {
   width: auto !important;
 }
 
-@media (max-height: 725px) {
+@media (max-height: 725px) and (max-width: 925px) {
   .appCenter:has(> div.MuiGrid-root:first-child, > div.MuiBox-root:first-child) {
     overflow-y: auto;
     margin-top: 1em;

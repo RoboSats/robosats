@@ -19,7 +19,7 @@ const config: Configuration = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.jsx', '.js'],
-  }
+  },
 };
 
 const configWeb: Configuration = {
@@ -43,9 +43,9 @@ const configMobile: Configuration = {
           condition: 'if-replacement-exists',
           replacement: path.resolve(__dirname, 'src/components/i18n.Native.js'),
           async: true,
-        }
-      }
-    ]
+        },
+      },
+    ],
   },
   output: {
     path: path.resolve(__dirname, '../mobile/html/Web.bundle/js'),

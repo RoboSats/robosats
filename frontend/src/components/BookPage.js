@@ -107,43 +107,90 @@ class BookPage extends Component {
     );
   };
 
-  mainView = () => {
+  mainView = (doubleView, widthEm, heightEm) => {
     if (this.props.bookNotFound) {
       return this.NoOrdersFound();
     }
 
-    if (this.state.view === 'depth') {
+    if (doubleView) {
+      const width = widthEm * 0.9;
+      const bookTableWidth = 85;
+      const chartWidthEm = width - bookTableWidth;
+      const tableWidthXS = (bookTableWidth / width) * 12;
+      const chartWidthXS = (chartWidthEm / width) * 12;
+      console.log(bookTableWidth, chartWidthEm, tableWidthXS, chartWidthXS);
       return (
-        <DepthChart
-          bookLoading={this.props.bookLoading}
-          orders={this.props.bookOrders}
-          lastDayPremium={this.props.lastDayPremium}
-          currency={this.props.currency}
-          compact={true}
-          setAppState={this.props.setAppState}
-          limits={this.props.limits}
-          maxWidth={(this.props.windowWidth / this.props.theme.typography.fontSize) * 0.8} // EM units
-          maxHeight={(this.props.windowHeight / this.props.theme.typography.fontSize) * 0.8 - 11} // EM units
-        />
+        <Grid
+          container
+          alignItems='center'
+          justifyContent='flex-start'
+          spacing={1}
+          direction='row'
+          style={{ width: `${widthEm}em`, position: 'relative', left: `${widthEm / 140}em` }}
+        >
+          <Grid item xs={tableWidthXS} style={{ width: `${bookTableWidth}em` }}>
+            <BookTable
+              loading={this.props.bookLoading}
+              orders={this.props.bookOrders}
+              type={this.props.type}
+              currency={this.props.currency}
+              maxWidth={bookTableWidth} // EM units
+              maxHeight={heightEm * 0.8 - 11} // EM units
+            />
+          </Grid>
+          <Grid
+            item
+            xs={chartWidthXS}
+            style={{ width: `${chartWidthEm}em`, position: 'relative', left: '-10em' }}
+          >
+            <DepthChart
+              bookLoading={this.props.bookLoading}
+              orders={this.props.bookOrders}
+              lastDayPremium={this.props.lastDayPremium}
+              currency={this.props.currency}
+              compact={true}
+              setAppState={this.props.setAppState}
+              limits={this.props.limits}
+              maxWidth={chartWidthEm} // EM units
+              maxHeight={heightEm * 0.8 - 11} // EM units
+            />
+          </Grid>
+        </Grid>
       );
     } else {
-      return (
-        <BookTable
-          loading={this.props.bookLoading}
-          orders={this.props.bookOrders}
-          type={this.props.type}
-          currency={this.props.currency}
-          maxWidth={(this.props.windowWidth / this.props.theme.typography.fontSize) * 0.97} // EM units
-          maxHeight={(this.props.windowHeight / this.props.theme.typography.fontSize) * 0.8 - 11} // EM units
-        />
-      );
+      if (this.state.view === 'depth') {
+        return (
+          <DepthChart
+            bookLoading={this.props.bookLoading}
+            orders={this.props.bookOrders}
+            lastDayPremium={this.props.lastDayPremium}
+            currency={this.props.currency}
+            compact={true}
+            setAppState={this.props.setAppState}
+            limits={this.props.limits}
+            maxWidth={widthEm * 0.8} // EM units
+            maxHeight={heightEm * 0.8 - 11} // EM units
+          />
+        );
+      } else {
+        return (
+          <BookTable
+            loading={this.props.bookLoading}
+            orders={this.props.bookOrders}
+            type={this.props.type}
+            currency={this.props.currency}
+            maxWidth={widthEm * 0.97} // EM units
+            maxHeight={heightEm * 0.8 - 11} // EM units
+          />
+        );
+      }
     }
   };
 
-  getTitle = () => {
+  getTitle = (doubleView) => {
     const { t } = this.props;
 
-    if (this.state.view == 'list') {
+    if (this.state.view == 'list' || doubleView) {
       if (this.props.type == 0) {
         return t('You are SELLING BTC for {{currencyCode}}', {
           currencyCode: this.props.bookCurrencyCode,
@@ -160,10 +207,10 @@ class BookPage extends Component {
     }
   };
 
-  render() {
+  mainFilters = () => {
     const { t } = this.props;
     return (
-      <Grid className='orderBook' container spacing={1} sx={{ minWidth: 400 }}>
+      <>
         <IconButton
           sx={{ position: 'fixed', right: '0px', top: '30px' }}
           onClick={() => this.setState({ loading: true }) & this.getOrderDetails()}
@@ -235,13 +282,26 @@ class BookPage extends Component {
             </Select>
           </FormControl>
         </Grid>
+      </>
+    );
+  };
+
+  render() {
+    const { t } = this.props;
+    const widthEm = this.props.windowWidth / this.props.theme.typography.fontSize;
+    const heightEm = this.props.windowHeight / this.props.theme.typography.fontSize;
+    const doubleView = widthEm > 115;
+
+    return (
+      <Grid className='orderBook' container spacing={1} sx={{ minWidth: 400 }}>
+        {this.mainFilters()}
         <Grid item xs={12} align='center'>
           <Typography component='h5' variant='h5'>
-            {this.getTitle()}
+            {this.getTitle(doubleView)}
           </Typography>
         </Grid>
         <Grid item xs={12} align='center'>
-          {this.mainView()}
+          {this.mainView(doubleView, widthEm, heightEm)}
         </Grid>
         <Grid item xs={12} align='center'>
           <ButtonGroup variant='contained' aria-label='outlined primary button group'>
@@ -250,17 +310,23 @@ class BookPage extends Component {
                 <Button variant='contained' color='primary' to='/make/' component={Link}>
                   {t('Make Order')}
                 </Button>
-                <Button color='inherit' style={{ color: '#111111' }} onClick={this.handleClickView}>
-                  {this.state.view == 'depth' ? (
-                    <>
-                      <FormatListBulleted /> {t('List')}
-                    </>
-                  ) : (
-                    <>
-                      <BarChart /> {t('Chart')}
-                    </>
-                  )}
-                </Button>
+                {doubleView ? null : (
+                  <Button
+                    color='inherit'
+                    style={{ color: '#111111' }}
+                    onClick={this.handleClickView}
+                  >
+                    {this.state.view == 'depth' ? (
+                      <>
+                        <FormatListBulleted /> {t('List')}
+                      </>
+                    ) : (
+                      <>
+                        <BarChart /> {t('Chart')}
+                      </>
+                    )}
+                  </Button>
+                )}
               </>
             ) : null}
             <Button color='secondary' variant='contained' to='/' component={Link}>

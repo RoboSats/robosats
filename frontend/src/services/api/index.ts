@@ -9,4 +9,6 @@ export interface ApiClient {
   fileImageUrl: (path: string) => Promise<string | undefined>;
 }
 
-export const apiClient: ApiClient = window.ReactNativeWebView ? new ApiNativeClient() : new ApiWebClient();
+export const apiClient: ApiClient = window.ReactNativeWebView
+  ? new ApiNativeClient()
+  : new ApiWebClient();

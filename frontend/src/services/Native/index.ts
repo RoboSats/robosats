@@ -1,43 +1,51 @@
-import { NativeRobosatsPromise, NativeWebViewMessage } from './index.d'
+import { NativeRobosatsPromise, NativeWebViewMessage } from './index.d';
 
 class NativeRobosats {
-  constructor() { 
-    this.messageCounter = 0
+  constructor() {
+    this.messageCounter = 0;
   }
 
-  private messageCounter: number
+  private messageCounter: number;
 
-  private pendingMessages: {[id:number]: NativeRobosatsPromise} = {}
+  private pendingMessages: { [id: number]: NativeRobosatsPromise } = {};
 
-  public onMessageResolve: (messageId: number, response?: object) => void = (messageId, response = {}) =>{
+  public onMessageResolve: (messageId: number, response?: object) => void = (
+    messageId,
+    response = {},
+  ) => {
     if (this.pendingMessages[messageId]) {
-      this.pendingMessages[messageId].resolve(response)
-      delete this.pendingMessages[messageId]
+      this.pendingMessages[messageId].resolve(response);
+      delete this.pendingMessages[messageId];
     }
-  }
+  };
 
-  public onMessageReject: (messageId: number, response?: object) => void = (messageId, response = {}) =>{
+  public onMessageReject: (messageId: number, response?: object) => void = (
+    messageId,
+    response = {},
+  ) => {
     if (this.pendingMessages[messageId]) {
-      this.pendingMessages[messageId].reject(response)
-      delete this.pendingMessages[messageId]
+      this.pendingMessages[messageId].reject(response);
+      delete this.pendingMessages[messageId];
     }
-  }
+  };
 
-  public postMessage: (message: NativeWebViewMessage) => Promise<{[key: string]: any}> = (message) => {
-    this.messageCounter += 1
-    message.id = this.messageCounter
-    const json = JSON.stringify(message)
-    window.ReactNativeWebView?.postMessage(json)
+  public postMessage: (message: NativeWebViewMessage) => Promise<{ [key: string]: any }> = (
+    message,
+  ) => {
+    this.messageCounter += 1;
+    message.id = this.messageCounter;
+    const json = JSON.stringify(message);
+    window.ReactNativeWebView?.postMessage(json);
 
     return new Promise<object>(async (resolve, reject) => {
       if (message.id) {
         this.pendingMessages[message.id] = {
           resolve: resolve,
-          reject: reject
-        }
+          reject: reject,
+        };
       }
-    })
-  }
+    });
+  };
 }
 
-export default NativeRobosats
+export default NativeRobosats;
