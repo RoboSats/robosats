@@ -1,51 +1,61 @@
-import React from 'react';
-import { WebView, WebViewMessageEvent } from "react-native-webview";
-import {SafeAreaView, Text, Platform} from 'react-native';
-// import Tor from "react-native-tor";
-
-// Initialize the module
-// const tor = Tor();
-
-// const makeTorRequest = async()=>{
-//     // Start the daemon and socks proxy (no need for Orbot and yes iOS supported!)
-//     await tor.startIfNotStarted();
-
-//     try{
-//        // Use built in client to make REST calls to .onion urls routed through the Sock5 proxy !
-//        const resp = await tor.get('http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion/api/info');
-//        return resp
-//     } catch(error){
-//       // Catch a network or server error like you normally with any other fetch library
-//     }
-// }
+import React, { useRef } from 'react';
+import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import { SafeAreaView, Text, Platform } from 'react-native';
+import { torClient } from './services/Tor';
 
 const App = () => {
-  // Webview with local html/js in a single location for andrid/iOS
-  // https://yelotofu.com/react-native-load-local-static-site-inside-webview-2b93eb1c4225
-  const htmlPath = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html';
+  const webViewRef = useRef<WebView>();
+  const uri = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html';
 
-  const uri = 'https://robosats.onion.moe'
-  const onion = 'http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion'
+  const injectMessage = (id: string, data: object) => {
+    const json = JSON.stringify(data);
+    webViewRef.current?.injectJavaScript(
+      `(function() {window.NativeRobosats.onMessageResolve(${id}, ${json});})();`,
+    );
+  };
 
-  const runFirst = `
-      // document.body.style.backgroundColor = 'red';
-      // const currentLocation = window.location;
-      // setTimeout(function() { window.alert(currentLocation) }, 000);
-      // true; // note: this is required, or you'll sometimes get silent failures
-    `;
+  const onMessage = async (event: WebViewMessageEvent) => {
+    const data = JSON.parse(event.nativeEvent.data);
+    if (data.category === 'http') {
+      if (data.type === 'get') {
+        torClient.get(data.path).then((response: object) => {
+          injectMessage(data.id, response);
+        });
+      } else if (data.type === 'post') {
+        torClient.post(data.path, data.body, data.headers).then((response: object) => {
+          injectMessage(data.id, response);
+        });
+      } else if (data.type === 'delete') {
+        torClient.delete(data.path, data.headers).then((response: object) => {
+          injectMessage(data.id, response);
+        });
+      } else if (data.type === 'xhr') {
+        torClient.request(data.path).then((response: object) => {
+          injectMessage(data.id, response);
+        });
+      }
+    }
+  };
+
+  torClient.startDaemon();
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <WebView
-        source={{ uri: uri }}
-        // source={{ baseUrl: 'file:///android_asset/Web.bundle/' }}
+        source={{
+          uri,
+        }}
+        onMessage={onMessage}
+        // @ts-expect-error
+        ref={(ref) => (webViewRef.current = ref)}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         sharedCookiesEnabled={true}
-        originWhitelist={['*']} //originWhitelist={[uri,uri2]}
+        thirdPartyCookiesEnabled={true}
+        originWhitelist={[uri]}
         scalesPageToFit={true}
         startInLoadingState={true}
-        mixedContentMode={"always"}
+        mixedContentMode={'always'}
         allowsInlineMediaPlayback={true}
         allowsFullscreenVideo={false}
         setBuiltInZoomControls={false}
@@ -54,9 +64,8 @@ const App = () => {
         allowsBackForwardNavigationGestures={false}
         mediaPlaybackRequiresUserAction={false}
         allowsLinkPreview={false}
-        injectedJavaScript={runFirst}
         renderLoading={() => <Text>Loading RoboSats</Text>}
-        onError={(syntheticEvent) => <Text>{syntheticEvent}</Text>}
+        onError={(syntheticEvent) => <Text>{syntheticEvent.type}</Text>}
       />
     </SafeAreaView>
   );

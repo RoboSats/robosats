@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { HashRouter, BrowserRouter , Switch, Route } from 'react-router-dom';
 
 import UserGenPage from './UserGenPage';
 import MakerPage from './MakerPage';
@@ -39,11 +39,22 @@ export default class HomePage extends Component {
     this.props.history.push(location);
   }
 
+  getBasename() {
+    if (window.NativeRobosats) {
+      // Only for Android
+      return window.location.pathname
+    }
+
+    return ""
+  }
+
   render() {
     const fontSize = this.props.theme.typography.fontSize;
     const fontSizeFactor = fontSize / 14; // default fontSize is 14
+    const Router = window.NativeRobosats ? HashRouter : BrowserRouter
+
     return (
-      <Router>
+      <Router basename={this.getBasename()}>
         <div className='appCenter'>
           <Switch>
             <Route

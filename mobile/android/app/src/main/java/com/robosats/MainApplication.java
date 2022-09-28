@@ -9,9 +9,13 @@ import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.soloader.SoLoader;
+import com.facebook.react.bridge.JavaScriptExecutorFactory;
+import com.facebook.react.modules.systeminfo.AndroidInfoHelpers;
+import android.webkit.WebView;
 import com.robosats.newarchitecture.MainApplicationReactNativeHost;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import io.csie.kudo.reactnative.v8.executor.V8ExecutorFactory;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -35,6 +39,15 @@ public class MainApplication extends Application implements ReactApplication {
         protected String getJSMainModuleName() {
           return "index";
         }
+
+        @Override
+        protected JavaScriptExecutorFactory getJavaScriptExecutorFactory() {
+          return new V8ExecutorFactory(
+              getApplicationContext(),
+              getPackageName(),
+              AndroidInfoHelpers.getFriendlyDeviceName(),
+              getUseDeveloperSupport());
+        }
       };
 
   private final ReactNativeHost mNewArchitectureNativeHost =
@@ -55,5 +68,7 @@ public class MainApplication extends Application implements ReactApplication {
     // If you opted-in for the New Architecture, we enable the TurboModule system
     ReactFeatureFlags.useTurboModules = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
     SoLoader.init(this, /* native exopackage */ false);
+    // For debugging, open in Chrome chrome://inspect/#devices -> inspect
+    WebView.setWebContentsDebuggingEnabled(true);
   }
 }

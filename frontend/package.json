@@ -61,6 +61,7 @@
     "@nivo/line": "^0.80.0",
     "country-flag-icons": "^1.4.25",
     "date-fns": "^2.28.0",
+    "file-replace-loader": "^1.4.0",
     "i18next": "^21.6.14",
     "i18next-browser-languagedetector": "^6.1.4",
     "i18next-http-backend": "^1.4.0",

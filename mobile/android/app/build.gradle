@@ -132,11 +132,11 @@ android {
     ndkVersion rootProject.ext.ndkVersion
 
     compileSdkVersion rootProject.ext.compileSdkVersion
-    
-    sourceSets { 
-        main { assets.srcDirs = ['src/main/assets', '../../html'] } 
+
+    sourceSets {
+        main { assets.srcDirs = ['src/main/assets', '../../html'] }
     }
-    
+
     defaultConfig {
         applicationId "com.robosats"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -257,6 +257,11 @@ android {
 
         }
     }
+
+    packagingOptions {
+        // Make sure libjsc.so does not packed in APK
+        exclude "**/libjsc.so"
+    }
 }
 
 dependencies {
@@ -266,6 +271,8 @@ dependencies {
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
+
+    implementation files("../../node_modules/react-native-tor/android/libs/sifir_android.aar")
 
     if (enableHermes) {
         //noinspection GradleDynamicVersion
