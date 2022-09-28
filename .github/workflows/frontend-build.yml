@@ -51,8 +51,13 @@ jobs:
     - name: 'Archive Built Results'
       uses: actions/upload-artifact@v3
       with:
-        name: main-js
+        name: web-main-js
         path: frontend/static/frontend/main.js
+    - name: 'Archive Built Results'
+      uses: actions/upload-artifact@v3
+      with:
+        name: mobile-main-js
+        path: mobile/html/Web.bundle/js/main.js
 
     # Invoke pre-release image build if this was not a tag push
     # Docker images tagged only with short commit hash

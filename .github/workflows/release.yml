@@ -55,12 +55,11 @@ jobs:
     needs: frontend-build
     secrets: inherit
   
-  # Disabled until first Android APK release
-  # android-build:
-  #   uses: reckless-satoshi/robosats/.github/workflows/coordinator-image.yml@main
-  #   needs: frontend-build
-  #   with:
-  #     semver: ${{ needs.check-versions.outputs.semver }}
+  android-build:
+    uses: reckless-satoshi/robosats/.github/workflows/coordinator-image.yml@main
+    needs: frontend-build
+    with:
+      semver: ${{ needs.check-versions.outputs.semver }}
   
   release:
     needs: [check-versions, coordinator-image, client-image] #, android-build]
@@ -79,21 +78,21 @@ jobs:
         with:
           body: ${{ steps.changelog.outputs.changelog }}
 
-      # Disabled until first Android APK release
-      # - name: 'Download APK Artifact'
-      #   uses: dawidd6/action-download-artifact@v2
-      #   with:
-      #     workflow: android-build.yml
-      #     workflow_conclusion: success
-      #     name: robosats-${{ needs.check-versions.outputs.semver }}.apk
-      #     path: .
-      # - name: 'Upload APK Asset'
-      #   id: upload-release-asset
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create-release.outputs.upload_url }}
-      #     asset_path: app-release.apk
-      #     asset_name: robosats-${{ needs.check-versions.outputs.semver }}.apk
-      #     asset_content_type: application/apk
+      # Upload APK artifact
+      - name: 'Download APK Artifact'
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: android-build.yml
+          workflow_conclusion: success
+          name: robosats-${{ needs.check-versions.outputs.semver }}.apk
+          path: .
+      - name: 'Upload APK Asset'
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: app-release.apk
+          asset_name: robosats-${{ needs.check-versions.outputs.semver }}.apk
+          asset_content_type: application/apk

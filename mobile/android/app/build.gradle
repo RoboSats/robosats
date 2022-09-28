@@ -137,6 +137,13 @@ android {
         main { assets.srcDirs = ['src/main/assets', '../../html'] }
     }
 
+    packagingOptions {
+        pickFirst 'lib/armeabi-v7a/libruntimeexecutor.so'
+        pickFirst 'lib/arm64-v8a/libruntimeexecutor.so'
+        pickFirst 'lib/x86_64/libruntimeexecutor.so'
+        pickFirst 'lib/x86/libruntimeexecutor.so'
+    }
+
     defaultConfig {
         applicationId "com.robosats"
         minSdkVersion rootProject.ext.minSdkVersion
