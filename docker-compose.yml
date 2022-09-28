@@ -44,6 +44,7 @@ services:
     command: npm run dev
     volumes:
       - ./frontend:/usr/src/frontend
+      - ./mobile:/usr/src/mobile
 
   nodeapp: # Umbrel / Citadel app
     build: ./nodeapp

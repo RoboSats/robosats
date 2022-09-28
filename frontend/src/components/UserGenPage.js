@@ -28,6 +28,7 @@ import { getCookie, writeCookie, deleteCookie } from '../utils/cookies';
 import { saveAsJson } from '../utils/saveFile';
 import { copyToClipboard } from '../utils/clipboard';
 import { apiClient } from '../services/api/index';
+import RobotAvatar from './Robots/RobotAvatar';
 
 class UserGenPage extends Component {
   constructor(props) {
@@ -48,7 +49,6 @@ class UserGenPage extends Component {
       this.setState({
         nickname: this.props.nickname,
         token: this.props.token ? this.props.token : '',
-        avatarUrl: '/static/assets/avatars/' + this.props.nickname + '.png',
         loadingRobot: false,
       });
     } else {
@@ -75,13 +75,11 @@ class UserGenPage extends Component {
         ref_code: refCode,
       };
     });
-
     requestBody.then((body) =>
       apiClient.post('/api/user/', body).then((data) => {
         this.setState({
           nickname: data.nickname,
           bit_entropy: data.token_bits_entropy,
-          avatarUrl: '/static/assets/avatars/' + data.nickname + '.png',
           shannon_entropy: data.token_shannon_entropy,
           bad_request: data.bad_request,
           found: data.found,
@@ -193,7 +191,7 @@ class UserGenPage extends Component {
           align='center'
           sx={{ width: 370 * fontSizeFactor, height: 260 * fontSizeFactor }}
         >
-          {this.props.avatarLoaded && this.state.avatarUrl ? (
+          {this.props.avatarLoaded && this.state.nickname ? (
             <div>
               <Grid item xs={12} align='center'>
                 <Typography component='h5' variant='h5'>
@@ -231,20 +229,19 @@ class UserGenPage extends Component {
                 </Typography>
               </Grid>
               <Grid item xs={12} align='center'>
-                <Tooltip enterTouchDelay={0} title={t('This is your trading avatar')}>
-                  <div style={{ maxWidth: 200 * fontSizeFactor, maxHeight: 200 * fontSizeFactor }}>
-                    <SmoothImage
-                      src={this.state.avatarUrl}
-                      imageStyles={{
-                        borderRadius: '50%',
-                        border: '2px solid #555',
-                        filter: 'drop-shadow(1px 1px 1px #000000)',
-                        height: `${195 * fontSizeFactor}px`,
-                        width: `${200 * fontSizeFactor}px`,
-                      }}
-                    />
-                  </div>
-                </Tooltip>
+                <RobotAvatar
+                  nickname={this.state.nickname}
+                  style={{ maxWidth: 200 * fontSizeFactor, maxHeight: 200 * fontSizeFactor }}
+                  imageStyle={{
+                    transform: '',
+                    border: '2px solid #555',
+                    filter: 'drop-shadow(1px 1px 1px #000000)',
+                    height: `${195 * fontSizeFactor}px`,
+                    width: `${200 * fontSizeFactor}px`,
+                  }}
+                  smooth={true}
+                  tooltip={t('This is your trading avatar')}
+                />
                 <br />
               </Grid>
             </div>
@@ -299,8 +296,10 @@ class UserGenPage extends Component {
                             <IconButton
                               color='primary'
                               disabled={
-                                !(getCookie('robot_token') == this.state.token) ||
-                                !this.props.avatarLoaded
+                                !this.props.avatarLoaded || (
+                                  !window.NativeRobosats && 
+                                  !(getCookie('robot_token') === this.state.token)
+                                )
                               }
                               onClick={() =>
                                 saveAsJson(this.state.nickname + '.json', this.createJsonFile())
@@ -318,8 +317,10 @@ class UserGenPage extends Component {
                           <IconButton
                             color={this.props.copiedToken ? 'inherit' : 'primary'}
                             disabled={
-                              !(getCookie('robot_token') == this.state.token) ||
-                              !this.props.avatarLoaded
+                              !this.props.avatarLoaded || (
+                                !window.NativeRobosats && 
+                                !(getCookie('robot_token') === this.state.token)
+                              )
                             }
                             onClick={() =>
                               copyToClipboard(getCookie('robot_token')) &
@@ -374,8 +375,10 @@ class UserGenPage extends Component {
           <ButtonGroup variant='contained' aria-label='outlined primary button group'>
             <Button
               disabled={
-                this.state.loadingRobot ||
-                !(this.props.token ? getCookie('robot_token') == this.props.token : true)
+                this.state.loadingRobot !== false || (
+                  !window.NativeRobosats &&
+                  !(this.props.token ? getCookie('robot_token') === this.props.token : true)
+                )
               }
               color='primary'
               to='/make/'
@@ -393,8 +396,10 @@ class UserGenPage extends Component {
             />
             <Button
               disabled={
-                this.state.loadingRobot ||
-                !(this.props.token ? getCookie('robot_token') == this.props.token : true)
+                this.state.loadingRobot !== false || (
+                  !window.NativeRobosats &&
+                  !(this.props.token ? getCookie('robot_token') === this.props.token : true)
+                )
               }
               color='secondary'
               to='/book/'

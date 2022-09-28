@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import SmoothImage from 'react-smooth-image';
 import { Avatar, Badge, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SendReceiveIcon } from '../../Icons';
+import { apiClient } from '../../../services/api';
 
 interface Props {
   nickname: string;
   smooth?: boolean;
   style?: object;
+  imageStyle?: object;
   statusColor?: 'primary' | 'secondary' | 'default' | 'error' | 'info' | 'success' | 'warning';
   orderType?: number;
   tooltip?: string;
@@ -22,12 +24,19 @@ const RobotAvatar: React.FC<Props> = ({
   tooltip,
   smooth = false,
   style = {},
+  imageStyle = {},
   avatarClass = 'flippedSmallAvatar',
   onLoad = () => {},
 }) => {
   const { t } = useTranslation();
 
-  const avatarSrc: string = window.location.origin + '/static/assets/avatars/' + nickname + '.png';
+  const [avatarSrc, setAvatarSrc] = useState<string>()
+
+  useEffect(() => {
+    if (nickname) {
+      apiClient.fileImageUrl('/static/assets/avatars/' + nickname + '.png').then(setAvatarSrc)
+    }
+  }, [nickname])
 
   const statusBadge = (
     <div style={{ position: 'relative', left: '6px', top: '1px' }}>
@@ -47,13 +56,13 @@ const RobotAvatar: React.FC<Props> = ({
       return (
         <div style={style}>
           <SmoothImage
-            className={avatarClass}
             src={avatarSrc}
             imageStyles={{
               borderRadius: '50%',
               transform: 'scaleX(-1)',
               border: '0.3px solid #555',
               filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
+              ...imageStyle,
             }}
           />
         </div>

@@ -14,7 +14,7 @@ class UnsafeAlert extends Component {
 
   getHost() {
     const url =
-      window.location != window.parent.location
+      window.location !== window.parent.location
         ? this.getHost(document.referrer)
         : document.location.href;
     return url.split('/')[2];
@@ -22,9 +22,13 @@ class UnsafeAlert extends Component {
 
   isSelfhosted() {
     const http = new XMLHttpRequest();
-    http.open('HEAD', `${location.protocol}//${this.getHost()}/selfhosted`, false);
-    http.send();
-    return http.status == 200;
+    try {
+      http.open('HEAD', `${location.protocol}//${this.getHost()}/selfhosted`, false);
+      http.send();
+      return http.status === 200;
+    } catch {
+      return false;
+    }
   }
 
   safe_urls = [
@@ -36,7 +40,7 @@ class UnsafeAlert extends Component {
   ];
 
   render() {
-    const { t, i18n } = this.props;
+    const { t } = this.props;
 
     // If alert is hidden return null
     if (!this.state.show) {
@@ -68,7 +72,7 @@ class UnsafeAlert extends Component {
     }
 
     // Show unsafe alert
-    if (!this.safe_urls.includes(this.getHost())) {
+    if (!window.NativeRobosats && !this.safe_urls.includes(this.getHost())) {
       return (
         <div>
           <MediaQuery minWidth={800}>

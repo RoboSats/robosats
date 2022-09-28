@@ -31,7 +31,7 @@ jobs:
       - name: 'Install npm Dependencies'
         run: |
           cd mobile
-          npm install
+          npm install --force
 
       - name: 'Build Android Release'
         run: |
