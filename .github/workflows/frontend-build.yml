@@ -48,12 +48,12 @@ jobs:
       run: |
         cd frontend
         npm run build
-    - name: 'Archive Built Results'
+    - name: 'Archive Web Built Results'
       uses: actions/upload-artifact@v3
       with:
         name: web-main-js
         path: frontend/static/frontend/main.js
-    - name: 'Archive Built Results'
+    - name: 'Archive Mobile Built Results'
       uses: actions/upload-artifact@v3
       with:
         name: mobile-main-js

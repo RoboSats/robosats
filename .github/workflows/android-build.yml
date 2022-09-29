@@ -21,10 +21,18 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 'Download main.js Artifact'
+        if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: frontend-build.yml
           workflow_conclusion: success
+          name: mobile-main-js
+          path: mobile/html/Web.bundle/js/
+
+      - name: 'Download main.js Artifact for a release'
+        if: inputs.semver != ''  # Only if fired as job in release.yml
+        uses: actions/download-artifact@v3
+        with:
           name: mobile-main-js
           path: mobile/html/Web.bundle/js/
 
@@ -71,8 +79,8 @@ jobs:
           path: mobile/android/app/build/outputs/apk/release/app-release.apk
 
       - name: 'Upload .apk Debug Artifact (for Pre-release)'
+        if: inputs.semver == ''  # Only build debug if this is a pre-release
         uses: actions/upload-artifact@v3
-        if: inputs.semver != ''  # only if this workflow is not called from a push to tag (a Release)
         with:
           name: robosats-debug-${{ steps.commit.outputs.short }}.apk
           path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
@@ -86,6 +94,7 @@ jobs:
         with:
           tag_name: android-${{ steps.commit.outputs.short }}
           release_name: robosats-android-${{ steps.commit.outputs.short }}
+          changelog: mobile/CHANGELOG.md
           draft: false
           prerelease: true
 

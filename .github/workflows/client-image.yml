@@ -3,16 +3,16 @@ name: Client App Image CI/CD
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      semver:
+        required: true
+        type: string
   push:
     branches: [ "main" ]
     paths: ["frontend", "nodeapp"]
   pull_request:
     branches: [ "main" ]
     paths: ["frontend", "nodeapp"]
-
-# concurrency:
-#   group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
-#   cancel-in-progress: true
 
 jobs:
   push_to_registry:
@@ -27,10 +27,18 @@ jobs:
         cp -r frontend/static nodeapp/static
 
     - name: 'Download main.js Artifact'
+      if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: frontend-build.yml
         workflow_conclusion: success
+        name: web-main-js
+        path: nodeapp/static/frontend/
+    
+    - name: 'Download main.js Artifact for a release'
+      if: inputs.semver != ''  # Only if fired as job in release.yml
+      uses: actions/download-artifact@v3
+      with:
         name: web-main-js
         path: nodeapp/static/frontend/
         
@@ -50,7 +58,7 @@ jobs:
             type=ref,event=tag
             type=semver,pattern={{major}}.{{minor}}
             type=sha,enable=true,priority=100,prefix=,suffix=,format=short
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+            type=raw,value=latest
             
     - name: 'Get Commit Hash'
       id: commit

@@ -64,7 +64,9 @@ const BookTable = ({
   const verticalHeightFrame = 6.9075;
   const verticalHeightRow = 3.25;
   const defaultPageSize = Math.max(
-    Math.floor(((fullscreen? fullHeight *0.875:maxHeight) - verticalHeightFrame) / verticalHeightRow),
+    Math.floor(
+      ((fullscreen ? fullHeight * 0.875 : maxHeight) - verticalHeightFrame) / verticalHeightRow,
+    ),
     1,
   );
   const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
@@ -577,7 +579,7 @@ const BookTable = ({
     return [columns, width * 0.875 + 0.15];
   };
 
-  const [columns, width] = filteredColumns(fullscreen? fullWidth : maxWidth);
+  const [columns, width] = filteredColumns(fullscreen ? fullWidth : maxWidth);
 
   const gridComponents = {
     NoResultsOverlay: () => (
@@ -586,65 +588,66 @@ const BookTable = ({
       </Stack>
     ),
     Footer: () => (
-      <Grid container alignItems="center" direction="row" justifyContent="space-between">
+      <Grid container alignItems='center' direction='row' justifyContent='space-between'>
         <Grid item>
-        <IconButton onClick={() => setFullscreen(!fullscreen)}>
-          {fullscreen ? <FullscreenExitIcon/> : <FullscreenIcon/>}
-        </IconButton>
+          <IconButton onClick={() => setFullscreen(!fullscreen)}>
+            {fullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+          </IconButton>
         </Grid>
         <Grid item>
-        <GridPagination/>
+          <GridPagination />
         </Grid>
       </Grid>
     ),
-  }
+  };
 
-  if (!fullscreen){
-    return(
+  if (!fullscreen) {
+    return (
       <Paper style={{ width: `${width}em`, height: `${height}em`, overflow: 'auto' }}>
         <DataGrid
-      localeText={localeText}
-      rows={orders.filter(
-        (order) =>
-          (order.type == type || type == null) && (order.currency == currency || currency == 0),
-      )}
-      loading={loading}
-      columns={columns}
-      components={gridComponents}
-      pageSize={loading ? 0 : pageSize}
-      rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
-      onPageSizeChange={(newPageSize) => {
-        setPageSize(newPageSize);
-        setUseDefaultPageSize(false);
-      }}
-      onRowClick={(params) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
-    />
+          localeText={localeText}
+          rows={orders.filter(
+            (order) =>
+              (order.type == type || type == null) && (order.currency == currency || currency == 0),
+          )}
+          loading={loading}
+          columns={columns}
+          components={gridComponents}
+          pageSize={loading ? 0 : pageSize}
+          rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
+          onPageSizeChange={(newPageSize) => {
+            setPageSize(newPageSize);
+            setUseDefaultPageSize(false);
+          }}
+          onRowClick={(params) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
+        />
       </Paper>
-    )
+    );
   } else {
-    return(
-    <Dialog open={fullscreen} fullScreen={true}>
-      <Paper style={{ width: '100%', height: '100%', overflow: 'auto' }}>
-        <DataGrid
-      localeText={localeText}
-      rows={orders.filter(
-        (order) =>
-          (order.type == type || type == null) && (order.currency == currency || currency == 0),
-      )}
-      loading={loading}
-      columns={columns}
-      components={gridComponents}
-      pageSize={loading ? 0 : pageSize}
-      rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
-      onPageSizeChange={(newPageSize) => {
-        setPageSize(newPageSize);
-        setUseDefaultPageSize(false);
-      }}
-      onRowClick={(params) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
-    />
-      </Paper>
-    </Dialog>
-    )
+    return (
+      <Dialog open={fullscreen} fullScreen={true}>
+        <Paper style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+          <DataGrid
+            localeText={localeText}
+            rows={orders.filter(
+              (order) =>
+                (order.type == type || type == null) &&
+                (order.currency == currency || currency == 0),
+            )}
+            loading={loading}
+            columns={columns}
+            components={gridComponents}
+            pageSize={loading ? 0 : pageSize}
+            rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
+            onPageSizeChange={(newPageSize) => {
+              setPageSize(newPageSize);
+              setUseDefaultPageSize(false);
+            }}
+            onRowClick={(params) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
+          />
+        </Paper>
+      </Dialog>
+    );
   }
 };
 

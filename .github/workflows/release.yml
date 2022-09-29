@@ -49,20 +49,24 @@ jobs:
     uses: reckless-satoshi/robosats/.github/workflows/coordinator-image.yml@main
     needs: [django-test, frontend-build]
     secrets: inherit
+    with:
+      semver: ${{ needs.check-versions.outputs.semver }}
   
   client-image:
     uses: reckless-satoshi/robosats/.github/workflows/client-image.yml@main
     needs: frontend-build
     secrets: inherit
+    with:
+      semver: ${{ needs.check-versions.outputs.semver }}
   
   android-build:
-    uses: reckless-satoshi/robosats/.github/workflows/coordinator-image.yml@main
-    needs: frontend-build
+    uses: reckless-satoshi/robosats/.github/workflows/android-build.yml@main
+    needs: [frontend-build, check-versions]
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
   
   release:
-    needs: [check-versions, coordinator-image, client-image] #, android-build]
+    needs: [check-versions, coordinator-image, client-image, android-build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -78,12 +82,10 @@ jobs:
         with:
           body: ${{ steps.changelog.outputs.changelog }}
 
-      # Upload APK artifact
+      # Upload APK artifact asset
       - name: 'Download APK Artifact'
-        uses: dawidd6/action-download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
-          workflow: android-build.yml
-          workflow_conclusion: success
           name: robosats-${{ needs.check-versions.outputs.semver }}.apk
           path: .
       - name: 'Upload APK Asset'
