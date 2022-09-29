@@ -118,7 +118,7 @@ class BookPage extends Component {
       const chartWidthEm = width - bookTableWidth;
       const tableWidthXS = (bookTableWidth / width) * 12;
       const chartWidthXS = (chartWidthEm / width) * 12;
-      console.log(bookTableWidth, chartWidthEm, tableWidthXS, chartWidthXS);
+
       return (
         <Grid
           container
@@ -136,6 +136,9 @@ class BookPage extends Component {
               currency={this.props.currency}
               maxWidth={bookTableWidth} // EM units
               maxHeight={heightEm * 0.8 - 11} // EM units
+              fullWidth={widthEm} // EM units
+              fullHeight={heightEm} // EM units
+              defaultFullscreen={false}
             />
           </Grid>
           <Grid
@@ -181,6 +184,9 @@ class BookPage extends Component {
             currency={this.props.currency}
             maxWidth={widthEm * 0.97} // EM units
             maxHeight={heightEm * 0.8 - 11} // EM units
+            fullWidth={widthEm} // EM units
+            fullHeight={heightEm} // EM units
+            defaultFullscreen={false}
           />
         );
       }

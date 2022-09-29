@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import {
   Box,
+  Grid,
+  Dialog,
   Typography,
   Paper,
   Stack,
@@ -11,8 +13,9 @@ import {
   ListItemAvatar,
   useTheme,
   CircularProgress,
+  IconButton,
 } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridFooterPlaceholder, GridPagination } from '@mui/x-data-grid';
 import currencyDict from '../../static/assets/currencies.json';
 import { Order } from '../models/Order.model';
 
@@ -23,6 +26,10 @@ import RobotAvatar from './Robots/RobotAvatar';
 import hexToRgb from '../utils/hexToRgb';
 import statusBadgeColor from '../utils/statusBadgeColor';
 
+// Icons
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+
 interface Props {
   loading: boolean;
   orders: Order[];
@@ -30,6 +37,9 @@ interface Props {
   currency: number;
   maxWidth: number;
   maxHeight: number;
+  fullWidth: number;
+  fullHeight: number;
+  defaultFullscreen: boolean;
 }
 
 const BookTable = ({
@@ -39,23 +49,26 @@ const BookTable = ({
   currency,
   maxWidth,
   maxHeight,
+  fullWidth,
+  fullHeight,
+  defaultFullscreen,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const history = useHistory();
-
-  const fontSize = theme.typography.fontSize;
+  const [pageSize, setPageSize] = useState(0);
+  const [fullscreen, setFullscreen] = useState(defaultFullscreen);
 
   // all sizes in 'em'
+  const fontSize = theme.typography.fontSize;
   const verticalHeightFrame = 6.9075;
   const verticalHeightRow = 3.25;
   const defaultPageSize = Math.max(
-    Math.floor((maxHeight - verticalHeightFrame) / verticalHeightRow),
+    Math.floor(((fullscreen? fullHeight *0.875:maxHeight) - verticalHeightFrame) / verticalHeightRow),
     1,
   );
   const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
 
-  const [pageSize, setPageSize] = useState(0);
   const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
   useEffect(() => {
     if (useDefaultPageSize) {
@@ -564,35 +577,75 @@ const BookTable = ({
     return [columns, width * 0.875 + 0.15];
   };
 
-  const [columns, width] = filteredColumns(maxWidth);
+  const [columns, width] = filteredColumns(fullscreen? fullWidth : maxWidth);
 
-  return (
-    <Paper style={{ width: `${width}em`, height: `${height}em`, overflow: 'auto' }}>
-      <DataGrid
-        localeText={localeText}
-        rows={orders.filter(
-          (order) =>
-            (order.type == type || type == null) && (order.currency == currency || currency == 0),
-        )}
-        loading={loading}
-        columns={columns}
-        components={{
-          NoResultsOverlay: () => (
-            <Stack height='100%' alignItems='center' justifyContent='center'>
-              {t('Filter has no results')}
-            </Stack>
-          ),
-        }}
-        pageSize={loading ? 0 : pageSize}
-        rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
-        onPageSizeChange={(newPageSize) => {
-          setPageSize(newPageSize);
-          setUseDefaultPageSize(false);
-        }}
-        onRowClick={(params) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
-      />
-    </Paper>
-  );
+  const gridComponents = {
+    NoResultsOverlay: () => (
+      <Stack height='100%' alignItems='center' justifyContent='center'>
+        {t('Filter has no results')}
+      </Stack>
+    ),
+    Footer: () => (
+      <Grid container alignItems="center" direction="row" justifyContent="space-between">
+        <Grid item>
+        <IconButton onClick={() => setFullscreen(!fullscreen)}>
+          {fullscreen ? <FullscreenExitIcon/> : <FullscreenIcon/>}
+        </IconButton>
+        </Grid>
+        <Grid item>
+        <GridPagination/>
+        </Grid>
+      </Grid>
+    ),
+  }
+
+  if (!fullscreen){
+    return(
+      <Paper style={{ width: `${width}em`, height: `${height}em`, overflow: 'auto' }}>
+        <DataGrid
+      localeText={localeText}
+      rows={orders.filter(
+        (order) =>
+          (order.type == type || type == null) && (order.currency == currency || currency == 0),
+      )}
+      loading={loading}
+      columns={columns}
+      components={gridComponents}
+      pageSize={loading ? 0 : pageSize}
+      rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
+      onPageSizeChange={(newPageSize) => {
+        setPageSize(newPageSize);
+        setUseDefaultPageSize(false);
+      }}
+      onRowClick={(params) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
+    />
+      </Paper>
+    )
+  } else {
+    return(
+    <Dialog open={fullscreen} fullScreen={true}>
+      <Paper style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+        <DataGrid
+      localeText={localeText}
+      rows={orders.filter(
+        (order) =>
+          (order.type == type || type == null) && (order.currency == currency || currency == 0),
+      )}
+      loading={loading}
+      columns={columns}
+      components={gridComponents}
+      pageSize={loading ? 0 : pageSize}
+      rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
+      onPageSizeChange={(newPageSize) => {
+        setPageSize(newPageSize);
+        setUseDefaultPageSize(false);
+      }}
+      onRowClick={(params) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
+    />
+      </Paper>
+    </Dialog>
+    )
+  }
 };
 
 export default BookTable;
