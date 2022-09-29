@@ -13,6 +13,7 @@ import {
   ListItemAvatar,
   useTheme,
   CircularProgress,
+  LinearProgress,
   IconButton,
 } from '@mui/material';
 import { DataGrid, GridFooterPlaceholder, GridPagination } from '@mui/x-data-grid';
@@ -27,11 +28,11 @@ import hexToRgb from '../utils/hexToRgb';
 import statusBadgeColor from '../utils/statusBadgeColor';
 
 // Icons
-import FullscreenIcon from '@mui/icons-material/Fullscreen';
-import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 
 interface Props {
   loading: boolean;
+  clickRefresh: () => void;
   orders: Order[];
   type: number;
   currency: number;
@@ -44,6 +45,8 @@ interface Props {
 
 const BookTable = ({
   loading,
+  refreshing,
+  clickRefresh,
   orders,
   type,
   currency,
@@ -426,7 +429,9 @@ const BookTable = ({
       renderCell: (params) => {
         return (
           <div style={{ cursor: 'pointer' }}>
-            {`${pn(Math.round(params.row.satoshis_now / 1000))}K`}
+            {params.row.satoshis_now > 1000000
+              ? `${pn(Math.round(params.row.satoshis_now / 10000) / 100)} M`
+              : `${pn(Math.round(params.row.satoshis_now / 1000))} K`}
           </div>
         );
       },
@@ -512,7 +517,7 @@ const BookTable = ({
       priority: 7,
       order: 7,
       normal: {
-        width: 5.8,
+        width: 5,
         object: expiryObj,
       },
     },
@@ -582,6 +587,7 @@ const BookTable = ({
   const [columns, width] = filteredColumns(fullscreen ? fullWidth : maxWidth);
 
   const gridComponents = {
+    LoadingOverlay: LinearProgress,
     NoResultsOverlay: () => (
       <Stack height='100%' alignItems='center' justifyContent='center'>
         {t('Filter has no results')}
@@ -590,10 +596,20 @@ const BookTable = ({
     Footer: () => (
       <Grid container alignItems='center' direction='row' justifyContent='space-between'>
         <Grid item>
-          <IconButton onClick={() => setFullscreen(!fullscreen)}>
-            {fullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-          </IconButton>
+          <Grid container alignItems='center' direction='row'>
+            <Grid item xs={6}>
+              <IconButton onClick={() => setFullscreen(!fullscreen)}>
+                {fullscreen ? <FullscreenExit /> : <Fullscreen />}
+              </IconButton>
+            </Grid>
+            <Grid item xs={6}>
+              <IconButton onClick={clickRefresh}>
+                <Refresh />
+              </IconButton>
+            </Grid>
+          </Grid>
         </Grid>
+
         <Grid item>
           <GridPagination />
         </Grid>
@@ -610,7 +626,7 @@ const BookTable = ({
             (order) =>
               (order.type == type || type == null) && (order.currency == currency || currency == 0),
           )}
-          loading={loading}
+          loading={loading || refreshing}
           columns={columns}
           components={gridComponents}
           pageSize={loading ? 0 : pageSize}
@@ -634,7 +650,7 @@ const BookTable = ({
                 (order.type == type || type == null) &&
                 (order.currency == currency || currency == 0),
             )}
-            loading={loading}
+            loading={loading || refreshing}
             columns={columns}
             components={gridComponents}
             pageSize={loading ? 0 : pageSize}

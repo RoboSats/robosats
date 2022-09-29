@@ -33,15 +33,20 @@ class BookPage extends Component {
   }
 
   componentDidMount = () => {
-    this.getOrderDetails();
+    if (this.props.bookOrders.length < 1) {
+      this.getOrderDetails(true, false);
+    } else {
+      this.getOrderDetails(false, true);
+    }
   };
 
-  getOrderDetails() {
-    this.props.setAppState({ bookLoading: true });
+  getOrderDetails(loading, refreshing) {
+    this.props.setAppState({ bookLoading: loading, bookRefreshing: refreshing });
     apiClient.get('/api/book/').then((data) =>
       this.props.setAppState({
         bookNotFound: data.not_found,
         bookLoading: false,
+        bookRefreshing: false,
         bookOrders: data,
       }),
     );
@@ -131,6 +136,8 @@ class BookPage extends Component {
           <Grid item xs={tableWidthXS} style={{ width: `${bookTableWidth}em` }}>
             <BookTable
               loading={this.props.bookLoading}
+              refreshing={this.props.bookRefreshing}
+              clickRefresh={() => this.getOrderDetails(false, true)}
               orders={this.props.bookOrders}
               type={this.props.type}
               currency={this.props.currency}
@@ -179,6 +186,8 @@ class BookPage extends Component {
         return (
           <BookTable
             loading={this.props.bookLoading}
+            refreshing={this.props.bookRefreshing}
+            clickRefresh={() => this.getOrderDetails(false, true)}
             orders={this.props.bookOrders}
             type={this.props.type}
             currency={this.props.currency}
@@ -217,13 +226,6 @@ class BookPage extends Component {
     const { t } = this.props;
     return (
       <>
-        <IconButton
-          sx={{ position: 'fixed', right: '0px', top: '30px' }}
-          onClick={() => this.setState({ loading: true }) & this.getOrderDetails()}
-        >
-          <Refresh />
-        </IconButton>
-
         <Grid item xs={6} align='right'>
           <FormControl align='center'>
             <FormHelperText align='center' sx={{ textAlign: 'center' }}>

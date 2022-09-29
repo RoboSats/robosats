@@ -33,7 +33,6 @@ import { apiClient } from '../../../services/api/index';
 import statusBadgeColor from '../../../utils/statusBadgeColor';
 
 interface DepthChartProps {
-  bookLoading: boolean;
   orders: Order[];
   lastDayPremium: number | undefined;
   currency: number;
@@ -44,7 +43,6 @@ interface DepthChartProps {
 }
 
 const DepthChart: React.FC<DepthChartProps> = ({
-  bookLoading,
   orders,
   lastDayPremium,
   currency,
@@ -291,7 +289,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   return (
     <Paper style={{ width: `${width}em`, maxHeight: `${height}em` }}>
       <Paper variant='outlined'>
-        {bookLoading || center == undefined || enrichedOrders.length < 1 ? (
+        {center == undefined || enrichedOrders.length < 1 ? (
           <div
             style={{
               display: 'flex',

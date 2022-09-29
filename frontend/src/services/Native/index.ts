@@ -29,7 +29,7 @@ class NativeRobosats {
     }
   };
 
-  public postMessage: (message: NativeWebViewMessage) => Promise<{ [key: string]: any }> = (
+  public postMessage: (message: NativeWebViewMessage) => Promise<{ [key: string]: any }> = async (
     message,
   ) => {
     this.messageCounter += 1;
@@ -37,11 +37,11 @@ class NativeRobosats {
     const json = JSON.stringify(message);
     window.ReactNativeWebView?.postMessage(json);
 
-    return new Promise<object>(async (resolve, reject) => {
+    return await new Promise<object>(async (resolve, reject) => {
       if (message.id) {
         this.pendingMessages[message.id] = {
-          resolve: resolve,
-          reject: reject,
+          resolve,
+          reject,
         };
       }
     });

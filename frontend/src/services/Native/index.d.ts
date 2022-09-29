@@ -8,7 +8,7 @@ declare global {
 }
 
 export interface ReactNativeWebView {
-  postMessage(message: string): void;
+  postMessage: (message: string) => void;
 }
 
 export interface NativeWebViewMessageHttp {
