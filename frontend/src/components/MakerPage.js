@@ -49,7 +49,7 @@ import { systemClient } from '../services/System';
 class MakerPage extends Component {
   defaultCurrency = 1;
   defaultCurrencyCode = 'USD';
-  defaultPaymentMethod = 'not specified';
+  defaultPaymentMethod = `not specified`;
   defaultPremium = 0;
   defaultMinTradeSats = 20000;
   defaultMaxTradeSats = 1200000;
@@ -59,7 +59,7 @@ class MakerPage extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
+    this.state = {2
       minTradeSats: this.defaultMinTradeSats,
       maxTradeSats: this.defaultMaxTradeSats,
       maxBondlessSats: this.defaultMaxBondlessSats,
