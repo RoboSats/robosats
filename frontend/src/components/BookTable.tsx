@@ -16,7 +16,7 @@ import {
   LinearProgress,
   IconButton,
 } from '@mui/material';
-import { DataGrid, GridFooterPlaceholder, GridPagination } from '@mui/x-data-grid';
+import { DataGrid, GridPagination } from '@mui/x-data-grid';
 import currencyDict from '../../static/assets/currencies.json';
 import { Order } from '../models/Order.model';
 
@@ -32,6 +32,7 @@ import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 
 interface Props {
   loading: boolean;
+  refreshing: boolean;
   clickRefresh: () => void;
   orders: Order[];
   type: number;
@@ -179,7 +180,7 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params) => {
         return (
-          <div style={{ position: 'relative', left: '-1.5em' }}>
+          <div style={{ position: 'relative', left: '-1.64em' }}>
             <ListItemButton style={{ cursor: 'pointer' }}>
               <RobotAvatar
                 nickname={params.row.maker_nick}
@@ -481,28 +482,28 @@ const BookTable = ({
         object: premiumObj,
       },
     },
-    robot: {
-      priority: 4,
-      order: 1,
-      normal: {
-        width: 17.14,
-        object: robotObj,
-      },
-      small: {
-        width: 4.3,
-        object: robotSmallObj,
-      },
-    },
     paymentMethod: {
-      priority: 5,
+      priority: 4,
       order: 6,
       normal: {
         width: 12.85,
         object: paymentObj,
       },
       small: {
-        width: 5.8,
+        width: 4.4,
         object: paymentSmallObj,
+      },
+    },
+    robot: {
+      priority: 5,
+      order: 1,
+      normal: {
+        width: 17.14,
+        object: robotObj,
+      },
+      small: {
+        width: 4.1,
+        object: robotSmallObj,
       },
     },
     price: {
@@ -525,7 +526,7 @@ const BookTable = ({
       priority: 8,
       order: 8,
       normal: {
-        width: 3.8,
+        width: 4.8,
         object: timerObj,
       },
     },
