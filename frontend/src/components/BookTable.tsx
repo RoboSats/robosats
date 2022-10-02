@@ -152,7 +152,7 @@ const BookTable = ({
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <ListItemButton style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}>
             <ListItemAvatar>
@@ -179,7 +179,7 @@ const BookTable = ({
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <div style={{ position: 'relative', left: '-1.64em' }}>
             <ListItemButton style={{ cursor: 'pointer' }}>
@@ -205,7 +205,7 @@ const BookTable = ({
       field: 'type',
       headerName: t('Is'),
       width: width * fontSize,
-      renderCell: (params) => (params.row.type ? t('Seller') : t('Buyer')),
+      renderCell: (params: any) => (params.row.type ? t('Seller') : t('Buyer')),
     };
   };
 
@@ -216,7 +216,7 @@ const BookTable = ({
       headerName: t('Amount'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <div style={{ cursor: 'pointer' }}>
             {amountToString(
@@ -237,7 +237,7 @@ const BookTable = ({
       field: 'currency',
       headerName: t('Currency'),
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         const currencyCode = currencyDict[params.row.currency.toString()];
         return (
           <div
@@ -262,7 +262,7 @@ const BookTable = ({
       field: 'payment_method',
       headerName: t('Payment Method'),
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <div style={{ cursor: 'pointer' }}>
             <PaymentText
@@ -283,14 +283,13 @@ const BookTable = ({
       field: 'payment_icons',
       headerName: t('Pay'),
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <div
             style={{
               position: 'relative',
               left: '-4px',
               cursor: 'pointer',
-              align: 'center',
             }}
           >
             <PaymentText
@@ -311,7 +310,7 @@ const BookTable = ({
       headerName: t('Price'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         const currencyCode = currencyDict[params.row.currency.toString()];
         return (
           <div style={{ cursor: 'pointer' }}>{`${pn(params.row.price)} ${currencyCode}/BTC`}</div>
@@ -332,7 +331,7 @@ const BookTable = ({
       headerName: t('Premium'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         let fontColor = `rgb(0,0,0)`;
         if (params.row.type === 0) {
           var premiumPoint = params.row.premium / buyOutstandingPremium;
@@ -370,7 +369,7 @@ const BookTable = ({
       headerName: t('Timer'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         const hours = Math.round(params.row.escrow_duration / 3600);
         const minutes = Math.round((params.row.escrow_duration - hours * 3600) / 60);
         return <div style={{ cursor: 'pointer' }}>{hours > 0 ? `${hours}h` : `${minutes}m`}</div>;
@@ -385,9 +384,9 @@ const BookTable = ({
       headerName: t('Expiry'),
       type: 'string',
       width: width * fontSize,
-      renderCell: (params) => {
-        const expiresAt = new Date(params.row.expires_at);
-        const timeToExpiry = Math.abs(expiresAt - new Date());
+      renderCell: (params: any) => {
+        const expiresAt: Date = new Date(params.row.expires_at);
+        const timeToExpiry: number = Math.abs(expiresAt - new Date());
         const percent = Math.round((timeToExpiry / (24 * 60 * 60 * 1000)) * 100);
         const hours = Math.round(timeToExpiry / (3600 * 1000));
         const minutes = Math.round((timeToExpiry - hours * (3600 * 1000)) / 60000);
@@ -429,7 +428,7 @@ const BookTable = ({
       headerName: t('Sats now'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <div style={{ cursor: 'pointer' }}>
             {params.row.satoshis_now > 1000000
@@ -447,7 +446,7 @@ const BookTable = ({
       field: 'id',
       headerName: 'Order ID',
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <div style={{ cursor: 'pointer' }}>
             <Typography variant='caption' color='text.secondary'>
@@ -659,7 +658,7 @@ const BookTable = ({
             setPageSize(newPageSize);
             setUseDefaultPageSize(false);
           }}
-          onRowClick={(params) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
+          onRowClick={(params: any) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
         />
       </Paper>
     );
@@ -683,7 +682,7 @@ const BookTable = ({
               setPageSize(newPageSize);
               setUseDefaultPageSize(false);
             }}
-            onRowClick={(params) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
+            onRowClick={(params: any) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
           />
         </Paper>
       </Dialog>

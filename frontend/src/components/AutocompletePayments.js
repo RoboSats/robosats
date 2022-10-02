@@ -16,7 +16,7 @@ import CloseIcon from '@mui/icons-material/Close';
 const Root = styled('div')(
   ({ theme }) => `
   color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,.85)'};
-  font-size: 14px;
+  font-size: ${theme.typography.fontSize};
 `,
 );
 
@@ -26,18 +26,19 @@ const Label = styled('label')(
     theme.palette.mode === 'dark' ? (error ? '#f44336' : '#cfcfcf') : error ? '#dd0000' : '#717171'
   };
   align: center;
-  padding: 0 0 4px;
-  line-height: 1.5; f44336
-  display: block;
-  font-size: 13px;
+  position: relative;
+  top: 0.6em;
+  maxHeight: 0em;
+  height: 0em;
+  white-space: no-wrap;
+  font-size: 1em;
 `,
 );
 
 const InputWrapper = styled('div')(
   ({ theme, error }) => `
-  width: 244px;
-  min-height: 44px;
-  max-height: 124px;
+  min-height: 2.9em;
+  max-height: 8.6em;
   border: 1px solid ${
     theme.palette.mode === 'dark' ? (error ? '#f44336' : '#434343') : error ? '#dd0000' : '#c4c4c4'
   };
@@ -75,17 +76,17 @@ const InputWrapper = styled('div')(
   & input {
     background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
     color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,.85)'};
-    height: 30px;
+    height: 2.15em;
     box-sizing: border-box;
     padding: 4px 6px;
     width: 0;
-    min-width: 30px;
-    font-size: 15px;
+    min-width: 2.15em;
+    font-size: ${theme.typography.fontSize * 1.0714};
     flex-grow: 1;
     border: 0;
     margin: 0;
     outline: 0;
-    max-height: 124px;
+    max-height: 8.6em;
   }
 `,
 );
@@ -113,9 +114,9 @@ const StyledTag = styled(Tag)(
   ({ theme }) => `
   display: flex;
   align-items: center;
-  height: 34px;
+  height: 2.3em;
   margin: 2px;
-  line-height: 22px;
+  line-height: 1.5em;
   background-color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'};
   border: 1px solid ${theme.palette.mode === 'dark' ? '#303030' : '#e8e8e8'};
   border-radius: 2px;
@@ -133,11 +134,11 @@ const StyledTag = styled(Tag)(
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    font-size: 15px;
+    font-size: 0.928em;
   }
 
   & svg {
-    font-size: 15px;
+    font-size: 0.857em;
     cursor: pointer;
     padding: 4px;
   }
@@ -152,27 +153,27 @@ const ListHeader = styled('span')(
   max-height: 10px;
   display: inline-block;
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#ffffff'};
-  font-size: 12px;
+  font-size: 0.875em;
   pointer-events: none;
 `,
 );
 
 const Listbox = styled('ul')(
   ({ theme }) => `
-  width: 244px;
+  width: 95%;
   margin: 2px 0 0;
   padding: 0;
   position: absolute;
   list-style: none;
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
   overflow: auto;
-  max-height: 250px;
+  max-height: 17em;
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 999;
 
   & li {
-    padding: 5px 12px;
+    padding: 0em 0em;
     display: flex;
 
     & span {
@@ -219,17 +220,18 @@ export default function AutocompletePayments(props) {
     focused = 'true',
     setAnchorEl,
   } = useAutocomplete({
-    sx: { width: '200px', align: 'left' },
+    // sx: { width: '200px', align: 'left' },
+    fullWidth: true,
     id: 'payment-methods',
     multiple: true,
     options: props.optionsType == 'fiat' ? paymentMethods : swapDestinations,
     getOptionLabel: (option) => option.name,
     onInputChange: (e) => setVal(e ? (e.target.value ? e.target.value : '') : ''),
-    onChange: (event, value) => props.onAutocompleteChange(optionsToString(value)),
+    onChange: (event, value) => props.onAutocompleteChange(value, optionsToString(value)),
     onClose: () => setVal(() => ''),
   });
 
-  const [val, setVal] = useState();
+  const [val, setVal] = useState('');
 
   function optionsToString(newValue) {
     let str = '';
@@ -253,7 +255,6 @@ export default function AutocompletePayments(props) {
 
   return (
     <Root>
-      <div style={{ height: '5px' }}></div>
       <Tooltip
         placement='top'
         enterTouchDelay={300}
@@ -262,10 +263,13 @@ export default function AutocompletePayments(props) {
         title={props.tooltipTitle}
       >
         <div {...getRootProps()}>
-          <Label {...getInputLabelProps()} error={props.error ? 'error' : null}>
-            {' '}
-            {props.label}
-          </Label>
+          {value.length == 0 && val.length == 0 ? (
+            <div style={{ height: 0 }}>
+              <Label {...getInputLabelProps()} error={props.error ? 'error' : null}>
+                {props.label}
+              </Label>
+            </div>
+          ) : null}
           <InputWrapper
             ref={setAnchorEl}
             error={props.error ? 'error' : null}
@@ -274,7 +278,7 @@ export default function AutocompletePayments(props) {
             {value.map((option, index) => (
               <StyledTag label={t(option.name)} icon={option.icon} {...getTagProps({ index })} />
             ))}
-            <input {...getInputProps()} value={val || ''} />
+            <input {...getInputProps()} value={val} />
           </InputWrapper>
         </div>
       </Tooltip>
@@ -283,9 +287,9 @@ export default function AutocompletePayments(props) {
           <div
             style={{
               position: 'fixed',
-              minHeight: '20px',
-              marginLeft: 120 - props.listHeaderText.length * 3,
-              marginTop: '-13px',
+              minHeight: '1.428em',
+              marginLeft: `${3 - props.listHeaderText.length * 0.05}em`,
+              marginTop: '-0.928em',
             }}
           >
             <ListHeader>
@@ -301,12 +305,12 @@ export default function AutocompletePayments(props) {
                 sx={{ textTransform: 'none' }}
                 style={{ justifyContent: 'flex-start' }}
               >
-                <div style={{ position: 'relative', right: '4px', top: '4px' }}>
-                  <AddIcon style={{ color: '#1976d2' }} sx={{ width: 18, height: 18 }} />
+                <div style={{ position: 'relative', right: '0.286em', top: '0.286em' }}>
+                  <AddIcon style={{ color: '#1976d2' }} sx={{ width: '1em', height: '1em' }} />
                 </div>
                 {t(option.name)}
               </Button>
-              <div style={{ position: 'relative', top: '5px' }}>
+              <div style={{ position: 'relative', top: '0.357em' }}>
                 <CheckIcon />
               </div>
             </li>
@@ -314,7 +318,7 @@ export default function AutocompletePayments(props) {
           {val != null ? (
             val.length > 2 ? (
               <Button size='small' fullWidth={true} onClick={() => handleAddNew(getInputProps())}>
-                <DashboardCustomizeIcon sx={{ width: 18, height: 18 }} />
+                <DashboardCustomizeIcon sx={{ width: '1em', height: '1em' }} />
                 {props.addNewButtonText}
               </Button>
             ) : null
@@ -324,7 +328,7 @@ export default function AutocompletePayments(props) {
       getInputProps().value.length > 0 ? (
         <Listbox {...getListboxProps()}>
           <Button fullWidth={true} onClick={() => handleAddNew(getInputProps())}>
-            <DashboardCustomizeIcon sx={{ width: 20, height: 20 }} />
+            <DashboardCustomizeIcon sx={{ width: '1.28em', height: '1.28em' }} />
             {props.addNewButtonText}
           </Button>
         </Listbox>

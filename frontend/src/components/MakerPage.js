@@ -44,7 +44,9 @@ import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import { pn } from '../utils/prettyNumbers';
+
 import { systemClient } from '../services/System';
+import MakerForm from './MakerForm';
 
 class MakerPage extends Component {
   defaultCurrency = 1;
@@ -59,7 +61,7 @@ class MakerPage extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {2
+    this.state = {
       minTradeSats: this.defaultMinTradeSats,
       maxTradeSats: this.defaultMaxTradeSats,
       maxBondlessSats: this.defaultMaxBondlessSats,
@@ -81,7 +83,6 @@ class MakerPage extends Component {
       limits: null,
       minAmount: '',
       maxAmount: '',
-      loadingLimits: true,
       amount: '',
       badPaymentMethod: '',
     };
@@ -885,32 +886,16 @@ class MakerPage extends Component {
   };
 
   makeOrderBox = () => {
-    const { t } = this.props;
     return (
-      <Box sx={{ width: this.state.tabValue == 1 ? `${270 / 16}em` : `${252 / 16}em` }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', position: 'relative', left: '5px' }}>
-          <Tabs value={this.state.tabValue} variant='fullWidth'>
-            <Tab
-              label={t('Order')}
-              {...this.a11yProps(0)}
-              onClick={() => this.setState({ tabValue: 0 })}
-            />
-            <Tab
-              label={t('Customize')}
-              {...this.a11yProps(1)}
-              onClick={() => this.setState({ tabValue: 1 })}
-            />
-          </Tabs>
-        </Box>
-        <Grid item xs={12} align='center'>
-          <div style={{ display: this.state.tabValue == 0 ? '' : 'none' }}>
-            {this.StandardMakerOptions()}
-          </div>
-          <div style={{ display: this.state.tabValue == 1 ? '' : 'none' }}>
-            {this.AdvancedMakerOptions()}
-          </div>
-        </Grid>
-      </Box>
+      <MakerForm
+        limits={this.props.limits}
+        loadingLimits={this.props.loadingLimits}
+        setAppState={this.props.setAppState}
+        maker={this.props.maker}
+        setMaker={this.props.setMaker}
+        type={this.props.type}
+        currency={this.props.currency}
+      />
     );
   };
 

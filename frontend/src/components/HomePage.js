@@ -29,6 +29,8 @@ export default class HomePage extends Component {
       referralCode: '',
       lastDayPremium: 0,
       limits: {},
+      loadingLimits: true,
+      maker: {},
     };
   }
 
@@ -51,6 +53,16 @@ export default class HomePage extends Component {
 
   setAppState = (newState) => {
     this.setState(newState);
+  };
+
+  setMaker = (newMaker) => {
+    this.setState({
+      ...this.state,
+      maker: {
+        ...this.state.maker,
+        ...newMaker,
+      },
+    });
   };
 
   redirectTo(location) {
@@ -106,6 +118,7 @@ export default class HomePage extends Component {
                   {...this.state}
                   {...this.props}
                   setAppState={this.setAppState}
+                  setMaker={this.setMaker}
                 />
               )}
             />
