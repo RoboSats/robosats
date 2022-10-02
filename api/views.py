@@ -1,17 +1,22 @@
 import os
 from re import T
 from django.db.models import Sum, Q
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import status, viewsets
+from rest_framework.exceptions import bad_request
 from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
+import textwrap
 
 from django.contrib.auth import authenticate, login, logout
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+from api.oas_schemas import BookViewSchema, HistoricalViewSchema, InfoViewSchema, LimitViewSchema, MakerViewSchema, OrderViewSchema, PriceViewSchema, RewardViewSchema, StealthViewSchema, TickViewSchema, UserViewSchema
 
-from api.serializers import ListOrderSerializer, MakeOrderSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer, TickSerializer, StealthSerializer
+from api.serializers import InfoSerializer, ListOrderSerializer, MakeOrderSerializer, OrderPublicSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer, TickSerializer, StealthSerializer
 from api.models import LNPayment, MarketTick, OnchainPayment, Order, Currency, Profile
 from control.models import AccountingDay, BalanceLog
 from api.logics import Logics
@@ -46,6 +51,7 @@ avatar_path.mkdir(parents=True, exist_ok=True)
 class MakerView(CreateAPIView):
     serializer_class = MakeOrderSerializer
 
+    @extend_schema(**MakerViewSchema.post)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
 
@@ -97,6 +103,8 @@ class MakerView(CreateAPIView):
         if bondless_taker == None: bondless_taker = False
         if has_range == None: has_range = False
 
+        # TODO add a check - if `is_explicit` is true then `satoshis` need to be specified
+
         # An order can either have an amount or a range (min_amount and max_amount)
         if has_range:
             amount = None
@@ -121,6 +129,7 @@ class MakerView(CreateAPIView):
                 },
                 status.HTTP_400_BAD_REQUEST,
             )
+
 
         # Creates a new order
         order = Order(
@@ -158,6 +167,7 @@ class OrderView(viewsets.ViewSet):
     serializer_class = UpdateOrderSerializer
     lookup_url_kwarg = "order_id"
 
+    @extend_schema(**OrderViewSchema.get)
     def get(self, request, format=None):
         """
         Full trade pipeline takes place while looking/refreshing the order page.
@@ -419,6 +429,7 @@ class OrderView(viewsets.ViewSet):
             
         return Response(data, status.HTTP_200_OK)
 
+    @extend_schema(**OrderViewSchema.take_update_confirm_dispute_cancel)
     def take_update_confirm_dispute_cancel(self, request, format=None):
         """
         Here takes place all of the updates to the order object.
@@ -548,6 +559,7 @@ class OrderView(viewsets.ViewSet):
 
         return self.get(request)
 
+
 class UserView(APIView):
     NickGen = NickGenerator(lang="English",
                             use_adv=False,
@@ -556,6 +568,7 @@ class UserView(APIView):
                             max_num=999)
 
     serializer_class = UserGenSerializer
+
 
     def post(self, request, format=None):
         """
@@ -711,6 +724,7 @@ class UserView(APIView):
                 context["bad_request"] = "Enter a different token"
                 return Response(context, status.HTTP_403_FORBIDDEN)
 
+    @extend_schema(**UserViewSchema.delete)
     def delete(self, request):
         """Pressing "give me another" deletes the logged in user"""
         user = request.user
@@ -750,9 +764,10 @@ class UserView(APIView):
 
 
 class BookView(ListAPIView):
-    serializer_class = ListOrderSerializer
+    serializer_class = OrderPublicSerializer
     queryset = Order.objects.filter(status=Order.Status.PUB)
 
+    @extend_schema(**BookViewSchema.get)
     def get(self, request, format=None):
         currency = request.GET.get("currency", 0)
         type = request.GET.get("type", 2)
@@ -794,8 +809,12 @@ class BookView(ListAPIView):
 
         return Response(book_data, status=status.HTTP_200_OK)
 
+
 class InfoView(ListAPIView):
 
+    serializer_class = InfoSerializer
+
+    @extend_schema(**InfoViewSchema.get)
     def get(self, request):
         context = {}
 
@@ -872,6 +891,7 @@ class InfoView(ListAPIView):
 class RewardView(CreateAPIView):
     serializer_class = ClaimRewardSerializer
 
+    @extend_schema(**RewardViewSchema.post)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
 
@@ -897,10 +917,12 @@ class RewardView(CreateAPIView):
 
         return Response({"successful_withdrawal": True}, status.HTTP_200_OK)
 
+
 class PriceView(ListAPIView):
 
     serializer_class = PriceSerializer
 
+    @extend_schema(**PriceViewSchema.get)
     def get(self, request):
 
         payload = {}
@@ -921,17 +943,21 @@ class PriceView(ListAPIView):
 
         return Response(payload, status.HTTP_200_OK)
 
+
 class TickView(ListAPIView):
 
     queryset = MarketTick.objects.all()
     serializer_class = TickSerializer
 
+    @extend_schema(**TickViewSchema.get)
     def get(self, request):
         data = self.serializer_class(self.queryset.all(), many=True, read_only=True).data
         return Response(data, status=status.HTTP_200_OK)
 
+
 class LimitView(ListAPIView):
 
+    @extend_schema(**LimitViewSchema.get)
     def get(self, request):
         
         # Trade limits as BTC
@@ -955,7 +981,10 @@ class LimitView(ListAPIView):
 
         return Response(payload, status.HTTP_200_OK)
 
+
 class HistoricalView(ListAPIView):
+
+    @extend_schema(**HistoricalViewSchema.get)
     def get(self, request):
         payload = {}
         queryset = AccountingDay.objects.all().order_by('day')
@@ -968,10 +997,11 @@ class HistoricalView(ListAPIView):
 
         return Response(payload, status.HTTP_200_OK)
 
+
 class StealthView(UpdateAPIView):
 
     serializer_class = StealthSerializer
-
+    @extend_schema(**StealthViewSchema.put)
     def put(self, request):
         serializer = self.serializer_class(data=request.data)
 

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 import os
 from pathlib import Path
+import textwrap
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -89,7 +90,47 @@ INSTALLED_APPS = [
     "chat",
     "control",
     "frontend.apps.FrontendConfig",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",  # required for Django collectstatic discovery
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'RoboSats REST API v0',
+    'DESCRIPTION': textwrap.dedent(
+        """
+        REST API Documentation for [RoboSats](https://learn.robosats.com) - A Simple and Private LN P2P Exchange
+
+        <p style='background-color:#fff0f0;padding:16px;border-radius:6px;border:2px solid #ffd3d3'>
+        <span style='color:#f31f1f;font-weight:bold'>Note:</span>
+        The RoboSats REST API is on v0, which in other words, is beta.
+        We recommend that if you don't have time to actively maintain
+        your project, do not build it with v0 of the API. A refactored, simpler
+        and more stable version - v1 will be released soon™.
+        </p>
+
+        """
+    ),
+    'VERSION': '0.1.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_UI_SETTINGS': {
+        'expandResponses': '200,201',
+    },
+    'EXTENSIONS_INFO': {
+        'x-logo': {
+          'url': 'https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png',
+          'backgroundColor': '#FFFFFF',
+          'altText': 'RoboSats logo'
+        }
+    },
+    'REDOC_DIST': 'SIDECAR',
+}
+
 from .celery.conf import *
 
 MIDDLEWARE = [
