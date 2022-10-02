@@ -105,7 +105,7 @@ class SummarySerializer(serializers.Serializer):
 class PlatformSummarySerializer(serializers.Serializer):
     contract_timestamp = serializers.DateTimeField(
         required=False,
-        help_text=f"Timestamp of when the contract was finalized (price and sats fixed)"
+        help_text="Timestamp of when the contract was finalized (price and sats fixed)"
     )
     contract_total_time = serializers.FloatField(
         required=False,
@@ -113,7 +113,7 @@ class PlatformSummarySerializer(serializers.Serializer):
     )
     routing_fee_sats = serializers.IntegerField(
         required=False,
-        help_text="Sats payed by the exchange (currently const 0). Mining fee in case of on-chain swap payout"
+        help_text="Sats payed by the exchange for routing fees. Mining fee in case of on-chain swap payout"
     )
     trade_revenue_sats = serializers.IntegerField(
         required=False,
