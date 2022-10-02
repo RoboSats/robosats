@@ -134,7 +134,7 @@ def get_lnd_version():
 
 robosats_commit_cache = {}
 @ring.dict(robosats_commit_cache, expire=3600)
-def get_commit_robosats():
+def get_robosats_commit():
 
     commit = os.popen('git log -n 1 --pretty=format:"%H"')
     commit_hash = commit.read()
@@ -145,6 +145,16 @@ def get_commit_robosats():
             commit_hash = f.read()
 
     return commit_hash
+
+robosats_version_cache = {}
+@ring.dict(robosats_commit_cache, expire=99999)
+def get_robosats_version():
+
+    with open("version.json") as f:
+        version_dict = json.load(f)
+
+    print(version_dict)
+    return version_dict
 
 premium_percentile = {}
 @ring.dict(premium_percentile, expire=300)

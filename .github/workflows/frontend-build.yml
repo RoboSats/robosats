@@ -2,6 +2,11 @@ name: Frontend Test & Build
 
 on:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      semver:
+        required: true
+        type: string
   push:
     branches: [ "main" ]
     paths: [ "frontend" ]
@@ -27,13 +32,14 @@ jobs:
     - name: 'Setup node'
       uses: actions/setup-node@v3
       with:
-        node-version: 16.16.0
+        node-version: 16.17.0
         cache: npm
         cache-dependency-path: frontend/package-lock.json
     - name: 'Install NPM Dependencies'
       run: |
         cd frontend
-        npm ci
+        npm install
+
     - name:  'Test'
       run: |
         cd frontend
@@ -42,17 +48,27 @@ jobs:
       run: |
         cd frontend
         npm run build
-    - name: 'Archive Built Results'
+    - name: 'Archive Web Built Results'
       uses: actions/upload-artifact@v3
       with:
-        name: main-js
+        name: web-main-js
         path: frontend/static/frontend/main.js
-    - name: 'Invoke Backend Build CI workflow'
+    - name: 'Archive Mobile Built Results'
+      uses: actions/upload-artifact@v3
+      with:
+        name: mobile-main-js
+        path: mobile/html/Web.bundle/js/main.js
+
+    # Invoke pre-release image build if this was not a tag push
+    # Docker images tagged only with short commit hash
+    - name: 'Invoke Coodinator Image CI'
+      if: inputs.semver == ''
       uses: benc-uk/workflow-dispatch@v1
       with:
-        workflow: 'Backend Image CI'
+        workflow: 'Coodinator Image CI'
         token: ${{ secrets.PERSONAL_TOKEN }}
     - name: 'Invoke Client App Build CI/CD workflow'
+      if: inputs.semver == ''
       uses: benc-uk/workflow-dispatch@v1
       with:
         workflow: 'Client App Image CI/CD'

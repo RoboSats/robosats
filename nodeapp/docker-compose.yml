@@ -1,0 +1,34 @@
+version: '3.9'
+services:
+  frontend:
+    build: ../frontend
+    container_name: npm-dev
+    restart: always
+    command: npm run dev
+    volumes:
+      - ../frontend:/usr/src/frontend
+
+  nodeapp:
+    build: .
+    container_name: nodeapp-dev
+    restart: always
+    environment:
+      TOR_PROXY_IP: 127.0.0.1
+      TOR_PROXY_PORT: 9050
+      ROBOSATS_ONION: robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion
+    network_mode: service:tor
+    volumes:
+      - ../frontend/static:/usr/src/robosats/static
+
+  tor:
+    build: ../docker/tor
+    container_name: tor-dev
+    restart: always
+    environment:
+      LOCAL_USER_ID: 1000
+      LOCAL_GROUP_ID: 1000
+    volumes:
+      - ../node/tor/data:/var/lib/tor
+      - ../node/tor/config:/etc/tor
+    ports:
+      - 12596:12596

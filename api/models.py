@@ -654,7 +654,7 @@ class Profile(models.Model):
                                                   blank=True)
 
     # Stealth invoices
-    wants_stealth = models.BooleanField(default=False,
+    wants_stealth = models.BooleanField(default=True,
                                         null=False)
 
     @receiver(post_save, sender=User)

@@ -10,8 +10,6 @@ sidebar:
 src: "_pages/docs/03-understand/02-robots.md"
 ---
 
-# **Summary**
-
 Assume the identity of a robot with a corresponding private token. Use this anonymous identity to begin making and taking orders with RoboSats! It is not recommended to use the same robot twice as this degrades end-user privacy.
 
 Each new webpage visit to the RoboSats site will present the end-user with an automatically and randomly generated robot avatar and username to provide default privacy for the end-user.
@@ -34,6 +32,8 @@ It is strongly recommended to generate a new, random robot after each trade to e
 
 The unique token associated with each avatar is not intended for robot re-use; rather, it is intended to act like a password for accessing ongoing orders and resolving active disputes. Please safely store this token or risk never accessing that particular robot avatar again.
 
+Recovering a robot is easy: simply replace the randomly generated token with your backed-up token and select "Generate Robot" to recover your robot's profile.
+
 While we may become fond of our one-time robot identity during the short time an order is made or taken, it is better to move on to a new avatar. Think of all the great times you'll have making and taking orders with new robot identities!
 
 As stated, robot re-use is ill-advised and can ultimately become a detriment to end-user privacy.
@@ -42,7 +42,7 @@ As stated, robot re-use is ill-advised and can ultimately become a detriment to 
 
 RoboSats references the source code for RoboHash.org as a quick way to generate fresh avatars for a website. Your robot is "built" from a unique token, a random string of characters (ZD3I7XH...), where only those characters in their exact order can generate that exact robot avatar.
 
-A token is automatically generated for you each time the RoboSats webpage is accessed. Users may re-generate as many randomized tokens as they'd like, which is strongly encouraged after each trade. As a note, you can enter any token created by yourself instead of relying on RoboSats. Because only you know the token, it is wise to safely back up your token.
+A token is automatically generated for you each time the RoboSats webpage is accessed. Users may re-generate as many randomized tokens as they'd like, which is strongly encouraged after each trade. As a note, you can enter a token of sufficient entropy created by yourself instead of relying on RoboSats. Because only you know the token, it is wise to safely back up your token.
 
 Under the hood, token creation in the RoboSats homepage is the process of generating and encrypting your PGP private key with your token on the client side of the app. The end-user requests from the RoboSats node an avatar and nickname generated from your encrypted token and returns to you the corresponding robot identity. See the graphic below:
 

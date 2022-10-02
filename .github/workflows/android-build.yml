@@ -1,11 +1,16 @@
 name: Android Build
 on:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      semver:
+        required: true
+        type: string
   push:
-    branches: [ "main" , "android-webview-app-ts"]
+    branches: [ "main" ]
     paths: [ "mobile", "frontend" ]
   pull_request:
-    branches: [ "main" , "android-webview-app-ts"]
+    branches: [ "main" ]
     paths: [ "mobile", "frontend" ]
 
 jobs:
@@ -16,17 +21,39 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 'Download main.js Artifact'
+        if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: frontend-build.yml
           workflow_conclusion: success
-          name: main-js
+          name: mobile-main-js
+          path: mobile/html/Web.bundle/js/
+
+      - name: 'Download main.js Artifact for a release'
+        if: inputs.semver != ''  # Only if fired as job in release.yml
+        uses: actions/download-artifact@v3
+        with:
+          name: mobile-main-js
           path: mobile/html/Web.bundle/js/
 
       - name: 'Install npm Dependencies'
         run: |
           cd mobile
-          npm install
+          npm install --force
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+          
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: 'Build Android Debug'
+        if: inputs.semver == ''  # Only build debug if this is a pre-release
+        run: |
+          cd mobile/android
+          ./gradlew assembleDebug
 
       - name: 'Build Android Release'
         run: |
@@ -37,8 +64,60 @@ jobs:
         id: commit
         uses: pr-mpt/actions-commit-hash@v1
 
-      - name: 'Upload .apk Artifact'
+      - name: 'Upload .apk Release Artifact (for Release)'
         uses: actions/upload-artifact@v3
+        if: inputs.semver != ''  # If this workflow is called from release.yml
+        with:
+          name: robosats-${{ inputs.semver }}.apk
+          path: mobile/android/app/build/outputs/apk/release/app-release.apk
+
+      - name: 'Upload .apk Artifact (for Pre-release)'
+        uses: actions/upload-artifact@v3
+        if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
         with:
           name: robosats-${{ steps.commit.outputs.short }}.apk
           path: mobile/android/app/build/outputs/apk/release/app-release.apk
+
+      - name: 'Upload .apk Debug Artifact (for Pre-release)'
+        if: inputs.semver == ''  # Only build debug if this is a pre-release
+        uses: actions/upload-artifact@v3
+        with:
+          name: robosats-debug-${{ steps.commit.outputs.short }}.apk
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: 'Create Pre-release'
+        id: create_release
+        if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: android-${{ steps.commit.outputs.short }}
+          release_name: robosats-android-${{ steps.commit.outputs.short }}
+          changelog: mobile/CHANGELOG.md
+          draft: false
+          prerelease: true
+
+      - name: 'Upload Pre-release APK Release Asset'
+        id: upload-release-apk-asset 
+        if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./mobile/android/app/build/outputs/apk/release/app-release.apk
+          asset_name: robosats-${{ steps.commit.outputs.short }}.apk
+          asset_content_type: application/apk
+
+      - name: 'Upload Pre-release APK Debug Asset'
+        id: upload-debug-apk-asset 
+        if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          asset_name: robosats-debug-${{ steps.commit.outputs.short }}.apk
+          asset_content_type: application/apk

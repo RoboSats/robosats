@@ -10,7 +10,6 @@ COPY package.json package.json
 COPY package-lock.json package-lock.json
 
 # packages we use
-
 RUN npm install
 
 # launch

@@ -24,6 +24,7 @@ All RoboSats contributors submit changes via pull requests. The workflow is as f
  - Fork the repository
  - Create a topic branch from the `main` branch
  - Commit patches
+ - Run formatter if the frontend was changed: `npm run format`
  - Squash redundant or unnecessary commits
  - Submit a pull request from your topic branch back to the `main` branch of the main repository
  - Make changes to the pull request if reviewers request them and request a re-review

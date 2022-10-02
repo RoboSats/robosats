@@ -1,50 +1,49 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogTitle,
-  DialogActions,  
+  DialogActions,
   DialogContent,
   DialogContentText,
   Button,
-  Link, 
-} from "@mui/material"
+  Link,
+} from '@mui/material';
 
-type Props = {
+interface Props {
   open: boolean;
   onClose: () => void;
 }
 
-const LearnDialog = ({
-  open, 
-  onClose,
-}: Props): JSX.Element => {
+const LearnDialog = ({ open, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      >
-      <DialogTitle>
-        {t("Learn RoboSats")}
-      </DialogTitle>
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>{t('Learn RoboSats')}</DialogTitle>
 
       <DialogContent>
         <DialogContentText>
-          {t("You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.")}
+          {t(
+            'You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.',
+          )}
         </DialogContentText>
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>{t("Back")}</Button>
-        <Button onClick={onClose} autoFocus component={Link} href="https://learn.robosats.com" target="_blank">
+        <Button onClick={onClose}>{t('Back')}</Button>
+        <Button
+          onClick={onClose}
+          autoFocus
+          component={Link}
+          href='https://learn.robosats.com'
+          target='_blank'
+        >
           {t("Let's go!")}
         </Button>
       </DialogActions>
-
     </Dialog>
-  )
-}
+  );
+};
 
 export default LearnDialog;
