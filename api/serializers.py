@@ -54,6 +54,7 @@ class ListOrderSerializer(serializers.ModelSerializer):
             "maker",
             "taker",
             "escrow_duration",
+            "bond_size"
         )
 
 

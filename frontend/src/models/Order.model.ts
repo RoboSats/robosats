@@ -15,6 +15,7 @@ export interface Order {
   satoshis: number;
   satoshis_now: number;
   bondless_taker: boolean;
+  bond_size: number;
   maker: number;
   escrow_duration: number;
   maker_nick: string;

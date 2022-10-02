@@ -457,6 +457,19 @@ const BookTable = ({
     };
   };
 
+  const bondObj = function (width: number, hide: boolean) {
+    return {
+      hide,
+      field: 'bond_size',
+      headerName: t('Bond'),
+      type: 'number',
+      width: width * fontSize,
+      renderCell: (params:any) => {
+        return <div style={{ cursor: 'pointer' }}>{`${Number(params.row.bond_size)}%`}</div>;
+      },
+    };
+  };
+
   const columnSpecs = {
     amount: {
       priority: 1,
@@ -546,8 +559,16 @@ const BookTable = ({
         object: typeObj,
       },
     },
-    id: {
+    bond: {
       priority: 11,
+      order: 10,
+      normal: {
+        width: 4.2,
+        object: bondObj,
+      },
+    },
+    id: {
+      priority: 12,
       order: 12,
       normal: {
         width: 4.8,
