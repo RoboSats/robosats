@@ -27,14 +27,14 @@ jobs:
           workflow: frontend-build.yml
           workflow_conclusion: success
           name: mobile-web.bundle
-          path: mobile/html
+          path: mobile/html/Web.bundle
 
       - name: 'Download main.js Artifact for a release'
         if: inputs.semver != ''  # Only if fired as job in release.yml
         uses: actions/download-artifact@v3
         with:
-          name: mobile-main-js
-          path: mobile/html/Web.bundle/js/
+          name: mobile-web.bundle
+          path: mobile/html/Web.bundle
 
       - name: 'Install npm Dependencies'
         run: |
