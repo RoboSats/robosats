@@ -4,6 +4,7 @@ Tested on Ubuntu 20.04 and OSX 12.5.1
 
 ## Install JDK
 
+Make sure you install version 17
 ```
 sudo apt update
 sudo apt install default-jdk
@@ -55,6 +56,11 @@ Make sure you have NDK installed : `Tools > SDK Manager > SDK Tools > NDK (Side 
 
 ## Launch app builder and
 
+Make sure you have the `build.js` file created on `robosats/mobile/html/Web.bundle/js`, if not, go to `robosats/frontend/`
+```
+npm run dev
+```
+
 Point a terminal to `/robosats/mobile/`
 
 ```
@@ -71,19 +77,22 @@ npx react-native run-android
 
 ## Install JDK
 
+Make sure you install version 17
 ```
 https://www.oracle.com/java/technologies/downloads
 ```
 
 ## Install Android Studio
 
-Download and install https://developer.android.com/studio/index.html.
+Download and install https://developer.android.com/studio/index.html
 Make sure you have the following libraries installed globally.
 
 ```
-npm -i react-native-cli
+npm install -g react-native-cli
 brew install android-platform-tools
 ```
+
+Open `robosats/mobile/android` to start the first build process.
 
 ## Install watchman
 
@@ -109,13 +118,12 @@ Make sure you have NDK installed : `Tools > SDK Manager > SDK Tools > NDK (Side 
 
 ## Run app
 
+Make sure you have the `main.js` file created on `robosats/mobile/html/Web.bundle/js`, if not, go to `robosats/frontend/`
+```
+npm run dev
+```
+
 Point a terminal to `robosats/mobile/`
-
-```
-npx react-native start --reset-cache
-```
-
-To create builds, on another temrinal also in `robosats/mobile/`
 
 ```
 npx react-native run-android
