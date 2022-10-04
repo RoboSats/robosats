@@ -13,6 +13,7 @@ import {
   Tab,
   Tabs,
   SliderThumb,
+  Switch,
   Tooltip,
   Paper,
   Button,
@@ -41,10 +42,7 @@ import FlagWithProps from './FlagWithProps';
 import AutocompletePayments from './AutocompletePayments';
 import currencyDict from '../../static/assets/currencies.json';
 
-// icons
-import LockIcon from '@mui/icons-material/Lock';
-import HourglassTopIcon from '@mui/icons-material/HourglassTop';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { SelfImprovement, Lock, HourglassTop, ExpandMore } from '@mui/icons-material';
 
 import { getCookie } from '../utils/cookies';
 import { pn } from '../utils/prettyNumbers';
@@ -85,6 +83,7 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
     amount: '',
     paymentMethod: new Array(),
     paymentMethodText: 'Not specified',
+    badPaymentMethod: false,
     premium: '',
     satoshis: '',
     publicExpiryTime: new Date(0, 0, 0, 23, 59),
@@ -97,6 +96,7 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
     badSatoshisText: '',
     badExactPrice: '',
   });
+  const [advancedOptions, setAdvancedOptions] = useState<boolean>(false);
   const [amountLimits, setAmountLimits] = useState<number[]>([1, 1000]);
   const [satoshisLimits, setSatoshisLimits] = useState<number[]>([20000, 4000000]);
   const [currentPrice, setCurrentPrice] = useState<number | string>('...');
@@ -105,7 +105,7 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
   useEffect(() => {
     if (Object.keys(limits).length === 0) {
       setAppState({ loadingLimits: true });
-      apiClient.get('/api/limits/').then((data: LimitList) => {
+      apiClient.get('/api/limits/').then((data) => {
         setAppState({ limits: data, loadingLimits: false });
         updateAmountLimits(data, currency);
         updateCurrentPrice(data, currency);
@@ -410,6 +410,24 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
 
   return (
     <Paper elevation={12} style={{ padding: 8, width: '16.25em' }}>
+      <Grid container justifyContent='flex-end'>
+        <Grid item>
+          <Tooltip enterTouchDelay={0} placement='top' title={t('Enable advanced options')}>
+            <div style={{ display: 'flex', width: '4em' }}>
+              <Switch
+                size='small'
+                checked={advancedOptions}
+                onChange={() => {
+                  setAdvancedOptions(!advancedOptions);
+                  handleClickRelative();
+                }}
+              />
+              <SelfImprovement sx={{ color: 'text.secondary' }} />
+            </div>
+          </Tooltip>
+        </Grid>
+      </Grid>
+
       <Grid container spacing={1} justifyContent='center' alignItems='center'>
         <Grid item xs={12}>
           <FormControl component='fieldset'>
@@ -539,48 +557,48 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
             addNewButtonText={t('Add New')}
           />
         </Grid>
-
-        <Grid item xs={12}>
-          <FormControl component='fieldset'>
-            <FormHelperText sx={{ textAlign: 'center', position: 'relative', top: '0.2em' }}>
-              {t('Choose a Pricing Method')}
-            </FormHelperText>
-            <RadioGroup row defaultValue='relative'>
-              <Tooltip
-                placement='top'
-                enterTouchDelay={0}
-                enterDelay={1000}
-                enterNextDelay={2000}
-                title={t('Let the price move with the market')}
-              >
-                <FormControlLabel
-                  value='relative'
-                  control={<Radio color='primary' />}
-                  label={t('Relative')}
-                  labelPlacement='end'
-                  onClick={handleClickRelative}
-                />
-              </Tooltip>
-              <Tooltip
-                placement='top'
-                enterTouchDelay={0}
-                enterDelay={1000}
-                enterNextDelay={2000}
-                title={t('Set a fix amount of satoshis')}
-              >
-                <FormControlLabel
-                  disabled={maker.amountRange}
-                  value='explicit'
-                  control={<Radio color='secondary' />}
-                  label={t('Explicit')}
-                  labelPlacement='end'
-                  onClick={handleClickExplicit}
-                />
-              </Tooltip>
-            </RadioGroup>
-          </FormControl>
-        </Grid>
-
+        {advancedOptions ? null : (
+          <Grid item xs={12}>
+            <FormControl component='fieldset'>
+              <FormHelperText sx={{ textAlign: 'center', position: 'relative', top: '0.2em' }}>
+                {t('Choose a Pricing Method')}
+              </FormHelperText>
+              <RadioGroup row defaultValue='relative'>
+                <Tooltip
+                  placement='top'
+                  enterTouchDelay={0}
+                  enterDelay={1000}
+                  enterNextDelay={2000}
+                  title={t('Let the price move with the market')}
+                >
+                  <FormControlLabel
+                    value='relative'
+                    control={<Radio color='primary' />}
+                    label={t('Relative')}
+                    labelPlacement='end'
+                    onClick={handleClickRelative}
+                  />
+                </Tooltip>
+                <Tooltip
+                  placement='top'
+                  enterTouchDelay={0}
+                  enterDelay={1000}
+                  enterNextDelay={2000}
+                  title={t('Set a fix amount of satoshis')}
+                >
+                  <FormControlLabel
+                    disabled={advancedOptions}
+                    value='explicit'
+                    control={<Radio color='secondary' />}
+                    label={t('Explicit')}
+                    labelPlacement='end'
+                    onClick={handleClickExplicit}
+                  />
+                </Tooltip>
+              </RadioGroup>
+            </FormControl>
+          </Grid>
+        )}
         <Grid item xs={12}>
           <div style={{ display: maker.isExplicit ? '' : 'none' }}>
             <TextField
