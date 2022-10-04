@@ -1,5 +1,6 @@
 import path from 'path';
 import { Configuration } from 'webpack';
+import CopyPlugin from 'copy-webpack-plugin';
 
 const config: Configuration = {
   entry: './src/index.js',
@@ -47,6 +48,16 @@ const configMobile: Configuration = {
       },
     ],
   },
+  plugins: [
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'static/css'),
+          to: path.resolve(__dirname, '../mobile/html/Web.bundle/css'),
+        },
+      ],
+    }),
+  ],
   output: {
     path: path.resolve(__dirname, '../mobile/html/Web.bundle/js'),
     filename: 'main.js',

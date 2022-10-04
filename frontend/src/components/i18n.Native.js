@@ -12,7 +12,10 @@ import translationFR from '../../static/locales/fr.json';
 import translationCA from '../../static/locales/ca.json';
 import translationIT from '../../static/locales/it.json';
 import translationPT from '../../static/locales/pt.json';
-import translationEU from '../../static/locales/th.json';
+import translationTH from '../../static/locales/th.json';
+import translationCS from '../../static/locales/cs.json';
+import translationEU from '../../static/locales/eu.json';
+import translationSV from '../../static/locales/sv.json';
 
 const config = {
   resources: {
@@ -26,6 +29,10 @@ const config = {
     it: { translations: translationIT },
     pt: { translations: translationPT },
     eu: { translations: translationEU },
+    cs: { translations: translationCS },
+    th: { translations: translationTH },
+    pl: { translations: translationPL },
+    sv: { translations: translationSV },
   },
   fallbackLng: 'en',
   debug: false,
