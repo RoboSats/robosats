@@ -20,14 +20,14 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v3
 
-      - name: 'Download main.js Artifact'
+      - name: 'Download Android Web.bundle Artifact (built frontend)'
         if: inputs.semver == ''  # Only if workflow fired from frontend-build.yml
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: frontend-build.yml
           workflow_conclusion: success
-          name: mobile-main-js
-          path: mobile/html/Web.bundle/js/
+          name: mobile-web.bundle
+          path: mobile/html
 
       - name: 'Download main.js Artifact for a release'
         if: inputs.semver != ''  # Only if fired as job in release.yml
@@ -39,7 +39,7 @@ jobs:
       - name: 'Install npm Dependencies'
         run: |
           cd mobile
-          npm install --force
+          npm install
 
       - uses: actions/setup-java@v3
         with:
