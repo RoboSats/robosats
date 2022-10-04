@@ -57,7 +57,7 @@ Make sure you have NDK installed : `Tools > SDK Manager > SDK Tools > NDK (Side 
 
 ## Launch app builder and
 
-Make sure you have the `build.js` file created on `robosats/mobile/html/Web.bundle/js`, if not, go to `robosats/frontend/`
+Make sure you have the `main.js` file created on `robosats/mobile/html/Web.bundle/js`, if not, go to `robosats/frontend/`
 
 ```
 npm run dev
