@@ -51,7 +51,10 @@ const configMobile: Configuration = {
   plugins: [
     new CopyPlugin({
       patterns: [
-        { from: path.resolve(__dirname, 'static/css'), to: path.resolve(__dirname, '../mobile/html/Web.bundle/css') }
+        { 
+          from: path.resolve(__dirname, 'static/css'), 
+          to: path.resolve(__dirname, '../mobile/html/Web.bundle/css') 
+        }
       ],
     }),
   ],
