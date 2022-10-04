@@ -10,8 +10,8 @@ export interface Maker {
   escrowExpiryTime: Date;
   bondSize: number;
   amountRange: boolean;
-  minAmount: number | null;
-  maxAmount: number | null;
+  minAmount: string;
+  maxAmount: string;
   badExactPrice: number | string | null;
   badSatoshisText: string;
   badPremiumText: string;

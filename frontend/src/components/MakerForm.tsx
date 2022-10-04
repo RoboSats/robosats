@@ -56,24 +56,6 @@ interface Props {
   currency: number;
   setAppState: (state: object) => void;
   setMaker: (state: object) => void;
-  //       tabValue: 0,
-  //       openStoreToken:  ,
-  //       is_explicit: false,
-  //       type: null,
-  //       currency: this.defaultCurrency,
-  //       currencyCode: this.defaultCurrencyCode,
-  //       payment_method: this.defaultPaymentMethod,
-  //       premium: 0,
-  //       satoshis: '',
-  //       publicExpiryTime: new Date(0, 0, 0, 23, 59),
-  //       escrowExpiryTime: new Date(0, 0, 0, 3, 0),
-  //       enableAmountRange: false,
-  //       bondSize: 3,
-  //       limits: null,
-  //       minAmount: '',
-  //       maxAmount: '',
-  //       loadingLimits: true,
-  //       badPaymentMethod: '',
 }
 
 const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props): JSX.Element => {
@@ -90,8 +72,8 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
     escrowExpiryTime: new Date(0, 0, 0, 3, 0),
     bondSize: 3,
     amountRange: false,
-    minAmount: null,
-    maxAmount: null,
+    minAmount: '',
+    maxAmount: '',
     badPremiumText: '',
     badSatoshisText: '',
     badExactPrice: '',
@@ -101,6 +83,9 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
   const [satoshisLimits, setSatoshisLimits] = useState<number[]>([20000, 4000000]);
   const [currentPrice, setCurrentPrice] = useState<number | string>('...');
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
+
+  const maxRangeAmountMultiple = 7.8;
+  const minRangeAmountMultiple = 1.6;
 
   useEffect(() => {
     if (Object.keys(limits).length === 0) {
@@ -118,13 +103,14 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
 
   const updateAmountLimits = function (limits: LimitList, currency: number) {
     const index = currency === 0 ? 1 : currency;
-    var minAmount: number = limits[index].min_amount * (1 + maker.premium / 100);
-    var maxAmount: number = limits[index].max_amount * (1 + maker.premium / 100);
+    var minAmountLimit: number = limits[index].min_amount * (1 + maker.premium / 100);
+    var maxAmountLimit: number = limits[index].max_amount * (1 + maker.premium / 100);
+
     // times 1.1 to allow a bit of margin with respect to the backend minimum
-    minAmount = minAmount * 1.1; // parseFloat(Number(minAmount * 1.1).toPrecision(2))
+    minAmountLimit = minAmountLimit * 1.1;
     // times 0.98 to allow a bit of margin with respect to the backend minimum
-    maxAmount = maxAmount * 0.98; // parseFloat(Number(maxAmount * 0.98).toPrecision(2));
-    setAmountLimits([minAmount, maxAmount]);
+    maxAmountLimit = maxAmountLimit * 0.98;
+    setAmountLimits([minAmountLimit, maxAmountLimit]);
   };
 
   const updateSatoshisLimits = function (limits: LimitList) {
@@ -153,7 +139,7 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
     });
     updateAmountLimits(limits, newCurrency);
     updateCurrentPrice(limits, newCurrency);
-    if (maker.amountRange) {
+    if (advancedOptions) {
       setMaker({
         ...maker,
         minAmount: parseFloat(Number(limits[newCurrency].max_amount * 0.25).toPrecision(2)),
@@ -186,52 +172,19 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
   //     });
   //   };
 
-  //   handleMinAmountChange = (e) => {
-  //     this.setState({
-  //       minAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
-  //     });
-  //   };
+  const handleMinAmountChange = function (e) {
+    setMaker({
+      ...maker,
+      minAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
+    });
+  };
 
-  //   handleMaxAmountChange = (e) => {
-  //     this.setState({
-  //       maxAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
-  //     });
-  //   };
-
-  //   handleRangeAmountChange = (e, newValue, activeThumb) => {
-  //     const maxAmount = this.getMaxAmount();
-  //     const minAmount = this.getMinAmount();
-  //     let lowerValue = e.target.value[0];
-  //     let upperValue = e.target.value[1];
-  //     const minRange = this.minRangeAmountMultiple;
-  //     const maxRange = this.maxRangeAmountMultiple;
-
-  //     if (lowerValue > maxAmount / minRange) {
-  //       lowerValue = maxAmount / minRange;
-  //     }
-  //     if (upperValue < minRange * minAmount) {
-  //       upperValue = minRange * minAmount;
-  //     }
-
-  //     if (lowerValue > upperValue / minRange) {
-  //       if (activeThumb === 0) {
-  //         upperValue = minRange * lowerValue;
-  //       } else {
-  //         lowerValue = upperValue / minRange;
-  //       }
-  //     } else if (lowerValue < upperValue / maxRange) {
-  //       if (activeThumb === 0) {
-  //         upperValue = maxRange * lowerValue;
-  //       } else {
-  //         lowerValue = upperValue / maxRange;
-  //       }
-  //     }
-
-  //     this.setState({
-  //       minAmount: parseFloat(Number(lowerValue).toPrecision(lowerValue < 100 ? 2 : 3)),
-  //       maxAmount: parseFloat(Number(upperValue).toPrecision(upperValue < 100 ? 2 : 3)),
-  //     });
-  //   };
+  const handleMaxAmountChange = function (e) {
+    setMaker({
+      ...maker,
+      maxAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
+    });
+  };
 
   const handlePremiumChange = function (e: object) {
     const max = 999;
@@ -255,14 +208,14 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
 
   const handleSatoshisChange = function (e: object) {
     const newSatoshis = e.target.value;
-    let badSatoshistext: string = '';
-    let satoshis: number = newSatoshis;
+    let badSatoshisText: string = '';
+    let satoshis: string = newSatoshis;
     if (newSatoshis > satoshisLimits[1]) {
-      badSatoshistext = t('Must be less than {{maxSats}', { maxSats: pn(satoshisLimits[1]) });
+      badSatoshisText = t('Must be less than {{maxSats}', { maxSats: pn(satoshisLimits[1]) });
       satoshis = satoshisLimits[1];
     }
     if (newSatoshis < satoshisLimits[0]) {
-      badSatoshistext = t('Must be more than {{minSats}}', { minSats: pn(satoshisLimits[0]) });
+      badSatoshisText = t('Must be more than {{minSats}}', { minSats: pn(satoshisLimits[0]) });
       satoshis = satoshisLimits[0];
     }
 
@@ -281,8 +234,9 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
   };
 
   const handleClickExplicit = function () {
-    if (!maker.amountRange) {
+    if (!maker.advancedOptions) {
       setMaker({
+        ...maker,
         isExplicit: true,
       });
     }
@@ -347,66 +301,93 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
   //   });
   // };
 
-  // RangeThumbComponent(props) {
-  //   const { children, ...other } = props;
-  //   return (
-  //     <SliderThumb {...other}>
-  //       {children}
-  //       <span className='range-bar' />
-  //       <span className='range-bar' />
-  //       <span className='range-bar' />
-  //     </SliderThumb>
-  //   );
-  // }
+  const RangeThumbComponent = function (props: object) {
+    const { children, ...other } = props;
+    return (
+      <SliderThumb {...other}>
+        {children}
+        <span className='range-bar' />
+        <span className='range-bar' />
+        <span className='range-bar' />
+      </SliderThumb>
+    );
+  };
 
-  // minAmountError = function {
-  //   return (
-  //     this.state.minAmount < this.getMinAmount() ||
-  //     this.state.maxAmount < this.state.minAmount ||
-  //     this.state.minAmount < this.state.maxAmount / (this.maxRangeAmountMultiple + 0.15) ||
-  //     this.state.minAmount * (this.minRangeAmountMultiple - 0.1) > this.state.maxAmount
-  //   );
-  // };
+  const handleClickAdvanced = function () {
+    if (advancedOptions) {
+      handleClickRelative();
+    } else {
+      resetRange();
+    }
 
-  // maxAmountError = function {
-  //   return (
-  //     this.state.maxAmount > this.getMaxAmount() ||
-  //     this.state.maxAmount < this.state.minAmount ||
-  //     this.state.minAmount < this.state.maxAmount / (this.maxRangeAmountMultiple + 0.15) ||
-  //     this.state.minAmount * (this.minRangeAmountMultiple - 0.1) > this.state.maxAmount
-  //   );
-  // };
+    setAdvancedOptions(!advancedOptions);
+  };
 
-  // rangeText = function {
-  //   const { t } = this.props;
-  //   return (
-  //     <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-  //       <span style={{ width: t('From').length * 8 + 2, textAlign: 'left' }}>{t('From')}</span>
-  //       <TextField
-  //         variant='standard'
-  //         type='number'
-  //         size='small'
-  //         value={this.state.minAmount}
-  //         onChange={this.handleMinAmountChange}
-  //         error={this.minAmountError()}
-  //         sx={{ width: this.state.minAmount.toString().length * 9, maxWidth: 40 }}
-  //       />
-  //       <span style={{ width: t('to').length * 8, textAlign: 'center' }}>{t('to')}</span>
-  //       <TextField
-  //         variant='standard'
-  //         size='small'
-  //         type='number'
-  //         value={this.state.maxAmount}
-  //         error={this.maxAmountError()}
-  //         onChange={this.handleMaxAmountChange}
-  //         sx={{ width: this.state.maxAmount.toString().length * 9, maxWidth: 50 }}
-  //       />
-  //       <span style={{ width: this.state.currencyCode.length * 9 + 3, textAlign: 'right' }}>
-  //         {this.state.currencyCode}
-  //       </span>
-  //     </div>
-  //   );
-  // };
+  const minAmountError = function () {
+    return (
+      maker.minAmount < amountLimits[0] ||
+      maker.maxAmount < maker.minAmount ||
+      maker.minAmount < maker.maxAmount / (maxRangeAmountMultiple + 0.15) ||
+      maker.minAmount * (minRangeAmountMultiple - 0.1) > maker.maxAmount
+    );
+  };
+
+  const maxAmountError = function () {
+    return (
+      maker.maxAmount > amountLimits[1] ||
+      maker.maxAmount < maker.minAmount ||
+      maker.minAmount < maker.maxAmount / (maxRangeAmountMultiple + 0.15) ||
+      maker.minAmount * (minRangeAmountMultiple - 0.1) > maker.maxAmount
+    );
+  };
+
+  const resetRange = function () {
+    const index = currency === 0 ? 1 : currency;
+    const minAmount = maker.amount
+      ? parseFloat((maker.amount / 2).toPrecision(2))
+      : parseFloat(Number(limits[index].max_amount * 0.25).toPrecision(2));
+    const maxAmount = maker.amount
+      ? parseFloat(maker.amount)
+      : parseFloat(Number(limits[index].max_amount * 0.75).toPrecision(2));
+
+    setMaker({
+      ...maker,
+      minAmount,
+      maxAmount,
+    });
+  };
+
+  const handleRangeAmountChange = function (e: any, newValue, activeThumb: number) {
+    let minAmount = e.target.value[0];
+    let maxAmount = e.target.value[1];
+
+    if (minAmount > amountLimits[1] / minRangeAmountMultiple) {
+      minAmount = amountLimits[1] / minRangeAmountMultiple;
+    }
+    if (maxAmount < minRangeAmountMultiple * amountLimits[0]) {
+      maxAmount = minRangeAmountMultiple * amountLimits[0];
+    }
+
+    if (minAmount > maxAmount / minRangeAmountMultiple) {
+      if (activeThumb === 0) {
+        maxAmount = minRangeAmountMultiple * minAmount;
+      } else {
+        minAmount = maxAmount / minRangeAmountMultiple;
+      }
+    } else if (minAmount < maxAmount / maxRangeAmountMultiple) {
+      if (activeThumb === 0) {
+        maxAmount = maxRangeAmountMultiple * minAmount;
+      } else {
+        minAmount = maxAmount / maxRangeAmountMultiple;
+      }
+    }
+
+    setMaker({
+      ...maker,
+      minAmount: parseFloat(Number(minAmount).toPrecision(minAmount < 100 ? 2 : 3)),
+      maxAmount: parseFloat(Number(maxAmount).toPrecision(maxAmount < 100 ? 2 : 3)),
+    });
+  };
 
   return (
     <Paper elevation={12} style={{ padding: 8, width: '16.25em' }}>
@@ -416,11 +397,9 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
             <div style={{ display: 'flex', width: '4em' }}>
               <Switch
                 size='small'
+                disabled={loadingLimits}
                 checked={advancedOptions}
-                onChange={() => {
-                  setAdvancedOptions(!advancedOptions);
-                  handleClickRelative();
-                }}
+                onChange={handleClickAdvanced}
               />
               <SelfImprovement sx={{ color: 'text.secondary' }} />
             </div>
@@ -437,7 +416,7 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
             <div style={{ textAlign: 'center' }}>
               <ButtonGroup>
                 <Button
-                  size='large'
+                  size={advancedOptions ? 'small' : 'large'}
                   variant='contained'
                   onClick={() =>
                     setAppState({
@@ -456,7 +435,7 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
                   {t('Buy')}
                 </Button>
                 <Button
-                  size='large'
+                  size={advancedOptions ? 'small' : 'large'}
                   variant='contained'
                   onClick={() =>
                     setAppState({
@@ -479,69 +458,182 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
             </div>
           </FormControl>
         </Grid>
-        <Grid item>
-          <Grid alignItems='stretch' style={{ display: 'flex' }}>
-            <Grid item>
-              <Tooltip
-                placement='top'
-                enterTouchDelay={500}
-                enterDelay={700}
-                enterNextDelay={2000}
-                title={t('Amount of fiat to exchange for bitcoin')}
-              >
+        {advancedOptions ? (
+          <Grid item>
+            <FormControl>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <Typography
+                  sx={{
+                    width: `${t('From').length * 0.56 + 0.6}em`,
+                    textAlign: 'left',
+                    color: 'text.secondary',
+                  }}
+                  variant='caption'
+                >
+                  {t('From')}
+                </Typography>
                 <TextField
-                  disabled={maker.amountRange}
-                  variant={maker.amountRange ? 'filled' : 'outlined'}
-                  error={
-                    maker.amount != '' &&
-                    (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])
-                  }
-                  helperText={
-                    maker.amount < amountLimits[0] && maker.amount != ''
-                      ? t('Must be more than {{minAmount}}', {
-                          minAmount: pn(parseFloat(amountLimits[0].toPrecision(2))),
-                        })
-                      : maker.amount > amountLimits[1] && maker.amount != ''
-                      ? t('Must be less than {{maxAmount}}', {
-                          maxAmount: pn(parseFloat(amountLimits[1].toPrecision(2))),
-                        })
-                      : null
-                  }
-                  label={t('Amount')}
-                  required={true}
-                  value={maker.amount}
+                  variant='standard'
                   type='number'
+                  size='small'
+                  value={maker.minAmount}
+                  onChange={handleMinAmountChange}
+                  error={minAmountError()}
+                  sx={{
+                    width: `${maker.minAmount.toString().length * 0.56}em`,
+                    minWidth: '0.56em',
+                    maxWidth: '2.8em',
+                  }}
+                />
+                <Typography
+                  sx={{
+                    width: `${t('to').length * 0.56 + 0.6}em`,
+                    textAlign: 'center',
+                    color: 'text.secondary',
+                  }}
+                  variant='caption'
+                >
+                  {t('to')}
+                </Typography>
+                <TextField
+                  variant='standard'
+                  size='small'
+                  type='number'
+                  value={maker.maxAmount}
+                  onChange={handleMaxAmountChange}
+                  error={maxAmountError()}
+                  sx={{
+                    width: `${maker.maxAmount.toString().length * 0.56}em`,
+                    minWidth: '0.56em',
+                    maxWidth: '3.36em',
+                  }}
+                />
+                <div style={{ width: '0.5em' }} />
+                <Select
+                  sx={{ width: '3.8em' }}
+                  variant='standard'
+                  size='small'
+                  required={true}
                   inputProps={{
-                    min: 0,
                     style: { textAlign: 'center' },
                   }}
-                  onChange={(e) => setMaker({ amount: e.target.value })}
-                />
-              </Tooltip>
-            </Grid>
+                  value={currency == 0 ? 1 : currency}
+                  renderValue={() => currencyCode}
+                  onChange={(e) => handleCurrencyChange(e.target.value)}
+                >
+                  {Object.entries(currencyDict).map(([key, value]) => (
+                    <MenuItem key={key} value={parseInt(key)}>
+                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <FlagWithProps code={value} />
+                        {' ' + value}
+                      </div>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </div>
 
-            <Grid item>
-              <Select
-                sx={{ width: '7.5em' }}
-                required={true}
-                inputProps={{
-                  style: { textAlign: 'center' },
-                }}
-                value={currency == 0 ? 1 : currency}
-                onChange={(e) => handleCurrencyChange(e.target.value)}
-              >
-                {Object.entries(currencyDict).map(([key, value]) => (
-                  <MenuItem key={key} value={parseInt(key)}>
-                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                      <FlagWithProps code={value} />
-                      {' ' + value}
-                    </div>
-                  </MenuItem>
-                ))}
-              </Select>
+              <div>
+                <RangeSlider
+                  disableSwap={true}
+                  sx={{ align: 'center' }}
+                  disabled={!advancedOptions || loadingLimits}
+                  value={[Number(maker.minAmount), Number(maker.maxAmount)]}
+                  step={(amountLimits[1] - amountLimits[0]) / 5000}
+                  valueLabelDisplay='auto'
+                  components={{ Thumb: RangeThumbComponent }}
+                  valueLabelFormat={(x) =>
+                    pn(parseFloat(Number(x).toPrecision(x < 100 ? 2 : 3))) + ' ' + currencyCode
+                  }
+                  marks={
+                    limits == null
+                      ? false
+                      : [
+                          {
+                            value: amountLimits[0] * 1.01,
+                            label: `${pn(
+                              parseFloat(Number(amountLimits[0] * 1.01).toPrecision(3)),
+                            )} ${currencyCode}`,
+                          },
+                          {
+                            value: amountLimits[1] * 0.99,
+                            label: `${pn(
+                              parseFloat(Number(amountLimits[1] * 0.99).toPrecision(3)),
+                            )} ${currencyCode}`,
+                          },
+                        ]
+                  }
+                  min={amountLimits[0] * 1.01}
+                  max={amountLimits[1] * 0.99}
+                  onChange={handleRangeAmountChange}
+                />
+              </div>
+            </FormControl>
+          </Grid>
+        ) : (
+          <Grid item>
+            <Grid alignItems='stretch' style={{ display: 'flex' }}>
+              <Grid item>
+                <Tooltip
+                  placement='top'
+                  enterTouchDelay={500}
+                  enterDelay={700}
+                  enterNextDelay={2000}
+                  title={t('Amount of fiat to exchange for bitcoin')}
+                >
+                  <TextField
+                    disabled={maker.amountRange}
+                    variant={maker.amountRange ? 'filled' : 'outlined'}
+                    error={
+                      maker.amount != '' &&
+                      (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])
+                    }
+                    helperText={
+                      maker.amount < amountLimits[0] && maker.amount != ''
+                        ? t('Must be more than {{minAmount}}', {
+                            minAmount: pn(parseFloat(amountLimits[0].toPrecision(2))),
+                          })
+                        : maker.amount > amountLimits[1] && maker.amount != ''
+                        ? t('Must be less than {{maxAmount}}', {
+                            maxAmount: pn(parseFloat(amountLimits[1].toPrecision(2))),
+                          })
+                        : null
+                    }
+                    label={t('Amount')}
+                    required={true}
+                    value={maker.amount}
+                    type='number'
+                    inputProps={{
+                      min: 0,
+                      style: { textAlign: 'center' },
+                    }}
+                    onChange={(e) => setMaker({ amount: e.target.value })}
+                  />
+                </Tooltip>
+              </Grid>
+
+              <Grid item>
+                <Select
+                  sx={{ width: '7.5em' }}
+                  required={true}
+                  inputProps={{
+                    style: { textAlign: 'center' },
+                  }}
+                  value={currency == 0 ? 1 : currency}
+                  onChange={(e) => handleCurrencyChange(e.target.value)}
+                >
+                  {Object.entries(currencyDict).map(([key, value]) => (
+                    <MenuItem key={key} value={parseInt(key)}>
+                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <FlagWithProps code={value} />
+                        {' ' + value}
+                      </div>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Grid>
             </Grid>
           </Grid>
-        </Grid>
+        )}
 
         <Grid item xs={12}>
           <AutocompletePayments
@@ -557,6 +649,7 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
             addNewButtonText={t('Add New')}
           />
         </Grid>
+
         {advancedOptions ? null : (
           <Grid item xs={12}>
             <FormControl component='fieldset'>
@@ -590,7 +683,7 @@ const MakerForm = ({ limits, loadingLimits, currency, type, setAppState }: Props
                     disabled={advancedOptions}
                     value='explicit'
                     control={<Radio color='secondary' />}
-                    label={t('Explicit')}
+                    label={t('Exact')}
                     labelPlacement='end'
                     onClick={handleClickExplicit}
                   />
@@ -734,21 +827,6 @@ export default MakerForm;
 //       }),
 //     );
 //   }
-
-//   recalcBounds = function {
-//     this.setState({
-//       minAmount: maker.amount
-//         ? parseFloat((maker.amount / 2).toPrecision(2))
-//         : parseFloat(
-//             Number(this.state.limits[this.state.currency].max_amount * 0.25).toPrecision(2),
-//           ),
-//       maxAmount: maker.amount
-//         ? maker.amount
-//         : parseFloat(
-//             Number(this.state.limits[this.state.currency].max_amount * 0.75).toPrecision(2),
-//           ),
-//     });
-//   };
 
 //   a11yProps(index) {
 //     return {
@@ -1238,17 +1316,17 @@ export default MakerForm;
 //     return parseFloat(Number(min_amount * 1.1).toPrecision(2));
 //   };
 
-//   RangeThumbComponent(props) {
-//     const { children, ...other } = props;
-//     return (
-//       <SliderThumb {...other}>
-//         {children}
-//         <span className='range-bar' />
-//         <span className='range-bar' />
-//         <span className='range-bar' />
-//       </SliderThumb>
-//     );
-//   }
+// const RangeThumbComponent = function(props:object) {
+//   const { children, ...other } = props;
+//   return (
+//     <SliderThumb {...other}>
+//       {children}
+//       <span className='range-bar' />
+//       <span className='range-bar' />
+//       <span className='range-bar' />
+//     </SliderThumb>
+//   );
+// }
 
 //   minAmountError = function {
 //     return (
@@ -1265,37 +1343,6 @@ export default MakerForm;
 //       this.state.maxAmount < this.state.minAmount ||
 //       this.state.minAmount < this.state.maxAmount / (this.maxRangeAmountMultiple + 0.15) ||
 //       this.state.minAmount * (this.minRangeAmountMultiple - 0.1) > this.state.maxAmount
-//     );
-//   };
-
-//   rangeText = function {
-//     const { t } = this.props;
-//     return (
-//       <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-//         <span style={{ width: t('From').length * 8 + 2, textAlign: 'left' }}>{t('From')}</span>
-//         <TextField
-//           variant='standard'
-//           type='number'
-//           size='small'
-//           value={this.state.minAmount}
-//           onChange={this.handleMinAmountChange}
-//           error={this.minAmountError()}
-//           sx={{ width: this.state.minAmount.toString().length * 9, maxWidth: 40 }}
-//         />
-//         <span style={{ width: t('to').length * 8, textAlign: 'center' }}>{t('to')}</span>
-//         <TextField
-//           variant='standard'
-//           size='small'
-//           type='number'
-//           value={this.state.maxAmount}
-//           error={this.maxAmountError()}
-//           onChange={this.handleMaxAmountChange}
-//           sx={{ width: this.state.maxAmount.toString().length * 9, maxWidth: 50 }}
-//         />
-//         <span style={{ width: this.state.currencyCode.length * 9 + 3, textAlign: 'right' }}>
-//           {this.state.currencyCode}
-//         </span>
-//       </div>
 //     );
 //   };
 

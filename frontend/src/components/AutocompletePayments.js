@@ -25,9 +25,10 @@ const Label = styled('label')(
   color: ${
     theme.palette.mode === 'dark' ? (error ? '#f44336' : '#cfcfcf') : error ? '#dd0000' : '#717171'
   };
-  align: center;
+  pointer-events: none;
   position: relative;
-  top: 0.6em;
+  left: 1em;
+  top: 0.72em;
   maxHeight: 0em;
   height: 0em;
   white-space: no-wrap;
@@ -114,7 +115,7 @@ const StyledTag = styled(Tag)(
   ({ theme }) => `
   display: flex;
   align-items: center;
-  height: 2.3em;
+  height: 2.1em;
   margin: 2px;
   line-height: 1.5em;
   background-color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'};
@@ -160,7 +161,7 @@ const ListHeader = styled('span')(
 
 const Listbox = styled('ul')(
   ({ theme }) => `
-  width: 95%;
+  width: 82%;
   margin: 2px 0 0;
   padding: 0;
   position: absolute;
@@ -264,7 +265,7 @@ export default function AutocompletePayments(props) {
       >
         <div {...getRootProps()}>
           {value.length == 0 && val.length == 0 ? (
-            <div style={{ height: 0 }}>
+            <div style={{ height: 0, display: 'flex', alignItems: 'flex-start' }}>
               <Label {...getInputLabelProps()} error={props.error ? 'error' : null}>
                 {props.label}
               </Label>
