@@ -5,6 +5,7 @@ Tested on Ubuntu 20.04 and OSX 12.5.1
 ## Install JDK
 
 Make sure you install version 17
+
 ```
 sudo apt update
 sudo apt install default-jdk
@@ -57,6 +58,7 @@ Make sure you have NDK installed : `Tools > SDK Manager > SDK Tools > NDK (Side 
 ## Launch app builder and
 
 Make sure you have the `build.js` file created on `robosats/mobile/html/Web.bundle/js`, if not, go to `robosats/frontend/`
+
 ```
 npm run dev
 ```
@@ -78,6 +80,7 @@ npx react-native run-android
 ## Install JDK
 
 Make sure you install version 17
+
 ```
 https://www.oracle.com/java/technologies/downloads
 ```
@@ -119,6 +122,7 @@ Make sure you have NDK installed : `Tools > SDK Manager > SDK Tools > NDK (Side 
 ## Run app
 
 Make sure you have the `main.js` file created on `robosats/mobile/html/Web.bundle/js`, if not, go to `robosats/frontend/`
+
 ```
 npm run dev
 ```

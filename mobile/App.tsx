@@ -48,7 +48,7 @@ const App = () => {
         onMessage={onMessage}
         // @ts-expect-error
         ref={(ref) => (webViewRef.current = ref)}
-        overScrollMode="never"
+        overScrollMode='never'
         javaScriptEnabled={true}
         domStorageEnabled={true}
         sharedCookiesEnabled={true}
