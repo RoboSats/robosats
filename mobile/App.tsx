@@ -27,7 +27,6 @@ const App = () => {
     if (data.category === 'http') {
       sendTorStatus();
 
-      console.log(data);
       if (data.type === 'get') {
         torClient
           .get(data.path)

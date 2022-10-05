@@ -27,7 +27,7 @@ import { genKey } from '../utils/pgp';
 import { getCookie, writeCookie, deleteCookie } from '../utils/cookies';
 import { saveAsJson } from '../utils/saveFile';
 import { systemClient } from '../services/System';
-import { apiClient } from '../services/Api/index';
+import { apiClient } from '../services/api/index';
 import RobotAvatar from './Robots/RobotAvatar';
 
 class UserGenPage extends Component {

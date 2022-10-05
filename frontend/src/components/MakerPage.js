@@ -32,7 +32,7 @@ import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { Link as LinkRouter } from 'react-router-dom';
 import { StoreTokenDialog, NoRobotDialog } from './Dialogs';
-import { apiClient } from '../services/Api';
+import { apiClient } from '../services/api';
 
 import FlagWithProps from './FlagWithProps';
 import AutocompletePayments from './AutocompletePayments';

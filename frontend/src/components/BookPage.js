@@ -17,7 +17,7 @@ import { Link } from 'react-router-dom';
 import currencyDict from '../../static/assets/currencies.json';
 import FlagWithProps from './FlagWithProps';
 import DepthChart from './Charts/DepthChart';
-import { apiClient } from '../services/Api/index';
+import { apiClient } from '../services/api/index';
 
 // Icons
 import { BarChart, FormatListBulleted, Refresh } from '@mui/icons-material';

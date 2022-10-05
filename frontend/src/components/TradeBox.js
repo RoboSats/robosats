@@ -33,7 +33,7 @@ import Chat from './EncryptedChat';
 import TradeSummary from './TradeSummary';
 import MediaQuery from 'react-responsive';
 import { systemClient } from '../services/System';
-import { apiClient } from '../services/Api';
+import { apiClient } from '../services/api';
 
 // Icons
 import PercentIcon from '@mui/icons-material/Percent';

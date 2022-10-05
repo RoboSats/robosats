@@ -54,7 +54,7 @@ import { getCookie } from '../utils/cookies';
 import { pn } from '../utils/prettyNumbers';
 import { systemClient } from '../services/System';
 import { getWebln } from '../utils/webln';
-import { apiClient } from '../services/Api';
+import { apiClient } from '../services/api';
 import RobotAvatar from './Robots/RobotAvatar';
 import statusBadgeColor from '../utils/statusBadgeColor';
 

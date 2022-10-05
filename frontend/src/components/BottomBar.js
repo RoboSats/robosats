@@ -18,7 +18,7 @@ import {
 import MediaQuery from 'react-responsive';
 import Flags from 'country-flag-icons/react/3x2';
 import { Link as LinkRouter } from 'react-router-dom';
-import { apiClient } from '../services/Api';
+import { apiClient } from '../services/api';
 import RobotAvatar from './Robots/RobotAvatar';
 
 // Icons
