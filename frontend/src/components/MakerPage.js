@@ -32,7 +32,7 @@ import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { Link as LinkRouter } from 'react-router-dom';
 import { StoreTokenDialog, NoRobotDialog } from './Dialogs';
-import { apiClient } from '../services/api';
+import { apiClient } from '../services/Api';
 
 import FlagWithProps from './FlagWithProps';
 import AutocompletePayments from './AutocompletePayments';
@@ -45,7 +45,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import { getCookie } from '../utils/cookies';
 import { pn } from '../utils/prettyNumbers';
-import { copyToClipboard } from '../utils/clipboard';
+import { systemClient } from '../services/System';
 
 class MakerPage extends Component {
   defaultCurrency = 1;
@@ -924,7 +924,7 @@ class MakerPage extends Component {
             open={this.state.openStoreToken}
             onClose={() => this.setState({ openStoreToken: false })}
             onClickCopy={() =>
-              copyToClipboard(getCookie('robot_token')) &
+              systemClient.copyToClipboard(getCookie('robot_token')) &
               this.props.setAppState({ copiedToken: true })
             }
             copyIconColor={this.props.copiedToken ? 'inherit' : 'primary'}

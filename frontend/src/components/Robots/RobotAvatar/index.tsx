@@ -3,7 +3,7 @@ import SmoothImage from 'react-smooth-image';
 import { Avatar, Badge, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SendReceiveIcon } from '../../Icons';
-import { apiClient } from '../../../services/api';
+import { apiClient } from '../../../services/Api';
 
 interface Props {
   nickname: string;

@@ -18,9 +18,10 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import { encryptMessage, decryptMessage } from '../utils/pgp';
 import { getCookie } from '../utils/cookies';
 import { saveAsJson } from '../utils/saveFile';
-import { copyToClipboard } from '../utils/clipboard';
 import { AuditPGPDialog } from './Dialogs';
 import RobotAvatar from './Robots/RobotAvatar';
+import { systemClient } from '../services/System';
+
 
 // Icons
 import CheckIcon from '@mui/icons-material/Check';
@@ -336,7 +337,7 @@ class Chat extends Component {
                     <IconButton
                       sx={{ height: 18, width: 18 }}
                       onClick={() =>
-                        copyToClipboard(
+                        systemClient.copyToClipboard(
                           this.state.showPGP[props.index]
                             ? props.message.encryptedMessage
                             : props.message.plainTextMessage,

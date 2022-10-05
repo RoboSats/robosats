@@ -1,9 +1,11 @@
-import { NativeRobosatsPromise, NativeWebViewMessage } from './index.d';
+import { NativeRobosatsPromise, NativeWebViewMessage, NativeWebViewMessageSystem } from './index.d';
 
 class NativeRobosats {
   constructor() {
     this.messageCounter = 0;
   }
+
+  public torDaemonStatus = 'NOTINIT'
 
   private messageCounter: number;
 
@@ -26,6 +28,12 @@ class NativeRobosats {
     if (this.pendingMessages[messageId]) {
       this.pendingMessages[messageId].reject(response);
       delete this.pendingMessages[messageId];
+    }
+  };
+
+  public onMessage: (message: NativeWebViewMessageSystem) => void = (message) => {
+    if (message.type === 'tor') {
+      this.torDaemonStatus = message.detail
     }
   };
 

@@ -32,8 +32,8 @@ import Countdown, { zeroPad } from 'react-countdown';
 import Chat from './EncryptedChat';
 import TradeSummary from './TradeSummary';
 import MediaQuery from 'react-responsive';
-import { copyToClipboard } from '../utils/clipboard';
-import { apiClient } from '../services/api';
+import { systemClient } from '../services/System';
+import { apiClient } from '../services/Api';
 
 // Icons
 import PercentIcon from '@mui/icons-material/Percent';
@@ -286,7 +286,7 @@ class TradeBox extends Component {
               size='small'
               color='inherit'
               onClick={() => {
-                copyToClipboard(this.props.data.bond_invoice);
+                systemClient.copyToClipboard(this.props.data.bond_invoice);
               }}
               align='center'
             >
@@ -420,7 +420,7 @@ class TradeBox extends Component {
               size='small'
               color='inherit'
               onClick={() => {
-                copyToClipboard(this.props.data.escrow_invoice);
+                systemClient.copyToClipboard(this.props.data.escrow_invoice);
               }}
               align='center'
             >
@@ -1549,7 +1549,7 @@ class TradeBox extends Component {
                   <IconButton
                     color='inherit'
                     onClick={() => {
-                      copyToClipboard(this.props.data.txid);
+                      systemClient.copyToClipboard(this.props.data.txid);
                     }}
                   >
                     <ContentCopy sx={{ width: 16, height: 16 }} />

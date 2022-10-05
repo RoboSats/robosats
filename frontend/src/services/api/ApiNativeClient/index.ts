@@ -4,7 +4,9 @@ import NativeRobosats from '../../Native';
 
 class ApiNativeClient implements ApiClient {
   constructor() {
-    window.NativeRobosats = new NativeRobosats();
+    if (!window.NativeRobosats) {
+      window.NativeRobosats = new NativeRobosats();
+    }
   }
 
   private assetsCache: { [path: string]: string } = {};

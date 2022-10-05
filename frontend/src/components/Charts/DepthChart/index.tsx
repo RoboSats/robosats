@@ -29,7 +29,7 @@ import currencyDict from '../../../../static/assets/currencies.json';
 import PaymentText from '../../PaymentText';
 import getNivoScheme from '../NivoScheme';
 import median from '../../../utils/match';
-import { apiClient } from '../../../services/api/index';
+import { apiClient } from '../../../services/Api/index';
 import statusBadgeColor from '../../../utils/statusBadgeColor';
 
 interface DepthChartProps {
