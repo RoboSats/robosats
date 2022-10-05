@@ -22,7 +22,6 @@ import { AuditPGPDialog } from './Dialogs';
 import RobotAvatar from './Robots/RobotAvatar';
 import { systemClient } from '../services/System';
 
-
 // Icons
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';

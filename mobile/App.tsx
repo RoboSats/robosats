@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { SafeAreaView, Text, Platform } from 'react-native';
 import { torClient } from './services/Tor';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 const App = () => {
   const webViewRef = useRef<WebView>();
@@ -26,22 +27,39 @@ const App = () => {
     if (data.category === 'http') {
       sendTorStatus();
 
+      console.log(data);
       if (data.type === 'get') {
-        torClient.get(data.path).then((response: object) => {
-          injectMessageResolve(data.id, response);
-        }).finally(sendTorStatus);
+        torClient
+          .get(data.path)
+          .then((response: object) => {
+            injectMessageResolve(data.id, response);
+          })
+          .finally(sendTorStatus);
       } else if (data.type === 'post') {
-        torClient.post(data.path, data.body, data.headers).then((response: object) => {
-          injectMessageResolve(data.id, response);
-        }).finally(sendTorStatus);
+        torClient
+          .post(data.path, data.body, data.headers)
+          .then((response: object) => {
+            injectMessageResolve(data.id, response);
+          })
+          .finally(sendTorStatus);
       } else if (data.type === 'delete') {
-        torClient.delete(data.path, data.headers).then((response: object) => {
-          injectMessageResolve(data.id, response);
-        }).finally(sendTorStatus);
+        torClient
+          .delete(data.path, data.headers)
+          .then((response: object) => {
+            injectMessageResolve(data.id, response);
+          })
+          .finally(sendTorStatus);
       } else if (data.type === 'xhr') {
-        torClient.request(data.path).then((response: object) => {
-          injectMessageResolve(data.id, response);
-        }).finally(sendTorStatus);
+        torClient
+          .request(data.path)
+          .then((response: object) => {
+            injectMessageResolve(data.id, response);
+          })
+          .finally(sendTorStatus);
+      }
+    } else if (data.category === 'system') {
+      if (data.type === 'copyToClipboardString') {
+        Clipboard.setString(data.detail);
       }
     }
   };
@@ -49,16 +67,16 @@ const App = () => {
   const sendTorStatus = async () => {
     let daemonStatus;
     try {
-      daemonStatus =  await torClient.daemon.getDaemonStatus();
+      daemonStatus = await torClient.daemon.getDaemonStatus();
     } catch {
-      daemonStatus = 'ERROR'
+      daemonStatus = 'ERROR';
     }
     injectMessage({
       category: 'system',
       type: 'tor',
       detail: daemonStatus,
-    })
-  }
+    });
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>

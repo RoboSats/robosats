@@ -8,11 +8,11 @@ class SystemNativeClient implements SystemClient {
     }
   }
 
-  public copyToClipboard: (value: string) => void = (path) => {
+  public copyToClipboard: (value: string) => void = (value) => {
     return window.NativeRobosats?.postMessage({
-      category: 'http',
-      type: 'get',
-      path,
+      category: 'system',
+      type: 'copyToClipboardString',
+      detail: value,
     });
   };
 }

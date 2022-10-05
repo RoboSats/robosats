@@ -464,7 +464,7 @@ const BookTable = ({
       headerName: t('Bond'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params:any) => {
+      renderCell: (params: any) => {
         return <div style={{ cursor: 'pointer' }}>{`${Number(params.row.bond_size)}%`}</div>;
       },
     };

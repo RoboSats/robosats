@@ -5,7 +5,7 @@ class NativeRobosats {
     this.messageCounter = 0;
   }
 
-  public torDaemonStatus = 'NOTINIT'
+  public torDaemonStatus = 'NOTINIT';
 
   private messageCounter: number;
 
@@ -33,7 +33,7 @@ class NativeRobosats {
 
   public onMessage: (message: NativeWebViewMessageSystem) => void = (message) => {
     if (message.type === 'tor') {
-      this.torDaemonStatus = message.detail
+      this.torDaemonStatus = message.detail;
     }
   };
 

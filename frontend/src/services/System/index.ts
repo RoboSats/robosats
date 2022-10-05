@@ -1,6 +1,5 @@
-import SystemNativeClient from "./SystemNativeClient";
-import SystemWebClient from "./SystemWebClient";
-
+import SystemNativeClient from './SystemNativeClient';
+import SystemWebClient from './SystemWebClient';
 
 export interface SystemClient {
   copyToClipboard: (value: string) => void;
