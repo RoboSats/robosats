@@ -231,15 +231,15 @@ class UserGenPage extends Component {
               <Grid item xs={12} align='center'>
                 <RobotAvatar
                   nickname={this.state.nickname}
-                  style={{ maxWidth: 200 * fontSizeFactor, maxHeight: 200 * fontSizeFactor }}
+                  smooth={true}
+                  style={{ maxWidth: 203 * fontSizeFactor, maxHeight: 203 * fontSizeFactor }}
                   imageStyle={{
                     transform: '',
                     border: '2px solid #555',
                     filter: 'drop-shadow(1px 1px 1px #000000)',
-                    height: `${195 * fontSizeFactor}px`,
-                    width: `${200 * fontSizeFactor}px`,
+                    height: `${201 * fontSizeFactor}px`,
+                    width: `${201 * fontSizeFactor}px`,
                   }}
-                  smooth={true}
                   tooltip={t('This is your trading avatar')}
                 />
                 <br />
