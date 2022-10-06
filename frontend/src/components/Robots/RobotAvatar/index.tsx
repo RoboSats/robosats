@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import SmoothImage from 'react-smooth-image';
-import { Avatar, Badge, Tooltip } from '@mui/material';
+import { Avatar, Badge, Tooltip, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SendReceiveIcon } from '../../Icons';
 import { apiClient } from '../../../services/api';
 import placeholder from './placeholder.json';
-import { useTheme } from '@emotion/react';
 
 interface Props {
   nickname: string;
