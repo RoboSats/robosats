@@ -1,18 +1,19 @@
 export interface Maker {
   isExplicit: boolean;
-  amount: number | string | null;
+  amount: number | string;
   paymentMethod: string[];
   paymentMethodText: string;
   badPaymentMethod: boolean;
-  premium: string;
+  premium: number | string;
   satoshis: string;
   publicExpiryTime: Date;
+  publicDuration: number;
   escrowExpiryTime: Date;
+  escrowDuration: number;
   bondSize: number;
   amountRange: boolean;
   minAmount: string;
   maxAmount: string;
-  badExactPrice: number | string | null;
   badSatoshisText: string;
   badPremiumText: string;
 }

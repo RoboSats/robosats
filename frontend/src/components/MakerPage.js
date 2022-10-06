@@ -887,15 +887,18 @@ class MakerPage extends Component {
 
   makeOrderBox = () => {
     return (
-      <MakerForm
-        limits={this.props.limits}
-        loadingLimits={this.props.loadingLimits}
-        setAppState={this.props.setAppState}
-        maker={this.props.maker}
-        setMaker={this.props.setMaker}
-        type={this.props.type}
-        currency={this.props.currency}
-      />
+      <Paper elevation={12} style={{ padding: 8, width: '16.25em' }}>
+        <MakerForm
+          limits={this.props.limits}
+          loadingLimits={this.props.loadingLimits}
+          pricingMethods={false}
+          setAppState={this.props.setAppState}
+          maker={this.props.maker}
+          setMaker={this.props.setMaker}
+          type={this.props.type}
+          currency={this.props.currency}
+        />
+      </Paper>
     );
   };
 
@@ -925,71 +928,10 @@ class MakerPage extends Component {
         <Grid item xs={12} align='center'>
           {this.makeOrderBox()}
         </Grid>
-
         <Grid item xs={12} align='center'>
-          {/* conditions to disable the make button */}
-          {this.props.type == null ||
-          (this.state.amount == null) &
-            (this.state.enableAmountRange == false || this.state.loadingLimits) ||
-          this.state.enableAmountRange & (this.minAmountError() || this.maxAmountError()) ||
-          (this.state.amount <= 0) & !this.state.enableAmountRange ||
-          this.state.is_explicit &
-            (this.state.badSatoshis != null || this.state.satoshis == null) ||
-          !this.state.is_explicit & (this.state.badPremium != null) ? (
-            <Tooltip enterTouchDelay={0} title={t('You must fill the order correctly')}>
-              <div>
-                <Button disabled color='primary' variant='contained'>
-                  {t('Create Order')}
-                </Button>
-              </div>
-            </Tooltip>
-          ) : (
-            <Button
-              color='primary'
-              variant='contained'
-              onClick={
-                this.props.copiedToken
-                  ? this.handleCreateOfferButtonPressed
-                  : () => this.setState({ openStoreToken: true })
-              }
-            >
-              {t('Create Order')}
-            </Button>
-          )}
-        </Grid>
-        <Grid item xs={12} align='center'>
-          {this.state.badRequest ? (
-            <Typography component='h2' variant='subtitle2' color='secondary'>
-              {this.state.badRequest} <br />
-            </Typography>
-          ) : (
-            ''
-          )}
-          <Typography component='h2' variant='subtitle2'>
-            <div align='center'>
-              {this.props.type == null
-                ? t('Create an order for ')
-                : this.props.type == 1
-                ? t('Create a BTC buy order for ')
-                : t('Create a BTC sell order for ')}
-              {this.state.enableAmountRange & (this.state.minAmount != null)
-                ? this.state.minAmount + '-' + this.state.maxAmount
-                : pn(this.state.amount)}
-              {' ' + this.state.currencyCode}
-              {this.state.is_explicit
-                ? t(' of {{satoshis}} Satoshis', { satoshis: pn(this.state.satoshis) })
-                : this.state.premium == 0
-                ? t(' at market price')
-                : this.state.premium > 0
-                ? t(' at a {{premium}}% premium', { premium: this.state.premium })
-                : t(' at a {{discount}}% discount', { discount: -this.state.premium })}
-            </div>
-          </Typography>
-          <Grid item xs={12} align='center'>
-            <Button color='secondary' variant='contained' to='/' component={LinkRouter}>
-              {t('Back')}
-            </Button>
-          </Grid>
+          <Button color='secondary' variant='contained' to='/' component={LinkRouter}>
+            {t('Back')}
+          </Button>
         </Grid>
       </Grid>
     );

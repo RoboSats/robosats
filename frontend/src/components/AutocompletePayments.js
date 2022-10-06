@@ -161,7 +161,7 @@ const ListHeader = styled('span')(
 
 const Listbox = styled('ul')(
   ({ theme }) => `
-  width: 82%;
+  width: 15.3em;
   margin: 2px 0 0;
   padding: 0;
   position: absolute;
