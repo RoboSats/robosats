@@ -160,6 +160,7 @@ const BookTable = ({
                 nickname={params.row.maker_nick}
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
+                flipHorizontally={true}
                 orderType={params.row.type}
                 statusColor={statusBadgeColor(params.row.maker_status)}
                 tooltip={t(params.row.maker_status)}
@@ -185,6 +186,7 @@ const BookTable = ({
               <RobotAvatar
                 nickname={params.row.maker_nick}
                 smooth={true}
+                flipHorizontally={true}
                 style={{ width: '3.215em', height: '3.215em' }}
                 orderType={params.row.type}
                 statusColor={statusBadgeColor(params.row.maker_status)}
