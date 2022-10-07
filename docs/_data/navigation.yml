@@ -44,6 +44,8 @@ docs:
         url: /docs/bonds/
       - title: '<span class="side-bar-item">&nbsp;&nbsp;<img id="side-icon-small" src="/assets/vector/money-bill-transfer.svg"/>Trade Escrow</span>'
         url: /docs/escrow/
+      - title: '<span class="side-bar-item">&nbsp;&nbsp;<img id="side-icon-small" src="/assets/vector/link-solid.svg"/>On-Chain Payouts</span>'
+        url: /docs/on-chain-payouts/
       - title: '<span class="side-bar-item">&nbsp;&nbsp;<img id="side-icon-small" src="/assets/vector/bitcoin.svg"/>Prices</span>'
         url: /docs/prices/
       - title: '<span class="side-bar-item">&nbsp;&nbsp;<img id="side-icon-small" src="/assets/vector/hand-holding-hand.svg"/>Fees</span>'
