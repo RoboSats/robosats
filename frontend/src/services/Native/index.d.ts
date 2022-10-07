@@ -23,7 +23,7 @@ export interface NativeWebViewMessageHttp {
 export interface NativeWebViewMessageSystem {
   id?: number;
   category: 'system';
-  type: 'tor' | 'copyToClipboardString';
+  type: 'torStatus' | 'copyToClipboardString';
   detail: string;
 }
 

@@ -32,8 +32,9 @@ class NativeRobosats {
   };
 
   public onMessage: (message: NativeWebViewMessageSystem) => void = (message) => {
-    if (message.type === 'tor') {
+    if (message.type === 'torStatus') {
       this.torDaemonStatus = message.detail;
+      window.dispatchEvent(new CustomEvent('torStatus', { detail: this.torDaemonStatus }));
     }
   };
 

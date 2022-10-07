@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import { SafeAreaView, Text, Platform } from 'react-native';
+import { SafeAreaView, Text, Platformm } from 'react-native';
 import { torClient } from './services/Tor';
 import Clipboard from '@react-native-clipboard/clipboard';
+import NetInfo from '@react-native-community/netinfo';
 
 const App = () => {
   const webViewRef = useRef<WebView>();
@@ -64,16 +65,19 @@ const App = () => {
   };
 
   const sendTorStatus = async () => {
-    let daemonStatus;
-    try {
-      daemonStatus = await torClient.daemon.getDaemonStatus();
-    } catch {
-      daemonStatus = 'ERROR';
-    }
-    injectMessage({
-      category: 'system',
-      type: 'tor',
-      detail: daemonStatus,
+    NetInfo.fetch().then(async (state) => {
+      let daemonStatus = 'ERROR';
+      if (state.isInternetReachable) {
+        try {
+          daemonStatus = await torClient.daemon.getDaemonStatus();
+        } catch {}
+      }
+
+      injectMessage({
+        category: 'system',
+        type: 'torStatus',
+        detail: daemonStatus,
+      });
     });
   };
 

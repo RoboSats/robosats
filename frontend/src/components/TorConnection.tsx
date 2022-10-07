@@ -7,13 +7,10 @@ const TorConnection = (): JSX.Element => {
   const [torStatus, setTorStatus] = useState<string>('NOTINIT');
   const { t } = useTranslation();
 
-  const getTorStatus = () => {
-    setTorStatus(window?.NativeRobosats?.torDaemonStatus || 'NOTINIT');
-    setInterval(getTorStatus, 1000);
-  };
-
   useEffect(() => {
-    getTorStatus();
+    window.addEventListener('torStatus', (event) => {
+      setTorStatus(event?.detail);
+    });
   }, []);
 
   if (window?.NativeRobosats && (torStatus === 'NOTINIT' || torStatus === 'STARTING')) {
