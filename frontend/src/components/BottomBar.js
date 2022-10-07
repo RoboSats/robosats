@@ -19,6 +19,7 @@ import MediaQuery from 'react-responsive';
 import Flags from 'country-flag-icons/react/3x2';
 import { Link as LinkRouter } from 'react-router-dom';
 import { apiClient } from '../services/api';
+import { systemClient } from '../services/System';
 import RobotAvatar from './Robots/RobotAvatar';
 
 // Icons
@@ -41,7 +42,6 @@ import {
   UpdateClientDialog,
 } from './Dialogs';
 
-import { getCookie } from '../utils/cookies';
 import checkVer from '../utils/checkVer';
 
 class BottomBar extends Component {
@@ -173,8 +173,8 @@ class BottomBar extends Component {
     return (
       this.props.avatarLoaded &&
       (window.NativeRobosats ||
-        ((this.props.token ? getCookie('robot_token') === this.props.token : true) &&
-          getCookie('sessionid')))
+        ((this.props.token ? systemClient.getCookie('robot_token') === this.props.token : true) &&
+          systemClient.getCookie('sessionid')))
     );
   };
 
@@ -467,7 +467,7 @@ class BottomBar extends Component {
 
   handleClickOpenExchangeSummary = () => {
     // avoid calling getInfo while sessionid not yet set. Temporary fix.
-    if (getCookie('sessionid')) {
+    if (systemClient.getCookie('sessionid')) {
       this.getInfo();
     }
     this.setState({ openExchangeSummary: true });

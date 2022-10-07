@@ -4,6 +4,7 @@ import { SafeAreaView, Text, Platform } from 'react-native';
 import { torClient } from './services/Tor';
 import Clipboard from '@react-native-clipboard/clipboard';
 import NetInfo from '@react-native-community/netinfo';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 const App = () => {
   const webViewRef = useRef<WebView>();
@@ -60,9 +61,26 @@ const App = () => {
     } else if (data.category === 'system') {
       if (data.type === 'copyToClipboardString') {
         Clipboard.setString(data.detail);
+      } else if (data.type === 'setCookie') {
+        setCookie(data.key, data.detail)
+      } else if (data.type === 'deleteCookie') {
+        EncryptedStorage.removeItem(data.key);
       }
     }
   };
+
+  const setCookie = async (key: string, value: string) => {
+    try {
+      await EncryptedStorage.setItem(key, value);
+      const storedValue = await EncryptedStorage.getItem(key);
+      injectMessage({
+        category: 'system',
+        type: 'setCookie',
+        key,
+        detail: storedValue,
+      });
+    } catch (error) { }
+  }
 
   const sendTorStatus = async () => {
     NetInfo.fetch().then(async (state) => {

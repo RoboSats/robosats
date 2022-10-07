@@ -1,5 +1,5 @@
 import { ApiClient } from '../api';
-import { getCookie } from '../../../utils/cookies';
+import { systemClient } from '../../System';
 import NativeRobosats from '../../Native';
 
 class ApiNativeClient implements ApiClient {
@@ -13,7 +13,7 @@ class ApiNativeClient implements ApiClient {
   private assetsPromises: { [path: string]: Promise<string | undefined> } = {};
 
   private readonly getHeaders: () => HeadersInit = () => {
-    return { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') || '' };
+    return { 'Content-Type': 'application/json', 'X-CSRFToken': systemClient.getCookie('csrftoken') || '' };
   };
 
   public put: (path: string, body: object) => Promise<object | undefined> = async (path, body) => {

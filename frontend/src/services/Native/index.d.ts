@@ -23,8 +23,9 @@ export interface NativeWebViewMessageHttp {
 export interface NativeWebViewMessageSystem {
   id?: number;
   category: 'system';
-  type: 'torStatus' | 'copyToClipboardString';
-  detail: string;
+  type: 'torStatus' | 'copyToClipboardString' | 'setCookie' | 'deleteCookie';
+  key?: string;
+  detail?: string;
 }
 
 export declare type NativeWebViewMessage = NativeWebViewMessageHttp | NativeWebViewMessageSystem;

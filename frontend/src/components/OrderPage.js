@@ -50,7 +50,6 @@ import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import CheckIcon from '@mui/icons-material/Check';
 import { SendReceiveIcon } from './Icons';
 
-import { getCookie } from '../utils/cookies';
 import { pn } from '../utils/prettyNumbers';
 import { systemClient } from '../services/System';
 import { getWebln } from '../utils/webln';
@@ -522,12 +521,12 @@ class OrderPage extends Component {
   };
 
   tokenDialog = () => {
-    return getCookie('robot_token') ? (
+    return systemClient.getCookie('robot_token') ? (
       <StoreTokenDialog
         open={this.state.openStoreToken}
         onClose={() => this.setState({ openStoreToken: false })}
         onClickCopy={() =>
-          systemClient.copyToClipboard(getCookie('robot_token')) &
+          systemClient.copyToClipboard(systemClient.getCookie('robot_token')) &
           this.props.setAppState({ copiedToken: true })
         }
         copyIconColor={this.props.copiedToken ? 'inherit' : 'primary'}

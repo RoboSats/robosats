@@ -16,7 +16,6 @@ import {
 } from '@mui/material';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import { encryptMessage, decryptMessage } from '../utils/pgp';
-import { getCookie } from '../utils/cookies';
 import { saveAsJson } from '../utils/saveFile';
 import { AuditPGPDialog } from './Dialogs';
 import RobotAvatar from './Robots/RobotAvatar';
@@ -37,10 +36,10 @@ class Chat extends Component {
   }
 
   state = {
-    own_pub_key: getCookie('pub_key').split('\\').join('\n'),
-    own_enc_priv_key: getCookie('enc_priv_key').split('\\').join('\n'),
+    own_pub_key: systemClient.getCookie('pub_key').split('\\').join('\n'),
+    own_enc_priv_key: systemClient.getCookie('enc_priv_key').split('\\').join('\n'),
     peer_pub_key: null,
-    token: getCookie('robot_token'),
+    token: systemClient.getCookie('robot_token'),
     messages: [],
     value: '',
     connected: false,

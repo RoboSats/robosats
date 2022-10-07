@@ -1,9 +1,9 @@
 import { ApiClient } from '../api';
-import { getCookie } from '../../../utils/cookies';
+import { systemClient } from '../../System';
 
 class ApiWebClient implements ApiClient {
   private readonly getHeaders: () => HeadersInit = () => {
-    return { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') || '' };
+    return { 'Content-Type': 'application/json', 'X-CSRFToken': systemClient.getCookie('csrftoken') || '' };
   };
 
   public post: (path: string, body: object) => Promise<object | undefined> = async (path, body) => {

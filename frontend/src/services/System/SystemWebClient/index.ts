@@ -24,6 +24,31 @@ class SystemWebClient implements SystemClient {
       textArea.remove();
     }
   };
+
+  public getCookie: (key: string) => string | undefined = (key) => {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        // Does this cookie string begin with the key we want?
+        if (cookie.substring(0, key.length + 1) === key + '=') {
+          cookieValue = decodeURIComponent(cookie.substring(key.length + 1));
+          break;
+        }
+      }
+    }
+
+    return cookieValue || "";
+  }
+  
+  public setCookie: (key: string, value: string) => void = (key, value) => {
+    document.cookie = `${key}=${value};path=/;SameSite=Strict`;
+  }
+
+  public deleteCookie: (key: string) => void = (key) => {
+    document.cookie = `${name}= ; expires = Thu, 01 Jan 1970 00:00:00 GMT`;
+  }
 }
 
 export default SystemWebClient;

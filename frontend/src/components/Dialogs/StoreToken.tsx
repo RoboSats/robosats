@@ -12,7 +12,7 @@ import {
   Button,
   Grid,
 } from '@mui/material';
-import { getCookie } from '../../utils/cookies';
+import { systemClient } from '../../services/System'
 import ContentCopy from '@mui/icons-material/ContentCopy';
 
 interface Props {
@@ -50,7 +50,7 @@ const StoreTokenDialog = ({
             sx={{ width: '100%', maxWidth: '550px' }}
             disabled
             label={t('Back it up!')}
-            value={getCookie('robot_token')}
+            value={systemClient.getCookie('robot_token')}
             variant='filled'
             size='small'
             InputProps={{
