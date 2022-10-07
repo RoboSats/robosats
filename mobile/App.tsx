@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import { SafeAreaView, Text, Platformm } from 'react-native';
+import { SafeAreaView, Text, Platform } from 'react-native';
 import { torClient } from './services/Tor';
 import Clipboard from '@react-native-clipboard/clipboard';
 import NetInfo from '@react-native-community/netinfo';
