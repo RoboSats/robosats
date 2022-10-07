@@ -14,6 +14,7 @@ export { default as SellSatsIcon } from './SellSats';
 export { default as SendReceiveIcon } from './SendReceive';
 export { default as ExportIcon } from './Export';
 export { default as UserNinjaIcon } from './UserNinja';
+export { default as TorIcon } from './Tor';
 
 // Some Flags missing on react-flags
 export { default as BasqueCountryFlag } from './BasqueCountryFlag';

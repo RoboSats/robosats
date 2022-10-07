@@ -52,7 +52,7 @@ import { SendReceiveIcon } from './Icons';
 
 import { getCookie } from '../utils/cookies';
 import { pn } from '../utils/prettyNumbers';
-import { copyToClipboard } from '../utils/clipboard';
+import { systemClient } from '../services/System';
 import { getWebln } from '../utils/webln';
 import { apiClient } from '../services/api';
 import RobotAvatar from './Robots/RobotAvatar';
@@ -527,7 +527,8 @@ class OrderPage extends Component {
         open={this.state.openStoreToken}
         onClose={() => this.setState({ openStoreToken: false })}
         onClickCopy={() =>
-          copyToClipboard(getCookie('robot_token')) & this.props.setAppState({ copiedToken: true })
+          systemClient.copyToClipboard(getCookie('robot_token')) &
+          this.props.setAppState({ copiedToken: true })
         }
         copyIconColor={this.props.copiedToken ? 'inherit' : 'primary'}
         onClickBack={() => this.setState({ openStoreToken: false })}

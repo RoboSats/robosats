@@ -26,7 +26,7 @@ import { genBase62Token, tokenStrength } from '../utils/token';
 import { genKey } from '../utils/pgp';
 import { getCookie, writeCookie, deleteCookie } from '../utils/cookies';
 import { saveAsJson } from '../utils/saveFile';
-import { copyToClipboard } from '../utils/clipboard';
+import { systemClient } from '../services/System';
 import { apiClient } from '../services/api/index';
 import RobotAvatar from './Robots/RobotAvatar';
 
@@ -321,7 +321,7 @@ class UserGenPage extends Component {
                                 !(getCookie('robot_token') === this.state.token))
                             }
                             onClick={() =>
-                              copyToClipboard(getCookie('robot_token')) &
+                              systemClient.copyToClipboard(getCookie('robot_token')) &
                               this.props.setAppState({ copiedToken: true })
                             }
                           >

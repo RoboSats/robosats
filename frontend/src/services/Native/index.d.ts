@@ -20,7 +20,14 @@ export interface NativeWebViewMessageHttp {
   body?: object;
 }
 
-export declare type NativeWebViewMessage = NativeWebViewMessageHttp;
+export interface NativeWebViewMessageSystem {
+  id?: number;
+  category: 'system';
+  type: 'torStatus' | 'copyToClipboardString';
+  detail: string;
+}
+
+export declare type NativeWebViewMessage = NativeWebViewMessageHttp | NativeWebViewMessageSystem;
 
 export interface NativeRobosatsPromise {
   resolve: (value: object | PromiseLike<object>) => void;
