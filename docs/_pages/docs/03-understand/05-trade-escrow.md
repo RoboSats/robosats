@@ -50,7 +50,7 @@ Once the fiat payment method is coordinated with the buyer, the seller clicks "C
 
 If you never received the fiat payment from the buyer, do not click "Confirm Fiat Received" and instead open a dispute for RoboSats staff to review. Trying to cheat by intentionally not confirming the fiat was received results in a dispute being automatically opened on the buyer's behalf.
 
-The cheating robot will risk losing that dispute and consequently forfeit their bond, where half of that bond is rewarded to the honest robot and the entirety of the locked escrow is released to the honest robot as well.
+The cheating robot will risk losing that dispute and consequently forfeit their bond. The entirety of the locked escrow is released and rewarded to the honest robot.
 
 Don't forget about your order! If your peer sent the fiat and the order timer expires before you confirm the fiat was received, then you will risk losing the following dispute which will in turn cause your bond to be forfeitted. Take care to remember your order and back up your robot’s unique token!
 
