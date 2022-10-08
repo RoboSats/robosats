@@ -1,3 +1,4 @@
+import { systemClient } from '../System';
 import { NativeRobosatsPromise, NativeWebViewMessage, NativeWebViewMessageSystem } from './index.d';
 
 class NativeRobosats {
@@ -8,6 +9,10 @@ class NativeRobosats {
   private pendingMessages: { [id: number]: NativeRobosatsPromise } = {};
 
   public cookies: { [key: string]: string } = {};
+
+  public loadCookie = (cookie: { key: string; value: string }) => {
+    this.cookies[cookie.key] = cookie.value;
+  };
 
   public onMessageResolve: (messageId: number, response?: object) => void = (
     messageId,

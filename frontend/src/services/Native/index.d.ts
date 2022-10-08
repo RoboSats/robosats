@@ -23,7 +23,7 @@ export interface NativeWebViewMessageHttp {
 export interface NativeWebViewMessageSystem {
   id?: number;
   category: 'system';
-  type: 'torStatus' | 'copyToClipboardString' | 'setCookie' | 'deleteCookie';
+  type: 'init' | 'torStatus' | 'copyToClipboardString' | 'setCookie' | 'deleteCookie';
   key?: string;
   detail?: string;
 }

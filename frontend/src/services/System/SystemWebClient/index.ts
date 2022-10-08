@@ -1,6 +1,8 @@
 import { SystemClient } from '..';
 
 class SystemWebClient implements SystemClient {
+  public loading = false;
+
   public copyToClipboard: (value: string) => void = (value) => {
     // navigator clipboard api needs a secure context (https)
     // this function attempts to copy also on http contexts

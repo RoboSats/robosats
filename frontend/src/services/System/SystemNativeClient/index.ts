@@ -3,10 +3,16 @@ import NativeRobosats from '../../Native';
 
 class SystemNativeClient implements SystemClient {
   constructor() {
-    if (!window.NativeRobosats) {
-      window.NativeRobosats = new NativeRobosats();
-    }
+    window.NativeRobosats = new NativeRobosats();
+    window.NativeRobosats.postMessage({
+      category: 'system',
+      type: 'init',
+    }).then(() => {
+      this.loading = false;
+    });
   }
+
+  public loading = true;
 
   public copyToClipboard: (value: string) => void = (value) => {
     return window.NativeRobosats?.postMessage({
@@ -36,6 +42,7 @@ class SystemNativeClient implements SystemClient {
     window.NativeRobosats?.postMessage({
       category: 'system',
       type: 'deleteCookie',
+      key,
     });
   };
 }

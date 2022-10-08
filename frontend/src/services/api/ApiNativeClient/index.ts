@@ -3,12 +3,6 @@ import { systemClient } from '../../System';
 import NativeRobosats from '../../Native';
 
 class ApiNativeClient implements ApiClient {
-  constructor() {
-    if (!window.NativeRobosats) {
-      window.NativeRobosats = new NativeRobosats();
-    }
-  }
-
   private assetsCache: { [path: string]: string } = {};
   private assetsPromises: { [path: string]: Promise<string | undefined> } = {};
 

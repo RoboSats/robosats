@@ -46,10 +46,11 @@ class UserGenPage extends Component {
     // Displays the existing one
     if (this.props.nickname != null) {
       this.setState({
-        nickname: this.props.nickname,
         token: this.props.token ? this.props.token : '',
         loadingRobot: false,
       });
+    } else if (window.NativeRobosats && systemClient.getCookie('robot_token')) {
+      this.setState({ token: systemClient.getCookie('robot_token'), loadingRobot: false });
     } else {
       const newToken = genBase62Token(36);
       this.setState({
@@ -77,7 +78,6 @@ class UserGenPage extends Component {
     requestBody.then((body) =>
       apiClient.post('/api/user/', body).then((data) => {
         this.setState({
-          nickname: data.nickname,
           bit_entropy: data.token_bits_entropy,
           shannon_entropy: data.token_shannon_entropy,
           bad_request: data.bad_request,
@@ -193,12 +193,12 @@ class UserGenPage extends Component {
           align='center'
           sx={{ width: 370 * fontSizeFactor, height: 260 * fontSizeFactor }}
         >
-          {this.props.avatarLoaded && this.state.nickname ? (
+          {this.props.avatarLoaded && this.props.nickname ? (
             <div>
               <Grid item xs={12} align='center'>
                 <Typography component='h5' variant='h5'>
                   <b>
-                    {this.state.nickname && systemClient.getCookie('sessionid') ? (
+                    {this.props.nickname && systemClient.getCookie('sessionid') ? (
                       <div
                         style={{
                           display: 'flex',
@@ -215,7 +215,7 @@ class UserGenPage extends Component {
                             width: 33 * fontSizeFactor,
                           }}
                         />
-                        <a>{this.state.nickname}</a>
+                        <a>{this.props.nickname}</a>
                         <BoltIcon
                           sx={{
                             color: '#fcba03',
@@ -232,7 +232,7 @@ class UserGenPage extends Component {
               </Grid>
               <Grid item xs={12} align='center'>
                 <RobotAvatar
-                  nickname={this.state.nickname}
+                  nickname={this.props.nickname}
                   smooth={true}
                   style={{ maxWidth: 203 * fontSizeFactor, maxHeight: 203 * fontSizeFactor }}
                   imageStyle={{
@@ -302,7 +302,7 @@ class UserGenPage extends Component {
                                 !(systemClient.getCookie('robot_token') === this.state.token)
                               }
                               onClick={() =>
-                                saveAsJson(this.state.nickname + '.json', this.createJsonFile())
+                                saveAsJson(this.props.nickname + '.json', this.createJsonFile())
                               }
                             >
                               <DownloadIcon
@@ -318,8 +318,7 @@ class UserGenPage extends Component {
                             color={this.props.copiedToken ? 'inherit' : 'primary'}
                             disabled={
                               !this.props.avatarLoaded ||
-                              (!window.NativeRobosats &&
-                                !(systemClient.getCookie('robot_token') === this.state.token))
+                              !(systemClient.getCookie('robot_token') === this.state.token)
                             }
                             onClick={() =>
                               systemClient.copyToClipboard(systemClient.getCookie('robot_token')) &
@@ -396,10 +395,9 @@ class UserGenPage extends Component {
             <Button
               disabled={
                 this.state.loadingRobot !== false ||
-                (!window.NativeRobosats &&
-                  !(this.props.token
-                    ? systemClient.getCookie('robot_token') === this.props.token
-                    : true))
+                !(this.props.token
+                  ? systemClient.getCookie('robot_token') === this.props.token
+                  : true)
               }
               color='secondary'
               to='/book/'
