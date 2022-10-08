@@ -7,6 +7,11 @@
   "You are self-hosting RoboSats": "You are self-hosting RoboSats",
   "RoboSats client is served from your own node granting you the strongest security and privacy.": "RoboSats client is served from your own node granting you the strongest security and privacy.",
 
+  "Initializing TOR daemon": "Initializing TOR daemon",
+  "Connecting to TOR network": "Connecting to TOR network",
+  "Connected to TOR network": "Connected to TOR network",
+  "Connection error": "Connection error",
+
   "USER GENERATION PAGE - UserGenPage.js": "Landing Page and User Generation",
   "Simple and Private LN P2P Exchange": "Simple and Private LN P2P Exchange",
   "This is your trading avatar": "This is your trading avatar",

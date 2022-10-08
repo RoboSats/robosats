@@ -37,7 +37,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { UserNinjaIcon, BitcoinIcon } from '../Icons';
 
 import { getCookie } from '../../utils/cookies';
-import { copyToClipboard } from '../../utils/clipboard';
+import { systemClient } from '../../services/System';
 import { getWebln } from '../../utils/webln';
 import RobotAvatar from '../Robots/RobotAvatar';
 
@@ -101,13 +101,13 @@ const ProfileDialog = ({
     const robotToken = getCookie('robot_token');
 
     if (robotToken) {
-      copyToClipboard(robotToken);
+      systemClient.copyToClipboard(robotToken);
       setAppState({ copiedToken: true });
     }
   };
 
   const copyReferralCodeHandler = () => {
-    copyToClipboard(`http://${host}/ref/${referralCode}`);
+    systemClient.copyToClipboard(`http://${host}/ref/${referralCode}`);
   };
 
   const handleWeblnInvoiceClicked = async (e: any) => {

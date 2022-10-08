@@ -5,6 +5,7 @@ import { CssBaseline, IconButton, Link } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import UnsafeAlert from './UnsafeAlert';
 import { LearnDialog } from './Dialogs';
+import TorConnection from './TorConnection';
 
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
@@ -16,6 +17,7 @@ import SchoolIcon from '@mui/icons-material/School';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { systemClient } from '../services/System';
 
 export default class App extends Component {
   constructor(props) {
@@ -102,6 +104,7 @@ export default class App extends Component {
               open={this.state.openLearn}
               onClose={() => this.setState({ openLearn: false })}
             />
+            <TorConnection />
             <IconButton
               color='inherit'
               sx={{ position: 'fixed', right: '34px' }}

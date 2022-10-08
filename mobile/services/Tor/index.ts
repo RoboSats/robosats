@@ -12,12 +12,16 @@ class TorClient {
     });
   }
 
-  public startDaemon = async () => {
-    await this.daemon.startIfNotStarted();
+  private connectDaemon: () => void = async () => {
+    try {
+      this.daemon.startIfNotStarted();
+    } catch {
+      console.log('TOR already started');
+    }
   };
 
   public get: (path: string) => Promise<object> = async (path) => {
-    await this.startDaemon();
+    await this.connectDaemon();
 
     return await new Promise<object>(async (resolve, reject) => {
       try {
@@ -31,7 +35,7 @@ class TorClient {
   };
 
   public delete: (path: string, headers: object) => Promise<object> = async (path, headers) => {
-    await this.startDaemon();
+    await this.connectDaemon();
 
     return await new Promise<object>(async (resolve, reject) => {
       try {
@@ -45,7 +49,7 @@ class TorClient {
   };
 
   public request: (path: string) => Promise<object> = async (path) => {
-    await this.startDaemon();
+    await this.connectDaemon();
 
     return await new Promise<object>(async (resolve, reject) => {
       try {
@@ -67,7 +71,7 @@ class TorClient {
     body,
     headers,
   ) => {
-    await this.startDaemon();
+    await this.connectDaemon();
 
     return await new Promise<object>(async (resolve, reject) => {
       try {

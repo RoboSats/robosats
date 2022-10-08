@@ -26,7 +26,7 @@ import { genBase62Token, tokenStrength } from '../utils/token';
 import { genKey } from '../utils/pgp';
 import { getCookie, writeCookie, deleteCookie } from '../utils/cookies';
 import { saveAsJson } from '../utils/saveFile';
-import { copyToClipboard } from '../utils/clipboard';
+import { systemClient } from '../services/System';
 import { apiClient } from '../services/api/index';
 import RobotAvatar from './Robots/RobotAvatar';
 
@@ -231,15 +231,15 @@ class UserGenPage extends Component {
               <Grid item xs={12} align='center'>
                 <RobotAvatar
                   nickname={this.state.nickname}
-                  style={{ maxWidth: 200 * fontSizeFactor, maxHeight: 200 * fontSizeFactor }}
+                  smooth={true}
+                  style={{ maxWidth: 203 * fontSizeFactor, maxHeight: 203 * fontSizeFactor }}
                   imageStyle={{
                     transform: '',
                     border: '2px solid #555',
                     filter: 'drop-shadow(1px 1px 1px #000000)',
-                    height: `${195 * fontSizeFactor}px`,
-                    width: `${200 * fontSizeFactor}px`,
+                    height: `${201 * fontSizeFactor}px`,
+                    width: `${201 * fontSizeFactor}px`,
                   }}
-                  smooth={true}
                   tooltip={t('This is your trading avatar')}
                 />
                 <br />
@@ -321,7 +321,7 @@ class UserGenPage extends Component {
                                 !(getCookie('robot_token') === this.state.token))
                             }
                             onClick={() =>
-                              copyToClipboard(getCookie('robot_token')) &
+                              systemClient.copyToClipboard(getCookie('robot_token')) &
                               this.props.setAppState({ copiedToken: true })
                             }
                           >

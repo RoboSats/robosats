@@ -178,3 +178,46 @@ input[type='number'] {
     width: 100%;
   }
 }
+
+@keyframes animatedBackground {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 80px;
+  }
+}
+
+.loadingAvatar {
+  background-size: 100%;
+  border-radius: 50%;
+  border: 0.3px solid #555;
+  filter: dropShadow(0.5px 0.5px 0.5px #000000);
+  background-image: linear-gradient(
+    0deg,
+    #ffffffab 0%,
+    #cfcfcfc2 40%,
+    #a3a3a3cc 60%,
+    #ffffffab 100%
+  );
+  background-position: 0px 0px;
+  background-repeat: repeat;
+  animation: animatedBackground 5s linear infinite;
+}
+
+.loadingAvatarDark {
+  background-size: 100%;
+  border-radius: 50%;
+  border: 0.3px solid #555;
+  filter: dropShadow(0.5px 0.5px 0.5px #000000);
+  background-image: linear-gradient(
+    0deg,
+    #6e6e6ec2 0%,
+    #14141479 40%,
+    #14141479 60%,
+    #6e6e6ec2 100%
+  );
+  background-position: 0px 0px;
+  background-repeat: repeat;
+  animation: animatedBackground 5s linear infinite;
+}

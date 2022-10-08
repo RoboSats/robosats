@@ -1,5 +1,5 @@
 {
-  "name": "RoboSats",
+  "name": "robosats",
   "version": "0.2.0",
   "private": true,
   "scripts": {
@@ -12,12 +12,14 @@
     "format": "prettier --write '**/**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-native": "^0.69.1",
+    "@react-native-clipboard/clipboard": "^1.11.1",
+    "@react-native-community/netinfo": "^9.3.4",
+    "react": "^18.0.0",
+    "react-native": "^0.69.6",
     "react-native-tor": "^0.1.8",
     "react-native-v8": "^1.5.0",
     "react-native-webview": "^11.22.3",
-    "v8-android-jit": "^10.100.1"
+    "v8-android-nointl": "^10.100.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
@@ -39,9 +41,9 @@
     "eslint-plugin-promise": "^6.0.1",
     "eslint-plugin-react": "^7.31.1",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "prettier": "^2.7.1",
     "jest": "^26.6.3",
     "metro-react-native-babel-preset": "^0.70.3",
+    "prettier": "^2.7.1",
     "react-test-renderer": "18.0.0",
     "typescript": "^4.4.4"
   },

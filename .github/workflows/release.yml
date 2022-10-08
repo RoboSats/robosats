@@ -23,11 +23,12 @@ jobs:
         read -ra semverArray <<< $semver
         tagV=$(echo ${semverArray[0]} | sed 's/v//')
         clientV=$(jq -r .version frontend/package.json)
+        androidV=$(grep -oP '(?<=versionName ").*?((?=\-)|$)' mobile/android/app/build.gradle)
         coordinatorV=$(jq -r .major version.json).$(jq -r .minor version.json).$(jq -r .patch version.json)
 
         printf "Client version: ${clientV}\nCoordinator version: ${coordinatorV}\nGit tag version: ${tagV}\n"
 
-        if [ "$coordinatorV" = "$clientV" ] && [ "$coordinatorV" = "$tagV" ] ; then
+        if [ "$coordinatorV" = "$clientV" ] && [ "$coordinatorV" = "$tagV" ] && [ "$coordinatorV" = "$androidV" ]; then
             echo "Versions match!"
             echo '::set-output name=semver::'$semver
         else

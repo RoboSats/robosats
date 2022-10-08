@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import SmoothImage from 'react-smooth-image';
-import { Avatar, Badge, Tooltip } from '@mui/material';
+import { Avatar, Badge, Tooltip, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { SendReceiveIcon } from '../../Icons';
 import { apiClient } from '../../../services/api';
+import placeholder from './placeholder.json';
 
 interface Props {
   nickname: string;
   smooth?: boolean;
+  flipHorizontally?: boolean;
   style?: object;
   imageStyle?: object;
   statusColor?: 'primary' | 'secondary' | 'default' | 'error' | 'info' | 'success' | 'warning';
@@ -23,13 +25,14 @@ const RobotAvatar: React.FC<Props> = ({
   statusColor,
   tooltip,
   smooth = false,
+  flipHorizontally = false,
   style = {},
-  imageStyle = {},
   avatarClass = 'flippedSmallAvatar',
+  imageStyle = {},
   onLoad = () => {},
 }) => {
   const { t } = useTranslation();
-
+  const theme = useTheme();
   const [avatarSrc, setAvatarSrc] = useState<string>();
 
   useEffect(() => {
@@ -54,17 +57,29 @@ const RobotAvatar: React.FC<Props> = ({
   const getAvatar = () => {
     if (smooth) {
       return (
-        <div style={style}>
-          <SmoothImage
-            src={avatarSrc}
-            imageStyles={{
-              borderRadius: '50%',
-              transform: 'scaleX(-1)',
-              border: '0.3px solid #555',
-              filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
-              ...imageStyle,
-            }}
-          />
+        <div
+          style={{
+            ...style,
+            imageRendering: 'high-quality',
+            backgroundSize: '100%',
+            borderRadius: '50%',
+            transform: flipHorizontally ? 'scaleX(-1)' : '',
+            border: '0.3px solid #55555',
+            filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
+            backgroundImage: `url(data:${placeholder.image.mime};base64,${placeholder.image.data})`,
+          }}
+        >
+          <div className={theme.palette.mode === 'dark' ? 'loadingAvatarDark' : 'loadingAvatar'}>
+            <SmoothImage
+              src={avatarSrc}
+              imageStyles={{
+                borderRadius: '50%',
+                border: '0.3px solid #55555',
+                filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
+                ...imageStyle,
+              }}
+            />
+          </div>
         </div>
       );
     } else {

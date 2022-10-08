@@ -4,10 +4,13 @@ import NativeRobosats from '../../Native';
 
 class ApiNativeClient implements ApiClient {
   constructor() {
-    window.NativeRobosats = new NativeRobosats();
+    if (!window.NativeRobosats) {
+      window.NativeRobosats = new NativeRobosats();
+    }
   }
 
   private assetsCache: { [path: string]: string } = {};
+  private assetsPromises: { [path: string]: Promise<string | undefined> } = {};
 
   private readonly getHeaders: () => HeadersInit = () => {
     return { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') || '' };
@@ -51,17 +54,24 @@ class ApiNativeClient implements ApiClient {
 
     if (this.assetsCache[path]) {
       return this.assetsCache[path];
+    } else if (path in this.assetsPromises) {
+      return this.assetsPromises[path];
     }
 
-    const fileB64 = await window.NativeRobosats?.postMessage({
-      category: 'http',
-      type: 'xhr',
-      path,
+    this.assetsPromises[path] = new Promise<string>(async (resolve, reject) => {
+      const fileB64 = await window.NativeRobosats?.postMessage({
+        category: 'http',
+        type: 'xhr',
+        path,
+      }).catch(reject);
+
+      this.assetsCache[path] = `data:image/png;base64,${fileB64?.b64Data}`;
+      delete this.assetsPromises[path];
+
+      resolve(this.assetsCache[path]);
     });
 
-    this.assetsCache[path] = `data:image/png;base64,${fileB64?.b64Data}`;
-
-    return this.assetsCache[path];
+    return this.assetsPromises[path];
   };
 }
 

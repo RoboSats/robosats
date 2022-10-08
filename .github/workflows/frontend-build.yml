@@ -48,16 +48,16 @@ jobs:
       run: |
         cd frontend
         npm run build
-    - name: 'Archive Web Built Results'
+    - name: 'Archive Web Build Results'
       uses: actions/upload-artifact@v3
       with:
         name: web-main-js
         path: frontend/static/frontend/main.js
-    - name: 'Archive Mobile Built Results'
+    - name: 'Archive Mobile Build Results'
       uses: actions/upload-artifact@v3
       with:
-        name: mobile-main-js
-        path: mobile/html/Web.bundle/js/main.js
+        name: mobile-web.bundle
+        path: mobile/html/Web.bundle
 
     # Invoke pre-release image build if this was not a tag push
     # Docker images tagged only with short commit hash
