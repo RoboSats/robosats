@@ -15,6 +15,12 @@ import {
   CircularProgress,
   LinearProgress,
   IconButton,
+  ToggleButton,
+  ToggleButtonGroup,
+  Select,
+  MenuItem,
+  Divider,
+  Collapse,
 } from '@mui/material';
 import { DataGrid, GridPagination } from '@mui/x-data-grid';
 import currencyDict from '../../static/assets/currencies.json';
@@ -29,6 +35,7 @@ import statusBadgeColor from '../utils/statusBadgeColor';
 
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
+import AutocompletePayments from './AutocompletePayments';
 
 interface Props {
   loading: boolean;
@@ -42,6 +49,9 @@ interface Props {
   fullWidth: number;
   fullHeight: number;
   defaultFullscreen: boolean;
+  showControls: boolean;
+  onCurrencyChange: () => void;
+  onTypeChange: () => void;
 }
 
 const BookTable = ({
@@ -55,21 +65,25 @@ const BookTable = ({
   maxHeight,
   fullWidth,
   fullHeight,
-  defaultFullscreen,
+  defaultFullscreen = false,
+  showControls = true,
+  onCurrencyChange,
+  onTypeChange,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const history = useHistory();
   const [pageSize, setPageSize] = useState(0);
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
 
   // all sizes in 'em'
   const fontSize = theme.typography.fontSize;
-  const verticalHeightFrame = 6.9075;
+  const verticalHeightFrame = 5.975 + (showControls ? 3.8 : 0);
   const verticalHeightRow = 3.25;
   const defaultPageSize = Math.max(
     Math.floor(
-      ((fullscreen ? fullHeight * 0.875 : maxHeight) - verticalHeightFrame) / verticalHeightRow,
+      ((fullscreen ? fullHeight * 0.9 : maxHeight) - verticalHeightFrame) / verticalHeightRow,
     ),
     1,
   );
@@ -81,6 +95,17 @@ const BookTable = ({
       setPageSize(defaultPageSize);
     }
   });
+
+  const verboseToolbarWidth =
+    (t('I want to').length +
+      t('buy').length +
+      t('sell').length +
+      t('and use').length +
+      t('pay with').length +
+      5) *
+      0.6 +
+    17;
+  const smallToolbarWidth = (t('buy').length + t('sell').length) * 0.6 + 22;
 
   const premiumColor = function (baseColor: string, accentColor: string, point: number) {
     const baseRGB = hexToRgb(baseColor);
@@ -144,6 +169,10 @@ const BookTable = ({
     columnHeaderSortIconLabel: t('Sort'),
     booleanCellTrueLabel: t('yes'),
     booleanCellFalseLabel: t('no'),
+  };
+
+  const handlePaymentMethodChange = function(paymentArray:string[], paymentString) {
+  //   setPaymentMethod(paymentArray[0]);
   };
 
   const robotObj = function (width: number, hide: boolean) {
@@ -615,6 +644,144 @@ const BookTable = ({
       <Stack height='100%' alignItems='center' justifyContent='center'>
         {t('Filter has no results')}
       </Stack>
+    ),
+    Toolbar: showControls ? (
+      () => (
+        <Box>
+          <Grid
+            container
+            alignItems='flex-start'
+            direction='row'
+            justifyContent='center'
+            spacing={1}
+            sx={{ height: '3.6em', padding: '0.2em' }}
+          >
+            <Grid item sx={{ position: 'relative', top: '0.5em' }}>
+              <Collapse orientation='horizontal' in={width > verboseToolbarWidth}>
+                <Typography variant='caption' color='text.secondary'>
+                  {t('I want to')}
+                </Typography>
+              </Collapse>
+            </Grid>
+            <Grid item>
+              <ToggleButtonGroup
+                sx={{
+                  height: '2.6em',
+                  backgroundColor: theme.palette.background.paper,
+                  border: '0.5px solid',
+                  borderColor: 'text.disabled',
+                  '&:hover': {
+                    borderColor: 'text.primary',
+                    border: '1px solid',
+                  },
+                }}
+                size='small'
+                exclusive={true}
+                value={type}
+                onChange={onTypeChange}
+              >
+                <ToggleButton value={1} color={'primary'}>
+                  {t('Buy')}
+                </ToggleButton>
+                <ToggleButton value={0} color={'secondary'}>
+                  {t('Sell')}
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Grid>
+
+            <Grid item sx={{ position: 'relative', top: '0.5em' }}>
+              <Collapse orientation='horizontal' in={width > verboseToolbarWidth}>
+                <Typography variant='caption' color='text.secondary'>
+                  {t('and use')}
+                </Typography>
+              </Collapse>
+            </Grid>
+
+            <Grid item>
+              <Select
+                autoWidth
+                sx={{
+                  height: '2.3em',
+                  border: '0.5px solid',
+                  backgroundColor: theme.palette.background.paper,
+                  borderRadius: '4px',
+                  borderColor: 'text.disabled',
+                  '&:hover': {
+                    borderColor: 'text.primary',
+                  },
+                }}
+                size='small'
+                label={t('Select Payment Currency')}
+                required={true}
+                value={currency}
+                inputProps={{
+                  style: { textAlign: 'center' },
+                }}
+                onChange={onCurrencyChange}
+              >
+                <MenuItem value={0}>
+                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <FlagWithProps code='ANY' />
+                    <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
+                      {' ' + t('ANY')}
+                    </Typography>
+                  </div>
+                </MenuItem>
+                {Object.entries(currencyDict).map(([key, value]) => (
+                  <MenuItem key={key} value={parseInt(key)} color='text.secondary'>
+                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <FlagWithProps code={value} />
+                      <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
+                        {' ' + value}
+                      </Typography>
+                    </div>
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
+
+            <Grid item sx={{ position: 'relative', top: '0.5em' }}>
+              <Collapse orientation='horizontal' in={width > verboseToolbarWidth}>
+                <Typography variant='caption' color='text.secondary'>
+                  {currency == 1000 ? t('swap to') : t('pay with')}
+                </Typography>
+              </Collapse>
+            </Grid>
+
+            <Grid item>
+              <Collapse orientation='horizontal' in={width > smallToolbarWidth}>
+                <AutocompletePayments
+                  sx={{
+                    minHeight: '2.6em',
+                    width: '8em',
+                    maxHeight: '2.6em',
+                    border: '2px solid',
+                    borderColor: theme.palette.text.disabled,
+                    hoverBorderColor: 'text.primary',
+                  }}
+                  labelProps={{sx: {top: '0.645em' } }}
+                  tagProps={{sx:{height:'1.8em'}}}
+                  listBoxProps={{sx:{width:'9em'}}}
+                  onAutocompleteChange={handlePaymentMethodChange}
+                  optionsType={currency == 1000 ? 'swap' : 'fiat'}
+                  error={paymentMethod.bad}
+                  helperText={paymentMethod.bad ? t('Must be shorter than 65 characters') : ''}
+                  label={currency == 1000 ? t('destination') : t('METHOD')}
+                  tooltipTitle={t(
+                    'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
+                  )}
+                  listHeaderText=''
+                  addNewButtonText=''
+                  isFilter={true}
+                />
+              </Collapse>
+            </Grid>
+          </Grid>
+          <Divider />
+        </Box>
+      )
+    ) : (
+      <></>
     ),
     Footer: () => (
       <Grid container alignItems='center' direction='row' justifyContent='space-between'>

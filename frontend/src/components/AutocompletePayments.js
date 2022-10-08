@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useAutocomplete } from '@mui/base/AutocompleteUnstyled';
 import { styled } from '@mui/material/styles';
-import { Button, Tooltip } from '@mui/material';
+import { Button, Fade, Tooltip, Typography } from '@mui/material';
 import { paymentMethods, swapDestinations } from './payment-methods/Methods';
 
 // Icons
@@ -15,20 +15,20 @@ import CloseIcon from '@mui/icons-material/Close';
 
 const Root = styled('div')(
   ({ theme }) => `
-  color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,.85)'};
+  color: ${theme.palette.text.primary};
   font-size: ${theme.typography.fontSize};
 `,
 );
 
 const Label = styled('label')(
-  ({ theme, error }) => `
+  ({ theme, error, sx }) => `
   color: ${
     theme.palette.mode === 'dark' ? (error ? '#f44336' : '#cfcfcf') : error ? '#dd0000' : '#717171'
   };
   pointer-events: none;
   position: relative;
   left: 1em;
-  top: 0.72em;
+  top: ${sx.top};
   maxHeight: 0em;
   height: 0em;
   white-space: no-wrap;
@@ -37,14 +37,15 @@ const Label = styled('label')(
 );
 
 const InputWrapper = styled('div')(
-  ({ theme, error }) => `
-  min-height: 2.9em;
-  max-height: 8.6em;
+  ({ theme, error, sx }) => `
+  min-height: ${sx.minHeight};
+  max-height: ${sx.maxHeight};
   border: 1px solid ${
     theme.palette.mode === 'dark' ? (error ? '#f44336' : '#434343') : error ? '#dd0000' : '#c4c4c4'
   };
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
   border-radius: 4px;
+  border-color: ${sx.borderColor ? `border-color ${sx.borderColor}` : ''}
   padding: 1px;
   display: flex;
   flex-wrap: wrap;
@@ -55,7 +56,7 @@ const InputWrapper = styled('div')(
       theme.palette.mode === 'dark'
         ? error
           ? '#f44336'
-          : '#ffffff'
+          : sx.hoverBorderColor
         : error
         ? '#dd0000'
         : '#2f2f2f'
@@ -112,10 +113,10 @@ Tag.propTypes = {
 };
 
 const StyledTag = styled(Tag)(
-  ({ theme }) => `
+  ({ theme, sx}) => `
   display: flex;
   align-items: center;
-  height: 2.1em;
+  height: ${sx.height};
   margin: 2px;
   line-height: 1.5em;
   background-color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'};
@@ -160,8 +161,8 @@ const ListHeader = styled('span')(
 );
 
 const Listbox = styled('ul')(
-  ({ theme }) => `
-  width: 15.3em;
+  ({ theme, sx}) => `
+  width: ${sx.width};
   margin: 2px 0 0;
   padding: 0;
   position: absolute;
@@ -221,10 +222,10 @@ export default function AutocompletePayments(props) {
     focused = 'true',
     setAnchorEl,
   } = useAutocomplete({
-    // sx: { width: '200px', align: 'left' },
     fullWidth: true,
     id: 'payment-methods',
     multiple: true,
+    // value: props.value,
     options: props.optionsType == 'fiat' ? paymentMethods : swapDestinations,
     getOptionLabel: (option) => option.name,
     onInputChange: (e) => setVal(e ? (e.target.value ? e.target.value : '') : ''),
@@ -249,7 +250,7 @@ export default function AutocompletePayments(props) {
     setVal(() => '');
 
     if (a || a == null) {
-      props.onAutocompleteChange(optionsToString(value));
+      props.onAutocompleteChange(value, optionsToString(value));
     }
     return false;
   }
@@ -264,39 +265,57 @@ export default function AutocompletePayments(props) {
         title={props.tooltipTitle}
       >
         <div {...getRootProps()}>
-          {value.length == 0 && val.length == 0 ? (
+          <Fade
+            appear={false}
+            in={groupedOptions.length == 0 && value.length == 0 && val.length == 0}
+          >
             <div style={{ height: 0, display: 'flex', alignItems: 'flex-start' }}>
-              <Label {...getInputLabelProps()} error={props.error ? 'error' : null}>
+              <Label
+                {...getInputLabelProps()}
+                sx={{ top: '0.72em', ...(props.labelProps ? props.labelProps.sx : {}) }}
+                error={props.error ? 'error' : null}
+              >
                 {props.label}
               </Label>
             </div>
-          ) : null}
+          </Fade>
           <InputWrapper
             ref={setAnchorEl}
             error={props.error ? 'error' : null}
             className={focused ? 'focused' : ''}
+            sx={{
+              minHeight: '2.9em',
+              maxHeight: '8.6em',
+              hoverBorderColor: '#ffffff',
+              ...props.sx,
+            }}
           >
             {value.map((option, index) => (
-              <StyledTag label={t(option.name)} icon={option.icon} {...getTagProps({ index })} />
+              <StyledTag label={t(option.name)} icon={option.icon} sx={{ height: '2.1em', ...(props.tagProps ? props.tagProps.sx : {}) }} {...getTagProps({ index })} />
             ))}
+            {value.length > 0 && props.isFilter ?
+              null:
             <input {...getInputProps()} value={val} />
+            }
           </InputWrapper>
         </div>
       </Tooltip>
       {groupedOptions.length > 0 ? (
-        <Listbox {...getListboxProps()}>
-          <div
-            style={{
-              position: 'fixed',
-              minHeight: '1.428em',
-              marginLeft: `${3 - props.listHeaderText.length * 0.05}em`,
-              marginTop: '-0.928em',
-            }}
-          >
-            <ListHeader>
-              <i>{props.listHeaderText + ' '} </i>{' '}
-            </ListHeader>
-          </div>
+        <Listbox sx={{ width: '15.6em', ...(props.listBoxProps ? props.listBoxProps.sx : {}) }} {...getListboxProps()}>
+          {!props.isFilter ? (
+            <div
+              style={{
+                position: 'fixed',
+                minHeight: '1.428em',
+                marginLeft: `${3 - props.listHeaderText.length * 0.05}em`,
+                marginTop: '-0.928em',
+              }}
+            >
+              <ListHeader>
+                <i>{props.listHeaderText + ' '} </i>{' '}
+              </ListHeader>
+            </div>
+          ) : null}
           {groupedOptions.map((option, index) => (
             <li key={option.name} {...getOptionProps({ option, index })}>
               <Button
@@ -306,17 +325,21 @@ export default function AutocompletePayments(props) {
                 sx={{ textTransform: 'none' }}
                 style={{ justifyContent: 'flex-start' }}
               >
-                <div style={{ position: 'relative', right: '0.286em', top: '0.286em' }}>
-                  <AddIcon style={{ color: '#1976d2' }} sx={{ width: '1em', height: '1em' }} />
-                </div>
+                {!props.isFilter ? (
+                  <div style={{ position: 'relative', right: '0.286em', top: '0.286em' }}>
+                    <AddIcon style={{ color: '#1976d2' }} sx={{ width: '1em', height: '1em' }} />
+                  </div>
+                ) : null}
+                <Typography variant="inherit" align="left">
                 {t(option.name)}
+                </Typography>
               </Button>
               <div style={{ position: 'relative', top: '0.357em' }}>
                 <CheckIcon />
               </div>
             </li>
           ))}
-          {val != null ? (
+          {val != null || !props.isFilter ? (
             val.length > 2 ? (
               <Button size='small' fullWidth={true} onClick={() => handleAddNew(getInputProps())}>
                 <DashboardCustomizeIcon sx={{ width: '1em', height: '1em' }} />
@@ -326,7 +349,7 @@ export default function AutocompletePayments(props) {
           ) : null}
         </Listbox>
       ) : // Here goes what happens if there is no groupedOptions
-      getInputProps().value.length > 0 ? (
+      getInputProps().value.length > 0 && !props.isFilter ? (
         <Listbox {...getListboxProps()}>
           <Button fullWidth={true} onClick={() => handleAddNew(getInputProps())}>
             <DashboardCustomizeIcon sx={{ width: '1.28em', height: '1.28em' }} />

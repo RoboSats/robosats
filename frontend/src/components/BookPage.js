@@ -67,9 +67,9 @@ class BookPage extends Component {
   getCurrencyCode(val) {
     const { t } = this.props;
     if (val) {
-      return val == 0 ? t('ANY_currency') : currencyDict[val.toString()];
+      return val == 0 ? t('ANY') : currencyDict[val.toString()];
     } else {
-      return t('ANY_currency');
+      return t('ANY');
     }
   }
 
@@ -142,10 +142,12 @@ class BookPage extends Component {
               type={this.props.type}
               currency={this.props.currency}
               maxWidth={bookTableWidth} // EM units
-              maxHeight={heightEm * 0.8 - 11} // EM units
+              maxHeight={heightEm * 0.8 - 5} // EM units
               fullWidth={widthEm} // EM units
               fullHeight={heightEm} // EM units
               defaultFullscreen={false}
+              onCurrencyChange={this.handleCurrencyChange}
+              onTypeChange={this.handleTypeChange}
             />
           </Grid>
           <Grid
@@ -162,7 +164,7 @@ class BookPage extends Component {
               setAppState={this.props.setAppState}
               limits={this.props.limits}
               maxWidth={chartWidthEm} // EM units
-              maxHeight={heightEm * 0.8 - 11} // EM units
+              maxHeight={heightEm * 0.8 - 5} // EM units
             />
           </Grid>
         </Grid>
@@ -179,7 +181,7 @@ class BookPage extends Component {
             setAppState={this.props.setAppState}
             limits={this.props.limits}
             maxWidth={widthEm * 0.8} // EM units
-            maxHeight={heightEm * 0.8 - 11} // EM units
+            maxHeight={heightEm * 0.8 - 5} // EM units
           />
         );
       } else {
@@ -192,10 +194,12 @@ class BookPage extends Component {
             type={this.props.type}
             currency={this.props.currency}
             maxWidth={widthEm * 0.97} // EM units
-            maxHeight={heightEm * 0.8 - 11} // EM units
+            maxHeight={heightEm * 0.8 - 5} // EM units
             fullWidth={widthEm} // EM units
             fullHeight={heightEm} // EM units
             defaultFullscreen={false}
+            onCurrencyChange={this.handleCurrencyChange}
+            onTypeChange={this.handleTypeChange}
           />
         );
       }
@@ -205,93 +209,7 @@ class BookPage extends Component {
   getTitle = (doubleView) => {
     const { t } = this.props;
 
-    if (this.state.view == 'list' || doubleView) {
-      if (this.props.type == 0) {
-        return t('You are SELLING BTC for {{currencyCode}}', {
-          currencyCode: this.props.bookCurrencyCode,
-        });
-      } else if (this.props.type == 1) {
-        return t('You are BUYING BTC for {{currencyCode}}', {
-          currencyCode: this.props.bookCurrencyCode,
-        });
-      } else {
-        return t('You are looking at all');
-      }
-    } else if (this.state.view == 'depth') {
-      return t('Depth chart');
-    }
-  };
-
-  mainFilters = () => {
-    const { t } = this.props;
-    return (
-      <>
-        <Grid item xs={6} align='right'>
-          <FormControl align='center'>
-            <FormHelperText align='center' sx={{ textAlign: 'center' }}>
-              {t('I want to')}
-            </FormHelperText>
-            <div style={{ textAlign: 'center' }}>
-              <ToggleButtonGroup
-                sx={{ height: '3.52em' }}
-                size='large'
-                exclusive={true}
-                value={this.props.type}
-                onChange={this.handleTypeChange}
-              >
-                <ToggleButton value={1} color={'primary'}>
-                  {t('Buy')}
-                </ToggleButton>
-                <ToggleButton value={0} color={'secondary'}>
-                  {t('Sell')}
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </div>
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={6} align='left'>
-          <FormControl align='center'>
-            <FormHelperText
-              align='center'
-              sx={{ textAlign: 'center', position: 'relative', left: '-5px' }}
-            >
-              {this.props.type == 0
-                ? t('and receive')
-                : this.props.type == 1
-                ? t('and pay with')
-                : t('and use')}
-            </FormHelperText>
-            <Select
-              // autoWidth={true}
-              sx={{ width: 120 }}
-              label={t('Select Payment Currency')}
-              required={true}
-              value={this.props.currency}
-              inputProps={{
-                style: { textAlign: 'center' },
-              }}
-              onChange={this.handleCurrencyChange}
-            >
-              <MenuItem value={0}>
-                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <FlagWithProps code='ANY' />
-                  {' ' + t('ANY_currency')}
-                </div>
-              </MenuItem>
-              {Object.entries(currencyDict).map(([key, value]) => (
-                <MenuItem key={key} value={parseInt(key)}>
-                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <FlagWithProps code={value} />
-                    {' ' + value}
-                  </div>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-      </>
-    );
+    return <></>;
   };
 
   render() {
@@ -302,12 +220,6 @@ class BookPage extends Component {
 
     return (
       <Grid className='orderBook' container spacing={1} sx={{ minWidth: 400 }}>
-        {this.mainFilters()}
-        <Grid item xs={12} align='center'>
-          <Typography component='h5' variant='h5'>
-            {this.getTitle(doubleView)}
-          </Typography>
-        </Grid>
         <Grid item xs={12} align='center'>
           {this.mainView(doubleView, widthEm, heightEm)}
         </Grid>

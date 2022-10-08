@@ -43,7 +43,185 @@ import { getCookie } from '../utils/cookies';
 import { pn } from '../utils/prettyNumbers';
 import { copyToClipboard } from '../utils/clipboard';
 
-interface Props {
+const RangeThumbComponent = function (props: object) {
+  const { children, ...other } = props;
+  return (
+    <SliderThumb {...other}>
+      {children}
+      <span className='range-bar' />
+      <span className='range-bar' />
+      <span className='range-bar' />
+    </SliderThumb>
+  );
+};
+
+interface AmountRangeProps {
+  limits: LimitList;
+  minAmount: string;
+  maxAmount: string;
+  type: number;
+  currency: number;
+  handleRangeAmountChange: () => void;
+  handleMaxAmountChange: () => void;
+  handleMinAmountChange: () => void;
+  handleCurrencyChange: () => void;
+  maxAmountError: boolean;
+  minAmountError: boolean;
+  currencyCode: boolean;
+  amountLimits: number[];
+}
+
+function AmountRange({
+  minAmount,
+  handleRangeAmountChange,
+  limits,
+  currency,
+  currencyCode,
+  handleCurrencyChange,
+  amountLimits,
+  maxAmount,
+  minAmountError,
+  maxAmountError,
+  handleMinAmountChange,
+  handleMaxAmountChange,
+}: AmountRangeProps) {
+  const theme = useTheme();
+  const { t } = useTranslation();
+
+  return (
+    <Grid item xs={12}>
+      <Box
+        sx={{
+          padding: '0.5em',
+          backgroundColor: 'background.paper',
+          border: '1px solid',
+          borderRadius: '4px',
+          borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+          '&:hover': {
+            borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
+          },
+        }}
+      >
+        <Grid container direction='column' alignItems='center' spacing={0.5}>
+          <Grid item sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+            <Typography
+              sx={{
+                width: `${t('From').length * 0.56 + 0.6}em`,
+                textAlign: 'left',
+                color: 'text.secondary',
+              }}
+              variant='caption'
+            >
+              {t('From')}
+            </Typography>
+            <TextField
+              variant='standard'
+              type='number'
+              size='small'
+              value={minAmount}
+              onChange={handleMinAmountChange}
+              error={minAmountError}
+              sx={{
+                width: `${minAmount.toString().length * 0.56}em`,
+                minWidth: '0.56em',
+                maxWidth: '2.8em',
+              }}
+            />
+            <Typography
+              sx={{
+                width: `${t('to').length * 0.56 + 0.6}em`,
+                textAlign: 'center',
+                color: 'text.secondary',
+              }}
+              variant='caption'
+            >
+              {t('to')}
+            </Typography>
+            <TextField
+              variant='standard'
+              size='small'
+              type='number'
+              value={maxAmount}
+              onChange={handleMaxAmountChange}
+              error={maxAmountError}
+              sx={{
+                width: `${maxAmount.toString().length * 0.56}em`,
+                minWidth: '0.56em',
+                maxWidth: '3.36em',
+              }}
+            />
+            <div style={{ width: '0.5em' }} />
+            <Select
+              sx={{ width: '3.8em' }}
+              variant='standard'
+              size='small'
+              required={true}
+              inputProps={{
+                style: { textAlign: 'center' },
+              }}
+              value={currency == 0 ? 1 : currency}
+              renderValue={() => currencyCode}
+              onChange={(e) => handleCurrencyChange(e.target.value)}
+            >
+              {Object.entries(currencyDict).map(([key, value]) => (
+                <MenuItem key={key} value={parseInt(key)}>
+                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <FlagWithProps code={value} />
+                    {' ' + value}
+                  </div>
+                </MenuItem>
+              ))}
+            </Select>
+          </Grid>
+
+          <Grid
+            item
+            sx={{
+              width: `calc(100% - ${Math.log10(amountLimits[1] * 0.65) + 2}em)`,
+            }}
+          >
+            <RangeSlider
+              disableSwap={true}
+              value={[Number(minAmount), Number(maxAmount)]}
+              step={(amountLimits[1] - amountLimits[0]) / 5000}
+              valueLabelDisplay='auto'
+              components={{ Thumb: RangeThumbComponent }}
+              componentsProps={{
+                thumb: { style: { backgroundColor: theme.palette.background.paper } },
+              }}
+              valueLabelFormat={(x) =>
+                pn(parseFloat(Number(x).toPrecision(x < 100 ? 2 : 3))) + ' ' + currencyCode
+              }
+              marks={
+                limits == null
+                  ? false
+                  : [
+                      {
+                        value: amountLimits[0] * 1.01,
+                        label: `${pn(
+                          parseFloat(Number(amountLimits[0] * 1.01).toPrecision(3)),
+                        )} ${currencyCode}`,
+                      },
+                      {
+                        value: amountLimits[1] * 0.99,
+                        label: `${pn(
+                          parseFloat(Number(amountLimits[1] * 0.99).toPrecision(3)),
+                        )} ${currencyCode}`,
+                      },
+                    ]
+              }
+              min={amountLimits[0] * 1.01}
+              max={amountLimits[1] * 0.99}
+              onChange={handleRangeAmountChange}
+            />
+          </Grid>
+        </Grid>
+      </Box>
+    </Grid>
+  );
+}
+
+interface MakerFormProps {
   limits: LimitList;
   loadingLimits: boolean;
   pricingMethods: boolean;
@@ -61,14 +239,14 @@ const MakerForm = ({
   currency,
   type,
   setAppState,
-}: Props): JSX.Element => {
+}: MakerFormProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const history = useHistory();
   const [maker, setMaker] = useState<Maker>({
     isExplicit: false,
     amount: '',
-    paymentMethod: new Array(),
+    paymentMethod: [],
     paymentMethodText: 'Not specified',
     badPaymentMethod: false,
     premium: '',
@@ -116,8 +294,8 @@ const MakerForm = ({
 
   const updateAmountLimits = function (limits: LimitList, currency: number, premium: number) {
     const index = currency === 0 ? 1 : currency;
-    var minAmountLimit: number = limits[index].min_amount * (1 + premium / 100);
-    var maxAmountLimit: number = limits[index].max_amount * (1 + premium / 100);
+    let minAmountLimit: number = limits[index].min_amount * (1 + premium / 100);
+    let maxAmountLimit: number = limits[index].max_amount * (1 + premium / 100);
 
     // times 1.1 to allow a bit of margin with respect to the backend minimum
     minAmountLimit = minAmountLimit * 1.1;
@@ -127,8 +305,8 @@ const MakerForm = ({
   };
 
   const updateSatoshisLimits = function (limits: LimitList) {
-    var minAmount: number = limits[1000].min_amount * 100000000;
-    var maxAmount: number = limits[1000].max_amount * 100000000;
+    const minAmount: number = limits[1000].min_amount * 100000000;
+    const maxAmount: number = limits[1000].max_amount * 100000000;
     setSatoshisLimits([minAmount, maxAmount]);
   };
 
@@ -294,18 +472,6 @@ const MakerForm = ({
     });
   };
 
-  const RangeThumbComponent = function (props: object) {
-    const { children, ...other } = props;
-    return (
-      <SliderThumb {...other}>
-        {children}
-        <span className='range-bar' />
-        <span className='range-bar' />
-        <span className='range-bar' />
-      </SliderThumb>
-    );
-  };
-
   const handleClickAdvanced = function () {
     if (advancedOptions) {
       handleClickRelative();
@@ -385,7 +551,7 @@ const MakerForm = ({
   const disableSubmit = function () {
     return (
       type == null ||
-      (maker.amount == null && (advancedOptions == false || loadingLimits)) ||
+      (maker.amount == null && (!advancedOptions || loadingLimits)) ||
       (advancedOptions && (minAmountError() || maxAmountError())) ||
       (maker.amount <= 0 && !advancedOptions) ||
       (maker.isExplicit && (maker.badSatoshisText != '' || satoshis == '')) ||
@@ -417,10 +583,11 @@ const MakerForm = ({
       </Typography>
     );
   };
+
   return (
     <Box>
       <Collapse in={loadingLimits}>
-        <div style={{ display: loadingLimits === true ? '' : 'none' }}>
+        <div style={{ display: loadingLimits ? '' : 'none' }}>
           <LinearProgress />
         </div>
       </Collapse>
@@ -502,138 +669,20 @@ const MakerForm = ({
 
         <Grid item>
           <Collapse in={advancedOptions}>
-            <Grid item xs={12}>
-              <Box
-                sx={{
-                  padding: '0.5em',
-                  backgroundColor: 'background.paper',
-                  border: '1px solid',
-                  borderRadius: '4px',
-                  borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-                  '&:hover': {
-                    borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-                  },
-                }}
-              >
-                <Grid container direction='column' alignItems='center' spacing={0.5}>
-                  <Grid item sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <Typography
-                      sx={{
-                        width: `${t('From').length * 0.56 + 0.6}em`,
-                        textAlign: 'left',
-                        color: 'text.secondary',
-                      }}
-                      variant='caption'
-                    >
-                      {t('From')}
-                    </Typography>
-                    <TextField
-                      sx={{ backgroundColor: 'background.paper', borderRadius: '4px' }}
-                      variant='standard'
-                      type='number'
-                      size='small'
-                      value={maker.minAmount}
-                      onChange={handleMinAmountChange}
-                      error={minAmountError()}
-                      sx={{
-                        width: `${maker.minAmount.toString().length * 0.56}em`,
-                        minWidth: '0.56em',
-                        maxWidth: '2.8em',
-                      }}
-                    />
-                    <Typography
-                      sx={{
-                        width: `${t('to').length * 0.56 + 0.6}em`,
-                        textAlign: 'center',
-                        color: 'text.secondary',
-                      }}
-                      variant='caption'
-                    >
-                      {t('to')}
-                    </Typography>
-                    <TextField
-                      sx={{ backgroundColor: 'background.paper', borderRadius: '4px' }}
-                      variant='standard'
-                      size='small'
-                      type='number'
-                      value={maker.maxAmount}
-                      onChange={handleMaxAmountChange}
-                      error={maxAmountError()}
-                      sx={{
-                        width: `${maker.maxAmount.toString().length * 0.56}em`,
-                        minWidth: '0.56em',
-                        maxWidth: '3.36em',
-                      }}
-                    />
-                    <div style={{ width: '0.5em' }} />
-                    <Select
-                      sx={{ width: '3.8em' }}
-                      variant='standard'
-                      size='small'
-                      required={true}
-                      inputProps={{
-                        style: { textAlign: 'center' },
-                      }}
-                      value={currency == 0 ? 1 : currency}
-                      renderValue={() => currencyCode}
-                      onChange={(e) => handleCurrencyChange(e.target.value)}
-                    >
-                      {Object.entries(currencyDict).map(([key, value]) => (
-                        <MenuItem key={key} value={parseInt(key)}>
-                          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                            <FlagWithProps code={value} />
-                            {' ' + value}
-                          </div>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </Grid>
-
-                  <Grid
-                    item
-                    sx={{
-                      width: `calc(100% - ${Math.log10(amountLimits[1] * 0.65) + 2}em)`,
-                    }}
-                  >
-                    <RangeSlider
-                      disableSwap={true}
-                      disabled={!advancedOptions || loadingLimits}
-                      value={[Number(maker.minAmount), Number(maker.maxAmount)]}
-                      step={(amountLimits[1] - amountLimits[0]) / 5000}
-                      valueLabelDisplay='auto'
-                      components={{ Thumb: RangeThumbComponent }}
-                      componentsProps={{
-                        thumb: { style: { backgroundColor: theme.palette.background.paper } },
-                      }}
-                      valueLabelFormat={(x) =>
-                        pn(parseFloat(Number(x).toPrecision(x < 100 ? 2 : 3))) + ' ' + currencyCode
-                      }
-                      marks={
-                        limits == null
-                          ? false
-                          : [
-                              {
-                                value: amountLimits[0] * 1.01,
-                                label: `${pn(
-                                  parseFloat(Number(amountLimits[0] * 1.01).toPrecision(3)),
-                                )} ${currencyCode}`,
-                              },
-                              {
-                                value: amountLimits[1] * 0.99,
-                                label: `${pn(
-                                  parseFloat(Number(amountLimits[1] * 0.99).toPrecision(3)),
-                                )} ${currencyCode}`,
-                              },
-                            ]
-                      }
-                      min={amountLimits[0] * 1.01}
-                      max={amountLimits[1] * 0.99}
-                      onChange={handleRangeAmountChange}
-                    />
-                  </Grid>
-                </Grid>
-              </Box>
-            </Grid>
+            <AmountRange
+              minAmount={maker.minAmount}
+              handleRangeAmountChange={handleRangeAmountChange}
+              limits={limits}
+              currency={currency}
+              currencyCode={currencyCode}
+              handleCurrencyChange={handleCurrencyChange}
+              amountLimits={amountLimits}
+              maxAmount={maker.maxAmount}
+              minAmountError={minAmountError()}
+              maxAmountError={maxAmountError()}
+              handleMinAmountChange={handleMinAmountChange}
+              handleMaxAmountChange={handleMaxAmountChange}
+            />
           </Collapse>
           <Collapse in={!advancedOptions}>
             <Grid item>
@@ -711,6 +760,7 @@ const MakerForm = ({
         <Grid item xs={12}>
           <AutocompletePayments
             onAutocompleteChange={handlePaymentMethodChange}
+            listBoxProps={{sx:{width:'15.3em',maxHeight:'20em'}}}
             optionsType={currency == 1000 ? 'swap' : 'fiat'}
             error={maker.badPaymentMethod}
             helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
@@ -720,6 +770,7 @@ const MakerForm = ({
             )}
             listHeaderText={t('You can add new methods')}
             addNewButtonText={t('Add New')}
+            asFilter={false}
           />
         </Grid>
 
