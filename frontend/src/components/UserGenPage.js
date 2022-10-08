@@ -111,7 +111,10 @@ class UserGenPage extends Component {
               }) &
               systemClient.setCookie('robot_token', token) &
               systemClient.setCookie('pub_key', data.public_key.split('\n').join('\\')) &
-              systemClient.setCookie('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'))) &
+              systemClient.setCookie(
+                'enc_priv_key',
+                data.encrypted_private_key.split('\n').join('\\'),
+              )) &
           // If the robot has been found (recovered) we assume the token is backed up
           (data.found ? this.props.setAppState({ copiedToken: true }) : null);
       }),
@@ -372,7 +375,9 @@ class UserGenPage extends Component {
             <Button
               disabled={
                 this.state.loadingRobot !== false ||
-                !(this.props.token ? systemClient.getCookie('robot_token') === this.props.token : true)
+                !(this.props.token
+                  ? systemClient.getCookie('robot_token') === this.props.token
+                  : true)
               }
               color='primary'
               to='/make/'
@@ -392,7 +397,9 @@ class UserGenPage extends Component {
               disabled={
                 this.state.loadingRobot !== false ||
                 (!window.NativeRobosats &&
-                  !(this.props.token ? systemClient.getCookie('robot_token') === this.props.token : true))
+                  !(this.props.token
+                    ? systemClient.getCookie('robot_token') === this.props.token
+                    : true))
               }
               color='secondary'
               to='/book/'

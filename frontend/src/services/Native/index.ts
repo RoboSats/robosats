@@ -7,7 +7,7 @@ class NativeRobosats {
 
   private pendingMessages: { [id: number]: NativeRobosatsPromise } = {};
 
-  public cookies: {[key:string]: string} = {};
+  public cookies: { [key: string]: string } = {};
 
   public onMessageResolve: (messageId: number, response?: object) => void = (
     messageId,
@@ -31,11 +31,11 @@ class NativeRobosats {
 
   public onMessage: (message: NativeWebViewMessageSystem) => void = (message) => {
     if (message.type === 'torStatus') {
-      this.torDaemonStatus = message.detail || "ERROR";
+      this.torDaemonStatus = message.detail || 'ERROR';
       window.dispatchEvent(new CustomEvent('torStatus', { detail: this.torDaemonStatus }));
     } else if (message.type === 'setCookie') {
       if (message.key !== undefined) {
-        this.cookies[message.key] = message.detail
+        this.cookies[message.key] = message.detail;
       }
     }
   };

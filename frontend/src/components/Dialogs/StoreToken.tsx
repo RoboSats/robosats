@@ -12,7 +12,7 @@ import {
   Button,
   Grid,
 } from '@mui/material';
-import { systemClient } from '../../services/System'
+import { systemClient } from '../../services/System';
 import ContentCopy from '@mui/icons-material/ContentCopy';
 
 interface Props {

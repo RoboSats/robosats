@@ -63,7 +63,7 @@ const App = () => {
       if (data.type === 'copyToClipboardString') {
         Clipboard.setString(data.detail);
       } else if (data.type === 'setCookie') {
-        setCookie(data.key, data.detail)
+        setCookie(data.key, data.detail);
       } else if (data.type === 'deleteCookie') {
         EncryptedStorage.removeItem(data.key);
       }
@@ -80,8 +80,8 @@ const App = () => {
         key,
         detail: storedValue,
       });
-    } catch (error) { }
-  }
+    } catch (error) {}
+  };
 
   const sendTorStatus = async () => {
     NetInfo.fetch().then(async (state) => {

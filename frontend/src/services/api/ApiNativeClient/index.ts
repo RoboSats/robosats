@@ -13,9 +13,9 @@ class ApiNativeClient implements ApiClient {
   private assetsPromises: { [path: string]: Promise<string | undefined> } = {};
 
   private readonly getHeaders: () => HeadersInit = () => {
-    let headers = { 
+    let headers = {
       'Content-Type': 'application/json',
-    }
+    };
 
     const sessionid = systemClient.getCookie('sessionid');
     if (sessionid) {
@@ -27,23 +27,23 @@ class ApiNativeClient implements ApiClient {
         ...headers,
         ...{
           'X-CSRFToken': csrftoken,
-          'Cookie': `sessionid=${sessionid};robot_token=${robotToken};csrftoken=${csrftoken};pub_key=${pubKey}`,
+          Cookie: `sessionid=${sessionid};robot_token=${robotToken};csrftoken=${csrftoken};pub_key=${pubKey}`,
         },
-      }
+      };
     }
 
     return headers;
   };
 
   private readonly parseResponse = (response: { [key: string]: any }): object => {
-    if (response.headers["set-cookie"]) {
-      response.headers["set-cookie"].forEach((cookie: string) => {
-        const keySplit: string[] = cookie.split('=')
-        systemClient.setCookie(keySplit[0], keySplit[1].split(';')[0])
-      })
+    if (response.headers['set-cookie']) {
+      response.headers['set-cookie'].forEach((cookie: string) => {
+        const keySplit: string[] = cookie.split('=');
+        systemClient.setCookie(keySplit[0], keySplit[1].split(';')[0]);
+      });
     }
-    return response.json
-  }
+    return response.json;
+  };
 
   public put: (path: string, body: object) => Promise<object | undefined> = async (path, body) => {
     return await new Promise((res, _rej) => res({}));

@@ -3,7 +3,10 @@ import { systemClient } from '../../System';
 
 class ApiWebClient implements ApiClient {
   private readonly getHeaders: () => HeadersInit = () => {
-    return { 'Content-Type': 'application/json', 'X-CSRFToken': systemClient.getCookie('csrftoken') || '' };
+    return {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': systemClient.getCookie('csrftoken') || '',
+    };
   };
 
   public post: (path: string, body: object) => Promise<object | undefined> = async (path, body) => {

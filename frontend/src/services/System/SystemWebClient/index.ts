@@ -39,16 +39,16 @@ class SystemWebClient implements SystemClient {
       }
     }
 
-    return cookieValue || "";
-  }
-  
+    return cookieValue || '';
+  };
+
   public setCookie: (key: string, value: string) => void = (key, value) => {
     document.cookie = `${key}=${value};path=/;SameSite=Strict`;
-  }
+  };
 
   public deleteCookie: (key: string) => void = (key) => {
     document.cookie = `${name}= ; expires = Thu, 01 Jan 1970 00:00:00 GMT`;
-  }
+  };
 }
 
 export default SystemWebClient;
