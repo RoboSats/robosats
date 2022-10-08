@@ -1,12 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { SafeAreaView, Text, Platform } from 'react-native';
-import { torClient } from './services/Tor';
+import TorClient from './services/Tor';
 import Clipboard from '@react-native-clipboard/clipboard';
 import NetInfo from '@react-native-community/netinfo';
 import EncryptedStorage from 'react-native-encrypted-storage';
 
 const App = () => {
+  const torClient = new TorClient();
   const webViewRef = useRef<WebView>();
   const uri = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html';
 
@@ -31,7 +32,7 @@ const App = () => {
 
       if (data.type === 'get') {
         torClient
-          .get(data.path)
+          .get(data.path, data.headers)
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })
