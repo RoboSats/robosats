@@ -50,7 +50,9 @@ class UserGenPage extends Component {
         loadingRobot: false,
       });
     } else if (window.NativeRobosats && systemClient.getCookie('robot_token')) {
-      this.setState({ token: systemClient.getCookie('robot_token'), loadingRobot: false });
+      const token = systemClient.getCookie('robot_token');
+      this.props.setAppState({ token });
+      this.setState({ token, loadingRobot: false });
     } else {
       const newToken = genBase62Token(36);
       this.setState({
