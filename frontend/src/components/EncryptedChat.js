@@ -20,6 +20,7 @@ import { saveAsJson } from '../utils/saveFile';
 import { AuditPGPDialog } from './Dialogs';
 import RobotAvatar from './Robots/RobotAvatar';
 import { systemClient } from '../services/System';
+import { websocketClient } from '../services/Websocket';
 
 // Icons
 import CheckIcon from '@mui/icons-material/Check';
@@ -43,6 +44,7 @@ class Chat extends Component {
     messages: [],
     value: '',
     connected: false,
+    connection: null,
     peer_connected: false,
     audit: false,
     showPGP: new Array(),
@@ -52,144 +54,29 @@ class Chat extends Component {
     scrollNow: false,
   };
 
-  rws = new ReconnectingWebSocket(
-    'ws://' + window.location.host + '/ws/chat/' + this.props.orderId + '/',
-    [],
-    { connectionTimeout: 15000 },
-  );
-
   componentDidMount() {
-    this.rws.addEventListener('open', () => {
-      console.log('Connected!');
-      this.setState({ connected: true });
-      this.rws.send(
-        JSON.stringify({
-          type: 'message',
+    websocketClient
+      .open(`ws://${window.location.host}/ws/chat/${this.props.orderId}/`)
+      .then((connection) => {
+        console.log('Connected!');
+
+        connection.send({
           message: this.state.own_pub_key,
           nick: this.props.ur_nick,
-        }),
-      );
-    });
+        });
 
-    this.rws.addEventListener('message', (message) => {
-      const dataFromServer = JSON.parse(message.data);
-      console.log('Got reply!', dataFromServer.type);
-      console.log(
-        'PGP message index',
-        dataFromServer.index,
-        ' latestIndex ',
-        this.state.latestIndex,
-      );
-      if (dataFromServer) {
-        console.log(dataFromServer);
-        this.setState({ peer_connected: dataFromServer.peer_connected });
+        connection.onMessage(onMessage);
+        connection.onClose(() => {
+          console.log('Socket is closed. Reconnect will be attempted');
+          this.setState({ connected: false });
+        });
+        connection.onMessage(() => {
+          console.error('Socket encountered error: Closing socket');
+          this.setState({ connected: false });
+        });
 
-        // If we receive our own key on a message
-        if (dataFromServer.message == this.state.own_pub_key) {
-          console.log('OWN PUB KEY RECEIVED!!');
-        }
-
-        // If we receive a public key other than ours (our peer key!)
-        if (
-          dataFromServer.message.substring(0, 36) == `-----BEGIN PGP PUBLIC KEY BLOCK-----` &&
-          dataFromServer.message != this.state.own_pub_key
-        ) {
-          if (dataFromServer.message == this.state.peer_pub_key) {
-            console.log('PEER HAS RECONNECTED USING HIS PREVIOUSLY KNOWN PUBKEY');
-          } else if (
-            (dataFromServer.message != this.state.peer_pub_key) &
-            (this.state.peer_pub_key != null)
-          ) {
-            console.log('PEER PUBKEY HAS CHANGED');
-          }
-          console.log('PEER PUBKEY RECEIVED!!');
-          this.setState({ peer_pub_key: dataFromServer.message });
-
-          // After receiving the peer pubkey we ask the server for the historic messages if any
-          this.rws.send(
-            JSON.stringify({
-              type: 'message',
-              message: `-----SERVE HISTORY-----`,
-              nick: this.props.ur_nick,
-            }),
-          );
-        }
-
-        // If we receive an encrypted message
-        else if (
-          dataFromServer.message.substring(0, 27) == `-----BEGIN PGP MESSAGE-----` &&
-          dataFromServer.index > this.state.latestIndex
-        ) {
-          decryptMessage(
-            dataFromServer.message.split('\\').join('\n'),
-            dataFromServer.user_nick == this.props.ur_nick
-              ? this.state.own_pub_key
-              : this.state.peer_pub_key,
-            this.state.own_enc_priv_key,
-            this.state.token,
-          ).then((decryptedData) =>
-            this.setState((state) => ({
-              scrollNow: true,
-              waitingEcho:
-                this.state.waitingEcho == true
-                  ? decryptedData.decryptedMessage != this.state.lastSent
-                  : false,
-              lastSent:
-                decryptedData.decryptedMessage == this.state.lastSent
-                  ? '----BLANK----'
-                  : this.state.lastSent,
-              latestIndex:
-                dataFromServer.index > this.state.latestIndex
-                  ? dataFromServer.index
-                  : this.state.latestIndex,
-              messages: [
-                ...state.messages,
-                {
-                  index: dataFromServer.index,
-                  encryptedMessage: dataFromServer.message.split('\\').join('\n'),
-                  plainTextMessage: decryptedData.decryptedMessage,
-                  validSignature: decryptedData.validSignature,
-                  userNick: dataFromServer.user_nick,
-                  time: dataFromServer.time,
-                },
-              ].sort(function (a, b) {
-                // order the message array by their index (increasing)
-                return a.index - b.index;
-              }),
-            })),
-          );
-        }
-
-        // We allow plaintext communication. The user must write # to start
-        // If we receive an plaintext message
-        else if (dataFromServer.message.substring(0, 1) == '#') {
-          console.log('Got plaintext message', dataFromServer.message);
-          this.setState((state) => ({
-            scrollNow: true,
-            messages: [
-              ...state.messages,
-              {
-                index: this.state.latestIndex + 0.001,
-                encryptedMessage: dataFromServer.message,
-                plainTextMessage: dataFromServer.message,
-                validSignature: false,
-                userNick: dataFromServer.user_nick,
-                time: new Date().toString(),
-              },
-            ],
-          }));
-        }
-      }
-    });
-
-    this.rws.addEventListener('close', () => {
-      console.log('Socket is closed. Reconnect will be attempted');
-      this.setState({ connected: false });
-    });
-
-    this.rws.addEventListener('error', () => {
-      console.error('Socket encountered error: Closing socket');
-    });
+        this.setState({ connected: true, connection: connection });
+      });
   }
 
   componentDidUpdate() {
@@ -201,6 +88,109 @@ class Chat extends Component {
       this.setState({ scrollNow: false });
     }
   }
+
+  onMessage = (message) => {
+    const dataFromServer = JSON.parse(message.data);
+    console.log('Got reply!', dataFromServer.type);
+    console.log('PGP message index', dataFromServer.index, ' latestIndex ', this.state.latestIndex);
+    if (dataFromServer) {
+      console.log(dataFromServer);
+      this.setState({ peer_connected: dataFromServer.peer_connected });
+
+      // If we receive our own key on a message
+      if (dataFromServer.message == this.state.own_pub_key) {
+        console.log('OWN PUB KEY RECEIVED!!');
+      }
+
+      // If we receive a public key other than ours (our peer key!)
+      if (
+        dataFromServer.message.substring(0, 36) == `-----BEGIN PGP PUBLIC KEY BLOCK-----` &&
+        dataFromServer.message != this.state.own_pub_key
+      ) {
+        if (dataFromServer.message == this.state.peer_pub_key) {
+          console.log('PEER HAS RECONNECTED USING HIS PREVIOUSLY KNOWN PUBKEY');
+        } else if (
+          (dataFromServer.message != this.state.peer_pub_key) &
+          (this.state.peer_pub_key != null)
+        ) {
+          console.log('PEER PUBKEY HAS CHANGED');
+        }
+        console.log('PEER PUBKEY RECEIVED!!');
+        this.setState({ peer_pub_key: dataFromServer.message });
+
+        // After receiving the peer pubkey we ask the server for the historic messages if any
+        this.state.send({
+          message: `-----SERVE HISTORY-----`,
+          nick: this.props.ur_nick,
+        });
+      }
+
+      // If we receive an encrypted message
+      else if (
+        dataFromServer.message.substring(0, 27) == `-----BEGIN PGP MESSAGE-----` &&
+        dataFromServer.index > this.state.latestIndex
+      ) {
+        decryptMessage(
+          dataFromServer.message.split('\\').join('\n'),
+          dataFromServer.user_nick == this.props.ur_nick
+            ? this.state.own_pub_key
+            : this.state.peer_pub_key,
+          this.state.own_enc_priv_key,
+          this.state.token,
+        ).then((decryptedData) =>
+          this.setState((state) => ({
+            scrollNow: true,
+            waitingEcho:
+              this.state.waitingEcho == true
+                ? decryptedData.decryptedMessage != this.state.lastSent
+                : false,
+            lastSent:
+              decryptedData.decryptedMessage == this.state.lastSent
+                ? '----BLANK----'
+                : this.state.lastSent,
+            latestIndex:
+              dataFromServer.index > this.state.latestIndex
+                ? dataFromServer.index
+                : this.state.latestIndex,
+            messages: [
+              ...state.messages,
+              {
+                index: dataFromServer.index,
+                encryptedMessage: dataFromServer.message.split('\\').join('\n'),
+                plainTextMessage: decryptedData.decryptedMessage,
+                validSignature: decryptedData.validSignature,
+                userNick: dataFromServer.user_nick,
+                time: dataFromServer.time,
+              },
+            ].sort(function (a, b) {
+              // order the message array by their index (increasing)
+              return a.index - b.index;
+            }),
+          })),
+        );
+      }
+
+      // We allow plaintext communication. The user must write # to start
+      // If we receive an plaintext message
+      else if (dataFromServer.message.substring(0, 1) == '#') {
+        console.log('Got plaintext message', dataFromServer.message);
+        this.setState((state) => ({
+          scrollNow: true,
+          messages: [
+            ...state.messages,
+            {
+              index: this.state.latestIndex + 0.001,
+              encryptedMessage: dataFromServer.message,
+              plainTextMessage: dataFromServer.message,
+              validSignature: false,
+              userNick: dataFromServer.user_nick,
+              time: new Date().toString(),
+            },
+          ],
+        }));
+      }
+    }
+  };
 
   scrollToBottom = () => {
     this.messagesEnd.scrollIntoView({ behavior: 'smooth' });
@@ -217,13 +207,10 @@ class Chat extends Component {
 
     // If input string contains '#' send unencrypted and unlogged message
     else if (this.state.value.substring(0, 1) == '#') {
-      this.rws.send(
-        JSON.stringify({
-          type: 'message',
-          message: this.state.value,
-          nick: this.props.ur_nick,
-        }),
-      );
+      this.state.send({
+        message: this.state.value,
+        nick: this.props.ur_nick,
+      });
       this.setState({ value: '' });
     }
 
@@ -239,13 +226,10 @@ class Chat extends Component {
       ).then(
         (encryptedMessage) =>
           console.log('Sending Encrypted MESSAGE', encryptedMessage) &
-          this.rws.send(
-            JSON.stringify({
-              type: 'message',
-              message: encryptedMessage.split('\n').join('\\'),
-              nick: this.props.ur_nick,
-            }),
-          ),
+          this.state.send({
+            message: encryptedMessage.split('\n').join('\\'),
+            nick: this.props.ur_nick,
+          }),
       );
     }
     e.preventDefault();
