@@ -1,4 +1,3 @@
-import ReconnectingWebSocket from 'reconnecting-websocket';
 import { WebsocketClient, WebsocketConnection } from '..';
 import WebsocketConnectionWeb from '../WebsocketConnectionWeb';
 
