@@ -84,6 +84,9 @@ const FlagWithProps = ({ code }: Props): JSX.Element => {
   if (code === 'XAF') flag = <Flags.CM {...defaultProps} />;
   if (code === 'UAH') flag = <Flags.UA {...defaultProps} />;
   if (code === 'TND') flag = <Flags.TN {...defaultProps} />;
+  if (code === 'ETB') flag = <Flags.ET {...defaultProps} />;
+  if (code === 'GEL') flag = <Flags.GE {...defaultProps} />;
+  if (code === 'UGX') flag = <Flags.UG {...defaultProps} />;
   if (code === 'ANY') flag = <EarthIcon {...defaultProps} />;
   if (code === 'XAU') flag = <GoldIcon {...defaultProps} />;
   if (code === 'BTC') flag = <SwapCallsIcon color='primary' />;
