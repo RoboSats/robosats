@@ -134,6 +134,13 @@ export default class App extends Component {
   }
 }
 
-const root = ReactDOM.createRoot(document.getElementById('app'));
+const loadApp = () => {
+  if (systemClient.loading) {
+    setTimeout(loadApp, 200);
+  } else {
+    const root = ReactDOM.createRoot(document.getElementById('app'));
+    root.render(<App />);
+  }
+};
 
-root.render(<App />);
+loadApp();

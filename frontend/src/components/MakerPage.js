@@ -43,7 +43,6 @@ import LockIcon from '@mui/icons-material/Lock';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-import { getCookie } from '../utils/cookies';
 import { pn } from '../utils/prettyNumbers';
 import { systemClient } from '../services/System';
 
@@ -919,12 +918,12 @@ class MakerPage extends Component {
     const { t } = this.props;
     return (
       <Grid container align='center' spacing={1} sx={{ minWidth: '60%' }}>
-        {getCookie('robot_token') ? (
+        {systemClient.getCookie('robot_token') ? (
           <StoreTokenDialog
             open={this.state.openStoreToken}
             onClose={() => this.setState({ openStoreToken: false })}
             onClickCopy={() =>
-              systemClient.copyToClipboard(getCookie('robot_token')) &
+              systemClient.copyToClipboard(systemClient.getCookie('robot_token')) &
               this.props.setAppState({ copiedToken: true })
             }
             copyIconColor={this.props.copiedToken ? 'inherit' : 'primary'}

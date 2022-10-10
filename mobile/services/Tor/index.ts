@@ -20,14 +20,12 @@ class TorClient {
     }
   };
 
-  public get: (path: string) => Promise<object> = async (path) => {
-    await this.connectDaemon();
-
+  public get: (path: string, headers: object) => Promise<object> = async (path, headers) => {
     return await new Promise<object>(async (resolve, reject) => {
       try {
-        const response = await this.daemon.get(`${this.baseUrl}${path}`);
+        const response = await this.daemon.get(`${this.baseUrl}${path}`, headers);
 
-        resolve(response.json);
+        resolve(response);
       } catch (error) {
         reject(error);
       }
@@ -35,13 +33,11 @@ class TorClient {
   };
 
   public delete: (path: string, headers: object) => Promise<object> = async (path, headers) => {
-    await this.connectDaemon();
-
     return await new Promise<object>(async (resolve, reject) => {
       try {
         const response = await this.daemon.delete(`${this.baseUrl}${path}`, '', headers);
 
-        resolve(response.json);
+        resolve(response);
       } catch (error) {
         reject(error);
       }
@@ -49,8 +45,6 @@ class TorClient {
   };
 
   public request: (path: string) => Promise<object> = async (path) => {
-    await this.connectDaemon();
-
     return await new Promise<object>(async (resolve, reject) => {
       try {
         const response = await this.daemon
@@ -71,21 +65,17 @@ class TorClient {
     body,
     headers,
   ) => {
-    await this.connectDaemon();
-
     return await new Promise<object>(async (resolve, reject) => {
       try {
         const json = JSON.stringify(body);
         const response = await this.daemon.post(`${this.baseUrl}${path}`, json, headers);
 
-        resolve(response.json);
+        resolve(response);
       } catch (error) {
         reject(error);
       }
     });
   };
 }
-
-export const torClient = new TorClient();
 
 export default TorClient;

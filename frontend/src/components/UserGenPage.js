@@ -24,7 +24,6 @@ import { RoboSatsNoTextIcon } from './Icons';
 import { sha256 } from 'js-sha256';
 import { genBase62Token, tokenStrength } from '../utils/token';
 import { genKey } from '../utils/pgp';
-import { getCookie, writeCookie, deleteCookie } from '../utils/cookies';
 import { saveAsJson } from '../utils/saveFile';
 import { systemClient } from '../services/System';
 import { apiClient } from '../services/api/index';
@@ -47,10 +46,13 @@ class UserGenPage extends Component {
     // Displays the existing one
     if (this.props.nickname != null) {
       this.setState({
-        nickname: this.props.nickname,
         token: this.props.token ? this.props.token : '',
         loadingRobot: false,
       });
+    } else if (window.NativeRobosats && systemClient.getCookie('robot_token')) {
+      const token = systemClient.getCookie('robot_token');
+      this.props.setAppState({ token });
+      this.setState({ token, loadingRobot: false });
     } else {
       const newToken = genBase62Token(36);
       this.setState({
@@ -78,7 +80,6 @@ class UserGenPage extends Component {
     requestBody.then((body) =>
       apiClient.post('/api/user/', body).then((data) => {
         this.setState({
-          nickname: data.nickname,
           bit_entropy: data.token_bits_entropy,
           shannon_entropy: data.token_shannon_entropy,
           bad_request: data.bad_request,
@@ -110,9 +111,12 @@ class UserGenPage extends Component {
                 tgBotName: data.tg_bot_name,
                 tgToken: data.tg_token,
               }) &
-              writeCookie('robot_token', token) &
-              writeCookie('pub_key', data.public_key.split('\n').join('\\')) &
-              writeCookie('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'))) &
+              systemClient.setCookie('robot_token', token) &
+              systemClient.setCookie('pub_key', data.public_key.split('\n').join('\\')) &
+              systemClient.setCookie(
+                'enc_priv_key',
+                data.encrypted_private_key.split('\n').join('\\'),
+              )) &
           // If the robot has been found (recovered) we assume the token is backed up
           (data.found ? this.props.setAppState({ copiedToken: true }) : null);
       }),
@@ -122,10 +126,10 @@ class UserGenPage extends Component {
   delGeneratedUser() {
     apiClient.delete('/api/user');
 
-    deleteCookie('sessionid');
-    deleteCookie('robot_token');
-    deleteCookie('pub_key');
-    deleteCookie('enc_priv_key');
+    systemClient.deleteCookie('sessionid');
+    systemClient.deleteCookie('robot_token');
+    systemClient.deleteCookie('pub_key');
+    systemClient.deleteCookie('enc_priv_key');
   }
 
   handleClickNewRandomToken = () => {
@@ -168,11 +172,11 @@ class UserGenPage extends Component {
 
   createJsonFile = () => {
     return {
-      token: getCookie('robot_token'),
+      token: systemClient.getCookie('robot_token'),
       token_shannon_entropy: this.state.shannon_entropy,
       token_bit_entropy: this.state.bit_entropy,
-      public_key: getCookie('pub_key').split('\\').join('\n'),
-      encrypted_private_key: getCookie('enc_priv_key').split('\\').join('\n'),
+      public_key: systemClient.getCookie('pub_key').split('\\').join('\n'),
+      encrypted_private_key: systemClient.getCookie('enc_priv_key').split('\\').join('\n'),
     };
   };
 
@@ -191,12 +195,12 @@ class UserGenPage extends Component {
           align='center'
           sx={{ width: 370 * fontSizeFactor, height: 260 * fontSizeFactor }}
         >
-          {this.props.avatarLoaded && this.state.nickname ? (
+          {this.props.avatarLoaded && this.props.nickname ? (
             <div>
               <Grid item xs={12} align='center'>
                 <Typography component='h5' variant='h5'>
                   <b>
-                    {this.state.nickname && getCookie('sessionid') ? (
+                    {this.props.nickname && systemClient.getCookie('sessionid') ? (
                       <div
                         style={{
                           display: 'flex',
@@ -213,7 +217,7 @@ class UserGenPage extends Component {
                             width: 33 * fontSizeFactor,
                           }}
                         />
-                        <a>{this.state.nickname}</a>
+                        <a>{this.props.nickname}</a>
                         <BoltIcon
                           sx={{
                             color: '#fcba03',
@@ -230,7 +234,7 @@ class UserGenPage extends Component {
               </Grid>
               <Grid item xs={12} align='center'>
                 <RobotAvatar
-                  nickname={this.state.nickname}
+                  nickname={this.props.nickname}
                   smooth={true}
                   style={{ maxWidth: 203 * fontSizeFactor, maxHeight: 203 * fontSizeFactor }}
                   imageStyle={{
@@ -297,11 +301,10 @@ class UserGenPage extends Component {
                               color='primary'
                               disabled={
                                 !this.props.avatarLoaded ||
-                                (!window.NativeRobosats &&
-                                  !(getCookie('robot_token') === this.state.token))
+                                !(systemClient.getCookie('robot_token') === this.state.token)
                               }
                               onClick={() =>
-                                saveAsJson(this.state.nickname + '.json', this.createJsonFile())
+                                saveAsJson(this.props.nickname + '.json', this.createJsonFile())
                               }
                             >
                               <DownloadIcon
@@ -317,11 +320,10 @@ class UserGenPage extends Component {
                             color={this.props.copiedToken ? 'inherit' : 'primary'}
                             disabled={
                               !this.props.avatarLoaded ||
-                              (!window.NativeRobosats &&
-                                !(getCookie('robot_token') === this.state.token))
+                              !(systemClient.getCookie('robot_token') === this.state.token)
                             }
                             onClick={() =>
-                              systemClient.copyToClipboard(getCookie('robot_token')) &
+                              systemClient.copyToClipboard(systemClient.getCookie('robot_token')) &
                               this.props.setAppState({ copiedToken: true })
                             }
                           >
@@ -374,8 +376,9 @@ class UserGenPage extends Component {
             <Button
               disabled={
                 this.state.loadingRobot !== false ||
-                (!window.NativeRobosats &&
-                  !(this.props.token ? getCookie('robot_token') === this.props.token : true))
+                !(this.props.token
+                  ? systemClient.getCookie('robot_token') === this.props.token
+                  : true)
               }
               color='primary'
               to='/make/'
@@ -394,8 +397,9 @@ class UserGenPage extends Component {
             <Button
               disabled={
                 this.state.loadingRobot !== false ||
-                (!window.NativeRobosats &&
-                  !(this.props.token ? getCookie('robot_token') === this.props.token : true))
+                !(this.props.token
+                  ? systemClient.getCookie('robot_token') === this.props.token
+                  : true)
               }
               color='secondary'
               to='/book/'

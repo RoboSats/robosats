@@ -36,7 +36,6 @@ import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { UserNinjaIcon, BitcoinIcon } from '../Icons';
 
-import { getCookie } from '../../utils/cookies';
 import { systemClient } from '../../services/System';
 import { getWebln } from '../../utils/webln';
 import RobotAvatar from '../Robots/RobotAvatar';
@@ -98,7 +97,7 @@ const ProfileDialog = ({
   }, [showRewards]);
 
   const copyTokenHandler = () => {
-    const robotToken = getCookie('robot_token');
+    const robotToken = systemClient.getCookie('robot_token');
 
     if (robotToken) {
       systemClient.copyToClipboard(robotToken);
@@ -226,12 +225,12 @@ const ProfileDialog = ({
             </ListItemIcon>
 
             <ListItemText secondary={t('Your token (will not remain here)')}>
-              {getCookie('robot_token') ? (
+              {systemClient.getCookie('robot_token') ? (
                 <TextField
                   disabled
                   sx={{ width: '100%', maxWidth: '450px' }}
                   label={t('Back it up!')}
-                  value={getCookie('robot_token')}
+                  value={systemClient.getCookie('robot_token')}
                   variant='filled'
                   size='small'
                   InputProps={{

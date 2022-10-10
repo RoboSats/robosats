@@ -52,7 +52,6 @@ import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { NewTabIcon } from './Icons';
 
-import { getCookie } from '../utils/cookies';
 import { pn } from '../utils/prettyNumbers';
 
 class TradeBox extends Component {
