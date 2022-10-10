@@ -229,7 +229,7 @@ interface MakerFormProps {
   type: number;
   currency: number;
   setAppState: (state: object) => void;
-  setMaker: (state: object) => void;
+  setMaker: () => void;
 }
 
 const MakerForm = ({
@@ -239,29 +239,12 @@ const MakerForm = ({
   currency,
   type,
   setAppState,
+  maker,
+  setMaker,
 }: MakerFormProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const history = useHistory();
-  const [maker, setMaker] = useState<Maker>({
-    isExplicit: false,
-    amount: '',
-    paymentMethod: [],
-    paymentMethodText: 'Not specified',
-    badPaymentMethod: false,
-    premium: '',
-    satoshis: '',
-    publicExpiryTime: new Date(0, 0, 0, 23, 59),
-    publicDuration: 86340,
-    escrowExpiryTime: new Date(0, 0, 0, 3, 0),
-    escrowDuration: 10800,
-    bondSize: 3,
-    amountRange: false,
-    minAmount: '',
-    maxAmount: '',
-    badPremiumText: '',
-    badSatoshisText: '',
-  });
   const [badRequest, setBadRequest] = useState<string | null>(null);
   const [advancedOptions, setAdvancedOptions] = useState<boolean>(false);
   const [amountLimits, setAmountLimits] = useState<number[]>([1, 1000]);
@@ -616,7 +599,7 @@ const MakerForm = ({
       </Collapse>
 
       <Grid container spacing={1} justifyContent='center' alignItems='center'>
-        <Grid item xs={12}>
+        <Grid item >
           <FormControl component='fieldset'>
             <FormHelperText sx={{ textAlign: 'center' }}>
               {t('Buy or Sell Bitcoin?')}
@@ -760,7 +743,7 @@ const MakerForm = ({
         <Grid item xs={12}>
           <AutocompletePayments
             onAutocompleteChange={handlePaymentMethodChange}
-            listBoxProps={{sx:{width:'15.3em',maxHeight:'20em'}}}
+            listBoxProps={{ sx: { width: '15.3em', maxHeight: '20em' } }}
             optionsType={currency == 1000 ? 'swap' : 'fiat'}
             error={maker.badPaymentMethod}
             helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
@@ -1008,8 +991,10 @@ const MakerForm = ({
             </Grid>
           </Collapse>
         </Grid>
-
-        <Grid item xs={12}>
+        
+        <Grid container justifyContent="center">
+        <Grid item >
+          <div style={{display:'flex', justifyContent:'center'}}>
           {badRequest ? (
             <Typography component='h2' variant='subtitle2' color='secondary'>
               {badRequest} <br />
@@ -1017,10 +1002,11 @@ const MakerForm = ({
           ) : (
             ''
           )}
+          </div>
           <SummaryText />
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid item >
           {/* conditions to disable the make button */}
           {disableSubmit() ? (
             <Tooltip enterTouchDelay={0} title={t('You must fill the form correctly')}>
@@ -1044,6 +1030,7 @@ const MakerForm = ({
               {t('Submit Order')}
             </Button>
           )}
+          </Grid>
 
           <Collapse in={!loadingLimits}>
             <Tooltip

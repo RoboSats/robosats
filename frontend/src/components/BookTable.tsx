@@ -171,8 +171,8 @@ const BookTable = ({
     booleanCellFalseLabel: t('no'),
   };
 
-  const handlePaymentMethodChange = function(paymentArray:string[], paymentString) {
-  //   setPaymentMethod(paymentArray[0]);
+  const handlePaymentMethodChange = function (paymentArray: string[], paymentString) {
+    //   setPaymentMethod(paymentArray[0]);
   };
 
   const robotObj = function (width: number, hide: boolean) {
@@ -759,9 +759,9 @@ const BookTable = ({
                     borderColor: theme.palette.text.disabled,
                     hoverBorderColor: 'text.primary',
                   }}
-                  labelProps={{sx: {top: '0.645em' } }}
-                  tagProps={{sx:{height:'1.8em'}}}
-                  listBoxProps={{sx:{width:'9em'}}}
+                  labelProps={{ sx: { top: '0.645em' } }}
+                  tagProps={{ sx: { height: '1.8em' } }}
+                  listBoxProps={{ sx: { width: '9em' } }}
                   onAutocompleteChange={handlePaymentMethodChange}
                   optionsType={currency == 1000 ? 'swap' : 'fiat'}
                   error={paymentMethod.bad}

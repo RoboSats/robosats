@@ -888,10 +888,7 @@ class MakerPage extends Component {
   makeOrderBox = () => {
     const maxHeight = this.props.windowHeight ? this.props.windowHeight * 0.85 : 1000;
     return (
-      <Paper
-        elevation={12}
-        style={{ padding: 8, width: '17.25em', maxHeight, overflow: 'auto' }}
-      >
+      <Paper elevation={12} style={{ padding: 8, width: '17.25em', maxHeight, overflow: 'auto' }}>
         <MakerForm
           limits={this.props.limits}
           loadingLimits={this.props.loadingLimits}

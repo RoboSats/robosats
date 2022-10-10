@@ -113,7 +113,7 @@ Tag.propTypes = {
 };
 
 const StyledTag = styled(Tag)(
-  ({ theme, sx}) => `
+  ({ theme, sx }) => `
   display: flex;
   align-items: center;
   height: ${sx.height};
@@ -161,7 +161,7 @@ const ListHeader = styled('span')(
 );
 
 const Listbox = styled('ul')(
-  ({ theme, sx}) => `
+  ({ theme, sx }) => `
   width: ${sx.width};
   margin: 2px 0 0;
   padding: 0;
@@ -291,17 +291,22 @@ export default function AutocompletePayments(props) {
             }}
           >
             {value.map((option, index) => (
-              <StyledTag label={t(option.name)} icon={option.icon} sx={{ height: '2.1em', ...(props.tagProps ? props.tagProps.sx : {}) }} {...getTagProps({ index })} />
+              <StyledTag
+                label={t(option.name)}
+                icon={option.icon}
+                sx={{ height: '2.1em', ...(props.tagProps ? props.tagProps.sx : {}) }}
+                {...getTagProps({ index })}
+              />
             ))}
-            {value.length > 0 && props.isFilter ?
-              null:
-            <input {...getInputProps()} value={val} />
-            }
+            {value.length > 0 && props.isFilter ? null : <input {...getInputProps()} value={val} />}
           </InputWrapper>
         </div>
       </Tooltip>
       {groupedOptions.length > 0 ? (
-        <Listbox sx={{ width: '15.6em', ...(props.listBoxProps ? props.listBoxProps.sx : {}) }} {...getListboxProps()}>
+        <Listbox
+          sx={{ width: '15.6em', ...(props.listBoxProps ? props.listBoxProps.sx : {}) }}
+          {...getListboxProps()}
+        >
           {!props.isFilter ? (
             <div
               style={{
@@ -330,8 +335,8 @@ export default function AutocompletePayments(props) {
                     <AddIcon style={{ color: '#1976d2' }} sx={{ width: '1em', height: '1em' }} />
                   </div>
                 ) : null}
-                <Typography variant="inherit" align="left">
-                {t(option.name)}
+                <Typography variant='inherit' align='left'>
+                  {t(option.name)}
                 </Typography>
               </Button>
               <div style={{ position: 'relative', top: '0.357em' }}>
