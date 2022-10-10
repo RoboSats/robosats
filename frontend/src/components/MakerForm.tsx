@@ -993,18 +993,18 @@ const MakerForm = ({
         </Grid>
         
         <Grid container justifyContent="center">
-        <Grid item >
-          <div style={{display:'flex', justifyContent:'center'}}>
-          {badRequest ? (
-            <Typography component='h2' variant='subtitle2' color='secondary'>
-              {badRequest} <br />
-            </Typography>
-          ) : (
-            ''
-          )}
-          </div>
-          <SummaryText />
-        </Grid>
+          <Grid item >
+            <div style={{display:'flex', justifyContent:'center'}}>
+            {badRequest ? (
+              <Typography component='h2' variant='subtitle2' color='secondary'>
+                {badRequest} <br />
+              </Typography>
+            ) : (
+              ''
+            )}
+            </div>
+            <SummaryText />
+          </Grid>
 
         <Grid item >
           {/* conditions to disable the make button */}
