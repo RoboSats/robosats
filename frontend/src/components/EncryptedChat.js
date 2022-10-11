@@ -65,12 +65,12 @@ class Chat extends Component {
           nick: this.props.ur_nick,
         });
 
-        connection.onMessage(onMessage);
+        connection.onMessage(this.onMessage);
         connection.onClose(() => {
           console.log('Socket is closed. Reconnect will be attempted');
           this.setState({ connected: false });
         });
-        connection.onMessage(() => {
+        connection.onError(() => {
           console.error('Socket encountered error: Closing socket');
           this.setState({ connected: false });
         });
@@ -119,7 +119,7 @@ class Chat extends Component {
         this.setState({ peer_pub_key: dataFromServer.message });
 
         // After receiving the peer pubkey we ask the server for the historic messages if any
-        this.state.send({
+        this.state.connection.send({
           message: `-----SERVE HISTORY-----`,
           nick: this.props.ur_nick,
         });
@@ -207,7 +207,7 @@ class Chat extends Component {
 
     // If input string contains '#' send unencrypted and unlogged message
     else if (this.state.value.substring(0, 1) == '#') {
-      this.state.send({
+      this.state.connection.send({
         message: this.state.value,
         nick: this.props.ur_nick,
       });
@@ -226,7 +226,7 @@ class Chat extends Component {
       ).then(
         (encryptedMessage) =>
           console.log('Sending Encrypted MESSAGE', encryptedMessage) &
-          this.state.send({
+          this.state.connection.send({
             message: encryptedMessage.split('\n').join('\\'),
             nick: this.props.ur_nick,
           }),

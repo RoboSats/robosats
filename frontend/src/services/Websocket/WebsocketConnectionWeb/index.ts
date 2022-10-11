@@ -1,5 +1,4 @@
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import { StringOrBuffer } from 'simple-plist';
 import { WebsocketConnection } from '..';
 
 class WebsocketConnectionWeb implements WebsocketConnection {
