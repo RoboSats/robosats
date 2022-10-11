@@ -33,7 +33,7 @@ class BookPage extends Component {
   }
 
   componentDidMount = () => {
-    if (this.props.bookOrders.length < 1) {
+    if (this.props.orders.length < 1) {
       this.getOrderDetails(true, false);
     } else {
       this.getOrderDetails(false, true);
@@ -47,7 +47,7 @@ class BookPage extends Component {
         bookNotFound: data.not_found,
         bookLoading: false,
         bookRefreshing: false,
-        bookOrders: data,
+        orders: data,
       }),
     );
   }
@@ -138,7 +138,7 @@ class BookPage extends Component {
               loading={this.props.bookLoading}
               refreshing={this.props.bookRefreshing}
               clickRefresh={() => this.getOrderDetails(false, true)}
-              orders={this.props.bookOrders}
+              orders={this.props.orders}
               type={this.props.type}
               currency={this.props.currency}
               maxWidth={bookTableWidth} // EM units
@@ -157,7 +157,7 @@ class BookPage extends Component {
           >
             <DepthChart
               bookLoading={this.props.bookLoading}
-              orders={this.props.bookOrders}
+              orders={this.props.orders}
               lastDayPremium={this.props.lastDayPremium}
               currency={this.props.currency}
               compact={true}
@@ -174,7 +174,7 @@ class BookPage extends Component {
         return (
           <DepthChart
             bookLoading={this.props.bookLoading}
-            orders={this.props.bookOrders}
+            orders={this.props.orders}
             lastDayPremium={this.props.lastDayPremium}
             currency={this.props.currency}
             compact={true}
@@ -190,7 +190,7 @@ class BookPage extends Component {
             loading={this.props.bookLoading}
             refreshing={this.props.bookRefreshing}
             clickRefresh={() => this.getOrderDetails(false, true)}
-            orders={this.props.bookOrders}
+            orders={this.props.orders}
             type={this.props.type}
             currency={this.props.currency}
             maxWidth={widthEm * 0.97} // EM units
@@ -214,8 +214,8 @@ class BookPage extends Component {
 
   render() {
     const { t } = this.props;
-    const widthEm = this.props.windowWidth / this.props.theme.typography.fontSize;
-    const heightEm = this.props.windowHeight / this.props.theme.typography.fontSize;
+    const widthEm = this.props.windowWidth;
+    const heightEm = this.props.windowHeight;
     const doubleView = widthEm > 115;
 
     return (

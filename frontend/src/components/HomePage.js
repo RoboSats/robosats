@@ -20,7 +20,7 @@ export default class HomePage extends Component {
       type: null,
       currency: 0,
       bookCurrencyCode: 'ANY',
-      bookOrders: new Array(),
+      orders: new Array(),
       bookLoading: true,
       bookRefreshing: false,
       activeOrderId: null,
@@ -36,7 +36,7 @@ export default class HomePage extends Component {
 
   componentDidMount = () => {
     if (typeof window !== undefined) {
-      this.setState({ windowWidth: window.innerWidth, windowHeight: window.innerHeight });
+      this.setState({ windowWidth: window.innerWidth / this.props.theme.typography.fontSize, windowHeight: window.innerHeight / this.props.theme.typography.fontSize});
       window.addEventListener('resize', this.onResize);
     }
   };
@@ -48,21 +48,11 @@ export default class HomePage extends Component {
   };
 
   onResize = () => {
-    this.setState({ windowWidth: window.innerWidth, windowHeight: window.innerHeight });
+    this.setState({ windowWidth: window.innerWidth / this.props.theme.typography.fontSize, windowHeight: window.innerHeight / this.props.theme.typography.fontSize});
   };
 
   setAppState = (newState) => {
     this.setState(newState);
-  };
-
-  setMaker = (newMaker) => {
-    this.setState({
-      ...this.state,
-      maker: {
-        ...this.state.maker,
-        ...newMaker,
-      },
-    });
   };
 
   redirectTo(location) {
@@ -118,7 +108,6 @@ export default class HomePage extends Component {
                   {...this.state}
                   {...this.props}
                   setAppState={this.setAppState}
-                  setMaker={this.setMaker}
                 />
               )}
             />
@@ -148,7 +137,7 @@ export default class HomePage extends Component {
         </div>
         <div
           className='bottomBar'
-          style={{ height: `${40 * fontSizeFactor}px`, width: this.state.windowWidth }}
+          style={{ height: `${40 * fontSizeFactor}px`, width: `${this.state.windowWidth/16*14}em`}}
         >
           <BottomBar
             redirectTo={this.redirectTo}

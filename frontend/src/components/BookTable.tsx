@@ -38,25 +38,26 @@ import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 import AutocompletePayments from './AutocompletePayments';
 
 interface Props {
-  loading: boolean;
-  refreshing: boolean;
-  clickRefresh: () => void;
+  loading?: boolean;
+  refreshing?: boolean;
+  clickRefresh?: () => void;
   orders: Order[];
   type: number;
   currency: number;
   maxWidth: number;
   maxHeight: number;
-  fullWidth: number;
-  fullHeight: number;
+  fullWidth?: number;
+  fullHeight?: number;
   defaultFullscreen: boolean;
-  showControls: boolean;
-  onCurrencyChange: () => void;
-  onTypeChange: () => void;
+  showControls?: boolean;
+  showFooter?: boolean;
+  onCurrencyChange?: () => void;
+  onTypeChange?: () => void;
 }
 
 const BookTable = ({
-  loading,
-  refreshing,
+  loading=false,
+  refreshing=false,
   clickRefresh,
   orders,
   type,
@@ -67,6 +68,7 @@ const BookTable = ({
   fullHeight,
   defaultFullscreen = false,
   showControls = true,
+  showFooter = true,
   onCurrencyChange,
   onTypeChange,
 }: Props): JSX.Element => {
@@ -638,16 +640,18 @@ const BookTable = ({
 
   const [columns, width] = filteredColumns(fullscreen ? fullWidth : maxWidth);
 
-  const gridComponents = {
-    LoadingOverlay: LinearProgress,
-    NoResultsOverlay: () => (
-      <Stack height='100%' alignItems='center' justifyContent='center'>
-        {t('Filter has no results')}
-      </Stack>
-    ),
-    Toolbar: showControls ? (
-      () => (
-        <Box>
+  const NoResultsOverlay = function(){
+    return (
+      (
+        <Stack height='100%' alignItems='center' justifyContent='center'>
+          {t('Filter has no results')}
+        </Stack>
+      )
+    )
+  }
+  const Controls = function(){
+    return(
+      <Box>
           <Grid
             container
             alignItems='flex-start'
@@ -779,11 +783,10 @@ const BookTable = ({
           </Grid>
           <Divider />
         </Box>
-      )
-    ) : (
-      <></>
-    ),
-    Footer: () => (
+    )
+  }
+  const Footer = function(){
+    return(
       <Grid container alignItems='center' direction='row' justifyContent='space-between'>
         <Grid item>
           <Grid container alignItems='center' direction='row'>
@@ -804,7 +807,20 @@ const BookTable = ({
           <GridPagination />
         </Grid>
       </Grid>
-    ),
+    )
+  }
+  const gridComponents = function(){
+    let components = {
+      LoadingOverlay: LinearProgress,
+      NoResultsOverlay: NoResultsOverlay}
+
+    if (showFooter){
+      components['Footer']=Footer
+    }
+    if (showControls){
+      components['Toolbar']=Controls
+    }
+    return components
   };
 
   if (!fullscreen) {
@@ -818,7 +834,8 @@ const BookTable = ({
           )}
           loading={loading || refreshing}
           columns={columns}
-          components={gridComponents}
+          hideFooter={!showFooter}
+          components={gridComponents()}
           pageSize={loading ? 0 : pageSize}
           rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
           onPageSizeChange={(newPageSize) => {
@@ -842,7 +859,8 @@ const BookTable = ({
             )}
             loading={loading || refreshing}
             columns={columns}
-            components={gridComponents}
+            hideFooter={!showFooter}
+            components={gridComponents()}
             pageSize={loading ? 0 : pageSize}
             rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
             onPageSizeChange={(newPageSize) => {

@@ -1,8 +1,8 @@
 export interface Maker {
   isExplicit: boolean;
   amount: number | string;
-  paymentMethod: string[];
-  paymentMethodText: string;
+  paymentMethods: string[];
+  paymentMethodsText: string;
   badPaymentMethod: boolean;
   premium: number | string;
   satoshis: string;
@@ -11,7 +11,6 @@ export interface Maker {
   escrowExpiryTime: Date;
   escrowDuration: number;
   bondSize: number;
-  amountRange: boolean;
   minAmount: string;
   maxAmount: string;
   badSatoshisText: string;

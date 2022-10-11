@@ -22,6 +22,7 @@ import {
   Box,
   useTheme,
   Collapse,
+  IconButton,
 } from '@mui/material';
 import { LimitList } from '../models/Limit.model';
 import Maker from '../models/Maker.model';
@@ -37,7 +38,7 @@ import FlagWithProps from './FlagWithProps';
 import AutocompletePayments from './AutocompletePayments';
 import currencyDict from '../../static/assets/currencies.json';
 
-import { SelfImprovement, Lock, HourglassTop } from '@mui/icons-material';
+import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 
 import { getCookie } from '../utils/cookies';
 import { pn } from '../utils/prettyNumbers';
@@ -229,7 +230,11 @@ interface MakerFormProps {
   type: number;
   currency: number;
   setAppState: (state: object) => void;
-  setMaker: () => void;
+  setMaker: (state: Maker) => void;
+  disableRequest?: boolean;
+  collapseAll?: boolean;
+  onSubmit?: () => void;
+  onReset?: () => void;
 }
 
 const MakerForm = ({
@@ -241,6 +246,10 @@ const MakerForm = ({
   setAppState,
   maker,
   setMaker,
+  disableRequest=false,
+  collapseAll=false,
+  onSubmit=() => {},
+  onReset=() => {}
 }: MakerFormProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -325,8 +334,8 @@ const MakerForm = ({
   const handlePaymentMethodChange = function (paymentArray: string[], paymentString: string) {
     setMaker({
       ...maker,
-      paymentMethod: paymentArray,
-      paymentMethodText: paymentString.substring(0, 53),
+      paymentMethods: paymentArray,
+      paymentMethodsText: paymentString.substring(0, 53),
       badPaymentMethod: paymentString.length > 50,
     });
   };
@@ -395,7 +404,7 @@ const MakerForm = ({
   };
 
   const handleClickExplicit = function () {
-    if (!maker.advancedOptions) {
+    if (!advancedOptions) {
       setMaker({
         ...maker,
         isExplicit: true,
@@ -404,26 +413,29 @@ const MakerForm = ({
   };
 
   const handleSubmit = function () {
-    const body = {
-      type: type == 0 ? 1 : 0,
-      currency: currency == 0 ? 1 : currency,
-      amount: advancedOptions ? null : maker.amount,
-      has_range: advancedOptions,
-      min_amount: advancedOptions ? maker.minAmount : null,
-      max_amount: advancedOptions ? maker.maxAmount : null,
-      payment_method: maker.paymentMethodText === '' ? 'Not specified' : maker.paymentMethodText,
-      is_explicit: maker.isExplicit,
-      premium: maker.isExplicit ? null : maker.premium == '' ? 0 : maker.premium,
-      satoshis: maker.isExplicit ? maker.satoshis : null,
-      public_duration: maker.publicDuration,
-      escrow_duration: maker.escrowDuration,
-      bond_size: maker.bondSize,
-    };
-    console.log(body);
-    apiClient.post('/api/make/', body).then((data: object) => {
-      setBadRequest(data.bad_request);
-      data.id ? history.push('/order/' + data.id) : '';
-    });
+    if (!disableRequest){
+      console.log(disableRequest)
+      const body = {
+        type: type == 0 ? 1 : 0,
+        currency: currency == 0 ? 1 : currency,
+        amount: advancedOptions ? null : maker.amount,
+        has_range: advancedOptions,
+        min_amount: advancedOptions ? maker.minAmount : null,
+        max_amount: advancedOptions ? maker.maxAmount : null,
+        payment_method: maker.paymentMethodsText === '' ? 'Not specified' : maker.paymentMethodsText,
+        is_explicit: maker.isExplicit,
+        premium: maker.isExplicit ? null : maker.premium == '' ? 0 : maker.premium,
+        satoshis: maker.isExplicit ? maker.satoshis : null,
+        public_duration: maker.publicDuration,
+        escrow_duration: maker.escrowDuration,
+        bond_size: maker.bondSize,
+      };
+      console.log(body);
+      apiClient.post('/api/make/', body).then((data: object) => {
+        setBadRequest(data.bad_request);
+        data.id ? history.push('/order/' + data.id) : '';
+      });
+    }
     // this.setState({ openStoreToken: false });
   };
 
@@ -534,22 +546,45 @@ const MakerForm = ({
   const disableSubmit = function () {
     return (
       type == null ||
+      (maker.amount != null && (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
       (maker.amount == null && (!advancedOptions || loadingLimits)) ||
       (advancedOptions && (minAmountError() || maxAmountError())) ||
       (maker.amount <= 0 && !advancedOptions) ||
-      (maker.isExplicit && (maker.badSatoshisText != '' || satoshis == '')) ||
+      (maker.isExplicit && (maker.badSatoshisText != '' || maker.satoshis == '')) ||
       (!maker.isExplicit && maker.badPremiumText != '')
     );
   };
-
+  
+  const clearMaker = function() {
+    setAppState({type:null})
+    setMaker({
+      ...maker,
+      isExplicit: false,
+      amount: '',
+      paymentMethods: [],
+      paymentMethodsText: 'Not specified',
+      badPaymentMethod: false,
+      premium: '',
+      satoshis: '',
+      publicExpiryTime: new Date(0, 0, 0, 23, 59),
+      publicDuration: 86340,
+      escrowExpiryTime: new Date(0, 0, 0, 3, 0),
+      escrowDuration: 10800,
+      bondSize: 3,
+      minAmount: '',
+      maxAmount: '',
+      badPremiumText: '',
+      badSatoshisText: '',
+    })
+  }
   const SummaryText = function () {
     return (
       <Typography
         component='h2'
         variant='subtitle2'
+        align='center'
         color={disableSubmit() ? 'text.secondary' : 'text.primary'}
       >
-        <div>
           {type == null ? t('Order for ') : type == 1 ? t('Buy order for ') : t('Sell order for ')}
           {advancedOptions && maker.minAmount != ''
             ? pn(maker.minAmount) + '-' + pn(maker.maxAmount)
@@ -562,7 +597,6 @@ const MakerForm = ({
             : maker.premium > 0
             ? t(' at a {{premium}}% premium', { premium: maker.premium })
             : t(' at a {{discount}}% discount', { discount: -maker.premium })}
-        </div>
       </Typography>
     );
   };
@@ -574,9 +608,23 @@ const MakerForm = ({
           <LinearProgress />
         </div>
       </Collapse>
-      <Collapse in={!loadingLimits}>
-        <Grid container justifyContent='flex-end' spacing={0}>
-          <Grid item>
+      <Collapse in={!(loadingLimits || collapseAll)}>
+        <Grid container justifyContent='space-between' spacing={0} sx={{maxHeight:'1em'}}>
+          <Grid item >
+            <IconButton 
+              sx={{width:'1.3em',height:'1.3em', position:'relative',bottom:'0.2em',right:'0.2em', color:"text.secondary"}}
+              onClick={clearMaker}>
+              <Tooltip
+                placement='top'
+                enterTouchDelay={500}
+                enterDelay={700}
+                enterNextDelay={2000}
+                title={t('Clear all fields')}>
+                <DeleteSweep sx={{width:'1em',height:'1em'}}/>
+              </Tooltip>
+            </IconButton>
+          </Grid>
+          <Grid item >
             <Tooltip enterTouchDelay={0} placement='top' title={t('Enable advanced options')}>
               <div
                 style={{
@@ -597,7 +645,8 @@ const MakerForm = ({
           </Grid>
         </Grid>
       </Collapse>
-
+      
+      <Collapse in={!collapseAll}>
       <Grid container spacing={1} justifyContent='center' alignItems='center'>
         <Grid item >
           <FormControl component='fieldset'>
@@ -680,8 +729,8 @@ const MakerForm = ({
                   >
                     <TextField
                       fullWidth
-                      disabled={maker.amountRange}
-                      variant={maker.amountRange ? 'filled' : 'outlined'}
+                      disabled={advancedOptions}
+                      variant={advancedOptions ? 'filled' : 'outlined'}
                       error={
                         maker.amount != '' &&
                         (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])
@@ -743,7 +792,7 @@ const MakerForm = ({
         <Grid item xs={12}>
           <AutocompletePayments
             onAutocompleteChange={handlePaymentMethodChange}
-            listBoxProps={{ sx: { width: '15.3em', maxHeight: '20em' } }}
+            //listBoxProps={{ sx: { width: '15.3em', maxHeight: '20em' } }}
             optionsType={currency == 1000 ? 'swap' : 'fiat'}
             error={maker.badPaymentMethod}
             helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
@@ -991,22 +1040,17 @@ const MakerForm = ({
             </Grid>
           </Collapse>
         </Grid>
+      </Grid>
+      </Collapse>
         
-        <Grid container justifyContent="center">
+        <Grid container direction="column" alignItems="center">
           <Grid item >
-            <div style={{display:'flex', justifyContent:'center'}}>
-            {badRequest ? (
-              <Typography component='h2' variant='subtitle2' color='secondary'>
-                {badRequest} <br />
-              </Typography>
-            ) : (
-              ''
-            )}
-            </div>
             <SummaryText />
           </Grid>
 
         <Grid item >
+        <Grid container direction="row" justifyItems="center" alignItems="center" spacing={1}>
+          <Grid item >
           {/* conditions to disable the make button */}
           {disableSubmit() ? (
             <Tooltip enterTouchDelay={0} title={t('You must fill the form correctly')}>
@@ -1020,7 +1064,7 @@ const MakerForm = ({
             <Button
               color='primary'
               variant='contained'
-              onClick={handleSubmit}
+              onClick={() => {handleSubmit(); onSubmit();}}
               // onClick={
               //    copiedToken
               //     ? this.handleCreateOfferButtonPressed
@@ -1030,6 +1074,32 @@ const MakerForm = ({
               {t('Submit Order')}
             </Button>
           )}
+          </Grid>
+          {collapseAll ?
+          <Grid item>
+            <Collapse in={collapseAll} orientation='vertical'>
+            <IconButton 
+              onClick={onReset}>
+              <Tooltip
+                placement='top'
+                enterTouchDelay={500}
+                enterDelay={700}
+                enterNextDelay={2000}
+                title={t('Edit order')}>
+                <Edit sx={{width:'1.5em', height:'1.5em'}}/>
+              </Tooltip>
+            </IconButton>
+            </Collapse>
+          </Grid> :
+          null}
+
+          </Grid>
+          </Grid>
+
+          <Grid item >
+            <Typography align="center" component='h2' variant='subtitle2' color='secondary'>
+              {badRequest}
+            </Typography>
           </Grid>
 
           <Collapse in={!loadingLimits}>
@@ -1050,7 +1120,6 @@ const MakerForm = ({
               </Typography>
             </Tooltip>
           </Collapse>
-        </Grid>
       </Grid>
     </Box>
   );
