@@ -423,7 +423,8 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 class OrderPublicSerializer(serializers.ModelSerializer):
     maker_nick = serializers.CharField(required=False)
     maker_status = serializers.CharField(help_text='Status of the nick - "Active" or "Inactive"', required=False)
-    price = serializers.IntegerField(help_text="Price in order's fiat currency", required=False)
+    price = serializers.FloatField(help_text="Price in order's fiat currency", required=False)
+    satoshis_now = serializers.IntegerField(help_text="The amount of sats to be traded at the present moment (not including the fees)", required=False)
 
     class Meta:
         model = Order
