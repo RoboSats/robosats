@@ -485,7 +485,7 @@ class BottomBar extends Component {
       this.props.avatarLoaded
     );
     return (
-      <Paper elevation={6} style={{ height: '2.85em', width: '100%'}}>
+      <Paper elevation={6} style={{ height: '2.85em', width: '100%' }}>
         <Grid container>
           <Grid item xs={1.6}>
             <div style={{ display: this.showProfileButton() ? '' : 'none' }}>

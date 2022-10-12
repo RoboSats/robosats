@@ -1,6 +1,6 @@
 export interface Maker {
   isExplicit: boolean;
-  amount: number | string;
+  amount: string;
   paymentMethods: string[];
   paymentMethodsText: string;
   badPaymentMethod: boolean;

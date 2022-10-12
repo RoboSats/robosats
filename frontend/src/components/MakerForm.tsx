@@ -235,6 +235,7 @@ interface MakerFormProps {
   collapseAll?: boolean;
   onSubmit?: () => void;
   onReset?: () => void;
+  submitButtonLabel?: string;
 }
 
 const MakerForm = ({
@@ -246,10 +247,11 @@ const MakerForm = ({
   setAppState,
   maker,
   setMaker,
-  disableRequest=false,
-  collapseAll=false,
-  onSubmit=() => {},
-  onReset=() => {}
+  disableRequest = false,
+  collapseAll = false,
+  onSubmit = () => {},
+  onReset = () => {},
+  submitButtonLabel = 'Create Order',
 }: MakerFormProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -413,8 +415,7 @@ const MakerForm = ({
   };
 
   const handleSubmit = function () {
-    if (!disableRequest){
-      console.log(disableRequest)
+    if (!disableRequest) {
       const body = {
         type: type == 0 ? 1 : 0,
         currency: currency == 0 ? 1 : currency,
@@ -422,7 +423,8 @@ const MakerForm = ({
         has_range: advancedOptions,
         min_amount: advancedOptions ? maker.minAmount : null,
         max_amount: advancedOptions ? maker.maxAmount : null,
-        payment_method: maker.paymentMethodsText === '' ? 'Not specified' : maker.paymentMethodsText,
+        payment_method:
+          maker.paymentMethodsText === '' ? 'Not specified' : maker.paymentMethodsText,
         is_explicit: maker.isExplicit,
         premium: maker.isExplicit ? null : maker.premium == '' ? 0 : maker.premium,
         satoshis: maker.isExplicit ? maker.satoshis : null,
@@ -430,7 +432,6 @@ const MakerForm = ({
         escrow_duration: maker.escrowDuration,
         bond_size: maker.bondSize,
       };
-      console.log(body);
       apiClient.post('/api/make/', body).then((data: object) => {
         setBadRequest(data.bad_request);
         data.id ? history.push('/order/' + data.id) : '';
@@ -546,7 +547,8 @@ const MakerForm = ({
   const disableSubmit = function () {
     return (
       type == null ||
-      (maker.amount != null && (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
+      (maker.amount != null &&
+        (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
       (maker.amount == null && (!advancedOptions || loadingLimits)) ||
       (advancedOptions && (minAmountError() || maxAmountError())) ||
       (maker.amount <= 0 && !advancedOptions) ||
@@ -554,9 +556,9 @@ const MakerForm = ({
       (!maker.isExplicit && maker.badPremiumText != '')
     );
   };
-  
-  const clearMaker = function() {
-    setAppState({type:null})
+
+  const clearMaker = function () {
+    setAppState({ type: null });
     setMaker({
       ...maker,
       isExplicit: false,
@@ -575,8 +577,8 @@ const MakerForm = ({
       maxAmount: '',
       badPremiumText: '',
       badSatoshisText: '',
-    })
-  }
+    });
+  };
   const SummaryText = function () {
     return (
       <Typography
@@ -585,18 +587,18 @@ const MakerForm = ({
         align='center'
         color={disableSubmit() ? 'text.secondary' : 'text.primary'}
       >
-          {type == null ? t('Order for ') : type == 1 ? t('Buy order for ') : t('Sell order for ')}
-          {advancedOptions && maker.minAmount != ''
-            ? pn(maker.minAmount) + '-' + pn(maker.maxAmount)
-            : pn(maker.amount)}
-          {' ' + currencyCode}
-          {maker.isExplicit
-            ? t(' of {{satoshis}} Satoshis', { satoshis: pn(maker.satoshis) })
-            : maker.premium == 0
-            ? t(' at market price')
-            : maker.premium > 0
-            ? t(' at a {{premium}}% premium', { premium: maker.premium })
-            : t(' at a {{discount}}% discount', { discount: -maker.premium })}
+        {type == null ? t('Order for ') : type == 1 ? t('Buy order for ') : t('Sell order for ')}
+        {advancedOptions && maker.minAmount != ''
+          ? pn(maker.minAmount) + '-' + pn(maker.maxAmount)
+          : pn(maker.amount)}
+        {' ' + currencyCode}
+        {maker.isExplicit
+          ? t(' of {{satoshis}} Satoshis', { satoshis: pn(maker.satoshis) })
+          : maker.premium == 0
+          ? t(' at market price')
+          : maker.premium > 0
+          ? t(' at a {{premium}}% premium', { premium: maker.premium })
+          : t(' at a {{discount}}% discount', { discount: -maker.premium })}
       </Typography>
     );
   };
@@ -609,22 +611,31 @@ const MakerForm = ({
         </div>
       </Collapse>
       <Collapse in={!(loadingLimits || collapseAll)}>
-        <Grid container justifyContent='space-between' spacing={0} sx={{maxHeight:'1em'}}>
-          <Grid item >
-            <IconButton 
-              sx={{width:'1.3em',height:'1.3em', position:'relative',bottom:'0.2em',right:'0.2em', color:"text.secondary"}}
-              onClick={clearMaker}>
+        <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
+          <Grid item>
+            <IconButton
+              sx={{
+                width: '1.3em',
+                height: '1.3em',
+                position: 'relative',
+                bottom: '0.2em',
+                right: '0.2em',
+                color: 'text.secondary',
+              }}
+              onClick={clearMaker}
+            >
               <Tooltip
                 placement='top'
                 enterTouchDelay={500}
                 enterDelay={700}
                 enterNextDelay={2000}
-                title={t('Clear all fields')}>
-                <DeleteSweep sx={{width:'1em',height:'1em'}}/>
+                title={t('Clear all fields')}
+              >
+                <DeleteSweep sx={{ width: '1em', height: '1em' }} />
               </Tooltip>
             </IconButton>
           </Grid>
-          <Grid item >
+          <Grid item>
             <Tooltip enterTouchDelay={0} placement='top' title={t('Enable advanced options')}>
               <div
                 style={{
@@ -645,481 +656,485 @@ const MakerForm = ({
           </Grid>
         </Grid>
       </Collapse>
-      
-      <Collapse in={!collapseAll}>
-      <Grid container spacing={1} justifyContent='center' alignItems='center'>
-        <Grid item >
-          <FormControl component='fieldset'>
-            <FormHelperText sx={{ textAlign: 'center' }}>
-              {t('Buy or Sell Bitcoin?')}
-            </FormHelperText>
-            <div style={{ textAlign: 'center' }}>
-              <ButtonGroup>
-                <Button
-                  size={advancedOptions ? 'small' : 'large'}
-                  variant='contained'
-                  onClick={() =>
-                    setAppState({
-                      type: 1,
-                    })
-                  }
-                  disableElevation={type == 1}
-                  sx={{
-                    backgroundColor: type == 1 ? 'primary.main' : 'background.paper',
-                    color: type == 1 ? 'background.paper' : 'text.secondary',
-                    ':hover': {
-                      color: 'background.paper',
-                    },
-                  }}
-                >
-                  {t('Buy')}
-                </Button>
-                <Button
-                  size={advancedOptions ? 'small' : 'large'}
-                  variant='contained'
-                  onClick={() =>
-                    setAppState({
-                      type: 0,
-                    })
-                  }
-                  disableElevation={type == 0}
-                  color='secondary'
-                  sx={{
-                    backgroundColor: type == 0 ? 'secondary.main' : 'background.paper',
-                    color: type == 0 ? 'background.secondary' : 'text.secondary',
-                    ':hover': {
-                      color: 'background.paper',
-                    },
-                  }}
-                >
-                  {t('Sell')}
-                </Button>
-              </ButtonGroup>
-            </div>
-          </FormControl>
-        </Grid>
 
-        <Grid item>
-          <Collapse in={advancedOptions}>
-            <AmountRange
-              minAmount={maker.minAmount}
-              handleRangeAmountChange={handleRangeAmountChange}
-              limits={limits}
-              currency={currency}
-              currencyCode={currencyCode}
-              handleCurrencyChange={handleCurrencyChange}
-              amountLimits={amountLimits}
-              maxAmount={maker.maxAmount}
-              minAmountError={minAmountError()}
-              maxAmountError={maxAmountError()}
-              handleMinAmountChange={handleMinAmountChange}
-              handleMaxAmountChange={handleMaxAmountChange}
-            />
-          </Collapse>
-          <Collapse in={!advancedOptions}>
-            <Grid item>
-              <Grid container alignItems='stretch' style={{ display: 'flex' }}>
-                <Grid item xs={6}>
-                  <Tooltip
-                    placement='top'
-                    enterTouchDelay={500}
-                    enterDelay={700}
-                    enterNextDelay={2000}
-                    title={t('Amount of fiat to exchange for bitcoin')}
+      <Collapse in={!collapseAll}>
+        <Grid container spacing={1} justifyContent='center' alignItems='center'>
+          <Grid item>
+            <FormControl component='fieldset'>
+              <FormHelperText sx={{ textAlign: 'center' }}>
+                {t('Buy or Sell Bitcoin?')}
+              </FormHelperText>
+              <div style={{ textAlign: 'center' }}>
+                <ButtonGroup>
+                  <Button
+                    size={advancedOptions ? 'small' : 'large'}
+                    variant='contained'
+                    onClick={() =>
+                      setAppState({
+                        type: 1,
+                      })
+                    }
+                    disableElevation={type == 1}
+                    sx={{
+                      backgroundColor: type == 1 ? 'primary.main' : 'background.paper',
+                      color: type == 1 ? 'background.paper' : 'text.secondary',
+                      ':hover': {
+                        color: 'background.paper',
+                      },
+                    }}
                   >
-                    <TextField
+                    {t('Buy')}
+                  </Button>
+                  <Button
+                    size={advancedOptions ? 'small' : 'large'}
+                    variant='contained'
+                    onClick={() =>
+                      setAppState({
+                        type: 0,
+                      })
+                    }
+                    disableElevation={type == 0}
+                    color='secondary'
+                    sx={{
+                      backgroundColor: type == 0 ? 'secondary.main' : 'background.paper',
+                      color: type == 0 ? 'background.secondary' : 'text.secondary',
+                      ':hover': {
+                        color: 'background.paper',
+                      },
+                    }}
+                  >
+                    {t('Sell')}
+                  </Button>
+                </ButtonGroup>
+              </div>
+            </FormControl>
+          </Grid>
+
+          <Grid item>
+            <Collapse in={advancedOptions}>
+              <AmountRange
+                minAmount={maker.minAmount}
+                handleRangeAmountChange={handleRangeAmountChange}
+                limits={limits}
+                currency={currency}
+                currencyCode={currencyCode}
+                handleCurrencyChange={handleCurrencyChange}
+                amountLimits={amountLimits}
+                maxAmount={maker.maxAmount}
+                minAmountError={minAmountError()}
+                maxAmountError={maxAmountError()}
+                handleMinAmountChange={handleMinAmountChange}
+                handleMaxAmountChange={handleMaxAmountChange}
+              />
+            </Collapse>
+            <Collapse in={!advancedOptions}>
+              <Grid item>
+                <Grid container alignItems='stretch' style={{ display: 'flex' }}>
+                  <Grid item xs={6}>
+                    <Tooltip
+                      placement='top'
+                      enterTouchDelay={500}
+                      enterDelay={700}
+                      enterNextDelay={2000}
+                      title={t('Amount of fiat to exchange for bitcoin')}
+                    >
+                      <TextField
+                        fullWidth
+                        disabled={advancedOptions}
+                        variant={advancedOptions ? 'filled' : 'outlined'}
+                        error={
+                          maker.amount != '' &&
+                          (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])
+                        }
+                        helperText={
+                          maker.amount < amountLimits[0] && maker.amount != ''
+                            ? t('Must be more than {{minAmount}}', {
+                                minAmount: pn(parseFloat(amountLimits[0].toPrecision(2))),
+                              })
+                            : maker.amount > amountLimits[1] && maker.amount != ''
+                            ? t('Must be less than {{maxAmount}}', {
+                                maxAmount: pn(parseFloat(amountLimits[1].toPrecision(2))),
+                              })
+                            : null
+                        }
+                        label={t('Amount')}
+                        required={true}
+                        value={maker.amount}
+                        type='number'
+                        inputProps={{
+                          min: 0,
+                          style: {
+                            textAlign: 'center',
+                            backgroundColor: theme.palette.background.paper,
+                            borderRadius: '4px',
+                          },
+                        }}
+                        onChange={(e) => setMaker({ ...maker, amount: e.target.value })}
+                      />
+                    </Tooltip>
+                  </Grid>
+
+                  <Grid item xs={6}>
+                    <Select
                       fullWidth
-                      disabled={advancedOptions}
-                      variant={advancedOptions ? 'filled' : 'outlined'}
-                      error={
-                        maker.amount != '' &&
-                        (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])
-                      }
-                      helperText={
-                        maker.amount < amountLimits[0] && maker.amount != ''
-                          ? t('Must be more than {{minAmount}}', {
-                              minAmount: pn(parseFloat(amountLimits[0].toPrecision(2))),
-                            })
-                          : maker.amount > amountLimits[1] && maker.amount != ''
-                          ? t('Must be less than {{maxAmount}}', {
-                              maxAmount: pn(parseFloat(amountLimits[1].toPrecision(2))),
-                            })
-                          : null
-                      }
-                      label={t('Amount')}
+                      sx={{ backgroundColor: theme.palette.background.paper, borderRadius: '4px' }}
                       required={true}
-                      value={maker.amount}
-                      type='number'
                       inputProps={{
-                        min: 0,
+                        style: { textAlign: 'center' },
+                      }}
+                      value={currency == 0 ? 1 : currency}
+                      onChange={(e) => handleCurrencyChange(e.target.value)}
+                    >
+                      {Object.entries(currencyDict).map(([key, value]) => (
+                        <MenuItem key={key} value={parseInt(key)}>
+                          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <FlagWithProps code={value} />
+                            {' ' + value}
+                          </div>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Collapse>
+          </Grid>
+
+          <Grid item xs={12}>
+            <AutocompletePayments
+              onAutocompleteChange={handlePaymentMethodChange}
+              // listBoxProps={{ sx: { width: '15.3em', maxHeight: '20em' } }}
+              optionsType={currency == 1000 ? 'swap' : 'fiat'}
+              error={maker.badPaymentMethod}
+              helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
+              label={currency == 1000 ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')}
+              tooltipTitle={t(
+                'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
+              )}
+              listHeaderText={t('You can add new methods')}
+              addNewButtonText={t('Add New')}
+              asFilter={false}
+            />
+          </Grid>
+
+          {!advancedOptions && pricingMethods ? (
+            <Grid item xs={12}>
+              <Box
+                sx={{
+                  padding: '0.5em',
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderRadius: '4px',
+                  borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+                  '&:hover': {
+                    borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
+                  },
+                }}
+              >
+                <FormControl component='fieldset'>
+                  <FormHelperText sx={{ textAlign: 'center', position: 'relative', top: '0.2em' }}>
+                    {t('Choose a Pricing Method')}
+                  </FormHelperText>
+                  <RadioGroup row defaultValue='relative'>
+                    <Tooltip
+                      placement='top'
+                      enterTouchDelay={0}
+                      enterDelay={1000}
+                      enterNextDelay={2000}
+                      title={t('Let the price move with the market')}
+                    >
+                      <FormControlLabel
+                        value='relative'
+                        control={<Radio color='primary' />}
+                        label={t('Relative')}
+                        labelPlacement='end'
+                        onClick={handleClickRelative}
+                      />
+                    </Tooltip>
+                    <Tooltip
+                      placement='top'
+                      enterTouchDelay={0}
+                      enterDelay={1000}
+                      enterNextDelay={2000}
+                      title={t('Set a fix amount of satoshis')}
+                    >
+                      <FormControlLabel
+                        disabled={advancedOptions}
+                        value='explicit'
+                        control={<Radio color='secondary' />}
+                        label={t('Exact')}
+                        labelPlacement='end'
+                        onClick={handleClickExplicit}
+                      />
+                    </Tooltip>
+                  </RadioGroup>
+                </FormControl>
+              </Box>
+            </Grid>
+          ) : null}
+          <Grid item xs={12}>
+            <div style={{ display: maker.isExplicit ? '' : 'none' }}>
+              <TextField
+                fullWidth
+                label={t('Satoshis')}
+                error={maker.badSatoshisText != ''}
+                helperText={maker.badSatoshisText === '' ? null : maker.badSatoshisText}
+                type='number'
+                required={true}
+                value={maker.satoshis}
+                inputProps={{
+                  min: satoshisLimits[0],
+                  max: satoshisLimits[1],
+                  style: {
+                    textAlign: 'center',
+                    backgroundColor: theme.palette.background.paper,
+                    borderRadius: '4px',
+                  },
+                }}
+                onChange={handleSatoshisChange}
+              />
+            </div>
+            <div style={{ display: maker.isExplicit ? 'none' : '' }}>
+              <TextField
+                fullWidth
+                error={maker.badPremiumText != ''}
+                helperText={maker.badPremiumText === '' ? null : maker.badPremiumText}
+                label={t('Premium over Market (%)')}
+                type='number'
+                value={maker.premium}
+                inputProps={{
+                  min: -100,
+                  max: 999,
+                  style: {
+                    textAlign: 'center',
+                    backgroundColor: theme.palette.background.paper,
+                    borderRadius: '4px',
+                  },
+                }}
+                onChange={handlePremiumChange}
+              />
+            </div>
+          </Grid>
+          <Grid item>
+            <Collapse in={advancedOptions}>
+              <Grid container spacing={1}>
+                <Grid item xs={12}>
+                  <LocalizationProvider dateAdapter={DateFnsUtils}>
+                    <TimePicker
+                      ampm={false}
+                      openTo='hours'
+                      views={['hours', 'minutes']}
+                      inputFormat='HH:mm'
+                      mask='__:__'
+                      components={{
+                        OpenPickerIcon: HourglassTop,
+                      }}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position='end'>
+                            <HourglassTop />
+                          </InputAdornment>
+                        ),
                         style: {
-                          textAlign: 'center',
                           backgroundColor: theme.palette.background.paper,
                           borderRadius: '4px',
                         },
                       }}
-                      onChange={(e) => setMaker({ ...maker, amount: e.target.value })}
+                      renderInput={(props) => <TextField {...props} />}
+                      label={t('Public Duration (HH:mm)')}
+                      value={maker.publicExpiryTime}
+                      onChange={handleChangePublicDuration}
+                      minTime={new Date(0, 0, 0, 0, 10)}
+                      maxTime={new Date(0, 0, 0, 23, 59)}
                     />
-                  </Tooltip>
+                  </LocalizationProvider>
                 </Grid>
 
-                <Grid item xs={6}>
-                  <Select
-                    fullWidth
-                    sx={{ backgroundColor: theme.palette.background.paper, borderRadius: '4px' }}
-                    required={true}
-                    inputProps={{
-                      style: { textAlign: 'center' },
-                    }}
-                    value={currency == 0 ? 1 : currency}
-                    onChange={(e) => handleCurrencyChange(e.target.value)}
-                  >
-                    {Object.entries(currencyDict).map(([key, value]) => (
-                      <MenuItem key={key} value={parseInt(key)}>
-                        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                          <FlagWithProps code={value} />
-                          {' ' + value}
-                        </div>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </Grid>
-              </Grid>
-            </Grid>
-          </Collapse>
-        </Grid>
-
-        <Grid item xs={12}>
-          <AutocompletePayments
-            onAutocompleteChange={handlePaymentMethodChange}
-            //listBoxProps={{ sx: { width: '15.3em', maxHeight: '20em' } }}
-            optionsType={currency == 1000 ? 'swap' : 'fiat'}
-            error={maker.badPaymentMethod}
-            helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
-            label={currency == 1000 ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')}
-            tooltipTitle={t(
-              'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
-            )}
-            listHeaderText={t('You can add new methods')}
-            addNewButtonText={t('Add New')}
-            asFilter={false}
-          />
-        </Grid>
-
-        {!advancedOptions && pricingMethods ? (
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                padding: '0.5em',
-                backgroundColor: 'background.paper',
-                border: '1px solid',
-                borderRadius: '4px',
-                borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-                '&:hover': {
-                  borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-                },
-              }}
-            >
-              <FormControl component='fieldset'>
-                <FormHelperText sx={{ textAlign: 'center', position: 'relative', top: '0.2em' }}>
-                  {t('Choose a Pricing Method')}
-                </FormHelperText>
-                <RadioGroup row defaultValue='relative'>
-                  <Tooltip
-                    placement='top'
-                    enterTouchDelay={0}
-                    enterDelay={1000}
-                    enterNextDelay={2000}
-                    title={t('Let the price move with the market')}
-                  >
-                    <FormControlLabel
-                      value='relative'
-                      control={<Radio color='primary' />}
-                      label={t('Relative')}
-                      labelPlacement='end'
-                      onClick={handleClickRelative}
-                    />
-                  </Tooltip>
-                  <Tooltip
-                    placement='top'
-                    enterTouchDelay={0}
-                    enterDelay={1000}
-                    enterNextDelay={2000}
-                    title={t('Set a fix amount of satoshis')}
-                  >
-                    <FormControlLabel
-                      disabled={advancedOptions}
-                      value='explicit'
-                      control={<Radio color='secondary' />}
-                      label={t('Exact')}
-                      labelPlacement='end'
-                      onClick={handleClickExplicit}
-                    />
-                  </Tooltip>
-                </RadioGroup>
-              </FormControl>
-            </Box>
-          </Grid>
-        ) : null}
-        <Grid item xs={12}>
-          <div style={{ display: maker.isExplicit ? '' : 'none' }}>
-            <TextField
-              fullWidth
-              label={t('Satoshis')}
-              error={maker.badSatoshisText != ''}
-              helperText={maker.badSatoshisText === '' ? null : maker.badSatoshisText}
-              type='number'
-              required={true}
-              value={maker.satoshis}
-              inputProps={{
-                min: satoshisLimits[0],
-                max: satoshisLimits[1],
-                style: {
-                  textAlign: 'center',
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: '4px',
-                },
-              }}
-              onChange={handleSatoshisChange}
-            />
-          </div>
-          <div style={{ display: maker.isExplicit ? 'none' : '' }}>
-            <TextField
-              fullWidth
-              error={maker.badPremiumText != ''}
-              helperText={maker.badPremiumText === '' ? null : maker.badPremiumText}
-              label={t('Premium over Market (%)')}
-              type='number'
-              value={maker.premium}
-              inputProps={{
-                min: -100,
-                max: 999,
-                style: {
-                  textAlign: 'center',
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: '4px',
-                },
-              }}
-              onChange={handlePremiumChange}
-            />
-          </div>
-        </Grid>
-        <Grid item>
-          <Collapse in={advancedOptions}>
-            <Grid container spacing={1}>
-              <Grid item xs={12}>
-                <LocalizationProvider dateAdapter={DateFnsUtils}>
-                  <TimePicker
-                    ampm={false}
-                    openTo='hours'
-                    views={['hours', 'minutes']}
-                    inputFormat='HH:mm'
-                    mask='__:__'
-                    components={{
-                      OpenPickerIcon: HourglassTop,
-                    }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position='end'>
-                          <HourglassTop />
-                        </InputAdornment>
-                      ),
-                      style: {
-                        backgroundColor: theme.palette.background.paper,
-                        borderRadius: '4px',
-                      },
-                    }}
-                    renderInput={(props) => <TextField {...props} />}
-                    label={t('Public Duration (HH:mm)')}
-                    value={maker.publicExpiryTime}
-                    onChange={handleChangePublicDuration}
-                    minTime={new Date(0, 0, 0, 0, 10)}
-                    maxTime={new Date(0, 0, 0, 23, 59)}
-                  />
-                </LocalizationProvider>
-              </Grid>
-
-              <Grid item xs={12}>
-                <LocalizationProvider dateAdapter={DateFnsUtils}>
-                  <TimePicker
-                    ampm={false}
-                    openTo='hours'
-                    views={['hours', 'minutes']}
-                    inputFormat='HH:mm'
-                    mask='__:__'
-                    components={{
-                      OpenPickerIcon: HourglassTop,
-                    }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position='end'>
-                          <HourglassTop />
-                        </InputAdornment>
-                      ),
-                      style: {
-                        backgroundColor: theme.palette.background.paper,
-                        borderRadius: '4px',
-                      },
-                    }}
-                    renderInput={(props) => <TextField {...props} />}
-                    label={t('Escrow Deposit Time-Out (HH:mm)')}
-                    value={maker.escrowExpiryTime}
-                    onChange={handleChangeEscrowDuration}
-                    minTime={new Date(0, 0, 0, 1, 0)}
-                    maxTime={new Date(0, 0, 0, 8, 0)}
-                  />
-                </LocalizationProvider>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Box
-                  sx={{
-                    padding: '0.5em',
-                    backgroundColor: 'background.paper',
-                    border: '1px solid',
-                    borderRadius: '4px',
-                    borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-                    '&:hover': {
-                      borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-                    },
-                  }}
-                >
-                  <Grid container direction='column' alignItems='center' spacing={0.5}>
-                    <Grid
-                      item
-                      sx={{
-                        width: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexWrap: 'wrap',
+                <Grid item xs={12}>
+                  <LocalizationProvider dateAdapter={DateFnsUtils}>
+                    <TimePicker
+                      ampm={false}
+                      openTo='hours'
+                      views={['hours', 'minutes']}
+                      inputFormat='HH:mm'
+                      mask='__:__'
+                      components={{
+                        OpenPickerIcon: HourglassTop,
                       }}
-                    >
-                      <Tooltip
-                        enterDelay={800}
-                        enterTouchDelay={0}
-                        placement='top'
-                        title={t('Set the skin-in-the-game, increase for higher safety assurance')}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position='end'>
+                            <HourglassTop />
+                          </InputAdornment>
+                        ),
+                        style: {
+                          backgroundColor: theme.palette.background.paper,
+                          borderRadius: '4px',
+                        },
+                      }}
+                      renderInput={(props) => <TextField {...props} />}
+                      label={t('Escrow Deposit Time-Out (HH:mm)')}
+                      value={maker.escrowExpiryTime}
+                      onChange={handleChangeEscrowDuration}
+                      minTime={new Date(0, 0, 0, 1, 0)}
+                      maxTime={new Date(0, 0, 0, 8, 0)}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Box
+                    sx={{
+                      padding: '0.5em',
+                      backgroundColor: 'background.paper',
+                      border: '1px solid',
+                      borderRadius: '4px',
+                      borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+                      '&:hover': {
+                        borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
+                      },
+                    }}
+                  >
+                    <Grid container direction='column' alignItems='center' spacing={0.5}>
+                      <Grid
+                        item
+                        sx={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexWrap: 'wrap',
+                        }}
                       >
-                        <Typography
-                          variant='caption'
-                          sx={{
-                            color: 'text.secondary',
-                            display: 'flex',
-                            flexWrap: 'wrap',
-                          }}
+                        <Tooltip
+                          enterDelay={800}
+                          enterTouchDelay={0}
+                          placement='top'
+                          title={t(
+                            'Set the skin-in-the-game, increase for higher safety assurance',
+                          )}
                         >
-                          {t('Fidelity Bond Size')}{' '}
-                          <Lock sx={{ height: '0.8em', width: '0.8em' }} />
-                        </Typography>
-                      </Tooltip>
+                          <Typography
+                            variant='caption'
+                            sx={{
+                              color: 'text.secondary',
+                              display: 'flex',
+                              flexWrap: 'wrap',
+                            }}
+                          >
+                            {t('Fidelity Bond Size')}{' '}
+                            <Lock sx={{ height: '0.8em', width: '0.8em' }} />
+                          </Typography>
+                        </Tooltip>
+                      </Grid>
+                      <Grid item sx={{ width: 'calc(100% - 2em)' }}>
+                        <Slider
+                          sx={{ width: '100%', align: 'center' }}
+                          aria-label='Bond Size (%)'
+                          defaultValue={3}
+                          value={maker.bondSize}
+                          valueLabelDisplay='auto'
+                          valueLabelFormat={(x: string) => x + '%'}
+                          step={0.25}
+                          marks={[
+                            { value: 2, label: '2%' },
+                            { value: 5, label: '5%' },
+                            { value: 10, label: '10%' },
+                            { value: 15, label: '15%' },
+                          ]}
+                          min={2}
+                          max={15}
+                          onChange={(e) => setMaker({ ...maker, bondSize: e.target.value })}
+                        />
+                      </Grid>
                     </Grid>
-                    <Grid item sx={{ width: 'calc(100% - 2em)' }}>
-                      <Slider
-                        sx={{ width: '100%', align: 'center' }}
-                        aria-label='Bond Size (%)'
-                        defaultValue={3}
-                        value={maker.bondSize}
-                        valueLabelDisplay='auto'
-                        valueLabelFormat={(x: string) => x + '%'}
-                        step={0.25}
-                        marks={[
-                          { value: 2, label: '2%' },
-                          { value: 5, label: '5%' },
-                          { value: 10, label: '10%' },
-                          { value: 15, label: '15%' },
-                        ]}
-                        min={2}
-                        max={15}
-                        onChange={(e) => setMaker({ ...maker, bondSize: e.target.value })}
-                      />
-                    </Grid>
-                  </Grid>
-                </Box>
+                  </Box>
+                </Grid>
               </Grid>
-            </Grid>
-          </Collapse>
-        </Grid>
-      </Grid>
-      </Collapse>
-        
-        <Grid container direction="column" alignItems="center">
-          <Grid item >
-            <SummaryText />
-          </Grid>
-
-        <Grid item >
-        <Grid container direction="row" justifyItems="center" alignItems="center" spacing={1}>
-          <Grid item >
-          {/* conditions to disable the make button */}
-          {disableSubmit() ? (
-            <Tooltip enterTouchDelay={0} title={t('You must fill the form correctly')}>
-              <div>
-                <Button disabled color='primary' variant='contained'>
-                  {t('Submit Order')}
-                </Button>
-              </div>
-            </Tooltip>
-          ) : (
-            <Button
-              color='primary'
-              variant='contained'
-              onClick={() => {handleSubmit(); onSubmit();}}
-              // onClick={
-              //    copiedToken
-              //     ? this.handleCreateOfferButtonPressed
-              //     : () => this.setState({ openStoreToken: true })
-              // }
-            >
-              {t('Submit Order')}
-            </Button>
-          )}
-          </Grid>
-          {collapseAll ?
-          <Grid item>
-            <Collapse in={collapseAll} orientation='vertical'>
-            <IconButton 
-              onClick={onReset}>
-              <Tooltip
-                placement='top'
-                enterTouchDelay={500}
-                enterDelay={700}
-                enterNextDelay={2000}
-                title={t('Edit order')}>
-                <Edit sx={{width:'1.5em', height:'1.5em'}}/>
-              </Tooltip>
-            </IconButton>
             </Collapse>
-          </Grid> :
-          null}
-
           </Grid>
-          </Grid>
+        </Grid>
+      </Collapse>
 
-          <Grid item >
-            <Typography align="center" component='h2' variant='subtitle2' color='secondary'>
-              {badRequest}
+      <Grid container direction='column' alignItems='center'>
+        <Grid item>
+          <SummaryText />
+        </Grid>
+
+        <Grid item>
+          <Grid container direction='row' justifyItems='center' alignItems='center' spacing={1}>
+            <Grid item>
+              {/* conditions to disable the make button */}
+              {disableSubmit() ? (
+                <Tooltip enterTouchDelay={0} title={t('You must fill the form correctly')}>
+                  <div>
+                    <Button disabled color='primary' variant='contained'>
+                      {t(submitButtonLabel)}
+                    </Button>
+                  </div>
+                </Tooltip>
+              ) : (
+                <Button
+                  color='primary'
+                  variant='contained'
+                  onClick={() => {
+                    handleSubmit();
+                    onSubmit();
+                  }}
+                  // onClick={
+                  //    copiedToken
+                  //     ? this.handleCreateOfferButtonPressed
+                  //     : () => this.setState({ openStoreToken: true })
+                  // }
+                >
+                  {t(submitButtonLabel)}
+                </Button>
+              )}
+            </Grid>
+            {collapseAll ? (
+              <Grid item>
+                <Collapse in={collapseAll} orientation='vertical'>
+                  <IconButton onClick={onReset}>
+                    <Tooltip
+                      placement='top'
+                      enterTouchDelay={500}
+                      enterDelay={700}
+                      enterNextDelay={2000}
+                      title={t('Edit order')}
+                    >
+                      <Edit sx={{ width: '1.5em', height: '1.5em' }} />
+                    </Tooltip>
+                  </IconButton>
+                </Collapse>
+              </Grid>
+            ) : null}
+          </Grid>
+        </Grid>
+
+        <Grid item>
+          <Typography align='center' component='h2' variant='subtitle2' color='secondary'>
+            {badRequest}
+          </Typography>
+        </Grid>
+
+        <Collapse in={!loadingLimits}>
+          <Tooltip
+            placement='top'
+            enterTouchDelay={0}
+            enterDelay={1000}
+            enterNextDelay={2000}
+            title={
+              maker.isExplicit
+                ? t('Your order fixed exchange rate')
+                : t("Your order's current exchange rate. Rate will move with the market.")
+            }
+          >
+            <Typography variant='caption' color='text.secondary'>
+              {(maker.isExplicit ? t('Order rate:') : t('Order current rate:')) +
+                ` ${pn(currentPrice)} ${currencyCode}/BTC`}
             </Typography>
-          </Grid>
-
-          <Collapse in={!loadingLimits}>
-            <Tooltip
-              placement='top'
-              enterTouchDelay={0}
-              enterDelay={1000}
-              enterNextDelay={2000}
-              title={
-                maker.isExplicit
-                  ? t('Your order fixed exchange rate')
-                  : t("Your order's current exchange rate. Rate will move with the market.")
-              }
-            >
-              <Typography variant='caption' color='text.secondary'>
-                {(maker.isExplicit ? t('Order rate:') : t('Order current rate:')) +
-                  ` ${pn(currentPrice)} ${currencyCode}/BTC`}
-              </Typography>
-            </Tooltip>
-          </Collapse>
+          </Tooltip>
+        </Collapse>
       </Grid>
     </Box>
   );

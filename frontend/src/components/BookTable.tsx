@@ -25,6 +25,7 @@ import {
 import { DataGrid, GridPagination } from '@mui/x-data-grid';
 import currencyDict from '../../static/assets/currencies.json';
 import { Order } from '../models/Order.model';
+import filterOrders from '../utils/filterOrders';
 
 import FlagWithProps from './FlagWithProps';
 import { pn, amountToString } from '../utils/prettyNumbers';
@@ -56,8 +57,8 @@ interface Props {
 }
 
 const BookTable = ({
-  loading=false,
-  refreshing=false,
+  loading = false,
+  refreshing = false,
   clickRefresh,
   orders,
   type,
@@ -81,7 +82,7 @@ const BookTable = ({
 
   // all sizes in 'em'
   const fontSize = theme.typography.fontSize;
-  const verticalHeightFrame = 5.975 + (showControls ? 3.8 : 0);
+  const verticalHeightFrame = 3.625 + (showControls ? 3.8 : 0) + (showFooter ? 2.35 : 0);
   const verticalHeightRow = 3.25;
   const defaultPageSize = Math.max(
     Math.floor(
@@ -125,7 +126,7 @@ const BookTable = ({
 
   const localeText = {
     MuiTablePagination: { labelRowsPerPage: t('Orders per page:') },
-    noRowsLabel: t('No rows'),
+    noRowsLabel: t('No order matches'),
     noResultsOverlayLabel: t('No results found.'),
     errorOverlayDefaultLabel: t('An error occurred.'),
     toolbarColumns: t('Columns'),
@@ -640,153 +641,151 @@ const BookTable = ({
 
   const [columns, width] = filteredColumns(fullscreen ? fullWidth : maxWidth);
 
-  const NoResultsOverlay = function(){
+  const NoResultsOverlay = function () {
     return (
-      (
-        <Stack height='100%' alignItems='center' justifyContent='center'>
-          {t('Filter has no results')}
-        </Stack>
-      )
-    )
-  }
-  const Controls = function(){
-    return(
+      <Stack height='100%' alignItems='center' justifyContent='center'>
+        {t('Filter has no results')}
+      </Stack>
+    );
+  };
+  const Controls = function () {
+    return (
       <Box>
-          <Grid
-            container
-            alignItems='flex-start'
-            direction='row'
-            justifyContent='center'
-            spacing={1}
-            sx={{ height: '3.6em', padding: '0.2em' }}
-          >
-            <Grid item sx={{ position: 'relative', top: '0.5em' }}>
-              <Collapse orientation='horizontal' in={width > verboseToolbarWidth}>
-                <Typography variant='caption' color='text.secondary'>
-                  {t('I want to')}
-                </Typography>
-              </Collapse>
-            </Grid>
-            <Grid item>
-              <ToggleButtonGroup
-                sx={{
-                  height: '2.6em',
-                  backgroundColor: theme.palette.background.paper,
-                  border: '0.5px solid',
-                  borderColor: 'text.disabled',
-                  '&:hover': {
-                    borderColor: 'text.primary',
-                    border: '1px solid',
-                  },
-                }}
-                size='small'
-                exclusive={true}
-                value={type}
-                onChange={onTypeChange}
-              >
-                <ToggleButton value={1} color={'primary'}>
-                  {t('Buy')}
-                </ToggleButton>
-                <ToggleButton value={0} color={'secondary'}>
-                  {t('Sell')}
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Grid>
+        <Grid
+          container
+          alignItems='flex-start'
+          direction='row'
+          justifyContent='center'
+          spacing={1}
+          sx={{ height: '3.6em', padding: '0.2em' }}
+        >
+          <Grid item sx={{ position: 'relative', top: '0.5em' }}>
+            <Collapse orientation='horizontal' in={width > verboseToolbarWidth}>
+              <Typography variant='caption' color='text.secondary'>
+                {t('I want to')}
+              </Typography>
+            </Collapse>
+          </Grid>
+          <Grid item>
+            <ToggleButtonGroup
+              sx={{
+                height: '2.6em',
+                backgroundColor: theme.palette.background.paper,
+                border: '0.5px solid',
+                borderColor: 'text.disabled',
+                '&:hover': {
+                  borderColor: 'text.primary',
+                  border: '1px solid',
+                },
+              }}
+              size='small'
+              exclusive={true}
+              value={type}
+              onChange={onTypeChange}
+            >
+              <ToggleButton value={1} color={'primary'}>
+                {t('Buy')}
+              </ToggleButton>
+              <ToggleButton value={0} color={'secondary'}>
+                {t('Sell')}
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Grid>
 
-            <Grid item sx={{ position: 'relative', top: '0.5em' }}>
-              <Collapse orientation='horizontal' in={width > verboseToolbarWidth}>
-                <Typography variant='caption' color='text.secondary'>
-                  {t('and use')}
-                </Typography>
-              </Collapse>
-            </Grid>
+          <Grid item sx={{ position: 'relative', top: '0.5em' }}>
+            <Collapse orientation='horizontal' in={width > verboseToolbarWidth}>
+              <Typography variant='caption' color='text.secondary'>
+                {t('and use')}
+              </Typography>
+            </Collapse>
+          </Grid>
 
-            <Grid item>
-              <Select
-                autoWidth
-                sx={{
-                  height: '2.3em',
-                  border: '0.5px solid',
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: '4px',
-                  borderColor: 'text.disabled',
-                  '&:hover': {
-                    borderColor: 'text.primary',
-                  },
-                }}
-                size='small'
-                label={t('Select Payment Currency')}
-                required={true}
-                value={currency}
-                inputProps={{
-                  style: { textAlign: 'center' },
-                }}
-                onChange={onCurrencyChange}
-              >
-                <MenuItem value={0}>
+          <Grid item>
+            <Select
+              autoWidth
+              sx={{
+                height: '2.3em',
+                border: '0.5px solid',
+                backgroundColor: theme.palette.background.paper,
+                borderRadius: '4px',
+                borderColor: 'text.disabled',
+                '&:hover': {
+                  borderColor: 'text.primary',
+                },
+              }}
+              size='small'
+              label={t('Select Payment Currency')}
+              required={true}
+              value={currency}
+              inputProps={{
+                style: { textAlign: 'center' },
+              }}
+              onChange={onCurrencyChange}
+            >
+              <MenuItem value={0}>
+                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <FlagWithProps code='ANY' />
+                  <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
+                    {' ' + t('ANY')}
+                  </Typography>
+                </div>
+              </MenuItem>
+              {Object.entries(currencyDict).map(([key, value]) => (
+                <MenuItem key={key} value={parseInt(key)} color='text.secondary'>
                   <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <FlagWithProps code='ANY' />
+                    <FlagWithProps code={value} />
                     <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
-                      {' ' + t('ANY')}
+                      {' ' + value}
                     </Typography>
                   </div>
                 </MenuItem>
-                {Object.entries(currencyDict).map(([key, value]) => (
-                  <MenuItem key={key} value={parseInt(key)} color='text.secondary'>
-                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                      <FlagWithProps code={value} />
-                      <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
-                        {' ' + value}
-                      </Typography>
-                    </div>
-                  </MenuItem>
-                ))}
-              </Select>
-            </Grid>
-
-            <Grid item sx={{ position: 'relative', top: '0.5em' }}>
-              <Collapse orientation='horizontal' in={width > verboseToolbarWidth}>
-                <Typography variant='caption' color='text.secondary'>
-                  {currency == 1000 ? t('swap to') : t('pay with')}
-                </Typography>
-              </Collapse>
-            </Grid>
-
-            <Grid item>
-              <Collapse orientation='horizontal' in={width > smallToolbarWidth}>
-                <AutocompletePayments
-                  sx={{
-                    minHeight: '2.6em',
-                    width: '8em',
-                    maxHeight: '2.6em',
-                    border: '2px solid',
-                    borderColor: theme.palette.text.disabled,
-                    hoverBorderColor: 'text.primary',
-                  }}
-                  labelProps={{ sx: { top: '0.645em' } }}
-                  tagProps={{ sx: { height: '1.8em' } }}
-                  listBoxProps={{ sx: { width: '9em' } }}
-                  onAutocompleteChange={handlePaymentMethodChange}
-                  optionsType={currency == 1000 ? 'swap' : 'fiat'}
-                  error={paymentMethod.bad}
-                  helperText={paymentMethod.bad ? t('Must be shorter than 65 characters') : ''}
-                  label={currency == 1000 ? t('destination') : t('METHOD')}
-                  tooltipTitle={t(
-                    'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
-                  )}
-                  listHeaderText=''
-                  addNewButtonText=''
-                  isFilter={true}
-                />
-              </Collapse>
-            </Grid>
+              ))}
+            </Select>
           </Grid>
-          <Divider />
-        </Box>
-    )
-  }
-  const Footer = function(){
-    return(
+
+          <Grid item sx={{ position: 'relative', top: '0.5em' }}>
+            <Collapse orientation='horizontal' in={width > verboseToolbarWidth}>
+              <Typography variant='caption' color='text.secondary'>
+                {currency == 1000 ? t('swap to') : t('pay with')}
+              </Typography>
+            </Collapse>
+          </Grid>
+
+          <Grid item>
+            <Collapse orientation='horizontal' in={width > smallToolbarWidth}>
+              <AutocompletePayments
+                sx={{
+                  minHeight: '2.6em',
+                  width: '8em',
+                  maxHeight: '2.6em',
+                  border: '2px solid',
+                  borderColor: theme.palette.text.disabled,
+                  hoverBorderColor: 'text.primary',
+                }}
+                labelProps={{ sx: { top: '0.645em' } }}
+                tagProps={{ sx: { height: '1.8em' } }}
+                listBoxProps={{ sx: { width: '9em' } }}
+                onAutocompleteChange={handlePaymentMethodChange}
+                optionsType={currency == 1000 ? 'swap' : 'fiat'}
+                error={paymentMethod.bad}
+                helperText={paymentMethod.bad ? t('Must be shorter than 65 characters') : ''}
+                label={currency == 1000 ? t('destination') : t('METHOD')}
+                tooltipTitle={t(
+                  'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
+                )}
+                listHeaderText=''
+                addNewButtonText=''
+                isFilter={true}
+              />
+            </Collapse>
+          </Grid>
+        </Grid>
+        <Divider />
+      </Box>
+    );
+  };
+  const Footer = function () {
+    return (
       <Grid container alignItems='center' direction='row' justifyContent='space-between'>
         <Grid item>
           <Grid container alignItems='center' direction='row'>
@@ -807,20 +806,21 @@ const BookTable = ({
           <GridPagination />
         </Grid>
       </Grid>
-    )
-  }
-  const gridComponents = function(){
-    let components = {
+    );
+  };
+  const gridComponents = function () {
+    const components = {
       LoadingOverlay: LinearProgress,
-      NoResultsOverlay: NoResultsOverlay}
+      NoResultsOverlay,
+    };
 
-    if (showFooter){
-      components['Footer']=Footer
+    if (showFooter) {
+      components.Footer = Footer;
     }
-    if (showControls){
-      components['Toolbar']=Controls
+    if (showControls) {
+      components.Toolbar = Controls;
     }
-    return components
+    return components;
   };
 
   if (!fullscreen) {
@@ -828,9 +828,12 @@ const BookTable = ({
       <Paper style={{ width: `${width}em`, height: `${height}em`, overflow: 'auto' }}>
         <DataGrid
           localeText={localeText}
-          rows={orders.filter(
-            (order) =>
-              (order.type == type || type == null) && (order.currency == currency || currency == 0),
+          rows={orders.filter((order) =>
+            filterOrders({
+              order,
+              baseFilter: { currency, type },
+              // paymentMethods: [paymentMethod]
+            }),
           )}
           loading={loading || refreshing}
           columns={columns}

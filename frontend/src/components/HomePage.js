@@ -36,7 +36,10 @@ export default class HomePage extends Component {
 
   componentDidMount = () => {
     if (typeof window !== undefined) {
-      this.setState({ windowWidth: window.innerWidth / this.props.theme.typography.fontSize, windowHeight: window.innerHeight / this.props.theme.typography.fontSize});
+      this.setState({
+        windowWidth: window.innerWidth / this.props.theme.typography.fontSize,
+        windowHeight: window.innerHeight / this.props.theme.typography.fontSize,
+      });
       window.addEventListener('resize', this.onResize);
     }
   };
@@ -48,7 +51,10 @@ export default class HomePage extends Component {
   };
 
   onResize = () => {
-    this.setState({ windowWidth: window.innerWidth / this.props.theme.typography.fontSize, windowHeight: window.innerHeight / this.props.theme.typography.fontSize});
+    this.setState({
+      windowWidth: window.innerWidth / this.props.theme.typography.fontSize,
+      windowHeight: window.innerHeight / this.props.theme.typography.fontSize,
+    });
   };
 
   setAppState = (newState) => {
@@ -137,7 +143,10 @@ export default class HomePage extends Component {
         </div>
         <div
           className='bottomBar'
-          style={{ height: `${40 * fontSizeFactor}px`, width: `${this.state.windowWidth/16*14}em`}}
+          style={{
+            height: `${40 * fontSizeFactor}px`,
+            width: `${(this.state.windowWidth / 16) * 14}em`,
+          }}
         >
           <BottomBar
             redirectTo={this.redirectTo}

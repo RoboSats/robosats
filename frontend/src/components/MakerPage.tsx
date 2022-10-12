@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Grid, useTheme, Paper, Collapse, Typography} from '@mui/material';
+import { Button, Grid, useTheme, Paper, Collapse, Typography } from '@mui/material';
 
 import { LimitList } from '../models/Limit.model';
 import Maker from '../models/Maker.model';
@@ -14,6 +14,7 @@ import { apiClient } from '../services/api';
 
 import { getCookie } from '../utils/cookies';
 import { copyToClipboard } from '../utils/clipboard';
+import filterOrders from '../utils/filterOrders';
 
 interface MakerPageProps {
   limits: LimitList;
@@ -58,60 +59,49 @@ const MakerPage = ({
     badPremiumText: '',
     badSatoshisText: '',
   });
-  
+
   const maxHeight = windowHeight ? windowHeight * 0.85 : 1000;
   const [openStoreToken, setOpenStoreToken] = useState<boolean>(false);
   const [showMatches, setShowMatches] = useState<boolean>(false);
 
-  const filterByPayment = function(order:Order, paymentMethods:string[]){
-    if (paymentMethods.length === 0){
-      return true
-    }else{
-      let result = false
-      paymentMethods.forEach((method) => {
-        if (order.payment_method == method.name) {
-          result = true
-        }})
-      return result
-    }
-  }
+  const matches = orders.filter((order) =>
+    filterOrders({
+      order,
+      baseFilter: { currency: currency == 0 ? 1 : currency, type },
+      paymentMethods: maker.paymentMethods,
+      amountFilter: {
+        amount: maker.amount,
+        minAmount: maker.minAmount,
+        maxAmount: maker.maxAmount,
+        threshold: 0.7,
+      },
+    }),
+  );
 
-  const filterOrders = function(order:Order, currency:number, type:number, paymentMethods:string[]){
-    return (
-      (order.type == type || type == null) && 
-      (order.currency == currency || currency == 0) && 
-      (filterByPayment(order, paymentMethods))
-    )
-  }
-
-  const matches = orders.filter((order) => filterOrders(order, currency==0? 1: currency, type, maker.paymentMethods))
-  
   return (
-        <Grid container direction="column" alignItems="center" spacing={1}>
-          <Grid item>
-            <Collapse in={matches.length>0 && showMatches}>
-            <Grid container direction="column" alignItems="center" spacing={1}>
-              <Grid item>
-              <Typography variant="h5">
-                {t("Existing orders match yours!")}
-              </Typography>
-              </Grid>
-              <Grid item>
+    <Grid container direction='column' alignItems='center' spacing={1}>
+      <Grid item>
+        <Collapse in={matches.length > 0 && showMatches}>
+          <Grid container direction='column' alignItems='center' spacing={1}>
+            <Grid item>
+              <Typography variant='h5'>{t('Existing orders match yours!')}</Typography>
+            </Grid>
+            <Grid item>
               <BookTable
                 orders={matches}
                 type={type}
                 currency={currency}
-                maxWidth={Math.min(windowWidth, 60)}  // EM units
+                maxWidth={Math.min(windowWidth, 60)} // EM units
                 maxHeight={Math.min(matches.length * 4, 20)} // EM units
                 defaultFullscreen={false}
                 showControls={false}
                 showFooter={false}
               />
-              </Grid>
-              </Grid>
-            </Collapse>
+            </Grid>
           </Grid>
-          {/* {getCookie('robot_token') ? (
+        </Collapse>
+      </Grid>
+      {/* {getCookie('robot_token') ? (
           <StoreTokenDialog
             open={this.state.openStoreToken}
             onClose={() => this.setState({ openStoreToken: false })}
@@ -129,35 +119,39 @@ const MakerPage = ({
             onClose={() => this.setState({ openStoreToken: false })}
           />
         )} */}
-          <Grid item>
-            <Paper elevation={12} style={{ padding: 8, width: '17.25em', maxHeight: `${maxHeight}em`, overflow: 'auto' }}>
-              <MakerForm
-                limits={limits}
-                loadingLimits={loadingLimits}
-                pricingMethods={false}
-                setAppState={setAppState}
-                maker={maker}
-                setMaker={setMaker}
-                type={type}
-                currency={currency}
-                disableRequest={true}
-                collapseAll={showMatches}
-                onSubmit={()=>setShowMatches(matches.length>0 ? true : false)}
-                onReset={()=> setShowMatches(false)}
-              />
-            </Paper>
-          </Grid>
-          <Grid item>
-            <Button
-              color='secondary'
-              variant='contained'
-              onClick={() => history.goBack()}
-              component='a'
-            >
-              {t('Back')}
-            </Button>
-          </Grid>
-        </Grid>
+      <Grid item>
+        <Paper
+          elevation={12}
+          style={{ padding: 8, width: '17.25em', maxHeight: `${maxHeight}em`, overflow: 'auto' }}
+        >
+          <MakerForm
+            limits={limits}
+            loadingLimits={loadingLimits}
+            pricingMethods={false}
+            setAppState={setAppState}
+            maker={maker}
+            setMaker={setMaker}
+            type={type}
+            currency={currency}
+            disableRequest={matches.length > 0 && !showMatches}
+            collapseAll={showMatches}
+            onSubmit={() => setShowMatches(matches.length > 0)}
+            onReset={() => setShowMatches(false)}
+            submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
+          />
+        </Paper>
+      </Grid>
+      <Grid item>
+        <Button
+          color='secondary'
+          variant='contained'
+          onClick={() => history.goBack()}
+          component='a'
+        >
+          {t('Back')}
+        </Button>
+      </Grid>
+    </Grid>
   );
 };
 
