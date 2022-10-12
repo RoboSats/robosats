@@ -2,7 +2,7 @@ import Order from '../models/Order.model';
 
 interface BaseFilter {
   currency: number;
-  type: number;
+  type: number | null;
 }
 
 interface AmountFilter {
@@ -13,7 +13,7 @@ interface AmountFilter {
 }
 
 interface FilterOrders {
-  order: Order;
+  orders: Order[];
   baseFilter: BaseFilter;
   amountFilter?: AmountFilter | null;
   paymentMethods?: string[];
@@ -32,46 +32,36 @@ const filterByPayment = function (order: Order, paymentMethods: string[]) {
 };
 
 const filterByAmount = function (order: Order, filter: AmountFilter) {
-  if (filter.amount != '') {
-    if (order.amount === '' || order.amount === null) {
-      return (
-        order.max_amount < filter.amount * (1 + filter.threshold) &&
-        order.min_amount > filter.amount * (1 - filter.threshold)
-      );
-    } else {
-      return (
-        order.amount < filter.amount * (1 + filter.threshold) &&
-        order.amount > filter.amount * (1 - filter.threshold)
-      );
-    }
-  } else {
-    if (order.amount === '' || order.amount === null) {
-      return (
-        order.max_amount < filter.maxAmount * (1 + filter.threshold) &&
-        order.min_amount > filter.minAmount * (1 - filter.threshold)
-      );
-    } else {
-      return (
-        order.amount < filter.maxAmount * (1 + filter.threshold) &&
-        order.amount > filter.minAmount * (1 - filter.threshold)
-      );
-    }
-  }
+  const filterMaxAmount = filter.amount != '' ? filter.amount : filter.maxAmount;
+  const filterMinAmount = filter.amount != '' ? filter.amount : filter.minAmount;
+  const orderMinAmount =
+    order.amount === '' || order.amount === null ? order.min_amount : order.amount;
+  const orderMaxAmount =
+    order.amount === '' || order.amount === null ? order.max_amount : order.amount;
+
+  return (
+    orderMaxAmount < filterMaxAmount * (1 + filter.threshold) &&
+    orderMinAmount > filterMinAmount * (1 - filter.threshold)
+  );
 };
 
 const filterOrders = function ({
-  order,
+  orders,
   baseFilter,
   paymentMethods = [],
   amountFilter = null,
 }: FilterOrders) {
-  const typeChecks = order.type == baseFilter.type || baseFilter.type == null;
-  const currencyChecks = order.currency == baseFilter.currency || baseFilter.currency == 0;
-  const paymentMethodChecks =
-    paymentMethods.length > 0 ? filterByPayment(order, paymentMethods) : true;
-  const amountChecks = amountFilter != null ? filterByAmount(order, amountFilter) : true;
+  const filteredOrders = orders.filter((order) => {
+    const typeChecks = order.type == baseFilter.type || baseFilter.type == null;
+    const currencyChecks = order.currency == baseFilter.currency || baseFilter.currency == 0;
+    const paymentMethodChecks =
+      paymentMethods.length > 0 ? filterByPayment(order, paymentMethods) : true;
+    const amountChecks = amountFilter != null ? filterByAmount(order, amountFilter) : true;
 
-  return typeChecks && currencyChecks && paymentMethodChecks && amountChecks;
+    return typeChecks && currencyChecks && paymentMethodChecks && amountChecks;
+  });
+
+  return filteredOrders;
 };
 
 export default filterOrders;

@@ -58,19 +58,17 @@ const MakerPage = ({
   const maxHeight = windowHeight ? windowHeight * 0.85 : 1000;
   const [showMatches, setShowMatches] = useState<boolean>(false);
 
-  const matches = orders.filter((order) =>
-    filterOrders({
-      order,
-      baseFilter: { currency: currency == 0 ? 1 : currency, type },
-      paymentMethods: maker.paymentMethods,
-      amountFilter: {
-        amount: maker.amount,
-        minAmount: maker.minAmount,
-        maxAmount: maker.maxAmount,
-        threshold: 0.7,
-      },
-    }),
-  );
+  const matches = filterOrders({
+    orders,
+    baseFilter: { currency: currency == 0 ? 1 : currency, type },
+    paymentMethods: maker.paymentMethods,
+    amountFilter: {
+      amount: maker.amount,
+      minAmount: maker.minAmount,
+      maxAmount: maker.maxAmount,
+      threshold: 0.7,
+    },
+  });
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1}>

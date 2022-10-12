@@ -7,6 +7,8 @@ import BookPage from './BookPage';
 import OrderPage from './OrderPage';
 import BottomBar from './BottomBar';
 
+import { apiClient } from '../services/api';
+
 export default class HomePage extends Component {
   constructor(props) {
     super(props);
@@ -42,6 +44,7 @@ export default class HomePage extends Component {
       });
       window.addEventListener('resize', this.onResize);
     }
+    this.fetchBook(true, false);
   };
 
   componentWillUnmount = () => {
@@ -70,9 +73,19 @@ export default class HomePage extends Component {
       // Only for Android
       return window.location.pathname;
     }
-
     return '';
   }
+
+  fetchBook = (loading, refreshing) => {
+    this.setState({ bookLoading: loading, bookRefreshing: refreshing });
+    apiClient.get('/api/book/').then((data) =>
+      this.setState({
+        bookLoading: false,
+        bookRefreshing: false,
+        orders: data,
+      }),
+    );
+  };
 
   render() {
     const fontSize = this.props.theme.typography.fontSize;
@@ -124,6 +137,7 @@ export default class HomePage extends Component {
                   {...props}
                   {...this.state}
                   {...this.props}
+                  fetchBook={this.fetchBook}
                   setAppState={this.setAppState}
                 />
               )}

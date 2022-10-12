@@ -557,8 +557,7 @@ const MakerForm = ({
   const disableSubmit = function () {
     return (
       type == null ||
-      (maker.amount != null &&
-        (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
+      (maker.amount != '' && (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
       (maker.amount == null && (!advancedOptions || loadingLimits)) ||
       (advancedOptions && (minAmountError() || maxAmountError())) ||
       (maker.amount <= 0 && !advancedOptions) ||

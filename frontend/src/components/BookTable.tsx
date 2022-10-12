@@ -7,7 +7,6 @@ import {
   Dialog,
   Typography,
   Paper,
-  Stack,
   ListItemButton,
   ListItemText,
   ListItemAvatar,
@@ -55,6 +54,7 @@ interface Props {
   showFooter?: boolean;
   onCurrencyChange?: () => void;
   onTypeChange?: () => void;
+  noResultsOverlay?: JSX.Element;
 }
 
 const BookTable = ({
@@ -73,6 +73,7 @@ const BookTable = ({
   showFooter = true,
   onCurrencyChange,
   onTypeChange,
+  noResultsOverlay,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -645,13 +646,6 @@ const BookTable = ({
 
   const [columns, width] = filteredColumns(fullscreen ? fullWidth : maxWidth);
 
-  const NoResultsOverlay = function () {
-    return (
-      <Stack height='100%' alignItems='center' justifyContent='center'>
-        {t('Filter has no results')}
-      </Stack>
-    );
-  };
   const Controls = function () {
     return (
       <Box>
@@ -787,6 +781,7 @@ const BookTable = ({
       </Box>
     );
   };
+
   const Footer = function () {
     return (
       <Grid container alignItems='center' direction='row' justifyContent='space-between'>
@@ -811,11 +806,22 @@ const BookTable = ({
       </Grid>
     );
   };
+
+  interface GridComponentProps {
+    LoadingOverlay: JSX.Element;
+    NoResultsOverlay?: JSX.Element;
+    Footer?: JSX.Element;
+    Toolbar?: JSX.Element;
+  }
+
   const gridComponents = function () {
-    const components = {
+    const components: GridComponentProps = {
       LoadingOverlay: LinearProgress,
-      NoResultsOverlay,
     };
+
+    if (noResultsOverlay != null) {
+      components.NoResultsOverlay = noResultsOverlay;
+    }
 
     if (showFooter) {
       components.Footer = Footer;
@@ -833,13 +839,11 @@ const BookTable = ({
           localeText={localeText}
           rows={
             showControls
-              ? orders.filter((order) =>
-                  filterOrders({
-                    order,
-                    baseFilter: { currency, type },
-                    paymentMethods,
-                  }),
-                )
+              ? filterOrders({
+                  orders,
+                  baseFilter: { currency, type },
+                  paymentMethods,
+                })
               : orders
           }
           loading={loading || refreshing}
@@ -847,7 +851,7 @@ const BookTable = ({
           hideFooter={!showFooter}
           components={gridComponents()}
           pageSize={loading ? 0 : pageSize}
-          rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
+          rowsPerPageOptions={width < 22 ? [] : [0, pageSize, defaultPageSize * 2, 50, 100]}
           onPageSizeChange={(newPageSize) => {
             setPageSize(newPageSize);
             setUseDefaultPageSize(false);
