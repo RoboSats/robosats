@@ -69,7 +69,7 @@ const filterOrders = function ({
   const currencyChecks = order.currency == baseFilter.currency || baseFilter.currency == 0;
   const paymentMethodChecks =
     paymentMethods.length > 0 ? filterByPayment(order, paymentMethods) : true;
-  const amountChecks = (amountFilter != null) ? filterByAmount(order, amountFilter) : true;
+  const amountChecks = amountFilter != null ? filterByAmount(order, amountFilter) : true;
 
   return typeChecks && currencyChecks && paymentMethodChecks && amountChecks;
 };

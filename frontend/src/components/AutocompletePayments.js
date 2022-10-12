@@ -225,24 +225,15 @@ export default function AutocompletePayments(props) {
     fullWidth: true,
     id: 'payment-methods',
     multiple: true,
-    // value: props.value,
+    value: props.value,
     options: props.optionsType == 'fiat' ? paymentMethods : swapDestinations,
     getOptionLabel: (option) => option.name,
     onInputChange: (e) => setVal(e ? (e.target.value ? e.target.value : '') : ''),
-    onChange: (event, value) => props.onAutocompleteChange(value, optionsToString(value)),
+    onChange: (event, value) => props.onAutocompleteChange(value),
     onClose: () => setVal(() => ''),
   });
 
   const [val, setVal] = useState('');
-
-  function optionsToString(newValue) {
-    let str = '';
-    const arrayLength = newValue.length;
-    for (let i = 0; i < arrayLength; i++) {
-      str += newValue[i].name + ' ';
-    }
-    return str.slice(0, -1);
-  }
 
   function handleAddNew(inputProps) {
     paymentMethods.push({ name: inputProps.value, icon: 'custom' });
@@ -250,7 +241,7 @@ export default function AutocompletePayments(props) {
     setVal(() => '');
 
     if (a || a == null) {
-      props.onAutocompleteChange(value, optionsToString(value));
+      props.onAutocompleteChange(value);
     }
     return false;
   }
@@ -259,8 +250,8 @@ export default function AutocompletePayments(props) {
     <Root>
       <Tooltip
         placement='top'
-        enterTouchDelay={300}
-        enterDelay={700}
+        enterTouchDelay={props.tooltipTitle == '' ? 99999 : 300}
+        enterDelay={props.tooltipTitle == '' ? 99999 : 700}
         enterNextDelay={2000}
         title={props.tooltipTitle}
       >

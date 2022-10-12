@@ -15,6 +15,7 @@ import {
   CircularProgress,
   LinearProgress,
   IconButton,
+  Tooltip,
   ToggleButton,
   ToggleButtonGroup,
   Select,
@@ -78,7 +79,7 @@ const BookTable = ({
   const history = useHistory();
   const [pageSize, setPageSize] = useState(0);
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
-  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
 
   // all sizes in 'em'
   const fontSize = theme.typography.fontSize;
@@ -172,10 +173,6 @@ const BookTable = ({
     columnHeaderSortIconLabel: t('Sort'),
     booleanCellTrueLabel: t('yes'),
     booleanCellFalseLabel: t('no'),
-  };
-
-  const handlePaymentMethodChange = function (paymentArray: string[], paymentString) {
-    //   setPaymentMethod(paymentArray[0]);
   };
 
   const robotObj = function (width: number, hide: boolean) {
@@ -364,6 +361,7 @@ const BookTable = ({
       type: 'number',
       width: width * fontSize,
       renderCell: (params: any) => {
+        const currencyCode = currencyDict[params.row.currency.toString()];
         let fontColor = `rgb(0,0,0)`;
         if (params.row.type === 0) {
           var premiumPoint = params.row.premium / buyOutstandingPremium;
@@ -384,11 +382,17 @@ const BookTable = ({
         }
         const fontWeight = 400 + Math.round(premiumPoint * 5) * 100;
         return (
-          <div style={{ cursor: 'pointer' }}>
-            <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
-              {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
-            </Typography>
-          </div>
+          <Tooltip
+            placement='left'
+            enterTouchDelay={0}
+            title={pn(params.row.price) + ' ' + currencyCode + '/BTC'}
+          >
+            <div style={{ cursor: 'pointer' }}>
+              <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
+                {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
+              </Typography>
+            </div>
+          </Tooltip>
         );
       },
     };
@@ -765,14 +769,13 @@ const BookTable = ({
                 labelProps={{ sx: { top: '0.645em' } }}
                 tagProps={{ sx: { height: '1.8em' } }}
                 listBoxProps={{ sx: { width: '9em' } }}
-                onAutocompleteChange={handlePaymentMethodChange}
+                onAutocompleteChange={setPaymentMethods}
+                value={paymentMethods}
                 optionsType={currency == 1000 ? 'swap' : 'fiat'}
-                error={paymentMethod.bad}
-                helperText={paymentMethod.bad ? t('Must be shorter than 65 characters') : ''}
+                error={false}
+                helperText={''}
                 label={currency == 1000 ? t('destination') : t('METHOD')}
-                tooltipTitle={t(
-                  'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
-                )}
+                tooltipTitle=''
                 listHeaderText=''
                 addNewButtonText=''
                 isFilter={true}
@@ -828,13 +831,17 @@ const BookTable = ({
       <Paper style={{ width: `${width}em`, height: `${height}em`, overflow: 'auto' }}>
         <DataGrid
           localeText={localeText}
-          rows={orders.filter((order) =>
-            filterOrders({
-              order,
-              baseFilter: { currency, type },
-              // paymentMethods: [paymentMethod]
-            }),
-          )}
+          rows={
+            showControls
+              ? orders.filter((order) =>
+                  filterOrders({
+                    order,
+                    baseFilter: { currency, type },
+                    paymentMethods: paymentMethods,
+                  }),
+                )
+              : orders
+          }
           loading={loading || refreshing}
           columns={columns}
           hideFooter={!showFooter}

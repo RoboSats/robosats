@@ -59,7 +59,7 @@ const TorConnection = (): JSX.Element => {
     });
   }, []);
 
-  if ((window?.NativeRobosats) == null) {
+  if (window?.NativeRobosats == null) {
     return <></>;
   }
 

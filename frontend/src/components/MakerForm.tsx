@@ -333,12 +333,18 @@ const MakerForm = ({
     }
   };
 
-  const handlePaymentMethodChange = function (paymentArray: string[], paymentString: string) {
+  const handlePaymentMethodChange = function (paymentArray: string[]) {
+    let str = '';
+    const arrayLength = paymentArray.length;
+    for (let i = 0; i < arrayLength; i++) {
+      str += paymentArray[i].name + ' ';
+    }
+    const paymentMethodText = str.slice(0, -1);
     setMaker({
       ...maker,
       paymentMethods: paymentArray,
-      paymentMethodsText: paymentString.substring(0, 53),
-      badPaymentMethod: paymentString.length > 50,
+      paymentMethodsText: paymentMethodText,
+      badPaymentMethod: paymentMethodText.length > 50,
     });
   };
 
@@ -814,6 +820,7 @@ const MakerForm = ({
               listHeaderText={t('You can add new methods')}
               addNewButtonText={t('Add New')}
               asFilter={false}
+              value={maker.paymentMethods}
             />
           </Grid>
 
