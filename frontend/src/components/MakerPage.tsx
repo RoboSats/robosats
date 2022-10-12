@@ -9,11 +9,6 @@ import MakerForm from './MakerForm';
 import BookTable from './BookTable';
 
 import { useHistory } from 'react-router-dom';
-import { StoreTokenDialog, NoRobotDialog } from './Dialogs';
-import { apiClient } from '../services/api';
-
-import { getCookie } from '../utils/cookies';
-import { copyToClipboard } from '../utils/clipboard';
 import filterOrders from '../utils/filterOrders';
 
 interface MakerPageProps {
@@ -61,7 +56,6 @@ const MakerPage = ({
   });
 
   const maxHeight = windowHeight ? windowHeight * 0.85 : 1000;
-  const [openStoreToken, setOpenStoreToken] = useState<boolean>(false);
   const [showMatches, setShowMatches] = useState<boolean>(false);
 
   const matches = orders.filter((order) =>
@@ -101,24 +95,6 @@ const MakerPage = ({
           </Grid>
         </Collapse>
       </Grid>
-      {/* {getCookie('robot_token') ? (
-          <StoreTokenDialog
-            open={this.state.openStoreToken}
-            onClose={() => this.setState({ openStoreToken: false })}
-            onClickCopy={() =>
-              copyToClipboard(getCookie('robot_token')) &
-              props.setAppState({ copiedToken: true })
-            }
-            copyIconColor={this.props.copiedToken ? 'inherit' : 'primary'}
-            onClickBack={() => this.setState({ openStoreToken: false })}
-            onClickDone={this.handleCreateOfferButtonPressed}
-          />
-        ) : (
-          <NoRobotDialog
-            open={this.state.openStoreToken}
-            onClose={() => this.setState({ openStoreToken: false })}
-          />
-        )} */}
       <Grid item>
         <Paper
           elevation={12}

@@ -837,7 +837,7 @@ const BookTable = ({
                   filterOrders({
                     order,
                     baseFilter: { currency, type },
-                    paymentMethods: paymentMethods,
+                    paymentMethods,
                   }),
                 )
               : orders

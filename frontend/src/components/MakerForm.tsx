@@ -33,16 +33,15 @@ import DateFnsUtils from '@date-io/date-fns';
 import { useHistory } from 'react-router-dom';
 import { StoreTokenDialog, NoRobotDialog } from './Dialogs';
 import { apiClient } from '../services/api';
+import { systemClient } from '../services/System';
 
 import FlagWithProps from './FlagWithProps';
 import AutocompletePayments from './AutocompletePayments';
 import currencyDict from '../../static/assets/currencies.json';
+import { pn } from '../utils/prettyNumbers';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
-
-import { getCookie } from '../utils/cookies';
-import { pn } from '../utils/prettyNumbers';
-import { copyToClipboard } from '../utils/clipboard';
+import { LoadingButton } from '@mui/lab';
 
 const RangeThumbComponent = function (props: object) {
   const { children, ...other } = props;
@@ -263,6 +262,9 @@ const MakerForm = ({
   const [currentPrice, setCurrentPrice] = useState<number | string>('...');
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
 
+  const [openDialogs, setOpenDialogs] = useState<boolean>(false);
+  const [submittingRequest, setSubmittingRequest] = useState<boolean>(false);
+
   const maxRangeAmountMultiple = 7.8;
   const minRangeAmountMultiple = 1.6;
 
@@ -420,8 +422,9 @@ const MakerForm = ({
     }
   };
 
-  const handleSubmit = function () {
+  const handleCreateOrder = function () {
     if (!disableRequest) {
+      setSubmittingRequest(true);
       const body = {
         type: type == 0 ? 1 : 0,
         currency: currency == 0 ? 1 : currency,
@@ -441,9 +444,10 @@ const MakerForm = ({
       apiClient.post('/api/make/', body).then((data: object) => {
         setBadRequest(data.bad_request);
         data.id ? history.push('/order/' + data.id) : '';
+        setSubmittingRequest(false);
       });
     }
-    // this.setState({ openStoreToken: false });
+    setOpenDialogs(false);
   };
 
   const handleChangePublicDuration = function (date: Date) {
@@ -609,8 +613,23 @@ const MakerForm = ({
     );
   };
 
+  const ConfirmationDialogs = function () {
+    return systemClient.getCookie('robot_token') ? (
+      <StoreTokenDialog
+        open={openDialogs}
+        onClose={() => setOpenDialogs(false)}
+        onClickCopy={() => systemClient.copyToClipboard(systemClient.getCookie('robot_token'))}
+        copyIconColor={'primary'}
+        onClickBack={() => setOpenDialogs(false)}
+        onClickDone={handleCreateOrder}
+      />
+    ) : (
+      <NoRobotDialog open={openDialogs} onClose={() => setOpenDialogs(false)} />
+    );
+  };
   return (
     <Box>
+      <ConfirmationDialogs />
       <Collapse in={loadingLimits}>
         <div style={{ display: loadingLimits ? '' : 'none' }}>
           <LinearProgress />
@@ -1081,21 +1100,16 @@ const MakerForm = ({
                   </div>
                 </Tooltip>
               ) : (
-                <Button
+                <LoadingButton
+                  loading={submittingRequest}
                   color='primary'
                   variant='contained'
                   onClick={() => {
-                    handleSubmit();
-                    onSubmit();
+                    disableRequest ? onSubmit() : setOpenDialogs(true);
                   }}
-                  // onClick={
-                  //    copiedToken
-                  //     ? this.handleCreateOfferButtonPressed
-                  //     : () => this.setState({ openStoreToken: true })
-                  // }
                 >
                   {t(submitButtonLabel)}
-                </Button>
+                </LoadingButton>
               )}
             </Grid>
             {collapseAll ? (
