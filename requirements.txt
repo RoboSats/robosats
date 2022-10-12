@@ -29,3 +29,5 @@ python-gnupg==0.4.9
 daphne==3.0.2
 drf-spectacular==0.24.0
 drf-spectacular-sidecar==2022.9.1
+black==22.8.0
+isort==5.10.1
