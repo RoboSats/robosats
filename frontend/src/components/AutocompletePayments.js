@@ -162,7 +162,7 @@ const ListHeader = styled('span')(
 
 const Listbox = styled('ul')(
   ({ theme, sx }) => `
-  width: ${sx.width};
+  width: ${sx ? sx.width : '15.6em'};
   margin: 2px 0 0;
   padding: 0;
   position: absolute;
@@ -294,10 +294,7 @@ export default function AutocompletePayments(props) {
         </div>
       </Tooltip>
       {groupedOptions.length > 0 ? (
-        <Listbox
-          sx={{ width: '15.6em', ...(props.listBoxProps ? props.listBoxProps.sx : {}) }}
-          {...getListboxProps()}
-        >
+        <Listbox sx={props.listBoxProps ? props.listBoxProps.sx : undefined} {...getListboxProps()}>
           {!props.isFilter ? (
             <div
               style={{

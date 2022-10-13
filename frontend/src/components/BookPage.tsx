@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Typography, Grid, ButtonGroup, Dialog, Box } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import currencyDict from '../../static/assets/currencies.json';
 import DepthChart from './Charts/DepthChart';
 
@@ -17,8 +17,10 @@ interface BookPageProps {
   bookLoading?: boolean;
   bookRefreshing?: boolean;
   loadingLimits: boolean;
+  lastDayPremium: number;
   orders: Order[];
   limits: LimitList;
+  fetchLimits: () => void;
   type: number;
   currency: number;
   windowWidth: number;
@@ -30,9 +32,11 @@ interface BookPageProps {
 const BookPage = ({
   bookLoading = false,
   bookRefreshing = false,
+  lastDayPremium = 0,
   loadingLimits,
   orders = [],
   limits,
+  fetchLimits,
   type,
   currency,
   windowWidth,
@@ -41,18 +45,16 @@ const BookPage = ({
   fetchBook,
 }: BookPageProps): JSX.Element => {
   const { t } = useTranslation();
+  const history = useHistory();
   const [view, setView] = useState<'list' | 'depth'>('list');
   const [openMaker, setOpenMaker] = useState<boolean>(false);
 
-  const widthEm = windowWidth;
-  const heightEm = windowHeight;
-  const doubleView = widthEm > 115;
-
-  const width = widthEm * 0.9;
-  const bookTableWidth = 85;
-  const chartWidthEm = width - bookTableWidth;
-  const tableWidthXS = (bookTableWidth / width) * 12;
-  const chartWidthXS = (chartWidthEm / width) * 12;
+  const doubleView = windowWidth > 115;
+  const width = windowWidth * 0.9;
+  const maxBookTableWidth = 85;
+  const chartWidthEm = width - maxBookTableWidth;
+  // const tableWidthXS = (maxBookTableWidth / width) * 12;
+  // const chartWidthXS = (chartWidthEm / width) * 12;
 
   const [maker, setMaker] = useState<Maker>({
     isExplicit: false,
@@ -92,136 +94,71 @@ const BookPage = ({
 
   const NoOrdersFound = function () {
     return (
-      <Grid item xs={12}>
-        <Grid item xs={12}>
+      <Grid
+        container
+        direction='column'
+        justifyContent='center'
+        alignItems='center'
+        sx={{ width: '100%', height: '100%' }}
+      >
+        <Grid item>
           <Typography component='h5' variant='h5'>
             {type == 0
               ? t('No orders found to sell BTC for {{currencyCode}}', {
-                  currencyCode: currencyDict[currency.toString()],
+                  currencyCode: currency == 0 ? t('ANY') : currencyDict[currency.toString()],
                 })
               : t('No orders found to buy BTC for {{currencyCode}}', {
-                  currencyCode: currencyDict[currency.toString()],
+                  currencyCode: currency == 0 ? t('ANY') : currencyDict[currency.toString()],
                 })}
           </Typography>
         </Grid>
-        <br />
         <Grid item>
-          <Button
-            size='large'
-            variant='contained'
-            color='primary'
-            onClick={() => setOpenMaker(true)}
-          >
-            {t('Make Order')}
-          </Button>
+          <Typography color='primary' variant='h6'>
+            {t('Be the first one to create an order')}
+          </Typography>
         </Grid>
-        <Typography color='primary' variant='body1'>
-          <b>{t('Be the first one to create an order')}</b>
-          <br />
-          <br />
-        </Typography>
       </Grid>
     );
   };
 
-  interface MainViewProps {
-    doubleView: boolean;
-    widthEm: number;
-    heightEm: number;
-  }
-
-  const MainView = function ({ doubleView, widthEm, heightEm }: MainViewProps) {
-    if (doubleView) {
-      return (
-        <Grid
-          container
-          alignItems='center'
-          justifyContent='flex-start'
-          spacing={1}
-          direction='row'
-          style={{ width: `${widthEm}em`, position: 'relative', left: `${widthEm / 140}em` }}
-        >
-          <Grid item xs={tableWidthXS} style={{ width: `${bookTableWidth}em` }}>
-            <BookTable
-              loading={bookLoading}
-              refreshing={bookRefreshing}
-              clickRefresh={() => fetchBook(false, true)}
-              orders={orders}
-              type={type}
-              currency={currency}
-              maxWidth={bookTableWidth} // EM units
-              maxHeight={heightEm * 0.8 - 5} // EM units
-              fullWidth={widthEm} // EM units
-              fullHeight={heightEm} // EM units
-              defaultFullscreen={false}
-              onCurrencyChange={handleCurrencyChange}
-              onTypeChange={handleTypeChange}
-              noResultsOverlay={NoOrdersFound}
-            />
-          </Grid>
-          <Grid
-            item
-            xs={chartWidthXS}
-            style={{ width: `${chartWidthEm}em`, position: 'relative', left: '-10em' }}
+  const NavButtons = function () {
+    return (
+      <ButtonGroup variant='contained' color='inherit'>
+        <Button color='primary' onClick={() => setOpenMaker(true)}>
+          {t('Make Order')}
+        </Button>
+        {doubleView ? (
+          <></>
+        ) : (
+          <Button
+            color='inherit'
+            style={{ color: '#111111' }}
+            onClick={() => setView(view === 'depth' ? 'list' : 'depth')}
           >
-            <DepthChart
-              bookLoading={bookLoading}
-              orders={orders}
-              lastDayPremium={lastDayPremium}
-              currency={currency}
-              compact={true}
-              setAppState={setAppState}
-              limits={limits}
-              maxWidth={chartWidthEm} // EM units
-              maxHeight={heightEm * 0.8 - 5} // EM units
-            />
-          </Grid>
-        </Grid>
-      );
-    } else {
-      if (view === 'depth') {
-        return (
-          <DepthChart
-            bookLoading={bookLoading}
-            orders={orders}
-            lastDayPremium={lastDayPremium}
-            currency={currency}
-            compact={true}
-            setAppState={setAppState}
-            limits={limits}
-            maxWidth={widthEm * 0.8} // EM units
-            maxHeight={heightEm * 0.8 - 5} // EM units
-          />
-        );
-      } else {
-        return (
-          <BookTable
-            loading={bookLoading}
-            refreshing={bookRefreshing}
-            clickRefresh={() => fetchBook(false, true)}
-            orders={orders}
-            type={type}
-            currency={currency}
-            maxWidth={widthEm * 0.97} // EM units
-            maxHeight={heightEm * 0.8 - 5} // EM units
-            fullWidth={widthEm} // EM units
-            fullHeight={heightEm} // EM units
-            defaultFullscreen={false}
-            onCurrencyChange={handleCurrencyChange}
-            onTypeChange={handleTypeChange}
-            noResultsOverlay={NoOrdersFound}
-          />
-        );
-      }
-    }
+            {view == 'depth' ? (
+              <>
+                <FormatListBulleted /> {t('List')}
+              </>
+            ) : (
+              <>
+                <BarChart /> {t('Chart')}
+              </>
+            )}
+          </Button>
+        )}
+        <Button color='secondary' onClick={() => history.push('/')}>
+          {t('Back')}
+        </Button>
+      </ButtonGroup>
+    );
   };
-
   return (
     <Grid container direction='column' alignItems='center' spacing={1} sx={{ minWidth: 400 }}>
       <Dialog open={openMaker} onClose={() => setOpenMaker(false)}>
         <Box sx={{ maxWidth: '18em', padding: '0.5em' }}>
           <MakerForm
             limits={limits}
+            fetchLimits={fetchLimits}
             loadingLimits={loadingLimits}
             pricingMethods={false}
             setAppState={setAppState}
@@ -237,12 +174,12 @@ const BookPage = ({
           <Grid
             container
             alignItems='center'
-            justifyContent='flex-start'
+            justifyContent='center'
             spacing={1}
             direction='row'
-            style={{ width: `${widthEm}em`, position: 'relative', left: `${widthEm / 140}em` }}
+            style={{ width: `${windowWidth}em` }}
           >
-            <Grid item xs={tableWidthXS} style={{ width: `${bookTableWidth}em` }}>
+            <Grid item>
               <BookTable
                 loading={bookLoading}
                 refreshing={bookRefreshing}
@@ -250,23 +187,18 @@ const BookPage = ({
                 orders={orders}
                 type={type}
                 currency={currency}
-                maxWidth={bookTableWidth} // EM units
-                maxHeight={heightEm * 0.8 - 5} // EM units
-                fullWidth={widthEm} // EM units
-                fullHeight={heightEm} // EM units
+                maxWidth={maxBookTableWidth} // EM units
+                maxHeight={windowHeight * 0.8 - 5} // EM units
+                fullWidth={windowWidth} // EM units
+                fullHeight={windowHeight} // EM units
                 defaultFullscreen={false}
                 onCurrencyChange={handleCurrencyChange}
                 onTypeChange={handleTypeChange}
                 noResultsOverlay={NoOrdersFound}
               />
             </Grid>
-            <Grid
-              item
-              xs={chartWidthXS}
-              style={{ width: `${chartWidthEm}em`, position: 'relative', left: '-10em' }}
-            >
+            <Grid item>
               <DepthChart
-                bookLoading={bookLoading}
                 orders={orders}
                 lastDayPremium={lastDayPremium}
                 currency={currency}
@@ -274,7 +206,7 @@ const BookPage = ({
                 setAppState={setAppState}
                 limits={limits}
                 maxWidth={chartWidthEm} // EM units
-                maxHeight={heightEm * 0.8 - 5} // EM units
+                maxHeight={windowHeight * 0.8 - 5} // EM units
               />
             </Grid>
           </Grid>
@@ -287,8 +219,8 @@ const BookPage = ({
             compact={true}
             setAppState={setAppState}
             limits={limits}
-            maxWidth={widthEm * 0.8} // EM units
-            maxHeight={heightEm * 0.8 - 5} // EM units
+            maxWidth={windowWidth * 0.8} // EM units
+            maxHeight={windowHeight * 0.8 - 5} // EM units
           />
         ) : (
           <BookTable
@@ -298,10 +230,10 @@ const BookPage = ({
             orders={orders}
             type={type}
             currency={currency}
-            maxWidth={widthEm * 0.97} // EM units
-            maxHeight={heightEm * 0.8 - 5} // EM units
-            fullWidth={widthEm} // EM units
-            fullHeight={heightEm} // EM units
+            maxWidth={windowWidth * 0.97} // EM units
+            maxHeight={windowHeight * 0.8 - 5} // EM units
+            fullWidth={windowWidth} // EM units
+            fullHeight={windowHeight} // EM units
             defaultFullscreen={false}
             onCurrencyChange={handleCurrencyChange}
             onTypeChange={handleTypeChange}
@@ -309,41 +241,9 @@ const BookPage = ({
           />
         )}
       </Grid>
+
       <Grid item xs={12}>
-        <ButtonGroup variant='contained' aria-label='outlined primary button group'>
-          {orders.length > 0 ? (
-            <>
-              <Button
-                variant='contained'
-                color='primary'
-                color='primary'
-                onClick={() => setOpenMaker(true)}
-              >
-                {t('Make Order')}
-              </Button>
-              {doubleView ? null : (
-                <Button
-                  color='inherit'
-                  style={{ color: '#111111' }}
-                  onClick={() => setView(view === 'depth' ? 'list' : 'depth')}
-                >
-                  {view == 'depth' ? (
-                    <>
-                      <FormatListBulleted /> {t('List')}
-                    </>
-                  ) : (
-                    <>
-                      <BarChart /> {t('Chart')}
-                    </>
-                  )}
-                </Button>
-              )}
-            </>
-          ) : null}
-          <Button color='secondary' variant='contained' to='/' component={Link}>
-            {t('Back')}
-          </Button>
-        </ButtonGroup>
+        <NavButtons />
       </Grid>
     </Grid>
   );

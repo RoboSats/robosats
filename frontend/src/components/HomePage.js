@@ -45,6 +45,7 @@ export default class HomePage extends Component {
       window.addEventListener('resize', this.onResize);
     }
     this.fetchBook(true, false);
+    this.fetchLimits(true);
   };
 
   componentWillUnmount = () => {
@@ -82,9 +83,18 @@ export default class HomePage extends Component {
       this.setState({
         bookLoading: false,
         bookRefreshing: false,
-        orders: data,
+        orders: data.not_found ? [] : data,
       }),
     );
+  };
+
+  fetchLimits = (loading) => {
+    this.setState({ loadingLimits: loading });
+    const limits = apiClient.get('/api/limits/').then((data) => {
+      this.setState({ limits: data, loadingLimits: false });
+      return data;
+    });
+    return limits;
   };
 
   render() {
@@ -126,6 +136,7 @@ export default class HomePage extends Component {
                   {...props}
                   {...this.state}
                   {...this.props}
+                  fetchLimits={this.fetchLimits}
                   setAppState={this.setAppState}
                 />
               )}
@@ -138,6 +149,7 @@ export default class HomePage extends Component {
                   {...this.state}
                   {...this.props}
                   fetchBook={this.fetchBook}
+                  fetchLimits={this.fetchLimits}
                   setAppState={this.setAppState}
                 />
               )}

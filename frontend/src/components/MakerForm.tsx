@@ -223,6 +223,7 @@ function AmountRange({
 
 interface MakerFormProps {
   limits: LimitList;
+  fetchLimits: (loading) => void;
   loadingLimits: boolean;
   pricingMethods: boolean;
   maker: Maker;
@@ -239,6 +240,7 @@ interface MakerFormProps {
 
 const MakerForm = ({
   limits,
+  fetchLimits,
   loadingLimits,
   pricingMethods,
   currency,
@@ -271,8 +273,7 @@ const MakerForm = ({
   useEffect(() => {
     if (Object.keys(limits).length === 0) {
       setAppState({ loadingLimits: true });
-      apiClient.get('/api/limits/').then((data) => {
-        setAppState({ limits: data, loadingLimits: false });
+      fetchLimits(true).then((data) => {
         updateAmountLimits(data, currency, maker.premium);
         updateCurrentPrice(data, currency, maker.premium);
         updateSatoshisLimits(data);
@@ -282,9 +283,7 @@ const MakerForm = ({
       updateCurrentPrice(limits, currency, maker.premium);
       updateSatoshisLimits(limits);
 
-      apiClient
-        .get('/api/limits/')
-        .then((data) => setAppState({ limits: data, loadingLimits: false }));
+      fetchLimits(false);
     }
   }, []);
 

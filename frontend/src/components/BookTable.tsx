@@ -810,6 +810,7 @@ const BookTable = ({
   interface GridComponentProps {
     LoadingOverlay: JSX.Element;
     NoResultsOverlay?: JSX.Element;
+    NoRowsOverlay?: JSX.Element;
     Footer?: JSX.Element;
     Toolbar?: JSX.Element;
   }
@@ -821,8 +822,8 @@ const BookTable = ({
 
     if (noResultsOverlay != null) {
       components.NoResultsOverlay = noResultsOverlay;
+      components.NoRowsOverlay = noResultsOverlay;
     }
-
     if (showFooter) {
       components.Footer = Footer;
     }

@@ -13,6 +13,7 @@ import filterOrders from '../utils/filterOrders';
 
 interface MakerPageProps {
   limits: LimitList;
+  fetchLimits: () => void;
   orders: Order[];
   loadingLimits: boolean;
   type: number;
@@ -24,6 +25,7 @@ interface MakerPageProps {
 
 const MakerPage = ({
   limits,
+  fetchLimits,
   orders,
   loadingLimits,
   currency,
@@ -100,6 +102,7 @@ const MakerPage = ({
         >
           <MakerForm
             limits={limits}
+            fetchLimits={fetchLimits}
             loadingLimits={loadingLimits}
             pricingMethods={false}
             setAppState={setAppState}
