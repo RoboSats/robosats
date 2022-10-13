@@ -92,6 +92,7 @@ const MakerForm = ({
   const minRangeAmountMultiple = 1.6;
 
   useEffect(() => {
+    setCurrencyCode(currencyDict[currency == 0 ? 1 : currency]);
     if (Object.keys(limits).length === 0) {
       setAppState({ loadingLimits: true });
       fetchLimits(true).then((data) => {
@@ -968,7 +969,7 @@ const MakerForm = ({
                 : t("Your order's current exchange rate. Rate will move with the market.")
             }
           >
-            <Typography variant='caption' color='text.secondary'>
+            <Typography align='center' variant='caption' color='text.secondary'>
               {(maker.isExplicit ? t('Order rate:') : t('Order current rate:')) +
                 ` ${pn(currentPrice)} ${currencyCode}/BTC`}
             </Typography>

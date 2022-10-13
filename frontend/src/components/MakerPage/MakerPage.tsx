@@ -54,7 +54,7 @@ const MakerPage = ({
     badSatoshisText: '',
   });
 
-  const maxHeight = windowHeight ? windowHeight * 0.85 : 1000;
+  const maxHeight = windowHeight ? windowHeight * 0.85 - 7 : 1000;
   const [showMatches, setShowMatches] = useState<boolean>(false);
 
   const matches = filterOrders({
@@ -79,11 +79,11 @@ const MakerPage = ({
             </Grid>
             <Grid item>
               <BookTable
-                orders={matches}
+                orders={matches.slice(0, matches.length > 4 ? 4 : matches.length)}
                 type={type}
                 currency={currency}
                 maxWidth={Math.min(windowWidth, 60)} // EM units
-                maxHeight={Math.min(matches.length * 4, 20)} // EM units
+                maxHeight={Math.min(matches.length * 3.25 + 3.575, 16.575)} // EM units
                 defaultFullscreen={false}
                 showControls={false}
                 showFooter={false}

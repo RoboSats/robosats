@@ -24,8 +24,8 @@ interface BookPageProps {
   currency: number;
   windowWidth: number;
   windowHeight: number;
-  fetchBook: () => void;
-  setAppState: () => void;
+  fetchBook: (loading: boolean, refreshing: boolean) => void;
+  setAppState: (state: object) => void;
 }
 
 const BookPage = ({
@@ -99,7 +99,7 @@ const BookPage = ({
         sx={{ width: '100%', height: '100%' }}
       >
         <Grid item>
-          <Typography component='h5' variant='h5'>
+          <Typography align='center' component='h5' variant='h5'>
             {type == 0
               ? t('No orders found to sell BTC for {{currencyCode}}', {
                   currencyCode: currency == 0 ? t('ANY') : currencyDict[currency.toString()],
@@ -110,7 +110,7 @@ const BookPage = ({
           </Typography>
         </Grid>
         <Grid item>
-          <Typography color='primary' variant='h6'>
+          <Typography align='center' color='primary' variant='h6'>
             {t('Be the first one to create an order')}
           </Typography>
         </Grid>
@@ -151,21 +151,24 @@ const BookPage = ({
   };
   return (
     <Grid container direction='column' alignItems='center' spacing={1} sx={{ minWidth: 400 }}>
-      <Dialog open={openMaker} onClose={() => setOpenMaker(false)}>
-        <Box sx={{ maxWidth: '18em', padding: '0.5em' }}>
-          <MakerForm
-            limits={limits}
-            fetchLimits={fetchLimits}
-            loadingLimits={loadingLimits}
-            pricingMethods={false}
-            setAppState={setAppState}
-            maker={maker}
-            setMaker={setMaker}
-            type={type}
-            currency={currency}
-          />
-        </Box>
-      </Dialog>
+      {openMaker ? (
+        <Dialog open={openMaker} onClose={() => setOpenMaker(false)}>
+          <Box sx={{ maxWidth: '18em', padding: '0.5em' }}>
+            <MakerForm
+              limits={limits}
+              fetchLimits={fetchLimits}
+              loadingLimits={loadingLimits}
+              pricingMethods={false}
+              setAppState={setAppState}
+              maker={maker}
+              setMaker={setMaker}
+              type={type}
+              currency={currency}
+            />
+          </Box>
+        </Dialog>
+      ) : null}
+
       <Grid item xs={12}>
         {doubleView ? (
           <Grid
@@ -217,7 +220,7 @@ const BookPage = ({
             setAppState={setAppState}
             limits={limits}
             maxWidth={windowWidth * 0.8} // EM units
-            maxHeight={windowHeight * 0.8 - 5} // EM units
+            maxHeight={windowHeight * 0.825 - 5} // EM units
           />
         ) : (
           <BookTable
@@ -228,7 +231,7 @@ const BookPage = ({
             type={type}
             currency={currency}
             maxWidth={windowWidth * 0.97} // EM units
-            maxHeight={windowHeight * 0.8 - 5} // EM units
+            maxHeight={windowHeight * 0.825 - 5} // EM units
             fullWidth={windowWidth} // EM units
             fullHeight={windowHeight} // EM units
             defaultFullscreen={false}

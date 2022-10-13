@@ -8,7 +8,6 @@ import { paymentMethods, swapDestinations } from '../payment-methods/Methods';
 
 // Icons
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
-import AddIcon from '@mui/icons-material/Add';
 import PaymentIcon from '../payment-methods/Icons';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -50,6 +49,7 @@ const InputWrapper = styled('div')(
   display: flex;
   flex-wrap: wrap;
   overflow-y:auto;
+  align-items: center;
 
   &:hover {
     border-color: ${
@@ -318,11 +318,9 @@ export default function AutocompletePayments(props) {
                 sx={{ textTransform: 'none' }}
                 style={{ justifyContent: 'flex-start' }}
               >
-                {!props.isFilter ? (
-                  <div style={{ position: 'relative', right: '0.286em', top: '0.286em' }}>
-                    <AddIcon style={{ color: '#1976d2' }} sx={{ width: '1em', height: '1em' }} />
-                  </div>
-                ) : null}
+                <div style={{ padding: '0.286em', position: 'relative', top: '0.35em' }}>
+                  <PaymentIcon width={22} height={22} icon={option.icon} />
+                </div>
                 <Typography variant='inherit' align='left'>
                   {t(option.name)}
                 </Typography>
