@@ -5,7 +5,6 @@ import {
   LinearProgress,
   ButtonGroup,
   Slider,
-  SliderThumb,
   Switch,
   Tooltip,
   Button,
@@ -24,202 +23,24 @@ import {
   Collapse,
   IconButton,
 } from '@mui/material';
-import { LimitList } from '../models/Limit.model';
-import Maker from '../models/Maker.model';
 
-import RangeSlider from './RangeSlider';
+import { LimitList, Maker } from '../../models';
+
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { useHistory } from 'react-router-dom';
-import { StoreTokenDialog, NoRobotDialog } from './Dialogs';
-import { apiClient } from '../services/api';
-import { systemClient } from '../services/System';
+import { StoreTokenDialog, NoRobotDialog } from '../Dialogs';
+import { apiClient } from '../../services/api';
+import { systemClient } from '../../services/System';
 
-import FlagWithProps from './FlagWithProps';
+import FlagWithProps from '../FlagWithProps';
 import AutocompletePayments from './AutocompletePayments';
-import currencyDict from '../../static/assets/currencies.json';
-import { pn } from '../utils/prettyNumbers';
+import AmountRange from './AmountRange';
+import currencyDict from '../../../static/assets/currencies.json';
+import { pn } from '../../utils/prettyNumbers';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-
-const RangeThumbComponent = function (props: object) {
-  const { children, ...other } = props;
-  return (
-    <SliderThumb {...other}>
-      {children}
-      <span className='range-bar' />
-      <span className='range-bar' />
-      <span className='range-bar' />
-    </SliderThumb>
-  );
-};
-
-interface AmountRangeProps {
-  limits: LimitList;
-  minAmount: string;
-  maxAmount: string;
-  type: number;
-  currency: number;
-  handleRangeAmountChange: () => void;
-  handleMaxAmountChange: () => void;
-  handleMinAmountChange: () => void;
-  handleCurrencyChange: () => void;
-  maxAmountError: boolean;
-  minAmountError: boolean;
-  currencyCode: boolean;
-  amountLimits: number[];
-}
-
-function AmountRange({
-  minAmount,
-  handleRangeAmountChange,
-  limits,
-  currency,
-  currencyCode,
-  handleCurrencyChange,
-  amountLimits,
-  maxAmount,
-  minAmountError,
-  maxAmountError,
-  handleMinAmountChange,
-  handleMaxAmountChange,
-}: AmountRangeProps) {
-  const theme = useTheme();
-  const { t } = useTranslation();
-
-  return (
-    <Grid item xs={12}>
-      <Box
-        sx={{
-          padding: '0.5em',
-          backgroundColor: 'background.paper',
-          border: '1px solid',
-          borderRadius: '4px',
-          borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-          '&:hover': {
-            borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-          },
-        }}
-      >
-        <Grid container direction='column' alignItems='center' spacing={0.5}>
-          <Grid item sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-            <Typography
-              sx={{
-                width: `${t('From').length * 0.56 + 0.6}em`,
-                textAlign: 'left',
-                color: 'text.secondary',
-              }}
-              variant='caption'
-            >
-              {t('From')}
-            </Typography>
-            <TextField
-              variant='standard'
-              type='number'
-              size='small'
-              value={minAmount}
-              onChange={handleMinAmountChange}
-              error={minAmountError}
-              sx={{
-                width: `${minAmount.toString().length * 0.56}em`,
-                minWidth: '0.56em',
-                maxWidth: '2.8em',
-              }}
-            />
-            <Typography
-              sx={{
-                width: `${t('to').length * 0.56 + 0.6}em`,
-                textAlign: 'center',
-                color: 'text.secondary',
-              }}
-              variant='caption'
-            >
-              {t('to')}
-            </Typography>
-            <TextField
-              variant='standard'
-              size='small'
-              type='number'
-              value={maxAmount}
-              onChange={handleMaxAmountChange}
-              error={maxAmountError}
-              sx={{
-                width: `${maxAmount.toString().length * 0.56}em`,
-                minWidth: '0.56em',
-                maxWidth: '3.36em',
-              }}
-            />
-            <div style={{ width: '0.5em' }} />
-            <Select
-              sx={{ width: '3.8em' }}
-              variant='standard'
-              size='small'
-              required={true}
-              inputProps={{
-                style: { textAlign: 'center' },
-              }}
-              value={currency == 0 ? 1 : currency}
-              renderValue={() => currencyCode}
-              onChange={(e) => handleCurrencyChange(e.target.value)}
-            >
-              {Object.entries(currencyDict).map(([key, value]) => (
-                <MenuItem key={key} value={parseInt(key)}>
-                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <FlagWithProps code={value} />
-                    {' ' + value}
-                  </div>
-                </MenuItem>
-              ))}
-            </Select>
-          </Grid>
-
-          <Grid
-            item
-            sx={{
-              width: `calc(100% - ${Math.log10(amountLimits[1] * 0.65) + 2}em)`,
-            }}
-          >
-            <RangeSlider
-              disableSwap={true}
-              value={[Number(minAmount), Number(maxAmount)]}
-              step={(amountLimits[1] - amountLimits[0]) / 5000}
-              valueLabelDisplay='auto'
-              components={{ Thumb: RangeThumbComponent }}
-              componentsProps={{
-                thumb: { style: { backgroundColor: theme.palette.background.paper } },
-              }}
-              valueLabelFormat={(x) =>
-                pn(parseFloat(Number(x).toPrecision(x < 100 ? 2 : 3))) + ' ' + currencyCode
-              }
-              marks={
-                limits == null
-                  ? false
-                  : [
-                      {
-                        value: amountLimits[0] * 1.01,
-                        label: `${pn(
-                          parseFloat(Number(amountLimits[0] * 1.01).toPrecision(3)),
-                        )} ${currencyCode}`,
-                      },
-                      {
-                        value: amountLimits[1] * 0.99,
-                        label: `${pn(
-                          parseFloat(Number(amountLimits[1] * 0.99).toPrecision(3)),
-                        )} ${currencyCode}`,
-                      },
-                    ]
-              }
-              min={amountLimits[0] * 1.01}
-              max={amountLimits[1] * 0.99}
-              onChange={handleRangeAmountChange}
-            />
-          </Grid>
-        </Grid>
-      </Box>
-    </Grid>
-  );
-}
 
 interface MakerFormProps {
   limits: LimitList;
@@ -738,7 +559,6 @@ const MakerForm = ({
               <AmountRange
                 minAmount={maker.minAmount}
                 handleRangeAmountChange={handleRangeAmountChange}
-                limits={limits}
                 currency={currency}
                 currencyCode={currencyCode}
                 handleCurrencyChange={handleCurrencyChange}

@@ -2,16 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Typography, Grid, ButtonGroup, Dialog, Box } from '@mui/material';
 import { useHistory } from 'react-router-dom';
-import currencyDict from '../../static/assets/currencies.json';
-import DepthChart from './Charts/DepthChart';
+import currencyDict from '../../../static/assets/currencies.json';
+import DepthChart from '../Charts/DepthChart';
 
-import { Order } from '../models/Order.model';
-import { LimitList } from '../models/Limit.model';
+import { Order, LimitList } from '../../models';
 
 // Icons
 import { BarChart, FormatListBulleted } from '@mui/icons-material';
 import BookTable from './BookTable';
-import MakerForm from './MakerForm';
+import { MakerForm } from '../MakerPage';
 
 interface BookPageProps {
   bookLoading?: boolean;

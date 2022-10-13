@@ -23,20 +23,20 @@ import {
   Collapse,
 } from '@mui/material';
 import { DataGrid, GridPagination } from '@mui/x-data-grid';
-import currencyDict from '../../static/assets/currencies.json';
-import { Order } from '../models/Order.model';
-import filterOrders from '../utils/filterOrders';
+import currencyDict from '../../../static/assets/currencies.json';
+import { Order } from '../../models';
+import filterOrders from '../../utils/filterOrders';
 
-import FlagWithProps from './FlagWithProps';
-import { pn, amountToString } from '../utils/prettyNumbers';
-import PaymentText from './PaymentText';
-import RobotAvatar from './Robots/RobotAvatar';
-import hexToRgb from '../utils/hexToRgb';
-import statusBadgeColor from '../utils/statusBadgeColor';
+import FlagWithProps from '../FlagWithProps';
+import { pn, amountToString } from '../../utils/prettyNumbers';
+import PaymentText from '../PaymentText';
+import RobotAvatar from '../Robots/RobotAvatar';
+import hexToRgb from '../../utils/hexToRgb';
+import statusBadgeColor from '../../utils/statusBadgeColor';
 
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
-import AutocompletePayments from './AutocompletePayments';
+import AutocompletePayments from '../MakerPage/AutocompletePayments';
 
 interface Props {
   loading?: boolean;

@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Grid, useTheme, Paper, Collapse, Typography } from '@mui/material';
+import { Button, Grid, Paper, Collapse, Typography } from '@mui/material';
 
-import { LimitList } from '../models/Limit.model';
-import Maker from '../models/Maker.model';
-import Order from '../models/Order.model';
+import { LimitList, Maker, Order } from '../../models';
 import MakerForm from './MakerForm';
-import BookTable from './BookTable';
+import BookTable from '../BookPage/BookTable';
 
 import { useHistory } from 'react-router-dom';
-import filterOrders from '../utils/filterOrders';
+import filterOrders from '../../utils/filterOrders';
 
 interface MakerPageProps {
   limits: LimitList;
@@ -35,7 +33,6 @@ const MakerPage = ({
   windowWidth,
 }: MakerPageProps): JSX.Element => {
   const { t } = useTranslation();
-  const theme = useTheme();
   const history = useHistory();
 
   const [maker, setMaker] = useState<Maker>({
@@ -119,12 +116,7 @@ const MakerPage = ({
         </Paper>
       </Grid>
       <Grid item>
-        <Button
-          color='secondary'
-          variant='contained'
-          onClick={() => history.goBack()}
-          component='a'
-        >
+        <Button color='secondary' variant='contained' onClick={() => history.push('/')}>
           {t('Back')}
         </Button>
       </Grid>

@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { useAutocomplete } from '@mui/base/AutocompleteUnstyled';
 import { styled } from '@mui/material/styles';
 import { Button, Fade, Tooltip, Typography } from '@mui/material';
-import { paymentMethods, swapDestinations } from './payment-methods/Methods';
+import { paymentMethods, swapDestinations } from '../payment-methods/Methods';
 
 // Icons
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 import AddIcon from '@mui/icons-material/Add';
-import PaymentIcon from './payment-methods/Icons';
+import PaymentIcon from '../payment-methods/Icons';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 

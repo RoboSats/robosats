@@ -21,8 +21,7 @@ import {
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
-import { Order } from '../../../models/Order.model';
-import { LimitList } from '../../../models/Limit.model';
+import { Order, LimitList } from '../../../models';
 import RobotAvatar from '../../Robots/RobotAvatar';
 import { amountToString } from '../../../utils/prettyNumbers';
 import currencyDict from '../../../../static/assets/currencies.json';
