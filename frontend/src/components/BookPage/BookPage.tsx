@@ -52,8 +52,6 @@ const BookPage = ({
   const width = windowWidth * 0.9;
   const maxBookTableWidth = 85;
   const chartWidthEm = width - maxBookTableWidth;
-  // const tableWidthXS = (maxBookTableWidth / width) * 12;
-  // const chartWidthXS = (chartWidthEm / width) * 12;
 
   const [maker, setMaker] = useState<Maker>({
     isExplicit: false,
@@ -124,7 +122,7 @@ const BookPage = ({
     return (
       <ButtonGroup variant='contained' color='inherit'>
         <Button color='primary' onClick={() => setOpenMaker(true)}>
-          {t('Make Order')}
+          {t('Create Order')}
         </Button>
         {doubleView ? (
           <></>
@@ -187,7 +185,7 @@ const BookPage = ({
                 type={type}
                 currency={currency}
                 maxWidth={maxBookTableWidth} // EM units
-                maxHeight={windowHeight * 0.8 - 5} // EM units
+                maxHeight={windowHeight * 0.825 - 5} // EM units
                 fullWidth={windowWidth} // EM units
                 fullHeight={windowHeight} // EM units
                 defaultFullscreen={false}
@@ -205,7 +203,7 @@ const BookPage = ({
                 setAppState={setAppState}
                 limits={limits}
                 maxWidth={chartWidthEm} // EM units
-                maxHeight={windowHeight * 0.8 - 5} // EM units
+                maxHeight={windowHeight * 0.825 - 5} // EM units
               />
             </Grid>
           </Grid>

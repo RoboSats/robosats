@@ -473,7 +473,7 @@ const MakerForm = ({
                 enterTouchDelay={500}
                 enterDelay={700}
                 enterNextDelay={2000}
-                title={t('Clear all fields')}
+                title={t('Clear form')}
               >
                 <DeleteSweep sx={{ width: '1em', height: '1em' }} />
               </Tooltip>
@@ -817,7 +817,7 @@ const MakerForm = ({
                         },
                       }}
                       renderInput={(props) => <TextField {...props} />}
-                      label={t('Escrow Deposit Time-Out (HH:mm)')}
+                      label={t('Escrow/Invoice Timer (HH:mm)')}
                       value={maker.escrowExpiryTime}
                       onChange={handleChangeEscrowDuration}
                       minTime={new Date(0, 0, 0, 1, 0)}

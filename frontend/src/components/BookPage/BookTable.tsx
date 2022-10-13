@@ -128,7 +128,6 @@ const BookTable = ({
 
   const localeText = {
     MuiTablePagination: { labelRowsPerPage: t('Orders per page:') },
-    noRowsLabel: t('No order matches'),
     noResultsOverlayLabel: t('No results found.'),
     errorOverlayDefaultLabel: t('An error occurred.'),
     toolbarColumns: t('Columns'),
@@ -768,7 +767,7 @@ const BookTable = ({
                 optionsType={currency == 1000 ? 'swap' : 'fiat'}
                 error={false}
                 helperText={''}
-                label={currency == 1000 ? t('destination') : t('METHOD')}
+                label={currency == 1000 ? t('DESTINATION') : t('METHOD')}
                 tooltipTitle=''
                 listHeaderText=''
                 addNewButtonText=''
