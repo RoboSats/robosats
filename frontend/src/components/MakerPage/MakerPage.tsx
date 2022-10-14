@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Grid, Paper, Collapse, Typography } from '@mui/material';
 
-import { LimitList, Maker, Order } from '../../models';
+import { LimitList, Maker, Order, defaultMaker } from '../../models';
 import MakerForm from './MakerForm';
 import BookTable from '../BookPage/BookTable';
 
@@ -35,25 +35,7 @@ const MakerPage = ({
   const { t } = useTranslation();
   const history = useHistory();
 
-  const [maker, setMaker] = useState<Maker>({
-    isExplicit: false,
-    amount: '',
-    paymentMethods: [],
-    paymentMethodsText: 'Not specified',
-    badPaymentMethod: false,
-    premium: '',
-    satoshis: '',
-    publicExpiryTime: new Date(0, 0, 0, 23, 59),
-    publicDuration: 86340,
-    escrowExpiryTime: new Date(0, 0, 0, 3, 0),
-    escrowDuration: 10800,
-    bondSize: 3,
-    minAmount: '',
-    maxAmount: '',
-    badPremiumText: '',
-    badSatoshisText: '',
-  });
-
+  const [maker, setMaker] = useState<Maker>(defaultMaker);
   const maxHeight = windowHeight ? windowHeight * 0.85 - 7 : 1000;
   const [showMatches, setShowMatches] = useState<boolean>(false);
 

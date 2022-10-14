@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useAutocomplete } from '@mui/base/AutocompleteUnstyled';
 import { styled } from '@mui/material/styles';
-import { Button, Fade, Tooltip, Typography } from '@mui/material';
+import { Button, Fade, Tooltip, Typography, Grow } from '@mui/material';
 import { paymentMethods, swapDestinations } from '../payment-methods/Methods';
 
 // Icons
@@ -234,6 +234,7 @@ export default function AutocompletePayments(props) {
   });
 
   const [val, setVal] = useState('');
+  const fewerOptions = groupedOptions.length > 8 ? groupedOptions.slice(0, 8) : groupedOptions;
 
   function handleAddNew(inputProps) {
     paymentMethods.push({ name: inputProps.value, icon: 'custom' });
@@ -258,7 +259,7 @@ export default function AutocompletePayments(props) {
         <div {...getRootProps()}>
           <Fade
             appear={false}
-            in={groupedOptions.length == 0 && value.length == 0 && val.length == 0}
+            in={fewerOptions.length == 0 && value.length == 0 && val.length == 0}
           >
             <div style={{ height: 0, display: 'flex', alignItems: 'flex-start' }}>
               <Label
@@ -293,7 +294,7 @@ export default function AutocompletePayments(props) {
           </InputWrapper>
         </div>
       </Tooltip>
-      {groupedOptions.length > 0 ? (
+      <Grow in={fewerOptions.length > 0}>
         <Listbox sx={props.listBoxProps ? props.listBoxProps.sx : undefined} {...getListboxProps()}>
           {!props.isFilter ? (
             <div
@@ -309,7 +310,7 @@ export default function AutocompletePayments(props) {
               </ListHeader>
             </div>
           ) : null}
-          {groupedOptions.map((option, index) => (
+          {fewerOptions.map((option, index) => (
             <li key={option.name} {...getOptionProps({ option, index })}>
               <Button
                 fullWidth={true}
@@ -339,15 +340,17 @@ export default function AutocompletePayments(props) {
             ) : null
           ) : null}
         </Listbox>
-      ) : // Here goes what happens if there is no groupedOptions
-      getInputProps().value.length > 0 && !props.isFilter ? (
+      </Grow>
+
+      {/* Here goes what happens if there is no fewerOptions */}
+      <Grow in={getInputProps().value.length > 0 && !props.isFilter && fewerOptions.length === 0}>
         <Listbox {...getListboxProps()}>
           <Button fullWidth={true} onClick={() => handleAddNew(getInputProps())}>
             <DashboardCustomizeIcon sx={{ width: '1.28em', height: '1.28em' }} />
             {props.addNewButtonText}
           </Button>
         </Listbox>
-      ) : null}
+      </Grow>
     </Root>
   );
 }

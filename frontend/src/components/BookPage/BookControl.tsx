@@ -7,7 +7,6 @@ import {
   ToggleButtonGroup,
   Select,
   Divider,
-  Collapse,
   MenuItem,
   Box,
 } from '@mui/material';
@@ -57,11 +56,9 @@ const BookControl = ({
       >
         {width > verboseToolbarWidth ? (
           <Grid item sx={{ position: 'relative', top: '0.5em' }}>
-            <Collapse orientation='horizontal' in={width > verboseToolbarWidth}>
-              <Typography variant='caption' color='text.secondary'>
-                {t('I want to')}
-              </Typography>
-            </Collapse>
+            <Typography variant='caption' color='text.secondary'>
+              {t('I want to')}
+            </Typography>
           </Grid>
         ) : null}
 
@@ -93,11 +90,9 @@ const BookControl = ({
 
         {width > verboseToolbarWidth ? (
           <Grid item sx={{ position: 'relative', top: '0.5em' }}>
-            <Collapse orientation='horizontal' in={width > verboseToolbarWidth}>
-              <Typography variant='caption' color='text.secondary'>
-                {t('and use')}
-              </Typography>
-            </Collapse>
+            <Typography variant='caption' color='text.secondary'>
+              {t('and use')}
+            </Typography>
           </Grid>
         ) : null}
 
@@ -146,16 +141,14 @@ const BookControl = ({
 
         {width > verboseToolbarWidth ? (
           <Grid item sx={{ position: 'relative', top: '0.5em' }}>
-            <Collapse orientation='horizontal' in={width > verboseToolbarWidth}>
-              <Typography variant='caption' color='text.secondary'>
-                {currency == 1000 ? t('swap to') : t('pay with')}
-              </Typography>
-            </Collapse>
+            <Typography variant='caption' color='text.secondary'>
+              {currency == 1000 ? t('swap to') : t('pay with')}
+            </Typography>
           </Grid>
         ) : null}
 
-        <Grid item>
-          <Collapse orientation='horizontal' in={width > mediumToolbarWidth}>
+        {width > mediumToolbarWidth ? (
+          <Grid item>
             <AutocompletePayments
               sx={{
                 minHeight: '2.6em',
@@ -179,14 +172,11 @@ const BookControl = ({
               addNewButtonText=''
               isFilter={true}
             />
-          </Collapse>
-        </Grid>
+          </Grid>
+        ) : null}
 
-        <Grid item>
-          <Collapse
-            orientation='horizontal'
-            in={width > smallestToolbarWidth && width < mediumToolbarWidth}
-          >
+        {width > smallestToolbarWidth && width < mediumToolbarWidth ? (
+          <Grid item>
             <Select
               sx={{
                 height: '2.3em',
@@ -246,8 +236,8 @@ const BookControl = ({
                     </MenuItem>
                   ))}
             </Select>
-          </Collapse>
-        </Grid>
+          </Grid>
+        ) : null}
       </Grid>
       <Divider />
     </Box>

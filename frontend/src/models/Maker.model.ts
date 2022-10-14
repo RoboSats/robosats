@@ -17,4 +17,23 @@ export interface Maker {
   badPremiumText: string;
 }
 
+export const defaultMaker: Maker = {
+  isExplicit: false,
+  amount: '',
+  paymentMethods: [],
+  paymentMethodsText: 'not specified',
+  badPaymentMethod: false,
+  premium: '',
+  satoshis: '',
+  publicExpiryTime: new Date(0, 0, 0, 23, 59),
+  publicDuration: 86340,
+  escrowExpiryTime: new Date(0, 0, 0, 3, 0),
+  escrowDuration: 10800,
+  bondSize: 3,
+  minAmount: '',
+  maxAmount: '',
+  badPremiumText: '',
+  badSatoshisText: '',
+};
+
 export default Maker;

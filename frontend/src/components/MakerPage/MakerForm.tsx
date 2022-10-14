@@ -24,7 +24,7 @@ import {
   IconButton,
 } from '@mui/material';
 
-import { LimitList, Maker } from '../../models';
+import { LimitList, Maker, defaultMaker } from '../../models';
 
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import DateFnsUtils from '@date-io/date-fns';
@@ -90,6 +90,7 @@ const MakerForm = ({
 
   const maxRangeAmountMultiple = 7.8;
   const minRangeAmountMultiple = 1.6;
+  const amountSafeThresholds = [1.03, 0.98];
 
   useEffect(() => {
     setCurrencyCode(currencyDict[currency == 0 ? 1 : currency]);
@@ -114,10 +115,9 @@ const MakerForm = ({
     let minAmountLimit: number = limits[index].min_amount * (1 + premium / 100);
     let maxAmountLimit: number = limits[index].max_amount * (1 + premium / 100);
 
-    // times 1.1 to allow a bit of margin with respect to the backend minimum
-    minAmountLimit = minAmountLimit * 1.1;
-    // times 0.98 to allow a bit of margin with respect to the backend minimum
-    maxAmountLimit = maxAmountLimit * 0.98;
+    // apply thresholds to ensure good request
+    minAmountLimit = minAmountLimit * amountSafeThresholds[0];
+    maxAmountLimit = maxAmountLimit * amountSafeThresholds[1];
     setAmountLimits([minAmountLimit, maxAmountLimit]);
   };
 
@@ -254,7 +254,7 @@ const MakerForm = ({
         min_amount: advancedOptions ? maker.minAmount : null,
         max_amount: advancedOptions ? maker.maxAmount : null,
         payment_method:
-          maker.paymentMethodsText === '' ? 'Not specified' : maker.paymentMethodsText,
+          maker.paymentMethodsText === '' ? 'not specified' : maker.paymentMethodsText,
         is_explicit: maker.isExplicit,
         premium: maker.isExplicit ? null : maker.premium == '' ? 0 : maker.premium,
         satoshis: maker.isExplicit ? maker.satoshis : null,
@@ -311,7 +311,7 @@ const MakerForm = ({
 
   const minAmountError = function () {
     return (
-      maker.minAmount < amountLimits[0] ||
+      maker.minAmount < amountLimits[0] * 0.99 ||
       maker.maxAmount < maker.minAmount ||
       maker.minAmount < maker.maxAmount / (maxRangeAmountMultiple + 0.15) ||
       maker.minAmount * (minRangeAmountMultiple - 0.1) > maker.maxAmount
@@ -320,7 +320,7 @@ const MakerForm = ({
 
   const maxAmountError = function () {
     return (
-      maker.maxAmount > amountLimits[1] ||
+      maker.maxAmount > amountLimits[1] * 1.01 ||
       maker.maxAmount < maker.minAmount ||
       maker.minAmount < maker.maxAmount / (maxRangeAmountMultiple + 0.15) ||
       maker.minAmount * (minRangeAmountMultiple - 0.1) > maker.maxAmount
@@ -347,12 +347,14 @@ const MakerForm = ({
     let minAmount = e.target.value[0];
     let maxAmount = e.target.value[1];
 
-    if (minAmount > amountLimits[1] / minRangeAmountMultiple) {
-      minAmount = amountLimits[1] / minRangeAmountMultiple;
-    }
-    if (maxAmount < minRangeAmountMultiple * amountLimits[0]) {
-      maxAmount = minRangeAmountMultiple * amountLimits[0];
-    }
+    minAmount = Math.min(
+      (amountLimits[1] * amountSafeThresholds[1]) / minRangeAmountMultiple,
+      minAmount,
+    );
+    maxAmount = Math.max(
+      minRangeAmountMultiple * amountLimits[0] * amountSafeThresholds[0],
+      maxAmount,
+    );
 
     if (minAmount > maxAmount / minRangeAmountMultiple) {
       if (activeThumb === 0) {
@@ -378,7 +380,9 @@ const MakerForm = ({
   const disableSubmit = function () {
     return (
       type == null ||
-      (maker.amount != '' && (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
+      (maker.amount != '' &&
+        !advancedOptions &&
+        (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
       (maker.amount == null && (!advancedOptions || loadingLimits)) ||
       (advancedOptions && (minAmountError() || maxAmountError())) ||
       (maker.amount <= 0 && !advancedOptions) ||
@@ -389,26 +393,9 @@ const MakerForm = ({
 
   const clearMaker = function () {
     setAppState({ type: null });
-    setMaker({
-      ...maker,
-      isExplicit: false,
-      amount: '',
-      paymentMethods: [],
-      paymentMethodsText: 'Not specified',
-      badPaymentMethod: false,
-      premium: '',
-      satoshis: '',
-      publicExpiryTime: new Date(0, 0, 0, 23, 59),
-      publicDuration: 86340,
-      escrowExpiryTime: new Date(0, 0, 0, 3, 0),
-      escrowDuration: 10800,
-      bondSize: 3,
-      minAmount: '',
-      maxAmount: '',
-      badPremiumText: '',
-      badSatoshisText: '',
-    });
+    setMaker(defaultMaker);
   };
+
   const SummaryText = function () {
     return (
       <Typography

@@ -5,7 +5,7 @@ import { useHistory } from 'react-router-dom';
 import currencyDict from '../../../static/assets/currencies.json';
 import DepthChart from '../Charts/DepthChart';
 
-import { Order, LimitList } from '../../models';
+import { Order, LimitList, Maker } from '../../models';
 
 // Icons
 import { BarChart, FormatListBulleted } from '@mui/icons-material';
@@ -53,11 +53,11 @@ const BookPage = ({
   const maxBookTableWidth = 85;
   const chartWidthEm = width - maxBookTableWidth;
 
-  const [maker, setMaker] = useState<Maker>({
+  const defaultMaker: Maker = {
     isExplicit: false,
     amount: '',
     paymentMethods: [],
-    paymentMethodsText: 'Not specified',
+    paymentMethodsText: 'not specified',
     badPaymentMethod: false,
     premium: '',
     satoshis: '',
@@ -70,7 +70,9 @@ const BookPage = ({
     maxAmount: '',
     badPremiumText: '',
     badSatoshisText: '',
-  });
+  };
+
+  const [maker, setMaker] = useState<Maker>(defaultMaker);
 
   useEffect(() => {
     if (orders.length < 1) {
@@ -161,6 +163,7 @@ const BookPage = ({
               pricingMethods={false}
               setAppState={setAppState}
               maker={maker}
+              defaultMaker={defaultMaker}
               setMaker={setMaker}
               type={type}
               currency={currency}

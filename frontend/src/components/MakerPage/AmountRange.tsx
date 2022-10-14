@@ -165,20 +165,20 @@ function AmountRange({
               }
               marks={[
                 {
-                  value: amountLimits[0] * 1.01,
+                  value: amountLimits[0],
                   label: `${pn(
-                    parseFloat(Number(amountLimits[0] * 1.01).toPrecision(3)),
+                    parseFloat(Number(amountLimits[0]).toPrecision(3)),
                   )} ${currencyCode}`,
                 },
                 {
-                  value: amountLimits[1] * 0.99,
+                  value: amountLimits[1],
                   label: `${pn(
-                    parseFloat(Number(amountLimits[1] * 0.99).toPrecision(3)),
+                    parseFloat(Number(amountLimits[1]).toPrecision(3)),
                   )} ${currencyCode}`,
                 },
               ]}
-              min={amountLimits[0] * 1.01}
-              max={amountLimits[1] * 0.99}
+              min={amountLimits[0]}
+              max={amountLimits[1]}
               onChange={handleRangeAmountChange}
             />
           </Grid>
