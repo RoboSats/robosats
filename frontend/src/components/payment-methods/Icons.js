@@ -425,20 +425,23 @@ export default class PaymentIcon extends Component {
   }
 
   render() {
-    if (this.props.icon === 'custom') {
+    if (this.props.icon === undefined) {
+      return null;
+    } else if (this.props.icon === 'custom') {
       return (
         <DashboardCustomizeIcon
           sx={{ ...this.props, filter: 'drop-shadow(1.5px 1.5px 1.5px rgba(0, 0, 0, 0.2))' }}
           color='primary'
         />
       );
+    } else {
+      return (
+        <img
+          {...this.props}
+          src={icons[this.props.icon].image}
+          style={{ borderRadius: '23%', filter: 'drop-shadow(1.5px 1.5px 2px rgba(0, 0, 0, 0.2))' }}
+        />
+      );
     }
-    return (
-      <img
-        {...this.props}
-        src={icons[this.props.icon].image}
-        style={{ borderRadius: '23%', filter: 'drop-shadow(1.5px 1.5px 2px rgba(0, 0, 0, 0.2))' }}
-      />
-    );
   }
 }

@@ -7,6 +7,8 @@ import BookPage from './BookPage';
 import OrderPage from './OrderPage';
 import BottomBar from './BottomBar';
 
+import { apiClient } from '../services/api';
+
 export default class HomePage extends Component {
   constructor(props) {
     super(props);
@@ -20,7 +22,7 @@ export default class HomePage extends Component {
       type: null,
       currency: 0,
       bookCurrencyCode: 'ANY',
-      bookOrders: new Array(),
+      orders: new Array(),
       bookLoading: true,
       bookRefreshing: false,
       activeOrderId: null,
@@ -29,14 +31,21 @@ export default class HomePage extends Component {
       referralCode: '',
       lastDayPremium: 0,
       limits: {},
+      loadingLimits: true,
+      maker: {},
     };
   }
 
   componentDidMount = () => {
     if (typeof window !== undefined) {
-      this.setState({ windowWidth: window.innerWidth, windowHeight: window.innerHeight });
+      this.setState({
+        windowWidth: window.innerWidth / this.props.theme.typography.fontSize,
+        windowHeight: window.innerHeight / this.props.theme.typography.fontSize,
+      });
       window.addEventListener('resize', this.onResize);
     }
+    this.fetchBook(true, false);
+    this.fetchLimits(true);
   };
 
   componentWillUnmount = () => {
@@ -46,7 +55,10 @@ export default class HomePage extends Component {
   };
 
   onResize = () => {
-    this.setState({ windowWidth: window.innerWidth, windowHeight: window.innerHeight });
+    this.setState({
+      windowWidth: window.innerWidth / this.props.theme.typography.fontSize,
+      windowHeight: window.innerHeight / this.props.theme.typography.fontSize,
+    });
   };
 
   setAppState = (newState) => {
@@ -62,9 +74,28 @@ export default class HomePage extends Component {
       // Only for Android
       return window.location.pathname;
     }
-
     return '';
   }
+
+  fetchBook = (loading, refreshing) => {
+    this.setState({ bookLoading: loading, bookRefreshing: refreshing });
+    apiClient.get('/api/book/').then((data) =>
+      this.setState({
+        bookLoading: false,
+        bookRefreshing: false,
+        orders: data.not_found ? [] : data,
+      }),
+    );
+  };
+
+  fetchLimits = (loading) => {
+    this.setState({ loadingLimits: loading });
+    const limits = apiClient.get('/api/limits/').then((data) => {
+      this.setState({ limits: data, loadingLimits: false });
+      return data;
+    });
+    return limits;
+  };
 
   render() {
     const fontSize = this.props.theme.typography.fontSize;
@@ -105,6 +136,7 @@ export default class HomePage extends Component {
                   {...props}
                   {...this.state}
                   {...this.props}
+                  fetchLimits={this.fetchLimits}
                   setAppState={this.setAppState}
                 />
               )}
@@ -116,6 +148,8 @@ export default class HomePage extends Component {
                   {...props}
                   {...this.state}
                   {...this.props}
+                  fetchBook={this.fetchBook}
+                  fetchLimits={this.fetchLimits}
                   setAppState={this.setAppState}
                 />
               )}
@@ -135,7 +169,10 @@ export default class HomePage extends Component {
         </div>
         <div
           className='bottomBar'
-          style={{ height: `${40 * fontSizeFactor}px`, width: this.state.windowWidth }}
+          style={{
+            height: `${40 * fontSizeFactor}px`,
+            width: `${(this.state.windowWidth / 16) * 14}em`,
+          }}
         >
           <BottomBar
             redirectTo={this.redirectTo}

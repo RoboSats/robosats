@@ -3,57 +3,60 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useAutocomplete } from '@mui/base/AutocompleteUnstyled';
 import { styled } from '@mui/material/styles';
-import { Button, Tooltip } from '@mui/material';
-import { paymentMethods, swapDestinations } from './payment-methods/Methods';
+import { Button, Fade, Tooltip, Typography, Grow } from '@mui/material';
+import { paymentMethods, swapDestinations } from '../payment-methods/Methods';
 
 // Icons
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
-import AddIcon from '@mui/icons-material/Add';
-import PaymentIcon from './payment-methods/Icons';
+import PaymentIcon from '../payment-methods/Icons';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 
 const Root = styled('div')(
   ({ theme }) => `
-  color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,.85)'};
-  font-size: 14px;
+  color: ${theme.palette.text.primary};
+  font-size: ${theme.typography.fontSize};
 `,
 );
 
 const Label = styled('label')(
-  ({ theme, error }) => `
+  ({ theme, error, sx }) => `
   color: ${
     theme.palette.mode === 'dark' ? (error ? '#f44336' : '#cfcfcf') : error ? '#dd0000' : '#717171'
   };
-  align: center;
-  padding: 0 0 4px;
-  line-height: 1.5; f44336
-  display: block;
-  font-size: 13px;
+  pointer-events: none;
+  position: relative;
+  left: 1em;
+  top: ${sx.top};
+  maxHeight: 0em;
+  height: 0em;
+  white-space: no-wrap;
+  font-size: 1em;
 `,
 );
 
 const InputWrapper = styled('div')(
-  ({ theme, error }) => `
-  width: 244px;
-  min-height: 44px;
-  max-height: 124px;
+  ({ theme, error, sx }) => `
+  min-height: ${sx.minHeight};
+  max-height: ${sx.maxHeight};
   border: 1px solid ${
     theme.palette.mode === 'dark' ? (error ? '#f44336' : '#434343') : error ? '#dd0000' : '#c4c4c4'
   };
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
   border-radius: 4px;
+  border-color: ${sx.borderColor ? `border-color ${sx.borderColor}` : ''}
   padding: 1px;
   display: flex;
   flex-wrap: wrap;
   overflow-y:auto;
+  align-items: center;
 
   &:hover {
     border-color: ${
       theme.palette.mode === 'dark'
         ? error
           ? '#f44336'
-          : '#ffffff'
+          : sx.hoverBorderColor
         : error
         ? '#dd0000'
         : '#2f2f2f'
@@ -75,17 +78,17 @@ const InputWrapper = styled('div')(
   & input {
     background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
     color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,.85)'};
-    height: 30px;
+    height: 2.15em;
     box-sizing: border-box;
     padding: 4px 6px;
     width: 0;
-    min-width: 30px;
-    font-size: 15px;
+    min-width: 2.15em;
+    font-size: ${theme.typography.fontSize * 1.0714};
     flex-grow: 1;
     border: 0;
     margin: 0;
     outline: 0;
-    max-height: 124px;
+    max-height: 8.6em;
   }
 `,
 );
@@ -110,12 +113,12 @@ Tag.propTypes = {
 };
 
 const StyledTag = styled(Tag)(
-  ({ theme }) => `
+  ({ theme, sx }) => `
   display: flex;
   align-items: center;
-  height: 34px;
+  height: ${sx.height};
   margin: 2px;
-  line-height: 22px;
+  line-height: 1.5em;
   background-color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'};
   border: 1px solid ${theme.palette.mode === 'dark' ? '#303030' : '#e8e8e8'};
   border-radius: 2px;
@@ -133,11 +136,11 @@ const StyledTag = styled(Tag)(
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    font-size: 15px;
+    font-size: 0.928em;
   }
 
   & svg {
-    font-size: 15px;
+    font-size: 0.857em;
     cursor: pointer;
     padding: 4px;
   }
@@ -152,27 +155,27 @@ const ListHeader = styled('span')(
   max-height: 10px;
   display: inline-block;
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#ffffff'};
-  font-size: 12px;
+  font-size: 0.875em;
   pointer-events: none;
 `,
 );
 
 const Listbox = styled('ul')(
-  ({ theme }) => `
-  width: 244px;
+  ({ theme, sx }) => `
+  width: ${sx ? sx.width : '15.6em'};
   margin: 2px 0 0;
   padding: 0;
   position: absolute;
   list-style: none;
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
   overflow: auto;
-  max-height: 250px;
+  max-height: 17em;
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 999;
 
   & li {
-    padding: 5px 12px;
+    padding: 0em 0em;
     display: flex;
 
     & span {
@@ -219,26 +222,19 @@ export default function AutocompletePayments(props) {
     focused = 'true',
     setAnchorEl,
   } = useAutocomplete({
-    sx: { width: '200px', align: 'left' },
+    fullWidth: true,
     id: 'payment-methods',
     multiple: true,
+    value: props.value,
     options: props.optionsType == 'fiat' ? paymentMethods : swapDestinations,
     getOptionLabel: (option) => option.name,
     onInputChange: (e) => setVal(e ? (e.target.value ? e.target.value : '') : ''),
-    onChange: (event, value) => props.onAutocompleteChange(optionsToString(value)),
+    onChange: (event, value) => props.onAutocompleteChange(value),
     onClose: () => setVal(() => ''),
   });
 
-  const [val, setVal] = useState();
-
-  function optionsToString(newValue) {
-    let str = '';
-    const arrayLength = newValue.length;
-    for (let i = 0; i < arrayLength; i++) {
-      str += newValue[i].name + ' ';
-    }
-    return str.slice(0, -1);
-  }
+  const [val, setVal] = useState('');
+  const fewerOptions = groupedOptions.length > 8 ? groupedOptions.slice(0, 8) : groupedOptions;
 
   function handleAddNew(inputProps) {
     paymentMethods.push({ name: inputProps.value, icon: 'custom' });
@@ -246,53 +242,75 @@ export default function AutocompletePayments(props) {
     setVal(() => '');
 
     if (a || a == null) {
-      props.onAutocompleteChange(optionsToString(value));
+      props.onAutocompleteChange(value);
     }
     return false;
   }
 
   return (
     <Root>
-      <div style={{ height: '5px' }}></div>
       <Tooltip
         placement='top'
-        enterTouchDelay={300}
-        enterDelay={700}
+        enterTouchDelay={props.tooltipTitle == '' ? 99999 : 300}
+        enterDelay={props.tooltipTitle == '' ? 99999 : 700}
         enterNextDelay={2000}
         title={props.tooltipTitle}
       >
         <div {...getRootProps()}>
-          <Label {...getInputLabelProps()} error={props.error ? 'error' : null}>
-            {' '}
-            {props.label}
-          </Label>
+          <Fade
+            appear={false}
+            in={fewerOptions.length == 0 && value.length == 0 && val.length == 0}
+          >
+            <div style={{ height: 0, display: 'flex', alignItems: 'flex-start' }}>
+              <Label
+                {...getInputLabelProps()}
+                sx={{ top: '0.72em', ...(props.labelProps ? props.labelProps.sx : {}) }}
+                error={props.error ? 'error' : null}
+              >
+                {props.label}
+              </Label>
+            </div>
+          </Fade>
           <InputWrapper
             ref={setAnchorEl}
             error={props.error ? 'error' : null}
             className={focused ? 'focused' : ''}
+            sx={{
+              minHeight: '2.9em',
+              maxHeight: '8.6em',
+              hoverBorderColor: '#ffffff',
+              ...props.sx,
+            }}
           >
             {value.map((option, index) => (
-              <StyledTag label={t(option.name)} icon={option.icon} {...getTagProps({ index })} />
+              <StyledTag
+                label={t(option.name)}
+                icon={option.icon}
+                sx={{ height: '2.1em', ...(props.tagProps ? props.tagProps.sx : {}) }}
+                {...getTagProps({ index })}
+              />
             ))}
-            <input {...getInputProps()} value={val || ''} />
+            {value.length > 0 && props.isFilter ? null : <input {...getInputProps()} value={val} />}
           </InputWrapper>
         </div>
       </Tooltip>
-      {groupedOptions.length > 0 ? (
-        <Listbox {...getListboxProps()}>
-          <div
-            style={{
-              position: 'fixed',
-              minHeight: '20px',
-              marginLeft: 120 - props.listHeaderText.length * 3,
-              marginTop: '-13px',
-            }}
-          >
-            <ListHeader>
-              <i>{props.listHeaderText + ' '} </i>{' '}
-            </ListHeader>
-          </div>
-          {groupedOptions.map((option, index) => (
+      <Grow in={fewerOptions.length > 0}>
+        <Listbox sx={props.listBoxProps ? props.listBoxProps.sx : undefined} {...getListboxProps()}>
+          {!props.isFilter ? (
+            <div
+              style={{
+                position: 'fixed',
+                minHeight: '1.428em',
+                marginLeft: `${3 - props.listHeaderText.length * 0.05}em`,
+                marginTop: '-0.928em',
+              }}
+            >
+              <ListHeader>
+                <i>{props.listHeaderText + ' '} </i>{' '}
+              </ListHeader>
+            </div>
+          ) : null}
+          {fewerOptions.map((option, index) => (
             <li key={option.name} {...getOptionProps({ option, index })}>
               <Button
                 fullWidth={true}
@@ -301,34 +319,38 @@ export default function AutocompletePayments(props) {
                 sx={{ textTransform: 'none' }}
                 style={{ justifyContent: 'flex-start' }}
               >
-                <div style={{ position: 'relative', right: '4px', top: '4px' }}>
-                  <AddIcon style={{ color: '#1976d2' }} sx={{ width: 18, height: 18 }} />
+                <div style={{ padding: '0.286em', position: 'relative', top: '0.35em' }}>
+                  <PaymentIcon width={22} height={22} icon={option.icon} />
                 </div>
-                {t(option.name)}
+                <Typography variant='inherit' align='left'>
+                  {t(option.name)}
+                </Typography>
               </Button>
-              <div style={{ position: 'relative', top: '5px' }}>
+              <div style={{ position: 'relative', top: '0.357em' }}>
                 <CheckIcon />
               </div>
             </li>
           ))}
-          {val != null ? (
+          {val != null || !props.isFilter ? (
             val.length > 2 ? (
               <Button size='small' fullWidth={true} onClick={() => handleAddNew(getInputProps())}>
-                <DashboardCustomizeIcon sx={{ width: 18, height: 18 }} />
+                <DashboardCustomizeIcon sx={{ width: '1em', height: '1em' }} />
                 {props.addNewButtonText}
               </Button>
             ) : null
           ) : null}
         </Listbox>
-      ) : // Here goes what happens if there is no groupedOptions
-      getInputProps().value.length > 0 ? (
+      </Grow>
+
+      {/* Here goes what happens if there is no fewerOptions */}
+      <Grow in={getInputProps().value.length > 0 && !props.isFilter && fewerOptions.length === 0}>
         <Listbox {...getListboxProps()}>
           <Button fullWidth={true} onClick={() => handleAddNew(getInputProps())}>
-            <DashboardCustomizeIcon sx={{ width: 20, height: 20 }} />
+            <DashboardCustomizeIcon sx={{ width: '1.28em', height: '1.28em' }} />
             {props.addNewButtonText}
           </Button>
         </Listbox>
-      ) : null}
+      </Grow>
     </Root>
   );
 }

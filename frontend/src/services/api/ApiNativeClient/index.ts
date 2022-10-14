@@ -79,7 +79,7 @@ class ApiNativeClient implements ApiClient {
     if (this.assetsCache[path]) {
       return this.assetsCache[path];
     } else if (path in this.assetsPromises) {
-      return this.assetsPromises[path];
+      return await this.assetsPromises[path];
     }
 
     this.assetsPromises[path] = new Promise<string>(async (resolve, reject) => {
@@ -95,7 +95,7 @@ class ApiNativeClient implements ApiClient {
       resolve(this.assetsCache[path]);
     });
 
-    return this.assetsPromises[path];
+    return await this.assetsPromises[path];
   };
 }
 

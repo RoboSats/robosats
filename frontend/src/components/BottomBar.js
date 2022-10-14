@@ -192,7 +192,7 @@ class BottomBar extends Component {
       secondaryTypographyProps: { fontSize: (fontSize * 12) / 14 },
     };
     return (
-      <Paper elevation={6} style={{ height: 40 * fontSizeFactor, width: window.innerWidth }}>
+      <Paper elevation={6} style={{ height: '2.85em', width: '100%' }}>
         <Grid container>
           <Grid item xs={1.9}>
             <div style={{ display: this.showProfileButton() ? '' : 'none' }}>
@@ -485,7 +485,7 @@ class BottomBar extends Component {
       this.props.avatarLoaded
     );
     return (
-      <Paper elevation={6} style={{ height: 40 }}>
+      <Paper elevation={6} style={{ height: '2.85em', width: '100%' }}>
         <Grid container>
           <Grid item xs={1.6}>
             <div style={{ display: this.showProfileButton() ? '' : 'none' }}>

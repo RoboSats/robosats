@@ -107,23 +107,17 @@ export default class App extends Component {
             <TorConnection />
             <IconButton
               color='inherit'
-              sx={{ position: 'fixed', right: '34px' }}
+              sx={{ position: 'fixed', right: '34px', color: 'text.secondary' }}
               onClick={() => this.setState({ openLearn: true })}
             >
               <SchoolIcon />
             </IconButton>
             <IconButton
               color='inherit'
-              sx={{ position: 'fixed', right: '0px' }}
+              sx={{ position: 'fixed', right: '0px', color: 'text.secondary' }}
               onClick={() => this.handleThemeChange()}
             >
               {this.state.theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
-            </IconButton>
-            <IconButton
-              sx={{ position: 'fixed', right: '34px' }}
-              onClick={() => this.setState({ openLearn: true })}
-            >
-              <SchoolIcon />
             </IconButton>
             <UnsafeAlert className='unsafeAlert' />
             <HomePage {...this.state} />

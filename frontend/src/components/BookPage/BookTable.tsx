@@ -7,7 +7,6 @@ import {
   Dialog,
   Typography,
   Paper,
-  Stack,
   ListItemButton,
   ListItemText,
   ListItemAvatar,
@@ -15,38 +14,46 @@ import {
   CircularProgress,
   LinearProgress,
   IconButton,
+  Tooltip,
 } from '@mui/material';
 import { DataGrid, GridPagination } from '@mui/x-data-grid';
-import currencyDict from '../../static/assets/currencies.json';
-import { Order } from '../models/Order.model';
+import currencyDict from '../../../static/assets/currencies.json';
+import { Order } from '../../models';
+import filterOrders from '../../utils/filterOrders';
+import BookControl from './BookControl';
 
-import FlagWithProps from './FlagWithProps';
-import { pn, amountToString } from '../utils/prettyNumbers';
-import PaymentText from './PaymentText';
-import RobotAvatar from './Robots/RobotAvatar';
-import hexToRgb from '../utils/hexToRgb';
-import statusBadgeColor from '../utils/statusBadgeColor';
+import FlagWithProps from '../FlagWithProps';
+import { pn, amountToString } from '../../utils/prettyNumbers';
+import PaymentText from '../PaymentText';
+import RobotAvatar from '../Robots/RobotAvatar';
+import hexToRgb from '../../utils/hexToRgb';
+import statusBadgeColor from '../../utils/statusBadgeColor';
 
 // Icons
-import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
+import { Fullscreen, FullscreenExit, Refresh, WidthFull } from '@mui/icons-material';
 
 interface Props {
-  loading: boolean;
-  refreshing: boolean;
-  clickRefresh: () => void;
+  loading?: boolean;
+  refreshing?: boolean;
+  clickRefresh?: () => void;
   orders: Order[];
   type: number;
   currency: number;
   maxWidth: number;
   maxHeight: number;
-  fullWidth: number;
-  fullHeight: number;
+  fullWidth?: number;
+  fullHeight?: number;
   defaultFullscreen: boolean;
+  showControls?: boolean;
+  showFooter?: boolean;
+  onCurrencyChange?: () => void;
+  onTypeChange?: () => void;
+  noResultsOverlay?: JSX.Element;
 }
 
 const BookTable = ({
-  loading,
-  refreshing,
+  loading = false,
+  refreshing = false,
   clickRefresh,
   orders,
   type,
@@ -55,21 +62,27 @@ const BookTable = ({
   maxHeight,
   fullWidth,
   fullHeight,
-  defaultFullscreen,
+  defaultFullscreen = false,
+  showControls = true,
+  showFooter = true,
+  onCurrencyChange,
+  onTypeChange,
+  noResultsOverlay,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const history = useHistory();
   const [pageSize, setPageSize] = useState(0);
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
+  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
 
   // all sizes in 'em'
   const fontSize = theme.typography.fontSize;
-  const verticalHeightFrame = 6.9075;
+  const verticalHeightFrame = 3.625 + (showControls ? 3.7 : 0) + (showFooter ? 2.35 : 0);
   const verticalHeightRow = 3.25;
   const defaultPageSize = Math.max(
     Math.floor(
-      ((fullscreen ? fullHeight * 0.875 : maxHeight) - verticalHeightFrame) / verticalHeightRow,
+      ((fullscreen ? fullHeight * 0.9 : maxHeight) - verticalHeightFrame) / verticalHeightRow,
     ),
     1,
   );
@@ -98,7 +111,6 @@ const BookTable = ({
 
   const localeText = {
     MuiTablePagination: { labelRowsPerPage: t('Orders per page:') },
-    noRowsLabel: t('No rows'),
     noResultsOverlayLabel: t('No results found.'),
     errorOverlayDefaultLabel: t('An error occurred.'),
     toolbarColumns: t('Columns'),
@@ -152,7 +164,7 @@ const BookTable = ({
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <ListItemButton style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}>
             <ListItemAvatar>
@@ -179,7 +191,7 @@ const BookTable = ({
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <div style={{ position: 'relative', left: '-1.64em' }}>
             <ListItemButton style={{ cursor: 'pointer' }}>
@@ -205,7 +217,7 @@ const BookTable = ({
       field: 'type',
       headerName: t('Is'),
       width: width * fontSize,
-      renderCell: (params) => (params.row.type ? t('Seller') : t('Buyer')),
+      renderCell: (params: any) => (params.row.type ? t('Seller') : t('Buyer')),
     };
   };
 
@@ -216,7 +228,7 @@ const BookTable = ({
       headerName: t('Amount'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <div style={{ cursor: 'pointer' }}>
             {amountToString(
@@ -237,7 +249,7 @@ const BookTable = ({
       field: 'currency',
       headerName: t('Currency'),
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         const currencyCode = currencyDict[params.row.currency.toString()];
         return (
           <div
@@ -262,7 +274,7 @@ const BookTable = ({
       field: 'payment_method',
       headerName: t('Payment Method'),
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <div style={{ cursor: 'pointer' }}>
             <PaymentText
@@ -283,14 +295,13 @@ const BookTable = ({
       field: 'payment_icons',
       headerName: t('Pay'),
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <div
             style={{
               position: 'relative',
               left: '-4px',
               cursor: 'pointer',
-              align: 'center',
             }}
           >
             <PaymentText
@@ -311,7 +322,7 @@ const BookTable = ({
       headerName: t('Price'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         const currencyCode = currencyDict[params.row.currency.toString()];
         return (
           <div style={{ cursor: 'pointer' }}>{`${pn(params.row.price)} ${currencyCode}/BTC`}</div>
@@ -332,7 +343,8 @@ const BookTable = ({
       headerName: t('Premium'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
+        const currencyCode = currencyDict[params.row.currency.toString()];
         let fontColor = `rgb(0,0,0)`;
         if (params.row.type === 0) {
           var premiumPoint = params.row.premium / buyOutstandingPremium;
@@ -353,11 +365,17 @@ const BookTable = ({
         }
         const fontWeight = 400 + Math.round(premiumPoint * 5) * 100;
         return (
-          <div style={{ cursor: 'pointer' }}>
-            <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
-              {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
-            </Typography>
-          </div>
+          <Tooltip
+            placement='left'
+            enterTouchDelay={0}
+            title={pn(params.row.price) + ' ' + currencyCode + '/BTC'}
+          >
+            <div style={{ cursor: 'pointer' }}>
+              <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
+                {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
+              </Typography>
+            </div>
+          </Tooltip>
         );
       },
     };
@@ -370,7 +388,7 @@ const BookTable = ({
       headerName: t('Timer'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         const hours = Math.round(params.row.escrow_duration / 3600);
         const minutes = Math.round((params.row.escrow_duration - hours * 3600) / 60);
         return <div style={{ cursor: 'pointer' }}>{hours > 0 ? `${hours}h` : `${minutes}m`}</div>;
@@ -385,9 +403,9 @@ const BookTable = ({
       headerName: t('Expiry'),
       type: 'string',
       width: width * fontSize,
-      renderCell: (params) => {
-        const expiresAt = new Date(params.row.expires_at);
-        const timeToExpiry = Math.abs(expiresAt - new Date());
+      renderCell: (params: any) => {
+        const expiresAt: Date = new Date(params.row.expires_at);
+        const timeToExpiry: number = Math.abs(expiresAt - new Date());
         const percent = Math.round((timeToExpiry / (24 * 60 * 60 * 1000)) * 100);
         const hours = Math.round(timeToExpiry / (3600 * 1000));
         const minutes = Math.round((timeToExpiry - hours * (3600 * 1000)) / 60000);
@@ -429,7 +447,7 @@ const BookTable = ({
       headerName: t('Sats now'),
       type: 'number',
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <div style={{ cursor: 'pointer' }}>
             {params.row.satoshis_now > 1000000
@@ -447,7 +465,7 @@ const BookTable = ({
       field: 'id',
       headerName: 'Order ID',
       width: width * fontSize,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         return (
           <div style={{ cursor: 'pointer' }}>
             <Typography variant='caption' color='text.secondary'>
@@ -610,14 +628,8 @@ const BookTable = ({
 
   const [columns, width] = filteredColumns(fullscreen ? fullWidth : maxWidth);
 
-  const gridComponents = {
-    LoadingOverlay: LinearProgress,
-    NoResultsOverlay: () => (
-      <Stack height='100%' alignItems='center' justifyContent='center'>
-        {t('Filter has no results')}
-      </Stack>
-    ),
-    Footer: () => (
+  const Footer = function () {
+    return (
       <Grid container alignItems='center' direction='row' justifyContent='space-between'>
         <Grid item>
           <Grid container alignItems='center' direction='row'>
@@ -638,7 +650,47 @@ const BookTable = ({
           <GridPagination />
         </Grid>
       </Grid>
-    ),
+    );
+  };
+
+  interface GridComponentProps {
+    LoadingOverlay: JSX.Element;
+    NoResultsOverlay?: JSX.Element;
+    NoRowsOverlay?: JSX.Element;
+    Footer?: JSX.Element;
+    Toolbar?: JSX.Element;
+  }
+
+  const Controls = function () {
+    return (
+      <BookControl
+        width={width}
+        type={type}
+        currency={currency}
+        onCurrencyChange={onCurrencyChange}
+        onTypeChange={onTypeChange}
+        paymentMethod={paymentMethods}
+        setPaymentMethods={setPaymentMethods}
+      />
+    );
+  };
+
+  const gridComponents = function () {
+    const components: GridComponentProps = {
+      LoadingOverlay: LinearProgress,
+    };
+
+    if (noResultsOverlay != null) {
+      components.NoResultsOverlay = noResultsOverlay;
+      components.NoRowsOverlay = noResultsOverlay;
+    }
+    if (showFooter) {
+      components.Footer = Footer;
+    }
+    if (showControls) {
+      components.Toolbar = Controls;
+    }
+    return components;
   };
 
   if (!fullscreen) {
@@ -646,20 +698,26 @@ const BookTable = ({
       <Paper style={{ width: `${width}em`, height: `${height}em`, overflow: 'auto' }}>
         <DataGrid
           localeText={localeText}
-          rows={orders.filter(
-            (order) =>
-              (order.type == type || type == null) && (order.currency == currency || currency == 0),
-          )}
+          rows={
+            showControls
+              ? filterOrders({
+                  orders,
+                  baseFilter: { currency, type },
+                  paymentMethods,
+                })
+              : orders
+          }
           loading={loading || refreshing}
           columns={columns}
-          components={gridComponents}
+          hideFooter={!showFooter}
+          components={gridComponents()}
           pageSize={loading ? 0 : pageSize}
-          rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
+          rowsPerPageOptions={width < 22 ? [] : [0, pageSize, defaultPageSize * 2, 50, 100]}
           onPageSizeChange={(newPageSize) => {
             setPageSize(newPageSize);
             setUseDefaultPageSize(false);
           }}
-          onRowClick={(params) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
+          onRowClick={(params: any) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
         />
       </Paper>
     );
@@ -676,14 +734,15 @@ const BookTable = ({
             )}
             loading={loading || refreshing}
             columns={columns}
-            components={gridComponents}
+            hideFooter={!showFooter}
+            components={gridComponents()}
             pageSize={loading ? 0 : pageSize}
             rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
             onPageSizeChange={(newPageSize) => {
               setPageSize(newPageSize);
               setUseDefaultPageSize(false);
             }}
-            onRowClick={(params) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
+            onRowClick={(params: any) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
           />
         </Paper>
       </Dialog>

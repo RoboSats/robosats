@@ -91,7 +91,7 @@ const FlagWithProps = ({ code }: Props): JSX.Element => {
   if (code === 'XAU') flag = <GoldIcon {...defaultProps} />;
   if (code === 'BTC') flag = <SwapCallsIcon color='primary' />;
 
-  return <div style={{ width: 28, height: 20 }}>{flag}</div>;
+  return <div style={{ width: 28, height: 20, maxHeight: 20 }}>{flag}</div>;
 };
 
 export default FlagWithProps;
