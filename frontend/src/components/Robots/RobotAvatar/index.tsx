@@ -124,7 +124,7 @@ const RobotAvatar: React.FC<Props> = ({
   };
 
   return tooltip ? (
-    <Tooltip placement='right' enterTouchDelay={0} title={tooltip}>
+    <Tooltip placement='top' enterTouchDelay={0} title={tooltip}>
       {getAvatarWithBadges()}
     </Tooltip>
   ) : (
