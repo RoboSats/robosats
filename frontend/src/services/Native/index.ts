@@ -1,5 +1,6 @@
 import { systemClient } from '../System';
-import { NativeRobosatsPromise, NativeWebViewMessage, NativeWebViewMessageSystem } from './index.d';
+import WebsocketConnectionNative from '../Websocket/WebsocketConnectionNative';
+import { NativeRobosatsPromise, NativeWebViewMessage } from './index.d';
 
 class NativeRobosats {
   public torDaemonStatus = 'NOTINIT';
@@ -9,9 +10,14 @@ class NativeRobosats {
   private pendingMessages: { [id: number]: NativeRobosatsPromise } = {};
 
   public cookies: { [key: string]: string } = {};
+  public sockets: { [path: string]: WebsocketConnectionNative } = {};
 
   public loadCookie = (cookie: { key: string; value: string }) => {
     this.cookies[cookie.key] = cookie.value;
+  };
+
+  public loadSocket = (path: string, connection: WebsocketConnectionNative) => {
+    this.sockets[path] = connection;
   };
 
   public onMessageResolve: (messageId: number, response?: object) => void = (
@@ -34,13 +40,22 @@ class NativeRobosats {
     }
   };
 
-  public onMessage: (message: NativeWebViewMessageSystem) => void = (message) => {
-    if (message.type === 'torStatus') {
-      this.torDaemonStatus = message.detail || 'ERROR';
-      window.dispatchEvent(new CustomEvent('torStatus', { detail: this.torDaemonStatus }));
-    } else if (message.type === 'setCookie') {
-      if (message.key !== undefined) {
-        this.cookies[message.key] = message.detail;
+  public onMessage: (message: NativeWebViewMessage) => void = (message) => {
+    if (message.category === 'system') {
+      if (message.type === 'torStatus') {
+        this.torDaemonStatus = message.detail || 'ERROR';
+        window.dispatchEvent(new CustomEvent('torStatus', { detail: this.torDaemonStatus }));
+      } else if (message.type === 'setCookie') {
+        if (message.key !== undefined) {
+          this.cookies[message.key] = message.detail;
+        }
+      }
+    } else if (message.category === 'socket') {
+      const connection = this.sockets[message.path]
+      if (message.type === 'receive') {
+        connection.receiveMessage(message.body || {})
+      } else if (message.type === 'error') {
+        connection.receiveError()
       }
     }
   };

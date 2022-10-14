@@ -20,6 +20,15 @@ export interface NativeWebViewMessageHttp {
   body?: object;
 }
 
+export interface NativeWebViewMessageSocket {
+  id?: number;
+  category: 'socket';
+  type: 'open' | 'send' | 'receive' | 'error';
+  path: string;
+  headers?: object,
+  body?: object;
+}
+
 export interface NativeWebViewMessageSystem {
   id?: number;
   category: 'system';
@@ -28,7 +37,7 @@ export interface NativeWebViewMessageSystem {
   detail?: string;
 }
 
-export declare type NativeWebViewMessage = NativeWebViewMessageHttp | NativeWebViewMessageSystem;
+export declare type NativeWebViewMessage = NativeWebViewMessageHttp | NativeWebViewMessageSystem | NativeWebViewMessageSocket;
 
 export interface NativeRobosatsPromise {
   resolve: (value: object | PromiseLike<object>) => void;

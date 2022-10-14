@@ -1,16 +1,23 @@
 import Tor from 'react-native-tor';
 
+interface TcpStream {
+  close(): Promise<boolean>;
+  write(msg: string): Promise<boolean>;
+}
+
 class TorClient {
   baseUrl: string;
   daemon: ReturnType<typeof Tor>;
 
   constructor() {
-    this.baseUrl = 'http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion';
+    this.baseUrl = 'robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion';
     this.daemon = Tor({
       stopDaemonOnBackground: false,
       numberConcurrentRequests: 0,
     });
   }
+
+  private sockets: {[path: string]: TcpStream } = {}
 
   private readonly connectDaemon: () => void = async () => {
     try {
@@ -26,10 +33,45 @@ class TorClient {
     await this.daemon.startIfNotStarted();
   };
 
+  public openSocket: (path: string, headers: object, onMessage: (message: string) => void, onError: () => void) => Promise<void> = async (path, headers, onMessage, onError) => {
+    return new Promise<void>(async (resolve, reject) =>{
+      try {
+        console.log('HANDSHAKE REQUEST ======>', `ws://${this.baseUrl}/ws/chat/584`, headers)
+        const response = await this.daemon
+          .request(`ws://${this.baseUrl}/ws/chat/584`, 'GET', '', headers, true)
+          .then((resp) => {
+            console.log('HANDSHAKE RESPONSE =======>', resp)
+          });
+        resolve(response);
+        // this.daemon.createTcpConnection({ target: `${this.baseUrl}${path}:80` }, (data, error) => {
+        //   if(error){
+        //     console.error('error sending msg', error);
+        //     onError();
+        //   }
+        //   console.log('recieved tcp msg', data);
+        //   onMessage(JSON.parse(data || '{}'));
+        // })
+        // .then((connection) => {
+        //   this.sockets[path] = connection 
+        //   resolve()
+        // })
+        // .catch(() => reject())
+      } catch (error) {
+        console.log('CATCH ERROR ===========', error)
+        reject()
+      }
+      
+    })
+  }
+
+  public sendSocket: (path: string, message: object) => void = async (path, message) => {
+    this.sockets[path].write(JSON.stringify(message))
+  }
+
   public get: (path: string, headers: object) => Promise<object> = async (path, headers) => {
     return await new Promise<object>(async (resolve, reject) => {
       try {
-        const response = await this.daemon.get(`${this.baseUrl}${path}`, headers);
+        const response = await this.daemon.get(`http://${this.baseUrl}${path}`, headers);
 
         resolve(response);
       } catch (error) {
@@ -41,7 +83,7 @@ class TorClient {
   public delete: (path: string, headers: object) => Promise<object> = async (path, headers) => {
     return await new Promise<object>(async (resolve, reject) => {
       try {
-        const response = await this.daemon.delete(`${this.baseUrl}${path}`, '', headers);
+        const response = await this.daemon.delete(`http://${this.baseUrl}${path}`, '', headers);
 
         resolve(response);
       } catch (error) {
@@ -54,7 +96,7 @@ class TorClient {
     return await new Promise<object>(async (resolve, reject) => {
       try {
         const response = await this.daemon
-          .request(`${this.baseUrl}${path}`, 'GET', '', {}, true)
+          .request(`http://${this.baseUrl}${path}`, 'GET', '', {}, true)
           .then((resp) => {
             resolve(resp);
           });
@@ -74,7 +116,7 @@ class TorClient {
     return await new Promise<object>(async (resolve, reject) => {
       try {
         const json = JSON.stringify(body);
-        const response = await this.daemon.post(`${this.baseUrl}${path}`, json, headers);
+        const response = await this.daemon.post(`http://${this.baseUrl}${path}`, json, headers);
 
         resolve(response);
       } catch (error) {

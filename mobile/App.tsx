@@ -97,6 +97,33 @@ const App = () => {
       } else if (data.type === 'deleteCookie') {
         EncryptedStorage.removeItem(data.key);
       }
+    } else if (data.category === 'socket') {
+      if (data.type === 'open') {
+        const onSocketMessage = (message: string) => {
+          injectMessage({
+            category: 'socket',
+            type: 'receive',
+            path: data.path,
+            body: message
+          });
+        }
+        const onSocketError = () => {
+          injectMessage({
+            category: 'socket',
+            type: 'error',
+            path: data.path
+          });
+        }
+
+        torClient
+          .openSocket(data.path, data.headers, onSocketMessage, onSocketError)
+          .then(() => {
+            injectMessageResolve(data.id, {connected: true});
+          })
+          .catch(() => onSocketError())
+      } if (data.type === 'send') {
+        torClient.sendSocket(data.path, data.body);
+      }
     }
   };
 
