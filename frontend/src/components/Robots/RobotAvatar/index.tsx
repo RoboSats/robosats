@@ -15,6 +15,7 @@ interface Props {
   statusColor?: 'primary' | 'secondary' | 'default' | 'error' | 'info' | 'success' | 'warning';
   orderType?: number;
   tooltip?: string;
+  tooltipPosition?: string;
   avatarClass?: string;
   onLoad?: () => void;
 }
@@ -24,6 +25,7 @@ const RobotAvatar: React.FC<Props> = ({
   orderType,
   statusColor,
   tooltip,
+  tooltipPosition = 'right',
   smooth = false,
   flipHorizontally = false,
   style = {},
@@ -124,7 +126,7 @@ const RobotAvatar: React.FC<Props> = ({
   };
 
   return tooltip ? (
-    <Tooltip placement='top' enterTouchDelay={0} title={tooltip}>
+    <Tooltip placement={tooltipPosition} enterTouchDelay={0} title={tooltip}>
       {getAvatarWithBadges()}
     </Tooltip>
   ) : (

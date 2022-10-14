@@ -245,6 +245,7 @@ class UserGenPage extends Component {
                     width: `${201 * fontSizeFactor}px`,
                   }}
                   tooltip={t('This is your trading avatar')}
+                  tooltipPosition='up'
                 />
                 <br />
               </Grid>
