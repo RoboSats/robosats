@@ -21,10 +21,10 @@ class TorClient {
   };
 
   public reset: () => void = async () => {
-    console.log("Reset TOR");
+    console.log('Reset TOR');
     await this.daemon.stopIfRunning();
     await this.daemon.startIfNotStarted();
-  }
+  };
 
   public get: (path: string, headers: object) => Promise<object> = async (path, headers) => {
     return await new Promise<object>(async (resolve, reject) => {
