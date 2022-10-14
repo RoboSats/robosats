@@ -424,11 +424,17 @@ class BottomBar extends Component {
           </div>
           PT
         </MenuItem>
-        <MenuItem disabled={true} value={'zh'}>
+        <MenuItem value={'zh-si'}>
           <div style={{ width: 24, position: 'relative', top: 3 }}>
             <Flags.CN {...flagProps} />
           </div>
-          ZH
+          简体
+        </MenuItem>
+        <MenuItem value={'zh-tr'}>
+          <div style={{ width: 24, position: 'relative', top: 3 }}>
+            <Flags.CN {...flagProps} />
+          </div>
+          繁體
         </MenuItem>
         <MenuItem value={'sv'}>
           <div style={{ width: 24, position: 'relative', top: 3 }}>

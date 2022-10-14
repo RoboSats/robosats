@@ -16,6 +16,8 @@ import translationTH from '../../static/locales/th.json';
 import translationCS from '../../static/locales/cs.json';
 import translationEU from '../../static/locales/eu.json';
 import translationSV from '../../static/locales/sv.json';
+import translationZHsi from '../../static/locales/zh-SI.json';
+import translationZHtr from '../../static/locales/zh-TR.json';
 
 const config = {
   resources: {
@@ -33,6 +35,8 @@ const config = {
     th: { translations: translationTH },
     pl: { translations: translationPL },
     sv: { translations: translationSV },
+    'zh-SI': { translations: translationZHsi },
+    'zh-TR': { translations: translationZHtr },
   },
   fallbackLng: 'en',
   debug: false,
