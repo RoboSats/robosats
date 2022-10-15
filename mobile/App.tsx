@@ -37,9 +37,9 @@ const App = () => {
       });
     };
 
-    loadCookie('sessionid');
+    EncryptedStorage.removeItem('sessionid');
+    EncryptedStorage.removeItem('csrftoken');
     loadCookie('robot_token');
-    loadCookie('csrftoken');
     loadCookie('pub_key');
     loadCookie('enc_priv_key').then(() => injectMessageResolve(reponseId));
   };
@@ -113,7 +113,14 @@ const App = () => {
       if (state.isInternetReachable) {
         try {
           daemonStatus = await torClient.daemon.getDaemonStatus();
-        } catch {}
+          if (daemonStatus === 'NOTINIT') {
+            await torClient.reset();
+            return sendTorStatus();
+          }
+        } catch {
+          await torClient.reset();
+          return sendTorStatus();
+        }
       }
 
       injectMessage({
