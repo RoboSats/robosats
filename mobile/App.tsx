@@ -7,18 +7,18 @@ import NetInfo from '@react-native-community/netinfo';
 import EncryptedStorage from 'react-native-encrypted-storage';
 
 const backgroundColors = {
-	light: 'white',
-	dark: 'black',
-}
+  light: 'white',
+  dark: 'black',
+};
 
 const App = () => {
-  const colorScheme = Appearance.getColorScheme()
+  const colorScheme = Appearance.getColorScheme();
   const torClient = new TorClient();
   const webViewRef = useRef<WebView>();
   const uri = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html';
 
   const injectMessageResolve = (id: string, data?: object) => {
-    const json = JSON.stringify(data || {});
+    const json = JSON.stringify((data != null) || {});
     webViewRef.current?.injectJavaScript(
       `(function() {window.NativeRobosats.onMessageResolve(${id}, ${json});})();`,
     );
@@ -32,8 +32,8 @@ const App = () => {
   };
 
   const init = (reponseId: string) => {
-    const loadCookie = (key: string) => {
-      return EncryptedStorage.getItem(key).then((value) => {
+    const loadCookie = async (key: string) => {
+      return await EncryptedStorage.getItem(key).then((value) => {
         if (value) {
           const json = JSON.stringify({ key, value });
           webViewRef.current?.injectJavaScript(
