@@ -150,7 +150,6 @@ const App = () => {
         allowsBackForwardNavigationGestures={false}
         mediaPlaybackRequiresUserAction={false}
         allowsLinkPreview={false}
-        renderLoading={() => <Text>Loading RoboSats</Text>}
         onError={(syntheticEvent) => <Text>{syntheticEvent.type}</Text>}
       />
     </SafeAreaView>
