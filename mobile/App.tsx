@@ -1,12 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import { SafeAreaView, Text, Platform } from 'react-native';
+import { SafeAreaView, Text, Platform, Appearance } from 'react-native';
 import TorClient from './services/Tor';
 import Clipboard from '@react-native-clipboard/clipboard';
 import NetInfo from '@react-native-community/netinfo';
 import EncryptedStorage from 'react-native-encrypted-storage';
 
+const backgroundColors = {
+	light: 'white',
+	dark: 'black',
+}
+
 const App = () => {
+  const colorScheme = Appearance.getColorScheme()
   const torClient = new TorClient();
   const webViewRef = useRef<WebView>();
   const uri = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html';
@@ -125,7 +131,7 @@ const App = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: backgroundColors[colorScheme] }}>
       <WebView
         source={{
           uri,
@@ -147,9 +153,10 @@ const App = () => {
         setBuiltInZoomControls={false}
         allowingReadAccessToURL={uri}
         allowFileAccess={true}
-        allowsBackForwardNavigationGestures={false}
+        allowsBackForwardNavigationGestures={true}
         mediaPlaybackRequiresUserAction={false}
         allowsLinkPreview={false}
+        renderLoading={() => <Text></Text>}
         onError={(syntheticEvent) => <Text>{syntheticEvent.type}</Text>}
       />
     </SafeAreaView>
