@@ -12,7 +12,7 @@ class TorClient {
     });
   }
 
-  private connectDaemon: () => void = async () => {
+  private readonly connectDaemon: () => void = async () => {
     try {
       this.daemon.startIfNotStarted();
     } catch {
