@@ -12,3 +12,9 @@ class ChatSerializer(serializers.ModelSerializer):
             "created_at",
         )
         depth = 0
+
+class PostMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = ("PGP_message","order")
+        depth = 0

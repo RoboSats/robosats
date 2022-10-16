@@ -21,5 +21,5 @@ urlpatterns = [
     path("historical/", HistoricalView.as_view()),
     path("ticks/", TickView.as_view()),
     path("stealth/", StealthView.as_view()),
-    path("chat/", ChatView.as_view({"get": "get"})),
+    path("chat/", ChatView.as_view({"get": "get","post":"post"})),
 ]
