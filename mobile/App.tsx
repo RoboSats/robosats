@@ -18,7 +18,7 @@ const App = () => {
   const uri = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html';
 
   const injectMessageResolve = (id: string, data?: object) => {
-    const json = JSON.stringify(data != null || {});
+    const json = JSON.stringify(data || {});
     webViewRef.current?.injectJavaScript(
       `(function() {window.NativeRobosats.onMessageResolve(${id}, ${json});})();`,
     );
@@ -119,7 +119,7 @@ const App = () => {
       if (state.isInternetReachable) {
         try {
           daemonStatus = await torClient.daemon.getDaemonStatus();
-        } catch { }
+        } catch {}
       }
 
       injectMessage({
