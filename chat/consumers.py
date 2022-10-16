@@ -2,6 +2,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from api.models import Order
 from chat.models import ChatRoom, Message
+from asgiref.sync import async_to_sync
 
 import json
 

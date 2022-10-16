@@ -448,6 +448,8 @@ class OrderPublicSerializer(serializers.ModelSerializer):
             "maker_status",
             "price",
             "escrow_duration",
+            "satoshis_now",
+            "bond_size"
         )
 
 
