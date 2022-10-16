@@ -8,14 +8,12 @@ from rest_framework.exceptions import bad_request
 from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
-import textwrap
 
 from django.contrib.auth import authenticate, login, logout
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from api.oas_schemas import BookViewSchema, HistoricalViewSchema, InfoViewSchema, LimitViewSchema, MakerViewSchema, OrderViewSchema, PriceViewSchema, RewardViewSchema, StealthViewSchema, TickViewSchema, UserViewSchema
 
+from chat.views import ChatView
 from api.serializers import InfoSerializer, ListOrderSerializer, MakeOrderSerializer, OrderPublicSerializer, UpdateOrderSerializer, ClaimRewardSerializer, PriceSerializer, UserGenSerializer, TickSerializer, StealthSerializer
 from api.models import LNPayment, MarketTick, OnchainPayment, Order, Currency, Profile
 from control.models import AccountingDay, BalanceLog
@@ -28,7 +26,6 @@ from .nick_generator.nick_generator import NickGenerator
 from robohash import Robohash
 from scipy.stats import entropy
 from math import log2
-import numpy as np
 import hashlib
 from pathlib import Path
 from datetime import timedelta, datetime
@@ -370,6 +367,10 @@ class OrderView(viewsets.ViewSet):
                     data["asked_for_cancel"] = True
                 else:
                     data["asked_for_cancel"] = False
+            
+            offset = request.GET.get('offset', None)
+            if offset:
+                data["chat"] = ChatView.get(None, request).data
 
         # 9) If status is 'DIS' and all HTLCS are in LOCKED
         elif order.status == Order.Status.DIS:
