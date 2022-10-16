@@ -119,14 +119,7 @@ const App = () => {
       if (state.isInternetReachable) {
         try {
           daemonStatus = await torClient.daemon.getDaemonStatus();
-          if (daemonStatus === 'NOTINIT') {
-            await torClient.reset();
-            return sendTorStatus();
-          }
-        } catch {
-          await torClient.reset();
-          return sendTorStatus();
-        }
+        } catch { }
       }
 
       injectMessage({
