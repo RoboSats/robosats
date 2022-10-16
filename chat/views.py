@@ -7,6 +7,9 @@ from rest_framework.response import Response
 from datetime import timedelta
 from django.utils import timezone
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
 class ChatView(viewsets.ViewSet):
     serializer_class = PostMessageSerializer
     lookup_url_kwarg = ["order_id","offset"]
@@ -40,7 +43,7 @@ class ChatView(viewsets.ViewSet):
                 },
                 status.HTTP_400_BAD_REQUEST,
             )
-            
+
         if not order.status in [Order.Status.CHA, Order.Status.FSE]:
             return Response(
                 {
@@ -65,7 +68,7 @@ class ChatView(viewsets.ViewSet):
             chatroom.save()
             peer_connected = chatroom.maker_connected
             
-
+        
         messages = []
         for message in queryset:
             d = ChatSerializer(message).data
@@ -146,7 +149,7 @@ class ChatView(viewsets.ViewSet):
                 )
 
         last_index = Message.objects.filter(order=order, chatroom=chatroom).count()
-        Message.objects.create(
+        new_message = Message.objects.create(
             index=last_index+1,
             PGP_message=serializer.data.get("PGP_message"),
             order=order,
@@ -155,5 +158,45 @@ class ChatView(viewsets.ViewSet):
             receiver=receiver,
             )
 
-        return Response(status.HTTP_200_OK)
+        # Send websocket message
+        if chatroom.maker == request.user:
+            peer_connected = chatroom.taker_connected
+        elif chatroom.taker == request.user:
+            peer_connected = chatroom.maker_connected
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"chat_order_{order_id}",
+            {
+                    "type": "PGP_message",
+                    "index": new_message.index,
+                    "message": new_message.PGP_message,
+                    "time": str(new_message.created_at),
+                    "nick": new_message.sender.username,
+                    "peer_connected": peer_connected,
+            }
+        )
+
+        # if offset is given, reply with messages
+        offset = serializer.data.get("offset", None)
+        if offset:
+            queryset = Message.objects.filter(order=order, index__gt=offset)
+            messages = []
+            for message in queryset:
+                d = ChatSerializer(message).data
+                print(d)
+                # Re-serialize so the response is identical to the consumer message
+                data = {
+                    'index':d['index'], 
+                    'time':d['created_at'], 
+                    'message':d['PGP_message'], 
+                    'nick': User.objects.get(id=d['sender']).username
+                    } 
+                messages.append(data)
+
+            response = {'peer_connected': peer_connected, 'messages':messages}
+        else:
+            response = {}
+
+        return Response(response, status.HTTP_200_OK)
         
