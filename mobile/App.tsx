@@ -12,13 +12,13 @@ const backgroundColors = {
 };
 
 const App = () => {
-  const colorScheme = Appearance.getColorScheme();
+  const colorScheme = Appearance.getColorScheme() ?? 'light';
   const torClient = new TorClient();
   const webViewRef = useRef<WebView>();
   const uri = (Platform.OS === 'android' ? 'file:///android_asset/' : '') + 'Web.bundle/index.html';
 
   const injectMessageResolve = (id: string, data?: object) => {
-    const json = JSON.stringify((data != null) || {});
+    const json = JSON.stringify(data != null || {});
     webViewRef.current?.injectJavaScript(
       `(function() {window.NativeRobosats.onMessageResolve(${id}, ${json});})();`,
     );
@@ -145,6 +145,7 @@ const App = () => {
         }}
         onMessage={onMessage}
         // @ts-expect-error
+        style={{ backgroundColor: backgroundColors[colorScheme] }}
         ref={(ref) => (webViewRef.current = ref)}
         overScrollMode='never'
         javaScriptEnabled={true}
