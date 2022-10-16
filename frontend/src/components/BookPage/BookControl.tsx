@@ -17,6 +17,8 @@ import { paymentMethods, swapDestinations } from '../payment-methods/Methods';
 import FlagWithProps from '../FlagWithProps';
 import PaymentIcon from '../payment-methods/Icons';
 
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+
 interface BookControlProps {
   width: number;
   type: number;
@@ -191,17 +193,30 @@ const BookControl = ({
               size='small'
               label={t('Select Payment Method')}
               required={true}
-              renderValue={(value) => (
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <PaymentIcon width={22} height={22} icon={value.icon} />
-                </div>
-              )}
+              renderValue={(value) =>
+                value == 'ANY' ? (
+                  <CheckBoxOutlineBlankIcon style={{ position: 'relative', top: '0.1em' }} />
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <PaymentIcon width={22} height={22} icon={value.icon} />
+                  </div>
+                )
+              }
               inputProps={{
                 style: { textAlign: 'center' },
               }}
-              value={paymentMethod[0] ? paymentMethod[0] : ''}
+              value={paymentMethod[0] ? paymentMethod[0] : 'ANY'}
               onChange={(e) => setPaymentMethods([e.target.value])}
             >
+              <MenuItem value={'ANY'}>
+                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <CheckBoxOutlineBlankIcon />
+                  <div style={{ width: '0.3em' }} />
+                  <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
+                    {' ' + t('ANY')}
+                  </Typography>
+                </div>
+              </MenuItem>
               {currency === 1000
                 ? swapDestinations.map((method, index) => (
                     <MenuItem
