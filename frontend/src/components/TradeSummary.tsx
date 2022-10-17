@@ -95,7 +95,7 @@ const TradeSummary = ({
           >
             <ToggleButtonGroup size='small' value={buttonValue} exclusive>
               <ToggleButton value={0} disableRipple={true} onClick={() => setButtonValue(0)}>
-                <RobotAvatar style={{ height: 24, width: 24 }} nickname={makerNick} />
+                <RobotAvatar style={{ height: 28, width: 28 }} nickname={makerNick} />
                 &nbsp;
                 {t('Maker')}
               </ToggleButton>

@@ -260,7 +260,8 @@ const BookTable = ({
               flexWrap: 'wrap',
             }}
           >
-            {currencyCode + ' '}
+            {currencyCode}
+            <div style={{ width: '0.3em' }} />
             <FlagWithProps code={currencyCode} />
           </div>
         );
