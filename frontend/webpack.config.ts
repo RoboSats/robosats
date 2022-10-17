@@ -38,11 +38,11 @@ const configMobile: Configuration = {
     rules: [
       ...(config?.module?.rules || []),
       {
-        test: path.resolve(__dirname, 'src/components/i18n.js'),
+        test: path.resolve(__dirname, 'src/i18n/Web.js'),
         loader: 'file-replace-loader',
         options: {
           condition: 'if-replacement-exists',
-          replacement: path.resolve(__dirname, 'src/components/i18n.Native.js'),
+          replacement: path.resolve(__dirname, 'src/i18n/Native.js'),
           async: true,
         },
       },

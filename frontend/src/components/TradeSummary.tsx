@@ -71,7 +71,7 @@ const TradeSummary = ({
   const secs = parseInt(total_time - hours * 3600 - mins * 60);
 
   return (
-    <Grid item xs={12} align='center'>
+    <Grid item xs={12}>
       <Accordion
         defaultExpanded={true}
         elevation={0}

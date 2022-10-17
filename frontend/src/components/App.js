@@ -1,22 +1,19 @@
 import React, { Component, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import HomePage from './HomePage';
-import { CssBaseline, IconButton, Link } from '@mui/material';
+import { CssBaseline, IconButton } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import UnsafeAlert from './UnsafeAlert';
 import { LearnDialog } from './Dialogs';
 import TorConnection from './TorConnection';
 
 import { I18nextProvider } from 'react-i18next';
-import i18n from './i18n';
+import i18n from '../i18n/Web';
 
 // Icons
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import SchoolIcon from '@mui/icons-material/School';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import SettingsIcon from '@mui/icons-material/Settings';
 import { systemClient } from '../services/System';
 
 export default class App extends Component {
