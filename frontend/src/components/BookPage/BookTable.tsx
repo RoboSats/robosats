@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { DataGrid, GridPagination } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
-import { Order } from '../../models';
+import { Book, Order } from '../../models';
 import filterOrders from '../../utils/filterOrders';
 import BookControl from './BookControl';
 
@@ -30,13 +30,11 @@ import hexToRgb from '../../utils/hexToRgb';
 import statusBadgeColor from '../../utils/statusBadgeColor';
 
 // Icons
-import { Fullscreen, FullscreenExit, Refresh, WidthFull } from '@mui/icons-material';
+import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 
 interface Props {
-  loading?: boolean;
-  refreshing?: boolean;
   clickRefresh?: () => void;
-  orders: Order[];
+  book: Book;
   type: number;
   currency: number;
   maxWidth: number;
@@ -52,10 +50,8 @@ interface Props {
 }
 
 const BookTable = ({
-  loading = false,
-  refreshing = false,
   clickRefresh,
-  orders,
+  book,
   type,
   currency,
   maxWidth,
@@ -702,17 +698,17 @@ const BookTable = ({
           rows={
             showControls
               ? filterOrders({
-                  orders,
+                  orders: book.orders,
                   baseFilter: { currency, type },
                   paymentMethods,
                 })
-              : orders
+              : book.orders
           }
-          loading={loading || refreshing}
+          loading={book.loading}
           columns={columns}
           hideFooter={!showFooter}
           components={gridComponents()}
-          pageSize={loading ? 0 : pageSize}
+          pageSize={book.loading && book.orders.length == 0 ? 0 : pageSize}
           rowsPerPageOptions={width < 22 ? [] : [0, pageSize, defaultPageSize * 2, 50, 100]}
           onPageSizeChange={(newPageSize) => {
             setPageSize(newPageSize);
@@ -728,16 +724,20 @@ const BookTable = ({
         <Paper style={{ width: '100%', height: '100%', overflow: 'auto' }}>
           <DataGrid
             localeText={localeText}
-            rows={orders.filter(
-              (order) =>
-                (order.type == type || type == null) &&
-                (order.currency == currency || currency == 0),
-            )}
-            loading={loading || refreshing}
+            rows={
+              showControls
+                ? filterOrders({
+                    orders: book.orders,
+                    baseFilter: { currency, type },
+                    paymentMethods,
+                  })
+                : book.orders
+            }
+            loading={book.loading}
             columns={columns}
             hideFooter={!showFooter}
             components={gridComponents()}
-            pageSize={loading ? 0 : pageSize}
+            pageSize={book.loading && book.orders.length == 0 ? 0 : pageSize}
             rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
             onPageSizeChange={(newPageSize) => {
               setPageSize(newPageSize);

@@ -43,9 +43,8 @@ import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/ico
 import { LoadingButton } from '@mui/lab';
 
 interface MakerFormProps {
-  limits: LimitList;
-  fetchLimits: (loading) => void;
-  loadingLimits: boolean;
+  limits: { list: LimitList; loading: boolean };
+  fetchLimits: () => LimitList;
   pricingMethods: boolean;
   maker: Maker;
   type: number;
@@ -62,7 +61,6 @@ interface MakerFormProps {
 const MakerForm = ({
   limits,
   fetchLimits,
-  loadingLimits,
   pricingMethods,
   currency,
   type,
@@ -94,19 +92,18 @@ const MakerForm = ({
 
   useEffect(() => {
     setCurrencyCode(currencyDict[currency == 0 ? 1 : currency]);
-    if (Object.keys(limits).length === 0) {
-      setAppState({ loadingLimits: true });
-      fetchLimits(true).then((data) => {
+    if (Object.keys(limits.list).length === 0) {
+      fetchLimits().then((data) => {
         updateAmountLimits(data, currency, maker.premium);
         updateCurrentPrice(data, currency, maker.premium);
         updateSatoshisLimits(data);
       });
     } else {
-      updateAmountLimits(limits, currency, maker.premium);
-      updateCurrentPrice(limits, currency, maker.premium);
-      updateSatoshisLimits(limits);
+      updateAmountLimits(limits.list, currency, maker.premium);
+      updateCurrentPrice(limits.list, currency, maker.premium);
+      updateSatoshisLimits(limits.list);
 
-      fetchLimits(false);
+      fetchLimits();
     }
   }, []);
 
@@ -130,10 +127,10 @@ const MakerForm = ({
   const updateCurrentPrice = function (limits: LimitList, currency: number, premium: number) {
     const index = currency === 0 ? 1 : currency;
     let price = '...';
-    if (maker.is_explicit && maker.amount > 0 && maker.satoshis > 0) {
+    if (maker.isExplicit && maker.amount > 0 && maker.satoshis > 0) {
       price = maker.amount / (maker.satoshis / 100000000);
     } else if (!maker.is_explicit) {
-      price = limits[index].price * (1 + premium / 100);
+      price = limits.list[index].price * (1 + premium / 100);
     }
     setCurrentPrice(parseFloat(Number(price).toPrecision(5)));
   };
@@ -145,13 +142,13 @@ const MakerForm = ({
       currency: newCurrency,
       bookCurrencyCode: currencyCode,
     });
-    updateAmountLimits(limits, newCurrency, maker.premium);
-    updateCurrentPrice(limits, newCurrency, maker.premium);
+    updateAmountLimits(limits.list, newCurrency, maker.premium);
+    updateCurrentPrice(limits.list, newCurrency, maker.premium);
     if (advancedOptions) {
       setMaker({
         ...maker,
-        minAmount: parseFloat(Number(limits[newCurrency].max_amount * 0.25).toPrecision(2)),
-        maxAmount: parseFloat(Number(limits[newCurrency].max_amount * 0.75).toPrecision(2)),
+        minAmount: parseFloat(Number(limits.list[newCurrency].max_amount * 0.25).toPrecision(2)),
+        maxAmount: parseFloat(Number(limits.list[newCurrency].max_amount * 0.75).toPrecision(2)),
       });
     }
   };
@@ -198,8 +195,8 @@ const MakerForm = ({
       badPremiumText = t('Must be more than {{min}}%', { min });
       premium = -99.99;
     }
-    updateCurrentPrice(limits, currency, premium);
-    updateAmountLimits(limits, currency, premium);
+    updateCurrentPrice(limits.list, currency, premium);
+    updateAmountLimits(limits.list, currency, premium);
     setMaker({
       ...maker,
       premium,
@@ -331,10 +328,10 @@ const MakerForm = ({
     const index = currency === 0 ? 1 : currency;
     const minAmount = maker.amount
       ? parseFloat((maker.amount / 2).toPrecision(2))
-      : parseFloat(Number(limits[index].max_amount * 0.25).toPrecision(2));
+      : parseFloat(Number(limits.list[index].max_amount * 0.25).toPrecision(2));
     const maxAmount = maker.amount
       ? parseFloat(maker.amount)
-      : parseFloat(Number(limits[index].max_amount * 0.75).toPrecision(2));
+      : parseFloat(Number(limits.list[index].max_amount * 0.75).toPrecision(2));
 
     setMaker({
       ...maker,
@@ -437,12 +434,12 @@ const MakerForm = ({
   return (
     <Box>
       <ConfirmationDialogs />
-      <Collapse in={loadingLimits}>
-        <div style={{ display: loadingLimits ? '' : 'none' }}>
+      <Collapse in={limits.loading}>
+        <div style={{ display: limits.loading ? '' : 'none' }}>
           <LinearProgress />
         </div>
       </Collapse>
-      <Collapse in={!(loadingLimits || collapseAll)}>
+      <Collapse in={!(limits.loading || collapseAll)}>
         <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
           <Grid item>
             <IconButton
@@ -478,7 +475,7 @@ const MakerForm = ({
               >
                 <Switch
                   size='small'
-                  disabled={loadingLimits}
+                  disabled={limits.loading}
                   checked={advancedOptions}
                   onChange={handleClickAdvanced}
                 />
@@ -944,7 +941,7 @@ const MakerForm = ({
           </Typography>
         </Grid>
 
-        <Collapse in={!loadingLimits}>
+        <Collapse in={!limits.loading}>
           <Tooltip
             placement='top'
             enterTouchDelay={0}

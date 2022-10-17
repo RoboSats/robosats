@@ -5,7 +5,7 @@ import { useHistory } from 'react-router-dom';
 import currencyDict from '../../../static/assets/currencies.json';
 import DepthChart from '../Charts/DepthChart';
 
-import { Order, LimitList, Maker } from '../../models';
+import { Book, Order, LimitList, Maker } from '../../models';
 
 // Icons
 import { BarChart, FormatListBulleted } from '@mui/icons-material';
@@ -13,27 +13,24 @@ import BookTable from './BookTable';
 import { MakerForm } from '../MakerPage';
 
 interface BookPageProps {
-  bookLoading?: boolean;
   bookRefreshing?: boolean;
   loadingLimits: boolean;
   lastDayPremium: number;
-  orders: Order[];
+  book: Book;
   limits: LimitList;
   fetchLimits: () => void;
   type: number;
   currency: number;
   windowWidth: number;
   windowHeight: number;
-  fetchBook: (loading: boolean, refreshing: boolean) => void;
+  fetchBook: () => void;
   setAppState: (state: object) => void;
 }
 
 const BookPage = ({
-  bookLoading = false,
-  bookRefreshing = false,
   lastDayPremium = 0,
   loadingLimits,
-  orders = [],
+  book = { orders: [], loading: true },
   limits,
   fetchLimits,
   type,
@@ -75,7 +72,7 @@ const BookPage = ({
   const [maker, setMaker] = useState<Maker>(defaultMaker);
 
   useEffect(() => {
-    if (orders.length < 1) {
+    if (book.orders.length < 1) {
       fetchBook(true, false);
     } else {
       fetchBook(false, true);
@@ -184,10 +181,8 @@ const BookPage = ({
           >
             <Grid item>
               <BookTable
-                loading={bookLoading}
-                refreshing={bookRefreshing}
-                clickRefresh={() => fetchBook(false, true)}
-                orders={orders}
+                clickRefresh={() => fetchBook()}
+                book={book}
                 type={type}
                 currency={currency}
                 maxWidth={maxBookTableWidth} // EM units
@@ -215,8 +210,7 @@ const BookPage = ({
           </Grid>
         ) : view === 'depth' ? (
           <DepthChart
-            bookLoading={bookLoading}
-            orders={orders}
+            book={book}
             lastDayPremium={lastDayPremium}
             currency={currency}
             compact={true}
@@ -227,10 +221,8 @@ const BookPage = ({
           />
         ) : (
           <BookTable
-            loading={bookLoading}
-            refreshing={bookRefreshing}
-            clickRefresh={() => fetchBook(false, true)}
-            orders={orders}
+            book={book}
+            clickRefresh={() => fetchBook()}
             type={type}
             currency={currency}
             maxWidth={windowWidth * 0.97} // EM units

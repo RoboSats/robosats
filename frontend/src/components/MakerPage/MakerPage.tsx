@@ -10,10 +10,9 @@ import { useHistory } from 'react-router-dom';
 import filterOrders from '../../utils/filterOrders';
 
 interface MakerPageProps {
-  limits: LimitList;
+  limits: { list: LimitList; loading: boolean };
   fetchLimits: () => void;
   orders: Order[];
-  loadingLimits: boolean;
   type: number;
   windowHeight: number;
   windowWidth: number;
@@ -25,7 +24,6 @@ const MakerPage = ({
   limits,
   fetchLimits,
   orders,
-  loadingLimits,
   currency,
   type,
   setAppState,
@@ -82,7 +80,6 @@ const MakerPage = ({
           <MakerForm
             limits={limits}
             fetchLimits={fetchLimits}
-            loadingLimits={loadingLimits}
             pricingMethods={false}
             setAppState={setAppState}
             maker={maker}

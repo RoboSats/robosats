@@ -1,6 +1,6 @@
 import React, { Suspense, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import HomePage from './HomePage';
+import Main from './Main';
 import { CssBaseline, IconButton } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import UnsafeAlert from './UnsafeAlert';
@@ -83,7 +83,7 @@ const App = (): JSX.Element => {
             {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
           <UnsafeAlert className='unsafeAlert' />
-          <HomePage theme={theme} />
+          <Main />
         </ThemeProvider>
       </I18nextProvider>
     </Suspense>
