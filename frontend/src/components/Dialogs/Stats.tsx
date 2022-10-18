@@ -26,7 +26,7 @@ import { AmbossIcon, BitcoinSignIcon, RoboSatsNoTextIcon } from '../Icons';
 import { pn } from '../../utils/prettyNumbers';
 
 interface Props {
-  isOpen: boolean;
+  open: boolean;
   handleClickCloseStatsForNerds: () => void;
   lndVersion: string;
   coordinatorVersion: string;
@@ -42,7 +42,7 @@ interface Props {
 }
 
 const StatsDialog = ({
-  isOpen,
+  open = false,
   handleClickCloseStatsForNerds,
   lndVersion,
   coordinatorVersion,
@@ -60,7 +60,7 @@ const StatsDialog = ({
 
   return (
     <Dialog
-      open={isOpen}
+      open={open}
       onClose={handleClickCloseStatsForNerds}
       aria-labelledby='stats-for-nerds-dialog-title'
       aria-describedby='stats-for-nerds-description'

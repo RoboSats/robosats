@@ -8,7 +8,11 @@ export interface Robot {
   lastOrderId: number | null;
   earnedRewards: number;
   referralCode: string;
+  tgEnabled: boolean;
+  tgBotName: string;
+  tgToken: string;
   loading: boolean;
+  avatarLoaded: boolean;
   copiedToken: boolean;
 }
 
@@ -22,7 +26,11 @@ export const defaultRobot: Robot = {
   lastOrderId: null,
   earnedRewards: 0,
   referralCode: '',
+  tgEnabled: false,
+  tgBotName: 'unknown',
+  tgToken: 'unknown',
   loading: true,
+  avatarLoaded: false,
   copiedToken: false,
 };
 

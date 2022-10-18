@@ -11,7 +11,6 @@ import {
   IconButton,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import SmoothImage from 'react-smooth-image';
 import { InfoDialog } from './Dialogs';
 
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -44,19 +43,18 @@ class UserGenPage extends Component {
   componentDidMount() {
     // Checks in parent HomePage if there is already a nick and token
     // Displays the existing one
-    if (this.props.nickname != null) {
+    if (this.props.robot.nickname != null) {
       this.setState({
-        token: this.props.token ? this.props.token : '',
-        loadingRobot: false,
+        inputToken: this.props.robot.token ? this.props.robot.token : '',
       });
     } else if (window.NativeRobosats && systemClient.getCookie('robot_token')) {
       const token = systemClient.getCookie('robot_token');
-      this.setState({ token });
+      this.setState({ inputToken: token });
       this.getGeneratedUser(token);
     } else {
       const newToken = genBase62Token(36);
       this.setState({
-        token: newToken,
+        inputToken: newToken,
       });
       this.getGeneratedUser(newToken);
     }
@@ -65,6 +63,7 @@ class UserGenPage extends Component {
   getGeneratedUser = (token) => {
     const strength = tokenStrength(token);
     const refCode = this.refCode;
+    this.props.setRobot({ ...this.props.robot, loading: true });
 
     const requestBody = genKey(token).then(function (key) {
       return {
@@ -79,46 +78,48 @@ class UserGenPage extends Component {
     });
     requestBody.then((body) =>
       apiClient.post('/api/user/', body).then((data) => {
-        this.setState({
+        this.props.setRobot({
           bit_entropy: data.token_bits_entropy,
           shannon_entropy: data.token_shannon_entropy,
           bad_request: data.bad_request,
           found: data.found,
-          loadingRobot: false,
+          loading: false,
           stealthInvoices: data.wants_stealth,
-        }) &
-          // Add nick and token to App state (token only if not a bad request)
-          (data.bad_request
-            ? this.props.setAppState({
-                nickname: data.nickname,
-                avatarLoaded: false,
-                activeOrderId: data.active_order_id ? data.active_order_id : null,
-                referralCode: data.referral_code,
-                earnedRewards: data.earned_rewards,
-                lastOrderId: data.last_order_id ? data.last_order_id : null,
-                stealthInvoices: data.wants_stealth,
-              })
-            : this.props.setAppState({
-                nickname: data.nickname,
-                token,
-                avatarLoaded: false,
-                activeOrderId: data.active_order_id ? data.active_order_id : null,
-                lastOrderId: data.last_order_id ? data.last_order_id : null,
-                referralCode: data.referral_code,
-                earnedRewards: data.earned_rewards,
-                stealthInvoices: data.wants_stealth,
-                tgEnabled: data.tg_enabled,
-                tgBotName: data.tg_bot_name,
-                tgToken: data.tg_token,
-              }) &
-              systemClient.setCookie('robot_token', token) &
-              systemClient.setCookie('pub_key', data.public_key.split('\n').join('\\')) &
-              systemClient.setCookie(
-                'enc_priv_key',
-                data.encrypted_private_key.split('\n').join('\\'),
-              )) &
-          // If the robot has been found (recovered) we assume the token is backed up
-          (data.found ? this.props.setAppState({ copiedToken: true }) : null);
+        });
+        // Add nick and token to App state (token only if not a bad request)
+        data.bad_request
+          ? this.props.setRobot({
+              ...this.props.robot,
+              nickname: data.nickname,
+              avatarLoaded: false,
+              activeOrderId: data.active_order_id ? data.active_order_id : null,
+              referralCode: data.referral_code,
+              earnedRewards: data.earned_rewards,
+              lastOrderId: data.last_order_id ? data.last_order_id : null,
+              stealthInvoices: data.wants_stealth,
+            })
+          : this.props.setRobot({
+              ...this.props.robot,
+              nickname: data.nickname,
+              token,
+              avatarLoaded: false,
+              activeOrderId: data.active_order_id ? data.active_order_id : null,
+              lastOrderId: data.last_order_id ? data.last_order_id : null,
+              referralCode: data.referral_code,
+              earnedRewards: data.earned_rewards,
+              stealthInvoices: data.wants_stealth,
+              tgEnabled: data.tg_enabled,
+              tgBotName: data.tg_bot_name,
+              tgToken: data.tg_token,
+            }) &
+            systemClient.setCookie('robot_token', token) &
+            systemClient.setCookie('pub_key', data.public_key.split('\n').join('\\')) &
+            systemClient.setCookie(
+              'enc_priv_key',
+              data.encrypted_private_key.split('\n').join('\\'),
+            );
+        // If the robot has been found (recovered) we assume the token is backed up
+        data.found ? this.props.setRobot({ ...this.props.robot, copiedToken: true }) : null;
       }),
     );
   };
@@ -133,26 +134,27 @@ class UserGenPage extends Component {
   }
 
   handleClickNewRandomToken = () => {
-    const token = genBase62Token(36);
+    const inputToken = genBase62Token(36);
     this.setState({
-      token,
+      inputToken,
       tokenHasChanged: true,
     });
-    this.props.setAppState({ copiedToken: true });
+    this.props.setRobot({ ...this.props.robot, copiedToken: true });
   };
 
   handleChangeToken = (e) => {
     this.setState({
-      token: e.target.value.split(' ').join(''),
+      inputToken: e.target.value.split(' ').join(''),
       tokenHasChanged: true,
     });
   };
 
   handleClickSubmitToken = () => {
     this.delGeneratedUser();
-    this.getGeneratedUser(this.state.token);
-    this.setState({ loadingRobot: true, tokenHasChanged: false });
-    this.props.setAppState({
+    this.getGeneratedUser(this.state.inputToken);
+    this.setState({ tokenHasChanged: false });
+    this.props.setRobot({
+      ...this.props.robot,
       avatarLoaded: false,
       nickname: null,
       token: null,
@@ -181,6 +183,10 @@ class UserGenPage extends Component {
   };
 
   render() {
+    console.log(systemClient.getCookie('robot_token'));
+    console.log(this.props.robot.token);
+    console.log(systemClient.getCookie('robot_token') === this.props.robot.token);
+
     const { t, i18n } = this.props;
     const fontSize = this.props.theme.typography.fontSize;
     const fontSizeFactor = fontSize / 14; // to scale sizes, default fontSize is 14
@@ -195,12 +201,12 @@ class UserGenPage extends Component {
           align='center'
           sx={{ width: 370 * fontSizeFactor, height: 260 * fontSizeFactor }}
         >
-          {this.props.avatarLoaded && this.props.nickname ? (
+          {this.props.robot.avatarLoaded && this.props.robot.nickname ? (
             <div>
               <Grid item xs={12} align='center'>
                 <Typography component='h5' variant='h5'>
                   <b>
-                    {this.props.nickname && systemClient.getCookie('sessionid') ? (
+                    {this.props.robot.nickname && systemClient.getCookie('sessionid') ? (
                       <div
                         style={{
                           display: 'flex',
@@ -217,7 +223,7 @@ class UserGenPage extends Component {
                             width: 33 * fontSizeFactor,
                           }}
                         />
-                        <a>{this.props.nickname}</a>
+                        <a>{this.props.robot.nickname}</a>
                         <BoltIcon
                           sx={{
                             color: '#fcba03',
@@ -234,7 +240,7 @@ class UserGenPage extends Component {
               </Grid>
               <Grid item xs={12} align='center'>
                 <RobotAvatar
-                  nickname={this.props.nickname}
+                  nickname={this.props.robot.nickname}
                   smooth={true}
                   style={{ maxWidth: 203 * fontSizeFactor, maxHeight: 203 * fontSizeFactor }}
                   imageStyle={{
@@ -271,7 +277,7 @@ class UserGenPage extends Component {
               error={!!this.state.bad_request}
               label={t('Store your token safely')}
               required={true}
-              value={this.state.token}
+              value={this.state.inputToken}
               variant='standard'
               helperText={this.state.bad_request}
               size='small'
@@ -301,11 +307,14 @@ class UserGenPage extends Component {
                             <IconButton
                               color='primary'
                               disabled={
-                                !this.props.avatarLoaded ||
-                                !(systemClient.getCookie('robot_token') === this.state.token)
+                                !this.props.robot.avatarLoaded ||
+                                !(systemClient.getCookie('robot_token') === this.state.inputToken)
                               }
                               onClick={() =>
-                                saveAsJson(this.props.nickname + '.json', this.createJsonFile())
+                                saveAsJson(
+                                  this.props.robot.nickname + '.json',
+                                  this.createJsonFile(),
+                                )
                               }
                             >
                               <DownloadIcon
@@ -318,14 +327,14 @@ class UserGenPage extends Component {
                       <Grid item xs={6}>
                         <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
                           <IconButton
-                            color={this.props.copiedToken ? 'inherit' : 'primary'}
+                            color={this.props.robot.copiedToken ? 'inherit' : 'primary'}
                             disabled={
-                              !this.props.avatarLoaded ||
-                              !(systemClient.getCookie('robot_token') === this.state.token)
+                              !this.props.robot.avatarLoaded ||
+                              !(systemClient.getCookie('robot_token') === this.state.inputToken)
                             }
                             onClick={() =>
                               systemClient.copyToClipboard(systemClient.getCookie('robot_token')) &
-                              this.props.setAppState({ copiedToken: true })
+                              this.props.setRobot({ ...this.props.robot, copiedToken: true })
                             }
                           >
                             <ContentCopy
@@ -351,7 +360,7 @@ class UserGenPage extends Component {
           </Grid>
         </Grid>
         <Grid item xs={12} align='center'>
-          {this.state.tokenHasChanged ? (
+          {this.state.inputTokenHasChanged ? (
             <Button type='submit' size='small' onClick={this.handleClickSubmitToken}>
               <SmartToyIcon sx={{ width: 18 * fontSizeFactor, height: 18 * fontSizeFactor }} />
               <span> {t('Generate Robot')}</span>
@@ -376,9 +385,9 @@ class UserGenPage extends Component {
           <ButtonGroup variant='contained' aria-label='outlined primary button group'>
             <Button
               disabled={
-                this.state.loadingRobot !== false ||
-                !(this.props.token
-                  ? systemClient.getCookie('robot_token') === this.props.token
+                this.props.robot.loading ||
+                !(this.props.robot.token
+                  ? systemClient.getCookie('robot_token') === this.props.robot.token
                   : true)
               }
               color='primary'
@@ -397,9 +406,9 @@ class UserGenPage extends Component {
             />
             <Button
               disabled={
-                this.state.loadingRobot !== false ||
-                !(this.props.token
-                  ? systemClient.getCookie('robot_token') === this.props.token
+                this.props.robot.loading ||
+                !(this.props.robot.token
+                  ? systemClient.getCookie('robot_token') === this.props.robot.token
                   : true)
               }
               color='secondary'
@@ -411,11 +420,11 @@ class UserGenPage extends Component {
           </ButtonGroup>
         </Grid>
 
-        <Grid item xs={12} align='center' sx={{ width: 370 * fontSizeFactor }}>
+        <Grid item xs={12} align='center' sx={{ width: '26.43em' }}>
           <Grid item>
-            <div style={{ height: 30 * fontSizeFactor }} />
+            <div style={{ height: '2.143em' }} />
           </Grid>
-          <div style={{ width: 370 * fontSizeFactor, left: 30 * fontSizeFactor }}>
+          <div style={{ width: '26.43em', left: '2.143em' }}>
             <Grid container align='center'>
               <Grid item xs={0.8} />
               <Grid item xs={7.5} align='right'>
@@ -424,10 +433,7 @@ class UserGenPage extends Component {
                 </Typography>
               </Grid>
               <Grid item xs={2.5} align='left'>
-                <RoboSatsNoTextIcon
-                  color='primary'
-                  sx={{ height: 72 * fontSizeFactor, width: 72 * fontSizeFactor }}
-                />
+                <RoboSatsNoTextIcon color='primary' sx={{ height: '5.143em', width: '5.143em' }} />
               </Grid>
             </Grid>
           </div>

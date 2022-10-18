@@ -41,7 +41,7 @@ import { getWebln } from '../../utils/webln';
 import RobotAvatar from '../Robots/RobotAvatar';
 
 interface Props {
-  isOpen: boolean;
+  open: boolean;
   handleClickCloseProfile: () => void;
   nickname: string;
   activeOrderId: string | number;
@@ -58,11 +58,11 @@ interface Props {
   earnedRewards: number;
   stealthInvoices: boolean;
   handleSetStealthInvoice: (stealth: boolean) => void;
-  setAppState: (state: any) => void; // TODO: move to a ContextProvider
+  updateRobot: (state: any) => void; // TODO: move to a ContextProvider
 }
 
 const ProfileDialog = ({
-  isOpen,
+  open = false,
   handleClickCloseProfile,
   nickname,
   activeOrderId,
@@ -77,7 +77,7 @@ const ProfileDialog = ({
   withdrawn,
   badInvoice,
   earnedRewards,
-  setAppState,
+  updateRobot,
   stealthInvoices,
   handleSetStealthInvoice,
 }: Props): JSX.Element => {
@@ -101,7 +101,7 @@ const ProfileDialog = ({
 
     if (robotToken) {
       systemClient.copyToClipboard(robotToken);
-      setAppState({ copiedToken: true });
+      updateRobot({ copiedToken: true });
     }
   };
 
@@ -128,7 +128,7 @@ const ProfileDialog = ({
 
   return (
     <Dialog
-      open={isOpen}
+      open={open}
       onClose={handleClickCloseProfile}
       aria-labelledby='profile-title'
       aria-describedby='profile-description'

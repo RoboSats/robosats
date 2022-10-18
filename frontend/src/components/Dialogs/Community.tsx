@@ -20,11 +20,11 @@ import RedditIcon from '@mui/icons-material/Reddit';
 import Flags from 'country-flag-icons/react/3x2';
 
 interface Props {
-  isOpen: boolean;
+  open: boolean;
   handleClickCloseCommunity: () => void;
 }
 
-const CommunityDialog = ({ isOpen, handleClickCloseCommunity }: Props): JSX.Element => {
+const CommunityDialog = ({ open = false, handleClickCloseCommunity }: Props): JSX.Element => {
   const { t } = useTranslation();
 
   const flagProps = {
@@ -38,7 +38,7 @@ const CommunityDialog = ({ isOpen, handleClickCloseCommunity }: Props): JSX.Elem
 
   return (
     <Dialog
-      open={isOpen}
+      open={open}
       onClose={handleClickCloseCommunity}
       aria-labelledby='community-dialog-title'
       aria-describedby='community-description'

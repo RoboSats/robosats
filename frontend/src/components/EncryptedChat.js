@@ -75,7 +75,7 @@ class Chat extends Component {
           this.setState({ connected: false });
         });
 
-        this.setState({ connected: true, connection: connection });
+        this.setState({ connected: true, connection });
       });
   }
 

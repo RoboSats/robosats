@@ -9,6 +9,7 @@ import OrderPage from './OrderPage';
 import BottomBar from './BottomBar';
 
 import { apiClient } from '../services/api';
+import checkVer from '../utils/checkVer';
 
 import {
   Book,
@@ -24,11 +25,19 @@ import {
   defaultSettings,
 } from '../models';
 
+const getWindowSize = function (fontSize: number) {
+  // returns window size in EM units
+  return {
+    width: window.innerWidth / fontSize,
+    height: window.innerHeight / fontSize,
+  };
+};
+
 const Main = (): JSX.Element => {
   const theme = useTheme();
   const history = useHistory();
-  const Router = window.NativeRobosats ? HashRouter : BrowserRouter;
-  const basename = window.NativeRobosats ? window.location.pathname : '';
+  const Router = window.NativeRobosats != null ? HashRouter : BrowserRouter;
+  const basename = window.NativeRobosats != null ? window.location.pathname : '';
 
   // All app data structured
   const [book, setBook] = useState<Book>({ orders: [], loading: true });
@@ -42,13 +51,8 @@ const Main = (): JSX.Element => {
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });
   const [settings, setSettings] = useState<Settings>(defaultSettings);
 
-  console.log(info);
-  const initialWindowSize = {
-    width: window.innerWidth / theme.typography.fontSize,
-    height: window.innerHeight / theme.typography.fontSize,
-  }; // EM values
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
-    initialWindowSize,
+    getWindowSize(theme.typography.fontSize),
   );
 
   useEffect(() => {
@@ -57,6 +61,7 @@ const Main = (): JSX.Element => {
     }
     fetchBook();
     fetchLimits();
+    fetchInfo();
     return () => {
       if (typeof window !== undefined) {
         window.removeEventListener('resize', onResize);
@@ -65,15 +70,12 @@ const Main = (): JSX.Element => {
   }, []);
 
   const onResize = function () {
-    setWindowSize({
-      width: window.innerWidth / theme.typography.fontSize,
-      height: window.innerHeight / theme.typography.fontSize,
-    });
+    setWindowSize(getWindowSize(theme.typography.fontSize));
   };
 
   const fetchBook = function () {
     setBook({ ...book, loading: true });
-    apiClient.get('/api/book/').then((data) =>
+    apiClient.get('/api/book/').then((data: any) =>
       setBook({
         loading: false,
         orders: data.not_found ? [] : data,
@@ -81,43 +83,57 @@ const Main = (): JSX.Element => {
     );
   };
 
-  const fetchLimits = () => {
+  const fetchLimits = async () => {
     setLimits({ ...limits, loading: true });
     const data = apiClient.get('/api/limits/').then((data) => {
       setLimits({ list: data, loading: false });
       return data;
     });
-    return data;
+    return await data;
+  };
+
+  const fetchInfo = function () {
+    apiClient.get('/api/info/').then((data: any) => {
+      const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
+      setInfo({
+        ...data,
+        openUpdateClient: versionInfo.updateAvailable,
+        coordinatorVersion: versionInfo.coordinatorVersion,
+        clientVersion: versionInfo.clientVersion,
+      });
+      setRobot({
+        ...robot,
+        nickname: data.nickname,
+        loading: false,
+        activeOrderId: data.active_order_id ? data.active_order_id : null,
+        lastOrderId: data.last_order_id ? data.last_order_id : null,
+        referralCode: data.referral_code,
+        tgEnabled: data.tg_enabled,
+        tgBotName: data.tg_bot_name,
+        tgToken: data.tg_token,
+        earnedRewards: data.earned_rewards,
+        stealthInvoices: data.wants_stealth,
+      });
+    });
   };
 
   return (
     <Router basename={basename}>
       <div className='appCenter'>
         <Switch>
-          {/* 
           <Route
             exact
             path='/'
-            render={(props) => (
-              <UserGenPage
-                {...props}
-                {...this.state}
-                {...this.props}
-                setAppState={this.setAppState}
-              />
+            render={(props: any) => (
+              <UserGenPage match={props.match} theme={theme} robot={robot} setRobot={setRobot} />
             )}
           />
           <Route
             path='/ref/:refCode'
-            render={(props) => (
-              <UserGenPage
-                {...props}
-                {...this.state}
-                {...this.props}
-                setAppState={this.setAppState}
-              />
+            render={(props: any) => (
+              <UserGenPage match={props.match} theme={theme} robot={robot} setRobot={setRobot} />
             )}
-          /> */}
+          />
           <Route
             path='/make'
             render={() => (
@@ -150,29 +166,30 @@ const Main = (): JSX.Element => {
               />
             )}
           />
-          {/* <Route
+          <Route
             path='/order/:orderId'
-            render={(props) => (
-              <OrderPage
-                {...props}
-                {...this.state}
-                {...this.props}
-                setAppState={this.setAppState}
-              />
-            )}
+            render={(props) => <OrderPage theme={theme} history={history} {...props} />}
           />
-           */}
         </Switch>
       </div>
-      {/* <div
-        className='bottomBar'
+      <div
         style={{
           height: '2.857em',
           width: `${(windowSize.width / 16) * 14}em`,
+          position: 'fixed',
+          bottom: 0,
         }}
       >
-        <BottomBar redirectTo={(location) => history.push(location)} info={info} />
-      </div> */}
+        <BottomBar
+          theme={theme}
+          redirectTo={(location: string) => history.push(location)}
+          robot={robot}
+          setRobot={setRobot}
+          info={info}
+          setInfo={setInfo}
+          fetchInfo={fetchInfo}
+        />
+      </div>
     </Router>
   );
 };

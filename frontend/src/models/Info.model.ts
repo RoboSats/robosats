@@ -17,16 +17,16 @@ export interface Info {
   taker_fee: number;
   bond_size: number;
   current_swap_fee_rate: number;
-
-  // Other keys that do not belong here. TODO on NavBar PR.
   coordinatorVersion: string;
   clientVersion: string;
+  openUpdateClient: boolean;
+
+  // Other keys that do not belong here. TODO on NavBar PR.
   profileShown: boolean;
   openStatsForNerds: boolean;
-  openCommuniy: boolean;
+  openCommunity: boolean;
   openExchangeSummary: boolean;
   openClaimRewards: boolean;
-  openUpdateClient: boolean;
   openProfile: boolean;
   showRewards: boolean;
   rewardInvoice: string | null;
@@ -54,16 +54,16 @@ export const defaultInfo: Info = {
   taker_fee: 0,
   bond_size: 0,
   current_swap_fee_rate: 0,
-
-  // Other keys that do not belong here. TODO on NavBar PR.
   coordinatorVersion: 'v?.?.?',
   clientVersion: 'v?.?.?',
+  openUpdateClient: false,
+
+  // Other keys that do not belong here. TODO on NavBar PR.
   profileShown: false,
   openStatsForNerds: false,
-  openCommuniy: false,
+  openCommunity: false,
   openExchangeSummary: false,
   openClaimRewards: false,
-  openUpdateClient: false,
   openProfile: false,
   showRewards: false,
   rewardInvoice: null,
