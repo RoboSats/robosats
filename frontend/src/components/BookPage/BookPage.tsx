@@ -5,7 +5,7 @@ import { useHistory } from 'react-router-dom';
 import currencyDict from '../../../static/assets/currencies.json';
 import DepthChart from '../Charts/DepthChart';
 
-import { Book, Order, LimitList, Maker } from '../../models';
+import { Book, Favorites, LimitList, Maker } from '../../models';
 
 // Icons
 import { BarChart, FormatListBulleted } from '@mui/icons-material';
@@ -13,40 +13,37 @@ import BookTable from './BookTable';
 import { MakerForm } from '../MakerPage';
 
 interface BookPageProps {
-  bookRefreshing?: boolean;
-  loadingLimits: boolean;
-  lastDayPremium: number;
   book: Book;
-  limits: LimitList;
+  limits: { list: LimitList; loading: boolean };
   fetchLimits: () => void;
-  type: number;
-  currency: number;
-  windowWidth: number;
-  windowHeight: number;
+  fav: Favorites;
+  setFav: (state: Favorites) => void;
   fetchBook: () => void;
-  setAppState: (state: object) => void;
+  windowSize: { width: number; height: number };
+  lastDayPremium: number;
+  maker: Maker;
+  setMaker: (state: Maker) => void;
 }
 
 const BookPage = ({
   lastDayPremium = 0,
-  loadingLimits,
-  book = { orders: [], loading: true },
   limits,
-  fetchLimits,
-  type,
-  currency,
-  windowWidth,
-  windowHeight,
-  setAppState,
+  book = { orders: [], loading: true },
   fetchBook,
+  fetchLimits,
+  fav,
+  setFav,
+  maker,
+  setMaker,
+  windowSize,
 }: BookPageProps): JSX.Element => {
   const { t } = useTranslation();
   const history = useHistory();
   const [view, setView] = useState<'list' | 'depth'>('list');
   const [openMaker, setOpenMaker] = useState<boolean>(false);
 
-  const doubleView = windowWidth > 115;
-  const width = windowWidth * 0.9;
+  const doubleView = windowSize.width > 115;
+  const width = windowSize.width * 0.9;
   const maxBookTableWidth = 85;
   const chartWidthEm = width - maxBookTableWidth;
 
@@ -69,8 +66,6 @@ const BookPage = ({
     badSatoshisText: '',
   };
 
-  const [maker, setMaker] = useState<Maker>(defaultMaker);
-
   useEffect(() => {
     if (book.orders.length < 1) {
       fetchBook(true, false);
@@ -81,11 +76,11 @@ const BookPage = ({
 
   const handleCurrencyChange = function (e) {
     const currency = e.target.value;
-    setAppState({ currency });
+    setFav({ ...fav, currency });
   };
 
   const handleTypeChange = function (mouseEvent, val) {
-    setAppState({ type: val });
+    setFav({ ...fav, type: val });
   };
 
   const NoOrdersFound = function () {
@@ -99,12 +94,14 @@ const BookPage = ({
       >
         <Grid item>
           <Typography align='center' component='h5' variant='h5'>
-            {type == 0
+            {fav.type == 0
               ? t('No orders found to sell BTC for {{currencyCode}}', {
-                  currencyCode: currency == 0 ? t('ANY') : currencyDict[currency.toString()],
+                  currencyCode:
+                    fav.currency == 0 ? t('ANY') : currencyDict[fav.currency.toString()],
                 })
               : t('No orders found to buy BTC for {{currencyCode}}', {
-                  currencyCode: currency == 0 ? t('ANY') : currencyDict[currency.toString()],
+                  currencyCode:
+                    fav.currency == 0 ? t('ANY') : currencyDict[fav.currency.toString()],
                 })}
           </Typography>
         </Grid>
@@ -156,14 +153,11 @@ const BookPage = ({
             <MakerForm
               limits={limits}
               fetchLimits={fetchLimits}
-              loadingLimits={loadingLimits}
               pricingMethods={false}
-              setAppState={setAppState}
               maker={maker}
-              defaultMaker={defaultMaker}
               setMaker={setMaker}
-              type={type}
-              currency={currency}
+              fav={fav}
+              setFav={setFav}
             />
           </Box>
         </Dialog>
@@ -177,18 +171,17 @@ const BookPage = ({
             justifyContent='center'
             spacing={1}
             direction='row'
-            style={{ width: `${windowWidth}em` }}
+            style={{ width: `${windowSize.width}em` }}
           >
             <Grid item>
               <BookTable
                 clickRefresh={() => fetchBook()}
                 book={book}
-                type={type}
-                currency={currency}
+                fav={fav}
                 maxWidth={maxBookTableWidth} // EM units
-                maxHeight={windowHeight * 0.825 - 5} // EM units
-                fullWidth={windowWidth} // EM units
-                fullHeight={windowHeight} // EM units
+                maxHeight={windowSize.height * 0.825 - 5} // EM units
+                fullWidth={windowSize.width} // EM units
+                fullHeight={windowSize.height} // EM units
                 defaultFullscreen={false}
                 onCurrencyChange={handleCurrencyChange}
                 onTypeChange={handleTypeChange}
@@ -197,38 +190,33 @@ const BookPage = ({
             </Grid>
             <Grid item>
               <DepthChart
-                orders={orders}
+                orders={book.orders}
                 lastDayPremium={lastDayPremium}
-                currency={currency}
-                compact={true}
-                setAppState={setAppState}
-                limits={limits}
+                currency={fav.currency}
+                limitList={limits.list}
                 maxWidth={chartWidthEm} // EM units
-                maxHeight={windowHeight * 0.825 - 5} // EM units
+                maxHeight={windowSize.height * 0.825 - 5} // EM units
               />
             </Grid>
           </Grid>
         ) : view === 'depth' ? (
           <DepthChart
-            book={book}
+            orders={book.orders}
             lastDayPremium={lastDayPremium}
-            currency={currency}
-            compact={true}
-            setAppState={setAppState}
-            limits={limits}
-            maxWidth={windowWidth * 0.8} // EM units
-            maxHeight={windowHeight * 0.825 - 5} // EM units
+            currency={fav.currency}
+            limitList={limits.list}
+            maxWidth={windowSize.width * 0.8} // EM units
+            maxHeight={windowSize.height * 0.825 - 5} // EM units
           />
         ) : (
           <BookTable
             book={book}
             clickRefresh={() => fetchBook()}
-            type={type}
-            currency={currency}
-            maxWidth={windowWidth * 0.97} // EM units
-            maxHeight={windowHeight * 0.825 - 5} // EM units
-            fullWidth={windowWidth} // EM units
-            fullHeight={windowHeight} // EM units
+            fav={fav}
+            maxWidth={windowSize.width * 0.97} // EM units
+            maxHeight={windowSize.height * 0.825 - 5} // EM units
+            fullWidth={windowSize.width} // EM units
+            fullHeight={windowSize.height} // EM units
             defaultFullscreen={false}
             onCurrencyChange={handleCurrencyChange}
             onTypeChange={handleTypeChange}

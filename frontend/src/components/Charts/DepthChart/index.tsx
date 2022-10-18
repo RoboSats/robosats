@@ -28,15 +28,13 @@ import currencyDict from '../../../../static/assets/currencies.json';
 import PaymentText from '../../PaymentText';
 import getNivoScheme from '../NivoScheme';
 import median from '../../../utils/match';
-import { apiClient } from '../../../services/api/index';
 import statusBadgeColor from '../../../utils/statusBadgeColor';
 
 interface DepthChartProps {
   orders: Order[];
   lastDayPremium: number | undefined;
   currency: number;
-  setAppState: (state: object) => void;
-  limits: LimitList;
+  limitList: LimitList;
   maxWidth: number;
   maxHeight: number;
 }
@@ -45,8 +43,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   orders,
   lastDayPremium,
   currency,
-  setAppState,
-  limits,
+  limitList,
   maxWidth,
   maxHeight,
 }) => {
@@ -58,37 +55,25 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const [rangeSteps, setRangeSteps] = useState<number>(8);
   const [xRange, setXRange] = useState<number>(8);
   const [xType, setXType] = useState<string>('premium');
-  const [currencyCode, setCurrencyCode] = useState<number>(1);
   const [center, setCenter] = useState<number>();
 
   const height = maxHeight < 20 ? 20 : maxHeight;
   const width = maxWidth < 20 ? 20 : maxWidth > 72.8 ? 72.8 : maxWidth;
 
   useEffect(() => {
-    if (Object.keys(limits).length === 0) {
-      apiClient.get('/api/limits/').then((data) => {
-        setAppState({ limits: data });
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    setCurrencyCode(currency === 0 ? 1 : currency);
-  }, [currency]);
-
-  useEffect(() => {
-    if (Object.keys(limits).length > 0) {
+    if (Object.keys(limitList).length > 0) {
       const enriched = orders.map((order) => {
         // We need to transform all currencies to the same base (ex. USD), we don't have the exchange rate
         // for EUR -> USD, but we know the rate of both to BTC, so we get advantage of it and apply a
         // simple rule of three
         order.base_amount =
-          (order.price * limits[currencyCode].price) / limits[order.currency].price;
+          (order.price * limitList[currency === 0 ? 1 : currency].price) /
+          limitList[order.currency].price;
         return order;
       });
       setEnrichedOrders(enriched);
     }
-  }, [limits, orders, currencyCode]);
+  }, [limitList, orders, currency]);
 
   useEffect(() => {
     if (enrichedOrders.length > 0) {
@@ -113,7 +98,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setXRange(8);
       setRangeSteps(0.5);
     }
-  }, [enrichedOrders, xType, lastDayPremium, currencyCode]);
+  }, [enrichedOrders, xType, lastDayPremium, currency]);
 
   const generateSeries: () => void = () => {
     const sortedOrders: Order[] =
@@ -338,7 +323,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 <Grid item>
                   <Box justifyContent='center'>
                     {xType === 'base_amount'
-                      ? `${center} ${currencyDict[currencyCode]}`
+                      ? `${center} ${currencyDict[currency === 0 ? 1 : currency]}`
                       : `${center}%`}
                   </Box>
                 </Grid>

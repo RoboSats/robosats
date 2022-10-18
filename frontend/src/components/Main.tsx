@@ -10,41 +10,49 @@ import BottomBar from './BottomBar';
 
 import { apiClient } from '../services/api';
 
-import { Book, LimitList } from '../models';
-
-interface Limits {
-  list: LimitList;
-  loading: boolean;
-}
+import {
+  Book,
+  LimitList,
+  Maker,
+  Robot,
+  Info,
+  Settings,
+  Favorites,
+  defaultMaker,
+  defaultRobot,
+  defaultInfo,
+  defaultSettings,
+} from '../models';
 
 const Main = (): JSX.Element => {
   const theme = useTheme();
   const history = useHistory();
   const Router = window.NativeRobosats ? HashRouter : BrowserRouter;
   const basename = window.NativeRobosats ? window.location.pathname : '';
-  const [windowSize, setWindowSize] = useState<number[]>(); // EM values
 
   // All app data structured
   const [book, setBook] = useState<Book>({ orders: [], loading: true });
-  const [limits, setLimits] = useState<Limits>({ list: [], loading: true });
-  const [robot, setRobot] = useState();
-  const [maker, setMaker] = useState();
-  const [info, setInfo] = useState();
-  const [favorites, setFavorites] = useState();
-  const [settings, setSettings] = useState();
+  const [limits, setLimits] = useState<{ list: LimitList; loading: boolean }>({
+    list: [],
+    loading: true,
+  });
+  const [robot, setRobot] = useState<Robot>(defaultRobot);
+  const [maker, setMaker] = useState<Maker>(defaultMaker);
+  const [info, setInfo] = useState<Info>(defaultInfo);
+  const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });
+  const [settings, setSettings] = useState<Settings>(defaultSettings);
 
-  // constructor(props) {
-  //   super(props);
-  //   this.state = {
-  //     type: null,
-  //     currency: 0,
-  //     lastDayPremium: 0,
-  //   };
-  // }
+  console.log(info);
+  const initialWindowSize = {
+    width: window.innerWidth / theme.typography.fontSize,
+    height: window.innerHeight / theme.typography.fontSize,
+  }; // EM values
+  const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
+    initialWindowSize,
+  );
 
   useEffect(() => {
     if (typeof window !== undefined) {
-      onResize();
       window.addEventListener('resize', onResize);
     }
     fetchBook();
@@ -57,10 +65,10 @@ const Main = (): JSX.Element => {
   }, []);
 
   const onResize = function () {
-    setWindowSize([
-      window.innerWidth / theme.typography.fontSize,
-      window.innerHeight / theme.typography.fontSize,
-    ]);
+    setWindowSize({
+      width: window.innerWidth / theme.typography.fontSize,
+      height: window.innerHeight / theme.typography.fontSize,
+    });
   };
 
   const fetchBook = function () {
@@ -76,7 +84,7 @@ const Main = (): JSX.Element => {
   const fetchLimits = () => {
     setLimits({ ...limits, loading: true });
     const data = apiClient.get('/api/limits/').then((data) => {
-      setLimits({ limits: data, loading: false });
+      setLimits({ list: data, loading: false });
       return data;
     });
     return data;
@@ -86,6 +94,7 @@ const Main = (): JSX.Element => {
     <Router basename={basename}>
       <div className='appCenter'>
         <Switch>
+          {/* 
           <Route
             exact
             path='/'
@@ -108,33 +117,40 @@ const Main = (): JSX.Element => {
                 setAppState={this.setAppState}
               />
             )}
-          />
+          /> */}
           <Route
             path='/make'
             render={() => (
               <MakerPage
                 orders={book.orders}
+                limits={limits}
                 fetchLimits={fetchLimits}
                 maker={maker}
                 setMaker={setMaker}
+                fav={fav}
+                setFav={setFav}
+                windowSize={windowSize}
               />
             )}
           />
           <Route
             path='/book'
-            render={(props) => (
+            render={() => (
               <BookPage
-                {...props}
-                {...this.state}
-                {...this.props}
                 book={book}
-                fetchBook={this.fetchBook}
-                fetchLimits={this.fetchLimits}
-                setAppState={this.setAppState}
+                fetchBook={fetchBook}
+                limits={limits}
+                fetchLimits={fetchLimits}
+                fav={fav}
+                setFav={setFav}
+                maker={maker}
+                setMaker={setMaker}
+                lastDayPremium={info.last_day_nonkyc_btc_premium}
+                windowSize={windowSize}
               />
             )}
           />
-          <Route
+          {/* <Route
             path='/order/:orderId'
             render={(props) => (
               <OrderPage
@@ -145,22 +161,18 @@ const Main = (): JSX.Element => {
               />
             )}
           />
+           */}
         </Switch>
       </div>
-      <div
+      {/* <div
         className='bottomBar'
         style={{
           height: '2.857em',
-          width: `${(windowSize[0] / 16) * 14}em`,
+          width: `${(windowSize.width / 16) * 14}em`,
         }}
       >
-        <BottomBar
-          redirectTo={(location) => history.push(location)}
-          {...this.state}
-          {...this.props}
-          setAppState={this.setAppState}
-        />
-      </div>
+        <BottomBar redirectTo={(location) => history.push(location)} info={info} />
+      </div> */}
     </Router>
   );
 };

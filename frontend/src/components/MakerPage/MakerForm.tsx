@@ -24,7 +24,7 @@ import {
   IconButton,
 } from '@mui/material';
 
-import { LimitList, Maker, defaultMaker } from '../../models';
+import { LimitList, Maker, Favorites, defaultMaker } from '../../models';
 
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import DateFnsUtils from '@date-io/date-fns';
@@ -44,12 +44,11 @@ import { LoadingButton } from '@mui/lab';
 
 interface MakerFormProps {
   limits: { list: LimitList; loading: boolean };
-  fetchLimits: () => LimitList;
+  fetchLimits: () => void;
   pricingMethods: boolean;
   maker: Maker;
-  type: number;
-  currency: number;
-  setAppState: (state: object) => void;
+  fav: Favorites;
+  setFav: (state: Favorites) => void;
   setMaker: (state: Maker) => void;
   disableRequest?: boolean;
   collapseAll?: boolean;
@@ -62,9 +61,8 @@ const MakerForm = ({
   limits,
   fetchLimits,
   pricingMethods,
-  currency,
-  type,
-  setAppState,
+  fav,
+  setFav,
   maker,
   setMaker,
   disableRequest = false,
@@ -91,26 +89,26 @@ const MakerForm = ({
   const amountSafeThresholds = [1.03, 0.98];
 
   useEffect(() => {
-    setCurrencyCode(currencyDict[currency == 0 ? 1 : currency]);
+    setCurrencyCode(currencyDict[fav.currency == 0 ? 1 : fav.currency]);
     if (Object.keys(limits.list).length === 0) {
       fetchLimits().then((data) => {
-        updateAmountLimits(data, currency, maker.premium);
-        updateCurrentPrice(data, currency, maker.premium);
+        updateAmountLimits(data, fav.currency, maker.premium);
+        updateCurrentPrice(data, fav.currency, maker.premium);
         updateSatoshisLimits(data);
       });
     } else {
-      updateAmountLimits(limits.list, currency, maker.premium);
-      updateCurrentPrice(limits.list, currency, maker.premium);
+      updateAmountLimits(limits.list, fav.currency, maker.premium);
+      updateCurrentPrice(limits.list, fav.currency, maker.premium);
       updateSatoshisLimits(limits.list);
 
       fetchLimits();
     }
   }, []);
 
-  const updateAmountLimits = function (limits: LimitList, currency: number, premium: number) {
-    const index = currency === 0 ? 1 : currency;
-    let minAmountLimit: number = limits[index].min_amount * (1 + premium / 100);
-    let maxAmountLimit: number = limits[index].max_amount * (1 + premium / 100);
+  const updateAmountLimits = function (limitList: LimitList, currency: number, premium: number) {
+    const index = currency == 0 ? 1 : currency;
+    let minAmountLimit: number = limitList[index].min_amount * (1 + premium / 100);
+    let maxAmountLimit: number = limitList[index].max_amount * (1 + premium / 100);
 
     // apply thresholds to ensure good request
     minAmountLimit = minAmountLimit * amountSafeThresholds[0];
@@ -118,19 +116,19 @@ const MakerForm = ({
     setAmountLimits([minAmountLimit, maxAmountLimit]);
   };
 
-  const updateSatoshisLimits = function (limits: LimitList) {
-    const minAmount: number = limits[1000].min_amount * 100000000;
-    const maxAmount: number = limits[1000].max_amount * 100000000;
+  const updateSatoshisLimits = function (limitList: LimitList) {
+    const minAmount: number = limitList[1000].min_amount * 100000000;
+    const maxAmount: number = limitList[1000].max_amount * 100000000;
     setSatoshisLimits([minAmount, maxAmount]);
   };
 
-  const updateCurrentPrice = function (limits: LimitList, currency: number, premium: number) {
-    const index = currency === 0 ? 1 : currency;
+  const updateCurrentPrice = function (limitsList: LimitList, currency: number, premium: number) {
+    const index = currency == 0 ? 1 : currency;
     let price = '...';
     if (maker.isExplicit && maker.amount > 0 && maker.satoshis > 0) {
       price = maker.amount / (maker.satoshis / 100000000);
     } else if (!maker.is_explicit) {
-      price = limits.list[index].price * (1 + premium / 100);
+      price = limitsList[index].price * (1 + premium / 100);
     }
     setCurrentPrice(parseFloat(Number(price).toPrecision(5)));
   };
@@ -138,9 +136,9 @@ const MakerForm = ({
   const handleCurrencyChange = function (newCurrency: number) {
     const currencyCode: string = currencyDict[newCurrency];
     setCurrencyCode(currencyCode);
-    setAppState({
+    setFav({
+      ...fav,
       currency: newCurrency,
-      bookCurrencyCode: currencyCode,
     });
     updateAmountLimits(limits.list, newCurrency, maker.premium);
     updateCurrentPrice(limits.list, newCurrency, maker.premium);
@@ -195,8 +193,8 @@ const MakerForm = ({
       badPremiumText = t('Must be more than {{min}}%', { min });
       premium = -99.99;
     }
-    updateCurrentPrice(limits.list, currency, premium);
-    updateAmountLimits(limits.list, currency, premium);
+    updateCurrentPrice(limits.list, fav.currency, premium);
+    updateAmountLimits(limits.list, fav.currency, premium);
     setMaker({
       ...maker,
       premium,
@@ -244,8 +242,8 @@ const MakerForm = ({
     if (!disableRequest) {
       setSubmittingRequest(true);
       const body = {
-        type: type == 0 ? 1 : 0,
-        currency: currency == 0 ? 1 : currency,
+        type: fav.type == 0 ? 1 : 0,
+        currency: fav.currency == 0 ? 1 : fav.currency,
         amount: advancedOptions ? null : maker.amount,
         has_range: advancedOptions,
         min_amount: advancedOptions ? maker.minAmount : null,
@@ -325,7 +323,7 @@ const MakerForm = ({
   };
 
   const resetRange = function () {
-    const index = currency === 0 ? 1 : currency;
+    const index = fav.currency === 0 ? 1 : fav.currency;
     const minAmount = maker.amount
       ? parseFloat((maker.amount / 2).toPrecision(2))
       : parseFloat(Number(limits.list[index].max_amount * 0.25).toPrecision(2));
@@ -376,11 +374,11 @@ const MakerForm = ({
 
   const disableSubmit = function () {
     return (
-      type == null ||
+      fav.type == null ||
       (maker.amount != '' &&
         !advancedOptions &&
         (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
-      (maker.amount == null && (!advancedOptions || loadingLimits)) ||
+      (maker.amount == null && (!advancedOptions || limits.loading)) ||
       (advancedOptions && (minAmountError() || maxAmountError())) ||
       (maker.amount <= 0 && !advancedOptions) ||
       (maker.isExplicit && (maker.badSatoshisText != '' || maker.satoshis == '')) ||
@@ -389,7 +387,7 @@ const MakerForm = ({
   };
 
   const clearMaker = function () {
-    setAppState({ type: null });
+    setFav({ ...fav, type: null });
     setMaker(defaultMaker);
   };
 
@@ -401,7 +399,11 @@ const MakerForm = ({
         align='center'
         color={disableSubmit() ? 'text.secondary' : 'text.primary'}
       >
-        {type == null ? t('Order for ') : type == 1 ? t('Buy order for ') : t('Sell order for ')}
+        {fav.type == null
+          ? t('Order for ')
+          : fav.type == 1
+          ? t('Buy order for ')
+          : t('Sell order for ')}
         {advancedOptions && maker.minAmount != ''
           ? pn(maker.minAmount) + '-' + pn(maker.maxAmount)
           : pn(maker.amount)}
@@ -434,12 +436,12 @@ const MakerForm = ({
   return (
     <Box>
       <ConfirmationDialogs />
-      <Collapse in={limits.loading}>
-        <div style={{ display: limits.loading ? '' : 'none' }}>
+      <Collapse in={limits.list.length == 0}>
+        <div style={{ display: limits.list.length == 0 ? '' : 'none' }}>
           <LinearProgress />
         </div>
       </Collapse>
-      <Collapse in={!(limits.loading || collapseAll)}>
+      <Collapse in={!(limits.list.length == 0 || collapseAll)}>
         <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
           <Grid item>
             <IconButton
@@ -475,7 +477,7 @@ const MakerForm = ({
               >
                 <Switch
                   size='small'
-                  disabled={limits.loading}
+                  disabled={limits.list.length == 0}
                   checked={advancedOptions}
                   onChange={handleClickAdvanced}
                 />
@@ -499,14 +501,15 @@ const MakerForm = ({
                     size={advancedOptions ? 'small' : 'large'}
                     variant='contained'
                     onClick={() =>
-                      setAppState({
+                      setFav({
+                        ...fav,
                         type: 1,
                       })
                     }
-                    disableElevation={type == 1}
+                    disableElevation={fav.type == 1}
                     sx={{
-                      backgroundColor: type == 1 ? 'primary.main' : 'background.paper',
-                      color: type == 1 ? 'background.paper' : 'text.secondary',
+                      backgroundColor: fav.type == 1 ? 'primary.main' : 'background.paper',
+                      color: fav.type == 1 ? 'background.paper' : 'text.secondary',
                       ':hover': {
                         color: 'background.paper',
                       },
@@ -518,15 +521,16 @@ const MakerForm = ({
                     size={advancedOptions ? 'small' : 'large'}
                     variant='contained'
                     onClick={() =>
-                      setAppState({
+                      setFav({
+                        ...fav,
                         type: 0,
                       })
                     }
-                    disableElevation={type == 0}
+                    disableElevation={fav.type == 0}
                     color='secondary'
                     sx={{
-                      backgroundColor: type == 0 ? 'secondary.main' : 'background.paper',
-                      color: type == 0 ? 'background.secondary' : 'text.secondary',
+                      backgroundColor: fav.type == 0 ? 'secondary.main' : 'background.paper',
+                      color: fav.type == 0 ? 'background.secondary' : 'text.secondary',
                       ':hover': {
                         color: 'background.paper',
                       },
@@ -544,7 +548,7 @@ const MakerForm = ({
               <AmountRange
                 minAmount={maker.minAmount}
                 handleRangeAmountChange={handleRangeAmountChange}
-                currency={currency}
+                currency={fav.currency}
                 currencyCode={currencyCode}
                 handleCurrencyChange={handleCurrencyChange}
                 amountLimits={amountLimits}
@@ -610,7 +614,7 @@ const MakerForm = ({
                       inputProps={{
                         style: { textAlign: 'center' },
                       }}
-                      value={currency == 0 ? 1 : currency}
+                      value={fav.currency == 0 ? 1 : fav.currency}
                       onChange={(e) => handleCurrencyChange(e.target.value)}
                     >
                       {Object.entries(currencyDict).map(([key, value]) => (
@@ -632,10 +636,10 @@ const MakerForm = ({
             <AutocompletePayments
               onAutocompleteChange={handlePaymentMethodChange}
               // listBoxProps={{ sx: { width: '15.3em', maxHeight: '20em' } }}
-              optionsType={currency == 1000 ? 'swap' : 'fiat'}
+              optionsType={fav.currency == 1000 ? 'swap' : 'fiat'}
               error={maker.badPaymentMethod}
               helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
-              label={currency == 1000 ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')}
+              label={fav.currency == 1000 ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')}
               tooltipTitle={t(
                 'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
               )}
@@ -941,7 +945,7 @@ const MakerForm = ({
           </Typography>
         </Grid>
 
-        <Collapse in={!limits.loading}>
+        <Collapse in={!(limits.list.length == 0)}>
           <Tooltip
             placement='top'
             enterTouchDelay={0}

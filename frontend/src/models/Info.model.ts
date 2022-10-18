@@ -1,0 +1,75 @@
+export interface Info {
+  num_public_buy_orders: number;
+  num_public_sell_orders: number;
+  book_liquidity: number;
+  active_robots_today: number;
+  last_day_nonkyc_btc_premium: number;
+  last_day_volume: number;
+  lifetime_volume: number;
+  lnd_version: string;
+  robosats_running_commit_hash: string;
+  alternative_site: string;
+  alternative_name: string;
+  node_alias: string;
+  node_id: string;
+  version: { major: number | null; minor: number | null; patch: number | null };
+  maker_fee: number;
+  taker_fee: number;
+  bond_size: number;
+  current_swap_fee_rate: number;
+
+  // Other keys that do not belong here. TODO on NavBar PR.
+  coordinatorVersion: string;
+  clientVersion: string;
+  profileShown: boolean;
+  openStatsForNerds: boolean;
+  openCommuniy: boolean;
+  openExchangeSummary: boolean;
+  openClaimRewards: boolean;
+  openUpdateClient: boolean;
+  openProfile: boolean;
+  showRewards: boolean;
+  rewardInvoice: string | null;
+  badInvoice: boolean;
+  showRewardsSpinner: boolean;
+  withdrawn: boolean;
+}
+
+export const defaultInfo: Info = {
+  num_public_buy_orders: 0,
+  num_public_sell_orders: 0,
+  book_liquidity: 0,
+  active_robots_today: 0,
+  last_day_nonkyc_btc_premium: 0,
+  last_day_volume: 0,
+  lifetime_volume: 0,
+  lnd_version: 'v0.0.0-beta',
+  robosats_running_commit_hash: '000000000000000',
+  alternative_site: 'RoboSats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion',
+  alternative_name: 'RoboSats Mainnet',
+  node_alias: '🤖RoboSats⚡(RoboDevs)',
+  node_id: '033b58d7681fe5dd2fb21fd741996cda5449616f77317dd1156b80128d6a71b807',
+  version: { major: null, minor: null, patch: null },
+  maker_fee: 0,
+  taker_fee: 0,
+  bond_size: 0,
+  current_swap_fee_rate: 0,
+
+  // Other keys that do not belong here. TODO on NavBar PR.
+  coordinatorVersion: 'v?.?.?',
+  clientVersion: 'v?.?.?',
+  profileShown: false,
+  openStatsForNerds: false,
+  openCommuniy: false,
+  openExchangeSummary: false,
+  openClaimRewards: false,
+  openUpdateClient: false,
+  openProfile: false,
+  showRewards: false,
+  rewardInvoice: null,
+  badInvoice: false,
+  showRewardsSpinner: false,
+  withdrawn: false,
+};
+
+export default Info;

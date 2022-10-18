@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { DataGrid, GridPagination } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
-import { Book, Order } from '../../models';
+import { Book, Favorites } from '../../models';
 import filterOrders from '../../utils/filterOrders';
 import BookControl from './BookControl';
 
@@ -35,8 +35,7 @@ import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 interface Props {
   clickRefresh?: () => void;
   book: Book;
-  type: number;
-  currency: number;
+  fav?: Favorites;
   maxWidth: number;
   maxHeight: number;
   fullWidth?: number;
@@ -44,16 +43,15 @@ interface Props {
   defaultFullscreen: boolean;
   showControls?: boolean;
   showFooter?: boolean;
-  onCurrencyChange?: () => void;
-  onTypeChange?: () => void;
-  noResultsOverlay?: JSX.Element;
+  onCurrencyChange?: (e: any) => void;
+  onTypeChange?: (mouseEvent: any, val: number) => void;
+  noResultsOverlay?: () => JSX.Element;
 }
 
 const BookTable = ({
   clickRefresh,
   book,
-  type,
-  currency,
+  fav,
   maxWidth,
   maxHeight,
   fullWidth,
@@ -662,8 +660,8 @@ const BookTable = ({
     return (
       <BookControl
         width={width}
-        type={type}
-        currency={currency}
+        type={fav.type}
+        currency={fav.currency}
         onCurrencyChange={onCurrencyChange}
         onTypeChange={onTypeChange}
         paymentMethod={paymentMethods}
@@ -699,7 +697,7 @@ const BookTable = ({
             showControls
               ? filterOrders({
                   orders: book.orders,
-                  baseFilter: { currency, type },
+                  baseFilter: fav,
                   paymentMethods,
                 })
               : book.orders
@@ -728,7 +726,7 @@ const BookTable = ({
               showControls
                 ? filterOrders({
                     orders: book.orders,
-                    baseFilter: { currency, type },
+                    baseFilter: fav,
                     paymentMethods,
                   })
                 : book.orders

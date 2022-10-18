@@ -1,9 +1,4 @@
-import Order from '../models/Order.model';
-
-interface BaseFilter {
-  currency: number;
-  type: number | null;
-}
+import { Order, Favorites } from '../models';
 
 interface AmountFilter {
   amount: string;
@@ -14,7 +9,7 @@ interface AmountFilter {
 
 interface FilterOrders {
   orders: Order[];
-  baseFilter: BaseFilter;
+  baseFilter: Favorites;
   amountFilter?: AmountFilter | null;
   paymentMethods?: string[];
 }
