@@ -38,7 +38,7 @@ const MakerPage = ({
 
   const matches = filterOrders({
     orders,
-    baseFilter: { currency: fav.currency == 0 ? 1 : fav.currency, type: fav.type },
+    baseFilter: { currency: fav.currency === 0 ? 1 : fav.currency, type: fav.type },
     paymentMethods: maker.paymentMethods,
     amountFilter: {
       amount: maker.amount,

@@ -34,7 +34,7 @@ class UserGenPage extends Component {
     this.state = {
       openInfo: false,
       tokenHasChanged: false,
-      token: '',
+      inputToken: '',
     };
 
     this.refCode = this.props.match.params.refCode;
@@ -94,7 +94,7 @@ class UserGenPage extends Component {
               avatarLoaded: false,
               activeOrderId: data.active_order_id ? data.active_order_id : null,
               referralCode: data.referral_code,
-              earnedRewards: data.earned_rewards,
+              earnedRewards: data.earned_rewards ?? 0,
               lastOrderId: data.last_order_id ? data.last_order_id : null,
               stealthInvoices: data.wants_stealth,
             })
@@ -106,7 +106,7 @@ class UserGenPage extends Component {
               activeOrderId: data.active_order_id ? data.active_order_id : null,
               lastOrderId: data.last_order_id ? data.last_order_id : null,
               referralCode: data.referral_code,
-              earnedRewards: data.earned_rewards,
+              earnedRewards: data.earned_rewards ?? 0,
               stealthInvoices: data.wants_stealth,
               tgEnabled: data.tg_enabled,
               tgBotName: data.tg_bot_name,
@@ -183,10 +183,6 @@ class UserGenPage extends Component {
   };
 
   render() {
-    console.log(systemClient.getCookie('robot_token'));
-    console.log(this.props.robot.token);
-    console.log(systemClient.getCookie('robot_token') === this.props.robot.token);
-
     const { t, i18n } = this.props;
     const fontSize = this.props.theme.typography.fontSize;
     const fontSizeFactor = fontSize / 14; // to scale sizes, default fontSize is 14
@@ -433,7 +429,7 @@ class UserGenPage extends Component {
                 </Typography>
               </Grid>
               <Grid item xs={2.5} align='left'>
-                <RoboSatsNoTextIcon color='primary' sx={{ height: '5.143em', width: '5.143em' }} />
+                <RoboSatsNoTextIcon color='primary' sx={{ height: '3.143em', width: '3.143em' }} />
               </Grid>
             </Grid>
           </div>

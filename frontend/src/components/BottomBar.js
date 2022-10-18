@@ -44,54 +44,74 @@ import {
 class BottomBar extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      profileShown: false,
+      openStatsForNerds: false,
+      openCommunity: false,
+      openExchangeSummary: false,
+      openClaimRewards: false,
+      openProfile: false,
+      showRewards: false,
+      rewardInvoice: null,
+      badInvoice: false,
+      showRewardsSpinner: false,
+      withdrawn: false,
+    };
   }
 
   handleClickOpenStatsForNerds = () => {
-    this.props.setInfo({ ...this.props.info, openStatsForNerds: true });
+    this.setState({ openStatsForNerds: true });
   };
 
   handleClickCloseStatsForNerds = () => {
-    this.props.setInfo({ ...this.props.info, openStatsForNerds: false });
+    this.setState({ openStatsForNerds: false });
   };
 
   handleClickOpenCommunity = () => {
-    this.props.setInfo({ ...this.props.info, openCommunity: true });
+    this.setState({ openCommunity: true });
   };
 
   handleClickCloseCommunity = () => {
-    this.props.setInfo({ ...this.props.info, openCommunity: false });
+    this.setState({ openCommunity: false });
   };
 
   handleClickOpenProfile = () => {
-    this.props.fetchInfo();
-    this.props.setInfo({ ...this.props.info, openProfile: true, profileShown: true });
+    this.setState({ openProfile: true, profileShown: true });
   };
 
   handleClickCloseProfile = () => {
-    this.props.setInfo({ ...this.props.info, openProfile: false });
+    this.setState({ openProfile: false });
+  };
+
+  handleClickOpenExchangeSummary = () => {
+    this.setState({ openExchangeSummary: true });
+  };
+
+  handleClickCloseExchangeSummary = () => {
+    this.setState({ openExchangeSummary: false });
   };
 
   handleSubmitInvoiceClicked = (e, rewardInvoice) => {
-    this.props.setInfo({ ...this.props.info, badInvoice: false, showRewardsSpinner: true });
+    this.setState({ badInvoice: false, showRewardsSpinner: true });
 
     apiClient
       .post('/api/reward/', {
         invoice: rewardInvoice,
       })
-      .then(
-        (data) =>
-          this.props.setInfo({
-            ...this.props.info,
-            badInvoice: data.bad_invoice,
-            openClaimRewards: !data.successful_withdrawal,
-            withdrawn: !!data.successful_withdrawal,
-            showRewardsSpinner: false,
-          }) &
-          this.props.setRobot({
-            ...this.props.robot,
-            earnedRewards: data.successful_withdrawal ? 0 : this.props.robot.earnedRewards,
-          }),
-      );
+      .then((data) => {
+        this.setState({ badInvoice: data.bad_invoice, showRewardsSpinner: false });
+        this.props.setInfo({
+          ...this.props.info,
+          badInvoice: data.bad_invoice,
+          openClaimRewards: !data.successful_withdrawal,
+          withdrawn: !!data.successful_withdrawal,
+          showRewardsSpinner: false,
+        });
+        this.props.setRobot({
+          ...this.props.robot,
+          earnedRewards: data.successful_withdrawal ? 0 : this.props.robot.earnedRewards,
+        });
+      });
     e.preventDefault();
   };
 
@@ -136,7 +156,10 @@ class BottomBar extends Component {
       secondaryTypographyProps: { fontSize: (fontSize * 12) / 14 },
     };
     return (
-      <Paper elevation={6} style={{ height: '2.85em', width: '100%' }}>
+      <Paper
+        elevation={6}
+        style={{ height: '2.5em', width: `${(this.props.windowSize.width / 16) * 14}em` }}
+      >
         <Grid container>
           <Grid item xs={1.9}>
             <div style={{ display: this.showProfileButton() ? '' : 'none' }}>
@@ -407,20 +430,12 @@ class BottomBar extends Component {
     );
   };
 
-  handleClickOpenExchangeSummary = () => {
-    this.props.setInfo({ ...this.props.info, openExchangeSummary: true });
-  };
-
-  handleClickCloseExchangeSummary = () => {
-    this.props.setInfo({ ...this.props.info, openExchangeSummary: false });
-  };
-
   bottomBarPhone = () => {
     const { t } = this.props;
     const hasRewards = this.props.robot.earnedRewards > 0;
     const hasOrder = !!(
       (this.props.info.active_order_id > 0) &
-      !this.props.info.profileShown &
+      !this.state.profileShown &
       this.props.robot.avatarLoaded
     );
     return (
@@ -558,7 +573,7 @@ class BottomBar extends Component {
     return (
       <div>
         <CommunityDialog
-          open={this.props.info.openCommunity}
+          open={this.state.openCommunity}
           handleClickCloseCommunity={this.handleClickCloseCommunity}
         />
 
@@ -566,11 +581,13 @@ class BottomBar extends Component {
           open={this.props.info.openUpdateClient}
           coordinatorVersion={this.props.info.coordinatorVersion}
           clientVersion={this.props.info.clientVersion}
-          handleClickClose={() => this.setState({ openUpdateClient: false })}
+          handleClickClose={() =>
+            this.props.setInfo({ ...this.props.info, openUpdateClient: false })
+          }
         />
 
         <ExchangeSummaryDialog
-          open={this.props.info.openExchangeSummary}
+          open={this.state.openExchangeSummary}
           handleClickCloseExchangeSummary={this.handleClickCloseExchangeSummary}
           numPublicBuyOrders={this.props.info.num_public_buy_orders}
           numPublicSellOrders={this.props.info.num_public_sell_orders}
@@ -583,7 +600,7 @@ class BottomBar extends Component {
         />
 
         <ProfileDialog
-          open={this.props.info.openProfile}
+          open={this.state.openProfile}
           handleClickCloseProfile={this.handleClickCloseProfile}
           nickname={this.props.robot.nickname}
           activeOrderId={this.props.robot.activeOrderId}
@@ -594,17 +611,17 @@ class BottomBar extends Component {
           tgToken={this.props.robot.tgToken}
           handleSubmitInvoiceClicked={this.handleSubmitInvoiceClicked}
           host={this.getHost()}
-          showRewardsSpinner={this.props.info.showRewardsSpinner}
+          showRewardsSpinner={this.state.showRewardsSpinner}
           withdrawn={this.props.info.withdrawn}
           badInvoice={this.props.info.badInvoice}
           earnedRewards={this.props.robot.earnedRewards}
-          updateRobot={(newParams) => this.props.setRobot({ ...robot, ...newParams })}
-          stealthInvoices={this.props.stealthInvoices}
+          updateRobot={(newParam) => this.props.setRobot({ ...robot, ...newParam })}
+          stealthInvoices={this.props.robot.stealthInvoices}
           handleSetStealthInvoice={this.handleSetStealthInvoice}
         />
 
         <StatsDialog
-          open={this.props.info.openStatsForNerds}
+          open={this.state.openStatsForNerds}
           handleClickCloseStatsForNerds={this.handleClickCloseStatsForNerds}
           coordinatorVersion={this.props.info.coordinatorVersion}
           clientVersion={this.props.info.clientVersion}

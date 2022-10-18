@@ -20,19 +20,6 @@ export interface Info {
   coordinatorVersion: string;
   clientVersion: string;
   openUpdateClient: boolean;
-
-  // Other keys that do not belong here. TODO on NavBar PR.
-  profileShown: boolean;
-  openStatsForNerds: boolean;
-  openCommunity: boolean;
-  openExchangeSummary: boolean;
-  openClaimRewards: boolean;
-  openProfile: boolean;
-  showRewards: boolean;
-  rewardInvoice: string | null;
-  badInvoice: boolean;
-  showRewardsSpinner: boolean;
-  withdrawn: boolean;
 }
 
 export const defaultInfo: Info = {
@@ -57,19 +44,6 @@ export const defaultInfo: Info = {
   coordinatorVersion: 'v?.?.?',
   clientVersion: 'v?.?.?',
   openUpdateClient: false,
-
-  // Other keys that do not belong here. TODO on NavBar PR.
-  profileShown: false,
-  openStatsForNerds: false,
-  openCommunity: false,
-  openExchangeSummary: false,
-  openClaimRewards: false,
-  openProfile: false,
-  showRewards: false,
-  rewardInvoice: null,
-  badInvoice: false,
-  showRewardsSpinner: false,
-  withdrawn: false,
 };
 
 export default Info;

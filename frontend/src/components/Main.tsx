@@ -86,7 +86,7 @@ const Main = (): JSX.Element => {
   const fetchLimits = async () => {
     setLimits({ ...limits, loading: true });
     const data = apiClient.get('/api/limits/').then((data) => {
-      setLimits({ list: data, loading: false });
+      setLimits({ list: data ?? [], loading: false });
       return data;
     });
     return await data;
@@ -105,13 +105,13 @@ const Main = (): JSX.Element => {
         ...robot,
         nickname: data.nickname,
         loading: false,
-        activeOrderId: data.active_order_id ? data.active_order_id : null,
-        lastOrderId: data.last_order_id ? data.last_order_id : null,
+        activeOrderId: data.active_order_id ?? null,
+        lastOrderId: data.last_order_id ?? null,
         referralCode: data.referral_code,
         tgEnabled: data.tg_enabled,
         tgBotName: data.tg_bot_name,
         tgToken: data.tg_token,
-        earnedRewards: data.earned_rewards,
+        earnedRewards: data.earned_rewards ?? 0,
         stealthInvoices: data.wants_stealth,
       });
     });
@@ -168,20 +168,20 @@ const Main = (): JSX.Element => {
           />
           <Route
             path='/order/:orderId'
-            render={(props) => <OrderPage theme={theme} history={history} {...props} />}
+            render={(props: any) => <OrderPage theme={theme} history={history} {...props} />}
           />
         </Switch>
       </div>
       <div
         style={{
-          height: '2.857em',
-          width: `${(windowSize.width / 16) * 14}em`,
+          height: '2.5em',
           position: 'fixed',
           bottom: 0,
         }}
       >
         <BottomBar
           theme={theme}
+          windowSize={windowSize}
           redirectTo={(location: string) => history.push(location)}
           robot={robot}
           setRobot={setRobot}

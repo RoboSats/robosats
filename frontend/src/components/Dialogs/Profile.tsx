@@ -57,7 +57,7 @@ interface Props {
   badInvoice: boolean | string;
   earnedRewards: number;
   stealthInvoices: boolean;
-  handleSetStealthInvoice: (stealth: boolean) => void;
+  handleSetStealthInvoice: (wantsStealth: boolean) => void;
   updateRobot: (state: any) => void; // TODO: move to a ContextProvider
 }
 
