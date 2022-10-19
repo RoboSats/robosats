@@ -117,6 +117,7 @@ const Main = (): JSX.Element => {
     });
   };
 
+  console.log(robot);
   return (
     <Router basename={basename}>
       <div className='appCenter'>

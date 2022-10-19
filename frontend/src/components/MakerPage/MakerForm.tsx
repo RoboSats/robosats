@@ -75,7 +75,6 @@ const MakerForm = ({
   const theme = useTheme();
   const history = useHistory();
   const [badRequest, setBadRequest] = useState<string | null>(null);
-  const [advancedOptions, setAdvancedOptions] = useState<boolean>(false);
   const [amountLimits, setAmountLimits] = useState<number[]>([1, 1000]);
   const [satoshisLimits, setSatoshisLimits] = useState<number[]>([20000, 4000000]);
   const [currentPrice, setCurrentPrice] = useState<number | string>('...');
@@ -142,7 +141,7 @@ const MakerForm = ({
     });
     updateAmountLimits(limits.list, newCurrency, maker.premium);
     updateCurrentPrice(limits.list, newCurrency, maker.premium);
-    if (advancedOptions) {
+    if (maker.advancedOptions) {
       setMaker({
         ...maker,
         minAmount: parseFloat(Number(limits.list[newCurrency].max_amount * 0.25).toPrecision(2)),
@@ -230,7 +229,7 @@ const MakerForm = ({
   };
 
   const handleClickExplicit = function () {
-    if (!advancedOptions) {
+    if (!maker.advancedOptions) {
       setMaker({
         ...maker,
         isExplicit: true,
@@ -244,10 +243,10 @@ const MakerForm = ({
       const body = {
         type: fav.type == 0 ? 1 : 0,
         currency: fav.currency == 0 ? 1 : fav.currency,
-        amount: advancedOptions ? null : maker.amount,
-        has_range: advancedOptions,
-        min_amount: advancedOptions ? maker.minAmount : null,
-        max_amount: advancedOptions ? maker.maxAmount : null,
+        amount: maker.advancedOptions ? null : maker.amount,
+        has_range: maker.advancedOptions,
+        min_amount: maker.advancedOptions ? maker.minAmount : null,
+        max_amount: maker.advancedOptions ? maker.maxAmount : null,
         payment_method:
           maker.paymentMethodsText === '' ? 'not specified' : maker.paymentMethodsText,
         is_explicit: maker.isExplicit,
@@ -295,13 +294,12 @@ const MakerForm = ({
   };
 
   const handleClickAdvanced = function () {
-    if (advancedOptions) {
+    if (maker.advancedOptions) {
       handleClickRelative();
+      setMaker({ ...maker, advancedOptions: false });
     } else {
-      resetRange();
+      resetRange(true);
     }
-
-    setAdvancedOptions(!advancedOptions);
   };
 
   const minAmountError = function () {
@@ -322,7 +320,7 @@ const MakerForm = ({
     );
   };
 
-  const resetRange = function () {
+  const resetRange = function (advancedOptions: boolean) {
     const index = fav.currency === 0 ? 1 : fav.currency;
     const minAmount = maker.amount
       ? parseFloat((maker.amount / 2).toPrecision(2))
@@ -333,6 +331,7 @@ const MakerForm = ({
 
     setMaker({
       ...maker,
+      advancedOptions,
       minAmount,
       maxAmount,
     });
@@ -376,11 +375,11 @@ const MakerForm = ({
     return (
       fav.type == null ||
       (maker.amount != '' &&
-        !advancedOptions &&
+        !maker.advancedOptions &&
         (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
-      (maker.amount == null && (!advancedOptions || limits.loading)) ||
-      (advancedOptions && (minAmountError() || maxAmountError())) ||
-      (maker.amount <= 0 && !advancedOptions) ||
+      (maker.amount == null && (!maker.advancedOptions || limits.loading)) ||
+      (maker.advancedOptions && (minAmountError() || maxAmountError())) ||
+      (maker.amount <= 0 && !maker.advancedOptions) ||
       (maker.isExplicit && (maker.badSatoshisText != '' || maker.satoshis == '')) ||
       (!maker.isExplicit && maker.badPremiumText != '')
     );
@@ -404,7 +403,7 @@ const MakerForm = ({
           : fav.type == 1
           ? t('Buy order for ')
           : t('Sell order for ')}
-        {advancedOptions && maker.minAmount != ''
+        {maker.advancedOptions && maker.minAmount != ''
           ? pn(maker.minAmount) + '-' + pn(maker.maxAmount)
           : pn(maker.amount)}
         {' ' + currencyCode}
@@ -478,7 +477,7 @@ const MakerForm = ({
                 <Switch
                   size='small'
                   disabled={limits.list.length == 0}
-                  checked={advancedOptions}
+                  checked={maker.advancedOptions}
                   onChange={handleClickAdvanced}
                 />
                 <SelfImprovement sx={{ color: 'text.secondary' }} />
@@ -498,7 +497,7 @@ const MakerForm = ({
               <div style={{ textAlign: 'center' }}>
                 <ButtonGroup>
                   <Button
-                    size={advancedOptions ? 'small' : 'large'}
+                    size={maker.advancedOptions ? 'small' : 'large'}
                     variant='contained'
                     onClick={() =>
                       setFav({
@@ -518,7 +517,7 @@ const MakerForm = ({
                     {t('Buy')}
                   </Button>
                   <Button
-                    size={advancedOptions ? 'small' : 'large'}
+                    size={maker.advancedOptions ? 'small' : 'large'}
                     variant='contained'
                     onClick={() =>
                       setFav({
@@ -544,7 +543,7 @@ const MakerForm = ({
           </Grid>
 
           <Grid item>
-            <Collapse in={advancedOptions}>
+            <Collapse in={maker.advancedOptions}>
               <AmountRange
                 minAmount={maker.minAmount}
                 handleRangeAmountChange={handleRangeAmountChange}
@@ -559,7 +558,7 @@ const MakerForm = ({
                 handleMaxAmountChange={handleMaxAmountChange}
               />
             </Collapse>
-            <Collapse in={!advancedOptions}>
+            <Collapse in={!maker.advancedOptions}>
               <Grid item>
                 <Grid container alignItems='stretch' style={{ display: 'flex' }}>
                   <Grid item xs={6}>
@@ -572,8 +571,8 @@ const MakerForm = ({
                     >
                       <TextField
                         fullWidth
-                        disabled={advancedOptions}
-                        variant={advancedOptions ? 'filled' : 'outlined'}
+                        disabled={maker.advancedOptions}
+                        variant={maker.advancedOptions ? 'filled' : 'outlined'}
                         error={
                           maker.amount != '' &&
                           (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])
@@ -650,7 +649,7 @@ const MakerForm = ({
             />
           </Grid>
 
-          {!advancedOptions && pricingMethods ? (
+          {!maker.advancedOptions && pricingMethods ? (
             <Grid item xs={12}>
               <Box
                 sx={{
@@ -692,7 +691,7 @@ const MakerForm = ({
                       title={t('Set a fix amount of satoshis')}
                     >
                       <FormControlLabel
-                        disabled={advancedOptions}
+                        disabled={maker.advancedOptions}
                         value='explicit'
                         control={<Radio color='secondary' />}
                         label={t('Exact')}
@@ -749,7 +748,7 @@ const MakerForm = ({
             </div>
           </Grid>
           <Grid item>
-            <Collapse in={advancedOptions}>
+            <Collapse in={maker.advancedOptions}>
               <Grid container spacing={1}>
                 <Grid item xs={12}>
                   <LocalizationProvider dateAdapter={DateFnsUtils}>

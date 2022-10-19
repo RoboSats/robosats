@@ -146,7 +146,7 @@ class BottomBar extends Component {
     const hasRewards = this.props.robot.earnedRewards > 0;
     const hasOrder = !!(
       (this.props.robot.activeOrderId > 0) &
-      !this.props.infoprofileShown &
+      !this.state.profileShown &
       this.props.robot.avatarLoaded
     );
     const fontSize = this.props.theme.typography.fontSize;
@@ -175,7 +175,7 @@ class BottomBar extends Component {
                     <RobotAvatar
                       style={{ marginTop: -13 }}
                       statusColor={
-                        (this.props.robot.activeOrderId > 0) & !this.props.robot.profileShown
+                        (this.props.robot.activeOrderId > 0) & !this.state.profileShown
                           ? 'primary'
                           : undefined
                       }
@@ -439,7 +439,10 @@ class BottomBar extends Component {
       this.props.robot.avatarLoaded
     );
     return (
-      <Paper elevation={6} style={{ height: '2.85em', width: '100%' }}>
+      <Paper
+        elevation={6}
+        style={{ height: '2.85em', width: `${(this.props.windowSize.width / 16) * 14}em` }}
+      >
         <Grid container>
           <Grid item xs={1.6}>
             <div style={{ display: this.showProfileButton() ? '' : 'none' }}>
@@ -458,12 +461,12 @@ class BottomBar extends Component {
                     style={{ width: 55, height: 55 }}
                     avatarClass='phoneFlippedSmallAvatar'
                     statusColor={
-                      (this.props.activeOrderId > 0) & !this.props.profileShown
+                      (this.props.activeOrderId > 0) & !this.state.profileShown
                         ? 'primary'
                         : undefined
                     }
-                    nickname={this.props.nickname}
-                    onLoad={() => this.props.setAppState({ avatarLoaded: true })}
+                    nickname={this.props.robot.nickname}
+                    onLoad={() => this.props.setRobot({ ...this.props.robot, avatarLoaded: true })}
                   />
                 </IconButton>
               </Tooltip>
@@ -475,10 +478,6 @@ class BottomBar extends Component {
               <IconButton
                 disabled={!this.showProfileButton()}
                 color='primary'
-                onClick={() =>
-                  this.props.setAppState({ buyChecked: false, sellChecked: true, type: 0 }) &
-                  this.getInfo()
-                }
                 to={`/book/`}
                 component={LinkRouter}
               >
@@ -494,10 +493,6 @@ class BottomBar extends Component {
               <IconButton
                 disabled={!this.showProfileButton()}
                 color='primary'
-                onClick={() =>
-                  this.props.setAppState({ buyChecked: true, sellChecked: false, type: 1 }) &
-                  this.getInfo()
-                }
                 to={`/book/`}
                 component={LinkRouter}
               >
@@ -513,7 +508,7 @@ class BottomBar extends Component {
               <IconButton
                 disabled={!this.showProfileButton()}
                 color='primary'
-                onClick={() => this.getInfo()}
+                onClick={() => this.props.fetchInfo()}
                 to={`/`}
                 component={LinkRouter}
               >
@@ -578,7 +573,7 @@ class BottomBar extends Component {
         />
 
         <UpdateClientDialog
-          open={this.props.info.openUpdateClient}
+          open={this.state.openUpdateClient}
           coordinatorVersion={this.props.info.coordinatorVersion}
           clientVersion={this.props.info.clientVersion}
           handleClickClose={() =>

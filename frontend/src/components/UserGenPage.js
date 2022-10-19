@@ -78,14 +78,6 @@ class UserGenPage extends Component {
     });
     requestBody.then((body) =>
       apiClient.post('/api/user/', body).then((data) => {
-        this.props.setRobot({
-          bit_entropy: data.token_bits_entropy,
-          shannon_entropy: data.token_shannon_entropy,
-          bad_request: data.bad_request,
-          found: data.found,
-          loading: false,
-          stealthInvoices: data.wants_stealth,
-        });
         // Add nick and token to App state (token only if not a bad request)
         data.bad_request
           ? this.props.setRobot({
@@ -111,6 +103,10 @@ class UserGenPage extends Component {
               tgEnabled: data.tg_enabled,
               tgBotName: data.tg_bot_name,
               tgToken: data.tg_token,
+              bitsEntropy: data.token_bits_entropy,
+              shannonEntropy: data.token_shannon_entropy,
+              pub_key: data.public_key,
+              enc_priv_key: data.encrypted_private_key,
             }) &
             systemClient.setCookie('robot_token', token) &
             systemClient.setCookie('pub_key', data.public_key.split('\n').join('\\')) &
@@ -174,11 +170,11 @@ class UserGenPage extends Component {
 
   createJsonFile = () => {
     return {
-      token: systemClient.getCookie('robot_token'),
-      token_shannon_entropy: this.state.shannon_entropy,
-      token_bit_entropy: this.state.bit_entropy,
-      public_key: systemClient.getCookie('pub_key').split('\\').join('\n'),
-      encrypted_private_key: systemClient.getCookie('enc_priv_key').split('\\').join('\n'),
+      token: this.props.robot.token,
+      token_shannon_entropy: this.props.robot.shannonEntropy,
+      token_bit_entropy: this.props.robot.bitsEntropy,
+      public_key: this.props.robot.pub_key,
+      encrypted_private_key: this.props.robot.enc_priv_key,
     };
   };
 
@@ -356,7 +352,7 @@ class UserGenPage extends Component {
           </Grid>
         </Grid>
         <Grid item xs={12} align='center'>
-          {this.state.inputTokenHasChanged ? (
+          {this.state.tokenHasChanged ? (
             <Button type='submit' size='small' onClick={this.handleClickSubmitToken}>
               <SmartToyIcon sx={{ width: 18 * fontSizeFactor, height: 18 * fontSizeFactor }} />
               <span> {t('Generate Robot')}</span>
