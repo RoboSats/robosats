@@ -34,7 +34,7 @@ interface DepthChartProps {
   orders: Order[];
   lastDayPremium: number | undefined;
   currency: number;
-  limitList: LimitList;
+  limits: LimitList;
   maxWidth: number;
   maxHeight: number;
 }
@@ -43,7 +43,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   orders,
   lastDayPremium,
   currency,
-  limitList,
+  limits,
   maxWidth,
   maxHeight,
 }) => {
@@ -55,25 +55,29 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const [rangeSteps, setRangeSteps] = useState<number>(8);
   const [xRange, setXRange] = useState<number>(8);
   const [xType, setXType] = useState<string>('premium');
+  const [currencyCode, setCurrencyCode] = useState<number>(1);
   const [center, setCenter] = useState<number>();
 
   const height = maxHeight < 20 ? 20 : maxHeight;
   const width = maxWidth < 20 ? 20 : maxWidth > 72.8 ? 72.8 : maxWidth;
 
   useEffect(() => {
-    if (Object.keys(limitList).length > 0) {
+    setCurrencyCode(currency === 0 ? 1 : currency);
+  }, [currency]);
+
+  useEffect(() => {
+    if (Object.keys(limits).length > 0) {
       const enriched = orders.map((order) => {
         // We need to transform all currencies to the same base (ex. USD), we don't have the exchange rate
         // for EUR -> USD, but we know the rate of both to BTC, so we get advantage of it and apply a
         // simple rule of three
         order.base_amount =
-          (order.price * limitList[currency === 0 ? 1 : currency].price) /
-          limitList[order.currency].price;
+          (order.price * limits[currencyCode].price) / limits[order.currency].price;
         return order;
       });
       setEnrichedOrders(enriched);
     }
-  }, [limitList, orders, currency]);
+  }, [limits, orders, currencyCode]);
 
   useEffect(() => {
     if (enrichedOrders.length > 0) {
@@ -98,7 +102,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setXRange(8);
       setRangeSteps(0.5);
     }
-  }, [enrichedOrders, xType, lastDayPremium, currency]);
+  }, [enrichedOrders, xType, lastDayPremium, currencyCode]);
 
   const generateSeries: () => void = () => {
     const sortedOrders: Order[] =
@@ -323,7 +327,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 <Grid item>
                   <Box justifyContent='center'>
                     {xType === 'base_amount'
-                      ? `${center} ${currencyDict[currency === 0 ? 1 : currency]}`
+                      ? `${center} ${currencyDict[currencyCode]}`
                       : `${center}%`}
                   </Box>
                 </Grid>
