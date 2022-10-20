@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from api.lightning.node import LNNode
 from api.tasks import follow_send_payment
@@ -84,7 +84,7 @@ class Command(BaseCommand):
                 if hasattr(response, "htlcs"):
                     try:
                         hold_lnpayment.expiry_height = response.htlcs[0].expiry_height
-                    except:
+                    except Exception:
                         pass
 
             except Exception as e:

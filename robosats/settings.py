@@ -16,7 +16,7 @@ from pathlib import Path
 
 from decouple import config
 
-from .celery.conf import *
+from .celery.conf import *  # noqa
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

@@ -1,16 +1,20 @@
-import grpc, os, hashlib, secrets, ring
-
-
-from . import lightning_pb2 as lnrpc, lightning_pb2_grpc as lightningstub
-from . import invoices_pb2 as invoicesrpc, invoices_pb2_grpc as invoicesstub
-from . import router_pb2 as routerrpc, router_pb2_grpc as routerstub
-
-from decouple import config
+import hashlib
+import os
+import secrets
 from base64 import b64decode
+from datetime import datetime, timedelta
 
-from datetime import timedelta, datetime
+import grpc
+import ring
+from decouple import config
 from django.utils import timezone
 
+from . import invoices_pb2 as invoicesrpc
+from . import invoices_pb2_grpc as invoicesstub
+from . import lightning_pb2 as lnrpc
+from . import lightning_pb2_grpc as lightningstub
+from . import router_pb2 as routerrpc
+from . import router_pb2_grpc as routerstub
 
 #######
 # Should work with LND (c-lightning in the future if there are features that deserve the work)
@@ -19,7 +23,7 @@ from django.utils import timezone
 # Read tls.cert from file or .env variable string encoded as base64
 try:
     CERT = open(os.path.join(config("LND_DIR"), "tls.cert"), "rb").read()
-except:
+except Exception:
     CERT = b64decode(config("LND_CERT_BASE64"))
 
 # Read macaroon from file or .env variable string encoded as base64
@@ -27,7 +31,7 @@ try:
     MACAROON = open(
         os.path.join(config("LND_DIR"), config("MACAROON_path")), "rb"
     ).read()
-except:
+except Exception:
     MACAROON = b64decode(config("LND_MACAROON_BASE64"))
 
 LND_GRPC_HOST = config("LND_GRPC_HOST")
@@ -236,7 +240,7 @@ class LNNode:
     @classmethod
     def resetmc(cls):
         request = routerrpc.ResetMissionControlRequest()
-        response = cls.routerstub.ResetMissionControl(
+        _ = cls.routerstub.ResetMissionControl(
             request, metadata=[("macaroon", MACAROON.hex())]
         )
         return True
@@ -256,14 +260,14 @@ class LNNode:
 
         try:
             payreq_decoded = cls.decode_payreq(invoice)
-        except:
+        except Exception:
             payout["context"] = {
                 "bad_invoice": "Does not look like a valid lightning invoice"
             }
             return payout
 
-        ## Some wallet providers (e.g. Muun) force routing through a private channel with high fees >1500ppm
-        ## These payments will fail. So it is best to let the user know in advance this invoice is not valid.
+        # Some wallet providers (e.g. Muun) force routing through a private channel with high fees >1500ppm
+        # These payments will fail. So it is best to let the user know in advance this invoice is not valid.
         route_hints = payreq_decoded.route_hints
 
         # Max amount RoboSats will pay for routing

@@ -21,15 +21,15 @@ def do_accounting():
     try:
         last_accounted_day = AccountingDay.objects.latest("day").day.date()
         accounted_yesterday = AccountingDay.objects.latest("day")
-    except:
+    except Exception:
         last_accounted_day = None
         accounted_yesterday = None
 
     if last_accounted_day == today:
         return {"message": "no days to account for"}
-    elif last_accounted_day != None:
+    elif last_accounted_day is not None:
         initial_day = last_accounted_day + timedelta(days=1)
-    elif last_accounted_day == None:
+    elif last_accounted_day is None:
         initial_day = all_payments.earliest("created_at").created_at.date()
 
     day = initial_day
@@ -54,11 +54,11 @@ def do_accounting():
         onchain_outflow = day_onchain_payments.filter(
             status__in=[OnchainPayment.Status.MEMPO, OnchainPayment.Status.CONFI]
         ).aggregate(Sum("sent_satoshis"))["sent_satoshis__sum"]
-        onchain_outflow = 0 if onchain_outflow == None else int(onchain_outflow)
+        onchain_outflow = 0 if onchain_outflow is None else int(onchain_outflow)
         offchain_outflow = day_payments.filter(
             type=LNPayment.Types.NORM, status=LNPayment.Status.SUCCED
         ).aggregate(Sum("num_satoshis"))["num_satoshis__sum"]
-        offchain_outflow = 0 if offchain_outflow == None else int(offchain_outflow)
+        offchain_outflow = 0 if offchain_outflow is None else int(offchain_outflow)
         routing_fees = day_payments.filter(
             type=LNPayment.Types.NORM, status=LNPayment.Status.SUCCED
         ).aggregate(Sum("fee"))["fee__sum"]
@@ -71,12 +71,12 @@ def do_accounting():
             status=LNPayment.Status.SUCCED,
         ).aggregate(Sum("num_satoshis"))["num_satoshis__sum"]
 
-        contracted = 0 if contracted == None else contracted
-        inflow = 0 if inflow == None else inflow
+        contracted = 0 if contracted is None else contracted
+        inflow = 0 if inflow is None else inflow
         outflow = offchain_outflow + onchain_outflow
-        routing_fees = 0 if routing_fees == None else routing_fees
-        rewards_claimed = 0 if rewards_claimed == None else rewards_claimed
-        mining_fees = 0 if mining_fees == None else mining_fees
+        routing_fees = 0 if routing_fees is None else routing_fees
+        rewards_claimed = 0 if rewards_claimed is None else rewards_claimed
+        mining_fees = 0 if mining_fees is None else mining_fees
 
         accounted_day = AccountingDay.objects.create(
             day=day,
@@ -154,7 +154,7 @@ def do_accounting():
             accounted_day.lifetime_rewards_claimed = Profile.objects.all().aggregate(
                 Sum("claimed_rewards")
             )["claimed_rewards__sum"]
-            if accounted_yesterday != None:
+            if accounted_yesterday is not None:
                 accounted_day.earned_rewards = (
                     accounted_day.outstanding_earned_rewards
                     - accounted_yesterday.outstanding_earned_rewards

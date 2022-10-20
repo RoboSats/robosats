@@ -1,4 +1,3 @@
-from operator import index
 from rest_framework import status, viewsets
 from chat.serializers import ChatSerializer, PostMessageSerializer
 from chat.models import Message, ChatRoom

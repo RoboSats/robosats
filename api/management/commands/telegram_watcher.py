@@ -1,10 +1,9 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from api.models import Profile
 from api.messages import Telegram
 from api.utils import get_session
 from decouple import config
-import requests
 import time
 
 
@@ -36,7 +35,7 @@ class Command(BaseCommand):
 
                 try:  # if there is no key message, skips this result.
                     text = result["message"]["text"]
-                except:
+                except Exception:
                     continue
 
                 splitted_text = text.split(" ")
@@ -44,7 +43,7 @@ class Command(BaseCommand):
                     token = splitted_text[-1]
                     try:
                         profile = Profile.objects.get(telegram_token=token)
-                    except:
+                    except Exception:
                         print(f"No profile with token {token}")
                         continue
 
@@ -59,7 +58,7 @@ class Command(BaseCommand):
                             profile.telegram_enabled = True
                             profile.save()
                             break
-                        except:
+                        except Exception:
                             time.sleep(5)
                             attempts = attempts - 1
 
