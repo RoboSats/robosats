@@ -1,17 +1,16 @@
+import ast
+import math
 from datetime import timedelta
-from django.utils import timezone
-from api.lightning.node import LNNode
-from django.db.models import Q, Sum
-
-from api.models import OnchainPayment, Order, LNPayment, MarketTick, User, Currency
-from api.tasks import send_message
-from decouple import config
-from api.utils import validate_onchain_address
 
 import gnupg
+from decouple import config
+from django.db.models import Q, Sum
+from django.utils import timezone
 
-import math
-import ast
+from api.lightning.node import LNNode
+from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, User
+from api.tasks import send_message
+from api.utils import validate_onchain_address
 
 FEE = float(config("FEE"))
 MAKER_FEE_SPLIT = float(config("MAKER_FEE_SPLIT"))
@@ -735,11 +734,7 @@ class Logics:
         if not order.taker_bond:
             return False, {"bad_request": "Wait for your order to be taken."}
         if (
-            not (
-                order.taker_bond.status
-                == order.maker_bond.status
-                == LNPayment.Status.LOCKED
-            )
+            not ( order.taker_bond.status == order.maker_bond.status == LNPayment.Status.LOCKED)
             and not order.status == Order.Status.FAI
         ):
             return False, {
@@ -758,7 +753,7 @@ class Logics:
         payout = LNNode.validate_ln_invoice(invoice, num_satoshis)
 
         if not payout["valid"]:
-            return False, payout["context"]
+            return False, payout['context']
 
         order.payout, _ = LNPayment.objects.update_or_create(
             concept=LNPayment.Concepts.PAYBUYER,
@@ -768,10 +763,10 @@ class Logics:
             receiver=user,
             # if there is a LNPayment matching these above, it updates that one with defaults below.
             defaults={
-                "invoice": invoice,
-                "status": LNPayment.Status.VALIDI,
-                "num_satoshis": num_satoshis,
-                "description": payout["description"],
+                "invoice":invoice,
+                "status":LNPayment.Status.VALIDI,
+                "num_satoshis":num_satoshis,
+                "description": payout['description'],
                 "payment_hash": payout["payment_hash"],
                 "created_at": payout["created_at"],
                 "expires_at": payout["expires_at"],
