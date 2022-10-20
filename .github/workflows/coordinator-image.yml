@@ -1,4 +1,4 @@
-name: Coodinator Image CI
+name: "Docker: Coordinator"
 
 on:
   workflow_dispatch:

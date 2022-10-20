@@ -1,4 +1,4 @@
-name: Client App Image CI/CD
+name: "Docker: Client"
 
 on:
   workflow_dispatch:

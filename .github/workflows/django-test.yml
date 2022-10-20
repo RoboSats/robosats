@@ -1,4 +1,4 @@
-name: Django Tests
+name: "Test: Coordinator"
 
 on:
   workflow_dispatch:

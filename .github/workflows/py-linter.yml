@@ -1,4 +1,4 @@
-name: Python Backend Lint
+name: "Lint: Python Coordinator"
 
 on:
   push:

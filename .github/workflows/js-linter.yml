@@ -1,4 +1,4 @@
-name: Lint
+name: "Lint: Javascript Client"
 
 on:
   # Trigger the workflow on push or pull request,
@@ -6,9 +6,13 @@ on:
   push:
     branches:
       - main
+    paths:
+      - frontend
   pull_request:
     branches:
       - main
+    paths:
+      - frontend
 
 jobs:
   run-linters:

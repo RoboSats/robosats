@@ -1,4 +1,4 @@
-name: Frontend Test & Build
+name: "Build: Frontend All Bundles"
 
 on:
   workflow_dispatch:
