@@ -1,10 +1,11 @@
 from django.urls import path
-from .views import index
+from .views import basic, pro
 
 urlpatterns = [
-    path("make/", index),
-    path("book/", index),
-    path("order/<int:orderId>", index),
-    path("", index),
-    path("ref/<refCode>", index),
+    path("make/", basic),
+    path("book/", basic),
+    path("order/<int:orderId>", basic),
+    path("", basic),
+    path("ref/<refCode>", basic),
+    path("pro/", pro),
 ]

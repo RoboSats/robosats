@@ -38,7 +38,7 @@ import { UserNinjaIcon, BitcoinIcon } from '../Icons';
 
 import { systemClient } from '../../services/System';
 import { getWebln } from '../../utils/webln';
-import RobotAvatar from '../Robots/RobotAvatar';
+import RobotAvatar from '../RobotAvatar';
 
 interface Props {
   open: boolean;

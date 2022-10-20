@@ -16,6 +16,8 @@ export { default as ExportIcon } from './Export';
 export { default as UserNinjaIcon } from './UserNinja';
 export { default as TorIcon } from './Tor';
 
+// Flags with props
+export { default as FlagWithProps } from './WorldFlags';
 // Some Flags missing on react-flags
 export { default as BasqueCountryFlag } from './BasqueCountryFlag';
 export { default as CataloniaFlag } from './CataloniaFlag';
