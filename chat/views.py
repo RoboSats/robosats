@@ -41,7 +41,7 @@ class ChatView(viewsets.ViewSet):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        if not order.status in [Order.Status.CHA, Order.Status.FSE]:
+        if order.status not in [Order.Status.CHA, Order.Status.FSE]:
             return Response(
                 {"bad_request": "Order is not in chat status"},
                 status.HTTP_400_BAD_REQUEST,
@@ -111,7 +111,7 @@ class ChatView(viewsets.ViewSet):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        if not order.status in [Order.Status.CHA, Order.Status.FSE]:
+        if order.status not in [Order.Status.CHA, Order.Status.FSE]:
             return Response(
                 {"bad_request": "Order is not in chat status"},
                 status.HTTP_400_BAD_REQUEST,

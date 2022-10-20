@@ -1,7 +1,6 @@
 from django.db import models
 from api.models import User, Order
 from django.utils import timezone
-import uuid
 
 
 class ChatRoom(models.Model):

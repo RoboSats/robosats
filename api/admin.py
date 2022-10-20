@@ -237,7 +237,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
             )
 
     def amt(self, obj):
-        if obj.has_range and obj.amount == None:
+        if obj.has_range and obj.amount is None:
             return str(float(obj.min_amount)) + "-" + str(float(obj.max_amount))
         else:
             return float(obj.amount)

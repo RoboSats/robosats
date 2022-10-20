@@ -1,8 +1,10 @@
 import json
+import logging
 import os
 
 import numpy as np
-import requests, ring, logging
+import requests
+import ring
 from decouple import config
 
 from api.models import Order
@@ -91,7 +93,7 @@ def get_exchange_rates(currencies):
                         blockchain_rates.append(
                             float(blockchain_prices[currency]["last"])
                         )
-                    except:
+                    except Exception:
                         blockchain_rates.append(np.nan)
                 api_rates.append(blockchain_rates)
 
@@ -101,10 +103,10 @@ def get_exchange_rates(currencies):
                 for currency in currencies:
                     try:
                         yadio_rates.append(float(yadio_prices["BTC"][currency]))
-                    except:
+                    except Exception:
                         yadio_rates.append(np.nan)
                 api_rates.append(yadio_rates)
-        except:
+        except Exception:
             pass
 
     if len(api_rates) == 0:
@@ -123,7 +125,7 @@ def get_lnd_version():
     try:
         lnd_version = config("LND_VERSION")
         return lnd_version
-    except:
+    except Exception:
         pass
 
     # If not dockerized and LND is local, read from CLI
@@ -131,7 +133,7 @@ def get_lnd_version():
         stream = os.popen("lnd --version")
         lnd_version = stream.read()[:-1]
         return lnd_version
-    except:
+    except Exception:
         return ""
 
 
@@ -145,7 +147,7 @@ def get_robosats_commit():
     commit_hash = commit.read()
 
     # .git folder is included in .dockerignore. But automatic build will drop in a commit_sha.txt file on root
-    if commit_hash == None or commit_hash == "":
+    if commit_hash is None or commit_hash == "":
         with open("commit_sha.txt") as f:
             commit_hash = f.read()
 

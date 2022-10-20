@@ -34,7 +34,7 @@ def users_cleansing():
             if valid:
                 deleted_users.append(str(user))
                 user.delete()
-        except:
+        except Exception:
             pass
 
     results = {
@@ -212,7 +212,7 @@ def payments_cleansing():
             name = str(lnpayment)
             lnpayment.delete()
             deleted_lnpayments.append(name)
-        except:
+        except Exception:
             pass
 
     # same for onchain payments
@@ -229,7 +229,7 @@ def payments_cleansing():
             name = str(onchainpayment)
             onchainpayment.delete()
             deleted_onchainpayments.append(name)
-        except:
+        except Exception:
             pass
 
     results = {

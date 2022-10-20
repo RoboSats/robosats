@@ -18,7 +18,7 @@ class Telegram:
         else:
             context["tg_enabled"] = False
 
-        if user.profile.telegram_token == None:
+        if user.profile.telegram_token is None:
             user.profile.telegram_token = token_urlsafe(15)
             user.profile.save()
 
@@ -40,7 +40,7 @@ class Telegram:
             try:
                 self.session.get(message_url).json()
                 return
-            except:
+            except Exception:
                 pass
 
     def welcome(self, user):

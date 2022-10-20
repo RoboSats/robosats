@@ -117,15 +117,15 @@ class MakerView(CreateAPIView):
         bondless_taker = serializer.data.get("bondless_taker")
 
         # Optional params
-        if public_duration == None:
+        if public_duration is None:
             public_duration = PUBLIC_DURATION
-        if escrow_duration == None:
+        if escrow_duration is None:
             escrow_duration = ESCROW_DURATION
-        if bond_size == None:
+        if bond_size is None:
             bond_size = BOND_SIZE
-        if bondless_taker == None:
+        if bondless_taker is None:
             bondless_taker = False
-        if has_range == None:
+        if has_range is None:
             has_range = False
 
         # TODO add a check - if `is_explicit` is true then `satoshis` need to be specified
@@ -138,14 +138,14 @@ class MakerView(CreateAPIView):
             max_amount = None
 
         # Either amount or min_max has to be specified.
-        if has_range and (min_amount == None or max_amount == None):
+        if has_range and (min_amount is None or max_amount is None):
             return Response(
                 {
                     "bad_request": "You must specify min_amount and max_amount for a range order"
                 },
                 status.HTTP_400_BAD_REQUEST,
             )
-        elif not has_range and amount == None:
+        elif not has_range and amount is None:
             return Response(
                 {"bad_request": "You must specify an order amount"},
                 status.HTTP_400_BAD_REQUEST,
@@ -200,7 +200,7 @@ class OrderView(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if order_id == None:
+        if order_id is None:
             return Response(
                 {"bad_request": "Order ID parameter not found in request"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -260,9 +260,9 @@ class OrderView(viewsets.ViewSet):
             order.save()
 
         # Add activity status of participants based on last_seen
-        if order.taker_last_seen != None:
+        if order.taker_last_seen is not None:
             data["taker_status"] = Logics.user_activity_status(order.taker_last_seen)
-        if order.maker_last_seen != None:
+        if order.maker_last_seen is not None:
             data["maker_status"] = Logics.user_activity_status(order.maker_last_seen)
 
         # 3.b) Non participants can view details (but only if PUB)
@@ -415,11 +415,11 @@ class OrderView(viewsets.ViewSet):
             # add whether the dispute statement has been received
             if data["is_maker"]:
                 data["statement_submitted"] = (
-                    order.maker_statement != None and order.maker_statement != ""
+                    order.maker_statement is not None and order.maker_statement != ""
                 )
             elif data["is_taker"]:
                 data["statement_submitted"] = (
-                    order.taker_statement != None and order.taker_statement != ""
+                    order.taker_statement is not None and order.taker_statement != ""
                 )
 
         # 9) If status is 'Failed routing', reply with retry amounts, time of next retry and ask for invoice at third.
@@ -690,7 +690,7 @@ class UserView(APIView):
             if bits_entropy < 128 or shannon_entropy < 0.7:
                 context["bad_request"] = "The token does not have enough entropy"
                 return Response(context, status=status.HTTP_400_BAD_REQUEST)
-        except:
+        except Exception:
             pass
 
         # Hash the token_sha256, only 1 iteration. (this is the second SHA256 of the user token, aka RoboSats ID)
@@ -881,7 +881,7 @@ class InfoView(ListAPIView):
             status=Order.Status.PUB
         ).aggregate(Sum("last_satoshis"))["last_satoshis__sum"]
         context["book_liquidity"] = (
-            0 if context["book_liquidity"] == None else context["book_liquidity"]
+            0 if context["book_liquidity"] is None else context["book_liquidity"]
         )
 
         # Number of active users (logged in in last 30 minutes)
@@ -1002,7 +1002,7 @@ class PriceView(ListAPIView):
                     "premium": last_tick.premium,
                     "timestamp": last_tick.timestamp,
                 }
-            except:
+            except Exception:
                 payload[code] = None
 
         return Response(payload, status.HTTP_200_OK)

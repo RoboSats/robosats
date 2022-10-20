@@ -478,7 +478,7 @@ class Order(models.Model):
     taker_platform_rated = models.BooleanField(default=False, null=False)
 
     def __str__(self):
-        if self.has_range and self.amount == None:
+        if self.has_range and self.amount is None:
             amt = str(float(self.min_amount)) + "-" + str(float(self.max_amount))
         else:
             amt = float(self.amount)
@@ -529,7 +529,7 @@ def delete_lnpayment_at_order_deletion(sender, instance, **kwargs):
     for lnpayment in to_delete:
         try:
             lnpayment.delete()
-        except:
+        except Exception:
             pass
 
 
@@ -640,7 +640,7 @@ class Profile(models.Model):
                 settings.AVATAR_ROOT + instance.profile.avatar.url.split("/")[-1]
             )
             avatar_file.unlink()
-        except:
+        except Exception:
             pass
 
     def __str__(self):

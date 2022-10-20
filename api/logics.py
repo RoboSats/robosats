@@ -101,7 +101,7 @@ class Logics:
             return (
                 False,
                 {
-                    "bad_request": f"Your PGP public key does not seem valid.\n"
+                    "bad_request": "Your PGP public key does not seem valid.\n"
                     + f"Stderr: {str(import_pub_result.stderr)}\n"
                     + f"ReturnCode: {str(import_pub_result.returncode)}\n"
                     + f"Summary: {str(import_pub_result.summary)}\n"
@@ -120,7 +120,7 @@ class Logics:
             return (
                 False,
                 {
-                    "bad_request": f"Your PGP encrypted private key does not seem valid.\n"
+                    "bad_request": "Your PGP encrypted private key does not seem valid.\n"
                     + f"Stderr: {str(import_priv_result.stderr)}\n"
                     + f"ReturnCode: {str(import_priv_result.returncode)}\n"
                     + f"Summary: {str(import_priv_result.summary)}\n"
@@ -182,7 +182,7 @@ class Logics:
                 }
             elif min_sats < max_sats / 8:
                 return False, {
-                    "bad_request": f"Your order amount range is too large. Max amount can only be 8 times bigger than min amount"
+                    "bad_request": "Your order amount range is too large. Max amount can only be 8 times bigger than min amount"
                 }
 
         return True, None
@@ -247,7 +247,7 @@ class Logics:
         if order.is_explicit:
             satoshis_now = order.satoshis
         else:
-            amount = order.amount if order.amount != None else order.max_amount
+            amount = order.amount if order.amount is not None else order.max_amount
             satoshis_now = cls.calc_sats(
                 amount, order.currency.exchange_rate, order.premium
             )
@@ -293,7 +293,7 @@ class Logics:
         ]
 
         # in any case, if order is_swap and there is an onchain_payment, cancel it.
-        if not order.status in does_not_expire:
+        if order.status not in does_not_expire:
             cls.cancel_onchain_payment(order)
 
         if order.status in does_not_expire:
@@ -342,7 +342,7 @@ class Logics:
                 # If seller is offline the escrow LNpayment does not exist
                 try:
                     cls.cancel_escrow(order)
-                except:
+                except Exception:
                     pass
                 order.status = Order.Status.EXP
                 order.expiry_reason = Order.ExpiryReasons.NESCRO
@@ -357,7 +357,7 @@ class Logics:
                 # If seller is offline the escrow LNpayment does not even exist
                 try:
                     cls.cancel_escrow(order)
-                except:
+                except Exception:
                     pass
                 taker_bond = order.taker_bond
                 order.taker = None
@@ -456,10 +456,10 @@ class Logics:
         order.save()
 
         # User could be None if a dispute is open automatically due to weird expiration.
-        if not user == None:
+        if user is not None:
             profile = user.profile
             profile.num_disputes = profile.num_disputes + 1
-            if profile.orders_disputes_started == None:
+            if profile.orders_disputes_started is None:
                 profile.orders_disputes_started = [str(order.id)]
             else:
                 profile.orders_disputes_started = list(
@@ -554,7 +554,7 @@ class Logics:
             status=OnchainPayment.Status.VALID
         ).aggregate(Sum("num_satoshis"))["num_satoshis__sum"]
 
-        if pending_txs == None:
+        if pending_txs is None:
             pending_txs = 0
 
         available_onchain = confirmed - reserve - pending_txs
@@ -622,7 +622,7 @@ class Logics:
             context["swap_failure_reason"] = "On-the-fly submarine swaps are dissabled"
             return True, context
 
-        if order.payout_tx == None:
+        if order.payout_tx is None:
             # Creates the OnchainPayment object and checks node balance
             valid = cls.create_onchain_payment(
                 order, user, preliminary_amount=context["invoice_amount"]
@@ -798,7 +798,7 @@ class Logics:
         # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow'
         elif order.status == Order.Status.WF2:
             # If the escrow does not exist, or is not locked move to WFE.
-            if order.trade_escrow == None:
+            if order.trade_escrow is None:
                 order.status = Order.Status.WFE
             # If the escrow is locked move to Chat.
             elif order.trade_escrow.status == LNPayment.Status.LOCKED:
@@ -827,7 +827,7 @@ class Logics:
         # TODO Unsafe, does not update ratings, it adds more ratings everytime a new rating is clicked.
         profile.total_ratings += 1
         latest_ratings = profile.latest_ratings
-        if latest_ratings == None:
+        if latest_ratings is None:
             profile.latest_ratings = [rating]
             profile.avg_rating = rating
 
@@ -873,18 +873,19 @@ class Logics:
             return False, {"bad_request": "You cannot cancel this order"}
 
         # 1) When maker cancels before bond
-        """The order never shows up on the book and order 
-        status becomes "cancelled" """
+        # The order never shows up on the book and order
+        # status becomes "cancelled"
         if order.status == Order.Status.WFB and order.maker == user:
             cls.cancel_bond(order.maker_bond)
             order.status = Order.Status.UCA
             order.save()
             return True, None
 
-            # 2.a) When maker cancels after bond
-            """The order dissapears from book and goes to cancelled. If strict, maker is charged the bond 
-            to prevent DDOS on the LN node and order book. If not strict, maker is returned
-            the bond (more user friendly)."""
+        # 2.a) When maker cancels after bond
+        #
+        # The order dissapears from book and goes to cancelled. If strict, maker is charged the bond
+        # to prevent DDOS on the LN node and order book. If not strict, maker is returned
+        # the bond (more user friendly).
         elif (
             order.status in [Order.Status.PUB, Order.Status.PAU] and order.maker == user
         ):
@@ -895,9 +896,10 @@ class Logics:
                 send_message.delay(order.id, "public_order_cancelled")
                 return True, None
 
-            # 2.b) When maker cancels after bond and before taker bond is locked
-            """The order dissapears from book and goes to cancelled.
-            The bond maker bond is returned."""
+        # 2.b) When maker cancels after bond and before taker bond is locked
+        #
+        # The order dissapears from book and goes to cancelled.
+        # The bond maker bond is returned.
         elif order.status == Order.Status.TAK and order.maker == user:
             # Return the maker bond (Maker gets returned the bond for cancelling public order)
             if cls.return_bond(order.maker_bond):
@@ -907,22 +909,23 @@ class Logics:
                 send_message.delay(order.id, "public_order_cancelled")
                 return True, None
 
-            # 3) When taker cancels before bond
-            """ The order goes back to the book as public.
-            LNPayment "order.taker_bond" is deleted() """
+        # 3) When taker cancels before bond
+        # The order goes back to the book as public.
+        # LNPayment "order.taker_bond" is deleted()
         elif order.status == Order.Status.TAK and order.taker == user:
             # adds a timeout penalty
             cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
             return True, None
 
-            # 4) When taker or maker cancel after bond (before escrow)
-            """The order goes into cancelled status if maker cancels.
-            The order goes into the public book if taker cancels.
-            In both cases there is a small fee."""
+        # 4) When taker or maker cancel after bond (before escrow)
+        #
+        # The order goes into cancelled status if maker cancels.
+        # The order goes into the public book if taker cancels.
+        # In both cases there is a small fee.
 
-            # 4.a) When maker cancel after bond (before escrow)
-            """The order into cancelled status if maker cancels."""
+        # 4.a) When maker cancel after bond (before escrow)
+        # The order into cancelled status if maker cancels.
         elif (
             order.status in [Order.Status.WF2, Order.Status.WFE] and order.maker == user
         ):
@@ -939,8 +942,8 @@ class Logics:
                 cls.add_slashed_rewards(order.maker_bond, order.taker.profile)
                 return True, None
 
-            # 4.b) When taker cancel after bond (before escrow)
-            """The order into cancelled status if mtker cancels."""
+        # 4.b) When taker cancel after bond (before escrow)
+        # The order into cancelled status if mtker cancels.
         elif (
             order.status in [Order.Status.WF2, Order.Status.WFE] and order.taker == user
         ):
@@ -958,11 +961,12 @@ class Logics:
                 cls.add_slashed_rewards(order.taker_bond, order.maker.profile)
                 return True, None
 
-            # 5) When trade collateral has been posted (after escrow)
-            """Always goes to CCA status. Collaboration is needed.
-            When a user asks for cancel, 'order.m/t/aker_asked_cancel' goes True.
-            When the second user asks for cancel. Order is totally cancelled.
-            Must have a small cost for both parties to prevent node DDOS."""
+        # 5) When trade collateral has been posted (after escrow)
+        #
+        # Always goes to CCA status. Collaboration is needed.
+        # When a user asks for cancel, 'order.m/t/aker_asked_cancel' goes True.
+        # When the second user asks for cancel. Order is totally cancelled.
+        # Must have a small cost for both parties to prevent node DDOS.
         elif order.status in [Order.Status.WFI, Order.Status.CHA]:
 
             # if the maker had asked, and now the taker does: cancel order, return everything
@@ -991,7 +995,7 @@ class Logics:
 
     @classmethod
     def collaborative_cancel(cls, order):
-        if not order.status in [Order.Status.WFI, Order.Status.CHA]:
+        if order.status not in [Order.Status.WFI, Order.Status.CHA]:
             return
         # cancel onchain payment if existing
         cls.cancel_onchain_payment(order)
@@ -1155,7 +1159,7 @@ class Logics:
         # Log a market tick
         try:
             MarketTick.log_a_tick(order)
-        except:
+        except Exception:
             pass
         send_message.delay(order.id, "order_taken_confirmed")
         return True
@@ -1366,7 +1370,7 @@ class Logics:
 
     def return_bond(bond):
         """returns a bond"""
-        if bond == None:
+        if bond is None:
             return
         try:
             LNNode.cancel_return_hold_invoice(bond.payment_hash)
@@ -1394,7 +1398,7 @@ class Logics:
     def cancel_bond(bond):
         """cancel a bond"""
         # Same as return bond, but used when the invoice was never LOCKED
-        if bond == None:
+        if bond is None:
             return True
         try:
             LNNode.cancel_return_hold_invoice(bond.payment_hash)
@@ -1415,7 +1419,7 @@ class Logics:
 
         # Pay to buyer invoice
         if not order.is_swap:
-            ##### Background process "follow_invoices" will try to pay this invoice until success
+            # Background process "follow_invoices" will try to pay this invoice until success
             order.status = Order.Status.PAY
             order.payout.status = LNPayment.Status.FLIGHT
             order.payout.save()
@@ -1482,13 +1486,13 @@ class Logics:
                     # RETURN THE BONDS
                     cls.return_bond(order.taker_bond)
                     cls.return_bond(order.maker_bond)
-                    ##### !!! KEY LINE - PAYS THE BUYER INVOICE !!!
+                    # !!! KEY LINE - PAYS THE BUYER INVOICE !!!
                     cls.pay_buyer(order)
 
                     # Add referral rewards (safe)
                     try:
                         cls.add_rewards(order)
-                    except:
+                    except Exception:
                         pass
 
                     return True, None
@@ -1535,12 +1539,12 @@ class Logics:
         # If the trade is finished
         if order.status in rating_allowed_status:
             # if maker, rates taker
-            if order.maker == user and order.maker_rated == False:
+            if order.maker == user and order.maker_rated is False:
                 cls.add_profile_rating(order.taker.profile, rating)
                 order.maker_rated = True
                 order.save()
             # if taker, rates maker
-            if order.taker == user and order.taker_rated == False:
+            if order.taker == user and order.taker_rated is False:
                 cls.add_profile_rating(order.maker.profile, rating)
                 order.taker_rated = True
                 order.save()
@@ -1617,7 +1621,7 @@ class Logics:
                 expires_at=reward_payout["expires_at"],
             )
         # Might fail if payment_hash already exists in DB
-        except:
+        except Exception:
             return False, {"bad_invoice": "Give me a new invoice"}
 
         user.profile.earned_rewards = 0
@@ -1645,7 +1649,7 @@ class Logics:
         Summarizes a finished order. Returns a dict with
         amounts, fees, costs, etc, for buyer and seller.
         """
-        if not order.status in [Order.Status.SUC, Order.Status.PAY, Order.Status.FAI]:
+        if order.status not in [Order.Status.SUC, Order.Status.PAY, Order.Status.FAI]:
             return False, {"bad_summary": "Order has not finished yet"}
 
         context = {}
@@ -1705,7 +1709,7 @@ class Logics:
         platform_summary["contract_exchange_rate"] = float(order.amount) / (
             float(order.last_satoshis) / 100000000
         )
-        if order.last_satoshis_time != None:
+        if order.last_satoshis_time is not None:
             platform_summary["contract_timestamp"] = order.last_satoshis_time
             platform_summary["contract_total_time"] = (
                 order.contract_finalization_time - order.last_satoshis_time
