@@ -1,14 +1,19 @@
-name: Python Lint
+name: Python Backend Lint
 
 on:
   push:
     branches:
       - main
-  pull_request:
+    paths:
+      - '**.py'
+  pull_request_target:
     branches:
       - main
     paths:
       - '**.py'
+
+permissions:
+  checks: write
 
 jobs:
   run-linters:
@@ -26,6 +31,10 @@ jobs:
         uses: wearerequired/lint-action@v2
         with:
           auto_fix: true
+          git_name: "Python Lint Action"
+          commit_message: "Fix code style issues with ${linter}"
+          commit: false
+          neutral_check_on_warning: true
           black: true
           flake8: true
           # Flake8 doesn't support auto-fixing
