@@ -2,7 +2,6 @@ from decouple import config
 from secrets import token_urlsafe
 from api.models import Order
 from api.utils import get_session
-import time
 
 class Telegram():
     ''' Simple telegram messages by requesting to API'''

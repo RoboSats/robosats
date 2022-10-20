@@ -1,4 +1,3 @@
-from django.template.defaultfilters import default
 from rest_framework import serializers
 from .models import MarketTick, Order
 from decouple import config

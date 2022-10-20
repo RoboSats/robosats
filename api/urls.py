@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import MakerView, OrderView, UserView, BookView, InfoView, RewardView, PriceView, LimitView, HistoricalView, TickView, StealthView
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
 from chat.views import ChatView
 
 urlpatterns = [
