@@ -53,21 +53,21 @@ SESSION_COOKIE_HTTPONLY = False
 # Logging settings
 if os.environ.get("LOG_TO_CONSOLE"):
     LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'handlers': {
-            'console': {
-                'class': 'logging.StreamHandler',
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
             },
         },
-        'root': {
-            'handlers': ['console'],
-            'level': 'WARNING',
+        "root": {
+            "handlers": ["console"],
+            "level": "WARNING",
         },
-        'loggers': {
-            'api.utils': {
-                'handlers': ['console'],
-                'level': 'WARNING',
+        "loggers": {
+            "api.utils": {
+                "handlers": ["console"],
+                "level": "WARNING",
             },
         },
     }
@@ -95,12 +95,12 @@ INSTALLED_APPS = [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'RoboSats REST API v0',
-    'DESCRIPTION': textwrap.dedent(
+    "TITLE": "RoboSats REST API v0",
+    "DESCRIPTION": textwrap.dedent(
         """
         REST API Documentation for [RoboSats](https://learn.robosats.com) - A Simple and Private LN P2P Exchange
 
@@ -114,21 +114,21 @@ SPECTACULAR_SETTINGS = {
 
         """
     ),
-    'VERSION': '0.1.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
-    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
-    'REDOC_UI_SETTINGS': {
-        'expandResponses': '200,201',
+    "VERSION": "0.1.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_DIST": "SIDECAR",  # shorthand to use the sidecar instead
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_UI_SETTINGS": {
+        "expandResponses": "200,201",
     },
-    'EXTENSIONS_INFO': {
-        'x-logo': {
-          'url': 'https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png',
-          'backgroundColor': '#FFFFFF',
-          'altText': 'RoboSats logo'
+    "EXTENSIONS_INFO": {
+        "x-logo": {
+            "url": "https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png",
+            "backgroundColor": "#FFFFFF",
+            "altText": "RoboSats logo",
         }
     },
-    'REDOC_DIST': 'SIDECAR',
+    "REDOC_DIST": "SIDECAR",
 }
 
 from .celery.conf import *
@@ -173,7 +173,7 @@ DATABASES = {
         "NAME": config("POSTGRES_DB"),
         "USER": config("POSTGRES_USER"),
         "PASSWORD": config("POSTGRES_PASSWORD"),
-        'HOST': config("POSTGRES_HOST"),
+        "HOST": config("POSTGRES_HOST"),
         "PORT": config("POSTGRES_PORT"),
     }
 }
@@ -183,20 +183,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME":
-        "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        "NAME":
-        "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        "NAME":
-        "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        "NAME":
-        "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -230,9 +226,7 @@ CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": config("REDIS_URL"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient"
-        },
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     }
 }
 

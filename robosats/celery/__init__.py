@@ -35,11 +35,11 @@ app.conf.beat_schedule = {
         "task": "users_cleansing",
         "schedule": crontab(hour=0, minute=0),
     },
-    "chatrooms-cleansing": { # Cleans 3+ days old encrypted messages and chatrooms at midnight
+    "chatrooms-cleansing": {  # Cleans 3+ days old encrypted messages and chatrooms at midnight
         "task": "chatrooms_cleansing",
         "schedule": crontab(hour=0, minute=0),
     },
-    "lnpayments-cleansing": { # Cleans 3+ days old unlocked hodl invoices
+    "lnpayments-cleansing": {  # Cleans 3+ days old unlocked hodl invoices
         "task": "payments_cleansing",
         "schedule": crontab(hour=0, minute=0),
     },
@@ -55,10 +55,10 @@ app.conf.beat_schedule = {
         "task": "cache_external_market_prices",
         "schedule": timedelta(seconds=60),
     },
-    "compute-node-balance": { # Logs LND channel and wallet balance
-        "task":"compute_node_balance",
+    "compute-node-balance": {  # Logs LND channel and wallet balance
+        "task": "compute_node_balance",
         "schedule": timedelta(minutes=60),
-    }
+    },
 }
 
 app.conf.timezone = "UTC"

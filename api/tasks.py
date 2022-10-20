@@ -1,5 +1,6 @@
 from celery import shared_task
 
+
 @shared_task(name="users_cleansing")
 def users_cleansing():
     """
@@ -21,7 +22,11 @@ def users_cleansing():
     for user in queryset:
         # Try an except, due to unknown cause for users lacking profiles.
         try:
-            if user.profile.pending_rewards > 0 or user.profile.earned_rewards > 0 or user.profile.claimed_rewards > 0:
+            if (
+                user.profile.pending_rewards > 0
+                or user.profile.earned_rewards > 0
+                or user.profile.claimed_rewards > 0
+            ):
                 continue
             if not user.profile.total_contracts == 0:
                 continue
@@ -37,6 +42,7 @@ def users_cleansing():
         "deleted_users": deleted_users,
     }
     return results
+
 
 @shared_task(name="give_rewards")
 def give_rewards():
@@ -57,9 +63,13 @@ def give_rewards():
         profile.pending_rewards = 0
         profile.save()
 
-        results[profile.user.username] = {'given_reward':given_reward,'earned_rewards':profile.earned_rewards}
+        results[profile.user.username] = {
+            "given_reward": given_reward,
+            "earned_rewards": profile.earned_rewards,
+        }
 
     return results
+
 
 @shared_task(name="follow_send_payment")
 def follow_send_payment(hash):
@@ -75,10 +85,10 @@ def follow_send_payment(hash):
     lnpayment = LNPayment.objects.get(payment_hash=hash)
     fee_limit_sat = int(
         max(
-            lnpayment.num_satoshis *
-            float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
+            lnpayment.num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
             float(config("MIN_FLAT_ROUTING_FEE_LIMIT")),
-        ))  # 1000 ppm or 10 sats
+        )
+    )  # 1000 ppm or 10 sats
     timeout_seconds = int(config("PAYOUT_TIMEOUT_SECONDS"))
 
     request = LNNode.routerrpc.SendPaymentRequest(
@@ -89,15 +99,13 @@ def follow_send_payment(hash):
 
     order = lnpayment.order_paid_LN
     try:
-        for response in LNNode.routerstub.SendPaymentV2(request,
-                                                        metadata=[
-                                                            ("macaroon",
-                                                             MACAROON.hex())
-                                                        ]):
-                                                        
+        for response in LNNode.routerstub.SendPaymentV2(
+            request, metadata=[("macaroon", MACAROON.hex())]
+        ):
+
             lnpayment.in_flight = True
             lnpayment.save()
-                
+
             if response.status == 0:  # Status 0 'UNKNOWN'
                 # Not sure when this status happens
                 lnpayment.in_flight = False
@@ -125,18 +133,20 @@ def follow_send_payment(hash):
 
                 order.status = Order.Status.FAI
                 order.expires_at = timezone.now() + timedelta(
-                    seconds=order.t_to_expire(Order.Status.FAI))
+                    seconds=order.t_to_expire(Order.Status.FAI)
+                )
                 order.save()
                 context = {
-                    "routing_failed":
-                    LNNode.payment_failure_context[response.failure_reason],
-                    "IN_FLIGHT":False,
+                    "routing_failed": LNNode.payment_failure_context[
+                        response.failure_reason
+                    ],
+                    "IN_FLIGHT": False,
                 }
                 print(context)
 
                 # If failed due to not route, reset mission control. (This won't scale well, just a temporary fix)
                 # ResetMC deactivate temporary for tests
-                #if response.failure_reason==2:
+                # if response.failure_reason==2:
                 #    LNNode.resetmc()
 
                 return False, context
@@ -144,12 +154,13 @@ def follow_send_payment(hash):
             if response.status == 2:  # Status 2 'SUCCEEDED'
                 print("SUCCEEDED")
                 lnpayment.status = LNPayment.Status.SUCCED
-                lnpayment.fee = float(response.fee_msat)/1000
+                lnpayment.fee = float(response.fee_msat) / 1000
                 lnpayment.preimage = response.payment_preimage
                 lnpayment.save()
                 order.status = Order.Status.SUC
                 order.expires_at = timezone.now() + timedelta(
-                    seconds=order.t_to_expire(Order.Status.SUC))
+                    seconds=order.t_to_expire(Order.Status.SUC)
+                )
                 order.save()
                 return True, None
 
@@ -162,17 +173,19 @@ def follow_send_payment(hash):
             lnpayment.save()
             order.status = Order.Status.FAI
             order.expires_at = timezone.now() + timedelta(
-                seconds=order.t_to_expire(Order.Status.FAI))
+                seconds=order.t_to_expire(Order.Status.FAI)
+            )
             order.save()
             context = {"routing_failed": "The payout invoice has expired"}
             return False, context
 
+
 @shared_task(name="payments_cleansing")
 def payments_cleansing():
     """
-    Deletes cancelled payments (hodl invoices never locked) that 
+    Deletes cancelled payments (hodl invoices never locked) that
     belong to orders expired more than 3 days ago.
-    Deletes 'cancelled' or 'create' onchain_payments 
+    Deletes 'cancelled' or 'create' onchain_payments
     """
 
     from django.db.models import Q
@@ -185,10 +198,11 @@ def payments_cleansing():
     # Usually expiry is 1 day for every finished order. So ~4 days until
     # a never locked hodl invoice is removed.
     finished_time = timezone.now() - timedelta(days=3)
-    queryset = LNPayment.objects.filter(Q(status=LNPayment.Status.CANCEL),
-                                        Q(order_made__expires_at__lt=finished_time)|
-                                        Q(order_taken__expires_at__lt=finished_time))
-
+    queryset = LNPayment.objects.filter(
+        Q(status=LNPayment.Status.CANCEL),
+        Q(order_made__expires_at__lt=finished_time)
+        | Q(order_taken__expires_at__lt=finished_time),
+    )
 
     # And do not have an active trade, any past contract or any reward.
     deleted_lnpayments = []
@@ -200,10 +214,12 @@ def payments_cleansing():
             deleted_lnpayments.append(name)
         except:
             pass
-    
+
     # same for onchain payments
-    queryset = OnchainPayment.objects.filter(Q(status__in=[OnchainPayment.Status.CANCE, OnchainPayment.Status.CREAT]),
-                                        Q(order_paid_TX__expires_at__lt=finished_time)|Q(order_paid_TX__isnull=True))
+    queryset = OnchainPayment.objects.filter(
+        Q(status__in=[OnchainPayment.Status.CANCE, OnchainPayment.Status.CREAT]),
+        Q(order_paid_TX__expires_at__lt=finished_time) | Q(order_paid_TX__isnull=True),
+    )
 
     # And do not have an active trade, any past contract or any reward.
     deleted_onchainpayments = []
@@ -224,6 +240,7 @@ def payments_cleansing():
     }
     return results
 
+
 @shared_task(name="cache_external_market_prices", ignore_result=True)
 def cache_market():
 
@@ -236,7 +253,9 @@ def cache_market():
     exchange_rates = get_exchange_rates(currency_codes)
 
     results = {}
-    for i in range(len(Currency.currency_dict.values())):  # currencies are indexed starting at 1 (USD)
+    for i in range(
+        len(Currency.currency_dict.values())
+    ):  # currencies are indexed starting at 1 (USD)
 
         rate = exchange_rates[i]
         results[i] = {currency_codes[i], rate}
@@ -259,45 +278,48 @@ def cache_market():
 
     return results
 
+
 @shared_task(name="send_message", ignore_result=True)
 def send_message(order_id, message):
 
     from api.models import Order
+
     order = Order.objects.get(id=order_id)
     if not order.maker.profile.telegram_enabled:
         return
 
     from api.messages import Telegram
+
     telegram = Telegram()
 
-    if message == 'welcome':
+    if message == "welcome":
         telegram.welcome(order)
-        
-    elif message == 'order_expired_untaken':
+
+    elif message == "order_expired_untaken":
         telegram.order_expired_untaken(order)
 
-    elif message == 'trade_successful':
+    elif message == "trade_successful":
         telegram.trade_successful(order)
 
-    elif message == 'public_order_cancelled':
+    elif message == "public_order_cancelled":
         telegram.public_order_cancelled(order)
 
-    elif message == 'taker_expired_b4bond':
+    elif message == "taker_expired_b4bond":
         telegram.taker_expired_b4bond(order)
 
-    elif message == 'order_published':
+    elif message == "order_published":
         telegram.order_published(order)
-    
-    elif message == 'order_taken_confirmed':
+
+    elif message == "order_taken_confirmed":
         telegram.order_taken_confirmed(order)
-    
-    elif message == 'fiat_exchange_starts':
+
+    elif message == "fiat_exchange_starts":
         telegram.fiat_exchange_starts(order)
 
-    elif message == 'dispute_opened':
+    elif message == "dispute_opened":
         telegram.dispute_opened(order)
 
-    elif message == 'collaborative_cancelled':
+    elif message == "collaborative_cancelled":
         telegram.collaborative_cancelled(order)
 
     return

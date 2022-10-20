@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django_admin_relation_links import AdminChangeLinksMixin
 from chat.models import ChatRoom, Message
+
 # Register your models here.
 
 
@@ -17,8 +18,9 @@ class ChatRoomAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "taker_connect_date",
         "room_group_name",
     )
-    change_links = ["order","maker","taker"]
+    change_links = ["order", "maker", "taker"]
     search_fields = ["id"]
+
 
 @admin.register(Message)
 class MessageAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
@@ -31,7 +33,7 @@ class MessageAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "receiver_link",
         "created_at",
     )
-    change_links = ["chatroom","order","sender","receiver"]
-    search_fields = ["id","index"]
-    ordering = ["-chatroom_id","-index"]
+    change_links = ["chatroom", "order", "sender", "receiver"]
+    search_fields = ["id", "index"]
+    ordering = ["-chatroom_id", "-index"]
     list_filter = ("chatroom",)

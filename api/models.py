@@ -29,12 +29,11 @@ DEFAULT_BOND_SIZE = float(config("DEFAULT_BOND_SIZE"))
 class Currency(models.Model):
 
     currency_dict = json.load(open("frontend/static/assets/currencies.json"))
-    currency_choices = [(int(val), label)
-                        for val, label in list(currency_dict.items())]
+    currency_choices = [(int(val), label) for val, label in list(currency_dict.items())]
 
-    currency = models.PositiveSmallIntegerField(choices=currency_choices,
-                                                null=False,
-                                                unique=True)
+    currency = models.PositiveSmallIntegerField(
+        choices=currency_choices, null=False, unique=True
+    )
     exchange_rate = models.DecimalField(
         max_digits=14,
         decimal_places=4,
@@ -54,7 +53,6 @@ class Currency(models.Model):
 
 
 class LNPayment(models.Model):
-
     class Types(models.IntegerChoices):
         NORM = 0, "Regular invoice"
         HOLD = 1, "hold invoice"
@@ -80,77 +78,78 @@ class LNPayment(models.Model):
 
     class FailureReason(models.IntegerChoices):
         NOTYETF = 0, "Payment isn't failed (yet)"
-        TIMEOUT = 1, "There are more routes to try, but the payment timeout was exceeded."
-        NOROUTE = 2, "All possible routes were tried and failed permanently. Or there were no routes to the destination at all."
+        TIMEOUT = (
+            1,
+            "There are more routes to try, but the payment timeout was exceeded.",
+        )
+        NOROUTE = (
+            2,
+            "All possible routes were tried and failed permanently. Or there were no routes to the destination at all.",
+        )
         NONRECO = 3, "A non-recoverable error has occurred."
-        INCORRE = 4, "Payment details are incorrect (unknown hash, invalid amount or invalid final CLTV delta)."
+        INCORRE = (
+            4,
+            "Payment details are incorrect (unknown hash, invalid amount or invalid final CLTV delta).",
+        )
         NOBALAN = 5, "Insufficient unlocked balance in RoboSats' node."
 
     # payment use details
-    type = models.PositiveSmallIntegerField(choices=Types.choices,
-                                            null=False,
-                                            default=Types.HOLD)
-    concept = models.PositiveSmallIntegerField(choices=Concepts.choices,
-                                               null=False,
-                                               default=Concepts.MAKEBOND)
-    status = models.PositiveSmallIntegerField(choices=Status.choices,
-                                              null=False,
-                                              default=Status.INVGEN)
-    failure_reason = models.PositiveSmallIntegerField(choices=FailureReason.choices,
-                                              null=True,
-                                              default=None)
+    type = models.PositiveSmallIntegerField(
+        choices=Types.choices, null=False, default=Types.HOLD
+    )
+    concept = models.PositiveSmallIntegerField(
+        choices=Concepts.choices, null=False, default=Concepts.MAKEBOND
+    )
+    status = models.PositiveSmallIntegerField(
+        choices=Status.choices, null=False, default=Status.INVGEN
+    )
+    failure_reason = models.PositiveSmallIntegerField(
+        choices=FailureReason.choices, null=True, default=None
+    )
 
     # payment info
-    payment_hash = models.CharField(max_length=100,
-                                    unique=True,
-                                    default=None,
-                                    blank=True,
-                                    primary_key=True)
+    payment_hash = models.CharField(
+        max_length=100, unique=True, default=None, blank=True, primary_key=True
+    )
     invoice = models.CharField(
-        max_length=1200, unique=True, null=True, default=None,
-        blank=True)  # Some invoices with lots of routing hints might be long
-    preimage = models.CharField(max_length=64,
-                                unique=True,
-                                null=True,
-                                default=None,
-                                blank=True)
-    description = models.CharField(max_length=500,
-                                   unique=False,
-                                   null=True,
-                                   default=None,
-                                   blank=True)
-    num_satoshis = models.PositiveBigIntegerField(validators=[
-        MinValueValidator(100),
-        MaxValueValidator(1.5 * MAX_TRADE),
-    ])
+        max_length=1200, unique=True, null=True, default=None, blank=True
+    )  # Some invoices with lots of routing hints might be long
+    preimage = models.CharField(
+        max_length=64, unique=True, null=True, default=None, blank=True
+    )
+    description = models.CharField(
+        max_length=500, unique=False, null=True, default=None, blank=True
+    )
+    num_satoshis = models.PositiveBigIntegerField(
+        validators=[
+            MinValueValidator(100),
+            MaxValueValidator(1.5 * MAX_TRADE),
+        ]
+    )
     # Fee in sats with mSats decimals fee_msat
-    fee = models.DecimalField(max_digits=10, decimal_places=3, default=0, null=False, blank=False)
+    fee = models.DecimalField(
+        max_digits=10, decimal_places=3, default=0, null=False, blank=False
+    )
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField()
-    cltv_expiry = models.PositiveSmallIntegerField(null=True,
-                                                   default=None,
-                                                   blank=True)
-    expiry_height = models.PositiveBigIntegerField(null=True,
-                                                   default=None,
-                                                   blank=True)
+    cltv_expiry = models.PositiveSmallIntegerField(null=True, default=None, blank=True)
+    expiry_height = models.PositiveBigIntegerField(null=True, default=None, blank=True)
 
     # routing
     routing_attempts = models.PositiveSmallIntegerField(null=False, default=0)
-    last_routing_time = models.DateTimeField(null=True,
-                                             default=None,
-                                             blank=True)
+    last_routing_time = models.DateTimeField(null=True, default=None, blank=True)
     in_flight = models.BooleanField(default=False, null=False, blank=False)
     # involved parties
-    sender = models.ForeignKey(User,
-                               related_name="sender",
-                               on_delete=models.SET_NULL,
-                               null=True,
-                               default=None)
-    receiver = models.ForeignKey(User,
-                                 related_name="receiver",
-                                 on_delete=models.SET_NULL,
-                                 null=True,
-                                 default=None)
+    sender = models.ForeignKey(
+        User, related_name="sender", on_delete=models.SET_NULL, null=True, default=None
+    )
+    receiver = models.ForeignKey(
+        User,
+        related_name="receiver",
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None,
+    )
 
     def __str__(self):
         return f"LN-{str(self.payment_hash)[:8]}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}"
@@ -166,89 +165,89 @@ class LNPayment(models.Model):
         # We created a truncated property for display 'hash'
         return truncatechars(self.payment_hash, 10)
 
-class OnchainPayment(models.Model):
 
+class OnchainPayment(models.Model):
     class Concepts(models.IntegerChoices):
         PAYBUYER = 3, "Payment to buyer"
 
     class Status(models.IntegerChoices):
-        CREAT = 0, "Created"        # User was given platform fees and suggested mining fees
-        VALID = 1, "Valid"          # Valid onchain address submitted
-        MEMPO = 2, "In mempool"     # Tx is sent to mempool
-        CONFI = 3, "Confirmed"      # Tx is confirme +2 blocks
-        CANCE = 4, "Cancelled"      # Cancelled tx
+        CREAT = 0, "Created"  # User was given platform fees and suggested mining fees
+        VALID = 1, "Valid"  # Valid onchain address submitted
+        MEMPO = 2, "In mempool"  # Tx is sent to mempool
+        CONFI = 3, "Confirmed"  # Tx is confirme +2 blocks
+        CANCE = 4, "Cancelled"  # Cancelled tx
 
     def get_balance():
         balance = BalanceLog.objects.create()
         return balance.time
 
     # payment use details
-    concept = models.PositiveSmallIntegerField(choices=Concepts.choices,
-                                               null=False,
-                                               default=Concepts.PAYBUYER)
-    status = models.PositiveSmallIntegerField(choices=Status.choices,
-                                              null=False,
-                                              default=Status.CREAT)
+    concept = models.PositiveSmallIntegerField(
+        choices=Concepts.choices, null=False, default=Concepts.PAYBUYER
+    )
+    status = models.PositiveSmallIntegerField(
+        choices=Status.choices, null=False, default=Status.CREAT
+    )
 
     # payment info
-    address = models.CharField(max_length=100,
-                                    unique=False,
-                                    default=None,
-                                    null=True,
-                                    blank=True)
-        
-    txid = models.CharField(max_length=64,
-                                unique=True,
-                                null=True,
-                                default=None,
-                                blank=True)
+    address = models.CharField(
+        max_length=100, unique=False, default=None, null=True, blank=True
+    )
 
-    num_satoshis = models.PositiveBigIntegerField(null=True, 
-                                                validators=[
-                                                    MinValueValidator(0.5 * MIN_SWAP_AMOUNT),
-                                                    MaxValueValidator(1.5 * MAX_TRADE),
-                                                ])
-    sent_satoshis = models.PositiveBigIntegerField(null=True, 
-                                                validators=[
-                                                    MinValueValidator(0.5 * MIN_SWAP_AMOUNT),
-                                                    MaxValueValidator(1.5 * MAX_TRADE),
-                                                ])
+    txid = models.CharField(
+        max_length=64, unique=True, null=True, default=None, blank=True
+    )
+
+    num_satoshis = models.PositiveBigIntegerField(
+        null=True,
+        validators=[
+            MinValueValidator(0.5 * MIN_SWAP_AMOUNT),
+            MaxValueValidator(1.5 * MAX_TRADE),
+        ],
+    )
+    sent_satoshis = models.PositiveBigIntegerField(
+        null=True,
+        validators=[
+            MinValueValidator(0.5 * MIN_SWAP_AMOUNT),
+            MaxValueValidator(1.5 * MAX_TRADE),
+        ],
+    )
     # fee in sats/vbyte with mSats decimals fee_msat
-    suggested_mining_fee_rate = models.DecimalField(max_digits=6, 
-                                                    decimal_places=3, 
-                                                    default=1.05, 
-                                                    null=False, 
-                                                    blank=False)
-    mining_fee_rate = models.DecimalField(max_digits=6, 
-                                        decimal_places=3,
-                                        default=1.05, 
-                                        null=False, 
-                                        blank=False)
-    mining_fee_sats = models.PositiveBigIntegerField(default=0, 
-                                                    null=False, 
-                                                    blank=False)
+    suggested_mining_fee_rate = models.DecimalField(
+        max_digits=6, decimal_places=3, default=1.05, null=False, blank=False
+    )
+    mining_fee_rate = models.DecimalField(
+        max_digits=6, decimal_places=3, default=1.05, null=False, blank=False
+    )
+    mining_fee_sats = models.PositiveBigIntegerField(default=0, null=False, blank=False)
 
     # platform onchain/channels balance at creation, swap fee rate as percent of total volume
-    balance = models.ForeignKey(BalanceLog, 
-                                related_name="balance", 
-                                on_delete=models.SET_NULL,
-                                null=True,
-                                default=get_balance)
+    balance = models.ForeignKey(
+        BalanceLog,
+        related_name="balance",
+        on_delete=models.SET_NULL,
+        null=True,
+        default=get_balance,
+    )
 
-    swap_fee_rate = models.DecimalField(max_digits=4, 
-                                        decimal_places=2, 
-                                        default=float(config("MIN_SWAP_FEE"))*100, 
-                                        null=False, 
-                                        blank=False)
+    swap_fee_rate = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=float(config("MIN_SWAP_FEE")) * 100,
+        null=False,
+        blank=False,
+    )
 
     created_at = models.DateTimeField(default=timezone.now)
 
     # involved parties
-    receiver = models.ForeignKey(User,
-                                 related_name="tx_receiver",
-                                 on_delete=models.SET_NULL,
-                                 null=True,
-                                 default=None)
+    receiver = models.ForeignKey(
+        User,
+        related_name="tx_receiver",
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None,
+    )
 
     def __str__(self):
         return f"TX-{str(self.id)}: {self.Concepts(self.concept).label} - {self.Status(self.status).label}"
@@ -262,8 +261,8 @@ class OnchainPayment(models.Model):
         # Display txid as 'hash' truncated
         return truncatechars(self.txid, 10)
 
-class Order(models.Model):
 
+class Order(models.Model):
     class Types(models.IntegerChoices):
         BUY = 0, "BUY"
         SELL = 1, "SELL"
@@ -297,30 +296,30 @@ class Order(models.Model):
         NESINV = 4, "Neither escrow locked or invoice submitted"
 
     # order info
-    reference = models.UUIDField(default = uuid.uuid4, editable = False)
-    status = models.PositiveSmallIntegerField(choices=Status.choices,
-                                              null=False,
-                                              default=Status.WFB)
+    reference = models.UUIDField(default=uuid.uuid4, editable=False)
+    status = models.PositiveSmallIntegerField(
+        choices=Status.choices, null=False, default=Status.WFB
+    )
     created_at = models.DateTimeField(default=timezone.now)
     expires_at = models.DateTimeField()
-    expiry_reason = models.PositiveSmallIntegerField(choices=ExpiryReasons.choices,
-                                                null=True,
-                                                blank=True,
-                                                default=None)
+    expiry_reason = models.PositiveSmallIntegerField(
+        choices=ExpiryReasons.choices, null=True, blank=True, default=None
+    )
 
     # order details
     type = models.PositiveSmallIntegerField(choices=Types.choices, null=False)
-    currency = models.ForeignKey(Currency,
-                                 null=True,
-                                 on_delete=models.SET_NULL)
+    currency = models.ForeignKey(Currency, null=True, on_delete=models.SET_NULL)
     amount = models.DecimalField(max_digits=18, decimal_places=8, null=True, blank=True)
     has_range = models.BooleanField(default=False, null=False, blank=False)
-    min_amount = models.DecimalField(max_digits=18, decimal_places=8, null=True, blank=True)
-    max_amount = models.DecimalField(max_digits=18, decimal_places=8, null=True, blank=True)
-    payment_method = models.CharField(max_length=70,
-                                      null=False,
-                                      default="not specified",
-                                      blank=True)
+    min_amount = models.DecimalField(
+        max_digits=18, decimal_places=8, null=True, blank=True
+    )
+    max_amount = models.DecimalField(
+        max_digits=18, decimal_places=8, null=True, blank=True
+    )
+    payment_method = models.CharField(
+        max_length=70, null=False, default="not specified", blank=True
+    )
     bondless_taker = models.BooleanField(default=False, null=False, blank=False)
     # order pricing method. A explicit amount of sats, or a relative premium above/below market.
     is_explicit = models.BooleanField(default=False, null=False)
@@ -330,37 +329,37 @@ class Order(models.Model):
         decimal_places=2,
         default=0,
         null=True,
-        validators=[MinValueValidator(-100),
-                    MaxValueValidator(999)],
+        validators=[MinValueValidator(-100), MaxValueValidator(999)],
         blank=True,
     )
     # explicit
     satoshis = models.PositiveBigIntegerField(
         null=True,
-        validators=[
-            MinValueValidator(MIN_TRADE),
-            MaxValueValidator(MAX_TRADE)
-        ],
+        validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)],
         blank=True,
     )
     # optionally makers can choose the public order duration length (seconds)
     public_duration = models.PositiveBigIntegerField(
-        default=60*60*int(config("DEFAULT_PUBLIC_ORDER_DURATION"))-1,
+        default=60 * 60 * int(config("DEFAULT_PUBLIC_ORDER_DURATION")) - 1,
         null=False,
         validators=[
-            MinValueValidator(60*60*float(config("MIN_PUBLIC_ORDER_DURATION"))),   # Min is 10 minutes
-            MaxValueValidator(60*60*float(config("MAX_PUBLIC_ORDER_DURATION"))),   # Max is 24 Hours
+            MinValueValidator(
+                60 * 60 * float(config("MIN_PUBLIC_ORDER_DURATION"))
+            ),  # Min is 10 minutes
+            MaxValueValidator(
+                60 * 60 * float(config("MAX_PUBLIC_ORDER_DURATION"))
+            ),  # Max is 24 Hours
         ],
         blank=False,
     )
 
     # optionally makers can choose the escrow lock / invoice submission step length (seconds)
     escrow_duration = models.PositiveBigIntegerField(
-        default=60 * int(config("INVOICE_AND_ESCROW_DURATION"))-1,
+        default=60 * int(config("INVOICE_AND_ESCROW_DURATION")) - 1,
         null=False,
         validators=[
-            MinValueValidator(60*30),        # Min is 30 minutes
-            MaxValueValidator(60*60*8),      # Max is 8 Hours
+            MinValueValidator(60 * 30),  # Min is 30 minutes
+            MaxValueValidator(60 * 60 * 8),  # Max is 8 Hours
         ],
         blank=False,
     )
@@ -372,8 +371,8 @@ class Order(models.Model):
         default=DEFAULT_BOND_SIZE,
         null=False,
         validators=[
-            MinValueValidator(float(config("MIN_BOND_SIZE"))),   # 1  %
-            MaxValueValidator(float(config("MAX_BOND_SIZE"))),   # 15 %
+            MinValueValidator(float(config("MIN_BOND_SIZE"))),  # 1  %
+            MaxValueValidator(float(config("MAX_BOND_SIZE"))),  # 15 %
         ],
         blank=False,
     )
@@ -381,29 +380,24 @@ class Order(models.Model):
     # how many sats at creation and at last check (relevant for marked to market)
     t0_satoshis = models.PositiveBigIntegerField(
         null=True,
-        validators=[
-            MinValueValidator(MIN_TRADE),
-            MaxValueValidator(MAX_TRADE)
-        ],
+        validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)],
         blank=True,
     )  # sats at creation
     last_satoshis = models.PositiveBigIntegerField(
         null=True,
-        validators=[MinValueValidator(0),
-                    MaxValueValidator(MAX_TRADE * 2)],
+        validators=[MinValueValidator(0), MaxValueValidator(MAX_TRADE * 2)],
         blank=True,
     )  # sats last time checked. Weird if 2* trade max...
     # timestamp of last_satoshis
     last_satoshis_time = models.DateTimeField(null=True, default=None, blank=True)
     # time the fiat exchange is confirmed and Sats released to buyer
-    contract_finalization_time = models.DateTimeField(null=True, default=None, blank=True)
+    contract_finalization_time = models.DateTimeField(
+        null=True, default=None, blank=True
+    )
     # order participants
     maker = models.ForeignKey(
-        User,
-        related_name="maker",
-        on_delete=models.SET_NULL,
-        null=True,
-        default=None)  # unique = True, a maker can only make one order
+        User, related_name="maker", on_delete=models.SET_NULL, null=True, default=None
+    )  # unique = True, a maker can only make one order
     taker = models.ForeignKey(
         User,
         related_name="taker",
@@ -416,21 +410,19 @@ class Order(models.Model):
     taker_last_seen = models.DateTimeField(null=True, default=None, blank=True)
 
     # When collaborative cancel is needed and one partner has cancelled.
-    maker_asked_cancel = models.BooleanField(default=False, null=False)  
+    maker_asked_cancel = models.BooleanField(default=False, null=False)
     taker_asked_cancel = models.BooleanField(default=False, null=False)
 
     is_fiat_sent = models.BooleanField(default=False, null=False)
 
     # in dispute
     is_disputed = models.BooleanField(default=False, null=False)
-    maker_statement = models.TextField(max_length=5000,
-                                       null=True,
-                                       default=None,
-                                       blank=True)
-    taker_statement = models.TextField(max_length=5000,
-                                       null=True,
-                                       default=None,
-                                       blank=True)
+    maker_statement = models.TextField(
+        max_length=5000, null=True, default=None, blank=True
+    )
+    taker_statement = models.TextField(
+        max_length=5000, null=True, default=None, blank=True
+    )
 
     # LNpayments
     # Order collateral
@@ -487,7 +479,7 @@ class Order(models.Model):
 
     def __str__(self):
         if self.has_range and self.amount == None:
-            amt = str(float(self.min_amount))+"-"+ str(float(self.max_amount))
+            amt = str(float(self.min_amount)) + "-" + str(float(self.max_amount))
         else:
             amt = float(self.amount)
         return f"Order {self.id}: {self.Types(self.type).label} BTC for {amt} {self.currency}"
@@ -495,27 +487,33 @@ class Order(models.Model):
     def t_to_expire(self, status):
 
         t_to_expire = {
-            0: int(config("EXP_MAKER_BOND_INVOICE")),           # 'Waiting for maker bond'
-            1: self.public_duration,                            # 'Public'
-            2: 0,                                               # 'Deleted'
-            3: int(config("EXP_TAKER_BOND_INVOICE")),           # 'Waiting for taker bond'
-            4: 0,                                               # 'Cancelled'
-            5: 0,                                               # 'Expired'
-            6: int(self.escrow_duration),                       # 'Waiting for trade collateral and buyer invoice'
-            7: int(self.escrow_duration),                       # 'Waiting only for seller trade collateral'
-            8: int(self.escrow_duration),                       # 'Waiting only for buyer invoice'
-            9: 60 * 60 * int(config("FIAT_EXCHANGE_DURATION")), # 'Sending fiat - In chatroom'
-            10: 60 * 60 * int(config("FIAT_EXCHANGE_DURATION")),# 'Fiat sent - In chatroom'
-            11: 1 * 24 * 60 * 60,                               # 'In dispute'
-            12: 0,                                              # 'Collaboratively cancelled'
-            13: 100 * 24 * 60 * 60,                             # 'Sending satoshis to buyer'
-            14: 100 * 24 * 60 * 60,                             # 'Sucessful trade'
-            15: 100 * 24 * 60 * 60,                             # 'Failed lightning network routing'
-            16: 100 * 24 * 60 * 60,                             # 'Wait for dispute resolution'
-            17: 100 * 24 * 60 * 60,                             # 'Maker lost dispute'
-            18: 100 * 24 * 60 * 60,                             # 'Taker lost dispute'
+            0: int(config("EXP_MAKER_BOND_INVOICE")),  # 'Waiting for maker bond'
+            1: self.public_duration,  # 'Public'
+            2: 0,  # 'Deleted'
+            3: int(config("EXP_TAKER_BOND_INVOICE")),  # 'Waiting for taker bond'
+            4: 0,  # 'Cancelled'
+            5: 0,  # 'Expired'
+            6: int(
+                self.escrow_duration
+            ),  # 'Waiting for trade collateral and buyer invoice'
+            7: int(self.escrow_duration),  # 'Waiting only for seller trade collateral'
+            8: int(self.escrow_duration),  # 'Waiting only for buyer invoice'
+            9: 60
+            * 60
+            * int(config("FIAT_EXCHANGE_DURATION")),  # 'Sending fiat - In chatroom'
+            10: 60
+            * 60
+            * int(config("FIAT_EXCHANGE_DURATION")),  # 'Fiat sent - In chatroom'
+            11: 1 * 24 * 60 * 60,  # 'In dispute'
+            12: 0,  # 'Collaboratively cancelled'
+            13: 100 * 24 * 60 * 60,  # 'Sending satoshis to buyer'
+            14: 100 * 24 * 60 * 60,  # 'Sucessful trade'
+            15: 100 * 24 * 60 * 60,  # 'Failed lightning network routing'
+            16: 100 * 24 * 60 * 60,  # 'Wait for dispute resolution'
+            17: 100 * 24 * 60 * 60,  # 'Maker lost dispute'
+            18: 100 * 24 * 60 * 60,  # 'Taker lost dispute'
         }
-        
+
         return t_to_expire[status]
 
 
@@ -570,53 +568,27 @@ class Profile(models.Model):
         decimal_places=1,
         default=None,
         null=True,
-        validators=[MinValueValidator(0),
-                    MaxValueValidator(100)],
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
         blank=True,
     )
     # Used to deep link telegram chat in case telegram notifications are enabled
-    telegram_token = models.CharField(
-        max_length=20,
-        null=True,
-        blank=True
-    )
-    telegram_chat_id = models.BigIntegerField(
-        null=True,
-        default=None,
-        blank=True
-    )
-    telegram_enabled = models.BooleanField(
-        default=False, 
-        null=False
-    )
-    telegram_lang_code = models.CharField(
-        max_length=10,
-        null=True,
-        blank=True
-    )
-    telegram_welcomed = models.BooleanField(
-        default=False, 
-        null=False
-    )
+    telegram_token = models.CharField(max_length=20, null=True, blank=True)
+    telegram_chat_id = models.BigIntegerField(null=True, default=None, blank=True)
+    telegram_enabled = models.BooleanField(default=False, null=False)
+    telegram_lang_code = models.CharField(max_length=10, null=True, blank=True)
+    telegram_welcomed = models.BooleanField(default=False, null=False)
 
     # Referral program
-    is_referred = models.BooleanField(
-        default=False, 
-        null=False
-    )
+    is_referred = models.BooleanField(default=False, null=False)
     referred_by = models.ForeignKey(
-        'self',
+        "self",
         related_name="referee",
         on_delete=models.SET_NULL,
         null=True,
         default=None,
         blank=True,
     )
-    referral_code = models.CharField(
-        max_length=15,
-        null=True,
-        blank=True
-    )
+    referral_code = models.CharField(max_length=15, null=True, blank=True)
     # Recent rewards from referred trades that will be "earned" at a later point to difficult spionage.
     pending_rewards = models.PositiveIntegerField(null=False, default=0)
     # Claimable rewards
@@ -644,18 +616,13 @@ class Profile(models.Model):
     )
 
     # Penalty expiration (only used then taking/cancelling repeatedly orders in the book before comitting bond)
-    penalty_expiration = models.DateTimeField(null=True,
-                                              default=None,
-                                              blank=True)
+    penalty_expiration = models.DateTimeField(null=True, default=None, blank=True)
 
     # Platform rate
-    platform_rating = models.PositiveIntegerField(null=True,
-                                                  default=None,
-                                                  blank=True)
+    platform_rating = models.PositiveIntegerField(null=True, default=None, blank=True)
 
     # Stealth invoices
-    wants_stealth = models.BooleanField(default=True,
-                                        null=False)
+    wants_stealth = models.BooleanField(default=True, null=False)
 
     @receiver(post_save, sender=User)
     def create_user_profile(sender, instance, created, **kwargs):
@@ -669,8 +636,9 @@ class Profile(models.Model):
     @receiver(pre_delete, sender=User)
     def del_avatar_from_disk(sender, instance, **kwargs):
         try:
-            avatar_file = Path(settings.AVATAR_ROOT +
-                               instance.profile.avatar.url.split("/")[-1])
+            avatar_file = Path(
+                settings.AVATAR_ROOT + instance.profile.avatar.url.split("/")[-1]
+            )
             avatar_file.unlink()
         except:
             pass
@@ -686,8 +654,7 @@ class Profile(models.Model):
 
     # method to create a fake table field in read only mode
     def avatar_tag(self):
-        return mark_safe('<img src="%s" width="50" height="50" />' %
-                         self.get_avatar())
+        return mark_safe('<img src="%s" width="50" height="50" />' % self.get_avatar())
 
 
 class MarketTick(models.Model):
@@ -723,13 +690,10 @@ class MarketTick(models.Model):
         decimal_places=2,
         default=None,
         null=True,
-        validators=[MinValueValidator(-100),
-                    MaxValueValidator(999)],
+        validators=[MinValueValidator(-100), MaxValueValidator(999)],
         blank=True,
     )
-    currency = models.ForeignKey(Currency,
-                                 null=True,
-                                 on_delete=models.SET_NULL)
+    currency = models.ForeignKey(Currency, null=True, on_delete=models.SET_NULL)
     timestamp = models.DateTimeField(default=timezone.now)
 
     # Relevant to keep record of the historical fee, so the insight on the premium can be better analyzed
@@ -737,8 +701,7 @@ class MarketTick(models.Model):
         max_digits=4,
         decimal_places=4,
         default=FEE,
-        validators=[MinValueValidator(0),
-                    MaxValueValidator(1)],
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
     )
 
     def log_a_tick(order):
@@ -755,10 +718,9 @@ class MarketTick(models.Model):
             market_exchange_rate = float(order.currency.exchange_rate)
             premium = 100 * (price / market_exchange_rate - 1)
 
-            tick = MarketTick.objects.create(price=price,
-                                             volume=volume,
-                                             premium=premium,
-                                             currency=order.currency)
+            tick = MarketTick.objects.create(
+                price=price, volume=volume, premium=premium, currency=order.currency
+            )
 
             tick.save()
 

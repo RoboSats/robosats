@@ -4,6 +4,7 @@ from import_export.admin import ImportExportModelAdmin
 
 # Register your models here.
 
+
 @admin.register(AccountingDay)
 class AccountingDayAdmin(ImportExportModelAdmin):
 
@@ -28,6 +29,7 @@ class AccountingDayAdmin(ImportExportModelAdmin):
     )
     change_links = ["day"]
     search_fields = ["day"]
+
 
 @admin.register(BalanceLog)
 class BalanceLogAdmin(ImportExportModelAdmin):

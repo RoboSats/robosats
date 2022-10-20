@@ -73,18 +73,17 @@ class Command(BaseCommand):
             try:
                 # this is similar to LNNnode.validate_hold_invoice_locked
                 request = LNNode.invoicesrpc.LookupInvoiceMsg(
-                    payment_hash=bytes.fromhex(hold_lnpayment.payment_hash))
-                response = stub.LookupInvoiceV2(request,
-                                                metadata=[("macaroon",
-                                                           MACAROON.hex())])
-                hold_lnpayment.status = lnd_state_to_lnpayment_status[
-                    response.state]
+                    payment_hash=bytes.fromhex(hold_lnpayment.payment_hash)
+                )
+                response = stub.LookupInvoiceV2(
+                    request, metadata=[("macaroon", MACAROON.hex())]
+                )
+                hold_lnpayment.status = lnd_state_to_lnpayment_status[response.state]
 
                 # try saving expiry height
                 if hasattr(response, "htlcs"):
                     try:
-                        hold_lnpayment.expiry_height = response.htlcs[
-                            0].expiry_height
+                        hold_lnpayment.expiry_height = response.htlcs[0].expiry_height
                     except:
                         pass
 
@@ -97,8 +96,7 @@ class Command(BaseCommand):
 
                 # LND restarted.
                 if "wallet locked, unlock it" in str(e):
-                    self.stdout.write(
-                        str(timezone.now()) + " :: Wallet Locked")
+                    self.stdout.write(str(timezone.now()) + " :: Wallet Locked")
                 # Other write to logs
                 else:
                     self.stdout.write(str(e))
@@ -114,13 +112,15 @@ class Command(BaseCommand):
 
                 # Report for debugging
                 new_status = LNPayment.Status(hold_lnpayment.status).label
-                debug["invoices"].append({
-                    idx: {
-                        "payment_hash": str(hold_lnpayment.payment_hash),
-                        "old_status": old_status,
-                        "new_status": new_status,
+                debug["invoices"].append(
+                    {
+                        idx: {
+                            "payment_hash": str(hold_lnpayment.payment_hash),
+                            "old_status": old_status,
+                            "new_status": new_status,
+                        }
                     }
-                })
+                )
 
             at_least_one_changed = at_least_one_changed or changed
 
@@ -148,7 +148,8 @@ class Command(BaseCommand):
             status__in=[LNPayment.Status.VALIDI, LNPayment.Status.FAILRO],
             in_flight=False,
             last_routing_time__lt=(
-                timezone.now() - timedelta(minutes=int(config("RETRY_TIME")))),
+                timezone.now() - timedelta(minutes=int(config("RETRY_TIME")))
+            ),
         )
 
         queryset = queryset.union(queryset_retries)
@@ -167,7 +168,7 @@ class Command(BaseCommand):
                 # It is a maker bond => Publish order.
                 if hasattr(lnpayment, "order_made"):
                     Logics.publish_order(lnpayment.order_made)
-                    send_message.delay(lnpayment.order_made.id,'order_published')
+                    send_message.delay(lnpayment.order_made.id, "order_published")
                     return
 
                 # It is a taker bond => close contract.

@@ -24,8 +24,9 @@ except:
 
 # Read macaroon from file or .env variable string encoded as base64
 try:
-    MACAROON = open(os.path.join(config("LND_DIR"), config("MACAROON_path")),
-                    "rb").read()
+    MACAROON = open(
+        os.path.join(config("LND_DIR"), config("MACAROON_path")), "rb"
+    ).read()
 except:
     MACAROON = b64decode(config("LND_MACAROON_BASE64"))
 
@@ -49,13 +50,10 @@ class LNNode:
 
     payment_failure_context = {
         0: "Payment isn't failed (yet)",
-        1:
-        "There are more routes to try, but the payment timeout was exceeded.",
-        2:
-        "All possible routes were tried and failed permanently. Or were no routes to the destination at all.",
+        1: "There are more routes to try, but the payment timeout was exceeded.",
+        2: "All possible routes were tried and failed permanently. Or were no routes to the destination at all.",
         3: "A non-recoverable error has occured.",
-        4:
-        "Payment details incorrect (unknown hash, invalid amt or invalid final cltv delta)",
+        4: "Payment details incorrect (unknown hash, invalid amt or invalid final cltv delta)",
         5: "Insufficient local balance.",
     }
 
@@ -63,9 +61,9 @@ class LNNode:
     def decode_payreq(cls, invoice):
         """Decodes a lightning payment request (invoice)"""
         request = lnrpc.PayReqString(pay_req=invoice)
-        response = cls.lightningstub.DecodePayReq(request,
-                                                  metadata=[("macaroon",
-                                                             MACAROON.hex())])
+        response = cls.lightningstub.DecodePayReq(
+            request, metadata=[("macaroon", MACAROON.hex())]
+        )
         return response
 
     @classmethod
@@ -73,46 +71,56 @@ class LNNode:
         """Returns estimated fee for onchain payouts"""
 
         # We assume segwit. Use robosats donation address as shortcut so there is no need of user inputs
-        request = lnrpc.EstimateFeeRequest(AddrToAmount={'bc1q3cpp7ww92n6zp04hv40kd3eyy5avgughx6xqnx':amount_sats}, 
-                                            target_conf=target_conf,
-                                            min_confs=min_confs,
-                                            spend_unconfirmed=False)
+        request = lnrpc.EstimateFeeRequest(
+            AddrToAmount={"bc1q3cpp7ww92n6zp04hv40kd3eyy5avgughx6xqnx": amount_sats},
+            target_conf=target_conf,
+            min_confs=min_confs,
+            spend_unconfirmed=False,
+        )
 
-        response = cls.lightningstub.EstimateFee(request,
-                                                  metadata=[("macaroon",
-                                                             MACAROON.hex())])
+        response = cls.lightningstub.EstimateFee(
+            request, metadata=[("macaroon", MACAROON.hex())]
+        )
 
-        return {'mining_fee_sats': response.fee_sat, 'mining_fee_rate': response.sat_per_vbyte}
+        return {
+            "mining_fee_sats": response.fee_sat,
+            "mining_fee_rate": response.sat_per_vbyte,
+        }
 
     wallet_balance_cache = {}
+
     @ring.dict(wallet_balance_cache, expire=10)  # keeps in cache for 10 seconds
     @classmethod
     def wallet_balance(cls):
         """Returns onchain balance"""
         request = lnrpc.WalletBalanceRequest()
-        response = cls.lightningstub.WalletBalance(request,
-                                                  metadata=[("macaroon",
-                                                             MACAROON.hex())])
+        response = cls.lightningstub.WalletBalance(
+            request, metadata=[("macaroon", MACAROON.hex())]
+        )
 
-        return {'total_balance': response.total_balance, 
-            'confirmed_balance': response.confirmed_balance,
-            'unconfirmed_balance': response.unconfirmed_balance}
+        return {
+            "total_balance": response.total_balance,
+            "confirmed_balance": response.confirmed_balance,
+            "unconfirmed_balance": response.unconfirmed_balance,
+        }
 
     channel_balance_cache = {}
+
     @ring.dict(channel_balance_cache, expire=10)  # keeps in cache for 10 seconds
     @classmethod
     def channel_balance(cls):
         """Returns channels balance"""
         request = lnrpc.ChannelBalanceRequest()
-        response = cls.lightningstub.ChannelBalance(request,
-                                                  metadata=[("macaroon",
-                                                             MACAROON.hex())])
+        response = cls.lightningstub.ChannelBalance(
+            request, metadata=[("macaroon", MACAROON.hex())]
+        )
 
-
-        return {'local_balance': response.local_balance.sat, 
-            'remote_balance': response.remote_balance.sat,
-            'unsettled_local_balance': response.unsettled_local_balance.sat,
-            'unsettled_remote_balance': response.unsettled_remote_balance.sat}
+        return {
+            "local_balance": response.local_balance.sat,
+            "remote_balance": response.remote_balance.sat,
+            "unsettled_local_balance": response.unsettled_local_balance.sat,
+            "unsettled_remote_balance": response.unsettled_remote_balance.sat,
+        }
 
     @classmethod
     def pay_onchain(cls, onchainpayment):
@@ -121,15 +129,17 @@ class LNNode:
         if config("DISABLE_ONCHAIN", cast=bool):
             return False
 
-        request = lnrpc.SendCoinsRequest(addr=onchainpayment.address,
-                                        amount=int(onchainpayment.sent_satoshis),
-                                        sat_per_vbyte=int(onchainpayment.mining_fee_rate),
-                                        label=str("Payout order #" + str(onchainpayment.order_paid_TX.id)),
-                                        spend_unconfirmed=True)
+        request = lnrpc.SendCoinsRequest(
+            addr=onchainpayment.address,
+            amount=int(onchainpayment.sent_satoshis),
+            sat_per_vbyte=int(onchainpayment.mining_fee_rate),
+            label=str("Payout order #" + str(onchainpayment.order_paid_TX.id)),
+            spend_unconfirmed=True,
+        )
 
-        response = cls.lightningstub.SendCoins(request,
-                                                metadata=[("macaroon",
-                                                            MACAROON.hex())])
+        response = cls.lightningstub.SendCoins(
+            request, metadata=[("macaroon", MACAROON.hex())]
+        )
 
         onchainpayment.txid = response.txid
         onchainpayment.save()
@@ -139,28 +149,27 @@ class LNNode:
     @classmethod
     def cancel_return_hold_invoice(cls, payment_hash):
         """Cancels or returns a hold invoice"""
-        request = invoicesrpc.CancelInvoiceMsg(
-            payment_hash=bytes.fromhex(payment_hash))
-        response = cls.invoicesstub.CancelInvoice(request,
-                                                  metadata=[("macaroon",
-                                                             MACAROON.hex())])
+        request = invoicesrpc.CancelInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
+        response = cls.invoicesstub.CancelInvoice(
+            request, metadata=[("macaroon", MACAROON.hex())]
+        )
         # Fix this: tricky because canceling sucessfully an invoice has no response. TODO
         return str(response) == ""  # True if no response, false otherwise.
 
     @classmethod
     def settle_hold_invoice(cls, preimage):
         """settles a hold invoice"""
-        request = invoicesrpc.SettleInvoiceMsg(
-            preimage=bytes.fromhex(preimage))
-        response = cls.invoicesstub.SettleInvoice(request,
-                                                  metadata=[("macaroon",
-                                                             MACAROON.hex())])
+        request = invoicesrpc.SettleInvoiceMsg(preimage=bytes.fromhex(preimage))
+        response = cls.invoicesstub.SettleInvoice(
+            request, metadata=[("macaroon", MACAROON.hex())]
+        )
         # Fix this: tricky because settling sucessfully an invoice has None response. TODO
         return str(response) == ""  # True if no response, false otherwise.
 
     @classmethod
-    def gen_hold_invoice(cls, num_satoshis, description, invoice_expiry,
-                         cltv_expiry_blocks):
+    def gen_hold_invoice(
+        cls, num_satoshis, description, invoice_expiry, cltv_expiry_blocks
+    ):
         """Generates hold invoice"""
 
         hold_payment = {}
@@ -179,18 +188,20 @@ class LNNode:
             ),  # actual expiry is padded by 50%, if tight, wrong client system clock will say invoice is expired.
             cltv_expiry=cltv_expiry_blocks,
         )
-        response = cls.invoicesstub.AddHoldInvoice(request,
-                                                   metadata=[("macaroon",
-                                                              MACAROON.hex())])
+        response = cls.invoicesstub.AddHoldInvoice(
+            request, metadata=[("macaroon", MACAROON.hex())]
+        )
 
         hold_payment["invoice"] = response.payment_request
         payreq_decoded = cls.decode_payreq(hold_payment["invoice"])
         hold_payment["preimage"] = preimage.hex()
         hold_payment["payment_hash"] = payreq_decoded.payment_hash
         hold_payment["created_at"] = timezone.make_aware(
-            datetime.fromtimestamp(payreq_decoded.timestamp))
+            datetime.fromtimestamp(payreq_decoded.timestamp)
+        )
         hold_payment["expires_at"] = hold_payment["created_at"] + timedelta(
-            seconds=payreq_decoded.expiry)
+            seconds=payreq_decoded.expiry
+        )
         hold_payment["cltv_expiry"] = cltv_expiry_blocks
 
         return hold_payment
@@ -201,11 +212,11 @@ class LNNode:
         from api.models import LNPayment
 
         request = invoicesrpc.LookupInvoiceMsg(
-            payment_hash=bytes.fromhex(lnpayment.payment_hash))
-        response = cls.invoicesstub.LookupInvoiceV2(request,
-                                                    metadata=[("macaroon",
-                                                               MACAROON.hex())
-                                                              ])
+            payment_hash=bytes.fromhex(lnpayment.payment_hash)
+        )
+        response = cls.invoicesstub.LookupInvoiceV2(
+            request, metadata=[("macaroon", MACAROON.hex())]
+        )
 
         # Will fail if 'unable to locate invoice'. Happens if invoice expiry
         # time has passed (but these are 15% padded at the moment). Should catch it
@@ -225,11 +236,9 @@ class LNNode:
     @classmethod
     def resetmc(cls):
         request = routerrpc.ResetMissionControlRequest()
-        response = cls.routerstub.ResetMissionControl(request,
-                                                      metadata=[
-                                                          ("macaroon",
-                                                           MACAROON.hex())
-                                                      ])
+        response = cls.routerstub.ResetMissionControl(
+            request, metadata=[("macaroon", MACAROON.hex())]
+        )
         return True
 
     @classmethod
@@ -258,7 +267,10 @@ class LNNode:
         route_hints = payreq_decoded.route_hints
 
         # Max amount RoboSats will pay for routing
-        max_routing_fee_sats = max(num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")), float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")))
+        max_routing_fee_sats = max(
+            num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
+            float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
+        )
 
         if route_hints:
             routes_cost = []
@@ -268,15 +280,17 @@ class LNNode:
                 # ...add up the cost of every hinted hop...
                 for hop_hint in hinted_route.hop_hints:
                     route_cost += hop_hint.fee_base_msat / 1000
-                    route_cost += hop_hint.fee_proportional_millionths * num_satoshis / 1000000
+                    route_cost += (
+                        hop_hint.fee_proportional_millionths * num_satoshis / 1000000
+                    )
 
                 # ...and store the cost of the route to the array
                 routes_cost.append(route_cost)
 
             # If the cheapest possible private route is more expensive than what RoboSats is willing to pay
-            if min(routes_cost) >=  max_routing_fee_sats :
+            if min(routes_cost) >= max_routing_fee_sats:
                 payout["context"] = {
-                "bad_invoice": "The invoice submitted only has a trick on the routing hints, you might be using an incompatible wallet (probably Muun? Use an onchain address instead!). Check the wallet compatibility guide at wallets.robosats.com"
+                    "bad_invoice": "The invoice submitted only has a trick on the routing hints, you might be using an incompatible wallet (probably Muun? Use an onchain address instead!). Check the wallet compatibility guide at wallets.robosats.com"
                 }
                 return payout
 
@@ -288,16 +302,18 @@ class LNNode:
 
         if not payreq_decoded.num_satoshis == num_satoshis:
             payout["context"] = {
-                "bad_invoice":
-                "The invoice provided is not for " +
-                "{:,}".format(num_satoshis) + " Sats"
+                "bad_invoice": "The invoice provided is not for "
+                + "{:,}".format(num_satoshis)
+                + " Sats"
             }
             return payout
 
         payout["created_at"] = timezone.make_aware(
-            datetime.fromtimestamp(payreq_decoded.timestamp))
+            datetime.fromtimestamp(payreq_decoded.timestamp)
+        )
         payout["expires_at"] = payout["created_at"] + timedelta(
-            seconds=payreq_decoded.expiry)
+            seconds=payreq_decoded.expiry
+        )
 
         if payout["expires_at"] < timezone.now():
             payout["context"] = {
@@ -315,21 +331,24 @@ class LNNode:
     def pay_invoice(cls, lnpayment):
         """Sends sats. Used for rewards payouts"""
         from api.models import LNPayment
-        
+
         fee_limit_sat = int(
             max(
-                lnpayment.num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
+                lnpayment.num_satoshis
+                * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
                 float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
-            ))  # 200 ppm or 10 sats
+            )
+        )  # 200 ppm or 10 sats
         timeout_seconds = int(config("REWARDS_TIMEOUT_SECONDS"))
-        request = routerrpc.SendPaymentRequest(payment_request=lnpayment.invoice,
-                                               fee_limit_sat=fee_limit_sat,
-                                               timeout_seconds=timeout_seconds)
+        request = routerrpc.SendPaymentRequest(
+            payment_request=lnpayment.invoice,
+            fee_limit_sat=fee_limit_sat,
+            timeout_seconds=timeout_seconds,
+        )
 
-        for response in cls.routerstub.SendPaymentV2(request,
-                                                     metadata=[("macaroon",
-                                                                MACAROON.hex())
-                                                               ]):
+        for response in cls.routerstub.SendPaymentV2(
+            request, metadata=[("macaroon", MACAROON.hex())]
+        ):
 
             if response.status == 0:  # Status 0 'UNKNOWN'
                 # Not sure when this status happens
@@ -354,7 +373,7 @@ class LNNode:
 
             if response.status == 2:  # STATUS 'SUCCEEDED'
                 lnpayment.status = LNPayment.Status.SUCCED
-                lnpayment.fee = float(response.fee_msat)/1000
+                lnpayment.fee = float(response.fee_msat) / 1000
                 lnpayment.preimage = response.payment_preimage
                 lnpayment.save()
                 return True, None
@@ -364,12 +383,10 @@ class LNNode:
     @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):
         """Just as it sounds. Better safe than sorry!"""
-        request = invoicesrpc.LookupInvoiceMsg(
-            payment_hash=bytes.fromhex(payment_hash))
-        response = cls.invoicesstub.LookupInvoiceV2(request,
-                                                    metadata=[("macaroon",
-                                                               MACAROON.hex())
-                                                              ])
+        request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
+        response = cls.invoicesstub.LookupInvoiceV2(
+            request, metadata=[("macaroon", MACAROON.hex())]
+        )
 
         return (
             response.state == 1
