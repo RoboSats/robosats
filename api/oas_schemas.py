@@ -23,7 +23,7 @@ class MakerViewSchema:
             f"""
             Create a new order as a maker.
 
-            
+
             Default values for the following fields if not specified:
             - `public_duration` - **{PUBLIC_DURATION}**
             - `escrow_duration` - **{ESCROW_DURATION}**
@@ -631,11 +631,11 @@ class InfoViewSchema:
             - Current market data
               - num. of orders
               - book liquidity
-              - 24h active robots 
+              - 24h active robots
               - 24h non-KYC premium
               - 24h volume
               - all time volume
-            - Node info 
+            - Node info
               - lnd version
               - node id
               - node alias

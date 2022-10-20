@@ -10,7 +10,7 @@ It builds Nicknames as:
 Adverb + Adjective + Noun + Numeric(0-999)
 
 With the current English dictionaries there
-is a total of to 450*4800*12500*1000 = 
+is a total of to 450*4800*12500*1000 =
 28 Trillion deterministic nicks
 """
 

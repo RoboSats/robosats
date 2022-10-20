@@ -37,7 +37,7 @@ def chatrooms_cleansing():
             chatroom = ChatRoom.objects.get(id=order.id)
             deleted_chatrooms.append(str(chatroom))
             chatroom.delete()
-        except:
+        except Exception:
             pass
 
     results = {

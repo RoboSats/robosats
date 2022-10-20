@@ -2,7 +2,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from api.models import Order
 from chat.models import ChatRoom, Message
-from asgiref.sync import async_to_sync
 
 import json
 
@@ -12,7 +11,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
     def allow_in_chatroom(self):
         order = Order.objects.get(id=self.order_id)
 
-        if not order.status in [Order.Status.CHA, Order.Status.FSE]:
+        if order.status not in [Order.Status.CHA, Order.Status.FSE]:
             print("Order is not in chat status")
             return False
 
@@ -61,7 +60,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         try:
             last_message = Message.objects.filter(order=order).latest()
             index = last_message.index + 1
-        except:
+        except Exception:
             index = 1
 
         sender = self.scope["user"]
