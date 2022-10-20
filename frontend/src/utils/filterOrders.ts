@@ -1,9 +1,4 @@
-import Order from '../models/Order.model';
-
-interface BaseFilter {
-  currency: number;
-  type: number | null;
-}
+import { Order, Favorites } from '../models';
 
 interface AmountFilter {
   amount: string;
@@ -14,12 +9,12 @@ interface AmountFilter {
 
 interface FilterOrders {
   orders: Order[];
-  baseFilter: BaseFilter;
+  baseFilter: Favorites;
   amountFilter?: AmountFilter | null;
   paymentMethods?: string[];
 }
 
-const filterByPayment = function (order: Order, paymentMethods: string[]) {
+const filterByPayment = function (order: Order, paymentMethods: any[]) {
   if (paymentMethods.length === 0) {
     return true;
   } else {
@@ -32,17 +27,19 @@ const filterByPayment = function (order: Order, paymentMethods: string[]) {
 };
 
 const filterByAmount = function (order: Order, filter: AmountFilter) {
-  const filterMaxAmount = filter.amount != '' ? filter.amount : filter.maxAmount;
-  const filterMinAmount = filter.amount != '' ? filter.amount : filter.minAmount;
-  const orderMinAmount =
-    order.amount === '' || order.amount === null ? order.min_amount : order.amount;
-  const orderMaxAmount =
-    order.amount === '' || order.amount === null ? order.max_amount : order.amount;
+  const filterMaxAmount =
+    Number(filter.amount != '' ? filter.amount : filter.maxAmount) * (1 + filter.threshold);
+  const filterMinAmount =
+    Number(filter.amount != '' ? filter.amount : filter.minAmount) * (1 - filter.threshold);
 
-  return (
-    orderMaxAmount < filterMaxAmount * (1 + filter.threshold) &&
-    orderMinAmount > filterMinAmount * (1 - filter.threshold)
+  const orderMinAmount = Number(
+    order.amount === '' || order.amount === null ? order.min_amount : order.amount,
   );
+  const orderMaxAmount = Number(
+    order.amount === '' || order.amount === null ? order.max_amount : order.amount,
+  );
+
+  return Math.max(filterMinAmount, orderMinAmount) <= Math.min(filterMaxAmount, orderMaxAmount);
 };
 
 const filterOrders = function ({
@@ -60,7 +57,6 @@ const filterOrders = function ({
 
     return typeChecks && currencyChecks && paymentMethodChecks && amountChecks;
   });
-
   return filteredOrders;
 };
 

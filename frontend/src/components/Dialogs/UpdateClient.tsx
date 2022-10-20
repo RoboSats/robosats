@@ -27,7 +27,7 @@ interface Props {
 }
 
 const UpdateClientDialog = ({
-  open,
+  open = false,
   clientVersion,
   coordinatorVersion,
   handleClickClose,

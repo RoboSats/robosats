@@ -24,7 +24,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import { pn } from '../../utils/prettyNumbers';
 
 interface Props {
-  isOpen: boolean;
+  open: boolean;
   handleClickCloseExchangeSummary: () => void;
   numPublicBuyOrders: number;
   numPublicSellOrders: number;
@@ -37,7 +37,7 @@ interface Props {
 }
 
 const ExchangeSummaryDialog = ({
-  isOpen,
+  open = false,
   handleClickCloseExchangeSummary,
   numPublicBuyOrders,
   numPublicSellOrders,
@@ -55,7 +55,7 @@ const ExchangeSummaryDialog = ({
 
   return (
     <Dialog
-      open={isOpen}
+      open={open}
       onClose={handleClickCloseExchangeSummary}
       aria-labelledby='exchange-summary-title'
       aria-describedby='exchange-summary-description'

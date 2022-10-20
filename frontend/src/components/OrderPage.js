@@ -525,10 +525,7 @@ class OrderPage extends Component {
       <StoreTokenDialog
         open={this.state.openStoreToken}
         onClose={() => this.setState({ openStoreToken: false })}
-        onClickCopy={() =>
-          systemClient.copyToClipboard(systemClient.getCookie('robot_token')) &
-          this.props.setAppState({ copiedToken: true })
-        }
+        onClickCopy={() => systemClient.copyToClipboard(systemClient.getCookie('robot_token'))}
         copyIconColor={this.props.copiedToken ? 'inherit' : 'primary'}
         onClickBack={() => this.setState({ openStoreToken: false })}
         onClickDone={() =>

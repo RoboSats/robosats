@@ -79,11 +79,6 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
-.bottomBar {
-  position: fixed;
-  bottom: 0;
-}
-
 .amboss {
   fill: url(#SVGID_1_);
 }

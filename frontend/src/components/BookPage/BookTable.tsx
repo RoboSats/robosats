@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { DataGrid, GridPagination } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
-import { Order } from '../../models';
+import { Book, Favorites } from '../../models';
 import filterOrders from '../../utils/filterOrders';
 import BookControl from './BookControl';
 
@@ -30,15 +30,12 @@ import hexToRgb from '../../utils/hexToRgb';
 import statusBadgeColor from '../../utils/statusBadgeColor';
 
 // Icons
-import { Fullscreen, FullscreenExit, Refresh, WidthFull } from '@mui/icons-material';
+import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 
 interface Props {
-  loading?: boolean;
-  refreshing?: boolean;
   clickRefresh?: () => void;
-  orders: Order[];
-  type: number;
-  currency: number;
+  book: Book;
+  fav?: Favorites;
   maxWidth: number;
   maxHeight: number;
   fullWidth?: number;
@@ -46,18 +43,15 @@ interface Props {
   defaultFullscreen: boolean;
   showControls?: boolean;
   showFooter?: boolean;
-  onCurrencyChange?: () => void;
-  onTypeChange?: () => void;
-  noResultsOverlay?: JSX.Element;
+  onCurrencyChange?: (e: any) => void;
+  onTypeChange?: (mouseEvent: any, val: number) => void;
+  noResultsOverlay?: () => JSX.Element;
 }
 
 const BookTable = ({
-  loading = false,
-  refreshing = false,
   clickRefresh,
-  orders,
-  type,
-  currency,
+  book,
+  fav,
   maxWidth,
   maxHeight,
   fullWidth,
@@ -666,8 +660,8 @@ const BookTable = ({
     return (
       <BookControl
         width={width}
-        type={type}
-        currency={currency}
+        type={fav.type}
+        currency={fav.currency}
         onCurrencyChange={onCurrencyChange}
         onTypeChange={onTypeChange}
         paymentMethod={paymentMethods}
@@ -702,17 +696,17 @@ const BookTable = ({
           rows={
             showControls
               ? filterOrders({
-                  orders,
-                  baseFilter: { currency, type },
+                  orders: book.orders,
+                  baseFilter: fav,
                   paymentMethods,
                 })
-              : orders
+              : book.orders
           }
-          loading={loading || refreshing}
+          loading={book.loading}
           columns={columns}
           hideFooter={!showFooter}
           components={gridComponents()}
-          pageSize={loading ? 0 : pageSize}
+          pageSize={book.loading && book.orders.length == 0 ? 0 : pageSize}
           rowsPerPageOptions={width < 22 ? [] : [0, pageSize, defaultPageSize * 2, 50, 100]}
           onPageSizeChange={(newPageSize) => {
             setPageSize(newPageSize);
@@ -728,16 +722,20 @@ const BookTable = ({
         <Paper style={{ width: '100%', height: '100%', overflow: 'auto' }}>
           <DataGrid
             localeText={localeText}
-            rows={orders.filter(
-              (order) =>
-                (order.type == type || type == null) &&
-                (order.currency == currency || currency == 0),
-            )}
-            loading={loading || refreshing}
+            rows={
+              showControls
+                ? filterOrders({
+                    orders: book.orders,
+                    baseFilter: fav,
+                    paymentMethods,
+                  })
+                : book.orders
+            }
+            loading={book.loading}
             columns={columns}
             hideFooter={!showFooter}
             components={gridComponents()}
-            pageSize={loading ? 0 : pageSize}
+            pageSize={book.loading && book.orders.length == 0 ? 0 : pageSize}
             rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
             onPageSizeChange={(newPageSize) => {
               setPageSize(newPageSize);

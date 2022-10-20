@@ -28,14 +28,12 @@ import currencyDict from '../../../../static/assets/currencies.json';
 import PaymentText from '../../PaymentText';
 import getNivoScheme from '../NivoScheme';
 import median from '../../../utils/match';
-import { apiClient } from '../../../services/api/index';
 import statusBadgeColor from '../../../utils/statusBadgeColor';
 
 interface DepthChartProps {
   orders: Order[];
   lastDayPremium: number | undefined;
   currency: number;
-  setAppState: (state: object) => void;
   limits: LimitList;
   maxWidth: number;
   maxHeight: number;
@@ -45,7 +43,6 @@ const DepthChart: React.FC<DepthChartProps> = ({
   orders,
   lastDayPremium,
   currency,
-  setAppState,
   limits,
   maxWidth,
   maxHeight,
@@ -63,14 +60,6 @@ const DepthChart: React.FC<DepthChartProps> = ({
 
   const height = maxHeight < 20 ? 20 : maxHeight;
   const width = maxWidth < 20 ? 20 : maxWidth > 72.8 ? 72.8 : maxWidth;
-
-  useEffect(() => {
-    if (Object.keys(limits).length === 0) {
-      apiClient.get('/api/limits/').then((data) => {
-        setAppState({ limits: data });
-      });
-    }
-  }, []);
 
   useEffect(() => {
     setCurrencyCode(currency === 0 ? 1 : currency);

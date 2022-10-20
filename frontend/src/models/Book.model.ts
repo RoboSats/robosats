@@ -23,4 +23,9 @@ export interface Order {
   maker_status: 'Active' | 'Seen recently' | 'Inactive';
 }
 
+export interface Book {
+  orders: Order[];
+  loading: boolean;
+}
+
 export default Order;

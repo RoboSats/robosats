@@ -4,7 +4,6 @@ import {
   Badge,
   Tooltip,
   ListItemAvatar,
-  Avatar,
   Paper,
   Grid,
   IconButton,
@@ -42,67 +41,22 @@ import {
   UpdateClientDialog,
 } from './Dialogs';
 
-import checkVer from '../utils/checkVer';
-
 class BottomBar extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      profileShown: false,
       openStatsForNerds: false,
-      openCommuniy: false,
+      openCommunity: false,
       openExchangeSummary: false,
       openClaimRewards: false,
-      openUpdateClient: false,
-      num_public_buy_orders: 0,
-      num_public_sell_orders: 0,
-      book_liquidity: 0,
-      active_robots_today: 0,
-      maker_fee: 0,
-      taker_fee: 0,
-      last_day_nonkyc_btc_premium: 0,
-      last_day_volume: 0,
-      lifetime_volume: 0,
-      robosats_running_commit_hash: '000000000000000',
       openProfile: false,
-      profileShown: false,
-      alternative_site: 'robosats...',
-      node_id: '00000000',
       showRewards: false,
       rewardInvoice: null,
       badInvoice: false,
       showRewardsSpinner: false,
       withdrawn: false,
     };
-  }
-
-  componentDidMount() {
-    this.getInfo();
-  }
-
-  getInfo() {
-    this.setState(null);
-    apiClient.get('/api/info/').then((data) => {
-      const versionInfo = checkVer(data.version.major, data.version.minor, data.version.patch);
-      this.setState({
-        ...data,
-        openUpdateClient: versionInfo.updateAvailable,
-        coordinatorVersion: versionInfo.coordinatorVersion,
-        clientVersion: versionInfo.clientVersion,
-      });
-      this.props.setAppState({
-        nickname: data.nickname,
-        loading: false,
-        activeOrderId: data.active_order_id ? data.active_order_id : null,
-        lastOrderId: data.last_order_id ? data.last_order_id : null,
-        referralCode: data.referral_code,
-        tgEnabled: data.tg_enabled,
-        tgBotName: data.tg_bot_name,
-        tgToken: data.tg_token,
-        earnedRewards: data.earned_rewards,
-        lastDayPremium: data.last_day_nonkyc_btc_premium,
-        stealthInvoices: data.wants_stealth,
-      });
-    });
   }
 
   handleClickOpenStatsForNerds = () => {
@@ -114,15 +68,14 @@ class BottomBar extends Component {
   };
 
   handleClickOpenCommunity = () => {
-    this.setState({ openCommuniy: true });
+    this.setState({ openCommunity: true });
   };
 
   handleClickCloseCommunity = () => {
-    this.setState({ openCommuniy: false });
+    this.setState({ openCommunity: false });
   };
 
   handleClickOpenProfile = () => {
-    this.getInfo();
     this.setState({ openProfile: true, profileShown: true });
   };
 
@@ -130,35 +83,44 @@ class BottomBar extends Component {
     this.setState({ openProfile: false });
   };
 
+  handleClickOpenExchangeSummary = () => {
+    this.setState({ openExchangeSummary: true });
+  };
+
+  handleClickCloseExchangeSummary = () => {
+    this.setState({ openExchangeSummary: false });
+  };
+
   handleSubmitInvoiceClicked = (e, rewardInvoice) => {
-    this.setState({
-      badInvoice: false,
-      showRewardsSpinner: true,
-    });
+    this.setState({ badInvoice: false, showRewardsSpinner: true });
 
     apiClient
       .post('/api/reward/', {
         invoice: rewardInvoice,
       })
-      .then(
-        (data) =>
-          this.setState({
-            badInvoice: data.bad_invoice,
-            openClaimRewards: !data.successful_withdrawal,
-            withdrawn: !!data.successful_withdrawal,
-            showRewardsSpinner: false,
-          }) &
-          this.props.setAppState({
-            earnedRewards: data.successful_withdrawal ? 0 : this.props.earnedRewards,
-          }),
-      );
+      .then((data) => {
+        this.setState({ badInvoice: data.bad_invoice, showRewardsSpinner: false });
+        this.props.setInfo({
+          ...this.props.info,
+          badInvoice: data.bad_invoice,
+          openClaimRewards: !data.successful_withdrawal,
+          withdrawn: !!data.successful_withdrawal,
+          showRewardsSpinner: false,
+        });
+        this.props.setRobot({
+          ...this.props.robot,
+          earnedRewards: data.successful_withdrawal ? 0 : this.props.robot.earnedRewards,
+        });
+      });
     e.preventDefault();
   };
 
   handleSetStealthInvoice = (wantsStealth) => {
     apiClient
       .put('/api/stealth/', { wantsStealth })
-      .then((data) => this.props.setAppState({ stealthInvoices: data?.wantsStealth }));
+      .then((data) =>
+        this.props.setRobot({ ...this.props.robot, stealthInvoices: data?.wantsStealth }),
+      );
   };
 
   getHost() {
@@ -171,19 +133,21 @@ class BottomBar extends Component {
 
   showProfileButton = () => {
     return (
-      this.props.avatarLoaded &&
-      (this.props.token ? systemClient.getCookie('robot_token') === this.props.token : true) &&
+      this.props.robot.avatarLoaded &&
+      (this.props.robot.token
+        ? systemClient.getCookie('robot_token') === this.props.robot.token
+        : true) &&
       systemClient.getCookie('sessionid')
     );
   };
 
   bottomBarDesktop = () => {
     const { t } = this.props;
-    const hasRewards = this.props.earnedRewards > 0;
+    const hasRewards = this.props.robot.earnedRewards > 0;
     const hasOrder = !!(
-      (this.props.activeOrderId > 0) &
+      (this.props.robot.activeOrderId > 0) &
       !this.state.profileShown &
-      this.props.avatarLoaded
+      this.props.robot.avatarLoaded
     );
     const fontSize = this.props.theme.typography.fontSize;
     const fontSizeFactor = fontSize / 14; // default fontSize is 14
@@ -192,7 +156,10 @@ class BottomBar extends Component {
       secondaryTypographyProps: { fontSize: (fontSize * 12) / 14 },
     };
     return (
-      <Paper elevation={6} style={{ height: '2.85em', width: '100%' }}>
+      <Paper
+        elevation={6}
+        style={{ height: '2.5em', width: `${(this.props.windowSize.width / 16) * 14}em` }}
+      >
         <Grid container>
           <Grid item xs={1.9}>
             <div style={{ display: this.showProfileButton() ? '' : 'none' }}>
@@ -208,16 +175,18 @@ class BottomBar extends Component {
                     <RobotAvatar
                       style={{ marginTop: -13 }}
                       statusColor={
-                        (this.props.activeOrderId > 0) & !this.props.profileShown
+                        (this.props.robot.activeOrderId > 0) & !this.state.profileShown
                           ? 'primary'
                           : undefined
                       }
-                      nickname={this.props.nickname}
-                      onLoad={() => this.props.setAppState({ avatarLoaded: true })}
+                      nickname={this.props.robot.nickname}
+                      onLoad={() =>
+                        this.props.setRobot({ ...this.props.robot, avatarLoaded: true })
+                      }
                     />
                   </ListItemAvatar>
                 </Tooltip>
-                <ListItemText primary={this.props.nickname} />
+                <ListItemText primary={this.props.robot.nickname} />
               </ListItemButton>
             </div>
           </Grid>
@@ -228,10 +197,6 @@ class BottomBar extends Component {
                 <IconButton
                   disabled={!this.showProfileButton()}
                   color='primary'
-                  onClick={() =>
-                    this.props.setAppState({ buyChecked: false, sellChecked: true, type: 0 }) &
-                    this.getInfo()
-                  }
                   to={`/book/`}
                   component={LinkRouter}
                 >
@@ -240,7 +205,7 @@ class BottomBar extends Component {
               </ListItemIcon>
               <ListItemText
                 {...typographyProps}
-                primary={this.state.num_public_buy_orders}
+                primary={this.props.info.num_public_buy_orders}
                 secondary={t('Public Buy Orders')}
               />
             </ListItem>
@@ -252,10 +217,6 @@ class BottomBar extends Component {
                 <IconButton
                   disabled={!this.showProfileButton()}
                   color='primary'
-                  onClick={() =>
-                    this.props.setAppState({ buyChecked: true, sellChecked: false, type: 1 }) &
-                    this.getInfo()
-                  }
                   to={`/book/`}
                   component={LinkRouter}
                 >
@@ -264,7 +225,7 @@ class BottomBar extends Component {
               </ListItemIcon>
               <ListItemText
                 {...typographyProps}
-                primary={this.state.num_public_sell_orders}
+                primary={this.props.info.num_public_sell_orders}
                 secondary={t('Public Sell Orders')}
               />
             </ListItem>
@@ -276,7 +237,6 @@ class BottomBar extends Component {
                 <IconButton
                   disabled={!this.showProfileButton()}
                   color='primary'
-                  onClick={() => this.getInfo()}
                   to={`/`}
                   component={LinkRouter}
                 >
@@ -285,7 +245,7 @@ class BottomBar extends Component {
               </ListItemIcon>
               <ListItemText
                 {...typographyProps}
-                primary={this.state.active_robots_today}
+                primary={this.props.info.active_robots_today}
                 secondary={t('Today Active Robots')}
               />
             </ListItem>
@@ -300,7 +260,7 @@ class BottomBar extends Component {
               </ListItemIcon>
               <ListItemText
                 {...typographyProps}
-                primary={this.state.last_day_nonkyc_btc_premium + '%'}
+                primary={this.props.info.last_day_nonkyc_btc_premium + '%'}
                 secondary={t('24h Avg Premium')}
               />
             </ListItem>
@@ -315,7 +275,7 @@ class BottomBar extends Component {
               </ListItemIcon>
               <ListItemText
                 {...typographyProps}
-                primary={(this.state.maker_fee + this.state.taker_fee) * 100}
+                primary={(this.props.info.maker_fee + this.props.info.taker_fee) * 100}
                 secondary={t('Trade Fee')}
               />
             </ListItem>
@@ -470,28 +430,19 @@ class BottomBar extends Component {
     );
   };
 
-  handleClickOpenExchangeSummary = () => {
-    // avoid calling getInfo while sessionid not yet set. Temporary fix.
-    if (systemClient.getCookie('sessionid')) {
-      this.getInfo();
-    }
-    this.setState({ openExchangeSummary: true });
-  };
-
-  handleClickCloseExchangeSummary = () => {
-    this.setState({ openExchangeSummary: false });
-  };
-
   bottomBarPhone = () => {
     const { t } = this.props;
-    const hasRewards = this.props.earnedRewards > 0;
+    const hasRewards = this.props.robot.earnedRewards > 0;
     const hasOrder = !!(
-      (this.state.active_order_id > 0) &
+      (this.props.info.active_order_id > 0) &
       !this.state.profileShown &
-      this.props.avatarLoaded
+      this.props.robot.avatarLoaded
     );
     return (
-      <Paper elevation={6} style={{ height: '2.85em', width: '100%' }}>
+      <Paper
+        elevation={6}
+        style={{ height: '2.85em', width: `${(this.props.windowSize.width / 16) * 14}em` }}
+      >
         <Grid container>
           <Grid item xs={1.6}>
             <div style={{ display: this.showProfileButton() ? '' : 'none' }}>
@@ -510,12 +461,12 @@ class BottomBar extends Component {
                     style={{ width: 55, height: 55 }}
                     avatarClass='phoneFlippedSmallAvatar'
                     statusColor={
-                      (this.props.activeOrderId > 0) & !this.props.profileShown
+                      (this.props.activeOrderId > 0) & !this.state.profileShown
                         ? 'primary'
                         : undefined
                     }
-                    nickname={this.props.nickname}
-                    onLoad={() => this.props.setAppState({ avatarLoaded: true })}
+                    nickname={this.props.robot.nickname}
+                    onLoad={() => this.props.setRobot({ ...this.props.robot, avatarLoaded: true })}
                   />
                 </IconButton>
               </Tooltip>
@@ -527,14 +478,10 @@ class BottomBar extends Component {
               <IconButton
                 disabled={!this.showProfileButton()}
                 color='primary'
-                onClick={() =>
-                  this.props.setAppState({ buyChecked: false, sellChecked: true, type: 0 }) &
-                  this.getInfo()
-                }
                 to={`/book/`}
                 component={LinkRouter}
               >
-                <Badge badgeContent={this.state.num_public_buy_orders} color='action'>
+                <Badge badgeContent={this.props.info.num_public_buy_orders} color='action'>
                   <InventoryIcon />
                 </Badge>
               </IconButton>
@@ -546,14 +493,10 @@ class BottomBar extends Component {
               <IconButton
                 disabled={!this.showProfileButton()}
                 color='primary'
-                onClick={() =>
-                  this.props.setAppState({ buyChecked: true, sellChecked: false, type: 1 }) &
-                  this.getInfo()
-                }
                 to={`/book/`}
                 component={LinkRouter}
               >
-                <Badge badgeContent={this.state.num_public_sell_orders} color='action'>
+                <Badge badgeContent={this.props.info.num_public_sell_orders} color='action'>
                   <SellIcon />
                 </Badge>
               </IconButton>
@@ -565,11 +508,11 @@ class BottomBar extends Component {
               <IconButton
                 disabled={!this.showProfileButton()}
                 color='primary'
-                onClick={() => this.getInfo()}
+                onClick={() => this.props.fetchInfo()}
                 to={`/`}
                 component={LinkRouter}
               >
-                <Badge badgeContent={this.state.active_robots_today} color='action'>
+                <Badge badgeContent={this.props.info.active_robots_today} color='action'>
                   <SmartToyIcon />
                 </Badge>
               </IconButton>
@@ -579,7 +522,10 @@ class BottomBar extends Component {
           <Grid item xs={1.8} align='center'>
             <Tooltip enterTouchDelay={300} title={t('24h non-KYC bitcoin premium')}>
               <IconButton color='primary' onClick={this.handleClickOpenExchangeSummary}>
-                <Badge badgeContent={this.state.last_day_nonkyc_btc_premium + '%'} color='action'>
+                <Badge
+                  badgeContent={this.props.info.last_day_nonkyc_btc_premium + '%'}
+                  color='action'
+                >
                   <PriceChangeIcon />
                 </Badge>
               </IconButton>
@@ -622,65 +568,67 @@ class BottomBar extends Component {
     return (
       <div>
         <CommunityDialog
-          isOpen={this.state.openCommuniy}
+          open={this.state.openCommunity}
           handleClickCloseCommunity={this.handleClickCloseCommunity}
         />
 
         <UpdateClientDialog
           open={this.state.openUpdateClient}
-          coordinatorVersion={this.state.coordinatorVersion}
-          clientVersion={this.state.clientVersion}
-          handleClickClose={() => this.setState({ openUpdateClient: false })}
+          coordinatorVersion={this.props.info.coordinatorVersion}
+          clientVersion={this.props.info.clientVersion}
+          handleClickClose={() =>
+            this.props.setInfo({ ...this.props.info, openUpdateClient: false })
+          }
         />
 
         <ExchangeSummaryDialog
-          isOpen={this.state.openExchangeSummary}
+          open={this.state.openExchangeSummary}
           handleClickCloseExchangeSummary={this.handleClickCloseExchangeSummary}
-          numPublicBuyOrders={this.state.num_public_buy_orders}
-          numPublicSellOrders={this.state.num_public_sell_orders}
-          bookLiquidity={this.state.book_liquidity}
-          activeRobotsToday={this.state.active_robots_today}
-          lastDayNonkycBtcPremium={this.state.last_day_nonkyc_btc_premium}
-          makerFee={this.state.maker_fee}
-          takerFee={this.state.taker_fee}
-          swapFeeRate={this.state.current_swap_fee_rate}
+          numPublicBuyOrders={this.props.info.num_public_buy_orders}
+          numPublicSellOrders={this.props.info.num_public_sell_orders}
+          bookLiquidity={this.props.info.book_liquidity}
+          activeRobotsToday={this.props.info.active_robots_today}
+          lastDayNonkycBtcPremium={this.props.info.last_day_nonkyc_btc_premium}
+          makerFee={this.props.info.maker_fee}
+          takerFee={this.props.info.taker_fee}
+          swapFeeRate={this.props.info.current_swap_fee_rate}
         />
 
         <ProfileDialog
-          isOpen={this.state.openProfile}
+          open={this.state.openProfile}
           handleClickCloseProfile={this.handleClickCloseProfile}
-          nickname={this.props.nickname}
-          activeOrderId={this.props.activeOrderId}
-          lastOrderId={this.props.lastOrderId}
-          referralCode={this.props.referralCode}
-          tgEnabled={this.props.tgEnabled}
-          tgBotName={this.props.tgBotName}
-          tgToken={this.props.tgToken}
+          nickname={this.props.robot.nickname}
+          activeOrderId={this.props.robot.activeOrderId}
+          lastOrderId={this.props.robotlastOrderId}
+          referralCode={this.props.robot.referralCode}
+          tgEnabled={this.props.robot.tgEnabled}
+          tgBotName={this.props.robot.tgBotName}
+          tgToken={this.props.robot.tgToken}
           handleSubmitInvoiceClicked={this.handleSubmitInvoiceClicked}
           host={this.getHost()}
           showRewardsSpinner={this.state.showRewardsSpinner}
-          withdrawn={this.state.withdrawn}
-          badInvoice={this.state.badInvoice}
-          earnedRewards={this.props.earnedRewards}
-          setAppState={this.props.setAppState}
-          stealthInvoices={this.props.stealthInvoices}
+          withdrawn={this.props.info.withdrawn}
+          badInvoice={this.props.info.badInvoice}
+          earnedRewards={this.props.robot.earnedRewards}
+          updateRobot={(newParam) => this.props.setRobot({ ...robot, ...newParam })}
+          stealthInvoices={this.props.robot.stealthInvoices}
           handleSetStealthInvoice={this.handleSetStealthInvoice}
         />
 
         <StatsDialog
-          isOpen={this.state.openStatsForNerds}
+          open={this.state.openStatsForNerds}
           handleClickCloseStatsForNerds={this.handleClickCloseStatsForNerds}
-          coordinatorVersion={this.state.coordinatorVersion}
-          clientVersion={this.state.clientVersion}
-          lndVersion={this.state.lnd_version}
-          network={this.state.network}
-          nodeAlias={this.state.node_alias}
-          nodeId={this.state.node_id}
-          alternativeName={this.state.alternative_name}
-          alternativeSite={this.state.alternative_site}
-          commitHash={this.state.robosats_running_commit_hash}
-          lastDayVolume={this.state.last_day_volume}
-          lifetimeVolume={this.state.lifetime_volume}
+          coordinatorVersion={this.props.info.coordinatorVersion}
+          clientVersion={this.props.info.clientVersion}
+          lndVersion={this.props.info.lnd_version}
+          network={this.props.info.network}
+          nodeAlias={this.props.info.node_alias}
+          nodeId={this.props.info.node_id}
+          alternativeName={this.props.info.alternative_name}
+          alternativeSite={this.props.info.alternative_site}
+          commitHash={this.props.info.robosats_running_commit_hash}
+          lastDayVolume={this.props.info.last_day_volume}
+          lifetimeVolume={this.props.info.lifetime_volume}
         />
 
         <MediaQuery minWidth={1200}>{this.bottomBarDesktop()}</MediaQuery>

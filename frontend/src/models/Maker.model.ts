@@ -1,4 +1,5 @@
 export interface Maker {
+  advancedOptions: boolean;
   isExplicit: boolean;
   amount: string;
   paymentMethods: string[];
@@ -18,6 +19,7 @@ export interface Maker {
 }
 
 export const defaultMaker: Maker = {
+  advancedOptions: false,
   isExplicit: false,
   amount: '',
   paymentMethods: [],
