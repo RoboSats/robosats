@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAutocomplete } from '@mui/base/AutocompleteUnstyled';
 import { styled } from '@mui/material/styles';
 import { Button, Fade, Tooltip, Typography, Grow } from '@mui/material';
-import { fiatMethods, swapMethods , PaymentIcon } from '../PaymentMethods';
+import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
 
 // Icons
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
