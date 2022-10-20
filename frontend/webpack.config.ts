@@ -27,7 +27,7 @@ const configWeb: Configuration = {
   ...config,
   output: {
     path: path.resolve(__dirname, 'static/frontend'),
-    filename: 'main.js',
+    filename: 'basic.js',
   },
 };
 
@@ -64,4 +64,27 @@ const configMobile: Configuration = {
   },
 };
 
-export default [configWeb, configMobile];
+const configWebPro: Configuration = {
+  ...config,
+  module: {
+    ...config.module,
+    rules: [
+      ...(config?.module?.rules || []),
+      {
+        test: path.resolve(__dirname, 'src/basic/Main.tsx'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/pro/Main.tsx'),
+          async: true,
+        },
+      },
+    ],
+  },
+  output: {
+    path: path.resolve(__dirname, 'static/frontend'),
+    filename: 'pro.js',
+  },
+};
+
+export default [configWeb, configWebPro, configMobile];

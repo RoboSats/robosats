@@ -22,10 +22,10 @@ import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import { Order, LimitList } from '../../../models';
-import RobotAvatar from '../../Robots/RobotAvatar';
+import RobotAvatar from '../../RobotAvatar';
 import { amountToString } from '../../../utils/prettyNumbers';
 import currencyDict from '../../../../static/assets/currencies.json';
-import PaymentText from '../../PaymentText';
+import { PaymentStringAsIcons } from '../../PaymentMethods';
 import getNivoScheme from '../NivoScheme';
 import median from '../../../utils/match';
 import statusBadgeColor from '../../../utils/statusBadgeColor';
@@ -245,7 +245,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                     {currencyDict[order.currency]}
                   </Grid>
                   <Grid item xs={12}>
-                    <PaymentText
+                    <PaymentStringAsIcons
                       othersText={t('Others')}
                       verbose={true}
                       size={20}

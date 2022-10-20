@@ -48,11 +48,16 @@ jobs:
       run: |
         cd frontend
         npm run build
-    - name: 'Archive Web Build Results'
+    - name: 'Archive Web Basic Build Results'
       uses: actions/upload-artifact@v3
       with:
-        name: web-main-js
-        path: frontend/static/frontend/main.js
+        name: web-basic-js
+        path: frontend/static/frontend/basic.js
+    - name: 'Archive Web PRO Build Results'
+      uses: actions/upload-artifact@v3
+      with:
+        name: web-pro-js
+        path: frontend/static/frontend/pro.js
     - name: 'Archive Mobile Build Results'
       uses: actions/upload-artifact@v3
       with:
