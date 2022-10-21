@@ -153,7 +153,6 @@ const BookPage = ({
             <MakerForm
               limits={limits}
               fetchLimits={fetchLimits}
-              pricingMethods={false}
               maker={maker}
               setMaker={setMaker}
               fav={fav}
