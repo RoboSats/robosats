@@ -79,6 +79,15 @@ const configWebPro: Configuration = {
           async: true,
         },
       },
+      {
+        test: path.resolve(__dirname, 'src/models/Settings.default.basic.ts'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/models/Settings.default.pro.ts'),
+          async: true,
+        },
+      },
     ],
   },
   output: {

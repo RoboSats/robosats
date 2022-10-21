@@ -10,5 +10,5 @@ export type { Favorites } from './Favorites.model';
 
 export { defaultMaker } from './Maker.model';
 export { defaultRobot } from './Robot.model';
-export { defaultSettings } from './Settings.model';
+export { defaultSettings } from './Settings.default.basic';
 export { defaultInfo } from './Info.model';

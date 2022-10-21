@@ -23,7 +23,6 @@ import {
   defaultMaker,
   defaultRobot,
   defaultInfo,
-  defaultSettings,
 } from '../models';
 
 // Icons
@@ -40,10 +39,12 @@ const getWindowSize = function (fontSize: number) {
 };
 
 interface MainProps {
-  handleModeChange: () => void;
+  updateTheme: () => void;
+  settings: Settings;
+  setSettings: (state: Settings) => void;
 }
 
-const Main = ({ handleModeChange }: MainProps): JSX.Element => {
+const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const theme = useTheme();
   const history = useHistory();
   const Router = window.NativeRobosats != null ? HashRouter : BrowserRouter;
@@ -60,7 +61,6 @@ const Main = ({ handleModeChange }: MainProps): JSX.Element => {
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });
-  const [settings, setSettings] = useState<Settings>(defaultSettings);
 
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
     getWindowSize(theme.typography.fontSize),
@@ -142,7 +142,9 @@ const Main = ({ handleModeChange }: MainProps): JSX.Element => {
         <IconButton
           color='inherit'
           sx={{ position: 'fixed', right: '0px', color: 'text.secondary' }}
-          onClick={() => handleModeChange()}
+          onClick={() =>
+            setSettings({ ...settings, mode: settings.mode === 'dark' ? 'light' : 'dark' })
+          }
         >
           {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
         </IconButton>

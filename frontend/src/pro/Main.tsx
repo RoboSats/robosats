@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import GridLayout, { Layout } from 'react-grid-layout';
 import { Grid, useTheme } from '@mui/material';
 
 import { apiClient } from '../services/api';
-import checkVer from '../utils/checkVer';
 
 import {
   Book,
@@ -16,11 +15,11 @@ import {
   defaultMaker,
   defaultRobot,
   defaultInfo,
-  defaultSettings,
 } from '../models';
 
-import { PlaceholderWidget, MakerWidget } from '../pro/Widgets';
+import { PlaceholderWidget, MakerWidget, BookWidget } from '../pro/Widgets';
 import ToolBar from '../pro/ToolBar';
+import LandingDialog from '../pro/LandingDialog';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -30,17 +29,23 @@ const getWindowSize = function (fontSize: number) {
   };
 };
 
-const Main = (): JSX.Element => {
+interface MainProps {
+  settings: Settings;
+  setSettings: (state: Settings) => void;
+}
+
+const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const theme = useTheme();
 
   const defaultLayout: Layout = [
-    { i: 'robots', w: 30, h: 12, x: 0, y: 0, minW: 15, maxW: 48, minH: 8, maxH: 20 },
-    { i: 'maker', w: 9, h: 12, x: 39, y: 0, minW: 6, maxW: 12, minH: 9, maxH: 15 },
-    { i: 'book', w: 27, h: 11, x: 21, y: 12, minW: 6, maxW: 40, minH: 9, maxH: 15 },
-    { i: 'history', w: 7, h: 11, x: 6, y: 12, minW: 6, maxW: 12, minH: 9, maxH: 15 },
-    { i: 'trade', w: 9, h: 12, x: 30, y: 0, minW: 6, maxW: 12, minH: 9, maxH: 15 },
-    { i: 'depth', w: 8, h: 11, x: 13, y: 12, minW: 6, maxW: 12, minH: 9, maxH: 15 },
-    { i: 'settings', w: 6, h: 11, x: 0, y: 12, minW: 6, maxW: 12, minH: 9, maxH: 15 },
+    { i: 'MakerWidget', w: 6, h: 13, x: 42, y: 0, minW: 6, maxW: 12, minH: 9, maxH: 18 },
+    { i: 'BookWidget', w: 27, h: 13, x: 21, y: 13, minW: 6, maxW: 40, minH: 9, maxH: 15 },
+    { i: 'robots', w: 33, h: 13, x: 0, y: 0, minW: 15, maxW: 48, minH: 8, maxH: 20 },
+    { i: 'history', w: 7, h: 9, x: 6, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
+    { i: 'trade', w: 9, h: 13, x: 33, y: 0, minW: 6, maxW: 12, minH: 9, maxH: 15 },
+    { i: 'depth', w: 8, h: 9, x: 13, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
+    { i: 'settings', w: 6, h: 13, x: 0, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
+    { i: 'other', w: 15, h: 4, x: 6, y: 22, minW: 2, maxW: 30, minH: 4, maxH: 15 },
   ];
 
   // All app data structured
@@ -55,6 +60,7 @@ const Main = (): JSX.Element => {
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });
   const [layout, setLayout] = useState<Layout>(defaultLayout);
 
+  const [openLanding, setOpenLanding] = useState<boolean>(true);
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
     getWindowSize(theme.typography.fontSize),
   );
@@ -64,6 +70,7 @@ const Main = (): JSX.Element => {
       window.addEventListener('resize', onResize);
     }
     fetchLimits();
+    fetchBook();
     return () => {
       if (typeof window !== undefined) {
         window.removeEventListener('resize', onResize);
@@ -84,12 +91,28 @@ const Main = (): JSX.Element => {
     return await data;
   };
 
-  console.log(layout);
+  const fetchBook = function () {
+    setBook({ ...book, loading: true });
+    apiClient.get('/api/book/').then((data: any) =>
+      setBook({
+        loading: false,
+        orders: data.not_found ? [] : data,
+      }),
+    );
+  };
+
+  const bookRef = useRef<HTMLInputElement>(null);
+  console.log(bookRef);
 
   return (
-    <Grid container direction='column' sx={{ width: `${(windowSize.width / 16) * 14}em` }}>
+    <Grid
+      container
+      direction='column'
+      sx={{ width: `${windowSize.width * theme.typography.fontSize}px` }}
+    >
       <Grid item>
-        <ToolBar width={windowSize.width} />
+        <ToolBar settings={settings} setSettings={setSettings} />
+        <LandingDialog open={openLanding} onClose={() => setOpenLanding(!openLanding)} />
       </Grid>
 
       <Grid item sx={{ height: `${(windowSize.height / 16) * 14 - 3}em` }}>
@@ -97,13 +120,17 @@ const Main = (): JSX.Element => {
           className='layout'
           layout={layout}
           cols={48}
-          rowHeight={30}
+          margin={[theme.typography.fontSize / 2, theme.typography.fontSize / 2]}
+          isDraggable={!settings.freezeViewports}
+          isResizable={!settings.freezeViewports}
+          rowHeight={theme.typography.fontSize * 2.4}
           width={windowSize.width * theme.typography.fontSize}
           autoSize={true}
           onLayoutChange={(layout: Layout) => setLayout(layout)}
         >
-          <div key='maker'>
+          <div key='MakerWidget'>
             <MakerWidget
+              ref={bookRef}
               limits={limits}
               fetchLimits={fetchLimits}
               fav={fav}
@@ -112,7 +139,16 @@ const Main = (): JSX.Element => {
               setMaker={setMaker}
             />
           </div>
-          <PlaceholderWidget key='book'>Book Table</PlaceholderWidget>
+          <div key='BookWidget'>
+            <BookWidget
+              book={book}
+              layoutBook={layout[1]}
+              fetchBook={fetchBook}
+              fav={fav}
+              setFav={setFav}
+              windowSize={windowSize}
+            />
+          </div>
           <PlaceholderWidget key='robots'>Robot Table</PlaceholderWidget>
           <PlaceholderWidget key='history'>Workspace History</PlaceholderWidget>
           <PlaceholderWidget key='trade'>
@@ -120,6 +156,7 @@ const Main = (): JSX.Element => {
           </PlaceholderWidget>
           <PlaceholderWidget key='depth'>Depth Chart</PlaceholderWidget>
           <PlaceholderWidget key='settings'>Settings</PlaceholderWidget>
+          <PlaceholderWidget key='other'>Other</PlaceholderWidget>
         </GridLayout>
       </Grid>
     </Grid>
