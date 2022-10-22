@@ -51,8 +51,8 @@ jobs:
     - name: 'Archive Web Basic Build Results'
       uses: actions/upload-artifact@v3
       with:
-        name: web-basic-js
-        path: frontend/static/frontend/basic.js
+        name: web-main-js
+        path: frontend/static/frontend/main.js
     - name: 'Archive Web PRO Build Results'
       uses: actions/upload-artifact@v3
       with:
@@ -70,11 +70,11 @@ jobs:
       if: inputs.semver == ''
       uses: benc-uk/workflow-dispatch@v1
       with:
-        workflow: 'Coodinator Image CI'
+        workflow: 'Docker: Coordinator'
         token: ${{ secrets.PERSONAL_TOKEN }}
     - name: 'Invoke Client App Build CI/CD workflow'
       if: inputs.semver == ''
       uses: benc-uk/workflow-dispatch@v1
       with:
-        workflow: 'Client App Image CI/CD'
+        workflow: 'Docker: Client'
         token: ${{ secrets.PERSONAL_TOKEN }}
