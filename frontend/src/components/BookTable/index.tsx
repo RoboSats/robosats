@@ -40,12 +40,13 @@ interface Props {
   maxHeight: number;
   fullWidth?: number;
   fullHeight?: number;
-  defaultFullscreen: boolean;
+  elevation: number;
+  defaultFullscreen?: boolean;
+  fillContainer?: boolean;
   showControls?: boolean;
   showFooter?: boolean;
   onCurrencyChange?: (e: any) => void;
   onTypeChange?: (mouseEvent: any, val: number) => void;
-  noResultsOverlay?: () => JSX.Element;
 }
 
 const BookTable = ({
@@ -57,11 +58,12 @@ const BookTable = ({
   fullWidth,
   fullHeight,
   defaultFullscreen = false,
+  elevation = 6,
+  fillContainer = false,
   showControls = true,
   showFooter = true,
   onCurrencyChange,
   onTypeChange,
-  noResultsOverlay,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -656,6 +658,37 @@ const BookTable = ({
     Toolbar?: JSX.Element;
   }
 
+  const NoResultsOverlay = function () {
+    return (
+      <Grid
+        container
+        direction='column'
+        justifyContent='center'
+        alignItems='center'
+        sx={{ width: '100%', height: '100%' }}
+      >
+        <Grid item>
+          <Typography align='center' component='h5' variant='h5'>
+            {fav.type == 0
+              ? t('No orders found to sell BTC for {{currencyCode}}', {
+                  currencyCode:
+                    fav.currency == 0 ? t('ANY') : currencyDict[fav.currency.toString()],
+                })
+              : t('No orders found to buy BTC for {{currencyCode}}', {
+                  currencyCode:
+                    fav.currency == 0 ? t('ANY') : currencyDict[fav.currency.toString()],
+                })}
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography align='center' color='primary' variant='h6'>
+            {t('Be the first one to create an order')}
+          </Typography>
+        </Grid>
+      </Grid>
+    );
+  };
+
   const Controls = function () {
     return (
       <BookControl
@@ -673,12 +706,10 @@ const BookTable = ({
   const gridComponents = function () {
     const components: GridComponentProps = {
       LoadingOverlay: LinearProgress,
+      NoResultsOverlay: NoResultsOverlay,
+      NoRowsOverlay: NoResultsOverlay,
     };
 
-    if (noResultsOverlay != null) {
-      components.NoResultsOverlay = noResultsOverlay;
-      components.NoRowsOverlay = noResultsOverlay;
-    }
     if (showFooter) {
       components.Footer = Footer;
     }
@@ -690,7 +721,14 @@ const BookTable = ({
 
   if (!fullscreen) {
     return (
-      <Paper style={{ width: `${width}em`, height: `${height}em`, overflow: 'auto' }}>
+      <Paper
+        elevation={elevation}
+        style={
+          fillContainer
+            ? { width: '100%', height: '100%' }
+            : { width: `${width}em`, height: `${height}em`, overflow: 'auto' }
+        }
+      >
         <DataGrid
           localeText={localeText}
           rows={

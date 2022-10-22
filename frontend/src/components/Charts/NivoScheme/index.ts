@@ -1,7 +1,5 @@
-import { light } from '@mui/material/styles/createPalette';
-import { palette } from '@mui/system';
 import { Theme as NivoTheme } from '@nivo/core';
-import { Theme as MuiTheme } from './createTheme';
+import { Theme as MuiTheme } from '@mui/material/styles';
 
 export const getNivoScheme: (theme: MuiTheme) => NivoTheme = (theme) => {
   const lightMode = {

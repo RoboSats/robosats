@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useAutocomplete } from '@mui/base/AutocompleteUnstyled';
 import { styled } from '@mui/material/styles';
-import { Button, Fade, Tooltip, Typography, Grow } from '@mui/material';
+import { Button, Fade, Tooltip, Typography, Grow, useTheme } from '@mui/material';
 import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
 
 // Icons
@@ -77,9 +77,9 @@ const InputWrapper = styled('div')(
   & input {
     background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
     color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,.85)'};
-    height: 2.15em;
+    height: 2em;
     box-sizing: border-box;
-    padding: 4px 6px;
+    padding: 0.28em 0.4em;
     width: 0;
     min-width: 2.15em;
     font-size: ${theme.typography.fontSize * 1.0714};
@@ -93,11 +93,13 @@ const InputWrapper = styled('div')(
 );
 
 function Tag(props) {
+  const theme = useTheme();
   const { label, icon, onDelete, ...other } = props;
+  const iconSize = 1.5 * theme.typography.fontSize;
   return (
     <div {...other}>
-      <div style={{ position: 'relative', left: '-5px', top: '4px' }}>
-        <PaymentIcon width={22} height={22} icon={icon} />
+      <div style={{ position: 'relative', left: '-5px', top: '0.28em' }}>
+        <PaymentIcon width={iconSize} height={iconSize} icon={icon} />
       </div>
       <span style={{ position: 'relative', left: '2px' }}>{label}</span>
       <CloseIcon onClick={onDelete} />
@@ -122,7 +124,7 @@ const StyledTag = styled(Tag)(
   border: 1px solid ${theme.palette.mode === 'dark' ? '#303030' : '#e8e8e8'};
   border-radius: 2px;
   box-sizing: content-box;
-  padding: 0 4px 0 10px;
+  padding: 0 0.28em 0 0.65em;
   outline: 0;
   overflow: hidden;
 
@@ -141,7 +143,7 @@ const StyledTag = styled(Tag)(
   & svg {
     font-size: 0.857em;
     cursor: pointer;
-    padding: 4px;
+    padding: 0.28em;
   }
 `,
 );
@@ -150,8 +152,8 @@ const ListHeader = styled('span')(
   ({ theme }) => `
   color: ${theme.palette.mode === 'dark' ? '#90caf9' : '#1976d2'};
   align: left;
-  line-height:10px;
-  max-height: 10px;
+  line-height:0.7em;
+  max-height: 10.7em;
   display: inline-block;
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#ffffff'};
   font-size: 0.875em;
@@ -234,6 +236,8 @@ export default function AutocompletePayments(props) {
 
   const [val, setVal] = useState('');
   const fewerOptions = groupedOptions.length > 8 ? groupedOptions.slice(0, 8) : groupedOptions;
+  const theme = useTheme();
+  const iconSize = 1.5 * theme.typography.fontSize;
 
   function handleAddNew(inputProps) {
     fiatMethods.push({ name: inputProps.value, icon: 'custom' });
@@ -319,7 +323,7 @@ export default function AutocompletePayments(props) {
                 style={{ justifyContent: 'flex-start' }}
               >
                 <div style={{ padding: '0.286em', position: 'relative', top: '0.35em' }}>
-                  <PaymentIcon width={22} height={22} icon={option.icon} />
+                  <PaymentIcon width={iconSize} height={iconSize} icon={option.icon} />
                 </div>
                 <Typography variant='inherit' align='left'>
                   {t(option.name)}

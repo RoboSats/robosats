@@ -45,7 +45,7 @@ import { LoadingButton } from '@mui/lab';
 interface MakerFormProps {
   limits: { list: LimitList; loading: boolean };
   fetchLimits: () => void;
-  pricingMethods: boolean;
+  pricingMethods?: boolean;
   maker: Maker;
   fav: Favorites;
   setFav: (state: Favorites) => void;
@@ -60,7 +60,7 @@ interface MakerFormProps {
 const MakerForm = ({
   limits,
   fetchLimits,
-  pricingMethods,
+  pricingMethods = false,
   fav,
   setFav,
   maker,

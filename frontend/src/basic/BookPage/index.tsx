@@ -83,37 +83,6 @@ const BookPage = ({
     setFav({ ...fav, type: val });
   };
 
-  const NoOrdersFound = function () {
-    return (
-      <Grid
-        container
-        direction='column'
-        justifyContent='center'
-        alignItems='center'
-        sx={{ width: '100%', height: '100%' }}
-      >
-        <Grid item>
-          <Typography align='center' component='h5' variant='h5'>
-            {fav.type == 0
-              ? t('No orders found to sell BTC for {{currencyCode}}', {
-                  currencyCode:
-                    fav.currency == 0 ? t('ANY') : currencyDict[fav.currency.toString()],
-                })
-              : t('No orders found to buy BTC for {{currencyCode}}', {
-                  currencyCode:
-                    fav.currency == 0 ? t('ANY') : currencyDict[fav.currency.toString()],
-                })}
-          </Typography>
-        </Grid>
-        <Grid item>
-          <Typography align='center' color='primary' variant='h6'>
-            {t('Be the first one to create an order')}
-          </Typography>
-        </Grid>
-      </Grid>
-    );
-  };
-
   const NavButtons = function () {
     return (
       <ButtonGroup variant='contained' color='inherit'>
@@ -153,7 +122,6 @@ const BookPage = ({
             <MakerForm
               limits={limits}
               fetchLimits={fetchLimits}
-              pricingMethods={false}
               maker={maker}
               setMaker={setMaker}
               fav={fav}
@@ -185,7 +153,6 @@ const BookPage = ({
                 defaultFullscreen={false}
                 onCurrencyChange={handleCurrencyChange}
                 onTypeChange={handleTypeChange}
-                noResultsOverlay={NoOrdersFound}
               />
             </Grid>
             <Grid item>
@@ -220,7 +187,6 @@ const BookPage = ({
             defaultFullscreen={false}
             onCurrencyChange={handleCurrencyChange}
             onTypeChange={handleTypeChange}
-            noResultsOverlay={NoOrdersFound}
           />
         )}
       </Grid>

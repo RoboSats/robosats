@@ -27,7 +27,7 @@ const configWeb: Configuration = {
   ...config,
   output: {
     path: path.resolve(__dirname, 'static/frontend'),
-    filename: 'basic.js',
+    filename: 'main.js',
   },
 };
 
@@ -76,6 +76,15 @@ const configWebPro: Configuration = {
         options: {
           condition: 'if-replacement-exists',
           replacement: path.resolve(__dirname, 'src/pro/Main.tsx'),
+          async: true,
+        },
+      },
+      {
+        test: path.resolve(__dirname, 'src/models/Settings.default.basic.ts'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/models/Settings.default.pro.ts'),
           async: true,
         },
       },

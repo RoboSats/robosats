@@ -81,7 +81,6 @@ const MakerPage = ({
           <MakerForm
             limits={limits}
             fetchLimits={fetchLimits}
-            pricingMethods={false}
             fav={fav}
             setFav={setFav}
             maker={maker}

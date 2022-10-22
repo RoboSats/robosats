@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { HashRouter, BrowserRouter, Switch, Route, useHistory } from 'react-router-dom';
-import { useTheme } from '@mui/material';
+import { useTheme, IconButton } from '@mui/material';
 
 import UserGenPage from './UserGenPage';
 import MakerPage from './MakerPage';
 import BookPage from './BookPage';
 import OrderPage from './OrderPage';
 import BottomBar from './BottomBar';
+import { LearnDialog } from '../components/Dialogs';
 
 import { apiClient } from '../services/api';
 import checkVer from '../utils/checkVer';
@@ -22,8 +23,12 @@ import {
   defaultMaker,
   defaultRobot,
   defaultInfo,
-  defaultSettings,
 } from '../models';
+
+// Icons
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import SchoolIcon from '@mui/icons-material/School';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -33,11 +38,18 @@ const getWindowSize = function (fontSize: number) {
   };
 };
 
-const Main = (): JSX.Element => {
+interface MainProps {
+  updateTheme: () => void;
+  settings: Settings;
+  setSettings: (state: Settings) => void;
+}
+
+const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const theme = useTheme();
   const history = useHistory();
   const Router = window.NativeRobosats != null ? HashRouter : BrowserRouter;
   const basename = window.NativeRobosats != null ? window.location.pathname : '';
+  const [openLearn, setOpenLearn] = useState<boolean>(false);
 
   // All app data structured
   const [book, setBook] = useState<Book>({ orders: [], loading: true });
@@ -49,7 +61,6 @@ const Main = (): JSX.Element => {
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });
-  const [settings, setSettings] = useState<Settings>(defaultSettings);
 
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
     getWindowSize(theme.typography.fontSize),
@@ -119,6 +130,25 @@ const Main = (): JSX.Element => {
 
   return (
     <Router basename={basename}>
+      <div className='temporaryUpperIcons'>
+        <LearnDialog open={openLearn} onClose={() => setOpenLearn(false)} />
+        <IconButton
+          color='inherit'
+          sx={{ position: 'fixed', right: '34px', color: 'text.secondary' }}
+          onClick={() => setOpenLearn(true)}
+        >
+          <SchoolIcon />
+        </IconButton>
+        <IconButton
+          color='inherit'
+          sx={{ position: 'fixed', right: '0px', color: 'text.secondary' }}
+          onClick={() =>
+            setSettings({ ...settings, mode: settings.mode === 'dark' ? 'light' : 'dark' })
+          }
+        >
+          {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+        </IconButton>
+      </div>
       <div className='appCenter'>
         <Switch>
           <Route
