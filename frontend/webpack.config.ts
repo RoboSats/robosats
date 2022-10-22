@@ -27,7 +27,7 @@ const configWeb: Configuration = {
   ...config,
   output: {
     path: path.resolve(__dirname, 'static/frontend'),
-    filename: 'basic.js',
+    filename: 'main.js',
   },
 };
 
