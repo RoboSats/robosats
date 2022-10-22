@@ -35,6 +35,7 @@ class UserGenPage extends Component {
       openInfo: false,
       tokenHasChanged: false,
       inputToken: '',
+      found: false,
     };
 
     this.refCode = this.props.match.params.refCode;
@@ -63,7 +64,7 @@ class UserGenPage extends Component {
   getGeneratedUser = (token) => {
     const strength = tokenStrength(token);
     const refCode = this.refCode;
-    this.props.setRobot({ ...this.props.robot, loading: true });
+    this.props.setRobot({ ...this.props.robot, loading: true, avatarLoaded: false });
 
     const requestBody = genKey(token).then(function (key) {
       return {
@@ -83,7 +84,6 @@ class UserGenPage extends Component {
           ? this.props.setRobot({
               ...this.props.robot,
               nickname: data.nickname,
-              avatarLoaded: false,
               activeOrderId: data.active_order_id ? data.active_order_id : null,
               referralCode: data.referral_code,
               earnedRewards: data.earned_rewards ?? 0,
@@ -94,7 +94,6 @@ class UserGenPage extends Component {
               ...this.props.robot,
               nickname: data.nickname,
               token,
-              avatarLoaded: false,
               activeOrderId: data.active_order_id ? data.active_order_id : null,
               lastOrderId: data.last_order_id ? data.last_order_id : null,
               referralCode: data.referral_code,
@@ -107,6 +106,7 @@ class UserGenPage extends Component {
               shannonEntropy: data.token_shannon_entropy,
               pub_key: data.public_key,
               enc_priv_key: data.encrypted_private_key,
+              copiedToken: data.found ? true : this.props.robot.copiedToken,
             }) &
             systemClient.setCookie('robot_token', token) &
             systemClient.setCookie('pub_key', data.public_key.split('\n').join('\\')) &
@@ -114,8 +114,7 @@ class UserGenPage extends Component {
               'enc_priv_key',
               data.encrypted_private_key.split('\n').join('\\'),
             );
-        // If the robot has been found (recovered) we assume the token is backed up
-        data.found ? this.props.setRobot({ ...this.props.robot, copiedToken: true }) : null;
+        data.found ? this.setState({ found: true }) : null;
       }),
     );
   };
