@@ -6,7 +6,6 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   IconButton,
-  Box,
   Link,
   Paper,
   Rating,
@@ -27,6 +26,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
 import QRCode from 'react-qr-code';
 import Countdown, { zeroPad } from 'react-countdown';
 import Chat from './EncryptedChat';
@@ -61,6 +61,10 @@ class TradeBox extends Component {
     super(props);
     this.state = {
       openConfirmFiatReceived: false,
+      loadingButtonFiatSent: false,
+      loadingButtonFiatReceived: false,
+      loadingSubmitInvoice: false,
+      loadingSubmitAddress: false,
       openConfirmDispute: false,
       receiveTab: 0,
       address: '',
@@ -232,7 +236,15 @@ class TradeBox extends Component {
           <Button onClick={this.handleClickCloseConfirmFiatReceived} autoFocus>
             {t('Go back')}
           </Button>
-          <Button onClick={this.handleClickTotallyConfirmFiatReceived}>{t('Confirm')}</Button>
+          <LoadingButton
+            loading={this.state.loadingButtonFiatReceived}
+            onClick={() => {
+              this.setState({ loadingButtonFiatReceived: true });
+              this.handleClickTotallyConfirmFiatReceived();
+            }}
+          >
+            {t('Confirm')}
+          </LoadingButton>
         </DialogActions>
       </Dialog>
     );
@@ -627,7 +639,7 @@ class TradeBox extends Component {
   };
 
   handleClickSubmitInvoiceButton = () => {
-    this.setState({ badInvoice: false });
+    this.setState({ badInvoice: false, loadingSubmitInvoice: true });
 
     apiClient
       .post('/api/order/?order_id=' + this.props.data.id, {
@@ -636,7 +648,8 @@ class TradeBox extends Component {
       })
       .then(
         (data) =>
-          this.setState({ badInvoice: data.bad_invoice }) & this.props.completeSetState(data),
+          this.setState({ badInvoice: data.bad_invoice, loadingSubmitInvoice: false }) &
+          this.props.completeSetState(data),
       );
   };
 
@@ -659,7 +672,7 @@ class TradeBox extends Component {
   };
 
   handleClickSubmitAddressButton = () => {
-    this.setState({ badInvoice: false });
+    this.setState({ badInvoice: false, loadingSubmitAddress: true });
 
     apiClient
       .post('/api/order/?order_id=' + this.props.data.id, {
@@ -669,7 +682,8 @@ class TradeBox extends Component {
       })
       .then(
         (data) =>
-          this.setState({ badAddress: data.bad_address }) & this.props.completeSetState(data),
+          this.setState({ badAddress: data.bad_address, loadingSubmitAddress: false }) &
+          this.props.completeSetState(data),
       );
   };
 
@@ -838,13 +852,14 @@ class TradeBox extends Component {
               />
             </Grid>
             <Grid item xs={12} align='center'>
-              <Button
+              <LoadingButton
+                loading={this.state.loadingSubmitInvoice}
                 onClick={this.handleClickSubmitInvoiceButton}
                 variant='contained'
                 color='primary'
               >
                 {t('Submit')}
-              </Button>
+              </LoadingButton>
             </Grid>
           </Grid>
         </div>
@@ -940,13 +955,14 @@ class TradeBox extends Component {
           <div style={{ height: 10 }} />
 
           <Grid item xs={12} align='center'>
-            <Button
+            <LoadingButton
+              loading={this.state.loadingSubmitAddress}
               onClick={this.handleClickSubmitAddressButton}
               variant='contained'
               color='primary'
             >
               {t('Submit')}
-            </Button>
+            </LoadingButton>
           </Grid>
         </div>
         <List>
@@ -1192,7 +1208,10 @@ class TradeBox extends Component {
       .post('/api/order/?order_id=' + this.props.data.id, {
         action: 'confirm',
       })
-      .then((data) => this.props.completeSetState(data));
+      .then((data) => {
+        this.props.completeSetState(data),
+          this.setState({ loadingButtonFiatSent: false, loadingButtonFiatReceived: false });
+      });
   };
 
   handleRatingUserChange = (e) => {
@@ -1224,10 +1243,14 @@ class TradeBox extends Component {
       <Grid container spacing={1}>
         <Grid item xs={12} align='center'>
           <Button
+            loading={this.state.loadingButtonFiatSent}
             defaultValue='confirm'
             variant='contained'
             color='secondary'
-            onClick={this.handleClickConfirmButton}
+            onClick={() => {
+              this.setState({ loadingButtonFiatSent: true });
+              this.handleClickConfirmButton();
+            }}
           >
             {t('Confirm {{amount}} {{currencyCode}} sent', {
               currencyCode: this.props.data.currencyCode,
@@ -1249,7 +1272,8 @@ class TradeBox extends Component {
     const { t } = this.props;
     return (
       <Grid item xs={12} align='center'>
-        <Button
+        <LoadingButton
+          loading={this.state.loadingButtonFiatReceived}
           defaultValue='confirm'
           variant='contained'
           color='secondary'
@@ -1265,7 +1289,7 @@ class TradeBox extends Component {
               ),
             ),
           })}
-        </Button>
+        </LoadingButton>
       </Grid>
     );
   }
@@ -1732,13 +1756,14 @@ class TradeBox extends Component {
             />
           </Grid>
           <Grid item xs={12} align='center'>
-            <Button
+            <LoadingButton
+              loading={this.state.loadingSubmitInvoice}
               onClick={this.handleClickSubmitInvoiceButton}
               variant='contained'
               color='primary'
             >
-              Submit
-            </Button>
+              {t('Submit')}
+            </LoadingButton>
           </Grid>
           {this.showBondIsReturned()}
         </Grid>

@@ -84,9 +84,11 @@ class UnsafeAlert extends Component {
               >
                 <AlertTitle>{t('You are not using RoboSats privately')}</AlertTitle>
                 <Trans i18nKey='desktop_unsafe_alert'>
-                  <a>Some features are disabled for your protection (e.g. chat) and you will not be
-                  able to complete a trade without them. To protect your privacy and fully enable
-                  RoboSats, use </a>
+                  <a>
+                    Some features are disabled for your protection (e.g. chat) and you will not be
+                    able to complete a trade without them. To protect your privacy and fully enable
+                    RoboSats, use{' '}
+                  </a>
                   <Link href='https://www.torproject.org/download/' target='_blank'>
                     Tor Browser
                   </Link>

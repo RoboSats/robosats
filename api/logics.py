@@ -734,7 +734,11 @@ class Logics:
         if not order.taker_bond:
             return False, {"bad_request": "Wait for your order to be taken."}
         if (
-            not ( order.taker_bond.status == order.maker_bond.status == LNPayment.Status.LOCKED)
+            not (
+                order.taker_bond.status
+                == order.maker_bond.status
+                == LNPayment.Status.LOCKED
+            )
             and not order.status == Order.Status.FAI
         ):
             return False, {
@@ -753,7 +757,7 @@ class Logics:
         payout = LNNode.validate_ln_invoice(invoice, num_satoshis)
 
         if not payout["valid"]:
-            return False, payout['context']
+            return False, payout["context"]
 
         order.payout, _ = LNPayment.objects.update_or_create(
             concept=LNPayment.Concepts.PAYBUYER,
@@ -763,10 +767,10 @@ class Logics:
             receiver=user,
             # if there is a LNPayment matching these above, it updates that one with defaults below.
             defaults={
-                "invoice":invoice,
-                "status":LNPayment.Status.VALIDI,
-                "num_satoshis":num_satoshis,
-                "description": payout['description'],
+                "invoice": invoice,
+                "status": LNPayment.Status.VALIDI,
+                "num_satoshis": num_satoshis,
+                "description": payout["description"],
                 "payment_hash": payout["payment_hash"],
                 "created_at": payout["created_at"],
                 "expires_at": payout["expires_at"],
@@ -1429,10 +1433,12 @@ class Logics:
             if not order.payout_tx.status == OnchainPayment.Status.VALID:
                 return False
 
-            valid = LNNode.pay_onchain(order.payout_tx)
+            valid = LNNode.pay_onchain(
+                order.payout_tx,
+                valid_code=OnchainPayment.Status.VALID,
+                on_mempool_code=OnchainPayment.Status.MEMPO,
+            )
             if valid:
-                order.payout_tx.status = OnchainPayment.Status.MEMPO
-                order.payout_tx.save()
                 order.status = Order.Status.SUC
                 order.save()
                 send_message.delay(order.id, "trade_successful")

@@ -16,6 +16,8 @@ from . import lightning_pb2_grpc as lightningstub
 from . import router_pb2 as routerrpc
 from . import router_pb2_grpc as routerstub
 
+import time, random
+
 #######
 # Should work with LND (c-lightning in the future if there are features that deserve the work)
 #######
@@ -127,7 +129,7 @@ class LNNode:
         }
 
     @classmethod
-    def pay_onchain(cls, onchainpayment):
+    def pay_onchain(cls, onchainpayment, valid_code=1, on_mempool_code=2):
         """Send onchain transaction for buyer payouts"""
 
         if config("DISABLE_ONCHAIN", cast=bool):
@@ -141,14 +143,24 @@ class LNNode:
             spend_unconfirmed=True,
         )
 
-        response = cls.lightningstub.SendCoins(
-            request, metadata=[("macaroon", MACAROON.hex())]
-        )
+        # Cheap security measure to ensure there has been some non-deterministic time between request and DB check
+        time.sleep(random.uniform(0.5, 10))
 
-        onchainpayment.txid = response.txid
-        onchainpayment.save()
+        if onchainpayment.status == valid_code:
+            # Changing the state to "MEMPO" should be atomic with SendCoins.
+            onchainpayment.status = on_mempool_code
+            onchainpayment.save()
+            response = cls.lightningstub.SendCoins(
+                request, metadata=[("macaroon", MACAROON.hex())]
+            )
 
-        return True
+            onchainpayment.txid = response.txid
+            onchainpayment.save()
+            return True
+
+        elif onchainpayment.status == on_mempool_code:
+            # Bug, double payment attempted
+            return True
 
     @classmethod
     def cancel_return_hold_invoice(cls, payment_hash):
