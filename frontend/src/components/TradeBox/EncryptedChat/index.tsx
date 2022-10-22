@@ -12,12 +12,12 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
-import { encryptMessage, decryptMessage } from '../../utils/pgp';
-import { saveAsJson } from '../../utils/saveFile';
-import { AuditPGPDialog } from '../Dialogs';
-import RobotAvatar from '../Robots/RobotAvatar';
-import { systemClient } from '../../services/System';
-import { websocketClient, WebsocketConnection } from '../../services/Websocket';
+import { encryptMessage, decryptMessage } from '../../../utils/pgp';
+import { saveAsJson } from '../../../utils/saveFile';
+import { AuditPGPDialog } from '../../Dialogs';
+import RobotAvatar from '../../RobotAvatar';
+import { systemClient } from '../../../services/System';
+import { websocketClient, WebsocketConnection } from '../../../services/Websocket';
 
 // Icons
 import CheckIcon from '@mui/icons-material/Check';
@@ -26,14 +26,14 @@ import ContentCopy from '@mui/icons-material/ContentCopy';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CircularProgress from '@mui/material/CircularProgress';
 import KeyIcon from '@mui/icons-material/Key';
-import { ExportIcon } from '../Icons';
+import { ExportIcon } from '../../Icons';
 
 interface Props {
   orderId: number;
   userNick: string;
 }
 
-interface EncrypteChatMessage {
+interface EncryptedChatMessage {
   userNick: string;
   validSignature: boolean;
   plainTextMessage: string;
@@ -42,7 +42,7 @@ interface EncrypteChatMessage {
   index: number;
 }
 
-const EncrypteChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Element => {
+const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Element => {
   const { t } = useTranslation();
   const messageEndRef = useRef<HTMLInputElement>(null);
   const [connected, setConnected] = useState<boolean>(false);
@@ -51,7 +51,7 @@ const EncrypteChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Elemen
   const [ownEncPrivKey, setOwnEncPrivKey] = useState<string>();
   const [peerPubKey, setPeerPubKey] = useState<string>();
   const [token, setToken] = useState<string>();
-  const [messages, setMessages] = useState<EncrypteChatMessage[]>([]);
+  const [messages, setMessages] = useState<EncryptedChatMessage[]>([]);
   const [value, setValue] = useState<string>('');
   const [connection, setConnection] = useState<WebsocketConnection>();
   const [audit, setAudit] = useState<boolean>(false);
@@ -181,7 +181,7 @@ const EncrypteChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Elemen
                 validSignature: decryptedData.validSignature,
                 userNick: dataFromServer.user_nick,
                 time: dataFromServer.time,
-              } as EncrypteChatMessage,
+              } as EncryptedChatMessage,
             ].sort((a, b) => {
               // order the message array by their index (increasing)
               return a.index - b.index;
@@ -205,7 +205,7 @@ const EncrypteChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Elemen
               validSignature: false,
               userNick: dataFromServer.user_nick,
               time: new Date().toString(),
-            } as EncrypteChatMessage,
+            } as EncryptedChatMessage,
           ].sort((a, b) => {
             // order the message array by their index (increasing)
             return a.index - b.index;
@@ -252,7 +252,7 @@ const EncrypteChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Elemen
   };
 
   const messageCard: (
-    message: EncrypteChatMessage,
+    message: EncryptedChatMessage,
     index: number,
     cardColor: string,
     userConnected: boolean,
@@ -530,4 +530,4 @@ const EncrypteChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Elemen
   );
 };
 
-export default EncrypteChat;
+export default EncryptedChat;

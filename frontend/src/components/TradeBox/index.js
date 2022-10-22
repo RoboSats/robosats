@@ -29,7 +29,7 @@ import {
 import { LoadingButton } from '@mui/lab';
 import QRCode from 'react-qr-code';
 import Countdown, { zeroPad } from 'react-countdown';
-import EncrypteChat from './EncryptedChat';
+import EncryptedChat from './EncryptedChat';
 import TradeSummary from './TradeSummary';
 import MediaQuery from 'react-responsive';
 import { systemClient } from '../../services/System';
@@ -1469,7 +1469,7 @@ class TradeBox extends Component {
           )}
         </Grid>
 
-        <EncrypteChat orderId={this.props.data.id} userNick={this.props.data.ur_nick} />
+        <EncryptedChat orderId={this.props.data.id} userNick={this.props.data.ur_nick} />
         <Grid item xs={12} align='center'>
           {showDisputeButton ? this.showOpenDisputeButton() : ''}
           {showSendButton ? this.showFiatSentButton() : ''}
