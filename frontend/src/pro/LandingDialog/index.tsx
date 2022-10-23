@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dialog, DialogTitle, DialogContent, Grid, Box } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, Grid, Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/system';
 
 interface Props {
@@ -14,7 +14,7 @@ const LandingDialog = ({ open, onClose }: Props): JSX.Element => {
 
   return (
     <Dialog fullWidth maxWidth={'md'} open={open} onClose={onClose}>
-      <DialogTitle>{t('Oh... a robot technician has arrived...')}</DialogTitle>
+      <DialogTitle>{t('A robot technician has arrived!')}</DialogTitle>
 
       <DialogContent sx={{ height: '30em' }}>
         <Grid container sx={{ width: '100%', height: '100%' }}>
@@ -24,11 +24,17 @@ const LandingDialog = ({ open, onClose }: Props): JSX.Element => {
                 width: '100%',
                 height: '100%',
                 backgroundColor: theme.palette.background.paper,
-                justifyContent: 'center',
-                alignContent: 'center',
+                textAlign: 'center',
+                alignItems: 'center',
+                display: 'flex',
+                border: '1px dotted',
               }}
             >
-              {t('Indeed, but it is my first time. Generate a new workspace and extended token.')}
+              <Typography variant='body1'>
+                {t(
+                  'My first time here. Generate a new Robot Garage and extended robot token (xToken).',
+                )}
+              </Typography>
             </Box>
           </Grid>
           <Grid item xs={6} sx={{ padding: '1em', width: '100%', height: '100%' }}>
@@ -37,11 +43,15 @@ const LandingDialog = ({ open, onClose }: Props): JSX.Element => {
                 width: '100%',
                 height: '100%',
                 backgroundColor: theme.palette.background.paper,
-                justifyContent: 'center',
-                alignContent: 'center',
+                textAlign: 'center',
+                alignItems: 'center',
+                display: 'flex',
+                border: '1px dotted',
               }}
             >
-              {t('Yup, here are my robots. Drag and drop workspace.json')}
+              <Typography variant='body1'>
+                {t('I bring my own robots, here they are. (Drag and drop workspace.json)')}
+              </Typography>
             </Box>
           </Grid>
         </Grid>

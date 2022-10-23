@@ -36,6 +36,8 @@ interface MainProps {
 
 const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const theme = useTheme();
+  const em = theme.typography.fontSize;
+  const toolbarHeight = 3;
 
   const defaultLayout: Layout = [
     { i: 'Maker', w: 6, h: 13, x: 42, y: 0, minW: 6, maxW: 12, minH: 9, maxH: 18 },
@@ -62,7 +64,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
 
   const [openLanding, setOpenLanding] = useState<boolean>(true);
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
-    getWindowSize(theme.typography.fontSize),
+    getWindowSize(em),
   );
 
   useEffect(() => {
@@ -80,7 +82,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   }, []);
 
   const onResize = function () {
-    setWindowSize(getWindowSize(theme.typography.fontSize));
+    setWindowSize(getWindowSize(em));
   };
 
   const fetchLimits = async () => {
@@ -113,28 +115,24 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
       });
     });
   };
-
+  console.log(windowSize);
   return (
-    <Grid
-      container
-      direction='column'
-      sx={{ width: `${windowSize.width * theme.typography.fontSize}px` }}
-    >
+    <Grid container direction='column' sx={{ width: `${windowSize.width}em` }}>
       <Grid item>
-        <ToolBar settings={settings} setSettings={setSettings} />
+        <ToolBar height={`${toolbarHeight}em`} settings={settings} setSettings={setSettings} />
         <LandingDialog open={openLanding} onClose={() => setOpenLanding(!openLanding)} />
       </Grid>
 
-      <Grid item sx={{ height: `${(windowSize.height / 16) * 14 - 3}em` }}>
+      <Grid item>
         <GridLayout
           className='layout'
           layout={layout}
-          cols={48}
-          margin={[theme.typography.fontSize / 2, theme.typography.fontSize / 2]}
+          cols={48} // 48 cols in display regardless of window size
+          margin={[0.5 * em, 0.5 * em]}
           isDraggable={!settings.freezeViewports}
           isResizable={!settings.freezeViewports}
-          rowHeight={theme.typography.fontSize * 2.4}
-          width={windowSize.width * theme.typography.fontSize}
+          rowHeight={((windowSize.height - toolbarHeight) / 32) * em} // 32 rows in display regardless of window size
+          width={windowSize.width * em}
           autoSize={true}
           onLayoutChange={(layout: Layout) => setLayout(layout)}
         >
@@ -167,13 +165,21 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
               windowSize={windowSize}
             />
           </div>
-          <PlaceholderWidget key='robots'>Robot Table</PlaceholderWidget>
-          <PlaceholderWidget key='history'>Workspace History</PlaceholderWidget>
-          <PlaceholderWidget key='trade'>
-            Trade Box (for selected order in Robot Table)
-          </PlaceholderWidget>
-          <PlaceholderWidget key='settings'>Settings</PlaceholderWidget>
-          <PlaceholderWidget key='other'>Other</PlaceholderWidget>
+          <div key='robots'>
+            <PlaceholderWidget label='Robot Garage' />
+          </div>
+          <div key='history'>
+            <PlaceholderWidget label='Garage History' />
+          </div>
+          <div key='trade'>
+            <PlaceholderWidget label='Trade Box' />
+          </div>
+          <div key='settings'>
+            <PlaceholderWidget label='Settings' />
+          </div>
+          <div key='other'>
+            <PlaceholderWidget label='Other' />
+          </div>
         </GridLayout>
       </Grid>
     </Grid>

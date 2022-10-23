@@ -38,7 +38,7 @@ const MakerWidget = React.forwardRef(
     return React.useMemo(() => {
       return (
         <Paper
-          elevation={6}
+          elevation={3}
           style={{ padding: 8, overflow: 'auto', width: '100%', height: '100%' }}
         >
           <MakerForm

@@ -1,17 +1,39 @@
 import React from 'react';
 
-import { styled } from '@mui/material/styles';
+import { Paper, Typography, useTheme } from '@mui/material';
 
-const PlaceholderWidget = styled('div')(
-  ({ theme }) => `
-    background-color: rgb(128,128,128,0.3);
-    color: ${theme.palette.text.primary};
-    font-size: ${theme.typography.fontSize};
-    text-align: center;
-    vertical-align: center;
-    padding: 1em;
-    border-radius: 0.3em;
-  `,
+interface PlaceholderWidgetProps {
+  label?: string;
+  style?: Object;
+  className?: string;
+  onMouseDown?: () => void;
+  onMouseUp?: () => void;
+  onTouchEnd?: () => void;
+}
+
+const PlaceholderWidget = React.forwardRef(
+  (
+    {
+      label = 'Placeholder',
+      style,
+      className,
+      onMouseDown,
+      onMouseUp,
+      onTouchEnd,
+    }: PlaceholderWidgetProps,
+    ref,
+  ) => {
+    const theme = useTheme();
+    return React.useMemo(() => {
+      return (
+        <Paper elevation={3} style={{ width: '100%', height: '100%', padding: '1em' }}>
+          <Typography align='center' variant='h6'>
+            {label}
+          </Typography>
+        </Paper>
+      );
+    }, []);
+  },
 );
 
 export default PlaceholderWidget;
