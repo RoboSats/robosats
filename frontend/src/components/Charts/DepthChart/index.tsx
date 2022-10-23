@@ -32,11 +32,13 @@ import statusBadgeColor from '../../../utils/statusBadgeColor';
 
 interface DepthChartProps {
   orders: Order[];
-  lastDayPremium: number | undefined;
+  lastDayPremium?: number | undefined;
   currency: number;
   limits: LimitList;
   maxWidth: number;
   maxHeight: number;
+  fillContainer?: boolean;
+  elevation: number;
 }
 
 const DepthChart: React.FC<DepthChartProps> = ({
@@ -46,6 +48,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
   limits,
   maxWidth,
   maxHeight,
+  fillContainer = false,
+  elevation = 6,
 }) => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -97,8 +101,13 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setCenter(medianValue);
       setXRange(maxRange);
       setRangeSteps(rangeSteps);
-    } else if (lastDayPremium != undefined) {
-      setCenter(lastDayPremium);
+    } else {
+      if (lastDayPremium === undefined) {
+        const premiums: number[] = enrichedOrders.map((order) => order?.premium || 0);
+        setCenter(~~median(premiums));
+      } else {
+        setCenter(lastDayPremium);
+      }
       setXRange(8);
       setRangeSteps(0.5);
     }
@@ -276,22 +285,30 @@ const DepthChart: React.FC<DepthChartProps> = ({
     history.push('/order/' + point.data?.order?.id);
   };
 
+  const em = theme.typography.fontSize;
   return (
-    <Paper style={{ width: `${width}em`, maxHeight: `${height}em` }}>
-      <Paper variant='outlined'>
+    <Paper
+      elevation={elevation}
+      style={
+        fillContainer
+          ? { width: '100%', maxHeight: '100%', height: '100%' }
+          : { width: `${width}em`, maxHeight: `${height}em` }
+      }
+    >
+      <Paper variant='outlined' style={{ width: '100%', height: '100%' }}>
         {center == undefined || enrichedOrders.length < 1 ? (
           <div
             style={{
               display: 'flex',
               justifyContent: 'center',
               paddingTop: `${(height - 3) / 2 - 1}em`,
-              height: `${height - 3}em`,
+              height: `${height}em`,
             }}
           >
             <CircularProgress />
           </div>
         ) : (
-          <Grid container style={{ paddingTop: 15 }}>
+          <Grid container style={{ paddingTop: '1em' }}>
             <Grid
               container
               direction='row'
@@ -303,7 +320,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 container
                 justifyContent='flex-start'
                 alignItems='flex-start'
-                style={{ paddingLeft: 20 }}
+                style={{ paddingLeft: '1em' }}
               >
                 <Select variant='standard' value={xType} onChange={(e) => setXType(e.target.value)}>
                   <MenuItem value={'premium'}>
@@ -340,7 +357,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 </Grid>
               </Grid>
             </Grid>
-            <Grid container style={{ height: `${height - 7}em`, padding: 15 }}>
+            <Grid container style={{ height: `${height * 0.8}em`, padding: '1em' }}>
               <ResponsiveLine
                 data={series}
                 enableArea={true}
@@ -349,20 +366,29 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 crosshairType='cross'
                 // tooltip={generateTooltip}
                 onClick={handleOnClick}
-                axisRight={{
-                  tickSize: 5,
-                  format: formatAxisY,
-                }}
                 axisLeft={{
                   tickSize: 5,
                   format: formatAxisY,
                 }}
                 axisBottom={{
                   tickSize: 5,
-                  tickRotation: xType === 'base_amount' && width < 40 ? 45 : 0,
+                  tickRotation:
+                    xType === 'base_amount' ? (width < 40 ? 45 : 0) : width < 25 ? 45 : 0,
                   format: formatAxisX,
                 }}
-                margin={{ left: 65, right: 60, bottom: width < 40 ? 36 : 25, top: 10 }}
+                margin={{
+                  left: 4.64 * em,
+                  right: 0.714 * em,
+                  bottom:
+                    xType === 'base_amount'
+                      ? width < 40
+                        ? 2.7 * em
+                        : 1.78 * em
+                      : width < 25
+                      ? 2.7 * em
+                      : 1.78 * em,
+                  top: 0.714 * em,
+                }}
                 xFormat={(value) => Number(value).toFixed(0)}
                 lineWidth={3}
                 theme={getNivoScheme(theme)}

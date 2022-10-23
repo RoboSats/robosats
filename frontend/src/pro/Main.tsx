@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import GridLayout, { Layout } from 'react-grid-layout';
 import { Grid, useTheme } from '@mui/material';
-
 import { apiClient } from '../services/api';
+import checkVer from '../utils/checkVer';
 
 import {
   Book,
@@ -17,7 +17,7 @@ import {
   defaultInfo,
 } from '../models';
 
-import { PlaceholderWidget, MakerWidget, BookWidget } from '../pro/Widgets';
+import { PlaceholderWidget, MakerWidget, BookWidget, DepthChartWidget } from '../pro/Widgets';
 import ToolBar from '../pro/ToolBar';
 import LandingDialog from '../pro/LandingDialog';
 
@@ -36,14 +36,16 @@ interface MainProps {
 
 const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const theme = useTheme();
+  const em = theme.typography.fontSize;
+  const toolbarHeight = 3;
 
   const defaultLayout: Layout = [
-    { i: 'MakerWidget', w: 6, h: 13, x: 42, y: 0, minW: 6, maxW: 12, minH: 9, maxH: 18 },
-    { i: 'BookWidget', w: 27, h: 13, x: 21, y: 13, minW: 6, maxW: 40, minH: 9, maxH: 15 },
+    { i: 'Maker', w: 6, h: 13, x: 42, y: 0, minW: 6, maxW: 12, minH: 9, maxH: 18 },
+    { i: 'Book', w: 27, h: 13, x: 21, y: 13, minW: 6, maxW: 40, minH: 9, maxH: 15 },
+    { i: 'DepthChart', w: 8, h: 9, x: 13, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
     { i: 'robots', w: 33, h: 13, x: 0, y: 0, minW: 15, maxW: 48, minH: 8, maxH: 20 },
     { i: 'history', w: 7, h: 9, x: 6, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
     { i: 'trade', w: 9, h: 13, x: 33, y: 0, minW: 6, maxW: 12, minH: 9, maxH: 15 },
-    { i: 'depth', w: 8, h: 9, x: 13, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
     { i: 'settings', w: 6, h: 13, x: 0, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
     { i: 'other', w: 15, h: 4, x: 6, y: 22, minW: 2, maxW: 30, minH: 4, maxH: 15 },
   ];
@@ -62,7 +64,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
 
   const [openLanding, setOpenLanding] = useState<boolean>(true);
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
-    getWindowSize(theme.typography.fontSize),
+    getWindowSize(em),
   );
 
   useEffect(() => {
@@ -71,6 +73,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     }
     fetchLimits();
     fetchBook();
+    fetchInfo();
     return () => {
       if (typeof window !== undefined) {
         window.removeEventListener('resize', onResize);
@@ -79,7 +82,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   }, []);
 
   const onResize = function () {
-    setWindowSize(getWindowSize(theme.typography.fontSize));
+    setWindowSize(getWindowSize(em));
   };
 
   const fetchLimits = async () => {
@@ -101,36 +104,40 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     );
   };
 
-  const bookRef = useRef<HTMLInputElement>(null);
-  console.log(bookRef);
-
+  const fetchInfo = function () {
+    apiClient.get('/api/info/').then((data: any) => {
+      const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
+      setInfo({
+        ...data,
+        openUpdateClient: versionInfo.updateAvailable,
+        coordinatorVersion: versionInfo.coordinatorVersion,
+        clientVersion: versionInfo.clientVersion,
+      });
+    });
+  };
+  console.log(windowSize);
   return (
-    <Grid
-      container
-      direction='column'
-      sx={{ width: `${windowSize.width * theme.typography.fontSize}px` }}
-    >
+    <Grid container direction='column' sx={{ width: `${windowSize.width}em` }}>
       <Grid item>
-        <ToolBar settings={settings} setSettings={setSettings} />
+        <ToolBar height={`${toolbarHeight}em`} settings={settings} setSettings={setSettings} />
         <LandingDialog open={openLanding} onClose={() => setOpenLanding(!openLanding)} />
       </Grid>
 
-      <Grid item sx={{ height: `${(windowSize.height / 16) * 14 - 3}em` }}>
+      <Grid item>
         <GridLayout
           className='layout'
           layout={layout}
-          cols={48}
-          margin={[theme.typography.fontSize / 2, theme.typography.fontSize / 2]}
+          cols={48} // 48 cols in display regardless of window size
+          margin={[0.5 * em, 0.5 * em]}
           isDraggable={!settings.freezeViewports}
           isResizable={!settings.freezeViewports}
-          rowHeight={theme.typography.fontSize * 2.4}
-          width={windowSize.width * theme.typography.fontSize}
+          rowHeight={((windowSize.height - toolbarHeight) / 32) * em} // 32 rows in display regardless of window size
+          width={windowSize.width * em}
           autoSize={true}
           onLayoutChange={(layout: Layout) => setLayout(layout)}
         >
-          <div key='MakerWidget'>
+          <div key='Maker'>
             <MakerWidget
-              ref={bookRef}
               limits={limits}
               fetchLimits={fetchLimits}
               fav={fav}
@@ -139,24 +146,40 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
               setMaker={setMaker}
             />
           </div>
-          <div key='BookWidget'>
+          <div key='Book'>
             <BookWidget
               book={book}
-              layoutBook={layout[1]}
+              layout={layout[1]}
               fetchBook={fetchBook}
               fav={fav}
               setFav={setFav}
               windowSize={windowSize}
             />
           </div>
-          <PlaceholderWidget key='robots'>Robot Table</PlaceholderWidget>
-          <PlaceholderWidget key='history'>Workspace History</PlaceholderWidget>
-          <PlaceholderWidget key='trade'>
-            Trade Box (for selected order in Robot Table)
-          </PlaceholderWidget>
-          <PlaceholderWidget key='depth'>Depth Chart</PlaceholderWidget>
-          <PlaceholderWidget key='settings'>Settings</PlaceholderWidget>
-          <PlaceholderWidget key='other'>Other</PlaceholderWidget>
+          <div key='DepthChart'>
+            <DepthChartWidget
+              orders={book.orders}
+              limitList={limits.list}
+              layout={layout[2]}
+              currency={fav.currency}
+              windowSize={windowSize}
+            />
+          </div>
+          <div key='robots'>
+            <PlaceholderWidget label='Robot Garage' />
+          </div>
+          <div key='history'>
+            <PlaceholderWidget label='Garage History' />
+          </div>
+          <div key='trade'>
+            <PlaceholderWidget label='Trade Box' />
+          </div>
+          <div key='settings'>
+            <PlaceholderWidget label='Settings' />
+          </div>
+          <div key='other'>
+            <PlaceholderWidget label='Other' />
+          </div>
         </GridLayout>
       </Grid>
     </Grid>

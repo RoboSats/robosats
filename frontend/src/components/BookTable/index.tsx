@@ -74,7 +74,7 @@ const BookTable = ({
 
   // all sizes in 'em'
   const fontSize = theme.typography.fontSize;
-  const verticalHeightFrame = 3.625 + (showControls ? 3.7 : 0) + (showFooter ? 2.35 : 0);
+  const verticalHeightFrame = 3.25 + (showControls ? 3.7 : 0) + (showFooter ? 2.35 : 0);
   const verticalHeightRow = 3.25;
   const defaultPageSize = Math.max(
     Math.floor(
@@ -500,7 +500,7 @@ const BookTable = ({
       priority: 2,
       order: 5,
       normal: {
-        width: 5.8,
+        width: 5.9,
         object: currencyObj,
       },
     },
@@ -706,7 +706,7 @@ const BookTable = ({
   const gridComponents = function () {
     const components: GridComponentProps = {
       LoadingOverlay: LinearProgress,
-      NoResultsOverlay: NoResultsOverlay,
+      NoResultsOverlay,
       NoRowsOverlay: NoResultsOverlay,
     };
 
@@ -731,6 +731,8 @@ const BookTable = ({
       >
         <DataGrid
           localeText={localeText}
+          rowHeight={3.714 * theme.typography.fontSize}
+          headerHeight={3.25 * theme.typography.fontSize}
           rows={
             showControls
               ? filterOrders({
@@ -760,6 +762,8 @@ const BookTable = ({
         <Paper style={{ width: '100%', height: '100%', overflow: 'auto' }}>
           <DataGrid
             localeText={localeText}
+            rowHeight={3.714 * theme.typography.fontSize}
+            headerHeight={3.25 * theme.typography.fontSize}
             rows={
               showControls
                 ? filterOrders({
