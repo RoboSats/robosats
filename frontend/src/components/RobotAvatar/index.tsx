@@ -44,14 +44,14 @@ const RobotAvatar: React.FC<Props> = ({
   }, [nickname]);
 
   const statusBadge = (
-    <div style={{ position: 'relative', left: '6px', top: '1px' }}>
+    <div style={{ position: 'relative', left: '0.428em', top: '0.07em' }}>
       {orderType === 0 ? (
         <SendReceiveIcon
-          sx={{ transform: 'scaleX(-1)', height: '18px', width: '18px' }}
+          sx={{ transform: 'scaleX(-1)', height: '0.8em', width: '0.8em' }}
           color='secondary'
         />
       ) : (
-        <SendReceiveIcon sx={{ height: '20px', width: '20px' }} color='primary' />
+        <SendReceiveIcon sx={{ height: '0.8em', width: '0.8em' }} color='primary' />
       )}
     </div>
   );

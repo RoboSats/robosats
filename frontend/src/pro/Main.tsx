@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import GridLayout, { Layout } from 'react-grid-layout';
 import { Grid, useTheme } from '@mui/material';
-
 import { apiClient } from '../services/api';
+import checkVer from '../utils/checkVer';
 
 import {
   Book,
@@ -17,7 +17,7 @@ import {
   defaultInfo,
 } from '../models';
 
-import { PlaceholderWidget, MakerWidget, BookWidget } from '../pro/Widgets';
+import { PlaceholderWidget, MakerWidget, BookWidget, DepthChartWidget } from '../pro/Widgets';
 import ToolBar from '../pro/ToolBar';
 import LandingDialog from '../pro/LandingDialog';
 
@@ -38,12 +38,12 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const theme = useTheme();
 
   const defaultLayout: Layout = [
-    { i: 'MakerWidget', w: 6, h: 13, x: 42, y: 0, minW: 6, maxW: 12, minH: 9, maxH: 18 },
-    { i: 'BookWidget', w: 27, h: 13, x: 21, y: 13, minW: 6, maxW: 40, minH: 9, maxH: 15 },
+    { i: 'Maker', w: 6, h: 13, x: 42, y: 0, minW: 6, maxW: 12, minH: 9, maxH: 18 },
+    { i: 'Book', w: 27, h: 13, x: 21, y: 13, minW: 6, maxW: 40, minH: 9, maxH: 15 },
+    { i: 'DepthChart', w: 8, h: 9, x: 13, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
     { i: 'robots', w: 33, h: 13, x: 0, y: 0, minW: 15, maxW: 48, minH: 8, maxH: 20 },
     { i: 'history', w: 7, h: 9, x: 6, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
     { i: 'trade', w: 9, h: 13, x: 33, y: 0, minW: 6, maxW: 12, minH: 9, maxH: 15 },
-    { i: 'depth', w: 8, h: 9, x: 13, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
     { i: 'settings', w: 6, h: 13, x: 0, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
     { i: 'other', w: 15, h: 4, x: 6, y: 22, minW: 2, maxW: 30, minH: 4, maxH: 15 },
   ];
@@ -71,6 +71,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     }
     fetchLimits();
     fetchBook();
+    fetchInfo();
     return () => {
       if (typeof window !== undefined) {
         window.removeEventListener('resize', onResize);
@@ -101,8 +102,17 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     );
   };
 
-  const bookRef = useRef<HTMLInputElement>(null);
-  console.log(bookRef);
+  const fetchInfo = function () {
+    apiClient.get('/api/info/').then((data: any) => {
+      const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
+      setInfo({
+        ...data,
+        openUpdateClient: versionInfo.updateAvailable,
+        coordinatorVersion: versionInfo.coordinatorVersion,
+        clientVersion: versionInfo.clientVersion,
+      });
+    });
+  };
 
   return (
     <Grid
@@ -128,9 +138,8 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
           autoSize={true}
           onLayoutChange={(layout: Layout) => setLayout(layout)}
         >
-          <div key='MakerWidget'>
+          <div key='Maker'>
             <MakerWidget
-              ref={bookRef}
               limits={limits}
               fetchLimits={fetchLimits}
               fav={fav}
@@ -139,13 +148,22 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
               setMaker={setMaker}
             />
           </div>
-          <div key='BookWidget'>
+          <div key='Book'>
             <BookWidget
               book={book}
-              layoutBook={layout[1]}
+              layout={layout[1]}
               fetchBook={fetchBook}
               fav={fav}
               setFav={setFav}
+              windowSize={windowSize}
+            />
+          </div>
+          <div key='DepthChart'>
+            <DepthChartWidget
+              orders={book.orders}
+              limitList={limits.list}
+              layout={layout[2]}
+              currency={fav.currency}
               windowSize={windowSize}
             />
           </div>
@@ -154,7 +172,6 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
           <PlaceholderWidget key='trade'>
             Trade Box (for selected order in Robot Table)
           </PlaceholderWidget>
-          <PlaceholderWidget key='depth'>Depth Chart</PlaceholderWidget>
           <PlaceholderWidget key='settings'>Settings</PlaceholderWidget>
           <PlaceholderWidget key='other'>Other</PlaceholderWidget>
         </GridLayout>
