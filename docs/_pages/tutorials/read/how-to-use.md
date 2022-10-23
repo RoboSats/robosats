@@ -10,6 +10,11 @@ sidebar:
   nav: tutorial
 --- 
 
+Full tutorial in tweets by @simplestBTCbook
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Enjoy this detailed new <a href="https://twitter.com/RoboSats">@RoboSats</a> Tutorial! <a href="https://t.co/CiizGINQ4f">pic.twitter.com/CiizGINQ4f</a></p>&mdash; SimplestBitcoinBook -Get ur 🔑&#39;s into Cold Storage (@SimplestBTCBook) <a href="https://twitter.com/SimplestBTCBook/status/1584103026733633537">October 23, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+Read full tweet thread without clutter and tracking in [Nitter](https://nitter.net/SimplestBTCBook/status/1584103026733633537)
+
 RoboSats is focused on user friendliness. The platform is totally self-explanatory, so one could say a tutorial is really not necessary. However, it really helps to feel comfortable when trading if you already know what are the next steps to come so nothing surprises you. After all, bitcoin p2p exchanges are very intimidating! Fear no more, RoboSats keeps it really simple and you simply cannot do things wrong! :D
 
 This document has two complete walkthroughs: 1) as a buyer that takes an order and; 2) as a seller that makes an order. Given that the platform explains to the user exactly everything in the menus, we are going to dedicate some lines to some tricks and give tips for safe trading in between.
