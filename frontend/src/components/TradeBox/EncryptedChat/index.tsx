@@ -47,10 +47,10 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
   const messageEndRef = useRef<HTMLInputElement>(null);
   const [connected, setConnected] = useState<boolean>(false);
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
-  const [ownPubKey, setOwnPubKey] = useState<string>();
-  const [ownEncPrivKey, setOwnEncPrivKey] = useState<string>();
+  const [ownPubKey] = useState<string>(systemClient.getCookie('pub_key') || '');
+  const [ownEncPrivKey] = useState<string>(systemClient.getCookie('enc_priv_key') || '');
   const [peerPubKey, setPeerPubKey] = useState<string>();
-  const [token, setToken] = useState<string>();
+  const [token] = useState<string>(systemClient.getCookie('robot_token') || '');
   const [messages, setMessages] = useState<EncryptedChatMessage[]>([]);
   const [value, setValue] = useState<string>('');
   const [connection, setConnection] = useState<WebsocketConnection>();
@@ -62,14 +62,6 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
   const [scrollNow, setScrollNow] = useState<boolean>(false);
 
   useEffect(() => {
-    const pubKeyCookie = systemClient.getCookie('pub_key');
-    const encPrivKeyCookie = systemClient.getCookie('enc_priv_key');
-    const tokenCookie = systemClient.getCookie('robot_token');
-    if (pubKeyCookie && encPrivKeyCookie && tokenCookie) {
-      setOwnPubKey(pubKeyCookie.split('\\').join('\n'));
-      setOwnEncPrivKey(encPrivKeyCookie.split('\\').join('\n'));
-      setToken(tokenCookie);
-    }
     connectWebsocket();
   }, []);
 
@@ -85,6 +77,8 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
   const connectWebsocket = () => {
     websocketClient.open(`ws://${window.location.host}/ws/chat/${orderId}/`).then((connection) => {
       console.log('Connected!');
+      setConnection(connection);
+      setConnected(true);
 
       connection.send({
         message: ownPubKey,
@@ -95,15 +89,11 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
       connection.onClose(() => {
         console.log('Socket is closed. Reconnect will be attempted');
         setConnected(false);
-        connectWebsocket();
       });
       connection.onError(() => {
         console.error('Socket encountered error: Closing socket');
         setConnected(false);
       });
-
-      setConnected(true);
-      setConnection(connection);
     });
   };
 
@@ -127,6 +117,7 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
     const dataFromServer = JSON.parse(message.data);
     console.log('Got reply!', dataFromServer.type);
     console.log('PGP message index', dataFromServer.index, ' latestIndex ', latestIndex);
+
     if (dataFromServer) {
       console.log(dataFromServer);
       setPeerConnected(dataFromServer.peer_connected);
