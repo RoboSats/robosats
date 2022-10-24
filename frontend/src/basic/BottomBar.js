@@ -599,7 +599,7 @@ class BottomBar extends Component {
           handleClickCloseProfile={this.handleClickCloseProfile}
           nickname={this.props.robot.nickname}
           activeOrderId={this.props.robot.activeOrderId}
-          lastOrderId={this.props.robotlastOrderId}
+          lastOrderId={this.props.robot.lastOrderId}
           referralCode={this.props.robot.referralCode}
           tgEnabled={this.props.robot.tgEnabled}
           tgBotName={this.props.robot.tgBotName}
