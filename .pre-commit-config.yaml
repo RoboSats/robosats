@@ -27,7 +27,7 @@ repos:
           - merge-commit
         language: system
         files: ^frontend/
-        types: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
+        types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
         entry: bash -c 'cd frontend && npm run format'
       - id: prettier-mobile
         name: prettier-mobile
@@ -36,7 +36,7 @@ repos:
           - merge-commit
         language: system
         files: ^mobile/
-        types: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
+        types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
         entry: bash -c 'cd mobile && npm run format'
       - id: isort
         name: isort
