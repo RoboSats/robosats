@@ -1,0 +1,64 @@
+# TODO
+# add a hook which automatically generates the OpenApi schema on API changes
+# and places them in an appropriate location
+repos:
+  - repo: 'https://github.com/pre-commit/pre-commit-hooks'
+    rev: v2.3.0
+    hooks:
+      - id: check-yaml
+      - id: check-toml
+      - id: mixed-line-ending
+        args:
+          - '--fix=lf'
+      - id: trailing-whitespace
+      - id: pretty-format-json
+        args:
+          - '--autofix'
+          - '--no-sort-keys'
+      - id: check-builtin-literals
+      - id: check-docstring-first
+      - id: check-merge-conflict
+  - repo: local
+    hooks:
+      - id: prettier-frontend
+        name: prettier-frontend
+        stages:
+          - commit
+          - merge-commit
+        language: system
+        files: ^frontend/
+        types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
+        entry: bash -c 'cd frontend && npm run format'
+      - id: prettier-mobile
+        name: prettier-mobile
+        stages:
+          - commit
+          - merge-commit
+        language: system
+        files: ^mobile/
+        types_or: [javascript, jsx, ts, tsx, css, markdown, json] # uses https://github.com/pre-commit/identify
+        entry: bash -c 'cd mobile && npm run format'
+      - id: isort
+        name: isort
+        stages:
+          - commit
+          - merge-commit
+        language: system
+        types: [python]
+        entry: isort
+      - id: black
+        name: black
+        stages:
+          - commit
+          - merge-commit
+        language: system
+        types: [python]
+        entry: black
+      - id: flake8
+        name: flake8
+        stages:
+          - commit
+          - merge-commit
+        language: system
+        types: [python]
+        entry: flake8

@@ -1,7 +1,5 @@
-from django.shortcuts import render
 from decouple import config
-
-# Create your views here.
+from django.shortcuts import render
 
 
 def basic(request, *args, **kwargs):
