@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import { Button, Grid, Paper, Collapse, Typography } from '@mui/material';
 
-import { LimitList, Maker, Order, Favorites } from '../../models';
+import { LimitList, Maker, Book, Favorites } from '../../models';
 
 import filterOrders from '../../utils/filterOrders';
 
@@ -13,7 +13,7 @@ import BookTable from '../../components/BookTable';
 interface MakerPageProps {
   limits: { list: LimitList; loading: boolean };
   fetchLimits: () => void;
-  orders: Order[];
+  book: Book;
   fav: Favorites;
   maker: Maker;
   setFav: (state: Favorites) => void;
@@ -24,7 +24,7 @@ interface MakerPageProps {
 const MakerPage = ({
   limits,
   fetchLimits,
-  orders,
+  book,
   fav,
   maker,
   setFav,
@@ -38,7 +38,7 @@ const MakerPage = ({
   const [showMatches, setShowMatches] = useState<boolean>(false);
 
   const matches = filterOrders({
-    orders,
+    orders: book.orders,
     baseFilter: { currency: fav.currency === 0 ? 1 : fav.currency, type: fav.type },
     paymentMethods: maker.paymentMethods,
     amountFilter: {
@@ -59,15 +59,13 @@ const MakerPage = ({
             </Grid>
             <Grid item>
               <BookTable
-                book={{
-                  orders: matches.slice(0, matches.length > 4 ? 4 : matches.length),
-                  loading: false,
-                }}
+                book={book}
                 maxWidth={Math.min(windowSize.width, 60)} // EM units
-                maxHeight={Math.min(matches.length * 3.25 + 3.575, 16.575)} // EM units
+                maxHeight={Math.min(matches.length * 3.25 + 3.25, 16)} // EM units
                 defaultFullscreen={false}
                 showControls={false}
                 showFooter={false}
+                showNoResults={false}
               />
             </Grid>
           </Grid>

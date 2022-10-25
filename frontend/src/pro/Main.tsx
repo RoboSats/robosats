@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import GridLayout, { Layout } from 'react-grid-layout';
-import { Grid, useTheme } from '@mui/material';
+import { Grid, styled, useTheme } from '@mui/material';
 import { apiClient } from '../services/api';
 import checkVer from '../utils/checkVer';
 
@@ -34,20 +34,36 @@ interface MainProps {
   setSettings: (state: Settings) => void;
 }
 
+// To Do. Add dotted grid when layout is not frozen
+// ${freeze ?
+//   `background: radial-gradient(${theme.palette.text.disabled} 1px, transparent 0px);
+//   background-size: ${gridCellSize}em ${gridCellSize}em;
+//   background-position: left 1em bottom 1.5em;`
+// :''}
+
+const StyledRGL = styled(GridLayout)(
+  ({ theme, gridCellSize, height, width, freeze }) => `
+  height: ${height}em;
+  width: ${width}px;
+  max-height: ${height}em;
+  `,
+);
+
 const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const theme = useTheme();
-  const em = theme.typography.fontSize;
-  const toolbarHeight = 3;
+  const em: number = theme.typography.fontSize;
+  const toolbarHeight: number = 3;
+  const gridCellSize: number = 2;
 
   const defaultLayout: Layout = [
-    { i: 'Maker', w: 6, h: 13, x: 42, y: 0, minW: 6, maxW: 12, minH: 9, maxH: 18 },
-    { i: 'Book', w: 27, h: 13, x: 21, y: 13, minW: 6, maxW: 40, minH: 9, maxH: 15 },
-    { i: 'DepthChart', w: 8, h: 9, x: 13, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
-    { i: 'robots', w: 33, h: 13, x: 0, y: 0, minW: 15, maxW: 48, minH: 8, maxH: 20 },
-    { i: 'history', w: 7, h: 9, x: 6, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
-    { i: 'trade', w: 9, h: 13, x: 33, y: 0, minW: 6, maxW: 12, minH: 9, maxH: 15 },
-    { i: 'settings', w: 6, h: 13, x: 0, y: 13, minW: 6, maxW: 12, minH: 9, maxH: 15 },
-    { i: 'other', w: 15, h: 4, x: 6, y: 22, minW: 2, maxW: 30, minH: 4, maxH: 15 },
+    { i: 'Maker', w: 10, h: 16, x: 67, y: 0, minW: 8, maxW: 22, minH: 10, maxH: 28 },
+    { i: 'Book', w: 43, h: 15, x: 34, y: 16, minW: 6, maxW: 70, minH: 9, maxH: 25 },
+    { i: 'DepthChart', w: 15, h: 10, x: 19, y: 16, minW: 6, maxW: 22, minH: 9, maxH: 25 },
+    { i: 'Garage', w: 52, h: 16, x: 0, y: 0, minW: 15, maxW: 78, minH: 8, maxH: 30 },
+    { i: 'History', w: 10, h: 10, x: 9, y: 16, minW: 6, maxW: 22, minH: 9, maxH: 25 },
+    { i: 'Trade', w: 15, h: 16, x: 52, y: 0, minW: 6, maxW: 22, minH: 9, maxH: 25 },
+    { i: 'Settings', w: 9, h: 15, x: 0, y: 16, minW: 6, maxW: 22, minH: 9, maxH: 25 },
+    { i: 'Other', w: 25, h: 5, x: 9, y: 26, minW: 2, maxW: 50, minH: 4, maxH: 25 },
   ];
 
   // All app data structured
@@ -115,7 +131,8 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
       });
     });
   };
-  console.log(windowSize);
+
+  console.log(layout);
   return (
     <Grid container direction='column' sx={{ width: `${windowSize.width}em` }}>
       <Grid item>
@@ -124,15 +141,19 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
       </Grid>
 
       <Grid item>
-        <GridLayout
+        <StyledRGL
+          height={windowSize.height - toolbarHeight}
+          width={Number((windowSize.width / gridCellSize).toFixed()) * gridCellSize * em}
+          theme={theme}
+          freeze={!settings.freezeViewports}
+          gridCellSize={gridCellSize}
           className='layout'
           layout={layout}
-          cols={48} // 48 cols in display regardless of window size
+          cols={Number((windowSize.width / gridCellSize).toFixed())} // cols are 2em wide
           margin={[0.5 * em, 0.5 * em]}
           isDraggable={!settings.freezeViewports}
           isResizable={!settings.freezeViewports}
-          rowHeight={((windowSize.height - toolbarHeight) / 32) * em} // 32 rows in display regardless of window size
-          width={windowSize.width * em}
+          rowHeight={gridCellSize * em} // rows are 2em high
           autoSize={true}
           onLayoutChange={(layout: Layout) => setLayout(layout)}
         >
@@ -150,6 +171,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
             <BookWidget
               book={book}
               layout={layout[1]}
+              gridCellSize={gridCellSize}
               fetchBook={fetchBook}
               fav={fav}
               setFav={setFav}
@@ -159,28 +181,29 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
           <div key='DepthChart'>
             <DepthChartWidget
               orders={book.orders}
+              gridCellSize={gridCellSize}
               limitList={limits.list}
               layout={layout[2]}
               currency={fav.currency}
               windowSize={windowSize}
             />
           </div>
-          <div key='robots'>
+          <div key='Garage'>
             <PlaceholderWidget label='Robot Garage' />
           </div>
-          <div key='history'>
+          <div key='History'>
             <PlaceholderWidget label='Garage History' />
           </div>
-          <div key='trade'>
+          <div key='Trade'>
             <PlaceholderWidget label='Trade Box' />
           </div>
-          <div key='settings'>
+          <div key='Settings'>
             <PlaceholderWidget label='Settings' />
           </div>
-          <div key='other'>
+          <div key='Other'>
             <PlaceholderWidget label='Other' />
           </div>
-        </GridLayout>
+        </StyledRGL>
       </Grid>
     </Grid>
   );

@@ -112,19 +112,21 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         coordinatorVersion: versionInfo.coordinatorVersion,
         clientVersion: versionInfo.clientVersion,
       });
-      setRobot({
-        ...robot,
-        nickname: data.nickname,
-        loading: false,
-        activeOrderId: data.active_order_id ?? null,
-        lastOrderId: data.last_order_id ?? null,
-        referralCode: data.referral_code,
-        tgEnabled: data.tg_enabled,
-        tgBotName: data.tg_bot_name,
-        tgToken: data.tg_token,
-        earnedRewards: data.earned_rewards ?? 0,
-        stealthInvoices: data.wants_stealth,
-      });
+      if (!robot.nickname) {
+        setRobot({
+          ...robot,
+          nickname: data.nickname,
+          loading: false,
+          activeOrderId: data.active_order_id ?? null,
+          lastOrderId: data.last_order_id ?? null,
+          referralCode: data.referral_code,
+          tgEnabled: data.tg_enabled,
+          tgBotName: data.tg_bot_name,
+          tgToken: data.tg_token,
+          earnedRewards: data.earned_rewards ?? 0,
+          stealthInvoices: data.wants_stealth,
+        });
+      }
     });
   };
 
@@ -168,7 +170,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
             path='/make'
             render={() => (
               <MakerPage
-                orders={book.orders}
+                book={book}
                 limits={limits}
                 fetchLimits={fetchLimits}
                 maker={maker}

@@ -6,6 +6,7 @@ import BookTable from '../../components/BookTable';
 
 interface BookWidgetProps {
   layout: any;
+  gridCellSize?: number;
   book: Book;
   fetchBook: () => void;
   fav: Favorites;
@@ -22,6 +23,7 @@ const BookWidget = React.forwardRef(
   (
     {
       layout,
+      gridCellSize = 2,
       book,
       fetchBook,
       fav,
@@ -45,8 +47,8 @@ const BookWidget = React.forwardRef(
             book={book}
             fav={fav}
             fillContainer={true}
-            maxWidth={(windowSize.width / 48) * layout.w} // EM units
-            maxHeight={(layout.h * theme.typography.fontSize * 2.5) / theme.typography.fontSize} // EM units
+            maxWidth={layout.w * gridCellSize} // EM units
+            maxHeight={layout.h * gridCellSize} // EM units
             fullWidth={windowSize.width} // EM units
             fullHeight={windowSize.height} // EM units
             defaultFullscreen={false}

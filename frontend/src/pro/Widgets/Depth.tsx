@@ -6,6 +6,7 @@ import DepthChart from '../../components/Charts/DepthChart';
 
 interface DepthChartWidgetProps {
   layout: any;
+  gridCellSize: number;
   orders: Order[];
   currency: number;
   limitList: LimitList;
@@ -21,6 +22,7 @@ const DepthChartWidget = React.forwardRef(
   (
     {
       layout,
+      gridCellSize,
       limitList,
       orders,
       currency,
@@ -42,8 +44,8 @@ const DepthChartWidget = React.forwardRef(
             orders={orders}
             currency={currency}
             limits={limitList}
-            maxWidth={(windowSize.width / 48) * layout.w} // EM units
-            maxHeight={(layout.h * theme.typography.fontSize * 2.5) / theme.typography.fontSize} // EM units
+            maxWidth={layout.w * gridCellSize} // EM units
+            maxHeight={layout.h * gridCellSize} // EM units
             fillContainer={true}
           />
         </Paper>

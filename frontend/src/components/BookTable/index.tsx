@@ -45,6 +45,7 @@ interface Props {
   fillContainer?: boolean;
   showControls?: boolean;
   showFooter?: boolean;
+  showNoResults?: boolean;
   onCurrencyChange?: (e: any) => void;
   onTypeChange?: (mouseEvent: any, val: number) => void;
 }
@@ -62,6 +63,7 @@ const BookTable = ({
   fillContainer = false,
   showControls = true,
   showFooter = true,
+  showNoResults = true,
   onCurrencyChange,
   onTypeChange,
 }: Props): JSX.Element => {
@@ -706,10 +708,12 @@ const BookTable = ({
   const gridComponents = function () {
     const components: GridComponentProps = {
       LoadingOverlay: LinearProgress,
-      NoResultsOverlay,
-      NoRowsOverlay: NoResultsOverlay,
     };
 
+    if (showNoResults) {
+      components.NoResultsOverlay = NoResultsOverlay;
+      components.NoRowsOverlay = NoResultsOverlay;
+    }
     if (showFooter) {
       components.Footer = Footer;
     }
