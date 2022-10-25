@@ -21,13 +21,20 @@ Discussion about code changes happens in GitHub issues and pull requests.
 
 All RoboSats contributors submit changes via pull requests. The workflow is as follows:
 
- - Fork the repository
- - Create a topic branch from the `main` branch
- - Commit patches
- - Run formatter if the frontend was changed: `npm run format`
- - Squash redundant or unnecessary commits
- - Submit a pull request from your topic branch back to the `main` branch of the main repository
- - Make changes to the pull request if reviewers request them and request a re-review
+1. Fork the repository
+2. Create a topic branch from the `main` branch
+3. Install [pre-commit](https://pre-commit.com/#installation) and initialize it:
+   - ```
+     pip install pre-commit
+     ```
+   - ```
+     pre-commit install
+     ```
+   Pre-commit installs git hooks that automatically checks the codebase for styleguide consistencies and runs formatters like prettier and black and performs other chores automatically on git events (mostly before a commit). If the pre-commit fails when you commit your changes, please fix the problems it points out.
+4. Commit patches
+6. Squash redundant or unnecessary commits
+7. Submit a pull request from your topic branch back to the `main` branch of the main repository
+8. Make changes to the pull request if reviewers request them and request a re-review
 
 Pull requests should be focused on a single change. Do not mix, for example, refactorings with a bug fix or implementation of a new feature. This practice makes it easier for fellow contributors to review each pull request.
 
@@ -54,7 +61,7 @@ At the moment RoboSats is a young and unfunded project. However, since launch, i
 2) An offer/negotiation takes place to set an amount of Sats until agreement. Everyone is welcome to express opinion on whether the compensation is right for the PR.
 3) The work happens: buidl, buidl, buidl!
 4) The review takes place. Once maintainers give the OK for the merge...
-5) The developer submits a LN invoice (with a long expiration time). The invoice is paid at merge. 
+5) The developer submits a LN invoice (with a long expiration time). The invoice is paid at merge.
 
 Every step (negotiation, code submission, review and invoice submission) must take place publicly in GitHub (i.e., no private messaging). Please contact the team lead for development (@reckless-satoshi) upfront if you have doubts whether your contribution is suitable for compensation. Currently, only contributions to the frontend or backend core functionality and maintainence are eligible for compensations (that excludes, for the time being, art, translations, etc...).
 
