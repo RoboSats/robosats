@@ -112,7 +112,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         coordinatorVersion: versionInfo.coordinatorVersion,
         clientVersion: versionInfo.clientVersion,
       });
-      if (!robot.nickname) {
+      if (!robot.nickname && data.nickname) {
         setRobot({
           ...robot,
           nickname: data.nickname,

@@ -44,14 +44,9 @@ class UserGenPage extends Component {
   componentDidMount() {
     // Checks in parent HomePage if there is already a nick and token
     // Displays the existing one
-    if (this.props.robot.nickname != null) {
-      this.setState({
-        inputToken: this.props.robot.token ? this.props.robot.token : '',
-      });
-    } else if (window.NativeRobosats && systemClient.getCookie('robot_token')) {
-      const token = systemClient.getCookie('robot_token');
-      this.setState({ inputToken: token });
-      this.getGeneratedUser(token);
+    if (this.props.robot.token) {
+      this.setState({ inputToken: this.props.robot.token });
+      this.getGeneratedUser(this.props.robot.token);
     } else {
       const newToken = genBase62Token(36);
       this.setState({
@@ -79,21 +74,23 @@ class UserGenPage extends Component {
     });
     requestBody.then((body) =>
       apiClient.post('/api/user/', body).then((data) => {
+        this.setState({ found: data.found, bad_request: data.bad_request });
         // Add nick and token to App state (token only if not a bad request)
         data.bad_request
           ? this.props.setRobot({
               ...this.props.robot,
-              nickname: data.nickname,
-              activeOrderId: data.active_order_id ? data.active_order_id : null,
-              referralCode: data.referral_code,
-              earnedRewards: data.earned_rewards ?? 0,
-              lastOrderId: data.last_order_id ? data.last_order_id : null,
-              stealthInvoices: data.wants_stealth,
+              avatarLoaded: true,
+              nickname: data.nickname ?? this.props.robot.nickname,
+              activeOrderId: data.active_order_id ?? null,
+              referralCode: data.referral_code ?? this.props.referralCode,
+              earnedRewards: data.earned_rewards ?? this.props.eartnedRewards,
+              lastOrderId: data.last_order_id ?? this.props.lastOrderId,
+              stealthInvoices: data.wants_stealth ?? this.props.stealthInvoices,
             })
           : this.props.setRobot({
               ...this.props.robot,
               nickname: data.nickname,
-              token,
+              token: token,
               activeOrderId: data.active_order_id ? data.active_order_id : null,
               lastOrderId: data.last_order_id ? data.last_order_id : null,
               referralCode: data.referral_code,
@@ -107,14 +104,10 @@ class UserGenPage extends Component {
               pub_key: data.public_key,
               enc_priv_key: data.encrypted_private_key,
               copiedToken: data.found ? true : this.props.robot.copiedToken,
-            }) &
-            systemClient.setCookie('robot_token', token) &
-            systemClient.setCookie('pub_key', data.public_key.split('\n').join('\\')) &
-            systemClient.setCookie(
-              'enc_priv_key',
-              data.encrypted_private_key.split('\n').join('\\'),
-            );
-        data.found ? this.setState({ found: true }) : null;
+            });
+        systemClient.setCookie('robot_token', token);
+        systemClient.setCookie('pub_key', data.public_key.split('\n').join('\\'));
+        systemClient.setCookie('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'));
       }),
     );
   };
@@ -299,7 +292,7 @@ class UserGenPage extends Component {
                               color='primary'
                               disabled={
                                 !this.props.robot.avatarLoaded ||
-                                !(systemClient.getCookie('robot_token') === this.state.inputToken)
+                                !(systemClient.getCookie('robot_token') == this.state.inputToken)
                               }
                               onClick={() =>
                                 saveAsJson(
@@ -399,7 +392,7 @@ class UserGenPage extends Component {
               disabled={
                 this.props.robot.loading ||
                 !(this.props.robot.token
-                  ? systemClient.getCookie('robot_token') === this.props.robot.token
+                  ? systemClient.getCookie('robot_token') == this.props.robot.token
                   : true)
               }
               color='secondary'

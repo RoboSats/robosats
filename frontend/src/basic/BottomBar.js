@@ -508,7 +508,6 @@ class BottomBar extends Component {
               <IconButton
                 disabled={!this.showProfileButton()}
                 color='primary'
-                onClick={() => this.props.fetchInfo()}
                 to={`/`}
                 component={LinkRouter}
               >
@@ -552,6 +551,7 @@ class BottomBar extends Component {
                 <IconButton
                   color='primary'
                   aria-label='Stats for Nerds'
+                  onClick={() => this.props.fetchInfo()}
                   onClick={this.handleClickOpenStatsForNerds}
                 >
                   <BarChartIcon />
