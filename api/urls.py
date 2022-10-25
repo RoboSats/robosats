@@ -1,19 +1,21 @@
 from django.urls import path
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
+
+from chat.views import ChatView
+
 from .views import (
+    BookView,
+    HistoricalView,
+    InfoView,
+    LimitView,
     MakerView,
     OrderView,
-    UserView,
-    BookView,
-    InfoView,
-    RewardView,
     PriceView,
-    LimitView,
-    HistoricalView,
-    TickView,
+    RewardView,
     StealthView,
+    TickView,
+    UserView,
 )
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
-from chat.views import ChatView
 
 urlpatterns = [
     path("schema/", SpectacularAPIView.as_view(), name="schema"),

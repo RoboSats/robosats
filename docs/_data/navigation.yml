@@ -63,7 +63,7 @@ docs:
       - title: '<span class="side-bar-item">&nbsp;&nbsp;<img id="side-icon-small" src="/assets/vector/cloud.svg"/>API</span>'
         url: /docs/api-v0.1/
 
-  - title: '<span class="side-bar-item"><img id="side-icon-big" src="/assets/vector/hand-peace.svg"/>Best Practices</span>' 
+  - title: '<span class="side-bar-item"><img id="side-icon-big" src="/assets/vector/hand-peace.svg"/>Best Practices</span>'
     url: /docs/best-practices/
     children:
       - title: '<span class="side-bar-item">&nbsp;&nbsp;<img id="side-icon-small" src="/assets/vector/fingerprint.svg"/>PGP Encryption</span>'
@@ -100,7 +100,7 @@ tutorial:
       url: "/read/es/"
     - title: '<span class="side-bar-item">&nbsp;&nbsp;<img style="width:22px;height:13px" src="/assets/vector/german.svg"/> Deutsch</span>'
       url: "/read/de/"
-      
+
 contribute:
   - title: '<span class="side-bar-item"><img id="side-icon-big" src="/assets/vector/handshake-angle.svg"/>Contribute</span>'
     url: /contribute/

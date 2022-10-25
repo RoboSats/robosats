@@ -34,8 +34,8 @@ jobs:
         else
             echo "Versions do not match! You might have forgotten to update the version on a component."; exit $ERRCODE;
         fi
-      
-      
+
+
   django-test:
     uses: reckless-satoshi/robosats/.github/workflows/django-test.yml@main
     needs: check-versions
@@ -45,27 +45,27 @@ jobs:
     needs: check-versions
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
-  
+
   coordinator-image:
     uses: reckless-satoshi/robosats/.github/workflows/coordinator-image.yml@main
     needs: [django-test, frontend-build]
     secrets: inherit
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
-  
+
   client-image:
     uses: reckless-satoshi/robosats/.github/workflows/client-image.yml@main
     needs: frontend-build
     secrets: inherit
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
-  
+
   android-build:
     uses: reckless-satoshi/robosats/.github/workflows/android-build.yml@main
     needs: [frontend-build, check-versions]
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
-  
+
   release:
     needs: [check-versions, coordinator-image, client-image, android-build]
     runs-on: ubuntu-latest

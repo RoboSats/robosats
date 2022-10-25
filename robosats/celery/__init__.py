@@ -1,10 +1,10 @@
 from __future__ import absolute_import, unicode_literals
+
 import os
+from datetime import timedelta
 
 from celery import Celery
 from celery.schedules import crontab
-
-from datetime import timedelta
 
 # You can use rabbitmq instead here.
 BASE_REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")

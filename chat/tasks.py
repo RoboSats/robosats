@@ -8,10 +8,12 @@ def chatrooms_cleansing():
     that have completely finished more than 3 days ago.
     """
 
+    from datetime import timedelta
+
+    from django.utils import timezone
+
     from api.models import Order
     from chat.models import ChatRoom
-    from datetime import timedelta
-    from django.utils import timezone
 
     finished_states = [
         Order.Status.SUC,

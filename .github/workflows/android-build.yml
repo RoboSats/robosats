@@ -16,7 +16,7 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - name: 'Checkout'
         uses: actions/checkout@v3
 
@@ -45,7 +45,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 11
-          
+
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
@@ -99,7 +99,7 @@ jobs:
           prerelease: true
 
       - name: 'Upload Pre-release APK Release Asset'
-        id: upload-release-apk-asset 
+        id: upload-release-apk-asset
         if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
         uses: actions/upload-release-asset@v1
         env:
@@ -111,7 +111,7 @@ jobs:
           asset_content_type: application/apk
 
       - name: 'Upload Pre-release APK Debug Asset'
-        id: upload-debug-apk-asset 
+        id: upload-debug-apk-asset
         if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
         uses: actions/upload-release-asset@v1
         env:

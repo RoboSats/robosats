@@ -41,7 +41,7 @@ jobs:
         with:
           prettier: true
           prettier_dir: frontend
-          
+
           ## Disabled due to error
           # eslint: true
           # eslint_dir: frontend

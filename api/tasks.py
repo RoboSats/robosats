@@ -6,11 +6,13 @@ def users_cleansing():
     """
     Deletes users never used 12 hours after creation
     """
+    from datetime import timedelta
+
     from django.contrib.auth.models import User
     from django.db.models import Q
-    from api.logics import Logics
-    from datetime import timedelta
     from django.utils import timezone
+
+    from api.logics import Logics
 
     # Users who's last login has not been in the last 6 hours
     active_time_range = (timezone.now() - timedelta(hours=6), timezone.now())
@@ -75,11 +77,12 @@ def give_rewards():
 def follow_send_payment(hash):
     """Sends sats to buyer, continuous update"""
 
-    from decouple import config
-    from django.utils import timezone
     from datetime import timedelta
 
-    from api.lightning.node import LNNode, MACAROON
+    from decouple import config
+    from django.utils import timezone
+
+    from api.lightning.node import MACAROON, LNNode
     from api.models import LNPayment, Order
 
     lnpayment = LNPayment.objects.get(payment_hash=hash)
@@ -188,11 +191,12 @@ def payments_cleansing():
     Deletes 'cancelled' or 'create' onchain_payments
     """
 
-    from django.db.models import Q
-    from api.models import LNPayment
-    from api.models import OnchainPayment
     from datetime import timedelta
+
+    from django.db.models import Q
     from django.utils import timezone
+
+    from api.models import LNPayment, OnchainPayment
 
     # Orders that have expired more than -3 days ago
     # Usually expiry is 1 day for every finished order. So ~4 days until
@@ -244,10 +248,10 @@ def payments_cleansing():
 @shared_task(name="cache_external_market_prices", ignore_result=True)
 def cache_market():
 
+    from django.utils import timezone
+
     from .models import Currency
     from .utils import get_exchange_rates
-
-    from django.utils import timezone
 
     currency_codes = list(Currency.currency_dict.values())
     exchange_rates = get_exchange_rates(currency_codes)

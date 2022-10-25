@@ -1,9 +1,10 @@
-from channels.generic.websocket import AsyncWebsocketConsumer
+import json
+
 from channels.db import database_sync_to_async
+from channels.generic.websocket import AsyncWebsocketConsumer
+
 from api.models import Order
 from chat.models import ChatRoom, Message
-
-import json
 
 
 class ChatRoomConsumer(AsyncWebsocketConsumer):

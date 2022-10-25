@@ -7,7 +7,7 @@ services:
     volumes:
       - .:/usr/src/robosats
     command: bash -c "cd /usr/src/robosats/docs/
-            && bundle install 
+            && bundle install
             && bundle exec jekyll serve --force_polling -H 0.0.0.0 -P 4000"
     ports:
       - 4000:4000
@@ -105,7 +105,7 @@ services:
       - redis
     network_mode: service:tor
 
-  celery-beat:                                 
+  celery-beat:
     image: backend
     container_name: cele-beat-dev
     restart: always
@@ -174,7 +174,7 @@ services:
       - ./node/tor/data:/var/lib/tor:ro
       - ./node/tor/config:/etc/tor:ro
       - ./node/bitcoin:/home/bitcoin/.bitcoin
-  
+
   postgres:
     image: postgres:14.2-alpine
     container_name: sql-dev

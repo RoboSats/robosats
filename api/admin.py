@@ -1,10 +1,12 @@
-from django.contrib import admin, messages
-from django_admin_relation_links import AdminChangeLinksMixin
-from django.contrib.auth.models import Group, User
-from django.contrib.auth.admin import UserAdmin
-from api.models import OnchainPayment, Order, LNPayment, Profile, MarketTick, Currency
-from api.logics import Logics
 from statistics import median
+
+from django.contrib import admin, messages
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Group, User
+from django_admin_relation_links import AdminChangeLinksMixin
+
+from api.logics import Logics
+from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Profile
 
 admin.site.unregister(Group)
 admin.site.unregister(User)

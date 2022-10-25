@@ -1,4 +1,4 @@
-from math import log, floor
+from math import floor, log
 
 
 def human_format(number):

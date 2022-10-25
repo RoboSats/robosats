@@ -8,7 +8,7 @@ sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/hand-peace.svg"/>Fiat Best Practices'
   nav: docs
 src: "_pages/docs/01-best-practices/02-payment-methods.md"
---- 
+---
 
 Currently, there are no restrictions on the fiat payment method. You can pay with any method that both you and your peer agree on. This includes the higher risk method such as PayPal, Venmo, and Cash apps. However, the payment method with lower risk is recommended, you can learn more details about the characteristics and differences of each fiat payment method from <a href =  "https://bisq.wiki/Payment_methods#Payment_method_guides">Bisq wiki</a>. The Bisq guidelines apply as the default guidelines for RoboSats.
 
@@ -55,7 +55,7 @@ Find more details on [Amazon eGift card Bisq guidelines](https://bisq.wiki/Amazo
 The best practice for users trying to transact with a payment method with a high risk of losing funds is discussed in this section.
 
 ### Paypal
-Paypal is one of the widely used fiat payment methods. However, with <a href="https://www.paypal.com/us/webapps/mpp/ua/buyer-protection">PayPal buyer protection policy</a>, buyer can do fraudulent action by creating a refund request in PayPal after the trading process in RoboSats is finished and therefore taking both fiat and bitcoin all by themselves. 
+Paypal is one of the widely used fiat payment methods. However, with <a href="https://www.paypal.com/us/webapps/mpp/ua/buyer-protection">PayPal buyer protection policy</a>, buyer can do fraudulent action by creating a refund request in PayPal after the trading process in RoboSats is finished and therefore taking both fiat and bitcoin all by themselves.
 
 This fraud can be prevented by agreeing with the buyer to have them send money using the “send money to a friend or family member” option. This will make the buyer become the one liable for the transaction fee and make it less likely for them to request a refund.
 

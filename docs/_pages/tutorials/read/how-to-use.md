@@ -8,7 +8,7 @@ excerpt: "Guide: How to use RoboSats. A complete walkthrough RoboSats P2P Exchan
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/chalkboard-user.svg"/>How to use'
   nav: tutorial
---- 
+---
 
 Full tutorial in tweets by @simplestBTCbook
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Enjoy this detailed new <a href="https://twitter.com/RoboSats">@RoboSats</a> Tutorial! <a href="https://t.co/CiizGINQ4f">pic.twitter.com/CiizGINQ4f</a></p>&mdash; SimplestBitcoinBook -Get ur 🔑&#39;s into Cold Storage (@SimplestBTCBook) <a href="https://twitter.com/SimplestBTCBook/status/1584103026733633537">October 23, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
@@ -30,14 +30,14 @@ RoboSats welcomes you right away with your unique robot avatar. The robot is det
 The tokens are generated in your own browser. However, if you do not trust your machine randomness, you can also input your own entropy token. *Note that low entropy tokens are not valid.*
 
 I was really not happy of being "HomelessCash"! :D So I just click on the dice icon to generate a new token and tap "Generate avatar" to get a new one
- 
+
 <div align="center">
 <img src="/assets/images/how-to-use/homepage-2.png"  width="370" />
 </div>
 
-Ah, "JoyfulPain", so much better!! :) 
-The token will live in your browser memory for some time, so you still might have a chance to copy it later by tapping in the profile icon in the bottom left corner. However, your browser will forget your token if you refresh or close it! 
- 
+Ah, "JoyfulPain", so much better!! :)
+The token will live in your browser memory for some time, so you still might have a chance to copy it later by tapping in the profile icon in the bottom left corner. However, your browser will forget your token if you refresh or close it!
+
 <div align="center">
 <img src="/assets/images/how-to-use/homepage-3.png"  width="370" />
 </div>
@@ -98,7 +98,7 @@ Every order has an expiration counter. By default, in RoboSats v0.1.0 new orders
 
 ### Walkthrough-1: Taking an order as a buyer
 
-When you are decided for an order to take simply tap the "Take Order" button. You will see the contract box. Follow the contract box indications until you complete the trade! :) 
+When you are decided for an order to take simply tap the "Take Order" button. You will see the contract box. Follow the contract box indications until you complete the trade! :)
 
 First thing is to lock a small fidelity bond (just {{site.robosats.default_bond_size}}% of the trade amount by default), so the seller knows you can be trusted. The satoshis in this bond will just freeze in your wallet. If you try to cheat or cancel unilaterally, you will lose the satoshis locked in the bond.
 
@@ -112,13 +112,13 @@ Scan or copy the invoice into your lightning wallet. It might show as a payment 
 <img src="/assets/images/how-to-use/contract-box-2.png"  width="370" />
 </div>
 
-As soon as our bond is locked, RoboSats will ask you to provide a lightning invoice to send you the satoshis. Generate an invoice with the exact amount in your lightning wallet and submit it. 
+As soon as our bond is locked, RoboSats will ask you to provide a lightning invoice to send you the satoshis. Generate an invoice with the exact amount in your lightning wallet and submit it.
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-3.png"  width="370" />
 </div>
 
-While you are submitting your payout invoice, the seller is asked to lock the trade escrow hold invoice. If you are faster than him, you would have to wait. Otherwise, you would already be able to chat with him. 
+While you are submitting your payout invoice, the seller is asked to lock the trade escrow hold invoice. If you are faster than him, you would have to wait. Otherwise, you would already be able to chat with him.
 
 There is a time limit of 3 hours to submit the invoice (buyer) and lock the trade escrow (seller). If the time runs out, the order will expire and the robot who did not follow with the contract obligations will lose the bond. This is a mechanism that helps prevent fake order spamming, wasting time of counterparts and DDOSing the order book.
 
@@ -127,7 +127,7 @@ There is a time limit of 3 hours to submit the invoice (buyer) and lock the trad
 </div>
 
 As soon as the seller locks the satoshis, it is safe to send the fiat currency! As a buyer, you will have to ask the seller for the details to send fiat. Only share the strictly needed information about yourself to not compromise your privacy. Remember, in RoboSats v0.1.0 this chat is memoryless, so the conversation will be lost if you refresh the browser.
- 
+
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-5.png"  width="370" />
 </div>
@@ -145,13 +145,13 @@ Rating the platform and leaving tips for improvement in our Telegram group or Gi
 ### Walkthrough-2: Making an order as a seller
 
 It might happen that there are no active orders for the positioning and currency you want. In this case, there is no orders to SELL bitcoin for GBP.
- 
+
 <div align="center">
 <img src="/assets/images/how-to-use/book-no-orders.png"  width="370" />
 </div>
 
-We can create the order exactly has we want it. But mind that you need to publish an order that others want to take too! 
- 
+We can create the order exactly has we want it. But mind that you need to publish an order that others want to take too!
+
 <div align="center">
 <img src="/assets/images/how-to-use/maker-page.png"  width="370" />
 </div>
@@ -214,7 +214,7 @@ All done!! :D
 
 ## Collaborative cancellation
 
-After the trade escrow has been posted and before the buyer confirms he sent the fiat it is possible to cancel the order. It might just happen that you both do not have a common way to send and receive fiat after all. You can agree to tap on the "Collaborative cancel" button. After the "Fiat sent" button is pressed by the buyer, the only way to cancel an order is by opening a dispute and involving the staff. 
+After the trade escrow has been posted and before the buyer confirms he sent the fiat it is possible to cancel the order. It might just happen that you both do not have a common way to send and receive fiat after all. You can agree to tap on the "Collaborative cancel" button. After the "Fiat sent" button is pressed by the buyer, the only way to cancel an order is by opening a dispute and involving the staff.
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-15.png"  width="370" />
@@ -224,7 +224,7 @@ This is totally not recommended, one of the two traders would lose his fidelity 
 
 ## Disputes
 
-Misunderstandings happen. But also, there might be people willing to try to scam others. In this case *MakeshiftSource875* thought he could get away by not confirming he received the fiat, as if he was going to be able to keep the satoshis. 
+Misunderstandings happen. But also, there might be people willing to try to scam others. In this case *MakeshiftSource875* thought he could get away by not confirming he received the fiat, as if he was going to be able to keep the satoshis.
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-16.png"  width="370" />

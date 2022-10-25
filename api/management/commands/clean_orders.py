@@ -1,9 +1,10 @@
-from django.core.management.base import BaseCommand
-
 import time
-from api.models import Order
-from api.logics import Logics
+
+from django.core.management.base import BaseCommand
 from django.utils import timezone
+
+from api.logics import Logics
+from api.models import Order
 
 
 class Command(BaseCommand):

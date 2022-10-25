@@ -13,7 +13,7 @@ on:
 # concurrency:
 #   group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
 #   cancel-in-progress: true
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -37,13 +37,13 @@ jobs:
         pip install -r requirements.txt
     - name: 'Install LND gRPC Dependencies'
       run: |
-        cd api/lightning 
+        cd api/lightning
         git clone https://github.com/googleapis/googleapis.git
         curl -o lightning.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/lightning.proto
         python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. lightning.proto
         curl -o invoices.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/invoicesrpc/invoices.proto
         python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. invoices.proto
-        curl -o router.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/routerrpc/router.proto 
+        curl -o router.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/routerrpc/router.proto
         python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. router.proto
         sed -i 's/^import .*_pb2 as/from . \0/' router_pb2.py
         sed -i 's/^import .*_pb2 as/from . \0/' invoices_pb2.py

@@ -1,10 +1,11 @@
+import time
+
+from decouple import config
 from django.core.management.base import BaseCommand
 
-from api.models import Profile
 from api.messages import Telegram
+from api.models import Profile
 from api.utils import get_session
-from decouple import config
-import time
 
 
 class Command(BaseCommand):

@@ -25,7 +25,7 @@ The combination of these features makes trading in RoboSats as private as it can
     <img src="/assets/images/private/usergen-pipeline.png" width="650"/>
 </div>
 
-Only your trading peer can get to know things about you while you chat. Keep the chat short and concise and avoid providing more information than strictly necessary for the fiat exchange. 
+Only your trading peer can get to know things about you while you chat. Keep the chat short and concise and avoid providing more information than strictly necessary for the fiat exchange.
 
 **ProTip** You can step up your privacy by using a lightning [proxy wallet](/docs/proxy-wallets/) when you buy Sats in RoboSats.
 {: .notice--primary}

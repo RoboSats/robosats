@@ -1,6 +1,8 @@
 import hashlib
 import os
+import random
 import secrets
+import time
 from base64 import b64decode
 from datetime import datetime, timedelta
 
@@ -15,8 +17,6 @@ from . import lightning_pb2 as lnrpc
 from . import lightning_pb2_grpc as lightningstub
 from . import router_pb2 as routerrpc
 from . import router_pb2_grpc as routerstub
-
-import time, random
 
 #######
 # Should work with LND (c-lightning in the future if there are features that deserve the work)

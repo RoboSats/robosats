@@ -1,21 +1,21 @@
-from django.db import models
+import json
+import uuid
+from pathlib import Path
+
+from decouple import config
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import (
     MaxValueValidator,
     MinValueValidator,
     validate_comma_separated_integer_list,
 )
-from django.utils import timezone
+from django.db import models
 from django.db.models.signals import post_save, pre_delete
-from django.template.defaultfilters import truncatechars
 from django.dispatch import receiver
+from django.template.defaultfilters import truncatechars
+from django.utils import timezone
 from django.utils.html import mark_safe
-import uuid
-from django.conf import settings
-
-from decouple import config
-from pathlib import Path
-import json
 
 from control.models import BalanceLog
 

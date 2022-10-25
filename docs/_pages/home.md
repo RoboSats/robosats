@@ -54,7 +54,7 @@ feature_row:
     excerpt: 'RoboSats is fully open source and will always be. Built by Robots just like you!{::nomarkdown}<div style="content-align:center"><p style="margin-top: -5px;margin-bottom: 0px"><iframe style="display: inline-block;" src="https://ghbtns.com/github-btn.html?user=reckless-satoshi&repo=robosats&type=star&count=true&size=large" frameborder="0" scrolling="0" width="150px" height="30px"></iframe><iframe style="display: inline-block;" src="https://ghbtns.com/github-btn.html?user=reckless-satoshi&repo=robosats&type=fork&count=true&size=large" frameborder="0" scrolling="0" width="150px" height="30px"></iframe></p></div>{:/nomarkdown}'
     url: "https://github.com/Reckless-Satoshi/robosats/blob/main/LICENSE"
     btn_class: "btn--primary"
-    btn_label: "See License" 
+    btn_label: "See License"
 ---
 {% include feature_row %}
 

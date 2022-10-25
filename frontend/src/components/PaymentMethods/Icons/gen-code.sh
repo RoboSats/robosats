@@ -8,7 +8,7 @@ code="{\n"
 html=""
 cd webp && for f in *.webp
 do
-  title=$(echo $f | sed 's/\.[^.]*$//')  
+  title=$(echo $f | sed 's/\.[^.]*$//')
   key=$(echo $title | sed 's/.*/\L&/' | sed 's/ //' | sed 's/[^[:alnum:]]//g')
 
   if [ "$OS" = "Darwin" ]; then

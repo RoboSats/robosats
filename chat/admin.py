@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django_admin_relation_links import AdminChangeLinksMixin
+
 from chat.models import ChatRoom, Message
 
 # Register your models here.

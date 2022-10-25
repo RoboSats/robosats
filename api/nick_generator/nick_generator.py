@@ -1,7 +1,7 @@
-from .utils import human_format
-
 import hashlib
 import time
+
+from .utils import human_format
 
 """
 Deterministic nick generator from SHA256 hash.
@@ -32,12 +32,12 @@ class NickGenerator:
         max_num: int, max integer to be used in nick (at least 1)
         """
         if lang == "English":
-            from .dicts.en.adverbs import adverbs
             from .dicts.en.adjectives import adjectives
+            from .dicts.en.adverbs import adverbs
             from .dicts.en.nouns import nouns
         elif lang == "Spanish":
-            from .dicts.es.adverbs import adverbs
             from .dicts.es.adjectives import adjectives
+            from .dicts.es.adverbs import adverbs
             from .dicts.es.nouns import nouns
         else:
             raise ValueError("Language not implemented.")

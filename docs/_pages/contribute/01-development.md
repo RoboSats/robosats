@@ -8,7 +8,7 @@ sidebar:
 toc: true
 toc_sticky: true
 src: "_pages/contribute/01-development.md"
---- 
+---
 
 Everyone can contribute to the development of the Robotic Satoshis Open Source Project. If you're looking for somewhere to start contributing, check out the [good first issue](https://github.com/reckless-satoshi/robosats/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue") list.
 
@@ -68,7 +68,7 @@ At the moment RoboSats is a young and unfunded project. However, it has shown th
 2. An offer/negotiation takes place to set an amount of Sats until agreement. Everyone is welcome to express opinion on whether the compensation is right for the PR.
 3. The work happens: buidl, buidl, buidl!
 4. The review takes place. Once maintainers give the OK for the merge...
-5. The developer submits a LN invoice (with a long expiration time). The invoice is paid at merge. 
+5. The developer submits a LN invoice (with a long expiration time). The invoice is paid at merge.
 
 Every step (negotiation, code submission, review and invoice submission) must take place publicly in GitHub (i.e., no private messaging). Please contact the team lead for development (@reckless-satoshi) upfront if you have doubts whether your contribution is suitable for compensation. Currently, only contributions to the frontend or backend core functionality and maintainence are eligible for compensations (that excludes, for the time being, art, translations, etc...).
 

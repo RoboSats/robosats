@@ -1,12 +1,26 @@
-from django.db.models import Sum, Q
+import hashlib
+from datetime import datetime, timedelta
+from math import log2
+from pathlib import Path
+from secrets import token_urlsafe
+
+from decouple import config
+from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.db.models import Q, Sum
+from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from robohash import Robohash
+from scipy.stats import entropy
 
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from api.logics import Logics
+from api.messages import Telegram
+from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Profile
 from api.oas_schemas import (
     BookViewSchema,
     HistoricalViewSchema,
@@ -20,43 +34,29 @@ from api.oas_schemas import (
     TickViewSchema,
     UserViewSchema,
 )
-
-from chat.views import ChatView
 from api.serializers import (
+    ClaimRewardSerializer,
     InfoSerializer,
     ListOrderSerializer,
     MakeOrderSerializer,
     OrderPublicSerializer,
-    UpdateOrderSerializer,
-    ClaimRewardSerializer,
     PriceSerializer,
-    UserGenSerializer,
-    TickSerializer,
     StealthSerializer,
+    TickSerializer,
+    UpdateOrderSerializer,
+    UserGenSerializer,
 )
-from api.models import LNPayment, MarketTick, OnchainPayment, Order, Currency, Profile
-from control.models import AccountingDay, BalanceLog
-from api.logics import Logics
-from api.messages import Telegram
-from secrets import token_urlsafe
 from api.utils import (
+    compute_avg_premium,
+    compute_premium_percentile,
     get_lnd_version,
     get_robosats_commit,
     get_robosats_version,
-    compute_premium_percentile,
-    compute_avg_premium,
 )
+from chat.views import ChatView
+from control.models import AccountingDay, BalanceLog
 
 from .nick_generator.nick_generator import NickGenerator
-from robohash import Robohash
-from scipy.stats import entropy
-from math import log2
-import hashlib
-from pathlib import Path
-from datetime import timedelta, datetime
-from django.utils import timezone
-from django.conf import settings
-from decouple import config
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))

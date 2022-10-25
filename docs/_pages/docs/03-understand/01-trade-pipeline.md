@@ -7,7 +7,7 @@ sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/timeline.svg"/>Trade Pipeline'
   nav: docs
 src: "_pages/docs/03-understand/01-trade-pipeline.md"
---- 
+---
 
 Alice wants to buy Sats privately. This is step-by-step what happens when she buys using RoboSats.
 

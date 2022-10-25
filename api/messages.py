@@ -1,5 +1,7 @@
-from decouple import config
 from secrets import token_urlsafe
+
+from decouple import config
+
 from api.models import Order
 from api.utils import get_session
 

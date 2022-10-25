@@ -6,7 +6,6 @@
   "Hide": "Ezkutatu",
   "You are self-hosting RoboSats": "You are self-hosting RoboSats",
   "RoboSats client is served from your own node granting you the strongest security and privacy.": "RoboSats webgunea zure nodotik zerbitzatzen da beraz segurtasun eta pribatutasun sendoena eskaintzen dizu.",
-
   "USER GENERATION PAGE - UserGenPage.js": "Landing Page and User Generation",
   "Simple and Private LN P2P Exchange": "LN P2P Exchange Sinple eta Pribatua",
   "This is your trading avatar": "Hau da zure salerosketa Robota",
@@ -23,7 +22,6 @@
   "You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.": "Learn Robosats bisitatu behar duzu. Bertan, Robosats erabiltzen ikasteko eta nola dabilen ulertzeko tutorialak eta dokumentazioa aurkituko dituzu.",
   "Let's go!": "Goazen!",
   "Save token and PGP credentials to file": "Gorde tokena eta PGP kredentzialak fitxategira",
-
   "MAKER PAGE - MakerPage.js": "This is the page where users can create new orders",
   "Order": "Eskaera",
   "Customize": "Pertsonalizatu",
@@ -80,7 +78,6 @@
   "Done": "Prest",
   "You do not have a robot avatar": "Ez daukazu robot avatarrik",
   "You need to generate a robot avatar in order to become an order maker": "Robot avatar bat sortu behar duzu eskaera bat egin ahal izateko",
-
   "PAYMENT METHODS - autocompletePayments.js": "Payment method strings",
   "not specified": "Zehaztu gabea",
   "Instant SEPA": "Bat-bateko SEPA",
@@ -88,7 +85,6 @@
   "Google Play Gift Code": "Google Play Opari Kodea",
   "Cash F2F": "Eskudirua aurrez-aurre",
   "On-Chain BTC": "On-Chain BTC",
-
   "BOOK PAGE - BookPage.js": "The Book Order page",
   "Seller": "Saltzaile",
   "Buyer": "Erosle",
@@ -162,7 +158,6 @@
   "no": "ez",
   "Depth chart": "Eskaera grafikoa",
   "Chart": "Grafikoa",
-
   "BOTTOM BAR AND MISC - BottomBar.js": "Bottom Bar user profile and miscellaneous dialogs",
   "Stats For Nerds": "Nerdentzako estatistikak",
   "LND version": "LND bersioa",
@@ -198,7 +193,7 @@
   "Claim": "Eskatu",
   "Invoice for {{amountSats}} Sats": "{{amountSats}} Sateko fakura",
   "Submit": "Bidali",
-  "There it goes, thank you!🥇": "Hor doa, mila esker!🥇",
+  "There it goes, thank you!\ud83e\udd47": "Hor doa, mila esker!\ud83e\udd47",
   "You have an active order": "Eskaera aktibo bat duzu",
   "You can claim satoshis!": "Satoshiak eska ditzakezu!",
   "Public Buy Orders": "Erosteko Eskaera Publikoak",
@@ -238,7 +233,6 @@
   "Coordinator": "Koordinatzailea",
   "RoboSats version": "RoboSats bersioa",
   "LN Node": "LN Nodoa",
-
   "ORDER PAGE - OrderPage.js": "Order details page",
   "Order Box": "Eskaera",
   "Contract": "Kontratua",
@@ -313,7 +307,6 @@
   "Payment not received, please check your WebLN wallet.": "Ordainketa ez da jaso, mesedez begiratu zure WebLN kartera.",
   "Invoice not received, please check your WebLN wallet.": "Faktura ez da jaso, mesedez begiratu zure WebLN kartera.",
   "Payment detected, you can close now your WebLN wallet popup.": "Ordainketa detektatu da, orain zure WebLN karteraren popup itxi dezakezu.",
-
   "CHAT BOX - Chat.js": "Chat Box",
   "You": "Zu",
   "Peer": "Bera",
@@ -343,7 +336,6 @@
   "Messages": "Mezuak",
   "Verified signature by {{nickname}}": "{{nickname}}ren egiaztatutako sinadura",
   "Cannot verify signature of {{nickname}}": "Ezin izan da {{nickname}}ren sinadura egiaztatu",
-
   "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
   "Contract Box": "Kontratua",
   "Robots show commitment to their peers": "Robotek beren pareekiko konpromezua erakusten dute",
@@ -360,7 +352,7 @@
   "Your maker bond was unlocked": "Zure egile fidantza desblokeatu da",
   "Your taker bond was unlocked": "Zure hartzaile fidantza ordaindu da",
   "Your order is public": "Zure eskaera publikatu da",
-  "Be patient while robots check the book. This box will ring 🔊 once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m to reply. If you do not reply, you risk losing your bond.": "Pazientzia izan robotek liburua aztertzen duten bitartean. Kutxa honek joko du 🔊 robot batek zure eskaera hartzen duenean, gero {{deposit_timer_hours}}h {{deposit_timer_minutes}}m izango dituzu erantzuteko. Ez baduzu erantzuten, zure fidantza galdu dezakezu.",
+  "Be patient while robots check the book. This box will ring \ud83d\udd0a once a robot takes your order, then you will have {{deposit_timer_hours}}h {{deposit_timer_minutes}}m to reply. If you do not reply, you risk losing your bond.": "Pazientzia izan robotek liburua aztertzen duten bitartean. Kutxa honek joko du \ud83d\udd0a robot batek zure eskaera hartzen duenean, gero {{deposit_timer_hours}}h {{deposit_timer_minutes}}m izango dituzu erantzuteko. Ez baduzu erantzuten, zure fidantza galdu dezakezu.",
   "If the order expires untaken, your bond will return to you (no action needed).": "Eskaera hartu gabe amaitzen bada, fidantza automatikoki itzuliko zaizu.",
   "Enable Telegram Notifications": "Baimendu Telegram Jakinarazpenak",
   "Enable TG Notifications": "Baimendu TG Jakinarazpenak",
@@ -395,7 +387,7 @@
   "Confirm": "Baieztatu",
   "Trade finished!": "Salerosketa amaitua!",
   "rate_robosats": "Zer iruditu zaizu <1>RoboSats</1>?",
-  "Thank you! RoboSats loves you too ❤️": "Mila esker! RoboSatsek ere maite zaitu ❤️",
+  "Thank you! RoboSats loves you too \u2764\ufe0f": "Mila esker! RoboSatsek ere maite zaitu \u2764\ufe0f",
   "RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!": "RoboSats hobetu egiten da likidezia eta erabiltzaile gehiagorekin. Aipatu Robosats lagun bitcoiner bati!",
   "Thank you for using Robosats!": "Mila esker Robosats erabiltzeagatik!",
   "let_us_know_hot_to_improve": "Kontaiguzu nola hobetu dezakegun (<1>Telegram</1> / <3>Github</3>)",
@@ -487,7 +479,6 @@
   "Timestamp": "Amaiera ordua",
   "Completed in": "Igarotako denbora",
   "Contract exchange rate": "Kontratuaren truke-tasa",
-
   "INFO DIALOG - InfoDiagog.js": "App information and clarifications and terms of use",
   "Close": "Itxi",
   "What is RoboSats?": "Zer da RoboSats?",
