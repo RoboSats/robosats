@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { withTranslation, Trans } from 'react-i18next';
 import { Paper, Alert, AlertTitle, Button, Link } from '@mui/material';
 import MediaQuery from 'react-responsive';
+import { getHost } from '../utils';
 
 class UnsafeAlert extends Component {
   constructor(props) {
@@ -12,18 +13,10 @@ class UnsafeAlert extends Component {
     };
   }
 
-  getHost() {
-    const url =
-      window.location !== window.parent.location
-        ? this.getHost(document.referrer)
-        : document.location.href;
-    return url.split('/')[2];
-  }
-
   isSelfhosted() {
     const http = new XMLHttpRequest();
     try {
-      http.open('HEAD', `${location.protocol}//${this.getHost()}/selfhosted`, false);
+      http.open('HEAD', `${location.protocol}//${getHost()}/selfhosted`, false);
       http.send();
       return http.status === 200;
     } catch {
@@ -72,7 +65,7 @@ class UnsafeAlert extends Component {
     }
 
     // Show unsafe alert
-    if (!window.NativeRobosats && !this.safe_urls.includes(this.getHost())) {
+    if (!window.NativeRobosats && !this.safe_urls.includes(getHost())) {
       return (
         <div>
           <MediaQuery minWidth={800}>

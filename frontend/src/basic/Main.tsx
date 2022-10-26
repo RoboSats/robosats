@@ -6,11 +6,11 @@ import UserGenPage from './UserGenPage';
 import MakerPage from './MakerPage';
 import BookPage from './BookPage';
 import OrderPage from './OrderPage';
-import BottomBar from './BottomBar';
+import NavBar from './NavBar';
 import { LearnDialog } from '../components/Dialogs';
 
 import { apiClient } from '../services/api';
-import checkVer from '../utils/checkVer';
+import { checkVer } from '../utils';
 
 import {
   Book,
@@ -211,7 +211,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
           bottom: 0,
         }}
       >
-        <BottomBar
+        <NavBar
           theme={theme}
           windowSize={windowSize}
           redirectTo={(location: string) => history.push(location)}

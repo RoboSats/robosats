@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import SmoothImage from 'react-smooth-image';
 import MediaQuery from 'react-responsive';
+import { pn } from '../../utils';
 
 // Icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -148,7 +149,7 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
               <p>
                 {t(
                   'Maximum single trade size is {{maxAmount}} Satoshis to minimize lightning routing failure. There is no limits to the number of trades per day. A robot can only have one order at a time. However, you can use multiple robots simultaneously in different browsers (remember to back up your robot tokens!).',
-                  { maxAmount },
+                  { maxAmount: pn(maxAmount) },
                 )}{' '}
               </p>
             </Typography>

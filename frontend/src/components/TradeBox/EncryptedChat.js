@@ -15,8 +15,8 @@ import {
   Typography,
 } from '@mui/material';
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import { encryptMessage, decryptMessage } from '../../utils/pgp';
-import { saveAsJson } from '../../utils/saveFile';
+import { encryptMessage, decryptMessage } from '../../pgp';
+import { saveAsJson } from '../../utils';
 import { AuditPGPDialog } from '../Dialogs';
 import RobotAvatar from '../RobotAvatar';
 import { systemClient } from '../../services/System';

@@ -18,8 +18,7 @@ import {
   AccordionDetails,
   Typography,
 } from '@mui/material';
-import { pn } from '../../utils/prettyNumbers';
-import { saveAsJson } from '../../utils/saveFile';
+import { pn, saveAsJson } from '../../utils';
 import RobotAvatar from '../RobotAvatar';
 
 // Icons

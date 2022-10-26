@@ -21,7 +21,7 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import BookIcon from '@mui/icons-material/Book';
 import LinkIcon from '@mui/icons-material/Link';
 
-import { pn } from '../../utils/prettyNumbers';
+import { pn } from '../../utils';
 
 interface Props {
   open: boolean;

@@ -37,7 +37,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { UserNinjaIcon, BitcoinIcon } from '../Icons';
 
 import { systemClient } from '../../services/System';
-import { getWebln } from '../../utils/webln';
+import { getHost, getWebln } from '../../utils';
 import RobotAvatar from '../RobotAvatar';
 
 interface Props {
@@ -51,7 +51,6 @@ interface Props {
   tgBotName: string;
   tgToken: string;
   handleSubmitInvoiceClicked: (e: any, invoice: string) => void;
-  host: string;
   showRewardsSpinner: boolean;
   withdrawn: boolean;
   badInvoice: boolean | string;
@@ -72,7 +71,6 @@ const ProfileDialog = ({
   tgBotName,
   tgToken,
   handleSubmitInvoiceClicked,
-  host,
   showRewardsSpinner,
   withdrawn,
   badInvoice,
@@ -83,6 +81,7 @@ const ProfileDialog = ({
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const host = getHost();
 
   const [rewardInvoice, setRewardInvoice] = useState<string>('');
   const [showRewards, setShowRewards] = useState<boolean>(false);

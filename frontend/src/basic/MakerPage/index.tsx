@@ -5,7 +5,7 @@ import { Button, Grid, Paper, Collapse, Typography } from '@mui/material';
 
 import { LimitList, Maker, Book, Favorites } from '../../models';
 
-import filterOrders from '../../utils/filterOrders';
+import { filterOrders } from '../../utils';
 
 import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';

@@ -19,15 +19,12 @@ import {
 import { DataGrid, GridPagination } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { Book, Favorites } from '../../models';
-import filterOrders from '../../utils/filterOrders';
+import { filterOrders, hexToRgb, statusBadgeColor, pn, amountToString } from '../../utils';
 import BookControl from './BookControl';
 
 import { FlagWithProps } from '../Icons';
-import { pn, amountToString } from '../../utils/prettyNumbers';
 import { PaymentStringAsIcons } from '../PaymentMethods';
 import RobotAvatar from '../RobotAvatar';
-import hexToRgb from '../../utils/hexToRgb';
-import statusBadgeColor from '../../utils/statusBadgeColor';
 
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';

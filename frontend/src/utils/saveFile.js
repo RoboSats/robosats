@@ -3,7 +3,7 @@
  * @param {filename} data -- object to save
  */
 
-export const saveAsJson = (filename, dataObjToWrite) => {
+const saveAsJson = (filename, dataObjToWrite) => {
   const blob = new Blob([JSON.stringify(dataObjToWrite, null, 2)], { type: 'text/json' });
   const link = document.createElement('a');
 
@@ -20,3 +20,5 @@ export const saveAsJson = (filename, dataObjToWrite) => {
   link.dispatchEvent(evt);
   link.remove();
 };
+
+export default saveAsJson;

@@ -21,9 +21,8 @@ import DownloadIcon from '@mui/icons-material/Download';
 import { RoboSatsNoTextIcon } from '../components/Icons';
 
 import { sha256 } from 'js-sha256';
-import { genBase62Token, tokenStrength } from '../utils/token';
-import { genKey } from '../utils/pgp';
-import { saveAsJson } from '../utils/saveFile';
+import { genBase62Token, tokenStrength, saveAsJson } from '../utils';
+import { genKey } from '../pgp';
 import { systemClient } from '../services/System';
 import { apiClient } from '../services/api/index';
 import RobotAvatar from '../components/RobotAvatar';

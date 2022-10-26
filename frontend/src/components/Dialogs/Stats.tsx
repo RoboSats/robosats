@@ -23,7 +23,7 @@ import EqualizerIcon from '@mui/icons-material/Equalizer';
 
 import { AmbossIcon, BitcoinSignIcon, RoboSatsNoTextIcon } from '../Icons';
 
-import { pn } from '../../utils/prettyNumbers';
+import { pn } from '../../utils';
 
 interface Props {
   open: boolean;
