@@ -44,7 +44,9 @@ class UserGenPage extends Component {
   componentDidMount() {
     // Checks in parent HomePage if there is already a nick and token
     // Displays the existing one
-    if (this.props.robot.token) {
+    if (this.props.robot.nickname != null) {
+      this.setState({ inputToken: this.props.robot.token });
+    } else if (this.props.robot.token) {
       this.setState({ inputToken: this.props.robot.token });
       this.getGeneratedUser(this.props.robot.token);
     } else {
@@ -80,6 +82,7 @@ class UserGenPage extends Component {
           ? this.props.setRobot({
               ...this.props.robot,
               avatarLoaded: true,
+              loading: false,
               nickname: data.nickname ?? this.props.robot.nickname,
               activeOrderId: data.active_order_id ?? null,
               referralCode: data.referral_code ?? this.props.referralCode,
@@ -91,6 +94,7 @@ class UserGenPage extends Component {
               ...this.props.robot,
               nickname: data.nickname,
               token: token,
+              loading: false,
               activeOrderId: data.active_order_id ? data.active_order_id : null,
               lastOrderId: data.last_order_id ? data.last_order_id : null,
               referralCode: data.referral_code,

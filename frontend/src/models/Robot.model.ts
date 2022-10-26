@@ -41,7 +41,7 @@ export const defaultRobot: Robot = {
   tgEnabled: false,
   tgBotName: 'unknown',
   tgToken: 'unknown',
-  loading: true,
+  loading: false,
   avatarLoaded: false,
   copiedToken: false,
 };

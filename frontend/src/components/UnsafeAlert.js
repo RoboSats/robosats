@@ -110,18 +110,18 @@ class UnsafeAlert extends Component {
               <Alert severity='warning' sx={{ maxHeight: '120px' }}>
                 <AlertTitle>{t('You are not using RoboSats privately')}</AlertTitle>
                 <Trans i18nKey='phone_unsafe_alert'>
-                  You will not be able to complete a trade. Use{' '}
+                  <a>You will not be able to complete a trade. Use </a>
                   <Link href='https://www.torproject.org/download/' target='_blank'>
                     Tor Browser
-                  </Link>{' '}
-                  and visit the{' '}
+                  </Link>
+                  <a> and visit the </a>
                   <Link
                     href='http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion'
                     target='_blank'
                   >
                     Onion
                   </Link>{' '}
-                  site.
+                  <a> site.</a>
                 </Trans>
                 <div style={{ width: '100%' }}></div>
                 <div align='center'>
