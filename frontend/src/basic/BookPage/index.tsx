@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Typography, Grid, ButtonGroup, Dialog, Box } from '@mui/material';
 import { useHistory } from 'react-router-dom';
-import currencyDict from '../../../static/assets/currencies.json';
 import DepthChart from '../../components/Charts/DepthChart';
 
 import { Book, Favorites, LimitList, Maker } from '../../models';
@@ -47,25 +46,6 @@ const BookPage = ({
   const maxBookTableWidth = 85;
   const chartWidthEm = width - maxBookTableWidth;
 
-  const defaultMaker: Maker = {
-    isExplicit: false,
-    amount: '',
-    paymentMethods: [],
-    paymentMethodsText: 'not specified',
-    badPaymentMethod: false,
-    premium: '',
-    satoshis: '',
-    publicExpiryTime: new Date(0, 0, 0, 23, 59),
-    publicDuration: 86340,
-    escrowExpiryTime: new Date(0, 0, 0, 3, 0),
-    escrowDuration: 10800,
-    bondSize: 3,
-    minAmount: '',
-    maxAmount: '',
-    badPremiumText: '',
-    badSatoshisText: '',
-  };
-
   useEffect(() => {
     if (book.orders.length < 1) {
       fetchBook(true, false);
@@ -87,7 +67,7 @@ const BookPage = ({
     return (
       <ButtonGroup variant='contained' color='inherit'>
         <Button color='primary' onClick={() => setOpenMaker(true)}>
-          {t('Create Order')}
+          {t('Create')}
         </Button>
         {doubleView ? (
           <></>
@@ -108,9 +88,6 @@ const BookPage = ({
             )}
           </Button>
         )}
-        <Button color='secondary' onClick={() => history.push('/')}>
-          {t('Back')}
-        </Button>
       </ButtonGroup>
     );
   };

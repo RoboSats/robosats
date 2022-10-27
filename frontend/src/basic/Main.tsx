@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { HashRouter, BrowserRouter, Switch, Route, useHistory } from 'react-router-dom';
-import { useTheme, IconButton } from '@mui/material';
+import { useTheme, IconButton, Box, Slide } from '@mui/material';
 
 import UserGenPage from './UserGenPage';
 import MakerPage from './MakerPage';
@@ -39,18 +39,18 @@ const getWindowSize = function (fontSize: number) {
   };
 };
 
+type Page = 'robot' | 'order' | 'create' | 'offers' | 'settings' | 'none';
+interface SlideDirection {
+  in: 'left' | 'right' | undefined;
+  out: 'left' | 'right' | undefined;
+}
+
 interface MainProps {
   settings: Settings;
   setSettings: (state: Settings) => void;
 }
 
 const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
-  const theme = useTheme();
-  const history = useHistory();
-  const Router = window.NativeRobosats != null ? HashRouter : BrowserRouter;
-  const basename = window.NativeRobosats != null ? window.location.pathname : '';
-  const [openLearn, setOpenLearn] = useState<boolean>(false);
-
   // All app data structured
   const [book, setBook] = useState<Book>({ orders: [], loading: true });
   const [limits, setLimits] = useState<{ list: LimitList; loading: boolean }>({
@@ -61,6 +61,19 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });
+
+  const theme = useTheme();
+  const history = useHistory();
+  const Router = window.NativeRobosats != null ? HashRouter : BrowserRouter;
+  const basename = window.NativeRobosats != null ? window.location.pathname : '';
+  const [page, setPage] = useState<Page>(window.location.pathname.split('/')[1]);
+  const [slideDirection, setSlideDirection] = useState<SlideDirection>({
+    in: undefined,
+    out: undefined,
+  });
+
+  const navbarHeight = 2.5;
+  const [openLearn, setOpenLearn] = useState<boolean>(false);
 
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
     getWindowSize(theme.typography.fontSize),
@@ -130,6 +143,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     });
   };
 
+  console.log(page, slideDirection);
   return (
     <Router basename={basename}>
       <div className='temporaryUpperIcons'>
@@ -141,17 +155,15 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         >
           <SchoolIcon />
         </IconButton>
-        <IconButton
-          color='inherit'
-          sx={{ position: 'fixed', right: '0px', color: 'text.secondary' }}
-          onClick={() =>
-            setSettings({ ...settings, mode: settings.mode === 'dark' ? 'light' : 'dark' })
-          }
-        >
-          {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
-        </IconButton>
       </div>
-      <div className='appCenter'>
+      <Box
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: `translate(-50%, -50%) translate(0,  -${navbarHeight / 2}em`,
+        }}
+      >
         <Switch>
           <Route
             exact
@@ -161,69 +173,91 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
             )}
           />
           <Route
-            path='/ref/:refCode'
+            path='/robot/:refCode?'
             render={(props: any) => (
               <UserGenPage match={props.match} theme={theme} robot={robot} setRobot={setRobot} />
             )}
           />
-          <Route
-            path='/make'
-            render={() => (
-              <MakerPage
-                book={book}
-                limits={limits}
-                fetchLimits={fetchLimits}
-                maker={maker}
-                setMaker={setMaker}
-                fav={fav}
-                setFav={setFav}
-                windowSize={windowSize}
-              />
-            )}
-          />
-          <Route
-            path='/book'
-            render={() => (
-              <BookPage
-                book={book}
-                fetchBook={fetchBook}
-                limits={limits}
-                fetchLimits={fetchLimits}
-                fav={fav}
-                setFav={setFav}
-                maker={maker}
-                setMaker={setMaker}
-                lastDayPremium={info.last_day_nonkyc_btc_premium}
-                windowSize={windowSize}
-              />
-            )}
-          />
+
+          <Route path='/offers'>
+            <Slide
+              direction={page === 'offers' ? slideDirection.in : slideDirection.out}
+              in={page === 'offers'}
+              appear={slideDirection.in != undefined}
+            >
+              <div>
+                <BookPage
+                  book={book}
+                  fetchBook={fetchBook}
+                  limits={limits}
+                  fetchLimits={fetchLimits}
+                  fav={fav}
+                  setFav={setFav}
+                  maker={maker}
+                  setMaker={setMaker}
+                  lastDayPremium={info.last_day_nonkyc_btc_premium}
+                  windowSize={windowSize}
+                />
+              </div>
+            </Slide>
+          </Route>
+
+          <Route path='/create'>
+            <Slide
+              direction={page === 'create' ? slideDirection.in : slideDirection.out}
+              in={page === 'create'}
+              appear={slideDirection.in != undefined}
+            >
+              <div>
+                <MakerPage
+                  book={book}
+                  limits={limits}
+                  fetchLimits={fetchLimits}
+                  maker={maker}
+                  setMaker={setMaker}
+                  fav={fav}
+                  setFav={setFav}
+                  windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}
+                />
+              </div>
+            </Slide>
+          </Route>
+
           <Route
             path='/order/:orderId'
             render={(props: any) => <OrderPage theme={theme} history={history} {...props} />}
           />
-          <Route
-            path='/settings'
-            render={(props: any) => <SettingsPage settings={settings} setSettings={setSettings} />}
-          />
+
+          <Route path='/settings'>
+            <Slide
+              direction={page === 'settings' ? slideDirection.in : slideDirection.out}
+              in={page === 'settings'}
+              appear={slideDirection.in != undefined}
+              mountOnEnter
+            >
+              <div>
+                <SettingsPage
+                  settings={settings}
+                  setSettings={setSettings}
+                  windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}
+                />
+              </div>
+            </Slide>
+          </Route>
         </Switch>
-      </div>
-      <div
-        style={{
-          height: '2.5em',
-          position: 'fixed',
-          bottom: 0,
-        }}
-      >
-        <NavBar
-          width={windowSize.width}
-          robot={robot}
-          setRobot={setRobot}
-          info={info}
-          setInfo={setInfo}
-          fetchInfo={fetchInfo}
-        />
-      </div>
+      </Box>
+      <NavBar
+        width={windowSize.width}
+        height={navbarHeight}
+        page={page}
+        setPage={setPage}
+        setSlideDirection={setSlideDirection}
+        robot={robot}
+        setRobot={setRobot}
+        info={info}
+        setInfo={setInfo}
+        fetchInfo={fetchInfo}
+      />
     </Router>
   );
 };

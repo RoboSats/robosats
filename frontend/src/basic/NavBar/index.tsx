@@ -1,52 +1,137 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
-import {
-  Badge,
-  Tooltip,
-  ListItemAvatar,
-  Paper,
-  Button,
-  Grid,
-  IconButton,
-  Select,
-  MenuItem,
-  ListItemText,
-  ListItem,
-  ListItemIcon,
-  ListItemButton,
-  useTheme,
-} from '@mui/material';
-import { Link as LinkRouter } from 'react-router-dom';
-import { apiClient } from '../../services/api';
-import { systemClient } from '../../services/System';
+import { Tabs, Tab, Paper, Button, useTheme } from '@mui/material';
 import RobotAvatar from '../../components/RobotAvatar';
 
+import {
+  SettingsApplications,
+  SmartToy,
+  Storefront,
+  AddBox,
+  Assignment,
+  MoreHoriz,
+} from '@mui/icons-material';
+
+type Page = 'robot' | 'offers' | 'create' | 'order' | 'settings' | 'none';
+type Direction = 'left' | 'right' | 'none';
+
 interface NavBarProps {
+  page: Page;
+  setPage: (state: Page) => void;
+  slideDirection: { in: Direction; out: Direction };
+  setSlideDirection: (state: { in: Direction; out: Direction }) => void;
   width: number;
+  height: number;
 }
-type Page = 'robot' | 'order' | 'make' | 'book' | 'settings';
 
-const NavBar = ({ width }: NavBarProps): JSX.Element => {
+const NavBar = ({
+  page,
+  setPage,
+  slideDirection,
+  setSlideDirection,
+  width,
+  height,
+}: NavBarProps): JSX.Element => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const history = useHistory();
-  const { pathname } = history.location;
+  const smallBar = width < 50;
+  const tabWidth = smallBar ? 1 : 1;
 
-  const [page, setPage] = useState<Page>(history.location.pathname.split('/'));
+  const [showMore, setShowMore] = useState<boolean>(false);
+  const [newPage, setNewPage] = useState<Page>(history.location.pathname.split('/')[1]);
 
-  const changePage = function (newPage: Page) {
-    setPage(newPage);
-    history.push(`/${newPage}`);
+  const pagesPosition = {
+    robot: 1,
+    offers: 2,
+    create: 3,
+    order: 4,
+    settings: 5,
+  };
+  const handleSlideDirection = function (oldPage: Page, newPage: Page) {
+    const oldPos: number = pagesPosition[oldPage];
+    const newPos: number = pagesPosition[newPage];
+    setSlideDirection(
+      newPos > oldPos ? { in: 'left', out: 'right' } : { in: 'right', out: 'left' },
+    );
   };
 
+  const changePage = function (mouseEvent: any, newPage: Page) {
+    if (newPage === 'none') {
+      return null;
+    } else {
+      handleSlideDirection(page, newPage);
+      setNewPage(newPage);
+      setTimeout(() => history.push(`/${newPage}`), theme.transitions.duration.leavingScreen * 3);
+    }
+  };
+
+  useEffect(() => {
+    setPage(newPage);
+  }, [slideDirection, newPage]);
+
   return (
-    <Paper elevation={6} style={{ height: '2.5em', width: `${width * 0.9}em` }}>
-      {page}
-      <Button onClick={() => changePage('robot')}>ROBOT</Button>
-      <Button onClick={() => changePage('book')}>BOOK</Button>
-      <Button onClick={() => changePage('make')}>MAKER</Button>
-      <Button onClick={() => changePage('order/1')}>ORDER</Button>
-      <Button onClick={() => changePage('settings')}>SETTINGS</Button>
+    <Paper
+      elevation={6}
+      sx={{ height: `${height}em`, width: `${width * 0.9}em`, position: 'fixed', bottom: 0 }}
+    >
+      <Tabs
+        TabIndicatorProps={{ sx: { height: '0.3em', position: 'absolute', top: 0 } }}
+        variant={smallBar ? 'scrollable' : 'fullWidth'}
+        centered={!smallBar}
+        allowScrollButtonsMobile
+        scrollButtons={smallBar}
+        value={page}
+        onChange={changePage}
+        aria-label='navigation bar'
+      >
+        <Tab
+          sx={{ maxWidth: `${tabWidth}em` }}
+          label={smallBar ? undefined : t('Robot')}
+          value='robot'
+          icon={<SmartToy />}
+          iconPosition='start'
+        />
+        <Tab
+          sx={{ maxWidth: `${tabWidth}em` }}
+          label={smallBar ? undefined : t('Offers')}
+          value='offers'
+          icon={<Storefront />}
+          iconPosition='start'
+        />
+        <Tab
+          sx={{ maxWidth: `${tabWidth}em` }}
+          label={smallBar ? undefined : t('Create')}
+          value='create'
+          icon={<AddBox />}
+          iconPosition='start'
+        />
+        <Tab
+          sx={{ maxWidth: `${tabWidth}em` }}
+          label={smallBar ? undefined : t('Order')}
+          value='order/1'
+          icon={<Assignment />}
+          iconPosition='start'
+        />
+        <Tab
+          sx={{ maxWidth: `${tabWidth}em` }}
+          label={smallBar ? undefined : t('Settings')}
+          value='settings'
+          icon={<SettingsApplications />}
+          iconPosition='start'
+        />
+        <Tab
+          sx={{ maxWidth: `${tabWidth}em` }}
+          label={smallBar ? undefined : t('More')}
+          value={'none'}
+          onClick={() => {
+            setShowMore(!showMore);
+          }}
+          icon={<MoreHoriz />}
+          iconPosition='start'
+        />
+      </Tabs>
     </Paper>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
 import { Button, Grid, Paper, Collapse, Typography } from '@mui/material';
 
 import { LimitList, Maker, Book, Favorites } from '../../models';
@@ -32,9 +31,8 @@ const MakerPage = ({
   windowSize,
 }: MakerPageProps): JSX.Element => {
   const { t } = useTranslation();
-  const history = useHistory();
 
-  const maxHeight = windowSize.height * 0.85 - 7;
+  const maxHeight = windowSize.height * 0.85 - 3;
   const [showMatches, setShowMatches] = useState<boolean>(false);
 
   const matches = filterOrders({
@@ -95,11 +93,6 @@ const MakerPage = ({
             submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
           />
         </Paper>
-      </Grid>
-      <Grid item>
-        <Button color='secondary' variant='contained' onClick={() => history.push('/')}>
-          {t('Back')}
-        </Button>
       </Grid>
     </Grid>
   );

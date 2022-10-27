@@ -28,6 +28,7 @@ interface SelectLanguageProps {
   language: Language;
   setLanguage: (lang: Language) => void;
 }
+
 const SelectLanguage = ({ language, setLanguage }: SelectLanguageProps): JSX.Element => {
   const theme = useTheme();
   const { t, i18n } = useTranslation();
@@ -42,10 +43,9 @@ const SelectLanguage = ({ language, setLanguage }: SelectLanguageProps): JSX.Ele
     i18n.changeLanguage(e.target.value);
   };
 
-  console.log(language);
   return (
     <Select
-      autoWidth={true}
+      fullWidth={true}
       value={language}
       inputProps={{
         style: { textAlign: 'center' },
