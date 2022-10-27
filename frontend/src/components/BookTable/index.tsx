@@ -37,7 +37,7 @@ interface Props {
   maxHeight: number;
   fullWidth?: number;
   fullHeight?: number;
-  elevation: number;
+  elevation?: number;
   defaultFullscreen?: boolean;
   fillContainer?: boolean;
   showControls?: boolean;

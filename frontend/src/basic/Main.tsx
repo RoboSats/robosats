@@ -29,6 +29,7 @@ import {
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import SchoolIcon from '@mui/icons-material/School';
+import SettingsPage from './SettingsPage';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -39,7 +40,6 @@ const getWindowSize = function (fontSize: number) {
 };
 
 interface MainProps {
-  updateTheme: () => void;
   settings: Settings;
   setSettings: (state: Settings) => void;
 }
@@ -202,6 +202,10 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
             path='/order/:orderId'
             render={(props: any) => <OrderPage theme={theme} history={history} {...props} />}
           />
+          <Route
+            path='/settings'
+            render={(props: any) => <SettingsPage settings={settings} setSettings={setSettings} />}
+          />
         </Switch>
       </div>
       <div
@@ -212,9 +216,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         }}
       >
         <NavBar
-          theme={theme}
-          windowSize={windowSize}
-          redirectTo={(location: string) => history.push(location)}
+          width={windowSize.width}
           robot={robot}
           setRobot={setRobot}
           info={info}

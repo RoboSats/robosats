@@ -74,7 +74,12 @@ const MakerPage = ({
       <Grid item>
         <Paper
           elevation={12}
-          style={{ padding: 8, width: '17.25em', maxHeight: `${maxHeight}em`, overflow: 'auto' }}
+          style={{
+            padding: '0.6em',
+            width: '17.25em',
+            maxHeight: `${maxHeight}em`,
+            overflow: 'auto',
+          }}
         >
           <MakerForm
             limits={limits}

@@ -17,6 +17,7 @@ export interface Info {
   taker_fee: number;
   bond_size: number;
   current_swap_fee_rate: number;
+  network: 'mainnet' | 'testnet' | undefined;
   coordinatorVersion: string;
   clientVersion: string;
   openUpdateClient: boolean;
@@ -41,6 +42,7 @@ export const defaultInfo: Info = {
   taker_fee: 0,
   bond_size: 0,
   current_swap_fee_rate: 0,
+  network: undefined,
   coordinatorVersion: 'v?.?.?',
   clientVersion: 'v?.?.?',
   openUpdateClient: false,

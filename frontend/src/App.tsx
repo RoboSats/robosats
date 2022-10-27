@@ -44,6 +44,10 @@ const App = (): JSX.Element => {
     updateTheme();
   }, [settings]);
 
+  useEffect(() => {
+    i18n.changeLanguage(settings.language);
+  }, []);
+
   return (
     <Suspense fallback='loading language'>
       <I18nextProvider i18n={i18n}>
