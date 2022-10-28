@@ -97,6 +97,10 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     };
   }, []);
 
+  useEffect(() => {
+    setWindowSize(getWindowSize(theme.typography.fontSize));
+  }, [theme.typography.fontSize]);
+
   const onResize = function () {
     setWindowSize(getWindowSize(theme.typography.fontSize));
   };

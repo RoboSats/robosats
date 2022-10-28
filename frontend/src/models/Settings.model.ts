@@ -3,6 +3,7 @@ import type Coordinator from './Coordinator.model';
 import type Language from './Language.model';
 
 export interface Settings {
+  frontend: 'basic' | 'pro';
   mode: 'light' | 'dark';
   fontSize: number;
   language: Language;
@@ -12,6 +13,7 @@ export interface Settings {
 }
 
 export const baseSettings: Settings = {
+  frontend: 'basic',
   mode:
     window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
       ? 'dark'
