@@ -23,6 +23,9 @@ export interface Info {
   openUpdateClient: boolean;
 }
 
+import packageJson from '../../package.json';
+const semver = packageJson.version.split('.');
+
 export const defaultInfo: Info = {
   num_public_buy_orders: 0,
   num_public_sell_orders: 0,
@@ -44,7 +47,7 @@ export const defaultInfo: Info = {
   current_swap_fee_rate: 0,
   network: undefined,
   coordinatorVersion: 'v?.?.?',
-  clientVersion: 'v?.?.?',
+  clientVersion: `v${semver[0]}.${semver[1]}.${semver[2]}`,
   openUpdateClient: false,
 };
 

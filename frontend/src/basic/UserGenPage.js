@@ -31,7 +31,6 @@ class UserGenPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      openInfo: false,
       tokenHasChanged: false,
       inputToken: '',
       found: false,
@@ -153,14 +152,6 @@ class UserGenPage extends Component {
       lastOrderId: null,
       activeOrderId: null,
     });
-  };
-
-  handleClickOpenInfo = () => {
-    this.setState({ openInfo: true });
-  };
-
-  handleCloseInfo = () => {
-    this.setState({ openInfo: false });
   };
 
   createJsonFile = () => {
@@ -383,14 +374,6 @@ class UserGenPage extends Component {
             >
               {t('Make Order')}
             </Button>
-            <Button color='inherit' style={{ color: '#111111' }} onClick={this.handleClickOpenInfo}>
-              {t('Info')}
-            </Button>
-            <InfoDialog
-              open={Boolean(this.state.openInfo)}
-              maxAmount='4,000,000'
-              onClose={this.handleCloseInfo}
-            />
             <Button
               disabled={
                 this.props.robot.loading ||

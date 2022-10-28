@@ -21,10 +21,10 @@ import Flags from 'country-flag-icons/react/3x2';
 
 interface Props {
   open: boolean;
-  handleClickCloseCommunity: () => void;
+  onClose: () => void;
 }
 
-const CommunityDialog = ({ open = false, handleClickCloseCommunity }: Props): JSX.Element => {
+const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
 
   const flagProps = {
@@ -39,7 +39,7 @@ const CommunityDialog = ({ open = false, handleClickCloseCommunity }: Props): JS
   return (
     <Dialog
       open={open}
-      onClose={handleClickCloseCommunity}
+      onClose={onClose}
       aria-labelledby='community-dialog-title'
       aria-describedby='community-description'
     >

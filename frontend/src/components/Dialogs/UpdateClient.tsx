@@ -9,7 +9,6 @@ import {
   Divider,
   List,
   ListItemText,
-  ListItem,
   ListItemIcon,
   ListItemButton,
   Typography,
@@ -23,19 +22,19 @@ interface Props {
   open: boolean;
   clientVersion: string;
   coordinatorVersion: string;
-  handleClickClose: () => void;
+  onClose: () => void;
 }
 
 const UpdateClientDialog = ({
   open = false,
   clientVersion,
   coordinatorVersion,
-  handleClickClose,
+  onClose,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
 
   return (
-    <Dialog open={open} onClose={handleClickClose}>
+    <Dialog open={open} onClose={onClose}>
       <DialogContent>
         <Typography component='h5' variant='h5'>
           {t('Update your RoboSats client')}
@@ -103,7 +102,7 @@ const UpdateClientDialog = ({
           </ListItemButton>
 
           <DialogActions>
-            <Button onClick={handleClickClose}>{t('Go away!')}</Button>
+            <Button onClick={onClose}>{t('Go away!')}</Button>
           </DialogActions>
         </List>
       </DialogContent>

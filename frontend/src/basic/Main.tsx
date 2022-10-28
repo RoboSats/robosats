@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { HashRouter, BrowserRouter, Switch, Route, useHistory } from 'react-router-dom';
-import { useTheme, IconButton, Box, Slide } from '@mui/material';
+import { useTheme, Box, Slide } from '@mui/material';
 
 import UserGenPage from './UserGenPage';
 import MakerPage from './MakerPage';
 import BookPage from './BookPage';
 import OrderPage from './OrderPage';
+import SettingsPage from './SettingsPage';
 import NavBar from './NavBar';
-import { LearnDialog } from '../components/Dialogs';
+import MainDialogs, { OpenDialogs } from './MainDialogs';
 
 import { apiClient } from '../services/api';
 import { checkVer } from '../utils';
@@ -24,12 +25,6 @@ import {
   defaultRobot,
   defaultInfo,
 } from '../models';
-
-// Icons
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import SchoolIcon from '@mui/icons-material/School';
-import SettingsPage from './SettingsPage';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -73,7 +68,16 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   });
 
   const navbarHeight = 2.5;
-  const [openLearn, setOpenLearn] = useState<boolean>(false);
+  const closeAll = {
+    more: false,
+    learn: false,
+    community: false,
+    info: false,
+    coordinator: false,
+    stats: false,
+    update: false,
+  };
+  const [open, setOpen] = useState<OpenDialogs>(closeAll);
 
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
     getWindowSize(theme.typography.fontSize),
@@ -146,16 +150,6 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   console.log(page, slideDirection);
   return (
     <Router basename={basename}>
-      <div className='temporaryUpperIcons'>
-        <LearnDialog open={openLearn} onClose={() => setOpenLearn(false)} />
-        <IconButton
-          color='inherit'
-          sx={{ position: 'fixed', right: '34px', color: 'text.secondary' }}
-          onClick={() => setOpenLearn(true)}
-        >
-          <SchoolIcon />
-        </IconButton>
-      </div>
       <Box
         style={{
           position: 'absolute',
@@ -233,7 +227,6 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
               direction={page === 'settings' ? slideDirection.in : slideDirection.out}
               in={page === 'settings'}
               appear={slideDirection.in != undefined}
-              mountOnEnter
             >
               <div>
                 <SettingsPage
@@ -251,6 +244,9 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         height={navbarHeight}
         page={page}
         setPage={setPage}
+        open={open}
+        setOpen={setOpen}
+        closeAll={closeAll}
         setSlideDirection={setSlideDirection}
         robot={robot}
         setRobot={setRobot}
@@ -258,6 +254,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         setInfo={setInfo}
         fetchInfo={fetchInfo}
       />
+      <MainDialogs open={open} setOpen={setOpen} info={info} closeAll={closeAll} />
     </Router>
   );
 };

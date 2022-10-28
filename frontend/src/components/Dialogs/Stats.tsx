@@ -27,11 +27,11 @@ import { pn } from '../../utils';
 
 interface Props {
   open: boolean;
-  handleClickCloseStatsForNerds: () => void;
+  onClose: () => void;
   lndVersion: string;
   coordinatorVersion: string;
   clientVersion: string;
-  network: string;
+  network: string | undefined;
   nodeAlias: string;
   nodeId: string;
   alternativeName: string;
@@ -43,7 +43,7 @@ interface Props {
 
 const StatsDialog = ({
   open = false,
-  handleClickCloseStatsForNerds,
+  onClose,
   lndVersion,
   coordinatorVersion,
   clientVersion,
@@ -61,7 +61,7 @@ const StatsDialog = ({
   return (
     <Dialog
       open={open}
-      onClose={handleClickCloseStatsForNerds}
+      onClose={onClose}
       aria-labelledby='stats-for-nerds-dialog-title'
       aria-describedby='stats-for-nerds-description'
     >
