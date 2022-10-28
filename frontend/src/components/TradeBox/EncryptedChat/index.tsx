@@ -44,39 +44,49 @@ interface EncryptedChatMessage {
 
 const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const messageEndRef = useRef<HTMLInputElement>(null);
+  const audio = new Audio(`/static/assets/sounds/chat-open.mp3`);
   const [connected, setConnected] = useState<boolean>(false);
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
-  const [ownPubKey] = useState<string>(systemClient.getCookie('pub_key') || '');
-  const [ownEncPrivKey] = useState<string>(systemClient.getCookie('enc_priv_key') || '');
+  const [ownPubKey] = useState<string>(
+    (systemClient.getCookie('pub_key') ?? '').split('\\').join('\n'),
+  );
+  const [ownEncPrivKey] = useState<string>(
+    (systemClient.getCookie('enc_priv_key') ?? '').split('\\').join('\n'),
+  );
   const [peerPubKey, setPeerPubKey] = useState<string>();
   const [token] = useState<string>(systemClient.getCookie('robot_token') || '');
   const [messages, setMessages] = useState<EncryptedChatMessage[]>([]);
+  const [serverMessages, setServerMessages] = useState<any[]>([]);
   const [value, setValue] = useState<string>('');
   const [connection, setConnection] = useState<WebsocketConnection>();
   const [audit, setAudit] = useState<boolean>(false);
   const [showPGP, setShowPGP] = useState<boolean[]>([]);
   const [waitingEcho, setWaitingEcho] = useState<boolean>(false);
   const [lastSent, setLastSent] = useState<string>('---BLANK---');
-  const [latestIndex, setLatestIndex] = useState<number>(0);
-  const [scrollNow, setScrollNow] = useState<boolean>(false);
+  const [messageCount, setMessageCount] = useState<number>(0);
+  const [receivedIndexes, setReceivedIndexes] = useState<number[]>([]);
 
   useEffect(() => {
-    connectWebsocket();
-  }, []);
-
-  useEffect(() => {
-    if (scrollNow) {
-      const audio = new Audio(`/static/assets/sounds/chat-open.mp3`);
-      audio.play();
-      scrollToBottom();
-      setScrollNow(false);
+    if (!connected) {
+      connectWebsocket();
     }
-  }, [scrollNow]);
+  }, [connected]);
+
+  useEffect(() => {
+    if (messages.length > messageCount) {
+      audio.play();
+      setMessageCount(messages.length);
+    }
+  }, [messages, messageCount]);
+
+  useEffect(() => {
+    if (serverMessages) {
+      serverMessages.forEach(onMessage);
+    }
+  }, [serverMessages]);
 
   const connectWebsocket = () => {
     websocketClient.open(`ws://${window.location.host}/ws/chat/${orderId}/`).then((connection) => {
-      console.log('Connected!');
       setConnection(connection);
       setConnected(true);
 
@@ -85,15 +95,9 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
         nick: userNick,
       });
 
-      connection.onMessage(onMessage);
-      connection.onClose(() => {
-        console.log('Socket is closed. Reconnect will be attempted');
-        setConnected(false);
-      });
-      connection.onError(() => {
-        console.error('Socket encountered error: Closing socket');
-        setConnected(false);
-      });
+      connection.onMessage((message) => setServerMessages((prev) => [...prev, message]));
+      connection.onClose(() => setConnected(false));
+      connection.onError(() => setConnected(false));
     });
   };
 
@@ -109,99 +113,77 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
     };
   };
 
-  const scrollToBottom = () => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   const onMessage: (message: any) => void = (message) => {
     const dataFromServer = JSON.parse(message.data);
-    console.log('Got reply!', dataFromServer.type);
-    console.log('PGP message index', dataFromServer.index, ' latestIndex ', latestIndex);
 
-    if (dataFromServer) {
-      console.log(dataFromServer);
+    if (dataFromServer && !receivedIndexes.includes(dataFromServer.index)) {
+      setReceivedIndexes((prev) => [...prev, dataFromServer.index]);
       setPeerConnected(dataFromServer.peer_connected);
-
-      // If we receive our own key on a message
-      if (dataFromServer.message == ownPubKey) {
-        console.log('OWN PUB KEY RECEIVED!!');
-      }
-
       // If we receive a public key other than ours (our peer key!)
       if (
         connection &&
         dataFromServer.message.substring(0, 36) == `-----BEGIN PGP PUBLIC KEY BLOCK-----` &&
         dataFromServer.message != ownPubKey
       ) {
-        if (dataFromServer.message == peerPubKey) {
-          console.log('PEER HAS RECONNECTED USING HIS PREVIOUSLY KNOWN PUBKEY');
-        } else if (dataFromServer.message != peerPubKey && peerPubKey != null) {
-          console.log('PEER PUBKEY HAS CHANGED');
-        }
-        console.log('PEER PUBKEY RECEIVED!!');
         setPeerPubKey(dataFromServer.message);
-
         connection.send({
           message: `-----SERVE HISTORY-----`,
           nick: userNick,
         });
       }
-
       // If we receive an encrypted message
-      else if (
-        dataFromServer.message.substring(0, 27) == `-----BEGIN PGP MESSAGE-----` &&
-        dataFromServer.index > latestIndex
-      ) {
+      else if (dataFromServer.message.substring(0, 27) == `-----BEGIN PGP MESSAGE-----`) {
         decryptMessage(
           dataFromServer.message.split('\\').join('\n'),
           dataFromServer.user_nick == userNick ? ownPubKey : peerPubKey,
           ownEncPrivKey,
           token,
         ).then((decryptedData) => {
-          setScrollNow(true);
-          setLatestIndex(dataFromServer.index > latestIndex ? dataFromServer.index : latestIndex);
           setWaitingEcho(waitingEcho ? decryptedData.decryptedMessage !== lastSent : false);
           setLastSent(decryptedData.decryptedMessage === lastSent ? '----BLANK----' : lastSent);
-          setMessages(
-            [
-              ...messages,
-              {
-                index: dataFromServer.index,
-                encryptedMessage: dataFromServer.message.split('\\').join('\n'),
-                plainTextMessage: decryptedData.decryptedMessage,
-                validSignature: decryptedData.validSignature,
-                userNick: dataFromServer.user_nick,
-                time: dataFromServer.time,
-              } as EncryptedChatMessage,
-            ].sort((a, b) => {
-              // order the message array by their index (increasing)
-              return a.index - b.index;
-            }),
-          );
+          setMessages((prev) => {
+            const existingMessage = prev.find((item) => item.index === dataFromServer.index);
+            if (existingMessage) {
+              return prev;
+            } else {
+              return [
+                ...prev,
+                {
+                  index: dataFromServer.index,
+                  encryptedMessage: dataFromServer.message.split('\\').join('\n'),
+                  plainTextMessage: decryptedData.decryptedMessage,
+                  validSignature: decryptedData.validSignature,
+                  userNick: dataFromServer.user_nick,
+                  time: dataFromServer.time,
+                } as EncryptedChatMessage,
+              ].sort((a, b) => a.index - b.index);
+            }
+          });
         });
       }
-
       // We allow plaintext communication. The user must write # to start
       // If we receive an plaintext message
       else if (dataFromServer.message.substring(0, 1) == '#') {
-        console.log('Got plaintext message', dataFromServer.message);
-        setScrollNow(true);
-        setMessages(
-          [
-            ...messages,
-            {
-              index: latestIndex + 0.001,
-              encryptedMessage: dataFromServer.message,
-              plainTextMessage: dataFromServer.message,
-              validSignature: false,
-              userNick: dataFromServer.user_nick,
-              time: new Date().toString(),
-            } as EncryptedChatMessage,
-          ].sort((a, b) => {
-            // order the message array by their index (increasing)
-            return a.index - b.index;
-          }),
-        );
+        setMessages((prev) => {
+          const existingMessage = prev.find(
+            (item) => item.plainTextMessage === dataFromServer.message,
+          );
+          if (existingMessage) {
+            return prev;
+          } else {
+            return [
+              ...prev,
+              {
+                index: prev.length + 0.001,
+                encryptedMessage: dataFromServer.message,
+                plainTextMessage: dataFromServer.message,
+                validSignature: false,
+                userNick: dataFromServer.user_nick,
+                time: new Date().toString(),
+              } as EncryptedChatMessage,
+            ].sort((a, b) => a.index - b.index);
+          }
+        });
       }
     }
   };
@@ -230,7 +212,6 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
       encryptMessage(value, ownPubKey, peerPubKey, ownEncPrivKey, token).then(
         (encryptedMessage) => {
           if (connection) {
-            console.log('Sending Encrypted MESSAGE', encryptedMessage);
             connection.send({
               message: encryptedMessage.toString().split('\n').join('\\'),
               nick: userNick,
@@ -248,8 +229,6 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
     cardColor: string,
     userConnected: boolean,
   ) => JSX.Element = (message, index, cardColor, userConnected) => {
-    if (!index) return <></>;
-    console.log('userConnected', userConnected);
     return (
       <Card elevation={5}>
         <CardHeader
@@ -401,7 +380,12 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
                 : messageCard(message, index, '#fafafa', peerConnected)}
             </li>
           ))}
-          <div style={{ float: 'left', clear: 'both' }} ref={messageEndRef} />
+          <div
+            style={{ float: 'left', clear: 'both' }}
+            ref={(el) => {
+              if (messages.length > messageCount) el?.scrollIntoView();
+            }}
+          />
         </Paper>
         <form noValidate onSubmit={onButtonClicked}>
           <Grid alignItems='stretch' style={{ display: 'flex' }}>
