@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import { Tabs, Tab, Paper, useTheme } from '@mui/material';
-import RobotAvatar from '../../components/RobotAvatar';
 import MoreTooltip from './MoreTooltip';
 
 import { OpenDialogs } from '../MainDialogs';
+
+import { Page } from '.';
 
 import {
   SettingsApplications,
@@ -15,12 +16,13 @@ import {
   Assignment,
   MoreHoriz,
 } from '@mui/icons-material';
+import RobotAvatar from '../../components/RobotAvatar';
 
-type Page = 'robot' | 'offers' | 'create' | 'order' | 'settings' | 'none';
 type Direction = 'left' | 'right' | undefined;
 
 interface NavBarProps {
   page: Page;
+  nickname?: string | null;
   setPage: (state: Page) => void;
   slideDirection: { in: Direction; out: Direction };
   setSlideDirection: (state: { in: Direction; out: Direction }) => void;
@@ -29,6 +31,8 @@ interface NavBarProps {
   open: OpenDialogs;
   setOpen: (state: OpenDialogs) => void;
   closeAll: OpenDialogs;
+  order: number | null;
+  hasRobot: boolean;
 }
 
 const NavBar = ({
@@ -37,20 +41,24 @@ const NavBar = ({
   slideDirection,
   setSlideDirection,
   open,
+  nickname = null,
   setOpen,
   closeAll,
   width,
   height,
+  order,
+  hasRobot = false,
 }: NavBarProps): JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
   const history = useHistory();
   const smallBar = width < 50;
-  const tabWidth = smallBar ? 1 : 12;
 
   const [newPage, setNewPage] = useState<Page>(history.location.pathname.split('/')[1]);
 
-  const tabSx = smallBar ? {} : { position: 'relative', bottom: '1em' };
+  const tabSx = smallBar
+    ? { position: 'relative', bottom: nickname ? '0.8em' : '0em', minWidth: '1em' }
+    : { position: 'relative', bottom: '1em', minWidth: '2em' };
   const pagesPosition = {
     robot: 1,
     offers: 2,
@@ -73,7 +81,11 @@ const NavBar = ({
     } else {
       handleSlideDirection(page, newPage);
       setNewPage(newPage);
-      setTimeout(() => history.push(`/${newPage}`), theme.transitions.duration.leavingScreen * 3);
+      const param = newPage === 'order' ? order ?? '' : '';
+      setTimeout(
+        () => history.push(`/${newPage}/${param}`),
+        theme.transitions.duration.leavingScreen * 3,
+      );
     }
   };
 
@@ -92,16 +104,30 @@ const NavBar = ({
     >
       <Tabs
         TabIndicatorProps={{ sx: { height: '0.3em', position: 'absolute', top: 0 } }}
-        variant={smallBar ? 'scrollable' : 'fullWidth'}
-        centered={!smallBar}
-        allowScrollButtonsMobile
-        scrollButtons={smallBar}
+        variant='fullWidth'
         value={page}
         onChange={changePage}
       >
         <Tab
+          sx={{ ...tabSx, minWidth: '2.5em', width: '2.5em', maxWidth: '4em' }}
+          value='none'
+          onClick={() => setOpen({ ...closeAll, profile: !open.profile })}
+          icon={
+            nickname ? (
+              <RobotAvatar
+                style={{ width: '2.3em', height: '2.3em' }}
+                avatarClass='phoneFlippedSmallAvatar'
+                nickname={nickname}
+              />
+            ) : (
+              <></>
+            )
+          }
+        />
+
+        <Tab
           label={smallBar ? undefined : t('Robot')}
-          sx={tabSx}
+          sx={{ ...tabSx, minWidth: '1em' }}
           value='robot'
           icon={<SmartToy />}
           iconPosition='start'
@@ -124,7 +150,8 @@ const NavBar = ({
         <Tab
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
-          value='order/1'
+          value='order'
+          disabled={!hasRobot}
           icon={<Assignment />}
           iconPosition='start'
         />
@@ -136,18 +163,20 @@ const NavBar = ({
           iconPosition='start'
         />
 
-        <MoreTooltip open={open} setOpen={setOpen} closeAll={closeAll}>
-          <Tab
-            sx={tabSx}
-            label={smallBar ? undefined : t('More')}
-            value={'none'}
-            onClick={() => {
-              setOpen(open.more ? closeAll : { ...open, more: true });
-            }}
-            icon={<MoreHoriz />}
-            iconPosition='start'
-          />
-        </MoreTooltip>
+        <Tab
+          sx={tabSx}
+          label={smallBar ? undefined : t('More')}
+          value='none'
+          onClick={(e) => {
+            open.more ? null : setOpen({ ...open, more: true });
+          }}
+          icon={
+            <MoreTooltip open={open} nickname={nickname} setOpen={setOpen} closeAll={closeAll}>
+              <MoreHoriz />
+            </MoreTooltip>
+          }
+          iconPosition='start'
+        />
       </Tabs>
     </Paper>
   );

@@ -55,6 +55,7 @@ interface MakerFormProps {
   onSubmit?: () => void;
   onReset?: () => void;
   submitButtonLabel?: string;
+  onOrderCreated?: (id: number) => void;
 }
 
 const MakerForm = ({
@@ -70,6 +71,7 @@ const MakerForm = ({
   onSubmit = () => {},
   onReset = () => {},
   submitButtonLabel = 'Create Order',
+  onOrderCreated = () => null,
 }: MakerFormProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -258,7 +260,10 @@ const MakerForm = ({
       };
       apiClient.post('/api/make/', body).then((data: object) => {
         setBadRequest(data.bad_request);
-        data.id ? history.push('/order/' + data.id) : '';
+        if (data.id) {
+          history.push('/order/' + data.id);
+          onOrderCreated(data.id);
+        }
         setSubmittingRequest(false);
       });
     }

@@ -7,7 +7,7 @@ import MakerPage from './MakerPage';
 import BookPage from './BookPage';
 import OrderPage from './OrderPage';
 import SettingsPage from './SettingsPage';
-import NavBar from './NavBar';
+import NavBar, { Page } from './NavBar';
 import MainDialogs, { OpenDialogs } from './MainDialogs';
 
 import { apiClient } from '../services/api';
@@ -25,6 +25,8 @@ import {
   defaultRobot,
   defaultInfo,
 } from '../models';
+import { sha256 } from 'js-sha256';
+import RobotAvatar from '../components/RobotAvatar';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -34,7 +36,6 @@ const getWindowSize = function (fontSize: number) {
   };
 };
 
-type Page = 'robot' | 'order' | 'create' | 'offers' | 'settings' | 'none';
 interface SlideDirection {
   in: 'left' | 'right' | undefined;
   out: 'left' | 'right' | undefined;
@@ -66,6 +67,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     in: undefined,
     out: undefined,
   });
+  const [order, setOrder] = useState<number | null>(null);
 
   const navbarHeight = 2.5;
   const closeAll = {
@@ -76,6 +78,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     coordinator: false,
     stats: false,
     update: false,
+    profile: false,
   };
   const [open, setOpen] = useState<OpenDialogs>(closeAll);
 
@@ -133,27 +136,60 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         coordinatorVersion: versionInfo.coordinatorVersion,
         clientVersion: versionInfo.clientVersion,
       });
-      if (!robot.nickname && data.nickname && !robot.loading) {
-        setRobot({
-          ...robot,
-          nickname: data.nickname,
-          loading: false,
-          activeOrderId: data.active_order_id ?? null,
-          lastOrderId: data.last_order_id ?? null,
-          referralCode: data.referral_code,
-          tgEnabled: data.tg_enabled,
-          tgBotName: data.tg_bot_name,
-          tgToken: data.tg_token,
-          earnedRewards: data.earned_rewards ?? 0,
-          stealthInvoices: data.wants_stealth,
-        });
-      }
     });
   };
 
-  console.log(page, slideDirection);
+  const fetchRobot = function () {
+    const requestBody = {
+      token_sha256: sha256(robot.token),
+    };
+
+    apiClient.post('/api/user/', requestBody).then((data: any) => {
+      console.log(data);
+      setOrder(
+        data.active_order_id
+          ? data.active_order_id
+          : data.last_order_id
+          ? data.last_order_id
+          : order,
+      );
+      setRobot({
+        ...robot,
+        nickname: data.nickname,
+        token: robot.token,
+        loading: false,
+        avatarLoaded: false,
+        activeOrderId: data.active_order_id ? data.active_order_id : null,
+        lastOrderId: data.last_order_id ? data.last_order_id : null,
+        referralCode: data.referral_code,
+        earnedRewards: data.earned_rewards ?? 0,
+        stealthInvoices: data.wants_stealth,
+        tgEnabled: data.tg_enabled,
+        tgBotName: data.tg_bot_name,
+        tgToken: data.tg_token,
+        bitsEntropy: data.token_bits_entropy,
+        shannonEntropy: data.token_shannon_entropy,
+        pub_key: data.public_key,
+        enc_priv_key: data.encrypted_private_key,
+        copiedToken: data.found ? true : robot.copiedToken,
+      });
+    });
+  };
+
+  useEffect(() => {
+    if (robot.token && robot.nickname === null) {
+      fetchRobot();
+    }
+  }, []);
+
   return (
     <Router basename={basename}>
+      {/* load robot avatar image, set avatarLoaded: true */}
+      <RobotAvatar
+        style={{ display: 'none' }}
+        nickname={robot.avatarLoaded ? robot.nickname : null}
+        onLoad={() => setRobot({ ...robot, avatarLoaded: true })}
+      />
       <Box
         style={{
           position: 'absolute',
@@ -167,13 +203,25 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
             exact
             path='/'
             render={(props: any) => (
-              <UserGenPage match={props.match} theme={theme} robot={robot} setRobot={setRobot} />
+              <UserGenPage
+                setPage={setPage}
+                match={props.match}
+                theme={theme}
+                robot={robot}
+                setRobot={setRobot}
+              />
             )}
           />
           <Route
             path='/robot/:refCode?'
             render={(props: any) => (
-              <UserGenPage match={props.match} theme={theme} robot={robot} setRobot={setRobot} />
+              <UserGenPage
+                setPage={setPage}
+                match={props.match}
+                theme={theme}
+                robot={robot}
+                setRobot={setRobot}
+              />
             )}
           />
 
@@ -195,6 +243,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                   setMaker={setMaker}
                   lastDayPremium={info.last_day_nonkyc_btc_premium}
                   windowSize={windowSize}
+                  hasRobot={robot.avatarLoaded}
                 />
               </div>
             </Slide>
@@ -213,9 +262,12 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                   fetchLimits={fetchLimits}
                   maker={maker}
                   setMaker={setMaker}
+                  setPage={setPage}
+                  setOrder={setOrder}
                   fav={fav}
                   setFav={setFav}
                   windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}
+                  hasRobot={robot.avatarLoaded}
                 />
               </div>
             </Slide>
@@ -244,6 +296,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         </Switch>
       </Box>
       <NavBar
+        nickname={robot.nickname}
         width={windowSize.width}
         height={navbarHeight}
         page={page}
@@ -252,13 +305,17 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         setOpen={setOpen}
         closeAll={closeAll}
         setSlideDirection={setSlideDirection}
-        robot={robot}
+        order={order}
+        hasRobot={robot.avatarLoaded}
+      />
+      <MainDialogs
+        open={open}
+        setOpen={setOpen}
         setRobot={setRobot}
         info={info}
-        setInfo={setInfo}
-        fetchInfo={fetchInfo}
+        robot={robot}
+        closeAll={closeAll}
       />
-      <MainDialogs open={open} setOpen={setOpen} info={info} closeAll={closeAll} />
     </Router>
   );
 };

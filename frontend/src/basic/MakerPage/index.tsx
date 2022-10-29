@@ -8,6 +8,7 @@ import { filterOrders } from '../../utils';
 
 import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
+import { Page } from '../NavBar';
 
 interface MakerPageProps {
   limits: { list: LimitList; loading: boolean };
@@ -18,6 +19,9 @@ interface MakerPageProps {
   setFav: (state: Favorites) => void;
   setMaker: (state: Maker) => void;
   windowSize: { width: number; height: number };
+  hasRobot: boolean;
+  setOrder: (state: number) => void;
+  setPage: (state: Page) => void;
 }
 
 const MakerPage = ({
@@ -29,6 +33,9 @@ const MakerPage = ({
   setFav,
   setMaker,
   windowSize,
+  setOrder,
+  setPage,
+  hasRobot = false,
 }: MakerPageProps): JSX.Element => {
   const { t } = useTranslation();
 
@@ -86,6 +93,10 @@ const MakerPage = ({
             setFav={setFav}
             maker={maker}
             setMaker={setMaker}
+            onOrderCreated={(id) => {
+              setOrder(id);
+              setPage('order');
+            }}
             disableRequest={matches.length > 0 && !showMatches}
             collapseAll={showMatches}
             onSubmit={() => setShowMatches(matches.length > 0)}

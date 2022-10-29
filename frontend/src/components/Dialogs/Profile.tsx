@@ -39,52 +39,26 @@ import { UserNinjaIcon, BitcoinIcon } from '../Icons';
 import { systemClient } from '../../services/System';
 import { getHost, getWebln } from '../../utils';
 import RobotAvatar from '../RobotAvatar';
+import { apiClient } from '../../services/api';
+import { Robot } from '../../models';
 
 interface Props {
   open: boolean;
-  handleClickCloseProfile: () => void;
-  nickname: string;
-  activeOrderId: string | number;
-  lastOrderId: string | number;
-  referralCode: string;
-  tgEnabled: boolean;
-  tgBotName: string;
-  tgToken: string;
-  handleSubmitInvoiceClicked: (e: any, invoice: string) => void;
-  showRewardsSpinner: boolean;
-  withdrawn: boolean;
-  badInvoice: boolean | string;
-  earnedRewards: number;
-  stealthInvoices: boolean;
-  handleSetStealthInvoice: (wantsStealth: boolean) => void;
-  updateRobot: (state: any) => void; // TODO: move to a ContextProvider
+  onClose: () => void;
+  robot: Robot;
+  setRobot: (state: Robot) => void;
 }
 
-const ProfileDialog = ({
-  open = false,
-  handleClickCloseProfile,
-  nickname,
-  activeOrderId,
-  lastOrderId,
-  referralCode,
-  tgEnabled,
-  tgBotName,
-  tgToken,
-  handleSubmitInvoiceClicked,
-  showRewardsSpinner,
-  withdrawn,
-  badInvoice,
-  earnedRewards,
-  updateRobot,
-  stealthInvoices,
-  handleSetStealthInvoice,
-}: Props): JSX.Element => {
+const ProfileDialog = ({ open = false, onClose, robot, setRobot }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const host = getHost();
 
   const [rewardInvoice, setRewardInvoice] = useState<string>('');
   const [showRewards, setShowRewards] = useState<boolean>(false);
+  const [showRewardsSpinner, setShowRewardsSpinner] = useState<boolean>(false);
+  const [withdrawn, setWithdrawn] = useState<boolean>(false);
+  const [badInvoice, setBadInvoice] = useState<string>('');
   const [openClaimRewards, setOpenClaimRewards] = useState<boolean>(false);
   const [weblnEnabled, setWeblnEnabled] = useState<boolean>(false);
   const [openEnableTelegram, setOpenEnableTelegram] = useState<boolean>(false);
@@ -100,19 +74,19 @@ const ProfileDialog = ({
 
     if (robotToken) {
       systemClient.copyToClipboard(robotToken);
-      updateRobot({ copiedToken: true });
+      setRobot({ ...robot, copiedToken: true });
     }
   };
 
   const copyReferralCodeHandler = () => {
-    systemClient.copyToClipboard(`http://${host}/ref/${referralCode}`);
+    systemClient.copyToClipboard(`http://${host}/ref/${robot.referralCode}`);
   };
 
   const handleWeblnInvoiceClicked = async (e: any) => {
     e.preventDefault();
-    if (earnedRewards) {
+    if (robot.earnedRewards) {
       const webln = await getWebln();
-      const invoice = webln.makeInvoice(earnedRewards).then(() => {
+      const invoice = webln.makeInvoice(robot.earnedRewards).then(() => {
         if (invoice) {
           handleSubmitInvoiceClicked(e, invoice.paymentRequest);
         }
@@ -120,15 +94,39 @@ const ProfileDialog = ({
     }
   };
 
+  const handleSubmitInvoiceClicked = (e: any, rewardInvoice: string) => {
+    setBadInvoice('');
+    setShowRewardsSpinner(true);
+
+    apiClient
+      .post('/api/reward/', {
+        invoice: rewardInvoice,
+      })
+      .then((data) => {
+        setBadInvoice(data.bad_invoice);
+        setShowRewardsSpinner(false);
+        setWithdrawn(!!data.successful_withdrawal);
+        setOpenClaimRewards(!data.successful_withdrawal);
+        setRobot({ ...robot, earnedRewards: data.successful_withdrawal ? 0 : robot.earnedRewards });
+      });
+    e.preventDefault();
+  };
+
   const handleClickEnableTelegram = () => {
-    window.open('https://t.me/' + tgBotName + '?start=' + tgToken, '_blank').focus();
+    window.open('https://t.me/' + robot.tgBotName + '?start=' + robot.tgToken, '_blank').focus();
     setOpenEnableTelegram(false);
+  };
+
+  const setStealthInvoice = (wantsStealth: boolean) => {
+    apiClient
+      .put('/api/stealth/', { wantsStealth })
+      .then((data) => setRobot({ ...robot, stealthInvoices: data?.wantsStealth }));
   };
 
   return (
     <Dialog
       open={open}
-      onClose={handleClickCloseProfile}
+      onClose={onClose}
       aria-labelledby='profile-title'
       aria-describedby='profile-description'
     >
@@ -143,7 +141,7 @@ const ProfileDialog = ({
           <ListItem className='profileNickname'>
             <ListItemText secondary={t('Your robot')}>
               <Typography component='h6' variant='h6'>
-                {nickname ? (
+                {robot.nickname ? (
                   <div style={{ position: 'relative', left: '-7px' }}>
                     <div
                       style={{
@@ -156,7 +154,7 @@ const ProfileDialog = ({
                     >
                       <BoltIcon sx={{ color: '#fcba03', height: '28px', width: '24px' }} />
 
-                      <a>{nickname}</a>
+                      <a>{robot.nickname}</a>
 
                       <BoltIcon sx={{ color: '#fcba03', height: '28px', width: '24px' }} />
                     </div>
@@ -169,17 +167,17 @@ const ProfileDialog = ({
               <RobotAvatar
                 avatarClass='profileAvatar'
                 style={{ width: 65, height: 65 }}
-                nickname={nickname}
+                nickname={robot.nickname}
               />
             </ListItemAvatar>
           </ListItem>
 
           <Divider />
 
-          {activeOrderId ? (
+          {robot.activeOrderId ? (
             <ListItemButton
-              onClick={handleClickCloseProfile}
-              to={`/order/${activeOrderId}`}
+              onClick={onClose}
+              to={`/order/${robot.activeOrderId}`}
               component={LinkRouter}
             >
               <ListItemIcon>
@@ -188,21 +186,21 @@ const ProfileDialog = ({
                 </Badge>
               </ListItemIcon>
               <ListItemText
-                primary={t('One active order #{{orderID}}', { orderID: activeOrderId })}
+                primary={t('One active order #{{orderID}}', { orderID: robot.activeOrderId })}
                 secondary={t('Your current order')}
               />
             </ListItemButton>
-          ) : lastOrderId ? (
+          ) : robot.lastOrderId ? (
             <ListItemButton
-              onClick={handleClickCloseProfile}
-              to={`/order/${lastOrderId}`}
+              onClick={onClose}
+              to={`/order/${robot.lastOrderId}`}
               component={LinkRouter}
             >
               <ListItemIcon>
                 <NumbersIcon color='primary' />
               </ListItemIcon>
               <ListItemText
-                primary={t('Your last order #{{orderID}}', { orderID: lastOrderId })}
+                primary={t('Your last order #{{orderID}}', { orderID: robot.lastOrderId })}
                 secondary={t('Inactive order')}
               />
             </ListItemButton>
@@ -253,8 +251,8 @@ const ProfileDialog = ({
           <EnableTelegramDialog
             open={openEnableTelegram}
             onClose={() => setOpenEnableTelegram(false)}
-            tgBotName={tgBotName}
-            tgToken={tgToken}
+            tgBotName={robot.tgBotName}
+            tgToken={robot.tgToken}
             onClickEnable={handleClickEnableTelegram}
           />
 
@@ -264,7 +262,7 @@ const ProfileDialog = ({
             </ListItemIcon>
 
             <ListItemText>
-              {tgEnabled ? (
+              {robot.tgEnabled ? (
                 <Typography color={theme.palette.success.main}>
                   <b>{t('Telegram enabled')}</b>
                 </Typography>
@@ -295,8 +293,8 @@ const ProfileDialog = ({
                     label={t('Use stealth invoices')}
                     control={
                       <Switch
-                        checked={stealthInvoices}
-                        onChange={() => handleSetStealthInvoice(!stealthInvoices)}
+                        checked={robot.stealthInvoices}
+                        onChange={() => setStealthInvoice(!robot.stealthInvoices)}
                       />
                     }
                   />
@@ -335,7 +333,7 @@ const ProfileDialog = ({
                 <ListItemText secondary={t('Share to earn 100 Sats per trade')}>
                   <TextField
                     label={t('Your referral link')}
-                    value={host + '/ref/' + referralCode}
+                    value={host + '/ref/' + robot.referralCode}
                     size='small'
                     InputProps={{
                       endAdornment: (
@@ -363,12 +361,12 @@ const ProfileDialog = ({
                   <ListItemText secondary={t('Your earned rewards')}>
                     <Grid container>
                       <Grid item xs={9}>
-                        <Typography>{`${earnedRewards} Sats`}</Typography>
+                        <Typography>{`${robot.earnedRewards} Sats`}</Typography>
                       </Grid>
 
                       <Grid item xs={3}>
                         <Button
-                          disabled={earnedRewards === 0}
+                          disabled={robot.earnedRewards === 0}
                           onClick={() => setOpenClaimRewards(true)}
                           variant='contained'
                           size='small'
@@ -386,7 +384,7 @@ const ProfileDialog = ({
                           error={!!badInvoice}
                           helperText={badInvoice || ''}
                           label={t('Invoice for {{amountSats}} Sats', {
-                            amountSats: earnedRewards,
+                            amountSats: robot.earnedRewards,
                           })}
                           size='small'
                           value={rewardInvoice}

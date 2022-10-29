@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useTheme, styled, Grid, IconButton } from '@mui/material';
-import { Info } from '../../models';
+import React, { useEffect } from 'react';
+import { Info, Robot } from '../../models';
 import {
   CommunityDialog,
   CoordinatorSummaryDialog,
   InfoDialog,
   LearnDialog,
+  ProfileDialog,
   StatsDialog,
   UpdateClientDialog,
 } from '../../components/Dialogs';
@@ -19,19 +18,26 @@ export interface OpenDialogs {
   coordinator: boolean;
   stats: boolean;
   update: boolean;
+  profile: boolean; // temporary until new Robot Page is ready
 }
 
 interface MainDialogsProps {
   open: OpenDialogs;
   setOpen: (state: OpenDialogs) => void;
   info: Info;
+  robot: Robot;
+  setRobot: (state: Robot) => void;
   closeAll: OpenDialogs;
 }
 
-const MainDialogs = ({ open, setOpen, info, closeAll }: MainDialogsProps): JSX.Element => {
-  const { t } = useTranslation();
-  const theme = useTheme();
-
+const MainDialogs = ({
+  open,
+  setOpen,
+  info,
+  closeAll,
+  robot,
+  setRobot,
+}: MainDialogsProps): JSX.Element => {
   useEffect(() => {
     if (info.openUpdateClient) {
       setOpen({ ...closeAll, update: true });
@@ -82,6 +88,12 @@ const MainDialogs = ({ open, setOpen, info, closeAll }: MainDialogsProps): JSX.E
         commitHash={info.robosats_running_commit_hash}
         lastDayVolume={info.last_day_volume}
         lifetimeVolume={info.lifetime_volume}
+      />
+      <ProfileDialog
+        open={open.profile}
+        onClose={() => setOpen({ ...open, profile: false })}
+        robot={robot}
+        setRobot={setRobot}
       />
     </>
   );

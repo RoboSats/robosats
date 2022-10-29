@@ -7,7 +7,7 @@ import { apiClient } from '../../services/api';
 import placeholder from './placeholder.json';
 
 interface Props {
-  nickname: string;
+  nickname: string | null;
   smooth?: boolean;
   flipHorizontally?: boolean;
   style?: object;
@@ -38,7 +38,7 @@ const RobotAvatar: React.FC<Props> = ({
   const [avatarSrc, setAvatarSrc] = useState<string>();
 
   useEffect(() => {
-    if (nickname) {
+    if (nickname != null) {
       apiClient.fileImageUrl('/static/assets/avatars/' + nickname + '.png').then(setAvatarSrc);
     }
   }, [nickname]);
@@ -92,6 +92,8 @@ const RobotAvatar: React.FC<Props> = ({
           alt={nickname}
           src={avatarSrc}
           imgProps={{
+            sx: { transform: flipHorizontally ? 'scaleX(-1)' : '' },
+            style: { transform: flipHorizontally ? 'scaleX(-1)' : '' },
             onLoad,
           }}
         />

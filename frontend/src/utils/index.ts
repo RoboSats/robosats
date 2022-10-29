@@ -6,6 +6,6 @@ export { default as matchMedian } from './match';
 export { default as pn } from './prettyNumbers';
 export { amountToString } from './prettyNumbers';
 export { default as saveAsJson } from './saveFile';
-export { default as statusBadgeColor } from './saveFile';
+export { default as statusBadgeColor } from './statusBadgeColor';
 export { genBase62Token, tokenStrength } from './token';
 export { default as getWebln } from './webln';

@@ -534,22 +534,23 @@ class UserGenSerializer(serializers.Serializer):
         required=True,
         help_text="SHA256 of user secret",
     )
+    # Optional fields
+    # (PGP keys are mandatory for new users, but optional for logins)
     public_key = serializers.CharField(
         max_length=2000,
         allow_null=False,
         allow_blank=False,
-        required=True,
+        required=False,
         help_text="Armored ASCII PGP public key block",
     )
     encrypted_private_key = serializers.CharField(
         max_length=2000,
         allow_null=False,
         allow_blank=False,
-        required=True,
+        required=False,
         help_text="Armored ASCII PGP encrypted private key block",
     )
 
-    # Optional fields
     ref_code = serializers.CharField(
         max_length=30,
         allow_null=True,

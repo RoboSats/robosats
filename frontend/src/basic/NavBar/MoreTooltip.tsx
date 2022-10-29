@@ -19,24 +19,21 @@ const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
   },
 }));
 
-export interface OpenDialogs {
-  more: boolean;
-  learn: boolean;
-  community: boolean;
-  info: boolean;
-  coordinator: boolean;
-  stats: boolean;
-  update: boolean;
-}
-
 interface MoreTooltipProps {
   open: OpenDialogs;
+  nickname: string | null;
   setOpen: (state: OpenDialogs) => void;
   closeAll: OpenDialogs;
   children: JSX.Element;
 }
 
-const MoreTooltip = ({ open, setOpen, closeAll, children }: MoreTooltipProps): JSX.Element => {
+const MoreTooltip = ({
+  open,
+  setOpen,
+  closeAll,
+  nickname,
+  children,
+}: MoreTooltipProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   return (
@@ -56,7 +53,7 @@ const MoreTooltip = ({ open, setOpen, closeAll, children }: MoreTooltipProps): J
                 sx={{
                   color: open.info ? theme.palette.primary.main : theme.palette.text.secondary,
                 }}
-                onClick={() => setOpen({ ...closeAll, more: true, info: !open.info })}
+                onClick={() => setOpen({ ...closeAll, info: !open.info })}
               >
                 <Info />
               </IconButton>
@@ -69,7 +66,7 @@ const MoreTooltip = ({ open, setOpen, closeAll, children }: MoreTooltipProps): J
                 sx={{
                   color: open.learn ? theme.palette.primary.main : theme.palette.text.secondary,
                 }}
-                onClick={() => setOpen({ ...closeAll, more: true, learn: !open.learn })}
+                onClick={() => setOpen({ ...closeAll, learn: !open.learn })}
               >
                 <School />
               </IconButton>
@@ -86,7 +83,7 @@ const MoreTooltip = ({ open, setOpen, closeAll, children }: MoreTooltipProps): J
                 sx={{
                   color: open.community ? theme.palette.primary.main : theme.palette.text.secondary,
                 }}
-                onClick={() => setOpen({ ...closeAll, more: true, community: !open.community })}
+                onClick={() => setOpen({ ...closeAll, community: !open.community })}
               >
                 <People />
               </IconButton>
@@ -101,7 +98,7 @@ const MoreTooltip = ({ open, setOpen, closeAll, children }: MoreTooltipProps): J
                     ? theme.palette.primary.main
                     : theme.palette.text.secondary,
                 }}
-                onClick={() => setOpen({ ...closeAll, more: true, coordinator: !open.coordinator })}
+                onClick={() => setOpen({ ...closeAll, coordinator: !open.coordinator })}
               >
                 <PriceChange />
               </IconButton>
@@ -114,7 +111,7 @@ const MoreTooltip = ({ open, setOpen, closeAll, children }: MoreTooltipProps): J
                 sx={{
                   color: open.stats ? theme.palette.primary.main : theme.palette.text.secondary,
                 }}
-                onClick={() => setOpen({ ...closeAll, more: true, stats: !open.stats })}
+                onClick={() => setOpen({ ...closeAll, stats: !open.stats })}
               >
                 <BubbleChart />
               </IconButton>

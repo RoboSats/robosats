@@ -10,8 +10,6 @@ import {
   CircularProgress,
   IconButton,
 } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { InfoDialog } from '../components/Dialogs';
 
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CasinoIcon from '@mui/icons-material/Casino';
@@ -72,6 +70,7 @@ class UserGenPage extends Component {
         ref_code: refCode,
       };
     });
+    requestBody.then((body) => console.log(body));
     requestBody.then((body) =>
       apiClient.post('/api/user/', body).then((data) => {
         this.setState({ found: data.found, bad_request: data.bad_request });
@@ -87,6 +86,9 @@ class UserGenPage extends Component {
               earnedRewards: data.earned_rewards ?? this.props.eartnedRewards,
               lastOrderId: data.last_order_id ?? this.props.lastOrderId,
               stealthInvoices: data.wants_stealth ?? this.props.stealthInvoices,
+              tgEnabled: data.tg_enabled,
+              tgBotName: data.tg_bot_name,
+              tgToken: data.tg_token,
             })
           : this.props.setRobot({
               ...this.props.robot,
@@ -358,36 +360,6 @@ class UserGenPage extends Component {
               </div>
             </Tooltip>
           )}
-        </Grid>
-        <Grid item xs={12} align='center'>
-          <ButtonGroup variant='contained' aria-label='outlined primary button group'>
-            <Button
-              disabled={
-                this.props.robot.loading ||
-                !(this.props.robot.token
-                  ? systemClient.getCookie('robot_token') === this.props.robot.token
-                  : true)
-              }
-              color='primary'
-              to='/make/'
-              component={Link}
-            >
-              {t('Make Order')}
-            </Button>
-            <Button
-              disabled={
-                this.props.robot.loading ||
-                !(this.props.robot.token
-                  ? systemClient.getCookie('robot_token') == this.props.robot.token
-                  : true)
-              }
-              color='secondary'
-              to='/book/'
-              component={Link}
-            >
-              {t('View Book')}
-            </Button>
-          </ButtonGroup>
         </Grid>
 
         <Grid item xs={12} align='center' sx={{ width: '26.43em' }}>

@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { Settings } from '../../models';
 import SelectLanguage from './SelectLanguage';
-import { Language, Palette, LightMode, DarkMode, FormatSize } from '@mui/icons-material';
+import { Language, Palette, LightMode, DarkMode, SettingsOverscan } from '@mui/icons-material';
 
 interface SettingsFormProps {
   dense?: boolean;
@@ -113,7 +113,7 @@ const SettingsForm = ({ dense = false, settings, setSettings }: SettingsFormProp
 
           <ListItem>
             <ListItemIcon>
-              <FormatSize />
+              <SettingsOverscan />
             </ListItemIcon>
             <Slider
               value={settings.fontSize}
