@@ -10,9 +10,7 @@ import SettingsPage from './SettingsPage';
 import NavBar, { Page } from './NavBar';
 import MainDialogs, { OpenDialogs } from './MainDialogs';
 
-import { apiClient } from '../services/api';
-import { checkVer } from '../utils';
-
+import RobotAvatar from '../components/RobotAvatar';
 import {
   Book,
   LimitList,
@@ -24,9 +22,14 @@ import {
   defaultMaker,
   defaultRobot,
   defaultInfo,
+  Coordinator,
 } from '../models';
+
+import { apiClient } from '../services/api';
+import { checkVer } from '../utils';
 import { sha256 } from 'js-sha256';
-import RobotAvatar from '../components/RobotAvatar';
+
+import defaultCoordinators from '../../static/federation.json';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -56,6 +59,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const [robot, setRobot] = useState<Robot>(defaultRobot);
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
+  const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });
 
   const theme = useTheme();
@@ -133,13 +137,17 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   };
 
   const fetchInfo = function () {
-    apiClient.get('/api/info/').then((data: any) => {
+    apiClient.get('/api/info/').then((data: Info) => {
       const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
       setInfo({
         ...data,
         openUpdateClient: versionInfo.updateAvailable,
         coordinatorVersion: versionInfo.coordinatorVersion,
         clientVersion: versionInfo.clientVersion,
+      });
+      setSettings({
+        ...settings,
+        network: data.network,
       });
     });
   };

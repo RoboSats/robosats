@@ -42,7 +42,7 @@ const App = (): JSX.Element => {
 
   useEffect(() => {
     updateTheme();
-  }, [settings]);
+  }, [settings.fontSize, settings.mode]);
 
   useEffect(() => {
     i18n.changeLanguage(settings.language);

@@ -12,7 +12,9 @@ export interface Coordinator {
     website: string | undefined;
   };
   mainnetOnion: string | undefined;
+  mainnetClearnet: string | undefined;
   testnetOnion: string | undefined;
+  testnetClearnet: string | undefined;
   mainnetNodesPubkeys: string[];
   testnetNodesPubkeys: string[];
 }

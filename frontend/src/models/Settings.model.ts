@@ -1,6 +1,23 @@
 import i18n from '../i18n/Web';
 import type Coordinator from './Coordinator.model';
-import type Language from './Language.model';
+
+export type Language =
+  | 'en'
+  | 'es'
+  | 'ru'
+  | 'de'
+  | 'pl'
+  | 'fr'
+  | 'ca'
+  | 'it'
+  | 'pt'
+  | 'eu'
+  | 'cs'
+  | 'th'
+  | 'pl'
+  | 'sv'
+  | 'zh-SI'
+  | 'zh-TR';
 
 export interface Settings {
   frontend: 'basic' | 'pro';

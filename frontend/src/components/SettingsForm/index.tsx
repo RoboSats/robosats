@@ -11,31 +11,25 @@ import {
   ListItemIcon,
   Slider,
   Typography,
+  ToggleButtonGroup,
+  ToggleButton,
 } from '@mui/material';
 import { Settings } from '../../models';
 import SelectLanguage from './SelectLanguage';
-import { Language, Palette, LightMode, DarkMode, SettingsOverscan } from '@mui/icons-material';
+import {
+  Translate,
+  Palette,
+  LightMode,
+  DarkMode,
+  SettingsOverscan,
+  Link,
+} from '@mui/icons-material';
 
 interface SettingsFormProps {
   dense?: boolean;
   settings: Settings;
   setSettings: (state: Settings) => void;
 }
-
-const fontSizesBasic = [
-  { label: 'XS', value: 12 },
-  { label: 'S', value: 13 },
-  { label: 'M', value: 14 },
-  { label: 'L', value: 15 },
-  { label: 'XL', value: 16 },
-];
-const fontSizesPro = [
-  { label: 'XS', value: 10 },
-  { label: 'S', value: 11 },
-  { label: 'M', value: 12 },
-  { label: 'L', value: 13 },
-  { label: 'XL', value: 14 },
-];
 
 const SettingsForm = ({ dense = false, settings, setSettings }: SettingsFormProps): JSX.Element => {
   const theme = useTheme();
@@ -54,7 +48,7 @@ const SettingsForm = ({ dense = false, settings, setSettings }: SettingsFormProp
         <List dense={dense}>
           <ListItem>
             <ListItemIcon>
-              <Language />
+              <Translate />
             </ListItemIcon>
             <SelectLanguage
               language={settings.language}
@@ -128,6 +122,24 @@ const SettingsForm = ({ dense = false, settings, setSettings }: SettingsFormProp
               }))}
               track={false}
             />
+          </ListItem>
+
+          <ListItem>
+            <ListItemIcon>
+              <Link />
+            </ListItemIcon>
+            <ToggleButtonGroup
+              exclusive={true}
+              value={settings.network}
+              onChange={(e, value) => setSettings({ ...settings, network: value })}
+            >
+              <ToggleButton value='mainnet' color='primary'>
+                {t('Mainnet')}
+              </ToggleButton>
+              <ToggleButton value='testnet' color='secondary'>
+                {t('Testnet')}
+              </ToggleButton>
+            </ToggleButtonGroup>
           </ListItem>
         </List>
       </Grid>
