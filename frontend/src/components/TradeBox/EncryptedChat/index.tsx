@@ -27,6 +27,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import CircularProgress from '@mui/material/CircularProgress';
 import KeyIcon from '@mui/icons-material/Key';
 import { ExportIcon } from '../../Icons';
+import { useTheme } from '@mui/system';
 
 interface Props {
   orderId: number;
@@ -44,6 +45,8 @@ interface EncryptedChatMessage {
 
 const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Element => {
   const { t } = useTranslation();
+  const theme = useTheme();
+
   const audio = new Audio(`/static/assets/sounds/chat-open.mp3`);
   const [connected, setConnected] = useState<boolean>(false);
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
@@ -232,7 +235,7 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
     return (
       <Card elevation={5}>
         <CardHeader
-          sx={{ color: '#333333' }}
+          sx={{ color: theme.palette.text.secondary }}
           avatar={
             <RobotAvatar
               statusColor={userConnected ? 'success' : 'error'}
@@ -259,23 +262,28 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
                   alignItems: 'center',
                   flexWrap: 'wrap',
                   position: 'relative',
-                  left: -5,
-                  width: 240,
+                  left: '-0.35em',
+                  width: '17.14em',
                 }}
               >
                 <div
-                  style={{ width: 168, display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}
+                  style={{
+                    width: '11.78em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}
                 >
                   {message.userNick}
                   {message.validSignature ? (
-                    <CheckIcon sx={{ height: 16 }} color='success' />
+                    <CheckIcon sx={{ height: '0.8em' }} color='success' />
                   ) : (
-                    <CloseIcon sx={{ height: 16 }} color='error' />
+                    <CloseIcon sx={{ height: '0.8em' }} color='error' />
                   )}
                 </div>
-                <div style={{ width: 20 }}>
+                <div style={{ width: '1.4em' }}>
                   <IconButton
-                    sx={{ height: 18, width: 18 }}
+                    sx={{ height: '1.2em', width: '1.2em', position: 'relative', right: '0.15em' }}
                     onClick={() => {
                       const newShowPGP = [...showPGP];
                       newShowPGP[index] = !newShowPGP[index];
@@ -285,24 +293,30 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
                     <VisibilityIcon
                       color={showPGP[index] ? 'primary' : 'inherit'}
                       sx={{
-                        height: 16,
-                        width: 16,
-                        color: showPGP[index] ? 'primary' : '#333333',
+                        height: '0.6em',
+                        width: '0.6em',
+                        color: showPGP[index] ? 'primary' : theme.palette.text.secondary,
                       }}
                     />
                   </IconButton>
                 </div>
-                <div style={{ width: 20 }}>
+                <div style={{ width: '1.4em' }}>
                   <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
                     <IconButton
-                      sx={{ height: 18, width: 18 }}
+                      sx={{ height: '0.8em', width: '0.8em' }}
                       onClick={() =>
                         systemClient.copyToClipboard(
                           showPGP[index] ? message.encryptedMessage : message.plainTextMessage,
                         )
                       }
                     >
-                      <ContentCopy sx={{ height: 16, width: 16, color: '#333333' }} />
+                      <ContentCopy
+                        sx={{
+                          height: '0.7em',
+                          width: '0.7em',
+                          color: theme.palette.text.secondary,
+                        }}
+                      />
                     </IconButton>
                   </Tooltip>
                 </div>
@@ -323,9 +337,11 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
           subheaderTypographyProps={{
             sx: {
               wordWrap: 'break-word',
-              width: '200px',
-              color: '#444444',
-              fontSize: showPGP[index] ? 11 : null,
+              width: '14.3em',
+              position: 'relative',
+              right: '1.5em',
+              textAlign: 'left',
+              fontSize: showPGP[index] ? theme.typography.fontSize * 0.78 : null,
             },
           }}
         />
@@ -333,16 +349,18 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
     );
   };
 
+  const connectedColor = theme.palette.mode === 'light' ? '#b5e3b7' : '#153717';
+  const connectedTextColor = theme.palette.getContrastText(connectedColor);
+  const ownCardColor = theme.palette.mode === 'light' ? '#d1e6fa' : '#082745';
+  const peerCardColor = theme.palette.mode === 'light' ? '#f2d5f6' : '#380d3f';
+
   return (
     <Container component='main'>
       <Grid container spacing={0.5}>
         <Grid item xs={0.3} />
         <Grid item xs={5.5}>
-          <Paper
-            elevation={1}
-            style={connected ? { backgroundColor: '#e8ffe6' } : { backgroundColor: '#FFF1C5' }}
-          >
-            <Typography variant='caption' sx={{ color: '#333333' }}>
+          <Paper elevation={1} sx={connected ? { backgroundColor: connectedColor } : {}}>
+            <Typography variant='caption' sx={{ color: connectedTextColor }}>
               {t('You') + ': '}
               {connected ? t('connected') : t('disconnected')}
             </Typography>
@@ -350,11 +368,8 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
         </Grid>
         <Grid item xs={0.4} />
         <Grid item xs={5.5}>
-          <Paper
-            elevation={1}
-            style={peerConnected ? { backgroundColor: '#e8ffe6' } : { backgroundColor: '#FFF1C5' }}
-          >
-            <Typography variant='caption' sx={{ color: '#333333' }}>
+          <Paper elevation={1} sx={peerConnected ? { backgroundColor: connectedColor } : {}}>
+            <Typography variant='caption' sx={{ color: connectedTextColor }}>
               {t('Peer') + ': '}
               {peerConnected ? t('connected') : t('disconnected')}
             </Typography>
@@ -362,22 +377,22 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
         </Grid>
         <Grid item xs={0.3} />
       </Grid>
-      <div style={{ position: 'relative', left: '-2px', margin: '0 auto', width: '285px' }}>
+      <div style={{ position: 'relative', left: '-0.14em', margin: '0 auto', width: '17.7em' }}>
         <Paper
           elevation={1}
           style={{
-            height: '300px',
-            maxHeight: '300px',
-            width: '285px',
+            height: '21.42em',
+            maxHeight: '21.42em',
+            width: '17.7em',
             overflow: 'auto',
-            backgroundColor: '#F7F7F7',
+            backgroundColor: theme.palette.background.paper,
           }}
         >
           {messages.map((message, index) => (
             <li style={{ listStyleType: 'none' }} key={index}>
               {message.userNick == userNick
-                ? messageCard(message, index, '#eeeeee', connected)
-                : messageCard(message, index, '#fafafa', peerConnected)}
+                ? messageCard(message, index, ownCardColor, connected)
+                : messageCard(message, index, peerCardColor, peerConnected)}
             </li>
           ))}
           <div
@@ -405,12 +420,12 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
                 onChange={(e) => {
                   setValue(e.target.value);
                 }}
-                sx={{ width: 219 }}
+                sx={{ width: '13.7em' }}
               />
             </Grid>
             <Grid item alignItems='stretch' style={{ display: 'flex' }}>
               <Button
-                sx={{ width: 68 }}
+                sx={{ width: '4.68em' }}
                 disabled={!connected || waitingEcho || !peerPubKey}
                 type='submit'
                 variant='contained'
@@ -422,17 +437,17 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
                       display: 'flex',
                       alignItems: 'center',
                       flexWrap: 'wrap',
-                      minWidth: 68,
-                      width: 68,
+                      minWidth: '4.68em',
+                      width: '4.68em',
                       position: 'relative',
-                      left: 15,
+                      left: '1em',
                     }}
                   >
-                    <div style={{ width: 20 }}>
-                      <KeyIcon sx={{ width: 18 }} />
+                    <div style={{ width: '1.2em' }}>
+                      <KeyIcon sx={{ width: '1em' }} />
                     </div>
-                    <div style={{ width: 18 }}>
-                      <CircularProgress size={16} thickness={5} />
+                    <div style={{ width: '1em', position: 'relative', left: '0.5em' }}>
+                      <CircularProgress size={1.1 * theme.typography.fontSize} thickness={5} />
                     </div>
                   </div>
                 ) : (
@@ -444,7 +459,7 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
         </form>
       </div>
 
-      <div style={{ height: 4 }} />
+      <div style={{ height: '0.3em' }} />
 
       <Grid container spacing={0}>
         <AuditPGPDialog
@@ -493,8 +508,8 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
               variant='outlined'
               onClick={() => saveAsJson('complete_log_chat_' + orderId + '.json', createJsonFile())}
             >
-              <div style={{ width: 28, height: 20 }}>
-                <ExportIcon sx={{ width: 20, height: 20 }} />
+              <div style={{ width: '1.4em', height: '1.4em' }}>
+                <ExportIcon sx={{ width: '0.8em', height: '0.8em' }} />
               </div>{' '}
               {t('Export')}{' '}
             </Button>
