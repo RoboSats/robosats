@@ -2,7 +2,7 @@ import WebsocketWebClient from './WebsocketWebClient';
 
 export interface WebsocketConnection {
   send: (message: object) => void;
-  onMessage: (event: (message: object) => void) => void;
+  onMessage: (event: (message: any) => void) => void;
   onClose: (event: () => void) => void;
   onError: (event: () => void) => void;
 }

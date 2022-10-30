@@ -17,7 +17,7 @@ class WebsocketConnectionWeb implements WebsocketConnection {
     );
   };
 
-  public onMessage: (event: (message: object) => void) => void = (event) => {
+  public onMessage: (event: (message: any) => void) => void = (event) => {
     this.rws.addEventListener('message', event);
   };
 
