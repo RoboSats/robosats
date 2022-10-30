@@ -49,11 +49,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: 'Build Android Debug'
-        if: inputs.semver == ''  # Only build debug if this is a pre-release
-        run: |
-          cd mobile/android
-          ./gradlew assembleDebug
+      # - name: 'Build Android Debug'
+      #   if: inputs.semver == ''  # Only build debug if this is a pre-release
+      #   run: |
+      #     cd mobile/android
+      #     ./gradlew assembleDebug
 
       - name: 'Build Android Release'
         run: |
@@ -78,12 +78,12 @@ jobs:
           name: robosats-${{ steps.commit.outputs.short }}.apk
           path: mobile/android/app/build/outputs/apk/release/app-release.apk
 
-      - name: 'Upload .apk Debug Artifact (for Pre-release)'
-        if: inputs.semver == ''  # Only build debug if this is a pre-release
-        uses: actions/upload-artifact@v3
-        with:
-          name: robosats-debug-${{ steps.commit.outputs.short }}.apk
-          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+      # - name: 'Upload .apk Debug Artifact (for Pre-release)'
+      #   if: inputs.semver == ''  # Only build debug if this is a pre-release
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: robosats-debug-${{ steps.commit.outputs.short }}.apk
+      #     path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: 'Create Pre-release'
         id: create_release
