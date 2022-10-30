@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Button,
@@ -12,8 +12,8 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
-import { encryptMessage, decryptMessage } from '../../../utils/pgp';
-import { saveAsJson } from '../../../utils/saveFile';
+import { encryptMessage, decryptMessage } from '../../../pgp';
+import { saveAsJson } from '../../../utils';
 import { AuditPGPDialog } from '../../Dialogs';
 import RobotAvatar from '../../RobotAvatar';
 import { systemClient } from '../../../services/System';
