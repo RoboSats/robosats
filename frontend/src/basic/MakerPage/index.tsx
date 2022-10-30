@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Grid, Paper, Collapse, Typography } from '@mui/material';
+import { Grid, Paper, Collapse, Typography } from '@mui/material';
 
 import { LimitList, Maker, Book, Favorites } from '../../models';
 
@@ -8,6 +8,7 @@ import { filterOrders } from '../../utils';
 
 import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
+
 import { Page } from '../NavBar';
 
 interface MakerPageProps {
@@ -97,11 +98,13 @@ const MakerPage = ({
               setOrder(id);
               setPage('order');
             }}
+            hasRobot={hasRobot}
             disableRequest={matches.length > 0 && !showMatches}
             collapseAll={showMatches}
             onSubmit={() => setShowMatches(matches.length > 0)}
             onReset={() => setShowMatches(false)}
             submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
+            setPage={setPage}
           />
         </Paper>
       </Grid>

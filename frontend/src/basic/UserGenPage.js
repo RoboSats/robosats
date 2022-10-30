@@ -70,10 +70,16 @@ class UserGenPage extends Component {
         ref_code: refCode,
       };
     });
-    requestBody.then((body) => console.log(body));
     requestBody.then((body) =>
       apiClient.post('/api/user/', body).then((data) => {
         this.setState({ found: data.found, bad_request: data.bad_request });
+        this.props.setOrder(
+          data.active_order_id
+            ? data.active_order_id
+            : data.last_order_id
+            ? data.last_order_id
+            : this.props.order,
+        );
         // Add nick and token to App state (token only if not a bad request)
         data.bad_request
           ? this.props.setRobot({

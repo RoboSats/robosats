@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Typography, Grid, ButtonGroup, Dialog, Box } from '@mui/material';
+import { Button, Grid, ButtonGroup, Dialog, Box } from '@mui/material';
 import { useHistory } from 'react-router-dom';
 import DepthChart from '../../components/Charts/DepthChart';
 
+import { NoRobotDialog } from '../../components/Dialogs';
+import MakerForm from '../../components/MakerForm';
+import BookTable from '../../components/BookTable';
+import { Page } from '../NavBar';
 import { Book, Favorites, LimitList, Maker } from '../../models';
 
 // Icons
 import { BarChart, FormatListBulleted } from '@mui/icons-material';
-import MakerForm from '../../components/MakerForm';
-import BookTable from '../../components/BookTable';
 
 interface BookPageProps {
   book: Book;
@@ -22,6 +24,9 @@ interface BookPageProps {
   lastDayPremium: number;
   maker: Maker;
   setMaker: (state: Maker) => void;
+  hasRobot: boolean;
+  setPage: (state: Page) => void;
+  setOrder: (state: number) => void;
 }
 
 const BookPage = ({
@@ -35,11 +40,15 @@ const BookPage = ({
   maker,
   setMaker,
   windowSize,
+  hasRobot = false,
+  setPage = () => null,
+  setOrder = () => null,
 }: BookPageProps): JSX.Element => {
   const { t } = useTranslation();
   const history = useHistory();
   const [view, setView] = useState<'list' | 'depth'>('list');
   const [openMaker, setOpenMaker] = useState<boolean>(false);
+  const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
 
   const doubleView = windowSize.width > 115;
   const width = windowSize.width * 0.9;
@@ -61,6 +70,16 @@ const BookPage = ({
 
   const handleTypeChange = function (mouseEvent, val) {
     setFav({ ...fav, type: val });
+  };
+
+  const onOrderClicked = function (id: number) {
+    if (hasRobot) {
+      history.push('/order/' + id);
+      setPage('order');
+      setOrder(id);
+    } else {
+      setOpenNoRobot(true);
+    }
   };
 
   const NavButtons = function () {
@@ -93,6 +112,7 @@ const BookPage = ({
   };
   return (
     <Grid container direction='column' alignItems='center' spacing={1} sx={{ minWidth: 400 }}>
+      <NoRobotDialog open={openNoRobot} onClose={() => setOpenNoRobot(false)} setPage={setPage} />
       {openMaker ? (
         <Dialog open={openMaker} onClose={() => setOpenMaker(false)}>
           <Box sx={{ maxWidth: '18em', padding: '0.5em' }}>
@@ -103,6 +123,8 @@ const BookPage = ({
               setMaker={setMaker}
               fav={fav}
               setFav={setFav}
+              setPage={setPage}
+              hasRobot={hasRobot}
             />
           </Box>
         </Dialog>
@@ -130,6 +152,7 @@ const BookPage = ({
                 defaultFullscreen={false}
                 onCurrencyChange={handleCurrencyChange}
                 onTypeChange={handleTypeChange}
+                onOrderClicked={onOrderClicked}
               />
             </Grid>
             <Grid item>
@@ -164,6 +187,7 @@ const BookPage = ({
             defaultFullscreen={false}
             onCurrencyChange={handleCurrencyChange}
             onTypeChange={handleTypeChange}
+            onOrderClicked={onOrderClicked}
           />
         )}
       </Grid>

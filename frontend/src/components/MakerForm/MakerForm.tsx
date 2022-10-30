@@ -29,7 +29,7 @@ import { LimitList, Maker, Favorites, defaultMaker } from '../../models';
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { useHistory } from 'react-router-dom';
-import { StoreTokenDialog, NoRobotDialog } from '../Dialogs';
+import { StoreTokenDialog, NoRobotDialog, ConfirmationDialog } from '../Dialogs';
 import { apiClient } from '../../services/api';
 import { systemClient } from '../../services/System';
 
@@ -41,6 +41,7 @@ import { pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
+import { Page } from '../../basic/NavBar';
 
 interface MakerFormProps {
   limits: { list: LimitList; loading: boolean };
@@ -56,6 +57,8 @@ interface MakerFormProps {
   onReset?: () => void;
   submitButtonLabel?: string;
   onOrderCreated?: (id: number) => void;
+  hasRobot?: boolean;
+  setPage?: (state: Page) => void;
 }
 
 const MakerForm = ({
@@ -72,6 +75,8 @@ const MakerForm = ({
   onReset = () => {},
   submitButtonLabel = 'Create Order',
   onOrderCreated = () => null,
+  hasRobot = true,
+  setPage = () => null,
 }: MakerFormProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -423,23 +428,15 @@ const MakerForm = ({
     );
   };
 
-  const ConfirmationDialogs = function () {
-    return systemClient.getCookie('robot_token') ? (
-      <StoreTokenDialog
-        open={openDialogs}
-        onClose={() => setOpenDialogs(false)}
-        onClickCopy={() => systemClient.copyToClipboard(systemClient.getCookie('robot_token'))}
-        copyIconColor={'primary'}
-        onClickBack={() => setOpenDialogs(false)}
-        onClickDone={handleCreateOrder}
-      />
-    ) : (
-      <NoRobotDialog open={openDialogs} onClose={() => setOpenDialogs(false)} />
-    );
-  };
   return (
     <Box>
-      <ConfirmationDialogs />
+      <ConfirmationDialog
+        open={openDialogs}
+        onClose={() => setOpenDialogs(false)}
+        setPage={setPage}
+        onClickDone={handleCreateOrder}
+        hasRobot={hasRobot}
+      />
       <Collapse in={limits.list.length == 0}>
         <div style={{ display: limits.list.length == 0 ? '' : 'none' }}>
           <LinearProgress />

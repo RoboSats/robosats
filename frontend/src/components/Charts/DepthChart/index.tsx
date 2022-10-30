@@ -36,7 +36,7 @@ interface DepthChartProps {
   maxWidth: number;
   maxHeight: number;
   fillContainer?: boolean;
-  elevation: number;
+  elevation?: number;
 }
 
 const DepthChart: React.FC<DepthChartProps> = ({

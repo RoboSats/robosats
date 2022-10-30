@@ -60,9 +60,14 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
 
   const theme = useTheme();
   const history = useHistory();
+
   const Router = window.NativeRobosats != null ? HashRouter : BrowserRouter;
   const basename = window.NativeRobosats != null ? window.location.pathname : '';
-  const [page, setPage] = useState<Page>(window.location.pathname.split('/')[1]);
+  const [page, setPage] = useState<Page>(
+    window.location.pathname.split('/')[1] == ''
+      ? 'offers'
+      : window.location.pathname.split('/')[1],
+  );
   const [slideDirection, setSlideDirection] = useState<SlideDirection>({
     in: undefined,
     out: undefined,
@@ -145,7 +150,6 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     };
 
     apiClient.post('/api/user/', requestBody).then((data: any) => {
-      console.log(data);
       setOrder(
         data.active_order_id
           ? data.active_order_id
@@ -182,12 +186,14 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     }
   }, []);
 
+  console.log(page);
+
   return (
     <Router basename={basename}>
       {/* load robot avatar image, set avatarLoaded: true */}
       <RobotAvatar
         style={{ display: 'none' }}
-        nickname={robot.avatarLoaded ? robot.nickname : null}
+        nickname={robot.nickname}
         onLoad={() => setRobot({ ...robot, avatarLoaded: true })}
       />
       <Box
@@ -200,32 +206,29 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
       >
         <Switch>
           <Route
-            exact
-            path='/'
-            render={(props: any) => (
-              <UserGenPage
-                setPage={setPage}
-                match={props.match}
-                theme={theme}
-                robot={robot}
-                setRobot={setRobot}
-              />
-            )}
-          />
-          <Route
             path='/robot/:refCode?'
             render={(props: any) => (
-              <UserGenPage
-                setPage={setPage}
-                match={props.match}
-                theme={theme}
-                robot={robot}
-                setRobot={setRobot}
-              />
+              <Slide
+                direction={page === 'robot' ? slideDirection.in : slideDirection.out}
+                in={page === 'robot'}
+                appear={slideDirection.in != undefined}
+              >
+                <div>
+                  <UserGenPage
+                    setPage={setPage}
+                    order={order}
+                    setOrder={setOrder}
+                    match={props.match}
+                    theme={theme}
+                    robot={robot}
+                    setRobot={setRobot}
+                  />
+                </div>
+              </Slide>
             )}
           />
 
-          <Route path='/offers'>
+          <Route exact path={['/offers', '/']}>
             <Slide
               direction={page === 'offers' ? slideDirection.in : slideDirection.out}
               in={page === 'offers'}
@@ -244,6 +247,8 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                   lastDayPremium={info.last_day_nonkyc_btc_premium}
                   windowSize={windowSize}
                   hasRobot={robot.avatarLoaded}
+                  setPage={setPage}
+                  setOrder={setOrder}
                 />
               </div>
             </Slide>
@@ -275,7 +280,17 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
 
           <Route
             path='/order/:orderId'
-            render={(props: any) => <OrderPage theme={theme} history={history} {...props} />}
+            render={(props: any) => (
+              <Slide
+                direction={page === 'order' ? slideDirection.in : slideDirection.out}
+                in={page === 'order'}
+                appear={slideDirection.in != undefined}
+              >
+                <div>
+                  <OrderPage theme={theme} history={history} {...props} />
+                </div>
+              </Slide>
+            )}
           />
 
           <Route path='/settings'>
@@ -296,7 +311,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         </Switch>
       </Box>
       <NavBar
-        nickname={robot.nickname}
+        nickname={robot.avatarLoaded ? robot.nickname : null}
         width={windowSize.width}
         height={navbarHeight}
         page={page}

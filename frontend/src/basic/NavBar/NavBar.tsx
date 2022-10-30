@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
-import { Tabs, Tab, Paper, useTheme } from '@mui/material';
+import { Tabs, Tab, Paper, useTheme, Tooltip } from '@mui/material';
 import MoreTooltip from './MoreTooltip';
 
 import { OpenDialogs } from '../MainDialogs';
@@ -24,7 +24,6 @@ interface NavBarProps {
   page: Page;
   nickname?: string | null;
   setPage: (state: Page) => void;
-  slideDirection: { in: Direction; out: Direction };
   setSlideDirection: (state: { in: Direction; out: Direction }) => void;
   width: number;
   height: number;
@@ -38,7 +37,6 @@ interface NavBarProps {
 const NavBar = ({
   page,
   setPage,
-  slideDirection,
   setSlideDirection,
   open,
   nickname = null,
@@ -53,8 +51,6 @@ const NavBar = ({
   const { t } = useTranslation();
   const history = useHistory();
   const smallBar = width < 50;
-
-  const [newPage, setNewPage] = useState<Page>(history.location.pathname.split('/')[1]);
 
   const tabSx = smallBar
     ? { position: 'relative', bottom: nickname ? '0.8em' : '0em', minWidth: '1em' }
@@ -80,7 +76,7 @@ const NavBar = ({
       return null;
     } else {
       handleSlideDirection(page, newPage);
-      setNewPage(newPage);
+      setPage(newPage);
       const param = newPage === 'order' ? order ?? '' : '';
       setTimeout(
         () => history.push(`/${newPage}/${param}`),
@@ -88,10 +84,6 @@ const NavBar = ({
       );
     }
   };
-
-  useEffect(() => {
-    setPage(newPage);
-  }, [slideDirection, newPage]);
 
   useEffect(() => {
     setOpen(closeAll);
@@ -151,7 +143,7 @@ const NavBar = ({
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!hasRobot}
+          disabled={!hasRobot || order == null}
           icon={<Assignment />}
           iconPosition='start'
         />
@@ -168,6 +160,7 @@ const NavBar = ({
           label={smallBar ? undefined : t('More')}
           value='none'
           onClick={(e) => {
+            console.log(e);
             open.more ? null : setOpen({ ...open, more: true });
           }}
           icon={
