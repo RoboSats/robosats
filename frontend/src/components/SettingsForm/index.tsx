@@ -29,9 +29,15 @@ interface SettingsFormProps {
   dense?: boolean;
   settings: Settings;
   setSettings: (state: Settings) => void;
+  network?: boolean;
 }
 
-const SettingsForm = ({ dense = false, settings, setSettings }: SettingsFormProps): JSX.Element => {
+const SettingsForm = ({
+  dense = false,
+  settings,
+  setSettings,
+  network = false,
+}: SettingsFormProps): JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
   const fontSizes = [
@@ -123,24 +129,27 @@ const SettingsForm = ({ dense = false, settings, setSettings }: SettingsFormProp
               track={false}
             />
           </ListItem>
-
-          <ListItem>
-            <ListItemIcon>
-              <Link />
-            </ListItemIcon>
-            <ToggleButtonGroup
-              exclusive={true}
-              value={settings.network}
-              onChange={(e, value) => setSettings({ ...settings, network: value })}
-            >
-              <ToggleButton value='mainnet' color='primary'>
-                {t('Mainnet')}
-              </ToggleButton>
-              <ToggleButton value='testnet' color='secondary'>
-                {t('Testnet')}
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </ListItem>
+          {network ? (
+            <ListItem>
+              <ListItemIcon>
+                <Link />
+              </ListItemIcon>
+              <ToggleButtonGroup
+                exclusive={true}
+                value={settings.network}
+                onChange={(e, value) => setSettings({ ...settings, network: value })}
+              >
+                <ToggleButton value='mainnet' color='primary'>
+                  {t('Mainnet')}
+                </ToggleButton>
+                <ToggleButton value='testnet' color='secondary'>
+                  {t('Testnet')}
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </ListItem>
+          ) : (
+            <></>
+          )}
         </List>
       </Grid>
     </Grid>

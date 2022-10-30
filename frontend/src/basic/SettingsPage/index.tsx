@@ -22,7 +22,11 @@ const SettingsPage = ({ settings, setSettings, windowSize }: SettingsPageProps):
     >
       <Grid container>
         <Grid item>
-          <SettingsForm settings={settings} setSettings={setSettings} />
+          <SettingsForm
+            settings={settings}
+            setSettings={setSettings}
+            networt={window.NativeRobosats}
+          />
         </Grid>
       </Grid>
     </Paper>

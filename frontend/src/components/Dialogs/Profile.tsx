@@ -4,7 +4,6 @@ import { useTheme } from '@mui/material/styles';
 import { Link as LinkRouter } from 'react-router-dom';
 
 import {
-  Avatar,
   Badge,
   Button,
   CircularProgress,
@@ -102,10 +101,10 @@ const ProfileDialog = ({ open = false, onClose, robot, setRobot }: Props): JSX.E
       .post('/api/reward/', {
         invoice: rewardInvoice,
       })
-      .then((data) => {
-        setBadInvoice(data.bad_invoice);
+      .then((data: any) => {
+        setBadInvoice(data.bad_invoice ?? '');
         setShowRewardsSpinner(false);
-        setWithdrawn(!!data.successful_withdrawal);
+        setWithdrawn(data.successful_withdrawal);
         setOpenClaimRewards(!data.successful_withdrawal);
         setRobot({ ...robot, earnedRewards: data.successful_withdrawal ? 0 : robot.earnedRewards });
       });

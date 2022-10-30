@@ -632,20 +632,22 @@ class UserView(APIView):
             context = {"bad_request": "Invalid serializer"}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
+        # Deprecated
+        #
         # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
-        if request.user.is_authenticated:
-            context = {"nickname": request.user.username}
-            not_participant, _, order = Logics.validate_already_maker_or_taker(
-                request.user
-            )
+        # if request.user.is_authenticated:
+        #     context = {"nickname": request.user.username}
+        #     not_participant, _, order = Logics.validate_already_maker_or_taker(
+        #         request.user
+        #     )
 
-            # Does not allow this 'mistake' if an active order
-            if not not_participant:
-                context["active_order_id"] = order.id
-                context[
-                    "bad_request"
-                ] = f"You are already logged in as {request.user} and have an active order"
-                return Response(context, status.HTTP_400_BAD_REQUEST)
+        #     # Does not allow this 'mistake' if an active order
+        #     if not not_participant:
+        #         context["active_order_id"] = order.id
+        #         context[
+        #             "bad_request"
+        #         ] = f"You are already logged in as {request.user} and have an active order"
+        #         return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # The new way. The token is never sent. Only its SHA256
         token_sha256 = serializer.data.get("token_sha256")

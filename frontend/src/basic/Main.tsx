@@ -101,7 +101,6 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     }
     fetchBook();
     fetchLimits();
-    fetchInfo();
     return () => {
       if (typeof window !== undefined) {
         window.removeEventListener('resize', onResize);
@@ -152,6 +151,10 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     });
   };
 
+  useEffect(() => {
+    fetchInfo();
+  }, [open.stats, open.coordinator]);
+
   const fetchRobot = function () {
     const requestBody = {
       token_sha256: sha256(robot.token),
@@ -193,8 +196,6 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
       fetchRobot();
     }
   }, []);
-
-  console.log(page);
 
   return (
     <Router basename={basename}>

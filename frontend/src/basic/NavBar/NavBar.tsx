@@ -53,7 +53,7 @@ const NavBar = ({
   const smallBar = width < 50;
 
   const tabSx = smallBar
-    ? { position: 'relative', bottom: nickname ? '0.8em' : '0em', minWidth: '1em' }
+    ? { position: 'relative', bottom: nickname ? '1em' : '0em', minWidth: '1em' }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
   const pagesPosition = {
     robot: 1,
@@ -103,12 +103,13 @@ const NavBar = ({
         <Tab
           sx={{ ...tabSx, minWidth: '2.5em', width: '2.5em', maxWidth: '4em' }}
           value='none'
+          disabled={nickname === null}
           onClick={() => setOpen({ ...closeAll, profile: !open.profile })}
           icon={
             nickname ? (
               <RobotAvatar
-                style={{ width: '2.3em', height: '2.3em' }}
-                avatarClass='phoneFlippedSmallAvatar'
+                style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
+                avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
                 nickname={nickname}
               />
             ) : (
@@ -160,7 +161,6 @@ const NavBar = ({
           label={smallBar ? undefined : t('More')}
           value='none'
           onClick={(e) => {
-            console.log(e);
             open.more ? null : setOpen({ ...open, more: true });
           }}
           icon={

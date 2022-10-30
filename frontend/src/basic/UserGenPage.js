@@ -42,7 +42,10 @@ class UserGenPage extends Component {
     // Displays the existing one
     if (this.props.robot.nickname != null) {
       this.setState({ inputToken: this.props.robot.token });
-    } else if (this.props.robot.token) {
+    } else if (
+      this.props.robot.token ||
+      (window.NativeRobosats && systemClient.getCookie('robot_token'))
+    ) {
       this.setState({ inputToken: this.props.robot.token });
       this.getGeneratedUser(this.props.robot.token);
     } else {
