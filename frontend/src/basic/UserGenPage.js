@@ -10,8 +10,6 @@ import {
   CircularProgress,
   IconButton,
 } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { InfoDialog } from '../components/Dialogs';
 
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CasinoIcon from '@mui/icons-material/Casino';
@@ -21,9 +19,8 @@ import DownloadIcon from '@mui/icons-material/Download';
 import { RoboSatsNoTextIcon } from '../components/Icons';
 
 import { sha256 } from 'js-sha256';
-import { genBase62Token, tokenStrength } from '../utils/token';
-import { genKey } from '../utils/pgp';
-import { saveAsJson } from '../utils/saveFile';
+import { genBase62Token, tokenStrength, saveAsJson } from '../utils';
+import { genKey } from '../pgp';
 import { systemClient } from '../services/System';
 import { apiClient } from '../services/api/index';
 import RobotAvatar from '../components/RobotAvatar';
@@ -32,7 +29,6 @@ class UserGenPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      openInfo: false,
       tokenHasChanged: false,
       inputToken: '',
       found: false,
@@ -46,7 +42,10 @@ class UserGenPage extends Component {
     // Displays the existing one
     if (this.props.robot.nickname != null) {
       this.setState({ inputToken: this.props.robot.token });
-    } else if (this.props.robot.token) {
+    } else if (
+      this.props.robot.token ||
+      (window.NativeRobosats && systemClient.getCookie('robot_token'))
+    ) {
       this.setState({ inputToken: this.props.robot.token });
       this.getGeneratedUser(this.props.robot.token);
     } else {
@@ -77,6 +76,13 @@ class UserGenPage extends Component {
     requestBody.then((body) =>
       apiClient.post('/api/user/', body).then((data) => {
         this.setState({ found: data.found, bad_request: data.bad_request });
+        this.props.setOrder(
+          data.active_order_id
+            ? data.active_order_id
+            : data.last_order_id
+            ? data.last_order_id
+            : this.props.order,
+        );
         // Add nick and token to App state (token only if not a bad request)
         data.bad_request
           ? this.props.setRobot({
@@ -89,6 +95,9 @@ class UserGenPage extends Component {
               earnedRewards: data.earned_rewards ?? this.props.eartnedRewards,
               lastOrderId: data.last_order_id ?? this.props.lastOrderId,
               stealthInvoices: data.wants_stealth ?? this.props.stealthInvoices,
+              tgEnabled: data.tg_enabled,
+              tgBotName: data.tg_bot_name,
+              tgToken: data.tg_token,
             })
           : this.props.setRobot({
               ...this.props.robot,
@@ -154,14 +163,6 @@ class UserGenPage extends Component {
       lastOrderId: null,
       activeOrderId: null,
     });
-  };
-
-  handleClickOpenInfo = () => {
-    this.setState({ openInfo: true });
-  };
-
-  handleCloseInfo = () => {
-    this.setState({ openInfo: false });
   };
 
   createJsonFile = () => {
@@ -368,44 +369,6 @@ class UserGenPage extends Component {
               </div>
             </Tooltip>
           )}
-        </Grid>
-        <Grid item xs={12} align='center'>
-          <ButtonGroup variant='contained' aria-label='outlined primary button group'>
-            <Button
-              disabled={
-                this.props.robot.loading ||
-                !(this.props.robot.token
-                  ? systemClient.getCookie('robot_token') === this.props.robot.token
-                  : true)
-              }
-              color='primary'
-              to='/make/'
-              component={Link}
-            >
-              {t('Make Order')}
-            </Button>
-            <Button color='inherit' style={{ color: '#111111' }} onClick={this.handleClickOpenInfo}>
-              {t('Info')}
-            </Button>
-            <InfoDialog
-              open={Boolean(this.state.openInfo)}
-              maxAmount='4,000,000'
-              onClose={this.handleCloseInfo}
-            />
-            <Button
-              disabled={
-                this.props.robot.loading ||
-                !(this.props.robot.token
-                  ? systemClient.getCookie('robot_token') == this.props.robot.token
-                  : true)
-              }
-              color='secondary'
-              to='/book/'
-              component={Link}
-            >
-              {t('View Book')}
-            </Button>
-          </ButtonGroup>
         </Grid>
 
         <Grid item xs={12} align='center' sx={{ width: '26.43em' }}>

@@ -23,12 +23,10 @@ import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import { Order, LimitList } from '../../../models';
 import RobotAvatar from '../../RobotAvatar';
-import { amountToString } from '../../../utils/prettyNumbers';
+import { amountToString, matchMedian, statusBadgeColor } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
 import { PaymentStringAsIcons } from '../../PaymentMethods';
 import getNivoScheme from '../NivoScheme';
-import median from '../../../utils/match';
-import statusBadgeColor from '../../../utils/statusBadgeColor';
 
 interface DepthChartProps {
   orders: Order[];
@@ -38,7 +36,7 @@ interface DepthChartProps {
   maxWidth: number;
   maxHeight: number;
   fillContainer?: boolean;
-  elevation: number;
+  elevation?: number;
 }
 
 const DepthChart: React.FC<DepthChartProps> = ({
@@ -93,7 +91,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
     if (xType === 'base_amount') {
       const prices: number[] = enrichedOrders.map((order) => order?.base_amount || 0);
 
-      const medianValue = ~~median(prices);
+      const medianValue = ~~matchMedian(prices);
       const maxValue = prices.sort((a, b) => b - a).slice(0, 1)[0] || 1500;
       const maxRange = maxValue - medianValue;
       const rangeSteps = maxRange / 10;
@@ -104,7 +102,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
     } else {
       if (lastDayPremium === undefined) {
         const premiums: number[] = enrichedOrders.map((order) => order?.premium || 0);
-        setCenter(~~median(premiums));
+        setCenter(~~matchMedian(premiums));
       } else {
         setCenter(lastDayPremium);
       }
@@ -217,62 +215,60 @@ const DepthChart: React.FC<DepthChartProps> = ({
     />
   );
 
-  // Unkown Bug. Temporarily silenced until cause is found.
-
-  // const generateTooltip: React.FunctionComponent<PointTooltipProps> = (
-  //   pointTooltip: PointTooltipProps,
-  // ) => {
-  //   const order: Order = pointTooltip.point.data.order;
-  //   return order ? (
-  //     <Paper elevation={12} style={{ padding: 10, width: 250 }}>
-  //       <Grid container justifyContent='space-between'>
-  //         <Grid item xs={3}>
-  //           <Grid container justifyContent='center' alignItems='center'>
-  //             <RobotAvatar
-  //               nickname={order.maker_nick}
-  //               orderType={order.type}
-  //               statusColor={statusBadgeColor(order.maker_status)}
-  //               tooltip={t(order.maker_status)}
-  //             />
-  //           </Grid>
-  //         </Grid>
-  //         <Grid item xs={8}>
-  //           <Grid container direction='column' justifyContent='center' alignItems='flex-start'>
-  //             <Box>{order.maker_nick}</Box>
-  //             <Box>
-  //               <Grid
-  //                 container
-  //                 direction='column'
-  //                 justifyContent='flex-start'
-  //                 alignItems='flex-start'
-  //               >
-  //                 <Grid item xs={12}>
-  //                   {amountToString(
-  //                     order.amount,
-  //                     order.has_range,
-  //                     order.min_amount,
-  //                     order.max_amount,
-  //                   )}{' '}
-  //                   {currencyDict[order.currency]}
-  //                 </Grid>
-  //                 <Grid item xs={12}>
-  //                   <PaymentStringAsIcons
-  //                     othersText={t('Others')}
-  //                     verbose={true}
-  //                     size={20}
-  //                     text={order.payment_method}
-  //                   />
-  //                 </Grid>
-  //               </Grid>
-  //             </Box>
-  //           </Grid>
-  //         </Grid>
-  //       </Grid>
-  //     </Paper>
-  //   ) : (
-  //     <></>
-  //   );
-  // };
+  const generateTooltip: React.FunctionComponent<PointTooltipProps> = (
+    pointTooltip: PointTooltipProps,
+  ) => {
+    const order: Order = pointTooltip.point.data.order;
+    return order ? (
+      <Paper elevation={12} style={{ padding: 10, width: 250 }}>
+        <Grid container justifyContent='space-between'>
+          <Grid item xs={3}>
+            <Grid container justifyContent='center' alignItems='center'>
+              <RobotAvatar
+                nickname={order.maker_nick}
+                orderType={order.type}
+                statusColor={statusBadgeColor(order.maker_status)}
+                tooltip={t(order.maker_status)}
+              />
+            </Grid>
+          </Grid>
+          <Grid item xs={8}>
+            <Grid container direction='column' justifyContent='center' alignItems='flex-start'>
+              <Box>{order.maker_nick}</Box>
+              <Box>
+                <Grid
+                  container
+                  direction='column'
+                  justifyContent='flex-start'
+                  alignItems='flex-start'
+                >
+                  <Grid item xs={12}>
+                    {amountToString(
+                      order.amount,
+                      order.has_range,
+                      order.min_amount,
+                      order.max_amount,
+                    )}{' '}
+                    {currencyDict[order.currency]}
+                  </Grid>
+                  <Grid item xs={12}>
+                    <PaymentStringAsIcons
+                      othersText={t('Others')}
+                      verbose={true}
+                      size={20}
+                      text={order.payment_method}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Paper>
+    ) : (
+      <></>
+    );
+  };
 
   const formatAxisX = (value: number): string => {
     if (xType === 'base_amount') {
@@ -364,7 +360,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 useMesh={true}
                 animate={false}
                 crosshairType='cross'
-                // tooltip={generateTooltip}
+                tooltip={generateTooltip}
                 onClick={handleOnClick}
                 axisLeft={{
                   tickSize: 5,

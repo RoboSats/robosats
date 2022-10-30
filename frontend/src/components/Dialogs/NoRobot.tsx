@@ -8,15 +8,24 @@ import {
   DialogContentText,
   Button,
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
+import { Page } from '../../basic/NavBar';
 
 interface Props {
   open: boolean;
   onClose: () => void;
+  setPage: (state: Page) => void;
 }
 
-const NoRobotDialog = ({ open, onClose }: Props): JSX.Element => {
+const NoRobotDialog = ({ open, onClose, setPage }: Props): JSX.Element => {
   const { t } = useTranslation();
+  const history = useHistory();
+
+  const handleClickGenerate = function () {
+    onClose();
+    setPage('robot');
+    history.push('/robot');
+  };
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -24,17 +33,12 @@ const NoRobotDialog = ({ open, onClose }: Props): JSX.Element => {
 
       <DialogContent>
         <DialogContentText>
-          {t('You need to generate a robot avatar in order to become an order maker')}
+          {t('Generate a robot avatar first. Then create your own order.')}
         </DialogContentText>
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose} autoFocus>
-          {t('Go back')}
-        </Button>
-        <Button onClick={onClose} to='/' component={Link}>
-          {t('Generate Robot')}
-        </Button>
+        <Button onClick={handleClickGenerate}>{t('Generate Robot')}</Button>
       </DialogActions>
     </Dialog>
   );

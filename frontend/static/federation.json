@@ -1,21 +1,22 @@
-{
-  "coordinator_1": {
-    "alias": "Maximalist",
-    "description": "Maximalist Robots. P2P for freedom. No trade limits, low fees.",
-    "cover_letter": "Hi! I am Mike. I'm a freedom activist based in TorLand. I have been running LN infrastructure since early 2019, long time FOSS contributor....",
+[
+  {
+    "alias": "Inception",
+    "description": "RoboSats original and experimental coordinator",
+    "coverLetter": "N/A",
     "contact_methods": {
-      "email": "maximalist@bitcoin.p2p",
-      "telegram": "maximalist_robot",
-      ".....": "...."
+      "email": "robosats@protonmail.com",
+      "telegram": "@robosats",
+      "twitter": "@robosats",
+      "matrix": "#robosats:matrix.org",
+      "website": "learn.robosats.com"
     },
-    "color": "#FFFFFF",
-    "mainnet_onion": "robomaxim......onion",
-    "testnet_onion": null,
-    "mainnet_ln_nodes_pubkeys": ["03e96as....", "02aaecc...."],
-    "testnet_ln_nodes_pubkeys": ["0284ff2...."],
-    "logo_svg_200x200": "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" width=\"120\" height=\"120\"> <rect x=\"14\" y=\"23\" width=\"200\" height=\"50\" fill=\"lime\" stroke=\"black\" /> </svg>"
-  },
-  "coordinator_2": {
-    "...": "..."
+    "color": "#9C27B0",
+    "mainnetOnion": "robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
+    "mainnetClearnet": "unsafe.robosats.com",
+    "testnetOnion": "robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+    "testnetClearnet": "unsafe.testnet.robosats.com",
+    "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
+    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"],
+    "logo": "/static/federation/inception.svg"
   }
-}
+]

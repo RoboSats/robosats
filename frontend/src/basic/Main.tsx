@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { HashRouter, BrowserRouter, Switch, Route, useHistory } from 'react-router-dom';
-import { useTheme, IconButton } from '@mui/material';
+import { useTheme, Box, Slide } from '@mui/material';
 
 import UserGenPage from './UserGenPage';
 import MakerPage from './MakerPage';
 import BookPage from './BookPage';
 import OrderPage from './OrderPage';
-import BottomBar from './BottomBar';
-import { LearnDialog } from '../components/Dialogs';
+import SettingsPage from './SettingsPage';
+import NavBar, { Page } from './NavBar';
+import MainDialogs, { OpenDialogs } from './MainDialogs';
 
-import { apiClient } from '../services/api';
-import checkVer from '../utils/checkVer';
-
+import RobotAvatar from '../components/RobotAvatar';
 import {
   Book,
   LimitList,
@@ -23,12 +22,14 @@ import {
   defaultMaker,
   defaultRobot,
   defaultInfo,
+  Coordinator,
 } from '../models';
 
-// Icons
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import SchoolIcon from '@mui/icons-material/School';
+import { apiClient } from '../services/api';
+import { checkVer } from '../utils';
+import { sha256 } from 'js-sha256';
+
+import defaultCoordinators from '../../static/federation.json';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -38,19 +39,17 @@ const getWindowSize = function (fontSize: number) {
   };
 };
 
+interface SlideDirection {
+  in: 'left' | 'right' | undefined;
+  out: 'left' | 'right' | undefined;
+}
+
 interface MainProps {
-  updateTheme: () => void;
   settings: Settings;
   setSettings: (state: Settings) => void;
 }
 
 const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
-  const theme = useTheme();
-  const history = useHistory();
-  const Router = window.NativeRobosats != null ? HashRouter : BrowserRouter;
-  const basename = window.NativeRobosats != null ? window.location.pathname : '';
-  const [openLearn, setOpenLearn] = useState<boolean>(false);
-
   // All app data structured
   const [book, setBook] = useState<Book>({ orders: [], loading: true });
   const [limits, setLimits] = useState<{ list: LimitList; loading: boolean }>({
@@ -60,7 +59,37 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const [robot, setRobot] = useState<Robot>(defaultRobot);
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
+  const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });
+
+  const theme = useTheme();
+  const history = useHistory();
+
+  const Router = window.NativeRobosats != null ? HashRouter : BrowserRouter;
+  const basename = window.NativeRobosats != null ? window.location.pathname : '';
+  const [page, setPage] = useState<Page>(
+    window.location.pathname.split('/')[1] == ''
+      ? 'offers'
+      : window.location.pathname.split('/')[1],
+  );
+  const [slideDirection, setSlideDirection] = useState<SlideDirection>({
+    in: undefined,
+    out: undefined,
+  });
+  const [order, setOrder] = useState<number | null>(null);
+
+  const navbarHeight = 2.5;
+  const closeAll = {
+    more: false,
+    learn: false,
+    community: false,
+    info: false,
+    coordinator: false,
+    stats: false,
+    update: false,
+    profile: false,
+  };
+  const [open, setOpen] = useState<OpenDialogs>(closeAll);
 
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
     getWindowSize(theme.typography.fontSize),
@@ -72,13 +101,16 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     }
     fetchBook();
     fetchLimits();
-    fetchInfo();
     return () => {
       if (typeof window !== undefined) {
         window.removeEventListener('resize', onResize);
       }
     };
   }, []);
+
+  useEffect(() => {
+    setWindowSize(getWindowSize(theme.typography.fontSize));
+  }, [theme.typography.fontSize]);
 
   const onResize = function () {
     setWindowSize(getWindowSize(theme.typography.fontSize));
@@ -104,7 +136,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   };
 
   const fetchInfo = function () {
-    apiClient.get('/api/info/').then((data: any) => {
+    apiClient.get('/api/info/').then((data: Info) => {
       const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
       setInfo({
         ...data,
@@ -112,116 +144,202 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         coordinatorVersion: versionInfo.coordinatorVersion,
         clientVersion: versionInfo.clientVersion,
       });
-      if (!robot.nickname && data.nickname && !robot.loading) {
-        setRobot({
-          ...robot,
-          nickname: data.nickname,
-          loading: false,
-          activeOrderId: data.active_order_id ?? null,
-          lastOrderId: data.last_order_id ?? null,
-          referralCode: data.referral_code,
-          tgEnabled: data.tg_enabled,
-          tgBotName: data.tg_bot_name,
-          tgToken: data.tg_token,
-          earnedRewards: data.earned_rewards ?? 0,
-          stealthInvoices: data.wants_stealth,
-        });
-      }
+      setSettings({
+        ...settings,
+        network: data.network,
+      });
     });
   };
 
+  useEffect(() => {
+    fetchInfo();
+  }, [open.stats, open.coordinator]);
+
+  const fetchRobot = function () {
+    const requestBody = {
+      token_sha256: sha256(robot.token),
+    };
+
+    apiClient.post('/api/user/', requestBody).then((data: any) => {
+      setOrder(
+        data.active_order_id
+          ? data.active_order_id
+          : data.last_order_id
+          ? data.last_order_id
+          : order,
+      );
+      setRobot({
+        ...robot,
+        nickname: data.nickname,
+        token: robot.token,
+        loading: false,
+        avatarLoaded: false,
+        activeOrderId: data.active_order_id ? data.active_order_id : null,
+        lastOrderId: data.last_order_id ? data.last_order_id : null,
+        referralCode: data.referral_code,
+        earnedRewards: data.earned_rewards ?? 0,
+        stealthInvoices: data.wants_stealth,
+        tgEnabled: data.tg_enabled,
+        tgBotName: data.tg_bot_name,
+        tgToken: data.tg_token,
+        bitsEntropy: data.token_bits_entropy,
+        shannonEntropy: data.token_shannon_entropy,
+        pub_key: data.public_key,
+        enc_priv_key: data.encrypted_private_key,
+        copiedToken: data.found ? true : robot.copiedToken,
+      });
+    });
+  };
+
+  useEffect(() => {
+    if (robot.token && robot.nickname === null) {
+      fetchRobot();
+    }
+  }, []);
+
   return (
     <Router basename={basename}>
-      <div className='temporaryUpperIcons'>
-        <LearnDialog open={openLearn} onClose={() => setOpenLearn(false)} />
-        <IconButton
-          color='inherit'
-          sx={{ position: 'fixed', right: '34px', color: 'text.secondary' }}
-          onClick={() => setOpenLearn(true)}
-        >
-          <SchoolIcon />
-        </IconButton>
-        <IconButton
-          color='inherit'
-          sx={{ position: 'fixed', right: '0px', color: 'text.secondary' }}
-          onClick={() =>
-            setSettings({ ...settings, mode: settings.mode === 'dark' ? 'light' : 'dark' })
-          }
-        >
-          {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
-        </IconButton>
-      </div>
-      <div className='appCenter'>
-        <Switch>
-          <Route
-            exact
-            path='/'
-            render={(props: any) => (
-              <UserGenPage match={props.match} theme={theme} robot={robot} setRobot={setRobot} />
-            )}
-          />
-          <Route
-            path='/ref/:refCode'
-            render={(props: any) => (
-              <UserGenPage match={props.match} theme={theme} robot={robot} setRobot={setRobot} />
-            )}
-          />
-          <Route
-            path='/make'
-            render={() => (
-              <MakerPage
-                book={book}
-                limits={limits}
-                fetchLimits={fetchLimits}
-                maker={maker}
-                setMaker={setMaker}
-                fav={fav}
-                setFav={setFav}
-                windowSize={windowSize}
-              />
-            )}
-          />
-          <Route
-            path='/book'
-            render={() => (
-              <BookPage
-                book={book}
-                fetchBook={fetchBook}
-                limits={limits}
-                fetchLimits={fetchLimits}
-                fav={fav}
-                setFav={setFav}
-                maker={maker}
-                setMaker={setMaker}
-                lastDayPremium={info.last_day_nonkyc_btc_premium}
-                windowSize={windowSize}
-              />
-            )}
-          />
-          <Route
-            path='/order/:orderId'
-            render={(props: any) => <OrderPage theme={theme} history={history} {...props} />}
-          />
-        </Switch>
-      </div>
-      <div
+      {/* load robot avatar image, set avatarLoaded: true */}
+      <RobotAvatar
+        style={{ display: 'none' }}
+        nickname={robot.nickname}
+        onLoad={() => setRobot({ ...robot, avatarLoaded: true })}
+      />
+      <Box
         style={{
-          height: '2.5em',
-          position: 'fixed',
-          bottom: 0,
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: `translate(-50%, -50%) translate(0,  -${navbarHeight / 2}em`,
         }}
       >
-        <BottomBar
-          theme={theme}
-          windowSize={windowSize}
-          redirectTo={(location: string) => history.push(location)}
-          robot={robot}
-          setRobot={setRobot}
-          info={info}
-          setInfo={setInfo}
-          fetchInfo={fetchInfo}
-        />
-      </div>
+        <Switch>
+          <Route
+            path='/robot/:refCode?'
+            render={(props: any) => (
+              <Slide
+                direction={page === 'robot' ? slideDirection.in : slideDirection.out}
+                in={page === 'robot'}
+                appear={slideDirection.in != undefined}
+              >
+                <div>
+                  <UserGenPage
+                    setPage={setPage}
+                    order={order}
+                    setOrder={setOrder}
+                    match={props.match}
+                    theme={theme}
+                    robot={robot}
+                    setRobot={setRobot}
+                  />
+                </div>
+              </Slide>
+            )}
+          />
+
+          <Route exact path={['/offers', '/']}>
+            <Slide
+              direction={page === 'offers' ? slideDirection.in : slideDirection.out}
+              in={page === 'offers'}
+              appear={slideDirection.in != undefined}
+            >
+              <div>
+                <BookPage
+                  book={book}
+                  fetchBook={fetchBook}
+                  limits={limits}
+                  fetchLimits={fetchLimits}
+                  fav={fav}
+                  setFav={setFav}
+                  maker={maker}
+                  setMaker={setMaker}
+                  lastDayPremium={info.last_day_nonkyc_btc_premium}
+                  windowSize={windowSize}
+                  hasRobot={robot.avatarLoaded}
+                  setPage={setPage}
+                  setOrder={setOrder}
+                />
+              </div>
+            </Slide>
+          </Route>
+
+          <Route path='/create'>
+            <Slide
+              direction={page === 'create' ? slideDirection.in : slideDirection.out}
+              in={page === 'create'}
+              appear={slideDirection.in != undefined}
+            >
+              <div>
+                <MakerPage
+                  book={book}
+                  limits={limits}
+                  fetchLimits={fetchLimits}
+                  maker={maker}
+                  setMaker={setMaker}
+                  setPage={setPage}
+                  setOrder={setOrder}
+                  fav={fav}
+                  setFav={setFav}
+                  windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}
+                  hasRobot={robot.avatarLoaded}
+                />
+              </div>
+            </Slide>
+          </Route>
+
+          <Route
+            path='/order/:orderId'
+            render={(props: any) => (
+              <Slide
+                direction={page === 'order' ? slideDirection.in : slideDirection.out}
+                in={page === 'order'}
+                appear={slideDirection.in != undefined}
+              >
+                <div>
+                  <OrderPage theme={theme} history={history} {...props} />
+                </div>
+              </Slide>
+            )}
+          />
+
+          <Route path='/settings'>
+            <Slide
+              direction={page === 'settings' ? slideDirection.in : slideDirection.out}
+              in={page === 'settings'}
+              appear={slideDirection.in != undefined}
+            >
+              <div>
+                <SettingsPage
+                  settings={settings}
+                  setSettings={setSettings}
+                  windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}
+                />
+              </div>
+            </Slide>
+          </Route>
+        </Switch>
+      </Box>
+      <NavBar
+        nickname={robot.avatarLoaded ? robot.nickname : null}
+        width={windowSize.width}
+        height={navbarHeight}
+        page={page}
+        setPage={setPage}
+        open={open}
+        setOpen={setOpen}
+        closeAll={closeAll}
+        setSlideDirection={setSlideDirection}
+        order={order}
+        hasRobot={robot.avatarLoaded}
+      />
+      <MainDialogs
+        open={open}
+        setOpen={setOpen}
+        setRobot={setRobot}
+        info={info}
+        robot={robot}
+        closeAll={closeAll}
+      />
     </Router>
   );
 };

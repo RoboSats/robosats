@@ -17,7 +17,13 @@ import {
   defaultInfo,
 } from '../models';
 
-import { PlaceholderWidget, MakerWidget, BookWidget, DepthChartWidget } from '../pro/Widgets';
+import {
+  PlaceholderWidget,
+  MakerWidget,
+  BookWidget,
+  DepthChartWidget,
+  SettingsWidget,
+} from '../pro/Widgets';
 import ToolBar from '../pro/ToolBar';
 import LandingDialog from '../pro/LandingDialog';
 
@@ -100,6 +106,10 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const onResize = function () {
     setWindowSize(getWindowSize(em));
   };
+
+  useEffect(() => {
+    setWindowSize(getWindowSize(theme.typography.fontSize));
+  }, [theme.typography.fontSize]);
 
   const fetchLimits = async () => {
     setLimits({ ...limits, loading: true });
@@ -188,6 +198,9 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
               windowSize={windowSize}
             />
           </div>
+          <div key='Settings'>
+            <SettingsWidget settings={settings} setSettings={setSettings} />
+          </div>
           <div key='Garage'>
             <PlaceholderWidget label='Robot Garage' />
           </div>
@@ -196,9 +209,6 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
           </div>
           <div key='Trade'>
             <PlaceholderWidget label='Trade Box' />
-          </div>
-          <div key='Settings'>
-            <PlaceholderWidget label='Settings' />
           </div>
           <div key='Other'>
             <PlaceholderWidget label='Other' />

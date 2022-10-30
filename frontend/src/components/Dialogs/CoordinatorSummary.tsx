@@ -21,11 +21,11 @@ import PriceChangeIcon from '@mui/icons-material/PriceChange';
 import BookIcon from '@mui/icons-material/Book';
 import LinkIcon from '@mui/icons-material/Link';
 
-import { pn } from '../../utils/prettyNumbers';
+import { pn } from '../../utils';
 
 interface Props {
   open: boolean;
-  handleClickCloseExchangeSummary: () => void;
+  onClose: () => void;
   numPublicBuyOrders: number;
   numPublicSellOrders: number;
   bookLiquidity: number;
@@ -36,9 +36,9 @@ interface Props {
   swapFeeRate: number;
 }
 
-const ExchangeSummaryDialog = ({
+const CoordinatorSummaryDialog = ({
   open = false,
-  handleClickCloseExchangeSummary,
+  onClose,
   numPublicBuyOrders,
   numPublicSellOrders,
   bookLiquidity,
@@ -54,15 +54,10 @@ const ExchangeSummaryDialog = ({
   }
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClickCloseExchangeSummary}
-      aria-labelledby='exchange-summary-title'
-      aria-describedby='exchange-summary-description'
-    >
+    <Dialog open={open} onClose={onClose}>
       <DialogContent>
         <Typography component='h5' variant='h5'>
-          {t('Exchange Summary')}
+          {t('Coordinator Summary')}
         </Typography>
 
         <List dense>
@@ -189,4 +184,4 @@ const ExchangeSummaryDialog = ({
   );
 };
 
-export default ExchangeSummaryDialog;
+export default CoordinatorSummaryDialog;

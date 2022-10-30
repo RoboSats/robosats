@@ -17,10 +17,14 @@ export interface Info {
   taker_fee: number;
   bond_size: number;
   current_swap_fee_rate: number;
+  network: 'mainnet' | 'testnet' | undefined;
   coordinatorVersion: string;
   clientVersion: string;
   openUpdateClient: boolean;
 }
+
+import packageJson from '../../package.json';
+const semver = packageJson.version.split('.');
 
 export const defaultInfo: Info = {
   num_public_buy_orders: 0,
@@ -41,8 +45,9 @@ export const defaultInfo: Info = {
   taker_fee: 0,
   bond_size: 0,
   current_swap_fee_rate: 0,
+  network: undefined,
   coordinatorVersion: 'v?.?.?',
-  clientVersion: 'v?.?.?',
+  clientVersion: `v${semver[0]}.${semver[1]}.${semver[2]}`,
   openUpdateClient: false,
 };
 

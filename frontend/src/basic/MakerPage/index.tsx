@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
-import { Button, Grid, Paper, Collapse, Typography } from '@mui/material';
+import { Grid, Paper, Collapse, Typography } from '@mui/material';
 
 import { LimitList, Maker, Book, Favorites } from '../../models';
 
-import filterOrders from '../../utils/filterOrders';
+import { filterOrders } from '../../utils';
 
 import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
+
+import { Page } from '../NavBar';
 
 interface MakerPageProps {
   limits: { list: LimitList; loading: boolean };
@@ -19,6 +20,9 @@ interface MakerPageProps {
   setFav: (state: Favorites) => void;
   setMaker: (state: Maker) => void;
   windowSize: { width: number; height: number };
+  hasRobot: boolean;
+  setOrder: (state: number) => void;
+  setPage: (state: Page) => void;
 }
 
 const MakerPage = ({
@@ -30,11 +34,13 @@ const MakerPage = ({
   setFav,
   setMaker,
   windowSize,
+  setOrder,
+  setPage,
+  hasRobot = false,
 }: MakerPageProps): JSX.Element => {
   const { t } = useTranslation();
-  const history = useHistory();
 
-  const maxHeight = windowSize.height * 0.85 - 7;
+  const maxHeight = windowSize.height * 0.85 - 3;
   const [showMatches, setShowMatches] = useState<boolean>(false);
 
   const matches = filterOrders({
@@ -74,7 +80,12 @@ const MakerPage = ({
       <Grid item>
         <Paper
           elevation={12}
-          style={{ padding: 8, width: '17.25em', maxHeight: `${maxHeight}em`, overflow: 'auto' }}
+          style={{
+            padding: '0.6em',
+            width: '17.25em',
+            maxHeight: `${maxHeight}em`,
+            overflow: 'auto',
+          }}
         >
           <MakerForm
             limits={limits}
@@ -83,18 +94,19 @@ const MakerPage = ({
             setFav={setFav}
             maker={maker}
             setMaker={setMaker}
+            onOrderCreated={(id) => {
+              setOrder(id);
+              setPage('order');
+            }}
+            hasRobot={hasRobot}
             disableRequest={matches.length > 0 && !showMatches}
             collapseAll={showMatches}
             onSubmit={() => setShowMatches(matches.length > 0)}
             onReset={() => setShowMatches(false)}
             submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
+            setPage={setPage}
           />
         </Paper>
-      </Grid>
-      <Grid item>
-        <Button color='secondary' variant='contained' onClick={() => history.push('/')}>
-          {t('Back')}
-        </Button>
       </Grid>
     </Grid>
   );

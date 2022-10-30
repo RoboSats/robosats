@@ -3,10 +3,13 @@ from django.urls import path
 from .views import basic, pro
 
 urlpatterns = [
-    path("make/", basic),
-    path("book/", basic),
-    path("order/<int:orderId>", basic),
     path("", basic),
-    path("ref/<refCode>", basic),
+    path("create/", basic),
+    path("robot/", basic),
+    path("robot/<refCode>", basic),
+    path("offers/", basic),
+    path("order/<int:orderId>", basic),
+    path("settings/", basic),
+    path("", basic),
     path("pro/", pro),
 ]

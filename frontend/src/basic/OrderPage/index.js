@@ -44,12 +44,10 @@ import ArticleIcon from '@mui/icons-material/Article';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import CheckIcon from '@mui/icons-material/Check';
 
-import { pn } from '../../utils/prettyNumbers';
+import { pn, getWebln, statusBadgeColor } from '../../utils';
 import { systemClient } from '../../services/System';
-import { getWebln } from '../../utils/webln';
 import { apiClient } from '../../services/api';
 import RobotAvatar from '../../components/RobotAvatar';
-import statusBadgeColor from '../../utils/statusBadgeColor';
 import { PaymentStringAsIcons } from '../../components/PaymentMethods';
 
 class OrderPage extends Component {

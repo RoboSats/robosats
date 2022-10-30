@@ -23,14 +23,8 @@ export interface Robot {
 export const defaultRobot: Robot = {
   nickname: null,
   token: systemClient.getCookie('robot_token') ?? null,
-  pub_key:
-    systemClient.getCookie('pub_key') === undefined
-      ? null
-      : systemClient.getCookie('pub_key').split('\\').join('\n'),
-  enc_priv_key:
-    systemClient.getCookie('enc_priv_key') === undefined
-      ? null
-      : systemClient.getCookie('enc_priv_key').split('\\').join('\n'),
+  pub_key: systemClient.getCookie('pub_key').split('\\').join('\n'),
+  enc_priv_key: systemClient.getCookie('enc_priv_key').split('\\').join('\n'),
   bitsEntropy: null,
   shannonEntropy: null,
   stealthInvoices: true,

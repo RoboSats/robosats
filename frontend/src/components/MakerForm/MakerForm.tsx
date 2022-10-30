@@ -29,7 +29,7 @@ import { LimitList, Maker, Favorites, defaultMaker } from '../../models';
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { useHistory } from 'react-router-dom';
-import { StoreTokenDialog, NoRobotDialog } from '../Dialogs';
+import { StoreTokenDialog, NoRobotDialog, ConfirmationDialog } from '../Dialogs';
 import { apiClient } from '../../services/api';
 import { systemClient } from '../../services/System';
 
@@ -37,10 +37,11 @@ import { FlagWithProps } from '../Icons';
 import AutocompletePayments from './AutocompletePayments';
 import AmountRange from './AmountRange';
 import currencyDict from '../../../static/assets/currencies.json';
-import { pn } from '../../utils/prettyNumbers';
+import { pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
+import { Page } from '../../basic/NavBar';
 
 interface MakerFormProps {
   limits: { list: LimitList; loading: boolean };
@@ -55,6 +56,9 @@ interface MakerFormProps {
   onSubmit?: () => void;
   onReset?: () => void;
   submitButtonLabel?: string;
+  onOrderCreated?: (id: number) => void;
+  hasRobot?: boolean;
+  setPage?: (state: Page) => void;
 }
 
 const MakerForm = ({
@@ -70,6 +74,9 @@ const MakerForm = ({
   onSubmit = () => {},
   onReset = () => {},
   submitButtonLabel = 'Create Order',
+  onOrderCreated = () => null,
+  hasRobot = true,
+  setPage = () => null,
 }: MakerFormProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -258,7 +265,10 @@ const MakerForm = ({
       };
       apiClient.post('/api/make/', body).then((data: object) => {
         setBadRequest(data.bad_request);
-        data.id ? history.push('/order/' + data.id) : '';
+        if (data.id) {
+          history.push('/order/' + data.id);
+          onOrderCreated(data.id);
+        }
         setSubmittingRequest(false);
       });
     }
@@ -418,23 +428,15 @@ const MakerForm = ({
     );
   };
 
-  const ConfirmationDialogs = function () {
-    return systemClient.getCookie('robot_token') ? (
-      <StoreTokenDialog
-        open={openDialogs}
-        onClose={() => setOpenDialogs(false)}
-        onClickCopy={() => systemClient.copyToClipboard(systemClient.getCookie('robot_token'))}
-        copyIconColor={'primary'}
-        onClickBack={() => setOpenDialogs(false)}
-        onClickDone={handleCreateOrder}
-      />
-    ) : (
-      <NoRobotDialog open={openDialogs} onClose={() => setOpenDialogs(false)} />
-    );
-  };
   return (
     <Box>
-      <ConfirmationDialogs />
+      <ConfirmationDialog
+        open={openDialogs}
+        onClose={() => setOpenDialogs(false)}
+        setPage={setPage}
+        onClickDone={handleCreateOrder}
+        hasRobot={hasRobot}
+      />
       <Collapse in={limits.list.length == 0}>
         <div style={{ display: limits.list.length == 0 ? '' : 'none' }}>
           <LinearProgress />

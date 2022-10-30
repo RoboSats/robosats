@@ -1,6 +1,6 @@
 import { requestProvider, WeblnProvider } from 'webln';
 
-export const getWebln = async (): Promise<WeblnProvider> => {
+const getWebln = async (): Promise<WeblnProvider> => {
   const resultPromise = new Promise<WeblnProvider>(async (resolve, reject) => {
     try {
       const webln = await requestProvider();
@@ -16,3 +16,5 @@ export const getWebln = async (): Promise<WeblnProvider> => {
 
   return await resultPromise;
 };
+
+export default getWebln;

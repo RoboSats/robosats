@@ -14,7 +14,7 @@ import {
 import { FlagWithProps } from '../Icons';
 import RangeSlider from './RangeSlider';
 import currencyDict from '../../../static/assets/currencies.json';
-import { pn } from '../../utils/prettyNumbers';
+import { pn } from '../../utils';
 
 const RangeThumbComponent = function (props: object) {
   const { children, ...other } = props;

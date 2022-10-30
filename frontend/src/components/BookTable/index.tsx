@@ -19,20 +19,17 @@ import {
 import { DataGrid, GridPagination } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { Book, Favorites } from '../../models';
-import filterOrders from '../../utils/filterOrders';
+import { filterOrders, hexToRgb, statusBadgeColor, pn, amountToString } from '../../utils';
 import BookControl from './BookControl';
 
 import { FlagWithProps } from '../Icons';
-import { pn, amountToString } from '../../utils/prettyNumbers';
 import { PaymentStringAsIcons } from '../PaymentMethods';
 import RobotAvatar from '../RobotAvatar';
-import hexToRgb from '../../utils/hexToRgb';
-import statusBadgeColor from '../../utils/statusBadgeColor';
 
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 
-interface Props {
+interface BookTableProps {
   clickRefresh?: () => void;
   book: Book;
   fav?: Favorites;
@@ -40,7 +37,7 @@ interface Props {
   maxHeight: number;
   fullWidth?: number;
   fullHeight?: number;
-  elevation: number;
+  elevation?: number;
   defaultFullscreen?: boolean;
   fillContainer?: boolean;
   showControls?: boolean;
@@ -48,16 +45,17 @@ interface Props {
   showNoResults?: boolean;
   onCurrencyChange?: (e: any) => void;
   onTypeChange?: (mouseEvent: any, val: number) => void;
+  onOrderClicked?: (id: number) => void;
 }
 
 const BookTable = ({
   clickRefresh,
   book,
-  fav,
-  maxWidth,
-  maxHeight,
-  fullWidth,
-  fullHeight,
+  fav = { currency: 1, type: 0 },
+  maxWidth = 100,
+  maxHeight = 70,
+  fullWidth = 100,
+  fullHeight = 70,
   defaultFullscreen = false,
   elevation = 6,
   fillContainer = false,
@@ -66,7 +64,8 @@ const BookTable = ({
   showNoResults = true,
   onCurrencyChange,
   onTypeChange,
-}: Props): JSX.Element => {
+  onOrderClicked = () => null,
+}: BookTableProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const history = useHistory();
@@ -756,7 +755,7 @@ const BookTable = ({
             setPageSize(newPageSize);
             setUseDefaultPageSize(false);
           }}
-          onRowClick={(params: any) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
+          onRowClick={(params: any) => onOrderClicked(params.row.id)}
         />
       </Paper>
     );

@@ -632,39 +632,28 @@ class UserView(APIView):
             context = {"bad_request": "Invalid serializer"}
             return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
+        # Deprecated
+        #
         # If an existing user opens the main page by mistake, we do not want it to create a new nickname/profile for him
-        if request.user.is_authenticated:
-            context = {"nickname": request.user.username}
-            not_participant, _, order = Logics.validate_already_maker_or_taker(
-                request.user
-            )
+        # if request.user.is_authenticated:
+        #     context = {"nickname": request.user.username}
+        #     not_participant, _, order = Logics.validate_already_maker_or_taker(
+        #         request.user
+        #     )
 
-            # Does not allow this 'mistake' if an active order
-            if not not_participant:
-                context["active_order_id"] = order.id
-                context[
-                    "bad_request"
-                ] = f"You are already logged in as {request.user} and have an active order"
-                return Response(context, status.HTTP_400_BAD_REQUEST)
+        #     # Does not allow this 'mistake' if an active order
+        #     if not not_participant:
+        #         context["active_order_id"] = order.id
+        #         context[
+        #             "bad_request"
+        #         ] = f"You are already logged in as {request.user} and have an active order"
+        #         return Response(context, status.HTTP_400_BAD_REQUEST)
 
         # The new way. The token is never sent. Only its SHA256
         token_sha256 = serializer.data.get("token_sha256")
         public_key = serializer.data.get("public_key")
         encrypted_private_key = serializer.data.get("encrypted_private_key")
         ref_code = serializer.data.get("ref_code")
-
-        if not public_key or not encrypted_private_key:
-            context["bad_request"] = "Must provide valid 'pub' and 'enc_priv' PGP keys"
-            return Response(context, status.HTTP_400_BAD_REQUEST)
-
-        (
-            valid,
-            bad_keys_context,
-            public_key,
-            encrypted_private_key,
-        ) = Logics.validate_pgp_keys(public_key, encrypted_private_key)
-        if not valid:
-            return Response(bad_keys_context, status.HTTP_400_BAD_REQUEST)
 
         # Now the server only receives a hash of the token. So server trusts the client
         # with computing length, counts and unique_values to confirm the high entropy of the token
@@ -712,6 +701,20 @@ class UserView(APIView):
 
         # Create new credentials and login if nickname is new
         if len(User.objects.filter(username=nickname)) == 0:
+            if not public_key or not encrypted_private_key:
+                context[
+                    "bad_request"
+                ] = "Must provide valid 'pub' and 'enc_priv' PGP keys"
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+            (
+                valid,
+                bad_keys_context,
+                public_key,
+                encrypted_private_key,
+            ) = Logics.validate_pgp_keys(public_key, encrypted_private_key)
+            if not valid:
+                return Response(bad_keys_context, status.HTTP_400_BAD_REQUEST)
+
             User.objects.create_user(
                 username=nickname, password=token_sha256, is_staff=False
             )
@@ -930,25 +933,6 @@ class InfoView(ListAPIView):
         context["current_swap_fee_rate"] = Logics.compute_swap_fee_rate(
             BalanceLog.objects.latest("time")
         )
-
-        if request.user.is_authenticated:
-            context["nickname"] = request.user.username
-            context["referral_code"] = str(request.user.profile.referral_code)
-            context["earned_rewards"] = request.user.profile.earned_rewards
-            context["wants_stealth"] = request.user.profile.wants_stealth
-            # Adds/generate telegram token and whether it is enabled
-            context = {**context, **Telegram.get_context(request.user)}
-            has_no_active_order, _, order = Logics.validate_already_maker_or_taker(
-                request.user
-            )
-            if not has_no_active_order:
-                context["active_order_id"] = order.id
-            else:
-                last_order = Order.objects.filter(
-                    Q(maker=request.user) | Q(taker=request.user)
-                ).last()
-                if last_order:
-                    context["last_order_id"] = last_order.id
 
         return Response(context, status.HTTP_200_OK)
 
