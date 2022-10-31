@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useHistory } from 'react-router-dom';
 import { Grid, Paper, Collapse, Typography } from '@mui/material';
 
 import { LimitList, Maker, Book, Favorites } from '../../models';
@@ -21,7 +22,7 @@ interface MakerPageProps {
   setMaker: (state: Maker) => void;
   windowSize: { width: number; height: number };
   hasRobot: boolean;
-  setOrder: (state: number) => void;
+  setCurrentOrder: (state: number) => void;
   setPage: (state: Page) => void;
 }
 
@@ -34,11 +35,12 @@ const MakerPage = ({
   setFav,
   setMaker,
   windowSize,
-  setOrder,
+  setCurrentOrder,
   setPage,
   hasRobot = false,
 }: MakerPageProps): JSX.Element => {
   const { t } = useTranslation();
+  const history = useHistory();
 
   const maxHeight = windowSize.height * 0.85 - 3;
   const [showMatches, setShowMatches] = useState<boolean>(false);
@@ -95,8 +97,9 @@ const MakerPage = ({
             maker={maker}
             setMaker={setMaker}
             onOrderCreated={(id) => {
-              setOrder(id);
+              setCurrentOrder(id);
               setPage('order');
+              history.push('/order/' + id);
             }}
             hasRobot={hasRobot}
             disableRequest={matches.length > 0 && !showMatches}

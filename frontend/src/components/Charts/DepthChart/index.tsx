@@ -21,7 +21,7 @@ import {
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
-import { Order, LimitList } from '../../../models';
+import { PublicOrder, LimitList } from '../../../models';
 import RobotAvatar from '../../RobotAvatar';
 import { amountToString, matchMedian, statusBadgeColor } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
@@ -29,7 +29,7 @@ import { PaymentStringAsIcons } from '../../PaymentMethods';
 import getNivoScheme from '../NivoScheme';
 
 interface DepthChartProps {
-  orders: Order[];
+  orders: PublicOrder[];
   lastDayPremium?: number | undefined;
   currency: number;
   limits: LimitList;
@@ -114,15 +114,17 @@ const DepthChart: React.FC<DepthChartProps> = ({
   }, [enrichedOrders, xType, lastDayPremium, currencyCode]);
 
   const generateSeries: () => void = () => {
-    const sortedOrders: Order[] =
+    const sortedOrders: PublicOrder[] =
       xType === 'base_amount'
         ? enrichedOrders.sort(
             (order1, order2) => (order1?.base_amount || 0) - (order2?.base_amount || 0),
           )
         : enrichedOrders.sort((order1, order2) => order1.premium - order2.premium);
 
-    const sortedBuyOrders: Order[] = sortedOrders.filter((order) => order.type == 0).reverse();
-    const sortedSellOrders: Order[] = sortedOrders.filter((order) => order.type == 1);
+    const sortedBuyOrders: PublicOrder[] = sortedOrders
+      .filter((order) => order.type == 0)
+      .reverse();
+    const sortedSellOrders: PublicOrder[] = sortedOrders.filter((order) => order.type == 1);
 
     const buySerie: Datum[] = generateSerie(sortedBuyOrders);
     const sellSerie: Datum[] = generateSerie(sortedSellOrders);
@@ -142,7 +144,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
     ]);
   };
 
-  const generateSerie = (orders: Order[]): Datum[] => {
+  const generateSerie = (orders: PublicOrder[]): Datum[] => {
     if (center == undefined) {
       return [];
     }
@@ -159,7 +161,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
           y: lastSumOrders,
         },
         {
-          // Order Point
+          // PublicOrder Point
           x: xType === 'base_amount' ? order.base_amount : order.premium,
           y: sumOrders,
           order,
@@ -220,7 +222,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const generateTooltip: React.FunctionComponent<PointTooltipProps> = (
     pointTooltip: PointTooltipProps,
   ) => {
-    const order: Order = pointTooltip.point.data.order;
+    const order: PublicOrder = pointTooltip.point.data.order;
     return order ? (
       <Paper elevation={12} style={{ padding: 10, width: 250 }}>
         <Grid container justifyContent='space-between'>

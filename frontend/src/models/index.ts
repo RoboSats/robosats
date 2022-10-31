@@ -2,7 +2,9 @@ import Robot from './Robot.model';
 
 export type { LimitList } from './Limit.model';
 export type { Limit } from './Limit.model';
-export type { Order } from './Book.model';
+export type { Maker } from './Maker.model';
+export type { Order } from './Order.model';
+export type { PublicOrder } from './Book.model';
 export type { Book } from './Book.model';
 export type { Info } from './Info.model';
 export type { Settings } from './Settings.model';

@@ -26,7 +26,7 @@ interface BookPageProps {
   setMaker: (state: Maker) => void;
   hasRobot: boolean;
   setPage: (state: Page) => void;
-  setOrder: (state: number) => void;
+  setCurrentOrder: (state: number) => void;
 }
 
 const BookPage = ({

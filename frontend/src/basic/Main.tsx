@@ -73,7 +73,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     in: undefined,
     out: undefined,
   });
-  const [order, setOrder] = useState<number | null>(null);
+  const [currentOrder, setCurrentOrder] = useState<number | null>(null);
 
   const navbarHeight = 2.5;
   const closeAll = {
@@ -163,7 +163,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
 
     setRobot({ ...robot, loading: true });
     apiClient.post('/api/user/', requestBody).then((data: any) => {
-      setOrder(
+      setCurrentOrder(
         data.active_order_id
           ? data.active_order_id
           : data.last_order_id
@@ -230,8 +230,8 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                 <div>
                   <UserGenPage
                     setPage={setPage}
-                    order={order}
-                    setOrder={setOrder}
+                    currentOrder={currentOrder}
+                    setCurrentOrder={setCurrentOrder}
                     match={props.match}
                     theme={theme}
                     robot={robot}
@@ -262,7 +262,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                   windowSize={windowSize}
                   hasRobot={robot.avatarLoaded}
                   setPage={setPage}
-                  setOrder={setOrder}
+                  setCurrentOrder={setCurrentOrder}
                 />
               </div>
             </Slide>
@@ -282,7 +282,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                   maker={maker}
                   setMaker={setMaker}
                   setPage={setPage}
-                  setOrder={setOrder}
+                  setCurrentOrder={setCurrentOrder}
                   fav={fav}
                   setFav={setFav}
                   windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}
@@ -334,7 +334,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         setOpen={setOpen}
         closeAll={closeAll}
         setSlideDirection={setSlideDirection}
-        order={order}
+        currentOrder={currentOrder}
         hasRobot={robot.avatarLoaded}
       />
       <MainDialogs
