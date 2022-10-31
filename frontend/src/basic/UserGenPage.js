@@ -111,8 +111,8 @@ class UserGenPage extends Component {
               tgToken: data.tg_token,
               bitsEntropy: data.token_bits_entropy,
               shannonEntropy: data.token_shannon_entropy,
-              pub_key: data.public_key,
-              enc_priv_key: data.encrypted_private_key,
+              pubKey: data.public_key,
+              encPrivKey: data.encrypted_private_key,
               copiedToken: data.found ? true : this.props.robot.copiedToken,
             }) &
             systemClient.setCookie('robot_token', token) &

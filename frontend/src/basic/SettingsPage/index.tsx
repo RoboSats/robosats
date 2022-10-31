@@ -25,7 +25,7 @@ const SettingsPage = ({ settings, setSettings, windowSize }: SettingsPageProps):
           <SettingsForm
             settings={settings}
             setSettings={setSettings}
-            networt={window.NativeRobosats}
+            showNetwork={!(window.NativeRobosats === undefined)}
           />
         </Grid>
       </Grid>

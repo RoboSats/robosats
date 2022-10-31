@@ -69,7 +69,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const basename = window.NativeRobosats === undefined ? '' : window.location.pathname;
   const entryPage: Page | '' =
     window.NativeRobosats === undefined ? window.location.pathname.split('/')[1] : '';
-  const [page, setPage] = useState<Page>(entryPage == '' ? 'offers' : entryPage);
+  const [page, setPage] = useState<Page>(entryPage == '' ? 'robot' : entryPage);
   const [slideDirection, setSlideDirection] = useState<SlideDirection>({
     in: undefined,
     out: undefined,
@@ -134,6 +134,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   };
 
   const fetchInfo = function () {
+    setInfo({ ...info, loading: true });
     apiClient.get('/api/info/').then((data: Info) => {
       const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
       setInfo({
@@ -141,23 +142,27 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         openUpdateClient: versionInfo.updateAvailable,
         coordinatorVersion: versionInfo.coordinatorVersion,
         clientVersion: versionInfo.clientVersion,
-      });
-      setSettings({
-        ...settings,
-        network: data.network,
+        loading: false,
       });
     });
   };
 
   useEffect(() => {
-    fetchInfo();
+    if (open.stats || open.coordinator) {
+      fetchInfo();
+    }
   }, [open.stats, open.coordinator]);
 
-  const fetchRobot = function () {
+  const fetchRobot = function ({ keys = false }) {
     const requestBody = {
       token_sha256: sha256(robot.token),
     };
+    if (keys) {
+      requestBody.pub_key = robot.pubKey;
+      requestBody.enc_priv_key = robot.encPrivKey;
+    }
 
+    setRobot({ ...robot, loading: true });
     apiClient.post('/api/user/', requestBody).then((data: any) => {
       setOrder(
         data.active_order_id
@@ -171,7 +176,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         nickname: data.nickname,
         token: robot.token,
         loading: false,
-        avatarLoaded: false,
+        avatarLoaded: robot.nickname === data.nickname ? true : false,
         activeOrderId: data.active_order_id ? data.active_order_id : null,
         lastOrderId: data.last_order_id ? data.last_order_id : null,
         referralCode: data.referral_code,
@@ -182,18 +187,20 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         tgToken: data.tg_token,
         bitsEntropy: data.token_bits_entropy,
         shannonEntropy: data.token_shannon_entropy,
-        pub_key: data.public_key,
-        enc_priv_key: data.encrypted_private_key,
+        pubKey: data.public_key,
+        encPrivKey: data.encrypted_private_key,
         copiedToken: data.found ? true : robot.copiedToken,
       });
     });
   };
 
   useEffect(() => {
-    if (robot.token && robot.nickname === null) {
-      fetchRobot();
+    if (open.profile || (robot.token && robot.nickname === null)) {
+      fetchRobot({ keys: false }); // fetch existing robot
+    } else if (robot.token && robot.encPrivKey && robot.pubKey) {
+      fetchRobot({ keys: true }); // create new robot with existing token and keys (on network and coordinator change)
     }
-  }, []);
+  }, [open.profile, settings.network, settings.coordinator]);
 
   return (
     <Router basename={basename}>
@@ -213,7 +220,8 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
       >
         <Switch>
           <Route
-            path='/robot/:refCode?'
+            path={['/robot/:refCode?', '/']}
+            exact
             render={(props: any) => (
               <Slide
                 direction={page === 'robot' ? slideDirection.in : slideDirection.out}
@@ -235,7 +243,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
             )}
           />
 
-          <Route exact path={['/offers', '/']}>
+          <Route path={'/offers'}>
             <Slide
               direction={page === 'offers' ? slideDirection.in : slideDirection.out}
               in={page === 'offers'}

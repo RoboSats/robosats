@@ -37,6 +37,7 @@ interface DepthChartProps {
   maxHeight: number;
   fillContainer?: boolean;
   elevation?: number;
+  onOrderClicked?: (id: number) => void;
 }
 
 const DepthChart: React.FC<DepthChartProps> = ({
@@ -48,6 +49,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   maxHeight,
   fillContainer = false,
   elevation = 6,
+  onOrderClicked = () => null,
 }) => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -278,7 +280,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   };
   const formatAxisY = (value: number): string => `${value}BTC`;
   const handleOnClick: PointMouseHandler = (point: Point) => {
-    history.push('/order/' + point.data?.order?.id);
+    onOrderClicked(point.data?.order?.id);
   };
 
   const em = theme.typography.fontSize;

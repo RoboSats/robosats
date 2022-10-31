@@ -29,14 +29,14 @@ interface SettingsFormProps {
   dense?: boolean;
   settings: Settings;
   setSettings: (state: Settings) => void;
-  network?: boolean;
+  showNetwork?: boolean;
 }
 
 const SettingsForm = ({
   dense = false,
   settings,
   setSettings,
-  network = false,
+  showNetwork = false,
 }: SettingsFormProps): JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -129,7 +129,7 @@ const SettingsForm = ({
               track={false}
             />
           </ListItem>
-          {network ? (
+          {showNetwork ? (
             <ListItem>
               <ListItemIcon>
                 <Link />

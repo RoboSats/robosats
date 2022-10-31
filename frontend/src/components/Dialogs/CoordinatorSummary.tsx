@@ -11,6 +11,7 @@ import {
   ListItem,
   ListItemIcon,
   Typography,
+  LinearProgress,
 } from '@mui/material';
 
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -22,39 +23,25 @@ import BookIcon from '@mui/icons-material/Book';
 import LinkIcon from '@mui/icons-material/Link';
 
 import { pn } from '../../utils';
+import { Info } from '../../models';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  numPublicBuyOrders: number;
-  numPublicSellOrders: number;
-  bookLiquidity: number;
-  activeRobotsToday: number;
-  lastDayNonkycBtcPremium: number;
-  makerFee: number;
-  takerFee: number;
-  swapFeeRate: number;
+  info: Info;
 }
 
-const CoordinatorSummaryDialog = ({
-  open = false,
-  onClose,
-  numPublicBuyOrders,
-  numPublicSellOrders,
-  bookLiquidity,
-  activeRobotsToday,
-  lastDayNonkycBtcPremium,
-  makerFee,
-  takerFee,
-  swapFeeRate,
-}: Props): JSX.Element => {
+const CoordinatorSummaryDialog = ({ open = false, onClose, info }: Props): JSX.Element => {
   const { t } = useTranslation();
-  if (swapFeeRate === null || swapFeeRate === undefined) {
-    swapFeeRate = 0;
+  if (info.current_swap_fee_rate === null || info.current_swap_fee_rate === undefined) {
+    info.current_swap_fee_rate = 0;
   }
 
   return (
     <Dialog open={open} onClose={onClose}>
+      <div style={info.loading ? {} : { display: 'none' }}>
+        <LinearProgress />
+      </div>
       <DialogContent>
         <Typography component='h5' variant='h5'>
           {t('Coordinator Summary')}
@@ -69,7 +56,7 @@ const CoordinatorSummaryDialog = ({
             <ListItemText
               primaryTypographyProps={{ fontSize: '14px' }}
               secondaryTypographyProps={{ fontSize: '12px' }}
-              primary={numPublicBuyOrders}
+              primary={info.num_public_buy_orders}
               secondary={t('Public buy orders')}
             />
           </ListItem>
@@ -84,7 +71,7 @@ const CoordinatorSummaryDialog = ({
             <ListItemText
               primaryTypographyProps={{ fontSize: '14px' }}
               secondaryTypographyProps={{ fontSize: '12px' }}
-              primary={numPublicSellOrders}
+              primary={info.num_public_sell_orders}
               secondary={t('Public sell orders')}
             />
           </ListItem>
@@ -99,7 +86,7 @@ const CoordinatorSummaryDialog = ({
             <ListItemText
               primaryTypographyProps={{ fontSize: '14px' }}
               secondaryTypographyProps={{ fontSize: '12px' }}
-              primary={`${pn(bookLiquidity)} Sats`}
+              primary={`${pn(info.book_liquidity)} Sats`}
               secondary={t('Book liquidity')}
             />
           </ListItem>
@@ -114,7 +101,7 @@ const CoordinatorSummaryDialog = ({
             <ListItemText
               primaryTypographyProps={{ fontSize: '14px' }}
               secondaryTypographyProps={{ fontSize: '12px' }}
-              primary={activeRobotsToday}
+              primary={info.active_robots_today}
               secondary={t('Today active robots')}
             />
           </ListItem>
@@ -129,7 +116,7 @@ const CoordinatorSummaryDialog = ({
             <ListItemText
               primaryTypographyProps={{ fontSize: '14px' }}
               secondaryTypographyProps={{ fontSize: '12px' }}
-              primary={`${lastDayNonkycBtcPremium}%`}
+              primary={`${info.last_day_nonkyc_btc_premium}%`}
               secondary={t('24h non-KYC bitcoin premium')}
             />
           </ListItem>
@@ -148,7 +135,7 @@ const CoordinatorSummaryDialog = ({
                   secondaryTypographyProps={{ fontSize: '12px' }}
                   secondary={t('Maker fee')}
                 >
-                  {(makerFee * 100).toFixed(3)}%
+                  {(info.maker_fee * 100).toFixed(3)}%
                 </ListItemText>
               </Grid>
 
@@ -158,7 +145,7 @@ const CoordinatorSummaryDialog = ({
                   secondaryTypographyProps={{ fontSize: '12px' }}
                   secondary={t('Taker fee')}
                 >
-                  {(takerFee * 100).toFixed(3)}%
+                  {(info.taker_fee * 100).toFixed(3)}%
                 </ListItemText>
               </Grid>
             </Grid>
@@ -174,7 +161,7 @@ const CoordinatorSummaryDialog = ({
             <ListItemText
               primaryTypographyProps={{ fontSize: '14px' }}
               secondaryTypographyProps={{ fontSize: '12px' }}
-              primary={`${swapFeeRate.toPrecision(3)}%`}
+              primary={`${info.current_swap_fee_rate.toPrecision(3)}%`}
               secondary={t('Current onchain payout fee')}
             />
           </ListItem>

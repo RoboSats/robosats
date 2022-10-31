@@ -21,6 +21,7 @@ export interface Info {
   coordinatorVersion: string;
   clientVersion: string;
   openUpdateClient: boolean;
+  loading: boolean;
 }
 
 import packageJson from '../../package.json';
@@ -49,6 +50,7 @@ export const defaultInfo: Info = {
   coordinatorVersion: 'v?.?.?',
   clientVersion: `v${semver[0]}.${semver[1]}.${semver[2]}`,
   openUpdateClient: false,
+  loading: true,
 };
 
 export default Info;

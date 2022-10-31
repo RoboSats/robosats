@@ -23,6 +23,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  LinearProgress,
 } from '@mui/material';
 
 import { EnableTelegramDialog } from '.';
@@ -129,6 +130,9 @@ const ProfileDialog = ({ open = false, onClose, robot, setRobot }: Props): JSX.E
       aria-labelledby='profile-title'
       aria-describedby='profile-description'
     >
+      <div style={robot.loading ? {} : { display: 'none' }}>
+        <LinearProgress />
+      </div>
       <DialogContent>
         <Typography component='h5' variant='h5'>
           {t('Your Profile')}

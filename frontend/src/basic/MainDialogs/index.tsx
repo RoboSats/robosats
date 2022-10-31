@@ -65,29 +65,12 @@ const MainDialogs = ({
       <CoordinatorSummaryDialog
         open={open.coordinator}
         onClose={() => setOpen({ ...open, coordinator: false })}
-        numPublicBuyOrders={info.num_public_buy_orders}
-        numPublicSellOrders={info.num_public_sell_orders}
-        bookLiquidity={info.book_liquidity}
-        activeRobotsToday={info.active_robots_today}
-        lastDayNonkycBtcPremium={info.last_day_nonkyc_btc_premium}
-        makerFee={info.maker_fee}
-        takerFee={info.taker_fee}
-        swapFeeRate={info.current_swap_fee_rate}
+        info={info}
       />
       <StatsDialog
         open={open.stats}
         onClose={() => setOpen({ ...open, stats: false })}
-        coordinatorVersion={info.coordinatorVersion}
-        clientVersion={info.clientVersion}
-        lndVersion={info.lnd_version}
-        network={info.network}
-        nodeAlias={info.node_alias}
-        nodeId={info.node_id}
-        alternativeName={info.alternative_name}
-        alternativeSite={info.alternative_site}
-        commitHash={info.robosats_running_commit_hash}
-        lastDayVolume={info.last_day_volume}
-        lifetimeVolume={info.lifetime_volume}
+        info={info}
       />
       <ProfileDialog
         open={open.profile}

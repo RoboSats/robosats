@@ -163,6 +163,7 @@ const BookPage = ({
                 limits={limits.list}
                 maxWidth={chartWidthEm} // EM units
                 maxHeight={windowSize.height * 0.825 - 5} // EM units
+                onOrderClicked={onOrderClicked}
               />
             </Grid>
           </Grid>
@@ -174,6 +175,7 @@ const BookPage = ({
             limits={limits.list}
             maxWidth={windowSize.width * 0.8} // EM units
             maxHeight={windowSize.height * 0.825 - 5} // EM units
+            onOrderClicked={onOrderClicked}
           />
         ) : (
           <BookTable
