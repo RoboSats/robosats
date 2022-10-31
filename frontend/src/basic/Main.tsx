@@ -65,13 +65,11 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const theme = useTheme();
   const history = useHistory();
 
-  const Router = window.NativeRobosats != null ? HashRouter : BrowserRouter;
-  const basename = window.NativeRobosats != null ? window.location.pathname : '';
-  const [page, setPage] = useState<Page>(
-    window.location.pathname.split('/')[1] == ''
-      ? 'offers'
-      : window.location.pathname.split('/')[1],
-  );
+  const Router = window.NativeRobosats === undefined ? BrowserRouter : HashRouter;
+  const basename = window.NativeRobosats === undefined ? '' : window.location.pathname;
+  const entryPage: Page | '' =
+    window.NativeRobosats === undefined ? window.location.pathname.split('/')[1] : '';
+  const [page, setPage] = useState<Page>(entryPage == '' ? 'offers' : entryPage);
   const [slideDirection, setSlideDirection] = useState<SlideDirection>({
     in: undefined,
     out: undefined,
@@ -166,7 +164,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
           ? data.active_order_id
           : data.last_order_id
           ? data.last_order_id
-          : order,
+          : null,
       );
       setRobot({
         ...robot,

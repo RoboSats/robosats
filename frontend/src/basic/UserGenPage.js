@@ -42,10 +42,7 @@ class UserGenPage extends Component {
     // Displays the existing one
     if (this.props.robot.nickname != null) {
       this.setState({ inputToken: this.props.robot.token });
-    } else if (
-      this.props.robot.token ||
-      (window.NativeRobosats && systemClient.getCookie('robot_token'))
-    ) {
+    } else if (this.props.robot.token) {
       this.setState({ inputToken: this.props.robot.token });
       this.getGeneratedUser(this.props.robot.token);
     } else {
@@ -117,10 +114,13 @@ class UserGenPage extends Component {
               pub_key: data.public_key,
               enc_priv_key: data.encrypted_private_key,
               copiedToken: data.found ? true : this.props.robot.copiedToken,
-            });
-        systemClient.setCookie('robot_token', token);
-        systemClient.setCookie('pub_key', data.public_key.split('\n').join('\\'));
-        systemClient.setCookie('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'));
+            }) &
+            systemClient.setCookie('robot_token', token) &
+            systemClient.setCookie('pub_key', data.public_key.split('\n').join('\\')) &
+            systemClient.setCookie(
+              'enc_priv_key',
+              data.encrypted_private_key.split('\n').join('\\'),
+            );
       }),
     );
   };

@@ -20,11 +20,14 @@ export interface Robot {
   copiedToken: boolean;
 }
 
+const pubKeyCookie = systemClient.getCookie('pub_key');
+const privKeyCookie = systemClient.getCookie('enc_priv_key');
+
 export const defaultRobot: Robot = {
   nickname: null,
   token: systemClient.getCookie('robot_token') ?? null,
-  pub_key: systemClient.getCookie('pub_key').split('\\').join('\n'),
-  enc_priv_key: systemClient.getCookie('enc_priv_key').split('\\').join('\n'),
+  pub_key: pubKeyCookie ? pubKeyCookie.split('\\').join('\n') : null,
+  enc_priv_key: privKeyCookie ? privKeyCookie.split('\\').join('\n') : null,
   bitsEntropy: null,
   shannonEntropy: null,
   stealthInvoices: true,
