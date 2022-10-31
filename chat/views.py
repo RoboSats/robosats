@@ -58,6 +58,7 @@ class ChatView(viewsets.ViewSet):
             chatroom.maker_connected = True
             chatroom.save()
             peer_connected = chatroom.taker_connected
+            peer_public_key = order.taker.profile.public_key
         elif chatroom.taker == request.user:
             chatroom.maker_connected = order.maker_last_seen > (
                 timezone.now() - timedelta(minutes=1)
@@ -65,8 +66,13 @@ class ChatView(viewsets.ViewSet):
             chatroom.taker_connected = True
             chatroom.save()
             peer_connected = chatroom.maker_connected
+            peer_public_key = order.maker.profile.public_key
 
         messages = []
+        peer_public_key_data = {
+            "message": peer_public_key
+        }
+        messages.append(peer_public_key_data)
         for message in queryset:
             d = ChatSerializer(message).data
             print(d)
