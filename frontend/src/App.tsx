@@ -53,8 +53,11 @@ const App = (): JSX.Element => {
       <I18nextProvider i18n={i18n}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <TorConnection />
-          <UnsafeAlert className='unsafeAlert' />
+          {window.NativeRobosats === undefined ? (
+            <UnsafeAlert settings={settings} setSettings={setSettings} />
+          ) : (
+            <TorConnection />
+          )}
           <Main settings={settings} setSettings={setSettings} />
         </ThemeProvider>
       </I18nextProvider>

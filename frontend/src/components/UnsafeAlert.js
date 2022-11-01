@@ -9,21 +9,10 @@ class UnsafeAlert extends Component {
     super(props);
     this.state = {
       show: true,
-      isSelfhosted: this.isSelfhosted(),
     };
   }
 
-  isSelfhosted() {
-    const http = new XMLHttpRequest();
-    try {
-      http.open('HEAD', `${location.protocol}//${getHost()}/selfhosted`, false);
-      http.send();
-      return http.status === 200;
-    } catch {
-      return false;
-    }
-  }
-
+  // To do. Read from Coordinators state Obj.
   safe_urls = [
     'robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion',
     'robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion',
@@ -31,6 +20,26 @@ class UnsafeAlert extends Component {
     'robosats.i2p',
     'r7r4sckft6ptmk4r2jajiuqbowqyxiwsle4iyg4fijtoordc6z7a.b32.i2p',
   ];
+
+  checkClient() {
+    const http = new XMLHttpRequest();
+    const unsafeClient = !this.safe_urls.includes(getHost());
+    try {
+      http.open('HEAD', `${location.protocol}//${getHost()}/selfhosted`, false);
+      http.send();
+      this.props.setSettings({
+        ...this.props.settings,
+        unsafeClient,
+        selfhostedClient: http.status === 200,
+      });
+    } catch {
+      this.props.setSettings({ ...this.props.settings, unsafeClient, selfhostedClient: false });
+    }
+  }
+
+  componentDidMount() {
+    this.checkClient();
+  }
 
   render() {
     const { t } = this.props;
@@ -41,7 +50,7 @@ class UnsafeAlert extends Component {
     }
 
     // Show selfhosted notice
-    if (this.state.isSelfhosted) {
+    else if (this.props.settings.selfhostedClient) {
       return (
         <div>
           <Paper elevation={6} className='alertUnsafe'>
@@ -65,7 +74,7 @@ class UnsafeAlert extends Component {
     }
 
     // Show unsafe alert
-    if (!window.NativeRobosats && !this.safe_urls.includes(getHost())) {
+    else if (this.props.settings.unsafeClient) {
       return (
         <div>
           <MediaQuery minWidth={800}>

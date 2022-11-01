@@ -230,7 +230,6 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                 <div>
                   <UserGenPage
                     setPage={setPage}
-                    currentOrder={currentOrder}
                     setCurrentOrder={setCurrentOrder}
                     match={props.match}
                     theme={theme}
