@@ -129,7 +129,10 @@ const SettingsForm = ({
               onChange={(e) => {
                 const fontSize = e.target.value;
                 setSettings({ ...settings, fontSize });
-                systemClient.setCookie(`settings_fontsize_${settings.frontend}`, fontSize);
+                systemClient.setCookie(
+                  `settings_fontsize_${settings.frontend}`,
+                  fontSize.toString(),
+                );
               }}
               valueLabelDisplay='off'
               marks={fontSizes.map(({ label, value }) => ({
