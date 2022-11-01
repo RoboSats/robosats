@@ -42,7 +42,7 @@ const BookPage = ({
   windowSize,
   hasRobot = false,
   setPage = () => null,
-  setOrder = () => null,
+  setCurrentOrder = () => null,
 }: BookPageProps): JSX.Element => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -76,7 +76,7 @@ const BookPage = ({
     if (hasRobot) {
       history.push('/order/' + id);
       setPage('order');
-      setOrder(id);
+      setCurrentOrder(id);
     } else {
       setOpenNoRobot(true);
     }
@@ -125,6 +125,11 @@ const BookPage = ({
               setFav={setFav}
               setPage={setPage}
               hasRobot={hasRobot}
+              onOrderCreated={(id) => {
+                setCurrentOrder(id);
+                setPage('order');
+                history.push('/order/' + id);
+              }}
             />
           </Box>
         </Dialog>

@@ -340,6 +340,8 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         open={open}
         setOpen={setOpen}
         setRobot={setRobot}
+        setPage={setPage}
+        setCurrentOrder={setCurrentOrder}
         info={info}
         robot={robot}
         closeAll={closeAll}

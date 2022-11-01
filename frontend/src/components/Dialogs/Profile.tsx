@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@mui/material/styles';
-import { Link as LinkRouter } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 import {
   Badge,
@@ -41,16 +41,27 @@ import { getHost, getWebln } from '../../utils';
 import RobotAvatar from '../RobotAvatar';
 import { apiClient } from '../../services/api';
 import { Robot } from '../../models';
+import { Page } from '../../basic/NavBar';
 
 interface Props {
   open: boolean;
   onClose: () => void;
   robot: Robot;
   setRobot: (state: Robot) => void;
+  setPage: (state: Page) => void;
+  setCurrentOrder: (state: number) => void;
 }
 
-const ProfileDialog = ({ open = false, onClose, robot, setRobot }: Props): JSX.Element => {
+const ProfileDialog = ({
+  open = false,
+  onClose,
+  robot,
+  setRobot,
+  setPage,
+  setCurrentOrder,
+}: Props): JSX.Element => {
   const { t } = useTranslation();
+  const history = useHistory();
   const theme = useTheme();
   const host = getHost();
 
@@ -179,9 +190,12 @@ const ProfileDialog = ({ open = false, onClose, robot, setRobot }: Props): JSX.E
 
           {robot.activeOrderId ? (
             <ListItemButton
-              onClick={onClose}
-              to={`/order/${robot.activeOrderId}`}
-              component={LinkRouter}
+              onClick={() => {
+                history.push('/order/' + robot.activeOrderId);
+                setPage('order');
+                setCurrentOrder(robot.activeOrderId);
+                onClose();
+              }}
             >
               <ListItemIcon>
                 <Badge badgeContent='' color='primary'>
@@ -195,9 +209,12 @@ const ProfileDialog = ({ open = false, onClose, robot, setRobot }: Props): JSX.E
             </ListItemButton>
           ) : robot.lastOrderId ? (
             <ListItemButton
-              onClick={onClose}
-              to={`/order/${robot.lastOrderId}`}
-              component={LinkRouter}
+              onClick={() => {
+                history.push('/order/' + robot.lastOrderId);
+                setPage('order');
+                setCurrentOrder(robot.lastOrderId);
+                onClose();
+              }}
             >
               <ListItemIcon>
                 <NumbersIcon color='primary' />

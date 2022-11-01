@@ -30,7 +30,7 @@ interface NavBarProps {
   open: OpenDialogs;
   setOpen: (state: OpenDialogs) => void;
   closeAll: OpenDialogs;
-  order: number | null;
+  currentOrder: number | null;
   hasRobot: boolean;
 }
 
@@ -44,7 +44,7 @@ const NavBar = ({
   closeAll,
   width,
   height,
-  order,
+  currentOrder,
   hasRobot = false,
 }: NavBarProps): JSX.Element => {
   const theme = useTheme();
@@ -77,7 +77,7 @@ const NavBar = ({
     } else {
       handleSlideDirection(page, newPage);
       setPage(newPage);
-      const param = newPage === 'order' ? order ?? '' : '';
+      const param = newPage === 'order' ? currentOrder ?? '' : '';
       setTimeout(
         () => history.push(`/${newPage}/${param}`),
         theme.transitions.duration.leavingScreen * 3,
@@ -144,7 +144,7 @@ const NavBar = ({
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!hasRobot || order == null}
+          disabled={!hasRobot || currentOrder == null}
           icon={<Assignment />}
           iconPosition='start'
         />
