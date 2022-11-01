@@ -312,7 +312,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
           onClickBack={() => setAudit(false)}
         />
 
-        <ChatBottom orderId={orderId} audit={audit} setAudit={setAudit} />
+        <ChatBottom orderId={orderId} audit={audit} setAudit={setAudit} createJsonFile={createJsonFile}/>
       </Grid>
     </Container>
   );

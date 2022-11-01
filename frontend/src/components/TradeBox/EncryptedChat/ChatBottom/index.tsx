@@ -9,9 +9,10 @@ interface Props {
   orderId: number;
   setAudit: (audit: boolean) => void;
   audit: boolean;
+  createJsonFile: () => object
 }
 
-const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit }) => {
+const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile }) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -58,6 +59,3 @@ const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit }) => {
 };
 
 export default ChatBottom;
-function createJsonFile(): any {
-  throw new Error('Function not implemented.');
-}
