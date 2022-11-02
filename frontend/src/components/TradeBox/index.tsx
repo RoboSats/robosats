@@ -26,6 +26,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  dividerClasses,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import QRCode from 'react-qr-code';
@@ -35,6 +36,7 @@ import TradeSummary from './TradeSummary';
 import { systemClient } from '../../services/System';
 import { apiClient } from '../../services/api';
 import { ConfirmDisputeDialog, ConfirmFiatReceivedDialog } from './Dialogs';
+import BondStatus from './BondStatus';
 
 // Icons
 import {
@@ -120,50 +122,6 @@ const defaultLightning: LightningFormProps = {
   badLnproxy: '',
 };
 
-const stepXofY = function (order: Order) {
-  // set y value
-  let x = null;
-  let y = null;
-
-  if (order.is_maker) {
-    y = 5;
-  } else if (order.is_taker) {
-    y = 4;
-  }
-
-  // set x values
-  if (order.is_maker) {
-    if (order.status === 0) {
-      x = 1;
-    } else if ([1, 2, 3].includes(order.status)) {
-      x = 2;
-    } else if ([6, 7, 8].includes(order.status)) {
-      x = 3;
-    } else if (order.status === 9) {
-      x = 4;
-    } else if (order.status === 10) {
-      x = 5;
-    }
-  } else if (order.is_taker) {
-    if (order.status === 3) {
-      x = 1;
-    } else if ([6, 7, 8].includes(order.status)) {
-      x = 2;
-    } else if (order.status === 9) {
-      x = 3;
-    } else if (order.status === 10) {
-      x = 4;
-    }
-  }
-
-  // Return "(x/y)"
-  if (x != null && y != null) {
-    return `(${x}/${y})`;
-  } else {
-    return '';
-  }
-};
-
 interface TradeBoxProps {
   order: Order;
   setOrder: (state: Order) => void;
@@ -217,6 +175,11 @@ const TradeBox = ({ order, setOrder }: TradeBoxProps): JSX.Element => {
         onClose={() => setOpen(closeAll)}
         onAgreeClick={onClickAgreeOpenDispute}
       />
+
+      <StepContent />
+      <Divider />
+      <BondStatus />
+
       <ConfirmFiatReceivedDialog
         open={open.confirmFiatReceived}
         order={order}
@@ -229,17 +192,13 @@ const TradeBox = ({ order, setOrder }: TradeBoxProps): JSX.Element => {
 };
 
 export default TradeBox;
+
 // class TradeBox extends Component {
 
 //   showQRInvoice = () => {
 //     const { t } = this.props;
 //     return (
 //       <Grid container spacing={1}>
-//         {/* <Grid item xs={12} align="center">
-//           <Typography  variant="body2">
-//             {t("Robots show commitment to their peers")}
-//           </Typography>
-//         </Grid> */}
 //         <Grid item xs={12} align='center'>
 //           {this.props.data.is_maker ? (
 //             <Typography color='primary' variant='subtitle1'>
@@ -305,77 +264,6 @@ export default TradeBox;
 //     );
 //   };
 
-//   showBondIsLocked = () => {
-//     const { t } = this.props;
-//     return (
-//       <Grid item xs={12} align='center'>
-//         <Typography color='primary' variant='subtitle1' align='center'>
-//           <div
-//             style={{
-//               display: 'flex',
-//               alignItems: 'center',
-//               justifyContent: 'center',
-//               flexWrap: 'wrap',
-//             }}
-//           >
-//             <LockIcon />
-//             {this.props.data.is_maker
-//               ? t('Your maker bond is locked')
-//               : t('Your taker bond is locked')}
-//           </div>
-//         </Typography>
-//       </Grid>
-//     );
-//   };
-
-//   showBondIsSettled = () => {
-//     const { t } = this.props;
-//     return (
-//       <Grid item xs={12} align='center'>
-//         <Typography color='error' variant='subtitle1' align='center'>
-//           <div
-//             style={{
-//               display: 'flex',
-//               alignItems: 'center',
-//               justifyContent: 'center',
-//               flexWrap: 'wrap',
-//               align: 'center',
-//             }}
-//             align='center'
-//           >
-//             <BalanceIcon />
-//             {this.props.data.is_maker
-//               ? t('Your maker bond was settled')
-//               : t('Your taker bond was settled')}
-//           </div>
-//         </Typography>
-//       </Grid>
-//     );
-//   };
-
-//   showBondIsReturned = () => {
-//     const { t } = this.props;
-//     return (
-//       <Grid item xs={12} align='center'>
-//         <Typography color='green' variant='subtitle1' align='center'>
-//           <div
-//             style={{
-//               display: 'flex',
-//               alignItems: 'center',
-//               justifyContent: 'center',
-//               flexWrap: 'wrap',
-//             }}
-//           >
-//             <LockOpenIcon />
-//             {this.props.data.is_maker
-//               ? t('Your maker bond was unlocked')
-//               : t('Your taker bond was unlocked')}
-//           </div>
-//         </Typography>
-//       </Grid>
-//     );
-//   };
-
 //   showEscrowQRInvoice = () => {
 //     const { t } = this.props;
 //     return (
@@ -436,7 +324,7 @@ export default TradeBox;
 //             color='secondary'
 //           />
 //         </Grid>
-//         {this.showBondIsLocked()}
+// <BondStatus status={'locked'} isMaker={order.is_maker}/>
 //       </Grid>
 //     );
 //   };
@@ -460,7 +348,7 @@ export default TradeBox;
 //             )}
 //           </Typography>
 //         </Grid>
-//         {this.showBondIsLocked()}
+//         // <BondStatus status={'locked'} isMaker={order.is_maker}/>
 //       </Grid>
 //     );
 //   };
@@ -567,7 +455,7 @@ export default TradeBox;
 //             <Divider />
 //           </List>
 //         </Grid>
-//         {this.showBondIsLocked()}
+//         // <BondStatus status={'locked'} isMaker={order.is_maker}/>
 //       </Grid>
 //     );
 //   };
@@ -607,7 +495,7 @@ export default TradeBox;
 //             <Divider />
 //           </List>
 //         </Grid>
-//         {this.showBondIsLocked()}
+//         // <BondStatus status={'locked'} isMaker={order.is_maker}/>
 //       </Grid>
 //     );
 //   };
@@ -950,7 +838,7 @@ export default TradeBox;
 //           <Divider />
 //         </List>
 
-//         {this.showBondIsLocked()}
+//         // <BondStatus status={'locked'} isMaker={order.is_maker}/>
 //       </Grid>
 //     );
 //   }
@@ -986,7 +874,7 @@ export default TradeBox;
 //               <Divider />
 //             </List>
 //           </Grid>
-//           {this.showBondIsSettled()}
+//           // <BondStatus status={'settled'} isMaker={order.is_maker}/>
 //         </Grid>
 //       );
 //     } else {
@@ -1033,7 +921,7 @@ export default TradeBox;
 //               </Button>
 //             </Grid>
 //           </List>
-//           {this.showBondIsSettled()}
+//           // <BondStatus status={'settled'} isMaker={order.is_maker}/>
 //         </Grid>
 //       );
 //     }
@@ -1068,7 +956,7 @@ export default TradeBox;
 //             <Divider />
 //           </List>
 //         </Grid>
-//         {this.showBondIsSettled()}
+//         // <BondStatus status={'settled'} isMaker={order.is_maker}/>
 //       </Grid>
 //     );
 //   };
@@ -1089,7 +977,7 @@ export default TradeBox;
 //             )}
 //           </Typography>
 //         </Grid>
-//         {this.showBondIsSettled()}
+//         // <BondStatus status={'settled'} isMaker={order.is_maker}/>
 //       </Grid>
 //     );
 //   };
@@ -1110,7 +998,7 @@ export default TradeBox;
 //             )}
 //           </Typography>
 //         </Grid>
-//         {this.showBondIsSettled()}
+//         // <BondStatus status={'settled'} isMaker={order.is_maker}/>
 //       </Grid>
 //     );
 //   };
@@ -1142,7 +1030,7 @@ export default TradeBox;
 //             <Divider />
 //           </List>
 //         </Grid>
-//         {this.showBondIsLocked()}
+//         // <BondStatus status={'locked'} isMaker={order.is_maker}/>
 //       </Grid>
 //     );
 //   }
@@ -1179,7 +1067,7 @@ export default TradeBox;
 //             <Divider />
 //           </List>
 //         </Grid>
-//         {this.showBondIsLocked()}
+//         // <BondStatus status={'locked'} isMaker={order.is_maker}/>
 //       </Grid>
 //     );
 //   }
@@ -1456,7 +1344,7 @@ export default TradeBox;
 //           {showSendButton ? this.showFiatSentButton() : ''}
 //           {showReveiceButton ? this.showFiatReceivedButton() : ''}
 //         </Grid>
-//         {this.showBondIsLocked()}
+//         // <BondStatus status={'locked'} isMaker={order.is_maker}/>
 //       </Grid>
 //     );
 //   };
@@ -1746,7 +1634,7 @@ export default TradeBox;
 //               {t('Submit')}
 //             </LoadingButton>
 //           </Grid>
-//           {this.showBondIsReturned()}
+//           // <BondStatus status={'returned'} isMaker={order.is_maker}/>
 //         </Grid>
 //       );
 //     } else {
@@ -1776,7 +1664,7 @@ export default TradeBox;
 //               </ListItemText>
 //             </List>
 //           </Grid>
-//           {this.showBondIsReturned()}
+//           // <BondStatus status={'returned'} isMaker={order.is_maker}/>
 //         </Grid>
 //       );
 //     }
