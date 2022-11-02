@@ -69,10 +69,6 @@ class ChatView(viewsets.ViewSet):
             peer_public_key = order.maker.profile.public_key
 
         messages = []
-        peer_public_key_data = {
-            "message": peer_public_key
-        }
-        messages.append(peer_public_key_data)
         for message in queryset:
             d = ChatSerializer(message).data
             print(d)
@@ -85,7 +81,7 @@ class ChatView(viewsets.ViewSet):
             }
             messages.append(data)
 
-        response = {"peer_connected": peer_connected, "messages": messages}
+        response = {"peer_connected": peer_connected, "messages": messages, "peer_pubkey": peer_public_key}
 
         return Response(response, status.HTTP_200_OK)
 

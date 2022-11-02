@@ -10,7 +10,6 @@ import { websocketClient, WebsocketConnection } from '../../../../services/Webso
 // Icons
 import CircularProgress from '@mui/material/CircularProgress';
 import KeyIcon from '@mui/icons-material/Key';
-import { ExportIcon } from '../../../Icons';
 import { useTheme } from '@mui/system';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
@@ -21,12 +20,16 @@ interface Props {
   orderId: number;
   userNick: string;
   takerNick: string;
+  messages: EncryptedChatMessage[];
+  setMessages: (messages: EncryptedChatMessage[]) => void;
 }
 
 const EncryptedSocketChat: React.FC<Props> = ({
   orderId,
   userNick,
   takerNick,
+  messages,
+  setMessages,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -42,7 +45,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
   );
   const [peerPubKey, setPeerPubKey] = useState<string>();
   const [token] = useState<string>(systemClient.getCookie('robot_token') || '');
-  const [messages, setMessages] = useState<EncryptedChatMessage[]>([]);
   const [serverMessages, setServerMessages] = useState<ServerMessage[]>([]);
   const [value, setValue] = useState<string>('');
   const [connection, setConnection] = useState<WebsocketConnection>();
@@ -150,7 +152,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       // We allow plaintext communication. The user must write # to start
       // If we receive an plaintext message
       else if (dataFromServer.message.substring(0, 1) == '#') {
-        setMessages((prev) => {
+        setMessages((prev: EncryptedChatMessage[]) => {
           const existingMessage = prev.find(
             (item) => item.plainTextMessage === dataFromServer.message,
           );
@@ -312,7 +314,12 @@ const EncryptedSocketChat: React.FC<Props> = ({
           onClickBack={() => setAudit(false)}
         />
 
-        <ChatBottom orderId={orderId} audit={audit} setAudit={setAudit} createJsonFile={createJsonFile}/>
+        <ChatBottom
+          orderId={orderId}
+          audit={audit}
+          setAudit={setAudit}
+          createJsonFile={createJsonFile}
+        />
       </Grid>
     </Container>
   );

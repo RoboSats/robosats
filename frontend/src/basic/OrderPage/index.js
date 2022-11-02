@@ -67,7 +67,6 @@ class OrderPage extends Component {
       tabValue: 1,
       orderId: this.props.match.params.orderId,
       chat_offset: 0,
-      turtle_mode: false,
     };
 
     // Refresh delays according to Order status
@@ -111,7 +110,7 @@ class OrderPage extends Component {
       currencyCode: this.getCurrencyCode(newStateVars.currency),
       penalty: newStateVars.penalty, // in case penalty time has finished, it goes back to null
       invoice_expired: newStateVars.invoice_expired, // in case invoice had expired, it goes back to null when it is valid again
-      chat_offset: this.state.chat_offset + newStateVars?.chat.messages.length,
+      chat_offset: this.state.chat_offset + newStateVars?.chat?.messages.length,
     };
 
     const completeStateVars = Object.assign({}, newStateVars, otherStateVars);
@@ -121,12 +120,9 @@ class OrderPage extends Component {
   getOrderDetails = (id) => {
     this.setState({ orderId: id });
 
-    let path = '/api/order/?order_id=' + id;
-    if (this.state.turtle_mode) {
-      path += '&offset=' + this.state.chat_offset;
-    }
-
-    apiClient.get(path).then(this.orderDetailsReceived);
+    apiClient
+      .get('/api/order/?order_id=' + id + '&offset=' + this.state.chat_offset)
+      .then(this.orderDetailsReceived);
   };
 
   orderDetailsReceived = (data) => {

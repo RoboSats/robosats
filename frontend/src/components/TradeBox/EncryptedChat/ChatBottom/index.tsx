@@ -9,7 +9,7 @@ interface Props {
   orderId: number;
   setAudit: (audit: boolean) => void;
   audit: boolean;
-  createJsonFile: () => object
+  createJsonFile: () => object;
 }
 
 const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile }) => {

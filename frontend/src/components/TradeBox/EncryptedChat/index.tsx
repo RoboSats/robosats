@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import EncryptedSocketChat from './EncryptedSocketChat';
 import EncryptedTrutleChat from './EncryptedTrutleChat';
 
@@ -32,15 +32,25 @@ const EncryptedChat: React.FC<Props> = ({
   userNick,
   chatOffset,
 }: Props): JSX.Element => {
+  const [messages, setMessages] = useState<EncryptedChatMessage[]>([]);
+
   return turtleMode ? (
     <EncryptedTrutleChat
+      messages={messages}
+      setMessages={setMessages}
       orderId={orderId}
       takerNick={takerNick}
       userNick={userNick}
       chatOffset={chatOffset}
     />
   ) : (
-    <EncryptedSocketChat orderId={orderId} takerNick={takerNick} userNick={userNick} />
+    <EncryptedSocketChat
+      messages={messages}
+      setMessages={setMessages}
+      orderId={orderId}
+      takerNick={takerNick}
+      userNick={userNick}
+    />
   );
 };
 

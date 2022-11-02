@@ -23,6 +23,8 @@ interface Props {
   userNick: string;
   takerNick: string;
   chatOffset: number;
+  messages: EncryptedChatMessage[];
+  setMessages: (messages: EncryptedChatMessage[]) => void;
 }
 
 const EncryptedTurtleChat: React.FC<Props> = ({
@@ -30,6 +32,8 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   userNick,
   takerNick,
   chatOffset,
+  messages,
+  setMessages,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -42,11 +46,8 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   const [ownEncPrivKey] = useState<string>(
     (systemClient.getCookie('enc_priv_key') ?? '').split('\\').join('\n'),
   );
-  const [peerPubKey, setPeerPubKey] = useState<string>(
-    '-----BEGIN PGP PUBLIC KEY BLOCK-----mDMEY0sj/RYJKwYBBAHaRw8BAQdALiPlUEfnW9k+pVMHuUstKpdfJRNN07+Huam7jP96vj20TFJvYm9TYXRzIElEIDFlMWUzM2VkMTc0ZTgzNTYzM2JkOTY5N2UyNTBhYTllNzgzYTBjMjUyZDMwYWU3ZDI4ZWFjNzUxMzFkMDI4ZjGIjAQQFgoAPgUCY0sj/QQLCQcICRBvpYjDqTP2jQMVCAoEFgACAQIZAQIbAwIeARYhBLm0oAYSSNiZp+gd32+liMOpM/aNAADR6AD/Yrlucc5F+rQxzKZSDcGvubK4lapfyYbgN+pgvRE9bX8A/jwDgWI07mR5bK1JPKDGzGdX4rnG1RPFkGY0n/XpTigGuDgEY0sj/RIKKwYBBAGXVQEFAQEHQK/+5UIZE6WWvPpPF4BAPnPDyEpAm82bDuaB3iup8+EXAwEIB4h4BBgWCAAqBQJjSyP9CRBvpYjDqTP2jQIbDBYhBLm0oAYSSNiZp+gd32+liMOpM/aNAABzuQD9F6/YNXr4hoDHYnVQR0n0LSKyhTV8FDusOuWrMzw3BcIBAMbTMHP1ykB7xTivGVvypRKsS5oMloqv59bJx01fzLEL=H0Iy-----END PGP PUBLIC KEY BLOCK-----',
-  );
+  const [peerPubKey, setPeerPubKey] = useState<string>();
   const [token] = useState<string>(systemClient.getCookie('robot_token') || '');
-  const [messages, setMessages] = useState<EncryptedChatMessage[]>([]);
   const [value, setValue] = useState<string>('');
   const [audit, setAudit] = useState<boolean>(false);
   const [waitingEcho, setWaitingEcho] = useState<boolean>(false);
@@ -78,7 +79,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
     apiClient.get(`/api/chat?order_id=${orderId}&offset=${lastIndex}`).then((results: any) => {
       if (results) {
         setPeerConnected(results.peer_connected);
-        storePeerPubKey(results.messages);
+        setPeerPubKey(results.peer_public_key);
         setServerMessages(results.messages);
       }
     });
@@ -96,17 +97,6 @@ const EncryptedTurtleChat: React.FC<Props> = ({
     };
   };
 
-  const storePeerPubKey: (dataFromServer: ServerMessage[]) => void = (dataFromServer) => {
-    dataFromServer.forEach((data) => {
-      if (
-        data.message.substring(0, 36) == `-----BEGIN PGP PUBLIC KEY BLOCK-----` &&
-        data.message != ownPubKey
-      ) {
-        setPeerPubKey(data.message);
-      }
-    });
-  };
-
   const onMessage: (dataFromServer: ServerMessage) => void = (dataFromServer) => {
     if (dataFromServer) {
       // If we receive an encrypted message
@@ -119,7 +109,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
         ).then((decryptedData) => {
           setLastSent(decryptedData.decryptedMessage === lastSent ? '----BLANK----' : lastSent);
           setLastIndex(lastIndex < dataFromServer.index ? dataFromServer.index : lastIndex);
-          setMessages((prev) => {
+          setMessages((prev: EncryptedChatMessage[]) => {
             const existingMessage = prev.find((item) => item.index === dataFromServer.index);
             if (existingMessage) {
               return prev;
@@ -299,7 +289,12 @@ const EncryptedTurtleChat: React.FC<Props> = ({
           passphrase={token || ''}
           onClickBack={() => setAudit(false)}
         />
-        <ChatBottom orderId={orderId} audit={audit} setAudit={setAudit} createJsonFile={createJsonFile} />
+        <ChatBottom
+          orderId={orderId}
+          audit={audit}
+          setAudit={setAudit}
+          createJsonFile={createJsonFile}
+        />
       </Grid>
     </Container>
   );
