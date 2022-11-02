@@ -329,6 +329,7 @@
   "Messages": "Сообщения",
   "Verified signature by {{nickname}}": "Проверенная подпись пользователя {{nickname}}",
   "Cannot verify signature of {{nickname}}": "Не удается проверить подпись {{nickname}}",
+  "Activate turtle mode (Use it when the connection is slow)": "Включить режим \"черепахи\" (Используйте при низкой скорости интернета)",
 
   "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
   "Contract Box": "Окно контракта",
