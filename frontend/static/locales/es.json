@@ -345,6 +345,7 @@
   "Messages": "Mensajes",
   "Verified signature by {{nickname}}": "Firma de {{nickname}} verificada",
   "Cannot verify signature of {{nickname}}": "No se pudo verificar la firma de {{nickname}}",
+  "Activate turtle mode (Use it when the connection is slow)": "Activar modo tortuga (Úsalo cuando tu conexión es lenta)",
 
   "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
   "Contract Box": "Contrato",
