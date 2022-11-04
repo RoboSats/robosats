@@ -19,8 +19,6 @@ import {
   Info,
   Settings,
   Favorites,
-  defaultMaker,
-  defaultRobot,
   defaultInfo,
   Coordinator,
 } from '../models';
@@ -56,8 +54,8 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     list: [],
     loading: true,
   });
-  const [robot, setRobot] = useState<Robot>(defaultRobot);
-  const [maker, setMaker] = useState<Maker>(defaultMaker);
+  const [robot, setRobot] = useState<Robot>(new Robot());
+  const [maker, setMaker] = useState<Maker>(new Maker());
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });

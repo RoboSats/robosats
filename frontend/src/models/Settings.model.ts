@@ -36,7 +36,8 @@ export const baseSettings: Settings = {
       ? 'dark'
       : 'light',
   fontSize: 14,
-  language: i18n.resolvedLanguage == null ? 'en' : i18n.resolvedLanguage.substring(0, 2),
+  language:
+    i18n.resolvedLanguage == null ? 'en' : (i18n.resolvedLanguage.substring(0, 2) as Language),
   freezeViewports: false,
   network: undefined,
   coordinator: undefined,

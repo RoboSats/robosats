@@ -1,41 +1,21 @@
-export interface Maker {
-  advancedOptions: boolean;
-  isExplicit: boolean;
-  amount: string;
-  paymentMethods: string[];
-  paymentMethodsText: string;
-  badPaymentMethod: boolean;
-  premium: number | string;
-  satoshis: string;
-  publicExpiryTime: Date;
-  publicDuration: number;
-  escrowExpiryTime: Date;
-  escrowDuration: number;
-  bondSize: number;
-  minAmount: string;
-  maxAmount: string;
-  badSatoshisText: string;
-  badPremiumText: string;
+class Maker {
+  public advancedOptions: boolean = false;
+  public isExplicit: boolean = false;
+  public amount: string = '';
+  public paymentMethods: string[] = [];
+  public paymentMethodsText: string = 'not specified';
+  public badPaymentMethod: boolean = false;
+  public premium: number | string = '';
+  public satoshis: string = '';
+  public publicExpiryTime: Date = new Date(0, 0, 0, 23, 59);
+  public publicDuration: number = 86340;
+  public escrowExpiryTime: Date = new Date(0, 0, 0, 3, 0);
+  public escrowDuration: number = 10800;
+  public bondSize: number = 3;
+  public minAmount: string = '';
+  public maxAmount: string = '';
+  public badSatoshisText: string = '';
+  public badPremiumText: string = '';
 }
-
-export const defaultMaker: Maker = {
-  advancedOptions: false,
-  isExplicit: false,
-  amount: '',
-  paymentMethods: [],
-  paymentMethodsText: 'not specified',
-  badPaymentMethod: false,
-  premium: '',
-  satoshis: '',
-  publicExpiryTime: new Date(0, 0, 0, 23, 59),
-  publicDuration: 86340,
-  escrowExpiryTime: new Date(0, 0, 0, 3, 0),
-  escrowDuration: 10800,
-  bondSize: 3,
-  minAmount: '',
-  maxAmount: '',
-  badPremiumText: '',
-  badSatoshisText: '',
-};
 
 export default Maker;

@@ -24,7 +24,7 @@ import {
   IconButton,
 } from '@mui/material';
 
-import { LimitList, Maker, Favorites, defaultMaker } from '../../models';
+import { LimitList, Maker, Favorites } from '../../models';
 
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import DateFnsUtils from '@date-io/date-fns';
@@ -397,7 +397,7 @@ const MakerForm = ({
 
   const clearMaker = function () {
     setFav({ ...fav, type: null });
-    setMaker(defaultMaker);
+    setMaker(new Maker());
   };
 
   const SummaryText = function () {

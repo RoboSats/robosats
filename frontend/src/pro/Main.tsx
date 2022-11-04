@@ -4,18 +4,7 @@ import { Grid, styled, useTheme } from '@mui/material';
 import { apiClient } from '../services/api';
 import checkVer from '../utils/checkVer';
 
-import {
-  Book,
-  LimitList,
-  Maker,
-  Robot,
-  Info,
-  Settings,
-  Favorites,
-  defaultMaker,
-  defaultRobot,
-  defaultInfo,
-} from '../models';
+import { Book, LimitList, Maker, Robot, Info, Settings, Favorites } from '../models';
 
 import {
   PlaceholderWidget,
@@ -26,6 +15,7 @@ import {
 } from '../pro/Widgets';
 import ToolBar from '../pro/ToolBar';
 import LandingDialog from '../pro/LandingDialog';
+import { defaultInfo } from '../models/Info.model';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -78,8 +68,8 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     list: [],
     loading: true,
   });
-  const [robot, setRobot] = useState<Robot>(defaultRobot);
-  const [maker, setMaker] = useState<Maker>(defaultMaker);
+  const [robot, setRobot] = useState<Robot>(new Robot());
+  const [maker, setMaker] = useState<Maker>(new Maker());
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });
   const [layout, setLayout] = useState<Layout>(defaultLayout);
