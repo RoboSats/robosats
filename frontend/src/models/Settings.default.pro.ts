@@ -1,13 +1,13 @@
 import { systemClient } from '../services/System';
-import { baseSettings, Settings } from './Settings.model';
+import BaseSettings from './Settings.model';
 
-const fontSizeCookie = systemClient.getCookie('settings_fontsize_pro');
-const fontSize = fontSizeCookie !== '' ? Number(fontSizeCookie) : 12;
+class Settings extends BaseSettings {
+  constructor() {
+    super();
+    const fontSizeCookie = systemClient.getCookie('settings_fontsize_pro');
+    this.fontSize = fontSizeCookie !== '' ? Number(fontSizeCookie) : 12;
+  }
+  public frontend: 'basic' | 'pro' = 'pro';
+}
 
-export const defaultSettings: Settings = {
-  ...baseSettings,
-  frontend: 'pro',
-  fontSize: fontSize,
-};
-
-export default defaultSettings;
+export default Settings;

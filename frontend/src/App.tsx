@@ -10,21 +10,21 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n/Web';
 
 import { systemClient } from './services/System';
-import { Settings, defaultSettings } from './models';
+import { Settings } from './models';
 
 const defaultTheme: Theme = createTheme({
   palette: {
-    mode: defaultSettings.mode,
+    mode: new Settings().mode,
     background: {
-      default: defaultSettings.mode === 'dark' ? '#070707' : '#fff',
+      default: new Settings().mode === 'dark' ? '#070707' : '#fff',
     },
   },
-  typography: { fontSize: defaultSettings.fontSize },
+  typography: { fontSize: new Settings().fontSize },
 });
 
 const App = (): JSX.Element => {
   const [theme, setTheme] = useState<Theme>(defaultTheme);
-  const [settings, setSettings] = useState<Settings>(defaultSettings);
+  const [settings, setSettings] = useState<Settings>(new Settings());
 
   const updateTheme = function () {
     setTheme(
