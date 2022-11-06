@@ -12,36 +12,26 @@ import i18n from './i18n/Web';
 import { systemClient } from './services/System';
 import { Settings } from './models';
 
-const defaultTheme: Theme = createTheme({
-  palette: {
-    mode: new Settings().mode,
-    background: {
-      default: new Settings().mode === 'dark' ? '#070707' : '#fff',
+const makeTheme = function (settings: Settings) {
+  const theme: Theme = createTheme({
+    palette: {
+      mode: settings.mode,
+      background: {
+        default: settings.mode === 'dark' ? '#070707' : '#fff',
+      },
     },
-  },
-  typography: { fontSize: new Settings().fontSize },
-});
+    typography: { fontSize: settings.fontSize },
+  });
+
+  return theme;
+};
 
 const App = (): JSX.Element => {
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
+  const [theme, setTheme] = useState<Theme>(makeTheme(new Settings()));
   const [settings, setSettings] = useState<Settings>(new Settings());
 
-  const updateTheme = function () {
-    setTheme(
-      createTheme({
-        palette: {
-          mode: settings.mode,
-          background: {
-            default: settings.mode === 'dark' ? '#070707' : '#fff',
-          },
-        },
-        typography: { fontSize: settings.fontSize },
-      }),
-    );
-  };
-
   useEffect(() => {
-    updateTheme();
+    setTheme(makeTheme(settings));
   }, [settings.fontSize, settings.mode]);
 
   useEffect(() => {
