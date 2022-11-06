@@ -169,6 +169,9 @@ const EncryptedTurtleChat: React.FC<Props> = ({
         .post(`/api/chat`, {
           PGP_message: value,
         })
+        .then((response) => {
+          if (response) onMessage(response as ServerMessage) 
+        })
         .finally(() => {
           setWaitingEcho(false);
           setValue('');
@@ -184,6 +187,9 @@ const EncryptedTurtleChat: React.FC<Props> = ({
             .post(`/api/chat/`, {
               PGP_message: encryptedMessage.toString().split('\n').join('\\'),
               order: orderId,
+            })
+            .then((response) => {
+              if (response) onMessage(response as ServerMessage) 
             })
             .finally(() => {
               setWaitingEcho(false);
