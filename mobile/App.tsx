@@ -47,6 +47,9 @@ const App = () => {
     EncryptedStorage.removeItem('csrftoken');
     loadCookie('robot_token');
     loadCookie('pub_key');
+    loadCookie('settings_fontsize_basic');
+    loadCookie('settings_language');
+    loadCookie('settings_mode');
     loadCookie('enc_priv_key').then(() => injectMessageResolve(reponseId));
   };
 
