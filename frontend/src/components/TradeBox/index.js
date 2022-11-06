@@ -75,7 +75,7 @@ class TradeBox extends Component {
       badInvoice: false,
       badAddress: false,
       badStatement: false,
-      turtleMode: true,
+      turtleMode: false,
     };
   }
 
