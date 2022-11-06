@@ -1,63 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Box,
-  Alert,
-  AlertTitle,
-  ToggleButtonGroup,
-  ToggleButton,
-  IconButton,
-  Link,
-  Paper,
-  Rating,
-  Button,
-  Tooltip,
-  CircularProgress,
-  Grid,
-  Typography,
-  TextField,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  ListItemIcon,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  dividerClasses,
-} from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import QRCode from 'react-qr-code';
-import Countdown, { zeroPad } from 'react-countdown';
-import EncryptedChat from './EncryptedChat';
-import TradeSummary from './TradeSummary';
+import { Box, Divider } from '@mui/material';
+
 import { systemClient } from '../../services/System';
 import { apiClient } from '../../services/api';
 import { ConfirmDisputeDialog, ConfirmFiatReceivedDialog } from './Dialogs';
+
+import Title from './Title';
+import { LockInvoicePrompt, TakerFoundPrompt } from './Prompts';
 import BondStatus from './BondStatus';
 
-// Icons
-import {
-  Percent,
-  Book,
-  Lock,
-  LockOpen,
-  Balance,
-  ContentCopy,
-  PauseCircle,
-  PlayCircle,
-  Bolt,
-  Link,
-  AccountBalanceWallet,
-  Favorite,
-  RocketLaunch,
-  Refresh,
-} from '@mui/icons-material';
-import { NewTabIcon } from '../Icons';
-
-import { pn } from '../../utils';
 import { Order } from '../../models';
 
 const audio = {
@@ -130,13 +82,13 @@ interface TradeBoxProps {
 const TradeBox = ({ order, setOrder }: TradeBoxProps): JSX.Element => {
   const { t } = useTranslation();
 
+  // Buttons and Dialogs
   const [loadingButtons, setLoadingButtons] = useState<loadingButtonsProps>(noLoadingButtons);
   const [open, setOpen] = useState<OpenDialogProps>(closeAll);
 
-  // Payout forms
+  // Forms
   const [onchain, setOnchain] = useState<OnchainFormProps>(defaultOnchain);
   const [lightning, setLightning] = useState<LightningFormProps>(defaultLightning);
-
   const [statement, setStatement] = useState<string>('');
 
   // Sounds
@@ -168,6 +120,38 @@ const TradeBox = ({ order, setOrder }: TradeBoxProps): JSX.Element => {
     submitAction('confirm');
   };
 
+  const Steps = [
+    {
+      isMaker: {
+        title: '',
+        prompt: <LockInvoicePrompt order={order} concept={'bond'} />,
+        bondStatus: 'none',
+      },
+    },
+  ];
+
+  const StepConcent = Steps[order.status][isMaker];
+
+  // 0: 2000, // 'Waiting for maker bond'
+  // 1: 25000, // 'Public'
+  // 2: 90000, // 'Paused'
+  // 3: 2000, // 'Waiting for taker bond'
+  // 4: 999999, // 'Cancelled'
+  // 5: 999999, // 'Expired'
+  // 6: 6000, // 'Waiting for trade collateral and buyer invoice'
+  // 7: 8000, // 'Waiting only for seller trade collateral'
+  // 8: 8000, // 'Waiting only for buyer invoice'
+  // 9: 10000, // 'Sending fiat - In chatroom'
+  // 10: 10000, // 'Fiat sent - In chatroom'
+  // 11: 30000, // 'In dispute'
+  // 12: 999999, // 'Collaboratively cancelled'
+  // 13: 3000, // 'Sending satoshis to buyer'
+  // 14: 999999, // 'Sucessful trade'
+  // 15: 10000, // 'Failed lightning network routing'
+  // 16: 180000, // 'Wait for dispute resolution'
+  // 17: 180000, // 'Maker lost dispute'
+  // 18: 180000, // 'Taker lost dispute'
+
   return (
     <Box>
       <ConfirmDisputeDialog
@@ -176,9 +160,11 @@ const TradeBox = ({ order, setOrder }: TradeBoxProps): JSX.Element => {
         onAgreeClick={onClickAgreeOpenDispute}
       />
 
-      <StepContent />
+      <Title order={order} />
       <Divider />
-      <BondStatus />
+      <StepConcent.prompt />
+      <Divider />
+      <BondStatus status={StepConcent.bondStatus} isMaker={order.is_maker} />
 
       <ConfirmFiatReceivedDialog
         open={open.confirmFiatReceived}
@@ -194,140 +180,6 @@ const TradeBox = ({ order, setOrder }: TradeBoxProps): JSX.Element => {
 export default TradeBox;
 
 // class TradeBox extends Component {
-
-//   showQRInvoice = () => {
-//     const { t } = this.props;
-//     return (
-//       <Grid container spacing={1}>
-//         <Grid item xs={12} align='center'>
-//           {this.props.data.is_maker ? (
-//             <Typography color='primary' variant='subtitle1'>
-//               <b>
-//                 {t('Lock {{amountSats}} Sats to PUBLISH order', {
-//                   amountSats: pn(this.props.data.bond_satoshis),
-//                 })}
-//               </b>{' '}
-//               {' ' + this.stepXofY()}
-//             </Typography>
-//           ) : (
-//             <Typography color='primary' variant='subtitle1'>
-//               <b>
-//                 {t('Lock {{amountSats}} Sats to TAKE order', {
-//                   amountSats: pn(this.props.data.bond_satoshis),
-//                 })}
-//               </b>{' '}
-//               {' ' + this.stepXofY()}
-//             </Typography>
-//           )}
-//         </Grid>
-
-//         <Grid item xs={12} align='center'>
-//           {this.compatibleWalletsButton()}
-//         </Grid>
-
-//         <Grid item xs={12} align='center'>
-//           <QRCode
-//             bgColor={'rgba(255, 255, 255, 0)'}
-//             fgColor={this.props.theme.palette.text.primary}
-//             value={this.props.data.bond_invoice}
-//             size={305}
-//           />
-//           <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-//             <Button
-//               size='small'
-//               color='inherit'
-//               onClick={() => {
-//                 systemClient.copyToClipboard(this.props.data.bond_invoice);
-//               }}
-//               align='center'
-//             >
-//               {' '}
-//               <ContentCopy />
-//               {t('Copy to clipboard')}
-//             </Button>
-//           </Tooltip>
-//         </Grid>
-//         <Grid item xs={12} align='center'>
-//           <TextField
-//             hiddenLabel
-//             variant='standard'
-//             size='small'
-//             defaultValue={this.props.data.bond_invoice}
-//             disabled={true}
-//             helperText={t(
-//               'This is a hold invoice, it will freeze in your wallet. It will be charged only if you cancel or lose a dispute.',
-//             )}
-//             color='secondary'
-//           />
-//         </Grid>
-//       </Grid>
-//     );
-//   };
-
-//   showEscrowQRInvoice = () => {
-//     const { t } = this.props;
-//     return (
-//       <Grid container spacing={1}>
-//         {/* Make sound for Taker found or HTLC received. */}
-//         {this.props.data.is_maker ? this.Sound('taker-found') : this.Sound('locked-invoice')}
-//         <Grid item xs={12} align='center'>
-//           <Typography color='orange' variant='subtitle1'>
-//             <b>
-//               {t('Lock {{amountSats}} Sats as collateral', {
-//                 amountSats: pn(this.props.data.escrow_satoshis),
-//               })}
-//             </b>
-//             {' ' + this.stepXofY()}
-//           </Typography>
-//         </Grid>
-//         <Grid item xs={12} align='center'>
-//           <Typography variant='body2'>
-//             {t(
-//               'You risk losing your bond if you do not lock the collateral. Total time available is {{deposit_timer_hours}}h {{deposit_timer_minutes}}m.',
-//               this.depositHoursMinutes(),
-//             )}
-//           </Typography>
-//         </Grid>
-//         <Grid item xs={12} align='center'>
-//           <QRCode
-//             bgColor={'rgba(255, 255, 255, 0)'}
-//             fgColor={this.props.theme.palette.text.primary}
-//             value={this.props.data.escrow_invoice}
-//             size={305}
-//           />
-//           <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-//             <Button
-//               size='small'
-//               color='inherit'
-//               onClick={() => {
-//                 systemClient.copyToClipboard(this.props.data.escrow_invoice);
-//               }}
-//               align='center'
-//             >
-//               {' '}
-//               <ContentCopy />
-//               {t('Copy to clipboard')}
-//             </Button>
-//           </Tooltip>
-//         </Grid>
-//         <Grid item xs={12} align='center'>
-//           <TextField
-//             hiddenLabel
-//             variant='filled'
-//             size='small'
-//             defaultValue={this.props.data.escrow_invoice}
-//             disabled={true}
-//             helperText={t(
-//               'This is a hold invoice, it will freeze in your wallet. It will be released to the buyer once you confirm to have received the {{currencyCode}}.',
-//               { currencyCode: this.props.data.currencyCode },
-//             )}
-//             color='secondary'
-//           />
-//         </Grid>
-// <BondStatus status={'locked'} isMaker={order.is_maker}/>
-//       </Grid>
-//     );
-//   };
 
 //   showTakerFound = () => {
 //     const { t } = this.props;

@@ -9,7 +9,7 @@ import {
   Button,
 } from '@mui/material';
 import { Order } from '../../../models';
-import currencyDict from '../../../../static/assets/currencies.json';
+import currencies from '../../../../static/assets/currencies.json';
 import { pn } from '../../../utils';
 import { LoadingButton } from '@mui/lab';
 
@@ -29,7 +29,7 @@ export const ConfirmFiatReceivedDialog = ({
   onConfirmClick,
 }: ConfirmFiatReceivedDialogProps): JSX.Element => {
   const { t } = useTranslation();
-  const currencyCode = currencyDict[order.currency.toString()];
+  const currencyCode = currencies[order.currency.toString()];
   const amount = pn(parseFloat(parseFloat(order.amount).toFixed(order.currency == 1000 ? 8 : 4)));
 
   return (

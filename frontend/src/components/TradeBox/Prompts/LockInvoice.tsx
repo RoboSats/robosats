@@ -1,36 +1,24 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Button,
-  Grid,
-  Link,
-  Typography,
-  TextField,
-  Tooltip,
-  useTheme,
-  Divider,
-} from '@mui/material';
+import { Button, Grid, Link, Typography, TextField, Tooltip, useTheme } from '@mui/material';
 import { AccountBalanceWallet, ContentCopy } from '@mui/icons-material';
-import { NewTabIcon } from '../Icons';
+import { NewTabIcon } from '../../Icons';
 import QRCode from 'react-qr-code';
-import { Order } from '../../models';
-import { systemClient } from '../../services/System';
-import currencyDict from '../../../static/assets/currencies.json';
-import stepXofY from './stepXofY';
-import { pn } from '../../utils';
+import { Order } from '../../../models';
+import { systemClient } from '../../../services/System';
+import currencies from '../../../../static/assets/currencies.json';
 
-interface LockInvoiceBoxProps {
+interface LockInvoicePromptProps {
   order: Order;
   concept: 'bond' | 'escrow';
 }
 
-export const LockInvoiceBox = ({ order, concept }: LockInvoiceBoxProps): JSX.Element => {
+export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const currencyCode = currencyDict[order.currency.toString()];
+  const currencyCode: string = currencies[`${order.currency}`];
 
   const invoice = concept === 'bond' ? order.bond_invoice : order.escrow_invoice;
-  const amountSats = concept === 'bond' ? order.bond_satoshis : order.escrow_satoshis;
   const helperText =
     concept === 'bond'
       ? t(
@@ -41,22 +29,6 @@ export const LockInvoiceBox = ({ order, concept }: LockInvoiceBoxProps): JSX.Ele
           { currencyCode },
         );
 
-  const Title = function () {
-    let text = `Lock {{amountSats}} Sats to ${order.is_maker ? 'PUBLISH' : 'TAKE'} order`;
-    if (concept === 'escrow') {
-      text = 'Lock {{amountSats}} Sats as collateral';
-    }
-    return (
-      <Typography color='primary' variant='subtitle1'>
-        <b>
-          {t(text, {
-            amountSats: pn(amountSats),
-          })}
-        </b>
-        {` ${stepXofY(order)}`}
-      </Typography>
-    );
-  };
   const CompatibleWalletsButton = function () {
     return (
       <Button
@@ -74,8 +46,8 @@ export const LockInvoiceBox = ({ order, concept }: LockInvoiceBoxProps): JSX.Ele
   };
 
   const depositHoursMinutes = function () {
-    const hours = parseInt(order.escrow_duration / 3600);
-    const minutes = parseInt((order.escrow_duration - hours * 3600) / 60);
+    const hours = Math.floor(order.escrow_duration / 3600);
+    const minutes = Math.floor((order.escrow_duration - hours * 3600) / 60);
     const dict = { deposit_timer_hours: hours, deposit_timer_minutes: minutes };
     return dict;
   };
@@ -93,12 +65,6 @@ export const LockInvoiceBox = ({ order, concept }: LockInvoiceBoxProps): JSX.Ele
 
   return (
     <Grid container spacing={1}>
-      <Grid item xs={12}>
-        <Title />
-      </Grid>
-
-      <Divider />
-
       <Grid item xs={12}>
         {concept === 'bond' ? <CompatibleWalletsButton /> : <ExpirationWarning />}
       </Grid>
@@ -145,4 +111,4 @@ export const LockInvoiceBox = ({ order, concept }: LockInvoiceBoxProps): JSX.Ele
   );
 };
 
-export default LockInvoiceBox;
+export default LockInvoicePrompt;
