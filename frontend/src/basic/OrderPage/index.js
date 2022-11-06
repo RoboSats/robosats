@@ -66,7 +66,7 @@ class OrderPage extends Component {
       openStoreToken: false,
       tabValue: 1,
       orderId: this.props.match.params.orderId,
-      chat_offset: 0,
+      chatOffset: 0,
     };
 
     // Refresh delays according to Order status
@@ -110,7 +110,7 @@ class OrderPage extends Component {
       currencyCode: this.getCurrencyCode(newStateVars.currency),
       penalty: newStateVars.penalty, // in case penalty time has finished, it goes back to null
       invoice_expired: newStateVars.invoice_expired, // in case invoice had expired, it goes back to null when it is valid again
-      chat_offset: this.state.chat_offset + newStateVars?.chat?.messages.length,
+      chatOffset: this.state.chatOffset + (newStateVars?.chat?.messages.length ?? 0),
     };
 
     const completeStateVars = Object.assign({}, newStateVars, otherStateVars);
@@ -121,7 +121,7 @@ class OrderPage extends Component {
     this.setState({ orderId: id });
 
     apiClient
-      .get('/api/order/?order_id=' + id + '&offset=' + this.state.chat_offset)
+      .get('/api/order/?order_id=' + id + '&offset=' + this.state.chatOffset)
       .then(this.orderDetailsReceived);
   };
 

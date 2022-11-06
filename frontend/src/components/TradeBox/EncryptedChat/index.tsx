@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import EncryptedSocketChat from './EncryptedSocketChat';
-import EncryptedTrutleChat from './EncryptedTrutleChat';
+import EncryptedTurtleChat from './EncryptedTurtleChat';
 
 interface Props {
   turtleMode: boolean;
@@ -35,7 +35,7 @@ const EncryptedChat: React.FC<Props> = ({
   const [messages, setMessages] = useState<EncryptedChatMessage[]>([]);
 
   return turtleMode ? (
-    <EncryptedTrutleChat
+    <EncryptedTurtleChat
       messages={messages}
       setMessages={setMessages}
       orderId={orderId}

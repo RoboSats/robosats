@@ -75,7 +75,7 @@ class TradeBox extends Component {
       badInvoice: false,
       badAddress: false,
       badStatement: false,
-      turtle_mode: false,
+      turtleMode: true,
     };
   }
 
@@ -1458,8 +1458,8 @@ class TradeBox extends Component {
                 <Switch
                   size='small'
                   disabled={false}
-                  checked={this.state.turtle_mode}
-                  onChange={() => this.setState({ turtle_mode: !this.state.turtle_mode })}
+                  checked={this.state.turtleMode}
+                  onChange={() => this.setState({ turtleMode: !this.state.turtleMode })}
                 />
                 <WifiTetheringErrorIcon sx={{ color: 'text.secondary' }} />
               </div>
@@ -1497,8 +1497,8 @@ class TradeBox extends Component {
         </Grid>
 
         <EncryptedChat
-          turtleMode={this.state.turtle_mode}
-          chatOffset={this.props.data.chat_offset}
+          turtleMode={this.state.turtleMode}
+          chatOffset={this.props.data.chatOffset}
           orderId={this.props.data.id}
           takerNick={this.props.data.taker_nick}
           makerNick={this.props.data.maker_nick}

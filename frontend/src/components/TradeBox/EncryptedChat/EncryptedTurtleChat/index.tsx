@@ -70,16 +70,16 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   }, [serverMessages, peerPubKey]);
 
   useEffect(() => {
-    if (chatOffset > lastIndex) {
+    if (chatOffset === 0 || chatOffset > lastIndex) {
       loadMessages();
     }
   }, [chatOffset]);
 
   const loadMessages: () => void = () => {
-    apiClient.get(`/api/chat?order_id=${orderId}&offset=${lastIndex}`).then((results: any) => {
+    apiClient.get(`/api/chat/?order_id=${orderId}&offset=${lastIndex}`).then((results: any) => {
       if (results) {
         setPeerConnected(results.peer_connected);
-        setPeerPubKey(results.peer_public_key);
+        setPeerPubKey(results.peer_pubkey.split('\\').join('\n'));
         setServerMessages(results.messages);
       }
     });
@@ -181,8 +181,9 @@ const EncryptedTurtleChat: React.FC<Props> = ({
       encryptMessage(value, ownPubKey, peerPubKey, ownEncPrivKey, token).then(
         (encryptedMessage) => {
           apiClient
-            .post(`/api/chat`, {
+            .post(`/api/chat/`, {
               PGP_message: encryptedMessage.toString().split('\n').join('\\'),
+              order: orderId,
             })
             .finally(() => {
               setWaitingEcho(false);

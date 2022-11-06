@@ -18,7 +18,7 @@ class ChatSerializer(serializers.ModelSerializer):
 class PostMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ("PGP_message", "order_id", "offset")
+        fields = ("PGP_message", "order", "offset")
         depth = 0
 
     offset = serializers.IntegerField(
