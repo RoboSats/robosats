@@ -13,7 +13,6 @@ import {
   Settings,
   Favorites,
   defaultMaker,
-  defaultRobot,
   defaultInfo,
 } from '../models';
 
@@ -78,7 +77,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     list: [],
     loading: true,
   });
-  const [robot, setRobot] = useState<Robot>(defaultRobot);
+  const [robot, setRobot] = useState<Robot>(new Robot());
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });

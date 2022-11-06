@@ -20,7 +20,6 @@ import {
   Settings,
   Favorites,
   defaultMaker,
-  defaultRobot,
   defaultInfo,
   Coordinator,
 } from '../models';
@@ -56,7 +55,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     list: [],
     loading: true,
   });
-  const [robot, setRobot] = useState<Robot>(defaultRobot);
+  const [robot, setRobot] = useState<Robot>(new Robot());
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);

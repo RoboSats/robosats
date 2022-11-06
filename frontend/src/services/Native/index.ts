@@ -1,4 +1,3 @@
-import { systemClient } from '../System';
 import { NativeRobosatsPromise, NativeWebViewMessage, NativeWebViewMessageSystem } from './index.d';
 
 class NativeRobosats {

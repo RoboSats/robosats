@@ -1,46 +1,29 @@
 import { systemClient } from '../services/System';
 
-export interface Robot {
-  nickname: string | null;
-  token: string | null;
-  pubKey: string | null;
-  encPrivKey: string | null;
-  bitsEntropy: number | null;
-  shannonEntropy: number | null;
-  stealthInvoices: boolean;
-  activeOrderId: number | null;
-  lastOrderId: number | null;
-  earnedRewards: number;
-  referralCode: string;
-  tgEnabled: boolean;
-  tgBotName: string;
-  tgToken: string;
-  loading: boolean;
-  avatarLoaded: boolean;
-  copiedToken: boolean;
+class Robot {
+  constructor() {
+    this.token = systemClient.getCookie('robot_token') ?? undefined;
+    this.pubKey = systemClient.getCookie('pub_key') ?? undefined;
+    this.encPrivKey = systemClient.getCookie('enc_priv_key') ?? undefined;
+  }
+
+  public nickname?: string;
+  public token?: string;
+  public pubKey?: string;
+  public encPrivKey?: string;
+  public bitsEntropy?: number;
+  public shannonEntropy?: number;
+  public stealthInvoices: boolean = true;
+  public activeOrderId?: number;
+  public lastOrderId?: number;
+  public earnedRewards: number = 0;
+  public referralCode: string = '';
+  public tgEnabled: boolean = false;
+  public tgBotName: string = 'unknown';
+  public tgToken: string = 'unknown';
+  public loading: boolean = false;
+  public avatarLoaded: boolean = false;
+  public copiedToken: boolean = false;
 }
-
-const pubKeyCookie = systemClient.getCookie('pub_key');
-const privKeyCookie = systemClient.getCookie('enc_priv_key');
-
-export const defaultRobot: Robot = {
-  nickname: null,
-  token: systemClient.getCookie('robot_token') ?? null,
-  pubKey: pubKeyCookie ? pubKeyCookie.split('\\').join('\n') : null,
-  encPrivKey: privKeyCookie ? privKeyCookie.split('\\').join('\n') : null,
-  bitsEntropy: null,
-  shannonEntropy: null,
-  stealthInvoices: true,
-  activeOrderId: null,
-  lastOrderId: null,
-  earnedRewards: 0,
-  referralCode: '',
-  tgEnabled: false,
-  tgBotName: 'unknown',
-  tgToken: 'unknown',
-  loading: false,
-  avatarLoaded: false,
-  copiedToken: false,
-};
 
 export default Robot;
