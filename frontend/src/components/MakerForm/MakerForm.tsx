@@ -266,7 +266,6 @@ const MakerForm = ({
       apiClient.post('/api/make/', body).then((data: object) => {
         setBadRequest(data.bad_request);
         if (data.id) {
-          history.push('/order/' + data.id);
           onOrderCreated(data.id);
         }
         setSubmittingRequest(false);

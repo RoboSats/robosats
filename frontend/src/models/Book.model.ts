@@ -1,4 +1,4 @@
-export interface Order {
+export interface PublicOrder {
   id: number;
   created_at: Date;
   expires_at: Date;
@@ -24,8 +24,8 @@ export interface Order {
 }
 
 export interface Book {
-  orders: Order[];
+  orders: PublicOrder[];
   loading: boolean;
 }
 
-export default Order;
+export default PublicOrder;

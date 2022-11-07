@@ -22,8 +22,9 @@ class SystemNativeClient implements SystemClient {
     });
   };
 
-  public getCookie: (key: string) => string | undefined = (key) => {
-    return window.NativeRobosats?.cookies[key];
+  public getCookie: (key: string) => string = (key) => {
+    const cookie = window.NativeRobosats?.cookies[key];
+    return cookie === null || cookie === undefined ? '' : cookie;
   };
 
   public setCookie: (key: string, value: string) => void = (key, value) => {

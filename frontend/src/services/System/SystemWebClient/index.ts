@@ -27,7 +27,7 @@ class SystemWebClient implements SystemClient {
     }
   };
 
-  public getCookie: (key: string) => string | undefined = (key) => {
+  public getCookie: (key: string) => string = (key) => {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
       const cookies = document.cookie.split(';');

@@ -28,19 +28,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 import KeyIcon from '@mui/icons-material/Key';
 import { ExportIcon } from '../../Icons';
 import { useTheme } from '@mui/system';
+import { WebSocketsChatMessage } from '../../../models';
 
 interface Props {
   orderId: number;
   userNick: string;
-}
-
-interface EncryptedChatMessage {
-  userNick: string;
-  validSignature: boolean;
-  plainTextMessage: string;
-  encryptedMessage: string;
-  time: string;
-  index: number;
 }
 
 const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Element => {
@@ -58,7 +50,7 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
   );
   const [peerPubKey, setPeerPubKey] = useState<string>();
   const [token] = useState<string>(systemClient.getCookie('robot_token') || '');
-  const [messages, setMessages] = useState<EncryptedChatMessage[]>([]);
+  const [messages, setMessages] = useState<WebSocketsChatMessage[]>([]);
   const [serverMessages, setServerMessages] = useState<any[]>([]);
   const [value, setValue] = useState<string>('');
   const [connection, setConnection] = useState<WebsocketConnection>();

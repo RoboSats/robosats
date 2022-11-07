@@ -10,38 +10,28 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n/Web';
 
 import { systemClient } from './services/System';
-import { Settings, defaultSettings } from './models';
+import { Settings } from './models';
 
-const defaultTheme: Theme = createTheme({
-  palette: {
-    mode: defaultSettings.mode,
-    background: {
-      default: defaultSettings.mode === 'dark' ? '#070707' : '#fff',
+const makeTheme = function (settings: Settings) {
+  const theme: Theme = createTheme({
+    palette: {
+      mode: settings.mode,
+      background: {
+        default: settings.mode === 'dark' ? '#070707' : '#fff',
+      },
     },
-  },
-  typography: { fontSize: defaultSettings.fontSize },
-});
+    typography: { fontSize: settings.fontSize },
+  });
+
+  return theme;
+};
 
 const App = (): JSX.Element => {
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
-  const [settings, setSettings] = useState<Settings>(defaultSettings);
-
-  const updateTheme = function () {
-    setTheme(
-      createTheme({
-        palette: {
-          mode: settings.mode,
-          background: {
-            default: settings.mode === 'dark' ? '#070707' : '#fff',
-          },
-        },
-        typography: { fontSize: settings.fontSize },
-      }),
-    );
-  };
+  const [theme, setTheme] = useState<Theme>(makeTheme(new Settings()));
+  const [settings, setSettings] = useState<Settings>(new Settings());
 
   useEffect(() => {
-    updateTheme();
+    setTheme(makeTheme(settings));
   }, [settings.fontSize, settings.mode]);
 
   useEffect(() => {
@@ -53,8 +43,11 @@ const App = (): JSX.Element => {
       <I18nextProvider i18n={i18n}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <TorConnection />
-          <UnsafeAlert className='unsafeAlert' />
+          {window.NativeRobosats === undefined ? (
+            <UnsafeAlert settings={settings} setSettings={setSettings} />
+          ) : (
+            <TorConnection />
+          )}
           <Main settings={settings} setSettings={setSettings} />
         </ThemeProvider>
       </I18nextProvider>

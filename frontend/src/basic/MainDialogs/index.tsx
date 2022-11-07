@@ -9,6 +9,7 @@ import {
   StatsDialog,
   UpdateClientDialog,
 } from '../../components/Dialogs';
+import { Page } from '../NavBar';
 
 export interface OpenDialogs {
   more: boolean;
@@ -27,6 +28,8 @@ interface MainDialogsProps {
   info: Info;
   robot: Robot;
   setRobot: (state: Robot) => void;
+  setPage: (state: Page) => void;
+  setCurrentOrder: (state: number) => void;
   closeAll: OpenDialogs;
 }
 
@@ -37,6 +40,8 @@ const MainDialogs = ({
   closeAll,
   robot,
   setRobot,
+  setPage,
+  setCurrentOrder,
 }: MainDialogsProps): JSX.Element => {
   useEffect(() => {
     if (info.openUpdateClient) {
@@ -77,6 +82,8 @@ const MainDialogs = ({
         onClose={() => setOpen({ ...open, profile: false })}
         robot={robot}
         setRobot={setRobot}
+        setPage={setPage}
+        setCurrentOrder={setCurrentOrder}
       />
     </>
   );

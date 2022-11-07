@@ -73,12 +73,12 @@ class UserGenPage extends Component {
     requestBody.then((body) =>
       apiClient.post('/api/user/', body).then((data) => {
         this.setState({ found: data.found, bad_request: data.bad_request });
-        this.props.setOrder(
+        this.props.setCurrentOrder(
           data.active_order_id
             ? data.active_order_id
             : data.last_order_id
             ? data.last_order_id
-            : this.props.order,
+            : null,
         );
         // Add nick and token to App state (token only if not a bad request)
         data.bad_request

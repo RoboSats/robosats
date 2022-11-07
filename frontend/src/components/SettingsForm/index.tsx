@@ -24,6 +24,7 @@ import {
   SettingsOverscan,
   Link,
 } from '@mui/icons-material';
+import { systemClient } from '../../services/System';
 
 interface SettingsFormProps {
   dense?: boolean;
@@ -58,7 +59,10 @@ const SettingsForm = ({
             </ListItemIcon>
             <SelectLanguage
               language={settings.language}
-              setLanguage={(language) => setSettings({ ...settings, language })}
+              setLanguage={(language) => {
+                setSettings({ ...settings, language });
+                systemClient.setCookie('settings_language', language);
+              }}
             />
           </ListItem>
 
@@ -103,9 +107,11 @@ const SettingsForm = ({
                       <LightMode sx={{ width: '0.67em', height: '0.67em', color: '#666' }} />
                     </Paper>
                   }
-                  onChange={(e) =>
-                    setSettings({ ...settings, mode: e.target.checked ? 'dark' : 'light' })
-                  }
+                  onChange={(e) => {
+                    const mode = e.target.checked ? 'dark' : 'light';
+                    setSettings({ ...settings, mode });
+                    systemClient.setCookie('settings_mode', mode);
+                  }}
                 />
               }
             />
@@ -120,7 +126,14 @@ const SettingsForm = ({
               min={settings.frontend == 'basic' ? 12 : 10}
               max={settings.frontend == 'basic' ? 16 : 14}
               step={1}
-              onChange={(e) => setSettings({ ...settings, fontSize: e.target.value })}
+              onChange={(e) => {
+                const fontSize = e.target.value;
+                setSettings({ ...settings, fontSize });
+                systemClient.setCookie(
+                  `settings_fontsize_${settings.frontend}`,
+                  fontSize.toString(),
+                );
+              }}
               valueLabelDisplay='off'
               marks={fontSizes.map(({ label, value }) => ({
                 label: <Typography variant='caption'>{t(label)}</Typography>,
@@ -137,7 +150,7 @@ const SettingsForm = ({
               <ToggleButtonGroup
                 exclusive={true}
                 value={settings.network}
-                onChange={(e, value) => setSettings({ ...settings, network: value })}
+                onChange={(e, network) => setSettings({ ...settings, network })}
               >
                 <ToggleButton value='mainnet' color='primary'>
                   {t('Mainnet')}
