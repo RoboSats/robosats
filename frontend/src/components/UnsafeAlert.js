@@ -23,17 +23,24 @@ class UnsafeAlert extends Component {
 
   checkClient() {
     const http = new XMLHttpRequest();
-    const unsafeClient = !this.safe_urls.includes(getHost());
+    const host = getHost();
+    const unsafeClient = !this.safe_urls.includes(host);
     try {
-      http.open('HEAD', `${location.protocol}//${getHost()}/selfhosted`, false);
+      http.open('HEAD', `${location.protocol}//${host}/selfhosted`, false);
       http.send();
       this.props.setSettings({
         ...this.props.settings,
+        host,
         unsafeClient,
         selfhostedClient: http.status === 200,
       });
     } catch {
-      this.props.setSettings({ ...this.props.settings, unsafeClient, selfhostedClient: false });
+      this.props.setSettings({
+        ...this.props.settings,
+        host,
+        unsafeClient,
+        selfhostedClient: false,
+      });
     }
   }
 

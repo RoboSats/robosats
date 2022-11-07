@@ -46,6 +46,7 @@ class BaseSettings {
   public freezeViewports: boolean = false;
   public network: 'mainnet' | 'testnet' | undefined = 'mainnet';
   public coordinator: Coordinator | undefined = undefined;
+  public host?: string;
   public unsafeClient: boolean = false;
   public hostedClient: boolean = false;
 }

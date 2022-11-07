@@ -25,7 +25,7 @@ import {
 } from '../models';
 
 import { apiClient } from '../services/api';
-import { checkVer } from '../utils';
+import { checkVer, getHost } from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
@@ -59,6 +59,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
+  const [baseUrl, setBaseUrl] = useState<string>('');
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });
 
   const theme = useTheme();
@@ -106,6 +107,20 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   }, []);
 
   useEffect(() => {
+    let host = '';
+    if (window.NativeRobosats === undefined) {
+      host = getHost();
+    } else {
+      host =
+        settings.network === 'mainnet'
+          ? coordinators[0].mainnetOnion
+          : coordinators[0].testnetOnion;
+    }
+    setBaseUrl(`http://${host}`);
+    console.log(`http://${host}`);
+  }, [settings.network]);
+
+  useEffect(() => {
     setWindowSize(getWindowSize(theme.typography.fontSize));
   }, [theme.typography.fontSize]);
 
@@ -115,7 +130,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
 
   const fetchBook = function () {
     setBook({ ...book, loading: true });
-    apiClient.get('/api/book/').then((data: any) =>
+    apiClient.get(baseUrl, '/api/book/').then((data: any) =>
       setBook({
         loading: false,
         orders: data.not_found ? [] : data,
@@ -125,7 +140,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
 
   const fetchLimits = async () => {
     setLimits({ ...limits, loading: true });
-    const data = apiClient.get('/api/limits/').then((data) => {
+    const data = apiClient.get(baseUrl, '/api/limits/').then((data) => {
       setLimits({ list: data ?? [], loading: false });
       return data;
     });
@@ -134,7 +149,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
 
   const fetchInfo = function () {
     setInfo({ ...info, loading: true });
-    apiClient.get('/api/info/').then((data: Info) => {
+    apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
       const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
       setInfo({
         ...data,
@@ -162,7 +177,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     }
 
     setRobot({ ...robot, loading: true });
-    apiClient.post('/api/user/', requestBody).then((data: any) => {
+    apiClient.post(baseUrl, '/api/user/', requestBody).then((data: any) => {
       setCurrentOrder(
         data.active_order_id
           ? data.active_order_id
@@ -207,6 +222,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
       <RobotAvatar
         style={{ display: 'none' }}
         nickname={robot.nickname}
+        baseUrl={baseUrl}
         onLoad={() => setRobot({ ...robot, avatarLoaded: true })}
       />
       <Box
@@ -235,6 +251,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                     theme={theme}
                     robot={robot}
                     setRobot={setRobot}
+                    baseUrl={baseUrl}
                   />
                 </div>
               </Slide>
@@ -262,6 +279,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                   hasRobot={robot.avatarLoaded}
                   setPage={setPage}
                   setCurrentOrder={setCurrentOrder}
+                  baseUrl={baseUrl}
                 />
               </div>
             </Slide>
@@ -300,7 +318,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                 appear={slideDirection.in != undefined}
               >
                 <div>
-                  <OrderPage theme={theme} history={history} {...props} />
+                  <OrderPage theme={theme} history={history} {...props} baseUrl={baseUrl} />
                 </div>
               </Slide>
             )}
@@ -335,6 +353,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         setSlideDirection={setSlideDirection}
         currentOrder={currentOrder}
         hasRobot={robot.avatarLoaded}
+        baseUrl={baseUrl}
       />
       <MainDialogs
         open={open}
@@ -345,6 +364,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         info={info}
         robot={robot}
         closeAll={closeAll}
+        baseUrl={baseUrl}
       />
     </Router>
   );

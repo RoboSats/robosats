@@ -16,6 +16,7 @@ export interface NativeWebViewMessageHttp {
   category: 'http';
   type: 'post' | 'get' | 'put' | 'delete' | 'xhr';
   path: string;
+  baseUrl: string;
   headers?: object;
   body?: object;
 }

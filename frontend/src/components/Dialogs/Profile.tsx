@@ -50,10 +50,12 @@ interface Props {
   setRobot: (state: Robot) => void;
   setPage: (state: Page) => void;
   setCurrentOrder: (state: number) => void;
+  baseUrl: string;
 }
 
 const ProfileDialog = ({
   open = false,
+  baseUrl,
   onClose,
   robot,
   setRobot,
@@ -110,7 +112,7 @@ const ProfileDialog = ({
     setShowRewardsSpinner(true);
 
     apiClient
-      .post('/api/reward/', {
+      .post(baseUrl, '/api/reward/', {
         invoice: rewardInvoice,
       })
       .then((data: any) => {
@@ -130,7 +132,7 @@ const ProfileDialog = ({
 
   const setStealthInvoice = (wantsStealth: boolean) => {
     apiClient
-      .put('/api/stealth/', { wantsStealth })
+      .put(baseUrl, '/api/stealth/', { wantsStealth })
       .then((data) => setRobot({ ...robot, stealthInvoices: data?.wantsStealth }));
   };
 

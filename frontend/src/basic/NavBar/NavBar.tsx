@@ -32,6 +32,7 @@ interface NavBarProps {
   closeAll: OpenDialogs;
   currentOrder: number | null;
   hasRobot: boolean;
+  baseUrl: string;
 }
 
 const NavBar = ({
@@ -46,6 +47,7 @@ const NavBar = ({
   height,
   currentOrder,
   hasRobot = false,
+  baseUrl,
 }: NavBarProps): JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -111,6 +113,7 @@ const NavBar = ({
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
                 nickname={nickname}
+                baseUrl={baseUrl}
               />
             ) : (
               <></>

@@ -38,39 +38,56 @@ class ApiNativeClient implements ApiClient {
     return response.json;
   };
 
-  public put: (path: string, body: object) => Promise<object | undefined> = async (path, body) => {
+  public put: (baseUrl: string, path: string, body: object) => Promise<object | undefined> = async (
+    baseUrl,
+    path,
+    body,
+  ) => {
     return await new Promise((res, _rej) => res({}));
   };
 
-  public delete: (path: string) => Promise<object | undefined> = async (path) => {
+  public delete: (baseUrl: string, path: string) => Promise<object | undefined> = async (
+    baseUrl,
+    path,
+  ) => {
     return await window.NativeRobosats?.postMessage({
       category: 'http',
       type: 'delete',
+      baseUrl,
       path,
       headers: this.getHeaders(),
     }).then(this.parseResponse);
   };
 
-  public post: (path: string, body: object) => Promise<object | undefined> = async (path, body) => {
-    return await window.NativeRobosats?.postMessage({
-      category: 'http',
-      type: 'post',
-      path,
-      body,
-      headers: this.getHeaders(),
-    }).then(this.parseResponse);
-  };
+  public post: (baseUrl: string, path: string, body: object) => Promise<object | undefined> =
+    async (baseUrl, path, body) => {
+      return await window.NativeRobosats?.postMessage({
+        category: 'http',
+        type: 'post',
+        baseUrl,
+        path,
+        body,
+        headers: this.getHeaders(),
+      }).then(this.parseResponse);
+    };
 
-  public get: (path: string) => Promise<object | undefined> = async (path) => {
+  public get: (baseUrl: string, path: string) => Promise<object | undefined> = async (
+    baseUrl,
+    path,
+  ) => {
     return await window.NativeRobosats?.postMessage({
       category: 'http',
       type: 'get',
+      baseUrl,
       path,
       headers: this.getHeaders(),
     }).then(this.parseResponse);
   };
 
-  public fileImageUrl: (path: string) => Promise<string | undefined> = async (path) => {
+  public fileImageUrl: (baseUrl: string, path: string) => Promise<string | undefined> = async (
+    baseUrl,
+    path,
+  ) => {
     if (!path) {
       return '';
     }
@@ -85,6 +102,7 @@ class ApiNativeClient implements ApiClient {
       const fileB64 = await window.NativeRobosats?.postMessage({
         category: 'http',
         type: 'xhr',
+        baseUrl,
         path,
       }).catch(reject);
 
