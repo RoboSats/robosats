@@ -1469,7 +1469,11 @@ class TradeBox extends Component {
           )}
         </Grid>
 
-        <EncryptedChat orderId={this.props.data.id} userNick={this.props.data.ur_nick} />
+        <EncryptedChat
+          orderId={this.props.data.id}
+          userNick={this.props.data.ur_nick}
+          baseUrl={this.props.baseUrl}
+        />
         <Grid item xs={12} align='center'>
           {showDisputeButton ? this.showOpenDisputeButton() : ''}
           {showSendButton ? this.showFiatSentButton() : ''}

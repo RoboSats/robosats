@@ -676,6 +676,7 @@ class OrderPage extends Component {
                     nickname={this.state.maker_nick}
                     tooltip={t(this.state.maker_status)}
                     orderType={this.state.type}
+                    baseUrl={this.props.baseUrl}
                   />
                 </ListItemAvatar>
                 <ListItemText
@@ -708,6 +709,7 @@ class OrderPage extends Component {
                             nickname={this.state.taker_nick}
                             tooltip={t(this.state.taker_status)}
                             orderType={this.state.type === 0 ? 1 : 0}
+                            baseUrl={this.props.baseUrl}
                           />
                         </ListItemAvatar>
                       </ListItem>

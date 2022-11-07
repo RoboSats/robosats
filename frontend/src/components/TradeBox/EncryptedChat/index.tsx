@@ -33,9 +33,10 @@ import { WebSocketsChatMessage } from '../../../models';
 interface Props {
   orderId: number;
   userNick: string;
+  baseUrl: string;
 }
 
-const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Element => {
+const EncryptedChat: React.FC<Props> = ({ orderId, userNick, baseUrl }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -232,6 +233,7 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick }: Props): JSX.Eleme
             <RobotAvatar
               statusColor={userConnected ? 'success' : 'error'}
               nickname={message.userNick}
+              baseUrl={baseUrl}
             />
           }
           style={{ backgroundColor: cardColor }}
