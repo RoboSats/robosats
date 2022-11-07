@@ -33,6 +33,7 @@ interface NavBarProps {
   currentOrder: number | null;
   hasRobot: boolean;
   baseUrl: string;
+  color: 'primary' | 'secondary';
 }
 
 const NavBar = ({
@@ -48,6 +49,7 @@ const NavBar = ({
   currentOrder,
   hasRobot = false,
   baseUrl,
+  color,
 }: NavBarProps): JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -100,6 +102,8 @@ const NavBar = ({
         TabIndicatorProps={{ sx: { height: '0.3em', position: 'absolute', top: 0 } }}
         variant='fullWidth'
         value={page}
+        indicatorColor={color}
+        textColor={color}
         onChange={changePage}
       >
         <Tab

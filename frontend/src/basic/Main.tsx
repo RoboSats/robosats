@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { HashRouter, BrowserRouter, Switch, Route, useHistory } from 'react-router-dom';
-import { useTheme, Box, Slide } from '@mui/material';
+import { useTheme, Box, Slide, Typography } from '@mui/material';
 
 import UserGenPage from './UserGenPage';
 import MakerPage from './MakerPage';
@@ -29,6 +29,7 @@ import { checkVer, getHost } from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
+import { useTranslation } from 'react-i18next';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -49,6 +50,8 @@ interface MainProps {
 }
 
 const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
+  const { t } = useTranslation();
+
   // All app data structured
   const [book, setBook] = useState<Book>({ orders: [], loading: true });
   const [limits, setLimits] = useState<{ list: LimitList; loading: boolean }>({
@@ -117,7 +120,6 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
           : coordinators[0].testnetOnion;
     }
     setBaseUrl(`http://${host}`);
-    console.log(`http://${host}`);
   }, [settings.network]);
 
   useEffect(() => {
@@ -225,6 +227,16 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         baseUrl={baseUrl}
         onLoad={() => setRobot({ ...robot, avatarLoaded: true })}
       />
+      {settings.network === 'testnet' ? (
+        <div style={{ height: 0 }}>
+          <Typography color='secondary' align='center'>
+            <i>{t('Using Testnet Bitcoin')}</i>
+          </Typography>
+        </div>
+      ) : (
+        <></>
+      )}
+
       <Box
         style={{
           position: 'absolute',
@@ -343,6 +355,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
       </Box>
       <NavBar
         nickname={robot.avatarLoaded ? robot.nickname : null}
+        color={settings.network === 'mainnet' ? 'primary' : 'secondary'}
         width={windowSize.width}
         height={navbarHeight}
         page={page}
