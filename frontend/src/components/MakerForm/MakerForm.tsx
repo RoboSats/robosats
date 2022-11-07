@@ -29,9 +29,8 @@ import { LimitList, Maker, Favorites, defaultMaker } from '../../models';
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import { useHistory } from 'react-router-dom';
-import { StoreTokenDialog, NoRobotDialog, ConfirmationDialog } from '../Dialogs';
+import { ConfirmationDialog } from '../Dialogs';
 import { apiClient } from '../../services/api';
-import { systemClient } from '../../services/System';
 
 import { FlagWithProps } from '../Icons';
 import AutocompletePayments from './AutocompletePayments';
@@ -59,6 +58,7 @@ interface MakerFormProps {
   onOrderCreated?: (id: number) => void;
   hasRobot?: boolean;
   setPage?: (state: Page) => void;
+  baseUrl: string;
 }
 
 const MakerForm = ({
@@ -77,6 +77,7 @@ const MakerForm = ({
   onOrderCreated = () => null,
   hasRobot = true,
   setPage = () => null,
+  baseUrl,
 }: MakerFormProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -263,7 +264,7 @@ const MakerForm = ({
         escrow_duration: maker.escrowDuration,
         bond_size: maker.bondSize,
       };
-      apiClient.post('/api/make/', body).then((data: object) => {
+      apiClient.post(baseUrl, '/api/make/', body).then((data: object) => {
         setBadRequest(data.bad_request);
         if (data.id) {
           onOrderCreated(data.id);

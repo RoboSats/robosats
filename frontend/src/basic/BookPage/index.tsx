@@ -132,6 +132,7 @@ const BookPage = ({
                 setPage('order');
                 history.push('/order/' + id);
               }}
+              baseUrl={baseUrl}
             />
           </Box>
         </Dialog>

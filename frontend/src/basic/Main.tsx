@@ -107,7 +107,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         window.removeEventListener('resize', onResize);
       }
     };
-  }, []);
+  }, [baseUrl]);
 
   useEffect(() => {
     let host = '';
@@ -316,6 +316,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                   setFav={setFav}
                   windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}
                   hasRobot={robot.avatarLoaded}
+                  baseUrl={baseUrl}
                 />
               </div>
             </Slide>

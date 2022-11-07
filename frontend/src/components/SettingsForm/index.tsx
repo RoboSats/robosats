@@ -150,7 +150,10 @@ const SettingsForm = ({
               <ToggleButtonGroup
                 exclusive={true}
                 value={settings.network}
-                onChange={(e, network) => setSettings({ ...settings, network })}
+                onChange={(e, network) => {
+                  setSettings({ ...settings, network });
+                  systemClient.setCookie('settings_network', network);
+                }}
               >
                 <ToggleButton value='mainnet' color='primary'>
                   {t('Mainnet')}
