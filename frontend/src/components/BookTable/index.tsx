@@ -786,7 +786,7 @@ const BookTable = ({
               setPageSize(newPageSize);
               setUseDefaultPageSize(false);
             }}
-            onRowClick={(params: any) => history.push('/order/' + params.row.id)} // Whole row is clickable, but the mouse only looks clickly in some places.
+            onRowClick={(params: any) => onOrderClicked(params.row.id)}
           />
         </Paper>
       </Dialog>

@@ -7,13 +7,10 @@ import {
   DialogActions,
   DialogContent,
   Button,
-  Grid,
   Accordion,
   AccordionDetails,
   AccordionSummary,
 } from '@mui/material';
-import SmoothImage from 'react-smooth-image';
-import MediaQuery from 'react-responsive';
 import { pn } from '../../utils';
 
 // Icons
@@ -37,63 +34,21 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
       scroll='paper'
     >
       <DialogContent>
-        <MediaQuery minWidth={475}>
-          <Grid container>
-            <Grid item xs={8}>
-              <Typography component='h4' variant='h4'>
-                {t('What is RoboSats?')}
-              </Typography>
-              <Typography component='div' variant='body2'>
-                <p>
-                  {t('It is a BTC/FIAT peer-to-peer exchange over lightning.')} <br />
-                  {t(
-                    'It simplifies matchmaking and minimizes the need of trust. RoboSats focuses in privacy and speed.',
-                  )}
-                </p>
-
-                <p>
-                  {t('RoboSats is an open source project ')}{' '}
-                  <Link href='https://github.com/reckless-satoshi/robosats'>{t('(GitHub).')}</Link>
-                </p>
-              </Typography>
-            </Grid>
-            <Grid item xs={4}>
-              <SmoothImage
-                src={window.location.origin + '/static/assets/images/v0.1.2-04.png'}
-                imageStyles={{
-                  borderRadius: '50%',
-                  border: '2px solid #555',
-                  filter: 'drop-shadow(1px 1px 1px #000000)',
-                  height: '170px',
-                  width: '170px',
-                }}
-              />
-            </Grid>
-          </Grid>
-          <div style={{ height: 15 }} />
-        </MediaQuery>
-
-        <MediaQuery maxWidth={474}>
-          <Typography component='h4' variant='h4'>
-            {t('What is RoboSats?')}
-          </Typography>
-          <Typography component='div' variant='body2'>
-            <p>
-              {t('It is a BTC/FIAT peer-to-peer exchange over lightning.') + ' '}{' '}
-              {t(
-                'It simplifies matchmaking and minimizes the need of trust. RoboSats focuses in privacy and speed.',
-              )}
-            </p>
-            <img
-              width='100%'
-              src={window.location.origin + '/static/assets/images/v0.1.2-03.png'}
-            />
-            <p>
-              {t('RoboSats is an open source project ')}{' '}
-              <Link href='https://github.com/reckless-satoshi/robosats'>{t('(GitHub).')}</Link>
-            </p>
-          </Typography>
-        </MediaQuery>
+        <Typography component='h4' variant='h4'>
+          {t('What is RoboSats?')}
+        </Typography>
+        <Typography component='div' variant='body2'>
+          <p>
+            {t('It is a BTC/FIAT peer-to-peer exchange over lightning.') + ' '}{' '}
+            {t(
+              'It simplifies matchmaking and minimizes the need of trust. RoboSats focuses in privacy and speed.',
+            )}
+          </p>
+          <p>
+            {t('RoboSats is an open source project ')}{' '}
+            <Link href='https://github.com/reckless-satoshi/robosats'>{t('(GitHub).')}</Link>
+          </p>
+        </Typography>
 
         <Accordion disableGutters={true}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
