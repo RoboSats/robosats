@@ -71,7 +71,7 @@ class UserGenPage extends Component {
       };
     });
     requestBody.then((body) =>
-      apiClient.post('/api/user/', body).then((data) => {
+      apiClient.post(this.props.baseUrl, '/api/user/', body).then((data) => {
         this.setState({ found: data.found, bad_request: data.bad_request });
         this.props.setCurrentOrder(
           data.active_order_id
@@ -126,7 +126,7 @@ class UserGenPage extends Component {
   };
 
   delGeneratedUser() {
-    apiClient.delete('/api/user');
+    apiClient.delete(this.props.baseUrl, '/api/user');
 
     systemClient.deleteCookie('sessionid');
     systemClient.deleteCookie('robot_token');
@@ -241,6 +241,7 @@ class UserGenPage extends Component {
                   }}
                   tooltip={t('This is your trading avatar')}
                   tooltipPosition='top'
+                  baseUrl={this.props.baseUrl}
                 />
                 <br />
               </Grid>

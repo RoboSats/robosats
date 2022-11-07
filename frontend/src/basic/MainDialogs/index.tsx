@@ -31,6 +31,7 @@ interface MainDialogsProps {
   setPage: (state: Page) => void;
   setCurrentOrder: (state: number) => void;
   closeAll: OpenDialogs;
+  baseUrl: string;
 }
 
 const MainDialogs = ({
@@ -42,6 +43,7 @@ const MainDialogs = ({
   setRobot,
   setPage,
   setCurrentOrder,
+  baseUrl,
 }: MainDialogsProps): JSX.Element => {
   useEffect(() => {
     if (info.openUpdateClient) {
@@ -79,6 +81,7 @@ const MainDialogs = ({
       />
       <ProfileDialog
         open={open.profile}
+        baseUrl={baseUrl}
         onClose={() => setOpen({ ...open, profile: false })}
         robot={robot}
         setRobot={setRobot}

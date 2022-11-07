@@ -46,6 +46,7 @@ interface BookTableProps {
   onCurrencyChange?: (e: any) => void;
   onTypeChange?: (mouseEvent: any, val: number) => void;
   onOrderClicked?: (id: number) => void;
+  baseUrl: string;
 }
 
 const BookTable = ({
@@ -65,6 +66,7 @@ const BookTable = ({
   onCurrencyChange,
   onTypeChange,
   onOrderClicked = () => null,
+  baseUrl,
 }: BookTableProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -173,6 +175,7 @@ const BookTable = ({
                 orderType={params.row.type}
                 statusColor={statusBadgeColor(params.row.maker_status)}
                 tooltip={t(params.row.maker_status)}
+                baseUrl={baseUrl}
               />
             </ListItemAvatar>
             <ListItemText primary={params.row.maker_nick} />
@@ -200,6 +203,7 @@ const BookTable = ({
                 orderType={params.row.type}
                 statusColor={statusBadgeColor(params.row.maker_status)}
                 tooltip={t(params.row.maker_status)}
+                baseUrl={baseUrl}
               />
             </ListItemButton>
           </div>

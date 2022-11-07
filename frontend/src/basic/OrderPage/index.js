@@ -117,7 +117,7 @@ class OrderPage extends Component {
 
   getOrderDetails = (id) => {
     this.setState({ orderId: id });
-    apiClient.get('/api/order/?order_id=' + id).then(this.orderDetailsReceived);
+    apiClient.get(this.props.baseUrl, '/api/order/?order_id=' + id).then(this.orderDetailsReceived);
   };
 
   orderDetailsReceived = (data) => {
@@ -179,7 +179,7 @@ class OrderPage extends Component {
 
   sendWeblnInvoice = (invoice) => {
     apiClient
-      .post('/api/order/?order_id=' + this.state.orderId, {
+      .post(this.props.baseUrl, '/api/order/?order_id=' + this.state.orderId, {
         action: 'update_invoice',
         invoice,
       })
@@ -418,7 +418,7 @@ class OrderPage extends Component {
   takeOrder = () => {
     this.setState({ loading: true });
     apiClient
-      .post('/api/order/?order_id=' + this.state.orderId, {
+      .post(this.props.baseUrl, '/api/order/?order_id=' + this.state.orderId, {
         action: 'take',
         amount: this.state.takeAmount,
       })
@@ -438,7 +438,7 @@ class OrderPage extends Component {
   handleClickConfirmCancelButton = () => {
     this.setState({ loading: true });
     apiClient
-      .post('/api/order/?order_id=' + this.state.orderId, {
+      .post(this.props.baseUrl, '/api/order/?order_id=' + this.state.orderId, {
         action: 'cancel',
       })
       .then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
@@ -538,7 +538,7 @@ class OrderPage extends Component {
 
   handleClickConfirmCollaborativeCancelButton = () => {
     apiClient
-      .post('/api/order/?order_id=' + this.state.orderId, {
+      .post(this.props.baseUrl, '/api/order/?order_id=' + this.state.orderId, {
         action: 'cancel',
       })
       .then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
@@ -676,6 +676,7 @@ class OrderPage extends Component {
                     nickname={this.state.maker_nick}
                     tooltip={t(this.state.maker_status)}
                     orderType={this.state.type}
+                    baseUrl={this.props.baseUrl}
                   />
                 </ListItemAvatar>
                 <ListItemText
@@ -708,6 +709,7 @@ class OrderPage extends Component {
                             nickname={this.state.taker_nick}
                             tooltip={t(this.state.taker_status)}
                             orderType={this.state.type === 0 ? 1 : 0}
+                            baseUrl={this.props.baseUrl}
                           />
                         </ListItemAvatar>
                       </ListItem>
@@ -965,6 +967,7 @@ class OrderPage extends Component {
             width={330}
             data={this.state}
             completeSetState={this.completeSetState}
+            baseUrl={this.props.baseUrl}
           />
         </Grid>
       </Grid>
@@ -1011,6 +1014,7 @@ class OrderPage extends Component {
                 width={330}
                 data={this.state}
                 completeSetState={this.completeSetState}
+                baseUrl={this.props.baseUrl}
               />
             </div>
           </Grid>

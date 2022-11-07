@@ -20,8 +20,7 @@ import {
 } from '@mui/material';
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
-import { PublicOrder, LimitList } from '../../../models';
+import { PublicOrder, LimitList, Order } from '../../../models';
 import RobotAvatar from '../../RobotAvatar';
 import { amountToString, matchMedian, statusBadgeColor } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
@@ -38,6 +37,7 @@ interface DepthChartProps {
   fillContainer?: boolean;
   elevation?: number;
   onOrderClicked?: (id: number) => void;
+  baseUrl: string;
 }
 
 const DepthChart: React.FC<DepthChartProps> = ({
@@ -50,9 +50,9 @@ const DepthChart: React.FC<DepthChartProps> = ({
   fillContainer = false,
   elevation = 6,
   onOrderClicked = () => null,
+  baseUrl,
 }) => {
   const { t } = useTranslation();
-  const history = useHistory();
   const theme = useTheme();
   const [enrichedOrders, setEnrichedOrders] = useState<Order[]>([]);
   const [series, setSeries] = useState<Serie[]>([]);
@@ -233,6 +233,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 orderType={order.type}
                 statusColor={statusBadgeColor(order.maker_status)}
                 tooltip={t(order.maker_status)}
+                baseUrl={baseUrl}
               />
             </Grid>
           </Grid>

@@ -24,6 +24,7 @@ interface MakerPageProps {
   hasRobot: boolean;
   setCurrentOrder: (state: number) => void;
   setPage: (state: Page) => void;
+  baseUrl: string;
 }
 
 const MakerPage = ({
@@ -38,6 +39,7 @@ const MakerPage = ({
   setCurrentOrder,
   setPage,
   hasRobot = false,
+  baseUrl,
 }: MakerPageProps): JSX.Element => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -108,6 +110,7 @@ const MakerPage = ({
             onReset={() => setShowMatches(false)}
             submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
             setPage={setPage}
+            baseUrl={baseUrl}
           />
         </Paper>
       </Grid>

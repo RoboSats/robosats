@@ -50,6 +50,7 @@ const App = () => {
     loadCookie('settings_fontsize_basic');
     loadCookie('settings_language');
     loadCookie('settings_mode');
+    loadCookie('settings_network');
     loadCookie('enc_priv_key').then(() => injectMessageResolve(reponseId));
   };
 
@@ -59,7 +60,7 @@ const App = () => {
       sendTorStatus();
       if (data.type === 'get') {
         torClient
-          .get(data.path, data.headers)
+          .get(data.baseUrl, data.path, data.headers)
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })
@@ -67,7 +68,7 @@ const App = () => {
           .finally(sendTorStatus);
       } else if (data.type === 'post') {
         torClient
-          .post(data.path, data.body, data.headers)
+          .post(data.baseUrl, data.path, data.body, data.headers)
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })
@@ -75,7 +76,7 @@ const App = () => {
           .finally(sendTorStatus);
       } else if (data.type === 'delete') {
         torClient
-          .delete(data.path, data.headers)
+          .delete(data.baseUrl, data.path, data.headers)
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })
@@ -83,7 +84,7 @@ const App = () => {
           .finally(sendTorStatus);
       } else if (data.type === 'xhr') {
         torClient
-          .request(data.path)
+          .request(data.baseUrl, data.path)
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })

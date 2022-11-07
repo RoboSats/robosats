@@ -18,6 +18,7 @@ interface Props {
   tooltipPosition?: string;
   avatarClass?: string;
   onLoad?: () => void;
+  baseUrl: string;
 }
 
 const RobotAvatar: React.FC<Props> = ({
@@ -32,6 +33,7 @@ const RobotAvatar: React.FC<Props> = ({
   avatarClass = 'flippedSmallAvatar',
   imageStyle = {},
   onLoad = () => {},
+  baseUrl,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -39,7 +41,13 @@ const RobotAvatar: React.FC<Props> = ({
 
   useEffect(() => {
     if (nickname != null) {
-      apiClient.fileImageUrl('/static/assets/avatars/' + nickname + '.png').then(setAvatarSrc);
+      if (window.NativeRobosats === undefined) {
+        setAvatarSrc(baseUrl + '/static/assets/avatars/' + nickname + '.png');
+      } else {
+        apiClient
+          .fileImageUrl(baseUrl, '/static/assets/avatars/' + nickname + '.png')
+          .then(setAvatarSrc);
+      }
     }
   }, [nickname]);
 

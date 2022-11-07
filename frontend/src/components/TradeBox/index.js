@@ -137,7 +137,7 @@ class TradeBox extends Component {
 
   handleClickAgreeDisputeButton = () => {
     apiClient
-      .post('/api/order/?order_id=' + this.props.data.id, {
+      .post(this.props.baseUrl, '/api/order/?order_id=' + this.props.data.id, {
         action: 'dispute',
       })
       .then((data) => this.props.completeSetState(data));
@@ -494,7 +494,7 @@ class TradeBox extends Component {
   handleClickPauseOrder = () => {
     this.props.completeSetState({ pauseLoading: true });
     apiClient
-      .post('/api/order/?order_id=' + this.props.data.id, {
+      .post(this.props.baseUrl, '/api/order/?order_id=' + this.props.data.id, {
         action: 'pause',
       })
       .then((data) => this.props.getOrderDetails(data.id));
@@ -642,7 +642,7 @@ class TradeBox extends Component {
     this.setState({ badInvoice: false, loadingSubmitInvoice: true });
 
     apiClient
-      .post('/api/order/?order_id=' + this.props.data.id, {
+      .post(this.props.baseUrl, '/api/order/?order_id=' + this.props.data.id, {
         action: 'update_invoice',
         invoice: this.state.invoice,
       })
@@ -675,7 +675,7 @@ class TradeBox extends Component {
     this.setState({ badInvoice: false, loadingSubmitAddress: true });
 
     apiClient
-      .post('/api/order/?order_id=' + this.props.data.id, {
+      .post(this.props.baseUrl, '/api/order/?order_id=' + this.props.data.id, {
         action: 'update_address',
         address: this.state.address,
         mining_fee_rate: Math.max(1, this.state.miningFee),
@@ -698,7 +698,7 @@ class TradeBox extends Component {
     this.setState({ badInvoice: false });
 
     apiClient
-      .post('/api/order/?order_id=' + this.props.data.id, {
+      .post(this.props.baseUrl, '/api/order/?order_id=' + this.props.data.id, {
         action: 'submit_statement',
         statement: this.state.statement,
       })
@@ -1205,7 +1205,7 @@ class TradeBox extends Component {
 
   handleClickConfirmButton = () => {
     apiClient
-      .post('/api/order/?order_id=' + this.props.data.id, {
+      .post(this.props.baseUrl, this.props.baseUrl, '/api/order/?order_id=' + this.props.data.id, {
         action: 'confirm',
       })
       .then((data) => {
@@ -1216,7 +1216,7 @@ class TradeBox extends Component {
 
   handleRatingUserChange = (e) => {
     apiClient
-      .post('/api/order/?order_id=' + this.props.data.id, {
+      .post(this.props.baseUrl, '/api/order/?order_id=' + this.props.data.id, {
         action: 'rate_user',
         rating: e.target.value,
       })
@@ -1230,7 +1230,7 @@ class TradeBox extends Component {
     this.setState({ rating_platform: e.target.value });
 
     apiClient
-      .post('/api/order/?order_id=' + this.props.data.id, {
+      .post(this.props.baseUrl, '/api/order/?order_id=' + this.props.data.id, {
         action: 'rate_platform',
         rating: e.target.value,
       })
@@ -1356,7 +1356,7 @@ class TradeBox extends Component {
       bondless_taker: this.props.data.bondless_taker,
     };
     apiClient
-      .post('/api/make/', body)
+      .post(this.props.baseUrl, '/api/make/', body)
       .then(
         (data) =>
           this.setState({ badRequest: data.bad_request }) &
@@ -1469,7 +1469,11 @@ class TradeBox extends Component {
           )}
         </Grid>
 
-        <EncryptedChat orderId={this.props.data.id} userNick={this.props.data.ur_nick} />
+        <EncryptedChat
+          orderId={this.props.data.id}
+          userNick={this.props.data.ur_nick}
+          baseUrl={this.props.baseUrl}
+        />
         <Grid item xs={12} align='center'>
           {showDisputeButton ? this.showOpenDisputeButton() : ''}
           {showSendButton ? this.showFiatSentButton() : ''}

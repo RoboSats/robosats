@@ -27,6 +27,7 @@ interface BookPageProps {
   hasRobot: boolean;
   setPage: (state: Page) => void;
   setCurrentOrder: (state: number) => void;
+  baseUrl: string;
 }
 
 const BookPage = ({
@@ -43,6 +44,7 @@ const BookPage = ({
   hasRobot = false,
   setPage = () => null,
   setCurrentOrder = () => null,
+  baseUrl,
 }: BookPageProps): JSX.Element => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -130,6 +132,7 @@ const BookPage = ({
                 setPage('order');
                 history.push('/order/' + id);
               }}
+              baseUrl={baseUrl}
             />
           </Box>
         </Dialog>
@@ -158,6 +161,7 @@ const BookPage = ({
                 onCurrencyChange={handleCurrencyChange}
                 onTypeChange={handleTypeChange}
                 onOrderClicked={onOrderClicked}
+                baseUrl={baseUrl}
               />
             </Grid>
             <Grid item>
@@ -169,6 +173,7 @@ const BookPage = ({
                 maxWidth={chartWidthEm} // EM units
                 maxHeight={windowSize.height * 0.825 - 5} // EM units
                 onOrderClicked={onOrderClicked}
+                baseUrl={baseUrl}
               />
             </Grid>
           </Grid>
@@ -181,6 +186,7 @@ const BookPage = ({
             maxWidth={windowSize.width * 0.8} // EM units
             maxHeight={windowSize.height * 0.825 - 5} // EM units
             onOrderClicked={onOrderClicked}
+            baseUrl={baseUrl}
           />
         ) : (
           <BookTable
@@ -195,6 +201,7 @@ const BookPage = ({
             onCurrencyChange={handleCurrencyChange}
             onTypeChange={handleTypeChange}
             onOrderClicked={onOrderClicked}
+            baseUrl={baseUrl}
           />
         )}
       </Grid>
