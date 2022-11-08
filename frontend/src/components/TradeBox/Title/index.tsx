@@ -86,9 +86,8 @@ export const Title = ({ order }: TakerFoundPrompProps): JSX.Element => {
   //             {this.props.data.status == 5 ? this.showOrderExpired() : ''}
 
   return (
-    <Typography variant='body2'>
-      <b>{text}</b>
-      {stepXofY(order)}
+    <Typography variant='body2' align='center'>
+      <b>{text}</b> {stepXofY(order)}
     </Typography>
   );
 };

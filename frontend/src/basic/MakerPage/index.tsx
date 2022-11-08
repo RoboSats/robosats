@@ -76,6 +76,7 @@ const MakerPage = ({
                 showControls={false}
                 showFooter={false}
                 showNoResults={false}
+                baseUrl={baseUrl}
               />
             </Grid>
           </Grid>

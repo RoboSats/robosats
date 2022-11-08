@@ -38,13 +38,14 @@ export interface Order {
   taker: number;
   escrow_duration: number;
   total_secs_exp: number;
-  penalty: Date;
+  penalty: Date | undefined;
   is_maker: boolean;
   is_taker: boolean;
   is_participant: boolean;
   maker_status: 'Active' | 'Seen recently' | 'Inactive';
   taker_status: 'Active' | 'Seen recently' | 'Inactive';
-  price_now: number;
+  price_now: number | undefined;
+  premium_now: number | undefined;
   premium_percentile: number;
   num_similar_orders: number;
   tg_enabled: boolean; // deprecated

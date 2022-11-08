@@ -40,7 +40,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
       >
         <AccountBalanceWallet />
         {t('See Compatible Wallets')}
-        <NewTabIcon sx={{ width: '1.1em', height: '1.1em' }} />
+        <NewTabIcon sx={{ width: '0.7em', height: '0.7em' }} />
       </Button>
     );
   };
@@ -64,7 +64,13 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
   };
 
   return (
-    <Grid container spacing={1}>
+    <Grid
+      container
+      direction='column'
+      justifyContent='flex-start'
+      alignItems='center'
+      spacing={0.5}
+    >
       <Grid item xs={12}>
         {concept === 'bond' ? <CompatibleWalletsButton /> : <ExpirationWarning />}
       </Grid>
@@ -81,7 +87,8 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
             }}
           />
         </Tooltip>
-
+      </Grid>
+      <Grid item xs={12}>
         <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
           <Button
             size='small'
