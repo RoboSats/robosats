@@ -19,6 +19,9 @@ class ApiWebClient implements ApiClient {
       headers: this.getHeaders(),
       body: JSON.stringify(body),
     };
+
+    console.log(requestOptions);
+
     return await fetch(baseUrl + path, requestOptions).then(
       async (response) => await response.json(),
     );

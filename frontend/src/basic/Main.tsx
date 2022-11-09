@@ -100,8 +100,11 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     if (typeof window !== undefined) {
       window.addEventListener('resize', onResize);
     }
-    fetchBook();
-    fetchLimits();
+
+    if (baseUrl != '') {
+      fetchBook();
+      fetchLimits();
+    }
     return () => {
       if (typeof window !== undefined) {
         window.removeEventListener('resize', onResize);
@@ -215,7 +218,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   };
 
   useEffect(() => {
-    if (baseUrl != '') {
+    if (baseUrl != '' && page != 'robot') {
       if (open.profile || (robot.token && robot.nickname === null)) {
         fetchRobot({ keys: false }); // fetch existing robot
       } else if (robot.token && robot.encPrivKey && robot.pubKey) {
