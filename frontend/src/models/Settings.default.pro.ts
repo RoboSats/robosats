@@ -4,7 +4,7 @@ import BaseSettings from './Settings.model';
 class Settings extends BaseSettings {
   constructor() {
     super();
-    const fontSizeCookie = systemClient.getCookie('settings_fontsize_pro');
+    const fontSizeCookie = systemClient.getItem('settings_fontsize_pro');
     this.fontSize = fontSizeCookie !== '' ? Number(fontSizeCookie) : 12;
   }
   public frontend: 'basic' | 'pro' = 'pro';

@@ -83,7 +83,7 @@ const ProfileDialog = ({
   }, [showRewards]);
 
   const copyTokenHandler = () => {
-    const robotToken = systemClient.getCookie('robot_token');
+    const robotToken = systemClient.getItem('robot_token');
 
     if (robotToken) {
       systemClient.copyToClipboard(robotToken);
@@ -244,12 +244,12 @@ const ProfileDialog = ({
             </ListItemIcon>
 
             <ListItemText secondary={t('Your token (will not remain here)')}>
-              {systemClient.getCookie('robot_token') ? (
+              {systemClient.getItem('robot_token') ? (
                 <TextField
                   disabled
                   sx={{ width: '100%', maxWidth: '450px' }}
                   label={t('Back it up!')}
-                  value={systemClient.getCookie('robot_token')}
+                  value={systemClient.getItem('robot_token')}
                   variant='filled'
                   size='small'
                   InputProps={{

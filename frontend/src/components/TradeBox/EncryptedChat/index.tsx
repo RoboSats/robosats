@@ -44,13 +44,13 @@ const EncryptedChat: React.FC<Props> = ({ orderId, userNick, baseUrl }: Props): 
   const [connected, setConnected] = useState<boolean>(false);
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
   const [ownPubKey] = useState<string>(
-    (systemClient.getCookie('pub_key') ?? '').split('\\').join('\n'),
+    (systemClient.getItem('pub_key') ?? '').split('\\').join('\n'),
   );
   const [ownEncPrivKey] = useState<string>(
-    (systemClient.getCookie('enc_priv_key') ?? '').split('\\').join('\n'),
+    (systemClient.getItem('enc_priv_key') ?? '').split('\\').join('\n'),
   );
   const [peerPubKey, setPeerPubKey] = useState<string>();
-  const [token] = useState<string>(systemClient.getCookie('robot_token') || '');
+  const [token] = useState<string>(systemClient.getItem('robot_token') || '');
   const [messages, setMessages] = useState<WebSocketsChatMessage[]>([]);
   const [serverMessages, setServerMessages] = useState<any[]>([]);
   const [value, setValue] = useState<string>('');

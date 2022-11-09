@@ -22,7 +22,7 @@ export type Language =
 
 class BaseSettings {
   constructor() {
-    const modeCookie: 'light' | 'dark' | '' = systemClient.getCookie('settings_mode');
+    const modeCookie: 'light' | 'dark' | '' = systemClient.getItem('settings_mode');
     this.mode =
       modeCookie !== ''
         ? modeCookie
@@ -30,7 +30,7 @@ class BaseSettings {
         ? 'dark'
         : 'light';
 
-    const languageCookie = systemClient.getCookie('settings_language');
+    const languageCookie = systemClient.getItem('settings_language');
     this.language =
       languageCookie !== ''
         ? languageCookie
@@ -38,7 +38,7 @@ class BaseSettings {
         ? 'en'
         : i18n.resolvedLanguage.substring(0, 2);
 
-    const networkCookie = systemClient.getCookie('settings_network');
+    const networkCookie = systemClient.getItem('settings_network');
     this.network = networkCookie !== '' ? networkCookie : 'mainnet';
   }
 

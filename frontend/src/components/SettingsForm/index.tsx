@@ -61,7 +61,7 @@ const SettingsForm = ({
               language={settings.language}
               setLanguage={(language) => {
                 setSettings({ ...settings, language });
-                systemClient.setCookie('settings_language', language);
+                systemClient.setItem('settings_language', language);
               }}
             />
           </ListItem>
@@ -110,7 +110,7 @@ const SettingsForm = ({
                   onChange={(e) => {
                     const mode = e.target.checked ? 'dark' : 'light';
                     setSettings({ ...settings, mode });
-                    systemClient.setCookie('settings_mode', mode);
+                    systemClient.setItem('settings_mode', mode);
                   }}
                 />
               }
@@ -129,10 +129,7 @@ const SettingsForm = ({
               onChange={(e) => {
                 const fontSize = e.target.value;
                 setSettings({ ...settings, fontSize });
-                systemClient.setCookie(
-                  `settings_fontsize_${settings.frontend}`,
-                  fontSize.toString(),
-                );
+                systemClient.setItem(`settings_fontsize_${settings.frontend}`, fontSize.toString());
               }}
               valueLabelDisplay='off'
               marks={fontSizes.map(({ label, value }) => ({
@@ -152,7 +149,7 @@ const SettingsForm = ({
                 value={settings.network}
                 onChange={(e, network) => {
                   setSettings({ ...settings, network });
-                  systemClient.setCookie('settings_network', network);
+                  systemClient.setItem('settings_network', network);
                 }}
               >
                 <ToggleButton value='mainnet' color='primary'>

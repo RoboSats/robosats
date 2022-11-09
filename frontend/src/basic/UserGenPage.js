@@ -115,12 +115,9 @@ class UserGenPage extends Component {
               encPrivKey: data.encrypted_private_key,
               copiedToken: data.found ? true : this.props.robot.copiedToken,
             }) &
-            systemClient.setCookie('robot_token', token) &
-            systemClient.setCookie('pub_key', data.public_key.split('\n').join('\\')) &
-            systemClient.setCookie(
-              'enc_priv_key',
-              data.encrypted_private_key.split('\n').join('\\'),
-            );
+            systemClient.setItem('robot_token', token) &
+            systemClient.setItem('pub_key', data.public_key.split('\n').join('\\')) &
+            systemClient.setItem('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'));
       }),
     );
   };
@@ -298,7 +295,7 @@ class UserGenPage extends Component {
                               color='primary'
                               disabled={
                                 !this.props.robot.avatarLoaded ||
-                                !(systemClient.getCookie('robot_token') == this.state.inputToken)
+                                !(systemClient.getItem('robot_token') == this.state.inputToken)
                               }
                               onClick={() =>
                                 saveAsJson(
@@ -320,10 +317,10 @@ class UserGenPage extends Component {
                             color={this.props.robot.copiedToken ? 'inherit' : 'primary'}
                             disabled={
                               !this.props.robot.avatarLoaded ||
-                              !(systemClient.getCookie('robot_token') === this.state.inputToken)
+                              !(systemClient.getItem('robot_token') === this.state.inputToken)
                             }
                             onClick={() =>
-                              systemClient.copyToClipboard(systemClient.getCookie('robot_token')) &
+                              systemClient.copyToClipboard(systemClient.getItem('robot_token')) &
                               this.props.setRobot({ ...this.props.robot, copiedToken: true })
                             }
                           >

@@ -46,6 +46,17 @@ class SystemNativeClient implements SystemClient {
       key,
     });
   };
+
+  // Emulate storage as emulated cookies (....to improve)
+  public getItem: (key: string) => string = (key) => {
+    return this.getCookie(key);
+  };
+  public setItem: (key: string, value: string) => void = (key, value) => {
+    this.setCookie(key, value);
+  };
+  public deleteItem: (key: string) => void = (key) => {
+    this.deleteCookie(key);
+  };
 }
 
 export default SystemNativeClient;

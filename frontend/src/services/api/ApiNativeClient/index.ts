@@ -10,11 +10,11 @@ class ApiNativeClient implements ApiClient {
       'Content-Type': 'application/json',
     };
 
-    const robotToken = systemClient.getCookie('robot_token');
+    const robotToken = systemClient.getItem('robot_token');
     if (robotToken) {
       const sessionid = systemClient.getCookie('sessionid');
       const csrftoken = systemClient.getCookie('csrftoken');
-      const pubKey = systemClient.getCookie('pub_key');
+      const pubKey = systemClient.getItem('pub_key');
 
       headers = {
         ...headers,

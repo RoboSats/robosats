@@ -2,9 +2,9 @@ import { systemClient } from '../services/System';
 
 class Robot {
   constructor() {
-    this.token = systemClient.getCookie('robot_token') ?? undefined;
-    this.pubKey = systemClient.getCookie('pub_key') ?? undefined;
-    this.encPrivKey = systemClient.getCookie('enc_priv_key') ?? undefined;
+    this.token = systemClient.getItem('robot_token') ?? undefined;
+    this.pubKey = systemClient.getItem('pub_key') ?? undefined;
+    this.encPrivKey = systemClient.getItem('enc_priv_key') ?? undefined;
   }
 
   public nickname?: string;
