@@ -33,19 +33,15 @@ import {
   Payments,
   Article,
   HourglassTop,
-  Check,
 } from '@mui/icons-material';
 import { PaymentStringAsIcons } from '../../components/PaymentMethods';
 import { FlagWithProps } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
 
-import { systemClient } from '../../services/System';
-import { apiClient } from '../../services/api';
-
 import { Order } from '../../models';
 import { statusBadgeColor, pn } from '../../utils';
-import { ConfirmationDialog } from '../Dialogs';
 import { Page } from '../../basic/NavBar';
+import TakeButton from './TakeButton';
 
 interface OrderDetailsProps {
   order: Order;
@@ -55,12 +51,6 @@ interface OrderDetailsProps {
   setPage: (state: Page) => void;
   handleWebln: () => void;
 }
-
-interface OpenDialogsProps {
-  inactiveMaker: boolean;
-  confirmation: boolean;
-}
-const closeAll = { inactiveMaker: false, confirmation: false };
 
 const OrderDetails = ({
   order,
@@ -72,9 +62,6 @@ const OrderDetails = ({
 }: OrderDetailsProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-
-  const [takeAmount, setTakeAmount] = useState<string>('');
-  const [open, setOpen] = useState<OpenDialogsProps>(closeAll);
 
   const currencyCode: string = currencies[`${order.currency}`];
 
@@ -95,29 +82,6 @@ const OrderDetails = ({
       secondary = t('Amount');
     }
     return { primary, secondary };
-  };
-
-  const InactiveMakerDialog = function () {
-    return (
-      <Dialog open={open.inactiveMaker} onClose={() => setOpen({ ...open, inactiveMaker: false })}>
-        <DialogTitle>{t('The maker is away')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t(
-              'By taking this order you risk wasting your time. If the maker does not proceed in time, you will be compensated in satoshis for 50% of the maker bond.',
-            )}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(closeAll)} autoFocus>
-            {t('Go back')}
-          </Button>
-          <Button onClick={() => setOpen({ inactiveMaker: false, confirmation: true })}>
-            {t('Take Order')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
   };
 
   // Countdown Renderer callback with condition
@@ -177,178 +141,8 @@ const OrderDetails = ({
     }
   };
 
-  const countdownTakeOrderRenderer = function ({ seconds, completed }) {
-    if (isNaN(seconds)) {
-      return takeOrderButton();
-    }
-    if (completed) {
-      // Render a completed state
-      return takeOrderButton();
-    } else {
-      return (
-        <Tooltip enterTouchDelay={0} title={t('Wait until you can take an order')}>
-          <div>
-            <Button disabled={true} variant='contained' color='primary'>
-              {t('Take Order')}
-            </Button>
-          </div>
-        </Tooltip>
-      );
-    }
-  };
-
-  const handleTakeAmountChange = function (e) {
-    if (e.target.value != '' && e.target.value != null) {
-      setTakeAmount(`${parseFloat(e.target.value)}`);
-    } else {
-      setTakeAmount(e.target.value);
-    }
-  };
-
-  const amountHelperText = function () {
-    if (takeAmount < order.min_amount && takeAmount != '') {
-      return t('Too low');
-    } else if (takeAmount > order.max_amount && takeAmount != '') {
-      return t('Too high');
-    } else {
-      return null;
-    }
-  };
-
-  const onTakeOrderClicked = function () {
-    if (order.maker_status == 'Inactive') {
-      setOpen({ inactiveMaker: true, confirmation: false });
-    } else {
-      setOpen({ inactiveMaker: false, confirmation: true });
-    }
-  };
-
-  const takeOrderButton = function () {
-    if (order.has_range) {
-      return (
-        <Grid container alignItems='stretch' justifyContent='center' style={{ display: 'flex' }}>
-          <div style={{ maxWidth: 120 }}>
-            <Tooltip
-              placement='top'
-              enterTouchDelay={500}
-              enterDelay={700}
-              enterNextDelay={2000}
-              title={t('Enter amount of fiat to exchange for bitcoin')}
-            >
-              <div style={{ maxHeight: 40 }}>
-                <TextField
-                  error={
-                    (takeAmount < order.min_amount || takeAmount > order.max_amount) &
-                    (takeAmount != '')
-                  }
-                  helperText={amountHelperText()}
-                  label={t('Amount {{currencyCode}}', { currencyCode })}
-                  size='small'
-                  type='number'
-                  required={true}
-                  value={takeAmount}
-                  inputProps={{
-                    min: order.min_amount,
-                    max: order.max_amount,
-                    style: { textAlign: 'center' },
-                  }}
-                  onChange={handleTakeAmountChange}
-                />
-              </div>
-            </Tooltip>
-          </div>
-          <div
-            style={{
-              height: 38,
-              top: '1px',
-              position: 'relative',
-              display:
-                this.state.takeAmount < this.state.min_amount ||
-                this.state.takeAmount > this.state.max_amount ||
-                this.state.takeAmount == '' ||
-                this.state.takeAmount == null
-                  ? ''
-                  : 'none',
-            }}
-          >
-            <Tooltip
-              placement='top'
-              enterTouchDelay={0}
-              enterDelay={500}
-              enterNextDelay={1200}
-              title={t('You must specify an amount first')}
-            >
-              <Button sx={{ height: 38 }} variant='contained' color='primary' disabled={true}>
-                {t('Take Order')}
-              </Button>
-            </Tooltip>
-          </div>
-          <div
-            style={{
-              height: 38,
-              top: '1px',
-              position: 'relative',
-              display:
-                takeAmount < order.min_amount ||
-                takeAmount > order.max_amount ||
-                takeAmount == '' ||
-                takeAmount == null
-                  ? 'none'
-                  : '',
-            }}
-          >
-            <Button
-              sx={{ height: 38 }}
-              variant='contained'
-              color='primary'
-              onClick={onTakeOrderClicked}
-            >
-              {t('Take Order')}
-            </Button>
-          </div>
-        </Grid>
-      );
-    } else {
-      return (
-        <>
-          <Button
-            sx={{ height: 38 }}
-            variant='contained'
-            color='primary'
-            onClick={
-              this.props.copiedToken
-                ? this.state.maker_status == 'Inactive'
-                  ? this.handleClickOpenInactiveMakerDialog
-                  : this.takeOrder
-                : () => this.setState({ openStoreToken: true })
-            }
-          >
-            {t('Take Order')}
-          </Button>
-        </>
-      );
-    }
-  };
-
-  const takeOrder = function () {
-    // TODO LOADING TRUE
-    apiClient
-      .post(this.props.baseUrl, '/api/order/?order_id=' + order.id, {
-        action: 'take',
-        amount: takeAmount,
-      })
-      .then((data) => handleWebln(data) & setOrder(data));
-  };
-
   return (
     <Grid container spacing={1}>
-      <ConfirmationDialog
-        open={open.confirmation}
-        onClose={() => setOpen({ ...open, confirmation: false })}
-        setPage={setPage}
-        onClickDone={() => takeOrder()}
-        hasRobot={hasRobot}
-      />
       <Grid item xs={12}>
         <List dense={true}>
           <ListItem>
@@ -524,16 +318,16 @@ const OrderDetails = ({
       </Grid>
 
       <Grid item xs={12}>
-        {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}
-        {order.is_participant ? (
-          <>{this.CancelButton()}</>
-        ) : (
-          <Grid container spacing={1}>
-            <Grid item xs={12}>
-              <Countdown date={new Date(order.penalty)} renderer={countdownTakeOrderRenderer} />
-            </Grid>
-          </Grid>
-        )}
+        <Collapse in={!order.is_participant}>
+          <TakeButton
+            order={order}
+            setOrder={setOrder}
+            baseUrl={baseUrl}
+            setPage={setPage}
+            hasRobot={hasRobot}
+            handleWebln={handleWebln}
+          />
+        </Collapse>
       </Grid>
     </Grid>
   );

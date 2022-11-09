@@ -1,0 +1,50 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  Button,
+} from '@mui/material';
+
+interface ConfirmCollabCancelDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onCollabCancelClick: () => void;
+  peerAskedCancel: boolean;
+}
+
+export const ConfirmCollabCancelDialog = ({
+  open,
+  onClose,
+  onCollabCancelClick,
+  peerAskedCancel,
+}: ConfirmCollabCancelDialogProps): JSX.Element => {
+  const { t } = useTranslation();
+
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle id='cancel-dialog-title'>{t('Collaborative cancel the order?')}</DialogTitle>
+      <DialogContent>
+        <DialogContentText id='cancel-dialog-description'>
+          {t(
+            'The trade escrow has been posted. The order can be cancelled only if both, maker and taker, agree to cancel.',
+          )}
+          {peerAskedCancel ? t('Your peer has asked for cancellation') : ''}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} autoFocus>
+          {t('Go back')}
+        </Button>
+        <Button onClick={onCollabCancelClick}>
+          {peerAskedCancel ? t('Accept Cancelation') : t('Ask for Cancel')}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+export default ConfirmCollabCancelDialog;

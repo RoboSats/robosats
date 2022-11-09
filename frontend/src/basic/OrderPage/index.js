@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { withTranslation } from 'react-i18next';
 import {
-  TextField,
-  Tooltip,
   Tab,
   Tabs,
   Paper,
@@ -16,17 +14,17 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Fade,
+  Collapse,
 } from '@mui/material';
-import { zeroPad } from 'react-countdown';
-
-import { StoreTokenDialog, NoRobotDialog } from '../../components/Dialogs';
 
 import currencyDict from '../../../static/assets/currencies.json';
 import TradeBox from '../../components/TradeBox';
+import OrderDetails from '../../components/OrderDetails';
 
 import MediaQuery from 'react-responsive';
-import { t } from 'i18next';
 
+import { Check } from '@mui/icons-material';
 import { getWebln } from '../../utils';
 import { systemClient } from '../../services/System';
 import { apiClient } from '../../services/api';
@@ -178,214 +176,6 @@ class OrderPage extends Component {
     return code;
   }
 
-  handleClickConfirmCancelButton = () => {
-    this.setState({ loading: true });
-    apiClient
-      .post(this.props.baseUrl, '/api/order/?order_id=' + this.state.orderId, {
-        action: 'cancel',
-      })
-      .then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
-    this.handleClickCloseConfirmCancelDialog();
-  };
-
-  handleClickOpenConfirmCancelDialog = () => {
-    this.setState({ openCancel: true });
-  };
-
-  handleClickCloseConfirmCancelDialog = () => {
-    this.setState({ openCancel: false });
-  };
-
-  CancelDialog = () => {
-    const { t } = this.props;
-    return (
-      <Dialog
-        open={this.state.openCancel}
-        onClose={this.handleClickCloseConfirmCancelDialog}
-        aria-labelledby='cancel-dialog-title'
-        aria-describedby='cancel-dialog-description'
-      >
-        <DialogTitle id='cancel-dialog-title'>{t('Cancel the order?')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id='cancel-dialog-description'>
-            {t('If the order is cancelled now you will lose your bond.')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={this.handleClickCloseConfirmCancelDialog} autoFocus>
-            {t('Go back')}
-          </Button>
-          <Button onClick={this.handleClickConfirmCancelButton}>{t('Confirm Cancel')}</Button>
-        </DialogActions>
-      </Dialog>
-    );
-  };
-
-  handleClickOpenInactiveMakerDialog = () => {
-    this.setState({ openInactiveMaker: true });
-  };
-
-  handleClickCloseInactiveMakerDialog = () => {
-    this.setState({ openInactiveMaker: false });
-  };
-
-  InactiveMakerDialog = () => {
-    const { t } = this.props;
-    return (
-      <Dialog
-        open={this.state.openInactiveMaker}
-        onClose={this.handleClickCloseInactiveMakerDialog}
-        aria-labelledby='inactive-maker-dialog-title'
-        aria-describedby='inactive-maker-description'
-      >
-        <DialogTitle id='inactive-maker-dialog-title'>{t('The maker is away')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id='cancel-dialog-description'>
-            {t(
-              'By taking this order you risk wasting your time. If the maker does not proceed in time, you will be compensated in satoshis for 50% of the maker bond.',
-            )}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={this.handleClickCloseInactiveMakerDialog} autoFocus>
-            {t('Go back')}
-          </Button>
-          <Button onClick={this.takeOrder}>{t('Take Order')}</Button>
-        </DialogActions>
-      </Dialog>
-    );
-  };
-
-  tokenDialog = () => {
-    return systemClient.getItem('robot_token') ? (
-      <StoreTokenDialog
-        open={this.state.openStoreToken}
-        onClose={() => this.setState({ openStoreToken: false })}
-        onClickCopy={() => systemClient.copyToClipboard(systemClient.getItem('robot_token'))}
-        copyIconColor={this.props.copiedToken ? 'inherit' : 'primary'}
-        onClickBack={() => this.setState({ openStoreToken: false })}
-        onClickDone={() =>
-          this.setState({ openStoreToken: false }) &
-          (this.state.maker_status == 'Inactive'
-            ? this.handleClickOpenInactiveMakerDialog()
-            : this.takeOrder())
-        }
-      />
-    ) : (
-      <NoRobotDialog
-        open={this.state.openStoreToken}
-        onClose={() => this.setState({ openStoreToken: false })}
-        setPage={this.props.setPage}
-      />
-    );
-  };
-
-  handleClickConfirmCollaborativeCancelButton = () => {
-    apiClient
-      .post(this.props.baseUrl, '/api/order/?order_id=' + this.state.orderId, {
-        action: 'cancel',
-      })
-      .then(() => this.getOrderDetails(this.state.orderId) & this.setState({ status: 4 }));
-    this.handleClickCloseCollaborativeCancelDialog();
-  };
-
-  handleClickOpenCollaborativeCancelDialog = () => {
-    this.setState({ openCollaborativeCancel: true });
-  };
-
-  handleClickCloseCollaborativeCancelDialog = () => {
-    this.setState({ openCollaborativeCancel: false });
-  };
-
-  CollaborativeCancelDialog = () => {
-    const { t } = this.props;
-    return (
-      <Dialog
-        open={this.state.openCollaborativeCancel}
-        onClose={this.handleClickCloseCollaborativeCancelDialog}
-        aria-labelledby='collaborative-cancel-dialog-title'
-        aria-describedby='collaborative-cancel-dialog-description'
-      >
-        <DialogTitle id='cancel-dialog-title'>{t('Collaborative cancel the order?')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id='cancel-dialog-description'>
-            {t(
-              'The trade escrow has been posted. The order can be cancelled only if both, maker and taker, agree to cancel.',
-            )}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={this.handleClickCloseCollaborativeCancelDialog} autoFocus>
-            {t('Go back')}
-          </Button>
-          <Button onClick={this.handleClickConfirmCollaborativeCancelButton}>
-            {t('Ask for Cancel')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  };
-
-  CancelButton = () => {
-    const { t } = this.props;
-    // If maker and Waiting for Bond. Or if taker and Waiting for bond.
-    // Simply allow to cancel without showing the cancel dialog.
-    if (
-      this.state.is_maker & [0, 1, 2].includes(this.state.status) ||
-      this.state.is_taker & (this.state.status == 3)
-    ) {
-      return (
-        <Grid item xs={12} align='center'>
-          <Button
-            variant='contained'
-            color='secondary'
-            onClick={this.handleClickConfirmCancelButton}
-          >
-            {t('Cancel')}
-          </Button>
-        </Grid>
-      );
-    }
-    // If the order does not yet have an escrow deposited. Show dialog
-    // to confirm forfeiting the bond
-    if ([3, 6, 7].includes(this.state.status)) {
-      return (
-        <div id='openDialogCancelButton'>
-          <Grid item xs={12} align='center'>
-            {this.CancelDialog()}
-            <Button
-              variant='contained'
-              color='secondary'
-              onClick={this.handleClickOpenConfirmCancelDialog}
-            >
-              {t('Cancel')}
-            </Button>
-          </Grid>
-        </div>
-      );
-    }
-
-    // If the escrow is Locked, show the collaborative cancel button.
-
-    if ([8, 9].includes(this.state.status)) {
-      return (
-        <Grid item xs={12} align='center'>
-          {this.CollaborativeCancelDialog()}
-          <Button
-            variant='contained'
-            color='secondary'
-            onClick={this.handleClickOpenCollaborativeCancelDialog}
-          >
-            {t('Collaborative Cancel')}
-          </Button>
-        </Grid>
-      );
-    }
-
-    // If none of the above do not return a cancel button.
-    return null;
-  };
-
   doubleOrderPageDesktop = () => {
     return (
       <Grid
@@ -397,7 +187,14 @@ class OrderPage extends Component {
         spacing={2}
       >
         <Grid item xs={6}>
-          {this.orderBox()}
+          <OrderDetails
+            order={this.state}
+            setOrder={this.completeSetState}
+            baseUrl={this.props.baseUrl}
+            setPage={this.props.setPage}
+            hasRobot={this.props.hasRobot}
+            handleWebln={this.handleWebln}
+          />
         </Grid>
         <Grid item xs={6}>
           <Paper elevation={12} style={{ width: '21em' }}>
@@ -440,7 +237,14 @@ class OrderPage extends Component {
         </Box>
 
         <div style={{ width: '21em', display: this.state.tabValue == 0 ? '' : 'none' }}>
-          {this.orderBox()}
+          <OrderDetails
+            order={this.state}
+            setOrder={this.completeSetState}
+            baseUrl={this.props.baseUrl}
+            setPage={this.props.setPage}
+            hasRobot={this.props.hasRobot}
+            handleWebln={this.handleWebln}
+          />
         </div>
         <div style={{ display: this.state.tabValue == 1 ? '' : 'none' }}>
           <Paper elevation={12} style={{ width: '21em' }}>
@@ -455,32 +259,6 @@ class OrderPage extends Component {
     );
   };
 
-  orderDetailsPage() {
-    const { t } = this.props;
-    return this.state.bad_request ? (
-      <div align='center'>
-        <Typography variant='subtitle2' color='secondary'>
-          {/* IMPLEMENT I18N for bad_request */}
-          {t(this.state.bad_request)}
-          <br />
-        </Typography>
-      </div>
-    ) : this.state.is_participant ? (
-      <>
-        {this.weblnDialog()}
-        {/* Desktop View */}
-        <MediaQuery minWidth={920}>{this.doubleOrderPageDesktop()}</MediaQuery>
-
-        {/* SmarPhone View */}
-        <MediaQuery maxWidth={919}>{this.doubleOrderPagePhone()}</MediaQuery>
-      </>
-    ) : (
-      <Grid item xs={12} style={{ width: 330 }}>
-        {this.orderBox()}
-      </Grid>
-    );
-  }
-
   handleCloseWeblnDialog = () => {
     this.setState({ openWeblnDialog: false });
   };
@@ -489,15 +267,10 @@ class OrderPage extends Component {
     const { t } = this.props;
 
     return (
-      <Dialog
-        open={this.state.openWeblnDialog}
-        onClose={this.handleCloseWeblnDialog}
-        aria-labelledby='webln-dialog-title'
-        aria-describedby='webln-dialog-description'
-      >
-        <DialogTitle id='webln-dialog-title'>{t('WebLN')}</DialogTitle>
+      <Dialog open={this.state.openWeblnDialog} onClose={this.handleCloseWeblnDialog}>
+        <DialogTitle>{t('WebLN')}</DialogTitle>
         <DialogContent>
-          <DialogContentText id='webln-dialog-description'>
+          <DialogContentText>
             {this.state.waitingWebln ? (
               <>
                 <CircularProgress size={16} thickness={5} style={{ marginRight: 10 }} />
@@ -507,7 +280,7 @@ class OrderPage extends Component {
               </>
             ) : (
               <>
-                <CheckIcon color='success' />
+                <Check color='success' />
                 {t('You can close now your WebLN wallet popup.')}
               </>
             )}
@@ -523,9 +296,39 @@ class OrderPage extends Component {
   };
 
   render() {
+    const { t } = this.props;
     return (
-      // Only so nothing shows while requesting the first batch of data
-      this.state.loading ? <CircularProgress /> : this.orderDetailsPage()
+      <Box>
+        <Fade in={this.state.loading}>
+          <CircularProgress />
+        </Fade>
+        <Fade in={!this.state.loading && this.state.bad_request != undefined}>
+          <Typography align='center' variant='subtitle2' color='secondary'>
+            {t(this.state.bad_request)}
+          </Typography>
+        </Fade>
+        {!this.state.loading && this.state.bad_request == undefined ? (
+          <>
+            <Collapse in={this.state.is_participant}>
+              {this.weblnDialog()}
+              <MediaQuery minWidth={920}>{this.doubleOrderPageDesktop()}</MediaQuery>
+              <MediaQuery maxWidth={919}>{this.doubleOrderPagePhone()}</MediaQuery>
+            </Collapse>
+            <Collapse in={!this.state.is_participant}>
+              <OrderDetails
+                order={this.state}
+                setOrder={this.completeSetState}
+                baseUrl={this.props.baseUrl}
+                setPage={this.props.setPage}
+                hasRobot={this.props.hasRobot}
+                handleWebln={this.handleWebln}
+              />
+            </Collapse>
+          </>
+        ) : (
+          <></>
+        )}
+      </Box>
     );
   }
 }

@@ -4,11 +4,17 @@ import { Box, Collapse, Divider, Grid } from '@mui/material';
 
 import { systemClient } from '../../services/System';
 import { apiClient } from '../../services/api';
-import { ConfirmDisputeDialog, ConfirmFiatReceivedDialog } from './Dialogs';
+import {
+  ConfirmCancelDialog,
+  ConfirmCollabCancelDialog,
+  ConfirmDisputeDialog,
+  ConfirmFiatReceivedDialog,
+} from './Dialogs';
 
 import Title from './Title';
 import { LockInvoicePrompt, TakerFoundPrompt } from './Prompts';
 import BondStatus from './BondStatus';
+import CancelButton from './CancelButton';
 
 import { Order } from '../../models';
 
@@ -20,6 +26,7 @@ const audio = {
 };
 
 interface loadingButtonsProps {
+  cancel: boolean;
   fiatSent: boolean;
   fiatReceived: boolean;
   submitInvoice: boolean;
@@ -28,6 +35,7 @@ interface loadingButtonsProps {
 }
 
 const noLoadingButtons: loadingButtonsProps = {
+  cancel: false,
   fiatSent: false,
   fiatReceived: false,
   submitInvoice: false,
@@ -36,11 +44,18 @@ const noLoadingButtons: loadingButtonsProps = {
 };
 
 interface OpenDialogProps {
+  confirmCancel: boolean;
+  confirmCollabCancel: boolean;
   confirmFiatReceived: boolean;
   confirmDispute: boolean;
 }
 
-const closeAll: OpenDialogProps = { confirmFiatReceived: false, confirmDispute: false };
+const closeAll: OpenDialogProps = {
+  confirmCancel: false,
+  confirmCollabCancel: false,
+  confirmFiatReceived: false,
+  confirmDispute: false,
+};
 
 interface OnchainFormProps {
   address: string;
@@ -111,12 +126,17 @@ const TradeBox = ({ order, setOrder, baseUrl }: TradeBoxProps): JSX.Element => {
       });
   };
 
-  const onClickAgreeOpenDispute = function () {
-    setLoadingButtons({ ...noLoadingButtons, fiatReceived: true });
+  const cancel = function () {
+    setLoadingButtons({ ...noLoadingButtons, cancel: true });
+    submitAction('cancel');
+  };
+
+  const openDispute = function () {
+    setLoadingButtons({ ...noLoadingButtons, openDispute: true });
     submitAction('dispute');
   };
 
-  const onClickConfirmFiatReceived = function () {
+  const confirmFiatReceived = function () {
     setLoadingButtons({ ...noLoadingButtons, fiatReceived: true });
     submitAction('confirm');
   };
@@ -193,14 +213,25 @@ const TradeBox = ({ order, setOrder, baseUrl }: TradeBoxProps): JSX.Element => {
       <ConfirmDisputeDialog
         open={open.confirmDispute}
         onClose={() => setOpen(closeAll)}
-        onAgreeClick={onClickAgreeOpenDispute}
+        onAgreeClick={openDispute}
+      />
+      <ConfirmCancelDialog
+        open={open.confirmCancel}
+        onClose={() => setOpen(closeAll)}
+        onCancelClick={cancel}
+      />
+      <ConfirmCollabCancelDialog
+        open={open.confirmCollabCancel}
+        onClose={() => setOpen(closeAll)}
+        onCollabCancelClick={cancel}
+        peerAskedCancel={order.pending_cancel}
       />
       <ConfirmFiatReceivedDialog
         open={open.confirmFiatReceived}
         order={order}
         loadingButton={loadingButtons.fiatReceived}
         onClose={() => setOpen(closeAll)}
-        onConfirmClick={onClickConfirmFiatReceived}
+        onConfirmClick={confirmFiatReceived}
       />
       <Grid
         container
@@ -222,7 +253,19 @@ const TradeBox = ({ order, setOrder, baseUrl }: TradeBoxProps): JSX.Element => {
             <Divider />
             <BondStatus status={StepContent.bondStatus} isMaker={order.is_maker} />
           </Collapse>
-          {/* // SHOW IF THE USER OR CONTERPART ASKED FOR CANCEL BELOW THE BOND STATUS!!! */}
+        </Grid>
+
+        {/* // SHOW IF THE USER OR CONTERPART ASKED FOR CANCEL BELOW THE BOND STATUS!!! */}
+        {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}
+
+        <Grid item>
+          <CancelButton
+            order={order}
+            onClickCancel={cancel}
+            openCancelDialog={() => setOpen({ ...closeAll, confirmCancel: true })}
+            openCollabCancelDialog={() => setOpen({ ...closeAll, confirmCollabCancel: true })}
+            loading={loadingButtons.cancel}
+          />
         </Grid>
       </Grid>
     </Box>

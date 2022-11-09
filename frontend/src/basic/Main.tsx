@@ -338,11 +338,18 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
               >
                 <div>
                   <OrderPage
+<<<<<<< HEAD
                     theme={theme}
                     history={history}
                     {...props}
                     setPage={setPage}
                     baseUrl={baseUrl}
+=======
+                    {...props}
+                    baseUrl={baseUrl}
+                    hasRobot={robot.avatarLoaded}
+                    setPage={setPage}
+>>>>>>> Wip 2 OrderDetails
                   />
                 </div>
               </Slide>
