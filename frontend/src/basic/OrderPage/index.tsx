@@ -105,8 +105,6 @@ const OrderPage = ({
   };
 
   const fetchOrder = function () {
-    console.log('location', locationOrder);
-    console.log('current', currentOrder);
     const id = locationOrder ?? currentOrder;
     apiClient.get(baseUrl, '/api/order/?order_id=' + id).then(orderReceived);
   };
@@ -188,70 +186,6 @@ const OrderPage = ({
     );
   };
 
-  const DoublePage = () => {
-    return (
-      <Grid
-        container
-        xs={12}
-        direction='row'
-        justifyContent='center'
-        alignItems='flex-start'
-        spacing={2}
-      >
-        <Grid item>
-          <Paper elevation={12} style={{ width: '21em' }}>
-            <OrderDetails
-              order={order}
-              setOrder={setOrder}
-              baseUrl={baseUrl}
-              setPage={setPage}
-              hasRobot={hasRobot}
-              handleWebln={handleWebln}
-            />
-          </Paper>
-        </Grid>
-        <Grid item>
-          <Paper elevation={12} style={{ width: '21em' }}>
-            <TradeBox order={order} setOrder={setOrder} baseUrl={baseUrl} />
-          </Paper>
-        </Grid>
-      </Grid>
-    );
-  };
-
-  const SinglePage = function () {
-    return (
-      <Box sx={{ width: '100%' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tab} onChange={(mouseEvent, value) => setTab(value)} variant='fullWidth'>
-            <Tab label={t('Order')} value='order' />
-            <Tab label={t('Contract')} value='contract' />
-          </Tabs>
-        </Box>
-
-        {/* <div style={{ width: '21em', display: tab == 'order' ? '' : 'none' }}> */}
-        <Paper elevation={12} style={{ width: '21em' }}>
-          <Collapse in={tab == 'order'}>
-            <OrderDetails
-              order={order}
-              setOrder={setOrder}
-              baseUrl={baseUrl}
-              setPage={setPage}
-              hasRobot={hasRobot}
-              handleWebln={handleWebln}
-            />
-          </Collapse>
-          <Collapse in={tab == 'contract'}>
-            <TradeBox order={order} setOrder={setOrder} baseUrl={baseUrl} />
-          </Collapse>
-        </Paper>
-        {/* </div> */}
-        {/* <div style={{ display: this.state.tabValue == 1 ? '' : 'none' }}> */}
-        {/* </div> */}
-      </Box>
-    );
-  };
-
   return (
     <Box>
       <Fade in={order == undefined}>
@@ -263,27 +197,87 @@ const OrderPage = ({
         </Typography>
       </Fade>
       {order != undefined && badRequest == undefined ? (
-        <>
-          <Collapse in={order.is_participant}>
+        order.is_participant ? (
+          <>
             <WeblnDialog />
-            <Collapse in={windowSize.width > 70}>
-              <DoublePage />
-            </Collapse>
-            <Collapse in={windowSize.width <= 70}>
-              <SinglePage />
-            </Collapse>
-          </Collapse>
-          <Collapse in={!order.is_participant}>
-            <OrderDetails
-              order={order}
-              setOrder={setOrder}
-              baseUrl={baseUrl}
-              setPage={setPage}
-              hasRobot={hasRobot}
-              handleWebln={handleWebln}
-            />
-          </Collapse>
-        </>
+            {windowSize.width > 70 ? (
+              // DOUBLE PAPER VIEW
+              <Grid
+                container
+                direction='row'
+                justifyContent='center'
+                alignItems='flex-start'
+                spacing={2}
+              >
+                <Grid item xs={6} style={{ width: '21em' }}>
+                  <Paper elevation={12} style={{ width: '21em' }}>
+                    <OrderDetails
+                      order={order}
+                      setOrder={setOrder}
+                      baseUrl={baseUrl}
+                      setPage={setPage}
+                      hasRobot={hasRobot}
+                      handleWebln={handleWebln}
+                    />
+                  </Paper>
+                </Grid>
+                <Grid item xs={6} style={{ width: '21em' }}>
+                  <Paper elevation={12} style={{ width: '21em' }}>
+                    <TradeBox order={order} setOrder={setOrder} baseUrl={baseUrl} />
+                  </Paper>
+                </Grid>
+              </Grid>
+            ) : (
+              // SINGLE PAPER VIEW
+              <Grid
+                container
+                direction='column'
+                justifyContent='flex-start'
+                alignItems='center'
+                spacing={1}
+              >
+                <Grid item>
+                  <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '21em' }}>
+                    <Tabs
+                      value={tab}
+                      onChange={(mouseEvent, value) => setTab(value)}
+                      variant='fullWidth'
+                    >
+                      <Tab label={t('Order')} value='order' />
+                      <Tab label={t('Contract')} value='contract' />
+                    </Tabs>
+                  </Box>
+                </Grid>
+                <Grid item>
+                  <Paper elevation={12} style={{ width: '21em' }}>
+                    <div style={{ display: tab == 'order' ? '' : 'none' }}>
+                      <OrderDetails
+                        order={order}
+                        setOrder={setOrder}
+                        baseUrl={baseUrl}
+                        setPage={setPage}
+                        hasRobot={hasRobot}
+                        handleWebln={handleWebln}
+                      />
+                    </div>
+                    <div style={{ display: tab == 'contract' ? '' : 'none' }}>
+                      <TradeBox order={order} setOrder={setOrder} baseUrl={baseUrl} />
+                    </div>
+                  </Paper>
+                </Grid>
+              </Grid>
+            )}
+          </>
+        ) : (
+          <OrderDetails
+            order={order}
+            setOrder={setOrder}
+            baseUrl={baseUrl}
+            setPage={setPage}
+            hasRobot={hasRobot}
+            handleWebln={handleWebln}
+          />
+        )
       ) : (
         <></>
       )}

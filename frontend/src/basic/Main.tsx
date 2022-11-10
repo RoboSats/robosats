@@ -371,21 +371,23 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
           </Route>
         </Switch>
       </Box>
-      <NavBar
-        nickname={robot.avatarLoaded ? robot.nickname : null}
-        color={settings.network === 'mainnet' ? 'primary' : 'secondary'}
-        width={windowSize.width}
-        height={navbarHeight}
-        page={page}
-        setPage={setPage}
-        open={open}
-        setOpen={setOpen}
-        closeAll={closeAll}
-        setSlideDirection={setSlideDirection}
-        currentOrder={currentOrder}
-        hasRobot={robot.avatarLoaded}
-        baseUrl={baseUrl}
-      />
+      <div style={{ alignContent: 'center', display: 'flex' }}>
+        <NavBar
+          nickname={robot.avatarLoaded ? robot.nickname : null}
+          color={settings.network === 'mainnet' ? 'primary' : 'secondary'}
+          width={windowSize.width}
+          height={navbarHeight}
+          page={page}
+          setPage={setPage}
+          open={open}
+          setOpen={setOpen}
+          closeAll={closeAll}
+          setSlideDirection={setSlideDirection}
+          currentOrder={currentOrder}
+          hasRobot={robot.avatarLoaded}
+          baseUrl={baseUrl}
+        />
+      </div>
       <MainDialogs
         open={open}
         setOpen={setOpen}

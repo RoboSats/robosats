@@ -232,7 +232,7 @@ const OrderDetails = ({
               <PriceChange />
             </ListItemIcon>
 
-            <Collapse in={order.price_now !== undefined ? true : false}>
+            {order.price_now !== undefined ? (
               <ListItemText
                 primary={t('{{price}} {{currencyCode}}/BTC - Premium: {{premium}}%', {
                   price: pn(order.price_now),
@@ -241,18 +241,18 @@ const OrderDetails = ({
                 })}
                 secondary={t('Price and Premium')}
               />
-            </Collapse>
+            ) : null}
 
-            <Collapse in={!order.price_now && order.is_explicit}>
+            {!order.price_now && order.is_explicit ? (
               <ListItemText primary={pn(order.satoshis)} secondary={t('Amount of Satoshis')} />
-            </Collapse>
+            ) : null}
 
-            <Collapse in={!order.price_now && !order.is_explicit}>
+            {!order.price_now && !order.is_explicit ? (
               <ListItemText
                 primary={parseFloat(Number(order.premium).toFixed(2)) + '%'}
                 secondary={t('Premium over market price')}
               />
-            </Collapse>
+            ) : null}
           </ListItem>
 
           <Divider />

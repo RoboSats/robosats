@@ -16,13 +16,17 @@ export const Title = ({ order }: TakerFoundPrompProps): JSX.Element => {
   const currencyCode: string = currencies[`${order.currency}`];
 
   let text = '';
+  let color = 'inherit';
 
   if (order.is_maker && order.status === 0) {
     text = t('Lock {{amountSats}} Sats to PUBLISH order', { amountSats: pn(order.bond_satoshis) });
+    color = 'primary';
   } else if (order.is_taker && order.status === 3) {
     text = t('Lock {{amountSats}} Sats to TAKE order', { amountSats: pn(order.bond_satoshis) });
+    color = 'primary';
   } else if (order.is_seller && [6, 7].includes(order.status)) {
     text = t('Lock {{amountSats}} Sats as collateral', { amountSats: pn(order.escrow_satoshis) });
+    color = 'warning';
   }
 
   {
@@ -86,7 +90,7 @@ export const Title = ({ order }: TakerFoundPrompProps): JSX.Element => {
   //             {this.props.data.status == 5 ? this.showOrderExpired() : ''}
 
   return (
-    <Typography variant='body2' align='center'>
+    <Typography color={color} variant='body2' align='center'>
       <b>{text}</b> {stepXofY(order)}
     </Typography>
   );
