@@ -77,7 +77,8 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     in: undefined,
     out: undefined,
   });
-  const [currentOrder, setCurrentOrder] = useState<number | null>(null);
+
+  const [currentOrder, setCurrentOrder] = useState<number | undefined>(undefined);
 
   const navbarHeight = 2.5;
   const closeAll = {
@@ -341,18 +342,12 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
               >
                 <div>
                   <OrderPage
-<<<<<<< HEAD
-                    theme={theme}
-                    history={history}
-                    {...props}
-                    setPage={setPage}
-                    baseUrl={baseUrl}
-=======
-                    {...props}
                     baseUrl={baseUrl}
                     hasRobot={robot.avatarLoaded}
+                    currentOrder={currentOrder}
+                    locationOrder={props.match.params.orderId}
+                    windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}
                     setPage={setPage}
->>>>>>> Wip 2 OrderDetails
                   />
                 </div>
               </Slide>

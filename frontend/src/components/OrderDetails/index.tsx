@@ -1,14 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContentText,
-  DialogActions,
-  DialogContent,
   List,
-  Button,
-  Tooltip,
   ListItem,
   Alert,
   Chip,
@@ -19,7 +12,6 @@ import {
   Grid,
   Collapse,
   useTheme,
-  TextField,
 } from '@mui/material';
 
 import Countdown, { zeroPad } from 'react-countdown';
@@ -49,7 +41,7 @@ interface OrderDetailsProps {
   baseUrl: string;
   hasRobot: boolean;
   setPage: (state: Page) => void;
-  handleWebln: () => void;
+  handleWebln: (order: Order) => void;
 }
 
 const OrderDetails = ({
