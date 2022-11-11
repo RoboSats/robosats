@@ -184,6 +184,7 @@ const ProfileDialog = ({
                 avatarClass='profileAvatar'
                 style={{ width: 65, height: 65 }}
                 nickname={robot.nickname}
+                baseUrl={baseUrl}
               />
             </ListItemAvatar>
           </ListItem>

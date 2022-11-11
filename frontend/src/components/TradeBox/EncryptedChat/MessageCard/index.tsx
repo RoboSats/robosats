@@ -15,9 +15,10 @@ interface Props {
   message: EncryptedChatMessage;
   isTaker: boolean;
   userConnected: boolean;
+  baseUrl: string;
 }
 
-const MessageCard: React.FC<Props> = ({ message, isTaker, userConnected }) => {
+const MessageCard: React.FC<Props> = ({ message, isTaker, userConnected, baseUrl }) => {
   const [showPGP, setShowPGP] = useState<boolean>();
   const { t } = useTranslation();
   const theme = useTheme();
@@ -34,6 +35,7 @@ const MessageCard: React.FC<Props> = ({ message, isTaker, userConnected }) => {
           <RobotAvatar
             statusColor={userConnected ? 'success' : 'error'}
             nickname={message.userNick}
+            baseUrl={baseUrl}
           />
         }
         style={{ backgroundColor: cardColor }}

@@ -55,6 +55,7 @@ const EncryptedChat: React.FC<Props> = ({
       orderId={orderId}
       takerNick={takerNick}
       userNick={userNick}
+      baseUrl={baseUrl}
     />
   );
 };

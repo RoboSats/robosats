@@ -38,7 +38,6 @@ import { apiClient } from '../../services/api';
 
 // Icons
 import PercentIcon from '@mui/icons-material/Percent';
-import SelfImprovement from '@mui/icons-material/SelfImprovement';
 import BookIcon from '@mui/icons-material/Book';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
@@ -1435,14 +1434,7 @@ class TradeBox extends Component {
         {/* Make confirmation sound for Chat Open. */}
         {this.Sound('locked-invoice')}
         <Grid item xs={12} align='center'>
-          <Typography variant='subtitle1'>
-            <b>
-              {' '}
-              {this.props.data.is_seller ? t('Chat with the buyer') : t('Chat with the seller')}
-            </b>{' '}
-            {' ' + this.stepXofY()}
-          </Typography>
-          <Grid item>
+          <div style={{ position: 'fixed', right: '-4em', top: '2.5em' }}>
             <Tooltip
               enterTouchDelay={0}
               placement='top'
@@ -1464,7 +1456,14 @@ class TradeBox extends Component {
                 <WifiTetheringErrorIcon sx={{ color: 'text.secondary' }} />
               </div>
             </Tooltip>
-          </Grid>
+          </div>
+          <Typography variant='subtitle1'>
+            <b>
+              {' '}
+              {this.props.data.is_seller ? t('Chat with the buyer') : t('Chat with the seller')}
+            </b>{' '}
+            {' ' + this.stepXofY()}
+          </Typography>
         </Grid>
         <Grid item xs={12} align='center'>
           {this.props.data.is_seller ? (

@@ -211,12 +211,14 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   };
 
   useEffect(() => {
-    if (open.profile || (robot.token && robot.nickname === null)) {
-      fetchRobot({ keys: false }); // fetch existing robot
-    } else if (robot.token && robot.encPrivKey && robot.pubKey) {
-      fetchRobot({ keys: true }); // create new robot with existing token and keys (on network and coordinator change)
+    if (baseUrl != '') {
+      if (open.profile || (robot.token && robot.nickname === null)) {
+        fetchRobot({ keys: false }); // fetch existing robot
+      } else if (robot.token && robot.encPrivKey && robot.pubKey) {
+        fetchRobot({ keys: true }); // create new robot with existing token and keys (on network and coordinator change)
+      }
     }
-  }, [open.profile, settings.network, settings.coordinator]);
+  }, [open.profile, baseUrl]);
 
   return (
     <Router basename={basename}>
