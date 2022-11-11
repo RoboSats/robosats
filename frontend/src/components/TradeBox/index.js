@@ -1434,7 +1434,16 @@ class TradeBox extends Component {
         {/* Make confirmation sound for Chat Open. */}
         {this.Sound('locked-invoice')}
         <Grid item xs={12} align='center'>
-          <div style={{ position: 'fixed', right: '-4em', top: '2.5em' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              position: 'relative',
+              right: '0em',
+              top: '0em',
+              height: '0em',
+            }}
+          >
             <Tooltip
               enterTouchDelay={0}
               placement='top'

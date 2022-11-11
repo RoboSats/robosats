@@ -1,5 +1,3 @@
-import { APIChat } from '.';
-
 export interface TradeRobotSummary {
   sent_fiat: number;
   received_sats: number;
@@ -85,7 +83,7 @@ export interface Order {
   trade_fee_percent: number;
   bond_size_sats: number;
   bond_size_percent: number;
-  chat: APIChat;
+  chat_last_index: number;
   maker_summary: TradeRobotSummary;
   taker_summary: TradeRobotSummary;
   platform_summary: TradeCoordinatorSummary;

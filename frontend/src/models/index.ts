@@ -12,7 +12,6 @@ export type { Info } from './Info.model';
 export type { Language } from './Settings.model';
 export type { Favorites } from './Favorites.model';
 export type { Coordinator } from './Coordinator.model';
-export type { APIChat, WebSocketsChatMessage, APIChatMessage } from './Chat.model';
 
 export { defaultMaker } from './Maker.model';
 export { defaultInfo } from './Info.model';
