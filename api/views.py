@@ -53,7 +53,7 @@ from api.utils import (
     get_robosats_commit,
     get_robosats_version,
 )
-from chat.views import ChatView
+from chat.models import Message
 from control.models import AccountingDay, BalanceLog
 
 from .nick_generator.nick_generator import NickGenerator
@@ -405,9 +405,12 @@ class OrderView(viewsets.ViewSet):
                 else:
                     data["asked_for_cancel"] = False
 
-            offset = request.GET.get("offset", None)
-            if offset:
-                data["chat"] = ChatView.get(None, request).data
+            # Add index of last chat message. To be used by client on Chat endpoint to fetch latest messages
+            messages = Message.objects.filter(order=order)
+            if len(messages) == 0:
+                data["chat_last_index"] = 0
+            else:
+                data["chat_last_index"] = messages.latest().index
 
         # 9) If status is 'DIS' and all HTLCS are in LOCKED
         elif order.status == Order.Status.DIS:

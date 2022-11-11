@@ -6,7 +6,6 @@
   "Hide": "Ocultar",
   "You are self-hosting RoboSats": "Estás hosteando RoboSats",
   "RoboSats client is served from your own node granting you the strongest security and privacy.": "El cliente RoboSats es servido por tu propio nodo, gozas de la mayor seguridad y privacidad.",
-
   "UserGenPage": "User Generation Page and Landing Page",
   "Simple and Private LN P2P Exchange": "Intercambio LN P2P Fácil y Privado",
   "This is your trading avatar": "Este es tu Robot de compraventa",
@@ -23,7 +22,6 @@
   "You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.": "Vas a visitar la página Learn RoboSats. Ha sido construida por la comunidad y contiene tutoriales y documentación que te ayudará a aprender como se usa RoboSats y a entender como funciona.",
   "Let's go!": "¡Vamos!",
   "Save token and PGP credentials to file": "Guardar archivo con token y credenciales PGP",
-
   "MAKER PAGE - MakerPage.js": "This is the page where users can create new orders",
   "Order": "Orden",
   "Customize": "Personalizar",
@@ -84,7 +82,6 @@
   "Existing orders match yours!": "¡Existen órdenes que coinciden!",
   "Enable advanced options": "Activar opciones avanzadas",
   "Clear form": "Borrar campos",
-
   "PAYMENT METHODS - autocompletePayments.js": "Payment method strings",
   "not specified": "Sin especificar",
   "Instant SEPA": "SEPA Instantánea",
@@ -94,7 +91,6 @@
   "Google Play Gift Code": "Google Play Tarjeta Regalo",
   "Cash F2F": "Efectivo en persona",
   "On-Chain BTC": "On-Chain BTC",
-
   "BOOK PAGE - BookPage.js": "The Book Order page",
   "Seller": "Vende",
   "Buyer": "Compra",
@@ -177,7 +173,6 @@
   "swap to": "swap a",
   "DESTINATION": "DESTINO",
   "METHOD": "MÉTODO",
-
   "BOTTOM BAR AND MISC - BottomBar.js": "Bottom Bar user profile and miscellaneous dialogs",
   "Stats For Nerds": "Estadísticas para nerds",
   "LND version": "Versión LND",
@@ -240,7 +235,6 @@
   "Current onchain payout fee": "Coste actual de recibir onchain",
   "Use stealth invoices": "Facturas sigilosas",
   "Stealth lightning invoices do not contain details about the trade except an order reference. Enable this setting if you don't want to disclose details to a custodial lightning wallet.": "Las facturas sigilosas no contienen información sobre tu orden excepto una referencia a la misma. Activalas para no desvelar información a tu proveedor de wallet custodial.",
-
   "ORDER PAGE - OrderPage.js": "Order details page",
   "Order Box": "Orden",
   "Contract": "Contrato",
@@ -315,7 +309,6 @@
   "Payment not received, please check your WebLN wallet.": "No se ha recibido el pago, echa un vistazo a tu wallet WebLN.",
   "Invoice not received, please check your WebLN wallet.": "No se ha recibido la factura, echa un vistazo a tu wallet WebLN.",
   "You can close now your WebLN wallet popup.": "Ahora puedes cerrar el popup de tu wallet WebLN.",
-
   "CHAT BOX - Chat.js": "Ventana del chat",
   "You": "Tú",
   "Peer": "Él",
@@ -345,7 +338,7 @@
   "Messages": "Mensajes",
   "Verified signature by {{nickname}}": "Firma de {{nickname}} verificada",
   "Cannot verify signature of {{nickname}}": "No se pudo verificar la firma de {{nickname}}",
-
+  "Activate turtle mode (Use it when the connection is slow)": "Activar modo tortuga (Úsalo cuando tu conexión es lenta)",
   "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
   "Contract Box": "Contrato",
   "Robots show commitment to their peers": "Los Robots deben mostrar su compromiso",
@@ -489,7 +482,6 @@
   "Timestamp": "Marca de hora",
   "Completed in": "Completado en",
   "Contract exchange rate": "Tasa de cambio del contrato",
-
   "INFO DIALOG - InfoDiagog.js": "App information and clarifications and terms of use",
   "Close": "Cerrar",
   "What is RoboSats?": "¿Qué es RoboSats?",

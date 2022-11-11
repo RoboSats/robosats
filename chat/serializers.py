@@ -18,7 +18,7 @@ class ChatSerializer(serializers.ModelSerializer):
 class PostMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ("PGP_message", "order", "offset")
+        fields = ("PGP_message", "order_id", "offset")
         depth = 0
 
     offset = serializers.IntegerField(
@@ -27,4 +27,11 @@ class PostMessageSerializer(serializers.ModelSerializer):
         required=False,
         min_value=0,
         help_text="Offset for message index to get as response",
+    )
+
+    order_id = serializers.IntegerField(
+        allow_null=False,
+        required=True,
+        min_value=0,
+        help_text="Order ID of chatroom",
     )

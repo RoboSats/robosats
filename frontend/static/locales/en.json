@@ -6,12 +6,10 @@
   "Hide": "Hide",
   "You are self-hosting RoboSats": "You are self-hosting RoboSats",
   "RoboSats client is served from your own node granting you the strongest security and privacy.": "RoboSats client is served from your own node granting you the strongest security and privacy.",
-
   "Initializing TOR daemon": "Initializing TOR daemon",
   "Connecting to TOR network": "Connecting to TOR network",
   "Connected to TOR network": "Connected to TOR network",
   "Connection error": "Connection error",
-
   "USER GENERATION PAGE - UserGenPage.js": "Landing Page and User Generation",
   "Simple and Private LN P2P Exchange": "Simple and Private LN P2P Exchange",
   "This is your trading avatar": "This is your trading avatar",
@@ -28,7 +26,6 @@
   "You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.": "You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.",
   "Let's go!": "Let's go!",
   "Save token and PGP credentials to file": "Save token and PGP credentials to file",
-
   "MAKER PAGE - MakerPage.js": "This is the page where users can create new orders",
   "Order": "Order",
   "Customize": "Customize",
@@ -87,7 +84,6 @@
   "Existing orders match yours!": "Existing orders match yours!",
   "Enable advanced options": "Enable advanced options",
   "Clear form": "Clear form",
-
   "PAYMENT METHODS - autocompletePayments.js": "Payment method strings",
   "not specified": "Not specified",
   "Instant SEPA": "Instant SEPA",
@@ -95,7 +91,6 @@
   "Google Play Gift Code": "Google Play Gift Code",
   "Cash F2F": "Cash F2F",
   "On-Chain BTC": "On-Chain BTC",
-
   "BOOK PAGE - BookPage": "The Book Order page",
   "Seller": "Seller",
   "Buyer": "Buyer",
@@ -175,7 +170,6 @@
   "swap to": "swap to",
   "DESTINATION": "DESTINATION",
   "METHOD": "METHOD",
-
   "BOTTOM BAR AND MISC - BottomBar.js": "Bottom Bar user profile and miscellaneous dialogs",
   "Stats For Nerds": "Stats For Nerds",
   "LND version": "LND version",
@@ -252,7 +246,6 @@
   "Coordinator": "Coordinator",
   "RoboSats version": "RoboSats version",
   "LN Node": "LN Node",
-
   "ORDER PAGE - OrderPage.js": "Order details page",
   "Order Box": "Order Box",
   "Contract": "Contract",
@@ -327,7 +320,6 @@
   "Payment not received, please check your WebLN wallet.": "Payment not received, please check your WebLN wallet.",
   "Invoice not received, please check your WebLN wallet.": "Invoice not received, please check your WebLN wallet.",
   "Payment detected, you can close now your WebLN wallet popup.": "Payment detected, you can close now your WebLN wallet popup.",
-
   "CHAT BOX - Chat.js": "Chat Box",
   "You": "You",
   "Peer": "Peer",
@@ -357,7 +349,7 @@
   "Messages": "Messages",
   "Verified signature by {{nickname}}": "Verified signature by {{nickname}}",
   "Cannot verify signature of {{nickname}}": "Cannot verify signature of {{nickname}}",
-
+  "Activate turtle mode (Use it when the connection is slow)": "Activate turtle mode (Use it when the connection is slow)",
   "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
   "Contract Box": "Contract Box",
   "Robots show commitment to their peers": "Robots show commitment to their peers",
@@ -501,7 +493,6 @@
   "Timestamp": "Timestamp",
   "Completed in": "Completed in",
   "Contract exchange rate": "Contract exchange rate",
-
   "INFO DIALOG - InfoDiagog.js": "App information and clarifications and terms of use",
   "Close": "Close",
   "What is RoboSats?": "What is RoboSats?",

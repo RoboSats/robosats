@@ -19,6 +19,7 @@ import {
   ListItem,
   ListItemText,
   Divider,
+  Switch,
   ListItemIcon,
   Dialog,
   DialogActions,
@@ -37,6 +38,7 @@ import { apiClient } from '../../services/api';
 
 // Icons
 import PercentIcon from '@mui/icons-material/Percent';
+import SelfImprovement from '@mui/icons-material/SelfImprovement';
 import BookIcon from '@mui/icons-material/Book';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
@@ -47,6 +49,7 @@ import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import BoltIcon from '@mui/icons-material/Bolt';
 import LinkIcon from '@mui/icons-material/Link';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import WifiTetheringErrorIcon from '@mui/icons-material/WifiTetheringError';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -72,6 +75,7 @@ class TradeBox extends Component {
       badInvoice: false,
       badAddress: false,
       badStatement: false,
+      turtleMode: false,
     };
   }
 
@@ -1438,6 +1442,29 @@ class TradeBox extends Component {
             </b>{' '}
             {' ' + this.stepXofY()}
           </Typography>
+          <Grid item>
+            <Tooltip
+              enterTouchDelay={0}
+              placement='top'
+              title={t('Activate turtle mode (Use it when the connection is slow)')}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  width: '4em',
+                  height: '1.1em',
+                }}
+              >
+                <Switch
+                  size='small'
+                  disabled={false}
+                  checked={this.state.turtleMode}
+                  onChange={() => this.setState({ turtleMode: !this.state.turtleMode })}
+                />
+                <WifiTetheringErrorIcon sx={{ color: 'text.secondary' }} />
+              </div>
+            </Tooltip>
+          </Grid>
         </Grid>
         <Grid item xs={12} align='center'>
           {this.props.data.is_seller ? (
@@ -1470,8 +1497,13 @@ class TradeBox extends Component {
         </Grid>
 
         <EncryptedChat
+          turtleMode={this.state.turtleMode}
+          chatOffset={this.props.data.chat_last_index}
           orderId={this.props.data.id}
+          takerNick={this.props.data.taker_nick}
+          makerNick={this.props.data.maker_nick}
           userNick={this.props.data.ur_nick}
+          chat={this.props.data.chat}
           baseUrl={this.props.baseUrl}
         />
         <Grid item xs={12} align='center'>
