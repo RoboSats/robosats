@@ -79,6 +79,9 @@ const OrderPage = ({
   const [timer, setTimer] = useState<NodeJS.Timer>(setInterval(() => null, delay));
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
 
+  const doublePageWidth: number = 50;
+  const maxHeight: number = windowSize.height * 0.85 - 3;
+
   useEffect(() => {
     fetchOrder();
     setTimer(setInterval(fetchOrder, delay));
@@ -188,19 +191,19 @@ const OrderPage = ({
 
   return (
     <Box>
-      <Fade in={order == undefined}>
-        <CircularProgress />
-      </Fade>
-      <Fade in={badRequest != undefined}>
+      {order == undefined ? <CircularProgress /> : <></>}
+      {badRequest != undefined ? (
         <Typography align='center' variant='subtitle2' color='secondary'>
           {t(badRequest)}
         </Typography>
-      </Fade>
+      ) : (
+        <></>
+      )}
       {order != undefined && badRequest == undefined ? (
         order.is_participant ? (
           <>
             <WeblnDialog />
-            {windowSize.width > 70 ? (
+            {windowSize.width > doublePageWidth ? (
               // DOUBLE PAPER VIEW
               <Grid
                 container
@@ -208,9 +211,17 @@ const OrderPage = ({
                 justifyContent='center'
                 alignItems='flex-start'
                 spacing={2}
+                style={{ width: '43em' }}
               >
                 <Grid item xs={6} style={{ width: '21em' }}>
-                  <Paper elevation={12} style={{ width: '21em' }}>
+                  <Paper
+                    elevation={12}
+                    style={{
+                      width: '21em',
+                      maxHeight: `${maxHeight}em`,
+                      overflow: 'auto',
+                    }}
+                  >
                     <OrderDetails
                       order={order}
                       setOrder={setOrder}
@@ -222,50 +233,54 @@ const OrderPage = ({
                   </Paper>
                 </Grid>
                 <Grid item xs={6} style={{ width: '21em' }}>
-                  <Paper elevation={12} style={{ width: '21em' }}>
+                  <Paper
+                    elevation={12}
+                    style={{
+                      width: '21em',
+                      maxHeight: `${maxHeight}em`,
+                      overflow: 'auto',
+                    }}
+                  >
                     <TradeBox order={order} setOrder={setOrder} baseUrl={baseUrl} />
                   </Paper>
                 </Grid>
               </Grid>
             ) : (
               // SINGLE PAPER VIEW
-              <Grid
-                container
-                direction='column'
-                justifyContent='flex-start'
-                alignItems='center'
-                spacing={1}
-              >
-                <Grid item>
-                  <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '21em' }}>
-                    <Tabs
-                      value={tab}
-                      onChange={(mouseEvent, value) => setTab(value)}
-                      variant='fullWidth'
-                    >
-                      <Tab label={t('Order')} value='order' />
-                      <Tab label={t('Contract')} value='contract' />
-                    </Tabs>
-                  </Box>
-                </Grid>
-                <Grid item>
-                  <Paper elevation={12} style={{ width: '21em' }}>
-                    <div style={{ display: tab == 'order' ? '' : 'none' }}>
-                      <OrderDetails
-                        order={order}
-                        setOrder={setOrder}
-                        baseUrl={baseUrl}
-                        setPage={setPage}
-                        hasRobot={hasRobot}
-                        handleWebln={handleWebln}
-                      />
-                    </div>
-                    <div style={{ display: tab == 'contract' ? '' : 'none' }}>
-                      <TradeBox order={order} setOrder={setOrder} baseUrl={baseUrl} />
-                    </div>
-                  </Paper>
-                </Grid>
-              </Grid>
+              <Box>
+                <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '21em' }}>
+                  <Tabs
+                    value={tab}
+                    onChange={(mouseEvent, value) => setTab(value)}
+                    variant='fullWidth'
+                  >
+                    <Tab label={t('Order')} value='order' />
+                    <Tab label={t('Contract')} value='contract' />
+                  </Tabs>
+                </Box>
+                <Paper
+                  elevation={12}
+                  style={{
+                    width: '21em',
+                    maxHeight: `${maxHeight}em`,
+                    overflow: 'auto',
+                  }}
+                >
+                  <div style={{ display: tab == 'order' ? '' : 'none' }}>
+                    <OrderDetails
+                      order={order}
+                      setOrder={setOrder}
+                      baseUrl={baseUrl}
+                      setPage={setPage}
+                      hasRobot={hasRobot}
+                      handleWebln={handleWebln}
+                    />
+                  </div>
+                  <div style={{ display: tab == 'contract' ? '' : 'none' }}>
+                    <TradeBox order={order} setOrder={setOrder} baseUrl={baseUrl} />
+                  </div>
+                </Paper>
+              </Box>
             )}
           </>
         ) : (

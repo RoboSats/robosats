@@ -239,7 +239,7 @@ const TradeBox = ({ order, setOrder, baseUrl }: TradeBoxProps): JSX.Element => {
         direction='column'
         justifyContent='flex-start'
         alignItems='center'
-        spacing={1}
+        spacing={0}
       >
         <Grid item>
           <Title order={order} />

@@ -30,26 +30,34 @@ const CancelButton = ({
 
   return (
     <Box>
-      <Collapse in={showCancelButton}>
-        <LoadingButton
-          loading={loading}
-          variant='contained'
-          color='secondary'
-          onClick={noConfirmation ? openCancelDialog : onClickCancel}
-        >
-          {t('Cancel')}
-        </LoadingButton>
-      </Collapse>
-      <Collapse in={showCollabCancelButton}>
-        <LoadingButton
-          loading={loading}
-          variant='contained'
-          color='secondary'
-          onClick={openCollabCancelDialog}
-        >
-          {t('Collaborative Cancel')}
-        </LoadingButton>
-      </Collapse>
+      {showCancelButton ? (
+        <Collapse in={showCancelButton}>
+          <LoadingButton
+            loading={loading}
+            variant='outlined'
+            color='secondary'
+            onClick={noConfirmation ? onClickCancel : openCancelDialog}
+          >
+            {t('Cancel')}
+          </LoadingButton>
+        </Collapse>
+      ) : (
+        <></>
+      )}
+      {showCollabCancelButton ? (
+        <Collapse in={showCollabCancelButton}>
+          <LoadingButton
+            loading={loading}
+            variant='outlined'
+            color='secondary'
+            onClick={openCollabCancelDialog}
+          >
+            {t('Collaborative Cancel')}
+          </LoadingButton>
+        </Collapse>
+      ) : (
+        <></>
+      )}
     </Box>
   );
 };
