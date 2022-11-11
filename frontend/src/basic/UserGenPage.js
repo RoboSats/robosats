@@ -126,9 +126,9 @@ class UserGenPage extends Component {
     apiClient.delete(this.props.baseUrl, '/api/user');
 
     systemClient.deleteCookie('sessionid');
-    systemClient.deleteCookie('robot_token');
-    systemClient.deleteCookie('pub_key');
-    systemClient.deleteCookie('enc_priv_key');
+    systemClient.deleteItem('robot_token');
+    systemClient.deleteItem('pub_key');
+    systemClient.deleteItem('enc_priv_key');
   }
 
   handleClickNewRandomToken = () => {
