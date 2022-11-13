@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Collapse, Box } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import { Order } from '../../models';
 import { LoadingButton } from '@mui/lab';
 
@@ -30,32 +30,42 @@ const CancelButton = ({
   return (
     <Box>
       {showCancelButton ? (
-        <Collapse in={showCancelButton}>
-          <LoadingButton
-            size='small'
-            loading={loading}
-            variant='outlined'
-            color='secondary'
-            onClick={noConfirmation ? onClickCancel : openCancelDialog}
-          >
-            {t('Cancel')}
-          </LoadingButton>
-        </Collapse>
+        <Tooltip
+          placement='top'
+          enterTouchDelay={500}
+          enterDelay={700}
+          enterNextDelay={2000}
+          title={
+            noConfirmation
+              ? t('Cancel order and unlock bond instantly')
+              : t('Unilateral cancelation (bond at risk!)')
+          }
+        >
+          <div>
+            <LoadingButton
+              size='small'
+              loading={loading}
+              variant='outlined'
+              color='secondary'
+              onClick={noConfirmation ? onClickCancel : openCancelDialog}
+            >
+              {t('Cancel')}
+            </LoadingButton>
+          </div>
+        </Tooltip>
       ) : (
         <></>
       )}
       {showCollabCancelButton ? (
-        <Collapse in={showCollabCancelButton}>
-          <LoadingButton
-            size='small'
-            loading={loading}
-            variant='outlined'
-            color='secondary'
-            onClick={openCollabCancelDialog}
-          >
-            {t('Collaborative Cancel')}
-          </LoadingButton>
-        </Collapse>
+        <LoadingButton
+          size='small'
+          loading={loading}
+          variant='outlined'
+          color='secondary'
+          onClick={openCollabCancelDialog}
+        >
+          {t('Collaborative Cancel')}
+        </LoadingButton>
       ) : (
         <></>
       )}

@@ -76,6 +76,7 @@ const OrderPage = ({
   const orderReceived = function (data: any) {
     if (data.bad_request != undefined) {
       setBadRequest(data.bad_request);
+      setOrder(undefined);
     } else {
       setDelay(data.status >= 0 && data.status <= 18 ? statusToDelay[data.status] : 99999999);
       setOrder(data);
@@ -85,13 +86,7 @@ const OrderPage = ({
 
   const fetchOrder = function () {
     const id = locationOrder ?? currentOrder;
-    apiClient
-      .get(baseUrl, '/api/order/?order_id=' + id)
-      .catch(() => {
-        setOrder(order);
-        console.log('CATCHED');
-      })
-      .then(orderReceived);
+    apiClient.get(baseUrl, '/api/order/?order_id=' + id).then(orderReceived);
   };
 
   return (

@@ -40,6 +40,8 @@ export const PublicWaitPrompt = ({
 
   return (
     <List dense={true}>
+      <Divider />
+
       <ListItem>
         <Typography variant='body2' align='left'>
           {t(
@@ -81,9 +83,11 @@ export const PublicWaitPrompt = ({
               enterNextDelay={2000}
               title={t('Pause the public order')}
             >
-              <LoadingButton loading={pauseLoading} color='primary' onClick={onClickPauseOrder}>
-                <PauseCircle sx={{ width: '1.6em', height: '1.6em' }} />
-              </LoadingButton>
+              <div>
+                <LoadingButton loading={pauseLoading} color='primary' onClick={onClickPauseOrder}>
+                  <PauseCircle sx={{ width: '1.6em', height: '1.6em' }} />
+                </LoadingButton>
+              </div>
             </Tooltip>
           </div>
         </Grid>

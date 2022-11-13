@@ -14,7 +14,7 @@ import {
 } from './Dialogs';
 
 import Title from './Title';
-import { LockInvoicePrompt, TakerFoundPrompt, PublicWaitPrompt } from './Prompts';
+import { LockInvoicePrompt, TakerFoundPrompt, PublicWaitPrompt, PausedPrompt } from './Prompts';
 import BondStatus from './BondStatus';
 import CancelButton from './CancelButton';
 
@@ -126,9 +126,12 @@ const TradeBox = ({ order, setOrder, baseUrl, setBadRequest }: TradeBoxProps): J
   // }, [order.status]);
 
   const submitAction = function (action: string, invoice?: string) {
-    console.log(action, invoice);
     apiClient
       .post(baseUrl, '/api/order/?order_id=' + order.id, { action, invoice })
+      .catch(() => {
+        setOpen(closeAll);
+        setLoadingButtons({ ...noLoadingButtons });
+      })
       .then((data: Order | undefined) => {
         if (data.bad_request) {
           setBadRequest(data.bad_request);
@@ -167,7 +170,7 @@ const TradeBox = ({ order, setOrder, baseUrl, setBadRequest }: TradeBoxProps): J
   };
 
   const handleWebln = async (order: Order) => {
-    const webln = await getWebln();
+    const webln = await getWebln().catch(() => console.log('Web LN not available'));
     // If Webln implements locked payments compatibility, this logic might be simplier
     if (order.is_maker && order.status == 0) {
       webln.sendPayment(order.bond_invoice);
@@ -277,7 +280,25 @@ const TradeBox = ({ order, setOrder, baseUrl, setBadRequest }: TradeBoxProps): J
       },
     },
     // 2: 'Paused'
-
+    {
+      isMaker: {
+        title: '',
+        prompt: () => {
+          return (
+            <PausedPrompt
+              pauseLoading={loadingButtons.pauseOrder}
+              onClickResumeOrder={pauseOrder}
+            />
+          );
+        },
+        bondStatus: 'locked',
+      },
+      isTaker: {
+        title: '',
+        prompt: <></>,
+        bondStatus: 'hide',
+      },
+    },
     // 3: 'Waiting for taker bond'
 
     // 4: 'Cancelled'
