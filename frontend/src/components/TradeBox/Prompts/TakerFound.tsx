@@ -2,7 +2,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid, Typography } from '@mui/material';
 import { Order } from '../../../models';
-import stepXofY from '../stepXofY';
 
 interface TakerFoundPrompProps {
   order: Order;
@@ -10,15 +9,6 @@ interface TakerFoundPrompProps {
 
 export const TakerFoundPrompt = ({ order }: TakerFoundPrompProps): JSX.Element => {
   const { t } = useTranslation();
-
-  const Title = function () {
-    return (
-      <Typography color='primary' variant='subtitle1'>
-        <b>{t('A taker has been found!')}</b>
-        {` ${stepXofY(order)}`}
-      </Typography>
-    );
-  };
 
   return (
     <Grid container spacing={1}>

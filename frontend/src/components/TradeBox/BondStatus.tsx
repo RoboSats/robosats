@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { Lock, LockOpen, Balance } from '@mui/icons-material';
 
 interface BondStatusProps {
@@ -22,21 +22,19 @@ const BondStatus = ({ status, isMaker }: BondStatusProps): JSX.Element => {
     return <></>;
   } else {
     return (
-      <Box>
-        <Typography color='primary' variant='subtitle1' align='center'>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
-            <Icon />
-            {t(`Your ${isMaker ? 'maker' : 'taker'} bond is ${status}`)}
-          </div>
-        </Typography>
-      </Box>
+      <Typography color='primary' variant='subtitle1' align='center'>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
+          <Icon />
+          {t(`Your ${isMaker ? 'maker' : 'taker'} bond is ${status}`)}
+        </div>
+      </Typography>
     );
   }
 };

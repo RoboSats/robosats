@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Collapse, Box, useTheme } from '@mui/material';
+import { Collapse, Box } from '@mui/material';
 import { Order } from '../../models';
 import { LoadingButton } from '@mui/lab';
 
@@ -20,7 +20,6 @@ const CancelButton = ({
   loading = false,
 }: CancelButtonProps): JSX.Element => {
   const { t } = useTranslation();
-  const theme = useTheme();
 
   const showCancelButton =
     (order.is_maker && [0, 1, 2].includes(order.status)) || [3, 6, 7].includes(order.status);
@@ -33,6 +32,7 @@ const CancelButton = ({
       {showCancelButton ? (
         <Collapse in={showCancelButton}>
           <LoadingButton
+            size='small'
             loading={loading}
             variant='outlined'
             color='secondary'
@@ -47,6 +47,7 @@ const CancelButton = ({
       {showCollabCancelButton ? (
         <Collapse in={showCollabCancelButton}>
           <LoadingButton
+            size='small'
             loading={loading}
             variant='outlined'
             color='secondary'

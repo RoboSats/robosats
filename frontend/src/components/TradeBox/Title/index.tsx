@@ -21,6 +21,9 @@ export const Title = ({ order }: TakerFoundPrompProps): JSX.Element => {
   if (order.is_maker && order.status === 0) {
     text = t('Lock {{amountSats}} Sats to PUBLISH order', { amountSats: pn(order.bond_satoshis) });
     color = 'primary';
+  } else if (order.is_maker && order.status === 1) {
+    text = t('Your order is public');
+    color = 'primary';
   } else if (order.is_taker && order.status === 3) {
     text = t('Lock {{amountSats}} Sats to TAKE order', { amountSats: pn(order.bond_satoshis) });
     color = 'primary';

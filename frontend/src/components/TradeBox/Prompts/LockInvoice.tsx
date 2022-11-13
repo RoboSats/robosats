@@ -77,15 +77,17 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
 
       <Grid item xs={12}>
         <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-          <QRCode
-            bgColor={'rgba(255, 255, 255, 0)'}
-            fgColor={theme.palette.text.primary}
-            value={invoice}
-            size={theme.typography.fontSize * 21.8}
-            onClick={() => {
-              systemClient.copyToClipboard(invoice);
-            }}
-          />
+          <div>
+            <QRCode
+              bgColor={'rgba(255, 255, 255, 0)'}
+              fgColor={theme.palette.text.primary}
+              value={invoice}
+              size={theme.typography.fontSize * 21.8}
+              onClick={() => {
+                systemClient.copyToClipboard(invoice);
+              }}
+            />
+          </div>
         </Tooltip>
       </Grid>
       <Grid item xs={12}>

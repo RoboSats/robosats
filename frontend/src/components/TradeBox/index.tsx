@@ -2,28 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Collapse, Divider, Grid } from '@mui/material';
 
-import { systemClient } from '../../services/System';
 import { apiClient } from '../../services/api';
+import { getWebln } from '../../utils';
+
 import {
   ConfirmCancelDialog,
   ConfirmCollabCancelDialog,
   ConfirmDisputeDialog,
   ConfirmFiatReceivedDialog,
+  WebLNDialog,
 } from './Dialogs';
 
 import Title from './Title';
-import { LockInvoicePrompt, TakerFoundPrompt } from './Prompts';
+import { LockInvoicePrompt, TakerFoundPrompt, PublicWaitPrompt } from './Prompts';
 import BondStatus from './BondStatus';
 import CancelButton from './CancelButton';
 
 import { Order } from '../../models';
 
-const audio = {
-  chat: new Audio(`/static/assets/sounds/chat-open.mp3`),
-  takerFound: new Audio(`/static/assets/sounds/taker-found.mp3`),
-  lockedInvoice: new Audio(`/static/assets/sounds/locked-invoice.mp3`),
-  successful: new Audio(`/static/assets/sounds/successful.mp3`),
-};
+// const audio = {
+//   chat: new Audio(`/static/assets/sounds/chat-open.mp3`),
+//   takerFound: new Audio(`/static/assets/sounds/taker-found.mp3`),
+//   lockedInvoice: new Audio(`/static/assets/sounds/locked-invoice.mp3`),
+//   successful: new Audio(`/static/assets/sounds/successful.mp3`),
+// };
 
 interface loadingButtonsProps {
   cancel: boolean;
@@ -32,6 +34,7 @@ interface loadingButtonsProps {
   submitInvoice: boolean;
   submitAddress: boolean;
   openDispute: boolean;
+  pauseOrder: boolean;
 }
 
 const noLoadingButtons: loadingButtonsProps = {
@@ -41,6 +44,7 @@ const noLoadingButtons: loadingButtonsProps = {
   submitInvoice: false,
   submitAddress: false,
   openDispute: false,
+  pauseOrder: false,
 };
 
 interface OpenDialogProps {
@@ -48,6 +52,7 @@ interface OpenDialogProps {
   confirmCollabCancel: boolean;
   confirmFiatReceived: boolean;
   confirmDispute: boolean;
+  webln: boolean;
 }
 
 const closeAll: OpenDialogProps = {
@@ -55,6 +60,7 @@ const closeAll: OpenDialogProps = {
   confirmCollabCancel: false,
   confirmFiatReceived: false,
   confirmDispute: false,
+  webln: false,
 };
 
 interface OnchainFormProps {
@@ -92,15 +98,18 @@ const defaultLightning: LightningFormProps = {
 interface TradeBoxProps {
   order: Order;
   setOrder: (state: Order) => void;
+  setBadRequest: (state: stirng) => void;
   baseUrl: string;
 }
 
-const TradeBox = ({ order, setOrder, baseUrl }: TradeBoxProps): JSX.Element => {
+const TradeBox = ({ order, setOrder, baseUrl, setBadRequest }: TradeBoxProps): JSX.Element => {
   const { t } = useTranslation();
 
   // Buttons and Dialogs
   const [loadingButtons, setLoadingButtons] = useState<loadingButtonsProps>(noLoadingButtons);
   const [open, setOpen] = useState<OpenDialogProps>(closeAll);
+  const [waitingWebln, setWaitingWebln] = useState<boolean>(false);
+  const [lastOrderStatus, setLastOrderStatus] = useState<number>(-1);
 
   // Forms
   const [onchain, setOnchain] = useState<OnchainFormProps>(defaultOnchain);
@@ -116,11 +125,17 @@ const TradeBox = ({ order, setOrder, baseUrl }: TradeBoxProps): JSX.Element => {
   //   }
   // }, [order.status]);
 
-  const submitAction = function (action: string) {
+  const submitAction = function (action: string, invoice?: string) {
+    console.log(action, invoice);
     apiClient
-      .post(baseUrl, '/api/order/?order_id=' + order.id, { action })
+      .post(baseUrl, '/api/order/?order_id=' + order.id, { action, invoice })
       .then((data: Order | undefined) => {
-        setOrder({ ...order, ...data });
+        if (data.bad_request) {
+          setBadRequest(data.bad_request);
+        } else {
+          setOrder({ ...order, ...data });
+          setBadRequest(undefined);
+        }
         setOpen(closeAll);
         setLoadingButtons({ ...noLoadingButtons });
       });
@@ -140,6 +155,60 @@ const TradeBox = ({ order, setOrder, baseUrl }: TradeBoxProps): JSX.Element => {
     setLoadingButtons({ ...noLoadingButtons, fiatReceived: true });
     submitAction('confirm');
   };
+
+  const updateInvoice = function (invoice: string) {
+    setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
+    submitAction('update_invoice', invoice);
+  };
+
+  const pauseOrder = function () {
+    setLoadingButtons({ ...noLoadingButtons, pauseOrder: true });
+    submitAction('pause');
+  };
+
+  const handleWebln = async (order: Order) => {
+    const webln = await getWebln();
+    // If Webln implements locked payments compatibility, this logic might be simplier
+    if (order.is_maker && order.status == 0) {
+      webln.sendPayment(order.bond_invoice);
+      setWaitingWebln(true);
+      setOpen({ ...open, webln: true });
+    } else if (order.is_taker && order.status == 3) {
+      webln.sendPayment(order.bond_invoice);
+      setWaitingWebln(true);
+      setOpen({ ...open, webln: true });
+    } else if (order.is_seller && (order.status == 6 || order.status == 7)) {
+      webln.sendPayment(order.escrow_invoice);
+      setWaitingWebln(true);
+      setOpen({ ...open, webln: true });
+    } else if (order.is_buyer && (order.status == 6 || order.status == 8)) {
+      setWaitingWebln(true);
+      setOpen({ ...open, webln: true });
+      webln
+        .makeInvoice(order.trade_satoshis)
+        .then((invoice: any) => {
+          if (invoice) {
+            updateInvoice(invoice.paymentRequest);
+            setWaitingWebln(false);
+            setOpen(closeAll);
+          }
+        })
+        .catch(() => {
+          setWaitingWebln(false);
+          setOpen(closeAll);
+        });
+    } else {
+      setWaitingWebln(false);
+    }
+  };
+
+  // Effect on Order Status change (used for WebLN)
+  useEffect(() => {
+    if (order.status != lastOrderStatus) {
+      setLastOrderStatus(order.status);
+      handleWebln(order);
+    }
+  }, [order.status]);
 
   // SHOW IF THE USER OR CONTERPART ASKED FOR CANCEL BELOW THE BOND STATUS!!!
 
@@ -169,6 +238,7 @@ const TradeBox = ({ order, setOrder, baseUrl }: TradeBoxProps): JSX.Element => {
   //   </>
   // ) : null}
 
+  console.log(order.status);
   const Steps = [
     // 0: 'Waiting for maker bond'
     {
@@ -186,9 +256,30 @@ const TradeBox = ({ order, setOrder, baseUrl }: TradeBoxProps): JSX.Element => {
       },
     },
     // 1: 'Public'
-
+    {
+      isMaker: {
+        title: '',
+        prompt: () => {
+          return (
+            <PublicWaitPrompt
+              order={order}
+              pauseLoading={loadingButtons.pauseOrder}
+              onClickPauseOrder={pauseOrder}
+            />
+          );
+        },
+        bondStatus: 'locked',
+      },
+      isTaker: {
+        title: '',
+        prompt: <></>,
+        bondStatus: 'hide',
+      },
+    },
     // 2: 'Paused'
+
     // 3: 'Waiting for taker bond'
+
     // 4: 'Cancelled'
     // 5: 'Expired'
     // 6: 'Waiting for trade collateral and buyer invoice'
@@ -210,6 +301,12 @@ const TradeBox = ({ order, setOrder, baseUrl }: TradeBoxProps): JSX.Element => {
 
   return (
     <Box>
+      <WebLNDialog
+        open={open.webln}
+        onClose={() => setOpen(closeAll)}
+        waitingWebln={waitingWebln}
+        isBuyer={order.is_buyer}
+      />
       <ConfirmDisputeDialog
         open={open.confirmDispute}
         onClose={() => setOpen(closeAll)}
@@ -248,12 +345,15 @@ const TradeBox = ({ order, setOrder, baseUrl }: TradeBoxProps): JSX.Element => {
         <Grid item>
           <StepContent.prompt />
         </Grid>
-        <Grid item>
-          <Collapse in={StepContent.bondStatus != 'hide'}>
+
+        {StepContent.bondStatus != 'hide' ? (
+          <Grid item sx={{ width: '100%' }}>
             <Divider />
             <BondStatus status={StepContent.bondStatus} isMaker={order.is_maker} />
-          </Collapse>
-        </Grid>
+          </Grid>
+        ) : (
+          <></>
+        )}
 
         {/* // SHOW IF THE USER OR CONTERPART ASKED FOR CANCEL BELOW THE BOND STATUS!!! */}
         {/* Participants can see the "Cancel" Button, but cannot see the "Back" or "Take Order" buttons */}

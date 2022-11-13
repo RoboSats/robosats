@@ -41,7 +41,6 @@ interface OrderDetailsProps {
   baseUrl: string;
   hasRobot: boolean;
   setPage: (state: Page) => void;
-  handleWebln: (order: Order) => void;
 }
 
 const OrderDetails = ({
@@ -50,7 +49,6 @@ const OrderDetails = ({
   baseUrl,
   setPage,
   hasRobot,
-  handleWebln,
 }: OrderDetailsProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -317,7 +315,6 @@ const OrderDetails = ({
             baseUrl={baseUrl}
             setPage={setPage}
             hasRobot={hasRobot}
-            handleWebln={handleWebln}
           />
         </Collapse>
       </Grid>

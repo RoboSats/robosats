@@ -1,29 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
-import {
-  Tab,
-  Tabs,
-  Paper,
-  CircularProgress,
-  Button,
-  Grid,
-  Typography,
-  Box,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Fade,
-  Collapse,
-} from '@mui/material';
+import { Tab, Tabs, Paper, CircularProgress, Grid, Typography, Box } from '@mui/material';
 
 import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
 
-import { Check } from '@mui/icons-material';
-import { getWebln } from '../../utils';
 import { apiClient } from '../../services/api';
 
 import { Page } from '../NavBar';
@@ -73,8 +54,6 @@ const OrderPage = ({
 
   const [order, setOrder] = useState<Order | undefined>(undefined);
   const [badRequest, setBadRequest] = useState<string | undefined>(undefined);
-  const [waitingWebln, setWaitingWebln] = useState<boolean>(false);
-  const [openWeblnDialog, setOpenWeblnDialog] = useState<boolean>(false);
   const [delay, setDelay] = useState<number>(60000);
   const [timer, setTimer] = useState<NodeJS.Timer>(setInterval(() => null, delay));
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
@@ -98,9 +77,6 @@ const OrderPage = ({
     if (data.bad_request != undefined) {
       setBadRequest(data.bad_request);
     } else {
-      if (data.status !== (order != undefined ? order.status : -1)) {
-        handleWebln(data);
-      }
       setDelay(data.status >= 0 && data.status <= 18 ? statusToDelay[data.status] : 99999999);
       setOrder(data);
       setBadRequest(undefined);
@@ -109,89 +85,18 @@ const OrderPage = ({
 
   const fetchOrder = function () {
     const id = locationOrder ?? currentOrder;
-    apiClient.get(baseUrl, '/api/order/?order_id=' + id).then(orderReceived);
-  };
-
-  const sendWeblnInvoice = (invoice: string) => {
     apiClient
-      .post(baseUrl, '/api/order/?order_id=' + currentOrder, {
-        action: 'update_invoice',
-        invoice,
+      .get(baseUrl, '/api/order/?order_id=' + id)
+      .catch(() => {
+        setOrder(order);
+        console.log('CATCHED');
       })
-      .then((data) => setOrder(data));
-  };
-
-  const handleWebln = async (data: Order) => {
-    const webln = await getWebln();
-    // If Webln implements locked payments compatibility, this logic might be simplier
-    if (data.is_maker && data.status == 0) {
-      webln.sendPayment(data.bond_invoice);
-      setWaitingWebln(true);
-      setOpenWeblnDialog(true);
-    } else if (data.is_taker && data.status == 3) {
-      webln.sendPayment(data.bond_invoice);
-      setWaitingWebln(true);
-      setOpenWeblnDialog(true);
-    } else if (data.is_seller && (data.status == 6 || data.status == 7)) {
-      webln.sendPayment(data.escrow_invoice);
-      setWaitingWebln(true);
-      setOpenWeblnDialog(true);
-    } else if (data.is_buyer && (data.status == 6 || data.status == 8)) {
-      setWaitingWebln(true);
-      setOpenWeblnDialog(true);
-      webln
-        .makeInvoice(data.trade_satoshis)
-        .then((invoice: any) => {
-          if (invoice) {
-            sendWeblnInvoice(invoice.paymentRequest);
-            setWaitingWebln(false);
-            setOpenWeblnDialog(false);
-          }
-        })
-        .catch(() => {
-          setWaitingWebln(false);
-          setOpenWeblnDialog(false);
-        });
-    } else {
-      setWaitingWebln(false);
-    }
-  };
-
-  const WeblnDialog = function () {
-    const { t } = useTranslation();
-
-    return (
-      <Dialog open={openWeblnDialog} onClose={() => setOpenWeblnDialog(false)}>
-        <DialogTitle>{t('WebLN')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {waitingWebln ? (
-              <>
-                <CircularProgress size={16} thickness={5} style={{ marginRight: 10 }} />
-                {order.is_buyer
-                  ? t('Invoice not received, please check your WebLN wallet.')
-                  : t('Payment not received, please check your WebLN wallet.')}
-              </>
-            ) : (
-              <>
-                <Check color='success' />
-                {t('You can close now your WebLN wallet popup.')}
-              </>
-            )}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenWeblnDialog(false)} autoFocus>
-            {t('Done')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
+      .then(orderReceived);
   };
 
   return (
     <Box>
-      {order == undefined ? <CircularProgress /> : <></>}
+      {order == undefined && badRequest == undefined ? <CircularProgress /> : <></>}
       {badRequest != undefined ? (
         <Typography align='center' variant='subtitle2' color='secondary'>
           {t(badRequest)}
@@ -201,63 +106,17 @@ const OrderPage = ({
       )}
       {order != undefined && badRequest == undefined ? (
         order.is_participant ? (
-          <>
-            <WeblnDialog />
-            {windowSize.width > doublePageWidth ? (
-              // DOUBLE PAPER VIEW
-              <Grid
-                container
-                direction='row'
-                justifyContent='center'
-                alignItems='flex-start'
-                spacing={2}
-                style={{ width: '43em' }}
-              >
-                <Grid item xs={6} style={{ width: '21em' }}>
-                  <Paper
-                    elevation={12}
-                    style={{
-                      width: '21em',
-                      maxHeight: `${maxHeight}em`,
-                      overflow: 'auto',
-                    }}
-                  >
-                    <OrderDetails
-                      order={order}
-                      setOrder={setOrder}
-                      baseUrl={baseUrl}
-                      setPage={setPage}
-                      hasRobot={hasRobot}
-                      handleWebln={handleWebln}
-                    />
-                  </Paper>
-                </Grid>
-                <Grid item xs={6} style={{ width: '21em' }}>
-                  <Paper
-                    elevation={12}
-                    style={{
-                      width: '21em',
-                      maxHeight: `${maxHeight}em`,
-                      overflow: 'auto',
-                    }}
-                  >
-                    <TradeBox order={order} setOrder={setOrder} baseUrl={baseUrl} />
-                  </Paper>
-                </Grid>
-              </Grid>
-            ) : (
-              // SINGLE PAPER VIEW
-              <Box>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '21em' }}>
-                  <Tabs
-                    value={tab}
-                    onChange={(mouseEvent, value) => setTab(value)}
-                    variant='fullWidth'
-                  >
-                    <Tab label={t('Order')} value='order' />
-                    <Tab label={t('Contract')} value='contract' />
-                  </Tabs>
-                </Box>
+          windowSize.width > doublePageWidth ? (
+            // DOUBLE PAPER VIEW
+            <Grid
+              container
+              direction='row'
+              justifyContent='center'
+              alignItems='flex-start'
+              spacing={2}
+              style={{ width: '43em' }}
+            >
+              <Grid item xs={6} style={{ width: '21em' }}>
                 <Paper
                   elevation={12}
                   style={{
@@ -266,23 +125,74 @@ const OrderPage = ({
                     overflow: 'auto',
                   }}
                 >
-                  <div style={{ display: tab == 'order' ? '' : 'none' }}>
-                    <OrderDetails
-                      order={order}
-                      setOrder={setOrder}
-                      baseUrl={baseUrl}
-                      setPage={setPage}
-                      hasRobot={hasRobot}
-                      handleWebln={handleWebln}
-                    />
-                  </div>
-                  <div style={{ display: tab == 'contract' ? '' : 'none' }}>
-                    <TradeBox order={order} setOrder={setOrder} baseUrl={baseUrl} />
-                  </div>
+                  <OrderDetails
+                    order={order}
+                    setOrder={setOrder}
+                    baseUrl={baseUrl}
+                    setPage={setPage}
+                    hasRobot={hasRobot}
+                  />
                 </Paper>
+              </Grid>
+              <Grid item xs={6} style={{ width: '21em' }}>
+                <Paper
+                  elevation={12}
+                  style={{
+                    width: '21em',
+                    maxHeight: `${maxHeight}em`,
+                    overflow: 'auto',
+                  }}
+                >
+                  <TradeBox
+                    order={order}
+                    setOrder={setOrder}
+                    setBadRequest={setBadRequest}
+                    baseUrl={baseUrl}
+                  />
+                </Paper>
+              </Grid>
+            </Grid>
+          ) : (
+            // SINGLE PAPER VIEW
+            <Box>
+              <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '21em' }}>
+                <Tabs
+                  value={tab}
+                  onChange={(mouseEvent, value) => setTab(value)}
+                  variant='fullWidth'
+                >
+                  <Tab label={t('Order')} value='order' />
+                  <Tab label={t('Contract')} value='contract' />
+                </Tabs>
               </Box>
-            )}
-          </>
+              <Paper
+                elevation={12}
+                style={{
+                  width: '21em',
+                  maxHeight: `${maxHeight}em`,
+                  overflow: 'auto',
+                }}
+              >
+                <div style={{ display: tab == 'order' ? '' : 'none' }}>
+                  <OrderDetails
+                    order={order}
+                    setOrder={setOrder}
+                    baseUrl={baseUrl}
+                    setPage={setPage}
+                    hasRobot={hasRobot}
+                  />
+                </div>
+                <div style={{ display: tab == 'contract' ? '' : 'none' }}>
+                  <TradeBox
+                    order={order}
+                    setOrder={setOrder}
+                    setBadRequest={setBadRequest}
+                    baseUrl={baseUrl}
+                  />
+                </div>
+              </Paper>
+            </Box>
+          )
         ) : (
           <OrderDetails
             order={order}
@@ -290,7 +200,6 @@ const OrderPage = ({
             baseUrl={baseUrl}
             setPage={setPage}
             hasRobot={hasRobot}
-            handleWebln={handleWebln}
           />
         )
       ) : (
