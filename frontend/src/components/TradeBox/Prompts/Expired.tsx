@@ -25,16 +25,20 @@ export const ExpiredPrompt = ({
           {t(order.expiry_message)}
         </Typography>
       </Grid>
-      <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
-        <LoadingButton
-          loading={renewLoading}
-          variant='contained'
-          color='primary'
-          onClick={onClickRenew}
-        >
-          {t('Renew Order')}
-        </LoadingButton>
-      </Grid>
+      {order.is_maker ? (
+        <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
+          <LoadingButton
+            loading={renewLoading}
+            variant='contained'
+            color='primary'
+            onClick={onClickRenew}
+          >
+            {t('Renew Order')}
+          </LoadingButton>
+        </Grid>
+      ) : (
+        <></>
+      )}
     </Grid>
   );
 };

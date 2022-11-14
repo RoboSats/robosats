@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Box, Divider, Grid } from '@mui/material';
 
 import { apiClient } from '../../services/api';
-import { getWebln } from '../../utils';
+import { getWebln, pn } from '../../utils';
 
 import {
   ConfirmCancelDialog,
@@ -258,86 +258,80 @@ const TradeBox = ({
   // ) : null}
 
   console.log(order.status);
-  const Steps = [
-    // 0: 'Waiting for maker bond'
-    {
-      isMaker: {
-        title: '',
-        prompt: () => {
-          return <LockInvoicePrompt order={order} concept={'bond'} />;
-        },
-        bondStatus: 'hide',
-      },
-      isTaker: {
-        title: '',
-        prompt: <></>,
-        bondStatus: 'hide',
-      },
-    },
-    // 1: 'Public'
-    {
-      isMaker: {
-        title: '',
-        prompt: () => {
-          return (
-            <PublicWaitPrompt
-              order={order}
-              pauseLoading={loadingButtons.pauseOrder}
-              onClickPauseOrder={pauseOrder}
-            />
-          );
-        },
-        bondStatus: 'locked',
-      },
-      isTaker: {
-        title: '',
-        prompt: <></>,
-        bondStatus: 'hide',
-      },
-    },
-    // 2: 'Paused'
-    {
-      isMaker: {
-        title: '',
-        prompt: () => {
-          return (
-            <PausedPrompt
-              pauseLoading={loadingButtons.pauseOrder}
-              onClickResumeOrder={pauseOrder}
-            />
-          );
-        },
-        bondStatus: 'locked',
-      },
-      isTaker: {
-        title: '',
-        prompt: <></>,
-        bondStatus: 'hide',
-      },
-    },
-    // 3: 'Waiting for taker bond'
-    {
-      isMaker: {
-        title: '',
-        prompt: () => {
-          return <TakerFoundPrompt />;
-        },
-        bondStatus: 'locked',
-      },
-      isTaker: {
-        title: '',
-        prompt: () => {
-          return <LockInvoicePrompt order={order} concept={'bond'} />;
-        },
-        bondStatus: 'hide',
-      },
-    },
-    // 4: 'Cancelled'
-    {},
-    // 5: 'Expired'
-    {
-      isMaker: {
-        title: '',
+  const statusToContract = function (order: Order) {
+    const status = order.status;
+    const isBuyer = order.is_buyer;
+    const isMaker = order.is_maker;
+
+    if (status == 0) {
+      // 0: 'Waiting for maker bond'
+      if (isMaker) {
+        return {
+          title: 'Lock {{amountSats}} Sats to PUBLISH order',
+          titleVariables: { amountSats: pn(order.bond_satoshis) },
+          prompt: () => {
+            return <LockInvoicePrompt order={order} concept={'bond'} />;
+          },
+          bondStatus: 'hide',
+        };
+      }
+    } else if (status == 1) {
+      // 1: 'Public'
+      if (isMaker) {
+        return {
+          title: 'Your order is public',
+          prompt: () => {
+            return (
+              <PublicWaitPrompt
+                order={order}
+                pauseLoading={loadingButtons.pauseOrder}
+                onClickPauseOrder={pauseOrder}
+              />
+            );
+          },
+          bondStatus: 'locked',
+        };
+      }
+    } else if (status == 2) {
+      // 2: 'Paused'
+      if (isMaker) {
+        return {
+          title: 'Your order is paused',
+          prompt: () => {
+            return (
+              <PausedPrompt
+                pauseLoading={loadingButtons.pauseOrder}
+                onClickResumeOrder={pauseOrder}
+              />
+            );
+          },
+          bondStatus: 'locked',
+        };
+      }
+    } else if (status == 3) {
+      // 3: 'Waiting for taker bond'
+      if (isMaker) {
+        return {
+          title: 'A taker has been found!',
+          prompt: () => {
+            return <TakerFoundPrompt />;
+          },
+          bondStatus: 'locked',
+        };
+      } else {
+        return {
+          title: 'Lock {{amountSats}} Sats to TAKE order',
+          titleVariables: { amountSats: pn(order.bond_satoshis) },
+          prompt: () => {
+            return <LockInvoicePrompt order={order} concept={'bond'} />;
+          },
+          bondStatus: 'hide',
+        };
+      }
+    } else if (status == 5) {
+      // 5: 'Expired'
+      return {
+        title: 'The order has expired',
         prompt: () => {
           return (
             <ExpiredPrompt
@@ -350,32 +344,117 @@ const TradeBox = ({
             />
           );
         },
+        bondStatus: 'hide', // To do: show bond status according to expiry message.
+      };
+    } else if (status == 6) {
+      // 6: 'Waiting for trade collateral and buyer invoice'
+      if (isBuyer) {
+      } else {
+        return {
+          title: 'Lock {{amountSats}} Sats as collateral',
+          titleVariables: { amountSats: pn(order.escrow_satoshis) },
+          prompt: () => {
+            return <LockInvoicePrompt order={order} concept={'escrow'} />;
+          },
+          bondStatus: 'locked',
+        };
+      }
+    } else if (status == 7) {
+      // 7: 'Waiting only for seller trade collateral'
+    } else if (status == 8) {
+      // 8: 'Waiting only for buyer invoice'
+    } else if (status == 9) {
+      // 9: 'Sending fiat - In chatroom'
+    } else if (status == 10) {
+      // 10: 'Fiat sent - In chatroom'
+    } else if (status == 11) {
+      // 11: 'In dispute'
+    } else if (status == 12) {
+      // 12: 'Collaboratively cancelled'
+    } else if (status == 13) {
+      // 13: 'Sending satoshis to buyer'
+    } else if (status == 14) {
+      // 14: 'Sucessful trade'
+    } else if (status == 15) {
+      // 15: 'Failed lightning network routing'
+    } else if (status == 16) {
+      // 16: 'Wait for dispute resolution'
+    } else if (status == 17) {
+      // 17: 'Maker lost dispute'
+    } else if (status == 18) {
+      // 18: 'Taker lost dispute'
+    } else {
+      // No known prompt matches
+      // E.g. 4: 'Cancelled'
+      return {
+        title: 'Unknown Order Status',
+        prompt: () => <span>Wops!</span>,
         bondStatus: 'hide',
-      },
-      isTaker: {
-        title: '',
-        prompt: () => {
-          return <LockInvoicePrompt order={order} concept={'bond'} />;
-        },
-        bondStatus: 'hide',
-      },
-    },
-    // 6: 'Waiting for trade collateral and buyer invoice'
-    // 7: 'Waiting only for seller trade collateral'
-    // 8: 'Waiting only for buyer invoice'
-    // 9: 'Sending fiat - In chatroom'
-    // 10: 'Fiat sent - In chatroom'
-    // 11: 'In dispute'
-    // 12: 'Collaboratively cancelled'
-    // 13: 'Sending satoshis to buyer'
-    // 14: 'Sucessful trade'
-    // 15: 'Failed lightning network routing'
-    // 16: 'Wait for dispute resolution'
-    // 17: 'Maker lost dispute'
-    // 18: 'Taker lost dispute'
-  ];
+      };
+    }
+  };
 
-  const StepContent = Steps[order.status][order.is_maker ? 'isMaker' : 'isTaker'];
+  {
+    /* Maker and taker Bond request */
+  }
+  //             {this.props.data.is_maker & (this.props.data.status == 0) ? this.showQRInvoice() : ''}
+  //             {this.props.data.is_taker & (this.props.data.status == 3) ? this.showQRInvoice() : ''}
+
+  //             {/* Waiting for taker and taker bond request */}
+  //             {this.props.data.is_maker & (this.props.data.status == 2) ? this.showPausedOrder() : ''}
+  //             {this.props.data.is_maker & (this.props.data.status == 1) ? this.showMakerWait() : ''}
+  //             {this.props.data.is_maker & (this.props.data.status == 3) ? this.showTakerFound() : ''}
+
+  //             {/* Send Invoice (buyer) and deposit collateral (seller) */}
+  //             {this.props.data.is_seller &
+  //             (this.props.data.status == 6 || this.props.data.status == 7)
+  //               ? this.showEscrowQRInvoice()
+  //               : ''}
+  //             {this.props.data.is_buyer & (this.props.data.status == 6 || this.props.data.status == 8)
+  //               ? this.showInputInvoice()
+  //               : ''}
+  //             {this.props.data.is_buyer & (this.props.data.status == 7)
+  //               ? this.showWaitingForEscrow()
+  //               : ''}
+  //             {this.props.data.is_seller & (this.props.data.status == 8)
+  //               ? this.showWaitingForBuyerInvoice()
+  //               : ''}
+
+  //             {/* In Chatroom  */}
+  //             {this.props.data.status == 9 || this.props.data.status == 10 ? this.showChat() : ''}
+
+  //             {/* Trade Finished */}
+  //             {this.props.data.is_seller & [13, 14, 15].includes(this.props.data.status)
+  //               ? this.showRateSelect()
+  //               : ''}
+  //             {this.props.data.is_buyer & (this.props.data.status == 14) ? this.showRateSelect() : ''}
+
+  //             {/* Trade Finished - Payment Routing Failed */}
+  //             {this.props.data.is_buyer & (this.props.data.status == 13)
+  //               ? this.showSendingPayment()
+  //               : ''}
+
+  //             {/* Trade Finished - Payment Routing Failed */}
+  //             {this.props.data.is_buyer & (this.props.data.status == 15)
+  //               ? this.showRoutingFailed()
+  //               : ''}
+
+  //             {/* Trade Finished - TODO Needs more planning */}
+  //             {this.props.data.status == 11 ? this.showInDisputeStatement() : ''}
+  //             {this.props.data.status == 16 ? this.showWaitForDisputeResolution() : ''}
+  //             {(this.props.data.status == 17) & this.props.data.is_taker ||
+  //             (this.props.data.status == 18) & this.props.data.is_maker
+  //               ? this.showDisputeWinner()
+  //               : ''}
+  //             {(this.props.data.status == 18) & this.props.data.is_taker ||
+  //             (this.props.data.status == 17) & this.props.data.is_maker
+  //               ? this.showDisputeLoser()
+  //               : ''}
+
+  //             {/* Order has expired */}
+  //             {this.props.data.status == 5 ? this.showOrderExpired() : ''}
+
+  const contract = statusToContract(order);
 
   return (
     <Box>
@@ -417,17 +496,22 @@ const TradeBox = ({
         spacing={0}
       >
         <Grid item>
-          <Title order={order} />
+          <Title
+            order={order}
+            text={contract.title}
+            color={contract.titleColor}
+            variables={contract.titleVariables}
+          />
         </Grid>
         <Divider />
         <Grid item>
-          <StepContent.prompt />
+          <contract.prompt />
         </Grid>
 
-        {StepContent.bondStatus != 'hide' ? (
+        {contract.bondStatus != 'hide' ? (
           <Grid item sx={{ width: '100%' }}>
             <Divider />
-            <BondStatus status={StepContent.bondStatus} isMaker={order.is_maker} />
+            <BondStatus status={contract.bondStatus} isMaker={order.is_maker} />
           </Grid>
         ) : (
           <></>

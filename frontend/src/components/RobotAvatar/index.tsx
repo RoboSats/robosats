@@ -7,7 +7,7 @@ import { apiClient } from '../../services/api';
 import placeholder from './placeholder.json';
 
 interface Props {
-  nickname: string | null;
+  nickname: string | undefined;
   smooth?: boolean;
   flipHorizontally?: boolean;
   style?: object;
@@ -40,7 +40,7 @@ const RobotAvatar: React.FC<Props> = ({
   const [avatarSrc, setAvatarSrc] = useState<string>();
 
   useEffect(() => {
-    if (nickname != null) {
+    if (nickname != undefined) {
       if (window.NativeRobosats === undefined) {
         setAvatarSrc(baseUrl + '/static/assets/avatars/' + nickname + '.png');
       } else {

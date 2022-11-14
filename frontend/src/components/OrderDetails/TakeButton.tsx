@@ -30,7 +30,6 @@ interface TakeButtonProps {
   baseUrl: string;
   hasRobot: boolean;
   setPage: (state: Page) => void;
-  handleWebln: (order: Order) => void;
 }
 
 interface OpenDialogsProps {
@@ -45,7 +44,6 @@ const TakeButton = ({
   baseUrl,
   setPage,
   hasRobot,
-  handleWebln,
 }: TakeButtonProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -250,7 +248,6 @@ const TakeButton = ({
         amount: takeAmount,
       })
       .then((data) => {
-        handleWebln(data);
         setOrder(data);
         setLoadingTake(false);
       });

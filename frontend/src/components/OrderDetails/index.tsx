@@ -162,7 +162,7 @@ const OrderDetails = ({
                 <RobotAvatar
                   avatarClass='smallAvatar'
                   statusColor={statusBadgeColor(order.taker_status)}
-                  nickname={order.taker_nick == 'None' ? null : order.taker_nick}
+                  nickname={order.taker_nick == 'None' ? undefined : order.taker_nick}
                   tooltip={t(order.taker_status)}
                   orderType={order.type === 0 ? 1 : 0}
                   baseUrl={baseUrl}
