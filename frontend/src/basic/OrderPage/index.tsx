@@ -177,13 +177,22 @@ const OrderPage = ({
             </Box>
           )
         ) : (
-          <OrderDetails
-            order={order}
-            setOrder={setOrder}
-            baseUrl={baseUrl}
-            setPage={setPage}
-            hasRobot={hasRobot}
-          />
+          <Paper
+            elevation={12}
+            style={{
+              width: '21em',
+              maxHeight: `${maxHeight}em`,
+              overflow: 'auto',
+            }}
+          >
+            <OrderDetails
+              order={order}
+              setOrder={setOrder}
+              baseUrl={baseUrl}
+              setPage={setPage}
+              hasRobot={hasRobot}
+            />
+          </Paper>
         )
       ) : (
         <></>

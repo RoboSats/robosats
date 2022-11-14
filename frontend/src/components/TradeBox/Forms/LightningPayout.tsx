@@ -30,11 +30,11 @@ interface LightningPayoutFormProps {
   order: Order;
   loading: boolean;
   lightning: LightningForm;
-  setLightning: (state: LightningForm) => void;
+  setLightning: () => void;
   onClickSubmit: () => void;
 }
 
-const LightningPayoutForm = ({
+export const LightningPayoutForm = ({
   order,
   loading,
   onClickSubmit,
@@ -43,7 +43,7 @@ const LightningPayoutForm = ({
 }: LightningPayoutFormProps): JSX.Element => {
   const { t } = useTranslation();
   return (
-    <Grid container spacing={1}>
+    <Grid container spacing={1} justifyContent='center'>
       <Grid item xs={12}>
         <Typography variant='body2'>
           {t('Submit a valid invoice for {{amountSats}} Satoshis.', {
@@ -52,11 +52,11 @@ const LightningPayoutForm = ({
         </Typography>
       </Grid>
 
-      <Grid item xs={12}>
+      <Grid item xs={12} justifyContent='center'>
         <WalletsButton />
       </Grid>
 
-      <Grid item xs={12}>
+      <Grid item xs={12} justifyContent='center'>
         <TextField
           error={lightning.badInvoice != '' ? true : false}
           helperText={lightning.badInvoice ? t(lightning.badInvoice) : ''}
@@ -64,8 +64,7 @@ const LightningPayoutForm = ({
           required
           value={lightning.invoice}
           inputProps={{
-            style: { textAlign: 'center' },
-            maxHeight: 200,
+            style: { textAlign: 'center', maxHeight: '14.28em' },
           }}
           multiline
           minRows={4}
@@ -73,13 +72,8 @@ const LightningPayoutForm = ({
           onChange={(e) => setLightning({ ...lightning, invoice: e.target.value ?? '' })}
         />
       </Grid>
-      <Grid item xs={12}>
-        <LoadingButton
-          loading={loading}
-          onClick={onClickSubmit}
-          variant='contained'
-          color='primary'
-        >
+      <Grid item xs={12} justifyContent='center'>
+        <LoadingButton loading={loading} onClick={onClickSubmit} variant='outlined' color='primary'>
           {t('Submit')}
         </LoadingButton>
       </Grid>

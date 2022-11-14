@@ -26,7 +26,7 @@ interface OnchainPayoutFormProps {
   onClickSubmit: () => void;
 }
 
-const OnchainPayoutForm = ({
+export const OnchainPayoutForm = ({
   order,
   loading,
   onClickSubmit,
@@ -91,34 +91,37 @@ const OnchainPayoutForm = ({
             secondary={t('Final amount you will receive')}
           />
         </ListItem>
+
+        <ListItem>
+          <TextField
+            error={onchain.badAddress != '' ? true : false}
+            helperText={onchain.badAddress ? t(onchain.badAddress) : ''}
+            label={t('Bitcoin Address')}
+            required
+            value={onchain.address}
+            sx={{ width: '12.14em' }}
+            inputProps={{
+              style: { textAlign: 'center' },
+            }}
+            onChange={(e) => setOnchain({ ...onchain, address: e.target.value })}
+          />
+          <TextField
+            error={invalidFee}
+            helperText={invalidFee ? t('Invalid') : ''}
+            label={t('Mining Fee')}
+            required
+            sx={{ width: '7.85em' }}
+            value={onchain.miningFee}
+            type='number'
+            inputProps={{
+              max: 50,
+              min: 1,
+              style: { textAlign: 'center' },
+            }}
+            onChange={(e) => setOnchain({ ...onchain, miningFee: Number(e.target.value) })}
+          />
+        </ListItem>
       </List>
-      <TextField
-        error={onchain.badAddress != '' ? true : false}
-        helperText={onchain.badAddress ? t(onchain.badAddress) : ''}
-        label={t('Bitcoin Address')}
-        required
-        value={onchain.address}
-        sx={{ width: '12.14em' }}
-        inputProps={{
-          style: { textAlign: 'center' },
-        }}
-        onChange={(e) => setOnchain({ ...onchain, address: e.target.value })}
-      />
-      <TextField
-        error={invalidFee}
-        helperText={invalidFee ? t('Invalid') : ''}
-        label={t('Mining Fee')}
-        required
-        sx={{ width: '7.85em' }}
-        value={onchain.miningFee}
-        type='number'
-        inputProps={{
-          max: 50,
-          min: 1,
-          style: { textAlign: 'center' },
-        }}
-        onChange={(e) => setOnchain({ ...onchain, miningFee: Number(e.target.value) })}
-      />
 
       <Grid item xs={12}>
         <LoadingButton

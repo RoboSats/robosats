@@ -11,7 +11,7 @@ import { LightningPayoutForm, LightningForm, OnchainPayoutForm, OnchainForm } fr
 
 interface PayoutPrompProps {
   order: Order;
-  onClickSubmitInvoice: (invoice: string) => void;
+  onClickSubmitInvoice: () => void;
   lightning: LightningForm;
   loadingLightning: boolean;
   setLightning: (state: LightningForm) => void;
@@ -53,12 +53,12 @@ export const PayoutPrompt = ({
         </Typography>
       </Grid>
 
-      <Grid item xs={12}>
+      <Grid item justifyContent='center'>
         <ToggleButtonGroup
           size='small'
           value={tab}
           exclusive
-          onClick={(mouseEvent, value: string) => setTab(value)}
+          onChange={(mouseEvent, value: string) => setTab(value)}
         >
           <ToggleButton value='lightning' disableRipple={true}>
             <div
@@ -72,7 +72,7 @@ export const PayoutPrompt = ({
               <Bolt /> {t('Lightning')}
             </div>
           </ToggleButton>
-          <ToggleButton value={1} disabled={!order.swap_allowed}>
+          <ToggleButton value='onchain' disabled={!order.swap_allowed}>
             <div
               style={{
                 display: 'flex',
@@ -87,7 +87,7 @@ export const PayoutPrompt = ({
         </ToggleButtonGroup>
       </Grid>
 
-      <div style={{ display: tab == 'lightning' ? '' : 'none' }}>
+      <div style={{ display: tab == 'lightning' ? 'flex' : 'none', justifyContent: 'center' }}>
         <LightningPayoutForm
           order={order}
           loading={loadingLightning}
@@ -98,7 +98,7 @@ export const PayoutPrompt = ({
       </div>
 
       {/* ONCHAIN PAYOUT TAB */}
-      <div style={{ display: tab == 'onchain' ? '' : 'none' }}>
+      <div style={{ display: tab == 'onchain' ? 'flex' : 'none', justifyContent: 'center' }}>
         <OnchainPayoutForm
           order={order}
           loading={loadingOnchain}

@@ -20,6 +20,7 @@ interface BookPageProps {
   fav: Favorites;
   setFav: (state: Favorites) => void;
   fetchBook: () => void;
+  clearOrder: () => void;
   windowSize: { width: number; height: number };
   lastDayPremium: number;
   maker: Maker;
@@ -36,6 +37,7 @@ const BookPage = ({
   book = { orders: [], loading: true },
   fetchBook,
   fetchLimits,
+  clearOrder,
   fav,
   setFav,
   maker,
@@ -128,7 +130,7 @@ const BookPage = ({
               setPage={setPage}
               hasRobot={hasRobot}
               onOrderCreated={(id) => {
-                setOrder(undefined);
+                clearOrder();
                 setCurrentOrder(id);
                 setPage('order');
                 history.push('/order/' + id);

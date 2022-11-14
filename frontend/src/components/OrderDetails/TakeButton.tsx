@@ -198,7 +198,7 @@ const TakeButton = ({
                     <LoadingButton
                       loading={loadingTake}
                       sx={{ height: '2.71em' }}
-                      variant='contained'
+                      variant='outlined'
                       color='primary'
                       disabled={true}
                     >
@@ -227,15 +227,24 @@ const TakeButton = ({
       );
     } else {
       return (
-        <LoadingButton
-          loading={loadingTake}
-          sx={{ height: '2.71em' }}
-          variant='contained'
-          color='primary'
-          onClick={onTakeOrderClicked}
+        <Box
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            position: 'relative',
+            bottom: '0.25em',
+          }}
         >
-          {t('Take Order')}
-        </LoadingButton>
+          <LoadingButton
+            loading={loadingTake}
+            sx={{ height: '2.71em' }}
+            variant='outlined'
+            color='primary'
+            onClick={onTakeOrderClicked}
+          >
+            {t('Take Order')}
+          </LoadingButton>
+        </Box>
       );
     }
   };

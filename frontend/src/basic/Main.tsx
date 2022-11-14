@@ -271,6 +271,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const orderReceived = function (data: any) {
     if (data.bad_request != undefined) {
       setBadOrder(data.bad_request);
+      setDelay(99999999);
       setOrder(undefined);
     } else {
       setDelay(
@@ -290,6 +291,11 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     if (currentOrder != undefined) {
       apiClient.get(baseUrl, '/api/order/?order_id=' + currentOrder).then(orderReceived);
     }
+  };
+
+  const clearOrder = function () {
+    setOrder(undefined);
+    setBadOrder(undefined);
   };
 
   return (
@@ -360,7 +366,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                   setFav={setFav}
                   maker={maker}
                   setMaker={setMaker}
-                  setOrder={setOrder}
+                  clearOrder={clearOrder}
                   lastDayPremium={info.last_day_nonkyc_btc_premium}
                   windowSize={windowSize}
                   hasRobot={robot.avatarLoaded}
@@ -385,7 +391,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                   fetchLimits={fetchLimits}
                   maker={maker}
                   setMaker={setMaker}
-                  setOrder={setOrder}
+                  clearOrder={clearOrder}
                   setPage={setPage}
                   setCurrentOrder={setCurrentOrder}
                   fav={fav}

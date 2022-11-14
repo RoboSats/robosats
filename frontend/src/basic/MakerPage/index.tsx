@@ -20,7 +20,7 @@ interface MakerPageProps {
   maker: Maker;
   setFav: (state: Favorites) => void;
   setMaker: (state: Maker) => void;
-  setOrder: (state: Order | undefined) => void;
+  clearOrder: () => void;
   windowSize: { width: number; height: number };
   hasRobot: boolean;
   setCurrentOrder: (state: number) => void;
@@ -36,7 +36,7 @@ const MakerPage = ({
   maker,
   setFav,
   setMaker,
-  setOrder,
+  clearOrder,
   windowSize,
   setCurrentOrder,
   setPage,
@@ -102,7 +102,7 @@ const MakerPage = ({
             maker={maker}
             setMaker={setMaker}
             onOrderCreated={(id) => {
-              setOrder(undefined);
+              clearOrder();
               setCurrentOrder(id);
               setPage('order');
               history.push('/order/' + id);

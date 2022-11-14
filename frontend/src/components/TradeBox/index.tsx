@@ -21,6 +21,8 @@ import {
   PausedPrompt,
   ExpiredPrompt,
   PayoutPrompt,
+  PayoutWaitPrompt,
+  EscrowWaitPrompt,
 } from './Prompts';
 import BondStatus from './BondStatus';
 import CancelButton from './CancelButton';
@@ -76,7 +78,7 @@ const closeAll: OpenDialogProps = {
 interface TradeBoxProps {
   order: Order;
   setOrder: (state: Order) => void;
-  setBadRequest: (state: string | undefined) => void;
+  setBadOrder: (state: string | undefined) => void;
   onRenewOrder: () => void;
   baseUrl: string;
 }
@@ -85,7 +87,7 @@ const TradeBox = ({
   order,
   setOrder,
   baseUrl,
-  setBadRequest,
+  setBadOrder,
   onRenewOrder,
 }: TradeBoxProps): JSX.Element => {
   const { t } = useTranslation();
@@ -110,12 +112,13 @@ const TradeBox = ({
   //   }
   // }, [order.status]);
 
-  const submitAction = function (
-    action: string,
-    invoice?: string,
-    address?: string,
-    mining_fee_rate?: number,
-  ) {
+  interface SubmitActionProps {
+    action: 'cancel' | 'dispute' | 'pause' | 'confirm' | 'update_invoice' | 'update_address';
+    invoice?: string;
+    address?: string;
+    mining_fee_rate?: number;
+  }
+  const submitAction = function ({ action, invoice, address, mining_fee_rate }: SubmitActionProps) {
     apiClient
       .post(baseUrl, '/api/order/?order_id=' + order.id, {
         action,
@@ -128,57 +131,63 @@ const TradeBox = ({
         setLoadingButtons({ ...noLoadingButtons });
       })
       .then((data: Order | undefined) => {
+        setOpen(closeAll);
+        setLoadingButtons({ ...noLoadingButtons });
         if (data.bad_request) {
           if (action == 'update_invoice') {
             setLightning({ ...lightning, badInvoice: data.bad_request });
           } else if (action == 'update_address') {
             setOnchain({ ...onchain, badAddress: data.bad_request });
           } else {
-            setBadRequest(data.bad_request);
+            setBadOrder(data.bad_request);
           }
         } else {
           setOrder({ ...order, ...data });
-          setBadRequest(undefined);
+          setBadOrder(undefined);
         }
-        setOpen(closeAll);
-        setLoadingButtons({ ...noLoadingButtons });
       });
   };
 
   const cancel = function () {
     setLoadingButtons({ ...noLoadingButtons, cancel: true });
-    submitAction('cancel');
+    submitAction({ action: 'cancel' });
   };
 
   const openDispute = function () {
     setLoadingButtons({ ...noLoadingButtons, openDispute: true });
-    submitAction('dispute');
+    submitAction({ action: 'dispute' });
   };
 
   const confirmFiatReceived = function () {
     setLoadingButtons({ ...noLoadingButtons, fiatReceived: true });
-    submitAction('confirm');
+    submitAction({ action: 'confirm' });
   };
 
   const updateInvoice = function (invoice: string) {
     setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
-    submitAction('update_invoice', invoice);
+    submitAction({ action: 'update_invoice', invoice });
   };
 
-  const updateAddress = function (address: string, mining_fee_rate: number) {
+  const updateAddress = function () {
     setLoadingButtons({ ...noLoadingButtons, submitAddress: true });
-    submitAction('update_address', onchain.address, onchain.miningFee);
+    submitAction({
+      action: 'update_address',
+      address: onchain.address,
+      mining_fee_rate: onchain.miningFee,
+    });
   };
 
   const pauseOrder = function () {
     setLoadingButtons({ ...noLoadingButtons, pauseOrder: true });
-    submitAction('pause');
+    submitAction({ action: 'pause' });
   };
 
   const handleWebln = async (order: Order) => {
-    const webln = await getWebln().catch(() => console.log('Web LN not available'));
+    const webln = await getWebln().catch(() => console.log('WebLN not available'));
     // If Webln implements locked payments compatibility, this logic might be simplier
-    if (order.is_maker && order.status == 0) {
+    if (webln == undefined) {
+      return null;
+    } else if (order.is_maker && order.status == 0) {
       webln.sendPayment(order.bond_invoice);
       setWaitingWebln(true);
       setOpen({ ...open, webln: true });
@@ -256,212 +265,183 @@ const TradeBox = ({
     let titleVariables: object = {};
     let titleColor: string = 'primary';
     let prompt = () => <span>Wops!</span>;
-    let bondStatus: 'hide' | 'lockec' | 'unlocked' | 'settled' = 'hide';
+    let bondStatus: 'hide' | 'locked' | 'unlocked' | 'settled' = 'hide';
 
+    // 0: 'Waiting for maker bond'
     if (status == 0) {
-      // 0: 'Waiting for maker bond'
       if (isMaker) {
-        return {
-          title: 'Lock {{amountSats}} Sats to PUBLISH order',
-          titleVariables: { amountSats: pn(order.bond_satoshis) },
-          prompt: () => {
-            return <LockInvoicePrompt order={order} concept={'bond'} />;
-          },
-          bondStatus: 'hide',
+        title = 'Lock {{amountSats}} Sats to PUBLISH order';
+        titleVariables = { amountSats: pn(order.bond_satoshis) };
+        prompt = () => {
+          return <LockInvoicePrompt order={order} concept={'bond'} />;
         };
+        bondStatus = 'hide';
       }
-    } else if (status == 1) {
+
       // 1: 'Public'
+    } else if (status == 1) {
       if (isMaker) {
-        return {
-          title: 'Your order is public',
-          prompt: () => {
-            return (
-              <PublicWaitPrompt
-                order={order}
-                pauseLoading={loadingButtons.pauseOrder}
-                onClickPauseOrder={pauseOrder}
-              />
-            );
-          },
-          bondStatus: 'locked',
-        };
-      }
-    } else if (status == 2) {
-      // 2: 'Paused'
-      if (isMaker) {
-        return {
-          title: 'Your order is paused',
-          prompt: () => {
-            return (
-              <PausedPrompt
-                pauseLoading={loadingButtons.pauseOrder}
-                onClickResumeOrder={pauseOrder}
-              />
-            );
-          },
-          bondStatus: 'locked',
-        };
-      }
-    } else if (status == 3) {
-      // 3: 'Waiting for taker bond'
-      if (isMaker) {
-        return {
-          title: 'A taker has been found!',
-          prompt: () => {
-            return <TakerFoundPrompt />;
-          },
-          bondStatus: 'locked',
-        };
-      } else {
-        return {
-          title: 'Lock {{amountSats}} Sats to TAKE order',
-          titleVariables: { amountSats: pn(order.bond_satoshis) },
-          prompt: () => {
-            return <LockInvoicePrompt order={order} concept={'bond'} />;
-          },
-          bondStatus: 'hide',
-        };
-      }
-    } else if (status == 5) {
-      // 5: 'Expired'
-      return {
-        title: 'The order has expired',
-        prompt: () => {
+        title = 'Your order is public';
+        prompt = () => {
           return (
-            <ExpiredPrompt
-              renewLoading={loadingButtons.renewOrder}
+            <PublicWaitPrompt
               order={order}
-              onClickRenew={() => {
-                onRenewOrder();
-                setLoadingButtons({ ...noLoadingButtons, renewOrder: true });
-              }}
+              pauseLoading={loadingButtons.pauseOrder}
+              onClickPauseOrder={pauseOrder}
             />
           );
-        },
-        bondStatus: 'hide', // To do: show bond status according to expiry message.
-      };
-    } else if (status == 6) {
-      // 6: 'Waiting for trade collateral and buyer invoice'
-      if (isBuyer) {
-        return {
-          title: 'Submit payout info for {{amountSats}} Sats',
-          titleVariables: { amountSats: pn(order.invoice_amount) },
-          prompt: () => {
-            return (
-              <PayoutPrompt
-                order={order}
-                onClickSubmitInvoice={updateInvoice}
-                loadingLightning={loadingButtons.submitInvoice}
-                lightning={lightning}
-                setLightning={setLightning}
-                onClickSubmitAddress={updateAddress}
-                loadingOnchain={loadingButtons.submitAddress}
-                onchain={onchain}
-                setOnchain={setOnchain}
-              />
-            );
-          },
-          bondStatus: 'locked',
         };
-      } else {
-        return {
-          title: 'Lock {{amountSats}} Sats as collateral',
-          titleVariables: { amountSats: pn(order.escrow_satoshis) },
-          titleColor: 'warning',
-          prompt: () => {
-            return <LockInvoicePrompt order={order} concept={'escrow'} />;
-          },
-          bondStatus: 'locked',
-        };
+        bondStatus = 'locked';
       }
-    } else if (status == 7) {
+
+      // 2: 'Paused'
+    } else if (status == 2) {
+      if (isMaker) {
+        title = 'Your order is paused';
+        prompt = () => {
+          return (
+            <PausedPrompt
+              pauseLoading={loadingButtons.pauseOrder}
+              onClickResumeOrder={pauseOrder}
+            />
+          );
+        };
+        bondStatus = 'locked';
+      }
+
+      // 3: 'Waiting for taker bond'
+    } else if (status == 3) {
+      if (isMaker) {
+        title = 'A taker has been found!';
+        prompt = () => {
+          return <TakerFoundPrompt />;
+        };
+        bondStatus = 'locked';
+      } else {
+        title = 'Lock {{amountSats}} Sats to TAKE order';
+        titleVariables = { amountSats: pn(order.bond_satoshis) };
+        prompt = () => {
+          return <LockInvoicePrompt order={order} concept={'bond'} />;
+        };
+        bondStatus = 'hide';
+      }
+
+      // 5: 'Expired'
+    } else if (status == 5) {
+      title = 'The order has expired';
+      prompt = () => {
+        return (
+          <ExpiredPrompt
+            renewLoading={loadingButtons.renewOrder}
+            order={order}
+            onClickRenew={() => {
+              onRenewOrder();
+              setLoadingButtons({ ...noLoadingButtons, renewOrder: true });
+            }}
+          />
+        );
+      };
+      bondStatus = 'hide'; // To do: show bond status according to expiry message.
+
+      // 6: 'Waiting for trade collateral and buyer invoice'
+    } else if (status == 6) {
+      if (isBuyer) {
+        title = 'Submit payout info for {{amountSats}} Sats';
+        titleVariables = { amountSats: pn(order.invoice_amount) };
+        prompt = function () {
+          return (
+            <PayoutPrompt
+              order={order}
+              onClickSubmitInvoice={updateInvoice}
+              loadingLightning={loadingButtons.submitInvoice}
+              lightning={lightning}
+              setLightning={setLightning}
+              onClickSubmitAddress={updateAddress}
+              loadingOnchain={loadingButtons.submitAddress}
+              onchain={onchain}
+              setOnchain={setOnchain}
+            />
+          );
+        };
+        bondStatus = 'locked';
+      } else {
+        title = 'Lock {{amountSats}} Sats as collateral';
+        titleVariables = { amountSats: pn(order.escrow_satoshis) };
+        titleColor = 'orange';
+        prompt = () => {
+          return <LockInvoicePrompt order={order} concept={'escrow'} />;
+        };
+        bondStatus = 'locked';
+      }
+
       // 7: 'Waiting only for seller trade collateral'
-    } else if (status == 8) {
+    } else if (status == 7) {
+      if (isBuyer) {
+        title = 'Your info looks good!';
+        prompt = () => {
+          return <PayoutWaitPrompt />;
+        };
+        bondStatus = 'locked';
+      } else {
+        title = 'Lock {{amountSats}} Sats as collateral';
+        titleVariables = { amountSats: pn(order.escrow_satoshis) };
+        titleColor = 'warning';
+        prompt = () => {
+          return <LockInvoicePrompt order={order} concept={'escrow'} />;
+        };
+        bondStatus = 'locked';
+      }
+
       // 8: 'Waiting only for buyer invoice'
-    } else if (status == 9) {
+    } else if (status == 8) {
+      if (isBuyer) {
+        title = 'Submit payout info for {{amountSats}} Sats';
+        titleVariables = { amountSats: pn(order.invoice_amount) };
+        prompt = (
+          <PayoutPrompt
+            order={order}
+            onClickSubmitInvoice={updateInvoice}
+            loadingLightning={loadingButtons.submitInvoice}
+            lightning={lightning}
+            setLightning={setLightning}
+            onClickSubmitAddress={updateAddress}
+            loadingOnchain={loadingButtons.submitAddress}
+            onchain={onchain}
+            setOnchain={setOnchain}
+          />
+        );
+        bondStatus = 'locked';
+      } else {
+        title = 'The trade collateral is locked!';
+        prompt = () => {
+          return <EscrowWaitPrompt />;
+        };
+        bondStatus = 'locked';
+      }
       // 9: 'Sending fiat - In chatroom'
-    } else if (status == 10) {
+    } else if (status == 9) {
       // 10: 'Fiat sent - In chatroom'
-    } else if (status == 11) {
+    } else if (status == 10) {
       // 11: 'In dispute'
-    } else if (status == 12) {
+    } else if (status == 11) {
       // 12: 'Collaboratively cancelled'
-    } else if (status == 13) {
+    } else if (status == 12) {
       // 13: 'Sending satoshis to buyer'
-    } else if (status == 14) {
+    } else if (status == 13) {
       // 14: 'Sucessful trade'
-    } else if (status == 15) {
+    } else if (status == 14) {
       // 15: 'Failed lightning network routing'
-    } else if (status == 16) {
+    } else if (status == 15) {
       // 16: 'Wait for dispute resolution'
-    } else if (status == 17) {
+    } else if (status == 16) {
       // 17: 'Maker lost dispute'
-    } else if (status == 18) {
+    } else if (status == 17) {
       // 18: 'Taker lost dispute'
+    } else if (status == 18) {
     }
+
     return { title, titleVariables, titleColor, prompt, bondStatus };
   };
-
-  {
-    /* Maker and taker Bond request */
-  }
-  //             {this.props.data.is_maker & (this.props.data.status == 0) ? this.showQRInvoice() : ''}
-  //             {this.props.data.is_taker & (this.props.data.status == 3) ? this.showQRInvoice() : ''}
-
-  //             {/* Waiting for taker and taker bond request */}
-  //             {this.props.data.is_maker & (this.props.data.status == 2) ? this.showPausedOrder() : ''}
-  //             {this.props.data.is_maker & (this.props.data.status == 1) ? this.showMakerWait() : ''}
-  //             {this.props.data.is_maker & (this.props.data.status == 3) ? this.showTakerFound() : ''}
-
-  //             {/* Send Invoice (buyer) and deposit collateral (seller) */}
-  //             {this.props.data.is_seller &
-  //             (this.props.data.status == 6 || this.props.data.status == 7)
-  //               ? this.showEscrowQRInvoice()
-  //               : ''}
-  //             {this.props.data.is_buyer & (this.props.data.status == 6 || this.props.data.status == 8)
-  //               ? this.showInputInvoice()
-  //               : ''}
-  //             {this.props.data.is_buyer & (this.props.data.status == 7)
-  //               ? this.showWaitingForEscrow()
-  //               : ''}
-  //             {this.props.data.is_seller & (this.props.data.status == 8)
-  //               ? this.showWaitingForBuyerInvoice()
-  //               : ''}
-
-  //             {/* In Chatroom  */}
-  //             {this.props.data.status == 9 || this.props.data.status == 10 ? this.showChat() : ''}
-
-  //             {/* Trade Finished */}
-  //             {this.props.data.is_seller & [13, 14, 15].includes(this.props.data.status)
-  //               ? this.showRateSelect()
-  //               : ''}
-  //             {this.props.data.is_buyer & (this.props.data.status == 14) ? this.showRateSelect() : ''}
-
-  //             {/* Trade Finished - Payment Routing Failed */}
-  //             {this.props.data.is_buyer & (this.props.data.status == 13)
-  //               ? this.showSendingPayment()
-  //               : ''}
-
-  //             {/* Trade Finished - Payment Routing Failed */}
-  //             {this.props.data.is_buyer & (this.props.data.status == 15)
-  //               ? this.showRoutingFailed()
-  //               : ''}
-
-  //             {/* Trade Finished - TODO Needs more planning */}
-  //             {this.props.data.status == 11 ? this.showInDisputeStatement() : ''}
-  //             {this.props.data.status == 16 ? this.showWaitForDisputeResolution() : ''}
-  //             {(this.props.data.status == 17) & this.props.data.is_taker ||
-  //             (this.props.data.status == 18) & this.props.data.is_maker
-  //               ? this.showDisputeWinner()
-  //               : ''}
-  //             {(this.props.data.status == 18) & this.props.data.is_taker ||
-  //             (this.props.data.status == 17) & this.props.data.is_maker
-  //               ? this.showDisputeLoser()
-  //               : ''}
-
-  //             {/* Order has expired */}
-  //             {this.props.data.status == 5 ? this.showOrderExpired() : ''}
 
   const contract = statusToContract(order);
 
