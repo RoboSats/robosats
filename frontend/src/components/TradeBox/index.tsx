@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Collapse, Divider, Grid } from '@mui/material';
+import { Box, Divider, Grid } from '@mui/material';
 
 import { apiClient } from '../../services/api';
 import { getWebln } from '../../utils';
@@ -14,11 +14,18 @@ import {
 } from './Dialogs';
 
 import Title from './Title';
-import { LockInvoicePrompt, TakerFoundPrompt, PublicWaitPrompt, PausedPrompt } from './Prompts';
+import {
+  LockInvoicePrompt,
+  TakerFoundPrompt,
+  PublicWaitPrompt,
+  PausedPrompt,
+  Expired,
+  ExpiredPrompt,
+} from './Prompts';
 import BondStatus from './BondStatus';
 import CancelButton from './CancelButton';
 
-import { Order } from '../../models';
+import { Maker, Order } from '../../models';
 
 // const audio = {
 //   chat: new Audio(`/static/assets/sounds/chat-open.mp3`),
@@ -35,6 +42,7 @@ interface loadingButtonsProps {
   submitAddress: boolean;
   openDispute: boolean;
   pauseOrder: boolean;
+  renewOrder: boolean;
 }
 
 const noLoadingButtons: loadingButtonsProps = {
@@ -45,6 +53,7 @@ const noLoadingButtons: loadingButtonsProps = {
   submitAddress: false,
   openDispute: false,
   pauseOrder: false,
+  renewOrder: false,
 };
 
 interface OpenDialogProps {
@@ -98,11 +107,18 @@ const defaultLightning: LightningFormProps = {
 interface TradeBoxProps {
   order: Order;
   setOrder: (state: Order) => void;
-  setBadRequest: (state: stirng) => void;
+  setBadRequest: (state: string) => void;
+  onRenewOrder: () => void;
   baseUrl: string;
 }
 
-const TradeBox = ({ order, setOrder, baseUrl, setBadRequest }: TradeBoxProps): JSX.Element => {
+const TradeBox = ({
+  order,
+  setOrder,
+  baseUrl,
+  setBadRequest,
+  onRenewOrder,
+}: TradeBoxProps): JSX.Element => {
   const { t } = useTranslation();
 
   // Buttons and Dialogs
@@ -300,9 +316,50 @@ const TradeBox = ({ order, setOrder, baseUrl, setBadRequest }: TradeBoxProps): J
       },
     },
     // 3: 'Waiting for taker bond'
-
+    {
+      isMaker: {
+        title: '',
+        prompt: () => {
+          return <TakerFoundPrompt />;
+        },
+        bondStatus: 'locked',
+      },
+      isTaker: {
+        title: '',
+        prompt: () => {
+          return <LockInvoicePrompt order={order} concept={'bond'} />;
+        },
+        bondStatus: 'hide',
+      },
+    },
     // 4: 'Cancelled'
+    {},
     // 5: 'Expired'
+    {
+      isMaker: {
+        title: '',
+        prompt: () => {
+          return (
+            <ExpiredPrompt
+              renewLoading={loadingButtons.renewOrder}
+              order={order}
+              onClickRenew={() => {
+                onRenewOrder();
+                setLoadingButtons({ ...noLoadingButtons, renewOrder: true });
+              }}
+            />
+          );
+        },
+        bondStatus: 'hide',
+      },
+      isTaker: {
+        title: '',
+        prompt: () => {
+          return <LockInvoicePrompt order={order} concept={'bond'} />;
+        },
+        bondStatus: 'hide',
+      },
+    },
     // 6: 'Waiting for trade collateral and buyer invoice'
     // 7: 'Waiting only for seller trade collateral'
     // 8: 'Waiting only for buyer invoice'

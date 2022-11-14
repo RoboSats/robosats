@@ -1,3 +1,5 @@
+import packageJson from '../../package.json';
+
 export interface Info {
   num_public_buy_orders: number;
   num_public_sell_orders: number;
@@ -23,8 +25,6 @@ export interface Info {
   openUpdateClient: boolean;
   loading: boolean;
 }
-
-import packageJson from '../../package.json';
 const semver = packageJson.version.split('.');
 
 export const defaultInfo: Info = {

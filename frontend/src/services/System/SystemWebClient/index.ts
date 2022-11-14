@@ -27,7 +27,7 @@ class SystemWebClient implements SystemClient {
     }
   };
 
-  //Cookies
+  // Cookies
   public getCookie: (key: string) => string = (key) => {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -44,9 +44,11 @@ class SystemWebClient implements SystemClient {
 
     return cookieValue || '';
   };
+
   public setCookie: (key: string, value: string) => void = (key, value) => {
     document.cookie = `${key}=${value};path=/;SameSite=Strict`;
   };
+
   public deleteCookie: (key: string) => void = (key) => {
     document.cookie = `${name}= ; expires = Thu, 01 Jan 1970 00:00:00 GMT`;
   };
@@ -56,9 +58,11 @@ class SystemWebClient implements SystemClient {
     const value = window.localStorage.getItem(key);
     return value || '';
   };
+
   public setItem: (key: string, value: string) => void = (key, value) => {
     window.localStorage.setItem(key, value);
   };
+
   public deleteItem: (key: string) => void = (key) => {
     window.localStorage.removeItem(key);
   };

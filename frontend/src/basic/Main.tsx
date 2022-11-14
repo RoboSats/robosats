@@ -200,7 +200,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         nickname: data.nickname,
         token: robot.token,
         loading: false,
-        avatarLoaded: robot.nickname === data.nickname ? true : false,
+        avatarLoaded: robot.nickname === data.nickname,
         activeOrderId: data.active_order_id ? data.active_order_id : null,
         lastOrderId: data.last_order_id ? data.last_order_id : null,
         referralCode: data.referral_code,
@@ -345,6 +345,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                     baseUrl={baseUrl}
                     hasRobot={robot.avatarLoaded}
                     currentOrder={currentOrder}
+                    setCurrentOrder={setCurrentOrder}
                     locationOrder={props.match.params.orderId}
                     windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}
                     setPage={setPage}

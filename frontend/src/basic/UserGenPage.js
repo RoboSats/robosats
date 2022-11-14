@@ -89,7 +89,7 @@ class UserGenPage extends Component {
               nickname: data.nickname ?? this.props.robot.nickname,
               activeOrderId: data.active_order_id ?? null,
               referralCode: data.referral_code ?? this.props.referralCode,
-              earnedRewards: data.earned_rewards ?? this.props.eartnedRewards,
+              earnedRewards: data.earned_rewards ?? this.props.earnedRewards,
               lastOrderId: data.last_order_id ?? this.props.lastOrderId,
               stealthInvoices: data.wants_stealth ?? this.props.stealthInvoices,
               tgEnabled: data.tg_enabled,
@@ -99,7 +99,7 @@ class UserGenPage extends Component {
           : this.props.setRobot({
               ...this.props.robot,
               nickname: data.nickname,
-              token: token,
+              token,
               loading: false,
               activeOrderId: data.active_order_id ? data.active_order_id : null,
               lastOrderId: data.last_order_id ? data.last_order_id : null,

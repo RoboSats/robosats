@@ -30,6 +30,9 @@ export const Title = ({ order }: TakerFoundPrompProps): JSX.Element => {
   } else if (order.is_taker && order.status === 3) {
     text = t('Lock {{amountSats}} Sats to TAKE order', { amountSats: pn(order.bond_satoshis) });
     color = 'primary';
+  } else if (order.status === 5) {
+    text = t('The order has expired');
+    color = 'primary';
   } else if (order.is_seller && [6, 7].includes(order.status)) {
     text = t('Lock {{amountSats}} Sats as collateral', { amountSats: pn(order.escrow_satoshis) });
     color = 'warning';

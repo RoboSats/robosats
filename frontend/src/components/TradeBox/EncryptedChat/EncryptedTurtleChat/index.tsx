@@ -94,7 +94,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
         encrypted_private_key: ownEncPrivKey,
         passphrase: token,
       },
-      messages: messages,
+      messages,
     };
   };
 
@@ -112,7 +112,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
           setLastIndex(lastIndex < dataFromServer.index ? dataFromServer.index : lastIndex);
           setMessages((prev: EncryptedChatMessage[]) => {
             const existingMessage = prev.find((item) => item.index === dataFromServer.index);
-            if (existingMessage) {
+            if (existingMessage != null) {
               return prev;
             } else {
               return [
@@ -158,7 +158,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   };
 
   const onButtonClicked = (e: any) => {
-    if (token && value.indexOf(token) !== -1) {
+    if (token && value.includes(token)) {
       alert(
         `Aye! You just sent your own robot token to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
       );
@@ -173,8 +173,8 @@ const EncryptedTurtleChat: React.FC<Props> = ({
         })
         .then((response) => {
           if (response) {
-            setPeerConnected(response.peer_connected);
-            if (response.messages) {
+            if (response.messages) {            
+              setPeerConnected(response.peer_connected);
               setServerMessages(response.messages);
             }
           }

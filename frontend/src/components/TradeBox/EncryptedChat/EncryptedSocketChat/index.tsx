@@ -99,7 +99,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
         encrypted_private_key: ownEncPrivKey,
         passphrase: token,
       },
-      messages: messages,
+      messages,
     };
   };
 
@@ -111,7 +111,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       setPeerConnected(dataFromServer.peer_connected);
       // If we receive a public key other than ours (our peer key!)
       if (
-        connection &&
+        connection != null &&
         dataFromServer.message.substring(0, 36) == `-----BEGIN PGP PUBLIC KEY BLOCK-----` &&
         dataFromServer.message != ownPubKey
       ) {
@@ -158,7 +158,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
           const existingMessage = prev.find(
             (item) => item.plainTextMessage === dataFromServer.message,
           );
-          if (existingMessage) {
+          if (existingMessage != null) {
             return prev;
           } else {
             return [
@@ -179,14 +179,14 @@ const EncryptedSocketChat: React.FC<Props> = ({
   };
 
   const onButtonClicked = (e: any) => {
-    if (token && value.indexOf(token) !== -1) {
+    if (token && value.includes(token)) {
       alert(
         `Aye! You just sent your own robot token to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
       );
       setValue('');
     }
     // If input string contains '#' send unencrypted and unlogged message
-    else if (connection && value.substring(0, 1) == '#') {
+    else if (connection != null && value.substring(0, 1) == '#') {
       connection.send({
         message: value,
         nick: userNick,
@@ -201,7 +201,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       setLastSent(value);
       encryptMessage(value, ownPubKey, peerPubKey, ownEncPrivKey, token).then(
         (encryptedMessage) => {
-          if (connection) {
+          if (connection != null) {
             connection.send({
               message: encryptedMessage.toString().split('\n').join('\\'),
               nick: userNick,

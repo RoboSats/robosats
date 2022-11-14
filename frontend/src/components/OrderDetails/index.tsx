@@ -162,7 +162,7 @@ const OrderDetails = ({
                 <RobotAvatar
                   avatarClass='smallAvatar'
                   statusColor={statusBadgeColor(order.taker_status)}
-                  nickname={order.taker_nick}
+                  nickname={order.taker_nick == 'None' ? null : order.taker_nick}
                   tooltip={t(order.taker_status)}
                   orderType={order.type === 0 ? 1 : 0}
                   baseUrl={baseUrl}
@@ -234,7 +234,7 @@ const OrderDetails = ({
               <ListItemText
                 primary={t('{{price}} {{currencyCode}}/BTC - Premium: {{premium}}%', {
                   price: pn(order.price_now),
-                  currencyCode: currencyCode,
+                  currencyCode,
                   premium: order.premium_now,
                 })}
                 secondary={t('Price and Premium')}
@@ -282,7 +282,7 @@ const OrderDetails = ({
           </ListItem>
 
           {/* if order is in a status that does not expire, do not show countdown */}
-          <Collapse in={![4, 12, 13, 14, 15, 16, 17, 18].includes(order.status)}>
+          <Collapse in={![4, 5, 12, 13, 14, 15, 16, 17, 18].includes(order.status)}>
             <Divider />
             <ListItem>
               <ListItemIcon>
@@ -297,7 +297,7 @@ const OrderDetails = ({
         </List>
 
         {/* If the user has a penalty/limit */}
-        <Collapse in={order.penalty !== undefined ? true : false}>
+        <Collapse in={order.penalty !== undefined}>
           <Divider />
           <Grid item xs={12}>
             <Alert severity='warning' sx={{ maxWidth: 360 }}>

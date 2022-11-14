@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { List, ListItem, Divider, Grid, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 
-import { Order } from '../../../models';
 import { PlayCircle } from '@mui/icons-material';
 
 interface PausedPrompProps {

@@ -18,7 +18,7 @@ const ToolBar = ({ height = '3em', settings, setSettings }: ToolBarProps): JSX.E
       elevation={6}
       sx={{
         width: `100%`,
-        height: height,
+        height,
         textAlign: 'center',
         padding: '1em',
         borderRadius: 0,

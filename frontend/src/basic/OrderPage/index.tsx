@@ -4,6 +4,7 @@ import { Tab, Tabs, Paper, CircularProgress, Grid, Typography, Box } from '@mui/
 
 import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
+import { useHistory } from 'react-router-dom';
 
 import { apiClient } from '../../services/api';
 
@@ -37,6 +38,7 @@ interface OrderPageProps {
   windowSize: { width: number; height: number };
   hasRobot: boolean;
   setPage: (state: Page) => void;
+  setCurrentOrder: (state: number) => void;
   baseUrl: string;
   currentOrder: number | undefined;
   locationOrder: number;
@@ -45,12 +47,14 @@ interface OrderPageProps {
 const OrderPage = ({
   windowSize,
   setPage,
+  setCurrentOrder,
   hasRobot = false,
   baseUrl,
   currentOrder,
   locationOrder,
 }: OrderPageProps): JSX.Element => {
   const { t } = useTranslation();
+  const history = useHistory();
 
   const [order, setOrder] = useState<Order | undefined>(undefined);
   const [badRequest, setBadRequest] = useState<string | undefined>(undefined);
@@ -60,15 +64,16 @@ const OrderPage = ({
 
   const doublePageWidth: number = 50;
   const maxHeight: number = windowSize.height * 0.85 - 3;
+  const orderId = locationOrder ?? currentOrder;
 
   useEffect(() => {
-    fetchOrder();
-    setTimer(setInterval(fetchOrder, delay));
+    fetchOrder(orderId);
+    setTimer(setInterval(() => fetchOrder(orderId), delay));
   }, []);
 
   useEffect(() => {
     clearInterval(timer);
-    setTimer(setInterval(fetchOrder, delay));
+    setTimer(setInterval(() => fetchOrder(orderId), delay));
 
     return () => clearInterval(timer);
   }, [delay]);
@@ -84,9 +89,38 @@ const OrderPage = ({
     }
   };
 
-  const fetchOrder = function () {
-    const id = locationOrder ?? currentOrder;
+  const fetchOrder = function (id: number) {
     apiClient.get(baseUrl, '/api/order/?order_id=' + id).then(orderReceived);
+  };
+
+  const renewOrder = function () {
+    if (order != undefined) {
+      const body = {
+        type: order.type,
+        currency: order.currency,
+        amount: order.has_range ? null : order.amount,
+        has_range: order.has_range,
+        min_amount: order.min_amount,
+        max_amount: order.max_amount,
+        payment_method: order.payment_method,
+        is_explicit: order.is_explicit,
+        premium: order.is_explicit ? null : order.premium,
+        satoshis: order.is_explicit ? order.satoshis : null,
+        public_duration: order.public_duration,
+        escrow_duration: order.escrow_duration,
+        bond_size: order.bond_size,
+        bondless_taker: order.bondless_taker,
+      };
+      apiClient.post(baseUrl, '/api/make/', body).then((data: any) => {
+        if (data.bad_request) {
+          setBadRequest(data.bad_request);
+        } else if (data.id) {
+          history.push('/order/' + data.id);
+          fetchOrder(data.id);
+          setCurrentOrder(data.id);
+        }
+      });
+    }
   };
 
   return (
@@ -143,6 +177,7 @@ const OrderPage = ({
                     setOrder={setOrder}
                     setBadRequest={setBadRequest}
                     baseUrl={baseUrl}
+                    onRenewOrder={renewOrder}
                   />
                 </Paper>
               </Grid>
@@ -183,6 +218,7 @@ const OrderPage = ({
                     setOrder={setOrder}
                     setBadRequest={setBadRequest}
                     baseUrl={baseUrl}
+                    onRenewOrder={renewOrder}
                   />
                 </div>
               </Paper>
