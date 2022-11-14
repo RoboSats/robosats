@@ -169,9 +169,13 @@ const EncryptedTurtleChat: React.FC<Props> = ({
       apiClient
         .post(baseUrl, `/api/chat`, {
           PGP_message: value,
+          offset: lastIndex
         })
         .then((response) => {
-          if (response) onMessage(response as ServerMessage);
+          if (response) {            
+            setPeerConnected(response.peer_connected);
+            setServerMessages(response.messages);
+          }
         })
         .finally(() => {
           setWaitingEcho(false);
@@ -188,9 +192,13 @@ const EncryptedTurtleChat: React.FC<Props> = ({
             .post(baseUrl, `/api/chat/`, {
               PGP_message: encryptedMessage.toString().split('\n').join('\\'),
               order_id: orderId,
+              offset: lastIndex
             })
             .then((response) => {
-              if (response) onMessage(response as ServerMessage);
+              if (response) {            
+                setPeerConnected(response.peer_connected);
+                setServerMessages(response.messages);
+              }
             })
             .finally(() => {
               setWaitingEcho(false);
