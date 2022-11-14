@@ -128,6 +128,7 @@ const BookPage = ({
               setPage={setPage}
               hasRobot={hasRobot}
               onOrderCreated={(id) => {
+                setOrder(undefined);
                 setCurrentOrder(id);
                 setPage('order');
                 history.push('/order/' + id);

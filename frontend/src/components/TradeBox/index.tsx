@@ -19,13 +19,14 @@ import {
   TakerFoundPrompt,
   PublicWaitPrompt,
   PausedPrompt,
-  Expired,
   ExpiredPrompt,
+  PayoutPrompt,
 } from './Prompts';
 import BondStatus from './BondStatus';
 import CancelButton from './CancelButton';
+import { defaultLightning, LightningForm, defaultOnchain, OnchainForm } from './Forms';
 
-import { Maker, Order } from '../../models';
+import { Order } from '../../models';
 
 // const audio = {
 //   chat: new Audio(`/static/assets/sounds/chat-open.mp3`),
@@ -72,42 +73,10 @@ const closeAll: OpenDialogProps = {
   webln: false,
 };
 
-interface OnchainFormProps {
-  address: string;
-  miningFee: number;
-  badAddress: string;
-}
-
-interface LightningFormProps {
-  invoice: string;
-  routingBudget: number;
-  badInvoice: string;
-  useLnproxy: boolean;
-  lnproxyServer: string;
-  lnproxyBudget: number;
-  badLnproxy: string;
-}
-
-const defaultOnchain: OnchainFormProps = {
-  address: '',
-  miningFee: 140,
-  badAddress: '',
-};
-
-const defaultLightning: LightningFormProps = {
-  invoice: '',
-  routingBudget: 0,
-  badInvoice: '',
-  useLnproxy: false,
-  lnproxyServer: '',
-  lnproxyBudget: 0,
-  badLnproxy: '',
-};
-
 interface TradeBoxProps {
   order: Order;
   setOrder: (state: Order) => void;
-  setBadRequest: (state: string) => void;
+  setBadRequest: (state: string | undefined) => void;
   onRenewOrder: () => void;
   baseUrl: string;
 }
@@ -128,8 +97,8 @@ const TradeBox = ({
   const [lastOrderStatus, setLastOrderStatus] = useState<number>(-1);
 
   // Forms
-  const [onchain, setOnchain] = useState<OnchainFormProps>(defaultOnchain);
-  const [lightning, setLightning] = useState<LightningFormProps>(defaultLightning);
+  const [onchain, setOnchain] = useState<OnchainForm>(defaultOnchain);
+  const [lightning, setLightning] = useState<LightningForm>(defaultLightning);
   const [statement, setStatement] = useState<string>('');
 
   // Sounds
@@ -141,16 +110,32 @@ const TradeBox = ({
   //   }
   // }, [order.status]);
 
-  const submitAction = function (action: string, invoice?: string) {
+  const submitAction = function (
+    action: string,
+    invoice?: string,
+    address?: string,
+    mining_fee_rate?: number,
+  ) {
     apiClient
-      .post(baseUrl, '/api/order/?order_id=' + order.id, { action, invoice })
+      .post(baseUrl, '/api/order/?order_id=' + order.id, {
+        action,
+        invoice,
+        address,
+        mining_fee_rate,
+      })
       .catch(() => {
         setOpen(closeAll);
         setLoadingButtons({ ...noLoadingButtons });
       })
       .then((data: Order | undefined) => {
         if (data.bad_request) {
-          setBadRequest(data.bad_request);
+          if (action == 'update_invoice') {
+            setLightning({ ...lightning, badInvoice: data.bad_request });
+          } else if (action == 'update_address') {
+            setOnchain({ ...onchain, badAddress: data.bad_request });
+          } else {
+            setBadRequest(data.bad_request);
+          }
         } else {
           setOrder({ ...order, ...data });
           setBadRequest(undefined);
@@ -178,6 +163,11 @@ const TradeBox = ({
   const updateInvoice = function (invoice: string) {
     setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
     submitAction('update_invoice', invoice);
+  };
+
+  const updateAddress = function (address: string, mining_fee_rate: number) {
+    setLoadingButtons({ ...noLoadingButtons, submitAddress: true });
+    submitAction('update_address', onchain.address, onchain.miningFee);
   };
 
   const pauseOrder = function () {
@@ -257,11 +247,16 @@ const TradeBox = ({
   //   </>
   // ) : null}
 
-  console.log(order.status);
   const statusToContract = function (order: Order) {
     const status = order.status;
     const isBuyer = order.is_buyer;
     const isMaker = order.is_maker;
+
+    let title: string = 'Unknown Order Status';
+    let titleVariables: object = {};
+    let titleColor: string = 'primary';
+    let prompt = () => <span>Wops!</span>;
+    let bondStatus: 'hide' | 'lockec' | 'unlocked' | 'settled' = 'hide';
 
     if (status == 0) {
       // 0: 'Waiting for maker bond'
@@ -349,10 +344,31 @@ const TradeBox = ({
     } else if (status == 6) {
       // 6: 'Waiting for trade collateral and buyer invoice'
       if (isBuyer) {
+        return {
+          title: 'Submit payout info for {{amountSats}} Sats',
+          titleVariables: { amountSats: pn(order.invoice_amount) },
+          prompt: () => {
+            return (
+              <PayoutPrompt
+                order={order}
+                onClickSubmitInvoice={updateInvoice}
+                loadingLightning={loadingButtons.submitInvoice}
+                lightning={lightning}
+                setLightning={setLightning}
+                onClickSubmitAddress={updateAddress}
+                loadingOnchain={loadingButtons.submitAddress}
+                onchain={onchain}
+                setOnchain={setOnchain}
+              />
+            );
+          },
+          bondStatus: 'locked',
+        };
       } else {
         return {
           title: 'Lock {{amountSats}} Sats as collateral',
           titleVariables: { amountSats: pn(order.escrow_satoshis) },
+          titleColor: 'warning',
           prompt: () => {
             return <LockInvoicePrompt order={order} concept={'escrow'} />;
           },
@@ -383,15 +399,8 @@ const TradeBox = ({
       // 17: 'Maker lost dispute'
     } else if (status == 18) {
       // 18: 'Taker lost dispute'
-    } else {
-      // No known prompt matches
-      // E.g. 4: 'Cancelled'
-      return {
-        title: 'Unknown Order Status',
-        prompt: () => <span>Wops!</span>,
-        bondStatus: 'hide',
-      };
     }
+    return { title, titleVariables, titleColor, prompt, bondStatus };
   };
 
   {

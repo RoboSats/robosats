@@ -29,7 +29,7 @@ export const ExpiredPrompt = ({
         <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
           <LoadingButton
             loading={renewLoading}
-            variant='contained'
+            variant='outlined'
             color='primary'
             onClick={onClickRenew}
           >

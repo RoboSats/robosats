@@ -1,12 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Grid, Link, Typography, TextField, Tooltip, useTheme } from '@mui/material';
-import { AccountBalanceWallet, ContentCopy } from '@mui/icons-material';
-import { NewTabIcon } from '../../Icons';
+import { Button, Grid, Typography, TextField, Tooltip, useTheme } from '@mui/material';
+import { ContentCopy } from '@mui/icons-material';
 import QRCode from 'react-qr-code';
 import { Order } from '../../../models';
 import { systemClient } from '../../../services/System';
 import currencies from '../../../../static/assets/currencies.json';
+import WalletsButton from '../WalletsButton';
 
 interface LockInvoicePromptProps {
   order: Order;
@@ -28,22 +28,6 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
           'This is a hold invoice, it will freeze in your wallet. It will be released to the buyer once you confirm to have received the {{currencyCode}}.',
           { currencyCode },
         );
-
-  const CompatibleWalletsButton = function () {
-    return (
-      <Button
-        color='primary'
-        component={Link}
-        href={'https://learn.robosats.com/docs/wallets/'}
-        target='_blank'
-        align='center'
-      >
-        <AccountBalanceWallet />
-        {t('See Compatible Wallets')}
-        <NewTabIcon sx={{ width: '0.7em', height: '0.7em' }} />
-      </Button>
-    );
-  };
 
   const depositHoursMinutes = function () {
     const hours = Math.floor(order.escrow_duration / 3600);
@@ -72,7 +56,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
       spacing={0.5}
     >
       <Grid item xs={12}>
-        {concept === 'bond' ? <CompatibleWalletsButton /> : <ExpirationWarning />}
+        {concept === 'bond' ? <WalletsButton /> : <ExpirationWarning />}
       </Grid>
 
       <Grid item xs={12}>
