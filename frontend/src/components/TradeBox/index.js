@@ -74,7 +74,7 @@ class TradeBox extends Component {
       badInvoice: false,
       badAddress: false,
       badStatement: false,
-      turtleMode: window.ReactNativeWebView !== undefined
+      turtleMode: window.ReactNativeWebView !== undefined,
     };
   }
 
@@ -1245,7 +1245,7 @@ class TradeBox extends Component {
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} align='center'>
-          <Button
+          <LoadingButton
             loading={this.state.loadingButtonFiatSent}
             defaultValue='confirm'
             variant='contained'
@@ -1265,7 +1265,7 @@ class TradeBox extends Component {
                 ),
               ),
             })}
-          </Button>
+          </LoadingButton>
         </Grid>
       </Grid>
     );
@@ -1467,7 +1467,9 @@ class TradeBox extends Component {
                 </div>
               </Tooltip>
             </div>
-          ) : <></>}
+          ) : (
+            <></>
+          )}
           <Typography variant='subtitle1'>
             <b>
               {' '}

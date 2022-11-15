@@ -48,7 +48,17 @@ class ChatView(viewsets.ViewSet):
             )
 
         queryset = Message.objects.filter(order=order, index__gt=offset)
-        chatroom = ChatRoom.objects.get(order=order)
+        chatroom, created = ChatRoom.objects.get_or_create(
+            id=order_id,
+            order=order,
+            room_group_name=f"chat_order_{order_id}",
+            defaults={
+                "maker": order.maker,
+                "maker_connected": order.maker == request.user,
+                "taker": order.taker,
+                "taker_connected": order.taker == request.user,
+            },
+        )
 
         # Poor idea: is_peer_connected() mockup. Update connection status based on last time a GET request was sent
         if chatroom.maker == request.user:
@@ -171,7 +181,7 @@ class ChatView(viewsets.ViewSet):
 
         # if offset is given, reply with messages
         offset = serializer.data.get("offset", None)
-        if offset:
+        if offset or offset == 0:
             queryset = Message.objects.filter(order=order, index__gt=offset)
             messages = []
             for message in queryset:

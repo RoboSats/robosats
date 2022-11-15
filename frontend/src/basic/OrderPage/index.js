@@ -514,11 +514,11 @@ class OrderPage extends Component {
   };
 
   tokenDialog = () => {
-    return systemClient.getCookie('robot_token') ? (
+    return systemClient.getItem('robot_token') ? (
       <StoreTokenDialog
         open={this.state.openStoreToken}
         onClose={() => this.setState({ openStoreToken: false })}
-        onClickCopy={() => systemClient.copyToClipboard(systemClient.getCookie('robot_token'))}
+        onClickCopy={() => systemClient.copyToClipboard(systemClient.getItem('robot_token'))}
         copyIconColor={this.props.copiedToken ? 'inherit' : 'primary'}
         onClickBack={() => this.setState({ openStoreToken: false })}
         onClickDone={() =>
@@ -532,6 +532,7 @@ class OrderPage extends Component {
       <NoRobotDialog
         open={this.state.openStoreToken}
         onClose={() => this.setState({ openStoreToken: false })}
+        setPage={this.props.setPage}
       />
     );
   };

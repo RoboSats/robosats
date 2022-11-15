@@ -333,7 +333,13 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                 appear={slideDirection.in != undefined}
               >
                 <div>
-                  <OrderPage theme={theme} history={history} {...props} baseUrl={baseUrl} />
+                  <OrderPage
+                    theme={theme}
+                    history={history}
+                    {...props}
+                    setPage={setPage}
+                    baseUrl={baseUrl}
+                  />
                 </div>
               </Slide>
             )}
