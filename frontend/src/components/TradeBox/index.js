@@ -1208,7 +1208,7 @@ class TradeBox extends Component {
 
   handleClickConfirmButton = () => {
     apiClient
-      .post(this.props.baseUrl, this.props.baseUrl, '/api/order/?order_id=' + this.props.data.id, {
+      .post(this.props.baseUrl, '/api/order/?order_id=' + this.props.data.id, {
         action: 'confirm',
       })
       .then((data) => {
