@@ -1681,6 +1681,7 @@ class TradeBox extends Component {
         </Grid>
 
         <TradeSummary
+          baseUrl={this.props.baseUrl}
           isMaker={this.props.data.is_maker}
           makerNick={this.props.data.maker_nick}
           takerNick={this.props.data.taker_nick}

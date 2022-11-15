@@ -48,6 +48,7 @@ interface Props {
   takerSummary: Record<string, Item>;
   platformSummary: Record<string, Item>;
   orderId: number;
+  baseUrl: string;
 }
 
 const TradeSummary = ({
@@ -59,6 +60,7 @@ const TradeSummary = ({
   takerSummary,
   platformSummary,
   orderId,
+  baseUrl,
 }: Props): JSX.Element => {
   const { t, i18n } = useTranslation();
   const [buttonValue, setButtonValue] = useState<number>(isMaker ? 0 : 2);
@@ -94,7 +96,11 @@ const TradeSummary = ({
           >
             <ToggleButtonGroup size='small' value={buttonValue} exclusive>
               <ToggleButton value={0} disableRipple={true} onClick={() => setButtonValue(0)}>
-                <RobotAvatar style={{ height: 28, width: 28 }} nickname={makerNick} />
+                <RobotAvatar
+                  baseUrl={baseUrl}
+                  style={{ height: 28, width: 28 }}
+                  nickname={makerNick}
+                />
                 &nbsp;
                 {t('Maker')}
               </ToggleButton>
@@ -105,6 +111,7 @@ const TradeSummary = ({
                 {t('Taker')}
                 &nbsp;
                 <RobotAvatar
+                  baseUrl={baseUrl}
                   avatarClass='smallAvatar'
                   style={{ height: 28, width: 28 }}
                   nickname={takerNick}
