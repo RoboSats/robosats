@@ -257,7 +257,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
 
   // Fetch current order at load and in a loop
   useEffect(() => {
-    if (currentOrder != undefined && (page == 'order' || order == undefined)) {
+    if (currentOrder != undefined && (page == 'order' || (order == badOrder) == undefined)) {
       fetchOrder();
     }
   }, [currentOrder, page]);
