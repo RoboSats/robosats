@@ -74,7 +74,7 @@ class TradeBox extends Component {
       badInvoice: false,
       badAddress: false,
       badStatement: false,
-      turtleMode: false,
+      turtleMode: window.ReactNativeWebView !== undefined
     };
   }
 
@@ -1434,38 +1434,40 @@ class TradeBox extends Component {
         {/* Make confirmation sound for Chat Open. */}
         {this.Sound('locked-invoice')}
         <Grid item xs={12} align='center'>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              position: 'relative',
-              right: '0em',
-              top: '0em',
-              height: '0em',
-            }}
-          >
-            <Tooltip
-              enterTouchDelay={0}
-              placement='top'
-              title={t('Activate turtle mode (Use it when the connection is slow)')}
+          {window.ReactNativeWebView === undefined ? (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                position: 'relative',
+                right: '0em',
+                top: '0em',
+                height: '0em',
+              }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  width: '4em',
-                  height: '1.1em',
-                }}
+              <Tooltip
+                enterTouchDelay={0}
+                placement='top'
+                title={t('Activate turtle mode (Use it when the connection is slow)')}
               >
-                <Switch
-                  size='small'
-                  disabled={false}
-                  checked={this.state.turtleMode}
-                  onChange={() => this.setState({ turtleMode: !this.state.turtleMode })}
-                />
-                <WifiTetheringErrorIcon sx={{ color: 'text.secondary' }} />
-              </div>
-            </Tooltip>
-          </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    width: '4em',
+                    height: '1.1em',
+                  }}
+                >
+                  <Switch
+                    size='small'
+                    disabled={false}
+                    checked={this.state.turtleMode}
+                    onChange={() => this.setState({ turtleMode: !this.state.turtleMode })}
+                  />
+                  <WifiTetheringErrorIcon sx={{ color: 'text.secondary' }} />
+                </div>
+              </Tooltip>
+            </div>
+          ) : <></>}
           <Typography variant='subtitle1'>
             <b>
               {' '}
