@@ -19,7 +19,6 @@ export const EscrowWaitPrompt = (): JSX.Element => {
           )}
         </Typography>
       </ListItem>
-      <Divider />
     </List>
   );
 };

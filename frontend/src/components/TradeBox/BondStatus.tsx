@@ -12,10 +12,13 @@ const BondStatus = ({ status, isMaker }: BondStatusProps): JSX.Element => {
   const { t } = useTranslation();
 
   let Icon = Lock;
+  let color = 'primary';
   if (status === 'returned') {
     Icon = LockOpen;
+    color = 'green';
   } else if (status === 'settled') {
     Icon = Balance;
+    color = 'red';
   }
 
   if (status === 'hide') {
@@ -31,7 +34,7 @@ const BondStatus = ({ status, isMaker }: BondStatusProps): JSX.Element => {
             flexWrap: 'wrap',
           }}
         >
-          <Icon />
+          <Icon sx={{ height: '0.9em', width: '0.9em' }} />
           {t(`Your ${isMaker ? 'maker' : 'taker'} bond is ${status}`)}
         </div>
       </Typography>

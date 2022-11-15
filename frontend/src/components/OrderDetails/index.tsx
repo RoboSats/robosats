@@ -197,7 +197,7 @@ const OrderDetails = ({
                   MozTransformOrigin: 'left center',
                 }}
               >
-                <FlagWithProps code={currencyCode} />
+                <FlagWithProps code={currencyCode} width='1.2em' height='1.2em' />
               </div>
             </ListItemIcon>
             <ListItemText primary={AmountString().primary} secondary={AmountString().secondary} />

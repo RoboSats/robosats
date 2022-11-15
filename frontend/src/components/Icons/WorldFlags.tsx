@@ -5,13 +5,12 @@ import { GoldIcon, EarthIcon } from '.';
 
 interface Props {
   code: string;
+  width?: string | number;
+  height?: string | number;
 }
 
-const FlagWithProps = ({ code }: Props): JSX.Element => {
-  const defaultProps = {
-    width: '1.428em',
-    height: '1.428em',
-  };
+const FlagWithProps = ({ code, width = '1.428em', height = '1.428em' }: Props): JSX.Element => {
+  const defaultProps = { width, height };
 
   let flag: JSX.Element | null = null;
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Grid, Typography, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Grid, Typography, ToggleButtonGroup, ToggleButton, Divider } from '@mui/material';
 
 import currencies from '../../../../static/assets/currencies.json';
 
@@ -38,7 +38,14 @@ export const PayoutPrompt = ({
   const [tab, setTab] = useState<'lightning' | 'onchain'>('lightning');
 
   return (
-    <Grid container spacing={1}>
+    <Grid
+      container
+      padding={1}
+      direction='column'
+      justifyContent='flex-start'
+      alignItems='center'
+      spacing={1}
+    >
       <Grid item>
         <Typography variant='body2'>
           {t(
@@ -53,7 +60,7 @@ export const PayoutPrompt = ({
         </Typography>
       </Grid>
 
-      <Grid item justifyContent='center'>
+      <Grid item>
         <ToggleButtonGroup
           size='small'
           value={tab}
@@ -87,7 +94,7 @@ export const PayoutPrompt = ({
         </ToggleButtonGroup>
       </Grid>
 
-      <div style={{ display: tab == 'lightning' ? 'flex' : 'none', justifyContent: 'center' }}>
+      <Grid item style={{ display: tab == 'lightning' ? '' : 'none' }}>
         <LightningPayoutForm
           order={order}
           loading={loadingLightning}
@@ -95,10 +102,10 @@ export const PayoutPrompt = ({
           setLightning={setLightning}
           onClickSubmit={onClickSubmitInvoice}
         />
-      </div>
+      </Grid>
 
       {/* ONCHAIN PAYOUT TAB */}
-      <div style={{ display: tab == 'onchain' ? 'flex' : 'none', justifyContent: 'center' }}>
+      <Grid item style={{ display: tab == 'onchain' ? '' : 'none' }}>
         <OnchainPayoutForm
           order={order}
           loading={loadingOnchain}
@@ -106,7 +113,7 @@ export const PayoutPrompt = ({
           setOnchain={setOnchain}
           onClickSubmit={onClickSubmitAddress}
         />
-      </div>
+      </Grid>
     </Grid>
   );
 };

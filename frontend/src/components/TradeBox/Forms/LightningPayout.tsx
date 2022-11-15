@@ -43,7 +43,7 @@ export const LightningPayoutForm = ({
 }: LightningPayoutFormProps): JSX.Element => {
   const { t } = useTranslation();
   return (
-    <Grid container spacing={1} justifyContent='center'>
+    <Grid container direction='column' justifyContent='flex-start' alignItems='center' spacing={1}>
       <Grid item xs={12}>
         <Typography variant='body2'>
           {t('Submit a valid invoice for {{amountSats}} Satoshis.', {
@@ -52,12 +52,13 @@ export const LightningPayoutForm = ({
         </Typography>
       </Grid>
 
-      <Grid item xs={12} justifyContent='center'>
+      <Grid item xs={12}>
         <WalletsButton />
       </Grid>
 
-      <Grid item xs={12} justifyContent='center'>
+      <Grid item xs={12}>
         <TextField
+          fullWidth={true}
           error={lightning.badInvoice != '' ? true : false}
           helperText={lightning.badInvoice ? t(lightning.badInvoice) : ''}
           label={t('Payout Lightning Invoice')}
@@ -72,7 +73,7 @@ export const LightningPayoutForm = ({
           onChange={(e) => setLightning({ ...lightning, invoice: e.target.value ?? '' })}
         />
       </Grid>
-      <Grid item xs={12} justifyContent='center'>
+      <Grid item xs={12}>
         <LoadingButton loading={loading} onClick={onClickSubmit} variant='outlined' color='primary'>
           {t('Submit')}
         </LoadingButton>

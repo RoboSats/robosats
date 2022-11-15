@@ -367,7 +367,7 @@ const TradeBox = ({
       } else {
         title = 'Lock {{amountSats}} Sats as collateral';
         titleVariables = { amountSats: pn(order.escrow_satoshis) };
-        titleColor = 'orange';
+        titleColor = 'red';
         prompt = () => {
           return <LockInvoicePrompt order={order} concept={'escrow'} />;
         };
@@ -385,7 +385,7 @@ const TradeBox = ({
       } else {
         title = 'Lock {{amountSats}} Sats as collateral';
         titleVariables = { amountSats: pn(order.escrow_satoshis) };
-        titleColor = 'warning';
+        titleColor = 'red';
         prompt = () => {
           return <LockInvoicePrompt order={order} concept={'escrow'} />;
         };
@@ -493,9 +493,8 @@ const TradeBox = ({
           />
         </Grid>
         <Divider />
-        <Grid item>
-          <contract.prompt />
-        </Grid>
+
+        <Grid item>{contract.prompt()}</Grid>
 
         {contract.bondStatus != 'hide' ? (
           <Grid item sx={{ width: '100%' }}>

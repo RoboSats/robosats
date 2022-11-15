@@ -77,14 +77,12 @@ const OrderPage = ({
 
   return (
     <Box>
-      {order == undefined && badOrder == undefined ? <CircularProgress /> : <></>}
+      {order == undefined && badOrder == undefined ? <CircularProgress /> : null}
       {badOrder != undefined ? (
         <Typography align='center' variant='subtitle2' color='secondary'>
           {t(badOrder)}
         </Typography>
-      ) : (
-        <></>
-      )}
+      ) : null}
       {order != undefined && badOrder == undefined ? (
         order.is_participant ? (
           windowSize.width > doublePageWidth ? (

@@ -23,7 +23,6 @@ export const PayoutWaitPrompt = (): JSX.Element => {
           )}
         </Typography>
       </ListItem>
-      <Divider />
     </List>
   );
 };

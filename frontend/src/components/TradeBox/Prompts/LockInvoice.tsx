@@ -19,6 +19,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
   const currencyCode: string = currencies[`${order.currency}`];
 
   const invoice = concept === 'bond' ? order.bond_invoice : order.escrow_invoice;
+
   const helperText =
     concept === 'bond'
       ? t(
@@ -65,7 +66,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
             <QRCode
               bgColor={'rgba(255, 255, 255, 0)'}
               fgColor={theme.palette.text.primary}
-              value={invoice}
+              value={invoice ?? 'Undefined: BOLT11 invoice not received'}
               size={theme.typography.fontSize * 21.8}
               onClick={() => {
                 systemClient.copyToClipboard(invoice);
@@ -94,7 +95,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
           hiddenLabel
           variant='standard'
           size='small'
-          defaultValue={invoice}
+          defaultValue={invoice ?? 'Undefined: BOLT11 invoice not received'}
           disabled={true}
           helperText={helperText}
           color='secondary'
