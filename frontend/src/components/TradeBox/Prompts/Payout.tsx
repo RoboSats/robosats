@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Grid, Typography, ToggleButtonGroup, ToggleButton, Divider } from '@mui/material';
+import { Grid, Typography, ToggleButtonGroup, ToggleButton } from '@mui/material';
 
 import currencies from '../../../../static/assets/currencies.json';
 

@@ -173,7 +173,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
         })
         .then((response) => {
           if (response) {
-            if (response.messages) {            
+            if (response.messages) {
               setPeerConnected(response.peer_connected);
               setServerMessages(response.messages);
             }

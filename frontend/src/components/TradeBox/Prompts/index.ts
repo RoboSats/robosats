@@ -6,3 +6,6 @@ export { ExpiredPrompt } from './Expired';
 export { PayoutPrompt } from './Payout';
 export { EscrowWaitPrompt } from './EscrowWait';
 export { PayoutWaitPrompt } from './PayoutWait';
+export { ChatPrompt } from './Chat';
+export { DisputePrompt } from './Dispute';
+export { DisputeWaitPrompt } from './DisputeWait';

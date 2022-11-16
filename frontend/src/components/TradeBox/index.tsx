@@ -23,12 +23,24 @@ import {
   PayoutPrompt,
   PayoutWaitPrompt,
   EscrowWaitPrompt,
+  ChatPrompt,
+  DisputePrompt,
+  DisputeWaitPrompt,
 } from './Prompts';
 import BondStatus from './BondStatus';
 import CancelButton from './CancelButton';
-import { defaultLightning, LightningForm, defaultOnchain, OnchainForm } from './Forms';
+import {
+  defaultLightning,
+  LightningForm,
+  defaultOnchain,
+  OnchainForm,
+  DisputeForm,
+  defaultDispute,
+} from './Forms';
 
 import { Order } from '../../models';
+import { EncryptedChatMessage } from './EncryptedChat';
+import { systemClient } from '../../services/System';
 
 // const audio = {
 //   chat: new Audio(`/static/assets/sounds/chat-open.mp3`),
@@ -43,6 +55,7 @@ interface loadingButtonsProps {
   fiatReceived: boolean;
   submitInvoice: boolean;
   submitAddress: boolean;
+  submitStatement: boolean;
   openDispute: boolean;
   pauseOrder: boolean;
   renewOrder: boolean;
@@ -54,6 +67,7 @@ const noLoadingButtons: loadingButtonsProps = {
   fiatReceived: false,
   submitInvoice: false,
   submitAddress: false,
+  submitStatement: false,
   openDispute: false,
   pauseOrder: false,
   renewOrder: false,
@@ -101,7 +115,10 @@ const TradeBox = ({
   // Forms
   const [onchain, setOnchain] = useState<OnchainForm>(defaultOnchain);
   const [lightning, setLightning] = useState<LightningForm>(defaultLightning);
-  const [statement, setStatement] = useState<string>('');
+  const [dispute, setDispute] = useState<DisputeForm>(defaultDispute);
+
+  // Chat
+  const [messages, setMessages] = useState<EncryptedChatMessage[]>([]);
 
   // Sounds
   // useEffect(() => {
@@ -113,24 +130,40 @@ const TradeBox = ({
   // }, [order.status]);
 
   interface SubmitActionProps {
-    action: 'cancel' | 'dispute' | 'pause' | 'confirm' | 'update_invoice' | 'update_address';
+    action:
+      | 'cancel'
+      | 'dispute'
+      | 'pause'
+      | 'confirm'
+      | 'update_invoice'
+      | 'update_address'
+      | 'submit_statement';
     invoice?: string;
     address?: string;
     mining_fee_rate?: number;
+    statement?: string;
   }
-  const submitAction = function ({ action, invoice, address, mining_fee_rate }: SubmitActionProps) {
+
+  const submitAction = function ({
+    action,
+    invoice,
+    address,
+    mining_fee_rate,
+    statement,
+  }: SubmitActionProps) {
     apiClient
       .post(baseUrl, '/api/order/?order_id=' + order.id, {
         action,
         invoice,
         address,
         mining_fee_rate,
+        statement,
       })
       .catch(() => {
         setOpen(closeAll);
         setLoadingButtons({ ...noLoadingButtons });
       })
-      .then((data: Order | undefined) => {
+      .then((data: Order) => {
         setOpen(closeAll);
         setLoadingButtons({ ...noLoadingButtons });
         if (data.bad_request) {
@@ -138,6 +171,8 @@ const TradeBox = ({
             setLightning({ ...lightning, badInvoice: data.bad_request });
           } else if (action == 'update_address') {
             setOnchain({ ...onchain, badAddress: data.bad_request });
+          } else if (action == 'submit_statement') {
+            setDispute({ ...dispute, badStatement: data.bad_request });
           } else {
             setBadOrder(data.bad_request);
           }
@@ -163,6 +198,11 @@ const TradeBox = ({
     submitAction({ action: 'confirm' });
   };
 
+  const confirmFiatSent = function () {
+    setLoadingButtons({ ...noLoadingButtons, fiatSent: true });
+    submitAction({ action: 'confirm' });
+  };
+
   const updateInvoice = function (invoice: string) {
     setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
     submitAction({ action: 'update_invoice', invoice });
@@ -180,6 +220,16 @@ const TradeBox = ({
   const pauseOrder = function () {
     setLoadingButtons({ ...noLoadingButtons, pauseOrder: true });
     submitAction({ action: 'pause' });
+  };
+
+  const submitStatement = function () {
+    let statement = dispute.statement;
+    if (dispute.attachLogs) {
+      const payload = { statement, messages, token: systemClient.getItem('robot_token') };
+      statement = JSON.stringify(payload, null, 2);
+    }
+    setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
+    submitAction({ action: 'submit_statement', statement });
   };
 
   const handleWebln = async (order: Order) => {
@@ -419,11 +469,47 @@ const TradeBox = ({
         bondStatus = 'locked';
       }
       // 9: 'Sending fiat - In chatroom'
-    } else if (status == 9) {
       // 10: 'Fiat sent - In chatroom'
-    } else if (status == 10) {
+    } else if (status == 9 || status == 10) {
+      title = isBuyer ? 'Chat with the seller' : 'Chat with the buyer';
+      prompt = function () {
+        return (
+          <ChatPrompt
+            order={order}
+            onClickConfirmSent={confirmFiatSent}
+            onClickConfirmReceived={() => setOpen({ ...open, confirmFiatReceived: true })}
+            loadingSent={loadingButtons.fiatSent}
+            loadingReceived={loadingButtons.fiatReceived}
+            onClickDispute={() => setOpen({ ...open, confirmDispute: true })}
+            loadingDispute={loadingButtons.openDispute}
+            baseUrl={baseUrl}
+            messages={messages}
+            setMessages={setMessages}
+          />
+        );
+      };
+      bondStatus = 'locked';
       // 11: 'In dispute'
     } else if (status == 11) {
+      bondStatus = 'settled';
+      if (order.statement_submitted) {
+        title = 'We have received your statement';
+        prompt = function () {
+          return <DisputeWaitPrompt />;
+        };
+      } else {
+        title = 'A dispute has been opened';
+        prompt = function () {
+          return (
+            <DisputePrompt
+              loading={loadingButtons.submitStatement}
+              dispute={dispute}
+              setDispute={setDispute}
+              onClickSubmit={submitStatement}
+            />
+          );
+        };
+      }
       // 12: 'Collaboratively cancelled'
     } else if (status == 12) {
       // 13: 'Sending satoshis to buyer'

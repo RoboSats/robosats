@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Typography } from '@mui/material';
+import { Typography, useTheme } from '@mui/material';
 import { Lock, LockOpen, Balance } from '@mui/icons-material';
 
 interface BondStatusProps {
@@ -10,22 +10,23 @@ interface BondStatusProps {
 
 const BondStatus = ({ status, isMaker }: BondStatusProps): JSX.Element => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   let Icon = Lock;
   let color = 'primary';
   if (status === 'returned') {
     Icon = LockOpen;
-    color = 'green';
+    color = theme.palette.mode == 'dark' ? 'lightgreen' : 'green';
   } else if (status === 'settled') {
     Icon = Balance;
-    color = 'red';
+    color = theme.palette.mode == 'dark' ? 'lightred' : 'red';
   }
 
   if (status === 'hide') {
     return <></>;
   } else {
     return (
-      <Typography color='primary' variant='subtitle1' align='center'>
+      <Typography color='' variant='subtitle1' align='center'>
         <div
           style={{
             display: 'flex',

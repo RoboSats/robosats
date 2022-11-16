@@ -21,7 +21,7 @@ export const Title = ({
   const { t } = useTranslation();
 
   return (
-    <Typography color={color} variant='body1' align='center'>
+    <Typography color={color} variant='subtitle1' align='center'>
       <b>{t(text, variables)}</b> {stepXofY(order)}
     </Typography>
   );
