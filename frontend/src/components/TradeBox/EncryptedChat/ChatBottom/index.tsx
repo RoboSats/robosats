@@ -19,12 +19,11 @@ const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile 
 
   const onPGPClick: () => void = () => {
     if (window.ReactNativeWebView === undefined) {
-      saveAsJson('complete_log_chat_' + orderId + '.json', createJsonFile())
+      saveAsJson('complete_log_chat_' + orderId + '.json', createJsonFile());
     } else {
-      systemClient.copyToClipboard(JSON.stringify(createJsonFile()))
+      systemClient.copyToClipboard(JSON.stringify(createJsonFile()));
     }
-    
-  }
+  };
 
   return (
     <>
@@ -51,12 +50,7 @@ const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile 
           enterNextDelay={2000}
           title={t('Save full log as a JSON file (messages and credentials)')}
         >
-          <Button
-            size='small'
-            color='primary'
-            variant='outlined'
-            onClick={onPGPClick}
-          >
+          <Button size='small' color='primary' variant='outlined' onClick={onPGPClick}>
             <div style={{ width: '1.4em', height: '1.4em' }}>
               <ExportIcon sx={{ width: '0.8em', height: '0.8em' }} />
             </div>{' '}
