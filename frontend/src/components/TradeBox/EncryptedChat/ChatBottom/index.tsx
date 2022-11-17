@@ -4,6 +4,7 @@ import { ExportIcon } from '../../../Icons';
 import KeyIcon from '@mui/icons-material/Key';
 import { useTranslation } from 'react-i18next';
 import { saveAsJson } from '../../../../utils';
+import { systemClient } from '../../../../services/System';
 
 interface Props {
   orderId: number;
@@ -15,6 +16,14 @@ interface Props {
 const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile }) => {
   const { t } = useTranslation();
   const theme = useTheme();
+
+  const onPGPClick: () => void = () => {
+    if (window.ReactNativeWebView === undefined) {
+      saveAsJson('complete_log_chat_' + orderId + '.json', createJsonFile());
+    } else {
+      systemClient.copyToClipboard(JSON.stringify(createJsonFile()));
+    }
+  };
 
   return (
     <>
@@ -41,12 +50,7 @@ const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile 
           enterNextDelay={2000}
           title={t('Save full log as a JSON file (messages and credentials)')}
         >
-          <Button
-            size='small'
-            color='primary'
-            variant='outlined'
-            onClick={() => saveAsJson('complete_log_chat_' + orderId + '.json', createJsonFile())}
-          >
+          <Button size='small' color='primary' variant='outlined' onClick={onPGPClick}>
             <div style={{ width: '1.4em', height: '1.4em' }}>
               <ExportIcon sx={{ width: '0.8em', height: '0.8em' }} />
             </div>{' '}
