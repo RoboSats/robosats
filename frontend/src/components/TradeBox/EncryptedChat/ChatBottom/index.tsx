@@ -17,14 +17,6 @@ const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile 
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const onPGPClick: () => void = () => {
-    if (window.ReactNativeWebView === undefined) {
-      saveAsJson('complete_log_chat_' + orderId + '.json', createJsonFile());
-    } else {
-      systemClient.copyToClipboard(JSON.stringify(createJsonFile()));
-    }
-  };
-
   return (
     <>
       <Grid item xs={6}>
@@ -43,20 +35,41 @@ const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile 
       </Grid>
 
       <Grid item xs={6}>
-        <Tooltip
-          placement='bottom'
-          enterTouchDelay={0}
-          enterDelay={500}
-          enterNextDelay={2000}
-          title={t('Save full log as a JSON file (messages and credentials)')}
-        >
-          <Button size='small' color='primary' variant='outlined' onClick={onPGPClick}>
-            <div style={{ width: '1.4em', height: '1.4em' }}>
-              <ExportIcon sx={{ width: '0.8em', height: '0.8em' }} />
-            </div>{' '}
-            {t('Export')}{' '}
-          </Button>
-        </Tooltip>
+        {window.ReactNativeWebView === undefined ? (
+          <Tooltip
+            placement='bottom'
+            enterTouchDelay={0}
+            enterDelay={500}
+            enterNextDelay={2000}
+            title={t('Save full log as a JSON file (messages and credentials)')}
+          >
+            <Button
+              size='small'
+              color='primary'
+              variant='outlined'
+              onClick={() => saveAsJson('complete_log_chat_' + orderId + '.json', createJsonFile())}
+            >
+              <div style={{ width: '1.4em', height: '1.4em' }}>
+                <ExportIcon sx={{ width: '0.8em', height: '0.8em' }} />
+              </div>{' '}
+              {t('Export')}{' '}
+            </Button>
+          </Tooltip>
+        ) : (
+          <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
+            <Button
+              size='small'
+              color='primary'
+              variant='outlined'
+              onClick={() => systemClient.copyToClipboard(JSON.stringify(createJsonFile()))}
+            >
+              <div style={{ width: '1.4em', height: '1.4em' }}>
+                <ExportIcon sx={{ width: '0.8em', height: '0.8em' }} />
+              </div>{' '}
+              {t('Export')}{' '}
+            </Button>
+          </Tooltip>
+        )}
       </Grid>
     </>
   );
