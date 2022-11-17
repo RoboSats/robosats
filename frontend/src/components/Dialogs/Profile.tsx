@@ -356,7 +356,7 @@ const ProfileDialog = ({
                 <ListItemText secondary={t('Share to earn 100 Sats per trade')}>
                   <TextField
                     label={t('Your referral link')}
-                    value={host + '/ref/' + robot.referralCode}
+                    value={host + '/robot/' + robot.referralCode}
                     size='small'
                     InputProps={{
                       endAdornment: (

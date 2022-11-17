@@ -164,7 +164,11 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   };
 
   useEffect(() => {
-    if (open.stats || open.coordinator) {
+    if (
+      open.stats ||
+      open.coordinator ||
+      info.version == { major: null, minor: null, patch: null }
+    ) {
       fetchInfo();
     }
   }, [open.stats, open.coordinator]);
