@@ -694,20 +694,6 @@ const BookTable = ({
     );
   };
 
-  const Controls = function () {
-    return (
-      <BookControl
-        width={width}
-        type={fav.type}
-        currency={fav.currency}
-        onCurrencyChange={onCurrencyChange}
-        onTypeChange={onTypeChange}
-        paymentMethod={paymentMethods}
-        setPaymentMethods={setPaymentMethods}
-      />
-    );
-  };
-
   const gridComponents = function () {
     const components: GridComponentProps = {
       LoadingOverlay: LinearProgress,
@@ -721,7 +707,7 @@ const BookTable = ({
       components.Footer = Footer;
     }
     if (showControls) {
-      components.Toolbar = Controls;
+      components.Toolbar = BookControl;
     }
     return components;
   };
@@ -753,6 +739,17 @@ const BookTable = ({
           columns={columns}
           hideFooter={!showFooter}
           components={gridComponents()}
+          componentsProps={{
+            toolbar: {
+              width,
+              type: fav.type,
+              currency: fav.currency,
+              onCurrencyChange,
+              onTypeChange,
+              paymentMethod: paymentMethods,
+              setPaymentMethods,
+            },
+          }}
           pageSize={book.loading && book.orders.length == 0 ? 0 : pageSize}
           rowsPerPageOptions={width < 22 ? [] : [0, pageSize, defaultPageSize * 2, 50, 100]}
           onPageSizeChange={(newPageSize) => {

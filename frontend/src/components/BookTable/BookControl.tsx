@@ -148,7 +148,7 @@ const BookControl = ({
           </Grid>
         ) : null}
 
-        {width > mediumToolbarWidth && window.NativeRobosats === undefined ? (
+        {width > mediumToolbarWidth ? (
           <Grid item>
             <AutocompletePayments
               sx={{
@@ -176,9 +176,7 @@ const BookControl = ({
           </Grid>
         ) : null}
 
-        {/* Native Android app must always show the Select, as the on display keyboard does not play well with the book table component */}
-        {(width > smallestToolbarWidth && width < mediumToolbarWidth) ||
-        window.NativeRobosats != undefined ? (
+        {width > smallestToolbarWidth && width < mediumToolbarWidth ? (
           <Grid item>
             <Select
               sx={{
