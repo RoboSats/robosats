@@ -220,8 +220,8 @@ const EncryptedSocketChat: React.FC<Props> = ({
         <Paper
           elevation={1}
           style={{
-            height: '21.42em',
-            maxHeight: '21.42em',
+            height: '18.42em',
+            maxHeight: '18.42em',
             width: '17.7em',
             overflow: 'auto',
             backgroundColor: theme.palette.background.paper,

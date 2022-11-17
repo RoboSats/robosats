@@ -75,6 +75,10 @@ const OrderPage = ({
     }
   };
 
+  const startAgain = function () {
+    history.push('/robot');
+    setPage('robot');
+  };
   return (
     <Box>
       {order == undefined && badOrder == undefined ? <CircularProgress /> : null}
@@ -128,6 +132,7 @@ const OrderPage = ({
                     setBadOrder={setBadOrder}
                     baseUrl={baseUrl}
                     onRenewOrder={renewOrder}
+                    onStartAgain={startAgain}
                   />
                 </Paper>
               </Grid>
@@ -169,6 +174,7 @@ const OrderPage = ({
                     setBadOrder={setBadOrder}
                     baseUrl={baseUrl}
                     onRenewOrder={renewOrder}
+                    onStartAgain={startAgain}
                   />
                 </div>
               </Paper>

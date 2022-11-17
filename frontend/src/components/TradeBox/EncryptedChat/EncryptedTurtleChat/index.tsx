@@ -172,7 +172,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
           offset: lastIndex,
         })
         .then((response) => {
-          if (response) {
+          if (response != null) {
             if (response.messages) {
               setPeerConnected(response.peer_connected);
               setServerMessages(response.messages);
@@ -197,7 +197,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
               offset: lastIndex,
             })
             .then((response) => {
-              if (response) {
+              if (response != null) {
                 setPeerConnected(response.peer_connected);
                 if (response.messages) {
                   setServerMessages(response.messages);
@@ -221,8 +221,8 @@ const EncryptedTurtleChat: React.FC<Props> = ({
         <Paper
           elevation={1}
           style={{
-            height: '21.42em',
-            maxHeight: '21.42em',
+            height: '18.42em',
+            maxHeight: '18.42em',
             width: '17.7em',
             overflow: 'auto',
             backgroundColor: theme.palette.background.paper,

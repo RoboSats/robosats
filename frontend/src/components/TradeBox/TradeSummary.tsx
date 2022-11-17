@@ -33,20 +33,16 @@ import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LinkIcon from '@mui/icons-material/Link';
 import { RoboSatsNoTextIcon, SendReceiveIcon, BitcoinIcon } from '../Icons';
-
-interface Item {
-  id: string;
-  name: string;
-}
+import { TradeCoordinatorSummary, TradeRobotSummary } from '../../models/Order.model';
 
 interface Props {
   isMaker: boolean;
   makerNick: string;
   takerNick: string;
   currencyCode: string;
-  makerSummary: Record<string, Item>;
-  takerSummary: Record<string, Item>;
-  platformSummary: Record<string, Item>;
+  makerSummary: TradeRobotSummary;
+  takerSummary: TradeRobotSummary;
+  platformSummary: TradeCoordinatorSummary;
   orderId: number;
   baseUrl: string;
 }

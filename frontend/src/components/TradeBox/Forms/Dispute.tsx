@@ -35,7 +35,7 @@ export const DisputeStatementForm = ({
     <Grid container direction='column' justifyContent='flex-start' alignItems='center' spacing={1}>
       <Grid item xs={12}>
         <TextField
-          error={dispute.badStatement == '' ? false : true}
+          error={dispute.badStatement != ''}
           helperText={dispute.badStatement}
           label={t('Submit dispute statement')}
           required

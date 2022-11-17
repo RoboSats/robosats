@@ -30,8 +30,8 @@ interface LightningPayoutFormProps {
   order: Order;
   loading: boolean;
   lightning: LightningForm;
-  setLightning: () => void;
-  onClickSubmit: () => void;
+  setLightning: (state: LightningForm) => void;
+  onClickSubmit: (invoice: string) => void;
 }
 
 export const LightningPayoutForm = ({
@@ -59,7 +59,7 @@ export const LightningPayoutForm = ({
       <Grid item xs={12}>
         <TextField
           fullWidth={true}
-          error={lightning.badInvoice != '' ? true : false}
+          error={lightning.badInvoice != ''}
           helperText={lightning.badInvoice ? t(lightning.badInvoice) : ''}
           label={t('Payout Lightning Invoice')}
           required
@@ -74,7 +74,12 @@ export const LightningPayoutForm = ({
         />
       </Grid>
       <Grid item xs={12}>
-        <LoadingButton loading={loading} onClick={onClickSubmit} variant='outlined' color='primary'>
+        <LoadingButton
+          loading={loading}
+          onClick={() => onClickSubmit(lightning.invoice)}
+          variant='outlined'
+          color='primary'
+        >
           {t('Submit')}
         </LoadingButton>
       </Grid>

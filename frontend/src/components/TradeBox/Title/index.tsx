@@ -10,6 +10,7 @@ interface TakerFoundPrompProps {
   text: string;
   variables?: Object;
   color?: string;
+  icon?: () => JSX.Element;
 }
 
 export const Title = ({
@@ -17,12 +18,17 @@ export const Title = ({
   text,
   variables = {},
   color = 'primary',
+  icon = function () {
+    return <></>;
+  },
 }: TakerFoundPrompProps): JSX.Element => {
   const { t } = useTranslation();
 
   return (
-    <Typography color={color} variant='subtitle1' align='center'>
+    <Typography sx={{ color }} variant='subtitle1' align='center'>
+      {icon()}
       <b>{t(text, variables)}</b> {stepXofY(order)}
+      {icon()}
     </Typography>
   );
 };

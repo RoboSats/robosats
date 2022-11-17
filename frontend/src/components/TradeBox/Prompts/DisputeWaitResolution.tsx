@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { List, ListItem, Divider, Typography } from '@mui/material';
 
-export const DisputeWaitPrompt = (): JSX.Element => {
+export const DisputeWaitResolutionPrompt = (): JSX.Element => {
   const { t } = useTranslation();
 
   return (
@@ -11,7 +11,7 @@ export const DisputeWaitPrompt = (): JSX.Element => {
       <ListItem>
         <Typography variant='body2'>
           {t(
-            'We are waiting for your trade counterpart statement. If you are hesitant about the state of the dispute or want to add more information, contact robosats@protonmail.com.',
+            'Both statements have been received, wait for the staff to resolve the dispute. If you are hesitant about the state of the dispute or want to add more information, contact robosats@protonmail.com. If you did not provide a contact method, or are unsure whether you wrote it right, write us immediately.',
           )}
         </Typography>
       </ListItem>
@@ -26,4 +26,4 @@ export const DisputeWaitPrompt = (): JSX.Element => {
   );
 };
 
-export default DisputeWaitPrompt;
+export default DisputeWaitResolutionPrompt;

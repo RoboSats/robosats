@@ -5,17 +5,17 @@ import { LoadingButton } from '@mui/lab';
 
 import { Order } from '../../../models';
 
-interface ExpiredPrompProps {
+interface ExpiredPromptProps {
   order: Order;
-  renewLoading: boolean;
+  loadingRenew: boolean;
   onClickRenew: () => void;
 }
 
 export const ExpiredPrompt = ({
-  renewLoading,
+  loadingRenew,
   order,
   onClickRenew,
-}: ExpiredPrompProps): JSX.Element => {
+}: ExpiredPromptProps): JSX.Element => {
   const { t } = useTranslation();
 
   return (
@@ -28,7 +28,7 @@ export const ExpiredPrompt = ({
       {order.is_maker ? (
         <Grid item xs={12} style={{ display: 'flex', justifyContent: 'center' }}>
           <LoadingButton
-            loading={renewLoading}
+            loading={loadingRenew}
             variant='outlined'
             color='primary'
             onClick={onClickRenew}

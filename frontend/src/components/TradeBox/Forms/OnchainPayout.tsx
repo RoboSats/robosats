@@ -94,7 +94,7 @@ export const OnchainPayoutForm = ({
 
         <ListItem>
           <TextField
-            error={onchain.badAddress != '' ? true : false}
+            error={onchain.badAddress != ''}
             helperText={onchain.badAddress ? t(onchain.badAddress) : ''}
             label={t('Bitcoin Address')}
             required

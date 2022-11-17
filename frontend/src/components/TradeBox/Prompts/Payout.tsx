@@ -11,7 +11,7 @@ import { LightningPayoutForm, LightningForm, OnchainPayoutForm, OnchainForm } fr
 
 interface PayoutPrompProps {
   order: Order;
-  onClickSubmitInvoice: () => void;
+  onClickSubmitInvoice: (invoice: string) => void;
   lightning: LightningForm;
   loadingLightning: boolean;
   setLightning: (state: LightningForm) => void;

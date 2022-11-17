@@ -4,7 +4,7 @@ import { Typography, useTheme } from '@mui/material';
 import { Lock, LockOpen, Balance } from '@mui/icons-material';
 
 interface BondStatusProps {
-  status: 'locked' | 'settled' | 'returned' | 'hide';
+  status: 'locked' | 'settled' | 'unlocked' | 'hide';
   isMaker: boolean;
 }
 
@@ -14,7 +14,7 @@ const BondStatus = ({ status, isMaker }: BondStatusProps): JSX.Element => {
 
   let Icon = Lock;
   let color = 'primary';
-  if (status === 'returned') {
+  if (status === 'unlocked') {
     Icon = LockOpen;
     color = theme.palette.mode == 'dark' ? 'lightgreen' : 'green';
   } else if (status === 'settled') {

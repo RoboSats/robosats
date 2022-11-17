@@ -14,7 +14,7 @@ import {
   useTheme,
 } from '@mui/material';
 
-import Countdown, { zeroPad } from 'react-countdown';
+import Countdown, { CountdownRenderProps, zeroPad } from 'react-countdown';
 import RobotAvatar from '../../components/RobotAvatar';
 
 import currencies from '../../../static/assets/currencies.json';
@@ -75,7 +75,13 @@ const OrderDetails = ({
   };
 
   // Countdown Renderer callback with condition
-  const countdownRenderer = function ({ total, hours, minutes, seconds, completed }) {
+  const countdownRenderer = function ({
+    total,
+    hours,
+    minutes,
+    seconds,
+    completed,
+  }: CountdownRenderProps) {
     if (completed) {
       // Render a completed state
       return <span> {t('The order has expired')}</span>;
