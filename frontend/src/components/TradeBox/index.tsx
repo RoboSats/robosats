@@ -50,13 +50,6 @@ import { systemClient } from '../../services/System';
 import CollabCancelAlert from './CollabCancelAlert';
 import { Bolt } from '@mui/icons-material';
 
-// const audio = {
-//   chat: new Audio(`/static/assets/sounds/chat-open.mp3`),
-//   takerFound: new Audio(`/static/assets/sounds/taker-found.mp3`),
-//   lockedInvoice: new Audio(`/static/assets/sounds/locked-invoice.mp3`),
-//   successful: new Audio(`/static/assets/sounds/successful.mp3`),
-// };
-
 interface loadingButtonsProps {
   cancel: boolean;
   fiatSent: boolean;
@@ -129,15 +122,6 @@ const TradeBox = ({
 
   // Chat
   const [messages, setMessages] = useState<EncryptedChatMessage[]>([]);
-
-  // Sounds
-  // useEffect(() => {
-  //   if (order.status) {
-  //     if (order.status === 1) {
-  //       audio.lockedInvoice.play();
-  //     }
-  //   }
-  // }, [order.status]);
 
   interface SubmitActionProps {
     action:
@@ -296,7 +280,7 @@ const TradeBox = ({
   }, [order.status]);
 
   const statusToContract = function (order: Order) {
-    const status = 18;
+    const status = order.status;
     const isBuyer = order.is_buyer;
     const isMaker = order.is_maker;
 
@@ -615,7 +599,7 @@ const TradeBox = ({
     } else if ((status == 17 && !isMaker) || (status == 18 && isMaker)) {
       title = 'You have lost the dispute';
       prompt = function () {
-        return <DisputeWinnerPrompt />;
+        return <DisputeLoserPrompt />;
       };
       bondStatus = 'settled';
     }

@@ -31,6 +31,7 @@ import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
 import { useTranslation } from 'react-i18next';
+import Notifications from '../components/Notifications';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -303,6 +304,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         baseUrl={baseUrl}
         onLoad={() => setRobot({ ...robot, avatarLoaded: true })}
       />
+      <Notifications order={order} rewards={robot.earnedRewards} />
       {settings.network === 'testnet' ? (
         <div style={{ height: 0 }}>
           <Typography color='secondary' align='center'>
