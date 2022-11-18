@@ -296,7 +296,7 @@ const TradeBox = ({
   }, [order.status]);
 
   const statusToContract = function (order: Order) {
-    const status = order.status;
+    const status = 18;
     const isBuyer = order.is_buyer;
     const isMaker = order.is_maker;
 
@@ -522,11 +522,11 @@ const TradeBox = ({
         prompt = function () {
           return (
             <SuccessfulPrompt
+              baseUrl={baseUrl}
               order={order}
               ratePlatform={ratePlatform}
               onClickStartAgain={onStartAgain}
               loadingRenew={loadingButtons.renewOrder}
-              order={order}
               onClickRenew={() => {
                 onRenewOrder();
                 setLoadingButtons({ ...noLoadingButtons, renewOrder: true });
@@ -544,7 +544,19 @@ const TradeBox = ({
         return <Bolt xs={{ width: '1em', height: '1em' }} color='warning' />;
       };
       prompt = function () {
-        return <SuccessfulPrompt />;
+        return (
+          <SuccessfulPrompt
+            baseUrl={baseUrl}
+            order={order}
+            ratePlatform={ratePlatform}
+            onClickStartAgain={onStartAgain}
+            loadingRenew={loadingButtons.renewOrder}
+            onClickRenew={() => {
+              onRenewOrder();
+              setLoadingButtons({ ...noLoadingButtons, renewOrder: true });
+            }}
+          />
+        );
       };
       // 15: 'Failed lightning network routing'
     } else if (status == 15) {
@@ -569,7 +581,19 @@ const TradeBox = ({
           return <Bolt xs={{ width: '1em', height: '1em' }} color='warning' />;
         };
         prompt = function () {
-          return <SuccessfulPrompt />;
+          return (
+            <SuccessfulPrompt
+              baseUrl={baseUrl}
+              order={order}
+              ratePlatform={ratePlatform}
+              onClickStartAgain={onStartAgain}
+              loadingRenew={loadingButtons.renewOrder}
+              onClickRenew={() => {
+                onRenewOrder();
+                setLoadingButtons({ ...noLoadingButtons, renewOrder: true });
+              }}
+            />
+          );
         };
       }
 

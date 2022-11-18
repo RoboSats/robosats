@@ -6,15 +6,22 @@ export const SendingSatsPrompt = (): JSX.Element => {
   const { t } = useTranslation();
 
   return (
-    <Grid container spacing={1}>
-      <Grid item xs={12}>
+    <Grid
+      container
+      direction='column'
+      justifyContent='flex-start'
+      alignItems='center'
+      spacing={1}
+      padding={1}
+    >
+      <Grid item>
         <Typography variant='body2'>
           {t(
             'RoboSats is trying to pay your lightning invoice. Remember that lightning nodes must be online in order to receive payments.',
           )}
         </Typography>
       </Grid>
-      <Grid item xs={12}>
+      <Grid item>
         <CircularProgress />
       </Grid>
     </Grid>

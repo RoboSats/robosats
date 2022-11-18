@@ -23,6 +23,8 @@ interface Props {
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
   baseUrl: string;
+  turtleMode: boolean;
+  setTurtleMode: (state: boolean) => void;
 }
 
 const EncryptedTurtleChat: React.FC<Props> = ({
@@ -33,6 +35,8 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   messages,
   setMessages,
   baseUrl,
+  setTurtleMode,
+  turtleMode,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -215,15 +219,38 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   };
 
   return (
-    <Container component='main'>
-      <ChatHeader connected={true} peerConnected={peerConnected} />
-      <div style={{ position: 'relative', left: '-0.14em', margin: '0 auto', width: '17.7em' }}>
+    <Grid
+      container
+      direction='column'
+      justifyContent='flex-start'
+      alignItems='center'
+      spacing={0.5}
+    >
+      <AuditPGPDialog
+        open={audit}
+        onClose={() => setAudit(false)}
+        orderId={Number(orderId)}
+        messages={messages}
+        own_pub_key={ownPubKey || ''}
+        own_enc_priv_key={ownEncPrivKey || ''}
+        peer_pub_key={peerPubKey || 'Not received yet'}
+        passphrase={token || ''}
+        onClickBack={() => setAudit(false)}
+      />
+
+      <Grid item>
+        <ChatHeader
+          connected={true}
+          peerConnected={peerConnected}
+          turtleMode={turtleMode}
+          setTurtleMode={setTurtleMode}
+        />
         <Paper
           elevation={1}
           style={{
             height: '18.42em',
             maxHeight: '18.42em',
-            width: '17.7em',
+            width: '100%',
             overflow: 'auto',
             backgroundColor: theme.palette.background.paper,
           }}
@@ -298,22 +325,9 @@ const EncryptedTurtleChat: React.FC<Props> = ({
             </Grid>
           </Grid>
         </form>
-      </div>
+      </Grid>
 
-      <div style={{ height: '0.3em' }} />
-
-      <Grid container spacing={0}>
-        <AuditPGPDialog
-          open={audit}
-          onClose={() => setAudit(false)}
-          orderId={Number(orderId)}
-          messages={messages}
-          own_pub_key={ownPubKey || ''}
-          own_enc_priv_key={ownEncPrivKey || ''}
-          peer_pub_key={peerPubKey || 'Not received yet'}
-          passphrase={token || ''}
-          onClickBack={() => setAudit(false)}
-        />
+      <Grid item>
         <ChatBottom
           orderId={orderId}
           audit={audit}
@@ -321,7 +335,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
           createJsonFile={createJsonFile}
         />
       </Grid>
-    </Container>
+    </Grid>
   );
 };
 

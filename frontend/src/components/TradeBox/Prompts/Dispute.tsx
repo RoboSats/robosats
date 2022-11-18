@@ -18,7 +18,14 @@ export const DisputePrompt = ({
 }: DisputePromptProps): JSX.Element => {
   const { t } = useTranslation();
   return (
-    <Grid container spacing={1}>
+    <Grid
+      container
+      direction='column'
+      justifyContent='flex-start'
+      alignItems='center'
+      spacing={0}
+      padding={1}
+    >
       <Grid item>
         <Typography variant='body2'>
           {t(

@@ -26,7 +26,7 @@ const BondStatus = ({ status, isMaker }: BondStatusProps): JSX.Element => {
     return <></>;
   } else {
     return (
-      <Typography color='' variant='subtitle1' align='center'>
+      <Typography color={color} variant='subtitle1' align='center'>
         <div
           style={{
             display: 'flex',

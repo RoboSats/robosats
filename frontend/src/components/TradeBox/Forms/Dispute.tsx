@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Grid, TextField, Checkbox, Tooltip } from '@mui/material';
+import { Grid, TextField, Checkbox, Tooltip, FormControlLabel } from '@mui/material';
 import { Order } from '../../../models';
 import { LoadingButton } from '@mui/lab';
 import { EncryptedChatMessage } from '../EncryptedChat';
@@ -32,8 +32,16 @@ export const DisputeStatementForm = ({
 }: DisputeStatementFormProps): JSX.Element => {
   const { t } = useTranslation();
   return (
-    <Grid container direction='column' justifyContent='flex-start' alignItems='center' spacing={1}>
-      <Grid item xs={12}>
+    <Grid
+      container
+      sx={{ width: '18em' }}
+      direction='column'
+      justifyContent='flex-start'
+      alignItems='center'
+      spacing={0.5}
+      padding={1}
+    >
+      <Grid item>
         <TextField
           error={dispute.badStatement != ''}
           helperText={dispute.badStatement}
@@ -47,7 +55,7 @@ export const DisputeStatementForm = ({
           onChange={(e) => setDispute({ ...dispute, statement: e.target.value })}
         />
       </Grid>
-      <Grid item xs={12}>
+      <Grid item>
         <Tooltip
           enterTouchDelay={0}
           placement='top'
@@ -55,14 +63,18 @@ export const DisputeStatementForm = ({
             'Attaching chat logs helps the dispute resolution process and adds transparency. However, it might compromise your privacy.',
           )}
         >
-          <Checkbox
-            checked={dispute.attachLogs}
-            onChange={() => setDispute({ ...dispute, attachLogs: !dispute.attachLogs })}
-            title={t('Attach chat logs')}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={dispute.attachLogs}
+                onChange={() => setDispute({ ...dispute, attachLogs: !dispute.attachLogs })}
+              />
+            }
+            label={t('Attach chat logs')}
           />
         </Tooltip>
       </Grid>
-      <Grid item xs={12}>
+      <Grid item>
         <LoadingButton
           onClick={onClickSubmit}
           variant='contained'

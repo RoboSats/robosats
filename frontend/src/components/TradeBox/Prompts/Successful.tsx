@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
 import {
   Grid,
   Typography,
@@ -28,6 +27,7 @@ interface SuccessfulPromptProps {
   onClickStartAgain: () => void;
   onClickRenew: () => void;
   loadingRenew: boolean;
+  baseUrl: string;
 }
 
 export const SuccessfulPrompt = ({
@@ -36,15 +36,22 @@ export const SuccessfulPrompt = ({
   onClickStartAgain,
   onClickRenew,
   loadingRenew,
+  baseUrl,
 }: SuccessfulPromptProps): JSX.Element => {
   const { t } = useTranslation();
-  const history = useHistory();
   const currencyCode: string = currencies[`${order.currency}`];
 
   const [rating, setRating] = useState<number | undefined>(undefined);
 
   return (
-    <Grid container spacing={1}>
+    <Grid
+      container
+      direction='column'
+      justifyContent='flex-start'
+      alignItems='center'
+      spacing={0.5}
+      padding={1}
+    >
       <Grid item xs={12}>
         <Typography variant='body2' align='center'>
           <Trans i18nKey='rate_robosats'>
@@ -52,7 +59,7 @@ export const SuccessfulPrompt = ({
           </Trans>
         </Typography>
       </Grid>
-      <Grid item xs={12}>
+      <Grid item>
         <Rating
           name='size-large'
           defaultValue={0}
@@ -153,24 +160,33 @@ export const SuccessfulPrompt = ({
 
         {order.is_maker ? (
           <Grid item xs={6}>
-            <LoadingButton color='primary' variant='outlined' onClick={onClickRenew}>
+            <LoadingButton
+              color='primary'
+              variant='outlined'
+              onClick={onClickRenew}
+              loading={loadingRenew}
+            >
               <Refresh />
               {t('Renew Order')}
             </LoadingButton>
           </Grid>
         ) : null}
       </Grid>
-
-      <TradeSummary
-        isMaker={order.is_maker}
-        makerNick={order.maker_nick}
-        takerNick={order.taker_nick}
-        currencyCode={currencyCode}
-        makerSummary={order.maker_summary}
-        takerSummary={order.taker_summary}
-        platformSummary={order.platform_summary}
-        orderId={order.id}
-      />
+      {order.platform_summary ? (
+        <TradeSummary
+          isMaker={order.is_maker}
+          makerNick={order.maker_nick}
+          takerNick={order.taker_nick}
+          currencyCode={currencyCode}
+          makerSummary={order.maker_summary}
+          takerSummary={order.taker_summary}
+          platformSummary={order.platform_summary}
+          orderId={order.id}
+          baseUrl={baseUrl}
+        />
+      ) : (
+        <></>
+      )}
     </Grid>
   );
 };

@@ -59,13 +59,20 @@ export const RoutingFailedPrompt = ({
     }
   };
 
-  if (order.invoice_expired) {
+  if (order.invoice_expired && order.failure_reason) {
     return (
-      <Grid container spacing={1}>
+      <Grid
+        container
+        direction='column'
+        justifyContent='flex-start'
+        alignItems='center'
+        spacing={0.5}
+        padding={1}
+      >
         <Grid item>
           <FailureReason failureReason={order.failure_reason} />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item>
           <Typography variant='body2'>
             {t(
               'Your invoice has expired or more than 3 payment attempts have been made. Submit a new invoice.',
@@ -73,7 +80,7 @@ export const RoutingFailedPrompt = ({
           </Typography>
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid item>
           <LightningPayoutForm
             order={order}
             loading={loadingLightning}
@@ -86,7 +93,14 @@ export const RoutingFailedPrompt = ({
     );
   } else {
     return (
-      <Grid container spacing={1}>
+      <Grid
+        container
+        direction='column'
+        justifyContent='flex-start'
+        alignItems='center'
+        spacing={0.5}
+        padding={1}
+      >
         <Grid item>
           <FailureReason failureReason={order.failure_reason} />
         </Grid>

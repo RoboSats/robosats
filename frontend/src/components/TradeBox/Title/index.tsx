@@ -25,7 +25,7 @@ export const Title = ({
   const { t } = useTranslation();
 
   return (
-    <Typography sx={{ color }} variant='subtitle1' align='center'>
+    <Typography color={color} variant='subtitle1' align='center'>
       {icon()}
       <b>{t(text, variables)}</b> {stepXofY(order)}
       {icon()}

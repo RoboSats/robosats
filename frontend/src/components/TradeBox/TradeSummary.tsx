@@ -61,7 +61,7 @@ const TradeSummary = ({
   const { t, i18n } = useTranslation();
   const [buttonValue, setButtonValue] = useState<number>(isMaker ? 0 : 2);
   const userSummary = buttonValue == 0 ? makerSummary : takerSummary;
-  const contractTimestamp = new Date(platformSummary.contract_timestamp);
+  const contractTimestamp = new Date(platformSummary.contract_timestamp ?? null);
   const total_time = platformSummary.contract_total_time;
   const hours = parseInt(total_time / 3600);
   const mins = parseInt((total_time - hours * 3600) / 60);

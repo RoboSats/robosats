@@ -5,7 +5,6 @@ import currencies from '../../../../static/assets/currencies.json';
 
 import { Order } from '../../../models';
 import { pn } from '../../../utils';
-import { WifiTetheringError } from '@mui/icons-material';
 import EncryptedChat, { EncryptedChatMessage } from '../EncryptedChat';
 import Countdown, { zeroPad } from 'react-countdown';
 import { LoadingButton } from '@mui/lab';
@@ -37,7 +36,6 @@ export const ChatPrompt = ({
 }: ChatPromptProps): JSX.Element => {
   const { t } = useTranslation();
 
-  const [turtleMode, setTurtleMode] = useState<boolean>(window.ReactNativeWebView !== undefined);
   const [sentButton, setSentButton] = useState<boolean>(false);
   const [receivedButton, setReceivedButton] = useState<boolean>(false);
   const [enableDisputeButton, setEnableDisputeButton] = useState<boolean>(false);
@@ -100,44 +98,34 @@ export const ChatPrompt = ({
   }, [order]);
 
   return (
-    <Grid container spacing={1}>
-      {window.ReactNativeWebView === undefined ? (
-        <Grid item xs={12}>
-          <Tooltip
-            enterTouchDelay={0}
-            placement='top'
-            title={t('Activate slow mode (use it when the connection is slow)')}
-          >
-            <IconButton
-              size='small'
-              color={turtleMode ? 'primary' : 'inherit'}
-              onClick={() => setTurtleMode(!turtleMode)}
-            >
-              <WifiTetheringError sx={{ color: 'text.secondary' }} />
-            </IconButton>
-          </Tooltip>
-        </Grid>
-      ) : (
-        <></>
-      )}
-      <Grid item xs={12}>
+    <Grid
+      container
+      padding={0}
+      direction='column'
+      justifyContent='flex-start'
+      alignItems='center'
+      spacing={0}
+    >
+      <Grid item>
         <Typography variant='body2' align='center'>
           {text}
         </Typography>
       </Grid>
 
-      <EncryptedChat
-        turtleMode={turtleMode}
-        chatOffset={order.chat_last_index}
-        orderId={order.id}
-        takerNick={order.taker_nick}
-        makerNick={order.maker_nick}
-        userNick={order.ur_nick}
-        baseUrl={baseUrl}
-        messages={messages}
-        setMessages={setMessages}
-      />
-      <Grid item xs={12}>
+      <Grid item>
+        <EncryptedChat
+          chatOffset={order.chat_last_index}
+          orderId={order.id}
+          takerNick={order.taker_nick}
+          makerNick={order.maker_nick}
+          userNick={order.ur_nick}
+          baseUrl={baseUrl}
+          messages={messages}
+          setMessages={setMessages}
+        />
+      </Grid>
+
+      <Grid item>
         <Tooltip
           placement='top'
           componentsProps={{
@@ -148,17 +136,17 @@ export const ChatPrompt = ({
           enterTouchDelay={0}
           title={<Countdown date={enableDisputeTime} renderer={disputeCountdownRenderer} />}
         >
-          <Grid item xs={12}>
-            <LoadingButton
-              loading={loadingDispute}
-              disabled={!enableDisputeButton}
-              color='inherit'
-              onClick={onClickDispute}
-            >
-              {t('Open Dispute')}
-            </LoadingButton>
-          </Grid>
+          <LoadingButton
+            loading={loadingDispute}
+            disabled={!enableDisputeButton}
+            color='inherit'
+            onClick={onClickDispute}
+          >
+            {t('Open Dispute')}
+          </LoadingButton>
         </Tooltip>
+      </Grid>
+      <Grid item>
         <Collapse in={sentButton}>
           <LoadingButton
             loading={loadingSent}
