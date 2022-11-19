@@ -20,6 +20,49 @@ When browsing the order book, the bitcoin-fiat price of live orders you see are 
 
 If a fiat currency isn't available on RoboSats, then one can easily add a new currency by opening a pull request on [GitHub](https://github.com/Reckless-Satoshi/robosats)!
 
+## **Prices in Practice**
+
+If the order pricing is *relative*, then the amount of satoshis being traded relative to the fiat exchange rate (we'll call `trade_sats`) becomes "locked" once the order taker locks their bond. Until the taker bond is locked, the order's price continues to move with the market over time.
+
+Once the taker bond is locked for a relatively priced order, the amount of satoshis being traded is calculated as follows:
+
+````
+premium_rate = CEX_rate * (1 + (premium / 100))
+trade_sats = amount / premium_rate
+````
+
+where `trade_sats` is the satoshis to be traded, `premium` is what the order maker defined during order creation, and `CEX_rate` is the current bitcoin exchange price given the currency you are using.
+
+The platform fees (`fee_sats`) associated with your order are calculated using the `trade_sats` variable:
+* For maker:
+  ````
+  fee_fraction = 0.002 * 0.125
+               = 0.00025 ==> {{site.robosats.maker_fee}}%
+  fee_sats = trade_sats * fee_fraction
+  ````
+* For taker:
+  ````
+  fee_fraction = 0.002 * (1 - 0.125)
+               = 0.00175 ==> {{site.robosats.taker_fee}}%
+  fee_sats = trade_sats * fee_fraction
+  ````
+
+where `fee_fraction` combines for a shared total platform fee of {{site.robosats.total_fee}}%; that breaks down to {{site.robosats.maker_fee}}% and {{site.robosats.taker_fee}}% for maker and taker, respectively. Refer to [Understand > Fees](https://learn.robosats.com/docs/fees/) for additional information on fees.
+
+RoboSats then collects fees in the trade escrow (`escrow_amount`) and payout invoice (`payout_amount`) process by calculating the following:
+* For seller:
+  ````
+  escrow_amount = trade_sats + fee_sats
+  ````
+* For buyer:
+  ````
+  payout_amount = trade_sats - fee_sats
+  ````
+
+In essence, RoboSats adds to the `escrow_amount`, deducts from the `payout_amount`, and, depending on whether you are the order taker or the order maker, applies the appropriate `fee_fraction` calculations.
+
+If the order pricing is *explicit*, then the amount of satoshis being traded is fixed regardless of the current fiat exchange rate (`CEX_rate`). Once the order is created, the satoshis are locked from the very beginning; however, the associated premium will move with the market over time instead of the price.
+
 ## **How Centralized Exchanges Determine the Bitcoin-Fiat Market Rate**
 
 The global bitcoin-fiat market rate is determined through simple bitcoin arbitrage; this causes the fiat price of bitcoin to converge toward the prices you see on your typical centralized exchanges.
