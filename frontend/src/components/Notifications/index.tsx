@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { StringIfPlural, useTranslation } from 'react-i18next';
 import {
   Tooltip,
   Alert,
@@ -27,6 +27,7 @@ interface NotificationMessage {
   onClick: () => void;
   sound: HTMLAudioElement | undefined;
   timeout: number;
+  pageTitle: String;
 }
 
 const audio = {
@@ -42,6 +43,7 @@ const emptyNotificationMessage: NotificationMessage = {
   onClick: () => null,
   sound: undefined,
   timeout: 1000,
+  pageTitle: 'RoboSats - Simple and Private Bitcoin Exchange',
 };
 
 const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
@@ -68,9 +70,12 @@ const Notifications = ({
   const [lastOrderStatus, setLastOrderStatus] = useState<number | undefined>(undefined);
   const [lastRewards, setLastRewards] = useState<number>(0);
   const [message, setMessage] = useState<NotificationMessage>(emptyNotificationMessage);
+  const [inFocus, setInFocus] = useState<boolean>(true);
+  const [titleAnimation, setTitleAnimation] = useState<NodeJS.Timer | undefined>(undefined);
   const [show, setShow] = useState<boolean>(false);
 
   const position = windowWidth > 60 ? { top: '4em', right: '0em' } : { top: '0.5em', left: '50%' };
+  const basePageTitle = t('RoboSats - Simple and Private Bitcoin Exchange');
 
   interface MessagesProps {
     bondLocked: NotificationMessage;
@@ -89,6 +94,7 @@ const Notifications = ({
       onClick: moveToOrderPage,
       sound: audio.lockedInvoice,
       timeout: 10000,
+      pageTitle: `${t('✅ Bond!')} - ${basePageTitle}`,
     },
     escrowLocked: {
       title: t(`Order collateral locked!`),
@@ -96,6 +102,7 @@ const Notifications = ({
       onClick: moveToOrderPage,
       sound: audio.lockedInvoice,
       timeout: 10000,
+      pageTitle: `${t('✅ Escrow!')} -  ${basePageTitle}`,
     },
     taken: {
       title: t('Order has been taken!'),
@@ -103,6 +110,7 @@ const Notifications = ({
       onClick: moveToOrderPage,
       sound: audio.takerFound,
       timeout: 30000,
+      pageTitle: `${t('🥳 Taken!')} - ${basePageTitle}`,
     },
   };
 
@@ -146,6 +154,14 @@ const Notifications = ({
     if (message.sound) {
       message.sound.play();
     }
+    if (!inFocus) {
+      setTitleAnimation(
+        setInterval(function () {
+          var title = document.title;
+          document.title = title == basePageTitle ? message.pageTitle : basePageTitle;
+        }, 1000),
+      );
+    }
   };
 
   useEffect(() => {
@@ -154,6 +170,23 @@ const Notifications = ({
       setLastOrderStatus(order.status);
     }
   }, [order]);
+
+  // Set blinking page title and clear on visibility change > infocus
+  useEffect(() => {
+    if (titleAnimation != undefined && inFocus) {
+      clearInterval(titleAnimation);
+    }
+  }, [inFocus]);
+
+  useEffect(() => {
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        setInFocus(false);
+      } else if (!document.hidden) {
+        setInFocus(true);
+      }
+    });
+  }, []);
 
   return (
     <StyledTooltip
