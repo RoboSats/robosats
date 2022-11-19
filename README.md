@@ -5,18 +5,18 @@
 [![AGPL-3.0 license](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/Reckless-Satoshi/robosats/blob/main/LICENSE)
 [![Telegram](https://img.shields.io/badge/chat-telegram-brightgreen)](https://t.me/robosats)
 
-RoboSats is a simple and private way to exchange bitcoin for national currencies. Robosats simplifies the peer-to-peer user experience and uses lightning hold invoices to minimize custody and trust requirements. The deterministically generated avatars help users stick to best privacy practices. 
+RoboSats is a simple and private way to exchange bitcoin for national currencies. Robosats simplifies the peer-to-peer user experience and uses lightning hold invoices to minimize custody and trust requirements. The deterministically generated avatars help users stick to best privacy practices.
 
 
 <div align="center">
   <img width="75%" src="https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png">
 </div>
 
-## Try it out! 
+## Try it out!
 ### **Bitcoin Mainnet**
 - **TOR URL:** [**RoboSats**6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion) ( Open with [Tor Browser](https://www.torproject.org/download/))
-- Clearnet URL: [unsafe.robosats.com](https://unsafe.robosats.com) (not recommended!) 
-- Clearnet Mirrors: [unsafe2](https://unsafe2.robosats.com) || [unsafe3](https://unsafe3.robosats.com) (not recommended!) 
+- Clearnet URL: [unsafe.robosats.com](https://unsafe.robosats.com) (not recommended!)
+- Clearnet Mirrors: [unsafe2](https://unsafe2.robosats.com) || [unsafe3](https://unsafe3.robosats.com) (not recommended!)
 
 *Always use [Tor Browser](https://www.torproject.org/download/) and .onion for best privacy. The Clearnet URL redirects to a third party Tor2web service. Your privacy cannot be guaranteed to be respected. Use clearnet only to check around the app, never use for trading!*
 
@@ -59,7 +59,7 @@ Check out our [Contribution Guide](https://learn.robosats.com/contribute/) to fi
 ### ⚡Developer Rewards ⚡
 Check out the [Developer Rewards Panel](https://github.com/users/Reckless-Satoshi/projects/2/views/5) for tasks paid in Sats.
 
-## Sponsors 
+## Sponsors
 <div align="center">
   <img src="https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/docs/assets/images/sponsors/hrf.png" width="300px">
 </div>

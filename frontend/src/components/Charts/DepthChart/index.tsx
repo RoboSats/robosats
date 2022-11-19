@@ -20,39 +20,39 @@ import {
 } from '@mui/material';
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
-import { Order } from '../../../models/Order.model';
-import { LimitList } from '../../../models/Limit.model';
-import RobotAvatar from '../../Robots/RobotAvatar';
-import { amountToString } from '../../../utils/prettyNumbers';
+import { PublicOrder, LimitList, Order } from '../../../models';
+import RobotAvatar from '../../RobotAvatar';
+import { amountToString, matchMedian, statusBadgeColor } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
-import PaymentText from '../../PaymentText';
+import { PaymentStringAsIcons } from '../../PaymentMethods';
 import getNivoScheme from '../NivoScheme';
-import median from '../../../utils/match';
-import { apiClient } from '../../../services/api/index';
-import statusBadgeColor from '../../../utils/statusBadgeColor';
 
 interface DepthChartProps {
-  orders: Order[];
-  lastDayPremium: number | undefined;
+  orders: PublicOrder[];
+  lastDayPremium?: number | undefined;
   currency: number;
-  setAppState: (state: object) => void;
   limits: LimitList;
   maxWidth: number;
   maxHeight: number;
+  fillContainer?: boolean;
+  elevation?: number;
+  onOrderClicked?: (id: number) => void;
+  baseUrl: string;
 }
 
 const DepthChart: React.FC<DepthChartProps> = ({
   orders,
   lastDayPremium,
   currency,
-  setAppState,
   limits,
   maxWidth,
   maxHeight,
+  fillContainer = false,
+  elevation = 6,
+  onOrderClicked = () => null,
+  baseUrl,
 }) => {
   const { t } = useTranslation();
-  const history = useHistory();
   const theme = useTheme();
   const [enrichedOrders, setEnrichedOrders] = useState<Order[]>([]);
   const [series, setSeries] = useState<Serie[]>([]);
@@ -64,14 +64,6 @@ const DepthChart: React.FC<DepthChartProps> = ({
 
   const height = maxHeight < 20 ? 20 : maxHeight;
   const width = maxWidth < 20 ? 20 : maxWidth > 72.8 ? 72.8 : maxWidth;
-
-  useEffect(() => {
-    if (Object.keys(limits).length === 0) {
-      apiClient.get('/api/limits/').then((data) => {
-        setAppState({ limits: data });
-      });
-    }
-  }, []);
 
   useEffect(() => {
     setCurrencyCode(currency === 0 ? 1 : currency);
@@ -101,7 +93,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
     if (xType === 'base_amount') {
       const prices: number[] = enrichedOrders.map((order) => order?.base_amount || 0);
 
-      const medianValue = ~~median(prices);
+      const medianValue = ~~matchMedian(prices);
       const maxValue = prices.sort((a, b) => b - a).slice(0, 1)[0] || 1500;
       const maxRange = maxValue - medianValue;
       const rangeSteps = maxRange / 10;
@@ -109,23 +101,30 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setCenter(medianValue);
       setXRange(maxRange);
       setRangeSteps(rangeSteps);
-    } else if (lastDayPremium != undefined) {
-      setCenter(lastDayPremium);
+    } else {
+      if (lastDayPremium === undefined) {
+        const premiums: number[] = enrichedOrders.map((order) => order?.premium || 0);
+        setCenter(~~matchMedian(premiums));
+      } else {
+        setCenter(lastDayPremium);
+      }
       setXRange(8);
       setRangeSteps(0.5);
     }
   }, [enrichedOrders, xType, lastDayPremium, currencyCode]);
 
   const generateSeries: () => void = () => {
-    const sortedOrders: Order[] =
+    const sortedOrders: PublicOrder[] =
       xType === 'base_amount'
         ? enrichedOrders.sort(
             (order1, order2) => (order1?.base_amount || 0) - (order2?.base_amount || 0),
           )
         : enrichedOrders.sort((order1, order2) => order1.premium - order2.premium);
 
-    const sortedBuyOrders: Order[] = sortedOrders.filter((order) => order.type == 0).reverse();
-    const sortedSellOrders: Order[] = sortedOrders.filter((order) => order.type == 1);
+    const sortedBuyOrders: PublicOrder[] = sortedOrders
+      .filter((order) => order.type == 0)
+      .reverse();
+    const sortedSellOrders: PublicOrder[] = sortedOrders.filter((order) => order.type == 1);
 
     const buySerie: Datum[] = generateSerie(sortedBuyOrders);
     const sellSerie: Datum[] = generateSerie(sortedSellOrders);
@@ -145,7 +144,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
     ]);
   };
 
-  const generateSerie = (orders: Order[]): Datum[] => {
+  const generateSerie = (orders: PublicOrder[]): Datum[] => {
     if (center == undefined) {
       return [];
     }
@@ -162,7 +161,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
           y: lastSumOrders,
         },
         {
-          // Order Point
+          // PublicOrder Point
           x: xType === 'base_amount' ? order.base_amount : order.premium,
           y: sumOrders,
           order,
@@ -223,7 +222,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const generateTooltip: React.FunctionComponent<PointTooltipProps> = (
     pointTooltip: PointTooltipProps,
   ) => {
-    const order: Order = pointTooltip.point.data.order;
+    const order: PublicOrder = pointTooltip.point.data.order;
     return order ? (
       <Paper elevation={12} style={{ padding: 10, width: 250 }}>
         <Grid container justifyContent='space-between'>
@@ -234,6 +233,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 orderType={order.type}
                 statusColor={statusBadgeColor(order.maker_status)}
                 tooltip={t(order.maker_status)}
+                baseUrl={baseUrl}
               />
             </Grid>
           </Grid>
@@ -257,7 +257,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                     {currencyDict[order.currency]}
                   </Grid>
                   <Grid item xs={12}>
-                    <PaymentText
+                    <PaymentStringAsIcons
                       othersText={t('Others')}
                       verbose={true}
                       size={20}
@@ -283,25 +283,33 @@ const DepthChart: React.FC<DepthChartProps> = ({
   };
   const formatAxisY = (value: number): string => `${value}BTC`;
   const handleOnClick: PointMouseHandler = (point: Point) => {
-    history.push('/order/' + point.data?.order?.id);
+    onOrderClicked(point.data?.order?.id);
   };
 
+  const em = theme.typography.fontSize;
   return (
-    <Paper style={{ width: `${width}em`, maxHeight: `${height}em` }}>
-      <Paper variant='outlined'>
+    <Paper
+      elevation={elevation}
+      style={
+        fillContainer
+          ? { width: '100%', maxHeight: '100%', height: '100%' }
+          : { width: `${width}em`, maxHeight: `${height}em` }
+      }
+    >
+      <Paper variant='outlined' style={{ width: '100%', height: '100%' }}>
         {center == undefined || enrichedOrders.length < 1 ? (
           <div
             style={{
               display: 'flex',
               justifyContent: 'center',
               paddingTop: `${(height - 3) / 2 - 1}em`,
-              height: `${height - 3}em`,
+              height: `${height}em`,
             }}
           >
             <CircularProgress />
           </div>
         ) : (
-          <Grid container style={{ paddingTop: 15 }}>
+          <Grid container style={{ paddingTop: '1em' }}>
             <Grid
               container
               direction='row'
@@ -313,7 +321,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 container
                 justifyContent='flex-start'
                 alignItems='flex-start'
-                style={{ paddingLeft: 20 }}
+                style={{ paddingLeft: '1em' }}
               >
                 <Select variant='standard' value={xType} onChange={(e) => setXType(e.target.value)}>
                   <MenuItem value={'premium'}>
@@ -350,7 +358,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 </Grid>
               </Grid>
             </Grid>
-            <Grid container style={{ height: `${height - 7}em`, padding: 15 }}>
+            <Grid container style={{ height: `${height * 0.8}em`, padding: '1em' }}>
               <ResponsiveLine
                 data={series}
                 enableArea={true}
@@ -359,20 +367,29 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 crosshairType='cross'
                 tooltip={generateTooltip}
                 onClick={handleOnClick}
-                axisRight={{
-                  tickSize: 5,
-                  format: formatAxisY,
-                }}
                 axisLeft={{
                   tickSize: 5,
                   format: formatAxisY,
                 }}
                 axisBottom={{
                   tickSize: 5,
-                  tickRotation: xType === 'base_amount' && width < 40 ? 45 : 0,
+                  tickRotation:
+                    xType === 'base_amount' ? (width < 40 ? 45 : 0) : width < 25 ? 45 : 0,
                   format: formatAxisX,
                 }}
-                margin={{ left: 65, right: 60, bottom: width < 40 ? 36 : 25, top: 10 }}
+                margin={{
+                  left: 4.64 * em,
+                  right: 0.714 * em,
+                  bottom:
+                    xType === 'base_amount'
+                      ? width < 40
+                        ? 2.7 * em
+                        : 1.78 * em
+                      : width < 25
+                      ? 2.7 * em
+                      : 1.78 * em,
+                  top: 0.714 * em,
+                }}
                 xFormat={(value) => Number(value).toFixed(0)}
                 lineWidth={3}
                 theme={getNivoScheme(theme)}

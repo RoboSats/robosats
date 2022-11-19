@@ -1,8 +1,10 @@
 from django.contrib import admin
-from control.models import AccountingDay, BalanceLog
 from import_export.admin import ImportExportModelAdmin
 
+from control.models import AccountingDay, BalanceLog
+
 # Register your models here.
+
 
 @admin.register(AccountingDay)
 class AccountingDayAdmin(ImportExportModelAdmin):
@@ -28,6 +30,7 @@ class AccountingDayAdmin(ImportExportModelAdmin):
     )
     change_links = ["day"]
     search_fields = ["day"]
+
 
 @admin.register(BalanceLog)
 class BalanceLogAdmin(ImportExportModelAdmin):

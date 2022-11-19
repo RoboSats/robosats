@@ -28,9 +28,9 @@ teaser                   : # path of fallback teaser image, e.g. "/assets/images
 logo                     : # path of logo image to display in the masthead, e.g. "/assets/images/88x88.png"
 masthead_title           : # overrides the website title displayed in the masthead, use " " for no title
 # breadcrumbs            : false # true, false (default)
-words_per_minute         : 
+words_per_minute         :
 robosats:
-  node_id                : 0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e              
+  node_id                : 0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e
   donation_address       : bc1qj3p8k9dufx8f9r4hc5dmls2letgcya48q2jart
   maker_fee              : 0.025        # In percent (%)
   taker_fee              : 0.175        # In percent (%)

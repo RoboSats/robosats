@@ -2,35 +2,17 @@ import React, { Component } from 'react';
 import { withTranslation, Trans } from 'react-i18next';
 import { Paper, Alert, AlertTitle, Button, Link } from '@mui/material';
 import MediaQuery from 'react-responsive';
+import { getHost } from '../utils';
 
 class UnsafeAlert extends Component {
   constructor(props) {
     super(props);
     this.state = {
       show: true,
-      isSelfhosted: this.isSelfhosted(),
     };
   }
 
-  getHost() {
-    const url =
-      window.location !== window.parent.location
-        ? this.getHost(document.referrer)
-        : document.location.href;
-    return url.split('/')[2];
-  }
-
-  isSelfhosted() {
-    const http = new XMLHttpRequest();
-    try {
-      http.open('HEAD', `${location.protocol}//${this.getHost()}/selfhosted`, false);
-      http.send();
-      return http.status === 200;
-    } catch {
-      return false;
-    }
-  }
-
+  // To do. Read from Coordinators state Obj.
   safe_urls = [
     'robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion',
     'robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion',
@@ -38,6 +20,33 @@ class UnsafeAlert extends Component {
     'robosats.i2p',
     'r7r4sckft6ptmk4r2jajiuqbowqyxiwsle4iyg4fijtoordc6z7a.b32.i2p',
   ];
+
+  checkClient() {
+    const http = new XMLHttpRequest();
+    const host = getHost();
+    const unsafeClient = !this.safe_urls.includes(host);
+    try {
+      http.open('HEAD', `${location.protocol}//${host}/selfhosted`, false);
+      http.send();
+      this.props.setSettings({
+        ...this.props.settings,
+        host,
+        unsafeClient,
+        selfhostedClient: http.status === 200,
+      });
+    } catch {
+      this.props.setSettings({
+        ...this.props.settings,
+        host,
+        unsafeClient,
+        selfhostedClient: false,
+      });
+    }
+  }
+
+  componentDidMount() {
+    this.checkClient();
+  }
 
   render() {
     const { t } = this.props;
@@ -48,7 +57,7 @@ class UnsafeAlert extends Component {
     }
 
     // Show selfhosted notice
-    if (this.state.isSelfhosted) {
+    else if (this.props.settings.selfhostedClient) {
       return (
         <div>
           <Paper elevation={6} className='alertUnsafe'>
@@ -72,7 +81,7 @@ class UnsafeAlert extends Component {
     }
 
     // Show unsafe alert
-    if (!window.NativeRobosats && !this.safe_urls.includes(this.getHost())) {
+    else if (this.props.settings.unsafeClient) {
       return (
         <div>
           <MediaQuery minWidth={800}>
@@ -84,20 +93,22 @@ class UnsafeAlert extends Component {
               >
                 <AlertTitle>{t('You are not using RoboSats privately')}</AlertTitle>
                 <Trans i18nKey='desktop_unsafe_alert'>
-                  Some features are disabled for your protection (e.g. chat) and you will not be
-                  able to complete a trade without them. To protect your privacy and fully enable
-                  RoboSats, use{' '}
+                  <a>
+                    Some features are disabled for your protection (e.g. chat) and you will not be
+                    able to complete a trade without them. To protect your privacy and fully enable
+                    RoboSats, use{' '}
+                  </a>
                   <Link href='https://www.torproject.org/download/' target='_blank'>
                     Tor Browser
-                  </Link>{' '}
-                  and visit the{' '}
+                  </Link>
+                  <a> and visit the </a>
                   <Link
                     href='http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion'
                     target='_blank'
                   >
                     Onion
-                  </Link>{' '}
-                  site.
+                  </Link>
+                  <a> site.</a>
                 </Trans>
               </Alert>
             </Paper>
@@ -108,18 +119,18 @@ class UnsafeAlert extends Component {
               <Alert severity='warning' sx={{ maxHeight: '120px' }}>
                 <AlertTitle>{t('You are not using RoboSats privately')}</AlertTitle>
                 <Trans i18nKey='phone_unsafe_alert'>
-                  You will not be able to complete a trade. Use{' '}
+                  <a>You will not be able to complete a trade. Use </a>
                   <Link href='https://www.torproject.org/download/' target='_blank'>
                     Tor Browser
-                  </Link>{' '}
-                  and visit the{' '}
+                  </Link>
+                  <a> and visit the </a>
                   <Link
                     href='http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion'
                     target='_blank'
                   >
                     Onion
                   </Link>{' '}
-                  site.
+                  <a> site.</a>
                 </Trans>
                 <div style={{ width: '100%' }}></div>
                 <div align='center'>

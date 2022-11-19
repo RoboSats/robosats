@@ -11,8 +11,8 @@ export const checkVer: (
     return { updateAvailable: null };
   }
   const semver = packageJson.version.split('.');
-  const updateAvailable = major > Number(semver[0]) || minor > Number(semver[1]);
-  const patchAvailable = !updateAvailable && patch > Number(semver[2]);
+  const updateAvailable: boolean = major > Number(semver[0]) || minor > Number(semver[1]);
+  const patchAvailable: boolean = !updateAvailable && patch > Number(semver[2]);
 
   return {
     updateAvailable,

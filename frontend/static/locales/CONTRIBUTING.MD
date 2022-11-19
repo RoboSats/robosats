@@ -5,13 +5,13 @@ There isn't a lot of text in RoboSats, however it might be bst to split the work
 
 ## How to contribute a new translation.
 
-Simply create a new translation file in `frontend/src/locales` (Same folder where you are reading these instructions). In `locales` there is a single file with a json dictionary for every language. In order to create a new translation, simply copy `en.json` (the master text) into a new file named after the language's [ISO 639 two character code](https://www.loc.gov/standards/iso639-2/php/English_list.php). 
+Simply create a new translation file in `frontend/src/locales` (Same folder where you are reading these instructions). In `locales` there is a single file with a json dictionary for every language. In order to create a new translation, simply copy `en.json` (the master text) into a new file named after the language's [ISO 639 two character code](https://www.loc.gov/standards/iso639-2/php/English_list.php).
 
 ## Guidelines
 
 Each language .json dictionary contains pairs of keys and values in the following format { "key1":"value1", "key2":"value2", ...}. Most keys are the literal English sentence. These simply have to be translated on the right side, for example, in order to translate the `Make Order` button to Spanish we edit the json file to look like this `{... "Make Order":"Crear Orden",...}`.
 
-1. **Not all keys are explicit sentences.** Some keys are not the English senstence but a variable names e.g. "phone_unsafe_alert". In this case you must take a look at the value originally in `en.json`. 
+1. **Not all keys are explicit sentences.** Some keys are not the English senstence but a variable names e.g. "phone_unsafe_alert". In this case you must take a look at the value originally in `en.json`.
 
 2. **The language dictionary is split into 9 sections.** The first key of each section is a reference and does not need to be translated. For example, the second section starts with the key:value `"USER GENERATION PAGE - UserGenPage.js": "Landing Page and User Generation"` . It does not need to be translated, it is just information for the translator to understand what part of the app he will be working on.
 

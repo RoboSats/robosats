@@ -7,7 +7,7 @@ toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/chalkboard-user.svg"/>Tutorial'
   nav: tutorial
---- 
+---
 Uno de los puntos en los que se centra RoboSats es la facilidad de uso. La plataforma es totalmente autoexplicativa, por lo que se podría decir que no es necesario un tutorial. Sin embargo, este tutorial te ayudará a sentirse más cómodo. Después de todo, las plataformas p2p de bitcoin intimidan muchísimo. ¡Sin miedo! RoboSats es superfácil y con este tutorial serás todo un experto :D
 
 Este documento contiene dos compraventas completas: 1) como comprador y tomador de una orden; 2) como vendedor y creador de la orden. Ya que la plataforma explica todo en los menús, voy a dedicar algunas líneas por todo el documento para dar trucos y consejos para que te mantengas seguro y anónimo.
@@ -165,7 +165,7 @@ Debes copiar o escanear la factura con tu billetera lightning para bloquear tu f
 <img src="/assets/images/how-to-use/contract-box-8.png" width="370" />
 </div>
 
-Tu orden permanecerá publicada durante {{site.robosats.hours_public_default}} horas por defecto. Puedes comprobar cuánto tiempo le queda consultando la pestaña "Order". Se puede cancelar en cualquier momento sin penalización antes de que otro robot tome tu orden. Mantén abierta la pestaña del contrato para recibir notificaciones [con este sonido](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3). Es aconsejable hacer esto en un ordenador o portátil con el volumen encendido para enterarte cuando alguien tome tu orden porque puede transcurrir bastante tiempo. ¡Quizás incluso olvides que tienes publicada una orden! También puedes activar las notificaciones de telegram. Simplemente pulsa en "Enable Telegram Notifications" y presiona "Start" en la conversación con el bot de RoboSats. Te llegará un mensaje de bienvenida y cuando alguien tome la orden te avisará con un mensaje. 
+Tu orden permanecerá publicada durante {{site.robosats.hours_public_default}} horas por defecto. Puedes comprobar cuánto tiempo le queda consultando la pestaña "Order". Se puede cancelar en cualquier momento sin penalización antes de que otro robot tome tu orden. Mantén abierta la pestaña del contrato para recibir notificaciones [con este sonido](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3). Es aconsejable hacer esto en un ordenador o portátil con el volumen encendido para enterarte cuando alguien tome tu orden porque puede transcurrir bastante tiempo. ¡Quizás incluso olvides que tienes publicada una orden! También puedes activar las notificaciones de telegram. Simplemente pulsa en "Enable Telegram Notifications" y presiona "Start" en la conversación con el bot de RoboSats. Te llegará un mensaje de bienvenida y cuando alguien tome la orden te avisará con un mensaje.
 
 *Nota: Si no estás pendiente de tu orden y un robot la toma y bloquea su fianza, corres el riesgo de perder tu fianza por no cumplir con los siguientes pasos del contrato.*
 

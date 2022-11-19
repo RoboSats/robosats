@@ -8,7 +8,7 @@ sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/fingerprint.svg"/>Encriptación PGP'
   nav: docs
 src: "_pages/docs/01-best-practices/01-pgp-guide_es.md"
---- 
+---
 
 Cómo usar OpenKeychain para cifrar datos sensibles al usar RoboSats.
 

@@ -8,7 +8,7 @@ sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/arrow-up-right-from-square.svg"/>Access'
   nav: docs
 src: "_pages/docs/00-quick-start/03-access.md"
---- 
+---
 
 ## <img style='width:32px;height:32px' src='/assets/vector/tor.svg'/> Privately with TOR
 A safe and very private way to use RoboSats is through the Onion address. You need [Tor Browser](/docs/tor/).
@@ -67,7 +67,7 @@ There are several tor2web services that serve as mirrors in case one of them is 
 > [unsafe2.robosats.com](https://unsafe2.robosats.com/) <br/>
 > [unsafe3.robosats.com](https://unsafe3.robosats.com/) <br/>
 > [unsafe.testnet.robosats.com](http://unsafe.testnet.robosats.com/) <br/>
-> [unsafe2.testnet.robosats.com](http://unsafe2.testnet.robosats.com/) 
+> [unsafe2.testnet.robosats.com](http://unsafe2.testnet.robosats.com/)
 
 
 {% include improve %}

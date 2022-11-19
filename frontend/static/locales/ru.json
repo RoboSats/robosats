@@ -4,7 +4,6 @@
   "desktop_unsafe_alert": "Некоторые функции отключены для Вашей безопасности (чат) и без них у Вас не будет возможности завершить сделку. Чтобы защитить Вашу конфиденциальность и полностью включить RoboSats, используйте <1>Tor Browser</1> и посетите <3>Onion</3> сайт.",
   "phone_unsafe_alert": "У Вас не будет возможности завершить сделку. Используйте <1>Tor Browser</1> и посетите <3>Onion</3> сайт.",
   "Hide": "Скрыть",
-
   "USER GENERATION PAGE - UserGenPage.js": "Landing Page and User Generation",
   "Simple and Private LN P2P Exchange": "Простой и Конфиденциальный LN P2P Обмен",
   "This is your trading avatar": "Это Ваш торговый аватар",
@@ -21,7 +20,6 @@
   "You are about to visit Learn RoboSats. It hosts tutorials and documentation to help you learn how to use RoboSats and understand how it works.": "Вы собираетесь посетить Learn RoboSats. На нём размещены учебные пособия и документация, которые помогут Вам научиться использовать RoboSats и понять, как он работает.",
   "Let's go!": "Поехали!",
   "Save token and PGP credentials to file": "Сохранить токен и учетные данные PGP в файл",
-
   "MAKER PAGE - MakerPage.js": "This is the page where users can create new orders",
   "Order": "Ордер",
   "Customize": "Настроить",
@@ -78,7 +76,6 @@
   "Done": "Готово",
   "You do not have a robot avatar": "У Вас нет аватара робота",
   "You need to generate a robot avatar in order to become an order maker": "Вам нужно сгенерировать аватар робота, чтобы стать мейкером ордеров",
-
   "PAYMENT METHODS - autocompletePayments.js": "Payment method strings",
   "not specified": "Не указано",
   "Instant SEPA": "Мгновенный SEPA",
@@ -86,14 +83,12 @@
   "Google Play Gift Code": "Подарочный код Google Play",
   "Cash F2F": "Наличные F2F",
   "On-Chain BTC": "Ончейн BTC",
-
   "BOOK PAGE - BookPage.js": "The Book Order page",
   "Seller": "Продавец",
   "Buyer": "Покупатель",
   "I want to": "Я хочу",
   "Select Order Type": "Выбрать тип ордера",
-  "ANY_type": "Любой тип",
-  "ANY_currency": "Любую валюту",
+  "ANY": "Любую валюту",
   "BUY": "Купить",
   "SELL": "Продать",
   "and receive": "и получить",
@@ -161,7 +156,6 @@
   "no": "нет",
   "Depth chart": "Схемами глубин",
   "Chart": "Схемами",
-
   "BOTTOM BAR AND MISC - BottomBar.js": "Bottom Bar user profile and miscellaneous dialogs",
   "Stats For Nerds": "Cтатистика для умников",
   "LND version": "LND версия",
@@ -225,7 +219,6 @@
   "Current onchain payout fee": "Текущая комиссия за выплату ончейн",
   "Use stealth invoices": "Использовать стелс инвойсы",
   "Stealth lightning invoices do not contain details about the trade except an order reference. Enable this setting if you don't want to disclose details to a custodial lightning wallet.": "Стелс Лайтнинг инвойсы не содержат подробностей о сделке, кроме ссылки на ордер. Включите этот параметр, если Вы не хотите раскрывать детали кошельку Лайтнинг.",
-
   "ORDER PAGE - OrderPage.js": "Order details page",
   "Order Box": "Окно ордера",
   "Contract": "Контракт",
@@ -300,7 +293,6 @@
   "Payment not received, please check your WebLN wallet.": "Платёж не получен. Пожалуйста, проверьте Ваш WebLN Кошелёк.",
   "Invoice not received, please check your WebLN wallet.": "Платёж не получен. Пожалуйста, проверьте Ваш WebLN Кошелёк.",
   "You can close now your WebLN wallet popup.": "Вы можете закрыть всплывающее окно WebLN Кошелька",
-
   "CHAT BOX - Chat.js": "Chat Box",
   "You": "Вы",
   "Peer": "Партнёр",
@@ -330,7 +322,7 @@
   "Messages": "Сообщения",
   "Verified signature by {{nickname}}": "Проверенная подпись пользователя {{nickname}}",
   "Cannot verify signature of {{nickname}}": "Не удается проверить подпись {{nickname}}",
-
+  "Activate turtle mode (Use it when the connection is slow)": "Включить режим \"черепахи\" (Используйте при низкой скорости интернета)",
   "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
   "Contract Box": "Окно контракта",
   "Robots show commitment to their peers": "Роботы демонстрируют приверженность к своим пирам",
@@ -474,7 +466,6 @@
   "Timestamp": "Временная метка",
   "Completed in": "Завершено за",
   "Contract exchange rate": "Курс обмена контракта",
-
   "INFO DIALOG - InfoDiagog.js": "App information and clarifications and terms of use",
   "Close": "Закрыть",
   "What is RoboSats?": "Что такое RoboSats?",

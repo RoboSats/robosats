@@ -6,7 +6,7 @@ sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/handshake-angle.svg"/>Contribute'
   nav: contribute
 src: "_pages/contribute/00-contribute.md"
---- 
+---
 
 RoboSats is a fully community driven project. You can help RoboSats get better in many different ways.
 

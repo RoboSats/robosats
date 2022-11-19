@@ -7,7 +7,7 @@ services:
     volumes:
       - .:/usr/src/robosats
     command: bash -c "cd /usr/src/robosats/docs/
-            && bundle install 
+            && bundle install
             && bundle exec jekyll serve --force_polling -H 0.0.0.0 -P 4000"
     ports:
       - 4000:4000
@@ -53,7 +53,7 @@ services:
     environment:
       TOR_PROXY_IP: 127.0.0.1
       TOR_PROXY_PORT: 9050
-      ROBOSATS_ONION: robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion
+      ROBOSATS_ONION: robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion
     network_mode: service:tor
     volumes:
       - ./frontend/static:/usr/src/robosats/static
@@ -105,7 +105,7 @@ services:
       - redis
     network_mode: service:tor
 
-  celery-beat:                                 
+  celery-beat:
     image: backend
     container_name: cele-beat-dev
     restart: always
@@ -174,7 +174,7 @@ services:
       - ./node/tor/data:/var/lib/tor:ro
       - ./node/tor/config:/etc/tor:ro
       - ./node/bitcoin:/home/bitcoin/.bitcoin
-  
+
   postgres:
     image: postgres:14.2-alpine
     container_name: sql-dev

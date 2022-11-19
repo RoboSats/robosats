@@ -21,7 +21,7 @@ src: "_pages/docs/tutorials/videos-en.md"
 
 #### AntonopulosL: Short Visual Explainer
 
-<blockquote class="twitter-tweet"><p lang="en" dir="ltr">ROBOSATS 🇬🇧🇺🇸 <a href="https://t.co/FmOS7rRGQX">pic.twitter.com/FmOS7rRGQX</a></p>&mdash; Antonópulos 🕵️⚡ (@AntonopulosL) <a href="https://twitter.com/AntonopulosL/status/1522582182128242688?ref_src=twsrc%5Etfw">May 6, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">ROBOSATS 🇬🇧🇺🇸 <a href="https://t.co/FmOS7rRGQX">pic.twitter.com/FmOS7rRGQX</a></p>&mdash; Antonópulos 🕵️⚡ (@AntonopulosL) <a href="https://twitter.com/AntonopulosL/status/1522582182128242688">May 6, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 #### [Read about RoboSats in BitcoinMagazine](https://bitcoinmagazine.com/business/robosats-private-bitcoin-exchange)
 

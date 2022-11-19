@@ -31,7 +31,7 @@ If buying bitcoin, then a higher premium increases the chances an order is fulfi
 In short:
 * **Positive** premium: trade BTC at an overprice with respect to the average price in centralized exchanges.
 * **Negative** premium: trade BTC at a discount with respect to the average price in centralized exchanges.
-* **Zero** premium: trade BTC at no price difference with respect to the average price in centralized exchanges. 
+* **Zero** premium: trade BTC at no price difference with respect to the average price in centralized exchanges.
 * **Relative** pricing method: let the price premium move with the bitcoin-fiat market rate.
 * **Explicit** pricing method: set a price premium using a fixed amount of satoshis.
 * **Premium Rank**: indicates how your order premium ranks among all public orders with the same currency, ranging from 0% (smallest premium) to 100% (largest premium).

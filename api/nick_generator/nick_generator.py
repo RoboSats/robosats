@@ -1,7 +1,8 @@
-from .utils import human_format
-
 import hashlib
 import time
+
+from .utils import human_format
+
 """
 Deterministic nick generator from SHA256 hash.
 
@@ -9,13 +10,12 @@ It builds Nicknames as:
 Adverb + Adjective + Noun + Numeric(0-999)
 
 With the current English dictionaries there
-is a total of to 450*4800*12500*1000 = 
+is a total of to 450*4800*12500*1000 =
 28 Trillion deterministic nicks
 """
 
 
 class NickGenerator:
-
     def __init__(
         self,
         lang="English",
@@ -32,22 +32,24 @@ class NickGenerator:
         max_num: int, max integer to be used in nick (at least 1)
         """
         if lang == "English":
-            from .dicts.en.adverbs import adverbs
             from .dicts.en.adjectives import adjectives
+            from .dicts.en.adverbs import adverbs
             from .dicts.en.nouns import nouns
         elif lang == "Spanish":
-            from .dicts.es.adverbs import adverbs
             from .dicts.es.adjectives import adjectives
+            from .dicts.es.adverbs import adverbs
             from .dicts.es.nouns import nouns
         else:
             raise ValueError("Language not implemented.")
 
         if verbose:
-            print(f"{lang} SHA256 Nick Generator initialized with:" +
-                  f"\nUp to {len(adverbs)} adverbs." +
-                  f"\nUp to {len(adjectives)} adjectives." +
-                  f"\nUp to {len(nouns)} nouns." +
-                  f"\nUp to {max_num+1} numerics.\n")
+            print(
+                f"{lang} SHA256 Nick Generator initialized with:"
+                + f"\nUp to {len(adverbs)} adverbs."
+                + f"\nUp to {len(adjectives)} adjectives."
+                + f"\nUp to {len(nouns)} nouns."
+                + f"\nUp to {max_num+1} numerics.\n"
+            )
 
         self.use_adv = use_adv
         self.use_adj = use_adj
@@ -147,10 +149,7 @@ class NickGenerator:
                 i = i + 1
         return "", 0, 0, i
 
-    def compute_pool_size_loss(self,
-                               max_length=22,
-                               max_iter=1000000,
-                               num_runs=5000):
+    def compute_pool_size_loss(self, max_length=22, max_iter=1000000, num_runs=5000):
         """
         Computes median an average loss of
         nick pool diversity due to max_lenght
@@ -196,13 +195,16 @@ if __name__ == "__main__":
 
     # Generates a short nick with length limit from SHA256
     nick, nick_id, pool_size, iterations = GenNick.short_from_SHA256(
-        hash, max_length, max_iter)
+        hash, max_length, max_iter
+    )
 
     # Output
-    print(f"Nick number {nick_id} has been selected among" +
-          f" {human_format(pool_size)} possible nicks.\n" +
-          f"Needed {iterations} iterations to find one " +
-          f"this short.\nYour nick is {nick} !\n")
+    print(
+        f"Nick number {nick_id} has been selected among"
+        + f" {human_format(pool_size)} possible nicks.\n"
+        + f"Needed {iterations} iterations to find one "
+        + f"this short.\nYour nick is {nick} !\n"
+    )
     print(f"Nick lenght is {len(nick)} characters.")
     print(f"Nick landed at height {nick_id/(pool_size+1)} on the pool.")
     print(f"Took {time.time()-t0} secs.\n")
@@ -216,9 +218,8 @@ if __name__ == "__main__":
         string = str(random.uniform(0, 1000000))
         hash = hashlib.sha256(str.encode(string)).hexdigest()
         print(
-            GenNick.short_from_SHA256(hash,
-                                      max_length=max_length,
-                                      max_iter=max_iter)[0])
+            GenNick.short_from_SHA256(hash, max_length=max_length, max_iter=max_iter)[0]
+        )
 
     # Other analysis
     GenNick.compute_pool_size_loss(max_length, max_iter, 200)

@@ -44,11 +44,11 @@ You can edit the frontend code in `/frontend/src/` to make the changes you want.
 
 **You are ready to go!** Edit the frontend code in `/frontend/src/` to make the changes you want. Within a few seconds, the `npm run dev` process will pack the code into the local `main.js`. Visit your selected {robosats-site} and you will see your new awesome frontend! :)
 
-Every time you save changes to files in `/frontend/src` you will be able to see them in your browser after a few seconds using force refresh (Ctrl+Shift+R). 
+Every time you save changes to files in `/frontend/src` you will be able to see them in your browser after a few seconds using force refresh (Ctrl+Shift+R).
 
 If you need to edit CSS or other static files in `/frontend/static`, simply add them to Requestly in the same way.
 
-i.e: index.css 
+i.e: index.css
 Make "{robosats-site}/static/css/index.css" redirect to "127.0.0.1:8080/css/index.css"
 
 # Documentation Jekyll Site Only

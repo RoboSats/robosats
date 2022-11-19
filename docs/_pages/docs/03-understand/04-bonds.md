@@ -32,7 +32,7 @@ After the trade is completed and both robots are satisfied, the maker and taker 
 
 Your wallet may take a while for funds to show as unlocked on your account balance. Some wallets have difficulty with recognizing the Lightning hold invoice as a temporary hold on your funds.
 
-If the issue persists, please reach out to the RoboSats Telegram group; but beware of scammers that may directly contact you and impersonate RoboSats staff! RoboSats staff will never directly contact you first. See [Contribute > Code > Communication Channels](https://learn.robosats.com/contribute/code/#communication-channels) for available Telegram groups. 
+If the issue persists, please reach out to the RoboSats Telegram group; but beware of scammers that may directly contact you and impersonate RoboSats staff! RoboSats staff will never directly contact you first. See [Contribute > Code > Communication Channels](https://learn.robosats.com/contribute/code/#communication-channels) for available Telegram groups.
 
 ## **Losing Your Bond**
 
@@ -53,7 +53,7 @@ If you received fiat but neglect to click "Confirm Fiat Received" on your end, t
 
 Due to the time limits involved in the order process, it is recommended to use instant fiat payment methods which help reduce the chances of losing your bond. Refer to [Best Practices > Payment Methods](https://learn.robosats.com/docs/payment-methods/) for additional information.
 
-Opening a dispute just to cancel an order is not recommended because one of the two traders will lose their fidelity bond, barring exceptional cases that are up to the discretion of the RoboSats staff. 
+Opening a dispute just to cancel an order is not recommended because one of the two traders will lose their fidelity bond, barring exceptional cases that are up to the discretion of the RoboSats staff.
 
 As a sidenote, if RoboSats suddenly vanished or was shutdown, then bonds are automatically unlocked since they technically never left your wallet.
 

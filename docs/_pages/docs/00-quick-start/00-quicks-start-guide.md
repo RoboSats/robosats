@@ -5,7 +5,7 @@ permalink: /docs/quick-start/
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/rocket.svg"/>Quick Start'
   nav: docs
---- 
+---
 RoboSats is an easy way to privately exchange Bitcoin for national currencies It simplifies the peer-to-peer experience and makes use lightning hold invoices to minimize custody and trust requirements.
 
 **Let's go!** To start using RoboSats you only need a [<i class='fa-solid fa-wallet'></i>  Lightning Wallet](/docs/wallets/) and a [TOR enabled browser](/docs/tor/).

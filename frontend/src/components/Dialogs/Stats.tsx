@@ -11,6 +11,7 @@ import {
   ListItem,
   ListItemIcon,
   Typography,
+  LinearProgress,
 } from '@mui/material';
 
 import BoltIcon from '@mui/icons-material/Bolt';
@@ -23,48 +24,24 @@ import EqualizerIcon from '@mui/icons-material/Equalizer';
 
 import { AmbossIcon, BitcoinSignIcon, RoboSatsNoTextIcon } from '../Icons';
 
-import { pn } from '../../utils/prettyNumbers';
+import { pn } from '../../utils';
+import { Info } from '../../models';
 
 interface Props {
-  isOpen: boolean;
-  handleClickCloseStatsForNerds: () => void;
-  lndVersion: string;
-  coordinatorVersion: string;
-  clientVersion: string;
-  network: string;
-  nodeAlias: string;
-  nodeId: string;
-  alternativeName: string;
-  alternativeSite: string;
-  commitHash: string;
-  lastDayVolume: number;
-  lifetimeVolume: number;
+  open: boolean;
+  onClose: () => void;
+  info: Info;
 }
 
-const StatsDialog = ({
-  isOpen,
-  handleClickCloseStatsForNerds,
-  lndVersion,
-  coordinatorVersion,
-  clientVersion,
-  network,
-  nodeAlias,
-  nodeId,
-  alternativeName,
-  alternativeSite,
-  commitHash,
-  lastDayVolume,
-  lifetimeVolume,
-}: Props): JSX.Element => {
+const StatsDialog = ({ open = false, onClose, info }: Props): JSX.Element => {
   const { t } = useTranslation();
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClickCloseStatsForNerds}
-      aria-labelledby='stats-for-nerds-dialog-title'
-      aria-describedby='stats-for-nerds-description'
-    >
+    <Dialog open={open} onClose={onClose}>
+      <div style={info.loading ? {} : { display: 'none' }}>
+        <LinearProgress />
+      </div>
+
       <DialogContent>
         <Typography component='h5' variant='h5'>
           {t('Stats For Nerds')}
@@ -80,9 +57,9 @@ const StatsDialog = ({
               />
             </ListItemIcon>
             <ListItemText
-              primary={`${t('Client')} ${clientVersion} - ${t(
-                'Coordinator',
-              )} ${coordinatorVersion}`}
+              primary={`${t('Client')} ${info.clientVersion} - ${t('Coordinator')} ${
+                info.coordinatorVersion
+              }`}
               secondary={t('RoboSats version')}
             />
           </ListItem>
@@ -93,23 +70,23 @@ const StatsDialog = ({
             <ListItemIcon>
               <BoltIcon />
             </ListItemIcon>
-            <ListItemText primary={lndVersion} secondary={t('LND version')} />
+            <ListItemText primary={info.lnd_version} secondary={t('LND version')} />
           </ListItem>
 
           <Divider />
 
-          {network === 'testnet' ? (
+          {info.network === 'testnet' ? (
             <ListItem>
               <ListItemIcon>
                 <DnsIcon />
               </ListItemIcon>
-              <ListItemText secondary={`${t('LN Node')}: ${nodeAlias}`}>
+              <ListItemText secondary={`${t('LN Node')}: ${info.node_alias}`}>
                 <Link
                   target='_blank'
-                  href={`https://1ml.com/testnet/node/${nodeId}`}
+                  href={`https://1ml.com/testnet/node/${info.node_id}`}
                   rel='noreferrer'
                 >
-                  {`${nodeId.slice(0, 12)}... (1ML)`}
+                  {`${info.node_id.slice(0, 12)}... (1ML)`}
                 </Link>
               </ListItemText>
             </ListItem>
@@ -118,9 +95,13 @@ const StatsDialog = ({
               <ListItemIcon>
                 <AmbossIcon />
               </ListItemIcon>
-              <ListItemText secondary={nodeAlias}>
-                <Link target='_blank' href={`https://amboss.space/node/${nodeId}`} rel='noreferrer'>
-                  {`${nodeId.slice(0, 12)}... (AMBOSS)`}
+              <ListItemText secondary={info.node_alias}>
+                <Link
+                  target='_blank'
+                  href={`https://amboss.space/node/${info.node_id}`}
+                  rel='noreferrer'
+                >
+                  {`${info.node_id.slice(0, 12)}... (AMBOSS)`}
                 </Link>
               </ListItemText>
             </ListItem>
@@ -132,9 +113,9 @@ const StatsDialog = ({
             <ListItemIcon>
               <WebIcon />
             </ListItemIcon>
-            <ListItemText secondary={alternativeName}>
-              <Link target='_blank' href={`http://${alternativeSite}`} rel='noreferrer'>
-                {`${alternativeSite.slice(0, 12)}...onion`}
+            <ListItemText secondary={info.alternative_name}>
+              <Link target='_blank' href={`http://${info.alternative_site}`} rel='noreferrer'>
+                {`${info.alternative_site.slice(0, 12)}...onion`}
               </Link>
             </ListItemText>
           </ListItem>
@@ -148,10 +129,10 @@ const StatsDialog = ({
             <ListItemText secondary={t('Coordinator commit hash')}>
               <Link
                 target='_blank'
-                href={`https://github.com/Reckless-Satoshi/robosats/tree/${commitHash}`}
+                href={`https://github.com/Reckless-Satoshi/robosats/tree/${info.robosats_running_commit_hash}`}
                 rel='noreferrer'
               >
-                {`${commitHash.slice(0, 12)}...`}
+                {`${info.robosats_running_commit_hash.slice(0, 12)}...`}
               </Link>
             </ListItemText>
           </ListItem>
@@ -171,7 +152,7 @@ const StatsDialog = ({
                   flexWrap: 'wrap',
                 }}
               >
-                {pn(lastDayVolume)}
+                {pn(info.last_day_volume)}
                 <BitcoinSignIcon sx={{ width: 14, height: 14 }} color={'text.secondary'} />
               </div>
             </ListItemText>
@@ -192,7 +173,7 @@ const StatsDialog = ({
                   flexWrap: 'wrap',
                 }}
               >
-                {pn(lifetimeVolume)}
+                {pn(info.lifetime_volume)}
                 <BitcoinSignIcon sx={{ width: 14, height: 14 }} color={'text.secondary'} />
               </div>
             </ListItemText>

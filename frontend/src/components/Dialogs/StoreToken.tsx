@@ -12,26 +12,17 @@ import {
   Button,
   Grid,
 } from '@mui/material';
-import { getCookie } from '../../utils/cookies';
+import { systemClient } from '../../services/System';
 import ContentCopy from '@mui/icons-material/ContentCopy';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  copyIconColor: string;
-  onClickCopy: () => void;
   onClickBack: () => void;
   onClickDone: () => void;
 }
 
-const StoreTokenDialog = ({
-  open,
-  onClose,
-  copyIconColor,
-  onClickCopy,
-  onClickBack,
-  onClickDone,
-}: Props): JSX.Element => {
+const StoreTokenDialog = ({ open, onClose, onClickBack, onClickDone }: Props): JSX.Element => {
   const { t } = useTranslation();
 
   return (
@@ -45,19 +36,23 @@ const StoreTokenDialog = ({
           )}
         </DialogContentText>
         <br />
-        <Grid align='center'>
+        <Grid container>
           <TextField
             sx={{ width: '100%', maxWidth: '550px' }}
             disabled
             label={t('Back it up!')}
-            value={getCookie('robot_token')}
+            value={systemClient.getItem('robot_token')}
             variant='filled'
             size='small'
             InputProps={{
               endAdornment: (
                 <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-                  <IconButton onClick={onClickCopy}>
-                    <ContentCopy color={copyIconColor} />
+                  <IconButton
+                    onClick={() =>
+                      systemClient.copyToClipboard(systemClient.getItem('robot_token'))
+                    }
+                  >
+                    <ContentCopy color='primary' />
                   </IconButton>
                 </Tooltip>
               ),

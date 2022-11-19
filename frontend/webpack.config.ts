@@ -38,11 +38,11 @@ const configMobile: Configuration = {
     rules: [
       ...(config?.module?.rules || []),
       {
-        test: path.resolve(__dirname, 'src/components/i18n.js'),
+        test: path.resolve(__dirname, 'src/i18n/Web.js'),
         loader: 'file-replace-loader',
         options: {
           condition: 'if-replacement-exists',
-          replacement: path.resolve(__dirname, 'src/components/i18n.Native.js'),
+          replacement: path.resolve(__dirname, 'src/i18n/Native.js'),
           async: true,
         },
       },
@@ -64,4 +64,36 @@ const configMobile: Configuration = {
   },
 };
 
-export default [configWeb, configMobile];
+const configWebPro: Configuration = {
+  ...config,
+  module: {
+    ...config.module,
+    rules: [
+      ...(config?.module?.rules || []),
+      {
+        test: path.resolve(__dirname, 'src/basic/Main.tsx'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/pro/Main.tsx'),
+          async: true,
+        },
+      },
+      {
+        test: path.resolve(__dirname, 'src/models/Settings.default.basic.ts'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/models/Settings.default.pro.ts'),
+          async: true,
+        },
+      },
+    ],
+  },
+  output: {
+    path: path.resolve(__dirname, 'static/frontend'),
+    filename: 'pro.js',
+  },
+};
+
+export default [configWeb, configWebPro, configMobile];

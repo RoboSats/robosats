@@ -7,7 +7,7 @@ toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/chalkboard-user.svg"/>Wie benutzt'
   nav: tutorial
---- 
+---
 
 RoboSats ist auf Benutzerfreundlichkeit ausgerichtet. Die Plattform ist im Prinzip selbsterklärend, so dass man sagen könnte, ein Tutorial ist wirklich nicht notwendig. Allerdings hilft es wirklich, sich beim Handel wohl zu fühlen, wenn du bereits weißt was die nächsten Schritte sind, so dass dich nichts überrascht. Schließlich sind Bitcoin-P2P-Börsen sehr einschüchternd! Keine Angst, RoboSats hält es wirklich einfach und du kannst einfach nichts falsch machen! :D
 
@@ -27,14 +27,14 @@ RoboSats begrüßt dich sofort mit deinem einzigartigen Roboter-Avatar. Der Robo
 Die Token werden in deinem eigenen Browser generiert. Wenn du jedoch der Zufälligkeit deines Rechners nicht traust, kannst du auch deinen eigenen Entropie-Token eingeben. *Beachte, dass Token mit geringer Entropie nicht gültig sind.
 
 Ich war wirklich nicht glücklich darüber, "HomelessCash" zu sein :D Also klicke ich einfach auf das Würfelsymbol, um einen neuen Token zu generieren, und tippe auf "Avatar generieren", um einen neuen zu bekommen.
- 
+
 <div align="center">
 <img src="/assets/images/how-to-use/homepage-2.png"  width="370" />
 </div>
 
-Ah, "JoyfulPain", so viel besser!! :) 
-Der Token bleibt einige Zeit im Speicher deines Browsers, du kannst ihn also später noch kopieren, indem du auf das Profilsymbol in der unteren linken Ecke tippst. Allerdings vergisst dein Browser dein Token, wenn du ihn aktualisierst oder schließt!  
- 
+Ah, "JoyfulPain", so viel besser!! :)
+Der Token bleibt einige Zeit im Speicher deines Browsers, du kannst ihn also später noch kopieren, indem du auf das Profilsymbol in der unteren linken Ecke tippst. Allerdings vergisst dein Browser dein Token, wenn du ihn aktualisierst oder schließt!
+
 <div align="center">
 <img src="/assets/images/how-to-use/homepage-3.png"  width="370" />
 </div>
@@ -95,7 +95,7 @@ Jedes Angebot hat einen Verfallszähler. In RoboSats v0.1.0 bleiben neue Angebot
 
 ### Beispiel-1: Ein Angebot als Käufer annehmen
 
-Wenn du dich für ein Angebot entschieden hast, tippe einfach auf die Schaltfläche "Take Order". Du siehst dann die Kontraktbox. Folge den Anweisungen der Kontraktbox, bis du den Handel abgeschlossen hast! :) 
+Wenn du dich für ein Angebot entschieden hast, tippe einfach auf die Schaltfläche "Take Order". Du siehst dann die Kontraktbox. Folge den Anweisungen der Kontraktbox, bis du den Handel abgeschlossen hast! :)
 
 Als erstes musst du eine kleine Kaution hinterlegen (nur {{site.robosats.default_bond_size}}% des Handelsbetrags), damit der Verkäufer weiß, dass du vertrauenswürdig bist. Die Satoshis in dieser Kaution werden einfach in deiner Wallet eingefroren. Wenn du versuchst zu betrügen oder einseitig zu kündigen, verlierst du die in der Kaution enthaltenen Satoshis.
 
@@ -109,13 +109,13 @@ Scanne oder kopiere die Invoice in deine Lightning Wallet. Sie könnte als Zahlu
 <img src="/assets/images/how-to-use/contract-box-2.png"  width="370" />
 </div>
 
-Sobald deine Kaution gesperrt ist, wird RoboSats dich bitten, eine Lightning-Invoice zu erstellen, um dir die Satoshis zu schicken. Erstelle eine Invoice mit dem genauen Betrag in deiner Lightning Wallet und schicke sie ab. 
+Sobald deine Kaution gesperrt ist, wird RoboSats dich bitten, eine Lightning-Invoice zu erstellen, um dir die Satoshis zu schicken. Erstelle eine Invoice mit dem genauen Betrag in deiner Lightning Wallet und schicke sie ab.
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-3.png"  width="370" />
 </div>
 
-Während du deine Auszahlungsinvoice einreichst, wird der Verkäufer aufgefordert, die Invoice für den Handelskredit zu sperren. Wenn Sie schneller sind als er, müssen Sie warten. Ansonsten können Sie bereits mit ihm chatten. 
+Während du deine Auszahlungsinvoice einreichst, wird der Verkäufer aufgefordert, die Invoice für den Handelskredit zu sperren. Wenn Sie schneller sind als er, müssen Sie warten. Ansonsten können Sie bereits mit ihm chatten.
 
 Es gibt ein Zeitlimit von 3 Stunden, um die Invoice einzureichen (Käufer) und das Treuhandkonto zu schließen (Verkäufer). Läuft die Zeit ab, verfällt die Bestellung und der Roboter, der sich nicht an die Vertragsverpflichtungen gehalten hat, verliert die Kaution. Dies ist ein Mechanismus, der dazu beiträgt, das Spammen von gefälschten Aufträgen, die Zeitverschwendung der Gegenparteien und das DDOSing des Auftragsbuchs zu verhindern.
 
@@ -124,7 +124,7 @@ Es gibt ein Zeitlimit von 3 Stunden, um die Invoice einzureichen (Käufer) und d
 </div>
 
 Sobald der Verkäufer die Satoshis sperrt, ist es sicher, die Fiat-Währung zu senden! Als Käufer musst du den Verkäufer nach den Details zum senden des Fiats fragen. Gib nur die unbedingt notwendigen Informationen über dich weiter, um deine Privatsphäre nicht zu gefährden. Denkt daran, dass in RoboSats v0.1.0 der Chat ohne Speicher funktioniert, so dass die Unterhaltung verloren geht, wenn ihr den Browser aktualisiert.
- 
+
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-5.png"  width="370" />
 </div>
@@ -142,13 +142,13 @@ Die Plattform zu bewerten und Tipps zur Verbesserung in unserer Telegram-Gruppe 
 ### Beispiel-2: Ein Angebot als Verkäufer aufgeben
 
 Es kann vorkommen, dass es keine aktiven Angebote für die gewünschte Position und Währung gibt. In diesem Fall gibt es keine Angebote zum VERKAUF von Bitcoin für GBP.
- 
+
 <div align="center">
 <img src="/assets/images/how-to-use/book-no-orders.png"  width="370" />
 </div>
 
-Wir können das Angebot genau so erstellen, wie wir es haben wollen. Aber denke daran, dass du ein Angebot veröffentlichen solltest, das die andere auch annehmen wollen! 
- 
+Wir können das Angebot genau so erstellen, wie wir es haben wollen. Aber denke daran, dass du ein Angebot veröffentlichen solltest, das die andere auch annehmen wollen!
+
 <div align="center">
 <img src="/assets/images/how-to-use/maker-page.png"  width="370" />
 </div>
@@ -211,7 +211,7 @@ All done!! :D
 
 ## Kollaborative Stornierung
 
-Nach der Buchung der Handelskaution und bevor der Käufer bestätigt, dass er das Fiat geschickt hat, ist es möglich, die Order zu stornieren. Es könnte ja sein, dass ihr beide doch keine gemeinsame Methode zum Senden und Empfangen von Fiat habt. Du kannst dich darauf einigen, auf die Schaltfläche " Collaborative cancel " zu tippen. Nachdem der Käufer auf die Schaltfläche "Fiat sent" (Fiat gesendet) geklickt hat, ist die einzige Möglichkeit, einen Handel zu stornieren, die Eröffnung eines Streitfalls und die Einschaltung des Teams. 
+Nach der Buchung der Handelskaution und bevor der Käufer bestätigt, dass er das Fiat geschickt hat, ist es möglich, die Order zu stornieren. Es könnte ja sein, dass ihr beide doch keine gemeinsame Methode zum Senden und Empfangen von Fiat habt. Du kannst dich darauf einigen, auf die Schaltfläche " Collaborative cancel " zu tippen. Nachdem der Käufer auf die Schaltfläche "Fiat sent" (Fiat gesendet) geklickt hat, ist die einzige Möglichkeit, einen Handel zu stornieren, die Eröffnung eines Streitfalls und die Einschaltung des Teams.
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-15.png"  width="370" />
@@ -221,7 +221,7 @@ Dies ist absolut nicht empfehlenswert, da einer der beiden Händler seine Kautio
 
 ## Rechtsstreitigkeiten
 
-Missverständnisse kommen vor. Es kann aber auch Leute geben, die versuchen, andere zu betrügen. In diesem Fall dachte *MakeshiftSource875*, er käme davon, indem er den Erhalt des Fiats nicht bestätigte und er die Satoshis behalten könnte. 
+Missverständnisse kommen vor. Es kann aber auch Leute geben, die versuchen, andere zu betrügen. In diesem Fall dachte *MakeshiftSource875*, er käme davon, indem er den Erhalt des Fiats nicht bestätigte und er die Satoshis behalten könnte.
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-16.png"  width="370" />

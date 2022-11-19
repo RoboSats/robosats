@@ -8,7 +8,7 @@ sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/fingerprint.svg"/>PGP Encryption'
   nav: docs
 src: "_pages/docs/01-best-practices/01-pgp-guide.md"
---- 
+---
 
 All comunications in RoboSats are PGP encrypted. The client app is fully transparent and offers an easy way to copy and export the PGP keys.
 
@@ -36,7 +36,7 @@ It will look like this:
     <img src="/assets/images/sensitive-data-PGP-guide/gpg-1.png" width="450"/>
 </div>
 
-You will be prompt to enter the passphrase of the private key. We use our *supersecret* robot **token** to decrypt it, you are the only one who knows the robot token. 
+You will be prompt to enter the passphrase of the private key. We use our *supersecret* robot **token** to decrypt it, you are the only one who knows the robot token.
 
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide/gpg-2.png" width="350"/>
@@ -59,7 +59,7 @@ echo "<paste_peer_public_key>" | gpg --import
     <img src="/assets/images/sensitive-data-PGP-guide/gpg-4.png" width="650"/>
 </div>
 
-We are all set. We have imported our encrypted private key and our peer's public key into GPG. So far everything seems to be right. 
+We are all set. We have imported our encrypted private key and our peer's public key into GPG. So far everything seems to be right.
 
 ### Decrypting and verifying messages with GnuPG
 #### Decrypt message
@@ -94,7 +94,7 @@ Voilà! Here it is. We can be guaranteed that:
 
 Since messages are signed by the robots keeping the log our robot token is very useful in case of a dispute. If your peer tries to cheat on you and then lies to the staff that is in charge of solving the dispute, you can prove it! It is useful to export the full chat log as Json (click export button) or, at least conserve your robot token. With those you can provide very excellent evidence that he said something different in the private chat with you.
 
-The frontend application of RoboSats that runs on your browser does the job of encrypting, decrypting an verifying every message. But in this tutorial we have independently verified it works as intended: we have verified that **only the person with access to the robot token can read (decrypt) and sign messages** during a RoboSats trade. 
+The frontend application of RoboSats that runs on your browser does the job of encrypting, decrypting an verifying every message. But in this tutorial we have independently verified it works as intended: we have verified that **only the person with access to the robot token can read (decrypt) and sign messages** during a RoboSats trade.
 
 **ProTip:** In order to independently verify that your token is absolutely secret and never sent to a third party you will need to run a HTTP request packet sniffer. You can also check by yourself the [frontend source code](https://github.com/Reckless-Satoshi/robosats/tree/main/frontend/src).
 {: .notice--secondary}

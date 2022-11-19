@@ -1,17 +1,18 @@
-from channels.generic.websocket import AsyncWebsocketConsumer
+import json
+
 from channels.db import database_sync_to_async
+from channels.generic.websocket import AsyncWebsocketConsumer
+
 from api.models import Order
 from chat.models import ChatRoom, Message
 
-import json
 
 class ChatRoomConsumer(AsyncWebsocketConsumer):
-
     @database_sync_to_async
     def allow_in_chatroom(self):
         order = Order.objects.get(id=self.order_id)
 
-        if not order.status in [Order.Status.CHA, Order.Status.FSE]:
+        if order.status not in [Order.Status.CHA, Order.Status.FSE]:
             print("Order is not in chat status")
             return False
 
@@ -22,37 +23,37 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def save_connect_user(self):
-        '''Creates or updates the ChatRoom object'''
+        """Creates or updates the ChatRoom object"""
 
         order = Order.objects.get(id=self.order_id)
 
         if order.maker == self.user:
             ChatRoom.objects.update_or_create(
-                id=self.order_id, 
-                order=order,  
+                id=self.order_id,
+                order=order,
                 room_group_name=self.room_group_name,
                 defaults={
                     "maker": self.user,
                     "maker_connected": True,
-                    }
-                )
+                },
+            )
 
         elif order.taker == self.user:
             ChatRoom.objects.update_or_create(
-                id=self.order_id, 
-                order=order,  
+                id=self.order_id,
+                order=order,
                 room_group_name=self.room_group_name,
                 defaults={
                     "taker": self.user,
                     "taker_connected": True,
-                    }
-                )
+                },
+            )
 
         return None
 
     @database_sync_to_async
     def save_new_PGP_message(self, PGP_message):
-        '''Creates a Message object'''
+        """Creates a Message object"""
 
         order = Order.objects.get(id=self.order_id)
         chatroom = ChatRoom.objects.get(order=order)
@@ -60,7 +61,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         try:
             last_message = Message.objects.filter(order=order).latest()
             index = last_message.index + 1
-        except:
+        except Exception:
             index = 1
 
         sender = self.scope["user"]
@@ -70,39 +71,33 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
             receiver = order.taker
 
         msg_obj = Message.objects.create(
-                order=order,
-                chatroom=chatroom,
-                index=index,
-                sender=sender,
-                receiver=receiver,
-                PGP_message=PGP_message,
-                )
+            order=order,
+            chatroom=chatroom,
+            index=index,
+            sender=sender,
+            receiver=receiver,
+            PGP_message=PGP_message,
+        )
         return msg_obj
 
     @database_sync_to_async
     def save_disconnect_user(self):
-        '''Creates or updates the ChatRoom object'''
-        
+        """Creates or updates the ChatRoom object"""
+
         order = Order.objects.get(id=self.order_id)
         if order.maker == self.user:
             ChatRoom.objects.update_or_create(
-                id=self.order_id, 
-                defaults={
-                    "maker_connected": False
-                    }
-                )
+                id=self.order_id, defaults={"maker_connected": False}
+            )
         elif order.taker == self.user:
             ChatRoom.objects.update_or_create(
-                id=self.order_id,
-                defaults={
-                    "taker_connected": False
-                    }
-                )
+                id=self.order_id, defaults={"taker_connected": False}
+            )
         return None
 
     @database_sync_to_async
     def is_peer_connected(self):
-        '''Returns whether the consumer's peer is connected'''
+        """Returns whether the consumer's peer is connected"""
 
         chatroom = ChatRoom.objects.get(id=self.order_id)
 
@@ -114,7 +109,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_peer_PGP_public_key(self):
-        '''Returns peer PGP public key'''
+        """Returns peer PGP public key"""
 
         order = Order.objects.get(id=self.order_id)
 
@@ -126,19 +121,21 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_all_PGP_messages(self):
-        '''Returns all PGP messages'''
+        """Returns all PGP messages"""
 
         order = Order.objects.get(id=self.order_id)
         messages = Message.objects.filter(order=order)
 
         msgs = []
         for message in messages:
-            msgs.append({
-                "index": message.index,
-                "time": str(message.created_at),
-                "message": message.PGP_message,
-                "nick": str(message.sender),
-                })
+            msgs.append(
+                {
+                    "index": message.index,
+                    "time": str(message.created_at),
+                    "message": message.PGP_message,
+                    "nick": str(message.sender),
+                }
+            )
 
         return msgs
 
@@ -152,8 +149,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
 
         if allowed:
             await self.save_connect_user()
-            await self.channel_layer.group_add(self.room_group_name,
-                                            self.channel_name)
+            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
 
             await self.accept()
 
@@ -172,13 +168,12 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         await self.save_disconnect_user()
-        await self.channel_layer.group_discard(self.room_group_name,
-                                               self.channel_name)
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 "type": "chatroom_message",
-                "message": 'peer-disconnected',
+                "message": "peer-disconnected",
                 "nick": self.scope["user"].username,
                 "peer_connected": False,
             },
@@ -188,9 +183,9 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
         peer_connected = await self.is_peer_connected()
-        
+
         # Encrypted messages are stored. They are served later when a user reconnects.
-        if message[0:27] == '-----BEGIN PGP MESSAGE-----': 
+        if message[0:27] == "-----BEGIN PGP MESSAGE-----":
             # save to database
             msg_obj = await self.save_new_PGP_message(message)
 
@@ -209,9 +204,9 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                     "peer_connected": peer_connected,
                 },
             )
-        
+
         # Encrypted messages are served when the user requests them
-        elif message[0:23] == '-----SERVE HISTORY-----': 
+        elif message[0:23] == "-----SERVE HISTORY-----":
             # If there is any stored message, serve them.
             msgs = await self.get_all_PGP_messages()
             peer_connected = await self.is_peer_connected()
@@ -220,10 +215,10 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
                     self.room_group_name,
                     {
                         "type": "PGP_message",
-                        "index": msg['index'],
-                        "time": msg['time'],
-                        "message": msg['message'],
-                        "nick": msg['nick'],
+                        "index": msg["index"],
+                        "time": msg["time"],
+                        "message": msg["message"],
+                        "nick": msg["nick"],
                         "peer_connected": peer_connected,
                     },
                 )
@@ -244,11 +239,15 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         nick = event["nick"]
         peer_connected = event["peer_connected"]
 
-        await self.send(text_data=json.dumps({
-            "message": message,
-            "user_nick": nick,
-            "peer_connected": peer_connected,
-        }))
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "message": message,
+                    "user_nick": nick,
+                    "peer_connected": peer_connected,
+                }
+            )
+        )
 
     async def PGP_message(self, event):
         message = event["message"]
@@ -257,10 +256,14 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         peer_connected = event["peer_connected"]
         time = event["time"]
 
-        await self.send(text_data=json.dumps({
-            "index": index,
-            "message": message,
-            "user_nick": nick,
-            "peer_connected": peer_connected,
-            "time":time,
-        }))
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "index": index,
+                    "message": message,
+                    "user_nick": nick,
+                    "peer_connected": peer_connected,
+                    "time": time,
+                }
+            )
+        )

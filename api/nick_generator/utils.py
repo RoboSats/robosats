@@ -1,10 +1,8 @@
-from math import log, floor
+from math import floor, log
 
 
 def human_format(number):
-    units = [
-        "", " Thousand", " Million", " Billion", " Trillion", " Quatrillion"
-    ]
+    units = ["", " Thousand", " Million", " Billion", " Trillion", " Quatrillion"]
     k = 1000.0
     magnitude = int(floor(log(number, k)))
     return "%.2f%s" % (number / k**magnitude, units[magnitude])

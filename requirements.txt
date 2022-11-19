@@ -1,4 +1,4 @@
-django==3.2.15
+django==3.2.16
 django-admin-relation-links==0.2.5
 django-celery-beat==2.2.1
 django-celery-results==2.4.0
@@ -29,3 +29,7 @@ python-gnupg==0.4.9
 daphne==3.0.2
 drf-spectacular==0.24.0
 drf-spectacular-sidecar==2022.9.1
+black==22.8.0
+isort==5.10.1
+flake8==5.0.4
+pyflakes==2.5.0

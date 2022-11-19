@@ -16,6 +16,7 @@ export interface NativeWebViewMessageHttp {
   category: 'http';
   type: 'post' | 'get' | 'put' | 'delete' | 'xhr';
   path: string;
+  baseUrl: string;
   headers?: object;
   body?: object;
 }
@@ -23,8 +24,9 @@ export interface NativeWebViewMessageHttp {
 export interface NativeWebViewMessageSystem {
   id?: number;
   category: 'system';
-  type: 'torStatus' | 'copyToClipboardString';
-  detail: string;
+  type: 'init' | 'torStatus' | 'copyToClipboardString' | 'setCookie' | 'deleteCookie';
+  key?: string;
+  detail?: string;
 }
 
 export declare type NativeWebViewMessage = NativeWebViewMessageHttp | NativeWebViewMessageSystem;

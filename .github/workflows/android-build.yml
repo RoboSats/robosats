@@ -1,4 +1,4 @@
-name: Android Build
+name: "Build: Android"
 on:
   workflow_dispatch:
   workflow_call:
@@ -16,7 +16,7 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - name: 'Checkout'
         uses: actions/checkout@v3
 
@@ -41,19 +41,23 @@ jobs:
           cd mobile
           npm install
 
+      - name: 'Patch modules' # react-native-tor and react-native-encrypted-storage rely on deprecated jcenter repositories. We patch the modules temporarily
+        run: |
+          cd mobile
+          cp -r patch_modules/* node_modules/
       - uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 11
-          
+
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: 'Build Android Debug'
-        if: inputs.semver == ''  # Only build debug if this is a pre-release
-        run: |
-          cd mobile/android
-          ./gradlew assembleDebug
+      # - name: 'Build Android Debug'
+      #   if: inputs.semver == ''  # Only build debug if this is a pre-release
+      #   run: |
+      #     cd mobile/android
+      #     ./gradlew assembleDebug
 
       - name: 'Build Android Release'
         run: |
@@ -78,12 +82,12 @@ jobs:
           name: robosats-${{ steps.commit.outputs.short }}.apk
           path: mobile/android/app/build/outputs/apk/release/app-release.apk
 
-      - name: 'Upload .apk Debug Artifact (for Pre-release)'
-        if: inputs.semver == ''  # Only build debug if this is a pre-release
-        uses: actions/upload-artifact@v3
-        with:
-          name: robosats-debug-${{ steps.commit.outputs.short }}.apk
-          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+      # - name: 'Upload .apk Debug Artifact (for Pre-release)'
+      #   if: inputs.semver == ''  # Only build debug if this is a pre-release
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: robosats-debug-${{ steps.commit.outputs.short }}.apk
+      #     path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: 'Create Pre-release'
         id: create_release
@@ -99,7 +103,7 @@ jobs:
           prerelease: true
 
       - name: 'Upload Pre-release APK Release Asset'
-        id: upload-release-apk-asset 
+        id: upload-release-apk-asset
         if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
         uses: actions/upload-release-asset@v1
         env:
@@ -110,14 +114,14 @@ jobs:
           asset_name: robosats-${{ steps.commit.outputs.short }}.apk
           asset_content_type: application/apk
 
-      - name: 'Upload Pre-release APK Debug Asset'
-        id: upload-debug-apk-asset 
-        if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./mobile/android/app/build/outputs/apk/debug/app-debug.apk
-          asset_name: robosats-debug-${{ steps.commit.outputs.short }}.apk
-          asset_content_type: application/apk
+      # - name: 'Upload Pre-release APK Debug Asset'
+      #   id: upload-debug-apk-asset
+      #   if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./mobile/android/app/build/outputs/apk/debug/app-debug.apk
+      #     asset_name: robosats-debug-${{ steps.commit.outputs.short }}.apk
+      #     asset_content_type: application/apk

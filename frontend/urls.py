@@ -1,10 +1,15 @@
 from django.urls import path
-from .views import index
+
+from .views import basic, pro
 
 urlpatterns = [
-    path("make/", index),
-    path("book/", index),
-    path("order/<int:orderId>", index),
-    path("", index),
-    path("ref/<refCode>", index),
+    path("", basic),
+    path("create/", basic),
+    path("robot/", basic),
+    path("robot/<refCode>", basic),
+    path("offers/", basic),
+    path("order/<int:orderId>", basic),
+    path("settings/", basic),
+    path("", basic),
+    path("pro/", pro),
 ]

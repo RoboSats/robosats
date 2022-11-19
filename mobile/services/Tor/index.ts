@@ -1,18 +1,16 @@
 import Tor from 'react-native-tor';
 
 class TorClient {
-  baseUrl: string;
   daemon: ReturnType<typeof Tor>;
 
   constructor() {
-    this.baseUrl = 'http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion';
     this.daemon = Tor({
       stopDaemonOnBackground: false,
       numberConcurrentRequests: 0,
     });
   }
 
-  private connectDaemon: () => void = async () => {
+  private readonly connectDaemon: () => void = async () => {
     try {
       this.daemon.startIfNotStarted();
     } catch {
@@ -20,41 +18,52 @@ class TorClient {
     }
   };
 
-  public get: (path: string) => Promise<object> = async (path) => {
-    await this.connectDaemon();
+  public reset: () => void = async () => {
+    console.log('Reset TOR');
+    await this.daemon.stopIfRunning();
+    await this.daemon.startIfNotStarted();
+  };
 
+  public get: (baseUrl: string, path: string, headers: object) => Promise<object> = async (
+    baseUrl,
+    path,
+    headers,
+  ) => {
     return await new Promise<object>(async (resolve, reject) => {
       try {
-        const response = await this.daemon.get(`${this.baseUrl}${path}`);
+        const response = await this.daemon.get(`${baseUrl}${path}`, headers);
 
-        resolve(response.json);
+        resolve(response);
       } catch (error) {
         reject(error);
       }
     });
   };
 
-  public delete: (path: string, headers: object) => Promise<object> = async (path, headers) => {
-    await this.connectDaemon();
-
+  public delete: (baseUrl: string, path: string, headers: object) => Promise<object> = async (
+    baseUrl,
+    path,
+    headers,
+  ) => {
     return await new Promise<object>(async (resolve, reject) => {
       try {
-        const response = await this.daemon.delete(`${this.baseUrl}${path}`, '', headers);
+        const response = await this.daemon.delete(`${baseUrl}${path}`, '', headers);
 
-        resolve(response.json);
+        resolve(response);
       } catch (error) {
         reject(error);
       }
     });
   };
 
-  public request: (path: string) => Promise<object> = async (path) => {
-    await this.connectDaemon();
-
+  public request: (baseUrl: string, path: string) => Promise<object> = async (
+    baseUrl: string,
+    path,
+  ) => {
     return await new Promise<object>(async (resolve, reject) => {
       try {
         const response = await this.daemon
-          .request(`${this.baseUrl}${path}`, 'GET', '', {}, true)
+          .request(`${baseUrl}${path}`, 'GET', '', {}, true)
           .then((resp) => {
             resolve(resp);
           });
@@ -66,26 +75,19 @@ class TorClient {
     });
   };
 
-  public post: (path: string, body: object, headers: object) => Promise<object> = async (
-    path,
-    body,
-    headers,
-  ) => {
-    await this.connectDaemon();
+  public post: (baseUrl: string, path: string, body: object, headers: object) => Promise<object> =
+    async (baseUrl, path, body, headers) => {
+      return await new Promise<object>(async (resolve, reject) => {
+        try {
+          const json = JSON.stringify(body);
+          const response = await this.daemon.post(`${baseUrl}${path}`, json, headers);
 
-    return await new Promise<object>(async (resolve, reject) => {
-      try {
-        const json = JSON.stringify(body);
-        const response = await this.daemon.post(`${this.baseUrl}${path}`, json, headers);
-
-        resolve(response.json);
-      } catch (error) {
-        reject(error);
-      }
-    });
-  };
+          resolve(response);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    };
 }
-
-export const torClient = new TorClient();
 
 export default TorClient;
