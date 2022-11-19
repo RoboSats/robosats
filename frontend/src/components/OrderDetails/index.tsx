@@ -303,26 +303,29 @@ const OrderDetails = ({
         </List>
 
         {/* If the user has a penalty/limit */}
-        <Collapse in={order.penalty !== undefined}>
-          <Divider />
+        {order.penalty !== undefined ? (
           <Grid item xs={12}>
-            <Alert severity='warning' sx={{ maxWidth: 360 }}>
+            <Alert severity='warning' sx={{ borderRadius: '0' }}>
               <Countdown date={new Date(order.penalty)} renderer={countdownPenaltyRenderer} />
             </Alert>
           </Grid>
-        </Collapse>
-      </Grid>
+        ) : (
+          <></>
+        )}
 
-      <Grid item xs={12}>
-        <Collapse in={!order.is_participant}>
-          <TakeButton
-            order={order}
-            setOrder={setOrder}
-            baseUrl={baseUrl}
-            setPage={setPage}
-            hasRobot={hasRobot}
-          />
-        </Collapse>
+        {!order.is_participant ? (
+          <Grid item xs={12}>
+            <TakeButton
+              order={order}
+              setOrder={setOrder}
+              baseUrl={baseUrl}
+              setPage={setPage}
+              hasRobot={hasRobot}
+            />
+          </Grid>
+        ) : (
+          <></>
+        )}
       </Grid>
     </Grid>
   );

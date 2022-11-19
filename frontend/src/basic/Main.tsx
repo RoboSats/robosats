@@ -304,7 +304,12 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         baseUrl={baseUrl}
         onLoad={() => setRobot({ ...robot, avatarLoaded: true })}
       />
-      <Notifications order={order} rewards={robot.earnedRewards} />
+      <Notifications
+        order={order}
+        rewards={robot.earnedRewards}
+        setPage={setPage}
+        windowWidth={windowSize.width}
+      />
       {settings.network === 'testnet' ? (
         <div style={{ height: 0 }}>
           <Typography color='secondary' align='center'>

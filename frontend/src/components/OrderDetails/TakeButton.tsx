@@ -78,25 +78,16 @@ const TakeButton = ({
   };
 
   const countdownTakeOrderRenderer = function ({ seconds, completed }) {
-    if (isNaN(seconds)) {
-      return takeOrderButton();
-    }
-    if (completed) {
-      // Render a completed state
+    if (isNaN(seconds) || completed) {
       return takeOrderButton();
     } else {
       return (
         <Tooltip enterTouchDelay={0} title={t('Wait until you can take an order')}>
-          <div>
-            <LoadingButton
-              loading={loadingTake}
-              disabled={true}
-              variant='contained'
-              color='primary'
-            >
+          <Grid container sx={{ width: '100%' }} padding={1} justifyContent='center'>
+            <LoadingButton loading={loadingTake} disabled={true} variant='outlined' color='primary'>
               {t('Take Order')}
             </LoadingButton>
-          </div>
+          </Grid>
         </Tooltip>
       );
     }
@@ -111,9 +102,9 @@ const TakeButton = ({
   };
 
   const amountHelperText = function () {
-    if (takeAmount < order.min_amount && takeAmount != '') {
+    if (Number(takeAmount) < Number(order.min_amount) && takeAmount != '') {
       return t('Too low');
-    } else if (takeAmount > order.max_amount && takeAmount != '') {
+    } else if (Number(takeAmount) > Number(order.max_amount) && takeAmount != '') {
       return t('Too high');
     } else {
       return null;
@@ -130,8 +121,8 @@ const TakeButton = ({
 
   const invalidTakeAmount = function () {
     return (
-      takeAmount < order.min_amount ||
-      takeAmount > order.max_amount ||
+      Number(takeAmount) < Number(order.min_amount) ||
+      Number(takeAmount) > Number(order.max_amount) ||
       takeAmount == '' ||
       takeAmount == null
     );
@@ -152,7 +143,7 @@ const TakeButton = ({
             },
           }}
         >
-          <Grid container direction='row' alignItems='stretch' justifyContent='center'>
+          <Grid container direction='row' alignItems='flex-start' justifyContent='space-evenly'>
             <Grid item>
               <Tooltip
                 placement='top'
@@ -163,7 +154,8 @@ const TakeButton = ({
               >
                 <TextField
                   error={
-                    (takeAmount < order.min_amount || takeAmount > order.max_amount) &&
+                    (Number(takeAmount) < Number(order.min_amount) ||
+                      Number(takeAmount) > Number(order.max_amount)) &&
                     takeAmount != ''
                   }
                   helperText={amountHelperText()}
@@ -197,7 +189,7 @@ const TakeButton = ({
                   <div>
                     <LoadingButton
                       loading={loadingTake}
-                      sx={{ height: '2.71em' }}
+                      sx={{ height: '2.8em' }}
                       variant='outlined'
                       color='primary'
                       disabled={true}
@@ -214,7 +206,8 @@ const TakeButton = ({
               >
                 <LoadingButton
                   loading={loadingTake}
-                  variant='contained'
+                  sx={{ height: '2.8em' }}
+                  variant='outlined'
                   color='primary'
                   onClick={onTakeOrderClicked}
                 >

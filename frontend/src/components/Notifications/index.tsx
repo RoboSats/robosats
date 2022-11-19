@@ -4,19 +4,21 @@ import {
   Tooltip,
   Alert,
   useTheme,
-  Box,
-  Collapse,
   IconButton,
   TooltipProps,
   styled,
   tooltipClasses,
 } from '@mui/material';
+import { useHistory } from 'react-router-dom';
 import { Order } from '../../models';
 import Close from '@mui/icons-material/Close';
+import { Page } from '../../basic/NavBar';
 
 interface NotificationsProps {
   order: Order | undefined;
   rewards: number | undefined;
+  setPage: (state: Page) => void;
+  windowWidth: number;
 }
 
 interface NotificationMessage {
@@ -53,34 +55,89 @@ const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
   },
 }));
 
-const Notifications = ({ order, rewards }: NotificationsProps): JSX.Element => {
+const Notifications = ({
+  order,
+  rewards,
+  setPage,
+  windowWidth,
+}: NotificationsProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const history = useHistory();
 
-  const [lastOrderStatus, setLastOrderStatus] = useState<number>(0);
+  const [lastOrderStatus, setLastOrderStatus] = useState<number | undefined>(undefined);
   const [lastRewards, setLastRewards] = useState<number>(0);
   const [message, setMessage] = useState<NotificationMessage>(emptyNotificationMessage);
-  const [show, setShow] = useState<boolean>(true);
+  const [show, setShow] = useState<boolean>(false);
+
+  const position = windowWidth > 60 ? { top: '4em', right: '0em' } : { top: '0.5em', left: '50%' };
 
   interface MessagesProps {
+    bondLocked: NotificationMessage;
+    escrowLocked: NotificationMessage;
     taken: NotificationMessage;
   }
+  const moveToOrderPage = function () {
+    setPage('order');
+    history.push(`/order/${order?.id}`);
+  };
 
   const Messages: MessagesProps = {
+    bondLocked: {
+      title: t(`${order?.is_maker ? 'Maker' : 'Taker'} bond locked!`),
+      severity: 'success',
+      onClick: moveToOrderPage,
+      sound: audio.lockedInvoice,
+      timeout: 10000,
+    },
+    escrowLocked: {
+      title: t(`Order collateral locked!`),
+      severity: 'success',
+      onClick: moveToOrderPage,
+      sound: audio.lockedInvoice,
+      timeout: 10000,
+    },
     taken: {
       title: t('Order has been taken!'),
       severity: 'success',
-      onClick: () => null,
+      onClick: moveToOrderPage,
       sound: audio.takerFound,
-      timeout: 15000,
+      timeout: 30000,
     },
   };
 
-  const handleStatusChange = function (lastStatus: number, status: number) {
+  const handleStatusChange = function (lastStatus: number | undefined, status: number) {
     let message = emptyNotificationMessage;
-    if (status > 5 && lastStatus < 5) {
+    if (lastStatus == undefined) {
+      return null;
+      // 0: 'Waiting for maker bond'
+      // 1: 'Public'
+      // 2: 'Paused'
+      // 3: 'Waiting for taker bond'
+      // 5: 'Expired'
+      // 6: 'Waiting for trade collateral and buyer invoice'
+      // 7: 'Waiting only for seller trade collateral'
+      // 8: 'Waiting only for buyer invoice'
+      // 9: 'Sending fiat - In chatroom'
+      // 10: 'Fiat sent - In chatroom'
+      // 11: 'In dispute'
+      // 12: 'Collaboratively cancelled'
+      // 13: 'Sending satoshis to buyer'
+      // 14: 'Sucessful trade'
+      // 15: 'Failed lightning network routing'
+      // 16: 'Wait for dispute resolution'
+      // 17: 'Maker lost dispute'
+      // 18: 'Taker lost dispute'
+    } else if (order?.is_maker && status > 0 && lastStatus == 0) {
+      message = Messages.bondLocked;
+    } else if (order?.is_taker && status > 5 && lastStatus <= 5) {
+      message = Messages.bondLocked;
+    } else if (order?.is_maker && status > 5 && lastStatus <= 5) {
       message = Messages.taken;
+    } else if (order?.is_seller && status > 7 && lastStatus < 7) {
+      message = Messages.escrowLocked;
     } else if (status > 10) {
+      message = emptyNotificationMessage;
     }
 
     setMessage(message);
@@ -100,9 +157,9 @@ const Notifications = ({ order, rewards }: NotificationsProps): JSX.Element => {
 
   return (
     <StyledTooltip
-      open={show}
+      open={show && message.title != ''}
       style={{ padding: 0, backgroundColor: 'black' }}
-      placement='left'
+      placement={windowWidth > 60 ? 'left' : 'bottom'}
       title={
         <Alert
           severity={message.severity}
@@ -118,13 +175,13 @@ const Notifications = ({ order, rewards }: NotificationsProps): JSX.Element => {
             </IconButton>
           }
         >
-          <div style={{ cursor: 'pointer' }} onClick={() => console.log('CLICKED')}>
+          <div style={{ cursor: 'pointer' }} onClick={message.onClick}>
             {message.title}
           </div>
         </Alert>
       }
     >
-      <div style={{ visibility: 'hidden', position: 'absolute', top: '4em', right: '0em' }} />
+      <div style={{ ...position, visibility: 'hidden', position: 'absolute' }} />
     </StyledTooltip>
   );
 };
