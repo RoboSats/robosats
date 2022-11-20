@@ -150,8 +150,8 @@ export const SuccessfulPrompt = ({
         </Alert>
       </Collapse>
 
-      <Grid item container spacing={3}>
-        <Grid item xs={order.is_maker ? 6 : 12}>
+      <Grid item container alignItems='center' justifyContent='space-evenly'>
+        <Grid item>
           <Button color='primary' variant='outlined' onClick={onClickStartAgain}>
             <RocketLaunch />
             {t('Start Again')}
@@ -159,7 +159,7 @@ export const SuccessfulPrompt = ({
         </Grid>
 
         {order.is_maker ? (
-          <Grid item xs={6}>
+          <Grid item>
             <LoadingButton
               color='primary'
               variant='outlined'
@@ -172,18 +172,21 @@ export const SuccessfulPrompt = ({
           </Grid>
         ) : null}
       </Grid>
+
       {order.platform_summary ? (
-        <TradeSummary
-          isMaker={order.is_maker}
-          makerNick={order.maker_nick}
-          takerNick={order.taker_nick}
-          currencyCode={currencyCode}
-          makerSummary={order.maker_summary}
-          takerSummary={order.taker_summary}
-          platformSummary={order.platform_summary}
-          orderId={order.id}
-          baseUrl={baseUrl}
-        />
+        <Grid item>
+          <TradeSummary
+            isMaker={order.is_maker}
+            makerNick={order.maker_nick}
+            takerNick={order.taker_nick}
+            currencyCode={currencyCode}
+            makerSummary={order.maker_summary}
+            takerSummary={order.taker_summary}
+            platformSummary={order.platform_summary}
+            orderId={order.id}
+            baseUrl={baseUrl}
+          />
+        </Grid>
       ) : (
         <></>
       )}

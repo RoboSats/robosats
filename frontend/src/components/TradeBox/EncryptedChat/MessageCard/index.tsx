@@ -59,7 +59,7 @@ const MessageCard: React.FC<Props> = ({ message, isTaker, userConnected, baseUrl
                 flexWrap: 'wrap',
                 position: 'relative',
                 left: '-0.35em',
-                width: '17.14em',
+                width: '100%',
               }}
             >
               <div
@@ -129,9 +129,7 @@ const MessageCard: React.FC<Props> = ({ message, isTaker, userConnected, baseUrl
         subheaderTypographyProps={{
           sx: {
             wordWrap: 'break-word',
-            width: '14.3em',
-            position: 'relative',
-            right: '1.5em',
+            width: '13em',
             textAlign: 'left',
             fontSize: showPGP ? theme.typography.fontSize * 0.78 : null,
           },

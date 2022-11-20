@@ -306,6 +306,8 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
       />
       <Notifications
         order={order}
+        page={page}
+        openProfile={() => setOpen({ ...closeAll, profile: true })}
         rewards={robot.earnedRewards}
         setPage={setPage}
         windowWidth={windowSize.width}

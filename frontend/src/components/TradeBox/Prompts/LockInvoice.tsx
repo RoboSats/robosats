@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Grid, Typography, TextField, Tooltip, useTheme } from '@mui/material';
+import { Button, Box, Grid, Typography, TextField, Tooltip, useTheme } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
 import QRCode from 'react-qr-code';
 import { Order } from '../../../models';
@@ -56,13 +56,32 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
       alignItems='center'
       spacing={0.5}
     >
+      {order.is_taker && concept == 'bond' ? (
+        <Grid item xs={12}>
+          <Typography color='primary'>
+            {t(`You are ${order.is_buyer ? 'BUYING' : 'SELLING'} BTC`)}
+          </Typography>
+        </Grid>
+      ) : (
+        <></>
+      )}
+
       <Grid item xs={12}>
         {concept === 'bond' ? <WalletsButton /> : <ExpirationWarning />}
       </Grid>
 
       <Grid item xs={12}>
         <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-          <div>
+          <Box
+            sx={{
+              display: 'flex',
+              backgroundColor: theme.palette.background.paper,
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.5em',
+              borderRadius: '0.3em',
+            }}
+          >
             <QRCode
               bgColor={'rgba(255, 255, 255, 0)'}
               fgColor={theme.palette.text.primary}
@@ -72,7 +91,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
                 systemClient.copyToClipboard(invoice);
               }}
             />
-          </div>
+          </Box>
         </Tooltip>
       </Grid>
       <Grid item xs={12}>

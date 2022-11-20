@@ -276,8 +276,8 @@ const EncryptedSocketChat: React.FC<Props> = ({
           />
         </Paper>
         <form noValidate onSubmit={onButtonClicked}>
-          <Grid alignItems='stretch' style={{ display: 'flex' }}>
-            <Grid item alignItems='stretch' style={{ display: 'flex' }}>
+          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%' }}>
+            <Grid item alignItems='stretch' style={{ display: 'flex' }} xs={9}>
               <TextField
                 label={t('Type a message')}
                 variant='standard'
@@ -293,12 +293,12 @@ const EncryptedSocketChat: React.FC<Props> = ({
                 onChange={(e) => {
                   setValue(e.target.value);
                 }}
-                sx={{ width: '13.7em' }}
+                fullWidth={true}
               />
             </Grid>
-            <Grid item alignItems='stretch' style={{ display: 'flex' }}>
+            <Grid item alignItems='stretch' style={{ display: 'flex' }} xs={3}>
               <Button
-                sx={{ width: '4.68em' }}
+                fullWidth={true}
                 disabled={!connected || waitingEcho || !peerPubKey}
                 type='submit'
                 variant='contained'

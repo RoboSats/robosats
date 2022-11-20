@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid, Typography, TextField, List, Divider, ListItemText, ListItem } from '@mui/material';
 import { Order } from '../../../models';
@@ -14,7 +14,7 @@ export interface OnchainForm {
 
 export const defaultOnchain: OnchainForm = {
   address: '',
-  miningFee: 141,
+  miningFee: 10,
   badAddress: '',
 };
 
@@ -34,10 +34,23 @@ export const OnchainPayoutForm = ({
   setOnchain,
 }: OnchainPayoutFormProps): JSX.Element => {
   const { t } = useTranslation();
-  const invalidFee = onchain.miningFee < 1 || onchain.miningFee > 50;
 
+  const invalidFee = onchain.miningFee < 1 || onchain.miningFee > 50;
+  const costPerVByte = 141;
+
+  useEffect(() => {
+    setOnchain({ ...onchain, miningFee: order.suggested_mining_fee_rate });
+  }, []);
+
+  console.log(onchain.badAddress);
   return (
-    <>
+    <Grid
+      container
+      direction='column'
+      justifyContent='flex-start'
+      alignItems='center'
+      spacing={0.5}
+    >
       <List dense={true}>
         <ListItem>
           <Typography variant='body2'>
@@ -64,7 +77,7 @@ export const OnchainPayoutForm = ({
         <ListItem>
           <ListItemText
             primary={
-              pn(Math.floor(Math.max(1, onchain.miningFee) * defaultOnchain.miningFee)) +
+              pn(Math.floor(Math.max(1, onchain.miningFee) * costPerVByte)) +
               ' Sats (' +
               Math.max(1, onchain.miningFee) +
               ' Sats/vByte)'
@@ -82,7 +95,7 @@ export const OnchainPayoutForm = ({
                 {pn(
                   Math.floor(
                     order.invoice_amount -
-                      Math.max(1, onchain.miningFee) * defaultOnchain.miningFee -
+                      Math.max(1, onchain.miningFee) * costPerVByte -
                       (order.invoice_amount * order.swap_fee_rate) / 100,
                   ),
                 ) + ' Sats'}
@@ -91,50 +104,56 @@ export const OnchainPayoutForm = ({
             secondary={t('Final amount you will receive')}
           />
         </ListItem>
-
-        <ListItem>
-          <TextField
-            error={onchain.badAddress != ''}
-            helperText={onchain.badAddress ? t(onchain.badAddress) : ''}
-            label={t('Bitcoin Address')}
-            required
-            value={onchain.address}
-            sx={{ width: '12.14em' }}
-            inputProps={{
-              style: { textAlign: 'center' },
-            }}
-            onChange={(e) => setOnchain({ ...onchain, address: e.target.value })}
-          />
-          <TextField
-            error={invalidFee}
-            helperText={invalidFee ? t('Invalid') : ''}
-            label={t('Mining Fee')}
-            required
-            sx={{ width: '7.85em' }}
-            value={onchain.miningFee}
-            type='number'
-            inputProps={{
-              max: 50,
-              min: 1,
-              style: { textAlign: 'center' },
-            }}
-            onChange={(e) => setOnchain({ ...onchain, miningFee: Number(e.target.value) })}
-          />
-        </ListItem>
       </List>
 
-      <Grid item xs={12}>
+      <Grid item>
+        <Grid container direction='row' justifyContent='center' alignItems='flex-start' spacing={0}>
+          <Grid item xs={7}>
+            <TextField
+              error={onchain.badAddress != ''}
+              helperText={onchain.badAddress ? t(onchain.badAddress) : ''}
+              label={t('Bitcoin Address')}
+              required
+              value={onchain.address}
+              fullWidth={true}
+              inputProps={{
+                style: { textAlign: 'center' },
+              }}
+              onChange={(e) => setOnchain({ ...onchain, address: e.target.value })}
+            />
+          </Grid>
+          <Grid item xs={5}>
+            <TextField
+              error={invalidFee}
+              helperText={invalidFee ? t('Invalid') : ''}
+              label={t('Mining Fee')}
+              required
+              fullWidth={true}
+              value={onchain.miningFee}
+              type='number'
+              inputProps={{
+                max: 50,
+                min: 1,
+                style: { textAlign: 'center' },
+              }}
+              onChange={(e) => setOnchain({ ...onchain, miningFee: Number(e.target.value) })}
+            />
+          </Grid>
+        </Grid>
+      </Grid>
+
+      <Grid item>
         <LoadingButton
           loading={loading}
           onClick={onClickSubmit}
           disabled={invalidFee}
-          variant='contained'
+          variant='outlined'
           color='primary'
         >
           {t('Submit')}
         </LoadingButton>
       </Grid>
-    </>
+    </Grid>
   );
 };
 

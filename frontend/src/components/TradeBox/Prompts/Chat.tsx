@@ -57,8 +57,9 @@ export const ChatPrompt = ({
     // open dispute button enables 12h before expiry
     const now = Date.now();
     const expires_at = new Date(order.expires_at);
+    expires_at.setHours(expires_at.getHours() - 12);
     setEnableDisputeButton(now > expires_at);
-    setEnableDisputeTime(expires_at.getHours() - 12);
+    setEnableDisputeTime(expires_at);
 
     if (order.status == 9) {
       // No fiat sent yet
@@ -134,39 +135,51 @@ export const ChatPrompt = ({
           disableHoverListener={enableDisputeButton}
           disableTouchListener={enableDisputeButton}
           enterTouchDelay={0}
-          title={<Countdown date={enableDisputeTime} renderer={disputeCountdownRenderer} />}
+          title={
+            <Countdown date={new Date(enableDisputeTime)} renderer={disputeCountdownRenderer} />
+          }
         >
-          <LoadingButton
-            loading={loadingDispute}
-            disabled={!enableDisputeButton}
-            color='inherit'
-            onClick={onClickDispute}
-          >
-            {t('Open Dispute')}
-          </LoadingButton>
+          <div>
+            <LoadingButton
+              loading={loadingDispute}
+              disabled={!enableDisputeButton}
+              color='inherit'
+              onClick={onClickDispute}
+            >
+              {t('Open Dispute')}
+            </LoadingButton>
+          </div>
         </Tooltip>
       </Grid>
-      <Grid item>
-        <Collapse in={sentButton}>
-          <LoadingButton
-            loading={loadingSent}
-            variant='contained'
-            color='secondary'
-            onClick={onClickConfirmSent}
-          >
-            {t('Confirm {{amount}} {{currencyCode}} sent', { currencyCode, amount })}
-          </LoadingButton>
-        </Collapse>
-        <Collapse in={receivedButton}>
-          <LoadingButton
-            loading={loadingReceived}
-            variant='contained'
-            color='secondary'
-            onClick={onClickConfirmReceived}
-          >
-            {t('Confirm {{amount}} {{currencyCode}} received', { currencyCode, amount })}
-          </LoadingButton>
-        </Collapse>
+      <Grid item padding={0.5}>
+        {sentButton ? (
+          <Collapse in={sentButton}>
+            <LoadingButton
+              loading={loadingSent}
+              variant='contained'
+              color='secondary'
+              onClick={onClickConfirmSent}
+            >
+              {t('Confirm {{amount}} {{currencyCode}} sent', { currencyCode, amount })}
+            </LoadingButton>
+          </Collapse>
+        ) : (
+          <></>
+        )}
+        {receivedButton ? (
+          <Collapse in={receivedButton}>
+            <LoadingButton
+              loading={loadingReceived}
+              variant='contained'
+              color='secondary'
+              onClick={onClickConfirmReceived}
+            >
+              {t('Confirm {{amount}} {{currencyCode}} received', { currencyCode, amount })}
+            </LoadingButton>
+          </Collapse>
+        ) : (
+          <></>
+        )}
       </Grid>
     </Grid>
   );

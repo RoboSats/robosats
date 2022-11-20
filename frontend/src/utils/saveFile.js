@@ -4,7 +4,6 @@
  */
 
 const saveAsJson = (filename, dataObjToWrite) => {
-  console.log(filename, dataObjToWrite);
   const blob = new Blob([JSON.stringify(dataObjToWrite, null, 2)], { type: 'text/json' });
   const link = document.createElement('a');
 

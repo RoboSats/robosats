@@ -165,15 +165,13 @@ const TradeBox = ({
         setOpen(closeAll);
         setLoadingButtons({ ...noLoadingButtons });
         if (data.bad_request) {
-          if (action == 'update_invoice') {
-            setLightning({ ...lightning, badInvoice: data.bad_request });
-          } else if (action == 'update_address') {
-            setOnchain({ ...onchain, badAddress: data.bad_request });
-          } else if (action == 'submit_statement') {
-            setDispute({ ...dispute, badStatement: data.bad_request });
-          } else {
-            setBadOrder(data.bad_request);
-          }
+          setBadOrder(data.bad_request);
+        } else if (data.bad_address) {
+          setOnchain({ ...onchain, badAddress: data.bad_address });
+        } else if (data.bad_invoice) {
+          setLightning({ ...lightning, badInvoice: data.bad_invoice });
+        } else if (data.bad_statement) {
+          setDispute({ ...dispute, badStatement: data.bad_statement });
         } else {
           setOrder({ ...order, ...data });
           setBadOrder(undefined);
