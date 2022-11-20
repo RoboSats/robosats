@@ -27,10 +27,17 @@ export const Title = ({
   let textColor = color;
   if (color == 'warning') {
     textColor = theme.palette.warning.main;
+  } else if (color == 'success') {
+    textColor = theme.palette.success.main;
   }
 
   return (
-    <Typography color={textColor} variant='subtitle1' align='center'>
+    <Typography
+      color={textColor}
+      variant='subtitle1'
+      align='center'
+      style={{ display: 'flex', alignItems: 'center' }}
+    >
       {icon()}
       <b>{t(text, variables)}</b> {stepXofY(order)}
       {icon()}

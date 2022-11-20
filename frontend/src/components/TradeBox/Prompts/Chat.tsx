@@ -115,6 +115,7 @@ export const ChatPrompt = ({
 
       <Grid item>
         <EncryptedChat
+          status={order.status}
           chatOffset={order.chat_last_index}
           orderId={order.id}
           takerNick={order.taker_nick}

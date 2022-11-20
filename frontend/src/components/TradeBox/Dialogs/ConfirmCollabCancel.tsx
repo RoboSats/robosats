@@ -8,9 +8,11 @@ import {
   DialogContentText,
   Button,
 } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
 
 interface ConfirmCollabCancelDialogProps {
   open: boolean;
+  loading: Boolean;
   onClose: () => void;
   onCollabCancelClick: () => void;
   peerAskedCancel: boolean;
@@ -18,6 +20,7 @@ interface ConfirmCollabCancelDialogProps {
 
 export const ConfirmCollabCancelDialog = ({
   open,
+  loading,
   onClose,
   onCollabCancelClick,
   peerAskedCancel,
@@ -32,16 +35,16 @@ export const ConfirmCollabCancelDialog = ({
           {t(
             'The trade escrow has been posted. The order can be cancelled only if both, maker and taker, agree to cancel.',
           )}
-          {peerAskedCancel ? t('Your peer has asked for cancellation') : ''}
+          {peerAskedCancel ? ` ${t('Your peer has asked for cancellation')}` : ''}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} autoFocus>
           {t('Go back')}
         </Button>
-        <Button onClick={onCollabCancelClick}>
+        <LoadingButton loading={loading} onClick={onCollabCancelClick}>
           {peerAskedCancel ? t('Accept Cancelation') : t('Ask for Cancel')}
-        </Button>
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );

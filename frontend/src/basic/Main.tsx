@@ -263,7 +263,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     clearInterval(timer);
     setTimer(setInterval(fetchOrder, delay));
     return () => clearInterval(timer);
-  }, [delay, currentOrder, page]);
+  }, [delay, currentOrder, page, badOrder]);
 
   const orderReceived = function (data: any) {
     if (data.bad_request != undefined) {

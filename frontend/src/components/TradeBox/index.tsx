@@ -629,6 +629,7 @@ const TradeBox = ({
         open={open.confirmCollabCancel}
         onClose={() => setOpen(closeAll)}
         onCollabCancelClick={cancel}
+        loading={loadingButtons.cancel}
         peerAskedCancel={order.pending_cancel}
       />
       <ConfirmFiatReceivedDialog
@@ -638,6 +639,7 @@ const TradeBox = ({
         onClose={() => setOpen(closeAll)}
         onConfirmClick={confirmFiatReceived}
       />
+      <CollabCancelAlert order={order} />
       <Grid
         container
         padding={1}
@@ -655,7 +657,6 @@ const TradeBox = ({
             variables={contract.titleVariables}
           />
         </Grid>
-        <CollabCancelAlert order={order} />
         <Divider />
 
         <Grid item>{contract.prompt()}</Grid>

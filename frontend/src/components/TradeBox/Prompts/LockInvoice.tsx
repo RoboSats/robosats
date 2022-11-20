@@ -57,11 +57,9 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
       spacing={0.5}
     >
       {order.is_taker && concept == 'bond' ? (
-        <Grid item xs={12}>
-          <Typography color='primary'>
-            {t(`You are ${order.is_buyer ? 'BUYING' : 'SELLING'} BTC`)}
-          </Typography>
-        </Grid>
+        <Typography color='secondary'>
+          <b>{t(`You are ${order.is_buyer ? 'BUYING' : 'SELLING'} BTC`)}</b>
+        </Typography>
       ) : (
         <></>
       )}

@@ -26,7 +26,13 @@ const ChatHeader: React.FC<Props> = ({ connected, peerConnected, turtleMode, set
     >
       <Grid item>
         <Paper
-          style={{ width: '7.2em' }}
+          style={{
+            width: '7.2em',
+            height: '1.8em',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
           elevation={1}
           sx={connected ? { backgroundColor: connectedColor } : {}}
         >
@@ -59,7 +65,13 @@ const ChatHeader: React.FC<Props> = ({ connected, peerConnected, turtleMode, set
       </Grid>
       <Grid item>
         <Paper
-          style={{ width: '7.2em' }}
+          style={{
+            width: '7.2em',
+            height: '1.8em',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
           elevation={1}
           sx={peerConnected ? { backgroundColor: connectedColor } : {}}
         >

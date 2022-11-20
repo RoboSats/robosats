@@ -194,7 +194,7 @@ const Notifications = ({
         setShow(false);
       },
       sound: audio.ding,
-      timeout: 15000,
+      timeout: 300000,
       pageTitle: `${t('₿ Rewards!')} - ${basePageTitle}`,
     },
     chatMessage: {

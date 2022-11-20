@@ -23,7 +23,7 @@ const CancelButton = ({
 
   const showCancelButton =
     (order.is_maker && [0, 1, 2].includes(order.status)) || [3, 6, 7].includes(order.status);
-  const showCollabCancelButton = [8, 9].includes(order.status);
+  const showCollabCancelButton = [8, 9].includes(order.status) && !order.asked_for_cancel;
   const noConfirmation =
     (order.is_maker && [0, 1, 2].includes(order.status)) || (order.is_taker && order.status === 3);
 

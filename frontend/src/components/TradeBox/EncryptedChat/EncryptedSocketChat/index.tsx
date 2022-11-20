@@ -18,6 +18,7 @@ import ChatBottom from '../ChatBottom';
 
 interface Props {
   orderId: number;
+  status: number;
   userNick: string;
   takerNick: string;
   messages: EncryptedChatMessage[];
@@ -29,6 +30,7 @@ interface Props {
 
 const EncryptedSocketChat: React.FC<Props> = ({
   orderId,
+  status,
   userNick,
   takerNick,
   messages,
@@ -65,6 +67,13 @@ const EncryptedSocketChat: React.FC<Props> = ({
       connectWebsocket();
     }
   }, [connected]);
+
+  // Make sure to not keep reconnecting once status is not Chat
+  useEffect(() => {
+    if (![9, 10].includes(status)) {
+      connection?.close();
+    }
+  }, [status]);
 
   useEffect(() => {
     if (messages.length > messageCount) {

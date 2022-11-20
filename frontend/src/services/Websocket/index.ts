@@ -5,6 +5,7 @@ export interface WebsocketConnection {
   onMessage: (event: (message: any) => void) => void;
   onClose: (event: () => void) => void;
   onError: (event: () => void) => void;
+  close: () => void;
 }
 
 export interface WebsocketClient {

@@ -71,7 +71,7 @@ export const SuccessfulPrompt = ({
           }}
         />
       </Grid>
-      <Collapse in={rating == 5}>
+      {rating == 5 ? (
         <Grid item xs={12}>
           <div
             style={{
@@ -92,8 +92,7 @@ export const SuccessfulPrompt = ({
             )}
           </Typography>
         </Grid>
-      </Collapse>
-      <Collapse in={rating != 5 && rating != undefined}>
+      ) : rating != undefined ? (
         <Grid>
           <Typography variant='body2' align='center'>
             <b>{t('Thank you for using Robosats!')}</b>
@@ -103,8 +102,8 @@ export const SuccessfulPrompt = ({
               Let us know how the platform could improve (
               <Link target='_blank' href='https://t.me/robosats'>
                 Telegram
-              </Link>{' '}
-              /{' '}
+              </Link>
+              {' / '}
               <Link target='_blank' href='https://github.com/Reckless-Satoshi/robosats/issues'>
                 Github
               </Link>
@@ -112,7 +111,9 @@ export const SuccessfulPrompt = ({
             </Trans>
           </Typography>
         </Grid>
-      </Collapse>
+      ) : (
+        <></>
+      )}
 
       {/* SHOW TXID IF USER RECEIVES ONCHAIN */}
       <Collapse in={order.txid != undefined}>
@@ -151,7 +152,7 @@ export const SuccessfulPrompt = ({
       </Collapse>
 
       <Grid item container alignItems='center' justifyContent='space-evenly'>
-        <Grid item>
+        <Grid item xs={6}>
           <Button color='primary' variant='outlined' onClick={onClickStartAgain}>
             <RocketLaunch />
             {t('Start Again')}
@@ -159,7 +160,7 @@ export const SuccessfulPrompt = ({
         </Grid>
 
         {order.is_maker ? (
-          <Grid item>
+          <Grid item xs={6}>
             <LoadingButton
               color='primary'
               variant='outlined'
