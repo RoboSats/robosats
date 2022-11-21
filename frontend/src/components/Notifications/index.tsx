@@ -166,7 +166,7 @@ const Notifications = ({
       title: t('Order has been disputed'),
       severity: 'warning',
       onClick: moveToOrderPage,
-      sound: audio.takerFound,
+      sound: audio.ding,
       timeout: 40000,
       pageTitle: `${t('⚖️ Disputed!')} - ${basePageTitle}`,
     },
@@ -261,9 +261,10 @@ const Notifications = ({
       message = Messages.taken;
     } else if (order?.is_seller && status > 7 && oldStatus < 7) {
       message = Messages.escrowLocked;
-    } else if (status > 9 && oldStatus <= 8) {
+    } else if ([9, 10].includes(status) && oldStatus < 9) {
+      console.log('yoooo');
       message = Messages.chat;
-    } else if (order?.is_seller && [13, 14, 15].includes(order.status) && oldStatus < 13) {
+    } else if (order?.is_seller && [13, 14, 15].includes(status) && oldStatus < 13) {
       message = Messages.successful;
     } else if (order?.is_buyer && status == 14 && oldStatus != 14) {
       message = Messages.successful;
@@ -295,7 +296,7 @@ const Notifications = ({
       setOldOrderStatus(order.status);
     } else if (order != undefined && order.chat_last_index > oldChatIndex) {
       if (page != 'order') {
-        notify(Messages.chat);
+        notify(Messages.chatMessage);
       }
       setOldChatIndex(order.chat_last_index);
     }
@@ -324,6 +325,7 @@ const Notifications = ({
         setInFocus(false);
       } else if (!document.hidden) {
         setInFocus(true);
+        document.title = basePageTitle;
       }
     });
   }, []);

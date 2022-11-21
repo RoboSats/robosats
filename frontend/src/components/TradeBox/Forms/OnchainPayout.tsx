@@ -42,7 +42,6 @@ export const OnchainPayoutForm = ({
     setOnchain({ ...onchain, miningFee: order.suggested_mining_fee_rate });
   }, []);
 
-  console.log(onchain.badAddress);
   return (
     <Grid
       container

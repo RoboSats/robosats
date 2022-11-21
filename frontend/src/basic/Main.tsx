@@ -365,6 +365,10 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                 <BookPage
                   book={book}
                   fetchBook={fetchBook}
+                  onViewOrder={() => {
+                    setOrder(undefined);
+                    setDelay(10000);
+                  }}
                   limits={limits}
                   fetchLimits={fetchLimits}
                   fav={fav}

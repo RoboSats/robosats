@@ -152,23 +152,23 @@ export const SuccessfulPrompt = ({
       </Collapse>
 
       <Grid item container alignItems='center' justifyContent='space-evenly'>
-        <Grid item xs={6}>
+        <Grid item>
           <Button color='primary' variant='outlined' onClick={onClickStartAgain}>
-            <RocketLaunch />
-            {t('Start Again')}
+            <RocketLaunch sx={{ width: '0.8em' }} />
+            <Typography style={{ display: 'inline-block' }}>{t('Start Again')}</Typography>
           </Button>
         </Grid>
 
         {order.is_maker ? (
-          <Grid item xs={6}>
+          <Grid item>
             <LoadingButton
               color='primary'
               variant='outlined'
               onClick={onClickRenew}
               loading={loadingRenew}
             >
-              <Refresh />
-              {t('Renew Order')}
+              <Refresh sx={{ width: '0.8em' }} />
+              <Typography style={{ display: 'inline-block' }}>{t('Renew')}</Typography>
             </LoadingButton>
           </Grid>
         ) : null}

@@ -39,7 +39,9 @@ export const Title = ({
       style={{ display: 'flex', alignItems: 'center' }}
     >
       {icon()}
-      <b>{t(text, variables)}</b> {stepXofY(order)}
+      <span>
+        <b>{t(text, variables)}</b> {stepXofY(order)}
+      </span>
       {icon()}
     </Typography>
   );
