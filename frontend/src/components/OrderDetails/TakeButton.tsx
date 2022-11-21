@@ -12,6 +12,7 @@ import {
   Grid,
   TextField,
   useTheme,
+  Typography,
 } from '@mui/material';
 
 import Countdown from 'react-countdown';
@@ -49,6 +50,7 @@ const TakeButton = ({
   const theme = useTheme();
 
   const [takeAmount, setTakeAmount] = useState<string>('');
+  const [badRequest, setBadRequest] = useState<string>('');
   const [loadingTake, setLoadingTake] = useState<boolean>(false);
   const [open, setOpen] = useState<OpenDialogsProps>(closeAll);
 
@@ -250,14 +252,29 @@ const TakeButton = ({
         amount: takeAmount,
       })
       .then((data) => {
-        setOrder(data);
         setLoadingTake(false);
+        if (data.bad_request) {
+          setBadRequest(data.bad_request);
+        } else {
+          setOrder(data);
+          setBadRequest('');
+        }
       });
   };
 
   return (
     <Box>
       <Countdown date={new Date(order.penalty)} renderer={countdownTakeOrderRenderer} />
+      {badRequest != '' ? (
+        <Box style={{ padding: '0.5em' }}>
+          <Typography align='center' color='secondary'>
+            {t(badRequest)}
+          </Typography>
+        </Box>
+      ) : (
+        <></>
+      )}
+
       <ConfirmationDialog
         open={open.confirmation}
         onClose={() => setOpen({ ...open, confirmation: false })}
