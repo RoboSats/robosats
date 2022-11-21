@@ -284,7 +284,6 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   };
 
   const fetchOrder = function () {
-    console.log(delay);
     if (currentOrder != undefined) {
       apiClient.get(baseUrl, '/api/order/?order_id=' + currentOrder).then(orderReceived);
     }
