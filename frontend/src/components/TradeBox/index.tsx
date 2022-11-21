@@ -134,6 +134,7 @@ const TradeBox = ({
       | 'submit_statement'
       | 'rate_platform';
     invoice?: string;
+    routing_budget?: number;
     address?: string;
     mining_fee_rate?: number;
     statement?: string;
@@ -143,6 +144,7 @@ const TradeBox = ({
   const submitAction = function ({
     action,
     invoice,
+    routing_budget,
     address,
     mining_fee_rate,
     statement,
@@ -152,6 +154,7 @@ const TradeBox = ({
       .post(baseUrl, '/api/order/?order_id=' + order.id, {
         action,
         invoice,
+        routing_budget,
         address,
         mining_fee_rate,
         statement,
@@ -201,7 +204,7 @@ const TradeBox = ({
 
   const updateInvoice = function (invoice: string) {
     setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
-    submitAction({ action: 'update_invoice', invoice });
+    submitAction({ action: 'update_invoice', invoice, routing_budget: lightning.routingBudgetPPM });
   };
 
   const updateAddress = function () {
@@ -252,7 +255,7 @@ const TradeBox = ({
       setWaitingWebln(true);
       setOpen({ ...open, webln: true });
       webln
-        .makeInvoice(order.trade_satoshis)
+        .makeInvoice(lightning.amount)
         .then((invoice: any) => {
           if (invoice) {
             updateInvoice(invoice.paymentRequest);
@@ -278,7 +281,7 @@ const TradeBox = ({
   }, [order.status]);
 
   const statusToContract = function (order: Order) {
-    const status = order.status;
+    const status = 6;
     const isBuyer = order.is_buyer;
     const isMaker = order.is_maker;
 

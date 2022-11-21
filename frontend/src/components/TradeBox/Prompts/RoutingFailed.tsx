@@ -28,6 +28,7 @@ const FailureReason = ({ failureReason }: FailureReasonProps): JSX.Element => {
         backgroundColor: theme.palette.background.paper,
         borderRadius: '0.3em',
         border: `1px solid ${theme.palette.text.secondary}`,
+        padding: '0.5em',
       }}
     >
       <Typography variant='body2' align='center'>

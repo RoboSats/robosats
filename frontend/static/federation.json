@@ -1,9 +1,10 @@
 [
   {
     "alias": "Inception",
+    "enabled": "true",
     "description": "RoboSats original and experimental coordinator",
     "coverLetter": "N/A",
-    "contact_methods": {
+    "contact": {
       "email": "robosats@protonmail.com",
       "telegram": "@robosats",
       "twitter": "@robosats",
