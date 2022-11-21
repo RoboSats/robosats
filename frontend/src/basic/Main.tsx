@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { HashRouter, BrowserRouter, Switch, Route, useHistory } from 'react-router-dom';
+import { HashRouter, BrowserRouter, Switch, Route } from 'react-router-dom';
 import { useTheme, Box, Slide, Typography } from '@mui/material';
 
 import UserGenPage from './UserGenPage';
@@ -22,6 +22,7 @@ import {
   defaultMaker,
   defaultInfo,
   Coordinator,
+  Order,
 } from '../models';
 
 import { apiClient } from '../services/api';
@@ -30,6 +31,7 @@ import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
 import { useTranslation } from 'react-i18next';
+import Notifications from '../components/Notifications';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -38,6 +40,29 @@ const getWindowSize = function (fontSize: number) {
     height: window.innerHeight / fontSize,
   };
 };
+
+// Refresh delays (ms) according to Order status
+const statusToDelay = [
+  3000, // 'Waiting for maker bond'
+  35000, // 'Public'
+  180000, // 'Paused'
+  3000, // 'Waiting for taker bond'
+  999999, // 'Cancelled'
+  999999, // 'Expired'
+  8000, // 'Waiting for trade collateral and buyer invoice'
+  8000, // 'Waiting only for seller trade collateral'
+  8000, // 'Waiting only for buyer invoice'
+  10000, // 'Sending fiat - In chatroom'
+  10000, // 'Fiat sent - In chatroom'
+  100000, // 'In dispute'
+  999999, // 'Collaboratively cancelled'
+  10000, // 'Sending satoshis to buyer'
+  999999, // 'Sucessful trade'
+  30000, // 'Failed lightning network routing'
+  300000, // 'Wait for dispute resolution'
+  300000, // 'Maker lost dispute'
+  300000, // 'Taker lost dispute'
+];
 
 interface SlideDirection {
   in: 'left' | 'right' | undefined;
@@ -51,6 +76,7 @@ interface MainProps {
 
 const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   // All app data structured
   const [book, setBook] = useState<Book>({ orders: [], loading: true });
@@ -65,8 +91,10 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const [baseUrl, setBaseUrl] = useState<string>('');
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });
 
-  const theme = useTheme();
-  const history = useHistory();
+  const [delay, setDelay] = useState<number>(60000);
+  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(setInterval(() => null, delay));
+  const [order, setOrder] = useState<Order | undefined>(undefined);
+  const [badOrder, setBadOrder] = useState<string | undefined>(undefined);
 
   const Router = window.NativeRobosats === undefined ? BrowserRouter : HashRouter;
   const basename = window.NativeRobosats === undefined ? '' : window.location.pathname;
@@ -77,7 +105,8 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     in: undefined,
     out: undefined,
   });
-  const [currentOrder, setCurrentOrder] = useState<number | null>(null);
+
+  const [currentOrder, setCurrentOrder] = useState<number | undefined>(undefined);
 
   const navbarHeight = 2.5;
   const closeAll = {
@@ -100,8 +129,11 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     if (typeof window !== undefined) {
       window.addEventListener('resize', onResize);
     }
-    fetchBook();
-    fetchLimits();
+
+    if (baseUrl != '') {
+      fetchBook();
+      fetchLimits();
+    }
     return () => {
       if (typeof window !== undefined) {
         window.removeEventListener('resize', onResize);
@@ -164,11 +196,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   };
 
   useEffect(() => {
-    if (
-      open.stats ||
-      open.coordinator ||
-      info.version == { major: null, minor: null, patch: null }
-    ) {
+    if (open.stats || open.coordinator || info.coordinatorVersion == 'v?.?.?') {
       fetchInfo();
     }
   }, [open.stats, open.coordinator]);
@@ -196,7 +224,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         nickname: data.nickname,
         token: robot.token,
         loading: false,
-        avatarLoaded: robot.nickname === data.nickname ? true : false,
+        avatarLoaded: robot.nickname === data.nickname,
         activeOrderId: data.active_order_id ? data.active_order_id : null,
         lastOrderId: data.last_order_id ? data.last_order_id : null,
         referralCode: data.referral_code,
@@ -215,7 +243,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   };
 
   useEffect(() => {
-    if (baseUrl != '') {
+    if (baseUrl != '' && page != 'robot') {
       if (open.profile || (robot.token && robot.nickname === null)) {
         fetchRobot({ keys: false }); // fetch existing robot
       } else if (robot.token && robot.encPrivKey && robot.pubKey) {
@@ -223,6 +251,48 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
       }
     }
   }, [open.profile, baseUrl]);
+
+  // Fetch current order at load and in a loop
+  useEffect(() => {
+    if (currentOrder != undefined && (page == 'order' || (order == badOrder) == undefined)) {
+      fetchOrder();
+    }
+  }, [currentOrder, page]);
+
+  useEffect(() => {
+    clearInterval(timer);
+    setTimer(setInterval(fetchOrder, delay));
+    return () => clearInterval(timer);
+  }, [delay, currentOrder, page, badOrder]);
+
+  const orderReceived = function (data: any) {
+    if (data.bad_request != undefined) {
+      setBadOrder(data.bad_request);
+      setDelay(99999999);
+      setOrder(undefined);
+    } else {
+      setDelay(
+        data.status >= 0 && data.status <= 18
+          ? page == 'order'
+            ? statusToDelay[data.status]
+            : statusToDelay[data.status] * 5
+          : 99999999,
+      );
+      setOrder(data);
+      setBadOrder(undefined);
+    }
+  };
+
+  const fetchOrder = function () {
+    if (currentOrder != undefined) {
+      apiClient.get(baseUrl, '/api/order/?order_id=' + currentOrder).then(orderReceived);
+    }
+  };
+
+  const clearOrder = function () {
+    setOrder(undefined);
+    setBadOrder(undefined);
+  };
 
   return (
     <Router basename={basename}>
@@ -232,6 +302,14 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         nickname={robot.nickname}
         baseUrl={baseUrl}
         onLoad={() => setRobot({ ...robot, avatarLoaded: true })}
+      />
+      <Notifications
+        order={order}
+        page={page}
+        openProfile={() => setOpen({ ...closeAll, profile: true })}
+        rewards={robot.earnedRewards}
+        setPage={setPage}
+        windowWidth={windowSize.width}
       />
       {settings.network === 'testnet' ? (
         <div style={{ height: 0 }}>
@@ -286,12 +364,17 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                 <BookPage
                   book={book}
                   fetchBook={fetchBook}
+                  onViewOrder={() => {
+                    setOrder(undefined);
+                    setDelay(10000);
+                  }}
                   limits={limits}
                   fetchLimits={fetchLimits}
                   fav={fav}
                   setFav={setFav}
                   maker={maker}
                   setMaker={setMaker}
+                  clearOrder={clearOrder}
                   lastDayPremium={info.last_day_nonkyc_btc_premium}
                   windowSize={windowSize}
                   hasRobot={robot.avatarLoaded}
@@ -316,6 +399,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                   fetchLimits={fetchLimits}
                   maker={maker}
                   setMaker={setMaker}
+                  clearOrder={clearOrder}
                   setPage={setPage}
                   setCurrentOrder={setCurrentOrder}
                   fav={fav}
@@ -338,11 +422,16 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
               >
                 <div>
                   <OrderPage
-                    theme={theme}
-                    history={history}
-                    {...props}
-                    setPage={setPage}
                     baseUrl={baseUrl}
+                    order={order}
+                    setOrder={setOrder}
+                    setCurrentOrder={setCurrentOrder}
+                    badOrder={badOrder}
+                    locationOrderId={props.match.params.orderId}
+                    setBadOrder={setBadOrder}
+                    hasRobot={robot.avatarLoaded}
+                    windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}
+                    setPage={setPage}
                   />
                 </div>
               </Slide>
@@ -366,21 +455,23 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
           </Route>
         </Switch>
       </Box>
-      <NavBar
-        nickname={robot.avatarLoaded ? robot.nickname : null}
-        color={settings.network === 'mainnet' ? 'primary' : 'secondary'}
-        width={windowSize.width}
-        height={navbarHeight}
-        page={page}
-        setPage={setPage}
-        open={open}
-        setOpen={setOpen}
-        closeAll={closeAll}
-        setSlideDirection={setSlideDirection}
-        currentOrder={currentOrder}
-        hasRobot={robot.avatarLoaded}
-        baseUrl={baseUrl}
-      />
+      <div style={{ alignContent: 'center', display: 'flex' }}>
+        <NavBar
+          nickname={robot.avatarLoaded ? robot.nickname : null}
+          color={settings.network === 'mainnet' ? 'primary' : 'secondary'}
+          width={windowSize.width}
+          height={navbarHeight}
+          page={page}
+          setPage={setPage}
+          open={open}
+          setOpen={setOpen}
+          closeAll={closeAll}
+          setSlideDirection={setSlideDirection}
+          currentOrder={currentOrder}
+          hasRobot={robot.avatarLoaded}
+          baseUrl={baseUrl}
+        />
+      </div>
       <MainDialogs
         open={open}
         setOpen={setOpen}

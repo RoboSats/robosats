@@ -1,42 +1,44 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Typography } from '@mui/material';
+import { Typography, useTheme } from '@mui/material';
 import { Lock, LockOpen, Balance } from '@mui/icons-material';
 
 interface BondStatusProps {
-  status: 'locked' | 'settled' | 'returned' | 'hide';
+  status: 'locked' | 'settled' | 'unlocked' | 'hide';
   isMaker: boolean;
 }
 
 const BondStatus = ({ status, isMaker }: BondStatusProps): JSX.Element => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   let Icon = Lock;
-  if (status === 'returned') {
+  let color = 'primary';
+  if (status === 'unlocked') {
     Icon = LockOpen;
+    color = theme.palette.mode == 'dark' ? 'lightgreen' : 'green';
   } else if (status === 'settled') {
     Icon = Balance;
+    color = theme.palette.mode == 'dark' ? 'lightred' : 'red';
   }
 
   if (status === 'hide') {
     return <></>;
   } else {
     return (
-      <Box>
-        <Typography color='primary' variant='subtitle1' align='center'>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
-            <Icon />
-            {t(`Your ${isMaker ? 'maker' : 'taker'} bond is ${status}`)}
-          </div>
-        </Typography>
-      </Box>
+      <Typography color={color} variant='subtitle1' align='center'>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
+          <Icon sx={{ height: '0.9em', width: '0.9em' }} />
+          {t(`Your ${isMaker ? 'maker' : 'taker'} bond is ${status}`)}
+        </div>
+      </Typography>
     );
   }
 };

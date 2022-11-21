@@ -7,6 +7,7 @@ class Settings extends BaseSettings {
     const fontSizeCookie = systemClient.getItem('settings_fontsize_pro');
     this.fontSize = fontSizeCookie !== '' ? Number(fontSizeCookie) : 12;
   }
+
   public frontend: 'basic' | 'pro' = 'pro';
 }
 

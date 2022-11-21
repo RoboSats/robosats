@@ -349,7 +349,7 @@
   "Messages": "Messages",
   "Verified signature by {{nickname}}": "Verified signature by {{nickname}}",
   "Cannot verify signature of {{nickname}}": "Cannot verify signature of {{nickname}}",
-  "Activate turtle mode (Use it when the connection is slow)": "Activate turtle mode (Use it when the connection is slow)",
+  "Activate slow mode (use it when the connection is slow)": "Activate slow mode (use it when the connection is slow)",
   "CONTRACT BOX - TradeBox.js": "The Contract Box that guides users trough the whole trade pipeline",
   "Contract Box": "Contract Box",
   "Robots show commitment to their peers": "Robots show commitment to their peers",

@@ -68,7 +68,6 @@ const ProfileDialog = ({
   const host = getHost();
 
   const [rewardInvoice, setRewardInvoice] = useState<string>('');
-  const [showRewards, setShowRewards] = useState<boolean>(false);
   const [showRewardsSpinner, setShowRewardsSpinner] = useState<boolean>(false);
   const [withdrawn, setWithdrawn] = useState<boolean>(false);
   const [badInvoice, setBadInvoice] = useState<string>('');
@@ -80,7 +79,7 @@ const ProfileDialog = ({
     getWebln().then((webln) => {
       setWeblnEnabled(webln !== undefined);
     });
-  }, [showRewards]);
+  }, []);
 
   const copyTokenHandler = () => {
     const robotToken = systemClient.getItem('robot_token');
@@ -328,141 +327,113 @@ const ProfileDialog = ({
 
           <ListItem>
             <ListItemIcon>
-              <BitcoinIcon />
+              <PersonAddAltIcon />
             </ListItemIcon>
 
-            <ListItemText>
-              <FormControlLabel
-                labelPlacement='end'
-                label={
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {t('Rewards and compensations')}
-                  </div>
-                }
-                control={
-                  <Switch checked={showRewards} onChange={() => setShowRewards(!showRewards)} />
-                }
+            <ListItemText secondary={t('Share to earn 100 Sats per trade')}>
+              <TextField
+                label={t('Your referral link')}
+                value={host + '/robot/' + robot.referralCode}
+                size='small'
+                InputProps={{
+                  endAdornment: (
+                    <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!') || ''}>
+                      <IconButton onClick={copyReferralCodeHandler}>
+                        <ContentCopy />
+                      </IconButton>
+                    </Tooltip>
+                  ),
+                }}
               />
             </ListItemText>
           </ListItem>
 
-          {showRewards && (
-            <>
-              <ListItem>
-                <ListItemIcon>
-                  <PersonAddAltIcon />
-                </ListItemIcon>
+          <ListItem>
+            <ListItemIcon>
+              <EmojiEventsIcon />
+            </ListItemIcon>
 
-                <ListItemText secondary={t('Share to earn 100 Sats per trade')}>
-                  <TextField
-                    label={t('Your referral link')}
-                    value={host + '/robot/' + robot.referralCode}
-                    size='small'
-                    InputProps={{
-                      endAdornment: (
-                        <Tooltip
-                          disableHoverListener
-                          enterTouchDelay={0}
-                          title={t('Copied!') || ''}
-                        >
-                          <IconButton onClick={copyReferralCodeHandler}>
-                            <ContentCopy />
-                          </IconButton>
-                        </Tooltip>
-                      ),
-                    }}
-                  />
-                </ListItemText>
-              </ListItem>
+            {!openClaimRewards ? (
+              <ListItemText secondary={t('Your earned rewards')}>
+                <Grid container>
+                  <Grid item xs={9}>
+                    <Typography>{`${robot.earnedRewards} Sats`}</Typography>
+                  </Grid>
 
-              <ListItem>
-                <ListItemIcon>
-                  <EmojiEventsIcon />
-                </ListItemIcon>
-
-                {!openClaimRewards ? (
-                  <ListItemText secondary={t('Your earned rewards')}>
-                    <Grid container>
-                      <Grid item xs={9}>
-                        <Typography>{`${robot.earnedRewards} Sats`}</Typography>
-                      </Grid>
-
-                      <Grid item xs={3}>
-                        <Button
-                          disabled={robot.earnedRewards === 0}
-                          onClick={() => setOpenClaimRewards(true)}
-                          variant='contained'
-                          size='small'
-                        >
-                          {t('Claim')}
-                        </Button>
-                      </Grid>
+                  <Grid item xs={3}>
+                    <Button
+                      disabled={robot.earnedRewards === 0}
+                      onClick={() => setOpenClaimRewards(true)}
+                      variant='contained'
+                      size='small'
+                    >
+                      {t('Claim')}
+                    </Button>
+                  </Grid>
+                </Grid>
+              </ListItemText>
+            ) : (
+              <form noValidate style={{ maxWidth: 270 }}>
+                <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
+                  <Grid item style={{ display: 'flex', maxWidth: 160 }}>
+                    <TextField
+                      error={!!badInvoice}
+                      helperText={badInvoice || ''}
+                      label={t('Invoice for {{amountSats}} Sats', {
+                        amountSats: robot.earnedRewards,
+                      })}
+                      size='small'
+                      value={rewardInvoice}
+                      onChange={(e) => {
+                        setRewardInvoice(e.target.value);
+                      }}
+                    />
+                  </Grid>
+                  <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 80 }}>
+                    <Button
+                      sx={{ maxHeight: 38 }}
+                      onClick={(e) => handleSubmitInvoiceClicked(e, rewardInvoice)}
+                      variant='contained'
+                      color='primary'
+                      size='small'
+                      type='submit'
+                    >
+                      {t('Submit')}
+                    </Button>
+                  </Grid>
+                </Grid>
+                {weblnEnabled && (
+                  <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
+                    <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 240 }}>
+                      <Button
+                        sx={{ maxHeight: 38, minWidth: 230 }}
+                        onClick={async (e) => await handleWeblnInvoiceClicked(e)}
+                        variant='contained'
+                        color='primary'
+                        size='small'
+                        type='submit'
+                      >
+                        {t('Generate with Webln')}
+                      </Button>
                     </Grid>
-                  </ListItemText>
-                ) : (
-                  <form noValidate style={{ maxWidth: 270 }}>
-                    <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
-                      <Grid item style={{ display: 'flex', maxWidth: 160 }}>
-                        <TextField
-                          error={!!badInvoice}
-                          helperText={badInvoice || ''}
-                          label={t('Invoice for {{amountSats}} Sats', {
-                            amountSats: robot.earnedRewards,
-                          })}
-                          size='small'
-                          value={rewardInvoice}
-                          onChange={(e) => {
-                            setRewardInvoice(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 80 }}>
-                        <Button
-                          sx={{ maxHeight: 38 }}
-                          onClick={(e) => handleSubmitInvoiceClicked(e, rewardInvoice)}
-                          variant='contained'
-                          color='primary'
-                          size='small'
-                          type='submit'
-                        >
-                          {t('Submit')}
-                        </Button>
-                      </Grid>
-                    </Grid>
-                    {weblnEnabled && (
-                      <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
-                        <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 240 }}>
-                          <Button
-                            sx={{ maxHeight: 38, minWidth: 230 }}
-                            onClick={async (e) => await handleWeblnInvoiceClicked(e)}
-                            variant='contained'
-                            color='primary'
-                            size='small'
-                            type='submit'
-                          >
-                            {t('Generate with Webln')}
-                          </Button>
-                        </Grid>
-                      </Grid>
-                    )}
-                  </form>
+                  </Grid>
                 )}
-              </ListItem>
+              </form>
+            )}
+          </ListItem>
 
-              {showRewardsSpinner && (
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <CircularProgress />
-                </div>
-              )}
+          {showRewardsSpinner && (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <CircularProgress />
+            </div>
+          )}
 
-              {withdrawn && (
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <Typography color='primary' variant='body2'>
-                    <b>{t('There it goes, thank you!🥇')}</b>
-                  </Typography>
-                </div>
-              )}
-            </>
+          {withdrawn && (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Typography color='primary' variant='body2'>
+                <b>{t('There it goes, thank you!🥇')}</b>
+              </Typography>
+            </div>
           )}
         </List>
       </DialogContent>

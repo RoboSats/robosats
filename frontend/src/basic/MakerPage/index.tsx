@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import { Grid, Paper, Collapse, Typography } from '@mui/material';
 
-import { LimitList, Maker, Book, Favorites } from '../../models';
+import { LimitList, Maker, Book, Favorites, Order } from '../../models';
 
 import { filterOrders } from '../../utils';
 
@@ -20,6 +20,7 @@ interface MakerPageProps {
   maker: Maker;
   setFav: (state: Favorites) => void;
   setMaker: (state: Maker) => void;
+  clearOrder: () => void;
   windowSize: { width: number; height: number };
   hasRobot: boolean;
   setCurrentOrder: (state: number) => void;
@@ -35,6 +36,7 @@ const MakerPage = ({
   maker,
   setFav,
   setMaker,
+  clearOrder,
   windowSize,
   setCurrentOrder,
   setPage,
@@ -76,6 +78,7 @@ const MakerPage = ({
                 showControls={false}
                 showFooter={false}
                 showNoResults={false}
+                baseUrl={baseUrl}
               />
             </Grid>
           </Grid>
@@ -99,6 +102,7 @@ const MakerPage = ({
             maker={maker}
             setMaker={setMaker}
             onOrderCreated={(id) => {
+              clearOrder();
               setCurrentOrder(id);
               setPage('order');
               history.push('/order/' + id);

@@ -1,12 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Grid, Link, Typography, TextField, Tooltip, useTheme } from '@mui/material';
-import { AccountBalanceWallet, ContentCopy } from '@mui/icons-material';
-import { NewTabIcon } from '../../Icons';
+import { Button, Box, Grid, Typography, TextField, Tooltip, useTheme } from '@mui/material';
+import { ContentCopy } from '@mui/icons-material';
 import QRCode from 'react-qr-code';
 import { Order } from '../../../models';
 import { systemClient } from '../../../services/System';
 import currencies from '../../../../static/assets/currencies.json';
+import WalletsButton from '../WalletsButton';
 
 interface LockInvoicePromptProps {
   order: Order;
@@ -19,6 +19,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
   const currencyCode: string = currencies[`${order.currency}`];
 
   const invoice = concept === 'bond' ? order.bond_invoice : order.escrow_invoice;
+
   const helperText =
     concept === 'bond'
       ? t(
@@ -28,22 +29,6 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
           'This is a hold invoice, it will freeze in your wallet. It will be released to the buyer once you confirm to have received the {{currencyCode}}.',
           { currencyCode },
         );
-
-  const CompatibleWalletsButton = function () {
-    return (
-      <Button
-        color='primary'
-        component={Link}
-        href={'https://learn.robosats.com/docs/wallets/'}
-        target='_blank'
-        align='center'
-      >
-        <AccountBalanceWallet />
-        {t('See Compatible Wallets')}
-        <NewTabIcon sx={{ width: '1.1em', height: '1.1em' }} />
-      </Button>
-    );
-  };
 
   const depositHoursMinutes = function () {
     const hours = Math.floor(order.escrow_duration / 3600);
@@ -64,24 +49,50 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
   };
 
   return (
-    <Grid container spacing={1}>
+    <Grid
+      container
+      direction='column'
+      justifyContent='flex-start'
+      alignItems='center'
+      spacing={0.5}
+    >
+      {order.is_taker && concept == 'bond' ? (
+        <Typography color='secondary'>
+          <b>{t(`You are ${order.is_buyer ? 'BUYING' : 'SELLING'} BTC`)}</b>
+        </Typography>
+      ) : (
+        <></>
+      )}
+
       <Grid item xs={12}>
-        {concept === 'bond' ? <CompatibleWalletsButton /> : <ExpirationWarning />}
+        {concept === 'bond' ? <WalletsButton /> : <ExpirationWarning />}
       </Grid>
 
       <Grid item xs={12}>
         <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-          <QRCode
-            bgColor={'rgba(255, 255, 255, 0)'}
-            fgColor={theme.palette.text.primary}
-            value={invoice}
-            size={theme.typography.fontSize * 21.8}
-            onClick={() => {
-              systemClient.copyToClipboard(invoice);
+          <Box
+            sx={{
+              display: 'flex',
+              backgroundColor: theme.palette.background.paper,
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.5em',
+              borderRadius: '0.3em',
             }}
-          />
+          >
+            <QRCode
+              bgColor={'rgba(255, 255, 255, 0)'}
+              fgColor={theme.palette.text.primary}
+              value={invoice ?? 'Undefined: BOLT11 invoice not received'}
+              size={theme.typography.fontSize * 21.8}
+              onClick={() => {
+                systemClient.copyToClipboard(invoice);
+              }}
+            />
+          </Box>
         </Tooltip>
-
+      </Grid>
+      <Grid item xs={12}>
         <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
           <Button
             size='small'
@@ -101,7 +112,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
           hiddenLabel
           variant='standard'
           size='small'
-          defaultValue={invoice}
+          defaultValue={invoice ?? 'Undefined: BOLT11 invoice not received'}
           disabled={true}
           helperText={helperText}
           color='secondary'

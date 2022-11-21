@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
-import { Tabs, Tab, Paper, useTheme, Tooltip } from '@mui/material';
+import { Tabs, Tab, Paper, useTheme } from '@mui/material';
 import MoreTooltip from './MoreTooltip';
 
 import { OpenDialogs } from '../MainDialogs';
@@ -30,7 +30,7 @@ interface NavBarProps {
   open: OpenDialogs;
   setOpen: (state: OpenDialogs) => void;
   closeAll: OpenDialogs;
-  currentOrder: number | null;
+  currentOrder: number | undefined;
   hasRobot: boolean;
   baseUrl: string;
   color: 'primary' | 'secondary';
@@ -151,7 +151,7 @@ const NavBar = ({
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!hasRobot || currentOrder == null}
+          disabled={!hasRobot || currentOrder == undefined}
           icon={<Assignment />}
           iconPosition='start'
         />

@@ -23,6 +23,8 @@ interface Props {
   messages: EncryptedChatMessage[];
   setMessages: (messages: EncryptedChatMessage[]) => void;
   baseUrl: string;
+  turtleMode: boolean;
+  setTurtleMode: (state: boolean) => void;
 }
 
 const EncryptedTurtleChat: React.FC<Props> = ({
@@ -33,6 +35,8 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   messages,
   setMessages,
   baseUrl,
+  setTurtleMode,
+  turtleMode,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -94,7 +98,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
         encrypted_private_key: ownEncPrivKey,
         passphrase: token,
       },
-      messages: messages,
+      messages,
     };
   };
 
@@ -112,7 +116,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
           setLastIndex(lastIndex < dataFromServer.index ? dataFromServer.index : lastIndex);
           setMessages((prev: EncryptedChatMessage[]) => {
             const existingMessage = prev.find((item) => item.index === dataFromServer.index);
-            if (existingMessage) {
+            if (existingMessage != null) {
               return prev;
             } else {
               return [
@@ -158,7 +162,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   };
 
   const onButtonClicked = (e: any) => {
-    if (token && value.indexOf(token) !== -1) {
+    if (token && value.includes(token)) {
       alert(
         `Aye! You just sent your own robot token to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
       );
@@ -172,9 +176,9 @@ const EncryptedTurtleChat: React.FC<Props> = ({
           offset: lastIndex,
         })
         .then((response) => {
-          if (response) {
-            setPeerConnected(response.peer_connected);
+          if (response != null) {
             if (response.messages) {
+              setPeerConnected(response.peer_connected);
               setServerMessages(response.messages);
             }
           }
@@ -197,7 +201,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
               offset: lastIndex,
             })
             .then((response) => {
-              if (response) {
+              if (response != null) {
                 setPeerConnected(response.peer_connected);
                 if (response.messages) {
                   setServerMessages(response.messages);
@@ -215,15 +219,38 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   };
 
   return (
-    <Container component='main'>
-      <ChatHeader connected={true} peerConnected={peerConnected} />
-      <div style={{ position: 'relative', left: '-0.14em', margin: '0 auto', width: '17.7em' }}>
+    <Grid
+      container
+      direction='column'
+      justifyContent='flex-start'
+      alignItems='center'
+      spacing={0.5}
+    >
+      <AuditPGPDialog
+        open={audit}
+        onClose={() => setAudit(false)}
+        orderId={Number(orderId)}
+        messages={messages}
+        own_pub_key={ownPubKey || ''}
+        own_enc_priv_key={ownEncPrivKey || ''}
+        peer_pub_key={peerPubKey || 'Not received yet'}
+        passphrase={token || ''}
+        onClickBack={() => setAudit(false)}
+      />
+
+      <Grid item>
+        <ChatHeader
+          connected={true}
+          peerConnected={peerConnected}
+          turtleMode={turtleMode}
+          setTurtleMode={setTurtleMode}
+        />
         <Paper
           elevation={1}
           style={{
-            height: '21.42em',
-            maxHeight: '21.42em',
-            width: '17.7em',
+            height: '18.42em',
+            maxHeight: '18.42em',
+            width: '100%',
             overflow: 'auto',
             backgroundColor: theme.palette.background.paper,
           }}
@@ -251,8 +278,8 @@ const EncryptedTurtleChat: React.FC<Props> = ({
           />
         </Paper>
         <form noValidate onSubmit={onButtonClicked}>
-          <Grid alignItems='stretch' style={{ display: 'flex' }}>
-            <Grid item alignItems='stretch' style={{ display: 'flex' }}>
+          <Grid alignItems='stretch' style={{ display: 'flex', width: '100%' }}>
+            <Grid item alignItems='stretch' style={{ display: 'flex' }} xs={9}>
               <TextField
                 label={t('Type a message')}
                 variant='standard'
@@ -261,16 +288,16 @@ const EncryptedTurtleChat: React.FC<Props> = ({
                 onChange={(e) => {
                   setValue(e.target.value);
                 }}
-                sx={{ width: '13.7em' }}
+                fullWidth={true}
               />
             </Grid>
-            <Grid item alignItems='stretch' style={{ display: 'flex' }}>
+            <Grid item alignItems='stretch' style={{ display: 'flex' }} xs={3}>
               <Button
-                sx={{ width: '4.68em' }}
                 disabled={waitingEcho || !peerPubKey}
                 type='submit'
                 variant='contained'
                 color='primary'
+                fullWidth={true}
               >
                 {waitingEcho ? (
                   <div
@@ -298,22 +325,9 @@ const EncryptedTurtleChat: React.FC<Props> = ({
             </Grid>
           </Grid>
         </form>
-      </div>
+      </Grid>
 
-      <div style={{ height: '0.3em' }} />
-
-      <Grid container spacing={0}>
-        <AuditPGPDialog
-          open={audit}
-          onClose={() => setAudit(false)}
-          orderId={Number(orderId)}
-          messages={messages}
-          own_pub_key={ownPubKey || ''}
-          own_enc_priv_key={ownEncPrivKey || ''}
-          peer_pub_key={peerPubKey || 'Not received yet'}
-          passphrase={token || ''}
-          onClickBack={() => setAudit(false)}
-        />
+      <Grid item>
         <ChatBottom
           orderId={orderId}
           audit={audit}
@@ -321,7 +335,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
           createJsonFile={createJsonFile}
         />
       </Grid>
-    </Container>
+    </Grid>
   );
 };
 

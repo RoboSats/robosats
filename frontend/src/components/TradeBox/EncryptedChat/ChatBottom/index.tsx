@@ -18,8 +18,15 @@ const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile 
   const theme = useTheme();
 
   return (
-    <>
-      <Grid item xs={6}>
+    <Grid
+      container
+      sx={{ width: '18em' }}
+      direction='row'
+      justifyContent='space-evenly'
+      alignItems='center'
+      padding={0.3}
+    >
+      <Grid item>
         <Tooltip
           placement='bottom'
           enterTouchDelay={0}
@@ -28,13 +35,13 @@ const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile 
           title={t('Verify your privacy')}
         >
           <Button size='small' color='primary' variant='outlined' onClick={() => setAudit(!audit)}>
-            <KeyIcon />
+            <KeyIcon sx={{ width: '0.8em', height: '0.8em' }} />
             {t('Audit PGP')}{' '}
           </Button>
         </Tooltip>
       </Grid>
 
-      <Grid item xs={6}>
+      <Grid item>
         {window.ReactNativeWebView === undefined ? (
           <Tooltip
             placement='bottom'
@@ -71,7 +78,7 @@ const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile 
           </Tooltip>
         )}
       </Grid>
-    </>
+    </Grid>
   );
 };
 

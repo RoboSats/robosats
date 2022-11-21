@@ -8,7 +8,7 @@ interface Props {
 }
 
 const LinearDeterminate = ({ expiresAt, totalSecsExp }: Props): JSX.Element => {
-  const [progress, setProgress] = useState<number>(0);
+  const [progress, setProgress] = useState<number>(100);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -25,7 +25,12 @@ const LinearDeterminate = ({ expiresAt, totalSecsExp }: Props): JSX.Element => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <LinearProgress variant='determinate' value={progress} />
+      <LinearProgress
+        sx={{ height: '0.4em' }}
+        variant='determinate'
+        value={progress}
+        color={progress < 20 ? 'secondary' : 'primary'}
+      />
     </Box>
   );
 };
