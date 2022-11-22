@@ -12,6 +12,7 @@ import {
   Grid,
   Collapse,
   useTheme,
+  Typography,
 } from '@mui/material';
 
 import Countdown, { CountdownRenderProps, zeroPad } from 'react-countdown';
@@ -86,25 +87,25 @@ const OrderDetails = ({
       // Render a completed state
       return <span> {t('The order has expired')}</span>;
     } else {
-      let col = 'inherit';
+      let color = 'inherit';
       const fraction_left = total / 1000 / order.total_secs_exp;
       // Make orange at 25% of time left
       if (fraction_left < 0.25) {
-        col = 'orange';
+        color = theme.palette.warning.main;
       }
       // Make red at 10% of time left
       if (fraction_left < 0.1) {
-        col = 'red';
+        color = theme.palette.error.main;
       }
       // Render a countdown, bold when less than 25%
       return fraction_left < 0.25 ? (
-        <b>
-          <span style={{ color: col }}>
-            {`${hours}h ${zeroPad(minutes)}m ${zeroPad(seconds)}s `}
-          </span>
-        </b>
+        <Typography color={color}>
+          <b>{`${hours}h ${zeroPad(minutes)}m ${zeroPad(seconds)}s `}</b>
+        </Typography>
       ) : (
-        <span style={{ color: col }}>{`${hours}h ${zeroPad(minutes)}m ${zeroPad(seconds)}s `}</span>
+        <Typography color={color}>
+          {`${hours}h ${zeroPad(minutes)}m ${zeroPad(seconds)}s `}
+        </Typography>
       );
     }
   };

@@ -65,9 +65,9 @@ export const PayoutPrompt = ({
           size='small'
           value={tab}
           exclusive
-          onChange={(mouseEvent, value: string) => setTab(value)}
+          onChange={(mouseEvent, value) => setTab(value == null ? tab : value)}
         >
-          <ToggleButton value='lightning' disableRipple={true}>
+          <ToggleButton value='lightning'>
             <div
               style={{
                 display: 'flex',

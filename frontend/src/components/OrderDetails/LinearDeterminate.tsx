@@ -29,7 +29,7 @@ const LinearDeterminate = ({ expiresAt, totalSecsExp }: Props): JSX.Element => {
         sx={{ height: '0.4em' }}
         variant='determinate'
         value={progress}
-        color={progress < 20 ? 'secondary' : 'primary'}
+        color={progress < 25 ? 'secondary' : 'primary'}
       />
     </Box>
   );
