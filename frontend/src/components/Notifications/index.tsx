@@ -134,7 +134,7 @@ const Notifications = ({
       title: t('Order has expired'),
       severity: 'warning',
       onClick: moveToOrderPage,
-      sound: undefined,
+      sound: audio.ding,
       timeout: 30000,
       pageTitle: `${t('😪 Expired!')} - ${basePageTitle}`,
     },

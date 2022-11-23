@@ -17,16 +17,18 @@ import {
   Button,
   FormControl,
   InputLabel,
+  IconButton,
 } from '@mui/material';
 import { Order } from '../../../models';
 import WalletsButton from '../WalletsButton';
 import { LoadingButton } from '@mui/lab';
 import { pn } from '../../../utils';
 
-import { RoundaboutRight, Route, SelfImprovement } from '@mui/icons-material';
+import { ContentCopy, RoundaboutRight, Route, SelfImprovement } from '@mui/icons-material';
 import { apiClient } from '../../../services/api';
 
 import lnproxies from '../../../../static/lnproxies.json';
+import { systemClient } from '../../../services/System';
 
 export interface LightningForm {
   invoice: string;
@@ -88,8 +90,17 @@ export const LightningPayoutForm = ({
 
   const computeInvoiceAmount = function () {
     //const tradeAmount = order.trade_satoshis
-    const tradeAmount = 10000;
-    return tradeAmount - Math.round((tradeAmount / 1000000) * lightning.routingBudgetPPM);
+    const tradeAmount = 1000000;
+    return tradeAmount - Math.floor((tradeAmount / 1000000) * lightning.routingBudgetPPM);
+  };
+
+  const validateInvoice = function (invoice: string, targetAmount: number) {
+    const invoiceAmount = Number(invoice.substring(4, 5 + Math.floor(Math.log10(targetAmount))));
+    if (targetAmount != invoiceAmount) {
+      return 'Invalid invoice amount';
+    } else {
+      return '';
+    }
   };
 
   useEffect(() => {
@@ -100,48 +111,84 @@ export const LightningPayoutForm = ({
       lnproxyAmount: amount - lightning.lnproxyBudgetSats,
       routingBudgetSats:
         lightning.routingBudgetSats == undefined
-          ? (amount / 1000000) * lightning.routingBudgetPPM
+          ? Math.ceil((amount / 1000000) * lightning.routingBudgetPPM)
           : lightning.routingBudgetSats,
     });
   }, [lightning.routingBudgetPPM]);
+
+  useEffect(() => {
+    if (lightning.invoice != '') {
+      setLightning({
+        ...lightning,
+        badInvoice: validateInvoice(lightning.invoice, lightning.amount),
+      });
+    }
+  }, [lightning.invoice, lightning.amount]);
+
+  useEffect(() => {
+    if (lightning.lnproxyInvoice != '') {
+      setLightning({
+        ...lightning,
+        badLnproxy: validateInvoice(lightning.lnproxyInvoice, lightning.lnproxyAmount),
+      });
+    }
+  }, [lightning.lnproxyInvoice, lightning.lnproxyAmount]);
 
   const lnproxyUrl = function () {
     return `http://${lnproxies[lightning.lnproxyServer].mainnetOnion}`;
   };
 
+  // const fetchLnproxy = function () {
+  //   setLoadingLnproxy(true);
+  //   apiClient
+  //     .get(
+  //       lnproxyUrl(),
+  //       `/api/${lightning.lnproxyInvoice}${lightning.lnproxyBudgetSats > 0 ? `?routing_msat=${lightning.lnproxyBudgetSats * 1000}` : ''}`,
+  //     )
+  // };
+
+  // Lnproxy API does not return JSON, therefore not compatible with current apiClient service
+  // Does not work on Android robosats!
   const fetchLnproxy = function () {
     setLoadingLnproxy(true);
-    apiClient
-      .get(
-        lnproxyUrl(),
-        `/api/${lightning.lnproxyInvoice}?routing_msat=${lightning.lnproxyBudgetSats * 1000}`,
-      )
-      .then((data) => {
-        const response = String(data);
-        if (response.includes('lnproxy error')) {
-          setLightning({ ...lightning, badLnproxy: response });
+    fetch(
+      lnproxyUrl() +
+        `/api/${lightning.lnproxyInvoice}${
+          lightning.lnproxyBudgetSats > 0
+            ? `?routing_msat=${lightning.lnproxyBudgetSats * 1000}`
+            : ''
+        }`,
+    )
+      .then((response) => response.text())
+      .then((text) => {
+        if (text.includes('lnproxy error')) {
+          setLightning({ ...lightning, badLnproxy: text });
         } else {
-          setLightning({ ...lightning, invoice: String(data), badLnproxy: '' });
+          setLightning({ ...lightning, invoice: text, badLnproxy: '' });
         }
       })
-      // .catch(() => {
-      //   setLightning({ ...lightning, badLnproxy: 'Lnproxy server uncaught error' });
-      // })
+      .catch(() => {
+        setLightning({ ...lightning, badLnproxy: 'Lnproxy server uncaught error' });
+      })
       .finally(() => {
         setLoadingLnproxy(false);
       });
   };
 
   const onProxyBudgetChange = function (e) {
-    if (isFinite(e.target.value)) {
+    if (isFinite(e.target.value) && e.target.value >= 0) {
+      let lnproxyBudgetSats;
+      let lnproxyBudgetPPM;
+
       if (lightning.lnproxyBudgetUnit === 'Sats') {
-        const lnproxyBudgetSats = Math.floor(e.target.value);
-        const lnproxyBudgetPPM = Math.round((lnproxyBudgetSats * 1000000) / lightning.amount);
-        const lnproxyAmount = lightning.amount - lnproxyBudgetSats;
-        setLightning({ ...lightning, lnproxyBudgetSats, lnproxyBudgetPPM, lnproxyAmount });
+        lnproxyBudgetSats = Math.floor(e.target.value);
+        lnproxyBudgetPPM = Math.round((lnproxyBudgetSats * 1000000) / lightning.amount);
       } else {
-        const lnproxyBudgetPPM = e.target.value;
-        const lnproxyBudgetSats = Math.round((lightning.amount / 1000000) * lnproxyBudgetPPM);
+        lnproxyBudgetPPM = e.target.value;
+        lnproxyBudgetSats = Math.ceil((lightning.amount / 1000000) * lnproxyBudgetPPM);
+      }
+
+      if (lnproxyBudgetPPM < 99999) {
         const lnproxyAmount = lightning.amount - lnproxyBudgetSats;
         setLightning({ ...lightning, lnproxyBudgetSats, lnproxyBudgetPPM, lnproxyAmount });
       }
@@ -149,15 +196,19 @@ export const LightningPayoutForm = ({
   };
 
   const onRoutingBudgetChange = function (e) {
-    if (isFinite(e.target.value)) {
+    if (isFinite(e.target.value) && e.target.value >= 0) {
+      let routingBudgetSats;
+      let routingBudgetPPM;
+
       if (lightning.routingBudgetUnit === 'Sats') {
-        const routingBudgetSats = Math.floor(e.target.value);
-        const routingBudgetPPM = Math.round((routingBudgetSats * 1000000) / lightning.amount);
-        const amount = lightning.amount - routingBudgetSats;
-        setLightning({ ...lightning, routingBudgetSats, routingBudgetPPM, amount });
+        routingBudgetSats = Math.floor(e.target.value);
+        routingBudgetPPM = Math.round((routingBudgetSats * 1000000) / lightning.amount);
       } else {
-        const routingBudgetPPM = e.target.value;
-        const routingBudgetSats = Math.round((lightning.amount / 1000000) * routingBudgetPPM);
+        routingBudgetPPM = e.target.value;
+        routingBudgetSats = Math.ceil((lightning.amount / 1000000) * routingBudgetPPM);
+      }
+
+      if (routingBudgetPPM < 99999) {
         const amount = lightning.amount - routingBudgetSats;
         setLightning({ ...lightning, routingBudgetSats, routingBudgetPPM, amount });
       }
@@ -204,9 +255,6 @@ export const LightningPayoutForm = ({
             setLightning({
               ...lightning,
               advancedOptions: checked,
-              useLnproxy: checked ? lightning.useLnproxy : false,
-              invoice: checked ? '' : lightning.invoice,
-              useCustomBudget: checked ? lightning.useCustomBudget : false,
             });
           }}
         />
@@ -214,27 +262,24 @@ export const LightningPayoutForm = ({
       </Grid>
 
       <Grid item>
-        <Collapse in={lightning.advancedOptions}>
-          <Tooltip
-            enterTouchDelay={0}
-            leaveTouchDelay={4000}
-            placement='top'
-            title={t(
-              `Wrap this invoice using a Lnproxy server to protect your privacy (hides the receiving wallet).`,
-            )}
+        <Box
+          sx={{
+            backgroundColor: 'background.paper',
+            border: '1px solid',
+            width: '18em',
+            borderRadius: '0.3em',
+            borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+            padding: '1em',
+          }}
+        >
+          <Grid
+            container
+            direction='column'
+            justifyContent='flex-start'
+            alignItems='center'
+            spacing={0.5}
           >
-            <Box
-              sx={{
-                backgroundColor: 'background.paper',
-                border: '1px solid',
-                width: '18em',
-                borderRadius: '0.3em',
-                borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-                '&:hover': {
-                  borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-                },
-              }}
-            >
+            <Collapse in={lightning.advancedOptions}>
               <Grid
                 container
                 direction='column'
@@ -244,25 +289,80 @@ export const LightningPayoutForm = ({
                 padding={0.5}
               >
                 <Grid item>
-                  <div>
-                    <FormControlLabel
-                      onChange={(e) =>
-                        setLightning({
-                          ...lightning,
-                          useLnproxy: e.target.checked,
-                          invoice: e.target.checked ? '' : lightning.invoice,
-                        })
-                      }
-                      checked={lightning.useLnproxy}
-                      control={<Checkbox />}
-                      label={
-                        <Typography color={lightning.useLnproxy ? 'primary' : 'text.secondary'}>
-                          {t('Use Lnproxy')}
-                        </Typography>
-                      }
-                    />
-                  </div>
+                  <TextField
+                    sx={{ width: '14em' }}
+                    disabled={!lightning.advancedOptions}
+                    error={routingBudgetHelper() != ''}
+                    helperText={routingBudgetHelper()}
+                    label={t('Routing Budget')}
+                    required={true}
+                    value={
+                      lightning.routingBudgetUnit == 'PPM'
+                        ? lightning.routingBudgetPPM
+                        : lightning.routingBudgetSats
+                    }
+                    variant='outlined'
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position='end'>
+                          <Button
+                            variant='text'
+                            onClick={() => {
+                              setLightning({
+                                ...lightning,
+                                routingBudgetUnit:
+                                  lightning.routingBudgetUnit == 'PPM' ? 'Sats' : 'PPM',
+                              });
+                            }}
+                          >
+                            {lightning.routingBudgetUnit}
+                          </Button>
+                        </InputAdornment>
+                      ),
+                    }}
+                    inputProps={{
+                      style: {
+                        textAlign: 'center',
+                      },
+                    }}
+                    onChange={onRoutingBudgetChange}
+                  />
                 </Grid>
+
+                {window.NativeRobosats === undefined ? (
+                  <Grid item>
+                    <Tooltip
+                      enterTouchDelay={0}
+                      leaveTouchDelay={4000}
+                      placement='top'
+                      title={t(
+                        `Wrap this invoice using a Lnproxy server to protect your privacy (hides the receiving wallet).`,
+                      )}
+                    >
+                      <div>
+                        <FormControlLabel
+                          onChange={(e) =>
+                            setLightning({
+                              ...lightning,
+                              useLnproxy: e.target.checked,
+                              invoice: e.target.checked ? '' : lightning.invoice,
+                            })
+                          }
+                          checked={lightning.useLnproxy}
+                          control={<Checkbox />}
+                          label={
+                            <Typography color={lightning.useLnproxy ? 'primary' : 'text.secondary'}>
+                              {t('Use Lnproxy')}
+                            </Typography>
+                          }
+                        />
+                      </div>
+                    </Tooltip>
+                  </Grid>
+                ) : (
+                  <></>
+                )}
+
                 <Grid item>
                   <Collapse in={lightning.useLnproxy}>
                     <Grid
@@ -332,53 +432,106 @@ export const LightningPayoutForm = ({
                           onChange={onProxyBudgetChange}
                         />
                       </Grid>
-
-                      <Grid item>
-                        <Typography variant='body2'>
-                          {t('Submit a valid invoice for {{amountSats}} Satoshis.', {
-                            amountSats: pn(lightning.lnproxyAmount),
-                          })}
-                        </Typography>
-                      </Grid>
-
-                      <Grid item>
-                        <TextField
-                          disabled={!lightning.useLnproxy}
-                          error={lightning.badLnproxy != ''}
-                          helperText={lightning.badLnproxy ? t(lightning.badLnproxy) : ''}
-                          label={t('Invoice to wrap')}
-                          required
-                          value={lightning.lnproxyInvoice}
-                          inputProps={{
-                            style: { textAlign: 'center' },
-                          }}
-                          variant='outlined'
-                          onChange={(e) =>
-                            setLightning({ ...lightning, lnproxyInvoice: e.target.value ?? '' })
-                          }
-                        />
-                      </Grid>
-
-                      <Grid item>
-                        <LoadingButton
-                          loading={loadingLnproxy}
-                          onClick={fetchLnproxy}
-                          variant='outlined'
-                          color='primary'
-                        >
-                          {t('Wrap invoice')}
-                        </LoadingButton>
-                      </Grid>
                     </Grid>
                   </Collapse>
                 </Grid>
               </Grid>
-            </Box>
-          </Tooltip>
-        </Collapse>
+            </Collapse>
+
+            <Grid item>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Typography align='center' variant='body2'>
+                  {t('Submit invoice for {{amountSats}} Sats', {
+                    amountSats: pn(
+                      lightning.useLnproxy ? lightning.lnproxyAmount : lightning.amount,
+                    ),
+                  })}
+                </Typography>
+                <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
+                  <IconButton
+                    sx={{ height: '0.5em' }}
+                    onClick={() =>
+                      systemClient.copyToClipboard(
+                        lightning.useLnproxy ? lightning.lnproxyAmount : lightning.amount,
+                      )
+                    }
+                  >
+                    <ContentCopy sx={{ width: '0.8em' }} />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            </Grid>
+
+            <Grid item>
+              {lightning.useLnproxy ? (
+                <TextField
+                  fullWidth={true}
+                  disabled={!lightning.useLnproxy}
+                  error={lightning.badLnproxy != ''}
+                  helperText={lightning.badLnproxy ? t(lightning.badLnproxy) : ''}
+                  label={t('Invoice to wrap')}
+                  required
+                  value={lightning.lnproxyInvoice}
+                  inputProps={{
+                    style: { textAlign: 'center' },
+                  }}
+                  variant='outlined'
+                  onChange={(e) =>
+                    setLightning({ ...lightning, lnproxyInvoice: e.target.value ?? '' })
+                  }
+                />
+              ) : (
+                <></>
+              )}
+              <TextField
+                fullWidth={true}
+                sx={lightning.useLnproxy ? { borderRadius: 0 } : {}}
+                disabled={lightning.useLnproxy}
+                error={lightning.badInvoice != ''}
+                helperText={lightning.badInvoice ? t(lightning.badInvoice) : ''}
+                label={lightning.useLnproxy ? t('Wrapped invoice') : t('Payout Lightning Invoice')}
+                required
+                value={lightning.invoice}
+                inputProps={{
+                  style: { textAlign: 'center', maxHeight: '8em' },
+                }}
+                variant={lightning.useLnproxy ? 'filled' : 'standard'}
+                multiline={lightning.useLnproxy ? false : true}
+                minRows={3}
+                maxRows={5}
+                onChange={(e) => setLightning({ ...lightning, invoice: e.target.value ?? '' })}
+              />
+            </Grid>
+
+            <Grid item>
+              {lightning.useLnproxy ? (
+                <LoadingButton
+                  loading={loadingLnproxy}
+                  disabled={lightning.lnproxyInvoice == ''}
+                  onClick={fetchLnproxy}
+                  variant='outlined'
+                  color='primary'
+                >
+                  {t('Wrap')}
+                </LoadingButton>
+              ) : (
+                <></>
+              )}
+              <LoadingButton
+                loading={loading}
+                disabled={lightning.invoice == ''}
+                onClick={() => onClickSubmit(lightning.invoice)}
+                variant='outlined'
+                color='primary'
+              >
+                {t('Submit')}
+              </LoadingButton>
+            </Grid>
+          </Grid>
+        </Box>
       </Grid>
 
-      <Grid item>
+      {/* <Grid item>
         <Box
           sx={{
             backgroundColor: 'background.paper',
@@ -433,98 +586,9 @@ export const LightningPayoutForm = ({
               </Tooltip>
             </Collapse>
 
-            <Grid item>
-              <Collapse in={lightning.useCustomBudget}>
-                <TextField
-                  sx={{ width: '14em' }}
-                  disabled={!lightning.useCustomBudget}
-                  error={routingBudgetHelper() != ''}
-                  helperText={routingBudgetHelper()}
-                  label={t('Routing Budget')}
-                  required={true}
-                  value={
-                    lightning.routingBudgetUnit == 'PPM'
-                      ? lightning.routingBudgetPPM
-                      : lightning.routingBudgetSats
-                  }
-                  variant='outlined'
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position='end'>
-                        <Button
-                          variant='text'
-                          onClick={() => {
-                            setLightning({
-                              ...lightning,
-                              routingBudgetUnit:
-                                lightning.routingBudgetUnit == 'PPM' ? 'Sats' : 'PPM',
-                            });
-                          }}
-                        >
-                          {lightning.routingBudgetUnit}
-                        </Button>
-                      </InputAdornment>
-                    ),
-                  }}
-                  inputProps={{
-                    style: {
-                      textAlign: 'center',
-                    },
-                  }}
-                  onChange={onRoutingBudgetChange}
-                />
-              </Collapse>
-            </Grid>
-
-            <Grid item>
-              <Collapse in={!lightning.useLnproxy}>
-                <Typography variant='body2'>
-                  {t('Submit a valid invoice for {{amountSats}} Satoshis.', {
-                    amountSats: pn(lightning.amount),
-                  })}
-                </Typography>
-              </Collapse>
-            </Grid>
-
-            <Grid item>
-              <TextField
-                fullWidth={true}
-                disabled={lightning.useLnproxy}
-                error={lightning.badInvoice != ''}
-                helperText={lightning.badInvoice ? t(lightning.badInvoice) : ''}
-                label={lightning.useLnproxy ? t('Wrapped invoice') : t('Payout Lightning Invoice')}
-                required
-                value={lightning.invoice}
-                inputProps={{
-                  style: { textAlign: 'center', maxHeight: '6em' },
-                }}
-                variant={
-                  lightning.useLnproxy
-                    ? 'filled'
-                    : lightning.useCustomBudget
-                    ? 'outlined'
-                    : 'standard'
-                }
-                multiline={lightning.useLnproxy ? false : true}
-                minRows={2}
-                maxRows={4}
-                onChange={(e) => setLightning({ ...lightning, invoice: e.target.value ?? '' })}
-              />
-            </Grid>
-            <Grid item>
-              <LoadingButton
-                loading={loading}
-                disabled={lightning.invoice == ''}
-                onClick={() => onClickSubmit(lightning.invoice)}
-                variant='outlined'
-                color='primary'
-              >
-                {t('Submit')}
-              </LoadingButton>
-            </Grid>
           </Grid>
         </Box>
-      </Grid>
+      </Grid> */}
 
       <Grid item>
         <WalletsButton />
