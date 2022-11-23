@@ -53,7 +53,7 @@ services:
     environment:
       TOR_PROXY_IP: 127.0.0.1
       TOR_PROXY_PORT: 9050
-      ROBOSATS_ONION: robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion
+      ROBOSATS_ONION: robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion
     network_mode: service:tor
     volumes:
       - ./frontend/static:/usr/src/robosats/static

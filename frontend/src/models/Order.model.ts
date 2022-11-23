@@ -15,7 +15,7 @@ export interface TradeCoordinatorSummary {
   contract_timestamp: Date;
   contract_total_time: number;
   contract_exchange_rate: number;
-  routing_fee_sats: number;
+  routing_budget_sats: number;
   trade_revenue_sats: number;
 }
 

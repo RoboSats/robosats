@@ -77,7 +77,7 @@ const ChatHeader: React.FC<Props> = ({ connected, peerConnected, turtleMode, set
         >
           <Typography align='center' variant='caption' sx={{ color: connectedTextColor }}>
             {t('Peer') + ': '}
-            {peerConnected ? t('connected') : t('disconnected')}
+            {connected ? (peerConnected ? t('connected') : t('disconnected')) : '...waiting'}
           </Typography>
         </Paper>
       </Grid>

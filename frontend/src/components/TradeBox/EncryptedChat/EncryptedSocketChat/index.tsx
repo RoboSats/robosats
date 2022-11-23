@@ -72,6 +72,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   useEffect(() => {
     if (![9, 10].includes(status)) {
       connection?.close();
+      setConnection(undefined);
     }
   }, [status]);
 

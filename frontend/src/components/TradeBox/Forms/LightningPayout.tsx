@@ -89,14 +89,13 @@ export const LightningPayoutForm = ({
   const [loadingLnproxy, setLoadingLnproxy] = useState<boolean>(false);
 
   const computeInvoiceAmount = function () {
-    //const tradeAmount = order.trade_satoshis
-    const tradeAmount = 1000000;
-    return tradeAmount - Math.floor((tradeAmount / 1000000) * lightning.routingBudgetPPM);
+    const tradeAmount = order.trade_satoshis;
+    return Math.floor(tradeAmount - tradeAmount * (lightning.routingBudgetPPM / 1000000));
   };
 
   const validateInvoice = function (invoice: string, targetAmount: number) {
     const invoiceAmount = Number(invoice.substring(4, 5 + Math.floor(Math.log10(targetAmount))));
-    if (targetAmount != invoiceAmount) {
+    if (targetAmount != invoiceAmount && invoice.length > 20) {
       return 'Invalid invoice amount';
     } else {
       return '';
@@ -196,20 +195,23 @@ export const LightningPayoutForm = ({
   };
 
   const onRoutingBudgetChange = function (e) {
+    const tradeAmount = order.trade_satoshis;
     if (isFinite(e.target.value) && e.target.value >= 0) {
       let routingBudgetSats;
       let routingBudgetPPM;
 
       if (lightning.routingBudgetUnit === 'Sats') {
         routingBudgetSats = Math.floor(e.target.value);
-        routingBudgetPPM = Math.round((routingBudgetSats * 1000000) / lightning.amount);
+        routingBudgetPPM = Math.round((routingBudgetSats * 1000000) / tradeAmount);
       } else {
         routingBudgetPPM = e.target.value;
         routingBudgetSats = Math.ceil((lightning.amount / 1000000) * routingBudgetPPM);
       }
 
       if (routingBudgetPPM < 99999) {
-        const amount = lightning.amount - routingBudgetSats;
+        const amount = Math.floor(
+          tradeAmount - tradeAmount * (lightning.routingBudgetPPM / 1000000),
+        );
         setLightning({ ...lightning, routingBudgetSats, routingBudgetPPM, amount });
       }
     }

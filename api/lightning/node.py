@@ -258,7 +258,7 @@ class LNNode:
         return True
 
     @classmethod
-    def validate_ln_invoice(cls, invoice, num_satoshis):
+    def validate_ln_invoice(cls, invoice, num_satoshis, routing_budget_ppm):
         """Checks if the submited LN invoice comforms to expectations"""
 
         payout = {
@@ -283,10 +283,17 @@ class LNNode:
         route_hints = payreq_decoded.route_hints
 
         # Max amount RoboSats will pay for routing
-        max_routing_fee_sats = max(
-            num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
-            float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
-        )
+        # Start deprecate after v0.3.1 (only else max_routing_fee_sats will remain)
+        if routing_budget_ppm == 0:
+            max_routing_fee_sats = max(
+                num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
+                float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
+            )
+        else:
+            # End deprecate
+            max_routing_fee_sats = int(
+                float(num_satoshis) * float(routing_budget_ppm) / 1000000
+            )
 
         if route_hints:
             routes_cost = []
@@ -306,7 +313,7 @@ class LNNode:
             # If the cheapest possible private route is more expensive than what RoboSats is willing to pay
             if min(routes_cost) >= max_routing_fee_sats:
                 payout["context"] = {
-                    "bad_invoice": "The invoice submitted only has a trick on the routing hints, you might be using an incompatible wallet (probably Muun? Use an onchain address instead!). Check the wallet compatibility guide at wallets.robosats.com"
+                    "bad_invoice": "The invoice hinted private routes are not payable within the submitted routing budget."
                 }
                 return payout
 

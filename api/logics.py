@@ -721,7 +721,7 @@ class Logics:
         return True, None
 
     @classmethod
-    def update_invoice(cls, order, user, invoice):
+    def update_invoice(cls, order, user, invoice, routing_budget_ppm):
 
         # Empty invoice?
         if not invoice:
@@ -754,7 +754,11 @@ class Logics:
         cls.cancel_onchain_payment(order)
 
         num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
-        payout = LNNode.validate_ln_invoice(invoice, num_satoshis)
+        routing_budget_sats = float(num_satoshis) * (
+            float(routing_budget_ppm) / 1000000
+        )
+        num_satoshis = int(num_satoshis - routing_budget_sats)
+        payout = LNNode.validate_ln_invoice(invoice, num_satoshis, routing_budget_ppm)
 
         if not payout["valid"]:
             return False, payout["context"]
@@ -765,6 +769,8 @@ class Logics:
             sender=User.objects.get(username=ESCROW_USERNAME),
             order_paid_LN=order,  # In case this user has other payouts, update the one related to this order.
             receiver=user,
+            routing_budget_ppm=routing_budget_ppm,
+            routing_budget_sats=routing_budget_sats,
             # if there is a LNPayment matching these above, it updates that one with defaults below.
             defaults={
                 "invoice": invoice,
@@ -1679,7 +1685,9 @@ class Logics:
                 else:
                     summary["received_sats"] = order.payout.num_satoshis
                 summary["trade_fee_sats"] = round(
-                    order.last_satoshis - summary["received_sats"]
+                    order.last_satoshis
+                    - summary["received_sats"]
+                    - order.payout.routing_budget_sats
                 )
                 # Only add context for swap costs if the user is the swap recipient. Peer should not know whether it was a swap
                 if users[order_user] == user and order.is_swap:
@@ -1716,11 +1724,20 @@ class Logics:
                 order.contract_finalization_time - order.last_satoshis_time
             )
         if not order.is_swap:
+            platform_summary["routing_budget_sats"] = order.payout.routing_budget_sats
+            # Start Deprecated after v0.3.1
             platform_summary["routing_fee_sats"] = order.payout.fee
+            # End Deprecated after v0.3.1
             platform_summary["trade_revenue_sats"] = int(
                 order.trade_escrow.num_satoshis
                 - order.payout.num_satoshis
-                - order.payout.fee
+                # Start Deprecated after v0.3.1 (will be `- order.payout.routing_budget_sats`)
+                - (
+                    order.payout.fee
+                    if order.payout.routing_budget_sats == 0
+                    else order.payout.routing_budget_sats
+                )
+                # End Deprecated after v0.3.1
             )
         else:
             platform_summary["routing_fee_sats"] = 0

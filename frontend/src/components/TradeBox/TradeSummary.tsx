@@ -273,9 +273,9 @@ const TradeSummary = ({
             </ListItemIcon>
             <ListItemText
               primary={t('{{routingFeeSats}} MiliSats', {
-                routingFeeSats: pn(platformSummary.routing_fee_sats),
+                routingFeeSats: pn(platformSummary.routing_budget_sats),
               })}
-              secondary={t('Platform covered routing fee')}
+              secondary={t('Routing budget')}
             />
           </ListItem>
 
