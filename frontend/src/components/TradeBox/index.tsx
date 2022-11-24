@@ -44,7 +44,7 @@ import {
   defaultDispute,
 } from './Forms';
 
-import { Order } from '../../models';
+import { Order, Settings } from '../../models';
 import { EncryptedChatMessage } from './EncryptedChat';
 import { systemClient } from '../../services/System';
 import CollabCancelAlert from './CollabCancelAlert';
@@ -96,12 +96,14 @@ interface TradeBoxProps {
   setBadOrder: (state: string | undefined) => void;
   onRenewOrder: () => void;
   onStartAgain: () => void;
+  settings: Settings;
   baseUrl: string;
 }
 
 const TradeBox = ({
   order,
   setOrder,
+  settings,
   baseUrl,
   setBadOrder,
   onRenewOrder,
@@ -384,6 +386,7 @@ const TradeBox = ({
           return (
             <PayoutPrompt
               order={order}
+              settings={settings}
               onClickSubmitInvoice={updateInvoice}
               loadingLightning={loadingButtons.submitInvoice}
               lightning={lightning}

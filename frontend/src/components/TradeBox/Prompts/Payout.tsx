@@ -4,7 +4,7 @@ import { Grid, Typography, ToggleButtonGroup, ToggleButton } from '@mui/material
 
 import currencies from '../../../../static/assets/currencies.json';
 
-import { Order } from '../../../models';
+import { Order, Settings } from '../../../models';
 import { pn } from '../../../utils';
 import { Bolt, Link } from '@mui/icons-material';
 import { LightningPayoutForm, LightningForm, OnchainPayoutForm, OnchainForm } from '../Forms';
@@ -19,6 +19,7 @@ interface PayoutPrompProps {
   onchain: OnchainForm;
   setOnchain: (state: OnchainForm) => void;
   loadingOnchain: boolean;
+  settings: Settings;
 }
 
 export const PayoutPrompt = ({
@@ -31,6 +32,7 @@ export const PayoutPrompt = ({
   loadingOnchain,
   onchain,
   setOnchain,
+  settings,
 }: PayoutPrompProps): JSX.Element => {
   const { t } = useTranslation();
   const currencyCode: string = currencies[`${order.currency}`];
@@ -97,6 +99,7 @@ export const PayoutPrompt = ({
       <Grid item style={{ display: tab == 'lightning' ? '' : 'none' }}>
         <LightningPayoutForm
           order={order}
+          settings={settings}
           loading={loadingLightning}
           lightning={lightning}
           setLightning={setLightning}

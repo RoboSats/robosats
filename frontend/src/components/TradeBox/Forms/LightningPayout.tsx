@@ -18,8 +18,9 @@ import {
   FormControl,
   InputLabel,
   IconButton,
+  FormHelperText,
 } from '@mui/material';
-import { Order } from '../../../models';
+import { Order, Settings } from '../../../models';
 import WalletsButton from '../WalletsButton';
 import { LoadingButton } from '@mui/lab';
 import { pn } from '../../../utils';
@@ -74,6 +75,7 @@ interface LightningPayoutFormProps {
   lightning: LightningForm;
   setLightning: (state: LightningForm) => void;
   onClickSubmit: (invoice: string) => void;
+  settings: Settings;
 }
 
 export const LightningPayoutForm = ({
@@ -82,11 +84,13 @@ export const LightningPayoutForm = ({
   onClickSubmit,
   lightning,
   setLightning,
+  settings,
 }: LightningPayoutFormProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 
   const [loadingLnproxy, setLoadingLnproxy] = useState<boolean>(false);
+  const [badLnproxyServer, setBadLnproxyServer] = useState<string>('');
 
   const computeInvoiceAmount = function () {
     const tradeAmount = order.trade_satoshis;
@@ -134,8 +138,31 @@ export const LightningPayoutForm = ({
   }, [lightning.lnproxyInvoice, lightning.lnproxyAmount]);
 
   const lnproxyUrl = function () {
-    return `http://${lnproxies[lightning.lnproxyServer].mainnetOnion}`;
+    const bitcoinNetwork = settings.network ?? 'mainnet';
+    let internetNetwork: 'Clearnet' | 'I2P' | 'TOR' = 'Clearnet';
+    if (settings.host?.includes('.i2p')) {
+      internetNetwork = 'I2P';
+    } else if (settings.host?.includes('.onion') || window.NativeRobosats != undefined) {
+      internetNetwork = 'TOR';
+    }
+
+    const url = lnproxies[lightning.lnproxyServer][`${bitcoinNetwork}${internetNetwork}`];
+    if (url != 'undefined') {
+      return url;
+    } else {
+      setBadLnproxyServer(
+        t(`Server not available for {{bitcoinNetwork}} bitcoin over {{internetNetwork}}`, {
+          bitcoinNetwork,
+          internetNetwork: t(internetNetwork),
+        }),
+      );
+    }
   };
+
+  useEffect(() => {
+    setBadLnproxyServer('');
+    lnproxyUrl();
+  }, [lightning.lnproxyServer]);
 
   // const fetchLnproxy = function () {
   //   setLoadingLnproxy(true);
@@ -375,7 +402,7 @@ export const LightningPayoutForm = ({
                       spacing={1}
                     >
                       <Grid item>
-                        <FormControl>
+                        <FormControl error={badLnproxyServer != ''}>
                           <InputLabel id='select-label'>{t('Server')}</InputLabel>
                           <Select
                             sx={{ width: '14em' }}
@@ -392,6 +419,11 @@ export const LightningPayoutForm = ({
                               </MenuItem>
                             ))}
                           </Select>
+                          {badLnproxyServer != '' ? (
+                            <FormHelperText>{t(badLnproxyServer)}</FormHelperText>
+                          ) : (
+                            <></>
+                          )}
                         </FormControl>
                       </Grid>
 
@@ -509,7 +541,9 @@ export const LightningPayoutForm = ({
               {lightning.useLnproxy ? (
                 <LoadingButton
                   loading={loadingLnproxy}
-                  disabled={lightning.lnproxyInvoice == ''}
+                  disabled={
+                    lightning.lnproxyInvoice.length < 20 || badLnproxyServer || lightning.badLnproxy
+                  }
                   onClick={fetchLnproxy}
                   variant='outlined'
                   color='primary'
