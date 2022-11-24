@@ -53,3 +53,5 @@ Under the hood, token creation in the RoboSats homepage is the process of genera
 Your identity may be concealed by a robot identity, yet that is no excuse for being a difficult peer during trades. Other robots have robo-feelings too! Be succinct and respectful when chatting with peers; this will make for an easier and smoother experience on RoboSats. Never share more information than is absolutely necessary to complete the order.
 
 All communications in RoboSats are PGP encrypted. The encrypted peer-to-peer chat messages are signed by each robot peer which proves no one intercepted the chat and is useful for resolving disputes. Refer to [Best Practices > PGP Encryption](https://learn.robosats.com/docs/pgp-encryption/) for additional information.
+
+{% include improve %}
