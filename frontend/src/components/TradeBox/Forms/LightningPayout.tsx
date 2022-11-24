@@ -25,6 +25,7 @@ import WalletsButton from '../WalletsButton';
 import { LoadingButton } from '@mui/lab';
 import { pn } from '../../../utils';
 
+
 import { ContentCopy, Help, RoundaboutRight, Route, SelfImprovement } from '@mui/icons-material';
 import { apiClient } from '../../../services/api';
 
@@ -360,7 +361,7 @@ export const LightningPayoutForm = ({
                 </Grid>
 
                 {window.NativeRobosats === undefined ? (
-                  <Grid item style={{ display: 'flex', alignItems: 'center' }}>
+                  <Grid item>
                     <Tooltip
                       enterTouchDelay={0}
                       leaveTouchDelay={4000}
