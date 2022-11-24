@@ -1,0 +1,11 @@
+[
+  {
+    "name": "↬ Lnproxy Dev",
+    "mainnetClearnet": "lnproxy.org",
+    "mainnetTOR": "rdq6tvulanl7aqtupmoboyk2z3suzkdwurejwyjyjf4itr3zhxrm2lad.onion",
+    "mainnetI2P": "undefined",
+    "testnetClearnet": "undefined",
+    "testnetTOR": "undefined",
+    "testnetI2P": "undefined"
+  }
+]

@@ -1,5 +1,6 @@
 export interface Coordinator {
   alias: string;
+  enabled: boolean;
   description: string | undefined;
   coverLetter: string | undefined;
   logo: string;

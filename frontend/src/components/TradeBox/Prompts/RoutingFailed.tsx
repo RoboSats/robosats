@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Box, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import Countdown, { CountdownRenderProps, zeroPad } from 'react-countdown';
 
-import { Order } from '../../../models';
+import { Order, Settings } from '../../../models';
 import { LightningForm, LightningPayoutForm } from '../Forms';
 
 interface RoutingFailedPromptProps {
@@ -12,6 +12,7 @@ interface RoutingFailedPromptProps {
   lightning: LightningForm;
   loadingLightning: boolean;
   setLightning: (state: LightningForm) => void;
+  settings: Settings;
 }
 
 interface FailureReasonProps {
@@ -28,6 +29,7 @@ const FailureReason = ({ failureReason }: FailureReasonProps): JSX.Element => {
         backgroundColor: theme.palette.background.paper,
         borderRadius: '0.3em',
         border: `1px solid ${theme.palette.text.secondary}`,
+        padding: '0.5em',
       }}
     >
       <Typography variant='body2' align='center'>
@@ -46,6 +48,7 @@ export const RoutingFailedPrompt = ({
   loadingLightning,
   lightning,
   setLightning,
+  settings,
 }: RoutingFailedPromptProps): JSX.Element => {
   const { t } = useTranslation();
 
@@ -95,6 +98,7 @@ export const RoutingFailedPrompt = ({
         <Grid item>
           <LightningPayoutForm
             order={order}
+            settings={settings}
             loading={loadingLightning}
             lightning={lightning}
             setLightning={setLightning}

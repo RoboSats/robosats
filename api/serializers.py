@@ -489,6 +489,14 @@ class UpdateOrderSerializer(serializers.Serializer):
     invoice = serializers.CharField(
         max_length=2000, allow_null=True, allow_blank=True, default=None
     )
+    routing_budget_ppm = serializers.IntegerField(
+        default=0,
+        min_value=0,
+        max_value=100000,
+        allow_null=True,
+        required=False,
+        help_text="Max budget to allocate for routing in PPM",
+    )
     address = serializers.CharField(
         max_length=100, allow_null=True, allow_blank=True, default=None
     )

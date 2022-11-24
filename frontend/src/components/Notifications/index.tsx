@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StringIfPlural, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import {
   Tooltip,
   Alert,
@@ -134,7 +134,7 @@ const Notifications = ({
       title: t('Order has expired'),
       severity: 'warning',
       onClick: moveToOrderPage,
-      sound: undefined,
+      sound: audio.ding,
       timeout: 30000,
       pageTitle: `${t('😪 Expired!')} - ${basePageTitle}`,
     },
@@ -262,7 +262,6 @@ const Notifications = ({
     } else if (order?.is_seller && status > 7 && oldStatus < 7) {
       message = Messages.escrowLocked;
     } else if ([9, 10].includes(status) && oldStatus < 9) {
-      console.log('yoooo');
       message = Messages.chat;
     } else if (order?.is_seller && [13, 14, 15].includes(status) && oldStatus < 13) {
       message = Messages.successful;
@@ -333,7 +332,6 @@ const Notifications = ({
   return (
     <StyledTooltip
       open={show}
-      style={{ padding: 0, backgroundColor: 'black' }}
       placement={windowWidth > 60 ? 'left' : 'bottom'}
       title={
         <Alert

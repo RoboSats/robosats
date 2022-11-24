@@ -7,12 +7,13 @@ import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
 
 import { Page } from '../NavBar';
-import { Order } from '../../models';
+import { Order, Settings } from '../../models';
 import { apiClient } from '../../services/api';
 
 interface OrderPageProps {
   windowSize: { width: number; height: number };
   order: Order;
+  settings: Settings;
   setOrder: (state: Order) => void;
   setCurrentOrder: (state: number) => void;
   fetchOrder: () => void;
@@ -27,6 +28,7 @@ interface OrderPageProps {
 const OrderPage = ({
   windowSize,
   order,
+  settings,
   setOrder,
   setCurrentOrder,
   badOrder,
@@ -128,6 +130,7 @@ const OrderPage = ({
                 >
                   <TradeBox
                     order={order}
+                    settings={settings}
                     setOrder={setOrder}
                     setBadOrder={setBadOrder}
                     baseUrl={baseUrl}
@@ -170,6 +173,7 @@ const OrderPage = ({
                 <div style={{ display: tab == 'contract' ? '' : 'none' }}>
                   <TradeBox
                     order={order}
+                    settings={settings}
                     setOrder={setOrder}
                     setBadOrder={setBadOrder}
                     baseUrl={baseUrl}

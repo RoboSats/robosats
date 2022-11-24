@@ -44,7 +44,7 @@ import {
   defaultDispute,
 } from './Forms';
 
-import { Order } from '../../models';
+import { Order, Settings } from '../../models';
 import { EncryptedChatMessage } from './EncryptedChat';
 import { systemClient } from '../../services/System';
 import CollabCancelAlert from './CollabCancelAlert';
@@ -96,12 +96,14 @@ interface TradeBoxProps {
   setBadOrder: (state: string | undefined) => void;
   onRenewOrder: () => void;
   onStartAgain: () => void;
+  settings: Settings;
   baseUrl: string;
 }
 
 const TradeBox = ({
   order,
   setOrder,
+  settings,
   baseUrl,
   setBadOrder,
   onRenewOrder,
@@ -134,6 +136,7 @@ const TradeBox = ({
       | 'submit_statement'
       | 'rate_platform';
     invoice?: string;
+    routing_budget_ppm?: number;
     address?: string;
     mining_fee_rate?: number;
     statement?: string;
@@ -143,6 +146,7 @@ const TradeBox = ({
   const submitAction = function ({
     action,
     invoice,
+    routing_budget_ppm,
     address,
     mining_fee_rate,
     statement,
@@ -152,6 +156,7 @@ const TradeBox = ({
       .post(baseUrl, '/api/order/?order_id=' + order.id, {
         action,
         invoice,
+        routing_budget_ppm,
         address,
         mining_fee_rate,
         statement,
@@ -201,7 +206,11 @@ const TradeBox = ({
 
   const updateInvoice = function (invoice: string) {
     setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
-    submitAction({ action: 'update_invoice', invoice });
+    submitAction({
+      action: 'update_invoice',
+      invoice,
+      routing_budget_ppm: lightning.routingBudgetPPM,
+    });
   };
 
   const updateAddress = function () {
@@ -252,7 +261,7 @@ const TradeBox = ({
       setWaitingWebln(true);
       setOpen({ ...open, webln: true });
       webln
-        .makeInvoice(order.trade_satoshis)
+        .makeInvoice(() => lightning.amount)
         .then((invoice: any) => {
           if (invoice) {
             updateInvoice(invoice.paymentRequest);
@@ -377,6 +386,7 @@ const TradeBox = ({
           return (
             <PayoutPrompt
               order={order}
+              settings={settings}
               onClickSubmitInvoice={updateInvoice}
               loadingLightning={loadingButtons.submitInvoice}
               lightning={lightning}
@@ -424,6 +434,7 @@ const TradeBox = ({
           return (
             <PayoutPrompt
               order={order}
+              settings={settings}
               onClickSubmitInvoice={updateInvoice}
               loadingLightning={loadingButtons.submitInvoice}
               lightning={lightning}
@@ -549,6 +560,7 @@ const TradeBox = ({
           return (
             <RoutingFailedPrompt
               order={order}
+              settings={settings}
               onClickSubmitInvoice={updateInvoice}
               loadingLightning={loadingButtons.submitInvoice}
               lightning={lightning}
