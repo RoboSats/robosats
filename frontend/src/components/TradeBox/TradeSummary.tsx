@@ -263,7 +263,7 @@ const TradeSummary = ({
               primary={t('{{revenueSats}} Sats', {
                 revenueSats: pn(platformSummary.trade_revenue_sats),
               })}
-              secondary={t('Platform trade revenue')}
+              secondary={t('Coordinator trade revenue')}
             />
           </ListItem>
 

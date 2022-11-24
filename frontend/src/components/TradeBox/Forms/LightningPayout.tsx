@@ -138,7 +138,8 @@ export const LightningPayoutForm = ({
   }, [lightning.lnproxyInvoice, lightning.lnproxyAmount]);
 
   const lnproxyUrl = function () {
-    const bitcoinNetwork = settings.network ?? 'mainnet';
+    console.log(settings);
+    const bitcoinNetwork = settings?.network ?? 'mainnet';
     let internetNetwork: 'Clearnet' | 'I2P' | 'TOR' = 'Clearnet';
     if (settings.host?.includes('.i2p')) {
       internetNetwork = 'I2P';

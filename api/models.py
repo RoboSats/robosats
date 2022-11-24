@@ -127,7 +127,7 @@ class LNPayment(models.Model):
         ]
     )
     # Routing budget in PPM
-    routing_budget = models.PositiveBigIntegerField(
+    routing_budget_ppm = models.PositiveBigIntegerField(
         default=0,
         null=False,
         validators=[

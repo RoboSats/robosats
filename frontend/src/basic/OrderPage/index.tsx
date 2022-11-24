@@ -173,6 +173,7 @@ const OrderPage = ({
                 <div style={{ display: tab == 'contract' ? '' : 'none' }}>
                   <TradeBox
                     order={order}
+                    settings={settings}
                     setOrder={setOrder}
                     setBadOrder={setBadOrder}
                     baseUrl={baseUrl}

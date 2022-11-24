@@ -434,6 +434,7 @@ const TradeBox = ({
           return (
             <PayoutPrompt
               order={order}
+              settings={settings}
               onClickSubmitInvoice={updateInvoice}
               loadingLightning={loadingButtons.submitInvoice}
               lightning={lightning}
@@ -559,6 +560,7 @@ const TradeBox = ({
           return (
             <RoutingFailedPrompt
               order={order}
+              settings={settings}
               onClickSubmitInvoice={updateInvoice}
               loadingLightning={loadingButtons.submitInvoice}
               lightning={lightning}
