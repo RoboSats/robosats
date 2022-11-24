@@ -56,7 +56,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
       alignItems='center'
       spacing={0.5}
     >
-      {order.is_taker && concept == 'bond' ? (
+      {concept == 'bond' ? (
         <Typography color='secondary'>
           <b>{t(`You are ${order.is_buyer ? 'BUYING' : 'SELLING'} BTC`)}</b>
         </Typography>
