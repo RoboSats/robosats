@@ -55,3 +55,5 @@ Privacy is valuable for both buyer and seller and always worth a premium, whethe
 The relative premium references the current exchange rates of public APIs, specifically blockchain.io and yadio.io prices. The median price of bitcoin in the selected currency is then calculated and displayed as the market rate your premium follows.
 
 The 24-hour premium shown on the exchange interface is determined by the weighted median, not the mean, of successful orders in the past 24 hours. This calculation method is more resistant to outliers and more representative of peer-to-peer market consensus. In other words, the end-user should view this value as the premium they can roughly expect to pay for an order.
+
+{% include improve %}

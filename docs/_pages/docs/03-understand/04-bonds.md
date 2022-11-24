@@ -14,7 +14,7 @@ The fidelity bond is a small deposit that the user "locks" which will become unl
 
 The RoboSats trade pipeline utilizes fidelity bonds to incentivize both the order maker and taker to play by the rules and not cheat their fellow robot. More specifically, the bonds are [hold invoices](https://github.com/lightningnetwork/lnd/pull/2022) using the Lightning Network; it's the tech that makes RoboSats possible!
 
-By default, the bond is 3% of the total trade amount. Alternatively, order makers can customize this amount to be anywhere from 2% to 15%. Larger bonds mean more "skin in the game" that is required to trade.
+By default, the bond is {{site.robosats.default_bond_size}}% of the total trade amount. Alternatively, order makers can customize this amount to be anywhere from {{site.robosats.min_bond_size}}% to {{site.robosats.max_bond_size}}%. Larger bonds mean more "skin in the game" that is required to trade.
 
 The bond does not leave your Lightning wallet, but please know some wallets play nicer with RoboSats than others due to the nature of the Lightning hold invoice mechanic. Refer to [Understand > Wallets](https://learn.robosats.com/docs/wallets/) for additional information.
 
@@ -25,7 +25,7 @@ The bond does not leave your Lightning wallet, but please know some wallets play
 First, refer to [Understand > Wallets](https://learn.robosats.com/docs/wallets/) for compatible Lightning wallets that will help make using RoboSats a smoother experience. Depending on the wallet, the invoice might show as a payment that is in transit, frozen, or even appearing to fail. Check the wallet compatability list!
 
 Read the relevant guide depending on if you are making or taking the order:
-* **Maker**: Select "Make Order" and modify the order conditions to your liking. The order can be customized to require a fidelity bond other than the default 3% of the total trade amount, ranging anywhere from 2% to 15%. Once complete, confirm with "Create Order" and then use the following QR code found in the "Contract Box" with your Lightning wallet to lock the indicated amount of sats for your fidelity bond. You can always cancel the untaken order while it is live and the bond will automatically unlock; however, if you try to cancel the order after it gets taken, you will forfeit your bond. *Note: Be prepared with your wallet beforehand because the order box expires in ten minutes.*
+* **Maker**: Select "Make Order" and modify the order conditions to your liking. The order can be customized to require a fidelity bond other than the default {{site.robosats.default_bond_size}}% of the total trade amount, ranging anywhere from {{site.robosats.min_bond_size}}% to {{site.robosats.max_bond_size}}%. Once complete, confirm with "Create Order" and then use the following QR code found in the "Contract Box" with your Lightning wallet to lock the indicated amount of sats for your fidelity bond. You can always cancel the untaken order while it is live and the bond will automatically unlock; however, if you try to cancel the order after it gets taken, you will forfeit your bond. *Note: Be prepared with your wallet beforehand because the order box expires in ten minutes.*
 * **Taker**: Browse the order book and find an order to your liking. Simply select the "Take Order" option and then use the following QR code found in the "Contract Box" with your Lightning wallet to lock the indicated amount of sats for your fidelity bond. *Note: Be prepared with your wallet beforehand because the order box expires in four minutes. If you do not proceed, the taken order is made public again.*
 
 After the trade is completed and both robots are satisfied, the maker and taker bonds are unlocked. Technically, the locked bond never left your wallet; but take caution, if you fail to follow the contract obligations by trying to cheat or cancelling unilaterally, you will forfeit your fidelity bond.
@@ -59,10 +59,12 @@ As a sidenote, if RoboSats suddenly vanished or was shutdown, then bonds are aut
 
 ## **Don't Have Any Bitcoin for Bonds?**
 
-Because the bonds require a Lightning hold invoice, what are you to do if you have no bitcoin to begin with? Even though the bond is typically just 3% of your total trade amount, this presents a real barrier to using RoboSats for the first time if your sat stack is non-existent.
+Because the bonds require a Lightning hold invoice, what are you to do if you have no bitcoin to begin with? Even though the bond is typically just {{site.robosats.default_bond_size}}% of your total trade amount, this presents a real barrier to using RoboSats for the first time if your sat stack is non-existent.
 
 Currently, bondless takers are not available; however, please know this is in the works! Bondless takers present a greater risk to the order maker since the taker has no skin in the game. It can be reasonable to expect higher premiums on orders that allow bondless takers.
 
 There are a myriad of available apps and services where very small amounts of bitcoin can be earned. RoboSats does not endorse a specific app, but users have reported success with apps like [Stacker News](https://stacker.news/), [Fountain](https://www.fountain.fm/), [Carrot](https://www.earncarrot.com/), [THNDR](https://www.thndr.games/), etc.
 
 Since the bond is a temporary hold on your funds, you could even borrow satoshis from a friend just for the fidelity bond. After the bond is unlocked from a successful trade, simply return the funds to your friend!
+
+{% include improve %}

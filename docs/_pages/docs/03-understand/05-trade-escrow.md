@@ -12,7 +12,7 @@ src: "_pages/docs/03-understand/05-trade-escrow.md"
 
 When selling bitcoin, a trade escrow is used to protect the buyer from fraud or nonpayment. The escrow acts as an assurance of security, leveraging Lightning [hold invoices](https://github.com/lightningnetwork/lnd/pull/2022) for a trustless transaction between robots.
 
-The alotted time to submit (lock) a trade escrow is determined by the order maker. The escrow's expiry timer defaults to three hours; however, this can be customized to range anywhere from one to eight hours.
+The alotted time to submit (lock) a trade escrow is determined by the order maker. The escrow's expiry timer defaults to {{site.robosats.hours_submit_escrow}} hours; however, this can be customized to range anywhere from 1 to 8 hours.
 
 If the seller fails to lock the trade escrow within the order's given time limit, then the seller forfeits their fidelity bond. Refer to [Understand > Bonds](https://learn.robosats.com/docs/bonds/) for additional information on fidelity bonds. In addition, if a dispute is opened, then the satoshis in escrow are released to the dispute winner.
 
@@ -25,12 +25,12 @@ Be sure to use a Lightning wallet that plays well with RoboSats, refer to [Under
 First, refer to [Understand > Wallets](https://learn.robosats.com/docs/wallets/) for compatible Lightning wallets that will help make using RoboSats a smoother experience. Depending on the wallet, the locked funds might show as a payment that is in transit, frozen, or even appearing to fail. Check the wallet compatability list!
 
 Read the relevant guide depending on if you are making or taking an order to sell bitcoin:
-* **Maker**: Select "Make Order" and modify the order conditions to your liking. The order can be customized to require an "Escrow Deposit Time-Out" (expiry timer) other than the default of three hours, ranging anywhere from one to eight hours. When your live order gets taken and the taker has submitted their fidelity bond, use the shown QR code found in the "Contract Box" with your Lightning wallet to lock the indicated amount of sats as collateral (escrow). *Note: Escrow funds are released to the buyer once you select "Confirm Fiat Received" which settles the order. Only confirm after the fiat has arrived in your account.*
+* **Maker**: Select "Make Order" and modify the order conditions to your liking. The order can be customized to require an "Escrow Deposit Time-Out" (expiry timer) other than the default of {{site.robosats.hours_submit_escrow}} hours, ranging anywhere from 1 to 8 hours. When your live order gets taken and the taker has submitted their fidelity bond, use the shown QR code found in the "Contract Box" with your Lightning wallet to lock the indicated amount of sats as collateral (escrow). *Note: Escrow funds are released to the buyer once you select "Confirm Fiat Received" which settles the order. Only confirm after the fiat has arrived in your account.*
 * **Taker**: Browse the order book and find an order to your liking. Simply select the "Take Order" option and lock your fidelity bond. Immediately after submitting the bond, use the following QR code found in the "Contract Box" with your Lightning wallet to lock the indicated amount of sats as collateral (escrow). *Note: Escrow funds are released to the buyer once you select "Confirm Fiat Received" which settles the order. Only confirm after the fiat has arrived in your account.*
 
 As soon as the order taker locks their bond, the buyer and seller are required to submit the payout invoice and trade escrow, respectively, within the given time limit.
 
-By default, the expiry timer is three hours; however, as the order maker, you can customize the timer to be anywhere from one hour to eight hours. In other words, modify the time allowed to lock the escrow funds and provide the payout invoice. Maybe you want an expedited transaction and will set the timer to a maximum of one hour instead of three hours.
+By default, the expiry timer is {{site.robosats.hours_submit_escrow}} hours; however, as the order maker, you can customize the timer to be anywhere from 1 hour to 8 hours. In other words, modify the time allowed to lock the escrow funds and provide the payout invoice. Maybe you want an expedited transaction and will set the timer to a maximum of 1 hour instead of {{site.robosats.hours_submit_escrow}} hours.
 
 If you lock the escrow funds before the buyer has provided the payout invoice, then you will have to wait to chat with your peer until after they have provided the invoice.
 
@@ -63,3 +63,5 @@ Although a very small window of time (about one second), the trade escrow could 
 Some Lightning wallets have difficulty with recognizing the Lightning hold invoice as a hold on your funds. As the seller, it is necessary to use a wallet that allows for multiple pending HTLCs since you will need to lock funds for a bond and then an escrow.
 
 If issues arise, please reach out to the RoboSats Telegram group; but beware of scammers that may directly contact you and impersonate RoboSats staff! RoboSats staff will never directly contact you first. See [Contribute > Code > Communication Channels](https://learn.robosats.com/contribute/code/#communication-channels) for available Telegram groups.
+
+{% include improve %}

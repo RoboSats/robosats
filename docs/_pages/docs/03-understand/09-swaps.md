@@ -70,7 +70,7 @@ recommendations:
 
 1. If you are the **seller** - you will be **receiving** on-chain BTC; setting
    the premium slightly below 0% (eg. -0.1%, -0.5%) will make your offer
-   attractive. The taker already pays 0.125% fees on the trade plus they have
+   attractive. The taker already pays {{site.robosats.taker_fee}}% fees on the trade plus they have
    to pay mining fees for sending the on-chain BTC.
 
 2. If you are the **buyer** - you will be **sending** on-chain BTC; setting the
@@ -79,3 +79,5 @@ recommendations:
 These are just general recommendations about what premium to set to get started
 with swaps, but at the end of the day, the price is what the market sets, so
 experiment and see what works for you.
+
+{% include improve %}
