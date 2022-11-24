@@ -92,3 +92,5 @@ First, check the current [currencies.json](https://github.com/Reckless-Satoshi/r
 If you find a currency that is missing from RoboSats and also available in any of the two referenced APIs, then you can directly edit the currencies.json and [FlagsWithProps.tsx](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/src/components/FlagWithProps/FlagWithProps.tsx) files.
 
 After merging the pull request, the added currency will now be available in RoboSats!
+
+{% include improve %}
