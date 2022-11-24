@@ -59,3 +59,4 @@ The exchange summary dialog displays the current value of the on-chain payout fe
     <img src="/assets/images/understand/14-on-chain-payouts/exchange-summary.png"/>
 </div>
 
+{% include improve %}
