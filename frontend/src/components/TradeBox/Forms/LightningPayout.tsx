@@ -25,7 +25,7 @@ import WalletsButton from '../WalletsButton';
 import { LoadingButton } from '@mui/lab';
 import { pn } from '../../../utils';
 
-import { ContentCopy, RoundaboutRight, Route, SelfImprovement } from '@mui/icons-material';
+import { ContentCopy, Help, RoundaboutRight, Route, SelfImprovement } from '@mui/icons-material';
 import { apiClient } from '../../../services/api';
 
 import lnproxies from '../../../../static/lnproxies.json';
@@ -360,7 +360,7 @@ export const LightningPayoutForm = ({
                 </Grid>
 
                 {window.NativeRobosats === undefined ? (
-                  <Grid item>
+                  <Grid item style={{ display: 'flex', alignItems: 'center' }}>
                     <Tooltip
                       enterTouchDelay={0}
                       leaveTouchDelay={4000}
@@ -385,7 +385,15 @@ export const LightningPayoutForm = ({
                               {t('Use Lnproxy')}
                             </Typography>
                           }
-                        />
+                        />{' '}
+                        <IconButton
+                          component='a'
+                          target='_blank'
+                          href='https://www.lnproxy.org/about'
+                          rel='noreferrer'
+                        >
+                          <Help sx={{ width: '0.9em', height: '0.9em', color: 'text.secondary' }} />
+                        </IconButton>
                       </div>
                     </Tooltip>
                   </Grid>
@@ -487,7 +495,9 @@ export const LightningPayoutForm = ({
                     sx={{ height: '0.5em' }}
                     onClick={() =>
                       systemClient.copyToClipboard(
-                        lightning.useLnproxy ? lightning.lnproxyAmount : lightning.amount,
+                        lightning.useLnproxy
+                          ? String(lightning.lnproxyAmount)
+                          : String(lightning.amount),
                       )
                     }
                   >
@@ -543,7 +553,9 @@ export const LightningPayoutForm = ({
                 <LoadingButton
                   loading={loadingLnproxy}
                   disabled={
-                    lightning.lnproxyInvoice.length < 20 || badLnproxyServer || lightning.badLnproxy
+                    lightning.lnproxyInvoice.length < 20 ||
+                    badLnproxyServer != '' ||
+                    lightning.badLnproxy
                   }
                   onClick={fetchLnproxy}
                   variant='outlined'
@@ -556,7 +568,7 @@ export const LightningPayoutForm = ({
               )}
               <LoadingButton
                 loading={loading}
-                disabled={lightning.invoice == ''}
+                disabled={lightning.invoice.length < 20 || lightning.badInvoice}
                 onClick={() => onClickSubmit(lightning.invoice)}
                 variant='outlined'
                 color='primary'
