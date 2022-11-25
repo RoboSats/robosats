@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import {
   CommunityDialog,
-  CoordinatorSummaryDialog,
+  ExchangeSummaryDialog,
   InfoDialog,
   LearnDialog,
   ProfileDialog,
@@ -68,7 +68,7 @@ const MainDialogs = (): JSX.Element => {
         open={open.community}
         onClose={() => setOpen({ ...open, community: false })}
       />
-      <CoordinatorSummaryDialog
+      <ExchangeSummaryDialog
         open={open.coordinator}
         onClose={() => setOpen({ ...open, coordinator: false })}
         info={info}

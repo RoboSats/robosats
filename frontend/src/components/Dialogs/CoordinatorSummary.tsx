@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -11,7 +11,9 @@ import {
   ListItem,
   ListItemIcon,
   Typography,
-  LinearProgress,
+  ListItemAvatar,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -23,25 +25,149 @@ import BookIcon from '@mui/icons-material/Book';
 import LinkIcon from '@mui/icons-material/Link';
 
 import { pn } from '../../utils';
-import { Info } from '../../models';
+import { Coordinator, Info } from '../../models';
+import RobotAvatar from '../RobotAvatar';
+import {
+  ContactSupport,
+  Description,
+  Email,
+  Language,
+  Send,
+  Tag,
+  Twitter,
+} from '@mui/icons-material';
 
 interface Props {
   open: boolean;
   onClose: () => void;
   info: Info;
+  coordinator: Coordinator | undefined;
+  baseUrl: string;
 }
 
-const CoordinatorSummaryDialog = ({ open = false, onClose, info }: Props): JSX.Element => {
+interface ContactProps {
+  email?: string;
+  telegram?: string;
+  twitter?: string;
+  matrix?: string;
+  website?: string;
+}
+const ContactButtons = ({
+  email,
+  telegram,
+  twitter,
+  matrix,
+  website,
+}: ContactProps): JSX.Element => {
   const { t } = useTranslation();
-  if (info.current_swap_fee_rate === null || info.current_swap_fee_rate === undefined) {
-    info.current_swap_fee_rate = 0;
-  }
+  const [showMatrix, setShowMatrix] = useState<boolean>(false);
+  return (
+    <Grid container direction='row' alignItems='center' justifyItems='space-between'>
+      {email ? (
+        <Grid item>
+          <IconButton component='a' href={`mailto: ${email}`}>
+            <Email />
+          </IconButton>
+        </Grid>
+      ) : (
+        <></>
+      )}
+
+      {telegram ? (
+        <Grid item>
+          <IconButton
+            component='a'
+            target='_blank'
+            href={`https://t.me/${telegram}`}
+            rel='noreferrer'
+          >
+            <Send />
+          </IconButton>
+        </Grid>
+      ) : (
+        <></>
+      )}
+
+      {twitter ? (
+        <Grid item>
+          <IconButton
+            component='a'
+            target='_blank'
+            href={`https://twitter.com/${twitter}`}
+            rel='noreferrer'
+          >
+            <Twitter />
+          </IconButton>
+        </Grid>
+      ) : (
+        <></>
+      )}
+
+      {website ? (
+        <Grid item>
+          <IconButton component='a' target='_blank' href={website} rel='noreferrer'>
+            <Language />
+          </IconButton>
+        </Grid>
+      ) : (
+        <></>
+      )}
+
+      {matrix ? (
+        <Grid item>
+          <Tooltip
+            title={<Typography variant='body2'>{`Matrix: ${matrix}`}</Typography>}
+            open={showMatrix}
+          >
+            <IconButton
+              onClick={() => {
+                setShowMatrix(true);
+                setTimeout(() => setShowMatrix(false), 10000);
+              }}
+            >
+              <Tag />
+            </IconButton>
+          </Tooltip>
+        </Grid>
+      ) : (
+        <></>
+      )}
+    </Grid>
+  );
+};
+
+const CoordinatorSummaryDialog = ({
+  open = false,
+  onClose,
+  coordinator,
+  baseUrl,
+}: Props): JSX.Element => {
+  const { t } = useTranslation();
+
+  //   {
+  //     "alias": "Inception",
+  //     "avatar": "/static/federation/Inception.png",
+  //     "enabled": true,
+  //     "description": "RoboSats experimental coordinator",
+  //     "coverLetter": "P2P FTW!",
+  //     "contact": {
+  //       "email": "robosats@protonmail.com",
+  //       "telegram": "@robosats",
+  //       "twitter": "@robosats",
+  //       "matrix": "#robosats:matrix.org",
+  //       "website": "learn.robosats.com"
+  //     },
+  //     "color": "#9C27B0",
+  //     "mainnetOnion": "robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
+  //     "mainnetClearnet": "unsafe.robosats.com",
+  //     "testnetOnion": "robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+  //     "testnetClearnet": "unsafe.testnet.robosats.com",
+  //     "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
+  //     "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
+  //   }
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <div style={info.loading ? {} : { display: 'none' }}>
-        <LinearProgress />
-      </div>
       <DialogContent>
         <Typography component='h5' variant='h5'>
           {t('Coordinator Summary')}
@@ -49,30 +175,29 @@ const CoordinatorSummaryDialog = ({ open = false, onClose, info }: Props): JSX.E
 
         <List dense>
           <ListItem>
-            <ListItemIcon>
-              <InventoryIcon />
-            </ListItemIcon>
+            <ListItemAvatar sx={{ position: 'relative', right: '1em' }}>
+              <RobotAvatar
+                nickname={coordinator?.alias}
+                coordinator={true}
+                style={{ width: '3.215em', height: '3.215em' }}
+                smooth={true}
+                flipHorizontally={true}
+                baseUrl={baseUrl}
+              />
+            </ListItemAvatar>
 
-            <ListItemText
-              primaryTypographyProps={{ fontSize: '14px' }}
-              secondaryTypographyProps={{ fontSize: '12px' }}
-              primary={info.num_public_buy_orders}
-              secondary={t('Public buy orders')}
-            />
+            <ListItemText primary={coordinator?.alias} secondary={t('Alias')} />
           </ListItem>
-
-          <Divider />
 
           <ListItem>
             <ListItemIcon>
-              <SellIcon />
+              <Description />
             </ListItemIcon>
 
             <ListItemText
-              primaryTypographyProps={{ fontSize: '14px' }}
-              secondaryTypographyProps={{ fontSize: '12px' }}
-              primary={info.num_public_sell_orders}
-              secondary={t('Public sell orders')}
+              primary={`${coordinator?.description}. ${coordinator?.coverLetter}`}
+              primaryTypographyProps={{ sx: { width: '25em' } }}
+              secondary={t('Description and motto')}
             />
           </ListItem>
 
@@ -83,30 +208,8 @@ const CoordinatorSummaryDialog = ({ open = false, onClose, info }: Props): JSX.E
               <BookIcon />
             </ListItemIcon>
 
-            <ListItemText
-              primaryTypographyProps={{ fontSize: '14px' }}
-              secondaryTypographyProps={{ fontSize: '12px' }}
-              primary={`${pn(info.book_liquidity)} Sats`}
-              secondary={t('Book liquidity')}
-            />
+            <ListItemText primary={'a'} secondary={t('Book liquidity')} />
           </ListItem>
-
-          <Divider />
-
-          <ListItem>
-            <ListItemIcon>
-              <SmartToyIcon />
-            </ListItemIcon>
-
-            <ListItemText
-              primaryTypographyProps={{ fontSize: '14px' }}
-              secondaryTypographyProps={{ fontSize: '12px' }}
-              primary={info.active_robots_today}
-              secondary={t('Today active robots')}
-            />
-          </ListItem>
-
-          <Divider />
 
           <ListItem>
             <ListItemIcon>
@@ -159,10 +262,8 @@ const CoordinatorSummaryDialog = ({ open = false, onClose, info }: Props): JSX.E
             </ListItemIcon>
 
             <ListItemText
-              primaryTypographyProps={{ fontSize: '14px' }}
-              secondaryTypographyProps={{ fontSize: '12px' }}
-              primary={`${info.current_swap_fee_rate.toPrecision(3)}%`}
-              secondary={t('Current onchain payout fee')}
+              primary={<ContactButtons {...coordinator?.contact} />}
+              secondary={t('Contact')}
             />
           </ListItem>
         </List>

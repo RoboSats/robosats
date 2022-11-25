@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { Grid, Paper, useTheme } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
 import { AppContextProps, AppContext } from '../../contexts/AppContext';
+import FederationTable from '../../components/FederationTable';
 
 const SettingsPage = (): JSX.Element => {
-  const { windowSize, navbarHeight } = useContext<AppContextProps>(AppContext);
+  const { windowSize, navbarHeight, coordinators, setCoordinators, baseUrl} = useContext<AppContextProps>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
@@ -24,7 +25,15 @@ const SettingsPage = (): JSX.Element => {
       <Grid container>
         <Grid item>
           <SettingsForm showNetwork={!(window.NativeRobosats === undefined)} />
-        </Grid>
+          </Grid>
+        <Grid item>
+          <FederationTable
+            coordinators={coordinators}
+            setCoordinators={setCoordinators}
+            baseUrl={baseUrl}
+            maxHeight={10}
+          />
+          </Grid>
       </Grid>
     </Paper>
   );

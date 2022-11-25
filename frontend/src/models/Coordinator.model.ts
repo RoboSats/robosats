@@ -1,3 +1,5 @@
+import { Info } from '.';
+
 export interface Coordinator {
   alias: string;
   enabled: boolean;
@@ -18,6 +20,7 @@ export interface Coordinator {
   testnetClearnet: string | undefined;
   mainnetNodesPubkeys: string[];
   testnetNodesPubkeys: string[];
+  info: Info | undefined;
 }
 
 export default Coordinator;

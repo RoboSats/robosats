@@ -1,23 +1,23 @@
 [
   {
     "alias": "Inception",
-    "enabled": "true",
-    "description": "RoboSats original and experimental coordinator",
-    "coverLetter": "N/A",
+    "avatar": "/static/federation/Inception.png",
+    "enabled": true,
+    "description": "RoboSats experimental coordinator",
+    "coverLetter": "P2P FTW!",
     "contact": {
       "email": "robosats@protonmail.com",
-      "telegram": "@robosats",
-      "twitter": "@robosats",
+      "telegram": "robosats",
+      "twitter": "robosats",
       "matrix": "#robosats:matrix.org",
-      "website": "learn.robosats.com"
+      "website": "https://learn.robosats.com"
     },
-    "color": "#9C27B0",
-    "mainnetOnion": "robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
-    "mainnetClearnet": "unsafe.robosats.com",
-    "testnetOnion": "robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
-    "testnetClearnet": "unsafe.testnet.robosats.com",
+    "color": "#1976d2",
+    "mainnetOnion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
+    "mainnetClearnet": "https://unsafe.robosats.com",
+    "testnetOnion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+    "testnetClearnet": "https://unsafe.testnet.robosats.com",
     "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
-    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"],
-    "logo": "/static/federation/inception.svg"
+    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
   }
 ]

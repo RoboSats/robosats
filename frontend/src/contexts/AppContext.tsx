@@ -318,6 +318,54 @@ export const AppContextProvider = ({
     return await data;
   };
 
+  // fetchInfo for many coordinators
+  // const fetchInfo = function (setNetwork?: boolean) {
+  //   const newCoordinators = coordinators.map(coordinator => {
+  //       if (coordinator.enabled === true) {
+  //         const baseUrl = coordinator[`${settings.network}Clearnet`]
+  //         apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
+  //           console.log(data)
+  //           let info:Info
+  //           const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
+  //           info = {
+  //             ...data,
+  //             openUpdateClient: versionInfo.updateAvailable,
+  //             coordinatorVersion: versionInfo.coordinatorVersion,
+  //             clientVersion: versionInfo.clientVersion,
+  //             loading: false,
+  //           };
+  //           setInfo(info)
+  //           return {...coordinator, info}
+  //         });
+  //         return coordinator;
+  //       }
+  //     });
+  //   setCoordinators(newCoordinators)
+  // };
+
+  // const fetchInfo = function (setNetwork?: boolean) {
+  //   setInfo({ ...info, loading: true });
+  //   apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
+  //     const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
+  //     const info = {
+  //       ...data,
+  //       openUpdateClient: versionInfo.updateAvailable,
+  //       coordinatorVersion: versionInfo.coordinatorVersion,
+  //       clientVersion: versionInfo.clientVersion,
+  //       loading: false,
+  //     };
+  //     setInfo(info);
+
+  //     // Cheap set coordinators info given that there is only one coordinator atm
+  //     setCoordinators(coordinators.map(coordinator => {return {...coordinator, info}}))
+
+  //     // Sets Setting network from coordinator API param if accessing via web
+  //     if (setNetwork) {
+  //       setSettings({ ...settings, network: data.network });
+  //     }
+  //   });
+  // };
+  
   const fetchInfo = function () {
     setInfo({ ...info, loading: true });
     apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
