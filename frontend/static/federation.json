@@ -17,7 +17,11 @@
     "mainnetClearnet": "https://unsafe.robosats.com",
     "testnetOnion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
     "testnetClearnet": "https://unsafe.testnet.robosats.com",
-    "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
-    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
+    "mainnetNodesPubkeys": [
+      "0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"
+    ],
+    "testnetNodesPubkeys": [
+      "03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"
+    ]
   }
 ]
