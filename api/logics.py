@@ -1720,6 +1720,9 @@ class Logics:
         )
         if order.last_satoshis_time is not None:
             platform_summary["contract_timestamp"] = order.last_satoshis_time
+            if order.contract_finalization_time is None:
+                order.contract_finalization_time = timezone.now()
+                order.save()
             platform_summary["contract_total_time"] = (
                 order.contract_finalization_time - order.last_satoshis_time
             )

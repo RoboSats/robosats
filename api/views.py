@@ -441,7 +441,12 @@ class OrderView(viewsets.ViewSet):
             if order.payout.status == LNPayment.Status.EXPIRE:
                 data["invoice_expired"] = True
                 # Add invoice amount once again if invoice was expired.
+                # Start deprecate after v0.3.1
                 data["invoice_amount"] = Logics.payout_amount(order, request.user)[1][
+                    "invoice_amount"
+                ]
+                # End deprecate
+                data["trade_satoshis"] = Logics.payout_amount(order, request.user)[1][
                     "invoice_amount"
                 ]
 
