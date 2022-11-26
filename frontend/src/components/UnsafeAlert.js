@@ -50,6 +50,7 @@ class UnsafeAlert extends Component {
 
   render() {
     const { t } = this.props;
+    console.log(this.state);
 
     // If alert is hidden return null
     if (!this.state.show) {

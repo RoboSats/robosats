@@ -181,7 +181,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     return await data;
   };
 
-  const fetchInfo = function (setNetwork?: boolean) {
+  const fetchInfo = function () {
     setInfo({ ...info, loading: true });
     apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
       const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
@@ -192,18 +192,21 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         clientVersion: versionInfo.clientVersion,
         loading: false,
       });
-      // Sets Setting network from coordinator API param if accessing via web
-      if (setNetwork) {
-        setSettings({ ...settings, network: data.network });
-      }
     });
   };
 
   useEffect(() => {
     if (open.stats || open.coordinator || info.coordinatorVersion == 'v?.?.?') {
-      fetchInfo(info.coordinatorVersion == 'v?.?.?');
+      fetchInfo();
     }
   }, [open.stats, open.coordinator]);
+
+  useEffect(() => {
+    // Sets Setting network from coordinator API param if accessing via web
+    if (settings.network == undefined) {
+      setSettings({ ...settings, network: data.network });
+    }
+  }, [info]);
 
   const fetchRobot = function ({ keys = false }) {
     const requestBody = {
