@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 
 import { Order, Settings } from '../../../models';
-import {decode} from 'light-bolt11-decoder'
+import { decode } from 'light-bolt11-decoder';
 import WalletsButton from '../WalletsButton';
 import { LoadingButton } from '@mui/lab';
 import { pn } from '../../../utils';
@@ -101,16 +101,16 @@ export const LightningPayoutForm = ({
 
   const validateInvoice = function (invoice: string, targetAmount: number) {
     try {
-      const decoded = decode(invoice)
-      const invoiceAmount = Math.floor(decoded['sections'][2]['value']/1000)
+      const decoded = decode(invoice);
+      const invoiceAmount = Math.floor(decoded['sections'][2]['value'] / 1000);
       if (targetAmount != invoiceAmount) {
         return 'Invalid invoice amount';
       } else {
         return '';
       }
-    } catch(err) {
-      const error = err.toString()
-      return `${error.substring(0,100)}${error.length >100 ? '...' : ''}`
+    } catch (err) {
+      const error = err.toString();
+      return `${error.substring(0, 100)}${error.length > 100 ? '...' : ''}`;
     }
   };
 
@@ -196,9 +196,9 @@ export const LightningPayoutForm = ({
       .then((response) => response.text())
       .then((text) => {
         if (text.includes('lnproxy error')) {
-          setLightning({ ...lightning, badLnproxy: text});
+          setLightning({ ...lightning, badLnproxy: text });
         } else {
-          const invoice = text.replace('\n',"")
+          const invoice = text.replace('\n', '');
           setLightning({ ...lightning, invoice, badLnproxy: '' });
         }
       })
@@ -208,6 +208,21 @@ export const LightningPayoutForm = ({
       .finally(() => {
         setLoadingLnproxy(false);
       });
+  };
+
+  const handleAdvancedOptions = function (checked: boolean) {
+    if (checked) {
+      setLightning({
+        ...lightning,
+        advancedOptions: true,
+      });
+    } else {
+      setLightning({
+        ...defaultLightning,
+        invoice: lightning.invoice,
+        amount: lightning.amount,
+      });
+    }
   };
 
   const onProxyBudgetChange = function (e) {
@@ -288,13 +303,7 @@ export const LightningPayoutForm = ({
         <Switch
           size='small'
           checked={lightning.advancedOptions}
-          onChange={(e) => {
-            const checked = e.target.checked;
-            setLightning({
-              ...lightning,
-              advancedOptions: checked,
-            });
-          }}
+          onChange={(e) => handleAdvancedOptions(e.target.checked)}
         />
         <SelfImprovement sx={{ color: 'text.primary' }} />
       </Grid>
@@ -521,7 +530,7 @@ export const LightningPayoutForm = ({
                   fullWidth={true}
                   disabled={!lightning.useLnproxy}
                   error={lightning.badLnproxy != ''}
-                  FormHelperTextProps={{style:{wordBreak: 'break-all'}}}
+                  FormHelperTextProps={{ style: { wordBreak: 'break-all' } }}
                   helperText={lightning.badLnproxy ? t(lightning.badLnproxy) : ''}
                   label={t('Invoice to wrap')}
                   required
@@ -543,7 +552,7 @@ export const LightningPayoutForm = ({
                 disabled={lightning.useLnproxy}
                 error={lightning.badInvoice != ''}
                 helperText={lightning.badInvoice ? t(lightning.badInvoice) : ''}
-                FormHelperTextProps={{style:{wordBreak: 'break-all'}}}
+                FormHelperTextProps={{ style: { wordBreak: 'break-all' } }}
                 label={lightning.useLnproxy ? t('Wrapped invoice') : t('Payout Lightning Invoice')}
                 required
                 value={lightning.invoice}

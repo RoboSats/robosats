@@ -287,7 +287,7 @@ const TradeBox = ({
   }, [order.status]);
 
   const statusToContract = function (order: Order) {
-    const status = order.status;
+    const status = 6;
     const isBuyer = order.is_buyer;
     const isMaker = order.is_maker;
 
