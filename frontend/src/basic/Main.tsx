@@ -203,8 +203,10 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
 
   useEffect(() => {
     // Sets Setting network from coordinator API param if accessing via web
-    if (settings.network == undefined) {
-      setSettings({ ...settings, network: info.network });
+    if (settings.network == undefined && info.network) {
+      setSettings((settings: Settings) => {
+        return { ...settings, network: info.network };
+      });
     }
   }, [info]);
 

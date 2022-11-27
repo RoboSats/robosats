@@ -172,43 +172,58 @@ export const LightningPayoutForm = ({
     lnproxyUrl();
   }, [lightning.lnproxyServer]);
 
-  // const fetchLnproxy = function () {
-  //   setLoadingLnproxy(true);
-  //   apiClient
-  //     .get(
-  //       lnproxyUrl(),
-  //       `/api/${lightning.lnproxyInvoice}${lightning.lnproxyBudgetSats > 0 ? `?routing_msat=${lightning.lnproxyBudgetSats * 1000}` : ''}`,
-  //     )
-  // };
-
-  // Lnproxy API does not return JSON, therefore not compatible with current apiClient service
-  // Does not work on Android robosats!
   const fetchLnproxy = function () {
     setLoadingLnproxy(true);
-    fetch(
-      lnproxyUrl() +
-        `/api/${lightning.lnproxyInvoice.toLocaleLowerCase()}${
+    apiClient
+      .get(
+        lnproxyUrl(),
+        `/api/${lightning.lnproxyInvoice}${
           lightning.lnproxyBudgetSats > 0
             ? `?routing_msat=${lightning.lnproxyBudgetSats * 1000}`
             : ''
-        }`,
-    )
-      .then((response) => response.text())
-      .then((text) => {
-        if (text.includes('lnproxy error')) {
-          setLightning({ ...lightning, badLnproxy: text });
+        }&format=json`,
+      )
+      .then((data) => {
+        if (data.reason) {
+          setLightning({ ...lightning, badLnproxy: data.reason });
+        } else if (data.wpr) {
+          setLightning({ ...lightning, invoice: data.wpr, badLnproxy: '' });
         } else {
-          const invoice = text.replace('\n', '');
-          setLightning({ ...lightning, invoice, badLnproxy: '' });
+          setLightning({ ...lightning, badLnproxy: 'Unknown lnproxy response' });
         }
       })
       .catch(() => {
         setLightning({ ...lightning, badLnproxy: 'Lnproxy server uncaught error' });
       })
-      .finally(() => {
-        setLoadingLnproxy(false);
-      });
+      .finally(() => setLoadingLnproxy(false));
   };
+
+  // const fetchLnproxy = function () {
+  //   setLoadingLnproxy(true);
+  //   fetch(
+  //     lnproxyUrl() +
+  //       `/api/${lightning.lnproxyInvoice.toLocaleLowerCase()}${
+  //         lightning.lnproxyBudgetSats > 0
+  //           ? `?routing_msat=${lightning.lnproxyBudgetSats * 1000}`
+  //           : ''
+  //       }`,
+  //   )
+  //     .then((response) => response.text())
+  //     .then((text) => {
+  //       if (text.includes('lnproxy error')) {
+  //         setLightning({ ...lightning, badLnproxy: text });
+  //       } else {
+  //         const invoice = text.replace('\n', '');
+  //         setLightning({ ...lightning, invoice, badLnproxy: '' });
+  //       }
+  //     })
+  //     .catch(() => {
+  //       setLightning({ ...lightning, badLnproxy: 'Lnproxy server uncaught error' });
+  //     })
+  //     .finally(() => {
+  //       setLoadingLnproxy(false);
+  //     });
+  // };
 
   const handleAdvancedOptions = function (checked: boolean) {
     if (checked) {
@@ -376,47 +391,43 @@ export const LightningPayoutForm = ({
                   />
                 </Grid>
 
-                {window.NativeRobosats === undefined ? (
-                  <Grid item>
-                    <Tooltip
-                      enterTouchDelay={0}
-                      leaveTouchDelay={4000}
-                      placement='top'
-                      title={t(
-                        `Wrap this invoice using a Lnproxy server to protect your privacy (hides the receiving wallet).`,
-                      )}
-                    >
-                      <div>
-                        <FormControlLabel
-                          onChange={(e) =>
-                            setLightning({
-                              ...lightning,
-                              useLnproxy: e.target.checked,
-                              invoice: e.target.checked ? '' : lightning.invoice,
-                            })
-                          }
-                          checked={lightning.useLnproxy}
-                          control={<Checkbox />}
-                          label={
-                            <Typography color={lightning.useLnproxy ? 'primary' : 'text.secondary'}>
-                              {t('Use Lnproxy')}
-                            </Typography>
-                          }
-                        />{' '}
-                        <IconButton
-                          component='a'
-                          target='_blank'
-                          href='https://www.lnproxy.org/about'
-                          rel='noreferrer'
-                        >
-                          <Help sx={{ width: '0.9em', height: '0.9em', color: 'text.secondary' }} />
-                        </IconButton>
-                      </div>
-                    </Tooltip>
-                  </Grid>
-                ) : (
-                  <></>
-                )}
+                <Grid item>
+                  <Tooltip
+                    enterTouchDelay={0}
+                    leaveTouchDelay={4000}
+                    placement='top'
+                    title={t(
+                      `Wrap this invoice using a Lnproxy server to protect your privacy (hides the receiving wallet).`,
+                    )}
+                  >
+                    <div>
+                      <FormControlLabel
+                        onChange={(e) =>
+                          setLightning({
+                            ...lightning,
+                            useLnproxy: e.target.checked,
+                            invoice: e.target.checked ? '' : lightning.invoice,
+                          })
+                        }
+                        checked={lightning.useLnproxy}
+                        control={<Checkbox />}
+                        label={
+                          <Typography color={lightning.useLnproxy ? 'primary' : 'text.secondary'}>
+                            {t('Use Lnproxy')}
+                          </Typography>
+                        }
+                      />{' '}
+                      <IconButton
+                        component='a'
+                        target='_blank'
+                        href='https://www.lnproxy.org/about'
+                        rel='noreferrer'
+                      >
+                        <Help sx={{ width: '0.9em', height: '0.9em', color: 'text.secondary' }} />
+                      </IconButton>
+                    </div>
+                  </Tooltip>
+                </Grid>
 
                 <Grid item>
                   <Collapse in={lightning.useLnproxy}>
