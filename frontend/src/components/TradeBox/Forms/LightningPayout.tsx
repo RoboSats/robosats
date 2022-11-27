@@ -20,12 +20,14 @@ import {
   IconButton,
   FormHelperText,
 } from '@mui/material';
+
 import { Order, Settings } from '../../../models';
+import {decode} from 'light-bolt11-decoder'
 import WalletsButton from '../WalletsButton';
 import { LoadingButton } from '@mui/lab';
 import { pn } from '../../../utils';
 
-import { ContentCopy, Help, RoundaboutRight, Route, SelfImprovement } from '@mui/icons-material';
+import { ContentCopy, Help, SelfImprovement } from '@mui/icons-material';
 import { apiClient } from '../../../services/api';
 
 import lnproxies from '../../../../static/lnproxies.json';
@@ -98,11 +100,17 @@ export const LightningPayoutForm = ({
   };
 
   const validateInvoice = function (invoice: string, targetAmount: number) {
-    const invoiceAmount = Number(invoice.substring(4, 5 + Math.floor(Math.log10(targetAmount))));
-    if (targetAmount != invoiceAmount && invoice.length > 20) {
-      return 'Invalid invoice amount';
-    } else {
-      return '';
+    try {
+      const decoded = decode(invoice)
+      const invoiceAmount = Math.floor(decoded['sections'][2]['value']/1000)
+      if (targetAmount != invoiceAmount) {
+        return 'Invalid invoice amount';
+      } else {
+        return '';
+      }
+    } catch(err) {
+      const error = err.toString()
+      return `${error.substring(0,100)}${error.length >100 ? '...' : ''}`
     }
   };
 
@@ -138,7 +146,6 @@ export const LightningPayoutForm = ({
   }, [lightning.lnproxyInvoice, lightning.lnproxyAmount]);
 
   const lnproxyUrl = function () {
-    console.log(settings);
     const bitcoinNetwork = settings?.network ?? 'mainnet';
     let internetNetwork: 'Clearnet' | 'I2P' | 'TOR' = 'Clearnet';
     if (settings.host?.includes('.i2p')) {
@@ -180,7 +187,7 @@ export const LightningPayoutForm = ({
     setLoadingLnproxy(true);
     fetch(
       lnproxyUrl() +
-        `/api/${lightning.lnproxyInvoice}${
+        `/api/${lightning.lnproxyInvoice.toLocaleLowerCase()}${
           lightning.lnproxyBudgetSats > 0
             ? `?routing_msat=${lightning.lnproxyBudgetSats * 1000}`
             : ''
@@ -189,9 +196,10 @@ export const LightningPayoutForm = ({
       .then((response) => response.text())
       .then((text) => {
         if (text.includes('lnproxy error')) {
-          setLightning({ ...lightning, badLnproxy: text });
+          setLightning({ ...lightning, badLnproxy: text});
         } else {
-          setLightning({ ...lightning, invoice: text, badLnproxy: '' });
+          const invoice = text.replace('\n',"")
+          setLightning({ ...lightning, invoice, badLnproxy: '' });
         }
       })
       .catch(() => {
@@ -513,6 +521,7 @@ export const LightningPayoutForm = ({
                   fullWidth={true}
                   disabled={!lightning.useLnproxy}
                   error={lightning.badLnproxy != ''}
+                  FormHelperTextProps={{style:{wordBreak: 'break-all'}}}
                   helperText={lightning.badLnproxy ? t(lightning.badLnproxy) : ''}
                   label={t('Invoice to wrap')}
                   required
@@ -534,6 +543,7 @@ export const LightningPayoutForm = ({
                 disabled={lightning.useLnproxy}
                 error={lightning.badInvoice != ''}
                 helperText={lightning.badInvoice ? t(lightning.badInvoice) : ''}
+                FormHelperTextProps={{style:{wordBreak: 'break-all'}}}
                 label={lightning.useLnproxy ? t('Wrapped invoice') : t('Payout Lightning Invoice')}
                 required
                 value={lightning.invoice}
@@ -555,7 +565,7 @@ export const LightningPayoutForm = ({
                   disabled={
                     lightning.lnproxyInvoice.length < 20 ||
                     badLnproxyServer != '' ||
-                    lightning.badLnproxy
+                    lightning.badLnproxy != ''
                   }
                   onClick={fetchLnproxy}
                   variant='outlined'
@@ -568,7 +578,7 @@ export const LightningPayoutForm = ({
               )}
               <LoadingButton
                 loading={loading}
-                disabled={lightning.invoice.length < 20 || lightning.badInvoice}
+                disabled={lightning.invoice.length < 20 || lightning.badInvoice != ''}
                 onClick={() => onClickSubmit(lightning.invoice)}
                 variant='outlined'
                 color='primary'
@@ -579,65 +589,6 @@ export const LightningPayoutForm = ({
           </Grid>
         </Box>
       </Grid>
-
-      {/* <Grid item>
-        <Box
-          sx={{
-            backgroundColor: 'background.paper',
-            border: '1px solid',
-            borderRadius: '0.3em',
-            width: '18em',
-            borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-            '&:hover': {
-              borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-            },
-          }}
-        >
-          <Grid
-            container
-            direction='column'
-            justifyContent='flex-start'
-            alignItems='center'
-            spacing={0.5}
-            padding={0.5}
-          >
-            <Collapse in={lightning.advancedOptions}>
-              <Tooltip
-                enterTouchDelay={0}
-                leaveTouchDelay={4000}
-                placement='top'
-                title={t(
-                  `Set custom routing budget for the payout. If you don't know what this is, simply do not touch.`,
-                )}
-              >
-                <div>
-                  <FormControlLabel
-                    checked={lightning.useCustomBudget}
-                    onChange={(e) =>
-                      setLightning({
-                        ...lightning,
-                        useCustomBudget: e.target.checked,
-                        routingBudgetSats: defaultLightning.routingBudgetSats,
-                        routingBudgetPPM: defaultLightning.routingBudgetPPM,
-                      })
-                    }
-                    control={<Checkbox />}
-                    label={
-                      <Typography
-                        style={{ display: 'flex', alignItems: 'center' }}
-                        color={lightning.useCustomBudget ? 'primary' : 'text.secondary'}
-                      >
-                        {t('Use custom routing budget')}
-                      </Typography>
-                    }
-                  />
-                </div>
-              </Tooltip>
-            </Collapse>
-
-          </Grid>
-        </Box>
-      </Grid> */}
 
       <Grid item>
         <WalletsButton />
