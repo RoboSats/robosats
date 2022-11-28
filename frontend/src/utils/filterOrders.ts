@@ -1,4 +1,4 @@
-import { Order, Favorites } from '../models';
+import { PublicOrder, Favorites } from '../models';
 
 interface AmountFilter {
   amount: string;
@@ -8,13 +8,13 @@ interface AmountFilter {
 }
 
 interface FilterOrders {
-  orders: Order[];
+  orders: PublicOrder[];
   baseFilter: Favorites;
   amountFilter?: AmountFilter | null;
   paymentMethods?: string[];
 }
 
-const filterByPayment = function (order: Order, paymentMethods: any[]) {
+const filterByPayment = function (order: PublicOrder, paymentMethods: any[]) {
   if (paymentMethods.length === 0) {
     return true;
   } else {
@@ -26,7 +26,7 @@ const filterByPayment = function (order: Order, paymentMethods: any[]) {
   }
 };
 
-const filterByAmount = function (order: Order, filter: AmountFilter) {
+const filterByAmount = function (order: PublicOrder, filter: AmountFilter) {
   const filterMaxAmount =
     Number(filter.amount != '' ? filter.amount : filter.maxAmount) * (1 + filter.threshold);
   const filterMinAmount =
@@ -54,7 +54,6 @@ const filterOrders = function ({
     const paymentMethodChecks =
       paymentMethods.length > 0 ? filterByPayment(order, paymentMethods) : true;
     const amountChecks = amountFilter != null ? filterByAmount(order, amountFilter) : true;
-
     return typeChecks && currencyChecks && paymentMethodChecks && amountChecks;
   });
   return filteredOrders;

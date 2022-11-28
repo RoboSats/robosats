@@ -71,9 +71,9 @@ const MakerPage = ({
             </Grid>
             <Grid item>
               <BookTable
-                book={book}
+                book={{ orders: matches, loading: book.loading }}
                 maxWidth={Math.min(windowSize.width, 60)} // EM units
-                maxHeight={Math.min(matches.length * 3.25 + 3.25, 16)} // EM units
+                maxHeight={Math.min(matches.length * 3.25 + 3, 16)} // EM units
                 defaultFullscreen={false}
                 showControls={false}
                 showFooter={false}
