@@ -14,6 +14,7 @@ import {
   ListItemAvatar,
   IconButton,
   Tooltip,
+  Link,
 } from '@mui/material';
 
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -28,19 +29,23 @@ import { pn } from '../../utils';
 import { Coordinator, Info } from '../../models';
 import RobotAvatar from '../RobotAvatar';
 import {
+  Bolt,
   ContactSupport,
   Description,
+  Dns,
   Email,
+  Equalizer,
+  GitHub,
   Language,
   Send,
   Tag,
   Twitter,
 } from '@mui/icons-material';
+import { AmbossIcon, BitcoinSignIcon, RoboSatsNoTextIcon } from '../Icons';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  info: Info;
   coordinator: Coordinator | undefined;
   baseUrl: string;
 }
@@ -174,8 +179,8 @@ const CoordinatorSummaryDialog = ({
         </Typography>
 
         <List dense>
-          <ListItem>
-            <ListItemAvatar sx={{ position: 'relative', right: '1em' }}>
+          <ListItem sx={{ display: 'flex', justifyContent: 'center' }}>
+            <ListItemAvatar>
               <RobotAvatar
                 nickname={coordinator?.alias}
                 coordinator={true}
@@ -186,8 +191,20 @@ const CoordinatorSummaryDialog = ({
               />
             </ListItemAvatar>
 
-            <ListItemText primary={coordinator?.alias} secondary={t('Alias')} />
+            <ListItemText
+              sx={{ maxWidth: '8em' }}
+              primary={<Typography variant='h5'>{coordinator?.alias}</Typography>}
+            />
           </ListItem>
+
+          <ListItem>
+            <ListItemText
+              primary={<ContactButtons {...coordinator?.contact} />}
+              secondary={t('Contact')}
+            />
+          </ListItem>
+
+          <Divider sx={{ borderColor: coordinator?.color }} />
 
           <ListItem>
             <ListItemIcon>
@@ -200,73 +217,229 @@ const CoordinatorSummaryDialog = ({
               secondary={t('Description and motto')}
             />
           </ListItem>
-
-          <Divider />
-
-          <ListItem>
-            <ListItemIcon>
-              <BookIcon />
-            </ListItemIcon>
-
-            <ListItemText primary={'a'} secondary={t('Book liquidity')} />
-          </ListItem>
-
-          <ListItem>
-            <ListItemIcon>
-              <PriceChangeIcon />
-            </ListItemIcon>
-
-            <ListItemText
-              primaryTypographyProps={{ fontSize: '14px' }}
-              secondaryTypographyProps={{ fontSize: '12px' }}
-              primary={`${info.last_day_nonkyc_btc_premium}%`}
-              secondary={t('Last 24h mean premium')}
-            />
-          </ListItem>
-
-          <Divider />
-
-          <ListItem>
-            <ListItemIcon>
-              <PercentIcon />
-            </ListItemIcon>
-
-            <Grid container>
-              <Grid item xs={6}>
-                <ListItemText
-                  primaryTypographyProps={{ fontSize: '14px' }}
-                  secondaryTypographyProps={{ fontSize: '12px' }}
-                  secondary={t('Maker fee')}
-                >
-                  {(info.maker_fee * 100).toFixed(3)}%
-                </ListItemText>
-              </Grid>
-
-              <Grid item xs={6}>
-                <ListItemText
-                  primaryTypographyProps={{ fontSize: '14px' }}
-                  secondaryTypographyProps={{ fontSize: '12px' }}
-                  secondary={t('Taker fee')}
-                >
-                  {(info.taker_fee * 100).toFixed(3)}%
-                </ListItemText>
-              </Grid>
-            </Grid>
-          </ListItem>
-
-          <Divider />
-
-          <ListItem>
-            <ListItemIcon>
-              <LinkIcon />
-            </ListItemIcon>
-
-            <ListItemText
-              primary={<ContactButtons {...coordinator?.contact} />}
-              secondary={t('Contact')}
-            />
-          </ListItem>
         </List>
+
+        {coordinator?.info ? (
+          <List dense>
+            <Divider />
+
+            <ListItem>
+              <ListItemIcon>
+                <InventoryIcon />
+              </ListItemIcon>
+
+              <ListItemText
+                primary={coordinator?.info?.num_public_buy_orders}
+                secondary={t('Public buy orders')}
+              />
+            </ListItem>
+
+            <Divider />
+
+            <ListItem>
+              <ListItemIcon>
+                <SellIcon />
+              </ListItemIcon>
+
+              <ListItemText
+                primary={coordinator?.info?.num_public_sell_orders}
+                secondary={t('Public sell orders')}
+              />
+            </ListItem>
+
+            <Divider />
+
+            <ListItem>
+              <ListItemIcon>
+                <BookIcon />
+              </ListItemIcon>
+
+              <ListItemText
+                primary={`${pn(coordinator?.info?.book_liquidity)} Sats`}
+                secondary={t('Book liquidity')}
+              />
+            </ListItem>
+
+            <Divider />
+
+            <ListItem>
+              <ListItemIcon>
+                <SmartToyIcon />
+              </ListItemIcon>
+
+              <ListItemText
+                primary={coordinator?.info?.active_robots_today}
+                secondary={t('Today active robots')}
+              />
+            </ListItem>
+
+            <Divider />
+
+            <ListItem>
+              <ListItemIcon>
+                <PriceChangeIcon />
+              </ListItemIcon>
+
+              <ListItemText
+                primary={`${coordinator?.info?.last_day_nonkyc_btc_premium}%`}
+                secondary={t('24h non-KYC bitcoin premium')}
+              />
+            </ListItem>
+
+            <Divider />
+
+            <ListItem>
+              <ListItemIcon>
+                <PercentIcon />
+              </ListItemIcon>
+
+              <Grid container>
+                <Grid item xs={6}>
+                  <ListItemText secondary={t('Maker fee')}>
+                    {(coordinator?.info?.maker_fee * 100).toFixed(3)}%
+                  </ListItemText>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <ListItemText secondary={t('Taker fee')}>
+                    {(coordinator?.info?.taker_fee * 100).toFixed(3)}%
+                  </ListItemText>
+                </Grid>
+              </Grid>
+            </ListItem>
+
+            <Divider />
+
+            <ListItem>
+              <ListItemIcon>
+                <LinkIcon />
+              </ListItemIcon>
+
+              <ListItemText
+                primary={`${coordinator?.info?.current_swap_fee_rate.toPrecision(3)}%`}
+                secondary={t('Current onchain payout fee')}
+              />
+            </ListItem>
+
+            <ListItem>
+              <ListItemIcon>
+                <RoboSatsNoTextIcon
+                  sx={{ width: '1.4em', height: '1.4em', right: '0.2em', position: 'relative' }}
+                />
+              </ListItemIcon>
+              <ListItemText
+                primary={`${t('Client')} ${coordinator?.info?.clientVersion} - ${t(
+                  'Coordinator',
+                )} ${coordinator?.info?.coordinatorVersion}`}
+                secondary={t('RoboSats version')}
+              />
+            </ListItem>
+
+            <Divider />
+
+            <ListItem>
+              <ListItemIcon>
+                <Bolt />
+              </ListItemIcon>
+              <ListItemText primary={coordinator?.info?.lnd_version} secondary={t('LND version')} />
+            </ListItem>
+
+            <Divider />
+
+            {coordinator?.info?.network === 'testnet' ? (
+              <ListItem>
+                <ListItemIcon>
+                  <Dns />
+                </ListItemIcon>
+                <ListItemText secondary={`${t('LN Node')}: ${coordinator?.info?.node_alias}`}>
+                  <Link
+                    target='_blank'
+                    href={`https://1ml.com/testnet/node/${coordinator?.info?.node_id}`}
+                    rel='noreferrer'
+                  >
+                    {`${coordinator?.info?.node_id.slice(0, 12)}... (1ML)`}
+                  </Link>
+                </ListItemText>
+              </ListItem>
+            ) : (
+              <ListItem>
+                <ListItemIcon>
+                  <AmbossIcon />
+                </ListItemIcon>
+                <ListItemText secondary={coordinator?.info?.node_alias}>
+                  <Link
+                    target='_blank'
+                    href={`https://amboss.space/node/${coordinator?.info?.node_id}`}
+                    rel='noreferrer'
+                  >
+                    {`${coordinator?.info?.node_id.slice(0, 12)}... (AMBOSS)`}
+                  </Link>
+                </ListItemText>
+              </ListItem>
+            )}
+
+            <Divider />
+
+            <ListItem>
+              <ListItemIcon>
+                <GitHub />
+              </ListItemIcon>
+              <ListItemText secondary={t('Coordinator commit hash')}>
+                <Link
+                  target='_blank'
+                  href={`https://github.com/Reckless-Satoshi/robosats/tree/${coordinator?.info?.robosats_running_commit_hash}`}
+                  rel='noreferrer'
+                >
+                  {`${coordinator?.info?.robosats_running_commit_hash.slice(0, 12)}...`}
+                </Link>
+              </ListItemText>
+            </ListItem>
+
+            <Divider />
+
+            <ListItem>
+              <ListItemIcon>
+                <Equalizer />
+              </ListItemIcon>
+              <ListItemText secondary={t('24h contracted volume')}>
+                <div
+                  style={{
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  {pn(coordinator?.info?.last_day_volume)}
+                  <BitcoinSignIcon sx={{ width: 14, height: 14 }} color={'text.secondary'} />
+                </div>
+              </ListItemText>
+            </ListItem>
+
+            <Divider />
+
+            <ListItem>
+              <ListItemIcon>
+                <Equalizer />
+              </ListItemIcon>
+              <ListItemText secondary={t('Lifetime contracted volume')}>
+                <div
+                  style={{
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  {pn(coordinator?.info?.lifetime_volume)}
+                  <BitcoinSignIcon sx={{ width: 14, height: 14 }} color={'text.secondary'} />
+                </div>
+              </ListItemText>
+            </ListItem>
+          </List>
+        ) : (
+          <Typography color='error'>{t('Not online')}</Typography>
+        )}
       </DialogContent>
     </Dialog>
   );

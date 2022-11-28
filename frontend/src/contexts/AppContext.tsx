@@ -343,41 +343,22 @@ export const AppContextProvider = ({
   //   setCoordinators(newCoordinators)
   // };
 
-  // const fetchInfo = function (setNetwork?: boolean) {
-  //   setInfo({ ...info, loading: true });
-  //   apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
-  //     const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
-  //     const info = {
-  //       ...data,
-  //       openUpdateClient: versionInfo.updateAvailable,
-  //       coordinatorVersion: versionInfo.coordinatorVersion,
-  //       clientVersion: versionInfo.clientVersion,
-  //       loading: false,
-  //     };
-  //     setInfo(info);
-
-  //     // Cheap set coordinators info given that there is only one coordinator atm
-  //     setCoordinators(coordinators.map(coordinator => {return {...coordinator, info}}))
-
-  //     // Sets Setting network from coordinator API param if accessing via web
-  //     if (setNetwork) {
-  //       setSettings({ ...settings, network: data.network });
-  //     }
-  //   });
-  // };
-  
   const fetchInfo = function () {
     setInfo({ ...info, loading: true });
     apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
       const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
-      setInfo({
+      const info = {
         ...data,
         openUpdateClient: versionInfo.updateAvailable,
         coordinatorVersion: versionInfo.coordinatorVersion,
         clientVersion: versionInfo.clientVersion,
         loading: false,
+      };
+      setInfo(info);
+      const newCoordinators = coordinators.map((coordinator) => {
+        return { ...coordinator, info };
       });
-      setSettings({ ...settings, network: data.network });
+      setCoordinators(newCoordinators);
     });
   };
 
