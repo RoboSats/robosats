@@ -1608,7 +1608,16 @@ class Logics:
 
         num_satoshis = user.profile.earned_rewards
 
-        reward_payout = LNNode.validate_ln_invoice(invoice, num_satoshis)
+        routing_budget = int(
+            max(
+                num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
+                float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
+            )
+        )  # 1000 ppm or 10 sats
+
+        reward_payout = LNNode.validate_ln_invoice(
+            invoice, num_satoshis, routing_budget
+        )
 
         if not reward_payout["valid"]:
             return False, reward_payout["context"]
