@@ -380,7 +380,7 @@ const TradeBox = ({
     } else if (status == 6) {
       bondStatus = 'locked';
       if (isBuyer) {
-        title = 'Submit payout info';
+        title = 'Submit payout info for {{amountSats}} Sats';
         titleVariables = { amountSats: pn(order.invoice_amount) };
         prompt = function () {
           return (
@@ -413,7 +413,7 @@ const TradeBox = ({
       if (isBuyer) {
         title = 'Your info looks good!';
         prompt = () => {
-          return <PayoutWaitPrompt />;
+          return <EscrowWaitPrompt />;
         };
       } else {
         title = 'Lock {{amountSats}} Sats as collateral';
@@ -428,7 +428,7 @@ const TradeBox = ({
     } else if (status == 8) {
       bondStatus = 'locked';
       if (isBuyer) {
-        title = 'Submit payout info';
+        title = 'Submit payout info for {{amountSats}} Sats';
         titleVariables = { amountSats: pn(order.invoice_amount) };
         prompt = () => {
           return (
@@ -449,7 +449,7 @@ const TradeBox = ({
       } else {
         title = 'The trade collateral is locked!';
         prompt = () => {
-          return <EscrowWaitPrompt />;
+          return <PayoutWaitPrompt />;
         };
       }
 
