@@ -69,7 +69,7 @@ export const RoutingFailedPrompt = ({
     }
   };
 
-  if (order.invoice_expired && order.failure_reason) {
+  if (order.invoice_expired) {
     return (
       <Grid
         container
