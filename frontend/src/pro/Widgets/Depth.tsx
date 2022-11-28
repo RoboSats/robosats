@@ -7,7 +7,7 @@ import DepthChart from '../../components/Charts/DepthChart';
 interface DepthChartWidgetProps {
   layout: any;
   gridCellSize: number;
-  orders: Order[];
+  orders: PublicOrder[];
   currency: number;
   limitList: LimitList;
   windowSize: { width: number; height: number };
@@ -16,6 +16,7 @@ interface DepthChartWidgetProps {
   onMouseDown?: () => void;
   onMouseUp?: () => void;
   onTouchEnd?: () => void;
+  baseUrl: string;
 }
 
 const DepthChartWidget = React.forwardRef(
@@ -25,6 +26,7 @@ const DepthChartWidget = React.forwardRef(
       gridCellSize,
       limitList,
       orders,
+      baseUrl,
       currency,
       windowSize,
       style,
@@ -40,6 +42,7 @@ const DepthChartWidget = React.forwardRef(
       return (
         <Paper elevation={3} style={{ width: '100%', height: '100%' }}>
           <DepthChart
+            baseUrl={baseUrl}
             elevation={0}
             orders={orders}
             currency={currency}

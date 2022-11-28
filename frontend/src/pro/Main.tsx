@@ -26,6 +26,9 @@ import {
 import ToolBar from '../pro/ToolBar';
 import LandingDialog from '../pro/LandingDialog';
 
+import defaultCoordinators from '../../static/federation.json';
+import { getHost } from '../utils';
+
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
   return {
@@ -80,7 +83,9 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const [robot, setRobot] = useState<Robot>(new Robot());
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
+  const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });
+  const [baseUrl, setBaseUrl] = useState<string>('');
   const [layout, setLayout] = useState<Layout>(defaultLayout);
 
   const [openLanding, setOpenLanding] = useState<boolean>(true);
@@ -92,15 +97,34 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
     if (typeof window !== undefined) {
       window.addEventListener('resize', onResize);
     }
-    fetchLimits();
-    fetchBook();
-    fetchInfo();
+
+    if (baseUrl != '') {
+      fetchBook();
+      fetchLimits();
+    }
     return () => {
       if (typeof window !== undefined) {
         window.removeEventListener('resize', onResize);
       }
     };
-  }, []);
+  }, [baseUrl]);
+
+  useEffect(() => {
+    let host = '';
+    if (window.NativeRobosats === undefined) {
+      host = getHost();
+    } else {
+      host =
+        settings.network === 'mainnet'
+          ? coordinators[0].mainnetOnion
+          : coordinators[0].testnetOnion;
+    }
+    setBaseUrl(`http://${host}`);
+  }, [settings.network]);
+
+  useEffect(() => {
+    setWindowSize(getWindowSize(theme.typography.fontSize));
+  }, [theme.typography.fontSize]);
 
   const onResize = function () {
     setWindowSize(getWindowSize(em));
@@ -112,7 +136,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
 
   const fetchLimits = async () => {
     setLimits({ ...limits, loading: true });
-    const data = apiClient.get('/api/limits/').then((data) => {
+    const data = apiClient.get(baseUrl, '/api/limits/').then((data) => {
       setLimits({ list: data ?? [], loading: false });
       return data;
     });
@@ -121,7 +145,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
 
   const fetchBook = function () {
     setBook({ ...book, loading: true });
-    apiClient.get('/api/book/').then((data: any) =>
+    apiClient.get(baseUrl, '/api/book/').then((data: any) =>
       setBook({
         loading: false,
         orders: data.not_found ? [] : data,
@@ -130,7 +154,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   };
 
   const fetchInfo = function () {
-    apiClient.get('/api/info/').then((data: any) => {
+    apiClient.get(baseUrl, '/api/info/').then((data: any) => {
       const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
       setInfo({
         ...data,
@@ -168,6 +192,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
         >
           <div key='Maker'>
             <MakerWidget
+              baseUrl={baseUrl}
               limits={limits}
               fetchLimits={fetchLimits}
               fav={fav}
@@ -178,6 +203,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
           </div>
           <div key='Book'>
             <BookWidget
+              baseUrl={baseUrl}
               book={book}
               layout={layout[1]}
               gridCellSize={gridCellSize}
@@ -189,6 +215,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
           </div>
           <div key='DepthChart'>
             <DepthChartWidget
+              baseUrl={baseUrl}
               orders={book.orders}
               gridCellSize={gridCellSize}
               limitList={limits.list}

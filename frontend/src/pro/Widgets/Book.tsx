@@ -5,6 +5,7 @@ import { Paper, useTheme } from '@mui/material';
 import BookTable from '../../components/BookTable';
 
 interface BookWidgetProps {
+  baseUrl: string;
   layout: any;
   gridCellSize?: number;
   book: Book;
@@ -23,6 +24,7 @@ const BookWidget = React.forwardRef(
   (
     {
       layout,
+      baseUrl,
       gridCellSize = 2,
       book,
       fetchBook,
@@ -42,6 +44,7 @@ const BookWidget = React.forwardRef(
       return (
         <Paper elevation={3} style={{ width: '100%', height: '100%' }}>
           <BookTable
+            baseUrl={baseUrl}
             elevation={0}
             clickRefresh={() => fetchBook()}
             book={book}
