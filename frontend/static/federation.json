@@ -1,11 +1,11 @@
 [
   {
-    "alias": "Inception",
-    "avatar": "/static/federation/Inception.png",
+    "alias": "Experimental",
+    "avatar": "/static/federation/Experimental.png",
     "enabled": true,
     "loadingInfo": true,
-    "description": "RoboSats experimental coordinator",
-    "coverLetter": "P2P FTW!",
+    "description": "RoboSats development and experimental coordinator",
+    "motto": "P2P FTW!",
     "contact": {
       "email": "robosats@protonmail.com",
       "telegram": "robosats",
@@ -26,8 +26,8 @@
     "avatar": "/static/federation/Inception.png",
     "enabled": true,
     "loadingInfo": true,
-    "description": "RoboSats experimental coordinator",
-    "coverLetter": "P2P FTW!",
+    "description": "Testnettt development and experimental coordinator",
+    "motto": "Yoooo!",
     "contact": {
       "email": "robosats@protonmail.com",
       "telegram": "robosats",

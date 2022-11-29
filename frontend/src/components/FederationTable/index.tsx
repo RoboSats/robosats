@@ -14,7 +14,7 @@ import { Coordinator } from '../../models';
 
 import RobotAvatar from '../RobotAvatar';
 import { CoordinatorSummaryDialog } from '../Dialogs';
-import { Check, Close, Square } from '@mui/icons-material';
+import { Check, Close } from '@mui/icons-material';
 
 interface FederationTableProps {
   coordinators: Coordinator[];
@@ -23,9 +23,11 @@ interface FederationTableProps {
   maxHeight?: number;
   fillContainer?: boolean;
   baseUrl: string;
+  network: 'mainnet' | 'testnet' | undefined;
 }
 
 const FederationTable = ({
+  network,
   coordinators,
   setCoordinators,
   maxWidth = 100,
@@ -184,7 +186,7 @@ const FederationTable = ({
       priority: 2,
       order: 1,
       normal: {
-        width: 11,
+        width: 12.1,
         object: aliasObj,
       },
       small: {
@@ -261,6 +263,7 @@ const FederationTable = ({
     >
       <CoordinatorSummaryDialog
         open={showDetails}
+        network={network}
         onClose={() => setShowDetails(false)}
         coordinator={selectedCoordinator}
         baseUrl={baseUrl}

@@ -32,6 +32,7 @@ const SettingsPage = (): JSX.Element => {
             setCoordinators={setCoordinators}
             baseUrl={baseUrl}
             maxHeight={10}
+            network={settings.network}
           />
           </Grid>
       </Grid>

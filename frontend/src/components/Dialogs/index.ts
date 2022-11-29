@@ -8,6 +8,6 @@ export { default as ConfirmationDialog } from './Confirmation';
 export { default as ExchangeSummaryDialog } from './ExchangeSummary';
 export { default as CoordinatorSummaryDialog } from './CoordinatorSummary';
 export { default as ProfileDialog } from './Profile';
-export { default as StatsDialog } from './Stats';
+export { default as AppInfoDialog } from './AppInfo';
 export { default as EnableTelegramDialog } from './EnableTelegram';
 export { default as UpdateClientDialog } from './UpdateClient';

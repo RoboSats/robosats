@@ -106,39 +106,6 @@ const ExchangeSummaryDialog = ({ open = false, onClose, info }: Props): JSX.Elem
           </ListItem>
 
           <Divider />
-
-          <ListItem>
-            <ListItemIcon>
-              <PercentIcon />
-            </ListItemIcon>
-
-            <Grid container>
-              <Grid item xs={6}>
-                <ListItemText secondary={t('Maker fee')}>
-                  {(info.maker_fee * 100).toFixed(3)}%
-                </ListItemText>
-              </Grid>
-
-              <Grid item xs={6}>
-                <ListItemText secondary={t('Taker fee')}>
-                  {(info.taker_fee * 100).toFixed(3)}%
-                </ListItemText>
-              </Grid>
-            </Grid>
-          </ListItem>
-
-          <Divider />
-
-          <ListItem>
-            <ListItemIcon>
-              <LinkIcon />
-            </ListItemIcon>
-
-            <ListItemText
-              primary={`${info.current_swap_fee_rate.toPrecision(3)}%`}
-              secondary={t('Current onchain payout fee')}
-            />
-          </ListItem>
         </List>
       </DialogContent>
     </Dialog>

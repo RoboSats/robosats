@@ -33,7 +33,7 @@ interface Props {
   info: Info;
 }
 
-const StatsDialog = ({ open = false, onClose, info }: Props): JSX.Element => {
+const AppInfoDialog = ({ open = false, onClose, info }: Props): JSX.Element => {
   const { t } = useTranslation();
 
   return (
@@ -209,4 +209,4 @@ const StatsDialog = ({ open = false, onClose, info }: Props): JSX.Element => {
   );
 };
 
-export default StatsDialog;
+export default AppInfoDialog;

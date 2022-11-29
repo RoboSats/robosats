@@ -5,7 +5,7 @@ import {
   InfoDialog,
   LearnDialog,
   ProfileDialog,
-  StatsDialog,
+  AppInfoDialog,
   UpdateClientDialog,
 } from '../../components/Dialogs';
 import { pn } from '../../utils';
@@ -73,7 +73,7 @@ const MainDialogs = (): JSX.Element => {
         onClose={() => setOpen({ ...open, coordinator: false })}
         info={info}
       />
-      <StatsDialog
+      <AppInfoDialog
         open={open.stats}
         onClose={() => setOpen({ ...open, stats: false })}
         info={info}
