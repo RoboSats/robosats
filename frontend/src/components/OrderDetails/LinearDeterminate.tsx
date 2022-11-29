@@ -8,16 +8,21 @@ interface Props {
 }
 
 const LinearDeterminate = ({ expiresAt, totalSecsExp }: Props): JSX.Element => {
-  const [progress, setProgress] = useState<number>(100);
+  const timePercentLeft = function(){
+    if (expiresAt && totalSecsExp){
+      const lapseTime = calcTimeDelta(new Date(expiresAt)).total / 1000;
+      return (lapseTime / totalSecsExp) * 100;
+    } else {
+      return 100;
+    }
+  }
 
+  const [progress, setProgress] = useState<number>(timePercentLeft);
+  
   useEffect(() => {
     const timer = setInterval(() => {
-      const left = calcTimeDelta(new Date(expiresAt)).total / 1000;
-      const newProgress = (left / totalSecsExp) * 100;
-
-      setProgress(newProgress);
+      setProgress(timePercentLeft);
     }, 1000);
-
     return () => {
       clearInterval(timer);
     };
