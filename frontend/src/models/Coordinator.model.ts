@@ -21,6 +21,7 @@ export interface Coordinator {
   mainnetNodesPubkeys: string[];
   testnetNodesPubkeys: string[];
   info: Info | undefined;
+  loadingInfo: boolean;
 }
 
 export default Coordinator;

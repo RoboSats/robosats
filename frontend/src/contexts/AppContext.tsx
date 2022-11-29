@@ -318,49 +318,60 @@ export const AppContextProvider = ({
     return await data;
   };
 
-  // fetchInfo for many coordinators
-  // const fetchInfo = function (setNetwork?: boolean) {
-  //   const newCoordinators = coordinators.map(coordinator => {
-  //       if (coordinator.enabled === true) {
-  //         const baseUrl = coordinator[`${settings.network}Clearnet`]
-  //         apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
-  //           console.log(data)
-  //           let info:Info
-  //           const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
-  //           info = {
-  //             ...data,
-  //             openUpdateClient: versionInfo.updateAvailable,
-  //             coordinatorVersion: versionInfo.coordinatorVersion,
-  //             clientVersion: versionInfo.clientVersion,
-  //             loading: false,
-  //           };
-  //           setInfo(info)
-  //           return {...coordinator, info}
-  //         });
-  //         return coordinator;
-  //       }
-  //     });
-  //   setCoordinators(newCoordinators)
-  // };
-
-  const fetchInfo = function () {
-    setInfo({ ...info, loading: true });
-    apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
-      const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
-      const info = {
-        ...data,
-        openUpdateClient: versionInfo.updateAvailable,
-        coordinatorVersion: versionInfo.coordinatorVersion,
-        clientVersion: versionInfo.clientVersion,
-        loading: false,
-      };
-      setInfo(info);
-      const newCoordinators = coordinators.map((coordinator) => {
-        return { ...coordinator, info };
-      });
-      setCoordinators(newCoordinators);
+  const fetchInfo = function (setNetwork?: boolean) {
+    coordinators.map((coordinator, i) => {
+      if (coordinator.enabled === true) {
+        const baseUrl = coordinator[`mainnetClearnet`];
+        apiClient
+          .get(baseUrl, '/api/info/', { mode: 'no-cors' })
+          .then((data: Info) => {
+            let info: Info;
+            const versionInfo: any = checkVer(
+              data.version.major,
+              data.version.minor,
+              data.version.patch,
+            );
+            info = {
+              ...data,
+              openUpdateClient: versionInfo.updateAvailable,
+              coordinatorVersion: versionInfo.coordinatorVersion,
+              clientVersion: versionInfo.clientVersion,
+              loading: false,
+            };
+            setInfo(info);
+            setCoordinators((coordinators) => {
+              coordinators[i].info = info;
+              return coordinators;
+            });
+          })
+          .finally(() => {
+            setCoordinators((coordinators) => {
+              coordinators[i].loadingInfo = false;
+              return coordinators;
+            });
+          });
+      }
     });
   };
+
+  // const fetchInfo = function () {
+  //   setInfo({ ...info, loading: true });
+  //   apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
+  //     const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
+  //     const info = {
+  //       ...data,
+  //       openUpdateClient: versionInfo.updateAvailable,
+  //       coordinatorVersion: versionInfo.coordinatorVersion,
+  //       clientVersion: versionInfo.clientVersion,
+  //       loading: false,
+  //     };
+  //     setInfo(info);
+  //     const newCoordinators = coordinators.map((coordinator) => {
+  //       return { ...coordinator, info };
+  //     });
+  //     setCoordinators(newCoordinators);
+  //   });
+  // };
 
   useEffect(() => {
     if (open.stats || open.coordinator || info.coordinatorVersion == 'v?.?.?') {

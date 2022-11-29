@@ -7,6 +7,7 @@ import {
   ListItemAvatar,
   useTheme,
   Checkbox,
+  CircularProgress,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { Coordinator } from '../../models';
@@ -159,16 +160,18 @@ const FederationTable = ({
   const upObj = function (width: number, hide: boolean) {
     return {
       hide,
-      field: 'color',
+      field: 'up',
       headerName: t('Up'),
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
           <div style={{ cursor: 'pointer' }} onClick={() => onClickCoordinator(params.row.alias)}>
-            {params.row.info ? (
-              <Check sx={{ color: params.row.color }} />
+            {params.row.loadingInfo ? (
+              <CircularProgress thickness={0.35 * fontSize} size={2 * fontSize} />
+            ) : params.row.info ? (
+              <Check color='success' />
             ) : (
-              <Close sx={{ color: 'text.disabled' }} />
+              <Close color='error' />
             )}
           </div>
         );
