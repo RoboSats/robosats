@@ -1696,7 +1696,7 @@ class Logics:
                 summary["trade_fee_sats"] = round(
                     order.last_satoshis
                     - summary["received_sats"]
-                    - order.payout.routing_budget_sats
+                    - (order.payout.routing_budget_sats if not order.is_swap else 0)
                 )
                 # Only add context for swap costs if the user is the swap recipient. Peer should not know whether it was a swap
                 if users[order_user] == user and order.is_swap:
