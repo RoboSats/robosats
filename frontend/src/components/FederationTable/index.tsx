@@ -13,12 +13,13 @@ import { DataGrid } from '@mui/x-data-grid';
 import { Coordinator } from '../../models';
 
 import RobotAvatar from '../RobotAvatar';
-import { CoordinatorSummaryDialog } from '../Dialogs';
 import { Check, Close } from '@mui/icons-material';
 
 interface FederationTableProps {
-  coordinators: Coordinator[];
-  setCoordinators: (state: Coordinator[]) => void;
+  federation: Coordinator[];
+  setFederation: (state: Coordinator[]) => void;
+  setFocusedCoordinator: (state: number) => void;
+  openCoordinator: () => void;
   maxWidth?: number;
   maxHeight?: number;
   fillContainer?: boolean;
@@ -27,9 +28,10 @@ interface FederationTableProps {
 }
 
 const FederationTable = ({
-  network,
-  coordinators,
-  setCoordinators,
+  federation,
+  setFederation,
+  setFocusedCoordinator,
+  openCoordinator,
   maxWidth = 100,
   maxHeight = 30,
   fillContainer = false,
@@ -38,10 +40,6 @@ const FederationTable = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const [pageSize, setPageSize] = useState<number>(0);
-  const [showDetails, setShowDetails] = useState<boolean>(false);
-  const [selectedCoordinator, setSelectedCoordinator] = useState<Coordinator | undefined>(
-    undefined,
-  );
 
   // all sizes in 'em'
   const fontSize = theme.typography.fontSize;
@@ -66,10 +64,10 @@ const FederationTable = ({
   };
 
   const onClickCoordinator = function (alias: string) {
-    coordinators.map((coordinator) => {
+    federation.map((coordinator, index) => {
       if (coordinator.alias === alias) {
-        setSelectedCoordinator(coordinator);
-        setShowDetails(true);
+        setFocusedCoordinator(index);
+        openCoordinator();
       }
     });
   };
@@ -84,14 +82,7 @@ const FederationTable = ({
         return (
           <ListItemButton
             style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}
-            onClick={() =>
-              coordinators.map((coordinator) => {
-                if (coordinator.alias === params.row.alias) {
-                  setSelectedCoordinator(coordinator);
-                  setShowDetails(true);
-                }
-              })
-            }
+            onClick={() => onClickCoordinator(params.row.alias)}
           >
             <ListItemAvatar>
               <RobotAvatar
@@ -120,14 +111,7 @@ const FederationTable = ({
         return (
           <ListItemButton
             style={{ cursor: 'pointer', position: 'relative', left: '-1.64em' }}
-            onClick={() =>
-              coordinators.map((coordinator) => {
-                if (coordinator.alias === params.row.alias) {
-                  setSelectedCoordinator(coordinator);
-                  setShowDetails(true);
-                }
-              })
-            }
+            onClick={() => onClickCoordinator(params.row.alias)}
           >
             <ListItemAvatar>
               <RobotAvatar
@@ -244,13 +228,13 @@ const FederationTable = ({
   const [columns, width] = filteredColumns();
 
   const onEnableChange = function (alias: string) {
-    const newCoordinators = coordinators.map((coordinator) => {
+    const newFederation = federation.map((coordinator) => {
       if (coordinator.alias === alias) {
         return { ...coordinator, enabled: !coordinator.enabled };
       }
       return coordinator;
     });
-    setCoordinators(newCoordinators);
+    setFederation(newFederation);
   };
 
   return (
@@ -261,19 +245,11 @@ const FederationTable = ({
           : { width: `${width}em`, height: `${height}em`, overflow: 'auto' }
       }
     >
-      <CoordinatorSummaryDialog
-        open={showDetails}
-        network={network}
-        onClose={() => setShowDetails(false)}
-        coordinator={selectedCoordinator}
-        baseUrl={baseUrl}
-      />
-
       <DataGrid
         localeText={localeText}
         rowHeight={3.714 * theme.typography.fontSize}
         headerHeight={3.25 * theme.typography.fontSize}
-        rows={coordinators}
+        rows={federation}
         getRowId={(params: any) => params.alias}
         columns={columns}
         checkboxSelection={false}

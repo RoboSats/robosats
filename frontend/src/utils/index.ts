@@ -1,4 +1,4 @@
-export { default as checkVer } from './checkVer';
+export { checkVer, getClientVersion } from './checkVer';
 export { default as filterOrders } from './filterOrders';
 export { default as getHost } from './getHost';
 export { default as hexToRgb } from './hexToRgb';

@@ -22,7 +22,7 @@ import { systemClient } from '../services/System';
 import { checkVer, getHost, tokenStrength } from '../utils';
 import { sha256 } from 'js-sha256';
 
-import defaultCoordinators from '../../static/federation.json';
+import defaultFederation from '../../static/federation.json';
 import { useTheme } from '@mui/material';
 
 const getWindowSize = function (fontSize: number) {
@@ -215,7 +215,10 @@ export const AppContextProvider = ({
   const [robot, setRobot] = useState<Robot>(new Robot(garage.slots[currentSlot].robot));
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
-  const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
+  const [federation, setFederation] = useState<Coordinator[]>(
+    defaultFederation.map((c) => new Coordinator(c)),
+  );
+  const [focusedCoordinator, setFocusedCoordinator] = useState<number>(0);
   const [baseUrl, setBaseUrl] = useState<string>('');
   const [fav, setFav] = useState<Favorites>({ type: null, mode: 'fiat', currency: 0 });
 
@@ -277,18 +280,12 @@ export const AppContextProvider = ({
 
   useEffect(() => {
     let host = '';
-    let protocol = '';
     if (window.NativeRobosats === undefined) {
       host = getHost();
-      protocol = location.protocol;
     } else {
-      protocol = 'http:';
-      host =
-        settings.network === 'mainnet'
-          ? coordinators[0].mainnetOnion
-          : coordinators[0].testnetOnion;
+      host = federation[0][`${settings.network}Onion`];
     }
-    setBaseUrl(`${protocol}//${host}`);
+    setBaseUrl(`http://${host}`);
   }, [settings.network]);
 
   useEffect(() => {
@@ -319,7 +316,7 @@ export const AppContextProvider = ({
   };
 
   const fetchInfo = function (setNetwork?: boolean) {
-    coordinators.map((coordinator, i) => {
+    federation.map((coordinator, i) => {
       if (coordinator.enabled === true) {
         const baseUrl = coordinator[`mainnetClearnet`];
         apiClient
@@ -339,39 +336,20 @@ export const AppContextProvider = ({
               loading: false,
             };
             setInfo(info);
-            setCoordinators((coordinators) => {
-              coordinators[i].info = info;
-              return coordinators;
+            setFederation((federation) => {
+              federation[i].info = info;
+              return federation;
             });
           })
           .finally(() => {
-            setCoordinators((coordinators) => {
-              coordinators[i].loadingInfo = false;
-              return coordinators;
+            setFederation((federation) => {
+              federation[i].loadingInfo = false;
+              return federation;
             });
           });
       }
     });
   };
-
-  // const fetchInfo = function () {
-  //   setInfo({ ...info, loading: true });
-  //   apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
-  //     const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
-  //     const info = {
-  //       ...data,
-  //       openUpdateClient: versionInfo.updateAvailable,
-  //       coordinatorVersion: versionInfo.coordinatorVersion,
-  //       clientVersion: versionInfo.clientVersion,
-  //       loading: false,
-  //     };
-  //     setInfo(info);
-  //     const newCoordinators = coordinators.map((coordinator) => {
-  //       return { ...coordinator, info };
-  //     });
-  //     setCoordinators(newCoordinators);
-  //   });
-  // };
 
   useEffect(() => {
     if (open.stats || open.coordinator || info.coordinatorVersion == 'v?.?.?') {
@@ -534,6 +512,10 @@ export const AppContextProvider = ({
         setSettings,
         book,
         setBook,
+        federation,
+        setFederation,
+        focusedCoordinator,
+        setFocusedCoordinator,
         garage,
         setGarage,
         currentSlot,

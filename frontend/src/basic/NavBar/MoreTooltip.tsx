@@ -84,14 +84,12 @@ const MoreTooltip = ({ open, setOpen, closeAll, children }: MoreTooltipProps): J
           </Grid>
 
           <Grid item sx={{ position: 'relative', right: '0.4em' }}>
-            <Tooltip enterTouchDelay={250} placement='left' title={t('Coordinator summary')}>
+            <Tooltip enterTouchDelay={250} placement='left' title={t('Exchange summary')}>
               <IconButton
                 sx={{
-                  color: open.coordinator
-                    ? theme.palette.primary.main
-                    : theme.palette.text.secondary,
+                  color: open.exchange ? theme.palette.primary.main : theme.palette.text.secondary,
                 }}
-                onClick={() => setOpen({ ...closeAll, coordinator: !open.coordinator })}
+                onClick={() => setOpen({ ...closeAll, exchange: !open.exchange })}
               >
                 <PriceChange />
               </IconButton>
@@ -99,12 +97,12 @@ const MoreTooltip = ({ open, setOpen, closeAll, children }: MoreTooltipProps): J
           </Grid>
 
           <Grid item sx={{ position: 'relative', right: '0.4em' }}>
-            <Tooltip enterTouchDelay={250} placement='left' title={t('Stats for nerds')}>
+            <Tooltip enterTouchDelay={250} placement='left' title={t('client for nerds')}>
               <IconButton
                 sx={{
-                  color: open.stats ? theme.palette.primary.main : theme.palette.text.secondary,
+                  color: open.client ? theme.palette.primary.main : theme.palette.text.secondary,
                 }}
-                onClick={() => setOpen({ ...closeAll, stats: !open.stats })}
+                onClick={() => setOpen({ ...closeAll, client: !open.client })}
               >
                 <BubbleChart />
               </IconButton>

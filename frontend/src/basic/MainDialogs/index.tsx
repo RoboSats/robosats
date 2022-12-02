@@ -1,11 +1,12 @@
 import React, { useState, useContext, useEffect } from 'react';
 import {
   CommunityDialog,
-  ExchangeSummaryDialog,
-  InfoDialog,
+  ExchangeDialog,
+  CoordinatorDialog,
+  AboutDialog,
   LearnDialog,
   ProfileDialog,
-  AppInfoDialog,
+  ClientDialog,
   UpdateClientDialog,
 } from '../../components/Dialogs';
 import { pn } from '../../utils';
@@ -17,7 +18,8 @@ export interface OpenDialogs {
   community: boolean;
   info: boolean;
   coordinator: boolean;
-  stats: boolean;
+  exchange: boolean;
+  client: boolean;
   update: boolean;
   profile: boolean;
 }
@@ -34,6 +36,9 @@ const MainDialogs = (): JSX.Element => {
     setPage,
     setCurrentOrder,
     baseUrl,
+    settings,
+    federation,
+    focusedCoordinator,
   } = useContext<AppContextProps>(AppContext);
 
   const [maxAmount, setMaxAmount] = useState<string>('...loading...');
@@ -58,7 +63,7 @@ const MainDialogs = (): JSX.Element => {
         clientVersion={info.clientVersion}
         onClose={() => setOpen({ ...open, update: false })}
       />
-      <InfoDialog
+      <AboutDialog
         open={open.info}
         maxAmount={maxAmount}
         onClose={() => setOpen({ ...open, info: false })}
@@ -68,16 +73,13 @@ const MainDialogs = (): JSX.Element => {
         open={open.community}
         onClose={() => setOpen({ ...open, community: false })}
       />
-      <ExchangeSummaryDialog
-        open={open.coordinator}
-        onClose={() => setOpen({ ...open, coordinator: false })}
+      <ExchangeDialog
+        federation={federation}
+        open={open.exchange}
+        onClose={() => setOpen({ ...open, exchange: false })}
         info={info}
       />
-      <AppInfoDialog
-        open={open.stats}
-        onClose={() => setOpen({ ...open, stats: false })}
-        info={info}
-      />
+      <ClientDialog open={open.client} onClose={() => setOpen({ ...open, client: false })} />
       <ProfileDialog
         open={open.profile}
         baseUrl={baseUrl}
@@ -86,6 +88,13 @@ const MainDialogs = (): JSX.Element => {
         setRobot={setRobot}
         setPage={setPage}
         setCurrentOrder={setCurrentOrder}
+      />
+      <CoordinatorDialog
+        open={open.coordinator}
+        network={settings.network}
+        onClose={() => setOpen({ ...open, coordinator: false })}
+        coordinator={federation[focusedCoordinator]}
+        baseUrl={baseUrl}
       />
     </>
   );

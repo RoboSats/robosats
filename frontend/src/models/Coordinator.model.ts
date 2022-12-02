@@ -1,5 +1,14 @@
 import { Info } from '.';
 
+export interface Contact {
+  email?: string | undefined;
+  telegram?: string | undefined;
+  reddit?: string | undefined;
+  matrix?: string | undefined;
+  twitter?: string | undefined;
+  website?: string | undefined;
+}
+
 export interface Coordinator {
   alias: string;
   enabled: boolean;
@@ -7,13 +16,7 @@ export interface Coordinator {
   motto: string | undefined;
   logo: string;
   color: string;
-  contact: {
-    email: string | undefined;
-    telegram: string | undefined;
-    matrix: string | undefined;
-    twitter: string | undefined;
-    website: string | undefined;
-  };
+  contact: Contact;
   mainnetOnion: string | undefined;
   mainnetClearnet: string | undefined;
   testnetOnion: string | undefined;

@@ -11,11 +11,9 @@ import {
   ListItem,
   ListItemIcon,
   Typography,
-  ListItemAvatar,
   IconButton,
   Tooltip,
   Link,
-  Chip,
   Box,
   CircularProgress,
   Accordion,
@@ -23,20 +21,14 @@ import {
   AccordionSummary,
 } from '@mui/material';
 
-import InventoryIcon from '@mui/icons-material/Inventory';
-import SellIcon from '@mui/icons-material/Sell';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
-import PercentIcon from '@mui/icons-material/Percent';
-import PriceChangeIcon from '@mui/icons-material/PriceChange';
-import BookIcon from '@mui/icons-material/Book';
+import { Inventory, Sell, SmartToy, Percent, PriceChange, Book, Reddit } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
 
 import { pn } from '../../utils';
-import { Coordinator, Info } from '../../models';
+import { Contact, Coordinator } from '../../models';
 import RobotAvatar from '../RobotAvatar';
 import {
   Bolt,
-  ContactSupport,
   Description,
   Dns,
   Email,
@@ -58,20 +50,14 @@ interface Props {
   baseUrl: string;
 }
 
-interface ContactProps {
-  email?: string;
-  telegram?: string;
-  twitter?: string;
-  matrix?: string;
-  website?: string;
-}
 const ContactButtons = ({
   email,
   telegram,
   twitter,
   matrix,
   website,
-}: ContactProps): JSX.Element => {
+  reddit,
+}: Contact): JSX.Element => {
   const { t } = useTranslation();
   const [showMatrix, setShowMatrix] = useState<boolean>(false);
   return (
@@ -116,6 +102,21 @@ const ContactButtons = ({
         <></>
       )}
 
+      {reddit ? (
+        <Grid item>
+          <IconButton
+            component='a'
+            target='_blank'
+            href={`https://twitter.com/${twitter}`}
+            rel='noreferrer'
+          >
+            <Reddit />
+          </IconButton>
+        </Grid>
+      ) : (
+        <></>
+      )}
+
       {website ? (
         <Grid item>
           <IconButton component='a' target='_blank' href={website} rel='noreferrer'>
@@ -149,7 +150,7 @@ const ContactButtons = ({
   );
 };
 
-const CoordinatorSummaryDialog = ({
+const CoordinatorDialog = ({
   open = false,
   onClose,
   coordinator,
@@ -260,7 +261,7 @@ const CoordinatorSummaryDialog = ({
 
                   <ListItem {...listItemProps}>
                     <ListItemIcon>
-                      <InventoryIcon />
+                      <Inventory />
                     </ListItemIcon>
 
                     <ListItemText
@@ -273,7 +274,7 @@ const CoordinatorSummaryDialog = ({
 
                   <ListItem {...listItemProps}>
                     <ListItemIcon>
-                      <SellIcon />
+                      <Sell />
                     </ListItemIcon>
 
                     <ListItemText
@@ -286,7 +287,7 @@ const CoordinatorSummaryDialog = ({
 
                   <ListItem {...listItemProps}>
                     <ListItemIcon>
-                      <BookIcon />
+                      <Book />
                     </ListItemIcon>
 
                     <ListItemText
@@ -299,7 +300,7 @@ const CoordinatorSummaryDialog = ({
 
                   <ListItem {...listItemProps}>
                     <ListItemIcon>
-                      <SmartToyIcon />
+                      <SmartToy />
                     </ListItemIcon>
 
                     <ListItemText
@@ -312,7 +313,7 @@ const CoordinatorSummaryDialog = ({
 
                   <ListItem {...listItemProps}>
                     <ListItemIcon>
-                      <PriceChangeIcon />
+                      <PriceChange />
                     </ListItemIcon>
 
                     <ListItemText
@@ -325,7 +326,7 @@ const CoordinatorSummaryDialog = ({
 
                   <ListItem {...listItemProps}>
                     <ListItemIcon>
-                      <PercentIcon />
+                      <Percent />
                     </ListItemIcon>
 
                     <Grid container>
@@ -505,4 +506,4 @@ const CoordinatorSummaryDialog = ({
   );
 };
 
-export default CoordinatorSummaryDialog;
+export default CoordinatorDialog;
