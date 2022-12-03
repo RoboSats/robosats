@@ -2,7 +2,6 @@ import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import { Grid, Paper, Collapse, Typography } from '@mui/material';
-
 import { filterOrders } from '../../utils';
 
 import MakerForm from '../../components/MakerForm';
@@ -27,6 +26,20 @@ const MakerPage = (): JSX.Element => {
   } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const history = useHistory();
+  const {
+    limits,
+    book,
+    fetchLimits,
+    clearOrder,
+    fav,
+    setFav,
+    maker,
+    setMaker,
+    windowSize,
+    setPage,
+    setCurrentOrder,
+    baseUrl,
+  } = useContext<AppContextProps>(AppContext);
 
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
   const [showMatches, setShowMatches] = useState<boolean>(false);

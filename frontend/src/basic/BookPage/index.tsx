@@ -27,6 +27,25 @@ const BookPage = (): JSX.Element => {
   } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const history = useHistory();
+  const {
+    limits,
+    book,
+    fetchBook,
+    fetchLimits,
+    clearOrder,
+    fav,
+    setFav,
+    setDelay,
+    info,
+    setOrder,
+    maker,
+    setMaker,
+    windowSize,
+    setPage,
+    setCurrentOrder,
+    baseUrl,
+  } = useContext<AppContextProps>(AppContext);
+
   const [view, setView] = useState<'list' | 'depth'>('list');
   const [openMaker, setOpenMaker] = useState<boolean>(false);
   const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
@@ -50,7 +69,8 @@ const BookPage = (): JSX.Element => {
       history.push('/order/' + id);
       setPage('order');
       setCurrentOrder(id);
-      onViewOrder();
+      setOrder(undefined);
+      setDelay(10000);
     } else {
       setOpenNoRobot(true);
     }

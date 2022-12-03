@@ -19,7 +19,7 @@ import {
 
 import { apiClient } from '../services/api';
 import { systemClient } from '../services/System';
-import { checkVer, getHost, tokenStrength } from '../utils';
+import { checkVer, getClientVersion, getHost, tokenStrength } from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultFederation from '../../static/federation.json';
@@ -80,6 +80,7 @@ export interface AppContextProps {
   setSettings: (state: Settings) => void;
   book: Book;
   info: Info;
+  setInfo: (state: Info) => void;
   garage: Garage;
   setGarage: (state: Garage) => void;
   currentSlot: number;
@@ -159,6 +160,7 @@ const closeAll = {
 //   setRobot: () => null,
 //   info: defaultExchange,
 //   setExchange: () => null,
+//   setInfo: () => null,
 //   focusedCoordinator: 0,
 //   setFocusedCoordinator: () => null,
 //   baseUrl: '',
@@ -216,8 +218,9 @@ export const AppContextProvider = ({
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [federation, setFederation] = useState<Coordinator[]>(
-    defaultFederation.map((c) => new Coordinator(c)),
+    defaultFederation.map((coor) => new Coordinator(coor)),
   );
+  console.log(federation);
   const [focusedCoordinator, setFocusedCoordinator] = useState<number>(0);
   const [baseUrl, setBaseUrl] = useState<string>('');
   const [fav, setFav] = useState<Favorites>({ type: null, mode: 'fiat', currency: 0 });
@@ -227,8 +230,6 @@ export const AppContextProvider = ({
   const [order, setOrder] = useState<Order | undefined>(undefined);
   const [badOrder, setBadOrder] = useState<string | undefined>(undefined);
 
-  const entryPage: Page | '' =
-    window.NativeRobosats === undefined ? window.location.pathname.split('/')[1] : '';
   const [page, setPage] = useState<Page>(entryPage == '' ? 'robot' : entryPage);
   const [slideDirection, setSlideDirection] = useState<SlideDirection>({
     in: undefined,
@@ -237,17 +238,8 @@ export const AppContextProvider = ({
   const [currentOrder, setCurrentOrder] = useState<number | undefined>(undefined);
 
   const navbarHeight = 2.5;
-  const closeAll = {
-    more: false,
-    learn: false,
-    community: false,
-    info: false,
-    coordinator: false,
-    exchange: false,
-    client: false,
-    update: false,
-    profile: false,
-  };
+  const clientVersion = getClientVersion();
+
   const [open, setOpen] = useState<OpenDialogs>(closeAll);
 
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
@@ -316,38 +308,23 @@ export const AppContextProvider = ({
     return await data;
   };
 
-  const fetchInfo = function (setNetwork?: boolean) {
+  const fetchInfo = function () {
+    apiClient.get(baseUrl, '/api/info/', { mode: 'no-cors' }).then((data: Info) => {
+      let info: Info;
+      const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
+      info = {
+        ...data,
+        openUpdateClient: versionInfo.updateAvailable,
+        coordinatorVersion: versionInfo.coordinatorVersion,
+        clientVersion: versionInfo.clientVersion,
+        loading: false,
+      };
+      setInfo(info);
+    });
+
     federation.map((coordinator, i) => {
       if (coordinator.enabled === true) {
-        const baseUrl = coordinator[`mainnetClearnet`];
-        apiClient
-          .get(baseUrl, '/api/info/', { mode: 'no-cors' })
-          .then((data: Info) => {
-            let info: Info;
-            const versionInfo: any = checkVer(
-              data.version.major,
-              data.version.minor,
-              data.version.patch,
-            );
-            info = {
-              ...data,
-              openUpdateClient: versionInfo.updateAvailable,
-              coordinatorVersion: versionInfo.coordinatorVersion,
-              clientVersion: versionInfo.clientVersion,
-              loading: false,
-            };
-            setInfo(info);
-            setFederation((federation) => {
-              federation[i].info = info;
-              return federation;
-            });
-          })
-          .finally(() => {
-            setFederation((federation) => {
-              federation[i].loadingInfo = false;
-              return federation;
-            });
-          });
+        coordinator.fetchInfo({ bitcoin: 'mainnet', network: 'Clearnet' });
       }
     });
   };
@@ -552,6 +529,7 @@ export const AppContextProvider = ({
         open,
         setOpen,
         windowSize,
+        clientVersion,
       }}
     >
       {children}

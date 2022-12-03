@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -17,7 +17,7 @@ import PublicIcon from '@mui/icons-material/Public';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
 import { RoboSatsNoTextIcon } from '../Icons';
-import { getClientVersion } from '../../utils';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface Props {
   open: boolean;
@@ -26,7 +26,7 @@ interface Props {
 
 const ClientDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const clientVersion = getClientVersion();
+  const { clientVersion } = useContext<AppContextProps>(AppContext);
 
   return (
     <Dialog open={open} onClose={onClose}>

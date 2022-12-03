@@ -31,7 +31,7 @@ const SettingsPage = (): JSX.Element => {
             federation={federation}
             setFederation={setFederation}
             setFocusedCoordinator={setFocusedCoordinator}
-            openCoordinator={openCoordinator}
+            openCoordinator={() => setOpen({ ...open, coordinator: true })}
             baseUrl={baseUrl}
             maxHeight={10}
             network={settings.network}

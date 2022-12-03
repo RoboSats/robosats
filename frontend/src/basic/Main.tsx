@@ -1,11 +1,7 @@
 import React, { useContext } from 'react';
 import { HashRouter, BrowserRouter, Switch, Route } from 'react-router-dom';
-<<<<<<< HEAD
-import { Box, Slide, Typography } from '@mui/material';
-=======
 import { useTheme, Box, Slide, Typography } from '@mui/material';
-import { AppContext } from '../contexts/AppContext';
->>>>>>> Create app context
+import { AppContext, AppContextProps } from '../contexts/AppContext';
 
 import RobotPage from './RobotPage';
 import MakerPage from './MakerPage';

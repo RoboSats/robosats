@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -41,6 +41,7 @@ import {
   Twitter,
 } from '@mui/icons-material';
 import { AmbossIcon, BitcoinSignIcon, RoboSatsNoTextIcon } from '../Icons';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface Props {
   open: boolean;
@@ -158,9 +159,14 @@ const CoordinatorDialog = ({
   baseUrl,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
+  const { clientVersion } = useContext<AppContextProps>(AppContext);
+
   const [expanded, setExpanded] = useState<'summary' | 'stats' | undefined>(undefined);
 
   const listItemProps = { sx: { maxHeight: '3em' } };
+  const coordinatorVersion = `v${coordinator?.info?.version?.major ?? '?'}.${
+    coordinator?.info?.version?.minor ?? '?'
+  }.${coordinator?.info?.version?.patch ?? '?'}`;
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -381,9 +387,9 @@ const CoordinatorDialog = ({
                       />
                     </ListItemIcon>
                     <ListItemText
-                      primary={`${t('Client')} ${coordinator?.info?.clientVersion} - ${t(
-                        'Coordinator',
-                      )} ${coordinator?.info?.coordinatorVersion}`}
+                      primary={`${t('Coordinator')} ${coordinatorVersion} - ${t('Client')} ${
+                        clientVersion.short
+                      }`}
                       secondary={t('RoboSats version')}
                     />
                   </ListItem>
