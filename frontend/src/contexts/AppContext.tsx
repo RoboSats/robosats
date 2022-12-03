@@ -19,11 +19,12 @@ import {
 
 import { apiClient } from '../services/api';
 import { systemClient } from '../services/System';
-import { checkVer, getClientVersion, getHost, tokenStrength } from '../utils';
+import { getClientVersion, getHost, aggregateInfo, tokenStrength } from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultFederation from '../../static/federation.json';
 import { useTheme } from '@mui/material';
+import { AggregatedInfo } from '../utils/aggregateInfo';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -79,7 +80,7 @@ export interface AppContextProps {
   settings: Settings;
   setSettings: (state: Settings) => void;
   book: Book;
-  info: Info;
+  info: AggregatedInfo;
   setInfo: (state: Info) => void;
   garage: Garage;
   setGarage: (state: Garage) => void;
@@ -216,9 +217,9 @@ export const AppContextProvider = ({
   const [currentSlot, setCurrentSlot] = useState<number>(garage.slots.length - 1);
   const [robot, setRobot] = useState<Robot>(new Robot(garage.slots[currentSlot].robot));
   const [maker, setMaker] = useState<Maker>(defaultMaker);
-  const [info, setInfo] = useState<Info>(defaultInfo);
+  const [info, setInfo] = useState<AggregatedInfo>(defaultInfo);
   const [federation, setFederation] = useState<Coordinator[]>(
-    defaultFederation.map((coor) => new Coordinator(coor)),
+    defaultFederation.map((c) => new Coordinator(c)),
   );
   console.log(federation);
   const [focusedCoordinator, setFocusedCoordinator] = useState<number>(0);
@@ -309,19 +310,6 @@ export const AppContextProvider = ({
   };
 
   const fetchInfo = function () {
-    apiClient.get(baseUrl, '/api/info/', { mode: 'no-cors' }).then((data: Info) => {
-      let info: Info;
-      const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
-      info = {
-        ...data,
-        openUpdateClient: versionInfo.updateAvailable,
-        coordinatorVersion: versionInfo.coordinatorVersion,
-        clientVersion: versionInfo.clientVersion,
-        loading: false,
-      };
-      setInfo(info);
-    });
-
     federation.map((coordinator, i) => {
       if (coordinator.enabled === true) {
         coordinator.fetchInfo({ bitcoin: 'mainnet', network: 'Clearnet' });
@@ -329,22 +317,29 @@ export const AppContextProvider = ({
     });
   };
 
+  console.log(info);
   useEffect(() => {
-    if (open.stats || open.coordinator || info.coordinatorVersion == 'v?.?.?') {
-      if (window.NativeRobosats === undefined || torStatus == '"Done"') {
-        fetchInfo();
-      }
-    }
-  }, [open.stats, open.coordinator, torStatus]);
+    setInfo(aggregateInfo(federation));
+  }, [federation]);
 
   useEffect(() => {
-    // Sets Setting network from coordinator API param if accessing via web
-    if (settings.network == undefined && info.network) {
-      setSettings((settings: Settings) => {
-        return { ...settings, network: info.network };
-      });
+    if (open.exchange) {
+      fetchInfo();
     }
-  }, [info]);
+  }, [open.exchange, open.coordinator, torStatus]);
+
+  useEffect(() => {
+    fetchInfo();
+  }, []);
+
+  // useEffect(() => {
+  //   // Sets Setting network from coordinator API param if accessing via web
+  //   if (settings.network == undefined && info.network) {
+  //     setSettings((settings: Settings) => {
+  //       return { ...settings, network: info.network };
+  //     });
+  //   }
+  // }, [info]);
 
   // Fetch current order at load and in a loop
   useEffect(() => {

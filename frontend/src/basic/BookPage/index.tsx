@@ -20,31 +20,11 @@ const BookPage = (): JSX.Element => {
     windowSize,
     setPage,
     setCurrentOrder,
-    baseUrl,
-    book,
     setDelay,
     setOrder,
   } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const history = useHistory();
-  const {
-    limits,
-    book,
-    fetchBook,
-    fetchLimits,
-    clearOrder,
-    fav,
-    setFav,
-    setDelay,
-    info,
-    setOrder,
-    maker,
-    setMaker,
-    windowSize,
-    setPage,
-    setCurrentOrder,
-    baseUrl,
-  } = useContext<AppContextProps>(AppContext);
 
   const [view, setView] = useState<'list' | 'depth'>('list');
   const [openMaker, setOpenMaker] = useState<boolean>(false);

@@ -7,5 +7,6 @@ export { default as pn } from './prettyNumbers';
 export { amountToString } from './prettyNumbers';
 export { default as saveAsJson } from './saveFile';
 export { default as statusBadgeColor } from './statusBadgeColor';
+export { default as aggregateInfo } from './aggregateInfo';
 export { genBase62Token, tokenStrength } from './token';
 export { default as getWebln } from './webln';

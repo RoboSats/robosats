@@ -24,7 +24,6 @@ interface FederationTableProps {
   maxHeight?: number;
   fillContainer?: boolean;
   baseUrl: string;
-  network: 'mainnet' | 'testnet' | undefined;
 }
 
 const FederationTable = ({

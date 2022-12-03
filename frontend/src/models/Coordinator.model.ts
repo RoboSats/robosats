@@ -56,6 +56,9 @@ export class Coordinator {
         .then((data: Info) => {
           this.info = data;
         })
+        .catch(() => {
+          this.loadingInfo = false;
+        })
         .finally(() => {
           this.loadingInfo = false;
         });

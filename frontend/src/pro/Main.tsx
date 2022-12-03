@@ -8,10 +8,10 @@ import {
   BookWidget,
   DepthChartWidget,
   SettingsWidget,
+  FederationWidget,
 } from '../pro/Widgets';
 import ToolBar from '../pro/ToolBar';
 import LandingDialog from '../pro/LandingDialog';
-
 import { AppContext, AppContextProps } from '../contexts/AppContext';
 
 // To Do. Add dotted grid when layout is not frozen
@@ -84,7 +84,7 @@ const Main = (): JSX.Element => {
   return (
     <Grid container direction='column' sx={{ width: `${windowSize.width}em` }}>
       <Grid item>
-        <ToolBar height={`${toolbarHeight}em`} settings={settings} setSettings={setSettings} />
+        <ToolBar height={`${toolbarHeight}em`} />
         <LandingDialog open={openLanding} onClose={() => setOpenLanding(!openLanding)} />
       </Grid>
 
@@ -106,6 +106,38 @@ const Main = (): JSX.Element => {
           onLayoutChange={(layout: Layout) => setLayout(layout)}
         >
           <div key='Maker'>
+<<<<<<< HEAD
+            <MakerWidget />
+=======
+<<<<<<< HEAD
+            <MakerWidget
+              baseUrl={baseUrl}
+              limits={limits}
+              fetchLimits={fetchLimits}
+              fav={fav}
+              setFav={setFav}
+              maker={maker}
+              setMaker={setMaker}
+            />
+>>>>>>> Fix PRO after AppContext refactor
+          </div>
+          <div key='Book'>
+            <BookWidget layout={layout[1]} gridCellSize={gridCellSize} />
+          </div>
+          <div key='DepthChart'>
+<<<<<<< HEAD
+            <DepthChartWidget gridCellSize={gridCellSize} layout={layout[2]} />
+=======
+            <DepthChartWidget
+              baseUrl={baseUrl}
+              orders={book.orders}
+              gridCellSize={gridCellSize}
+              limitList={limits.list}
+              layout={layout[2]}
+              currency={fav.currency}
+              windowSize={windowSize}
+            />
+=======
             <MakerWidget />
           </div>
           <div key='Book'>
@@ -113,6 +145,8 @@ const Main = (): JSX.Element => {
           </div>
           <div key='DepthChart'>
             <DepthChartWidget gridCellSize={gridCellSize} layout={layout[2]} />
+>>>>>>> Fix PRO after AppContext refactor
+>>>>>>> Fix PRO after AppContext refactor
           </div>
           <div key='Settings'>
             <SettingsWidget />
@@ -126,8 +160,8 @@ const Main = (): JSX.Element => {
           <div key='Trade'>
             <PlaceholderWidget label='Trade Box' />
           </div>
-          <div key='Other'>
-            <PlaceholderWidget label='Other' />
+          <div key='Federation'>
+            <FederationWidget layout={layout[7]} gridCellSize={gridCellSize} />
           </div>
         </StyledRGL>
       </Grid>

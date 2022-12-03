@@ -36,6 +36,8 @@ const DepthChartWidget = React.forwardRef(
             maxWidth={layout.w * gridCellSize} // EM units
             maxHeight={layout.h * gridCellSize} // EM units
             fillContainer={true}
+            lastDayPremium={info.last_day_nonkyc_btc_premium}
+            baseUrl={baseUrl}
           />
         </Paper>
       );
