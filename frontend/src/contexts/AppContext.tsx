@@ -243,7 +243,8 @@ export const AppContextProvider = ({
     community: false,
     info: false,
     coordinator: false,
-    stats: false,
+    exchange: false,
+    client: false,
     update: false,
     profile: false,
   };
@@ -357,7 +358,7 @@ export const AppContextProvider = ({
         fetchInfo();
       }
     }
-  }, [open.stats, open.coordinator]);
+  }, [open.stats, open.coordinator, torStatus]);
 
   useEffect(() => {
     // Sets Setting network from coordinator API param if accessing via web
