@@ -12,19 +12,18 @@ import {
   Settings,
   Favorites,
   defaultMaker,
-  defaultInfo,
   Coordinator,
+  ExchangeInfo,
   Order,
 } from '../models';
 
 import { apiClient } from '../services/api';
 import { systemClient } from '../services/System';
-import { getClientVersion, getHost, aggregateInfo, tokenStrength } from '../utils';
+import { getClientVersion, getHost, tokenStrength } from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultFederation from '../../static/federation.json';
 import { useTheme } from '@mui/material';
-import { AggregatedInfo } from '../utils/aggregateInfo';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -80,7 +79,7 @@ export interface AppContextProps {
   settings: Settings;
   setSettings: (state: Settings) => void;
   book: Book;
-  info: AggregatedInfo;
+  info: ExchangeInfo;
   setInfo: (state: Info) => void;
   garage: Garage;
   setGarage: (state: Garage) => void;
@@ -217,7 +216,7 @@ export const AppContextProvider = ({
   const [currentSlot, setCurrentSlot] = useState<number>(garage.slots.length - 1);
   const [robot, setRobot] = useState<Robot>(new Robot(garage.slots[currentSlot].robot));
   const [maker, setMaker] = useState<Maker>(defaultMaker);
-  const [info, setInfo] = useState<AggregatedInfo>(defaultInfo);
+  const [info, setInfo] = useState<ExchangeInfo>(new ExchangeInfo());
   const [federation, setFederation] = useState<Coordinator[]>(
     defaultFederation.map((c) => new Coordinator(c)),
   );
@@ -312,14 +311,13 @@ export const AppContextProvider = ({
   const fetchInfo = function () {
     federation.map((coordinator, i) => {
       if (coordinator.enabled === true) {
-        coordinator.fetchInfo({ bitcoin: 'mainnet', network: 'Clearnet' });
+        coordinator.fetchInfo({ bitcoin: 'mainnet', network: 'Clearnet' }, setFederation);
       }
     });
   };
 
-  console.log(info);
   useEffect(() => {
-    setInfo(aggregateInfo(federation));
+    info.update(federation, setInfo);
   }, [federation]);
 
   useEffect(() => {

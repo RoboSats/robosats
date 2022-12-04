@@ -1,4 +1,3 @@
-import { Info } from '.';
 import { apiClient } from '../services/api';
 
 export interface Contact {
@@ -8,6 +7,32 @@ export interface Contact {
   matrix?: string | undefined;
   twitter?: string | undefined;
   website?: string | undefined;
+}
+
+export type Version = { major: number | null; minor: number | null; patch: number | null };
+
+export interface Info {
+  num_public_buy_orders: number;
+  num_public_sell_orders: number;
+  book_liquidity: number;
+  active_robots_today: number;
+  last_day_nonkyc_btc_premium: number;
+  last_day_volume: number;
+  lifetime_volume: number;
+  lnd_version: string;
+  robosats_running_commit_hash: string;
+  alternative_site: string;
+  alternative_name: string;
+  node_alias: string;
+  node_id: string;
+  version: Version;
+  maker_fee: number;
+  taker_fee: number;
+  bond_size: number;
+  current_swap_fee_rate: number;
+  network: 'mainnet' | 'testnet' | undefined;
+  openUpdateClient: boolean;
+  loading: boolean;
 }
 
 export interface EndpointProps {
@@ -47,7 +72,7 @@ export class Coordinator {
   public info?: Info | undefined = undefined;
   public loadingInfo: boolean = true;
 
-  fetchInfo = ({ bitcoin, network }: EndpointProps) => {
+  fetchInfo = ({ bitcoin, network }: EndpointProps, callback: (state: Coordinator[]) => void) => {
     this.loadingInfo = true;
     const url = this[`${bitcoin}${network}`];
     if (url != undefined) {
@@ -63,6 +88,9 @@ export class Coordinator {
           this.loadingInfo = false;
         });
     }
+    return callback((state: Coordinator[]) => {
+      return state;
+    });
   };
 }
 
