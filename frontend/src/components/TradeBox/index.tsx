@@ -602,13 +602,13 @@ const TradeBox = ({
       // 17: 'Maker lost dispute'
       // 18: 'Taker lost dispute'
     } else if ((status == 17 && isMaker) || (status == 18 && !isMaker)) {
-      title = 'You have won the dispute';
+      title = 'You have lost the dispute';
       prompt = function () {
         return <DisputeLoserPrompt />;
       };
       bondStatus = 'settled';
     } else if ((status == 17 && !isMaker) || (status == 18 && isMaker)) {
-      title = 'You have lost the dispute';
+      title = 'You have won the dispute';
       prompt = function () {
         return <DisputeWinnerPrompt />;
       };
