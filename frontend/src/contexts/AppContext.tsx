@@ -15,6 +15,7 @@ import {
   Coordinator,
   ExchangeInfo,
   Order,
+  Version,
 } from '../models';
 
 import { apiClient } from '../services/api';
@@ -226,7 +227,9 @@ export const AppContextProvider = ({
   const [fav, setFav] = useState<Favorites>({ type: null, mode: 'fiat', currency: 0 });
 
   const [delay, setDelay] = useState<number>(60000);
-  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(setInterval(() => null, delay));
+  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
+    setInterval(() => null, delay),
+  );
   const [order, setOrder] = useState<Order | undefined>(undefined);
   const [badOrder, setBadOrder] = useState<string | undefined>(undefined);
 
@@ -242,7 +245,7 @@ export const AppContextProvider = ({
 
   const [open, setOpen] = useState<OpenDialogs>(closeAll);
 
-  const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
+  const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(() =>
     getWindowSize(theme.typography.fontSize),
   );
 
