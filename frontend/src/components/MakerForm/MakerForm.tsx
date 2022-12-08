@@ -81,22 +81,22 @@ const MakerForm = ({
   const minRangeAmountMultiple = 1.6;
   const amountSafeThresholds = [1.03, 0.98];
 
-  useEffect(() => {
-    setCurrencyCode(currencyDict[fav.currency == 0 ? 1 : fav.currency]);
-    if (Object.keys(limits.list).length === 0) {
-      fetchLimits().then((data) => {
-        updateAmountLimits(data, fav.currency, maker.premium);
-        updateCurrentPrice(data, fav.currency, maker.premium);
-        updateSatoshisLimits(data);
-      });
-    } else {
-      updateAmountLimits(limits.list, fav.currency, maker.premium);
-      updateCurrentPrice(limits.list, fav.currency, maker.premium);
-      updateSatoshisLimits(limits.list);
+  // useEffect(() => {
+  //   setCurrencyCode(currencyDict[fav.currency == 0 ? 1 : fav.currency]);
+  //   if (Object.keys(limits.list).length === 0) {
+  //     fetchLimits().then((data) => {
+  //       updateAmountLimits(data, fav.currency, maker.premium);
+  //       updateCurrentPrice(data, fav.currency, maker.premium);
+  //       updateSatoshisLimits(data);
+  //     });
+  //   } else {
+  //     updateAmountLimits(limits.list, fav.currency, maker.premium);
+  //     updateCurrentPrice(limits.list, fav.currency, maker.premium);
+  //     updateSatoshisLimits(limits.list);
 
-      fetchLimits();
-    }
-  }, []);
+  //     fetchLimits();
+  //   }
+  // }, []);
 
   const updateAmountLimits = function (limitList: LimitList, currency: number, premium: number) {
     const index = currency == 0 ? 1 : currency;

@@ -1,3 +1,4 @@
+import { LimitList } from '.';
 import { apiClient } from '../services/api';
 
 export interface Contact {
@@ -56,7 +57,7 @@ export class Coordinator {
   }
 
   public alias: string;
-  public enabled: boolean = true;
+  public enabled?: boolean = true;
   public description: string;
   public motto: string;
   public color: string;
@@ -69,10 +70,13 @@ export class Coordinator {
   public testnetI2P: string | undefined;
   public mainnetNodesPubkeys: string[] | undefined;
   public testnetNodesPubkeys: string[] | undefined;
-  public info?: Info | undefined = undefined;
-  public loadingInfo: boolean = true;
 
-  fetchInfo = ({ bitcoin, network }: EndpointProps, callback: (state: Coordinator[]) => void) => {
+  public info?: Info | undefined = undefined;
+  public loadingInfo?: boolean = true;
+  public limits?: LimitList | undefined = undefined;
+  public loadingLimits?: boolean = true;
+
+  fetchInfo = ({ bitcoin, network }: EndpointProps, callback: () => void) => {
     this.loadingInfo = true;
     const url = this[`${bitcoin}${network}`];
     if (url != undefined) {
@@ -88,10 +92,28 @@ export class Coordinator {
           this.loadingInfo = false;
         });
     }
-    return callback((state: Coordinator[]) => {
-      return state;
-    });
+    return callback();
   };
+
+  fetchLimits = ({ bitcoin, network }: EndpointProps, callback: () => void) => {
+    this.loadingLimits = true;
+    const url = this[`${bitcoin}${network}`];
+    if (url != undefined) {
+      apiClient
+        .get(url, '/api/limits/', { mode: 'no-cors' })
+        .then((data: LimitList) => {
+          this.limits = data;
+        })
+        .catch(() => {
+          this.loadingLimits = false;
+        })
+        .finally(() => {
+          this.loadingLimits = false;
+        });
+    }
+    return callback();
+  };
+
 }
 
 export default Coordinator;

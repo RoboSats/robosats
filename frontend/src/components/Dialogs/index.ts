@@ -10,4 +10,4 @@ export { default as CoordinatorDialog } from './Coordinator';
 export { default as ProfileDialog } from './Profile';
 export { default as ClientDialog } from './Client';
 export { default as EnableTelegramDialog } from './EnableTelegram';
-export { default as UpdateClientDialog } from './UpdateClient';
+export { default as UpdateDialog } from './Update';
