@@ -548,7 +548,7 @@ class Logics:
         # Compute a safer available  onchain liquidity: (confirmed_utxos - reserve - pending_outgoing_txs))
         # Accounts for already committed outgoing TX for previous users.
         confirmed = onchain_payment.balance.onchain_confirmed
-        reserve = 0.01 * onchain_payment.balance.total  # We assume a reserve of 1%
+        reserve = 300000  # We assume a reserve of 300K Sats (3 times higher than LND's default anchor reserve)
         pending_txs = OnchainPayment.objects.filter(
             status=OnchainPayment.Status.VALID
         ).aggregate(Sum("num_satoshis"))["num_satoshis__sum"]
