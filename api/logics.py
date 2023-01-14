@@ -548,7 +548,7 @@ class Logics:
         # Compute a safer available  onchain liquidity: (confirmed_utxos - reserve - pending_outgoing_txs))
         # Accounts for already committed outgoing TX for previous users.
         confirmed = onchain_payment.balance.onchain_confirmed
-        reserve = 0.01 * onchain_payment.balance.total  # We assume a reserve of 1%
+        reserve = 300000  # We assume a reserve of 300K Sats (3 times higher than LND's default anchor reserve)
         pending_txs = OnchainPayment.objects.filter(
             status=OnchainPayment.Status.VALID
         ).aggregate(Sum("num_satoshis"))["num_satoshis__sum"]
@@ -1608,7 +1608,17 @@ class Logics:
 
         num_satoshis = user.profile.earned_rewards
 
-        reward_payout = LNNode.validate_ln_invoice(invoice, num_satoshis)
+        routing_budget_sats = int(
+            max(
+                num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
+                float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
+            )
+        )  # 1000 ppm or 10 sats
+
+        routing_budget_ppm = (routing_budget_sats / float(num_satoshis)) * 1000000
+        reward_payout = LNNode.validate_ln_invoice(
+            invoice, num_satoshis, routing_budget_ppm
+        )
 
         if not reward_payout["valid"]:
             return False, reward_payout["context"]
@@ -1687,7 +1697,7 @@ class Logics:
                 summary["trade_fee_sats"] = round(
                     order.last_satoshis
                     - summary["received_sats"]
-                    - order.payout.routing_budget_sats
+                    - (order.payout.routing_budget_sats if not order.is_swap else 0)
                 )
                 # Only add context for swap costs if the user is the swap recipient. Peer should not know whether it was a swap
                 if users[order_user] == user and order.is_swap:
@@ -1720,6 +1730,9 @@ class Logics:
         )
         if order.last_satoshis_time is not None:
             platform_summary["contract_timestamp"] = order.last_satoshis_time
+            if order.contract_finalization_time is None:
+                order.contract_finalization_time = timezone.now()
+                order.save()
             platform_summary["contract_total_time"] = (
                 order.contract_finalization_time - order.last_satoshis_time
             )

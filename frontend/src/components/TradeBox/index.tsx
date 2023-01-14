@@ -380,7 +380,7 @@ const TradeBox = ({
     } else if (status == 6) {
       bondStatus = 'locked';
       if (isBuyer) {
-        title = 'Submit payout info for {{amountSats}} Sats';
+        title = 'Submit payout info';
         titleVariables = { amountSats: pn(order.invoice_amount) };
         prompt = function () {
           return (
@@ -413,7 +413,7 @@ const TradeBox = ({
       if (isBuyer) {
         title = 'Your info looks good!';
         prompt = () => {
-          return <PayoutWaitPrompt />;
+          return <EscrowWaitPrompt />;
         };
       } else {
         title = 'Lock {{amountSats}} Sats as collateral';
@@ -428,7 +428,7 @@ const TradeBox = ({
     } else if (status == 8) {
       bondStatus = 'locked';
       if (isBuyer) {
-        title = 'Submit payout info for {{amountSats}} Sats';
+        title = 'Submit payout info';
         titleVariables = { amountSats: pn(order.invoice_amount) };
         prompt = () => {
           return (
@@ -449,7 +449,7 @@ const TradeBox = ({
       } else {
         title = 'The trade collateral is locked!';
         prompt = () => {
-          return <EscrowWaitPrompt />;
+          return <PayoutWaitPrompt />;
         };
       }
 
@@ -602,16 +602,16 @@ const TradeBox = ({
       // 17: 'Maker lost dispute'
       // 18: 'Taker lost dispute'
     } else if ((status == 17 && isMaker) || (status == 18 && !isMaker)) {
-      title = 'You have won the dispute';
-      prompt = function () {
-        return <DisputeWinnerPrompt />;
-      };
-    } else if ((status == 17 && !isMaker) || (status == 18 && isMaker)) {
       title = 'You have lost the dispute';
       prompt = function () {
         return <DisputeLoserPrompt />;
       };
       bondStatus = 'settled';
+    } else if ((status == 17 && !isMaker) || (status == 18 && isMaker)) {
+      title = 'You have won the dispute';
+      prompt = function () {
+        return <DisputeWinnerPrompt />;
+      };
     }
 
     return { title, titleVariables, titleColor, prompt, bondStatus, titleIcon };

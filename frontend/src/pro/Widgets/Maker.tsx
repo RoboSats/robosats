@@ -11,6 +11,7 @@ interface MakerWidgetProps {
   maker: Maker;
   setFav: (state: Favorites) => void;
   setMaker: (state: Maker) => void;
+  baseUrl: string;
   style?: Object;
   className?: string;
   onMouseDown?: () => void;
@@ -27,6 +28,7 @@ const MakerWidget = React.forwardRef(
       fetchLimits,
       fav,
       setFav,
+      baseUrl,
       style,
       className,
       onMouseDown,
@@ -42,6 +44,7 @@ const MakerWidget = React.forwardRef(
           style={{ padding: 8, overflow: 'auto', width: '100%', height: '100%' }}
         >
           <MakerForm
+            baseUrl={baseUrl}
             limits={limits}
             fetchLimits={fetchLimits}
             maker={maker}

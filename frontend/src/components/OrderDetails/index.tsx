@@ -99,13 +99,11 @@ const OrderDetails = ({
       }
       // Render a countdown, bold when less than 25%
       return fraction_left < 0.25 ? (
-        <Typography color={color}>
+        <a style={{ color }}>
           <b>{`${hours}h ${zeroPad(minutes)}m ${zeroPad(seconds)}s `}</b>
-        </Typography>
+        </a>
       ) : (
-        <Typography color={color}>
-          {`${hours}h ${zeroPad(minutes)}m ${zeroPad(seconds)}s `}
-        </Typography>
+        <a style={{ color }}>{`${hours}h ${zeroPad(minutes)}m ${zeroPad(seconds)}s `}</a>
       );
     }
   };

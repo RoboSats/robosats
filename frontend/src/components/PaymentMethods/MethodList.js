@@ -80,6 +80,7 @@ export const fiatMethods = [
 
 export const swapMethods = [
   { name: 'On-Chain BTC', icon: 'onchain' },
+  { name: 'On-Chain w/ Stowaway', icon: 'stowaway' },
   { name: 'RBTC', icon: 'rbtc' },
   { name: 'LBTC', icon: 'lbtc' },
   { name: 'WBTC', icon: 'wbtc' },
