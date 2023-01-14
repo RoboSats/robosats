@@ -380,7 +380,7 @@ const TradeBox = ({
     } else if (status == 6) {
       bondStatus = 'locked';
       if (isBuyer) {
-        title = 'Submit payout info for {{amountSats}} Sats';
+        title = 'Submit payout info';
         titleVariables = { amountSats: pn(order.invoice_amount) };
         prompt = function () {
           return (
@@ -428,7 +428,7 @@ const TradeBox = ({
     } else if (status == 8) {
       bondStatus = 'locked';
       if (isBuyer) {
-        title = 'Submit payout info for {{amountSats}} Sats';
+        title = 'Submit payout info';
         titleVariables = { amountSats: pn(order.invoice_amount) };
         prompt = () => {
           return (

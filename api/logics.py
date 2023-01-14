@@ -1616,7 +1616,6 @@ class Logics:
         )  # 1000 ppm or 10 sats
 
         routing_budget_ppm = (routing_budget_sats / float(num_satoshis)) * 1000000
-        
         reward_payout = LNNode.validate_ln_invoice(
             invoice, num_satoshis, routing_budget_ppm
         )

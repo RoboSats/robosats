@@ -1,4 +1,4 @@
-src/components/payment-methods/code/code.js
+src/components/PaymentMethods/Icons/code/code.js
 static/rest_framework/**
 static/admin/**
 static/frontend/**
