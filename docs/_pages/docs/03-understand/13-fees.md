@@ -12,7 +12,7 @@ src: "_pages/docs/03-understand/13-fees.md"
 
 RoboSats charges a {{site.robosats.total_fee}}% fee of the total trade amount; this fee is distributed between the order maker and the order taker who pay {{site.robosats.maker_fee}}% and {{site.robosats.taker_fee}}%, respectively.
 
-The platform fees are summarized in the table below:
+The platform fees are summarized in the table below to emphasize the fee percentage depends on whether you make or take the order, not if you are the buyer or seller:
 
 | Side   | Maker                        | Taker                        |
 |--------|------------------------------|------------------------------|
@@ -78,11 +78,17 @@ Implementing fees also helps mitigate the opportunity for denial of service atta
 
 External platform fees can be incurred when performing on-chain payouts (on-chain swaps) and when routing payments through the Lightning Network.
 
-When choosing to receive bitcoin on-chain, an overview of the fees (swap fee and mining fee) is displayed.
+When choosing to receive bitcoin on-chain, an overview of the mining fee (`fee_mining`) and swap fee (`fee_swap`) is displayed. The `payout_amount` for receiving on-chain is calculated as follows:
+
+````
+payout_amount = trade_sats - fee_sats - fee_mining - fee_swap
+````
 
 The swap fee is an additional fee that RoboSats charges for making the on-chain payment and the mining fee is the on-chain fee rate in sats/vbyte which can be customized to suit your needs. Refer to [Understand > On-Chain Payouts](https://learn.robosats.com/docs/on-chain-payouts/) for additional information regarding on-chain payouts.
 
 RoboSats leverages the speed and security of the Lightning Network, therefore payments sent through the Lightning Network may incur fees depending on the necessary "path" that payment must take.
+
+Users can receive payments privately through [lnproxy](https://lnproxy.org/), a simple Lightning Network privacy tool, but your routing budget may increase to cover extra fees incurred by the lnproxy server. Refer to [Best Practices > Proxy Wallets](https://learn.robosats.com/docs/proxy-wallets/) for more on receiving privately.
 
 The user has the option to specify the Lightning Network routing budget which may help reduce routing failures. Refer to [Quick Start > Lightning Network](https://learn.robosats.com/docs/lightning/) for additional information on routing failures.
 
