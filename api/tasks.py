@@ -299,7 +299,10 @@ def send_message(order_id, message):
     from api.models import Order
 
     order = Order.objects.get(id=order_id)
-    if not order.maker.profile.telegram_enabled:
+    taker_enabled = (
+        False if order.taker is None else order.taker.profile.telegram_enabled
+    )
+    if not (order.maker.profile.telegram_enabled or taker_enabled):
         return
 
     from api.messages import Telegram

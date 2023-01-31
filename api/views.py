@@ -751,6 +751,7 @@ class UserView(APIView):
 
             user.profile.save()
 
+            context = {**context, **Telegram.get_context(user)}
             context["public_key"] = user.profile.public_key
             context["encrypted_private_key"] = user.profile.encrypted_private_key
             context["wants_stealth"] = user.profile.wants_stealth
