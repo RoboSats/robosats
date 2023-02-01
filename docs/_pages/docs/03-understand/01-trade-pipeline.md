@@ -9,6 +9,16 @@ sidebar:
 src: "_pages/docs/03-understand/01-trade-pipeline.md"
 ---
 
+# In images
+<div align="center">
+    <img src="/assets/images/trade-pipeline/buyer-en.jpg" width="650"/>
+</div>
+
+<div align="center">
+    <img src="/assets/images/trade-pipeline/seller-en.jpg" width="650"/>
+</div>
+
+# In simple words
 Alice wants to buy Sats privately. This is step-by-step what happens when she buys using RoboSats.
 
 
