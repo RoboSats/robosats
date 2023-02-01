@@ -40,7 +40,17 @@ class Command(BaseCommand):
             for result in response["result"]:
                 if not result.get("message")("text"):
                     continue
-                if result["message"].get("text") and result["message"]["text"].startswith("/start"):
+                if not result["message"].get("text") or not result["message"]["text"].startswith("/start"):
+                     if result["message"]["text"] == "/start":
+                        token = input("Please enter your token: ")
+                        profile = Profile.objects.filter(telegram_token=token).first()
+                        if not profile:
+                            print(f"No profile with token {token}")
+                            continue
+                if len(result["message"]["text"].split(" ")) < 2:
+                    print("Invalid format. It should be: /start <token>")
+                    print("Remember that you can find your token after activate Telegram notifications. It is in the Tor address after start=<OnlythisistheToken>")
+                    continue
                     token = result["message"]["text"].split(" ")[-1]
                     profile = Profile.objects.filter(telegram_token=token).first()
                     if not profile:
