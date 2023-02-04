@@ -41,7 +41,7 @@ class Command(BaseCommand):
                 if not result.get("message")("text"):
                     continue
                 if not result["message"].get("text") or not result["message"]["text"].startswith("/start"):
-                     if result["message"]["text"] == "/start":
+                    if result["message"]["text"] == "/start":
                         token = input("Please enter your token: ")
                         profile = Profile.objects.filter(telegram_token=token).first()
                         if not profile:
