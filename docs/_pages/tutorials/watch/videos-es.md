@@ -16,6 +16,9 @@ src: "_pages/docs/tutorials/videos-es.md"
 #### Juan en Crypto (directo): Comprar y vender sin-KYC.
 <iframe width="560" height="315" src="https://www.youtube.com/embed/8r8X_nSK8mc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
+#### Privacidad Avanzada (Arkad & P_hodl): Swaps de Lightning a Onchain con Stowaway
+<iframe width="560" height="315" src="https://www.youtube.com/embed/RkaCv2HcIaI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
 #### Cripto Panas: Compra BITCOIN sin KYC en ROBOSATS
 <iframe width="560" height="315" src="https://www.youtube.com/embed/XsawPxCIPgg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
