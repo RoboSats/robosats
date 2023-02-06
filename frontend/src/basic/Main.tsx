@@ -89,7 +89,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
   const [baseUrl, setBaseUrl] = useState<string>('');
-  const [fav, setFav] = useState<Favorites>({ type: null, currency: 0 });
+  const [fav, setFav] = useState<Favorites>({ type: null, mode: 'fiat', currency: 0 });
 
   const [delay, setDelay] = useState<number>(60000);
   const [timer, setTimer] = useState<NodeJS.Timer | undefined>(setInterval(() => null, delay));
@@ -456,6 +456,8 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
             >
               <div>
                 <SettingsPage
+                  fav={fav}
+                  setFav={setFav}
                   settings={settings}
                   setSettings={setSettings}
                   windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}

@@ -2,15 +2,23 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid, Paper, useTheme } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
-import { Settings } from '../../models';
+import { Settings, Favorites } from '../../models';
 
 interface SettingsPageProps {
+  fav: Favorites;
+  setFav: (state: Favorites) => void;
   settings: Settings;
   setSettings: (state: Settings) => void;
   windowSize: { width: number; height: number };
 }
 
-const SettingsPage = ({ settings, setSettings, windowSize }: SettingsPageProps): JSX.Element => {
+const SettingsPage = ({
+  fav,
+  setFav,
+  settings,
+  setSettings,
+  windowSize,
+}: SettingsPageProps): JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
   const maxHeight = windowSize.height * 0.85 - 3;
@@ -23,6 +31,8 @@ const SettingsPage = ({ settings, setSettings, windowSize }: SettingsPageProps):
       <Grid container>
         <Grid item>
           <SettingsForm
+            fav={fav}
+            setFav={setFav}
             settings={settings}
             setSettings={setSettings}
             showNetwork={!(window.NativeRobosats === undefined)}
