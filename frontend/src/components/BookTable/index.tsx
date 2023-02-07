@@ -43,8 +43,7 @@ interface BookTableProps {
   showControls?: boolean;
   showFooter?: boolean;
   showNoResults?: boolean;
-  onCurrencyChange?: (e: any) => void;
-  onTypeChange?: (mouseEvent: any, val: number) => void;
+  setFav?: (state: Favorites) => void;
   onOrderClicked?: (id: number) => void;
   baseUrl: string;
 }
@@ -52,7 +51,8 @@ interface BookTableProps {
 const BookTable = ({
   clickRefresh,
   book,
-  fav = { currency: 1, type: 0 },
+  fav = { currency: 1, type: 0, mode: 'fiat' },
+  setFav,
   maxWidth = 100,
   maxHeight = 70,
   fullWidth = 100,
@@ -63,8 +63,6 @@ const BookTable = ({
   showControls = true,
   showFooter = true,
   showNoResults = true,
-  onCurrencyChange,
-  onTypeChange,
   onOrderClicked = () => null,
   baseUrl,
 }: BookTableProps): JSX.Element => {
@@ -742,10 +740,8 @@ const BookTable = ({
           componentsProps={{
             toolbar: {
               width,
-              type: fav.type,
-              currency: fav.currency,
-              onCurrencyChange,
-              onTypeChange,
+              fav,
+              setFav,
               paymentMethod: paymentMethods,
               setPaymentMethods,
             },

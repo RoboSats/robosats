@@ -17,33 +17,49 @@ import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
 import { FlagWithProps } from '../Icons';
 
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import { Favorites } from '../../models';
+import SwapCalls from '@mui/icons-material/SwapCalls';
 
 interface BookControlProps {
   width: number;
-  type: number;
-  currency: number;
+  fav: Favorites;
+  setFav: (state: Favorites) => void;
   paymentMethod: string[];
-  onCurrencyChange: () => void;
-  onTypeChange: () => void;
   setPaymentMethods: () => void;
 }
 
 const BookControl = ({
   width,
-  type,
-  currency,
-  onCurrencyChange,
-  onTypeChange,
+  fav,
+  setFav,
   paymentMethod,
   setPaymentMethods,
 }: BookControlProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const smallestToolbarWidth = (t('Buy').length + t('Sell').length) * 0.7 + 12;
+  const typeZeroText = fav.mode === 'fiat' ? 'Buy' : 'Swap In';
+  const typeOneText = fav.mode === 'fiat' ? 'Sell' : 'Swap Out';
+
+  const smallestToolbarWidth = (typeZeroText.length + typeOneText.length) * 0.7 + 12;
   const mediumToolbarWidth = smallestToolbarWidth + 12;
   const verboseToolbarWidth =
     mediumToolbarWidth + (t('and use').length + t('pay with').length) * 0.6;
+
+  const handleCurrencyChange = function (e) {
+    const currency = e.target.value;
+    setFav({ ...fav, currency, mode: currency === 1000 ? 'swap' : 'fiat' });
+  };
+
+  const handleTypeChange = function (mouseEvent, val) {
+    setFav({ ...fav, type: val });
+  };
+
+  const handleModeChange = function (mouseEvent, val) {
+    const mode = fav.mode === 'fiat' ? 'swap' : 'fiat';
+    const currency = fav.mode === 'fiat' ? 1000 : 0;
+    setFav({ ...fav, mode, currency });
+  };
 
   return (
     <Box>
@@ -77,19 +93,42 @@ const BookControl = ({
             }}
             size='small'
             exclusive={true}
-            value={type}
-            onChange={onTypeChange}
+            value={fav.mode}
+            onChange={handleModeChange}
           >
-            <ToggleButton value={1} color={'primary'}>
-              {t('Buy')}
-            </ToggleButton>
-            <ToggleButton value={0} color={'secondary'}>
-              {t('Sell')}
+            <ToggleButton value={'swap'} color={'secondary'}>
+              <SwapCalls />
             </ToggleButton>
           </ToggleButtonGroup>
         </Grid>
 
-        {width > verboseToolbarWidth ? (
+        <Grid item>
+          <ToggleButtonGroup
+            sx={{
+              height: '2.6em',
+              backgroundColor: theme.palette.background.paper,
+              border: '0.5px solid',
+              borderColor: 'text.disabled',
+              '&:hover': {
+                borderColor: 'text.primary',
+                border: '1px solid',
+              },
+            }}
+            size='small'
+            exclusive={true}
+            value={fav.type}
+            onChange={handleTypeChange}
+          >
+            <ToggleButton value={1} color={'primary'}>
+              {typeZeroText}
+            </ToggleButton>
+            <ToggleButton value={0} color={'secondary'}>
+              {typeOneText}
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Grid>
+
+        {width > verboseToolbarWidth && fav.mode === 'fiat' ? (
           <Grid item sx={{ position: 'relative', top: '0.5em' }}>
             <Typography variant='caption' color='text.secondary'>
               {t('and use')}
@@ -97,53 +136,55 @@ const BookControl = ({
           </Grid>
         ) : null}
 
-        <Grid item>
-          <Select
-            autoWidth
-            sx={{
-              height: '2.3em',
-              border: '0.5px solid',
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: '4px',
-              borderColor: 'text.disabled',
-              '&:hover': {
-                borderColor: 'text.primary',
-              },
-            }}
-            size='small'
-            label={t('Select Payment Currency')}
-            required={true}
-            value={currency}
-            inputProps={{
-              style: { textAlign: 'center' },
-            }}
-            onChange={onCurrencyChange}
-          >
-            <MenuItem value={0}>
-              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                <FlagWithProps code='ANY' />
-                <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
-                  {' ' + t('ANY')}
-                </Typography>
-              </div>
-            </MenuItem>
-            {Object.entries(currencyDict).map(([key, value]) => (
-              <MenuItem key={key} value={parseInt(key)} color='text.secondary'>
+        {fav.mode === 'fiat' ? (
+          <Grid item>
+            <Select
+              autoWidth
+              sx={{
+                height: '2.3em',
+                border: '0.5px solid',
+                backgroundColor: theme.palette.background.paper,
+                borderRadius: '4px',
+                borderColor: 'text.disabled',
+                '&:hover': {
+                  borderColor: 'text.primary',
+                },
+              }}
+              size='small'
+              label={t('Select Payment Currency')}
+              required={true}
+              value={fav.currency}
+              inputProps={{
+                style: { textAlign: 'center' },
+              }}
+              onChange={handleCurrencyChange}
+            >
+              <MenuItem value={0}>
                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <FlagWithProps code={value} />
+                  <FlagWithProps code='ANY' />
                   <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
-                    {' ' + value}
+                    {' ' + t('ANY')}
                   </Typography>
                 </div>
               </MenuItem>
-            ))}
-          </Select>
-        </Grid>
+              {Object.entries(currencyDict).map(([key, value]) => (
+                <MenuItem key={key} value={parseInt(key)} color='text.secondary'>
+                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <FlagWithProps code={value} />
+                    <Typography sx={{ width: '2em' }} align='right' color='text.secondary'>
+                      {' ' + value}
+                    </Typography>
+                  </div>
+                </MenuItem>
+              ))}
+            </Select>
+          </Grid>
+        ) : null}
 
         {width > verboseToolbarWidth ? (
           <Grid item sx={{ position: 'relative', top: '0.5em' }}>
             <Typography variant='caption' color='text.secondary'>
-              {currency == 1000 ? t('swap to') : t('pay with')}
+              {fav.currency == 1000 ? t(fav.type === 0 ? 'to' : 'from') : t('pay with')}
             </Typography>
           </Grid>
         ) : null}
@@ -164,10 +205,10 @@ const BookControl = ({
               listBoxProps={{ sx: { width: '13em' } }}
               onAutocompleteChange={setPaymentMethods}
               value={paymentMethod}
-              optionsType={currency == 1000 ? 'swap' : 'fiat'}
+              optionsType={fav.currency == 1000 ? 'swap' : 'fiat'}
               error={false}
               helperText={''}
-              label={currency == 1000 ? t('DESTINATION') : t('METHOD')}
+              label={fav.currency == 1000 ? t('DESTINATION') : t('METHOD')}
               tooltipTitle=''
               listHeaderText=''
               addNewButtonText=''
@@ -216,7 +257,7 @@ const BookControl = ({
                   </Typography>
                 </div>
               </MenuItem>
-              {currency === 1000
+              {fav.currency === 1000
                 ? swapMethods.map((method, index) => (
                     <MenuItem
                       style={{ width: '10em' }}
