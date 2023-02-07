@@ -50,6 +50,10 @@ In case the buyer has an existing Amazon giftcard code, the buyer will first hav
 
 Find more details on [Amazon eGift card Bisq guidelines](https://bisq.wiki/Amazon_eGift_card)
 
+### Interac e-Transfer
+
+In Canada, [Interac e-Transfer](https://www.interac.ca/en/consumers/support/faq-consumers/) is a popular and widely accepted payment method used to send payments from one bank account to another, using only a registered email (or telephone number). e-Transfers are considered to have low charge-back risk; however, charge-backs likely remain possible in rare cases. e-Transfers can either be initiated by the sender by sending a payment to the recipient's email address, or by the receiver by sending a payment request to the sender's email address.
+
 ## High-risk payment method
 
 The best practice for users trying to transact with a payment method with a high risk of losing funds is discussed in this section.
