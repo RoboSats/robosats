@@ -216,7 +216,10 @@ const BookTable = ({
       field: 'type',
       headerName: t('Is'),
       width: width * fontSize,
-      renderCell: (params: any) => (params.row.type ? t('Seller') : t('Buyer')),
+      renderCell: (params: any) =>
+        params.row.type
+          ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
+          : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In'),
     };
   };
 
@@ -228,14 +231,15 @@ const BookTable = ({
       type: 'number',
       width: width * fontSize,
       renderCell: (params: any) => {
+        const amount = fav.mode === 'swap' ? params.row.amount * 100000 : params.row.amount;
+        const minAmount =
+          fav.mode === 'swap' ? params.row.min_amount * 100000 : params.row.min_amount;
+        const maxAmount =
+          fav.mode === 'swap' ? params.row.max_amount * 100000 : params.row.max_amount;
         return (
           <div style={{ cursor: 'pointer' }}>
-            {amountToString(
-              params.row.amount,
-              params.row.has_range,
-              params.row.min_amount,
-              params.row.max_amount,
-            )}
+            {amountToString(amount, params.row.has_range, minAmount, maxAmount) +
+              (fav.mode === 'swap' ? 'K Sats' : '')}
           </div>
         );
       },
@@ -244,7 +248,7 @@ const BookTable = ({
 
   const currencyObj = function (width: number, hide: boolean) {
     return {
-      hide,
+      hide: fav.mode === 'swap' ? true : hide,
       field: 'currency',
       headerName: t('Currency'),
       width: width * fontSize,
@@ -495,7 +499,7 @@ const BookTable = ({
       priority: 1,
       order: 4,
       normal: {
-        width: 6.5,
+        width: fav.mode === 'swap' ? 9.5 : 6.5,
         object: amountObj,
       },
     },
@@ -503,7 +507,7 @@ const BookTable = ({
       priority: 2,
       order: 5,
       normal: {
-        width: 5.9,
+        width: fav.mode === 'swap' ? 0 : 5.9,
         object: currencyObj,
       },
     },
@@ -575,7 +579,7 @@ const BookTable = ({
       priority: 10,
       order: 2,
       normal: {
-        width: 4.3,
+        width: fav.mode === 'swap' ? 7 : 4.3,
         object: typeObj,
       },
     },

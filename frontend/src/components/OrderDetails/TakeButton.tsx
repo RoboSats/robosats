@@ -54,7 +54,7 @@ const TakeButton = ({
   const [loadingTake, setLoadingTake] = useState<boolean>(false);
   const [open, setOpen] = useState<OpenDialogsProps>(closeAll);
 
-  const currencyCode: string = currencies[`${order.currency}`];
+  const currencyCode: string = order.currency == 1000 ? 'Sats' : currencies[`${order.currency}`];
 
   const InactiveMakerDialog = function () {
     return (
@@ -104,9 +104,10 @@ const TakeButton = ({
   };
 
   const amountHelperText = function () {
-    if (Number(takeAmount) < Number(order.min_amount) && takeAmount != '') {
+    const amount = order.currency == 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
+    if (amount < Number(order.min_amount) && takeAmount != '') {
       return t('Too low');
-    } else if (Number(takeAmount) > Number(order.max_amount) && takeAmount != '') {
+    } else if (amount > Number(order.max_amount) && takeAmount != '') {
       return t('Too high');
     } else {
       return null;
@@ -122,9 +123,10 @@ const TakeButton = ({
   };
 
   const invalidTakeAmount = function () {
+    const amount = order.currency == 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
     return (
-      Number(takeAmount) < Number(order.min_amount) ||
-      Number(takeAmount) > Number(order.max_amount) ||
+      amount < Number(order.min_amount) ||
+      amount > Number(order.max_amount) ||
       takeAmount == '' ||
       takeAmount == null
     );
@@ -155,11 +157,7 @@ const TakeButton = ({
                 title={t('Enter amount of fiat to exchange for bitcoin')}
               >
                 <TextField
-                  error={
-                    (Number(takeAmount) < Number(order.min_amount) ||
-                      Number(takeAmount) > Number(order.max_amount)) &&
-                    takeAmount != ''
-                  }
+                  error={takeAmount === '' ? false : invalidTakeAmount()}
                   helperText={amountHelperText()}
                   label={t('Amount {{currencyCode}}', { currencyCode })}
                   size='small'
@@ -249,7 +247,7 @@ const TakeButton = ({
     apiClient
       .post(baseUrl, '/api/order/?order_id=' + order.id, {
         action: 'take',
-        amount: takeAmount,
+        amount: order.currency == 1000 ? takeAmount / 100000000 : takeAmount,
       })
       .then((data) => {
         setLoadingTake(false);
