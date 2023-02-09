@@ -48,15 +48,15 @@ class Command(BaseCommand):
                 parts = message.split(" ")
                 if len(parts) < 2:
                     self.telegram.send_message(chat_id=result["message"]["from"]["id"],
-                                                text="Invalid format. It should be: /start <token>")
+                    text="Invalid format. It should be: /start <token>")
                     self.telegram.send_message(chat_id=result["message"]["from"]["id"],
-                                                text="Remember that you can find your token after activating Telegram notifications. It is in the Tor address after start=<OnlythisistheToken>")
+                    text="Remember that you can find your token after activating Telegram notifications. It is in the Tor address after start=<OnlythisistheToken>")
                     continue
                 token = parts[-1]
                 profile = Profile.objects.filter(telegram_token=token).first()
                 if not profile:
                     self.telegram.send_message(chat_id=result["message"]["from"]["id"],
-                                                text=f"No profile with token {token}")
+                    text=f"No profile with token {token}")
                     continue
 
                 attempts = 5
