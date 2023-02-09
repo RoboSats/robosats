@@ -148,7 +148,7 @@ const TakeButton = ({
           }}
         >
           <Grid container direction='row' alignItems='flex-start' justifyContent='space-evenly'>
-            <Grid item>
+            <Grid item sx={{ width: '12em' }}>
               <Tooltip
                 placement='top'
                 enterTouchDelay={500}

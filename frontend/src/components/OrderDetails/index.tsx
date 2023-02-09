@@ -62,13 +62,18 @@ const OrderDetails = ({
       return (
         amountToString(
           order.amount * 100000000,
-          order.has_range,
+          order.amount ? false : order.has_range,
           order.min_amount * 100000000,
           order.max_amount * 100000000,
         ) + ' Sats'
       );
     } else {
-      return amountToString(order.amount, order.has_range, order.min_amount, order.max_amount);
+      return amountToString(
+        order.amount,
+        order.amount ? false : order.has_range,
+        order.min_amount,
+        order.max_amount,
+      );
     }
   };
 
@@ -212,7 +217,7 @@ const OrderDetails = ({
             </ListItemIcon>
             <ListItemText
               primary={AmountString()}
-              secondary={order.has_range ? 'Amount Range' : 'Amount'}
+              secondary={order.amount && !order.has_range ? 'Amount' : 'Amount Range'}
             />
           </ListItem>
           <Divider />
