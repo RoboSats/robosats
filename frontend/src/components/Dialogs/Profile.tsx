@@ -91,7 +91,7 @@ const ProfileDialog = ({
   };
 
   const copyReferralCodeHandler = () => {
-    systemClient.copyToClipboard(`http://${host}/ref/${robot.referralCode}`);
+    systemClient.copyToClipboard(`http://${host}/robot/${robot.referralCode}`);
   };
 
   const handleWeblnInvoiceClicked = async (e: any) => {
