@@ -155,7 +155,7 @@ const SettingsForm = ({
               exclusive={true}
               value={fav.mode}
               onChange={(e, mode) => {
-                setFav({ ...fav, mode });
+                setFav({ ...fav, mode, currency: mode === 'fiat' ? 0 : 1000 });
               }}
             >
               <ToggleButton value='fiat' color='primary'>

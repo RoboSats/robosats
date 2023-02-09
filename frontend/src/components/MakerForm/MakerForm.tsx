@@ -37,7 +37,7 @@ import { FlagWithProps } from '../Icons';
 import AutocompletePayments from './AutocompletePayments';
 import AmountRange from './AmountRange';
 import currencyDict from '../../../static/assets/currencies.json';
-import { pn } from '../../utils';
+import { amountToString, pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
@@ -411,18 +411,23 @@ const MakerForm = ({
         color={disableSubmit() ? 'text.secondary' : 'text.primary'}
       >
         {fav.type == null
-          ? t('Order for ')
+          ? t(fav.mode === 'fiat' ? 'Order for ' : 'Swap of ')
           : fav.type == 1
-          ? t('Buy order for ')
-          : t('Sell order for ')}
-        {maker.advancedOptions && maker.minAmount != ''
-          ? pn(maker.minAmount) + '-' + pn(maker.maxAmount)
-          : pn(maker.amount)}
-        {' ' + currencyCode}
+          ? t(fav.mode === 'fiat' ? 'Buy BTC for ' : 'Swap into LN ')
+          : t(fav.mode === 'fiat' ? 'Sell BTC for ' : 'Swap out of LN ')}
+        {fav.mode === 'fiat'
+          ? amountToString(maker.amount, maker.advancedOptions, maker.minAmount, maker.maxAmount)
+          : amountToString(
+              maker.amount * 100000000,
+              maker.advancedOptions,
+              maker.minAmount * 100000000,
+              maker.maxAmount * 100000000,
+            )}
+        {' ' + (fav.mode === 'fiat' ? currencyCode : 'Sats')}
         {maker.isExplicit
           ? t(' of {{satoshis}} Satoshis', { satoshis: pn(maker.satoshis) })
           : maker.premium == 0
-          ? t(' at market price')
+          ? t(fav.mode === 'fiat' ? ' at market price' : '')
           : maker.premium > 0
           ? t(' at a {{premium}}% premium', { premium: maker.premium })
           : t(' at a {{discount}}% discount', { discount: -maker.premium })}
@@ -502,13 +507,7 @@ const MakerForm = ({
                     <Checkbox
                       sx={{ position: 'relative', bottom: '0.3em' }}
                       checked={fav.mode == 'swap'}
-                      onClick={() =>
-                        setFav({
-                          ...fav,
-                          mode: fav.mode == 'swap' ? 'fiat' : 'swap',
-                          currency: fav.mode == 'swap' ? 0 : 1000,
-                        })
-                      }
+                      onClick={() => handleCurrencyChange(fav.mode == 'swap' ? 1 : 1000)}
                     />
                   </FormControl>
                 </Grid>

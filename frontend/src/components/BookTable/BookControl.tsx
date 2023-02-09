@@ -9,6 +9,7 @@ import {
   Divider,
   MenuItem,
   Box,
+  Tooltip,
 } from '@mui/material';
 import currencyDict from '../../../static/assets/currencies.json';
 import { useTheme } from '@mui/system';
@@ -80,26 +81,34 @@ const BookControl = ({
         ) : null}
 
         <Grid item>
-          <ToggleButtonGroup
-            sx={{
-              height: '2.6em',
-              backgroundColor: theme.palette.background.paper,
-              border: '0.5px solid',
-              borderColor: 'text.disabled',
-              '&:hover': {
-                borderColor: 'text.primary',
-                border: '1px solid',
-              },
-            }}
-            size='small'
-            exclusive={true}
-            value={fav.mode}
-            onChange={handleModeChange}
+          <Tooltip
+            placement='bottom'
+            enterTouchDelay={200}
+            enterDelay={700}
+            enterNextDelay={2000}
+            title={t('Show Lightning swaps')}
           >
-            <ToggleButton value={'swap'} color={'secondary'}>
-              <SwapCalls />
-            </ToggleButton>
-          </ToggleButtonGroup>
+            <ToggleButtonGroup
+              sx={{
+                height: '2.6em',
+                backgroundColor: theme.palette.background.paper,
+                border: '0.5px solid',
+                borderColor: 'text.disabled',
+                '&:hover': {
+                  borderColor: 'text.primary',
+                  border: '1px solid',
+                },
+              }}
+              size='small'
+              exclusive={true}
+              value={fav.mode}
+              onChange={handleModeChange}
+            >
+              <ToggleButton value={'swap'} color={'secondary'}>
+                <SwapCalls />
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Tooltip>
         </Grid>
 
         <Grid item>

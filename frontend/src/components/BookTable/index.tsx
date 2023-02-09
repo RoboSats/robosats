@@ -276,7 +276,7 @@ const BookTable = ({
     return {
       hide,
       field: 'payment_method',
-      headerName: t('Payment Method'),
+      headerName: fav.mode === 'fiat' ? t('Payment Method') : t('Destination'),
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
