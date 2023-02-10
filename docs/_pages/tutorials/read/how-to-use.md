@@ -1,6 +1,6 @@
 ---
 layout: single
-title: How to Use (v0.1.0)
+title: How to Use
 permalink: /read/en/
 toc: true
 toc_sticky: true
@@ -9,7 +9,12 @@ sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/chalkboard-user.svg"/>How to use'
   nav: tutorial
 ---
+## How to Use (v0.3.3)
+![image](https://user-images.githubusercontent.com/97640728/218118681-520e7fa6-52e9-4740-b488-1d294f833de6.png)
+### <a href="https://www.athena-alpha.com/how-to-buy-bitcoins-using-robosats/" target="_blank">How To Buy Bitcoins Using RoboSats: Fastest KYC Free Sats In The West</a>
+Updated for the latest version, Athena Alpha's full guide walks you through the full buying process step-by-step. It also answers any extra FAQs you might have and helps outline how brand new Bitcoin Beginners can get the deposit needed to make their first trade.
 
+## How to Use (v0.1.0)
 Full tutorial in tweets by @simplestBTCbook
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Enjoy this detailed new <a href="https://twitter.com/RoboSats">@RoboSats</a> Tutorial! <a href="https://t.co/CiizGINQ4f">pic.twitter.com/CiizGINQ4f</a></p>&mdash; SimplestBitcoinBook -Get ur 🔑&#39;s into Cold Storage (@SimplestBTCBook) <a href="https://twitter.com/SimplestBTCBook/status/1584103026733633537">October 23, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
