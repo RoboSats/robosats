@@ -283,14 +283,12 @@ class LNNode:
         route_hints = payreq_decoded.route_hints
 
         # Max amount RoboSats will pay for routing
-        # Start deprecate after v0.3.1 (only else max_routing_fee_sats will remain)
         if routing_budget_ppm == 0:
             max_routing_fee_sats = max(
                 num_satoshis * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
                 float(config("MIN_FLAT_ROUTING_FEE_LIMIT_REWARD")),
             )
         else:
-            # End deprecate
             max_routing_fee_sats = int(
                 float(num_satoshis) * float(routing_budget_ppm) / 1000000
             )

@@ -1738,19 +1738,10 @@ class Logics:
             )
         if not order.is_swap:
             platform_summary["routing_budget_sats"] = order.payout.routing_budget_sats
-            # Start Deprecated after v0.3.1
-            platform_summary["routing_fee_sats"] = order.payout.fee
-            # End Deprecated after v0.3.1
             platform_summary["trade_revenue_sats"] = int(
                 order.trade_escrow.num_satoshis
                 - order.payout.num_satoshis
-                # Start Deprecated after v0.3.1 (will be `- order.payout.routing_budget_sats`)
-                - (
-                    order.payout.fee
-                    if order.payout.routing_budget_sats == 0
-                    else order.payout.routing_budget_sats
-                )
-                # End Deprecated after v0.3.1
+                - order.payout.routing_budget_sats
             )
         else:
             platform_summary["routing_fee_sats"] = 0

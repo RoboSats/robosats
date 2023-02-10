@@ -86,23 +86,11 @@ def follow_send_payment(hash):
     from api.models import LNPayment, Order
 
     lnpayment = LNPayment.objects.get(payment_hash=hash)
-    # Start deprecate after v0.3.1 (only else max_routing_fee_sats will remain)
-    if lnpayment.routing_budget_ppm == 0:
-        fee_limit_sat = int(
-            max(
-                lnpayment.num_satoshis
-                * float(config("PROPORTIONAL_ROUTING_FEE_LIMIT")),
-                float(config("MIN_FLAT_ROUTING_FEE_LIMIT")),
-            )
-        )  # 1000 ppm or 10 sats
-    else:
-        # End deprecate
-        # Defaults is 0ppm. Set by the user over API. Defaults to 1000 ppm on ReactJS frontend.
-        fee_limit_sat = int(
-            float(lnpayment.num_satoshis)
-            * float(lnpayment.routing_budget_ppm)
-            / 1000000
-        )
+
+    # Default is 0ppm. Set by the user over API. Client's default is 1000 ppm.
+    fee_limit_sat = int(
+        float(lnpayment.num_satoshis) * float(lnpayment.routing_budget_ppm) / 1000000
+    )
     timeout_seconds = int(config("PAYOUT_TIMEOUT_SECONDS"))
 
     request = LNNode.routerrpc.SendPaymentRequest(
