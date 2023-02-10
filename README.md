@@ -34,6 +34,11 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 
 https://user-images.githubusercontent.com/90936742/167310017-dc211a05-dd5e-4ef4-b93f-250f80bc5bca.mp4
 
+**How To Guide** by Athena Alpha for the latest v0.3.3
+![image](https://user-images.githubusercontent.com/97640728/218118681-520e7fa6-52e9-4740-b488-1d294f833de6.png)
+### <a href="https://www.athena-alpha.com/how-to-buy-bitcoins-using-robosats/" target="_blank">How To Buy Bitcoins Using RoboSats: Fastest KYC Free Sats In The West</a>
+Updated for the latest version, Athena Alpha's full guide walks you through the full buying process step-by-step. It also answers any extra FAQs you might have and helps outline how brand new Bitcoin Beginners can get the deposit needed to make their first trade.
+
 **Video tutorial** by Ben from BTCsessions (YouTube)
 [![ROBOSATS - Buy and Sell Bitcoin With No ID (Youtube)](https://user-images.githubusercontent.com/90936742/167309821-79be8570-fcd1-4677-b43f-fb1aedc896bb.png)](https://www.youtube.com/watch?v=XW_wzRz_BDI)
 
