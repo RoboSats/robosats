@@ -113,7 +113,6 @@ export class Coordinator {
     }
     return callback();
   };
-
 }
 
 export default Coordinator;

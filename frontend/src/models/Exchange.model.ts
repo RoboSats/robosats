@@ -14,17 +14,30 @@ interface ExchangeInfo {
   version: Version;
 }
 
-const compareUpdateLimit = (baseL:Limit, newL:Limit)=>{
-  if (!baseL){
-    return newL
+const defaultExchangeInfo: ExchangeInfo = {
+  onlineCoordinators: 0,
+  totalCoordinators: 0,
+  num_public_buy_orders: 0,
+  num_public_sell_orders: 0,
+  book_liquidity: 0,
+  active_robots_today: 0,
+  last_day_nonkyc_btc_premium: 0,
+  last_day_volume: 0,
+  lifetime_volume: 0,
+  version: { major: 0, minor: 0, patch: 0 },
+};
+
+const compareUpdateLimit = (baseL: Limit, newL: Limit) => {
+  if (!baseL) {
+    return newL;
   } else {
-    const price = ( baseL.price + newL.price ) / 2
-    const max_amount = Math.max(baseL.max_amount, newL.max_amount)
-    const min_amount = Math.min(baseL.min_amount, newL.min_amount)
-    const max_bondless_amount = Math.max(baseL.max_bondless_amount, newL.max_bondless_amount)
-    return {code: newL.code, price, max_amount, min_amount, max_bondless_amount}
+    const price = (baseL.price + newL.price) / 2;
+    const max_amount = Math.max(baseL.max_amount, newL.max_amount);
+    const min_amount = Math.min(baseL.min_amount, newL.min_amount);
+    const max_bondless_amount = Math.max(baseL.max_bondless_amount, newL.max_bondless_amount);
+    return { code: newL.code, price, max_amount, min_amount, max_bondless_amount };
   }
-}
+};
 
 type toAdd =
   | 'num_public_buy_orders'
@@ -35,11 +48,11 @@ type toAdd =
   | 'lifetime_volume';
 
 export class Exchange {
-  public info?: ExchangeInfo;
+  public info?: ExchangeInfo = defaultExchangeInfo;
   public limits?: LimitList;
 
   updateInfo = (federation: Coordinator[], callback: () => void) => {
-    this.info = undefined
+    this.info = undefined;
     const addUp: toAdd[] = [
       'num_public_buy_orders',
       'num_public_sell_orders',
@@ -77,14 +90,17 @@ export class Exchange {
   };
 
   updateLimits = (federation: Coordinator[], callback: () => void) => {
-    let newLimits:LimitList = {}
+    let newLimits: LimitList = {};
     federation.map((coordinator, index) => {
       if (coordinator.limits) {
-        for (const currency in coordinator.limits){
-          newLimits[currency] = compareUpdateLimit(newLimits[currency], coordinator.limits[currency])
+        for (const currency in coordinator.limits) {
+          newLimits[currency] = compareUpdateLimit(
+            newLimits[currency],
+            coordinator.limits[currency],
+          );
         }
       }
-    this.limits = newLimits
+      this.limits = newLimits;
     });
     return callback();
   };

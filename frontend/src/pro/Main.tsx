@@ -42,35 +42,8 @@ const defaultLayout: Layout = [
 
 const Main = (): JSX.Element => {
   const {
-    book,
-    fetchBook,
-    maker,
-    setMaker,
-    setSettings,
-    clearOrder,
-    torStatus,
     settings,
-    limits,
-    fetchLimits,
-    robot,
-    setRobot,
-    fetchRobot,
-    setOrder,
-    setDelay,
-    info,
-    fav,
-    setFav,
-    baseUrl,
-    order,
-    page,
-    setPage,
-    currentOrder,
-    setCurrentOrder,
-    open,
-    setOpen,
     windowSize,
-    badOrder,
-    setBadOrder,
   } = useContext<AppContextProps>(AppContext);
 
   const theme = useTheme();
@@ -106,38 +79,6 @@ const Main = (): JSX.Element => {
           onLayoutChange={(layout: Layout) => setLayout(layout)}
         >
           <div key='Maker'>
-<<<<<<< HEAD
-            <MakerWidget />
-=======
-<<<<<<< HEAD
-            <MakerWidget
-              baseUrl={baseUrl}
-              limits={limits}
-              fetchLimits={fetchLimits}
-              fav={fav}
-              setFav={setFav}
-              maker={maker}
-              setMaker={setMaker}
-            />
->>>>>>> Fix PRO after AppContext refactor
-          </div>
-          <div key='Book'>
-            <BookWidget layout={layout[1]} gridCellSize={gridCellSize} />
-          </div>
-          <div key='DepthChart'>
-<<<<<<< HEAD
-            <DepthChartWidget gridCellSize={gridCellSize} layout={layout[2]} />
-=======
-            <DepthChartWidget
-              baseUrl={baseUrl}
-              orders={book.orders}
-              gridCellSize={gridCellSize}
-              limitList={limits.list}
-              layout={layout[2]}
-              currency={fav.currency}
-              windowSize={windowSize}
-            />
-=======
             <MakerWidget />
           </div>
           <div key='Book'>
@@ -145,8 +86,9 @@ const Main = (): JSX.Element => {
           </div>
           <div key='DepthChart'>
             <DepthChartWidget gridCellSize={gridCellSize} layout={layout[2]} />
->>>>>>> Fix PRO after AppContext refactor
->>>>>>> Fix PRO after AppContext refactor
+          </div>
+          <div key='Book'>
+            <BookWidget layout={layout[1]} gridCellSize={gridCellSize} />
           </div>
           <div key='Settings'>
             <SettingsWidget />

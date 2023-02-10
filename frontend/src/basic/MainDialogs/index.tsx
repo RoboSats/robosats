@@ -28,18 +28,18 @@ const MainDialogs = (): JSX.Element => {
   const {
     open,
     setOpen,
-    info,
     limits,
     closeAll,
     robot,
     setRobot,
     setPage,
     setCurrentOrder,
-    baseUrl,
     settings,
     federation,
     clientVersion,
     focusedCoordinator,
+    baseUrl,
+    exchange,
   } = useContext<AppContextProps>(AppContext);
 
   const [maxAmount, setMaxAmount] = useState<string>('...loading...');
@@ -53,7 +53,7 @@ const MainDialogs = (): JSX.Element => {
   return (
     <>
       <UpdateDialog
-        coordinatorVersion={info.version}
+        coordinatorVersion={exchange.info.version}
         clientVersion={clientVersion.semver}
         onClose={() => setOpen(closeAll)}
       />
@@ -64,7 +64,7 @@ const MainDialogs = (): JSX.Element => {
         federation={federation}
         open={open.exchange}
         onClose={() => setOpen(closeAll)}
-        info={info}
+        info={exchange.info}
       />
       <ClientDialog open={open.client} onClose={() => setOpen({ ...open, client: false })} />
       <ProfileDialog
