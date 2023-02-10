@@ -148,7 +148,7 @@ function AmountRange({
           <Grid
             item
             sx={{
-              width: `calc(100% - ${Math.log10(amountLimits[1] * 0.65) + 2}em)`,
+              width: `calc(100% - ${Math.abs(Math.log10(amountLimits[1]) * 0.65) + 2}em)`,
             }}
           >
             <RangeSlider

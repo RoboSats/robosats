@@ -32,7 +32,7 @@ import { FlagWithProps } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
 
 import { Order } from '../../models';
-import { statusBadgeColor, pn } from '../../utils';
+import { statusBadgeColor, pn, amountToString } from '../../utils';
 import { Page } from '../../basic/NavBar';
 import TakeButton from './TakeButton';
 
@@ -58,21 +58,23 @@ const OrderDetails = ({
 
   const AmountString = function () {
     // precision to 8 decimal if currency is BTC otherwise 4 decimals
-    const precision = order.currency == 1000 ? 8 : 4;
-
-    let primary = '';
-    let secondary = '';
-    if (order.has_range && order.amount == null) {
-      const minAmount = pn(parseFloat(Number(order.min_amount).toPrecision(precision)));
-      const maxAmount = pn(parseFloat(Number(order.max_amount).toPrecision(precision)));
-      primary = `${minAmount}-${maxAmount} ${currencyCode}`;
-      secondary = t('Amount range');
+    if (order.currency == 1000) {
+      return (
+        amountToString(
+          order.amount * 100000000,
+          order.amount ? false : order.has_range,
+          order.min_amount * 100000000,
+          order.max_amount * 100000000,
+        ) + ' Sats'
+      );
     } else {
-      const amount = pn(parseFloat(Number(order.amount).toPrecision(precision)));
-      primary = `${amount} ${currencyCode}`;
-      secondary = t('Amount');
+      return amountToString(
+        order.amount,
+        order.amount ? false : order.has_range,
+        order.min_amount,
+        order.max_amount,
+      );
     }
-    return { primary, secondary };
   };
 
   // Countdown Renderer callback with condition
@@ -151,7 +153,11 @@ const OrderDetails = ({
               />
             </ListItemAvatar>
             <ListItemText
-              primary={order.maker_nick + (order.type ? ' ' + t('(Seller)') : ' ' + t('(Buyer)'))}
+              primary={`${order.maker_nick} (${
+                order.type
+                  ? t(order.currency == 1000 ? 'Swapping Out' : 'Seller')
+                  : t(order.currency == 1000 ? 'Swapping In' : 'Buyer')
+              })`}
               secondary={t('Order maker')}
             />
           </ListItem>
@@ -160,7 +166,11 @@ const OrderDetails = ({
             <Divider />
             <ListItem>
               <ListItemText
-                primary={`${order.taker_nick} ${order.type ? t('(Buyer)') : t('(Seller)')}`}
+                primary={`${order.taker_nick} (${
+                  order.type
+                    ? t(order.currency == 1000 ? 'Swapping In' : 'Buyer')
+                    : t(order.currency == 1000 ? 'Swapping Out' : 'Seller')
+                })`}
                 secondary={t('Order taker')}
               />
               <ListItemAvatar>
@@ -205,7 +215,10 @@ const OrderDetails = ({
                 <FlagWithProps code={currencyCode} width='1.2em' height='1.2em' />
               </div>
             </ListItemIcon>
-            <ListItemText primary={AmountString().primary} secondary={AmountString().secondary} />
+            <ListItemText
+              primary={AmountString()}
+              secondary={order.amount && !order.has_range ? 'Amount' : 'Amount Range'}
+            />
           </ListItem>
           <Divider />
 

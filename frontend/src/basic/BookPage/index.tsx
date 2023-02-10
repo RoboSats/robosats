@@ -69,15 +69,6 @@ const BookPage = ({
     }
   }, []);
 
-  const handleCurrencyChange = function (e) {
-    const currency = e.target.value;
-    setFav({ ...fav, currency });
-  };
-
-  const handleTypeChange = function (mouseEvent, val) {
-    setFav({ ...fav, type: val });
-  };
-
   const onOrderClicked = function (id: number) {
     if (hasRobot) {
       history.push('/order/' + id);
@@ -159,13 +150,12 @@ const BookPage = ({
                 clickRefresh={() => fetchBook()}
                 book={book}
                 fav={fav}
+                setFav={setFav}
                 maxWidth={maxBookTableWidth} // EM units
                 maxHeight={windowSize.height * 0.825 - 5} // EM units
                 fullWidth={windowSize.width} // EM units
                 fullHeight={windowSize.height} // EM units
                 defaultFullscreen={false}
-                onCurrencyChange={handleCurrencyChange}
-                onTypeChange={handleTypeChange}
                 onOrderClicked={onOrderClicked}
                 baseUrl={baseUrl}
               />
@@ -199,13 +189,12 @@ const BookPage = ({
             book={book}
             clickRefresh={() => fetchBook()}
             fav={fav}
+            setFav={setFav}
             maxWidth={windowSize.width * 0.97} // EM units
             maxHeight={windowSize.height * 0.825 - 5} // EM units
             fullWidth={windowSize.width} // EM units
             fullHeight={windowSize.height} // EM units
             defaultFullscreen={false}
-            onCurrencyChange={handleCurrencyChange}
-            onTypeChange={handleTypeChange}
             onOrderClicked={onOrderClicked}
             baseUrl={baseUrl}
           />

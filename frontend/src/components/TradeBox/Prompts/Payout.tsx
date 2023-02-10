@@ -54,9 +54,13 @@ export const PayoutPrompt = ({
             'Before letting you send {{amountFiat}} {{currencyCode}}, we want to make sure you are able to receive the BTC.',
             {
               amountFiat: pn(
-                parseFloat(parseFloat(order.amount).toFixed(order.currency == 1000 ? 8 : 4)),
+                parseFloat(
+                  parseFloat(
+                    order.currency == 1000 ? order.amount * 100000000 : order.amount,
+                  ).toFixed(4),
+                ),
               ),
-              currencyCode,
+              currencyCode: order.currency == 1000 ? 'Sats' : currencyCode,
             },
           )}
         </Typography>

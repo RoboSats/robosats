@@ -14,7 +14,7 @@ import {
   ToggleButtonGroup,
   ToggleButton,
 } from '@mui/material';
-import { Settings } from '../../models';
+import { Favorites, Settings } from '../../models';
 import SelectLanguage from './SelectLanguage';
 import {
   Translate,
@@ -23,11 +23,16 @@ import {
   DarkMode,
   SettingsOverscan,
   Link,
+  AccountBalance,
+  AttachMoney,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
+import SwapCalls from '@mui/icons-material/SwapCalls';
 
 interface SettingsFormProps {
   dense?: boolean;
+  fav: Favorites;
+  setFav: (state: Favorites) => void;
   settings: Settings;
   setSettings: (state: Settings) => void;
   showNetwork?: boolean;
@@ -35,6 +40,8 @@ interface SettingsFormProps {
 
 const SettingsForm = ({
   dense = false,
+  fav,
+  setFav,
   settings,
   setSettings,
   showNetwork = false,
@@ -139,6 +146,29 @@ const SettingsForm = ({
               track={false}
             />
           </ListItem>
+
+          <ListItem>
+            <ListItemIcon>
+              <AccountBalance />
+            </ListItemIcon>
+            <ToggleButtonGroup
+              exclusive={true}
+              value={fav.mode}
+              onChange={(e, mode) => {
+                setFav({ ...fav, mode, currency: mode === 'fiat' ? 0 : 1000 });
+              }}
+            >
+              <ToggleButton value='fiat' color='primary'>
+                <AttachMoney />
+                {t('Fiat')}
+              </ToggleButton>
+              <ToggleButton value='swap' color='secondary'>
+                <SwapCalls />
+                {t('Swaps')}
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </ListItem>
+
           {showNetwork ? (
             <ListItem>
               <ListItemIcon>

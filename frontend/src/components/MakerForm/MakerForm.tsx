@@ -8,6 +8,7 @@ import {
   Switch,
   Tooltip,
   Button,
+  Checkbox,
   Grid,
   Typography,
   TextField,
@@ -36,7 +37,7 @@ import { FlagWithProps } from '../Icons';
 import AutocompletePayments from './AutocompletePayments';
 import AmountRange from './AmountRange';
 import currencyDict from '../../../static/assets/currencies.json';
-import { pn } from '../../utils';
+import { amountToString, pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
@@ -146,6 +147,7 @@ const MakerForm = ({
     setFav({
       ...fav,
       currency: newCurrency,
+      mode: newCurrency === 1000 ? 'swap' : 'fiat',
     });
     updateAmountLimits(limits.list, newCurrency, maker.premium);
     updateCurrentPrice(limits.list, newCurrency, maker.premium);
@@ -409,18 +411,23 @@ const MakerForm = ({
         color={disableSubmit() ? 'text.secondary' : 'text.primary'}
       >
         {fav.type == null
-          ? t('Order for ')
+          ? t(fav.mode === 'fiat' ? 'Order for ' : 'Swap of ')
           : fav.type == 1
-          ? t('Buy order for ')
-          : t('Sell order for ')}
-        {maker.advancedOptions && maker.minAmount != ''
-          ? pn(maker.minAmount) + '-' + pn(maker.maxAmount)
-          : pn(maker.amount)}
-        {' ' + currencyCode}
+          ? t(fav.mode === 'fiat' ? 'Buy BTC for ' : 'Swap into LN ')
+          : t(fav.mode === 'fiat' ? 'Sell BTC for ' : 'Swap out of LN ')}
+        {fav.mode === 'fiat'
+          ? amountToString(maker.amount, maker.advancedOptions, maker.minAmount, maker.maxAmount)
+          : amountToString(
+              maker.amount * 100000000,
+              maker.advancedOptions,
+              maker.minAmount * 100000000,
+              maker.maxAmount * 100000000,
+            )}
+        {' ' + (fav.mode === 'fiat' ? currencyCode : 'Sats')}
         {maker.isExplicit
           ? t(' of {{satoshis}} Satoshis', { satoshis: pn(maker.satoshis) })
           : maker.premium == 0
-          ? t(' at market price')
+          ? t(fav.mode === 'fiat' ? ' at market price' : '')
           : maker.premium > 0
           ? t(' at a {{premium}}% premium', { premium: maker.premium })
           : t(' at a {{discount}}% discount', { discount: -maker.premium })}
@@ -492,56 +499,73 @@ const MakerForm = ({
       <Collapse in={!collapseAll}>
         <Grid container spacing={1} justifyContent='center' alignItems='center'>
           <Grid item>
-            <FormControl component='fieldset'>
-              <FormHelperText sx={{ textAlign: 'center' }}>
-                {t('Buy or Sell Bitcoin?')}
-              </FormHelperText>
-              <div style={{ textAlign: 'center' }}>
-                <ButtonGroup>
-                  <Button
-                    size={maker.advancedOptions ? 'small' : 'large'}
-                    variant='contained'
-                    onClick={() =>
-                      setFav({
-                        ...fav,
-                        type: 1,
-                      })
-                    }
-                    disableElevation={fav.type == 1}
-                    sx={{
-                      backgroundColor: fav.type == 1 ? 'primary.main' : 'background.paper',
-                      color: fav.type == 1 ? 'background.paper' : 'text.secondary',
-                      ':hover': {
-                        color: 'background.paper',
-                      },
-                    }}
-                  >
-                    {t('Buy')}
-                  </Button>
-                  <Button
-                    size={maker.advancedOptions ? 'small' : 'large'}
-                    variant='contained'
-                    onClick={() =>
-                      setFav({
-                        ...fav,
-                        type: 0,
-                      })
-                    }
-                    disableElevation={fav.type == 0}
-                    color='secondary'
-                    sx={{
-                      backgroundColor: fav.type == 0 ? 'secondary.main' : 'background.paper',
-                      color: fav.type == 0 ? 'background.secondary' : 'text.secondary',
-                      ':hover': {
-                        color: 'background.paper',
-                      },
-                    }}
-                  >
-                    {t('Sell')}
-                  </Button>
-                </ButtonGroup>
-              </div>
-            </FormControl>
+            <Grid container direction='row' justifyContent='center' alignItems='stretch'>
+              <Collapse in={maker.advancedOptions} orientation='horizontal'>
+                <Grid item>
+                  <FormControl>
+                    <FormHelperText sx={{ textAlign: 'center' }}>{t('Swap?')}</FormHelperText>
+                    <Checkbox
+                      sx={{ position: 'relative', bottom: '0.3em' }}
+                      checked={fav.mode == 'swap'}
+                      onClick={() => handleCurrencyChange(fav.mode == 'swap' ? 1 : 1000)}
+                    />
+                  </FormControl>
+                </Grid>
+              </Collapse>
+
+              <Grid item>
+                <FormControl component='fieldset'>
+                  <FormHelperText sx={{ textAlign: 'center' }}>
+                    {fav.mode === 'fiat' ? t('Buy or Sell Bitcoin?') : t('In or Out of Lightning?')}
+                  </FormHelperText>
+                  <div style={{ textAlign: 'center' }}>
+                    <ButtonGroup>
+                      <Button
+                        size={maker.advancedOptions ? 'small' : 'large'}
+                        variant='contained'
+                        onClick={() =>
+                          setFav({
+                            ...fav,
+                            type: 1,
+                          })
+                        }
+                        disableElevation={fav.type == 1}
+                        sx={{
+                          backgroundColor: fav.type == 1 ? 'primary.main' : 'background.paper',
+                          color: fav.type == 1 ? 'background.paper' : 'text.secondary',
+                          ':hover': {
+                            color: 'background.paper',
+                          },
+                        }}
+                      >
+                        {fav.mode === 'fiat' ? t('Buy') : t('Swap In')}
+                      </Button>
+                      <Button
+                        size={maker.advancedOptions ? 'small' : 'large'}
+                        variant='contained'
+                        onClick={() =>
+                          setFav({
+                            ...fav,
+                            type: 0,
+                          })
+                        }
+                        disableElevation={fav.type == 0}
+                        color='secondary'
+                        sx={{
+                          backgroundColor: fav.type == 0 ? 'secondary.main' : 'background.paper',
+                          color: fav.type == 0 ? 'background.secondary' : 'text.secondary',
+                          ':hover': {
+                            color: 'background.paper',
+                          },
+                        }}
+                      >
+                        {fav.mode === 'fiat' ? t('Sell') : t('Swap Out')}
+                      </Button>
+                    </ButtonGroup>
+                  </div>
+                </FormControl>
+              </Grid>
+            </Grid>
           </Grid>
 
           <Grid item>
@@ -637,10 +661,10 @@ const MakerForm = ({
             <AutocompletePayments
               onAutocompleteChange={handlePaymentMethodChange}
               // listBoxProps={{ sx: { width: '15.3em', maxHeight: '20em' } }}
-              optionsType={fav.currency == 1000 ? 'swap' : 'fiat'}
+              optionsType={fav.mode}
               error={maker.badPaymentMethod}
               helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
-              label={fav.currency == 1000 ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')}
+              label={fav.mode == 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')}
               tooltipTitle={t(
                 'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
               )}

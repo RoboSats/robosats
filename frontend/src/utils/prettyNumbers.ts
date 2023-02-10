@@ -15,15 +15,16 @@ export const amountToString: (
   has_range: boolean,
   min_amount: number,
   max_amount: number,
-) => string = (amount, has_range, min_amount, max_amount) => {
+  precision?: number,
+) => string = (amount, has_range, min_amount, max_amount, precision = 4) => {
   if (has_range) {
     return (
-      pn(parseFloat(Number(min_amount).toPrecision(4))) +
+      pn(parseFloat(Number(min_amount).toPrecision(precision))) +
       '-' +
-      pn(parseFloat(Number(max_amount).toPrecision(4)))
+      pn(parseFloat(Number(max_amount).toPrecision(precision)))
     );
   }
-  return pn(parseFloat(Number(amount).toPrecision(4))) || '';
+  return pn(parseFloat(Number(amount).toPrecision(precision))) || '';
 };
 
 export default pn;

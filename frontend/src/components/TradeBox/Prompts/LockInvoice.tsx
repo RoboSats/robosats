@@ -56,17 +56,21 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
       alignItems='center'
       spacing={0.5}
     >
+      <Grid item xs={12}>
+        {concept === 'bond' ? <WalletsButton /> : <ExpirationWarning />}
+      </Grid>
+
       {concept == 'bond' ? (
-        <Typography color='secondary'>
-          <b>{t(`You are ${order.is_buyer ? 'BUYING' : 'SELLING'} BTC`)}</b>
+        <Typography color='secondary' variant='h6' align='center'>
+          <b>
+            {order.currency == 1000
+              ? t(`${order.is_buyer ? 'SWAPPING INTO' : 'SWAPPING OUT of'} Lightning`)
+              : t(`You are ${order.is_buyer ? 'BUYING' : 'SELLING'} BTC`)}
+          </b>
         </Typography>
       ) : (
         <></>
       )}
-
-      <Grid item xs={12}>
-        {concept === 'bond' ? <WalletsButton /> : <ExpirationWarning />}
-      </Grid>
 
       <Grid item xs={12}>
         <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
