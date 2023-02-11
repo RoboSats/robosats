@@ -82,8 +82,8 @@ It works well. But they are having issues in the custodial mode. Escrows that Ro
 ### Bitcoin Beach (Mobile)
 The hodl invoice shows as a grey icon while waiting. Need to tap the obvious back button to return to the main screen while the payment is pending.
 
-### SBW (Mobile)
-One of the simplest and one of the best. The hodl invoice shows as "on fly". Nowadays (14-06-2022) it is NOT recommend to use the default Hosted Channel until the developer is back but the wallet is safe and works fine.
+### OBW (Mobile)
+One of the simplest and one of the best. The hodl invoice shows as "on fly", it is no custodial and it allows to create our own channels, to buy one from a liquidity provider or use Hosted Channels. It is maintained by the great Fiatjaf and it is a fork of the abandoned SBW.
 
 ## <i class="fa-solid fa-code-pull-request"></i> Help keep this page updated
 There are many wallets and all of them keep improving at lightning speed. You can contribute to the RoboSats Open Source Project by testing wallets, editing [the content of this page](https://github.com/Reckless-Satoshi/robosats/tree/main/docs/{{page.src}}) and opening a [Pull Request](https://github.com/Reckless-Satoshi/robosats/pulls)
