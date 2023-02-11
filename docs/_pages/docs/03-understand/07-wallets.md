@@ -28,7 +28,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 | Wallet | Version | Device | UX<sup>1</sup> | Bonds<sup>2</sup> | Payout<sup>3</sup> | Comp<sup>4</sup> | Total<sup>5</sup> |
 |:---|:---|:--:|:--:|:--:|:--:|:--:|:--:|
 |[Blixt](#blixt-androidios-lnd-light-backend-on-device)|[v0.4.1](https://github.com/hsjoberg/blixt-wallet)|{{page.phone}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
-|[Electrum](#electrum-desktop)|[4.1.4](https://github.com/spesmilo/electrum)|{{page.laptop}}|{{page.good}}|{{page.soso}}|{{page.soso}}|{{page.soso}}|{{page.unclear}}||
+|[Electrum](#electrum-desktop)|[4.1.4](https://github.com/spesmilo/electrum)|{{page.laptop}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}||
 |[LND](#lnd-cli-interface)|[v0.14.2](https://github.com/LightningNetwork/lnd)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Core Lightning](#core-lightning--cln-cli-interface)|[v0.11.1](https://github.com/ElementsProject/lightning)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Zeus](#zeus-mobile-lnd-cln-eclair-remote-backend)|[v0.6.0-rc3](https://github.com/ZeusLN/zeus)|{{page.phone}}{{page.remote}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
@@ -48,12 +48,11 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 5. **Total:** Is the wallet compatible and stable enough to be used consistently without issues?
 
 ### Alby (browser extension)
-Alby is a browser extension compatible with WebLN standard. Since RoboSats supports WebLN, the experience with Alby is probably best-in-class: you won't have to scan the QR codes or generate invoices, simply click on the Alby pop up to confirm the actions. You can connect the Alby extension to most of the popular nodes and wallets, or simply let Alby host a custodial wallet for you.
+Alby is a browser extension compatible with WebLN standard. Given that RoboSats supports WebLN, the experience with Alby is probably best-in-class: you won't have to scan the QR codes or copy/paste generated invoices. Simply click on the Alby pop up to confirm the actions. You can connect the Alby extension to most of the popular nodes and wallets or simply let Alby host a custodial wallet for you.
 
-Special instructions to install Alby in Tor Browser:
+Instructions to install Alby in Tor Browser:
 1. Install the Alby extension from the [Firefox add-ons store](https://addons.mozilla.org/en-US/firefox/addon/alby/)
-2. Alby needs persistent memory, Tor Browser disables it by default. Go to `Settings`, type `"History"` on the search bar and uncheck `"Always use private browsing mode"`
-3. Click on the Alby extension and follow the prompts to setup your wallet.
+2. Click on the Alby extension and follow the prompts to setup your wallet.
 
 ### Blixt (Android/iOS, LND light backend on device)
 Most development testing for Robosats has been done using Blixt. This is one of the most complete lightning wallets around. However, it does lead to misunderstanding when hold invoices are locked, as it shows a spinner with payment in transit. The user needs to check on the website for confirmation. Blixt allows for multiple pending HTLCs, this is necessary as a seller since you need to lock a taker/maker bond and then a trade escrow (2 pending concurrent HTLCs). It might eventually also display as paid/charged invoices that are still pending, specially if the user force closes blixt and reopens it. Occasionally can display as charged fidelity bonds that have in fact been returned.
