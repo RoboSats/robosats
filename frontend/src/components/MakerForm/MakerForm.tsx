@@ -593,7 +593,11 @@ const MakerForm = ({
                       enterTouchDelay={500}
                       enterDelay={700}
                       enterNextDelay={2000}
-                      title={t('Amount of fiat to exchange for bitcoin')}
+                      title={
+                        fav.mode === 'fiat'
+                          ? t('Amount of fiat to exchange for bitcoin')
+                          : t('Amount of BTC to swap for LN Sats')
+                      }
                     >
                       <TextField
                         fullWidth
@@ -666,7 +670,9 @@ const MakerForm = ({
               helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
               label={fav.mode == 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')}
               tooltipTitle={t(
-                'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
+                fav.mode == 'swap'
+                  ? t('Enter the destination of the Lightning swap')
+                  : 'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
               )}
               listHeaderText={t('You can add new methods')}
               addNewButtonText={t('Add New')}
