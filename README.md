@@ -23,19 +23,19 @@ RoboSats is a simple and private way to exchange bitcoin for national currencies
 - [Testnet and mirrors](https://learn.robosats.com/docs/access)
 
 ## How to use it
-
-- **[Full Walkthrough how to use RoboSats (English)](https://learn.robosats.com/read/en)**
-
-- **[Guia completa de como usar RoboSats (Español)](https://learn.robosats.com/read/es)**
-
-- **[Vollständiges how to use RoboSats (Deutsch)](https://learn.robosats.com/read/de)**
-
-**Short video-walktrough**
-
 https://user-images.githubusercontent.com/90936742/167310017-dc211a05-dd5e-4ef4-b93f-250f80bc5bca.mp4
 
-**Video tutorial** by Ben from BTCsessions (YouTube)
-[![ROBOSATS - Buy and Sell Bitcoin With No ID (Youtube)](https://user-images.githubusercontent.com/90936742/167309821-79be8570-fcd1-4677-b43f-fb1aedc896bb.png)](https://www.youtube.com/watch?v=XW_wzRz_BDI)
+### Written guides
+- **[English](https://learn.robosats.com/read/en)**
+- **[Español](https://learn.robosats.com/read/es)**
+- **[Deutsch](https://learn.robosats.com/read/de)**
+
+### Video guides
+- **[English](https://learn.robosats.com/watch/en/)**
+- **[Español](https://learn.robosats.com/watch/es/)**
+- **[Deutsch](https://learn.robosats.com/watch/de)**
+- **[Português](https://learn.robosats.com/watch/pt)**
+- **[Polski](https://learn.robosats.com/watch/pl)**
 
 ## How it works
 
