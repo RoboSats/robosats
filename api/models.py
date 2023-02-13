@@ -227,10 +227,20 @@ class OnchainPayment(models.Model):
     )
     # fee in sats/vbyte with mSats decimals fee_msat
     suggested_mining_fee_rate = models.DecimalField(
-        max_digits=6, decimal_places=3, default=1.05, null=False, blank=False
+        max_digits=6,
+        decimal_places=3,
+        default=2.05,
+        null=False,
+        blank=False,
+        validators=[MinValueValidator(1), MaxValueValidator(999)],
     )
     mining_fee_rate = models.DecimalField(
-        max_digits=6, decimal_places=3, default=1.05, null=False, blank=False
+        max_digits=6,
+        decimal_places=3,
+        default=2.05,
+        null=False,
+        blank=False,
+        validators=[MinValueValidator(1), MaxValueValidator(999)],
     )
     mining_fee_sats = models.PositiveBigIntegerField(default=0, null=False, blank=False)
 

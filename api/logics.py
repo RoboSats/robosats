@@ -566,12 +566,12 @@ class Logics:
             "mining_fee_rate"
         ]
 
-        # Hardcap mining fee suggested at 50 sats/vbyte
-        if suggested_mining_fee_rate > 50:
-            suggested_mining_fee_rate = 50
+        # Hardcap mining fee suggested at 100 sats/vbyte
+        if suggested_mining_fee_rate > 100:
+            suggested_mining_fee_rate = 100
 
         onchain_payment.suggested_mining_fee_rate = max(
-            1.05, LNNode.estimate_fee(amount_sats=preliminary_amount)["mining_fee_rate"]
+            2.05, LNNode.estimate_fee(amount_sats=preliminary_amount)["mining_fee_rate"]
         )
         onchain_payment.swap_fee_rate = cls.compute_swap_fee_rate(
             onchain_payment.balance
@@ -688,13 +688,13 @@ class Logics:
 
         if mining_fee_rate:
             # not a valid mining fee
-            if float(mining_fee_rate) < 1:
+            if float(mining_fee_rate) < 2:
                 return False, {
-                    "bad_address": "The mining fee is too low, must be higher than 1 Sat/vbyte"
+                    "bad_address": "The mining fee is too low, must be higher than 2 Sat/vbyte"
                 }
-            elif float(mining_fee_rate) > 50:
+            elif float(mining_fee_rate) > 100:
                 return False, {
-                    "bad_address": "The mining fee is too high, must be less than 50 Sats/vbyte"
+                    "bad_address": "The mining fee is too high, must be less than 100 Sats/vbyte"
                 }
             order.payout_tx.mining_fee_rate = float(mining_fee_rate)
         # If not mining ee provider use backend's suggested fee rate
@@ -703,7 +703,7 @@ class Logics:
 
         tx = order.payout_tx
         tx.address = address
-        tx.mining_fee_sats = int(tx.mining_fee_rate * 141)
+        tx.mining_fee_sats = int(tx.mining_fee_rate * 200)
         tx.num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
         tx.sent_satoshis = int(
             float(tx.num_satoshis)
@@ -1738,10 +1738,19 @@ class Logics:
             )
         if not order.is_swap:
             platform_summary["routing_budget_sats"] = order.payout.routing_budget_sats
+            # Start Deprecated after v0.3.1
+            platform_summary["routing_fee_sats"] = order.payout.fee
+            # End Deprecated after v0.3.1
             platform_summary["trade_revenue_sats"] = int(
                 order.trade_escrow.num_satoshis
                 - order.payout.num_satoshis
-                - order.payout.routing_budget_sats
+                # Start Deprecated after v0.3.1 (will be `- order.payout.routing_budget_sats`)
+                - (
+                    order.payout.fee
+                    if order.payout.routing_budget_sats == 0
+                    else order.payout.routing_budget_sats
+                )
+                # End Deprecated after v0.3.1
             )
         else:
             platform_summary["routing_fee_sats"] = 0

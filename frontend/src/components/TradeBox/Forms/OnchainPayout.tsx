@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid, Typography, TextField, List, Divider, ListItemText, ListItem } from '@mui/material';
 import { Order } from '../../../models';
-import WalletsButton from '../WalletsButton';
 import { LoadingButton } from '@mui/lab';
 import { pn } from '../../../utils';
 
@@ -35,8 +34,15 @@ export const OnchainPayoutForm = ({
 }: OnchainPayoutFormProps): JSX.Element => {
   const { t } = useTranslation();
 
-  const invalidFee = onchain.miningFee < 1 || onchain.miningFee > 50;
-  const costPerVByte = 141;
+  const minMiningFee = 2;
+  const maxMiningFee = 100;
+  const invalidFee = onchain.miningFee < minMiningFee || onchain.miningFee > maxMiningFee;
+  const costPerVByte = 200;
+
+  const handleMiningFeeChange = (e) => {
+    const miningFee = Number(e.target.value);
+    setOnchain({ ...onchain, miningFee });
+  };
 
   useEffect(() => {
     setOnchain({ ...onchain, miningFee: order.suggested_mining_fee_rate });
@@ -76,9 +82,9 @@ export const OnchainPayoutForm = ({
         <ListItem>
           <ListItemText
             primary={
-              pn(Math.floor(Math.max(1, onchain.miningFee) * costPerVByte)) +
+              pn(Math.floor(Math.max(minMiningFee, onchain.miningFee) * costPerVByte)) +
               ' Sats (' +
-              Math.max(1, onchain.miningFee) +
+              Math.max(minMiningFee, onchain.miningFee) +
               ' Sats/vByte)'
             }
             secondary={t('Mining fee')}
@@ -94,7 +100,7 @@ export const OnchainPayoutForm = ({
                 {pn(
                   Math.floor(
                     order.invoice_amount -
-                      Math.max(1, onchain.miningFee) * costPerVByte -
+                      Math.max(minMiningFee, onchain.miningFee) * costPerVByte -
                       (order.invoice_amount * order.swap_fee_rate) / 100,
                   ),
                 ) + ' Sats'}
@@ -131,11 +137,11 @@ export const OnchainPayoutForm = ({
               value={onchain.miningFee}
               type='number'
               inputProps={{
-                max: 50,
-                min: 1,
+                max: maxMiningFee,
+                min: minMiningFee,
                 style: { textAlign: 'center' },
               }}
-              onChange={(e) => setOnchain({ ...onchain, miningFee: Number(e.target.value) })}
+              onChange={handleMiningFeeChange}
             />
           </Grid>
         </Grid>
