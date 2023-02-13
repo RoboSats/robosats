@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { HashRouter, BrowserRouter, Switch, Route } from 'react-router-dom';
 import { useTheme, Box, Slide, Typography } from '@mui/material';
 
-import UserGenPage from './UserGenPage';
+import RobotPage from './RobotPage';
 import MakerPage from './MakerPage';
 import BookPage from './BookPage';
 import OrderPage from './OrderPage';
@@ -349,11 +349,9 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                 appear={slideDirection.in != undefined}
               >
                 <div>
-                  <UserGenPage
+                  <RobotPage
                     setPage={setPage}
                     setCurrentOrder={setCurrentOrder}
-                    match={props.match}
-                    theme={theme}
                     robot={robot}
                     setRobot={setRobot}
                     baseUrl={baseUrl}
