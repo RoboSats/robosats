@@ -1,12 +1,13 @@
 import time
+import traceback
 
 from decouple import config
 from django.core.management.base import BaseCommand
 from django.db import transaction
+
 from api.messages import Telegram
 from api.models import Profile
 from api.utils import get_session
-import traceback
 
 
 class Command(BaseCommand):
@@ -27,13 +28,15 @@ class Command(BaseCommand):
             try:
                 response = self.session.get(self.updates_url, params=params)
                 if response.status_code != 200:
-                    with open('error.log', 'a') as f:
-                        f.write(f"Error getting updates, status code: {response.status_code}\n")
+                    with open("error.log", "a") as f:
+                        f.write(
+                            f"Error getting updates, status code: {response.status_code}\n"
+                        )
                     continue
                 response = response.json()
                 response = self.session.get(self.updates_url, params=params).json()
             except Exception as e:
-                with open('error.log', 'a') as f:
+                with open("error.log", "a") as f:
                     f.write(f"Error getting updates: {e}\n{traceback.format_exc()}\n")
                 continue
 
@@ -47,16 +50,18 @@ class Command(BaseCommand):
                     continue
                 parts = message.split(" ")
                 if len(parts) < 2:
-                    self.telegram.send_message(chat_id=result["message"]["from"]["id"],
-                        text="Invalid format. It should be: /start <token>")
-                    self.telegram.send_message(chat_id=result["message"]["from"]["id"],
-                        text="Remember that you can find your token after activating Telegram notifications. It is in the Tor address after start=<OnlythisistheToken>")
+                    self.telegram.send_message(
+                        chat_id=result["message"]["from"]["id"],
+                        text='You must enable the notifications bot using the RoboSats client. Click on your "Robot profile" -> "Enable Telegram" and follow the link or scan the QR code.',
+                    )
                     continue
                 token = parts[-1]
                 profile = Profile.objects.filter(telegram_token=token).first()
                 if not profile:
-                    self.telegram.send_message(chat_id=result["message"]["from"]["id"],
-                        text=f"No profile with token {token}")
+                    self.telegram.send_message(
+                        chat_id=result["message"]["from"]["id"],
+                        text=f'Wops, invalid token! There is no Robot with telegram chat token "{token}"',
+                    )
                     continue
 
                 attempts = 5
@@ -64,10 +69,13 @@ class Command(BaseCommand):
                     try:
                         with transaction.atomic():
                             profile.telegram_chat_id = result["message"]["from"]["id"]
-                            profile.telegram_lang_code = result["message"]["from"]["language_code"]
+                            profile.telegram_lang_code = result["message"]["from"][
+                                "language_code"
+                            ]
                             self.telegram.welcome(profile.user)
                             profile.telegram_enabled = True
                             profile.save()
+                            break
                     except Exception:
                         time.sleep(5)
                         attempts -= 1
