@@ -1,7 +1,9 @@
 import time
+import traceback
 
 from decouple import config
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 from api.messages import Telegram
 from api.models import Profile
@@ -15,42 +17,57 @@ class Command(BaseCommand):
 
     bot_token = config("TELEGRAM_TOKEN")
     updates_url = f"https://api.telegram.org/bot{bot_token}/getUpdates"
-
     session = get_session()
     telegram = Telegram()
 
     def handle(self, *args, **options):
-        """Infinite loop to check for telegram updates.
-        If it finds a new user (/start), enables it's taker found
-        notification and sends a 'Hey {username} {order_id}' message back"""
-
         offset = 0
         while True:
             time.sleep(self.rest)
-
             params = {"offset": offset + 1, "timeout": 5}
-            response = self.session.get(self.updates_url, params=params).json()
-            if len(list(response["result"])) == 0:
+            try:
+                response = self.session.get(self.updates_url, params=params)
+                if response.status_code != 200:
+                    with open("error.log", "a") as f:
+                        f.write(
+                            f"Error getting updates, status code: {response.status_code}\n"
+                        )
+                    continue
+                response = response.json()
+                response = self.session.get(self.updates_url, params=params).json()
+            except Exception as e:
+                with open("error.log", "a") as f:
+                    f.write(f"Error getting updates: {e}\n{traceback.format_exc()}\n")
+                continue
+
+            if not response["result"]:
                 continue
             for result in response["result"]:
-
-                try:  # if there is no key message, skips this result.
-                    text = result["message"]["text"]
-                except Exception:
+                if not result.get("message") or not result.get("message").get("text"):
+                    continue
+                message = result["message"]["text"]
+                if not message or not message.startswith("/start"):
+                    continue
+                parts = message.split(" ")
+                if len(parts) < 2:
+                    self.telegram.send_message(
+                        chat_id=result["message"]["from"]["id"],
+                        text='You must enable the notifications bot using the RoboSats client. Click on your "Robot profile" -> "Enable Telegram" and follow the link or scan the QR code.',
+                    )
+                    continue
+                token = parts[-1]
+                profile = Profile.objects.filter(telegram_token=token).first()
+                if not profile:
+                    self.telegram.send_message(
+                        chat_id=result["message"]["from"]["id"],
+                        text=f'Wops, invalid token! There is no Robot with telegram chat token "{token}"',
+                    )
                     continue
 
-                splitted_text = text.split(" ")
-                if splitted_text[0] == "/start":
-                    token = splitted_text[-1]
+                attempts = 5
+                while attempts >= 0:
                     try:
-                        profile = Profile.objects.get(telegram_token=token)
-                    except Exception:
-                        print(f"No profile with token {token}")
-                        continue
-
-                    attempts = 5
-                    while attempts >= 0:
-                        try:
+                        with transaction.atomic():
                             profile.telegram_chat_id = result["message"]["from"]["id"]
                             profile.telegram_lang_code = result["message"]["from"][
                                 "language_code"
@@ -59,8 +76,7 @@ class Command(BaseCommand):
                             profile.telegram_enabled = True
                             profile.save()
                             break
-                        except Exception:
-                            time.sleep(5)
-                            attempts = attempts - 1
-
+                    except Exception:
+                        time.sleep(5)
+                        attempts -= 1
             offset = response["result"][-1]["update_id"]
