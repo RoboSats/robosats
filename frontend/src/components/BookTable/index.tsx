@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
 import {
   Box,
   Grid,
@@ -68,7 +67,6 @@ const BookTable = ({
 }: BookTableProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const history = useHistory();
   const [pageSize, setPageSize] = useState(0);
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
@@ -781,6 +779,15 @@ const BookTable = ({
             columns={columns}
             hideFooter={!showFooter}
             components={gridComponents()}
+            componentsProps={{
+              toolbar: {
+                width,
+                fav,
+                setFav,
+                paymentMethod: paymentMethods,
+                setPaymentMethods,
+              },
+            }}
             pageSize={book.loading && book.orders.length == 0 ? 0 : pageSize}
             rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
             onPageSizeChange={(newPageSize) => {
