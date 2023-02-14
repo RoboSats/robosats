@@ -80,36 +80,38 @@ const BookControl = ({
           </Grid>
         ) : null}
 
-        <Grid item>
-          <Tooltip
-            placement='bottom'
-            enterTouchDelay={200}
-            enterDelay={700}
-            enterNextDelay={2000}
-            title={t('Show Lightning swaps')}
-          >
-            <ToggleButtonGroup
-              sx={{
-                height: '2.6em',
-                backgroundColor: theme.palette.background.paper,
-                border: '0.5px solid',
-                borderColor: 'text.disabled',
-                '&:hover': {
-                  borderColor: 'text.primary',
-                  border: '1px solid',
-                },
-              }}
-              size='small'
-              exclusive={true}
-              value={fav.mode}
-              onChange={handleModeChange}
+        {width > smallestToolbarWidth + 5 ? (
+          <Grid item>
+            <Tooltip
+              placement='bottom'
+              enterTouchDelay={200}
+              enterDelay={700}
+              enterNextDelay={2000}
+              title={t('Show Lightning swaps')}
             >
-              <ToggleButton value={'swap'} color={'secondary'}>
-                <SwapCalls />
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Tooltip>
-        </Grid>
+              <ToggleButtonGroup
+                sx={{
+                  height: '2.6em',
+                  backgroundColor: theme.palette.background.paper,
+                  border: '0.5px solid',
+                  borderColor: 'text.disabled',
+                  '&:hover': {
+                    borderColor: 'text.primary',
+                    border: '1px solid',
+                  },
+                }}
+                size='small'
+                exclusive={true}
+                value={fav.mode}
+                onChange={handleModeChange}
+              >
+                <ToggleButton value={'swap'} color={'secondary'}>
+                  <SwapCalls />
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Tooltip>
+          </Grid>
+        ) : null}
 
         <Grid item>
           <ToggleButtonGroup
