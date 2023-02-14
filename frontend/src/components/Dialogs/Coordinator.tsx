@@ -19,9 +19,22 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Badge,
 } from '@mui/material';
 
-import { Inventory, Sell, SmartToy, Percent, PriceChange, Book, Reddit } from '@mui/icons-material';
+import {
+  Inventory,
+  Sell,
+  SmartToy,
+  Percent,
+  PriceChange,
+  Book,
+  Reddit,
+  Security,
+  NoStrollerOutlined,
+  Spoke,
+  WorkspacePremium,
+} from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
 
 import { pn } from '../../utils';
@@ -42,6 +55,7 @@ import {
 } from '@mui/icons-material';
 import { AmbossIcon, BitcoinSignIcon, RoboSatsNoTextIcon } from '../Icons';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { systemClient } from '../../services/System';
 
 interface Props {
   open: boolean;
@@ -52,6 +66,8 @@ interface Props {
 }
 
 const ContactButtons = ({
+  nostr,
+  pgp,
   email,
   telegram,
   twitter,
@@ -61,8 +77,43 @@ const ContactButtons = ({
 }: Contact): JSX.Element => {
   const { t } = useTranslation();
   const [showMatrix, setShowMatrix] = useState<boolean>(false);
+  const [showNostr, setShowNostr] = useState<boolean>(false);
+
   return (
     <Grid container direction='row' alignItems='center' justifyItems='space-between'>
+      {nostr ? (
+        <Grid item>
+          <Tooltip
+            title={<Typography variant='body2'>{`Nostr pubkey copied! ${nostr}`}</Typography>}
+            open={showNostr}
+          >
+            <IconButton
+              onClick={() => {
+                setShowNostr(true);
+                setTimeout(() => setShowNostr(false), 10000);
+                systemClient.copyToClipboard(nostr);
+              }}
+            >
+              <Spoke />
+            </IconButton>
+          </Tooltip>
+        </Grid>
+      ) : (
+        <></>
+      )}
+
+      {pgp ? (
+        <Grid item>
+          <Tooltip enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={'PGP'}>
+            <IconButton component='a' target='_blank' href={`https://${pgp}`} rel='noreferrer'>
+              <Security />
+            </IconButton>
+          </Tooltip>
+        </Grid>
+      ) : (
+        <></>
+      )}
+
       {email ? (
         <Grid item>
           <IconButton component='a' href={`mailto: ${email}`}>
@@ -108,7 +159,7 @@ const ContactButtons = ({
           <IconButton
             component='a'
             target='_blank'
-            href={`https://twitter.com/${twitter}`}
+            href={`https://reddit.com/${reddit}`}
             rel='noreferrer'
           >
             <Reddit />
@@ -131,13 +182,14 @@ const ContactButtons = ({
       {matrix ? (
         <Grid item>
           <Tooltip
-            title={<Typography variant='body2'>{`Matrix: ${matrix}`}</Typography>}
+            title={<Typography variant='body2'>{`Matrix copied! ${matrix}`}</Typography>}
             open={showMatrix}
           >
             <IconButton
               onClick={() => {
                 setShowMatrix(true);
                 setTimeout(() => setShowMatrix(false), 10000);
+                systemClient.copyToClipboard(matrix);
               }}
             >
               <Tag />
@@ -148,6 +200,22 @@ const ContactButtons = ({
         <></>
       )}
     </Grid>
+  );
+};
+
+const FounderBadge = (): JSX.Element => {
+  return (
+    <Tooltip
+      enterTouchDelay={0}
+      enterDelay={100}
+      enterNextDelay={1000}
+      title={'Awarded for contributing to the creation of the federation in testnet'}
+    >
+      <WorkspacePremium
+        sx={{ position: 'relative', left: '0.5em', width: '1.5em', height: '1.5em' }}
+        color='primary'
+      />
+    </Tooltip>
   );
 };
 
@@ -178,14 +246,19 @@ const CoordinatorDialog = ({
           <ListItem sx={{ display: 'flex', justifyContent: 'center' }}>
             <Grid container direction='column' alignItems='center' padding={0}>
               <Grid item>
-                <RobotAvatar
-                  nickname={coordinator?.alias}
-                  coordinator={true}
-                  style={{ width: '5.5em', height: '5.5em' }}
-                  smooth={true}
-                  flipHorizontally={false}
-                  baseUrl={baseUrl}
-                />
+                <Badge
+                  badgeContent={coordinator?.isFounder ? <FounderBadge /> : ''}
+                  overlap='circular'
+                >
+                  <RobotAvatar
+                    nickname={coordinator?.alias}
+                    coordinator={true}
+                    style={{ width: '5.5em', height: '5.5em' }}
+                    smooth={true}
+                    flipHorizontally={false}
+                    baseUrl={baseUrl}
+                  />
+                </Badge>
               </Grid>
               <Grid item>
                 <Typography align='center' variant='body2'>
@@ -206,7 +279,7 @@ const CoordinatorDialog = ({
             <ListItemText
               primary={coordinator?.description}
               primaryTypographyProps={{ sx: { maxWidth: '20em' } }}
-              secondary={t('Description')}
+              secondary={t('Coordinator description')}
             />
           </ListItem>
 

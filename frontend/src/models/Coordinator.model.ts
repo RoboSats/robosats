@@ -2,6 +2,9 @@ import { LimitList } from '.';
 import { apiClient } from '../services/api';
 
 export interface Contact {
+  nostr?: string | undefined;
+  pgp?: string | undefined;
+  fingerprint?: string | undefined;
   email?: string | undefined;
   telegram?: string | undefined;
   reddit?: string | undefined;
@@ -44,6 +47,7 @@ export class Coordinator {
   constructor(value: Coordinator) {
     this.alias = value.alias;
     this.description = value.description;
+    this.isFounder = value.isFounder;
     this.motto = value.motto;
     this.color = value.color;
     this.contact = value.contact;
@@ -59,6 +63,7 @@ export class Coordinator {
   public alias: string;
   public enabled?: boolean = true;
   public description: string;
+  public isFounder?: boolean = false;
   public motto: string;
   public color: string;
   public contact: Contact | undefined;
