@@ -54,6 +54,10 @@ Find more details on [Amazon eGift card Bisq guidelines](https://bisq.wiki/Amazo
 
 In Canada, [Interac e-Transfer](https://www.interac.ca/en/consumers/support/faq-consumers/) is a popular and widely accepted payment method used to send payments from one bank account to another, using only a registered email (or telephone number). e-Transfers are considered to have low charge-back risk; however, charge-backs likely remain possible in rare cases. e-Transfers can either be initiated by the sender by sending a payment to the recipient's email address, or by the receiver by sending a payment request to the sender's email address.
 
+### Wise
+
+[Wise](https://wise.com/) (formerly TransferWise) is a regulated international money transmitter in 175 countries and 50 currencies. It is known for its relatively cheap fees for transferring money between countries and currencies. Chargebacks remain a risk, but are likely uncommon. Users may transfer money between Wise accounts using an email address similar to how e-Transfers work; or in Canada, users may request standard e-Transfers directly from their Wise accounts.
+
 ## High-risk payment method
 
 The best practice for users trying to transact with a payment method with a high risk of losing funds is discussed in this section.
