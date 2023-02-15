@@ -15,6 +15,14 @@ export interface Contact {
 
 export type Version = { major: number | null; minor: number | null; patch: number | null };
 
+export interface Badges {
+  isFounder?: boolean | undefined;
+  donatesToDevFund?: number | undefined;
+  privacyFriendly?: boolean | undefined;
+  robotsLove?: boolean | undefined;
+  noLimits?: string | undefined;
+}
+
 export interface Info {
   num_public_buy_orders: number;
   num_public_sell_orders: number;
@@ -51,6 +59,7 @@ export class Coordinator {
     this.motto = value.motto;
     this.color = value.color;
     this.contact = value.contact;
+    this.badges = value.badges;
     this.mainnetOnion = value.mainnetOnion;
     this.mainnetClearnet = value.mainnetClearnet;
     this.mainnetI2P = value.mainnetI2P;
@@ -67,6 +76,7 @@ export class Coordinator {
   public motto: string;
   public color: string;
   public contact: Contact | undefined;
+  public badges?: Badges | undefined;
   public mainnetOnion: string | undefined;
   public mainnetClearnet: string | undefined;
   public mainnetI2P: string | undefined;

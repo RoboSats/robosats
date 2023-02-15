@@ -3,7 +3,6 @@
     "alias": "Experimental",
     "description": "RoboSats node for development and experimentation.",
     "motto": "P2P FTW!",
-    "isFounder": true,
     "contact": {
       "email": "robosats@protonmail.com",
       "telegram": "robosats",
@@ -14,6 +13,13 @@
       "nostr": "npub17pqgxxtga6u4du83f5tq9pgqk6fkuwlhvyrn4m7plvtepvgmjpys6dl4zl",
       "pgp": "keys.openpgp.org/vks/v1/by-fingerprint/B4AB5F19113D4125DDF217739C4585B561315571",
       "fingerprint": "B4AB5F19113D4125DDF217739C4585B561315571"
+    },
+    "badges": {
+      "isFounder": true,
+      "donatesToDevFund": 1,
+      "privacyFriendly": true,
+      "robotsLove": true,
+      "noLimits": true
     },
     "color": "#1976d2",
     "mainnetOnion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
