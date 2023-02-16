@@ -352,6 +352,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                   <RobotPage
                     setPage={setPage}
                     setCurrentOrder={setCurrentOrder}
+                    windowSize={windowSize}
                     robot={robot}
                     setRobot={setRobot}
                     baseUrl={baseUrl}

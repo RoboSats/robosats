@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Button,
-  CircularProgress,
+  Paper,
   Grid,
   IconButton,
   TextField,
@@ -21,12 +21,14 @@ import { genKey } from '../../pgp';
 import { sha256 } from 'js-sha256';
 import { Casino, Download, ContentCopy, SmartToy, Bolt } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
+import Onboarding from './Onboarding';
 
 interface RobotPageProps {
   setPage: (state: Page) => void;
   setCurrentOrder: (state: number) => void;
   robot: Robot;
   setRobot: (state: Robot) => void;
+  windowSize: { width: number; height: number };
   fetchRobot: ({}) => void;
   baseUrl: string;
 }
@@ -34,6 +36,7 @@ interface RobotPageProps {
 const RobotPage = ({
   setPage,
   setCurrentOrder,
+  windowSize,
   robot,
   setRobot,
   fetchRobot,
@@ -43,9 +46,10 @@ const RobotPage = ({
   const params = useParams();
   const theme = useTheme();
   const refCode = params.refCode;
+  const maxHeight = windowSize.height * 0.85 - 3;
 
   const [robotFound, setRobotFound] = useState<boolean>(false);
-  const [badRequest, setBadRequest] = useState<string | null>(null);
+  const [badRequest, setBadRequest] = useState<string | undefined>(undefined);
   const [tokenChanged, setTokenChanged] = useState<boolean>(false);
   const [inputToken, setInputToken] = useState<string>('');
 
@@ -144,216 +148,243 @@ const RobotPage = ({
   const handleClickSubmitToken = () => {};
   const handleClickNewRandomToken = () => {};
 
-  const createJsonFile = () => {
-    return {
-      token: robot.token,
-      token_shannon_entropy: robot.shannonEntropy,
-      token_bit_entropy: robot.bitsEntropy,
-      public_key: robot.pub_key,
-      encrypted_private_key: robot.enc_priv_key,
-    };
-  };
-
   return (
-    <Grid container spacing={1}>
-      <Grid item>
-        <div className='clickTrough' />
-      </Grid>
-      <Grid item xs={12} sx={{ width: '26.4em', height: '18.6' }}>
-        {robot.avatarLoaded && robot.nickname ? (
-          <div>
-            <Grid item xs={12}>
-              <Typography component='h5' variant='h5'>
-                <b>
-                  {robot.nickname && systemClient.getCookie('sessionid') ? (
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexWrap: 'wrap',
-                        height: 45 * 1.000004,
-                      }}
-                    >
-                      <Bolt
-                        sx={{
-                          color: '#fcba03',
-                          height: 33 * 1.000004,
-                          width: 33 * 1.000004,
-                        }}
-                      />
-                      <a>{robot.nickname}</a>
-                      <Bolt
-                        sx={{
-                          color: '#fcba03',
-                          height: 33 * 1.000004,
-                          width: 33 * 1.000004,
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    ''
-                  )}
-                </b>
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <RobotAvatar
-                nickname={robot.nickname}
-                smooth={true}
-                style={{ maxWidth: 203 * 1.000004, maxHeight: 203 * 1.000004 }}
-                imageStyle={{
-                  transform: '',
-                  border: '2px solid #555',
-                  filter: 'drop-shadow(1px 1px 1px #000000)',
-                  height: `${201 * 1.000004}px`,
-                  width: `${201 * 1.000004}px`,
-                }}
-                tooltip={t('This is your trading avatar')}
-                tooltipPosition='top'
-                baseUrl={baseUrl}
-              />
-              <br />
-            </Grid>
-          </div>
-        ) : (
-          <CircularProgress sx={{ position: 'relative', top: 100 }} />
-        )}
-      </Grid>
-      {robotFound ? (
-        <Grid item xs={12}>
-          <Typography variant='subtitle2' color='primary'>
-            {t('A robot avatar was found, welcome back!')}
-            <br />
-          </Typography>
-        </Grid>
-      ) : (
-        <></>
-      )}
-      <Grid container>
-        <Grid item xs={12}>
-          <TextField
-            sx={{ maxWidth: 280 * 1.000004 }}
-            error={!!badRequest}
-            label={t('Store your token safely')}
-            required={true}
-            value={inputToken}
-            variant='standard'
-            helperText={badRequest}
-            size='small'
-            onChange={handleChangeToken}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleClickSubmitToken();
-              }
-            }}
-            InputProps={{
-              startAdornment: (
-                <div
-                  style={{
-                    width: 50 * 1.000004,
-                    minWidth: 50 * 1.000004,
-                    position: 'relative',
-                    left: -6,
-                  }}
-                >
-                  <Grid container>
-                    <Grid item xs={6}>
-                      <Tooltip
-                        enterTouchDelay={250}
-                        title={t('Save token and PGP credentials to file')}
-                      >
-                        <span>
-                          <IconButton
-                            color='primary'
-                            disabled={
-                              !robot.avatarLoaded ||
-                              !(systemClient.getItem('robot_token') == inputToken)
-                            }
-                            onClick={() => saveAsJson(robot.nickname + '.json', createJsonFile())}
-                          >
-                            <Download sx={{ width: 22 * 1.000004, height: 22 * 1.000004 }} />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-                        <IconButton
-                          color={robot.copiedToken ? 'inherit' : 'primary'}
-                          disabled={
-                            !robot.avatarLoaded ||
-                            !(systemClient.getItem('robot_token') === inputToken)
-                          }
-                          onClick={() =>
-                            systemClient.copyToClipboard(systemClient.getItem('robot_token')) &
-                            setRobot({ ...robot, copiedToken: true })
-                          }
-                        >
-                          <ContentCopy sx={{ width: 18 * 1.000004, height: 18 * 1.000004 }} />
-                        </IconButton>
-                      </Tooltip>
-                    </Grid>
-                  </Grid>
-                </div>
-              ),
-              endAdornment: (
-                <Tooltip enterTouchDelay={250} title={t('Generate a new token')}>
-                  <IconButton onClick={handleClickNewRandomToken}>
-                    <Casino sx={{ width: 18 * 1.000004, height: 18 * 1.000004 }} />
-                  </IconButton>
-                </Tooltip>
-              ),
-            }}
-          />
-        </Grid>
-      </Grid>
-      <Grid item xs={12}>
-        {tokenChanged ? (
-          <Button type='submit' size='small' onClick={handleClickSubmitToken}>
-            <SmartToy sx={{ width: 18 * 1.000004, height: 18 * 1.000004 }} />
-            <span> {t('Generate Robot')}</span>
-          </Button>
-        ) : (
-          <Tooltip
-            enterTouchDelay={0}
-            enterDelay={500}
-            enterNextDelay={2000}
-            title={t('You must enter a new token first')}
-          >
-            <div>
-              <Button disabled={true} type='submit' size='small'>
-                <SmartToy sx={{ width: 18 * 1.000004, height: 18 * 1.000004 }} />
-                <span>{t('Generate Robot')}</span>
-              </Button>
-            </div>
-          </Tooltip>
-        )}
-      </Grid>
+    <Grid container direction='column' alignItems='center' spacing={1}>
+      {/* // Welcome to RoboSats
+      // Easy and private LN exchange
 
-      {/* <Grid item xs={12} align='center' sx={{ width: '26.43em' }}>
-          <Grid item>
-            <div style={{ height: '2.143em' }} />
-          </Grid>
-          <div style={{ width: '26.43em', left: '2.143em' }}>
-            <Grid container align='center'>
-              <Grid item xs={0.8} />
-              <Grid item xs={7.5} align='right'>
-                <Typography component='h5' variant='h5'>
-                  {t('Simple and Private LN P2P Exchange')}
-                </Typography>
-              </Grid>
-              <Grid item xs={2.5} align='left'>
-                <RoboSatsNoTextIcon color='primary' sx={{ height: '3.143em', width: '3.143em' }} />
-              </Grid>
-            </Grid>
-          </div>
-        </Grid> */}
+      // I am a newbie
+      // Skip (fast robot gen)
+      // Recover existing token */}
+
+      <Grid item>
+        <Paper
+          elevation={12}
+          style={{
+            padding: '1em',
+            width: `${Math.min(windowSize.width * 0.7, 30)}em`,
+            maxHeight: `${maxHeight}em`,
+            overflow: 'auto',
+          }}
+        >
+          <Onboarding
+            robot={robot}
+            setRobot={setRobot}
+            badRequest={badRequest}
+            inputToken={inputToken}
+            setInputToken={setInputToken}
+            getGenerateRobot={getGenerateRobot}
+            setPage={setPage}
+            baseUrl={baseUrl}
+          />
+        </Paper>
+      </Grid>
     </Grid>
   );
 };
 
 export default RobotPage;
+
+// return (
+//   <Grid container spacing={1}>
+//       {/* <Grid item>
+//         <div className='clickTrough' />
+//       </Grid>
+//       <Grid item xs={12} sx={{ width: '26.4em', height: '18.6' }}>
+//         {robot.avatarLoaded && robot.nickname ? (
+//           <div>
+//             <Grid item xs={12}>
+//               <Typography component='h5' variant='h5'>
+//                 <b>
+//                   {robot.nickname && systemClient.getCookie('sessionid') ? (
+//                     <div
+//                       style={{
+//                         display: 'flex',
+//                         alignItems: 'center',
+//                         justifyContent: 'center',
+//                         flexWrap: 'wrap',
+//                         height: 45 * 1.000004,
+//                       }}
+//                     >
+//                       <Bolt
+//                         sx={{
+//                           color: '#fcba03',
+//                           height: 33 * 1.000004,
+//                           width: 33 * 1.000004,
+//                         }}
+//                       />
+//                       <a>{robot.nickname}</a>
+//                       <Bolt
+//                         sx={{
+//                           color: '#fcba03',
+//                           height: 33 * 1.000004,
+//                           width: 33 * 1.000004,
+//                         }}
+//                       />
+//                     </div>
+//                   ) : (
+//                     ''
+//                   )}
+//                 </b>
+//               </Typography>
+//             </Grid>
+//             <Grid item xs={12}>
+//               <RobotAvatar
+//                 nickname={robot.nickname}
+//                 smooth={true}
+//                 style={{ maxWidth: 203 * 1.000004, maxHeight: 203 * 1.000004 }}
+//                 imageStyle={{
+//                   transform: '',
+//                   border: '2px solid #555',
+//                   filter: 'drop-shadow(1px 1px 1px #000000)',
+//                   height: `${201 * 1.000004}px`,
+//                   width: `${201 * 1.000004}px`,
+//                 }}
+//                 tooltip={t('This is your trading avatar')}
+//                 tooltipPosition='top'
+//                 baseUrl={baseUrl}
+//               />
+//               <br />
+//             </Grid>
+//           </div>
+//         ) : (
+//           <CircularProgress sx={{ position: 'relative', top: 100 }} />
+//         )}
+//       </Grid>
+//       {robotFound ? (
+//         <Grid item xs={12}>
+//           <Typography variant='subtitle2' color='primary'>
+//             {t('A robot avatar was found, welcome back!')}
+//             <br />
+//           </Typography>
+//         </Grid>
+//       ) : (
+//         <></>
+//       )}
+//       <Grid container>
+//         <Grid item xs={12}>
+//           <TextField
+//             sx={{ maxWidth: 280 * 1.000004 }}
+//             error={!!badRequest}
+//             label={t('Store your token safely')}
+//             required={true}
+//             value={inputToken}
+//             variant='standard'
+//             helperText={badRequest}
+//             size='small'
+//             onChange={handleChangeToken}
+//             onKeyPress={(e) => {
+//               if (e.key === 'Enter') {
+//                 handleClickSubmitToken();
+//               }
+//             }}
+//             InputProps={{
+//               startAdornment: (
+//                 <div
+//                   style={{
+//                     width: 50 * 1.000004,
+//                     minWidth: 50 * 1.000004,
+//                     position: 'relative',
+//                     left: -6,
+//                   }}
+//                 >
+//                   <Grid container>
+//                     <Grid item xs={6}>
+//                       <Tooltip
+//                         enterTouchDelay={250}
+//                         title={t('Save token and PGP credentials to file')}
+//                       >
+//                         <span>
+//                           <IconButton
+//                             color='primary'
+//                             disabled={
+//                               !robot.avatarLoaded ||
+//                               !(systemClient.getItem('robot_token') == inputToken)
+//                             }
+//                             onClick={() => saveAsJson(robot.nickname + '.json', createJsonFile())}
+//                           >
+//                             <Download sx={{ width: 22 * 1.000004, height: 22 * 1.000004 }} />
+//                           </IconButton>
+//                         </span>
+//                       </Tooltip>
+//                     </Grid>
+//                     <Grid item xs={6}>
+//                       <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
+//                         <IconButton
+//                           color={robot.copiedToken ? 'inherit' : 'primary'}
+//                           disabled={
+//                             !robot.avatarLoaded ||
+//                             !(systemClient.getItem('robot_token') === inputToken)
+//                           }
+//                           onClick={() =>
+//                             systemClient.copyToClipboard(systemClient.getItem('robot_token')) &
+//                             setRobot({ ...robot, copiedToken: true })
+//                           }
+//                         >
+//                           <ContentCopy sx={{ width: 18 * 1.000004, height: 18 * 1.000004 }} />
+//                         </IconButton>
+//                       </Tooltip>
+//                     </Grid>
+//                   </Grid>
+//                 </div>
+//               ),
+//               endAdornment: (
+//                 <Tooltip enterTouchDelay={250} title={t('Generate a new token')}>
+//                   <IconButton onClick={handleClickNewRandomToken}>
+//                     <Casino sx={{ width: 18 * 1.000004, height: 18 * 1.000004 }} />
+//                   </IconButton>
+//                 </Tooltip>
+//               ),
+//             }}
+//           />
+//         </Grid>
+//       </Grid>
+//       <Grid item xs={12}>
+//         {tokenChanged ? (
+//           <Button type='submit' size='small' onClick={handleClickSubmitToken}>
+//             <SmartToy sx={{ width: 18 * 1.000004, height: 18 * 1.000004 }} />
+//             <span> {t('Generate Robot')}</span>
+//           </Button>
+//         ) : (
+//           <Tooltip
+//             enterTouchDelay={0}
+//             enterDelay={500}
+//             enterNextDelay={2000}
+//             title={t('You must enter a new token first')}
+//           >
+//             <div>
+//               <Button disabled={true} type='submit' size='small'>
+//                 <SmartToy sx={{ width: 18 * 1.000004, height: 18 * 1.000004 }} />
+//                 <span>{t('Generate Robot')}</span>
+//               </Button>
+//             </div>
+//           </Tooltip>
+//         )}
+//       </Grid>
+
+//       {/* <Grid item xs={12} align='center' sx={{ width: '26.43em' }}>
+//           <Grid item>
+//             <div style={{ height: '2.143em' }} />
+//           </Grid>
+//           <div style={{ width: '26.43em', left: '2.143em' }}>
+//             <Grid container align='center'>
+//               <Grid item xs={0.8} />
+//               <Grid item xs={7.5} align='right'>
+//                 <Typography component='h5' variant='h5'>
+//                   {t('Simple and Private LN P2P Exchange')}
+//                 </Typography>
+//               </Grid>
+//               <Grid item xs={2.5} align='left'>
+//                 <RoboSatsNoTextIcon color='primary' sx={{ height: '3.143em', width: '3.143em' }} />
+//               </Grid>
+//             </Grid>
+//           </div>
+//         </Grid> */}
+//     </Grid>
+//   );
+// };
+
+// export default RobotPage; */}
 
 // class UserGenPage extends Component {
 
