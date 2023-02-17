@@ -53,18 +53,18 @@ const RobotPage = ({
   const [tokenChanged, setTokenChanged] = useState<boolean>(false);
   const [inputToken, setInputToken] = useState<string>('');
 
-  useEffect(() => {
-    if (robot.nickname != null) {
-      setInputToken(robot.token);
-    } else if (robot.token) {
-      setInputToken(robot.token);
-      getGenerateRobot(robot.token);
-    } else {
-      const newToken = genBase62Token(36);
-      setInputToken(newToken);
-      getGenerateRobot(newToken);
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (robot.nickname != null) {
+  //     setInputToken(robot.token);
+  //   } else if (robot.token) {
+  //     setInputToken(robot.token);
+  //     getGenerateRobot(robot.token);
+  //   } else {
+  //     const newToken = genBase62Token(36);
+  //     setInputToken(newToken);
+  //     getGenerateRobot(newToken);
+  //   }
+  // }, []);
 
   const getGenerateRobot = (token: string) => {
     const strength = tokenStrength(token);
@@ -162,7 +162,7 @@ const RobotPage = ({
           elevation={12}
           style={{
             padding: '1em',
-            width: `${Math.min(windowSize.width * 0.7, 30)}em`,
+            width: `${Math.min(windowSize.width * 0.8, 30)}em`,
             maxHeight: `${maxHeight}em`,
             overflow: 'auto',
           }}

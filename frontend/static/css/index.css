@@ -228,3 +228,20 @@ input[type='number'] {
   background-repeat: repeat;
   animation: animatedBackground 5s linear infinite;
 }
+
+.generatingAvatar {
+  background-size: 100%;
+  border-radius: 50%;
+  border: 0.3px solid #555;
+  filter: dropShadow(1px 1px 1px #000000);
+  background-image: linear-gradient(
+    0deg,
+    #ffd9001f 0%,
+    #3609ff33 40%,
+    #ff32322d 60%,
+    #ffd9001f 100%
+  );
+  background-position: 0px 0px;
+  background-repeat: repeat;
+  animation: animatedBackground 5s linear infinite;
+}
