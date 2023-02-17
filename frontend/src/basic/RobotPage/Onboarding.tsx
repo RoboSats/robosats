@@ -1,11 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button, Collapse, Grid, LinearProgress, Typography, useTheme } from '@mui/material';
-import { useParams } from 'react-router-dom';
-
+import { useHistory } from 'react-router-dom';
+import {
+  Alert,
+  Button,
+  ButtonGroup,
+  Collapse,
+  Grid,
+  LinearProgress,
+  Typography,
+} from '@mui/material';
 import { Page } from '../NavBar';
 import { Robot } from '../../models';
-import { Casino, Download, ContentCopy, SmartToy, Bolt, Check } from '@mui/icons-material';
+import { Casino, Bolt, Check, Storefront, AddBox } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { genBase62Token } from '../../utils';
@@ -32,7 +39,7 @@ const Onboarding = ({
   baseUrl,
 }: OnboardingProps): JSX.Element => {
   const { t } = useTranslation();
-  const theme = useTheme();
+  const history = useHistory();
 
   const [step, setStep] = useState<'1' | '2' | '3'>('1');
   const [generatedToken, setGeneratedToken] = useState<boolean>(false);
@@ -45,14 +52,27 @@ const Onboarding = ({
     setTimeout(() => setShowMimickProgress(false), 1000);
   };
 
+  const changePage = function (newPage: Page) {
+    setPage(newPage);
+    history.push(`/${newPage}`);
+  };
+
   return (
     <Grid container direction='column' alignItems='center' spacing={2}>
       <Grid item>
         <Typography variant='h5' color={step == '1' ? 'text.primary' : 'text.disabled'}>
           {t('1. Generate a token')}
         </Typography>
+
         <Collapse in={step == '1'}>
-          <Grid container direction='column' alignItems='center' spacing={1} paddingLeft={4}>
+          <Grid
+            container
+            direction='column'
+            alignItems='center'
+            spacing={1}
+            padding={1.5}
+            paddingLeft={4}
+          >
             <Grid item>
               <Typography>
                 {t(
@@ -109,7 +129,7 @@ const Onboarding = ({
                         onClick={() => {
                           setStep('2');
                           getGenerateRobot(inputToken);
-                          setRobot({ ...robot, nickname: null });
+                          setRobot({ ...robot, nickname: undefined });
                         }}
                         variant='contained'
                         size='large'
@@ -124,53 +144,33 @@ const Onboarding = ({
             )}
           </Grid>
         </Collapse>
+      </Grid>
 
-        <Grid item>
-          <Typography variant='h5' color={step == '2' ? 'text.primary' : 'text.disabled'}>
-            {t('2. Meet your robot identity')}
-          </Typography>
-        </Grid>
+      <Grid item sx={{ width: '100%' }}>
+        <Typography variant='h5' color={step == '2' ? 'text.primary' : 'text.disabled'}>
+          {t('2. Meet your robot identity')}
+        </Typography>
 
         <Collapse in={step == '2'}>
-          <Grid container direction='column' alignItems='center' spacing={1} paddingLeft={4}>
-            {robot.avatarLoaded && robot.nickname ? (
-              <Grid item>
-                <Typography>{t('Hi! My name is')}</Typography>
-                <Typography component='h5' variant='h5'>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexWrap: 'wrap',
-                      height: '3.2em',
-                    }}
-                  >
-                    <Bolt
-                      sx={{
-                        color: '#fcba03',
-                        height: '1.5em',
-                        width: '1.5em',
-                      }}
-                    />
-                    <a>{robot.nickname}</a>
-                    <Bolt
-                      sx={{
-                        color: '#fcba03',
-                        height: '1.5em',
-                        width: '1.5em',
-                      }}
-                    />
-                  </div>
-                </Typography>
-              </Grid>
-            ) : (
-              <Grid item>
-                <Typography>{t('Your robot is under consctruction!')}</Typography>
-              </Grid>
-            )}
+          <Grid
+            container
+            direction='column'
+            alignItems='center'
+            spacing={1}
+            padding={1.5}
+            paddingLeft={4}
+          >
+            <Grid item>
+              <Typography>
+                {robot.avatarLoaded && robot.nickname ? (
+                  t('This is your trading avatar')
+                ) : (
+                  <b>{t('Building your robot!')}</b>
+                )}
+              </Typography>
+            </Grid>
 
-            <Grid item sx={{ width: '15em' }}>
+            <Grid item sx={{ width: '13.5em' }}>
               <RobotAvatar
                 nickname={robot.nickname}
                 smooth={true}
@@ -183,33 +183,102 @@ const Onboarding = ({
                   height: '12.4em',
                   width: '12.4em',
                 }}
-                tooltip={t('This is your trading avatar')}
                 tooltipPosition='top'
                 baseUrl={baseUrl}
               />
             </Grid>
 
+            {robot.avatarLoaded && robot.nickname ? (
+              <Grid item>
+                <Typography align='center'>{t('Hi! My name is')}</Typography>
+                <Typography component='h5' variant='h5'>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <Bolt
+                      sx={{
+                        color: '#fcba03',
+                        height: '1.5em',
+                        width: '1.5em',
+                      }}
+                    />
+                    <b>{robot.nickname}</b>
+                    <Bolt
+                      sx={{
+                        color: '#fcba03',
+                        height: '1.5em',
+                        width: '1.5em',
+                      }}
+                    />
+                  </div>
+                </Typography>
+              </Grid>
+            ) : null}
             <Grid item>
-              <Button onClick={() => setStep('3')} variant='contained' size='large'>
-                <Check />
-                {t('Continue')}
-              </Button>
+              <Collapse in={robot.avatarLoaded && robot.nickname ? true : false}>
+                <Button onClick={() => setStep('3')} variant='contained' size='large'>
+                  <Check />
+                  {t('Continue')}
+                </Button>
+              </Collapse>
             </Grid>
           </Grid>
         </Collapse>
+      </Grid>
 
-        <Grid item>
-          <Typography variant='h5' color={step == '3' ? 'text.primary' : 'text.disabled'}>
-            {t('3. Browse or create an order')}
-          </Typography>
-          <Collapse in={step == '3'}>
-            <Grid container direction='column' alignItems='center' spacing={1} paddingLeft={4}>
-              Marketplace See Offers contained buttonm Create Offer container button If you need
-              help fire away on our support public Telegram group! Support Telegram Group My profile
-              not contained button
+      <Grid item>
+        <Typography variant='h5' color={step == '3' ? 'text.primary' : 'text.disabled'}>
+          {t('3. Browse or create an order')}
+        </Typography>
+        <Collapse in={step == '3'}>
+          <Grid
+            container
+            direction='column'
+            alignItems='center'
+            spacing={1}
+            padding={1.5}
+            paddingLeft={4}
+          >
+            <Grid item>
+              <Typography>
+                {t(
+                  'RoboSats is a peer-to-peer marketplace. You can browse the public offers or create a new one.',
+                )}
+              </Typography>
             </Grid>
-          </Collapse>
-        </Grid>
+
+            <Grid item>
+              <ButtonGroup variant='contained'>
+                <Button color='primary' onClick={() => changePage('offers')}>
+                  <Storefront />
+                  {t('Offers')}
+                </Button>
+                <Button color='secondary' onClick={() => changePage('create')}>
+                  <AddBox />
+                  {t('Create')}
+                </Button>
+              </ButtonGroup>
+            </Grid>
+
+            <Grid item>
+              <Typography>
+                {`${t('If you need help on your RoboSats journey, join our public support')} `}
+                <a target='_blank' href='https://t.me/robosats_es' rel='noreferrer'>
+                  {t('Telegram group')}
+                </a>
+              </Typography>
+            </Grid>
+
+            <Grid item>
+              <Button>{t('Go back')}</Button>
+            </Grid>
+          </Grid>
+        </Collapse>
       </Grid>
     </Grid>
   );

@@ -52,6 +52,7 @@ const RobotPage = ({
   const [badRequest, setBadRequest] = useState<string | undefined>(undefined);
   const [tokenChanged, setTokenChanged] = useState<boolean>(false);
   const [inputToken, setInputToken] = useState<string>('');
+  const [view, setView] = useState<'welcome' | 'onboarding' | 'recovery' | 'profile'>('welcome');
 
   // useEffect(() => {
   //   if (robot.nickname != null) {
