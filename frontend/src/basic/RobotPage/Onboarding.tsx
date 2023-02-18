@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import {
   Alert,
+  Box,
   Button,
   ButtonGroup,
   Collapse,
@@ -10,6 +11,7 @@ import {
   LinearProgress,
   Link,
   Typography,
+  useTheme,
 } from '@mui/material';
 import { Page } from '../NavBar';
 import { Robot } from '../../models';
@@ -43,6 +45,7 @@ const Onboarding = ({
 }: OnboardingProps): JSX.Element => {
   const { t } = useTranslation();
   const history = useHistory();
+  const theme = useTheme();
 
   const [step, setStep] = useState<'1' | '2' | '3'>('1');
   const [generatedToken, setGeneratedToken] = useState<boolean>(false);
@@ -61,91 +64,97 @@ const Onboarding = ({
   };
 
   return (
-    <Grid container direction='column' alignItems='center' spacing={2}>
+    <Grid container direction='column' alignItems='center' spacing={2} padding={2}>
       <Grid item>
         <Typography variant='h5' color={step == '1' ? 'text.primary' : 'text.disabled'}>
           {t('1. Generate a token')}
         </Typography>
 
         <Collapse in={step == '1'}>
-          <Grid
-            container
-            direction='column'
-            alignItems='center'
-            spacing={1}
-            padding={1.5}
-            paddingLeft={4}
+          <Box
+            sx={{
+              padding: '0.5em',
+              backgroundColor: 'background.paper',
+              border: '1px solid',
+              borderRadius: '4px',
+              borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+              '&:hover': {
+                borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
+              },
+            }}
           >
-            <Grid item>
-              <Typography>
-                {t(
-                  'This temporary key gives you access to a unique and private robot identity for your trade.',
-                )}
-              </Typography>
-            </Grid>
-            {!generatedToken ? (
+            <Grid container direction='column' alignItems='center' spacing={1} padding={1.5}>
               <Grid item>
-                <Button autoFocus onClick={generateToken} variant='contained' size='large'>
-                  <Casino />
-                  {t('Generate token')}
-                </Button>
+                <Typography>
+                  {t(
+                    'This temporary key gives you access to a unique and private robot identity for your trade.',
+                  )}
+                </Typography>
               </Grid>
-            ) : (
-              <Grid item>
-                <Collapse in={generatedToken}>
-                  <Grid container direction='column' alignItems='center' spacing={1}>
-                    <Grid item>
-                      <Alert variant='outlined' severity='info'>
-                        <b>{`${t('Store it somewhere safe!')} `}</b>
-                        {t(
-                          `This token is the one and only key to your robot and trade. You will need it later to recover your order or check it's status.`,
+              {!generatedToken ? (
+                <Grid item>
+                  <Button autoFocus onClick={generateToken} variant='contained' size='large'>
+                    <Casino />
+                    {t('Generate token')}
+                  </Button>
+                </Grid>
+              ) : (
+                <Grid item>
+                  <Collapse in={generatedToken}>
+                    <Grid container direction='column' alignItems='center' spacing={1}>
+                      <Grid item>
+                        <Alert variant='outlined' severity='info'>
+                          <b>{`${t('Store it somewhere safe!')} `}</b>
+                          {t(
+                            `This token is the one and only key to your robot and trade. You will need it later to recover your order or check its status.`,
+                          )}
+                        </Alert>
+                      </Grid>
+                      <Grid item sx={{ width: '100%' }}>
+                        {showMimickProgress ? (
+                          <LinearProgress sx={{ height: '0.7em' }} />
+                        ) : (
+                          <TokenInput
+                            inputToken={inputToken}
+                            setInputToken={setInputToken}
+                            setRobot={setRobot}
+                            badRequest={badRequest}
+                            robot={robot}
+                            onPressEnter={() => null}
+                            badRequest={badRequest}
+                          />
                         )}
-                      </Alert>
-                    </Grid>
-                    <Grid item sx={{ width: '100%' }}>
-                      {showMimickProgress ? (
-                        <LinearProgress sx={{ height: '0.7em' }} />
-                      ) : (
-                        <TokenInput
-                          inputToken={inputToken}
-                          setInputToken={setInputToken}
-                          setRobot={setRobot}
-                          badRequest={badRequest}
-                          robot={robot}
-                          onPressEnter={() => null}
-                          badRequest={badRequest}
-                        />
-                      )}
-                    </Grid>
-                    <Grid item>
-                      <Typography>
-                        {t('You can also add your own random characters into the token or')}
-                        <Button size='small' onClick={generateToken}>
-                          <Casino />
-                          {t('roll again')}
-                        </Button>
-                      </Typography>
-                    </Grid>
+                      </Grid>
+                      <Grid item>
+                        <Typography>
+                          {t('You can also add your own random characters into the token or')}
+                          <Button size='small' onClick={generateToken}>
+                            <Casino />
+                            {t('roll again')}
+                          </Button>
+                        </Typography>
+                      </Grid>
 
-                    <Grid item>
-                      <Button
-                        onClick={() => {
-                          setStep('2');
-                          getGenerateRobot(inputToken);
-                          setRobot({ ...robot, nickname: undefined });
-                        }}
-                        variant='contained'
-                        size='large'
-                      >
-                        <Check />
-                        {t('Continue')}
-                      </Button>
+                      <Grid item>
+                        <Button
+                          onClick={() => {
+                            setStep('2');
+                            getGenerateRobot(inputToken);
+                            setRobot({ ...robot, nickname: undefined });
+                          }}
+                          variant='contained'
+                          size='large'
+                        >
+                          <Check />
+                          {t('Continue')}
+                        </Button>
+                      </Grid>
                     </Grid>
-                  </Grid>
-                </Collapse>
-              </Grid>
-            )}
-          </Grid>
+                  </Collapse>
+                </Grid>
+              )}
+            </Grid>
+          </Box>
         </Collapse>
       </Grid>
 
@@ -155,82 +164,88 @@ const Onboarding = ({
         </Typography>
 
         <Collapse in={step == '2'}>
-          <Grid
-            container
-            direction='column'
-            alignItems='center'
-            spacing={1}
-            padding={1.5}
-            paddingLeft={4}
+          <Box
+            sx={{
+              padding: '0.5em',
+              backgroundColor: 'background.paper',
+              border: '1px solid',
+              borderRadius: '4px',
+              borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+              '&:hover': {
+                borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
+              },
+            }}
           >
-            <Grid item>
-              <Typography>
-                {robot.avatarLoaded && robot.nickname ? (
-                  t('This is your trading avatar')
-                ) : (
-                  <b>{t('Building your robot!')}</b>
-                )}
-              </Typography>
-            </Grid>
-
-            <Grid item sx={{ width: '13.5em' }}>
-              <RobotAvatar
-                nickname={robot.nickname}
-                smooth={true}
-                style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
-                placeholderType='generating'
-                imageStyle={{
-                  transform: '',
-                  border: '2px solid #555',
-                  filter: 'drop-shadow(1px 1px 1px #000000)',
-                  height: '12.4em',
-                  width: '12.4em',
-                }}
-                tooltipPosition='top'
-                baseUrl={baseUrl}
-              />
-            </Grid>
-
-            {robot.avatarLoaded && robot.nickname ? (
+            <Grid container direction='column' alignItems='center' spacing={1} padding={1.5}>
               <Grid item>
-                <Typography align='center'>{t('Hi! My name is')}</Typography>
-                <Typography component='h5' variant='h5'>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    <Bolt
-                      sx={{
-                        color: '#fcba03',
-                        height: '1.5em',
-                        width: '1.5em',
-                      }}
-                    />
-                    <b>{robot.nickname}</b>
-                    <Bolt
-                      sx={{
-                        color: '#fcba03',
-                        height: '1.5em',
-                        width: '1.5em',
-                      }}
-                    />
-                  </div>
+                <Typography>
+                  {robot.avatarLoaded && robot.nickname ? (
+                    t('This is your trading avatar')
+                  ) : (
+                    <b>{t('Building your robot!')}</b>
+                  )}
                 </Typography>
               </Grid>
-            ) : null}
-            <Grid item>
-              <Collapse in={robot.avatarLoaded && robot.nickname ? true : false}>
-                <Button onClick={() => setStep('3')} variant='contained' size='large'>
-                  <Check />
-                  {t('Continue')}
-                </Button>
-              </Collapse>
+
+              <Grid item sx={{ width: '13.5em' }}>
+                <RobotAvatar
+                  nickname={robot.nickname}
+                  smooth={true}
+                  style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
+                  placeholderType='generating'
+                  imageStyle={{
+                    transform: '',
+                    border: '2px solid #555',
+                    filter: 'drop-shadow(1px 1px 1px #000000)',
+                    height: '12.4em',
+                    width: '12.4em',
+                  }}
+                  tooltipPosition='top'
+                  baseUrl={baseUrl}
+                />
+              </Grid>
+
+              {robot.avatarLoaded && robot.nickname ? (
+                <Grid item>
+                  <Typography align='center'>{t('Hi! My name is')}</Typography>
+                  <Typography component='h5' variant='h5'>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <Bolt
+                        sx={{
+                          color: '#fcba03',
+                          height: '1.5em',
+                          width: '1.5em',
+                        }}
+                      />
+                      <b>{robot.nickname}</b>
+                      <Bolt
+                        sx={{
+                          color: '#fcba03',
+                          height: '1.5em',
+                          width: '1.5em',
+                        }}
+                      />
+                    </div>
+                  </Typography>
+                </Grid>
+              ) : null}
+              <Grid item>
+                <Collapse in={robot.avatarLoaded && robot.nickname ? true : false}>
+                  <Button onClick={() => setStep('3')} variant='contained' size='large'>
+                    <Check />
+                    {t('Continue')}
+                  </Button>
+                </Collapse>
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
         </Collapse>
       </Grid>
 
@@ -239,49 +254,56 @@ const Onboarding = ({
           {t('3. Browse or create an order')}
         </Typography>
         <Collapse in={step == '3'}>
-          <Grid
-            container
-            direction='column'
-            alignItems='center'
-            spacing={1}
-            padding={1.5}
-            paddingLeft={4}
+          <Box
+            sx={{
+              padding: '0.5em',
+              backgroundColor: 'background.paper',
+              border: '1px solid',
+              borderRadius: '4px',
+              borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+              '&:hover': {
+                borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
+              },
+            }}
           >
-            <Grid item>
-              <Typography>
-                {t(
-                  'RoboSats is a peer-to-peer marketplace. You can browse the public offers or create a new one.',
-                )}
-              </Typography>
-            </Grid>
+            <Grid container direction='column' alignItems='center' spacing={1} padding={1.5}>
+              <Grid item>
+                <Typography>
+                  {t(
+                    'RoboSats is a peer-to-peer marketplace. You can browse the public offers or create a new one.',
+                  )}
+                </Typography>
+              </Grid>
 
-            <Grid item>
-              <ButtonGroup variant='contained'>
-                <Button color='primary' onClick={() => changePage('offers')}>
-                  <Storefront />
-                  {t('Offers')}
-                </Button>
-                <Button color='secondary' onClick={() => changePage('create')}>
-                  <AddBox />
-                  {t('Create')}
-                </Button>
-              </ButtonGroup>
-            </Grid>
+              <Grid item>
+                <ButtonGroup variant='contained'>
+                  <Button color='primary' onClick={() => changePage('offers')}>
+                    <Storefront />
+                    {t('Offers')}
+                  </Button>
+                  <Button color='secondary' onClick={() => changePage('create')}>
+                    <AddBox />
+                    {t('Create')}
+                  </Button>
+                </ButtonGroup>
+              </Grid>
 
-            <Grid item>
-              <Typography>
-                {`${t('If you need help on your RoboSats journey, join our public support')} `}
-                <Link target='_blank' href='https://t.me/robosats_es' rel='noreferrer'>
-                  {t('Telegram group')}
-                </Link>
-              </Typography>
+              <Grid item>
+                <Typography>
+                  {`${t('If you need help on your RoboSats journey join our public support')} `}
+                  <Link target='_blank' href='https://t.me/robosats_es' rel='noreferrer'>
+                    {t('Telegram group')}
+                  </Link>
+                </Typography>
+              </Grid>
             </Grid>
-
-            <Grid item>
-              <Button onClick={() => setView('profile')}>{t('See profile')}</Button>
-            </Grid>
-          </Grid>
+          </Box>
         </Collapse>
+      </Grid>
+      <Grid item>
+        <Button color='inherit' onClick={() => setView('profile')}>
+          {t('See profile')}
+        </Button>
       </Grid>
     </Grid>
   );

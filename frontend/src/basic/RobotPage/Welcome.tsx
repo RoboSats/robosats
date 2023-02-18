@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
-import { RoboSatsNoTextIcon, RoboSatsTextIcon } from '../../components/Icons';
-import { FastForward, RocketLaunch } from '@mui/icons-material';
-import SmartToy from '@mui/icons-material/SmartToy';
+import { RoboSatsTextIcon } from '../../components/Icons';
+import { FastForward, RocketLaunch, Key } from '@mui/icons-material';
 
 interface WelcomeProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
@@ -15,22 +14,43 @@ const Welcome = ({ setView, width }: WelcomeProps): JSX.Element => {
   const theme = useTheme();
 
   return (
-    <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
-      <RoboSatsTextIcon
-        color='primary'
-        sx={{
-          height: `${Math.min(width * 0.65, 13) * 0.25}em`,
-          width: `${Math.min(width * 0.65, 13)}em`,
-        }}
-      />
-      <Typography align='center' component='h5' variant='h5'>
-        {t('Simple and Private LN P2P Exchange')}
-      </Typography>
+    <Grid
+      container
+      direction='column'
+      alignItems='center'
+      spacing={1.8}
+      paddingTop={2}
+      padding={0.5}
+    >
+      <Grid item>
+        <svg width={0} height={0}>
+          <linearGradient id='linearColors' x1={1} y1={0} x2={1} y2={1}>
+            <stop offset={0} stopColor={theme.palette.primary.main} />
+            <stop offset={1} stopColor={theme.palette.secondary.main} />
+          </linearGradient>
+        </svg>
+        <RoboSatsTextIcon
+          sx={{
+            fill: 'url(#linearColors)',
+            height: `${Math.min(width * 0.7, 16) * 0.25}em`,
+            width: `${Math.min(width * 0.7, 16)}em`,
+          }}
+        />
+        <Typography
+          lineHeight={0.8}
+          sx={{ position: 'relative', bottom: '0.3em' }}
+          color='secondary'
+          align='center'
+          component='h6'
+          variant='h6'
+        >
+          {t('Simple and Private LN P2P Exchange')}
+        </Typography>
+      </Grid>
 
       <Grid item>
         <Box
           sx={{
-            padding: '0.5em',
             backgroundColor: 'background.paper',
             border: '1px solid',
             borderRadius: '4px',
@@ -65,14 +85,14 @@ const Welcome = ({ setView, width }: WelcomeProps): JSX.Element => {
             </Grid>
             <Grid item>
               <Button color='secondary' variant='contained' onClick={() => setView('recovery')}>
-                <SmartToy />
+                <Key />
                 {t('Recovery')}
               </Button>
             </Grid>
           </Grid>
         </Box>
       </Grid>
-      <Grid item>
+      <Grid item sx={{ position: 'relative', bottom: '0.5em' }}>
         <Button color='primary' onClick={() => setView('profile')}>
           <FastForward />
           {t('Skip to Robot Generator')}

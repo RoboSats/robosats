@@ -12,6 +12,8 @@ import { genKey } from '../../pgp';
 import { sha256 } from 'js-sha256';
 import Onboarding from './Onboarding';
 import Welcome from './Welcome';
+import RobotProfile from './RobotProfile';
+import Recovery from './Recovery';
 
 interface RobotPageProps {
   setPage: (state: Page) => void;
@@ -36,7 +38,7 @@ const RobotPage = ({
   const params = useParams();
   const theme = useTheme();
   const refCode = params.refCode;
-  const width = Math.min(windowSize.width * 0.8, 30);
+  const width = Math.min(windowSize.width * 0.8, 28);
   const maxHeight = windowSize.height * 0.85 - 3;
 
   const [robotFound, setRobotFound] = useState<boolean>(false);
@@ -141,35 +143,35 @@ const RobotPage = ({
   const handleClickNewRandomToken = () => {};
 
   return (
-    <Grid container direction='column' alignItems='center' spacing={1}>
-      <Grid item>
-        <Paper
-          elevation={12}
-          style={{
-            padding: '1em',
-            width: `${width}em`,
-            maxHeight: `${maxHeight}em`,
-            overflow: 'auto',
-          }}
-        >
-          {view === 'welcome' ? <Welcome setView={setView} width={width} /> : null}
+    <Paper
+      elevation={12}
+      style={{
+        width: `${width}em`,
+        maxHeight: `${maxHeight}em`,
+        overflow: 'auto',
+        overflowX: 'clip',
+      }}
+    >
+      {view === 'welcome' ? <Welcome setView={setView} width={width} /> : null}
 
-          {view === 'onboarding' ? (
-            <Onboarding
-              setView={setView}
-              robot={robot}
-              setRobot={setRobot}
-              badRequest={badRequest}
-              inputToken={inputToken}
-              setInputToken={setInputToken}
-              getGenerateRobot={getGenerateRobot}
-              setPage={setPage}
-              baseUrl={baseUrl}
-            />
-          ) : null}
-        </Paper>
-      </Grid>
-    </Grid>
+      {view === 'onboarding' ? (
+        <Onboarding
+          setView={setView}
+          robot={robot}
+          setRobot={setRobot}
+          badRequest={badRequest}
+          inputToken={inputToken}
+          setInputToken={setInputToken}
+          getGenerateRobot={getGenerateRobot}
+          setPage={setPage}
+          baseUrl={baseUrl}
+        />
+      ) : null}
+
+      {view === 'profile' ? <RobotProfile setView={setView} width={width} /> : null}
+
+      {view === 'recovery' ? <Recovery setView={setView} width={width} /> : null}
+    </Paper>
   );
 };
 
