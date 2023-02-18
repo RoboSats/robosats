@@ -1,15 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Button,
-  Paper,
-  Grid,
-  IconButton,
-  TextField,
-  Tooltip,
-  Typography,
-  useTheme,
-} from '@mui/material';
+import { Paper, Grid, useTheme } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
 import { Page } from '../NavBar';
@@ -19,9 +10,8 @@ import { systemClient } from '../../services/System';
 import { apiClient } from '../../services/api';
 import { genKey } from '../../pgp';
 import { sha256 } from 'js-sha256';
-import { Casino, Download, ContentCopy, SmartToy, Bolt } from '@mui/icons-material';
-import RobotAvatar from '../../components/RobotAvatar';
 import Onboarding from './Onboarding';
+import Welcome from './Welcome';
 
 interface RobotPageProps {
   setPage: (state: Page) => void;
@@ -46,6 +36,7 @@ const RobotPage = ({
   const params = useParams();
   const theme = useTheme();
   const refCode = params.refCode;
+  const width = Math.min(windowSize.width * 0.8, 30);
   const maxHeight = windowSize.height * 0.85 - 3;
 
   const [robotFound, setRobotFound] = useState<boolean>(false);
@@ -151,33 +142,31 @@ const RobotPage = ({
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1}>
-      {/* // Welcome to RoboSats
-      // Easy and private LN exchange
-
-      // I am a newbie
-      // Skip (fast robot gen)
-      // Recover existing token */}
-
       <Grid item>
         <Paper
           elevation={12}
           style={{
             padding: '1em',
-            width: `${Math.min(windowSize.width * 0.8, 30)}em`,
+            width: `${width}em`,
             maxHeight: `${maxHeight}em`,
             overflow: 'auto',
           }}
         >
-          <Onboarding
-            robot={robot}
-            setRobot={setRobot}
-            badRequest={badRequest}
-            inputToken={inputToken}
-            setInputToken={setInputToken}
-            getGenerateRobot={getGenerateRobot}
-            setPage={setPage}
-            baseUrl={baseUrl}
-          />
+          {view === 'welcome' ? <Welcome setView={setView} width={width} /> : null}
+
+          {view === 'onboarding' ? (
+            <Onboarding
+              setView={setView}
+              robot={robot}
+              setRobot={setRobot}
+              badRequest={badRequest}
+              inputToken={inputToken}
+              setInputToken={setInputToken}
+              getGenerateRobot={getGenerateRobot}
+              setPage={setPage}
+              baseUrl={baseUrl}
+            />
+          ) : null}
         </Paper>
       </Grid>
     </Grid>

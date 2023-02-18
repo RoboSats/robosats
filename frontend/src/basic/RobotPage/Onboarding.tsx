@@ -8,6 +8,7 @@ import {
   Collapse,
   Grid,
   LinearProgress,
+  Link,
   Typography,
 } from '@mui/material';
 import { Page } from '../NavBar';
@@ -18,6 +19,7 @@ import TokenInput from './TokenInput';
 import { genBase62Token } from '../../utils';
 
 interface OnboardingProps {
+  setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   robot: Robot;
   setRobot: (state: Robot) => void;
   inputToken: string;
@@ -29,6 +31,7 @@ interface OnboardingProps {
 }
 
 const Onboarding = ({
+  setView,
   robot,
   inputToken,
   setInputToken,
@@ -268,14 +271,14 @@ const Onboarding = ({
             <Grid item>
               <Typography>
                 {`${t('If you need help on your RoboSats journey, join our public support')} `}
-                <a target='_blank' href='https://t.me/robosats_es' rel='noreferrer'>
+                <Link target='_blank' href='https://t.me/robosats_es' rel='noreferrer'>
                   {t('Telegram group')}
-                </a>
+                </Link>
               </Typography>
             </Grid>
 
             <Grid item>
-              <Button>{t('Go back')}</Button>
+              <Button onClick={() => setView('profile')}>{t('See profile')}</Button>
             </Grid>
           </Grid>
         </Collapse>

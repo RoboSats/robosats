@@ -3,7 +3,7 @@ import { SvgIcon } from '@mui/material';
 
 export default function RoboSatsTextIcon(props) {
   return (
-    <SvgIcon {...props} x='0px' y='0px' width='2000px' height='1000px' viewBox='0 300 2000 150'>
+    <SvgIcon {...props} x='0px' y='0px' width='2000px' height='500px' viewBox='0 620 2000 1'>
       <g>
         <path
           d='M455.556,849.519c10.487-10.606,18.315-22.243,23.484-35.499c11.767-30.177,10.624-59.483-6.55-87.546
