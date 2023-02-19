@@ -1,22 +1,125 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
-import { RoboSatsTextIcon } from '../../components/Icons';
+import { Box, Button, Grid, LinearProgress, Typography, useTheme } from '@mui/material';
 import { FastForward, RocketLaunch } from '@mui/icons-material';
 import SmartToy from '@mui/icons-material/SmartToy';
+import RobotAvatar from '../../components/RobotAvatar';
+import Bolt from '@mui/icons-material/Bolt';
+import TokenInput from './TokenInput';
+import { Page } from '../NavBar';
+import { Robot } from '../../models';
 
 interface RobotProfileProps {
+  robot: Robot;
+  setRobot: (state: Robot) => void;
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
+  inputToken: string;
+  setInputToken: (state: string) => void;
+  getGenerateRobot: (token: string) => void;
+  setPage: (state: Page) => void;
+  baseUrl: string;
+  badRequest: string;
+  robotFound: boolean;
   width: number;
 }
 
-const RobotProfile = ({ setView, width }: RobotProfileProps): JSX.Element => {
+const RobotProfile = ({
+  robot,
+  setRobot,
+  inputToken,
+  setInputToken,
+  getGenerateRobot,
+  setPage,
+  badRequest,
+  baseUrl,
+  robotFound,
+  width,
+}: RobotProfileProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 
   return (
-    <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
-      <Grid item></Grid>
+    <Grid container direction='column' alignItems='center' spacing={2} padding={2}>
+      <Grid item sx={{ height: '2.3em', position: 'relative' }}>
+        {robot.avatarLoaded && robot.nickname ? (
+          <Typography align='center' component='h5' variant='h5'>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+              }}
+            >
+              {width < 19 ? null : (
+                <Bolt
+                  sx={{
+                    color: '#fcba03',
+                    height: '1.5em',
+                    width: '1.5em',
+                  }}
+                />
+              )}
+              <b>{robot.nickname}</b>
+              {width < 19 ? null : (
+                <Bolt
+                  sx={{
+                    color: '#fcba03',
+                    height: '1.5em',
+                    width: '1.5em',
+                  }}
+                />
+              )}
+            </div>
+          </Typography>
+        ) : (
+          <>
+            <b>{t('Rebuilding your robot!')}</b>
+            <LinearProgress />
+          </>
+        )}
+      </Grid>
+
+      <Grid item sx={{ width: `13.5em` }}>
+        <RobotAvatar
+          nickname={robot.nickname}
+          smooth={true}
+          style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
+          placeholderType='generating'
+          imageStyle={{
+            transform: '',
+            border: '2px solid #555',
+            filter: 'drop-shadow(1px 1px 1px #000000)',
+            height: `12.4em`,
+            width: `12.4em`,
+          }}
+          tooltip={t('This is your trading avatar')}
+          tooltipPosition='top'
+          baseUrl={baseUrl}
+        />
+      </Grid>
+
+      {robotFound ? (
+        <Grid item>
+          <Typography variant='subtitle2' color='primary'>
+            {t('Welcome back!')}
+            <br />
+          </Typography>
+        </Grid>
+      ) : (
+        <></>
+      )}
+      <Grid item sx={{ width: '100%' }}>
+        <TokenInput
+          inputToken={inputToken}
+          editable={false}
+          setInputToken={setInputToken}
+          setRobot={setRobot}
+          badRequest={badRequest}
+          robot={robot}
+          onPressEnter={() => null}
+        />
+      </Grid>
     </Grid>
   );
 };

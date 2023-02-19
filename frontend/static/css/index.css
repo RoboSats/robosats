@@ -56,12 +56,6 @@ body {
   position: fixed;
 }
 
-.clickTrough {
-  height: 50px;
-  pointer-events: none;
-  z-index: 1;
-}
-
 /* No arrows on numeric inputs */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {

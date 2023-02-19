@@ -21,6 +21,7 @@ import { saveAsJson } from '../../utils';
 
 interface TokenInputProps {
   robot: Robot;
+  editable?: boolean;
   showDownload?: boolean;
   fullWidth?: boolean;
   setRobot: (state: Robot) => void;
@@ -29,11 +30,14 @@ interface TokenInputProps {
   badRequest: string | undefined;
   setInputToken: (state: string) => void;
   showCopy?: boolean;
+  label?: string;
 }
 
 const TokenInput = ({
   robot,
+  editable = true,
   showCopy = true,
+  label,
   setRobot,
   showDownload = false,
   fullWidth = true,
@@ -58,12 +62,14 @@ const TokenInput = ({
   return (
     <TextField
       error={!!badRequest}
+      disabled={!editable}
       required={true}
+      label={label ? label : undefined}
       value={inputToken}
       autoFocus
       fullWidth={fullWidth}
       sx={{ borderColor: 'primary' }}
-      variant='outlined'
+      variant={editable ? 'outlined' : 'filled'}
       helperText={badRequest}
       size='medium'
       onChange={(e) => setInputToken(e.target.value)}

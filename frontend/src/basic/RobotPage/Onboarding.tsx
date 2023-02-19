@@ -182,7 +182,10 @@ const Onboarding = ({
                   {robot.avatarLoaded && robot.nickname ? (
                     t('This is your trading avatar')
                   ) : (
-                    <b>{t('Building your robot!')}</b>
+                    <>
+                      <b>{t('Building your robot!')}</b>
+                      <LinearProgress />
+                    </>
                   )}
                 </Typography>
               </Grid>

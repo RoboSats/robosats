@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 
 import { Page } from '../NavBar';
 import { Robot } from '../../models';
-import { genBase62Token, saveAsJson, tokenStrength } from '../../utils';
+import { tokenStrength } from '../../utils';
 import { systemClient } from '../../services/System';
 import { apiClient } from '../../services/api';
 import { genKey } from '../../pgp';
@@ -45,20 +45,18 @@ const RobotPage = ({
   const [badRequest, setBadRequest] = useState<string | undefined>(undefined);
   const [tokenChanged, setTokenChanged] = useState<boolean>(false);
   const [inputToken, setInputToken] = useState<string>('');
-  const [view, setView] = useState<'welcome' | 'onboarding' | 'recovery' | 'profile'>('welcome');
+  const [view, setView] = useState<'welcome' | 'onboarding' | 'recovery' | 'profile'>(
+    robot.token ? 'profile' : 'welcome',
+  );
 
-  // useEffect(() => {
-  //   if (robot.nickname != null) {
-  //     setInputToken(robot.token);
-  //   } else if (robot.token) {
-  //     setInputToken(robot.token);
-  //     getGenerateRobot(robot.token);
-  //   } else {
-  //     const newToken = genBase62Token(36);
-  //     setInputToken(newToken);
-  //     getGenerateRobot(newToken);
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (robot.token) {
+      setInputToken(robot.token);
+    }
+    if (robot.nickname == null && robot.token) {
+      getGenerateRobot(robot.token);
+    }
+  }, []);
 
   const getGenerateRobot = (token: string) => {
     const strength = tokenStrength(token);
@@ -152,6 +150,11 @@ const RobotPage = ({
         overflowX: 'clip',
       }}
     >
+      {/* TOR LOADING
+      Your connection is being encrypted and annonimized using the TOR Network. This ensures maximum privacy, however you might feel it is a bit slow or even lose connection from time to time.
+
+      */}
+
       {view === 'welcome' ? <Welcome setView={setView} width={width} /> : null}
 
       {view === 'onboarding' ? (
@@ -172,8 +175,10 @@ const RobotPage = ({
         <RobotProfile
           setView={setView}
           robot={robot}
+          robotFound={robotFound}
           setRobot={setRobot}
           badRequest={badRequest}
+          width={width}
           inputToken={inputToken}
           setInputToken={setInputToken}
           getGenerateRobot={getGenerateRobot}

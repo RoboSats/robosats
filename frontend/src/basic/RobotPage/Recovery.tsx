@@ -25,6 +25,7 @@ const Recovery = ({
   robot,
   setRobot,
   inputToken,
+  setView,
   setInputToken,
   getGenerateRobot,
   setPage,
@@ -40,6 +41,8 @@ const Recovery = ({
     if (recoveryDisabled()) {
       return;
     } else {
+      getGenerateRobot(inputToken);
+      setView('profile');
     }
   };
 
@@ -58,13 +61,19 @@ const Recovery = ({
           inputToken={inputToken}
           setInputToken={setInputToken}
           setRobot={setRobot}
+          label={t('Paste token here')}
           robot={robot}
           onPressEnter={onClickRecover}
           badRequest={''}
         />
       </Grid>
       <Grid item>
-        <Button variant='contained' size='large' disabled={recoveryDisabled()}>
+        <Button
+          variant='contained'
+          size='large'
+          disabled={recoveryDisabled()}
+          onClick={onClickRecover}
+        >
           <Key /> <div style={{ width: '0.5em' }} />
           {t('Recover')}
         </Button>
