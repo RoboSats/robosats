@@ -28,10 +28,12 @@ interface TokenInputProps {
   onPressEnter: () => void;
   badRequest: string | undefined;
   setInputToken: (state: string) => void;
+  showCopy?: boolean;
 }
 
 const TokenInput = ({
   robot,
+  showCopy = true,
   setRobot,
   showDownload = false,
   fullWidth = true,
@@ -83,7 +85,7 @@ const TokenInput = ({
             </span>
           </Tooltip>
         ) : null,
-        endAdornment: (
+        endAdornment: showCopy ? (
           <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
             <IconButton
               color={robot.copiedToken ? 'inherit' : 'primary'}
@@ -95,7 +97,7 @@ const TokenInput = ({
               <ContentCopy sx={{ width: '1em', height: '1em' }} />
             </IconButton>
           </Tooltip>
-        ),
+        ) : null,
       }}
     />
   );

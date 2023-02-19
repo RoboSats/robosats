@@ -15,10 +15,11 @@ import {
 } from '@mui/material';
 import { Page } from '../NavBar';
 import { Robot } from '../../models';
-import { Casino, Bolt, Check, Storefront, AddBox } from '@mui/icons-material';
+import { Casino, Bolt, Check, Storefront, AddBox, School } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { genBase62Token } from '../../utils';
+import { NewTabIcon } from '../../components/Icons';
 
 interface OnboardingProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
@@ -121,7 +122,6 @@ const Onboarding = ({
                             badRequest={badRequest}
                             robot={robot}
                             onPressEnter={() => null}
-                            badRequest={badRequest}
                           />
                         )}
                       </Grid>
@@ -278,11 +278,11 @@ const Onboarding = ({
               <Grid item>
                 <ButtonGroup variant='contained'>
                   <Button color='primary' onClick={() => changePage('offers')}>
-                    <Storefront />
+                    <Storefront /> <div style={{ width: '0.5em' }} />
                     {t('Offers')}
                   </Button>
                   <Button color='secondary' onClick={() => changePage('create')}>
-                    <AddBox />
+                    <AddBox /> <div style={{ width: '0.5em' }} />
                     {t('Create')}
                   </Button>
                 </ButtonGroup>
@@ -294,7 +294,23 @@ const Onboarding = ({
                   <Link target='_blank' href='https://t.me/robosats_es' rel='noreferrer'>
                     {t('Telegram group')}
                   </Link>
+                  {`, ${t('or visit the robot school for documentation.')} `}
                 </Typography>
+              </Grid>
+              <Grid item>
+                <Button
+                  sx={{ color: 'black' }}
+                  component={Link}
+                  href='https://learn.robosats.com'
+                  target='_blank'
+                  color='inherit'
+                  variant='contained'
+                >
+                  <School /> <div style={{ width: '0.5em' }} />
+                  {t('Learn RoboSats')}
+                  <div style={{ width: '0.5em' }} />
+                  <NewTabIcon sx={{ width: '0.8em' }} />
+                </Button>
               </Grid>
             </Grid>
           </Box>

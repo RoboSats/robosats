@@ -168,9 +168,33 @@ const RobotPage = ({
         />
       ) : null}
 
-      {view === 'profile' ? <RobotProfile setView={setView} width={width} /> : null}
+      {view === 'profile' ? (
+        <RobotProfile
+          setView={setView}
+          robot={robot}
+          setRobot={setRobot}
+          badRequest={badRequest}
+          inputToken={inputToken}
+          setInputToken={setInputToken}
+          getGenerateRobot={getGenerateRobot}
+          setPage={setPage}
+          baseUrl={baseUrl}
+        />
+      ) : null}
 
-      {view === 'recovery' ? <Recovery setView={setView} width={width} /> : null}
+      {view === 'recovery' ? (
+        <Recovery
+          setView={setView}
+          robot={robot}
+          setRobot={setRobot}
+          badRequest={badRequest}
+          inputToken={inputToken}
+          setInputToken={setInputToken}
+          getGenerateRobot={getGenerateRobot}
+          setPage={setPage}
+          baseUrl={baseUrl}
+        />
+      ) : null}
     </Paper>
   );
 };

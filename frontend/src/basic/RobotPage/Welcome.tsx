@@ -19,7 +19,7 @@ const Welcome = ({ setView, width }: WelcomeProps): JSX.Element => {
       direction='column'
       alignItems='center'
       spacing={1.8}
-      paddingTop={2}
+      paddingTop={2.2}
       padding={0.5}
     >
       <Grid item>
@@ -32,19 +32,19 @@ const Welcome = ({ setView, width }: WelcomeProps): JSX.Element => {
         <RoboSatsTextIcon
           sx={{
             fill: 'url(#linearColors)',
-            height: `${Math.min(width * 0.7, 16) * 0.25}em`,
-            width: `${Math.min(width * 0.7, 16)}em`,
+            height: `${Math.min(width * 0.66, 17) * 0.25}em`,
+            width: `${Math.min(width * 0.66, 17)}em`,
           }}
         />
         <Typography
-          lineHeight={0.8}
+          lineHeight={0.82}
           sx={{ position: 'relative', bottom: '0.3em' }}
           color='secondary'
           align='center'
           component='h6'
           variant='h6'
         >
-          {t('Simple and Private LN P2P Exchange')}
+          {t('A Simple and Private LN P2P Exchange')}
         </Typography>
       </Grid>
 
@@ -60,7 +60,7 @@ const Welcome = ({ setView, width }: WelcomeProps): JSX.Element => {
             },
           }}
         >
-          <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
+          <Grid container direction='column' alignItems='center' spacing={1} padding={1.5}>
             <Grid item>
               <Typography align='center'>
                 {t('Create a new robot and learn to use RoboSats')}
@@ -74,6 +74,7 @@ const Welcome = ({ setView, width }: WelcomeProps): JSX.Element => {
                 onClick={() => setView('onboarding')}
               >
                 <RocketLaunch />
+                <div style={{ width: '0.5em' }} />
                 {t('Start')}
               </Button>
             </Grid>
@@ -84,8 +85,13 @@ const Welcome = ({ setView, width }: WelcomeProps): JSX.Element => {
               </Typography>
             </Grid>
             <Grid item>
-              <Button color='secondary' variant='contained' onClick={() => setView('recovery')}>
-                <Key />
+              <Button
+                size='small'
+                color='secondary'
+                variant='contained'
+                onClick={() => setView('recovery')}
+              >
+                <Key /> <div style={{ width: '0.5em' }} />
                 {t('Recovery')}
               </Button>
             </Grid>
@@ -93,9 +99,9 @@ const Welcome = ({ setView, width }: WelcomeProps): JSX.Element => {
         </Box>
       </Grid>
       <Grid item sx={{ position: 'relative', bottom: '0.5em' }}>
-        <Button color='primary' onClick={() => setView('profile')}>
-          <FastForward />
-          {t('Skip to Robot Generator')}
+        <Button size='small' color='primary' onClick={() => setView('profile')}>
+          <FastForward /> <div style={{ width: '0.5em' }} />
+          {t('Skip to Robot')}
         </Button>
       </Grid>
     </Grid>
