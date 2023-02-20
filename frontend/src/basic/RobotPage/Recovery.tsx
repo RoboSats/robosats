@@ -35,7 +35,7 @@ const Recovery = ({
   const theme = useTheme();
 
   const recoveryDisabled = () => {
-    return inputToken.length > 10 ? false : true;
+    return inputToken.length > 20 ? false : true;
   };
   const onClickRecover = () => {
     if (recoveryDisabled()) {

@@ -70,20 +70,15 @@ const Onboarding = ({
         <Typography variant='h5' color={step == '1' ? 'text.primary' : 'text.disabled'}>
           {t('1. Generate a token')}
         </Typography>
-
-        <Collapse in={step == '1'}>
-          <Box
-            sx={{
-              padding: '0.5em',
-              backgroundColor: 'background.paper',
-              border: '1px solid',
-              borderRadius: '4px',
-              borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-              '&:hover': {
-                borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-              },
-            }}
-          >
+        <Box
+          sx={{
+            backgroundColor: 'background.paper',
+            border: '1px solid',
+            borderRadius: '4px',
+            borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+          }}
+        >
+          <Collapse in={step == '1'}>
             <Grid container direction='column' alignItems='center' spacing={1} padding={1.5}>
               <Grid item>
                 <Typography>
@@ -154,28 +149,23 @@ const Onboarding = ({
                 </Grid>
               )}
             </Grid>
-          </Box>
-        </Collapse>
+          </Collapse>
+        </Box>
       </Grid>
 
       <Grid item sx={{ width: '100%' }}>
         <Typography variant='h5' color={step == '2' ? 'text.primary' : 'text.disabled'}>
           {t('2. Meet your robot identity')}
         </Typography>
-
-        <Collapse in={step == '2'}>
-          <Box
-            sx={{
-              padding: '0.5em',
-              backgroundColor: 'background.paper',
-              border: '1px solid',
-              borderRadius: '4px',
-              borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-              '&:hover': {
-                borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-              },
-            }}
-          >
+        <Box
+          sx={{
+            backgroundColor: 'background.paper',
+            border: '1px solid',
+            borderRadius: '4px',
+            borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+          }}
+        >
+          <Collapse in={step == '2'}>
             <Grid container direction='column' alignItems='center' spacing={1} padding={1.5}>
               <Grid item>
                 <Typography>
@@ -248,27 +238,23 @@ const Onboarding = ({
                 </Collapse>
               </Grid>
             </Grid>
-          </Box>
-        </Collapse>
+          </Collapse>
+        </Box>
       </Grid>
 
       <Grid item>
         <Typography variant='h5' color={step == '3' ? 'text.primary' : 'text.disabled'}>
           {t('3. Browse or create an order')}
         </Typography>
-        <Collapse in={step == '3'}>
-          <Box
-            sx={{
-              padding: '0.5em',
-              backgroundColor: 'background.paper',
-              border: '1px solid',
-              borderRadius: '4px',
-              borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
-              '&:hover': {
-                borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
-              },
-            }}
-          >
+        <Box
+          sx={{
+            backgroundColor: 'background.paper',
+            border: '1px solid',
+            borderRadius: '4px',
+            borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+          }}
+        >
+          <Collapse in={step == '3'}>
             <Grid container direction='column' alignItems='center' spacing={1} padding={1.5}>
               <Grid item>
                 <Typography>
@@ -316,8 +302,8 @@ const Onboarding = ({
                 </Button>
               </Grid>
             </Grid>
-          </Box>
-        </Collapse>
+          </Collapse>
+        </Box>
       </Grid>
       <Grid item>
         <Button color='inherit' onClick={() => setView('profile')}>

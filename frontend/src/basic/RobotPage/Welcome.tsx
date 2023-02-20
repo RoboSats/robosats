@@ -3,13 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
 import { RoboSatsTextIcon } from '../../components/Icons';
 import { FastForward, RocketLaunch, Key } from '@mui/icons-material';
+import { genBase62Token } from '../../utils';
 
 interface WelcomeProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
+  getGenerateRobot: (token: string) => void;
   width: number;
 }
 
-const Welcome = ({ setView, width }: WelcomeProps): JSX.Element => {
+const Welcome = ({ setView, width, getGenerateRobot }: WelcomeProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -99,9 +101,16 @@ const Welcome = ({ setView, width }: WelcomeProps): JSX.Element => {
         </Box>
       </Grid>
       <Grid item sx={{ position: 'relative', bottom: '0.5em' }}>
-        <Button size='small' color='primary' onClick={() => setView('profile')}>
+        <Button
+          size='small'
+          color='primary'
+          onClick={() => {
+            setView('profile');
+            getGenerateRobot(genBase62Token(36));
+          }}
+        >
           <FastForward /> <div style={{ width: '0.5em' }} />
-          {t('Skip to Robot')}
+          {t('Fast Generate Robot')}
         </Button>
       </Grid>
     </Grid>

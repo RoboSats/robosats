@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Button, Grid, LinearProgress, Typography, useTheme } from '@mui/material';
-import { FastForward, RocketLaunch } from '@mui/icons-material';
-import SmartToy from '@mui/icons-material/SmartToy';
+import { Button, Grid, LinearProgress, Typography, useTheme } from '@mui/material';
+import { Bolt, Logout } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
-import Bolt from '@mui/icons-material/Bolt';
 import TokenInput from './TokenInput';
 import { Page } from '../NavBar';
 import { Robot } from '../../models';
@@ -14,6 +12,7 @@ interface RobotProfileProps {
   setRobot: (state: Robot) => void;
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   inputToken: string;
+  logoutRobot: () => void;
   setInputToken: (state: string) => void;
   getGenerateRobot: (token: string) => void;
   setPage: (state: Page) => void;
@@ -28,8 +27,8 @@ const RobotProfile = ({
   setRobot,
   inputToken,
   setInputToken,
-  getGenerateRobot,
-  setPage,
+  logoutRobot,
+  setView,
   badRequest,
   baseUrl,
   robotFound,
@@ -109,16 +108,40 @@ const RobotProfile = ({
       ) : (
         <></>
       )}
+
+      <Grid item>
+        {/* This robot has an active order
+
+        This robot has a past order. Reusing Robot degrades your privacy: Get a new robot! */}
+      </Grid>
+
       <Grid item sx={{ width: '100%' }}>
         <TokenInput
           inputToken={inputToken}
           editable={false}
+          showDownload={true}
+          label={t('Store your token safely')}
           setInputToken={setInputToken}
           setRobot={setRobot}
           badRequest={badRequest}
           robot={robot}
           onPressEnter={() => null}
         />
+      </Grid>
+
+      <Grid item>
+        <Button
+          disabled={robot.avatarLoaded && robot.nickname}
+          size='small'
+          color='primary'
+          onClick={() => {
+            logoutRobot();
+            setView('welcome');
+          }}
+        >
+          <Logout /> <div style={{ width: '0.5em' }} />
+          {t('Logout Robot')}
+        </Button>
       </Grid>
     </Grid>
   );

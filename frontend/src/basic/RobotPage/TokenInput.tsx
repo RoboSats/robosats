@@ -48,7 +48,7 @@ const TokenInput = ({
 }: TokenInputProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-
+  const [showCopied, setShowCopied] = useState<boolean>(false);
   const createJsonFile = () => {
     return {
       token: robot.token,
@@ -80,23 +80,24 @@ const TokenInput = ({
       }}
       InputProps={{
         startAdornment: showDownload ? (
-          <Tooltip enterTouchDelay={250} title={t('Save token to file')}>
-            <span>
-              <IconButton
-                color='primary'
-                onClick={() => saveAsJson(robot.nickname + '.json', createJsonFile())}
-              >
-                <Download sx={{ width: '1em', height: '1em' }} />
-              </IconButton>
-            </span>
+          <Tooltip enterTouchDelay={250} title={t('Download token and PGP credentials')}>
+            <IconButton
+              color='primary'
+              sx={{ position: 'relative', top: label ? '0.4em' : '0em' }}
+              onClick={() => saveAsJson(robot.nickname + '.json', createJsonFile())}
+            >
+              <Download sx={{ width: '1em', height: '1em' }} />
+            </IconButton>
           </Tooltip>
         ) : null,
         endAdornment: showCopy ? (
-          <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
+          <Tooltip open={showCopied} title={t('Copied!')}>
             <IconButton
               color={robot.copiedToken ? 'inherit' : 'primary'}
               onClick={() => {
                 systemClient.copyToClipboard(inputToken);
+                setShowCopied(true);
+                setTimeout(() => setShowCopied(false), 1000);
                 setRobot({ ...robot, copiedToken: true });
               }}
             >
