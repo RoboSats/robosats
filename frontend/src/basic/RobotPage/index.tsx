@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Paper, Grid, useTheme } from '@mui/material';
+import { Paper, Grid, CircularProgress, Box, Alert, Typography, useTheme } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
 import { Page } from '../NavBar';
@@ -14,24 +14,25 @@ import Onboarding from './Onboarding';
 import Welcome from './Welcome';
 import RobotProfile from './RobotProfile';
 import Recovery from './Recovery';
+import { TorIcon } from '../../components/Icons';
 
 interface RobotPageProps {
   setPage: (state: Page) => void;
   setCurrentOrder: (state: number) => void;
+  torStatus: 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
   robot: Robot;
   setRobot: (state: Robot) => void;
   windowSize: { width: number; height: number };
-  fetchRobot: ({}) => void;
   baseUrl: string;
 }
 
 const RobotPage = ({
   setPage,
   setCurrentOrder,
+  torStatus,
   windowSize,
   robot,
   setRobot,
-  fetchRobot,
   baseUrl,
 }: RobotPageProps): JSX.Element => {
   const { t } = useTranslation();
@@ -39,6 +40,7 @@ const RobotPage = ({
   const refCode = params.refCode;
   const width = Math.min(windowSize.width * 0.8, 28);
   const maxHeight = windowSize.height * 0.85 - 3;
+  const theme = useTheme();
 
   const [robotFound, setRobotFound] = useState<boolean>(false);
   const [badRequest, setBadRequest] = useState<string | undefined>(undefined);
@@ -141,70 +143,116 @@ const RobotPage = ({
     systemClient.deleteItem('enc_priv_key');
   };
 
-  return (
-    <Paper
-      elevation={12}
-      style={{
-        width: `${width}em`,
-        maxHeight: `${maxHeight}em`,
-        overflow: 'auto',
-        overflowX: 'clip',
-      }}
-    >
-      {/* TOR LOADING
-      Your connection is being encrypted and annonimized using the TOR Network. This ensures maximum privacy, however you might feel it is a bit slow. You could eventually lose connection from time to time, restart the app.
-      */}
+  if (window?.NativeRobosats & (torStatus != 'DONE')) {
+    return (
+      <Paper
+        elevation={12}
+        style={{
+          width: `${width}em`,
+          maxHeight: `${maxHeight}em`,
+        }}
+      >
+        <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
+          <Grid item>
+            <Typography align='center' variant='h5'>
+              {t('Connecting to TOR')}
+            </Typography>
+          </Grid>
+          <Grid item>
+            <Box>
+              <svg width={0} height={0}>
+                <linearGradient id='linearColors' x1={1} y1={0} x2={1} y2={1}>
+                  <stop offset={0} stopColor={theme.palette.primary.main} />
+                  <stop offset={1} stopColor={theme.palette.secondary.main} />
+                </linearGradient>
+              </svg>
+              <CircularProgress thickness={3} style={{ width: '11.2em', height: '11.2em' }} />
+              <Box sx={{ position: 'fixed', top: '4.6em' }}>
+                <TorIcon
+                  sx={{
+                    fill: 'url(#linearColors)',
+                    width: '6em',
+                    height: '6em',
+                    position: 'relative',
+                    left: '0.7em',
+                  }}
+                />
+              </Box>
+            </Box>
+          </Grid>
+          <Grid item>
+            <Alert>
+              <b>{t('Your traffic is encrypted and annonimized using TOR. ')}</b>
+              {t(
+                'This ensures maximum privacy, however you might feel the app behaves slow. If connection is lost, restart the app.',
+              )}
+            </Alert>
+          </Grid>
+        </Grid>
+      </Paper>
+    );
+  } else {
+    return (
+      <Paper
+        elevation={12}
+        style={{
+          width: `${width}em`,
+          maxHeight: `${maxHeight}em`,
+          overflow: 'auto',
+          overflowX: 'clip',
+        }}
+      >
+        {view === 'welcome' ? (
+          <Welcome setView={setView} getGenerateRobot={getGenerateRobot} width={width} />
+        ) : null}
 
-      {view === 'welcome' ? (
-        <Welcome setView={setView} getGenerateRobot={getGenerateRobot} width={width} />
-      ) : null}
+        {view === 'onboarding' ? (
+          <Onboarding
+            setView={setView}
+            robot={robot}
+            setRobot={setRobot}
+            badRequest={badRequest}
+            inputToken={inputToken}
+            setInputToken={setInputToken}
+            getGenerateRobot={getGenerateRobot}
+            setPage={setPage}
+            baseUrl={baseUrl}
+          />
+        ) : null}
 
-      {view === 'onboarding' ? (
-        <Onboarding
-          setView={setView}
-          robot={robot}
-          setRobot={setRobot}
-          badRequest={badRequest}
-          inputToken={inputToken}
-          setInputToken={setInputToken}
-          getGenerateRobot={getGenerateRobot}
-          setPage={setPage}
-          baseUrl={baseUrl}
-        />
-      ) : null}
+        {view === 'profile' ? (
+          <RobotProfile
+            setView={setView}
+            robot={robot}
+            robotFound={robotFound}
+            setRobot={setRobot}
+            badRequest={badRequest}
+            logoutRobot={logoutRobot}
+            width={width}
+            inputToken={inputToken}
+            setInputToken={setInputToken}
+            getGenerateRobot={getGenerateRobot}
+            setPage={setPage}
+            baseUrl={baseUrl}
+          />
+        ) : null}
 
-      {view === 'profile' ? (
-        <RobotProfile
-          setView={setView}
-          robot={robot}
-          robotFound={robotFound}
-          setRobot={setRobot}
-          badRequest={badRequest}
-          logoutRobot={logoutRobot}
-          width={width}
-          inputToken={inputToken}
-          setInputToken={setInputToken}
-          getGenerateRobot={getGenerateRobot}
-          setPage={setPage}
-          baseUrl={baseUrl}
-        />
-      ) : null}
-
-      {view === 'recovery' ? (
-        <Recovery
-          setView={setView}
-          robot={robot}
-          setRobot={setRobot}
-          badRequest={badRequest}
-          inputToken={inputToken}
-          setInputToken={setInputToken}
-          getGenerateRobot={getGenerateRobot}
-          setPage={setPage}
-          baseUrl={baseUrl}
-        />
-      ) : null}
-    </Paper>
-  );
+        {view === 'recovery' ? (
+          <Recovery
+            setView={setView}
+            robot={robot}
+            setRobot={setRobot}
+            badRequest={badRequest}
+            inputToken={inputToken}
+            setInputToken={setInputToken}
+            getGenerateRobot={getGenerateRobot}
+            setPage={setPage}
+            baseUrl={baseUrl}
+          />
+        ) : null}
+      </Paper>
+    );
+  }
 };
 
 export default RobotPage;

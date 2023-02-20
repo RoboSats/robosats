@@ -71,10 +71,11 @@ interface SlideDirection {
 
 interface MainProps {
   settings: Settings;
+  torStatus: 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
   setSettings: (state: Settings) => void;
 }
 
-const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
+const Main = ({ torStatus, settings, setSettings }: MainProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -351,6 +352,7 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                 <div>
                   <RobotPage
                     setPage={setPage}
+                    torStatus={torStatus}
                     setCurrentOrder={setCurrentOrder}
                     windowSize={windowSize}
                     robot={robot}

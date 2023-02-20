@@ -4,7 +4,7 @@ import Main from './basic/Main';
 import { CssBaseline } from '@mui/material';
 import { ThemeProvider, createTheme, Theme } from '@mui/material/styles';
 import UnsafeAlert from './components/UnsafeAlert';
-import TorConnection from './components/TorConnection';
+import TorConnectionBadge from './components/TorConnection';
 
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n/Web';
@@ -29,6 +29,13 @@ const makeTheme = function (settings: Settings) {
 const App = (): JSX.Element => {
   const [theme, setTheme] = useState<Theme>(makeTheme(new Settings()));
   const [settings, setSettings] = useState<Settings>(new Settings());
+  const [torStatus, setTorStatus] = useState<string>('NOTINIT');
+
+  useEffect(() => {
+    window.addEventListener('torStatus', (event) => {
+      setTorStatus(event?.detail);
+    });
+  }, []);
 
   useEffect(() => {
     setTheme(makeTheme(settings));
@@ -46,9 +53,9 @@ const App = (): JSX.Element => {
           {window.NativeRobosats === undefined ? (
             <UnsafeAlert settings={settings} setSettings={setSettings} />
           ) : (
-            <TorConnection />
+            <TorConnectionBadge torStatus={torStatus} />
           )}
-          <Main settings={settings} setSettings={setSettings} />
+          <Main settings={settings} setSettings={setSettings} torStatus={torStatus} />
         </ThemeProvider>
       </I18nextProvider>
     </Suspense>
