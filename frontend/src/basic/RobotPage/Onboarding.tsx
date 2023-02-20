@@ -108,6 +108,7 @@ const Onboarding = ({
                         <LinearProgress sx={{ height: '0.7em' }} />
                       ) : (
                         <TokenInput
+                          autoFocusTarget='copyButton'
                           inputToken={inputToken}
                           setInputToken={setInputToken}
                           setRobot={setRobot}

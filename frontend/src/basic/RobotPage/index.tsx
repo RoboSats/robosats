@@ -152,7 +152,7 @@ const RobotPage = ({
     setTimeout(() => setRobot(new Robot()), 10);
   };
 
-  if (window?.NativeRobosats & (torStatus != 'DONE')) {
+  if (!(window.NativeRobosats === undefined) && !(torStatus == 'DONE' || torStatus == '"Done"')) {
     return (
       <Paper
         elevation={12}

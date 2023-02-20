@@ -1,21 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Button,
-  Collapse,
-  Grid,
-  IconButton,
-  TextField,
-  Tooltip,
-  Typography,
-  useTheme,
-} from '@mui/material';
-import { useParams } from 'react-router-dom';
-
-import { Page } from '../NavBar';
+import { IconButton, TextField, Tooltip, useTheme } from '@mui/material';
 import { Robot } from '../../models';
-import { Casino, Download, ContentCopy, SmartToy, Bolt } from '@mui/icons-material';
-import RobotAvatar from '../../components/RobotAvatar';
+import { Download, ContentCopy } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import { saveAsJson } from '../../utils';
 
@@ -26,6 +13,7 @@ interface TokenInputProps {
   fullWidth?: boolean;
   setRobot: (state: Robot) => void;
   inputToken: string;
+  autoFocusTarget?: 'textfield' | 'copyButton' | 'none';
   onPressEnter: () => void;
   badRequest: string | undefined;
   setInputToken: (state: string) => void;
@@ -42,12 +30,12 @@ const TokenInput = ({
   showDownload = false,
   fullWidth = true,
   onPressEnter,
+  autoFocusTarget = 'textfield',
   inputToken,
   badRequest,
   setInputToken,
 }: TokenInputProps): JSX.Element => {
   const { t } = useTranslation();
-  const theme = useTheme();
   const [showCopied, setShowCopied] = useState<boolean>(false);
   const createJsonFile = () => {
     return {
@@ -66,7 +54,7 @@ const TokenInput = ({
       required={true}
       label={label ? label : undefined}
       value={inputToken}
-      autoFocus
+      autoFocus={autoFocusTarget == 'texfield' ? true : false}
       fullWidth={fullWidth}
       sx={{ borderColor: 'primary' }}
       variant={editable ? 'outlined' : 'filled'}
@@ -93,6 +81,7 @@ const TokenInput = ({
         endAdornment: showCopy ? (
           <Tooltip open={showCopied} title={t('Copied!')}>
             <IconButton
+              autoFocus={autoFocusTarget == 'copyButton' ? true : false}
               color={robot.copiedToken ? 'inherit' : 'primary'}
               onClick={() => {
                 systemClient.copyToClipboard(inputToken);
