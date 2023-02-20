@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Paper, Grid, CircularProgress, Box, Alert, Typography, useTheme } from '@mui/material';
+import {
+  Paper,
+  Grid,
+  CircularProgress,
+  Box,
+  Alert,
+  Typography,
+  useTheme,
+  AlertTitle,
+} from '@mui/material';
 import { useParams } from 'react-router-dom';
 
 import { Page } from '../NavBar';
@@ -134,13 +143,13 @@ const RobotPage = ({
   };
 
   const logoutRobot = () => {
-    setRobot({ ...robot, nickname: undefined, token: undefined, avatarLoaded: false });
     setInputToken('');
     setRobotFound(false);
     systemClient.deleteCookie('sessionid');
     systemClient.deleteItem('robot_token');
     systemClient.deleteItem('pub_key');
     systemClient.deleteItem('enc_priv_key');
+    setTimeout(() => setRobot(new Robot()), 10);
   };
 
   if (window?.NativeRobosats & (torStatus != 'DONE')) {
@@ -154,7 +163,7 @@ const RobotPage = ({
       >
         <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
           <Grid item>
-            <Typography align='center' variant='h5'>
+            <Typography align='center' variant='h6'>
               {t('Connecting to TOR')}
             </Typography>
           </Grid>
@@ -182,7 +191,7 @@ const RobotPage = ({
           </Grid>
           <Grid item>
             <Alert>
-              <b>{t('Your traffic is encrypted and annonimized using TOR. ')}</b>
+              <AlertTitle>{t('Connection encrypted and anonymized using TOR.')}</AlertTitle>
               {t(
                 'This ensures maximum privacy, however you might feel the app behaves slow. If connection is lost, restart the app.',
               )}
@@ -226,6 +235,7 @@ const RobotPage = ({
             robot={robot}
             robotFound={robotFound}
             setRobot={setRobot}
+            setCurrentOrder={setCurrentOrder}
             badRequest={badRequest}
             logoutRobot={logoutRobot}
             width={width}

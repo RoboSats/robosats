@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Grid, LinearProgress, Typography, useTheme } from '@mui/material';
-import { Bolt, Logout } from '@mui/icons-material';
+import { useHistory } from 'react-router-dom';
+import { Button, Link, Grid, LinearProgress, Typography, Alert } from '@mui/material';
+import { Bolt, Logout, Refresh } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { Page } from '../NavBar';
 import { Robot } from '../../models';
+import { genBase62Token } from '../../utils';
 
 interface RobotProfileProps {
   robot: Robot;
   setRobot: (state: Robot) => void;
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   inputToken: string;
+  setCurrentOrder: (state: number) => void;
   logoutRobot: () => void;
   setInputToken: (state: string) => void;
   getGenerateRobot: (token: string) => void;
@@ -27,7 +30,10 @@ const RobotProfile = ({
   setRobot,
   inputToken,
   setInputToken,
+  setCurrentOrder,
+  getGenerateRobot,
   logoutRobot,
+  setPage,
   setView,
   badRequest,
   baseUrl,
@@ -35,7 +41,12 @@ const RobotProfile = ({
   width,
 }: RobotProfileProps): JSX.Element => {
   const { t } = useTranslation();
-  const theme = useTheme();
+  const history = useHistory();
+
+  const getNewRobot = () => {
+    logoutRobot();
+    setTimeout(() => getGenerateRobot(genBase62Token(36)), 10);
+  };
 
   return (
     <Grid container direction='column' alignItems='center' spacing={2} padding={2}>
@@ -73,7 +84,7 @@ const RobotProfile = ({
           </Typography>
         ) : (
           <>
-            <b>{t('Rebuilding your robot!')}</b>
+            <b>{t('Building your robot!')}</b>
             <LinearProgress />
           </>
         )}
@@ -102,18 +113,60 @@ const RobotProfile = ({
         <Grid item>
           <Typography variant='subtitle2' color='primary'>
             {t('Welcome back!')}
-            <br />
           </Typography>
         </Grid>
       ) : (
         <></>
       )}
 
-      <Grid item>
-        {/* This robot has an active order
+      {robot.activeOrderId ? (
+        <Grid item>
+          <Typography>
+            {t('One active order')}
+            <Link
+              onClick={() => {
+                history.push('/order/' + robot.activeOrderId);
+                setPage('order');
+                setCurrentOrder(robot.activeOrderId);
+              }}
+            >
+              {` #${robot.activeOrderId}`}
+            </Link>
+          </Typography>
+        </Grid>
+      ) : null}
 
-        This robot has a past order. Reusing Robot degrades your privacy: Get a new robot! */}
-      </Grid>
+      {robot.lastOrderId ? (
+        <Grid item>
+          <Typography align='center'>
+            {t('Your past order')}
+            <Link
+              onClick={() => {
+                history.push('/order/' + robot.lastOrderId);
+                setPage('order');
+                setCurrentOrder(robot.lastOrderId);
+              }}
+            >
+              {` #${robot.lastOrderId}`}
+            </Link>
+          </Typography>
+          <Alert severity='warning'>
+            <Grid container direction='column' alignItems='center'>
+              <Grid item>
+                {t(
+                  'Reusing trading identity degrades your privacy against other users, coordinators and observers.',
+                )}
+              </Grid>
+              <Grid item sx={{ position: 'relative', right: '1em' }}>
+                <Button color='inherit' size='small' onClick={getNewRobot}>
+                  <Refresh />
+                  {t('Generate a new Robot')}
+                </Button>
+              </Grid>
+            </Grid>
+          </Alert>
+        </Grid>
+      ) : null}
 
       <Grid item sx={{ width: '100%' }}>
         <TokenInput
