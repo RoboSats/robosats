@@ -221,7 +221,7 @@ const Onboarding = ({
               </Grid>
             ) : null}
             <Grid item>
-              <Collapse in={robot.avatarLoaded && robot.nickname ? true : false}>
+              <Collapse in={!!(robot.avatarLoaded && robot.nickname)}>
                 <Button onClick={() => setStep('3')} variant='contained' size='large'>
                   <Check />
                   {t('Continue')}

@@ -35,11 +35,10 @@ const Recovery = ({
   const theme = useTheme();
 
   const recoveryDisabled = () => {
-    return inputToken.length > 20 ? false : true;
+    return !(inputToken.length > 20);
   };
   const onClickRecover = () => {
     if (recoveryDisabled()) {
-      return;
     } else {
       getGenerateRobot(inputToken);
       setView('profile');

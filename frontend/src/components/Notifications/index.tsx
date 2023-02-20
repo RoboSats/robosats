@@ -212,13 +212,13 @@ const Notifications = ({
       setMessage(message);
       setShow(true);
       setTimeout(() => setShow(false), message.timeout);
-      if (message.sound) {
+      if (message.sound != null) {
         message.sound.play();
       }
       if (!inFocus) {
         setTitleAnimation(
           setInterval(function () {
-            var title = document.title;
+            const title = document.title;
             document.title = title == basePageTitle ? message.pageTitle : basePageTitle;
           }, 1000),
         );

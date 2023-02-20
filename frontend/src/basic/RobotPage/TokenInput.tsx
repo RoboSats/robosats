@@ -37,6 +37,11 @@ const TokenInput = ({
 }: TokenInputProps): JSX.Element => {
   const { t } = useTranslation();
   const [showCopied, setShowCopied] = useState<boolean>(false);
+
+  useEffect(() => {
+    setShowCopied(false);
+  }, [inputToken]);
+
   const createJsonFile = () => {
     return {
       token: robot.token,
@@ -52,9 +57,9 @@ const TokenInput = ({
       error={!!badRequest}
       disabled={!editable}
       required={true}
-      label={label ? label : undefined}
+      label={label || undefined}
       value={inputToken}
-      autoFocus={autoFocusTarget == 'texfield' ? true : false}
+      autoFocus={autoFocusTarget == 'texfield'}
       fullWidth={fullWidth}
       sx={{ borderColor: 'primary' }}
       variant={editable ? 'outlined' : 'filled'}
@@ -81,7 +86,7 @@ const TokenInput = ({
         endAdornment: showCopy ? (
           <Tooltip open={showCopied} title={t('Copied!')}>
             <IconButton
-              autoFocus={autoFocusTarget == 'copyButton' ? true : false}
+              autoFocus={autoFocusTarget == 'copyButton'}
               color={robot.copiedToken ? 'inherit' : 'primary'}
               onClick={() => {
                 systemClient.copyToClipboard(inputToken);
