@@ -12,6 +12,7 @@ interface Props {
   flipHorizontally?: boolean;
   style?: object;
   imageStyle?: object;
+  placeholderType?: 'loading' | 'generating';
   statusColor?: 'primary' | 'secondary' | 'default' | 'error' | 'info' | 'success' | 'warning';
   orderType?: number;
   tooltip?: string;
@@ -29,6 +30,7 @@ const RobotAvatar: React.FC<Props> = ({
   tooltipPosition = 'right',
   smooth = false,
   flipHorizontally = false,
+  placeholderType = 'loading',
   style = {},
   avatarClass = 'flippedSmallAvatar',
   imageStyle = {},
@@ -38,6 +40,16 @@ const RobotAvatar: React.FC<Props> = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const [avatarSrc, setAvatarSrc] = useState<string>();
+
+  const backgroundData =
+    placeholderType == 'generating' ? placeholder.generating : placeholder.loading;
+  const backgroundImage = `url(data:${backgroundData.mime};base64,${backgroundData.data})`;
+  const className =
+    placeholderType == 'loading'
+      ? theme.palette.mode === 'dark'
+        ? 'loadingAvatarDark'
+        : 'loadingAvatar'
+      : 'generatingAvatar';
 
   useEffect(() => {
     if (nickname != undefined) {
@@ -76,10 +88,10 @@ const RobotAvatar: React.FC<Props> = ({
             transform: flipHorizontally ? 'scaleX(-1)' : '',
             border: '0.3px solid #55555',
             filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
-            backgroundImage: `url(data:${placeholder.image.mime};base64,${placeholder.image.data})`,
+            backgroundImage,
           }}
         >
-          <div className={theme.palette.mode === 'dark' ? 'loadingAvatarDark' : 'loadingAvatar'}>
+          <div className={className}>
             <SmoothImage
               src={avatarSrc}
               imageStyles={{

@@ -147,7 +147,7 @@ const ProfileDialog = ({
       </div>
       <DialogContent>
         <Typography component='h5' variant='h5'>
-          {t('Your Profile')}
+          {t('Your Robot')}
         </Typography>
 
         <List>

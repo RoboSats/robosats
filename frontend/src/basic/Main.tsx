@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { HashRouter, BrowserRouter, Switch, Route } from 'react-router-dom';
 import { useTheme, Box, Slide, Typography } from '@mui/material';
 
-import UserGenPage from './UserGenPage';
+import RobotPage from './RobotPage';
 import MakerPage from './MakerPage';
 import BookPage from './BookPage';
 import OrderPage from './OrderPage';
@@ -71,10 +71,11 @@ interface SlideDirection {
 
 interface MainProps {
   settings: Settings;
+  torStatus: 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
   setSettings: (state: Settings) => void;
 }
 
-const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
+const Main = ({ torStatus, settings, setSettings }: MainProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -349,11 +350,11 @@ const Main = ({ settings, setSettings }: MainProps): JSX.Element => {
                 appear={slideDirection.in != undefined}
               >
                 <div>
-                  <UserGenPage
+                  <RobotPage
                     setPage={setPage}
+                    torStatus={torStatus}
                     setCurrentOrder={setCurrentOrder}
-                    match={props.match}
-                    theme={theme}
+                    windowSize={windowSize}
                     robot={robot}
                     setRobot={setRobot}
                     baseUrl={baseUrl}

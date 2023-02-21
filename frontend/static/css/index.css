@@ -56,12 +56,6 @@ body {
   position: fixed;
 }
 
-.clickTrough {
-  height: 50px;
-  pointer-events: none;
-  z-index: 1;
-}
-
 /* No arrows on numeric inputs */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
@@ -227,4 +221,12 @@ input[type='number'] {
   background-position: 0px 0px;
   background-repeat: repeat;
   animation: animatedBackground 5s linear infinite;
+}
+
+.generatingAvatar {
+  background-size: 100%;
+  border-radius: 50%;
+  outline: 2px solid #555;
+  outline-offset: -2px;
+  filter: dropShadow(1px 1px 1px #000000);
 }

@@ -102,7 +102,7 @@ export const LightningPayoutForm = ({
   const validateInvoice = function (invoice: string, targetAmount: number) {
     try {
       const decoded = decode(invoice);
-      const invoiceAmount = Math.floor(decoded['sections'][2]['value'] / 1000);
+      const invoiceAmount = Math.floor(decoded.sections[2].value / 1000);
       if (targetAmount != invoiceAmount) {
         return 'Invalid invoice amount';
       } else {
@@ -571,7 +571,7 @@ export const LightningPayoutForm = ({
                   style: { textAlign: 'center', maxHeight: '8em' },
                 }}
                 variant={lightning.useLnproxy ? 'filled' : 'standard'}
-                multiline={lightning.useLnproxy ? false : true}
+                multiline={!lightning.useLnproxy}
                 minRows={3}
                 maxRows={5}
                 onChange={(e) => setLightning({ ...lightning, invoice: e.target.value ?? '' })}

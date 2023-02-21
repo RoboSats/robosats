@@ -2,16 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { Box, CircularProgress, Tooltip } from '@mui/material';
 import { TorIcon } from './Icons';
 import { useTranslation } from 'react-i18next';
-import { gridQuickFilterValuesSelector } from '@mui/x-data-grid';
 
-interface Props {
+interface TorIndicatorProps {
   color: 'inherit' | 'error' | 'warning' | 'success' | 'primary' | 'secondary' | 'info' | undefined;
   tooltipOpen?: boolean | undefined;
   title: string;
   progress: boolean;
 }
 
-const TorIndicator = ({ color, tooltipOpen = undefined, title, progress }: Props): JSX.Element => {
+const TorIndicator = ({
+  color,
+  tooltipOpen = undefined,
+  title,
+  progress,
+}: TorIndicatorProps): JSX.Element => {
   return (
     <Tooltip
       open={tooltipOpen}
@@ -49,15 +53,12 @@ const TorIndicator = ({ color, tooltipOpen = undefined, title, progress }: Props
   );
 };
 
-const TorConnection = (): JSX.Element => {
-  const [torStatus, setTorStatus] = useState<string>('NOTINIT');
-  const { t } = useTranslation();
+interface TorConnectionBadgeProps {
+  torStatus: 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
+}
 
-  useEffect(() => {
-    window.addEventListener('torStatus', (event) => {
-      setTorStatus(event?.detail);
-    });
-  }, []);
+const TorConnectionBadge = ({ torStatus }: TorConnectionBadgeProps): JSX.Element => {
+  const { t } = useTranslation();
 
   if (window?.NativeRobosats == null) {
     return <></>;
@@ -95,4 +96,4 @@ const TorConnection = (): JSX.Element => {
   }
 };
 
-export default TorConnection;
+export default TorConnectionBadge;

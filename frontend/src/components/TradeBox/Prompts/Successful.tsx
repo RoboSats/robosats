@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import {
   Grid,
   Typography,
@@ -16,7 +16,6 @@ import currencies from '../../../../static/assets/currencies.json';
 import TradeSummary from '../TradeSummary';
 import { Favorite, RocketLaunch, ContentCopy, Refresh } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-import { Trans } from 'react-i18next';
 
 import { Order } from '../../../models';
 import { systemClient } from '../../../services/System';

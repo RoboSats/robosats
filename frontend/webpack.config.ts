@@ -46,6 +46,18 @@ const configMobile: Configuration = {
           async: true,
         },
       },
+      {
+        test: path.resolve(__dirname, 'src/components/RobotAvatar/placeholder.json'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(
+            __dirname,
+            'src/components/RobotAvatar/placeholder_highres.json',
+          ),
+          async: true,
+        },
+      },
     ],
   },
   plugins: [
