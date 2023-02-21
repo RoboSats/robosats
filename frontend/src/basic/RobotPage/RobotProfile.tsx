@@ -43,11 +43,6 @@ const RobotProfile = ({
   const { t } = useTranslation();
   const history = useHistory();
 
-  const getNewRobot = () => {
-    logoutRobot();
-    setTimeout(() => getGenerateRobot(genBase62Token(36)), 10);
-  };
-
   return (
     <Grid container direction='column' alignItems='center' spacing={2} padding={2}>
       <Grid item sx={{ height: '2.3em', position: 'relative' }}>
@@ -109,62 +104,67 @@ const RobotProfile = ({
         />
       </Grid>
 
-      {robotFound ? (
+      {/* {robotFound ? (
         <Grid item>
-          <Typography variant='subtitle2' color='primary'>
+          <Typography variant='h6'>
             {t('Welcome back!')}
           </Typography>
         </Grid>
       ) : (
         <></>
-      )}
+      )} */}
 
       {robot.activeOrderId ? (
         <Grid item>
-          <Typography>
-            {t('One active order')}
-            <Link
-              onClick={() => {
-                history.push('/order/' + robot.activeOrderId);
-                setPage('order');
-                setCurrentOrder(robot.activeOrderId);
-              }}
-            >
-              {` #${robot.activeOrderId}`}
-            </Link>
-          </Typography>
+          <Button
+            onClick={() => {
+              history.push('/order/' + robot.activeOrderId);
+              setPage('order');
+              setCurrentOrder(robot.activeOrderId);
+            }}
+          >
+            {t('Active order #{{orderID}}', { orderID: robot.activeOrderId })}
+          </Button>
         </Grid>
       ) : null}
 
       {robot.lastOrderId ? (
-        <Grid item>
-          <Typography align='center'>
-            {t('Your past order')}
-            <Link
+        <Grid item container direction='column' alignItems='center'>
+          <Grid item>
+            <Button
               onClick={() => {
                 history.push('/order/' + robot.lastOrderId);
                 setPage('order');
                 setCurrentOrder(robot.lastOrderId);
               }}
             >
-              {` #${robot.lastOrderId}`}
-            </Link>
-          </Typography>
-          <Alert severity='warning'>
-            <Grid container direction='column' alignItems='center'>
-              <Grid item>
-                {t(
-                  'Reusing trading identity degrades your privacy against other users, coordinators and observers.',
-                )}
+              {t('Last order #{{orderID}}', { orderID: robot.lastOrderId })}
+            </Button>
+          </Grid>
+          <Grid item>
+            <Alert severity='warning'>
+              <Grid container direction='column' alignItems='center'>
+                <Grid item>
+                  {t(
+                    'Reusing trading identity degrades your privacy against other users, coordinators and observers.',
+                  )}
+                </Grid>
+                <Grid item sx={{ position: 'relative', right: '1em' }}>
+                  <Button
+                    color='inherit'
+                    size='small'
+                    onClick={() => {
+                      logoutRobot();
+                      setView('welcome');
+                    }}
+                  >
+                    <Refresh />
+                    {t('Generate a new Robot')}
+                  </Button>
+                </Grid>
               </Grid>
-              <Grid item sx={{ position: 'relative', right: '1em' }}>
-                <Button color='inherit' size='small' onClick={getNewRobot}>
-                  <Refresh />
-                  {t('Generate a new Robot')}
-                </Button>
-              </Grid>
-            </Grid>
-          </Alert>
+            </Alert>
+          </Grid>
         </Grid>
       ) : null}
 
