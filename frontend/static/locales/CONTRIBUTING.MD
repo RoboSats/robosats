@@ -29,6 +29,6 @@ Each language .json dictionary contains pairs of keys and values in the followin
 
 9. **Congratulate yourself!** Seriously, it's so awesome you are looking into building up freedom tools!!
 
-## For Devs
+## For Developers
 
-After adding or edditing components with new phrases on `frontend/src/` make sure to run the script `cd frontend/static/locales/` `python3 collect_phrases.py` it will generate update all locales keeping existing values for already translated keys.
+After adding or edditing components with new phrases on `frontend/src/` make sure to run the script `cd frontend/static/locales/` `python3 collect_phrases.py` it will generate update all locales keeping existing values for already translated keys. If you have built complex translation keys using `<Trans></Trans>` add first the new key and values to `handcrafted.py`.

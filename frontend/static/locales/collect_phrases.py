@@ -8,8 +8,10 @@ import json
 import os
 import re
 
+from handcrafted import phrases
+
 prefix = r"[^a-zA-Z]t\s*\(\s*\'"
-suffix = r"(?:\'\,\s*\)|\'\,*\)|\'\))"
+suffix = r"(?:\'\,\s*\)|\'\,*\)|\'\)|\'\,\s*\{)"
 match = r"(.*?[a-zA-Z].*?)"
 pattern = f"{prefix}{match}{suffix}"
 
@@ -31,21 +33,22 @@ for root, dirs, files in os.walk("../../src"):
                 for match in matches:
                     strings_dict[match] = match
 
-# Load existing dics
+# Load existing locale dics and replace keys
 locales = [f for f in os.listdir(".") if f.endswith(".json")]
+all_phrases = {**strings_dict, **phrases}
 for locale in locales:
-    new_locale_dict = {}
+    new_phrases = {}
     with open(locale, "r", encoding="utf-8") as f:
-        old_locale_dict = json.load(f)
-        for key in strings_dict:
+        old_phrases = json.load(f)
+        for key in all_phrases:
             # update dictionary with new keys on /src/
-            if key in old_locale_dict:
-                new_locale_dict[key] = old_locale_dict[key]
+            if key in old_phrases:
+                new_phrases[key] = old_phrases[key]
             else:
-                new_locale_dict[key] = strings_dict[key]
+                new_phrases[key] = all_phrases[key]
 
     with open(locale, "w", encoding="utf-8") as f:
-        json.dump(new_locale_dict, f, ensure_ascii=False)
+        json.dump(new_phrases, f, ensure_ascii=False)
 
 with open("./collected_phrases.json", "w", encoding="utf-8") as f:
-    json.dump(strings_dict, f, ensure_ascii=False)
+    json.dump(all_phrases, f, ensure_ascii=False)
