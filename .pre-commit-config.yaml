@@ -21,6 +21,17 @@ repos:
       - id: check-merge-conflict
   - repo: local
     hooks:
+      - id: collect-phrases
+        name: collect-phrases
+        stages:
+          - commit
+          - merge-commit
+        language: system
+        files: ^frontend/
+        types_or: [javascript, jsx, ts, tsx] # uses https://github.com/pre-commit/identify
+        entry: bash -c 'cd frontend/static/locales && python3 collect_phrases.py'
+  - repo: local
+    hooks:
       - id: prettier-frontend
         name: prettier-frontend
         stages:

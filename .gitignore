@@ -653,6 +653,7 @@ api/lightning/lightning*
 api/lightning/invoices*
 api/lightning/router*
 api/lightning/googleapis*
+frontend/static/locales/collected_phrases.json
 frontend/static/admin*
 frontend/static/rest_framework*
 frontend/static/import_export*
