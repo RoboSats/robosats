@@ -13,7 +13,7 @@ Each language .json dictionary contains pairs of keys and values in the followin
 
 1. **Not all keys are explicit sentences.** Some keys are not the English senstence but a variable names e.g. "phone_unsafe_alert". In this case you must take a look at the value originally in `en.json`.
 
-2. **The language dictionary is split into 9 sections.** The first key of each section is a reference and does not need to be translated. For example, the second section starts with the key:value `"USER GENERATION PAGE - UserGenPage.js": "Landing Page and User Generation"` . It does not need to be translated, it is just information for the translator to understand what part of the app he will be working on.
+2. **The language dictionary has keys to identify the file the phrase was found on.** These keys are for reference and start with `#number` and name of file. These do not need to be translated.
 
 3. **Try to keep a similar length to the original sentence.** In most cases it will be okay if the translation is shorter. However, translations that result in a higher character count might break the UI! It might not always be possible to stick to the length of the English sentence. In those cases the UI might have to be changed, contact the responsible person for such a change.
 
@@ -29,5 +29,6 @@ Each language .json dictionary contains pairs of keys and values in the followin
 
 9. **Congratulate yourself!** Seriously, it's so awesome you are looking into building up freedom tools!!
 
+## For Devs
 
-
+After adding or edditing components with new phrases on `frontend/src/` make sure to run the script `cd frontend/static/locales/` `python3 collect_phrases.py` it will generate update all locales keeping existing values for already translated keys.
