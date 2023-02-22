@@ -33,7 +33,8 @@ const App = (): JSX.Element => {
 
   useEffect(() => {
     window.addEventListener('torStatus', (event) => {
-      setTorStatus(event?.detail);
+      // UX improv: delay the "Conencted" status by 10 secs to avoid long waits for first requests
+      setTimeout(() => setTorStatus(event?.detail), event?.detail === '"Done"' ? 10000 : 0);
     });
   }, []);
 

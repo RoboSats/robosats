@@ -26,7 +26,13 @@ const SettingsPage = ({
   return (
     <Paper
       elevation={12}
-      sx={{ padding: '0.6em', width: '18em', maxHeight: `${maxHeight}em`, overflow: 'auto' }}
+      sx={{
+        padding: '0.6em',
+        width: '18em',
+        maxHeight: `${maxHeight}em`,
+        overflow: 'auto',
+        overflowX: 'clip',
+      }}
     >
       <Grid container>
         <Grid item>

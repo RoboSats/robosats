@@ -81,15 +81,6 @@ const ProfileDialog = ({
     });
   }, []);
 
-  const copyTokenHandler = () => {
-    const robotToken = systemClient.getItem('robot_token');
-
-    if (robotToken) {
-      systemClient.copyToClipboard(robotToken);
-      setRobot({ ...robot, copiedToken: true });
-    }
-  };
-
   const copyReferralCodeHandler = () => {
     systemClient.copyToClipboard(`http://${host}/robot/${robot.referralCode}`);
   };
@@ -237,36 +228,6 @@ const ProfileDialog = ({
               />
             </ListItem>
           )}
-
-          <ListItem>
-            <ListItemIcon>
-              <PasswordIcon />
-            </ListItemIcon>
-
-            <ListItemText secondary={t('Your token (will not remain here)')}>
-              {systemClient.getItem('robot_token') ? (
-                <TextField
-                  disabled
-                  sx={{ width: '100%', maxWidth: '450px' }}
-                  label={t('Back it up!')}
-                  value={systemClient.getItem('robot_token')}
-                  variant='filled'
-                  size='small'
-                  InputProps={{
-                    endAdornment: (
-                      <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!') || ''}>
-                        <IconButton onClick={copyTokenHandler}>
-                          <ContentCopy color='inherit' />
-                        </IconButton>
-                      </Tooltip>
-                    ),
-                  }}
-                />
-              ) : (
-                t('Cannot remember')
-              )}
-            </ListItemText>
-          </ListItem>
 
           <Divider />
 

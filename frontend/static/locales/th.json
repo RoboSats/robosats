@@ -238,8 +238,6 @@
   "Inactive order": "รายการที่ไม่ได้ดำเนินการอยู่",
   "No active orders": "ไม่มีรายการที่กำลังดำเนินการอยู่",
   "You do not have previous orders": "คุณไม่มีรายการก่อนหน้านี้",
-  "Your token (will not remain here)": "token ของคุณ (แพล้ตฟอร์มไม่ได้บันทึกให้คุณ)",
-  "Cannot remember": "จำไม่ได้",
   "Telegram enabled": "เปิดใช้ Telegram แล้ว",
   "Enable Telegram Notifications": "เปิดใช้การแจ้งเตือนผ่านทาง Telegram",
   "Use stealth invoices": "ใช้งาน stealth invoices",
