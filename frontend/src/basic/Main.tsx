@@ -1,352 +1,61 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { HashRouter, BrowserRouter, Switch, Route } from 'react-router-dom';
-import { useTheme, Box, Slide, Typography } from '@mui/material';
+import { Box, Slide, Typography } from '@mui/material';
 
 import RobotPage from './RobotPage';
 import MakerPage from './MakerPage';
 import BookPage from './BookPage';
 import OrderPage from './OrderPage';
 import SettingsPage from './SettingsPage';
-import NavBar, { Page } from './NavBar';
-import MainDialogs, { OpenDialogs } from './MainDialogs';
+import NavBar from './NavBar';
+import MainDialogs from './MainDialogs';
 
 import RobotAvatar from '../components/RobotAvatar';
-import {
-  Book,
-  LimitList,
-  Maker,
-  Robot,
-  Info,
-  Settings,
-  Favorites,
-  defaultMaker,
-  defaultInfo,
-  Coordinator,
-  Order,
-} from '../models';
 
-import { apiClient } from '../services/api';
-import { checkVer, getHost, tokenStrength } from '../utils';
-import { sha256 } from 'js-sha256';
-
-import defaultCoordinators from '../../static/federation.json';
 import { useTranslation } from 'react-i18next';
 import Notifications from '../components/Notifications';
-import { genKey } from '../pgp';
-import { systemClient } from '../services/System';
+import { AppContext } from '../contexts/AppContext';
 
-const getWindowSize = function (fontSize: number) {
-  // returns window size in EM units
-  return {
-    width: window.innerWidth / fontSize,
-    height: window.innerHeight / fontSize,
-  };
-};
-
-// Refresh delays (ms) according to Order status
-const statusToDelay = [
-  3000, // 'Waiting for maker bond'
-  35000, // 'Public'
-  180000, // 'Paused'
-  3000, // 'Waiting for taker bond'
-  999999, // 'Cancelled'
-  999999, // 'Expired'
-  8000, // 'Waiting for trade collateral and buyer invoice'
-  8000, // 'Waiting only for seller trade collateral'
-  8000, // 'Waiting only for buyer invoice'
-  10000, // 'Sending fiat - In chatroom'
-  10000, // 'Fiat sent - In chatroom'
-  100000, // 'In dispute'
-  999999, // 'Collaboratively cancelled'
-  10000, // 'Sending satoshis to buyer'
-  999999, // 'Sucessful trade'
-  30000, // 'Failed lightning network routing'
-  300000, // 'Wait for dispute resolution'
-  300000, // 'Maker lost dispute'
-  300000, // 'Taker lost dispute'
-];
-
-export interface SlideDirection {
-  in: 'left' | 'right' | undefined;
-  out: 'left' | 'right' | undefined;
-}
-
-interface MainProps {
-  settings: Settings;
-  torStatus: 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
-  setSettings: (state: Settings) => void;
-}
-
-export interface fetchRobotProps {
-  action?: 'login' | 'generate';
-  newKeys?: { encPrivKey: string; pubKey: string } | null;
-  newToken?: string | null;
-  refCode?: string | null;
-  setBadRequest?: (state: string) => void;
-}
-
-const Main = ({ torStatus, settings, setSettings }: MainProps): JSX.Element => {
+const Main = (): JSX.Element => {
   const { t } = useTranslation();
-  const theme = useTheme();
-
-  // All app data structured
-  const [book, setBook] = useState<Book>({ orders: [], loading: true });
-  const [limits, setLimits] = useState<{ list: LimitList; loading: boolean }>({
-    list: [],
-    loading: true,
-  });
-  const [robot, setRobot] = useState<Robot>(new Robot());
-  const [maker, setMaker] = useState<Maker>(defaultMaker);
-  const [info, setInfo] = useState<Info>(defaultInfo);
-  const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
-  const [baseUrl, setBaseUrl] = useState<string>('');
-  const [fav, setFav] = useState<Favorites>({ type: null, mode: 'fiat', currency: 0 });
-
-  const [delay, setDelay] = useState<number>(60000);
-  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(setInterval(() => null, delay));
-  const [order, setOrder] = useState<Order | undefined>(undefined);
-  const [badOrder, setBadOrder] = useState<string | undefined>(undefined);
+  const {
+    book,
+    fetchBook,
+    maker,
+    setMaker,
+    setSettings,
+    clearOrder,
+    torStatus,
+    settings,
+    limits,
+    fetchLimits,
+    robot,
+    setRobot,
+    fetchRobot,
+    setOrder,
+    setDelay,
+    info,
+    fav,
+    setFav,
+    baseUrl,
+    order,
+    page,
+    setPage,
+    slideDirection,
+    setSlideDirection,
+    currentOrder,
+    setCurrentOrder,
+    navbarHeight,
+    closeAll,
+    open,
+    setOpen,
+    windowSize,
+    badOrder,
+    setBadOrder,
+  } = useContext<AppContextProps>(AppContext);
 
   const Router = window.NativeRobosats === undefined ? BrowserRouter : HashRouter;
   const basename = window.NativeRobosats === undefined ? '' : window.location.pathname;
-  const entryPage: Page | '' =
-    window.NativeRobosats === undefined ? window.location.pathname.split('/')[1] : '';
-  const [page, setPage] = useState<Page>(entryPage == '' ? 'robot' : entryPage);
-  const [slideDirection, setSlideDirection] = useState<SlideDirection>({
-    in: undefined,
-    out: undefined,
-  });
-
-  const [currentOrder, setCurrentOrder] = useState<number | undefined>(undefined);
-
-  const navbarHeight = 2.5;
-  const closeAll = {
-    more: false,
-    learn: false,
-    community: false,
-    info: false,
-    coordinator: false,
-    stats: false,
-    update: false,
-    profile: false,
-  };
-  const [open, setOpen] = useState<OpenDialogs>(closeAll);
-
-  const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
-    getWindowSize(theme.typography.fontSize),
-  );
-
-  useEffect(() => {
-    if (typeof window !== undefined) {
-      window.addEventListener('resize', onResize);
-    }
-
-    if (baseUrl != '') {
-      fetchBook();
-      fetchLimits();
-    }
-    return () => {
-      if (typeof window !== undefined) {
-        window.removeEventListener('resize', onResize);
-      }
-    };
-  }, [baseUrl]);
-
-  useEffect(() => {
-    let host = '';
-    if (window.NativeRobosats === undefined) {
-      host = getHost();
-    } else {
-      host =
-        settings.network === 'mainnet'
-          ? coordinators[0].mainnetOnion
-          : coordinators[0].testnetOnion;
-    }
-    setBaseUrl(`${location.protocol}//${host}`);
-  }, [settings.network]);
-
-  useEffect(() => {
-    setWindowSize(getWindowSize(theme.typography.fontSize));
-  }, [theme.typography.fontSize]);
-
-  const onResize = function () {
-    setWindowSize(getWindowSize(theme.typography.fontSize));
-  };
-
-  const fetchBook = function () {
-    setBook({ ...book, loading: true });
-    apiClient.get(baseUrl, '/api/book/').then((data: any) =>
-      setBook({
-        loading: false,
-        orders: data.not_found ? [] : data,
-      }),
-    );
-  };
-
-  const fetchLimits = async () => {
-    setLimits({ ...limits, loading: true });
-    const data = apiClient.get(baseUrl, '/api/limits/').then((data) => {
-      setLimits({ list: data ?? [], loading: false });
-      return data;
-    });
-    return await data;
-  };
-
-  const fetchInfo = function () {
-    setInfo({ ...info, loading: true });
-    apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
-      const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
-      setInfo({
-        ...data,
-        openUpdateClient: versionInfo.updateAvailable,
-        coordinatorVersion: versionInfo.coordinatorVersion,
-        clientVersion: versionInfo.clientVersion,
-        loading: false,
-      });
-    });
-  };
-
-  useEffect(() => {
-    if (open.stats || open.coordinator || info.coordinatorVersion == 'v?.?.?') {
-      fetchInfo();
-    }
-  }, [open.stats, open.coordinator]);
-
-  useEffect(() => {
-    // Sets Setting network from coordinator API param if accessing via web
-    if (settings.network == undefined && info.network) {
-      setSettings((settings: Settings) => {
-        return { ...settings, network: info.network };
-      });
-    }
-  }, [info]);
-
-  const fetchRobot = function ({
-    action = 'login',
-    newKeys = null,
-    newToken = null,
-    refCode = null,
-    setBadRequest = () => {},
-  }: fetchRobotProps) {
-    setRobot({ ...robot, loading: true, avatarLoaded: false });
-    setBadRequest('');
-
-    let requestBody = {};
-    if (action == 'login') {
-      requestBody.token_sha256 = sha256(newToken ?? robot.token);
-    } else if (action == 'generate' && newToken != null) {
-      const strength = tokenStrength(newToken);
-      requestBody.token_sha256 = sha256(newToken);
-      requestBody.unique_values = strength.uniqueValues;
-      requestBody.counts = strength.counts;
-      requestBody.length = newToken.length;
-      requestBody.ref_code = refCode;
-      requestBody.public_key = newKeys.pubKey ?? robot.pubkey;
-      requestBody.encrypted_private_key = newKeys.encPrivKey ?? robot.encPrivKey;
-    }
-
-    apiClient.post(baseUrl, '/api/user/', requestBody).then((data: any) => {
-      setCurrentOrder(
-        data.active_order_id
-          ? data.active_order_id
-          : data.last_order_id
-          ? data.last_order_id
-          : null,
-      );
-      if (data.bad_request) {
-        setBadRequest(data.bad_request);
-        setRobot({
-          ...robot,
-          avatarLoaded: true,
-          loading: false,
-          nickname: data.nickname ?? robot.nickname,
-          activeOrderId: data.active_order_id ?? null,
-          referralCode: data.referral_code ?? robot.referralCode,
-          earnedRewards: data.earned_rewards ?? robot.earnedRewards,
-          lastOrderId: data.last_order_id ?? robot.lastOrderId,
-          stealthInvoices: data.wants_stealth ?? robot.stealthInvoices,
-          tgEnabled: data.tg_enabled,
-          tgBotName: data.tg_bot_name,
-          tgToken: data.tg_token,
-        });
-      } else {
-        setRobot({
-          ...robot,
-          nickname: data.nickname,
-          token: newToken ?? robot.token,
-          loading: false,
-          activeOrderId: data.active_order_id ?? null,
-          lastOrderId: data.last_order_id ?? null,
-          referralCode: data.referral_code,
-          earnedRewards: data.earned_rewards ?? 0,
-          stealthInvoices: data.wants_stealth,
-          tgEnabled: data.tg_enabled,
-          tgBotName: data.tg_bot_name,
-          tgToken: data.tg_token,
-          bitsEntropy: data.token_bits_entropy,
-          shannonEntropy: data.token_shannon_entropy,
-          pubKey: data.public_key,
-          encPrivKey: data.encrypted_private_key,
-          copiedToken: data.found ? true : robot.copiedToken,
-        });
-        systemClient.setItem('robot_token', newToken ?? robot.token);
-        systemClient.setItem('pub_key', data.public_key.split('\n').join('\\'));
-        systemClient.setItem('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'));
-      }
-    });
-  };
-
-  useEffect(() => {
-    if (baseUrl != '' && page != 'robot') {
-      if (open.profile || (robot.token && robot.nickname === null)) {
-        fetchRobot({ action: 'login' }); // fetch existing robot
-        // } else if (robot.token && robot.encPrivKey && robot.pubKey) {
-        //   fetchRobot({action:'generate'}); // create new robot with existing token and keys (on network and coordinator change)
-      }
-    }
-  }, [open.profile, baseUrl]);
-
-  // Fetch current order at load and in a loop
-  useEffect(() => {
-    if (currentOrder != undefined && (page == 'order' || (order == badOrder) == undefined)) {
-      fetchOrder();
-    }
-  }, [currentOrder, page]);
-
-  useEffect(() => {
-    clearInterval(timer);
-    setTimer(setInterval(fetchOrder, delay));
-    return () => clearInterval(timer);
-  }, [delay, currentOrder, page, badOrder]);
-
-  const orderReceived = function (data: any) {
-    if (data.bad_request != undefined) {
-      setBadOrder(data.bad_request);
-      setDelay(99999999);
-      setOrder(undefined);
-    } else {
-      setDelay(
-        data.status >= 0 && data.status <= 18
-          ? page == 'order'
-            ? statusToDelay[data.status]
-            : statusToDelay[data.status] * 5
-          : 99999999,
-      );
-      setOrder(data);
-      setBadOrder(undefined);
-    }
-  };
-
-  const fetchOrder = function () {
-    if (currentOrder != undefined) {
-      apiClient.get(baseUrl, '/api/order/?order_id=' + currentOrder).then(orderReceived);
-    }
-  };
-
-  const clearOrder = function () {
-    setOrder(undefined);
-    setBadOrder(undefined);
-  };
 
   return (
     <Router basename={basename}>
