@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Collapse, Grid, Typography, useTheme } from '@mui/material';
-import { useParams } from 'react-router-dom';
-
-import { Page } from '../NavBar';
+import { Button, Grid, Typography, useTheme } from '@mui/material';
 import { Robot } from '../../models';
-import { Casino, Download, ContentCopy, SmartToy, Bolt } from '@mui/icons-material';
-import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import Key from '@mui/icons-material/Key';
 
@@ -16,9 +11,7 @@ interface RecoveryProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   inputToken: string;
   setInputToken: (state: string) => void;
-  getGenerateRobot: (token: string) => void;
-  setPage: (state: Page) => void;
-  baseUrl: string;
+  fetchRobot: (data: fetchRobotProps) => void;
 }
 
 const Recovery = ({
@@ -27,12 +20,9 @@ const Recovery = ({
   inputToken,
   setView,
   setInputToken,
-  getGenerateRobot,
-  setPage,
-  baseUrl,
+  fetchRobot,
 }: RecoveryProps): JSX.Element => {
   const { t } = useTranslation();
-  const theme = useTheme();
 
   const recoveryDisabled = () => {
     return !(inputToken.length > 20);
@@ -40,7 +30,7 @@ const Recovery = ({
   const onClickRecover = () => {
     if (recoveryDisabled()) {
     } else {
-      getGenerateRobot(inputToken);
+      fetchRobot({ action: 'login', newToken: inputToken });
       setView('profile');
     }
   };
@@ -48,10 +38,13 @@ const Recovery = ({
   return (
     <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
       <Grid item>
+        <Typography variant='h5' align='center'>
+          {t('Robot recovery')}
+        </Typography>
+      </Grid>
+      <Grid item>
         <Typography align='center'>
-          {t(
-            'Please, introduce your robot token to re-build your robot and gain access to its trades.',
-          )}
+          {t('Enter your robot token to re-build your robot and gain access to its trades.')}
         </Typography>
       </Grid>
       <Grid item>

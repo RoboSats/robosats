@@ -26,12 +26,14 @@ import {
 } from '../models';
 
 import { apiClient } from '../services/api';
-import { checkVer, getHost } from '../utils';
+import { checkVer, getHost, tokenStrength } from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
 import { useTranslation } from 'react-i18next';
 import Notifications from '../components/Notifications';
+import { genKey } from '../pgp';
+import { systemClient } from '../services/System';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -64,7 +66,7 @@ const statusToDelay = [
   300000, // 'Taker lost dispute'
 ];
 
-interface SlideDirection {
+export interface SlideDirection {
   in: 'left' | 'right' | undefined;
   out: 'left' | 'right' | undefined;
 }
@@ -73,6 +75,14 @@ interface MainProps {
   settings: Settings;
   torStatus: 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
   setSettings: (state: Settings) => void;
+}
+
+export interface fetchRobotProps {
+  action?: 'login' | 'generate';
+  newKeys?: { encPrivKey: string; pubKey: string } | null;
+  newToken?: string | null;
+  refCode?: string | null;
+  setBadRequest?: (state: string) => void;
 }
 
 const Main = ({ torStatus, settings, setSettings }: MainProps): JSX.Element => {
@@ -211,16 +221,30 @@ const Main = ({ torStatus, settings, setSettings }: MainProps): JSX.Element => {
     }
   }, [info]);
 
-  const fetchRobot = function ({ keys = false }) {
-    const requestBody = {
-      token_sha256: sha256(robot.token),
-    };
-    if (keys) {
-      requestBody.pub_key = robot.pubKey;
-      requestBody.enc_priv_key = robot.encPrivKey;
+  const fetchRobot = function ({
+    action = 'login',
+    newKeys = null,
+    newToken = null,
+    refCode = null,
+    setBadRequest = () => {},
+  }: fetchRobotProps) {
+    setRobot({ ...robot, loading: true, avatarLoaded: false });
+    setBadRequest('');
+
+    let requestBody = {};
+    if (action == 'login') {
+      requestBody.token_sha256 = sha256(newToken ?? robot.token);
+    } else if (action == 'generate' && newToken != null) {
+      const strength = tokenStrength(newToken);
+      requestBody.token_sha256 = sha256(newToken);
+      requestBody.unique_values = strength.uniqueValues;
+      requestBody.counts = strength.counts;
+      requestBody.length = newToken.length;
+      requestBody.ref_code = refCode;
+      requestBody.public_key = newKeys.pubKey ?? robot.pubkey;
+      requestBody.encrypted_private_key = newKeys.encPrivKey ?? robot.encPrivKey;
     }
 
-    setRobot({ ...robot, loading: true });
     apiClient.post(baseUrl, '/api/user/', requestBody).then((data: any) => {
       setCurrentOrder(
         data.active_order_id
@@ -229,35 +253,55 @@ const Main = ({ torStatus, settings, setSettings }: MainProps): JSX.Element => {
           ? data.last_order_id
           : null,
       );
-      setRobot({
-        ...robot,
-        nickname: data.nickname,
-        token: robot.token,
-        loading: false,
-        avatarLoaded: robot.nickname === data.nickname,
-        activeOrderId: data.active_order_id ? data.active_order_id : null,
-        lastOrderId: data.last_order_id ? data.last_order_id : null,
-        referralCode: data.referral_code,
-        earnedRewards: data.earned_rewards ?? 0,
-        stealthInvoices: data.wants_stealth,
-        tgEnabled: data.tg_enabled,
-        tgBotName: data.tg_bot_name,
-        tgToken: data.tg_token,
-        bitsEntropy: data.token_bits_entropy,
-        shannonEntropy: data.token_shannon_entropy,
-        pubKey: data.public_key,
-        encPrivKey: data.encrypted_private_key,
-        copiedToken: data.found ? true : robot.copiedToken,
-      });
+      if (data.bad_request) {
+        setBadRequest(data.bad_request);
+        setRobot({
+          ...robot,
+          avatarLoaded: true,
+          loading: false,
+          nickname: data.nickname ?? robot.nickname,
+          activeOrderId: data.active_order_id ?? null,
+          referralCode: data.referral_code ?? robot.referralCode,
+          earnedRewards: data.earned_rewards ?? robot.earnedRewards,
+          lastOrderId: data.last_order_id ?? robot.lastOrderId,
+          stealthInvoices: data.wants_stealth ?? robot.stealthInvoices,
+          tgEnabled: data.tg_enabled,
+          tgBotName: data.tg_bot_name,
+          tgToken: data.tg_token,
+        });
+      } else {
+        setRobot({
+          ...robot,
+          nickname: data.nickname,
+          token: newToken ?? robot.token,
+          loading: false,
+          activeOrderId: data.active_order_id ?? null,
+          lastOrderId: data.last_order_id ?? null,
+          referralCode: data.referral_code,
+          earnedRewards: data.earned_rewards ?? 0,
+          stealthInvoices: data.wants_stealth,
+          tgEnabled: data.tg_enabled,
+          tgBotName: data.tg_bot_name,
+          tgToken: data.tg_token,
+          bitsEntropy: data.token_bits_entropy,
+          shannonEntropy: data.token_shannon_entropy,
+          pubKey: data.public_key,
+          encPrivKey: data.encrypted_private_key,
+          copiedToken: data.found ? true : robot.copiedToken,
+        });
+        systemClient.setItem('robot_token', newToken ?? robot.token);
+        systemClient.setItem('pub_key', data.public_key.split('\n').join('\\'));
+        systemClient.setItem('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'));
+      }
     });
   };
 
   useEffect(() => {
     if (baseUrl != '' && page != 'robot') {
       if (open.profile || (robot.token && robot.nickname === null)) {
-        fetchRobot({ keys: false }); // fetch existing robot
-      } else if (robot.token && robot.encPrivKey && robot.pubKey) {
-        fetchRobot({ keys: true }); // create new robot with existing token and keys (on network and coordinator change)
+        fetchRobot({ action: 'login' }); // fetch existing robot
+        // } else if (robot.token && robot.encPrivKey && robot.pubKey) {
+        //   fetchRobot({action:'generate'}); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
   }, [open.profile, baseUrl]);
@@ -353,6 +397,7 @@ const Main = ({ torStatus, settings, setSettings }: MainProps): JSX.Element => {
                   <RobotPage
                     setPage={setPage}
                     torStatus={torStatus}
+                    fetchRobot={fetchRobot}
                     setCurrentOrder={setCurrentOrder}
                     windowSize={windowSize}
                     robot={robot}

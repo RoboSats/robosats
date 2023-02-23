@@ -7,7 +7,6 @@ import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { Page } from '../NavBar';
 import { Robot } from '../../models';
-import { genBase62Token } from '../../utils';
 
 interface RobotProfileProps {
   robot: Robot;
@@ -104,15 +103,13 @@ const RobotProfile = ({
         />
       </Grid>
 
-      {/* {robotFound ? (
-        <Grid item>
-          <Typography variant='h6'>
-            {t('Welcome back!')}
-          </Typography>
-        </Grid>
+      {robotFound ? (
+        <Typography align='center' variant='h6'>
+          {t('Welcome back!')}
+        </Typography>
       ) : (
         <></>
-      )} */}
+      )}
 
       {robot.activeOrderId ? (
         <Grid item>
