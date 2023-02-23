@@ -20,7 +20,6 @@ interface RobotProfileProps {
   setPage: (state: Page) => void;
   baseUrl: string;
   badRequest: string;
-  robotFound: boolean;
   width: number;
 }
 
@@ -36,7 +35,6 @@ const RobotProfile = ({
   setView,
   badRequest,
   baseUrl,
-  robotFound,
   width,
 }: RobotProfileProps): JSX.Element => {
   const { t } = useTranslation();
@@ -103,7 +101,7 @@ const RobotProfile = ({
         />
       </Grid>
 
-      {robotFound ? (
+      {robot.found ? (
         <Typography align='center' variant='h6'>
           {t('Welcome back!')}
         </Typography>

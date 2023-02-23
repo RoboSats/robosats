@@ -401,7 +401,7 @@ export const AppContextProvider = ({
         setBadRequest(data.bad_request);
         setRobot({
           ...robot,
-          avatarLoaded: true,
+          avatarLoaded: false,
           loading: false,
           nickname: data.nickname ?? robot.nickname,
           activeOrderId: data.active_order_id ?? null,
@@ -412,10 +412,12 @@ export const AppContextProvider = ({
           tgEnabled: data.tg_enabled,
           tgBotName: data.tg_bot_name,
           tgToken: data.tg_token,
+          found: false,
         });
       } else {
         setRobot({
           ...robot,
+          avatarLoaded: true,
           nickname: data.nickname,
           token: newToken ?? robot.token,
           loading: false,
@@ -427,6 +429,7 @@ export const AppContextProvider = ({
           tgEnabled: data.tg_enabled,
           tgBotName: data.tg_bot_name,
           tgToken: data.tg_token,
+          found: data?.found,
           bitsEntropy: data.token_bits_entropy,
           shannonEntropy: data.token_shannon_entropy,
           pubKey: data.public_key,

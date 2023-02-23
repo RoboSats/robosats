@@ -52,7 +52,6 @@ const RobotPage = ({
   const maxHeight = windowSize.height * 0.85 - 3;
   const theme = useTheme();
 
-  const [robotFound, setRobotFound] = useState<boolean>(false);
   const [badRequest, setBadRequest] = useState<string | undefined>(undefined);
   const [inputToken, setInputToken] = useState<string>('');
   const [view, setView] = useState<'welcome' | 'onboarding' | 'recovery' | 'profile'>(
@@ -91,7 +90,6 @@ const RobotPage = ({
 
   const logoutRobot = () => {
     setInputToken('');
-    setRobotFound(false);
     systemClient.deleteCookie('sessionid');
     systemClient.deleteItem('robot_token');
     systemClient.deleteItem('pub_key');
@@ -180,7 +178,6 @@ const RobotPage = ({
           <RobotProfile
             setView={setView}
             robot={robot}
-            robotFound={robotFound}
             setRobot={setRobot}
             setCurrentOrder={setCurrentOrder}
             badRequest={badRequest}
@@ -202,7 +199,7 @@ const RobotPage = ({
             badRequest={badRequest}
             inputToken={inputToken}
             setInputToken={setInputToken}
-            fetchRobot={fetchRobot}
+            getGenerateRobot={getGenerateRobot}
             setPage={setPage}
             baseUrl={baseUrl}
           />

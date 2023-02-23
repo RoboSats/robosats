@@ -11,7 +11,7 @@ interface RecoveryProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   inputToken: string;
   setInputToken: (state: string) => void;
-  fetchRobot: (data: fetchRobotProps) => void;
+  getGenerateRobot: (token: string) => void;
 }
 
 const Recovery = ({
@@ -20,7 +20,7 @@ const Recovery = ({
   inputToken,
   setView,
   setInputToken,
-  fetchRobot,
+  getGenerateRobot,
 }: RecoveryProps): JSX.Element => {
   const { t } = useTranslation();
 
@@ -30,7 +30,7 @@ const Recovery = ({
   const onClickRecover = () => {
     if (recoveryDisabled()) {
     } else {
-      fetchRobot({ action: 'login', newToken: inputToken });
+      getGenerateRobot(inputToken);
       setView('profile');
     }
   };
