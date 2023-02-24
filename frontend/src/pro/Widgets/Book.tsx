@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 import { Book, Favorites } from '../../models';
-import { Paper, useTheme } from '@mui/material';
+import { Paper } from '@mui/material';
 import BookTable from '../../components/BookTable';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface BookWidgetProps {
   baseUrl: string;

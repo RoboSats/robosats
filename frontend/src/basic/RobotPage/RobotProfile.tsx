@@ -179,7 +179,6 @@ const RobotProfile = ({
 
       <Grid item>
         <Button
-          disabled={!(robot.avatarLoaded && robot.nickname)}
           size='small'
           color='primary'
           onClick={() => {

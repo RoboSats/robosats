@@ -5,8 +5,6 @@ import { Paper } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
 
 interface SettingsWidgetProps {
-  settings: Settings;
-  setSettings: (state: Settings) => void;
   style?: Object;
   className?: string;
   onMouseDown?: () => void;

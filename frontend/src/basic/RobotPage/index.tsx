@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Paper,
@@ -21,30 +21,12 @@ import Welcome from './Welcome';
 import RobotProfile from './RobotProfile';
 import Recovery from './Recovery';
 import { TorIcon } from '../../components/Icons';
-import { fetchRobotProps } from '../Main';
 import { genKey } from '../../pgp';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
-interface RobotPageProps {
-  setPage: (state: Page) => void;
-  setCurrentOrder: (state: number) => void;
-  torStatus: 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
-  robot: Robot;
-  fetchRobot: (data: fetchRobotProps) => void;
-  setRobot: (state: Robot) => void;
-  windowSize: { width: number; height: number };
-  baseUrl: string;
-}
-
-const RobotPage = ({
-  setPage,
-  setCurrentOrder,
-  fetchRobot,
-  torStatus,
-  windowSize,
-  robot,
-  setRobot,
-  baseUrl,
-}: RobotPageProps): JSX.Element => {
+const RobotPage = (): JSX.Element => {
+  const { setPage, setCurrentOrder, fetchRobot, torStatus, windowSize, robot, setRobot, baseUrl } =
+    useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const params = useParams();
   const refCode = params.refCode;

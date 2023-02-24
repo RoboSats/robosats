@@ -34,10 +34,10 @@ const defaultLayout: Layout = [
   { i: 'Book', w: 43, h: 15, x: 34, y: 16, minW: 6, maxW: 70, minH: 9, maxH: 25 },
   { i: 'DepthChart', w: 15, h: 10, x: 19, y: 16, minW: 6, maxW: 22, minH: 9, maxH: 25 },
   { i: 'Garage', w: 52, h: 16, x: 0, y: 0, minW: 15, maxW: 78, minH: 8, maxH: 30 },
-  { i: 'History', w: 10, h: 10, x: 9, y: 16, minW: 6, maxW: 22, minH: 9, maxH: 25 },
+  { i: 'History', w: 8, h: 10, x: 11, y: 16, minW: 6, maxW: 22, minH: 9, maxH: 25 },
   { i: 'Trade', w: 15, h: 16, x: 52, y: 0, minW: 6, maxW: 22, minH: 9, maxH: 25 },
-  { i: 'Settings', w: 9, h: 15, x: 0, y: 16, minW: 6, maxW: 22, minH: 9, maxH: 25 },
-  { i: 'Other', w: 25, h: 5, x: 9, y: 26, minW: 2, maxW: 50, minH: 4, maxH: 25 },
+  { i: 'Settings', w: 11, h: 15, x: 0, y: 16, minW: 6, maxW: 22, minH: 9, maxH: 25 },
+  { i: 'Other', w: 23, h: 5, x: 11, y: 26, minW: 2, maxW: 50, minH: 4, maxH: 25 },
 ];
 
 const Main = (): JSX.Element => {
@@ -109,27 +109,10 @@ const Main = (): JSX.Element => {
             <MakerWidget />
           </div>
           <div key='Book'>
-            <BookWidget
-              baseUrl={baseUrl}
-              book={book}
-              layout={layout[1]}
-              gridCellSize={gridCellSize}
-              fetchBook={fetchBook}
-              fav={fav}
-              setFav={setFav}
-              windowSize={windowSize}
-            />
+            <BookWidget layout={layout[1]} gridCellSize={gridCellSize} />
           </div>
           <div key='DepthChart'>
-            <DepthChartWidget
-              baseUrl={baseUrl}
-              orders={book.orders}
-              gridCellSize={gridCellSize}
-              limitList={limits.list}
-              layout={layout[2]}
-              currency={fav.currency}
-              windowSize={windowSize}
-            />
+            <DepthChartWidget gridCellSize={gridCellSize} layout={layout[2]} />
           </div>
           <div key='Settings'>
             <SettingsWidget />

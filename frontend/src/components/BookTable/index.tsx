@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { DataGrid, GridPagination } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
-import { Book, Favorites } from '../../models';
+import { PublicOrder } from '../../models';
 import { filterOrders, hexToRgb, statusBadgeColor, pn, amountToString } from '../../utils';
 import BookControl from './BookControl';
 
@@ -30,6 +30,7 @@ import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface BookTableProps {
+  orderList?: PublicOrder[];
   maxWidth: number;
   maxHeight: number;
   fullWidth?: number;
@@ -44,6 +45,7 @@ interface BookTableProps {
 }
 
 const BookTable = ({
+  orderList,
   maxWidth = 100,
   maxHeight = 70,
   fullWidth = 100,
@@ -60,6 +62,7 @@ const BookTable = ({
 
   const { t } = useTranslation();
   const theme = useTheme();
+  const orders = orderList ?? book.orders;
   const [pageSize, setPageSize] = useState(0);
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
@@ -722,11 +725,11 @@ const BookTable = ({
           rows={
             showControls
               ? filterOrders({
-                  orders: book.orders,
+                  orders,
                   baseFilter: fav,
                   paymentMethods,
                 })
-              : book.orders
+              : orders
           }
           loading={book.loading}
           columns={columns}
@@ -741,7 +744,7 @@ const BookTable = ({
               setPaymentMethods,
             },
           }}
-          pageSize={book.loading && book.orders.length == 0 ? 0 : pageSize}
+          pageSize={book.loading && orders.length == 0 ? 0 : pageSize}
           rowsPerPageOptions={width < 22 ? [] : [0, pageSize, defaultPageSize * 2, 50, 100]}
           onPageSizeChange={(newPageSize) => {
             setPageSize(newPageSize);
@@ -762,11 +765,11 @@ const BookTable = ({
             rows={
               showControls
                 ? filterOrders({
-                    orders: book.orders,
+                    orders,
                     baseFilter: fav,
                     paymentMethods,
                   })
-                : book.orders
+                : orders
             }
             loading={book.loading}
             columns={columns}
@@ -781,7 +784,7 @@ const BookTable = ({
                 setPaymentMethods,
               },
             }}
-            pageSize={book.loading && book.orders.length == 0 ? 0 : pageSize}
+            pageSize={book.loading && orders.length == 0 ? 0 : pageSize}
             rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
             onPageSizeChange={(newPageSize) => {
               setPageSize(newPageSize);

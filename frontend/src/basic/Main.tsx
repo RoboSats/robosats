@@ -156,21 +156,7 @@ const Main = (): JSX.Element => {
               appear={slideDirection.in != undefined}
             >
               <div>
-                <MakerPage
-                  book={book}
-                  limits={limits}
-                  fetchLimits={fetchLimits}
-                  maker={maker}
-                  setMaker={setMaker}
-                  clearOrder={clearOrder}
-                  setPage={setPage}
-                  setCurrentOrder={setCurrentOrder}
-                  fav={fav}
-                  setFav={setFav}
-                  windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}
-                  hasRobot={robot.avatarLoaded}
-                  baseUrl={baseUrl}
-                />
+                <MakerPage hasRobot={robot.avatarLoaded} />
               </div>
             </Slide>
           </Route>
@@ -185,17 +171,8 @@ const Main = (): JSX.Element => {
               >
                 <div>
                   <OrderPage
-                    baseUrl={baseUrl}
-                    order={order}
-                    settings={settings}
-                    setOrder={setOrder}
-                    setCurrentOrder={setCurrentOrder}
-                    badOrder={badOrder}
                     locationOrderId={props.match.params.orderId}
-                    setBadOrder={setBadOrder}
                     hasRobot={robot.avatarLoaded}
-                    windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}
-                    setPage={setPage}
                   />
                 </div>
               </Slide>
@@ -216,21 +193,7 @@ const Main = (): JSX.Element => {
         </Switch>
       </Box>
       <div style={{ alignContent: 'center', display: 'flex' }}>
-        <NavBar
-          nickname={robot.avatarLoaded ? robot.nickname : null}
-          color={settings.network === 'mainnet' ? 'primary' : 'secondary'}
-          width={windowSize.width}
-          height={navbarHeight}
-          page={page}
-          setPage={setPage}
-          open={open}
-          setOpen={setOpen}
-          closeAll={closeAll}
-          setSlideDirection={setSlideDirection}
-          currentOrder={currentOrder}
-          hasRobot={robot.avatarLoaded}
-          baseUrl={baseUrl}
-        />
+        <NavBar width={windowSize.width} height={navbarHeight} hasRobot={robot.avatarLoaded} />
       </div>
       <MainDialogs
         open={open}

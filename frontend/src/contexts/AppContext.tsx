@@ -77,6 +77,7 @@ export interface AppContextProps {
   settings: Settings;
   setSettings: (state: Settings) => void;
   book: Book;
+  info: Info;
   setBook: (state: Book) => void;
   fetchBook: () => void;
   limits: { list: LimitList; loading: boolean };
@@ -447,8 +448,8 @@ export const AppContextProvider = ({
     if (baseUrl != '' && page != 'robot') {
       if (open.profile || (robot.token && robot.nickname === null)) {
         fetchRobot({ action: 'login' }); // fetch existing robot
-        // } else if (robot.token && robot.encPrivKey && robot.pubKey) {
-        //   fetchRobot({action:'generate'}); // create new robot with existing token and keys (on network and coordinator change)
+      } else if (robot.token && robot.encPrivKey && robot.pubKey) {
+        fetchRobot({ action: 'login' }); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
   }, [open.profile, baseUrl]);

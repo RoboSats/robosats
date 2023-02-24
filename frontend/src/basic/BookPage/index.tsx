@@ -157,27 +157,17 @@ const BookPage = ({
             </Grid>
             <Grid item>
               <DepthChart
-                orders={book.orders}
-                lastDayPremium={lastDayPremium}
-                currency={fav.currency}
-                limits={limits.list}
                 maxWidth={chartWidthEm} // EM units
                 maxHeight={windowSize.height * 0.825 - 5} // EM units
                 onOrderClicked={onOrderClicked}
-                baseUrl={baseUrl}
               />
             </Grid>
           </Grid>
         ) : view === 'depth' ? (
           <DepthChart
-            orders={book.orders}
-            lastDayPremium={lastDayPremium}
-            currency={fav.currency}
-            limits={limits.list}
             maxWidth={windowSize.width * 0.8} // EM units
             maxHeight={windowSize.height * 0.825 - 5} // EM units
             onOrderClicked={onOrderClicked}
-            baseUrl={baseUrl}
           />
         ) : (
           <BookTable
