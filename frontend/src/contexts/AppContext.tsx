@@ -402,7 +402,6 @@ export const AppContextProvider = ({
         setBadRequest(data.bad_request);
         setRobot({
           ...robot,
-          avatarLoaded: false,
           loading: false,
           nickname: data.nickname ?? robot.nickname,
           activeOrderId: data.active_order_id ?? null,
@@ -418,7 +417,6 @@ export const AppContextProvider = ({
       } else {
         setRobot({
           ...robot,
-          avatarLoaded: true,
           nickname: data.nickname,
           token: newToken ?? robot.token,
           loading: false,

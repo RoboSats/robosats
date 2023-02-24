@@ -58,7 +58,6 @@ const Main = (): JSX.Element => {
 
   return (
     <Router basename={basename}>
-      {/* load robot avatar image, set avatarLoaded: true */}
       <RobotAvatar
         style={{ display: 'none' }}
         nickname={robot.nickname}

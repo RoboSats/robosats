@@ -98,7 +98,7 @@ const NavBar = ({ width, height, hasRobot = false }: NavBarProps): JSX.Element =
           disabled={robot.nickname === null}
           onClick={() => setOpen({ ...closeAll, profile: !open.profile })}
           icon={
-            robot.nickname ? (
+            robot.nickname && robot.avatarLoaded ? (
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
