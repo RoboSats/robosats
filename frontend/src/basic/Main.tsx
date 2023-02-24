@@ -152,7 +152,7 @@ const Main = ({ torStatus, settings, setSettings }: MainProps): JSX.Element => {
           ? coordinators[0].mainnetOnion
           : coordinators[0].testnetOnion;
     }
-    setBaseUrl(`${location.protocol}://${host}`);
+    setBaseUrl(`${location.protocol}//${host}`);
   }, [settings.network]);
 
   useEffect(() => {
