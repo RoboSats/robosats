@@ -106,15 +106,7 @@ const Main = (): JSX.Element => {
           onLayoutChange={(layout: Layout) => setLayout(layout)}
         >
           <div key='Maker'>
-            <MakerWidget
-              baseUrl={baseUrl}
-              limits={limits}
-              fetchLimits={fetchLimits}
-              fav={fav}
-              setFav={setFav}
-              maker={maker}
-              setMaker={setMaker}
-            />
+            <MakerWidget />
           </div>
           <div key='Book'>
             <BookWidget
@@ -140,7 +132,7 @@ const Main = (): JSX.Element => {
             />
           </div>
           <div key='Settings'>
-            <SettingsWidget settings={settings} setSettings={setSettings} />
+            <SettingsWidget />
           </div>
           <div key='Garage'>
             <PlaceholderWidget label='Robot Garage' />

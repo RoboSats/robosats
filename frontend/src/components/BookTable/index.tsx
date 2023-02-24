@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -27,11 +27,9 @@ import RobotAvatar from '../RobotAvatar';
 
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface BookTableProps {
-  clickRefresh?: () => void;
-  book: Book;
-  fav?: Favorites;
   maxWidth: number;
   maxHeight: number;
   fullWidth?: number;
@@ -42,16 +40,10 @@ interface BookTableProps {
   showControls?: boolean;
   showFooter?: boolean;
   showNoResults?: boolean;
-  setFav?: (state: Favorites) => void;
   onOrderClicked?: (id: number) => void;
-  baseUrl: string;
 }
 
 const BookTable = ({
-  clickRefresh,
-  book,
-  fav = { currency: 1, type: 0, mode: 'fiat' },
-  setFav,
   maxWidth = 100,
   maxHeight = 70,
   fullWidth = 100,
@@ -63,8 +55,9 @@ const BookTable = ({
   showFooter = true,
   showNoResults = true,
   onOrderClicked = () => null,
-  baseUrl,
 }: BookTableProps): JSX.Element => {
+  const { book, fetchBook, fav, setFav, baseUrl } = useContext<AppContextProps>(AppContext);
+
   const { t } = useTranslation();
   const theme = useTheme();
   const [pageSize, setPageSize] = useState(0);
@@ -641,7 +634,7 @@ const BookTable = ({
               </IconButton>
             </Grid>
             <Grid item xs={6}>
-              <IconButton onClick={clickRefresh}>
+              <IconButton onClick={() => fetchBook()}>
                 <Refresh />
               </IconButton>
             </Grid>

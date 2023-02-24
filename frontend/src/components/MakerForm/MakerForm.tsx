@@ -40,11 +40,11 @@ import { amountToString, pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-import { Page } from '../../basic/NavBar';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface MakerFormProps {
   disableRequest?: boolean;
+  pricingMethods?: boolean;
   collapseAll?: boolean;
   onSubmit?: () => void;
   onReset?: () => void;
@@ -57,6 +57,8 @@ const MakerForm = ({
   pricingMethods = false,
   disableRequest = false,
   collapseAll = false,
+  onSubmit = () => {},
+  onReset = () => {},
   submitButtonLabel = 'Create Order',
   onOrderCreated = () => null,
   hasRobot = true,

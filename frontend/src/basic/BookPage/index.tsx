@@ -147,17 +147,12 @@ const BookPage = ({
           >
             <Grid item>
               <BookTable
-                clickRefresh={() => fetchBook()}
-                book={book}
-                fav={fav}
-                setFav={setFav}
                 maxWidth={maxBookTableWidth} // EM units
                 maxHeight={windowSize.height * 0.825 - 5} // EM units
                 fullWidth={windowSize.width} // EM units
                 fullHeight={windowSize.height} // EM units
                 defaultFullscreen={false}
                 onOrderClicked={onOrderClicked}
-                baseUrl={baseUrl}
               />
             </Grid>
             <Grid item>
@@ -186,17 +181,12 @@ const BookPage = ({
           />
         ) : (
           <BookTable
-            book={book}
-            clickRefresh={() => fetchBook()}
-            fav={fav}
-            setFav={setFav}
             maxWidth={windowSize.width * 0.97} // EM units
             maxHeight={windowSize.height * 0.825 - 5} // EM units
             fullWidth={windowSize.width} // EM units
             fullHeight={windowSize.height} // EM units
             defaultFullscreen={false}
             onOrderClicked={onOrderClicked}
-            baseUrl={baseUrl}
           />
         )}
       </Grid>

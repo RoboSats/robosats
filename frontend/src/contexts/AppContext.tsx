@@ -264,7 +264,7 @@ export const AppContextProvider = ({
           ? coordinators[0].mainnetOnion
           : coordinators[0].testnetOnion;
     }
-    setBaseUrl(`http://${host}`);
+    setBaseUrl(`${location.protocol}//${host}`);
   }, [settings.network]);
 
   useEffect(() => {
