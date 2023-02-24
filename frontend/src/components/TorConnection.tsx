@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { Box, CircularProgress, Tooltip } from '@mui/material';
 import { TorIcon } from './Icons';
 import { useTranslation } from 'react-i18next';
+import { AppContext, AppContextProps } from '../contexts/AppContext';
 
 interface TorIndicatorProps {
   color: 'inherit' | 'error' | 'warning' | 'success' | 'primary' | 'secondary' | 'info' | undefined;
@@ -53,11 +54,8 @@ const TorIndicator = ({
   );
 };
 
-interface TorConnectionBadgeProps {
-  torStatus: 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
-}
-
-const TorConnectionBadge = ({ torStatus }: TorConnectionBadgeProps): JSX.Element => {
+const TorConnectionBadge = (): JSX.Element => {
+  const { torStatus } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
 
   if (window?.NativeRobosats == null) {

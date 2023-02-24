@@ -95,12 +95,6 @@ const MakerPage = ({
           }}
         >
           <MakerForm
-            limits={limits}
-            fetchLimits={fetchLimits}
-            fav={fav}
-            setFav={setFav}
-            maker={maker}
-            setMaker={setMaker}
             onOrderCreated={(id) => {
               clearOrder();
               setCurrentOrder(id);
@@ -113,8 +107,6 @@ const MakerPage = ({
             onSubmit={() => setShowMatches(matches.length > 0)}
             onReset={() => setShowMatches(false)}
             submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
-            setPage={setPage}
-            baseUrl={baseUrl}
           />
         </Paper>
       </Grid>

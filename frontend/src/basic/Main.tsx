@@ -14,7 +14,7 @@ import RobotAvatar from '../components/RobotAvatar';
 
 import { useTranslation } from 'react-i18next';
 import Notifications from '../components/Notifications';
-import { AppContext } from '../contexts/AppContext';
+import { AppContextProps, AppContext } from '../contexts/AppContext';
 
 const Main = (): JSX.Element => {
   const { t } = useTranslation();
@@ -23,7 +23,6 @@ const Main = (): JSX.Element => {
     fetchBook,
     maker,
     setMaker,
-    setSettings,
     clearOrder,
     torStatus,
     settings,
@@ -45,12 +44,12 @@ const Main = (): JSX.Element => {
     setSlideDirection,
     currentOrder,
     setCurrentOrder,
-    navbarHeight,
     closeAll,
     open,
     setOpen,
     windowSize,
     badOrder,
+    navbarHeight,
     setBadOrder,
   } = useContext<AppContextProps>(AppContext);
 
@@ -210,13 +209,7 @@ const Main = (): JSX.Element => {
               appear={slideDirection.in != undefined}
             >
               <div>
-                <SettingsPage
-                  fav={fav}
-                  setFav={setFav}
-                  settings={settings}
-                  setSettings={setSettings}
-                  windowSize={{ ...windowSize, height: windowSize.height - navbarHeight }}
-                />
+                <SettingsPage />
               </div>
             </Slide>
           </Route>
