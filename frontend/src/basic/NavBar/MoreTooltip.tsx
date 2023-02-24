@@ -21,19 +21,12 @@ const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
 
 interface MoreTooltipProps {
   open: OpenDialogs;
-  nickname: string | null;
   setOpen: (state: OpenDialogs) => void;
   closeAll: OpenDialogs;
   children: JSX.Element;
 }
 
-const MoreTooltip = ({
-  open,
-  setOpen,
-  closeAll,
-  nickname,
-  children,
-}: MoreTooltipProps): JSX.Element => {
+const MoreTooltip = ({ open, setOpen, closeAll, children }: MoreTooltipProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   return (

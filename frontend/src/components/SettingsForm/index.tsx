@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AppContextProps, AppContext } from '../../contexts/AppContext';
 import {
   Grid,
   Paper,
@@ -14,7 +15,6 @@ import {
   ToggleButtonGroup,
   ToggleButton,
 } from '@mui/material';
-import { Favorites, Settings } from '../../models';
 import SelectLanguage from './SelectLanguage';
 import {
   Translate,
@@ -31,21 +31,11 @@ import SwapCalls from '@mui/icons-material/SwapCalls';
 
 interface SettingsFormProps {
   dense?: boolean;
-  fav: Favorites;
-  setFav: (state: Favorites) => void;
-  settings: Settings;
-  setSettings: (state: Settings) => void;
   showNetwork?: boolean;
 }
 
-const SettingsForm = ({
-  dense = false,
-  fav,
-  setFav,
-  settings,
-  setSettings,
-  showNetwork = false,
-}: SettingsFormProps): JSX.Element => {
+const SettingsForm = ({ dense = false, showNetwork = false }: SettingsFormProps): JSX.Element => {
+  const { fav, setFav, settings, setSettings } = useContext<AppContextProps>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
   const fontSizes = [

@@ -1,27 +1,14 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid, Paper, useTheme } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
-import { Settings, Favorites } from '../../models';
+import { AppContextProps, AppContext } from '../../contexts/AppContext';
 
-interface SettingsPageProps {
-  fav: Favorites;
-  setFav: (state: Favorites) => void;
-  settings: Settings;
-  setSettings: (state: Settings) => void;
-  windowSize: { width: number; height: number };
-}
-
-const SettingsPage = ({
-  fav,
-  setFav,
-  settings,
-  setSettings,
-  windowSize,
-}: SettingsPageProps): JSX.Element => {
+const SettingsPage = (): JSX.Element => {
+  const { windowSize, navbarHeight } = useContext<AppContextProps>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
-  const maxHeight = windowSize.height * 0.85 - 3;
+  const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
 
   return (
     <Paper
@@ -36,13 +23,7 @@ const SettingsPage = ({
     >
       <Grid container>
         <Grid item>
-          <SettingsForm
-            fav={fav}
-            setFav={setFav}
-            settings={settings}
-            setSettings={setSettings}
-            showNetwork={!(window.NativeRobosats === undefined)}
-          />
+          <SettingsForm showNetwork={!(window.NativeRobosats === undefined)} />
         </Grid>
       </Grid>
     </Paper>

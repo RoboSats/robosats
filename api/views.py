@@ -759,9 +759,8 @@ class UserView(APIView):
                     if last_order:
                         context["last_order_id"] = last_order.id
 
-                # Sends the welcome back message, only if created +3 mins ago
-                if request.user.date_joined < (timezone.now() - timedelta(minutes=3)):
-                    context["found"] = "We found your Robot avatar. Welcome back!"
+                # Sends the welcome back message.
+                context["found"] = "We found your Robot avatar. Welcome back!"
                 return Response(context, status=status.HTTP_202_ACCEPTED)
             else:
                 # It is unlikely, but maybe the nickname is taken (1 in 20 Billion chance)

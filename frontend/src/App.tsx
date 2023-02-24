@@ -2,6 +2,7 @@ import React, { Suspense, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import Main from './basic/Main';
 import { CssBaseline } from '@mui/material';
+import { AppContextProvider } from './contexts/AppContext';
 import { ThemeProvider, createTheme, Theme } from '@mui/material/styles';
 import UnsafeAlert from './components/UnsafeAlert';
 import TorConnectionBadge from './components/TorConnection';
@@ -29,14 +30,6 @@ const makeTheme = function (settings: Settings) {
 const App = (): JSX.Element => {
   const [theme, setTheme] = useState<Theme>(makeTheme(new Settings()));
   const [settings, setSettings] = useState<Settings>(new Settings());
-  const [torStatus, setTorStatus] = useState<string>('NOTINIT');
-
-  useEffect(() => {
-    window.addEventListener('torStatus', (event) => {
-      // UX improv: delay the "Conencted" status by 10 secs to avoid long waits for first requests
-      setTimeout(() => setTorStatus(event?.detail), event?.detail === '"Done"' ? 10000 : 0);
-    });
-  }, []);
 
   useEffect(() => {
     setTheme(makeTheme(settings));
@@ -50,13 +43,15 @@ const App = (): JSX.Element => {
     <Suspense fallback='loading language'>
       <I18nextProvider i18n={i18n}>
         <ThemeProvider theme={theme}>
-          <CssBaseline />
-          {window.NativeRobosats === undefined ? (
-            <UnsafeAlert settings={settings} setSettings={setSettings} />
-          ) : (
-            <TorConnectionBadge torStatus={torStatus} />
-          )}
-          <Main settings={settings} setSettings={setSettings} torStatus={torStatus} />
+          <AppContextProvider settings={settings} setSettings={setSettings}>
+            <CssBaseline />
+            {window.NativeRobosats === undefined ? (
+              <UnsafeAlert settings={settings} setSettings={setSettings} />
+            ) : (
+              <TorConnectionBadge />
+            )}
+            <Main />
+          </AppContextProvider>
         </ThemeProvider>
       </I18nextProvider>
     </Suspense>

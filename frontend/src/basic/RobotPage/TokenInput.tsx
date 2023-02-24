@@ -59,7 +59,7 @@ const TokenInput = ({
       required={true}
       label={label || undefined}
       value={inputToken}
-      autoFocus={autoFocusTarget == 'texfield'}
+      autoFocus={autoFocusTarget == 'textfield'}
       fullWidth={fullWidth}
       sx={{ borderColor: 'primary' }}
       variant={editable ? 'outlined' : 'filled'}

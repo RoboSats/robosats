@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   InputAdornment,
@@ -29,7 +29,6 @@ import { LimitList, Maker, Favorites, defaultMaker } from '../../models';
 
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import { useHistory } from 'react-router-dom';
 import { ConfirmationDialog } from '../Dialogs';
 import { apiClient } from '../../services/api';
 
@@ -41,35 +40,21 @@ import { amountToString, pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-import { Page } from '../../basic/NavBar';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface MakerFormProps {
-  limits: { list: LimitList; loading: boolean };
-  fetchLimits: () => void;
-  pricingMethods?: boolean;
-  maker: Maker;
-  fav: Favorites;
-  setFav: (state: Favorites) => void;
-  setMaker: (state: Maker) => void;
   disableRequest?: boolean;
+  pricingMethods?: boolean;
   collapseAll?: boolean;
   onSubmit?: () => void;
   onReset?: () => void;
   submitButtonLabel?: string;
   onOrderCreated?: (id: number) => void;
   hasRobot?: boolean;
-  setPage?: (state: Page) => void;
-  baseUrl: string;
 }
 
 const MakerForm = ({
-  limits,
-  fetchLimits,
   pricingMethods = false,
-  fav,
-  setFav,
-  maker,
-  setMaker,
   disableRequest = false,
   collapseAll = false,
   onSubmit = () => {},
@@ -77,12 +62,12 @@ const MakerForm = ({
   submitButtonLabel = 'Create Order',
   onOrderCreated = () => null,
   hasRobot = true,
-  setPage = () => null,
-  baseUrl,
 }: MakerFormProps): JSX.Element => {
+  const { fav, setFav, limits, fetchLimits, maker, setMaker, setPage, baseUrl } =
+    useContext<AppContextProps>(AppContext);
+
   const { t } = useTranslation();
   const theme = useTheme();
-  const history = useHistory();
   const [badRequest, setBadRequest] = useState<string | null>(null);
   const [amountLimits, setAmountLimits] = useState<number[]>([1, 1000]);
   const [satoshisLimits, setSatoshisLimits] = useState<number[]>([20000, 4000000]);

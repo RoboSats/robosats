@@ -22,6 +22,7 @@ class Robot {
   public tgBotName: string = 'unknown';
   public tgToken: string = 'unknown';
   public loading: boolean = false;
+  public found: boolean = false;
   public avatarLoaded: boolean = false;
   public copiedToken: boolean = false;
 }

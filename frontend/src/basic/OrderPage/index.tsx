@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Tab, Tabs, Paper, CircularProgress, Grid, Typography, Box } from '@mui/material';
 import { useHistory } from 'react-router-dom';
@@ -9,40 +9,31 @@ import OrderDetails from '../../components/OrderDetails';
 import { Page } from '../NavBar';
 import { Order, Settings } from '../../models';
 import { apiClient } from '../../services/api';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface OrderPageProps {
-  windowSize: { width: number; height: number };
-  order: Order;
-  settings: Settings;
-  setOrder: (state: Order) => void;
-  setCurrentOrder: (state: number) => void;
-  fetchOrder: () => void;
-  badOrder: string | undefined;
-  setBadOrder: (state: string | undefined) => void;
   hasRobot: boolean;
-  setPage: (state: Page) => void;
-  baseUrl: string;
   locationOrderId: number;
 }
 
-const OrderPage = ({
-  windowSize,
-  order,
-  settings,
-  setOrder,
-  setCurrentOrder,
-  badOrder,
-  setBadOrder,
-  setPage,
-  hasRobot = false,
-  baseUrl,
-  locationOrderId,
-}: OrderPageProps): JSX.Element => {
+const OrderPage = ({ hasRobot = false, locationOrderId }: OrderPageProps): JSX.Element => {
+  const {
+    windowSize,
+    order,
+    settings,
+    setOrder,
+    setCurrentOrder,
+    badOrder,
+    setBadOrder,
+    setPage,
+    baseUrl,
+    navbarHeight,
+  } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const history = useHistory();
 
   const doublePageWidth: number = 50;
-  const maxHeight: number = windowSize.height * 0.85 - 3;
+  const maxHeight: number = (windowSize.height - navbarHeight) * 0.85 - 3;
 
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
 

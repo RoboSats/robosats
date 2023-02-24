@@ -147,56 +147,36 @@ const BookPage = ({
           >
             <Grid item>
               <BookTable
-                clickRefresh={() => fetchBook()}
-                book={book}
-                fav={fav}
-                setFav={setFav}
                 maxWidth={maxBookTableWidth} // EM units
                 maxHeight={windowSize.height * 0.825 - 5} // EM units
                 fullWidth={windowSize.width} // EM units
                 fullHeight={windowSize.height} // EM units
                 defaultFullscreen={false}
                 onOrderClicked={onOrderClicked}
-                baseUrl={baseUrl}
               />
             </Grid>
             <Grid item>
               <DepthChart
-                orders={book.orders}
-                lastDayPremium={lastDayPremium}
-                currency={fav.currency}
-                limits={limits.list}
                 maxWidth={chartWidthEm} // EM units
                 maxHeight={windowSize.height * 0.825 - 5} // EM units
                 onOrderClicked={onOrderClicked}
-                baseUrl={baseUrl}
               />
             </Grid>
           </Grid>
         ) : view === 'depth' ? (
           <DepthChart
-            orders={book.orders}
-            lastDayPremium={lastDayPremium}
-            currency={fav.currency}
-            limits={limits.list}
             maxWidth={windowSize.width * 0.8} // EM units
             maxHeight={windowSize.height * 0.825 - 5} // EM units
             onOrderClicked={onOrderClicked}
-            baseUrl={baseUrl}
           />
         ) : (
           <BookTable
-            book={book}
-            clickRefresh={() => fetchBook()}
-            fav={fav}
-            setFav={setFav}
             maxWidth={windowSize.width * 0.97} // EM units
             maxHeight={windowSize.height * 0.825 - 5} // EM units
             fullWidth={windowSize.width} // EM units
             fullHeight={windowSize.height} // EM units
             defaultFullscreen={false}
             onOrderClicked={onOrderClicked}
-            baseUrl={baseUrl}
           />
         )}
       </Grid>

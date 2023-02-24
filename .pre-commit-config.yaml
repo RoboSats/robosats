@@ -21,17 +21,15 @@ repos:
       - id: check-docstring-first
   - repo: local
     hooks:
-      - id: collect-phrases
-        name: collect-phrases
-        stages:
-          - commit
-          - merge-commit
-        language: system
-        files: ^frontend/src/
-        types_or: [javascript, jsx, ts, tsx] # uses https://github.com/pre-commit/identify
-        entry: bash -c 'cd frontend/static/locales && python3 collect_phrases.py'
-  - repo: local
-    hooks:
+      # - id: collect-phrases
+      #   name: Collect i18n phrases
+      #   stages:
+      #     - commit
+      #     - merge-commit
+      #   language: system
+      #   files: ^frontend/
+      #   types_or: [javascript, jsx, ts, tsx] # uses https://github.com/pre-commit/identify
+      #   entry: bash -c 'cd frontend/static/locales && python3 collect_phrases.py'
       - id: prettier-frontend
         name: prettier-frontend
         stages:

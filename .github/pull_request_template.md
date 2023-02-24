@@ -1,5 +1,8 @@
 ## What does this PR do?
-Fixes #<PR_NUMBER/>
+Fixes #<ISSUE_NUMBER>
+
+This PR introduces/refactors/...
 
 ## Checklist before merging
-- [ ] Make sure you have installed and initialized [pre-commit](https://pre-commit.com). `pip install pre-commit` and `pre-commit install`
+- [ ] If it's a frontend feature, I have ran prettier `cd frontend; npm run format`. If it's a mobile app feature I ran `cd mobile; npm run format`.
+- [ ] If I added new phrases to the user interface, I have ran prettier `cd frontend/static/locales; python collect_phrases.py` to collect them for translation.
