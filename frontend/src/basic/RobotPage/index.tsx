@@ -12,7 +12,6 @@ import {
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
-import { Page } from '../NavBar';
 import { Robot } from '../../models';
 import { systemClient } from '../../services/System';
 import { apiClient } from '../../services/api';
@@ -25,8 +24,18 @@ import { genKey } from '../../pgp';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 const RobotPage = (): JSX.Element => {
-  const { setPage, setCurrentOrder, fetchRobot, torStatus, windowSize, robot, setRobot, baseUrl } =
-    useContext<AppContextProps>(AppContext);
+  const {
+    garage,
+    setGarage,
+    setPage,
+    setCurrentOrder,
+    fetchRobot,
+    torStatus,
+    windowSize,
+    robot,
+    setRobot,
+    baseUrl,
+  } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const params = useParams();
   const refCode = params.refCode;
@@ -159,6 +168,8 @@ const RobotPage = (): JSX.Element => {
         {view === 'profile' ? (
           <RobotProfile
             setView={setView}
+            garage={garage}
+            setGarage={setGarage}
             robot={robot}
             setRobot={setRobot}
             setCurrentOrder={setCurrentOrder}

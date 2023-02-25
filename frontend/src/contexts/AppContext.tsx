@@ -7,6 +7,7 @@ import {
   LimitList,
   Maker,
   Robot,
+  Garage,
   Info,
   Settings,
   Favorites,
@@ -78,8 +79,13 @@ export interface AppContextProps {
   setSettings: (state: Settings) => void;
   book: Book;
   info: Info;
+  garage: Garage;
+  setGarage: (state: Garage) => void;
+  currentSlot: number;
+  setCurrentSlot: (state: number) => void;
   setBook: (state: Book) => void;
   fetchBook: () => void;
+  fetchRobot: (state: fetchRobotProps) => void;
   limits: { list: LimitList; loading: boolean };
   setLimits: (state: { list: LimitList; loading: boolean }) => void;
   fetchLimits: () => void;
@@ -201,6 +207,8 @@ export const AppContextProvider = ({
     loading: true,
   });
   const [robot, setRobot] = useState<Robot>(new Robot());
+  const [garage, setGarage] = useState<Garage>(new Garage());
+  const [currentSlot, setCurrentSlot] = useState<number>(0);
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
@@ -257,15 +265,18 @@ export const AppContextProvider = ({
 
   useEffect(() => {
     let host = '';
+    let protocol = '';
     if (window.NativeRobosats === undefined) {
       host = getHost();
+      protocol = location.protocol;
     } else {
+      protocol = 'http';
       host =
         settings.network === 'mainnet'
           ? coordinators[0].mainnetOnion
           : coordinators[0].testnetOnion;
     }
-    setBaseUrl(`${location.protocol}//${host}`);
+    setBaseUrl(`${protocol}//${host}`);
   }, [settings.network]);
 
   useEffect(() => {
@@ -366,6 +377,13 @@ export const AppContextProvider = ({
     setBadOrder(undefined);
   };
 
+  useEffect(() => {
+    garage.load();
+    setGarage(new Garage(garage));
+  }, []);
+
+  console.log(garage);
+
   const fetchRobot = function ({
     action = 'login',
     newKeys = null,
@@ -400,7 +418,7 @@ export const AppContextProvider = ({
       );
       if (data.bad_request) {
         setBadRequest(data.bad_request);
-        setRobot({
+        const newRobot = {
           ...robot,
           loading: false,
           nickname: data.nickname ?? robot.nickname,
@@ -413,9 +431,11 @@ export const AppContextProvider = ({
           tgBotName: data.tg_bot_name,
           tgToken: data.tg_token,
           found: false,
-        });
+        };
+        setRobot(newRobot);
+        garage.updateRobot(newRobot, currentSlot);
       } else {
-        setRobot({
+        const newRobot = {
           ...robot,
           nickname: data.nickname,
           token: newToken ?? robot.token,
@@ -434,7 +454,9 @@ export const AppContextProvider = ({
           pubKey: data.public_key,
           encPrivKey: data.encrypted_private_key,
           copiedToken: data.found ? true : robot.copiedToken,
-        });
+        };
+        setRobot(newRobot);
+        garage.updateRobot(newRobot, currentSlot);
         systemClient.setItem('robot_token', newToken ?? robot.token);
         systemClient.setItem('pub_key', data.public_key.split('\n').join('\\'));
         systemClient.setItem('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'));
@@ -460,6 +482,10 @@ export const AppContextProvider = ({
         setSettings,
         book,
         setBook,
+        garage,
+        setGarage,
+        currentSlot,
+        setCurrentSlot,
         fetchBook,
         fetchRobot,
         limits,

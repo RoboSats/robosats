@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
-import { Button, Link, Grid, LinearProgress, Typography, Alert } from '@mui/material';
-import { Bolt, Logout, Refresh } from '@mui/icons-material';
+import { Button, Grid, LinearProgress, Typography, Alert, Select, MenuItem } from '@mui/material';
+import { Bolt, Logout, Delete, Refresh, Add } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { Page } from '../NavBar';
-import { Robot } from '../../models';
+import { Garage, Robot } from '../../models';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface RobotProfileProps {
   robot: Robot;
   setRobot: (state: Robot) => void;
+  garage: Garage;
+  setGarage: (state: Garage) => void;
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   inputToken: string;
   setCurrentOrder: (state: number) => void;
@@ -24,6 +27,8 @@ interface RobotProfileProps {
 }
 
 const RobotProfile = ({
+  garage,
+  setGarage,
   robot,
   setRobot,
   inputToken,
@@ -37,6 +42,7 @@ const RobotProfile = ({
   baseUrl,
   width,
 }: RobotProfileProps): JSX.Element => {
+  const { currentSlot, setCurrentSlot } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const history = useHistory();
 
@@ -176,19 +182,92 @@ const RobotProfile = ({
           onPressEnter={() => null}
         />
       </Grid>
-
-      <Grid item>
-        <Button
-          size='small'
-          color='primary'
-          onClick={() => {
-            logoutRobot();
-            setView('welcome');
+      <Grid item sx={{ width: '100%' }}>
+        <Typography variant='h5' align='center'>
+          {t('Robot Garage')}
+        </Typography>
+      </Grid>
+      <Grid item sx={{ width: '100%' }}>
+        <Select
+          fullWidth
+          required={true}
+          inputProps={{
+            style: { textAlign: 'center' },
           }}
+          value={currentSlot}
+          onChange={(e) => setCurrentSlot(e.target.value)}
         >
-          <Logout /> <div style={{ width: '0.5em' }} />
-          {t('Logout Robot')}
-        </Button>
+          {garage.slots.map((slot: Slot, index: number) => {
+            console.log('slot', slot, 'index', index, 'currentSlot', currentSlot);
+            return (
+              <MenuItem key={index} value={index}>
+                <Grid
+                  container
+                  direction='row'
+                  justifyContent='flex-start'
+                  alignItems='center'
+                  style={{ height: '2.8em' }}
+                  spacing={1}
+                >
+                  <Grid item>
+                    <RobotAvatar
+                      nickname={slot.robot.nickname}
+                      smooth={true}
+                      style={{ width: '2.6em', height: '2.6em' }}
+                      placeholderType='loading'
+                      baseUrl={baseUrl}
+                    />
+                  </Grid>
+                  <Grid item>{slot.robot.nickname}</Grid>
+                </Grid>
+              </MenuItem>
+            );
+          })}
+        </Select>
+      </Grid>
+
+      <Grid item container direction='row' alignItems='center'>
+        <Grid item>
+          <Button
+            size='small'
+            color='primary'
+            onClick={() => {
+              garage.delete();
+              setGarage(new Garage());
+            }}
+          >
+            <Delete /> <div style={{ width: '0.5em' }} />
+            {t('Delete Garage')}
+          </Button>
+        </Grid>
+
+        <Grid item>
+          <Button
+            size='small'
+            color='primary'
+            onClick={() => {
+              garage.addSlot();
+              setGarage(new Garage(garage));
+            }}
+          >
+            <Add /> <div style={{ width: '0.5em' }} />
+            {t('Add Robot')}
+          </Button>
+        </Grid>
+
+        <Grid item>
+          <Button
+            size='small'
+            color='primary'
+            onClick={() => {
+              logoutRobot();
+              setView('welcome');
+            }}
+          >
+            <Logout /> <div style={{ width: '0.5em' }} />
+            {t('Logout Robot')}
+          </Button>
+        </Grid>
       </Grid>
     </Grid>
   );
