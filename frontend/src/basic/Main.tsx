@@ -43,11 +43,13 @@ const Main = (): JSX.Element => {
     slideDirection,
     setSlideDirection,
     currentOrder,
+    garage,
     setCurrentOrder,
     closeAll,
     open,
     setOpen,
     windowSize,
+    currentSlot,
     badOrder,
     navbarHeight,
     setBadOrder,
@@ -62,7 +64,12 @@ const Main = (): JSX.Element => {
         style={{ display: 'none' }}
         nickname={robot.nickname}
         baseUrl={baseUrl}
-        onLoad={() => setRobot({ ...robot, avatarLoaded: true })}
+        onLoad={() =>
+          garage.updateRobot(
+            { ...garage.slots[currentSlot].robot, avatarLoaded: true },
+            currentSlot,
+          )
+        }
       />
       <Notifications
         order={order}

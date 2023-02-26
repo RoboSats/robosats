@@ -30,10 +30,12 @@ const NavBar = ({ width, height, hasRobot = false }: NavBarProps): JSX.Element =
     setPage,
     setSlideDirection,
     open,
+    garage,
     robot,
     setOpen,
     closeAll,
     currentOrder,
+    currentSlot,
     baseUrl,
   } = useContext<AppContextProps>(AppContext);
 
@@ -43,7 +45,11 @@ const NavBar = ({ width, height, hasRobot = false }: NavBarProps): JSX.Element =
   const smallBar = width < 50;
 
   const tabSx = smallBar
-    ? { position: 'relative', bottom: robot.nickname ? '1em' : '0em', minWidth: '1em' }
+    ? {
+        position: 'relative',
+        bottom: garage.slots[currentSlot].robot.nickname ? '1em' : '0em',
+        minWidth: '1em',
+      }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
   const pagesPosition = {
     robot: 1,
@@ -95,14 +101,15 @@ const NavBar = ({ width, height, hasRobot = false }: NavBarProps): JSX.Element =
         <Tab
           sx={{ ...tabSx, minWidth: '2.5em', width: '2.5em', maxWidth: '4em' }}
           value='none'
-          disabled={robot.nickname === null}
+          disabled={garage.slots[currentSlot].robot.nickname === null}
           onClick={() => setOpen({ ...closeAll, profile: !open.profile })}
           icon={
-            robot.nickname && robot.avatarLoaded ? (
+            garage.slots[currentSlot].robot.nickname &&
+            garage.slots[currentSlot].robot.avatarLoaded ? (
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
-                nickname={robot.nickname}
+                nickname={garage.slots[currentSlot].robot.nickname}
                 baseUrl={baseUrl}
               />
             ) : (

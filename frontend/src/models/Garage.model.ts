@@ -9,32 +9,49 @@ export interface Slot {
   order: Order | null;
 }
 
+export interface fetchRobotProps {
+  index?: number;
+  action?: 'login' | 'generate';
+  url: string;
+  newKeys?: { encPrivKey: string; pubKey: string } | null;
+  newToken?: string | null;
+  refCode?: string | null;
+  setBadRequest?: (state: string) => void;
+  setCurrentOrder?: (state: number) => void;
+}
+
 const emptySlot: Slot = { robot: new Robot(), order: null };
 
 class Garage {
   constructor(initialState?: Garage) {
-    this.slots = initialState?.slots ?? [emptySlot];
+    this.slots = initialState?.slots || [emptySlot];
+    this.setGarage = initialState?.setGarage || (() => {});
   }
   slots: Slot[] = [emptySlot];
+  setGarage: (state: Garage) => void = () => {};
 
   load = () => {
-    const slots =
+    this.slots =
       systemClient.getItem('garage') != ''
         ? JSON.parse(systemClient.getItem('garage'))
         : [emptySlot];
+    this.save();
   };
 
   save = () => {
     systemClient.setItem('garage', JSON.stringify(this.slots));
+    this.setGarage(new Garage(this));
   };
 
   delete = () => {
     this.slots = [emptySlot];
     systemClient.deleteItem('garage');
+    this.save();
   };
 
   updateRobot: (robot: Robot, index: number) => void = (robot, index) => {
     this.slots[index] = { robot, order: null };
+    console.log('robot', robot, 'index', index);
     this.save();
   };
 
@@ -44,22 +61,26 @@ class Garage {
   };
 
   deleteSlot: (index?: number) => void = (index) => {
-    const delIndex = index ?? this.slots.length - 1;
-    this.slots.splice(delIndex, 1);
+    const targetSlot = index ?? this.slots.length - 1;
+    this.slots.splice(targetSlot, 1);
     this.save();
   };
 
   fetchRobot = ({
+    index,
     url,
     action = 'login',
     newKeys = null,
     newToken = null,
     refCode = null,
     setBadRequest = () => {},
+    setCurrentOrder = () => {},
   }: fetchRobotProps) => {
-    const robot = this.robot();
-    this.slots[this.activeSlot].robot = { ...robot, loading: true, avatarLoaded: false };
-    // setBadRequest('');
+    const targetSlot = index ?? this.slots.length - 1;
+    const robot = this.slots[targetSlot].robot;
+    this.slots[targetSlot].robot = { ...robot, loading: true, avatarLoaded: false };
+    this.save();
+    setBadRequest('');
 
     let requestBody = {};
     if (action == 'login') {
@@ -76,16 +97,16 @@ class Garage {
     }
 
     apiClient.post(url, '/api/user/', requestBody).then((data: any) => {
-      //   setCurrentOrder(
-      //     data.active_order_id
-      //       ? data.active_order_id
-      //       : data.last_order_id
-      //       ? data.last_order_id
-      //       : null,
-      //   );
+      setCurrentOrder(
+        data.active_order_id
+          ? data.active_order_id
+          : data.last_order_id
+          ? data.last_order_id
+          : null,
+      );
       if (data.bad_request) {
         // setBadRequest(data.bad_request);
-        this.slots[this.activeSlot].robot = {
+        this.slots[targetSlot].robot = {
           ...robot,
           loading: false,
           nickname: data.nickname ?? robot.nickname,
@@ -100,7 +121,7 @@ class Garage {
           found: false,
         };
       } else {
-        this.slots[this.activeSlot].robot = {
+        this.slots[targetSlot].robot = {
           ...robot,
           nickname: data.nickname,
           token: newToken ?? robot.token,

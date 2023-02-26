@@ -25,7 +25,6 @@ interface RobotProfileProps {
   robot: Robot;
   setRobot: (state: Robot) => void;
   garage: Garage;
-  setGarage: (state: Garage) => void;
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   inputToken: string;
   setCurrentOrder: (state: number) => void;
@@ -39,7 +38,6 @@ interface RobotProfileProps {
 
 const RobotProfile = ({
   garage,
-  setGarage,
   robot,
   setRobot,
   inputToken,
@@ -56,6 +54,12 @@ const RobotProfile = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const history = useHistory();
+
+  const handleAddRobot = () => {
+    garage.addSlot(new Robot());
+    setCurrentSlot(garage.slots.length - 1);
+    garage.save();
+  };
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
@@ -134,7 +138,7 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {robot.activeOrderId ? (
+        {robot.activeOrderId && robot.avatarLoaded && robot.nickname ? (
           <Grid item>
             <Button
               onClick={() => {
@@ -148,7 +152,7 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        {robot.lastOrderId ? (
+        {robot.lastOrderId && robot.avatarLoaded && robot.nickname ? (
           <Grid item container direction='column' alignItems='center'>
             <Grid item>
               <Button
@@ -282,10 +286,7 @@ const RobotProfile = ({
                 <Button
                   size={windowSize.width < 27 ? 'small' : 'medium'}
                   color='primary'
-                  onClick={() => {
-                    garage.addSlot(new Robot());
-                    setGarage(new Garage(garage));
-                  }}
+                  onClick={handleAddRobot}
                 >
                   <Add /> <div style={{ width: '0.5em' }} />
                   {t('Add Robot')}
@@ -298,7 +299,6 @@ const RobotProfile = ({
                   color='primary'
                   onClick={() => {
                     garage.delete();
-                    setGarage(new Garage());
                     logoutRobot();
                     setView('welcome');
                   }}

@@ -207,7 +207,13 @@ export const AppContextProvider = ({
     loading: true,
   });
   const [robot, setRobot] = useState<Robot>(new Robot());
-  const [garage, setGarage] = useState<Garage>(new Garage());
+  const [garage, setGarage] = useState<Garage>(() => {
+    const initialState = { setGarage };
+    const newGarage = new Garage(initialState);
+    newGarage.load();
+    return newGarage;
+  });
+
   const [currentSlot, setCurrentSlot] = useState<number>(0);
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
@@ -376,11 +382,6 @@ export const AppContextProvider = ({
     setOrder(undefined);
     setBadOrder(undefined);
   };
-
-  useEffect(() => {
-    garage.load();
-    setGarage(new Garage(garage));
-  }, []);
 
   console.log(garage);
 

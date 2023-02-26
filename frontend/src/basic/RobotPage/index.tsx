@@ -26,7 +26,7 @@ import { AppContext, AppContextProps } from '../../contexts/AppContext';
 const RobotPage = (): JSX.Element => {
   const {
     garage,
-    setGarage,
+    currentSlot,
     setPage,
     setCurrentOrder,
     fetchRobot,
@@ -154,7 +154,7 @@ const RobotPage = (): JSX.Element => {
         {view === 'onboarding' ? (
           <Onboarding
             setView={setView}
-            robot={robot}
+            robot={garage.slots[currentSlot].robot}
             setRobot={setRobot}
             badRequest={badRequest}
             inputToken={inputToken}
@@ -169,8 +169,7 @@ const RobotPage = (): JSX.Element => {
           <RobotProfile
             setView={setView}
             garage={garage}
-            setGarage={setGarage}
-            robot={robot}
+            robot={garage.slots[currentSlot].robot}
             setRobot={setRobot}
             setCurrentOrder={setCurrentOrder}
             badRequest={badRequest}
@@ -187,7 +186,7 @@ const RobotPage = (): JSX.Element => {
         {view === 'recovery' ? (
           <Recovery
             setView={setView}
-            robot={robot}
+            robot={garage.slots[currentSlot].robot}
             setRobot={setRobot}
             badRequest={badRequest}
             inputToken={inputToken}
