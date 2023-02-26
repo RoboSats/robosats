@@ -1,8 +1,20 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
-import { Button, Grid, LinearProgress, Typography, Alert, Select, MenuItem } from '@mui/material';
-import { Bolt, Logout, Delete, Refresh, Add } from '@mui/icons-material';
+import {
+  Button,
+  Grid,
+  LinearProgress,
+  Typography,
+  Alert,
+  Select,
+  MenuItem,
+  Box,
+  useTheme,
+  FormHelperText,
+  Tooltip,
+} from '@mui/material';
+import { Bolt, Refresh, Add, DeleteSweep, Logout } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { Page } from '../NavBar';
@@ -19,7 +31,6 @@ interface RobotProfileProps {
   setCurrentOrder: (state: number) => void;
   logoutRobot: () => void;
   setInputToken: (state: string) => void;
-  getGenerateRobot: (token: string) => void;
   setPage: (state: Page) => void;
   baseUrl: string;
   badRequest: string;
@@ -34,7 +45,6 @@ const RobotProfile = ({
   inputToken,
   setInputToken,
   setCurrentOrder,
-  getGenerateRobot,
   logoutRobot,
   setPage,
   setView,
@@ -42,232 +52,264 @@ const RobotProfile = ({
   baseUrl,
   width,
 }: RobotProfileProps): JSX.Element => {
-  const { currentSlot, setCurrentSlot } = useContext<AppContextProps>(AppContext);
+  const { currentSlot, setCurrentSlot, windowSize } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
+  const theme = useTheme();
   const history = useHistory();
 
   return (
-    <Grid container direction='column' alignItems='center' spacing={2} padding={2}>
-      <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-        {robot.avatarLoaded && robot.nickname ? (
-          <Typography align='center' component='h5' variant='h5'>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-              }}
-            >
-              {width < 19 ? null : (
-                <Bolt
-                  sx={{
-                    color: '#fcba03',
-                    height: '1.5em',
-                    width: '1.5em',
-                  }}
-                />
-              )}
-              <b>{robot.nickname}</b>
-              {width < 19 ? null : (
-                <Bolt
-                  sx={{
-                    color: '#fcba03',
-                    height: '1.5em',
-                    width: '1.5em',
-                  }}
-                />
-              )}
-            </div>
-          </Typography>
-        ) : (
-          <>
-            <b>{t('Building your robot!')}</b>
-            <LinearProgress />
-          </>
-        )}
-      </Grid>
-
-      <Grid item sx={{ width: `13.5em` }}>
-        <RobotAvatar
-          nickname={robot.nickname}
-          smooth={true}
-          style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
-          placeholderType='generating'
-          imageStyle={{
-            transform: '',
-            border: '2px solid #555',
-            filter: 'drop-shadow(1px 1px 1px #000000)',
-            height: `12.4em`,
-            width: `12.4em`,
-          }}
-          tooltip={t('This is your trading avatar')}
-          tooltipPosition='top'
-          baseUrl={baseUrl}
-        />
-      </Grid>
-
-      {robot.found ? (
-        <Typography align='center' variant='h6'>
-          {t('Welcome back!')}
-        </Typography>
-      ) : (
-        <></>
-      )}
-
-      {robot.activeOrderId ? (
-        <Grid item>
-          <Button
-            onClick={() => {
-              history.push('/order/' + robot.activeOrderId);
-              setPage('order');
-              setCurrentOrder(robot.activeOrderId);
-            }}
-          >
-            {t('Active order #{{orderID}}', { orderID: robot.activeOrderId })}
-          </Button>
+    <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
+      <Grid
+        item
+        container
+        direction='column'
+        alignItems='center'
+        spacing={1}
+        padding={1}
+        sx={{ width: '100%' }}
+      >
+        <Grid item sx={{ height: '2.3em', position: 'relative' }}>
+          {robot.avatarLoaded && robot.nickname ? (
+            <Typography align='center' component='h5' variant='h5'>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexWrap: 'wrap',
+                }}
+              >
+                {width < 19 ? null : (
+                  <Bolt
+                    sx={{
+                      color: '#fcba03',
+                      height: '1.5em',
+                      width: '1.5em',
+                    }}
+                  />
+                )}
+                <b>{robot.nickname}</b>
+                {width < 19 ? null : (
+                  <Bolt
+                    sx={{
+                      color: '#fcba03',
+                      height: '1.5em',
+                      width: '1.5em',
+                    }}
+                  />
+                )}
+              </div>
+            </Typography>
+          ) : (
+            <>
+              <b>{t('Building your robot!')}</b>
+              <LinearProgress />
+            </>
+          )}
         </Grid>
-      ) : null}
 
-      {robot.lastOrderId ? (
-        <Grid item container direction='column' alignItems='center'>
+        <Grid item sx={{ width: `13.5em` }}>
+          <RobotAvatar
+            nickname={robot.nickname}
+            smooth={true}
+            style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
+            placeholderType='generating'
+            imageStyle={{
+              transform: '',
+              border: '2px solid #555',
+              filter: 'drop-shadow(1px 1px 1px #000000)',
+              height: `12.4em`,
+              width: `12.4em`,
+            }}
+            tooltip={t('This is your trading avatar')}
+            tooltipPosition='top'
+            baseUrl={baseUrl}
+          />
+          {robot.found ? (
+            <Typography align='center' variant='h6'>
+              {t('Welcome back!')}
+            </Typography>
+          ) : (
+            <></>
+          )}
+        </Grid>
+
+        {robot.activeOrderId ? (
           <Grid item>
             <Button
               onClick={() => {
-                history.push('/order/' + robot.lastOrderId);
+                history.push('/order/' + robot.activeOrderId);
                 setPage('order');
-                setCurrentOrder(robot.lastOrderId);
+                setCurrentOrder(robot.activeOrderId);
               }}
             >
-              {t('Last order #{{orderID}}', { orderID: robot.lastOrderId })}
+              {t('Active order #{{orderID}}', { orderID: robot.activeOrderId })}
             </Button>
           </Grid>
-          <Grid item>
-            <Alert severity='warning'>
-              <Grid container direction='column' alignItems='center'>
-                <Grid item>
-                  {t(
-                    'Reusing trading identity degrades your privacy against other users, coordinators and observers.',
-                  )}
+        ) : null}
+
+        {robot.lastOrderId ? (
+          <Grid item container direction='column' alignItems='center'>
+            <Grid item>
+              <Button
+                onClick={() => {
+                  history.push('/order/' + robot.lastOrderId);
+                  setPage('order');
+                  setCurrentOrder(robot.lastOrderId);
+                }}
+              >
+                {t('Last order #{{orderID}}', { orderID: robot.lastOrderId })}
+              </Button>
+            </Grid>
+            <Grid item>
+              <Alert severity='warning'>
+                <Grid container direction='column' alignItems='center'>
+                  <Grid item>
+                    {t(
+                      'Reusing trading identity degrades your privacy against other users, coordinators and observers.',
+                    )}
+                  </Grid>
+                  <Grid item sx={{ position: 'relative', right: '1em' }}>
+                    <Button
+                      color='inherit'
+                      size='small'
+                      onClick={() => {
+                        logoutRobot();
+                        setView('welcome');
+                      }}
+                    >
+                      <Refresh />
+                      {t('Generate a new Robot')}
+                    </Button>
+                  </Grid>
                 </Grid>
-                <Grid item sx={{ position: 'relative', right: '1em' }}>
-                  <Button
-                    color='inherit'
-                    size='small'
-                    onClick={() => {
-                      logoutRobot();
-                      setView('welcome');
-                    }}
-                  >
-                    <Refresh />
-                    {t('Generate a new Robot')}
-                  </Button>
-                </Grid>
-              </Grid>
-            </Alert>
+              </Alert>
+            </Grid>
+          </Grid>
+        ) : null}
+
+        <Grid
+          item
+          container
+          direction='row'
+          justifyContent='space-between'
+          alignItems='center'
+          sx={{ width: '100%' }}
+        >
+          <Grid sx={{ width: `3.2em` }}>
+            <Tooltip enterTouchDelay={0} enterDelay={300} enterNextDelay={1000} title={t('Logout')}>
+              <Button
+                size='large'
+                sx={{ width: '3em', height: '3.7em' }}
+                color='primary'
+                variant='outlined'
+                onClick={() => {
+                  logoutRobot();
+                  setView('welcome');
+                }}
+              >
+                <Logout />
+              </Button>
+            </Tooltip>
+          </Grid>
+          <Grid item sx={{ width: `calc(100% - 4em)` }}>
+            <TokenInput
+              inputToken={inputToken}
+              editable={false}
+              showDownload={true}
+              label={t('Store your token safely')}
+              setInputToken={setInputToken}
+              setRobot={setRobot}
+              badRequest={badRequest}
+              robot={robot}
+              onPressEnter={() => null}
+            />
           </Grid>
         </Grid>
-      ) : null}
-
-      <Grid item sx={{ width: '100%' }}>
-        <TokenInput
-          inputToken={inputToken}
-          editable={false}
-          showDownload={true}
-          label={t('Store your token safely')}
-          setInputToken={setInputToken}
-          setRobot={setRobot}
-          badRequest={badRequest}
-          robot={robot}
-          onPressEnter={() => null}
-        />
       </Grid>
       <Grid item sx={{ width: '100%' }}>
-        <Typography variant='h5' align='center'>
-          {t('Robot Garage')}
-        </Typography>
-      </Grid>
-      <Grid item sx={{ width: '100%' }}>
-        <Select
-          fullWidth
-          required={true}
-          inputProps={{
-            style: { textAlign: 'center' },
+        <Box
+          sx={{
+            backgroundColor: 'background.paper',
+            border: '1px solid',
+            borderRadius: '4px',
+            borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
           }}
-          value={currentSlot}
-          onChange={(e) => setCurrentSlot(e.target.value)}
         >
-          {garage.slots.map((slot: Slot, index: number) => {
-            console.log('slot', slot, 'index', index, 'currentSlot', currentSlot);
-            return (
-              <MenuItem key={index} value={index}>
-                <Grid
-                  container
-                  direction='row'
-                  justifyContent='flex-start'
-                  alignItems='center'
-                  style={{ height: '2.8em' }}
-                  spacing={1}
+          <Grid container direction='column' alignItems='center' spacing={2} padding={2}>
+            <Grid item sx={{ width: '100%' }}>
+              <FormHelperText>{t('Current Robot')}</FormHelperText>
+              <Select
+                fullWidth
+                required={true}
+                inputProps={{
+                  style: { textAlign: 'center' },
+                }}
+                value={currentSlot}
+                onChange={(e) => setCurrentSlot(e.target.value)}
+              >
+                {garage.slots.map((slot: Slot, index: number) => {
+                  console.log('slot', slot, 'index', index, 'currentSlot', currentSlot);
+                  return (
+                    <MenuItem key={index} value={index}>
+                      <Grid
+                        container
+                        direction='row'
+                        justifyContent='flex-start'
+                        alignItems='center'
+                        style={{ height: '2.8em' }}
+                        spacing={1}
+                      >
+                        <Grid item>
+                          <RobotAvatar
+                            nickname={slot.robot.nickname}
+                            smooth={true}
+                            style={{ width: '2.6em', height: '2.6em' }}
+                            placeholderType='loading'
+                            baseUrl={baseUrl}
+                          />
+                        </Grid>
+                        <Grid item>{slot.robot.nickname}</Grid>
+                      </Grid>
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </Grid>
+
+            <Grid item container direction='row' alignItems='center' justifyContent='space-evenly'>
+              <Grid item>
+                <Button
+                  size={windowSize.width < 27 ? 'small' : 'medium'}
+                  color='primary'
+                  onClick={() => {
+                    garage.addSlot(new Robot());
+                    setGarage(new Garage(garage));
+                  }}
                 >
-                  <Grid item>
-                    <RobotAvatar
-                      nickname={slot.robot.nickname}
-                      smooth={true}
-                      style={{ width: '2.6em', height: '2.6em' }}
-                      placeholderType='loading'
-                      baseUrl={baseUrl}
-                    />
-                  </Grid>
-                  <Grid item>{slot.robot.nickname}</Grid>
-                </Grid>
-              </MenuItem>
-            );
-          })}
-        </Select>
-      </Grid>
+                  <Add /> <div style={{ width: '0.5em' }} />
+                  {t('Add Robot')}
+                </Button>
+              </Grid>
 
-      <Grid item container direction='row' alignItems='center'>
-        <Grid item>
-          <Button
-            size='small'
-            color='primary'
-            onClick={() => {
-              garage.delete();
-              setGarage(new Garage());
-            }}
-          >
-            <Delete /> <div style={{ width: '0.5em' }} />
-            {t('Delete Garage')}
-          </Button>
-        </Grid>
-
-        <Grid item>
-          <Button
-            size='small'
-            color='primary'
-            onClick={() => {
-              garage.addSlot();
-              setGarage(new Garage(garage));
-            }}
-          >
-            <Add /> <div style={{ width: '0.5em' }} />
-            {t('Add Robot')}
-          </Button>
-        </Grid>
-
-        <Grid item>
-          <Button
-            size='small'
-            color='primary'
-            onClick={() => {
-              logoutRobot();
-              setView('welcome');
-            }}
-          >
-            <Logout /> <div style={{ width: '0.5em' }} />
-            {t('Logout Robot')}
-          </Button>
-        </Grid>
+              <Grid item>
+                <Button
+                  size={windowSize.width < 27 ? 'small' : 'medium'}
+                  color='primary'
+                  onClick={() => {
+                    garage.delete();
+                    setGarage(new Garage());
+                    logoutRobot();
+                    setView('welcome');
+                  }}
+                >
+                  <DeleteSweep /> <div style={{ width: '0.5em' }} />
+                  {t('Delete Garage')}
+                </Button>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Box>
       </Grid>
     </Grid>
   );
