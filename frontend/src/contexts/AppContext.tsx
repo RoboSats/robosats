@@ -61,14 +61,6 @@ export interface SlideDirection {
   out: 'left' | 'right' | undefined;
 }
 
-export interface fetchRobotProps {
-  action?: 'login' | 'generate';
-  newKeys?: { encPrivKey: string; pubKey: string } | null;
-  newToken?: string | null;
-  refCode?: string | null;
-  setBadRequest?: (state: string) => void;
-}
-
 export type TorStatus = 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
 
 export interface AppContextProps {
@@ -85,7 +77,6 @@ export interface AppContextProps {
   setCurrentSlot: (state: number) => void;
   setBook: (state: Book) => void;
   fetchBook: () => void;
-  fetchRobot: (state: fetchRobotProps) => void;
   limits: { list: LimitList; loading: boolean };
   setLimits: (state: { list: LimitList; loading: boolean }) => void;
   fetchLimits: () => void;
@@ -93,7 +84,6 @@ export interface AppContextProps {
   setMaker: (state: Maker) => void;
   clearOrder: () => void;
   robot: Robot;
-  setRobot: (state: Robot) => void;
   focusedCoordinator: number;
   setFocusedCoordinator: (state: number) => void;
   baseUrl: string;
@@ -206,15 +196,14 @@ export const AppContextProvider = ({
     list: [],
     loading: true,
   });
-  const [robot, setRobot] = useState<Robot>(new Robot());
   const [garage, setGarage] = useState<Garage>(() => {
     const initialState = { setGarage };
     const newGarage = new Garage(initialState);
     newGarage.load();
     return newGarage;
   });
-
-  const [currentSlot, setCurrentSlot] = useState<number>(0);
+  const [currentSlot, setCurrentSlot] = useState<number>(garage.slots.length - 1);
+  const [robot, setRobot] = useState<Robot>(garage.slots[currentSlot].robot);
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
@@ -383,97 +372,28 @@ export const AppContextProvider = ({
     setBadOrder(undefined);
   };
 
-  console.log(garage);
-
-  const fetchRobot = function ({
-    action = 'login',
-    newKeys = null,
-    newToken = null,
-    refCode = null,
-    setBadRequest = () => {},
-  }: fetchRobotProps) {
-    setRobot({ ...robot, loading: true, avatarLoaded: false });
-    setBadRequest('');
-
-    let requestBody = {};
-    if (action == 'login') {
-      requestBody.token_sha256 = sha256(newToken ?? robot.token);
-    } else if (action == 'generate' && newToken != null) {
-      const strength = tokenStrength(newToken);
-      requestBody.token_sha256 = sha256(newToken);
-      requestBody.unique_values = strength.uniqueValues;
-      requestBody.counts = strength.counts;
-      requestBody.length = newToken.length;
-      requestBody.ref_code = refCode;
-      requestBody.public_key = newKeys.pubKey ?? robot.pubkey;
-      requestBody.encrypted_private_key = newKeys.encPrivKey ?? robot.encPrivKey;
-    }
-
-    apiClient.post(baseUrl, '/api/user/', requestBody).then((data: any) => {
-      setCurrentOrder(
-        data.active_order_id
-          ? data.active_order_id
-          : data.last_order_id
-          ? data.last_order_id
-          : null,
-      );
-      if (data.bad_request) {
-        setBadRequest(data.bad_request);
-        const newRobot = {
-          ...robot,
-          loading: false,
-          nickname: data.nickname ?? robot.nickname,
-          activeOrderId: data.active_order_id ?? null,
-          referralCode: data.referral_code ?? robot.referralCode,
-          earnedRewards: data.earned_rewards ?? robot.earnedRewards,
-          lastOrderId: data.last_order_id ?? robot.lastOrderId,
-          stealthInvoices: data.wants_stealth ?? robot.stealthInvoices,
-          tgEnabled: data.tg_enabled,
-          tgBotName: data.tg_bot_name,
-          tgToken: data.tg_token,
-          found: false,
-        };
-        setRobot(newRobot);
-        garage.updateRobot(newRobot, currentSlot);
-      } else {
-        const newRobot = {
-          ...robot,
-          nickname: data.nickname,
-          token: newToken ?? robot.token,
-          loading: false,
-          activeOrderId: data.active_order_id ?? null,
-          lastOrderId: data.last_order_id ?? null,
-          referralCode: data.referral_code,
-          earnedRewards: data.earned_rewards ?? 0,
-          stealthInvoices: data.wants_stealth,
-          tgEnabled: data.tg_enabled,
-          tgBotName: data.tg_bot_name,
-          tgToken: data.tg_token,
-          found: data?.found,
-          bitsEntropy: data.token_bits_entropy,
-          shannonEntropy: data.token_shannon_entropy,
-          pubKey: data.public_key,
-          encPrivKey: data.encrypted_private_key,
-          copiedToken: data.found ? true : robot.copiedToken,
-        };
-        setRobot(newRobot);
-        garage.updateRobot(newRobot, currentSlot);
-        systemClient.setItem('robot_token', newToken ?? robot.token);
-        systemClient.setItem('pub_key', data.public_key.split('\n').join('\\'));
-        systemClient.setItem('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'));
-      }
-    });
-  };
-
   useEffect(() => {
     if (baseUrl != '' && page != 'robot') {
-      if (open.profile || (robot.token && robot.nickname === null)) {
-        fetchRobot({ action: 'login' }); // fetch existing robot
-      } else if (robot.token && robot.encPrivKey && robot.pubKey) {
-        fetchRobot({ action: 'login' }); // create new robot with existing token and keys (on network and coordinator change)
+      if (
+        open.profile ||
+        (garage.slots[currentSlot].robot.token && garage.slots[currentSlot].robot.nickname === null)
+      ) {
+        garage.fetchRobot({ url: baseUrl, action: 'login' }); // fetch existing robot
+      } else if (
+        garage.slots[currentSlot].robot.token &&
+        garage.slots[currentSlot].robot.encPrivKey
+      ) {
+        garage.fetchRobot({ url: baseUrl, action: 'login' }); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
   }, [open.profile, baseUrl]);
+
+  useEffect(() => {
+    setRobot(garage.slots[currentSlot].robot);
+    console.log('robot SET');
+  }, [garage, currentSlot]);
+
+  console.log('robot', robot, 'currentslot', currentSlot);
 
   return (
     <AppContext.Provider
@@ -488,7 +408,6 @@ export const AppContextProvider = ({
         currentSlot,
         setCurrentSlot,
         fetchBook,
-        fetchRobot,
         limits,
         info,
         setLimits,
@@ -497,7 +416,6 @@ export const AppContextProvider = ({
         setMaker,
         clearOrder,
         robot,
-        setRobot,
         baseUrl,
         setBaseUrl,
         fav,

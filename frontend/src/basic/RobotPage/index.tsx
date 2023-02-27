@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
-import { Robot } from '../../models';
+import { Garage, Robot } from '../../models';
 import { systemClient } from '../../services/System';
 import { apiClient } from '../../services/api';
 import Onboarding from './Onboarding';
@@ -26,14 +26,14 @@ import { AppContext, AppContextProps } from '../../contexts/AppContext';
 const RobotPage = (): JSX.Element => {
   const {
     garage,
+    setGarage,
+    robot,
     currentSlot,
     setPage,
     setCurrentOrder,
     fetchRobot,
     torStatus,
     windowSize,
-    robot,
-    setRobot,
     baseUrl,
   } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
@@ -50,18 +50,21 @@ const RobotPage = (): JSX.Element => {
   );
 
   useEffect(() => {
-    if (robot.token) {
-      setInputToken(robot.token);
+    if (garage.slots[currentSlot].robot.token) {
+      setInputToken(garage.slots[currentSlot].robot.token);
     }
-    if (robot.nickname == null && robot.token) {
-      fetchRobot({ action: 'login' });
+    if (garage.slots[currentSlot].robot.nickname == null && garage.slots[currentSlot].robot.token) {
+      getGenerateRobot(garage.slots[currentSlot].robot.token);
     }
   }, []);
 
   const getGenerateRobot = (token: string) => {
+    console.log('getGenerateRobot called!');
     setInputToken(token);
     genKey(token).then(function (key) {
-      fetchRobot({
+      garage.fetchRobot({
+        url: baseUrl,
+        index: currentSlot,
         action: 'generate',
         newKeys: {
           pubKey: key.publicKeyArmored,
@@ -81,11 +84,6 @@ const RobotPage = (): JSX.Element => {
 
   const logoutRobot = () => {
     setInputToken('');
-    systemClient.deleteCookie('sessionid');
-    systemClient.deleteItem('robot_token');
-    systemClient.deleteItem('pub_key');
-    systemClient.deleteItem('enc_priv_key');
-    setTimeout(() => setRobot(new Robot()), 10);
   };
 
   if (!(window.NativeRobosats === undefined) && !(torStatus == 'DONE' || torStatus == '"Done"')) {
@@ -155,7 +153,7 @@ const RobotPage = (): JSX.Element => {
           <Onboarding
             setView={setView}
             robot={garage.slots[currentSlot].robot}
-            setRobot={setRobot}
+            setRobot={() => null}
             badRequest={badRequest}
             inputToken={inputToken}
             setInputToken={setInputToken}
@@ -170,9 +168,10 @@ const RobotPage = (): JSX.Element => {
             setView={setView}
             garage={garage}
             robot={garage.slots[currentSlot].robot}
-            setRobot={setRobot}
+            setRobot={() => null}
             setCurrentOrder={setCurrentOrder}
             badRequest={badRequest}
+            getGenerateRobot={getGenerateRobot}
             logoutRobot={logoutRobot}
             width={width}
             inputToken={inputToken}
@@ -187,7 +186,7 @@ const RobotPage = (): JSX.Element => {
           <Recovery
             setView={setView}
             robot={garage.slots[currentSlot].robot}
-            setRobot={setRobot}
+            setRobot={() => null}
             badRequest={badRequest}
             inputToken={inputToken}
             setInputToken={setInputToken}

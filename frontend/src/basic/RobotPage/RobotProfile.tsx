@@ -20,6 +20,7 @@ import TokenInput from './TokenInput';
 import { Page } from '../NavBar';
 import { Garage, Robot } from '../../models';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { genBase62Token } from '../../utils';
 
 interface RobotProfileProps {
   robot: Robot;
@@ -37,10 +38,10 @@ interface RobotProfileProps {
 }
 
 const RobotProfile = ({
-  garage,
   robot,
   setRobot,
   inputToken,
+  getGenerateRobot,
   setInputToken,
   setCurrentOrder,
   logoutRobot,
@@ -50,7 +51,8 @@ const RobotProfile = ({
   baseUrl,
   width,
 }: RobotProfileProps): JSX.Element => {
-  const { currentSlot, setCurrentSlot, windowSize } = useContext<AppContextProps>(AppContext);
+  const { currentSlot, garage, setGarage, setCurrentSlot, windowSize } =
+    useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
   const history = useHistory();
@@ -58,7 +60,18 @@ const RobotProfile = ({
   const handleAddRobot = () => {
     garage.addSlot(new Robot());
     setCurrentSlot(garage.slots.length - 1);
+    getGenerateRobot(genBase62Token(36));
     garage.save();
+  };
+
+  const handleChangeSlot = (e) => {
+    garage.fetchRobot({
+      url: baseUrl,
+      index: e.target.value,
+      action: 'login',
+    });
+    setCurrentSlot(e.target.value);
+    console.log('new garage', newGarage);
   };
 
   return (
@@ -250,10 +263,9 @@ const RobotProfile = ({
                   style: { textAlign: 'center' },
                 }}
                 value={currentSlot}
-                onChange={(e) => setCurrentSlot(e.target.value)}
+                onChange={handleChangeSlot}
               >
                 {garage.slots.map((slot: Slot, index: number) => {
-                  console.log('slot', slot, 'index', index, 'currentSlot', currentSlot);
                   return (
                     <MenuItem key={index} value={index}>
                       <Grid
@@ -299,6 +311,7 @@ const RobotProfile = ({
                   color='primary'
                   onClick={() => {
                     garage.delete();
+                    setCurrentSlot(0);
                     logoutRobot();
                     setView('welcome');
                   }}

@@ -35,12 +35,14 @@ class Garage {
       systemClient.getItem('garage') != ''
         ? JSON.parse(systemClient.getItem('garage'))
         : [emptySlot];
-    this.save();
+    this.setGarage(new Garage(this));
+    console.log('loaded!');
   };
 
   save = () => {
     systemClient.setItem('garage', JSON.stringify(this.slots));
     this.setGarage(new Garage(this));
+    console.log('saved!');
   };
 
   delete = () => {
@@ -51,7 +53,6 @@ class Garage {
 
   updateRobot: (robot: Robot, index: number) => void = (robot, index) => {
     this.slots[index] = { robot, order: null };
-    console.log('robot', robot, 'index', index);
     this.save();
   };
 
@@ -142,6 +143,7 @@ class Garage {
           copiedToken: data.found ? true : robot.copiedToken,
         };
       }
+      console.log('fetched Robot:', this.slots[targetSlot].robot);
       this.save();
     });
   };

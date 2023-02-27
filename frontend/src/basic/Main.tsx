@@ -15,6 +15,7 @@ import RobotAvatar from '../components/RobotAvatar';
 import { useTranslation } from 'react-i18next';
 import Notifications from '../components/Notifications';
 import { AppContextProps, AppContext } from '../contexts/AppContext';
+import { Garage } from '../models';
 
 const Main = (): JSX.Element => {
   const { t } = useTranslation();
@@ -24,13 +25,10 @@ const Main = (): JSX.Element => {
     maker,
     setMaker,
     clearOrder,
-    torStatus,
     settings,
     limits,
     fetchLimits,
     robot,
-    setRobot,
-    fetchRobot,
     setOrder,
     setDelay,
     info,
@@ -41,16 +39,12 @@ const Main = (): JSX.Element => {
     page,
     setPage,
     slideDirection,
-    setSlideDirection,
-    currentOrder,
     garage,
     setCurrentOrder,
     closeAll,
-    open,
     setOpen,
     windowSize,
     currentSlot,
-    badOrder,
     navbarHeight,
     setBadOrder,
   } = useContext<AppContextProps>(AppContext);
@@ -64,12 +58,13 @@ const Main = (): JSX.Element => {
         style={{ display: 'none' }}
         nickname={robot.nickname}
         baseUrl={baseUrl}
-        onLoad={() =>
+        onLoad={() => {
           garage.updateRobot(
             { ...garage.slots[currentSlot].robot, avatarLoaded: true },
             currentSlot,
-          )
-        }
+          );
+          garage.setGarage(new Garage(garage));
+        }}
       />
       <Notifications
         order={order}
@@ -108,16 +103,7 @@ const Main = (): JSX.Element => {
                 appear={slideDirection.in != undefined}
               >
                 <div>
-                  <RobotPage
-                    setPage={setPage}
-                    torStatus={torStatus}
-                    fetchRobot={fetchRobot}
-                    setCurrentOrder={setCurrentOrder}
-                    windowSize={windowSize}
-                    robot={robot}
-                    setRobot={setRobot}
-                    baseUrl={baseUrl}
-                  />
+                  <RobotPage />
                 </div>
               </Slide>
             )}
@@ -201,17 +187,7 @@ const Main = (): JSX.Element => {
       <div style={{ alignContent: 'center', display: 'flex' }}>
         <NavBar width={windowSize.width} height={navbarHeight} hasRobot={robot.avatarLoaded} />
       </div>
-      <MainDialogs
-        open={open}
-        setOpen={setOpen}
-        setRobot={setRobot}
-        setPage={setPage}
-        setCurrentOrder={setCurrentOrder}
-        info={info}
-        robot={robot}
-        closeAll={closeAll}
-        baseUrl={baseUrl}
-      />
+      <MainDialogs />
     </Router>
   );
 };

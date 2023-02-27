@@ -16,6 +16,7 @@ import {
 } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { Robot } from '../../models';
 
 interface NavBarProps {
   width: number;
@@ -25,17 +26,15 @@ interface NavBarProps {
 
 const NavBar = ({ width, height, hasRobot = false }: NavBarProps): JSX.Element => {
   const {
+    robot,
     page,
     settings,
     setPage,
     setSlideDirection,
     open,
-    garage,
-    robot,
     setOpen,
     closeAll,
     currentOrder,
-    currentSlot,
     baseUrl,
   } = useContext<AppContextProps>(AppContext);
 
@@ -45,11 +44,7 @@ const NavBar = ({ width, height, hasRobot = false }: NavBarProps): JSX.Element =
   const smallBar = width < 50;
 
   const tabSx = smallBar
-    ? {
-        position: 'relative',
-        bottom: garage.slots[currentSlot].robot.nickname ? '1em' : '0em',
-        minWidth: '1em',
-      }
+    ? { position: 'relative', bottom: robot.nickname ? '1em' : '0em', minWidth: '1em' }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
   const pagesPosition = {
     robot: 1,
@@ -101,15 +96,14 @@ const NavBar = ({ width, height, hasRobot = false }: NavBarProps): JSX.Element =
         <Tab
           sx={{ ...tabSx, minWidth: '2.5em', width: '2.5em', maxWidth: '4em' }}
           value='none'
-          disabled={garage.slots[currentSlot].robot.nickname === null}
+          disabled={robot.nickname === null}
           onClick={() => setOpen({ ...closeAll, profile: !open.profile })}
           icon={
-            garage.slots[currentSlot].robot.nickname &&
-            garage.slots[currentSlot].robot.avatarLoaded ? (
+            robot.nickname && robot.avatarLoaded ? (
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
-                nickname={garage.slots[currentSlot].robot.nickname}
+                nickname={robot.nickname}
                 baseUrl={baseUrl}
               />
             ) : (
