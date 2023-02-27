@@ -44,7 +44,7 @@ const NavBar = ({ width, height, hasRobot = false }: NavBarProps): JSX.Element =
   const smallBar = width < 50;
 
   const tabSx = smallBar
-    ? { position: 'relative', bottom: robot.nickname ? '1em' : '0em', minWidth: '1em' }
+    ? { position: 'relative', bottom: robot.avatarLoaded ? '0.9em' : '0.13em', minWidth: '1em' }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
   const pagesPosition = {
     robot: 1,

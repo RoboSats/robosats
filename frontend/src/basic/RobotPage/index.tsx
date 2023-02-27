@@ -28,6 +28,7 @@ const RobotPage = (): JSX.Element => {
     garage,
     setGarage,
     robot,
+    setRobot,
     currentSlot,
     setPage,
     setCurrentOrder,
@@ -50,27 +51,25 @@ const RobotPage = (): JSX.Element => {
   );
 
   useEffect(() => {
-    if (garage.slots[currentSlot].robot.token) {
-      setInputToken(garage.slots[currentSlot].robot.token);
+    if (robot.token) {
+      setInputToken(robot.token);
     }
-    if (garage.slots[currentSlot].robot.nickname == null && garage.slots[currentSlot].robot.token) {
-      getGenerateRobot(garage.slots[currentSlot].robot.token);
+    if (robot.nickname == null && robot.token) {
+      fetchRobot({ action: 'login' });
     }
   }, []);
 
-  const getGenerateRobot = (token: string) => {
-    console.log('getGenerateRobot called!');
+  const getGenerateRobot = (token: string, slot?: number) => {
     setInputToken(token);
     genKey(token).then(function (key) {
-      garage.fetchRobot({
-        url: baseUrl,
-        index: currentSlot,
+      fetchRobot({
         action: 'generate',
         newKeys: {
           pubKey: key.publicKeyArmored,
           encPrivKey: key.encryptedPrivateKeyArmored,
         },
         newToken: token,
+        slot,
         refCode,
         setBadRequest,
       });
@@ -84,6 +83,7 @@ const RobotPage = (): JSX.Element => {
 
   const logoutRobot = () => {
     setInputToken('');
+    setRobot(new Robot());
   };
 
   if (!(window.NativeRobosats === undefined) && !(torStatus == 'DONE' || torStatus == '"Done"')) {
@@ -152,7 +152,7 @@ const RobotPage = (): JSX.Element => {
         {view === 'onboarding' ? (
           <Onboarding
             setView={setView}
-            robot={garage.slots[currentSlot].robot}
+            robot={robot}
             setRobot={() => null}
             badRequest={badRequest}
             inputToken={inputToken}
@@ -166,8 +166,7 @@ const RobotPage = (): JSX.Element => {
         {view === 'profile' ? (
           <RobotProfile
             setView={setView}
-            garage={garage}
-            robot={garage.slots[currentSlot].robot}
+            robot={robot}
             setRobot={() => null}
             setCurrentOrder={setCurrentOrder}
             badRequest={badRequest}
@@ -185,7 +184,7 @@ const RobotPage = (): JSX.Element => {
         {view === 'recovery' ? (
           <Recovery
             setView={setView}
-            robot={garage.slots[currentSlot].robot}
+            robot={robot}
             setRobot={() => null}
             badRequest={badRequest}
             inputToken={inputToken}

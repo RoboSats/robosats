@@ -203,7 +203,7 @@ export const AppContextProvider = ({
     return newGarage;
   });
   const [currentSlot, setCurrentSlot] = useState<number>(garage.slots.length - 1);
-  const [robot, setRobot] = useState<Robot>(garage.slots[currentSlot].robot);
+  const [robot, setRobot] = useState<Robot>(new Robot(garage.slots[currentSlot].robot));
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
@@ -372,28 +372,95 @@ export const AppContextProvider = ({
     setBadOrder(undefined);
   };
 
+  const fetchRobot = function ({
+    action = 'login',
+    newKeys = null,
+    newToken = null,
+    refCode = null,
+    slot = null,
+    setBadRequest = () => {},
+  }: fetchRobotProps) {
+    const oldRobot = robot;
+    const targetSlot = slot ?? currentSlot;
+    setRobot(new Robot());
+    setBadRequest('');
+
+    let requestBody = {};
+    if (action == 'login') {
+      requestBody.token_sha256 = sha256(newToken ?? oldRobot.token);
+    } else if (action == 'generate' && newToken != null) {
+      const strength = tokenStrength(newToken);
+      requestBody.token_sha256 = sha256(newToken);
+      requestBody.unique_values = strength.uniqueValues;
+      requestBody.counts = strength.counts;
+      requestBody.length = newToken.length;
+      requestBody.ref_code = refCode;
+      requestBody.public_key = newKeys.pubKey ?? oldRobot.pubkey;
+      requestBody.encrypted_private_key = newKeys.encPrivKey ?? oldRobot.encPrivKey;
+    }
+
+    apiClient.post(baseUrl, '/api/user/', requestBody).then((data: any) => {
+      let newRobot = robot;
+      setCurrentOrder(
+        data.active_order_id
+          ? data.active_order_id
+          : data.last_order_id
+          ? data.last_order_id
+          : null,
+      );
+      if (data.bad_request) {
+        setBadRequest(data.bad_request);
+        newRobot = {
+          ...oldRobot,
+          loading: false,
+          nickname: data.nickname ?? oldRobot.nickname,
+          activeOrderId: data.active_order_id ?? null,
+          referralCode: data.referral_code ?? oldRobot.referralCode,
+          earnedRewards: data.earned_rewards ?? oldRobot.earnedRewards,
+          lastOrderId: data.last_order_id ?? oldRobot.lastOrderId,
+          stealthInvoices: data.wants_stealth ?? robot.stealthInvoices,
+          tgEnabled: data.tg_enabled,
+          tgBotName: data.tg_bot_name,
+          tgToken: data.tg_token,
+          found: false,
+        };
+      } else {
+        newRobot = {
+          ...oldRobot,
+          nickname: data.nickname,
+          token: newToken ?? oldRobot.token,
+          loading: false,
+          activeOrderId: data.active_order_id ?? null,
+          lastOrderId: data.last_order_id ?? null,
+          referralCode: data.referral_code,
+          earnedRewards: data.earned_rewards ?? 0,
+          stealthInvoices: data.wants_stealth,
+          tgEnabled: data.tg_enabled,
+          tgBotName: data.tg_bot_name,
+          tgToken: data.tg_token,
+          found: data?.found,
+          bitsEntropy: data.token_bits_entropy,
+          shannonEntropy: data.token_shannon_entropy,
+          pubKey: data.public_key,
+          encPrivKey: data.encrypted_private_key,
+          copiedToken: data.found ? true : false,
+        };
+        setRobot(newRobot);
+        garage.updateRobot(newRobot, targetSlot);
+        setCurrentSlot(targetSlot);
+      }
+    });
+  };
+
   useEffect(() => {
     if (baseUrl != '' && page != 'robot') {
-      if (
-        open.profile ||
-        (garage.slots[currentSlot].robot.token && garage.slots[currentSlot].robot.nickname === null)
-      ) {
-        garage.fetchRobot({ url: baseUrl, action: 'login' }); // fetch existing robot
-      } else if (
-        garage.slots[currentSlot].robot.token &&
-        garage.slots[currentSlot].robot.encPrivKey
-      ) {
-        garage.fetchRobot({ url: baseUrl, action: 'login' }); // create new robot with existing token and keys (on network and coordinator change)
+      if (open.profile || (robot.token && robot.nickname === null)) {
+        fetchRobot({ action: 'login' }); // fetch existing robot
+      } else if (robot.token && robot.encPrivKey && robot.pubKey) {
+        fetchRobot({ action: 'login' }); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
   }, [open.profile, baseUrl]);
-
-  useEffect(() => {
-    setRobot(garage.slots[currentSlot].robot);
-    console.log('robot SET');
-  }, [garage, currentSlot]);
-
-  console.log('robot', robot, 'currentslot', currentSlot);
 
   return (
     <AppContext.Provider
@@ -416,6 +483,8 @@ export const AppContextProvider = ({
         setMaker,
         clearOrder,
         robot,
+        setRobot,
+        fetchRobot,
         baseUrl,
         setBaseUrl,
         fav,

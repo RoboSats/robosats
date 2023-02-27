@@ -15,7 +15,6 @@ import RobotAvatar from '../components/RobotAvatar';
 import { useTranslation } from 'react-i18next';
 import Notifications from '../components/Notifications';
 import { AppContextProps, AppContext } from '../contexts/AppContext';
-import { Garage } from '../models';
 
 const Main = (): JSX.Element => {
   const { t } = useTranslation();
@@ -29,6 +28,7 @@ const Main = (): JSX.Element => {
     limits,
     fetchLimits,
     robot,
+    setRobot,
     setOrder,
     setDelay,
     info,
@@ -39,7 +39,6 @@ const Main = (): JSX.Element => {
     page,
     setPage,
     slideDirection,
-    garage,
     setCurrentOrder,
     closeAll,
     setOpen,
@@ -58,13 +57,7 @@ const Main = (): JSX.Element => {
         style={{ display: 'none' }}
         nickname={robot.nickname}
         baseUrl={baseUrl}
-        onLoad={() => {
-          garage.updateRobot(
-            { ...garage.slots[currentSlot].robot, avatarLoaded: true },
-            currentSlot,
-          );
-          garage.setGarage(new Garage(garage));
-        }}
+        onLoad={() => setRobot({ ...robot, avatarLoaded: true })}
       />
       <Notifications
         order={order}

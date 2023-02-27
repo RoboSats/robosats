@@ -14,18 +14,18 @@ import {
   FormHelperText,
   Tooltip,
 } from '@mui/material';
-import { Bolt, Refresh, Add, DeleteSweep, Logout } from '@mui/icons-material';
+import { Bolt, Refresh, Add, DeleteSweep, Logout, Download } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { Page } from '../NavBar';
-import { Garage, Robot } from '../../models';
+import { Slot, Robot } from '../../models';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
+import { LoadingButton } from '@mui/lab';
 
 interface RobotProfileProps {
   robot: Robot;
   setRobot: (state: Robot) => void;
-  garage: Garage;
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   inputToken: string;
   setCurrentOrder: (state: number) => void;
@@ -51,27 +51,29 @@ const RobotProfile = ({
   baseUrl,
   width,
 }: RobotProfileProps): JSX.Element => {
-  const { currentSlot, garage, setGarage, setCurrentSlot, windowSize } =
+  const { currentSlot, garage, setCurrentSlot, windowSize } =
     useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
   const history = useHistory();
 
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (robot.nickname && robot.avatarLoaded) {
+      setLoading(false);
+    }
+  }, [robot]);
+
   const handleAddRobot = () => {
-    garage.addSlot(new Robot());
-    setCurrentSlot(garage.slots.length - 1);
-    getGenerateRobot(genBase62Token(36));
-    garage.save();
+    getGenerateRobot(genBase62Token(36), garage.slots.length);
+    setLoading(true);
   };
 
   const handleChangeSlot = (e) => {
-    garage.fetchRobot({
-      url: baseUrl,
-      index: e.target.value,
-      action: 'login',
-    });
-    setCurrentSlot(e.target.value);
-    console.log('new garage', newGarage);
+    const slot = e.target.value;
+    getGenerateRobot(garage.slots[slot].robot.token, slot);
+    setLoading(false);
   };
 
   return (
@@ -142,7 +144,7 @@ const RobotProfile = ({
             tooltipPosition='top'
             baseUrl={baseUrl}
           />
-          {robot.found ? (
+          {robot.found && !robot.lastOrderId ? (
             <Typography align='center' variant='h6'>
               {t('Welcome back!')}
             </Typography>
@@ -187,16 +189,9 @@ const RobotProfile = ({
                     )}
                   </Grid>
                   <Grid item sx={{ position: 'relative', right: '1em' }}>
-                    <Button
-                      color='inherit'
-                      size='small'
-                      onClick={() => {
-                        logoutRobot();
-                        setView('welcome');
-                      }}
-                    >
-                      <Refresh />
-                      {t('Generate a new Robot')}
+                    <Button color='success' size='small' onClick={handleAddRobot}>
+                      <Add />
+                      {t('Add a new Robot')}
                     </Button>
                   </Grid>
                 </Grid>
@@ -209,15 +204,14 @@ const RobotProfile = ({
           item
           container
           direction='row'
-          justifyContent='space-between'
-          alignItems='center'
-          sx={{ width: '100%' }}
+          justifyContent='stretch'
+          alignItems='stretch'
+          sx={{ width: '100%', display: 'flex' }}
         >
-          <Grid sx={{ width: `3.2em` }}>
+          <Grid xs={2} sx={{ display: 'flex', justifyContent: 'stretch', alignItems: 'stretch' }}>
             <Tooltip enterTouchDelay={0} enterDelay={300} enterNextDelay={1000} title={t('Logout')}>
               <Button
-                size='large'
-                sx={{ width: '3em', height: '3.7em' }}
+                sx={{ minWidth: '2em', width: '100%' }}
                 color='primary'
                 variant='outlined'
                 onClick={() => {
@@ -229,11 +223,10 @@ const RobotProfile = ({
               </Button>
             </Tooltip>
           </Grid>
-          <Grid item sx={{ width: `calc(100% - 4em)` }}>
+          <Grid item xs={10}>
             <TokenInput
               inputToken={inputToken}
               editable={false}
-              showDownload={true}
               label={t('Store your token safely')}
               setInputToken={setInputToken}
               setRobot={setRobot}
@@ -255,7 +248,7 @@ const RobotProfile = ({
         >
           <Grid container direction='column' alignItems='center' spacing={2} padding={2}>
             <Grid item sx={{ width: '100%' }}>
-              <FormHelperText>{t('Current Robot')}</FormHelperText>
+              <Typography variant='caption'>{t('Robot Garage')}</Typography>
               <Select
                 fullWidth
                 required={true}
@@ -285,7 +278,11 @@ const RobotProfile = ({
                             baseUrl={baseUrl}
                           />
                         </Grid>
-                        <Grid item>{slot.robot.nickname}</Grid>
+                        <Grid item>
+                          {currentSlot == index && !robot.avatarLoaded
+                            ? t('Loading...')
+                            : slot.robot.nickname}
+                        </Grid>
                       </Grid>
                     </MenuItem>
                   );
@@ -295,19 +292,22 @@ const RobotProfile = ({
 
             <Grid item container direction='row' alignItems='center' justifyContent='space-evenly'>
               <Grid item>
-                <Button
-                  size={windowSize.width < 27 ? 'small' : 'medium'}
-                  color='primary'
-                  onClick={handleAddRobot}
-                >
+                <LoadingButton loading={loading} color='primary' onClick={handleAddRobot}>
                   <Add /> <div style={{ width: '0.5em' }} />
                   {t('Add Robot')}
-                </Button>
+                </LoadingButton>
               </Grid>
+
+              {window.NativeRobosats === undefined ? (
+                <Grid item>
+                  <Button color='primary' onClick={() => garage.download()}>
+                    <Download />
+                  </Button>
+                </Grid>
+              ) : null}
 
               <Grid item>
                 <Button
-                  size={windowSize.width < 27 ? 'small' : 'medium'}
                   color='primary'
                   onClick={() => {
                     garage.delete();
