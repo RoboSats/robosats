@@ -4,6 +4,7 @@ import EncryptedTurtleChat from './EncryptedTurtleChat';
 
 interface Props {
   orderId: number;
+  status: number;
   takerNick: string;
   makerNick: string;
   userNick: string;
@@ -37,12 +38,14 @@ const EncryptedChat: React.FC<Props> = ({
   baseUrl,
   setMessages,
   messages,
+  status,
 }: Props): JSX.Element => {
   const [turtleMode, setTurtleMode] = useState<boolean>(window.ReactNativeWebView !== undefined);
 
   return turtleMode ? (
     <EncryptedTurtleChat
       messages={messages}
+      robot={robot}
       setMessages={setMessages}
       orderId={orderId}
       takerNick={takerNick}
@@ -54,7 +57,9 @@ const EncryptedChat: React.FC<Props> = ({
     />
   ) : (
     <EncryptedSocketChat
+      status={status}
       messages={messages}
+      robot={robot}
       setMessages={setMessages}
       orderId={orderId}
       takerNick={takerNick}

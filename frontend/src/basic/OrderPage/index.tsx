@@ -20,6 +20,7 @@ const OrderPage = ({ hasRobot = false, locationOrderId }: OrderPageProps): JSX.E
   const {
     windowSize,
     order,
+    robot,
     settings,
     setOrder,
     setCurrentOrder,
@@ -121,6 +122,7 @@ const OrderPage = ({ hasRobot = false, locationOrderId }: OrderPageProps): JSX.E
                 >
                   <TradeBox
                     order={order}
+                    robot={robot}
                     settings={settings}
                     setOrder={setOrder}
                     setBadOrder={setBadOrder}
@@ -164,6 +166,7 @@ const OrderPage = ({ hasRobot = false, locationOrderId }: OrderPageProps): JSX.E
                 <div style={{ display: tab == 'contract' ? '' : 'none' }}>
                   <TradeBox
                     order={order}
+                    robot={robot}
                     settings={settings}
                     setOrder={setOrder}
                     setBadOrder={setBadOrder}

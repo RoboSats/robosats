@@ -85,6 +85,7 @@ const RobotProfile = ({
         alignItems='center'
         spacing={1}
         padding={1}
+        topPadding={2}
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
@@ -206,7 +207,7 @@ const RobotProfile = ({
           direction='row'
           justifyContent='stretch'
           alignItems='stretch'
-          sx={{ width: '100%', display: 'flex' }}
+          sx={{ width: '100%' }}
         >
           <Grid xs={2} sx={{ display: 'flex', justifyContent: 'stretch', alignItems: 'stretch' }}>
             <Tooltip enterTouchDelay={0} enterDelay={300} enterNextDelay={1000} title={t('Logout')}>

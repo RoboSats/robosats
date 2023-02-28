@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, TextField, Grid, Container, Paper } from '@mui/material';
+import { Button, TextField, Grid, Paper } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { AuditPGPDialog } from '../../../Dialogs';
-import { systemClient } from '../../../../services/System';
+import { Robot } from '../../../../models';
 
 // Icons
 import CircularProgress from '@mui/material/CircularProgress';
@@ -17,6 +17,7 @@ import ChatBottom from '../ChatBottom';
 
 interface Props {
   orderId: number;
+  robot: Robot;
   userNick: string;
   takerNick: string;
   chatOffset: number;
@@ -29,6 +30,7 @@ interface Props {
 
 const EncryptedTurtleChat: React.FC<Props> = ({
   orderId,
+  robot,
   userNick,
   takerNick,
   chatOffset,
@@ -43,14 +45,10 @@ const EncryptedTurtleChat: React.FC<Props> = ({
 
   const audio = new Audio(`/static/assets/sounds/chat-open.mp3`);
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
-  const [ownPubKey] = useState<string>(
-    (systemClient.getItem('pub_key') ?? '').split('\\').join('\n'),
-  );
-  const [ownEncPrivKey] = useState<string>(
-    (systemClient.getItem('enc_priv_key') ?? '').split('\\').join('\n'),
-  );
+  const [ownPubKey] = useState<string>(robot.pubKey || '');
+  const [ownEncPrivKey] = useState<string>(robot.encPrivKey || '');
   const [peerPubKey, setPeerPubKey] = useState<string>();
-  const [token] = useState<string>(systemClient.getItem('robot_token') || '');
+  const [token] = useState<string>(robot.token || '');
   const [value, setValue] = useState<string>('');
   const [audit, setAudit] = useState<boolean>(false);
   const [waitingEcho, setWaitingEcho] = useState<boolean>(false);
