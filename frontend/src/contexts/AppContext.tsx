@@ -92,6 +92,7 @@ export interface AppContextProps {
   setMaker: (state: Maker) => void;
   clearOrder: () => void;
   robot: Robot;
+  setRobot: (state: Robot) => void;
   focusedCoordinator: number;
   setFocusedCoordinator: (state: number) => void;
   baseUrl: string;
@@ -207,7 +208,6 @@ export const AppContextProvider = ({
   const [garage, setGarage] = useState<Garage>(() => {
     const initialState = { setGarage };
     const newGarage = new Garage(initialState);
-    newGarage.load();
     return newGarage;
   });
   const [currentSlot, setCurrentSlot] = useState<number>(garage.slots.length - 1);
@@ -230,7 +230,6 @@ export const AppContextProvider = ({
     in: undefined,
     out: undefined,
   });
-
   const [currentOrder, setCurrentOrder] = useState<number | undefined>(undefined);
 
   const navbarHeight = 2.5;
@@ -473,10 +472,9 @@ export const AppContextProvider = ({
     if (baseUrl != '' && page != 'robot') {
       if (open.profile || (robot.token && robot.nickname === null)) {
         fetchRobot({ action: 'refresh' }); // refresh/update existing robot
+      } else if (robot.token && robot.encPrivKey && robot.pubKey) {
+        fetchRobot({ action: 'refresh' }); // create new robot with existing token and keys (on network and coordinator change)
       }
-      // } else if (robot.token && robot.encPrivKey && robot.pubKey) {
-      //   fetchRobot({ action: 'refresh' }); // create new robot with existing token and keys (on network and coordinator change)
-      // }
     }
   }, [open.profile, baseUrl]);
 

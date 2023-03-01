@@ -10,21 +10,16 @@ const emptySlot: Slot = { robot: new Robot(), order: null };
 
 class Garage {
   constructor(initialState?: Garage) {
-    this.slots = initialState?.slots || [emptySlot];
-    this.setGarage = initialState?.setGarage || (() => {});
-  }
-  slots: Slot[] = [emptySlot];
-  setGarage: (state: Garage) => void = () => {};
-
-  load = () => {
-    if (systemClient.getItem('garage') != '') {
+    if (initialState?.slots === undefined && systemClient.getItem('garage') != '') {
       this.slots = JSON.parse(systemClient.getItem('garage'));
       console.log('Robot Garage was loaded from local storage');
     } else {
       this.slots = [emptySlot];
     }
-    this.setGarage(new Garage(this));
-  };
+    this.setGarage = initialState?.setGarage || (() => {});
+  }
+  slots: Slot[] = [emptySlot];
+  setGarage: (state: Garage) => void = () => {};
 
   save = () => {
     systemClient.setItem('garage', JSON.stringify(this.slots));

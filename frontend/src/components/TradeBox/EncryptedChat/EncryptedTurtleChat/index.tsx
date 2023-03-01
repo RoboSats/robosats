@@ -169,8 +169,9 @@ const EncryptedTurtleChat: React.FC<Props> = ({
     // If input string contains '#' send unencrypted and unlogged message
     else if (value.substring(0, 1) == '#') {
       apiClient
-        .post(baseUrl, `/api/chat`, {
+        .post(baseUrl, `/api/chat/`, {
           PGP_message: value,
+          order_id: orderId,
           offset: lastIndex,
         })
         .then((response) => {

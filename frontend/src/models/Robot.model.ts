@@ -1,5 +1,3 @@
-import { systemClient } from '../services/System';
-
 class Robot {
   constructor(garageRobot?: Robot) {
     if (garageRobot) {
