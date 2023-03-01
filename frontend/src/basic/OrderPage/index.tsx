@@ -6,17 +6,14 @@ import { useHistory } from 'react-router-dom';
 import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
 
-import { Page } from '../NavBar';
-import { Order, Settings } from '../../models';
 import { apiClient } from '../../services/api';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface OrderPageProps {
-  hasRobot: boolean;
   locationOrderId: number;
 }
 
-const OrderPage = ({ hasRobot = false, locationOrderId }: OrderPageProps): JSX.Element => {
+const OrderPage = ({ locationOrderId }: OrderPageProps): JSX.Element => {
   const {
     windowSize,
     order,
@@ -107,7 +104,7 @@ const OrderPage = ({ hasRobot = false, locationOrderId }: OrderPageProps): JSX.E
                     setOrder={setOrder}
                     baseUrl={baseUrl}
                     setPage={setPage}
-                    hasRobot={hasRobot}
+                    hasRobot={robot.avatarLoaded}
                   />
                 </Paper>
               </Grid>
@@ -160,7 +157,7 @@ const OrderPage = ({ hasRobot = false, locationOrderId }: OrderPageProps): JSX.E
                     setOrder={setOrder}
                     baseUrl={baseUrl}
                     setPage={setPage}
-                    hasRobot={hasRobot}
+                    hasRobot={robot.avatarLoaded}
                   />
                 </div>
                 <div style={{ display: tab == 'contract' ? '' : 'none' }}>
@@ -192,7 +189,7 @@ const OrderPage = ({ hasRobot = false, locationOrderId }: OrderPageProps): JSX.E
               setOrder={setOrder}
               baseUrl={baseUrl}
               setPage={setPage}
-              hasRobot={hasRobot}
+              hasRobot={robot.avatarLoaded}
             />
           </Paper>
         )

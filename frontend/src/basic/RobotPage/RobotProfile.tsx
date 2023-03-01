@@ -11,10 +11,9 @@ import {
   MenuItem,
   Box,
   useTheme,
-  FormHelperText,
   Tooltip,
 } from '@mui/material';
-import { Bolt, Refresh, Add, DeleteSweep, Logout, Download } from '@mui/icons-material';
+import { Bolt, Add, DeleteSweep, Logout, Download } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { Page } from '../NavBar';
@@ -27,9 +26,11 @@ interface RobotProfileProps {
   robot: Robot;
   setRobot: (state: Robot) => void;
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
+  getGenerateRobot: (token: string, slot?: number) => void;
   inputToken: string;
   setCurrentOrder: (state: number) => void;
   logoutRobot: () => void;
+  inputToken: string;
   setInputToken: (state: string) => void;
   setPage: (state: Page) => void;
   baseUrl: string;
@@ -57,7 +58,7 @@ const RobotProfile = ({
   const theme = useTheme();
   const history = useHistory();
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (robot.nickname && robot.avatarLoaded) {
@@ -73,19 +74,17 @@ const RobotProfile = ({
   const handleChangeSlot = (e) => {
     const slot = e.target.value;
     getGenerateRobot(garage.slots[slot].robot.token, slot);
-    setLoading(false);
+    setLoading(true);
   };
 
   return (
-    <Grid container direction='column' alignItems='center' spacing={1} padding={1}>
+    <Grid container direction='column' alignItems='center' spacing={1} padding={1} paddingTop={2}>
       <Grid
         item
         container
         direction='column'
         alignItems='center'
         spacing={1}
-        padding={1}
-        topPadding={2}
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
@@ -209,7 +208,11 @@ const RobotProfile = ({
           alignItems='stretch'
           sx={{ width: '100%' }}
         >
-          <Grid xs={2} sx={{ display: 'flex', justifyContent: 'stretch', alignItems: 'stretch' }}>
+          <Grid
+            item
+            xs={2}
+            sx={{ display: 'flex', justifyContent: 'stretch', alignItems: 'stretch' }}
+          >
             <Tooltip enterTouchDelay={0} enterDelay={300} enterNextDelay={1000} title={t('Logout')}>
               <Button
                 sx={{ minWidth: '2em', width: '100%' }}
@@ -256,38 +259,44 @@ const RobotProfile = ({
                 inputProps={{
                   style: { textAlign: 'center' },
                 }}
-                value={currentSlot}
+                value={loading ? 'loading' : currentSlot}
                 onChange={handleChangeSlot}
               >
-                {garage.slots.map((slot: Slot, index: number) => {
-                  return (
-                    <MenuItem key={index} value={index}>
-                      <Grid
-                        container
-                        direction='row'
-                        justifyContent='flex-start'
-                        alignItems='center'
-                        style={{ height: '2.8em' }}
-                        spacing={1}
-                      >
-                        <Grid item>
-                          <RobotAvatar
-                            nickname={slot.robot.nickname}
-                            smooth={true}
-                            style={{ width: '2.6em', height: '2.6em' }}
-                            placeholderType='loading'
-                            baseUrl={baseUrl}
-                          />
+                {loading ? (
+                  <MenuItem key={'loading'} value={'loading'}>
+                    <Typography>{t('Building...')}</Typography>
+                  </MenuItem>
+                ) : (
+                  garage.slots.map((slot: Slot, index: number) => {
+                    return (
+                      <MenuItem key={index} value={index}>
+                        <Grid
+                          container
+                          direction='row'
+                          justifyContent='flex-start'
+                          alignItems='center'
+                          style={{ height: '2.8em' }}
+                          spacing={1}
+                        >
+                          <Grid item>
+                            <RobotAvatar
+                              nickname={slot.robot.nickname}
+                              smooth={true}
+                              style={{ width: '2.6em', height: '2.6em' }}
+                              placeholderType='loading'
+                              baseUrl={baseUrl}
+                            />
+                          </Grid>
+                          <Grid item>
+                            <Typography variant={windowSize.width < 23 ? 'caption' : 'body2'}>
+                              {slot.robot.nickname}
+                            </Typography>
+                          </Grid>
                         </Grid>
-                        <Grid item>
-                          {currentSlot == index && !robot.avatarLoaded
-                            ? t('Loading...')
-                            : slot.robot.nickname}
-                        </Grid>
-                      </Grid>
-                    </MenuItem>
-                  );
-                })}
+                      </MenuItem>
+                    );
+                  })
+                )}
               </Select>
             </Grid>
 

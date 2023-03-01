@@ -12,8 +12,7 @@ import {
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
-import { Garage, Robot } from '../../models';
-import { systemClient } from '../../services/System';
+import { Robot } from '../../models';
 import { apiClient } from '../../services/api';
 import Onboarding from './Onboarding';
 import Welcome from './Welcome';
@@ -24,19 +23,8 @@ import { genKey } from '../../pgp';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 const RobotPage = (): JSX.Element => {
-  const {
-    garage,
-    setGarage,
-    robot,
-    setRobot,
-    currentSlot,
-    setPage,
-    setCurrentOrder,
-    fetchRobot,
-    torStatus,
-    windowSize,
-    baseUrl,
-  } = useContext<AppContextProps>(AppContext);
+  const { robot, setRobot, setPage, setCurrentOrder, fetchRobot, torStatus, windowSize, baseUrl } =
+    useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const params = useParams();
   const refCode = params.refCode;
@@ -74,11 +62,6 @@ const RobotPage = (): JSX.Element => {
         setBadRequest,
       });
     });
-  };
-
-  const deleteRobot = () => {
-    apiClient.delete(baseUrl, '/api/user');
-    logoutRobot();
   };
 
   const logoutRobot = () => {

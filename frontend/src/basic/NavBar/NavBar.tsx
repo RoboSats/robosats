@@ -16,15 +16,13 @@ import {
 } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
-import { Robot } from '../../models';
 
 interface NavBarProps {
   width: number;
   height: number;
-  hasRobot: boolean;
 }
 
-const NavBar = ({ width, height, hasRobot = false }: NavBarProps): JSX.Element => {
+const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
   const {
     robot,
     page,
@@ -138,7 +136,7 @@ const NavBar = ({ width, height, hasRobot = false }: NavBarProps): JSX.Element =
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!hasRobot || currentOrder == undefined}
+          disabled={!robot.avatarLoaded || currentOrder == undefined}
           icon={<Assignment />}
           iconPosition='start'
         />

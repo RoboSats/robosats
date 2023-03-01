@@ -19,7 +19,7 @@ class Garage {
   load = () => {
     if (systemClient.getItem('garage') != '') {
       this.slots = JSON.parse(systemClient.getItem('garage'));
-      console.log('Robot Garage loaded from local storage!');
+      console.log('Robot Garage was loaded from local storage');
     } else {
       this.slots = [emptySlot];
     }
@@ -29,7 +29,6 @@ class Garage {
   save = () => {
     systemClient.setItem('garage', JSON.stringify(this.slots));
     this.setGarage(new Garage(this));
-    console.log('saved!');
   };
 
   delete = () => {

@@ -19,33 +19,18 @@ import { AppContextProps, AppContext } from '../contexts/AppContext';
 const Main = (): JSX.Element => {
   const { t } = useTranslation();
   const {
-    book,
-    fetchBook,
-    maker,
-    setMaker,
-    clearOrder,
     settings,
-    limits,
-    fetchLimits,
     robot,
     setRobot,
-    setOrder,
-    setDelay,
-    info,
-    fav,
-    setFav,
     baseUrl,
     order,
     page,
     setPage,
     slideDirection,
-    setCurrentOrder,
     closeAll,
     setOpen,
     windowSize,
-    currentSlot,
     navbarHeight,
-    setBadOrder,
   } = useContext<AppContextProps>(AppContext);
 
   const Router = window.NativeRobosats === undefined ? BrowserRouter : HashRouter;
@@ -109,27 +94,7 @@ const Main = (): JSX.Element => {
               appear={slideDirection.in != undefined}
             >
               <div>
-                <BookPage
-                  book={book}
-                  fetchBook={fetchBook}
-                  onViewOrder={() => {
-                    setOrder(undefined);
-                    setDelay(10000);
-                  }}
-                  limits={limits}
-                  fetchLimits={fetchLimits}
-                  fav={fav}
-                  setFav={setFav}
-                  maker={maker}
-                  setMaker={setMaker}
-                  clearOrder={clearOrder}
-                  lastDayPremium={info.last_day_nonkyc_btc_premium}
-                  windowSize={windowSize}
-                  hasRobot={robot.avatarLoaded}
-                  setPage={setPage}
-                  setCurrentOrder={setCurrentOrder}
-                  baseUrl={baseUrl}
-                />
+                <BookPage />
               </div>
             </Slide>
           </Route>
@@ -141,7 +106,7 @@ const Main = (): JSX.Element => {
               appear={slideDirection.in != undefined}
             >
               <div>
-                <MakerPage hasRobot={robot.avatarLoaded} />
+                <MakerPage />
               </div>
             </Slide>
           </Route>
@@ -155,10 +120,7 @@ const Main = (): JSX.Element => {
                 appear={slideDirection.in != undefined}
               >
                 <div>
-                  <OrderPage
-                    locationOrderId={props.match.params.orderId}
-                    hasRobot={robot.avatarLoaded}
-                  />
+                  <OrderPage locationOrderId={props.match.params.orderId} />
                 </div>
               </Slide>
             )}
@@ -178,7 +140,7 @@ const Main = (): JSX.Element => {
         </Switch>
       </Box>
       <div style={{ alignContent: 'center', display: 'flex' }}>
-        <NavBar width={windowSize.width} height={navbarHeight} hasRobot={robot.avatarLoaded} />
+        <NavBar width={windowSize.width} height={navbarHeight} />
       </div>
       <MainDialogs />
     </Router>

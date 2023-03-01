@@ -10,13 +10,18 @@ import BookTable from '../../components/BookTable';
 
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
-interface MakerPageProps {
-  hasRobot: boolean;
-}
-
-const MakerPage = ({ hasRobot = false }: MakerPageProps): JSX.Element => {
-  const { book, fav, maker, clearOrder, windowSize, setCurrentOrder, navbarHeight, setPage } =
-    useContext<AppContextProps>(AppContext);
+const MakerPage = (): JSX.Element => {
+  const {
+    robot,
+    book,
+    fav,
+    maker,
+    clearOrder,
+    windowSize,
+    setCurrentOrder,
+    navbarHeight,
+    setPage,
+  } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const history = useHistory();
 
@@ -74,7 +79,7 @@ const MakerPage = ({ hasRobot = false }: MakerPageProps): JSX.Element => {
               setPage('order');
               history.push('/order/' + id);
             }}
-            hasRobot={hasRobot}
+            hasRobot={robot.avatarLoaded}
             disableRequest={matches.length > 0 && !showMatches}
             collapseAll={showMatches}
             onSubmit={() => setShowMatches(matches.length > 0)}

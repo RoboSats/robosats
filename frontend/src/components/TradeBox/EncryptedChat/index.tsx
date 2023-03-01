@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Robot } from '../../../models';
 import EncryptedSocketChat from './EncryptedSocketChat';
 import EncryptedTurtleChat from './EncryptedTurtleChat';
 
@@ -16,6 +17,7 @@ interface Props {
 
 export interface EncryptedChatMessage {
   userNick: string;
+  robot: Robot;
   validSignature: boolean;
   plainTextMessage: string;
   encryptedMessage: string;
@@ -33,6 +35,7 @@ export interface ServerMessage {
 const EncryptedChat: React.FC<Props> = ({
   orderId,
   takerNick,
+  robot,
   userNick,
   chatOffset,
   baseUrl,

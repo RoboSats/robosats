@@ -23,7 +23,6 @@ import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
 import { useTheme } from '@mui/material';
-import { systemClient } from '../services/System';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -59,6 +58,15 @@ const statusToDelay = [
 export interface SlideDirection {
   in: 'left' | 'right' | undefined;
   out: 'left' | 'right' | undefined;
+}
+
+export interface fetchRobotProps {
+  action?: 'login' | 'generate' | 'refresh';
+  newKeys?: { encPrivKey: string; pubKey: string } | null;
+  newToken?: string | null;
+  refCode?: string | null;
+  slot?: number | null;
+  setBadRequest?: (state: string) => void;
 }
 
 export type TorStatus = 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
@@ -243,6 +251,13 @@ export const AppContextProvider = ({
   );
 
   useEffect(() => {
+    window.addEventListener('torStatus', (event) => {
+      // UX improv: delay the "Conencted" status by 10 secs to avoid long waits for first requests
+      setTimeout(() => setTorStatus(event?.detail), event?.detail === '"Done"' ? 10000 : 0);
+    });
+  }, []);
+
+  useEffect(() => {
     if (typeof window !== undefined) {
       window.addEventListener('resize', onResize);
     }
@@ -265,7 +280,7 @@ export const AppContextProvider = ({
       host = getHost();
       protocol = location.protocol;
     } else {
-      protocol = 'http';
+      protocol = 'http:';
       host =
         settings.network === 'mainnet'
           ? coordinators[0].mainnetOnion
@@ -382,11 +397,13 @@ export const AppContextProvider = ({
   }: fetchRobotProps) {
     const oldRobot = robot;
     const targetSlot = slot ?? currentSlot;
-    setRobot(new Robot());
+    if (action != 'refresh') {
+      setRobot(new Robot());
+    }
     setBadRequest('');
 
     let requestBody = {};
-    if (action == 'login') {
+    if (action == 'login' || action == 'refresh') {
       requestBody.token_sha256 = sha256(newToken ?? oldRobot.token);
     } else if (action == 'generate' && newToken != null) {
       const strength = tokenStrength(newToken);
@@ -455,10 +472,11 @@ export const AppContextProvider = ({
   useEffect(() => {
     if (baseUrl != '' && page != 'robot') {
       if (open.profile || (robot.token && robot.nickname === null)) {
-        fetchRobot({ action: 'login' }); // fetch existing robot
-      } else if (robot.token && robot.encPrivKey && robot.pubKey) {
-        fetchRobot({ action: 'login' }); // create new robot with existing token and keys (on network and coordinator change)
+        fetchRobot({ action: 'refresh' }); // refresh/update existing robot
       }
+      // } else if (robot.token && robot.encPrivKey && robot.pubKey) {
+      //   fetchRobot({ action: 'refresh' }); // create new robot with existing token and keys (on network and coordinator change)
+      // }
     }
   }, [open.profile, baseUrl]);
 
