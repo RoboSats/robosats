@@ -46,6 +46,12 @@ body {
   }
 }
 
+.unsafeAlert {
+  position: absolute;
+  width: 100%;
+  z-index: 9999;
+}
+
 /* No arrows on numeric inputs */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {

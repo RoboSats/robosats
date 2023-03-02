@@ -77,7 +77,7 @@ const UnsafeAlert = (): JSX.Element => {
   // Show unsafe alert
   else if (settings.unsafeClient) {
     return (
-      <Paper elevation={6} style={{ position: 'absolute', width: '100%', zIndex: 9999 }}>
+      <Paper elevation={6} className='unsafeAlert'>
         {windowSize.width > 57 ? (
           <Alert
             severity='warning'

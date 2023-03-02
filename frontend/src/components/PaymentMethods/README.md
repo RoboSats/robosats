@@ -6,8 +6,8 @@ Scripts taken from https://github.com/hsjoberg/blixt-wallet/blob/master/contrib/
 
 1. Run `cd Icons` and `./gen-webp.sh` to generate the WebP files to used
 2. Run `cd Icons` and `./gen-code.sh` to generate code to either be used in react js source files
-3. Copy/Paste and replace the dict from `frontend/src/components/PaymentMethods/Icons/code/code.js` to `frontend/src/components/PaymentMethods/Icons/index.js`
-4. Add the new entry to `paymentMethods` or `swapMethods` array in `frontend/src/components/PaymentMethods/MethodList.js`
+3. Copy/Paste and replace the dict from `frontend/src/components/PaymentMethods/Icons/code/code.js` to `frontend/src/components/PaymentMethods/Icons/index.tsx`
+4. Add the new entry to `paymentMethods` or `swapMethods` array in `frontend/src/components/PaymentMethods/MethodList.ts`
 
 # Trademarks belong to their respective owners
 
