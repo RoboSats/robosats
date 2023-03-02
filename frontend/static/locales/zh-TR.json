@@ -16,7 +16,7 @@
   "Logout": "Logout",
   "Store your token safely": "請安全地存儲你的令牌",
   "Robot Garage": "Robot Garage",
-  "Loading...": "Loading...",
+  "Building...": "Building...",
   "Add Robot": "Add Robot",
   "Delete Garage": "Delete Garage",
   "#4": "Phrases in basic/RobotPage/TokenInput.tsx",

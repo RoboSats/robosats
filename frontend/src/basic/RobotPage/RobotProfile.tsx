@@ -288,7 +288,7 @@ const RobotProfile = ({
                             />
                           </Grid>
                           <Grid item>
-                            <Typography variant={windowSize.width < 23 ? 'caption' : 'body2'}>
+                            <Typography variant={windowSize.width < 26 ? 'caption' : undefined}>
                               {slot.robot.nickname}
                             </Typography>
                           </Grid>
