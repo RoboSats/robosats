@@ -46,16 +46,6 @@ body {
   }
 }
 
-.alertUnsafe {
-  position: absolute;
-  width: 100%;
-  z-index: 9999;
-}
-
-.hideAlertButton {
-  position: fixed;
-}
-
 /* No arrows on numeric inputs */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {

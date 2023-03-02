@@ -78,7 +78,6 @@
     "react-i18next": "^11.16.2",
     "react-image": "^4.0.3",
     "react-qr-code": "^2.0.3",
-    "react-responsive": "^9.0.0-beta.6",
     "react-router-dom": "^5.2.0",
     "react-smooth-image": "^1.1.0",
     "react-world-flags": "^1.4.0",
