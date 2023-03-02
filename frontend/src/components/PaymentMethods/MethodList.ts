@@ -1,4 +1,9 @@
-export const fiatMethods = [
+export interface PaymentMethod {
+  name: string;
+  icon: string;
+}
+
+export const fiatMethods: PaymentMethod[] = [
   { name: 'Revolut', icon: 'revolut' },
   { name: 'CashApp', icon: 'cashapp' },
   { name: 'Zelle', icon: 'zelle' },
@@ -78,7 +83,7 @@ export const fiatMethods = [
   { name: 'Amazon TR GiftCard', icon: 'amazontr' },
 ];
 
-export const swapMethods = [
+export const swapMethods: PaymentMethod[] = [
   { name: 'On-Chain BTC', icon: 'onchain' },
   { name: 'On-Chain w/ Stowaway', icon: 'stowaway' },
   { name: 'RBTC', icon: 'rbtc' },

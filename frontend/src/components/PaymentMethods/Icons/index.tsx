@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 
 const icons = {
@@ -424,29 +424,25 @@ const icons = {
   },
 };
 
-export default class PaymentIcon extends Component {
-  constructor(props) {
-    super(props);
+const PaymentIcon: React.FC = (props) => {
+  if (props.icon === undefined) {
+    return null;
+  } else if (props.icon === 'custom') {
+    return (
+      <DashboardCustomizeIcon
+        sx={{ ...props, filter: 'drop-shadow(1.5px 1.5px 1.5px rgba(0, 0, 0, 0.2))' }}
+        color='primary'
+      />
+    );
+  } else {
+    return (
+      <img
+        {...props}
+        src={icons[props.icon].image}
+        style={{ borderRadius: '23%', filter: 'drop-shadow(1.5px 1.5px 2px rgba(0, 0, 0, 0.2))' }}
+      />
+    );
   }
+};
 
-  render() {
-    if (this.props.icon === undefined) {
-      return null;
-    } else if (this.props.icon === 'custom') {
-      return (
-        <DashboardCustomizeIcon
-          sx={{ ...this.props, filter: 'drop-shadow(1.5px 1.5px 1.5px rgba(0, 0, 0, 0.2))' }}
-          color='primary'
-        />
-      );
-    } else {
-      return (
-        <img
-          {...this.props}
-          src={icons[this.props.icon].image}
-          style={{ borderRadius: '23%', filter: 'drop-shadow(1.5px 1.5px 2px rgba(0, 0, 0, 0.2))' }}
-        />
-      );
-    }
-  }
-}
+export default PaymentIcon;

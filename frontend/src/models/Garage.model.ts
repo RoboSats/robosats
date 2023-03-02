@@ -16,8 +16,9 @@ class Garage {
     } else {
       this.slots = [emptySlot];
     }
-    this.setGarage = initialState?.setGarage || (() => {});
+    this.setGarage = initialState?.setGarage != null || (() => {});
   }
+
   slots: Slot[] = [emptySlot];
   setGarage: (state: Garage) => void = () => {};
 

@@ -51,7 +51,7 @@ class BaseSettings {
   public coordinator: Coordinator | undefined = undefined;
   public host?: string;
   public unsafeClient: boolean = false;
-  public hostedClient: boolean = false;
+  public selfhostedClient: boolean = false;
 }
 
 export default BaseSettings;

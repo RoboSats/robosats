@@ -401,7 +401,7 @@ export const AppContextProvider = ({
     }
     setBadRequest('');
 
-    let requestBody = {};
+    const requestBody = {};
     if (action == 'login' || action == 'refresh') {
       requestBody.token_sha256 = sha256(newToken ?? oldRobot.token);
     } else if (action == 'generate' && newToken != null) {
@@ -459,7 +459,7 @@ export const AppContextProvider = ({
           shannonEntropy: data.token_shannon_entropy,
           pubKey: data.public_key,
           encPrivKey: data.encrypted_private_key,
-          copiedToken: data.found ? true : false,
+          copiedToken: !!data.found,
         };
         setRobot(newRobot);
         garage.updateRobot(newRobot, targetSlot);
