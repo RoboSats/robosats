@@ -1,6 +1,6 @@
 class Robot {
   constructor(garageRobot?: Robot) {
-    if (garageRobot) {
+    if (garageRobot != null) {
       this.token = garageRobot?.token ?? undefined;
       this.pubKey = garageRobot?.pubKey ?? undefined;
       this.encPrivKey = garageRobot?.encPrivKey ?? undefined;
