@@ -30,11 +30,10 @@ import { EnableTelegramDialog } from '.';
 import BoltIcon from '@mui/icons-material/Bolt';
 import SendIcon from '@mui/icons-material/Send';
 import NumbersIcon from '@mui/icons-material/Numbers';
-import PasswordIcon from '@mui/icons-material/Password';
 import ContentCopy from '@mui/icons-material/ContentCopy';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import { UserNinjaIcon, BitcoinIcon } from '../Icons';
+import { UserNinjaIcon } from '../Icons';
 
 import { systemClient } from '../../services/System';
 import { getHost, getWebln } from '../../utils';
@@ -76,9 +75,12 @@ const ProfileDialog = ({
   const [openEnableTelegram, setOpenEnableTelegram] = useState<boolean>(false);
 
   useEffect(() => {
-    getWebln().then((webln) => {
-      setWeblnEnabled(webln !== undefined);
-    });
+    const handleWebln = async (order: Order) => {
+      const webln = await getWebln().catch(() => console.log('WebLN not available'));
+      return webln;
+    };
+    const webln = handleWebln();
+    setWeblnEnabled(webln !== undefined);
   }, []);
 
   const copyReferralCodeHandler = () => {
