@@ -7,6 +7,7 @@ import {
   LimitList,
   Maker,
   Robot,
+  Garage,
   Info,
   Settings,
   Favorites,
@@ -22,7 +23,6 @@ import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
 import { useTheme } from '@mui/material';
-import { systemClient } from '../services/System';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -61,10 +61,11 @@ export interface SlideDirection {
 }
 
 export interface fetchRobotProps {
-  action?: 'login' | 'generate';
+  action?: 'login' | 'generate' | 'refresh';
   newKeys?: { encPrivKey: string; pubKey: string } | null;
   newToken?: string | null;
   refCode?: string | null;
+  slot?: number | null;
   setBadRequest?: (state: string) => void;
 }
 
@@ -78,6 +79,10 @@ export interface AppContextProps {
   setSettings: (state: Settings) => void;
   book: Book;
   info: Info;
+  garage: Garage;
+  setGarage: (state: Garage) => void;
+  currentSlot: number;
+  setCurrentSlot: (state: number) => void;
   setBook: (state: Book) => void;
   fetchBook: () => void;
   limits: { list: LimitList; loading: boolean };
@@ -200,7 +205,13 @@ export const AppContextProvider = ({
     list: [],
     loading: true,
   });
-  const [robot, setRobot] = useState<Robot>(new Robot());
+  const [garage, setGarage] = useState<Garage>(() => {
+    const initialState = { setGarage };
+    const newGarage = new Garage(initialState);
+    return newGarage;
+  });
+  const [currentSlot, setCurrentSlot] = useState<number>(garage.slots.length - 1);
+  const [robot, setRobot] = useState<Robot>(new Robot(garage.slots[currentSlot].robot));
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
@@ -219,7 +230,6 @@ export const AppContextProvider = ({
     in: undefined,
     out: undefined,
   });
-
   const [currentOrder, setCurrentOrder] = useState<number | undefined>(undefined);
 
   const navbarHeight = 2.5;
@@ -240,6 +250,13 @@ export const AppContextProvider = ({
   );
 
   useEffect(() => {
+    window.addEventListener('torStatus', (event) => {
+      // UX improv: delay the "Conencted" status by 10 secs to avoid long waits for first requests
+      setTimeout(() => setTorStatus(event?.detail), event?.detail === '"Done"' ? 10000 : 0);
+    });
+  }, []);
+
+  useEffect(() => {
     if (typeof window !== undefined) {
       window.addEventListener('resize', onResize);
     }
@@ -257,15 +274,18 @@ export const AppContextProvider = ({
 
   useEffect(() => {
     let host = '';
+    let protocol = '';
     if (window.NativeRobosats === undefined) {
       host = getHost();
+      protocol = location.protocol;
     } else {
+      protocol = 'http:';
       host =
         settings.network === 'mainnet'
           ? coordinators[0].mainnetOnion
           : coordinators[0].testnetOnion;
     }
-    setBaseUrl(`${location.protocol}//${host}`);
+    setBaseUrl(`${protocol}//${host}`);
   }, [settings.network]);
 
   useEffect(() => {
@@ -371,14 +391,19 @@ export const AppContextProvider = ({
     newKeys = null,
     newToken = null,
     refCode = null,
+    slot = null,
     setBadRequest = () => {},
   }: fetchRobotProps) {
-    setRobot({ ...robot, loading: true, avatarLoaded: false });
+    const oldRobot = robot;
+    const targetSlot = slot ?? currentSlot;
+    if (action != 'refresh') {
+      setRobot(new Robot());
+    }
     setBadRequest('');
 
     let requestBody = {};
-    if (action == 'login') {
-      requestBody.token_sha256 = sha256(newToken ?? robot.token);
+    if (action == 'login' || action == 'refresh') {
+      requestBody.token_sha256 = sha256(newToken ?? oldRobot.token);
     } else if (action == 'generate' && newToken != null) {
       const strength = tokenStrength(newToken);
       requestBody.token_sha256 = sha256(newToken);
@@ -386,11 +411,12 @@ export const AppContextProvider = ({
       requestBody.counts = strength.counts;
       requestBody.length = newToken.length;
       requestBody.ref_code = refCode;
-      requestBody.public_key = newKeys.pubKey ?? robot.pubkey;
-      requestBody.encrypted_private_key = newKeys.encPrivKey ?? robot.encPrivKey;
+      requestBody.public_key = newKeys.pubKey ?? oldRobot.pubkey;
+      requestBody.encrypted_private_key = newKeys.encPrivKey ?? oldRobot.encPrivKey;
     }
 
     apiClient.post(baseUrl, '/api/user/', requestBody).then((data: any) => {
+      let newRobot = robot;
       setCurrentOrder(
         data.active_order_id
           ? data.active_order_id
@@ -400,25 +426,25 @@ export const AppContextProvider = ({
       );
       if (data.bad_request) {
         setBadRequest(data.bad_request);
-        setRobot({
-          ...robot,
+        newRobot = {
+          ...oldRobot,
           loading: false,
-          nickname: data.nickname ?? robot.nickname,
+          nickname: data.nickname ?? oldRobot.nickname,
           activeOrderId: data.active_order_id ?? null,
-          referralCode: data.referral_code ?? robot.referralCode,
-          earnedRewards: data.earned_rewards ?? robot.earnedRewards,
-          lastOrderId: data.last_order_id ?? robot.lastOrderId,
+          referralCode: data.referral_code ?? oldRobot.referralCode,
+          earnedRewards: data.earned_rewards ?? oldRobot.earnedRewards,
+          lastOrderId: data.last_order_id ?? oldRobot.lastOrderId,
           stealthInvoices: data.wants_stealth ?? robot.stealthInvoices,
           tgEnabled: data.tg_enabled,
           tgBotName: data.tg_bot_name,
           tgToken: data.tg_token,
           found: false,
-        });
+        };
       } else {
-        setRobot({
-          ...robot,
+        newRobot = {
+          ...oldRobot,
           nickname: data.nickname,
-          token: newToken ?? robot.token,
+          token: newToken ?? oldRobot.token,
           loading: false,
           activeOrderId: data.active_order_id ?? null,
           lastOrderId: data.last_order_id ?? null,
@@ -433,11 +459,11 @@ export const AppContextProvider = ({
           shannonEntropy: data.token_shannon_entropy,
           pubKey: data.public_key,
           encPrivKey: data.encrypted_private_key,
-          copiedToken: data.found ? true : robot.copiedToken,
-        });
-        systemClient.setItem('robot_token', newToken ?? robot.token);
-        systemClient.setItem('pub_key', data.public_key.split('\n').join('\\'));
-        systemClient.setItem('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'));
+          copiedToken: data.found ? true : false,
+        };
+        setRobot(newRobot);
+        garage.updateRobot(newRobot, targetSlot);
+        setCurrentSlot(targetSlot);
       }
     });
   };
@@ -445,9 +471,9 @@ export const AppContextProvider = ({
   useEffect(() => {
     if (baseUrl != '' && page != 'robot') {
       if (open.profile || (robot.token && robot.nickname === null)) {
-        fetchRobot({ action: 'login' }); // fetch existing robot
+        fetchRobot({ action: 'refresh' }); // refresh/update existing robot
       } else if (robot.token && robot.encPrivKey && robot.pubKey) {
-        fetchRobot({ action: 'login' }); // create new robot with existing token and keys (on network and coordinator change)
+        fetchRobot({ action: 'refresh' }); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
   }, [open.profile, baseUrl]);
@@ -460,8 +486,11 @@ export const AppContextProvider = ({
         setSettings,
         book,
         setBook,
+        garage,
+        setGarage,
+        currentSlot,
+        setCurrentSlot,
         fetchBook,
-        fetchRobot,
         limits,
         info,
         setLimits,
@@ -471,6 +500,7 @@ export const AppContextProvider = ({
         clearOrder,
         robot,
         setRobot,
+        fetchRobot,
         baseUrl,
         setBaseUrl,
         fav,

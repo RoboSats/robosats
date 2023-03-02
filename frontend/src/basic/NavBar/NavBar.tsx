@@ -20,17 +20,16 @@ import { AppContext, AppContextProps } from '../../contexts/AppContext';
 interface NavBarProps {
   width: number;
   height: number;
-  hasRobot: boolean;
 }
 
-const NavBar = ({ width, height, hasRobot = false }: NavBarProps): JSX.Element => {
+const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
   const {
+    robot,
     page,
     settings,
     setPage,
     setSlideDirection,
     open,
-    robot,
     setOpen,
     closeAll,
     currentOrder,
@@ -43,7 +42,7 @@ const NavBar = ({ width, height, hasRobot = false }: NavBarProps): JSX.Element =
   const smallBar = width < 50;
 
   const tabSx = smallBar
-    ? { position: 'relative', bottom: robot.nickname ? '1em' : '0em', minWidth: '1em' }
+    ? { position: 'relative', bottom: robot.avatarLoaded ? '0.9em' : '0.13em', minWidth: '1em' }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
   const pagesPosition = {
     robot: 1,
@@ -137,7 +136,7 @@ const NavBar = ({ width, height, hasRobot = false }: NavBarProps): JSX.Element =
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!hasRobot || currentOrder == undefined}
+          disabled={!robot.avatarLoaded || currentOrder == undefined}
           icon={<Assignment />}
           iconPosition='start'
         />

@@ -12,9 +12,7 @@ import {
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
-import { Page } from '../NavBar';
 import { Robot } from '../../models';
-import { systemClient } from '../../services/System';
 import { apiClient } from '../../services/api';
 import Onboarding from './Onboarding';
 import Welcome from './Welcome';
@@ -25,7 +23,7 @@ import { genKey } from '../../pgp';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 const RobotPage = (): JSX.Element => {
-  const { setPage, setCurrentOrder, fetchRobot, torStatus, windowSize, robot, setRobot, baseUrl } =
+  const { robot, setRobot, setPage, setCurrentOrder, fetchRobot, torStatus, windowSize, baseUrl } =
     useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const params = useParams();
@@ -49,7 +47,7 @@ const RobotPage = (): JSX.Element => {
     }
   }, []);
 
-  const getGenerateRobot = (token: string) => {
+  const getGenerateRobot = (token: string, slot?: number) => {
     setInputToken(token);
     genKey(token).then(function (key) {
       fetchRobot({
@@ -59,24 +57,16 @@ const RobotPage = (): JSX.Element => {
           encPrivKey: key.encryptedPrivateKeyArmored,
         },
         newToken: token,
+        slot,
         refCode,
         setBadRequest,
       });
     });
   };
 
-  const deleteRobot = () => {
-    apiClient.delete(baseUrl, '/api/user');
-    logoutRobot();
-  };
-
   const logoutRobot = () => {
     setInputToken('');
-    systemClient.deleteCookie('sessionid');
-    systemClient.deleteItem('robot_token');
-    systemClient.deleteItem('pub_key');
-    systemClient.deleteItem('enc_priv_key');
-    setTimeout(() => setRobot(new Robot()), 10);
+    setRobot(new Robot());
   };
 
   if (!(window.NativeRobosats === undefined) && !(torStatus == 'DONE' || torStatus == '"Done"')) {
@@ -146,7 +136,7 @@ const RobotPage = (): JSX.Element => {
           <Onboarding
             setView={setView}
             robot={robot}
-            setRobot={setRobot}
+            setRobot={() => null}
             badRequest={badRequest}
             inputToken={inputToken}
             setInputToken={setInputToken}
@@ -160,9 +150,10 @@ const RobotPage = (): JSX.Element => {
           <RobotProfile
             setView={setView}
             robot={robot}
-            setRobot={setRobot}
+            setRobot={() => null}
             setCurrentOrder={setCurrentOrder}
             badRequest={badRequest}
+            getGenerateRobot={getGenerateRobot}
             logoutRobot={logoutRobot}
             width={width}
             inputToken={inputToken}
@@ -177,7 +168,7 @@ const RobotPage = (): JSX.Element => {
           <Recovery
             setView={setView}
             robot={robot}
-            setRobot={setRobot}
+            setRobot={() => null}
             badRequest={badRequest}
             inputToken={inputToken}
             setInputToken={setInputToken}

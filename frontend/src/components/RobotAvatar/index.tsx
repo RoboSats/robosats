@@ -40,6 +40,7 @@ const RobotAvatar: React.FC<Props> = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const [avatarSrc, setAvatarSrc] = useState<string>();
+  const [nicknameReady, setNicknameReady] = useState<boolean>(false);
 
   const backgroundData =
     placeholderType == 'generating' ? placeholder.generating : placeholder.loading;
@@ -55,11 +56,15 @@ const RobotAvatar: React.FC<Props> = ({
     if (nickname != undefined) {
       if (window.NativeRobosats === undefined) {
         setAvatarSrc(baseUrl + '/static/assets/avatars/' + nickname + '.png');
+        setNicknameReady(true);
       } else {
+        setNicknameReady(true);
         apiClient
           .fileImageUrl(baseUrl, '/static/assets/avatars/' + nickname + '.png')
           .then(setAvatarSrc);
       }
+    } else {
+      setNicknameReady(false);
     }
   }, [nickname]);
 
@@ -93,7 +98,7 @@ const RobotAvatar: React.FC<Props> = ({
         >
           <div className={className}>
             <SmoothImage
-              src={avatarSrc}
+              src={nicknameReady ? avatarSrc : null}
               imageStyles={{
                 borderRadius: '50%',
                 border: '0.3px solid #55555',
@@ -110,7 +115,7 @@ const RobotAvatar: React.FC<Props> = ({
           className={avatarClass}
           style={style}
           alt={nickname}
-          src={avatarSrc}
+          src={nicknameReady ? avatarSrc : null}
           imgProps={{
             sx: { transform: flipHorizontally ? 'scaleX(-1)' : '' },
             style: { transform: flipHorizontally ? 'scaleX(-1)' : '' },

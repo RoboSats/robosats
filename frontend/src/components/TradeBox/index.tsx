@@ -93,6 +93,7 @@ const closeAll: OpenDialogProps = {
 interface TradeBoxProps {
   order: Order;
   setOrder: (state: Order) => void;
+  robot: Robot;
   setBadOrder: (state: string | undefined) => void;
   onRenewOrder: () => void;
   onStartAgain: () => void;
@@ -103,6 +104,7 @@ interface TradeBoxProps {
 const TradeBox = ({
   order,
   setOrder,
+  robot,
   settings,
   baseUrl,
   setBadOrder,
@@ -230,7 +232,7 @@ const TradeBox = ({
   const submitStatement = function () {
     let statement = dispute.statement;
     if (dispute.attachLogs) {
-      const payload = { statement, messages, token: systemClient.getItem('robot_token') };
+      const payload = { statement, messages, token: robot.token };
       statement = JSON.stringify(payload, null, 2);
     }
     setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
@@ -461,6 +463,7 @@ const TradeBox = ({
         return (
           <ChatPrompt
             order={order}
+            robot={robot}
             onClickConfirmSent={confirmFiatSent}
             onClickConfirmReceived={() => setOpen({ ...open, confirmFiatReceived: true })}
             loadingSent={loadingButtons.fiatSent}
