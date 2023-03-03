@@ -396,6 +396,7 @@ export const AppContextProvider = ({
   }: fetchRobotProps) {
     const oldRobot = robot;
     const targetSlot = slot ?? currentSlot;
+    const token = newToken ?? oldRobot.token;
     if (action != 'refresh') {
       setRobot(new Robot());
     }
@@ -403,16 +404,16 @@ export const AppContextProvider = ({
 
     const requestBody = {};
     if (action == 'login' || action == 'refresh') {
-      requestBody.token_sha256 = sha256(newToken ?? oldRobot.token);
-    } else if (action == 'generate' && newToken != null) {
-      const strength = tokenStrength(newToken);
-      requestBody.token_sha256 = sha256(newToken);
+      requestBody.token_sha256 = sha256(token);
+    } else if (action == 'generate' && token != null) {
+      const strength = tokenStrength(token);
+      requestBody.token_sha256 = sha256(token);
       requestBody.unique_values = strength.uniqueValues;
       requestBody.counts = strength.counts;
-      requestBody.length = newToken.length;
+      requestBody.length = token.length;
       requestBody.ref_code = refCode;
-      requestBody.public_key = newKeys.pubKey ?? oldRobot.pubkey;
-      requestBody.encrypted_private_key = newKeys.encPrivKey ?? oldRobot.encPrivKey;
+      requestBody.public_key = newKeys?.pubKey ?? oldRobot.pubKey;
+      requestBody.encrypted_private_key = newKeys?.encPrivKey ?? oldRobot.encPrivKey;
     }
 
     apiClient.post(baseUrl, '/api/user/', requestBody).then((data: any) => {
@@ -444,7 +445,7 @@ export const AppContextProvider = ({
         newRobot = {
           ...oldRobot,
           nickname: data.nickname,
-          token: newToken ?? oldRobot.token,
+          token: token,
           loading: false,
           activeOrderId: data.active_order_id ?? null,
           lastOrderId: data.last_order_id ?? null,
@@ -473,7 +474,7 @@ export const AppContextProvider = ({
       if (open.profile || (robot.token && robot.nickname === null)) {
         fetchRobot({ action: 'refresh' }); // refresh/update existing robot
       } else if (robot.token && robot.encPrivKey && robot.pubKey) {
-        fetchRobot({ action: 'refresh' }); // create new robot with existing token and keys (on network and coordinator change)
+        fetchRobot({ action: 'generate' }); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
   }, [open.profile, baseUrl]);

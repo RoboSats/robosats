@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { useAutocomplete } from '@mui/base/AutocompleteUnstyled';
+import useAutocomplete from '@mui/base/useAutocomplete';
 import { styled } from '@mui/material/styles';
 import { Button, Fade, Tooltip, Typography, Grow, useTheme } from '@mui/material';
 import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
@@ -92,9 +91,13 @@ const InputWrapper = styled('div')(
 `,
 );
 
-function Tag(props) {
+interface TagProps {
+  label: string;
+  icon: string;
+  onDelete: () => void;
+}
+const Tag = ({ label, icon, onDelete, ...other }: TagProps) => {
   const theme = useTheme();
-  const { label, icon, onDelete, ...other } = props;
   const iconSize = 1.5 * theme.typography.fontSize;
   return (
     <div {...other}>
@@ -105,12 +108,6 @@ function Tag(props) {
       <CloseIcon onClick={onDelete} />
     </div>
   );
-}
-
-Tag.propTypes = {
-  label: PropTypes.string.isRequired,
-  icon: PropTypes.string.isRequired,
-  onDelete: PropTypes.func.isRequired,
 };
 
 const StyledTag = styled(Tag)(
