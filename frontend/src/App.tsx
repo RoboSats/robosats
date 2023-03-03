@@ -45,11 +45,7 @@ const App = (): JSX.Element => {
         <ThemeProvider theme={theme}>
           <AppContextProvider settings={settings} setSettings={setSettings}>
             <CssBaseline />
-            {window.NativeRobosats === undefined ? (
-              <UnsafeAlert settings={settings} setSettings={setSettings} />
-            ) : (
-              <TorConnectionBadge />
-            )}
+            {window.NativeRobosats === undefined ? <UnsafeAlert /> : <TorConnectionBadge />}
             <Main />
           </AppContextProvider>
         </ThemeProvider>
