@@ -56,7 +56,7 @@ const App = (): JSX.Element => {
 
 const loadApp = () => {
   if (systemClient.loading) {
-    setTimeout(loadApp, 1000);
+    setTimeout(loadApp, 200);
   } else {
     const root = ReactDOM.createRoot(document.getElementById('app') ?? new HTMLElement());
     root.render(<App />);
