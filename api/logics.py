@@ -97,38 +97,42 @@ class Logics:
         # Try to import the public key
         import_pub_result = gpg.import_keys(pub_key)
         if not import_pub_result.imported == 1:
-            return (
-                False,
-                {
-                    "bad_request": "Your PGP public key does not seem valid.\n"
-                    + f"Stderr: {str(import_pub_result.stderr)}\n"
-                    + f"ReturnCode: {str(import_pub_result.returncode)}\n"
-                    + f"Summary: {str(import_pub_result.summary)}\n"
-                    + f"Results: {str(import_pub_result.results)}\n"
-                    + f"Imported: {str(import_pub_result.imported)}\n"
-                },
-                None,
-                None,
-            )
+            # If a robot is deleted and it is rebuilt with the same pubKey, the key will not be imported again
+            # so we assert that the import error is "Not actually changed"
+            if "Not actually changed" not in import_pub_result.results[0]["text"]:
+                return (
+                    False,
+                    {
+                        "bad_request": "Your PGP public key does not seem valid.\n"
+                        + f"Stderr: {str(import_pub_result.stderr)}\n"
+                        + f"ReturnCode: {str(import_pub_result.returncode)}\n"
+                        + f"Summary: {str(import_pub_result.summary)}\n"
+                        + f"Results: {str(import_pub_result.results)}\n"
+                        + f"Imported: {str(import_pub_result.imported)}\n"
+                    },
+                    None,
+                    None,
+                )
         # Exports the public key again for uniform formatting.
         pub_key = gpg.export_keys(import_pub_result.fingerprints[0])
 
         # Try to import the encrypted private key (without passphrase)
         import_priv_result = gpg.import_keys(enc_priv_key)
         if not import_priv_result.sec_imported == 1:
-            return (
-                False,
-                {
-                    "bad_request": "Your PGP encrypted private key does not seem valid.\n"
-                    + f"Stderr: {str(import_priv_result.stderr)}\n"
-                    + f"ReturnCode: {str(import_priv_result.returncode)}\n"
-                    + f"Summary: {str(import_priv_result.summary)}\n"
-                    + f"Results: {str(import_priv_result.results)}\n"
-                    + f"Sec Imported: {str(import_priv_result.sec_imported)}\n"
-                },
-                None,
-                None,
-            )
+            if "Not actually changed" not in import_priv_result.results[0]["text"]:
+                return (
+                    False,
+                    {
+                        "bad_request": "Your PGP encrypted private key does not seem valid.\n"
+                        + f"Stderr: {str(import_priv_result.stderr)}\n"
+                        + f"ReturnCode: {str(import_priv_result.returncode)}\n"
+                        + f"Summary: {str(import_priv_result.summary)}\n"
+                        + f"Results: {str(import_priv_result.results)}\n"
+                        + f"Sec Imported: {str(import_priv_result.sec_imported)}\n"
+                    },
+                    None,
+                    None,
+                )
 
         return True, None, pub_key, enc_priv_key
 

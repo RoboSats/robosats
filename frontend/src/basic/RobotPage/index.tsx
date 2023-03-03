@@ -43,7 +43,7 @@ const RobotPage = (): JSX.Element => {
       setInputToken(robot.token);
     }
     if (robot.nickname == null && robot.token) {
-      fetchRobot({ action: 'generate' });
+      fetchRobot({ action: 'generate', setBadRequest });
     }
   }, []);
 

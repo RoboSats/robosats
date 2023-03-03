@@ -9,6 +9,7 @@ import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
 
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { NoRobotDialog } from '../../components/Dialogs';
 
 const MakerPage = (): JSX.Element => {
   const {
@@ -21,16 +22,19 @@ const MakerPage = (): JSX.Element => {
     setCurrentOrder,
     navbarHeight,
     setPage,
+    setOrder,
+    setDelay,
   } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const history = useHistory();
 
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
   const [showMatches, setShowMatches] = useState<boolean>(false);
+  const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
 
   const matches = filterOrders({
     orders: book.orders,
-    baseFilter: { currency: fav.currency === 0 ? 1 : fav.currency, type: fav.type },
+    baseFilter: { currency: fav.currency === 0 ? 1 : fav.currency, type: fav.type, mode: fav.mode },
     paymentMethods: maker.paymentMethods,
     amountFilter: {
       amount: maker.amount,
@@ -40,8 +44,25 @@ const MakerPage = (): JSX.Element => {
     },
   });
 
+  const onViewOrder = function () {
+    setOrder(undefined);
+    setDelay(10000);
+  };
+
+  const onOrderClicked = function (id: number) {
+    if (robot.avatarLoaded) {
+      history.push('/order/' + id);
+      setPage('order');
+      setCurrentOrder(id);
+      onViewOrder();
+    } else {
+      setOpenNoRobot(true);
+    }
+  };
+
   return (
     <Grid container direction='column' alignItems='center' spacing={1}>
+      <NoRobotDialog open={openNoRobot} onClose={() => setOpenNoRobot(false)} setPage={setPage} />
       <Grid item>
         <Collapse in={matches.length > 0 && showMatches}>
           <Grid container direction='column' alignItems='center' spacing={1}>
@@ -57,6 +78,7 @@ const MakerPage = (): JSX.Element => {
                 showControls={false}
                 showFooter={false}
                 showNoResults={false}
+                onOrderClicked={onOrderClicked}
               />
             </Grid>
           </Grid>
