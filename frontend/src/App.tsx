@@ -45,11 +45,7 @@ const App = (): JSX.Element => {
         <ThemeProvider theme={theme}>
           <AppContextProvider settings={settings} setSettings={setSettings}>
             <CssBaseline />
-            {window.NativeRobosats === undefined ? (
-              <UnsafeAlert settings={settings} setSettings={setSettings} />
-            ) : (
-              <TorConnectionBadge />
-            )}
+            {window.NativeRobosats === undefined ? <UnsafeAlert /> : <TorConnectionBadge />}
             <Main />
           </AppContextProvider>
         </ThemeProvider>
@@ -60,7 +56,7 @@ const App = (): JSX.Element => {
 
 const loadApp = () => {
   if (systemClient.loading) {
-    setTimeout(loadApp, 200);
+    setTimeout(loadApp, 1000);
   } else {
     const root = ReactDOM.createRoot(document.getElementById('app') ?? new HTMLElement());
     root.render(<App />);
