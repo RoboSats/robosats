@@ -263,6 +263,8 @@ export const AppContextProvider = ({
     }
 
     if (baseUrl != '') {
+      setBook({ orders: [], loading: true });
+      setLimits({ list: [], loading: true });
       fetchBook();
       fetchLimits();
     }
@@ -332,7 +334,9 @@ export const AppContextProvider = ({
 
   useEffect(() => {
     if (open.stats || open.coordinator || info.coordinatorVersion == 'v?.?.?') {
-      fetchInfo();
+      if (window.NativeRobosats === undefined || torStatus == '"Done"') {
+        fetchInfo();
+      }
     }
   }, [open.stats, open.coordinator]);
 
@@ -473,9 +477,9 @@ export const AppContextProvider = ({
 
   useEffect(() => {
     if (baseUrl != '' && page != 'robot') {
-      if (open.profile || (robot.token && robot.nickname === null)) {
+      if (open.profile && robot.avatarLoaded) {
         fetchRobot({ action: 'refresh' }); // refresh/update existing robot
-      } else if (robot.token && robot.encPrivKey && robot.pubKey) {
+      } else if (!robot.avatarLoaded && robot.token && robot.encPrivKey && robot.pubKey) {
         fetchRobot({ action: 'generate' }); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
