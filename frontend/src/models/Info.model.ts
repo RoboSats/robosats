@@ -19,7 +19,7 @@ export interface Info {
   taker_fee: number;
   bond_size: number;
   current_swap_fee_rate: number;
-  network: 'mainnet' | 'testnet' | undefined;
+  network: 'mainnet' | 'testnet';
   coordinatorVersion: string;
   clientVersion: string;
   openUpdateClient: boolean;

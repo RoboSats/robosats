@@ -160,7 +160,7 @@ const ListHeader = styled('span')(
 
 const Listbox = styled('ul')(
   ({ theme, sx }) => `
-  width: ${sx ? sx.width : '15.6em'};
+  width: ${sx != null ? sx.width : '15.6em'};
   margin: 2px 0 0;
   padding: 0;
   position: absolute;

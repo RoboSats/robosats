@@ -329,6 +329,7 @@ export const AppContextProvider = ({
         clientVersion: versionInfo.clientVersion,
         loading: false,
       });
+      setSettings({ ...settings, network: data.network });
     });
   };
 
@@ -450,7 +451,7 @@ export const AppContextProvider = ({
         newRobot = {
           ...oldRobot,
           nickname: data.nickname,
-          token: token,
+          token,
           loading: false,
           activeOrderId: data.active_order_id ?? null,
           lastOrderId: data.last_order_id ?? null,
