@@ -43,9 +43,11 @@ const RobotPage = (): JSX.Element => {
       setInputToken(robot.token);
     }
     if (robot.nickname == null && robot.token) {
-      fetchRobot({ action: 'generate', setBadRequest });
+      if (window.NativeRobosats === undefined || torStatus == '"Done"') {
+        fetchRobot({ action: 'generate', setBadRequest });
+      }
     }
-  }, []);
+  }, [torStatus]);
 
   const getGenerateRobot = (token: string, slot?: number) => {
     setInputToken(token);

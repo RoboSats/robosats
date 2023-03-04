@@ -10,16 +10,19 @@ class ApiNativeClient implements ApiClient {
       'Content-Type': 'application/json',
     };
 
-    const sessionid = systemClient.getCookie('sessionid');
-    const csrftoken = systemClient.getCookie('csrftoken');
+    const robotToken = systemClient.getItem('robot_token');
+    if (robotToken) {
+      const sessionid = systemClient.getCookie('sessionid');
+      const csrftoken = systemClient.getCookie('csrftoken');
 
-    headers = {
-      ...headers,
-      ...{
-        'X-CSRFToken': csrftoken,
-        Cookie: `sessionid=${sessionid};token=${csrftoken}`,
-      },
-    };
+      headers = {
+        ...headers,
+        ...{
+          'X-CSRFToken': csrftoken,
+          Cookie: `sessionid=${sessionid};csrftoken=${csrftoken}`,
+        },
+      };
+    }
 
     return headers;
   };

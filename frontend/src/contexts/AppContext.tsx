@@ -18,6 +18,7 @@ import {
 } from '../models';
 
 import { apiClient } from '../services/api';
+import { systemClient } from '../services/System';
 import { checkVer, getHost, tokenStrength } from '../utils';
 import { sha256 } from 'js-sha256';
 
@@ -252,7 +253,7 @@ export const AppContextProvider = ({
   useEffect(() => {
     window.addEventListener('torStatus', (event) => {
       // UX improv: delay the "Conencted" status by 10 secs to avoid long waits for first requests
-      setTimeout(() => setTorStatus(event?.detail), event?.detail === '"Done"' ? 10000 : 0);
+      setTimeout(() => setTorStatus(event?.detail), event?.detail === '"Done"' ? 5000 : 0);
     });
   }, []);
 
@@ -465,6 +466,7 @@ export const AppContextProvider = ({
         setRobot(newRobot);
         garage.updateRobot(newRobot, targetSlot);
         setCurrentSlot(targetSlot);
+        systemClient.setItem('robot_token', token);
       }
     });
   };
