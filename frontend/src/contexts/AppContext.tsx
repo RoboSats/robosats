@@ -18,6 +18,7 @@ import {
 } from '../models';
 
 import { apiClient } from '../services/api';
+import { systemClient } from '../services/System';
 import { checkVer, getHost, tokenStrength } from '../utils';
 import { sha256 } from 'js-sha256';
 
@@ -465,6 +466,9 @@ export const AppContextProvider = ({
         setRobot(newRobot);
         garage.updateRobot(newRobot, targetSlot);
         setCurrentSlot(targetSlot);
+        systemClient.setItem('robot_token', token);
+        systemClient.setItem('pub_key', data.public_key.split('\n').join('\\'));
+        systemClient.setItem('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'));
       }
     });
   };
