@@ -45,6 +45,7 @@ const App = () => {
 
     EncryptedStorage.removeItem('sessionid');
     EncryptedStorage.removeItem('csrftoken');
+    loadCookie('robot_token');
     loadCookie('settings_fontsize_basic');
     loadCookie('settings_language');
     loadCookie('settings_mode');

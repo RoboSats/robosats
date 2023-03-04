@@ -253,7 +253,7 @@ export const AppContextProvider = ({
   useEffect(() => {
     window.addEventListener('torStatus', (event) => {
       // UX improv: delay the "Conencted" status by 10 secs to avoid long waits for first requests
-      setTimeout(() => setTorStatus(event?.detail), event?.detail === '"Done"' ? 10000 : 0);
+      setTimeout(() => setTorStatus(event?.detail), event?.detail === '"Done"' ? 5000 : 0);
     });
   }, []);
 
@@ -467,8 +467,6 @@ export const AppContextProvider = ({
         garage.updateRobot(newRobot, targetSlot);
         setCurrentSlot(targetSlot);
         systemClient.setItem('robot_token', token);
-        systemClient.setItem('pub_key', data.public_key.split('\n').join('\\'));
-        systemClient.setItem('enc_priv_key', data.encrypted_private_key.split('\n').join('\\'));
       }
     });
   };
