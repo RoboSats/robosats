@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { withTranslation } from 'react-i18next';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import PaymentIcon from './Icons';
 import { Tooltip } from '@mui/material';
 import { fiatMethods, swapMethods } from './MethodList';
@@ -7,18 +7,15 @@ import { fiatMethods, swapMethods } from './MethodList';
 const ns = [{ name: 'not specified', icon: 'notspecified' }];
 const methods = ns.concat(swapMethods).concat(fiatMethods);
 
-class StringAsIcons extends Component {
-  constructor(props) {
-    super(props);
-  }
+const StringAsIcons: React.FC = (props) => {
+  const { t } = useTranslation();
 
-  parseText() {
-    const { t } = this.props;
+  const parseText = () => {
     const rows = [];
-    let custom_methods = this.props.text;
+    let custom_methods = props.text;
     // Adds icons for each PaymentMethod that matches
     methods.forEach((method, i) => {
-      if (this.props.text.includes(method.name)) {
+      if (props.text.includes(method.name)) {
         custom_methods = custom_methods.replace(method.name, '');
         rows.push(
           <Tooltip
@@ -30,11 +27,11 @@ class StringAsIcons extends Component {
             <div
               style={{
                 display: 'inline-block',
-                width: this.props.size + 2,
-                height: this.props.size,
+                width: props.size + 2,
+                height: props.size,
               }}
             >
-              <PaymentIcon width={this.props.size} height={this.props.size} icon={method.icon} />
+              <PaymentIcon width={props.size} height={props.size} icon={method.icon} />
             </div>
           </Tooltip>,
         );
@@ -55,32 +52,24 @@ class StringAsIcons extends Component {
           key={'pushed'}
           placement='top'
           enterTouchDelay={0}
-          title={
-            this.props.verbose
-              ? this.props.othersText
-              : this.props.othersText + ': ' + custom_methods
-          }
+          title={props.verbose ? props.othersText : props.othersText + ': ' + custom_methods}
         >
           <div
             style={{
               position: 'relative',
               display: 'inline-block',
-              width: this.props.size + 2,
-              maxHeight: this.props.size,
+              width: props.size + 2,
+              maxHeight: props.size,
               top: '-1px',
             }}
           >
-            <PaymentIcon
-              width={this.props.size * 1.1}
-              height={this.props.size * 1.1}
-              icon={'custom'}
-            />
+            <PaymentIcon width={props.size * 1.1} height={props.size * 1.1} icon={'custom'} />
           </div>
         </Tooltip>,
       );
     }
 
-    if (this.props.verbose) {
+    if (props.verbose) {
       return (
         <>
           {rows}{' '}
@@ -93,15 +82,11 @@ class StringAsIcons extends Component {
     } else {
       return rows;
     }
-  }
+  };
 
-  render() {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-        {this.parseText()}
-      </div>
-    );
-  }
-}
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>{parseText()}</div>
+  );
+};
 
-export default withTranslation()(StringAsIcons);
+export default StringAsIcons;

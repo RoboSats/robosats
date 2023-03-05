@@ -1,10 +1,10 @@
-import { systemClient } from '../services/System';
-
 class Robot {
-  constructor() {
-    this.token = systemClient.getItem('robot_token') ?? undefined;
-    this.pubKey = systemClient.getItem('pub_key') ?? undefined;
-    this.encPrivKey = systemClient.getItem('enc_priv_key') ?? undefined;
+  constructor(garageRobot?: Robot) {
+    if (garageRobot != null) {
+      this.token = garageRobot?.token ?? undefined;
+      this.pubKey = garageRobot?.pubKey ?? undefined;
+      this.encPrivKey = garageRobot?.encPrivKey ?? undefined;
+    }
   }
 
   public nickname?: string;
@@ -22,6 +22,7 @@ class Robot {
   public tgBotName: string = 'unknown';
   public tgToken: string = 'unknown';
   public loading: boolean = false;
+  public found: boolean = false;
   public avatarLoaded: boolean = false;
   public copiedToken: boolean = false;
 }

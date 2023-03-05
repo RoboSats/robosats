@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   ResponsiveLine,
   Serie,
@@ -26,32 +26,24 @@ import { amountToString, matchMedian, statusBadgeColor } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
 import { PaymentStringAsIcons } from '../../PaymentMethods';
 import getNivoScheme from '../NivoScheme';
+import { AppContextProps, AppContext } from '../../../contexts/AppContext';
 
 interface DepthChartProps {
-  orders: PublicOrder[];
-  lastDayPremium?: number | undefined;
-  currency: number;
-  limits: LimitList;
   maxWidth: number;
   maxHeight: number;
   fillContainer?: boolean;
   elevation?: number;
   onOrderClicked?: (id: number) => void;
-  baseUrl: string;
 }
 
 const DepthChart: React.FC<DepthChartProps> = ({
-  orders,
-  lastDayPremium,
-  currency,
-  limits,
   maxWidth,
   maxHeight,
   fillContainer = false,
   elevation = 6,
   onOrderClicked = () => null,
-  baseUrl,
 }) => {
+  const { book, fav, info, limits, baseUrl } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
   const [enrichedOrders, setEnrichedOrders] = useState<Order[]>([]);
@@ -66,22 +58,22 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const width = maxWidth < 20 ? 20 : maxWidth > 72.8 ? 72.8 : maxWidth;
 
   useEffect(() => {
-    setCurrencyCode(currency === 0 ? 1 : currency);
-  }, [currency]);
+    setCurrencyCode(fav.currency === 0 ? 1 : fav.currency);
+  }, [fav.currency]);
 
   useEffect(() => {
-    if (Object.keys(limits).length > 0) {
-      const enriched = orders.map((order) => {
+    if (Object.keys(limits.list).length > 0) {
+      const enriched = book.orders.map((order) => {
         // We need to transform all currencies to the same base (ex. USD), we don't have the exchange rate
         // for EUR -> USD, but we know the rate of both to BTC, so we get advantage of it and apply a
         // simple rule of three
         order.base_amount =
-          (order.price * limits[currencyCode].price) / limits[order.currency].price;
+          (order.price * limits.list[currencyCode].price) / limits.list[order.currency].price;
         return order;
       });
       setEnrichedOrders(enriched);
     }
-  }, [limits, orders, currencyCode]);
+  }, [limits.list, book.orders, currencyCode]);
 
   useEffect(() => {
     if (enrichedOrders.length > 0) {
@@ -102,16 +94,16 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setXRange(maxRange);
       setRangeSteps(rangeSteps);
     } else {
-      if (lastDayPremium === undefined) {
+      if (info.last_day_nonkyc_btc_premium === undefined) {
         const premiums: number[] = enrichedOrders.map((order) => order?.premium || 0);
         setCenter(~~matchMedian(premiums));
       } else {
-        setCenter(lastDayPremium);
+        setCenter(info.last_day_nonkyc_btc_premium);
       }
       setXRange(8);
       setRangeSteps(0.5);
     }
-  }, [enrichedOrders, xType, lastDayPremium, currencyCode]);
+  }, [enrichedOrders, xType, info.last_day_nonkyc_btc_premium, currencyCode]);
 
   const generateSeries: () => void = () => {
     const sortedOrders: PublicOrder[] =

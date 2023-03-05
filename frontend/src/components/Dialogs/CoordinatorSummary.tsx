@@ -117,7 +117,7 @@ const CoordinatorSummaryDialog = ({ open = false, onClose, info }: Props): JSX.E
               primaryTypographyProps={{ fontSize: '14px' }}
               secondaryTypographyProps={{ fontSize: '12px' }}
               primary={`${info.last_day_nonkyc_btc_premium}%`}
-              secondary={t('24h non-KYC bitcoin premium')}
+              secondary={t('Last 24h mean premium')}
             />
           </ListItem>
 

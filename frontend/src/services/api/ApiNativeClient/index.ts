@@ -14,13 +14,12 @@ class ApiNativeClient implements ApiClient {
     if (robotToken) {
       const sessionid = systemClient.getCookie('sessionid');
       const csrftoken = systemClient.getCookie('csrftoken');
-      const pubKey = systemClient.getItem('pub_key');
 
       headers = {
         ...headers,
         ...{
           'X-CSRFToken': csrftoken,
-          Cookie: `sessionid=${sessionid};robot_token=${robotToken};csrftoken=${csrftoken};pub_key=${pubKey}`,
+          Cookie: `sessionid=${sessionid};csrftoken=${csrftoken}`,
         },
       };
     }

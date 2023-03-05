@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { systemClient } from '../../services/System';
 import ContentCopy from '@mui/icons-material/ContentCopy';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface Props {
   open: boolean;
@@ -23,6 +24,7 @@ interface Props {
 }
 
 const StoreTokenDialog = ({ open, onClose, onClickBack, onClickDone }: Props): JSX.Element => {
+  const { robot } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
 
   return (
@@ -41,17 +43,13 @@ const StoreTokenDialog = ({ open, onClose, onClickBack, onClickDone }: Props): J
             sx={{ width: '100%', maxWidth: '550px' }}
             disabled
             label={t('Back it up!')}
-            value={systemClient.getItem('robot_token')}
+            value={robot.token}
             variant='filled'
             size='small'
             InputProps={{
               endAdornment: (
                 <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-                  <IconButton
-                    onClick={() =>
-                      systemClient.copyToClipboard(systemClient.getItem('robot_token'))
-                    }
-                  >
+                  <IconButton onClick={() => systemClient.copyToClipboard(robot.token)}>
                     <ContentCopy color='primary' />
                   </IconButton>
                 </Tooltip>

@@ -24,7 +24,7 @@ const Welcome = ({ setView, width, getGenerateRobot }: WelcomeProps): JSX.Elemen
       paddingTop={2.2}
       padding={0.5}
     >
-      <Grid item>
+      <Grid item style={{ paddingTop: '2em', paddingBottom: '1.5em' }}>
         <svg width={0} height={0}>
           <linearGradient id='linearColors' x1={1} y1={0} x2={1} y2={1}>
             <stop offset={0} stopColor={theme.palette.primary.main} />

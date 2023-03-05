@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Grid, Typography, Tooltip, Collapse, IconButton } from '@mui/material';
 import currencies from '../../../../static/assets/currencies.json';
 
-import { Order } from '../../../models';
+import { Order, Robot } from '../../../models';
 import { pn } from '../../../utils';
 import EncryptedChat, { EncryptedChatMessage } from '../EncryptedChat';
 import Countdown, { zeroPad } from 'react-countdown';
@@ -11,6 +11,7 @@ import { LoadingButton } from '@mui/lab';
 
 interface ChatPromptProps {
   order: Order;
+  robot: Robot;
   onClickConfirmSent: () => void;
   loadingSent: boolean;
   onClickConfirmReceived: () => void;
@@ -24,6 +25,7 @@ interface ChatPromptProps {
 
 export const ChatPrompt = ({
   order,
+  robot,
   onClickConfirmSent,
   onClickConfirmReceived,
   loadingSent,
@@ -116,6 +118,7 @@ export const ChatPrompt = ({
       <Grid item>
         <EncryptedChat
           status={order.status}
+          robot={robot}
           chatOffset={order.chat_last_index}
           orderId={order.id}
           takerNick={order.taker_nick}

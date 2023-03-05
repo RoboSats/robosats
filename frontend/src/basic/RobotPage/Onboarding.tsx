@@ -49,17 +49,16 @@ const Onboarding = ({
 }: OnboardingProps): JSX.Element => {
   const { t } = useTranslation();
   const history = useHistory();
-  const theme = useTheme();
 
   const [step, setStep] = useState<'1' | '2' | '3'>('1');
   const [generatedToken, setGeneratedToken] = useState<boolean>(false);
-  const [showMimickProgress, setShowMimickProgress] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const generateToken = () => {
     setGeneratedToken(true);
     setInputToken(genBase62Token(36));
-    setShowMimickProgress(true);
-    setTimeout(() => setShowMimickProgress(false), 1000);
+    setLoading(true);
+    setTimeout(() => setLoading(false), 1000);
   };
 
   const changePage = function (newPage: Page) {
@@ -104,19 +103,16 @@ const Onboarding = ({
                       </Alert>
                     </Grid>
                     <Grid item sx={{ width: '100%' }}>
-                      {showMimickProgress ? (
-                        <LinearProgress sx={{ height: '0.7em' }} />
-                      ) : (
-                        <TokenInput
-                          autoFocusTarget='copyButton'
-                          inputToken={inputToken}
-                          setInputToken={setInputToken}
-                          setRobot={setRobot}
-                          badRequest={badRequest}
-                          robot={robot}
-                          onPressEnter={() => null}
-                        />
-                      )}
+                      <TokenInput
+                        loading={loading}
+                        autoFocusTarget='copyButton'
+                        inputToken={inputToken}
+                        setInputToken={setInputToken}
+                        setRobot={setRobot}
+                        badRequest={badRequest}
+                        robot={robot}
+                        onPressEnter={() => null}
+                      />
                     </Grid>
                     <Grid item>
                       <Typography>

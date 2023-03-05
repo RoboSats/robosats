@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { DataGrid, GridPagination } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
-import { Book, Favorites } from '../../models';
+import { PublicOrder } from '../../models';
 import { filterOrders, hexToRgb, statusBadgeColor, pn, amountToString } from '../../utils';
 import BookControl from './BookControl';
 
@@ -27,11 +27,10 @@ import RobotAvatar from '../RobotAvatar';
 
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface BookTableProps {
-  clickRefresh?: () => void;
-  book: Book;
-  fav?: Favorites;
+  orderList?: PublicOrder[];
   maxWidth: number;
   maxHeight: number;
   fullWidth?: number;
@@ -42,16 +41,11 @@ interface BookTableProps {
   showControls?: boolean;
   showFooter?: boolean;
   showNoResults?: boolean;
-  setFav?: (state: Favorites) => void;
   onOrderClicked?: (id: number) => void;
-  baseUrl: string;
 }
 
 const BookTable = ({
-  clickRefresh,
-  book,
-  fav = { currency: 1, type: 0, mode: 'fiat' },
-  setFav,
+  orderList,
   maxWidth = 100,
   maxHeight = 70,
   fullWidth = 100,
@@ -63,10 +57,12 @@ const BookTable = ({
   showFooter = true,
   showNoResults = true,
   onOrderClicked = () => null,
-  baseUrl,
 }: BookTableProps): JSX.Element => {
+  const { book, fetchBook, fav, setFav, baseUrl } = useContext<AppContextProps>(AppContext);
+
   const { t } = useTranslation();
   const theme = useTheme();
+  const orders = orderList ?? book.orders;
   const [pageSize, setPageSize] = useState(0);
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
@@ -641,7 +637,7 @@ const BookTable = ({
               </IconButton>
             </Grid>
             <Grid item xs={6}>
-              <IconButton onClick={clickRefresh}>
+              <IconButton onClick={() => fetchBook()}>
                 <Refresh />
               </IconButton>
             </Grid>
@@ -729,11 +725,11 @@ const BookTable = ({
           rows={
             showControls
               ? filterOrders({
-                  orders: book.orders,
+                  orders,
                   baseFilter: fav,
                   paymentMethods,
                 })
-              : book.orders
+              : orders
           }
           loading={book.loading}
           columns={columns}
@@ -748,7 +744,7 @@ const BookTable = ({
               setPaymentMethods,
             },
           }}
-          pageSize={book.loading && book.orders.length == 0 ? 0 : pageSize}
+          pageSize={book.loading && orders.length == 0 ? 0 : pageSize}
           rowsPerPageOptions={width < 22 ? [] : [0, pageSize, defaultPageSize * 2, 50, 100]}
           onPageSizeChange={(newPageSize) => {
             setPageSize(newPageSize);
@@ -769,11 +765,11 @@ const BookTable = ({
             rows={
               showControls
                 ? filterOrders({
-                    orders: book.orders,
+                    orders,
                     baseFilter: fav,
                     paymentMethods,
                   })
-                : book.orders
+                : orders
             }
             loading={book.loading}
             columns={columns}
@@ -788,7 +784,7 @@ const BookTable = ({
                 setPaymentMethods,
               },
             }}
-            pageSize={book.loading && book.orders.length == 0 ? 0 : pageSize}
+            pageSize={book.loading && orders.length == 0 ? 0 : pageSize}
             rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
             onPageSizeChange={(newPageSize) => {
               setPageSize(newPageSize);

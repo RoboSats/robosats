@@ -1,10 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import { Tabs, Tab, Paper, useTheme } from '@mui/material';
 import MoreTooltip from './MoreTooltip';
-
-import { OpenDialogs } from '../MainDialogs';
 
 import { Page } from '.';
 
@@ -17,47 +15,34 @@ import {
   MoreHoriz,
 } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
-
-type Direction = 'left' | 'right' | undefined;
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface NavBarProps {
-  page: Page;
-  nickname?: string | null;
-  setPage: (state: Page) => void;
-  setSlideDirection: (state: { in: Direction; out: Direction }) => void;
   width: number;
   height: number;
-  open: OpenDialogs;
-  setOpen: (state: OpenDialogs) => void;
-  closeAll: OpenDialogs;
-  currentOrder: number | undefined;
-  hasRobot: boolean;
-  baseUrl: string;
-  color: 'primary' | 'secondary';
 }
 
-const NavBar = ({
-  page,
-  setPage,
-  setSlideDirection,
-  open,
-  nickname = null,
-  setOpen,
-  closeAll,
-  width,
-  height,
-  currentOrder,
-  hasRobot = false,
-  baseUrl,
-  color,
-}: NavBarProps): JSX.Element => {
+const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
+  const {
+    robot,
+    page,
+    settings,
+    setPage,
+    setSlideDirection,
+    open,
+    setOpen,
+    closeAll,
+    currentOrder,
+    baseUrl,
+  } = useContext<AppContextProps>(AppContext);
+
   const theme = useTheme();
   const { t } = useTranslation();
   const history = useHistory();
   const smallBar = width < 50;
 
   const tabSx = smallBar
-    ? { position: 'relative', bottom: nickname ? '1em' : '0em', minWidth: '1em' }
+    ? { position: 'relative', bottom: robot.avatarLoaded ? '0.9em' : '0.13em', minWidth: '1em' }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
   const pagesPosition = {
     robot: 1,
@@ -102,21 +87,21 @@ const NavBar = ({
         TabIndicatorProps={{ sx: { height: '0.3em', position: 'absolute', top: 0 } }}
         variant='fullWidth'
         value={page}
-        indicatorColor={color}
-        textColor={color}
+        indicatorColor={settings.network === 'mainnet' ? 'primary' : 'secondary'}
+        textColor={settings.network === 'mainnet' ? 'primary' : 'secondary'}
         onChange={changePage}
       >
         <Tab
           sx={{ ...tabSx, minWidth: '2.5em', width: '2.5em', maxWidth: '4em' }}
           value='none'
-          disabled={nickname === null}
+          disabled={robot.nickname === null}
           onClick={() => setOpen({ ...closeAll, profile: !open.profile })}
           icon={
-            nickname ? (
+            robot.nickname && robot.avatarLoaded ? (
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
-                nickname={nickname}
+                nickname={robot.nickname}
                 baseUrl={baseUrl}
               />
             ) : (
@@ -151,7 +136,7 @@ const NavBar = ({
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!hasRobot || currentOrder == undefined}
+          disabled={!robot.avatarLoaded || currentOrder == undefined}
           icon={<Assignment />}
           iconPosition='start'
         />
@@ -171,7 +156,7 @@ const NavBar = ({
             open.more ? null : setOpen({ ...open, more: true });
           }}
           icon={
-            <MoreTooltip open={open} nickname={nickname} setOpen={setOpen} closeAll={closeAll}>
+            <MoreTooltip open={open} setOpen={setOpen} closeAll={closeAll}>
               <MoreHoriz />
             </MoreTooltip>
           }

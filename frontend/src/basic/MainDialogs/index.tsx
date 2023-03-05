@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { Info, Robot } from '../../models';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   CommunityDialog,
   CoordinatorSummaryDialog,
@@ -9,7 +8,8 @@ import {
   StatsDialog,
   UpdateClientDialog,
 } from '../../components/Dialogs';
-import { Page } from '../NavBar';
+import { pn } from '../../utils';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 export interface OpenDialogs {
   more: boolean;
@@ -19,32 +19,31 @@ export interface OpenDialogs {
   coordinator: boolean;
   stats: boolean;
   update: boolean;
-  profile: boolean; // temporary until new Robot Page is ready
+  profile: boolean;
 }
 
-interface MainDialogsProps {
-  open: OpenDialogs;
-  setOpen: (state: OpenDialogs) => void;
-  info: Info;
-  robot: Robot;
-  setRobot: (state: Robot) => void;
-  setPage: (state: Page) => void;
-  setCurrentOrder: (state: number) => void;
-  closeAll: OpenDialogs;
-  baseUrl: string;
-}
+const MainDialogs = (): JSX.Element => {
+  const {
+    open,
+    setOpen,
+    info,
+    limits,
+    closeAll,
+    robot,
+    setRobot,
+    setPage,
+    setCurrentOrder,
+    baseUrl,
+  } = useContext<AppContextProps>(AppContext);
 
-const MainDialogs = ({
-  open,
-  setOpen,
-  info,
-  closeAll,
-  robot,
-  setRobot,
-  setPage,
-  setCurrentOrder,
-  baseUrl,
-}: MainDialogsProps): JSX.Element => {
+  const [maxAmount, setMaxAmount] = useState<string>('...loading...');
+
+  useEffect(() => {
+    if (limits.list[1000]) {
+      setMaxAmount(pn(limits.list[1000].max_amount * 100000000));
+    }
+  }, [limits.list]);
+
   useEffect(() => {
     if (info.openUpdateClient) {
       setOpen({ ...closeAll, update: true });
@@ -61,7 +60,7 @@ const MainDialogs = ({
       />
       <InfoDialog
         open={open.info}
-        maxAmount='4,000,000'
+        maxAmount={maxAmount}
         onClose={() => setOpen({ ...open, info: false })}
       />
       <LearnDialog open={open.learn} onClose={() => setOpen({ ...open, learn: false })} />

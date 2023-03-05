@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Collapse, Grid, Typography, useTheme } from '@mui/material';
-import { useParams } from 'react-router-dom';
-
-import { Page } from '../NavBar';
+import { Button, Grid, Typography, useTheme } from '@mui/material';
 import { Robot } from '../../models';
-import { Casino, Download, ContentCopy, SmartToy, Bolt } from '@mui/icons-material';
-import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import Key from '@mui/icons-material/Key';
 
@@ -17,8 +12,6 @@ interface RecoveryProps {
   inputToken: string;
   setInputToken: (state: string) => void;
   getGenerateRobot: (token: string) => void;
-  setPage: (state: Page) => void;
-  baseUrl: string;
 }
 
 const Recovery = ({
@@ -28,11 +21,8 @@ const Recovery = ({
   setView,
   setInputToken,
   getGenerateRobot,
-  setPage,
-  baseUrl,
 }: RecoveryProps): JSX.Element => {
   const { t } = useTranslation();
-  const theme = useTheme();
 
   const recoveryDisabled = () => {
     return !(inputToken.length > 20);
@@ -48,10 +38,13 @@ const Recovery = ({
   return (
     <Grid container direction='column' alignItems='center' spacing={1} padding={2}>
       <Grid item>
+        <Typography variant='h5' align='center'>
+          {t('Robot recovery')}
+        </Typography>
+      </Grid>
+      <Grid item>
         <Typography align='center'>
-          {t(
-            'Please, introduce your robot token to re-build your robot and gain access to its trades.',
-          )}
+          {t('Enter your robot token to re-build your robot and gain access to its trades.')}
         </Typography>
       </Grid>
       <Grid item>

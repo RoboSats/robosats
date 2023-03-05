@@ -46,12 +46,11 @@ const App = () => {
     EncryptedStorage.removeItem('sessionid');
     EncryptedStorage.removeItem('csrftoken');
     loadCookie('robot_token');
-    loadCookie('pub_key');
     loadCookie('settings_fontsize_basic');
     loadCookie('settings_language');
     loadCookie('settings_mode');
     loadCookie('settings_network');
-    loadCookie('enc_priv_key').then(() => injectMessageResolve(reponseId));
+    loadCookie('garage').then(() => injectMessageResolve(reponseId));
   };
 
   const onMessage = async (event: WebViewMessageEvent) => {

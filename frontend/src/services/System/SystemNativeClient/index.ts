@@ -14,8 +14,8 @@ class SystemNativeClient implements SystemClient {
 
   public loading = true;
 
-  public copyToClipboard: (value: string) => void = (value) => {
-    return window.NativeRobosats?.postMessage({
+  public copyToClipboard: (value: string) => void = async (value) => {
+    return await window.NativeRobosats?.postMessage({
       category: 'system',
       type: 'copyToClipboardString',
       detail: value,

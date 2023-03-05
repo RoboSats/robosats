@@ -1,57 +1,40 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import { Grid, Paper, Collapse, Typography } from '@mui/material';
-
-import { LimitList, Maker, Book, Favorites, Order } from '../../models';
 
 import { filterOrders } from '../../utils';
 
 import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
 
-import { Page } from '../NavBar';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { NoRobotDialog } from '../../components/Dialogs';
 
-interface MakerPageProps {
-  limits: { list: LimitList; loading: boolean };
-  fetchLimits: () => void;
-  book: Book;
-  fav: Favorites;
-  maker: Maker;
-  setFav: (state: Favorites) => void;
-  setMaker: (state: Maker) => void;
-  clearOrder: () => void;
-  windowSize: { width: number; height: number };
-  hasRobot: boolean;
-  setCurrentOrder: (state: number) => void;
-  setPage: (state: Page) => void;
-  baseUrl: string;
-}
-
-const MakerPage = ({
-  limits,
-  fetchLimits,
-  book,
-  fav,
-  maker,
-  setFav,
-  setMaker,
-  clearOrder,
-  windowSize,
-  setCurrentOrder,
-  setPage,
-  hasRobot = false,
-  baseUrl,
-}: MakerPageProps): JSX.Element => {
+const MakerPage = (): JSX.Element => {
+  const {
+    robot,
+    book,
+    fav,
+    maker,
+    clearOrder,
+    windowSize,
+    setCurrentOrder,
+    navbarHeight,
+    setPage,
+    setOrder,
+    setDelay,
+  } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const history = useHistory();
 
-  const maxHeight = windowSize.height * 0.85 - 3;
+  const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
   const [showMatches, setShowMatches] = useState<boolean>(false);
+  const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
 
   const matches = filterOrders({
     orders: book.orders,
-    baseFilter: { currency: fav.currency === 0 ? 1 : fav.currency, type: fav.type },
+    baseFilter: { currency: fav.currency === 0 ? 1 : fav.currency, type: fav.type, mode: fav.mode },
     paymentMethods: maker.paymentMethods,
     amountFilter: {
       amount: maker.amount,
@@ -61,8 +44,25 @@ const MakerPage = ({
     },
   });
 
+  const onViewOrder = function () {
+    setOrder(undefined);
+    setDelay(10000);
+  };
+
+  const onOrderClicked = function (id: number) {
+    if (robot.avatarLoaded) {
+      history.push('/order/' + id);
+      setPage('order');
+      setCurrentOrder(id);
+      onViewOrder();
+    } else {
+      setOpenNoRobot(true);
+    }
+  };
+
   return (
     <Grid container direction='column' alignItems='center' spacing={1}>
+      <NoRobotDialog open={openNoRobot} onClose={() => setOpenNoRobot(false)} setPage={setPage} />
       <Grid item>
         <Collapse in={matches.length > 0 && showMatches}>
           <Grid container direction='column' alignItems='center' spacing={1}>
@@ -71,14 +71,14 @@ const MakerPage = ({
             </Grid>
             <Grid item>
               <BookTable
-                book={{ orders: matches, loading: book.loading }}
+                orderList={matches}
                 maxWidth={Math.min(windowSize.width, 60)} // EM units
                 maxHeight={Math.min(matches.length * 3.25 + 3, 16)} // EM units
                 defaultFullscreen={false}
                 showControls={false}
                 showFooter={false}
                 showNoResults={false}
-                baseUrl={baseUrl}
+                onOrderClicked={onOrderClicked}
               />
             </Grid>
           </Grid>
@@ -95,26 +95,18 @@ const MakerPage = ({
           }}
         >
           <MakerForm
-            limits={limits}
-            fetchLimits={fetchLimits}
-            fav={fav}
-            setFav={setFav}
-            maker={maker}
-            setMaker={setMaker}
             onOrderCreated={(id) => {
               clearOrder();
               setCurrentOrder(id);
               setPage('order');
               history.push('/order/' + id);
             }}
-            hasRobot={hasRobot}
+            hasRobot={robot.avatarLoaded}
             disableRequest={matches.length > 0 && !showMatches}
             collapseAll={showMatches}
             onSubmit={() => setShowMatches(matches.length > 0)}
             onReset={() => setShowMatches(false)}
             submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
-            setPage={setPage}
-            baseUrl={baseUrl}
           />
         </Paper>
       </Grid>
