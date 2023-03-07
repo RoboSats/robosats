@@ -25,7 +25,7 @@ import {
   IconButton,
 } from '@mui/material';
 
-import { LimitList, Maker, Favorites, defaultMaker } from '../../models';
+import { LimitList, defaultMaker } from '../../models';
 
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import DateFnsUtils from '@date-io/date-fns';
@@ -73,6 +73,7 @@ const MakerForm = ({
   const [satoshisLimits, setSatoshisLimits] = useState<number[]>([20000, 4000000]);
   const [currentPrice, setCurrentPrice] = useState<number | string>('...');
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
+  const [swapSats, setSwapSats] = useState<number>(0);
 
   const [openDialogs, setOpenDialogs] = useState<boolean>(false);
   const [submittingRequest, setSubmittingRequest] = useState<boolean>(false);
@@ -81,22 +82,22 @@ const MakerForm = ({
   const minRangeAmountMultiple = 1.6;
   const amountSafeThresholds = [1.03, 0.98];
 
-  useEffect(() => {
-    setCurrencyCode(currencyDict[fav.currency == 0 ? 1 : fav.currency]);
-    if (Object.keys(limits.list).length === 0) {
-      fetchLimits().then((data) => {
-        updateAmountLimits(data, fav.currency, maker.premium);
-        updateCurrentPrice(data, fav.currency, maker.premium);
-        updateSatoshisLimits(data);
-      });
-    } else {
-      updateAmountLimits(limits.list, fav.currency, maker.premium);
-      updateCurrentPrice(limits.list, fav.currency, maker.premium);
-      updateSatoshisLimits(limits.list);
+  // useEffect(() => {
+  //   setCurrencyCode(currencyDict[fav.currency == 0 ? 1 : fav.currency]);
+  //   if (Object.keys(limits.list).length === 0) {
+  //     fetchLimits().then((data) => {
+  //       updateAmountLimits(data, fav.currency, maker.premium);
+  //       updateCurrentPrice(data, fav.currency, maker.premium);
+  //       updateSatoshisLimits(data);
+  //     });
+  //   } else {
+  //     updateAmountLimits(limits.list, fav.currency, maker.premium);
+  //     updateCurrentPrice(limits.list, fav.currency, maker.premium);
+  //     updateSatoshisLimits(limits.list);
 
-      fetchLimits();
-    }
-  }, []);
+  //     fetchLimits();
+  //   }
+  // }, []);
 
   const updateAmountLimits = function (limitList: LimitList, currency: number, premium: number) {
     const index = currency == 0 ? 1 : currency;
@@ -368,6 +369,21 @@ const MakerForm = ({
     });
   };
 
+  const amountLabel = function () {
+    let label = t('Amount');
+    let helper = '';
+    if (fav.mode === 'swap') {
+      if (fav.type === 0) {
+        label = t('Onchain amount to send');
+        helper = t('You receive {{swapSats}} LN Sats', { swapSats });
+      } else if (fav.type === 1) {
+        label = t('Onchain amount to receive');
+        helper = t('You send {{swapSats}} LN Sats', { swapSats });
+      }
+    }
+    return { label, helper };
+  };
+
   const disableSubmit = function () {
     return (
       fav.type == null ||
@@ -553,7 +569,7 @@ const MakerForm = ({
             </Grid>
           </Grid>
 
-          <Grid item>
+          <Grid item sx={{ width: '100%' }}>
             <Collapse in={maker.advancedOptions}>
               <AmountRange
                 minAmount={maker.minAmount}
@@ -572,7 +588,7 @@ const MakerForm = ({
             <Collapse in={!maker.advancedOptions}>
               <Grid item>
                 <Grid container alignItems='stretch' style={{ display: 'flex' }}>
-                  <Grid item xs={6}>
+                  <Grid item xs={fav.mode === 'fiat' ? 6 : 12}>
                     <Tooltip
                       placement='top'
                       enterTouchDelay={500}
@@ -603,7 +619,7 @@ const MakerForm = ({
                               })
                             : null
                         }
-                        label={t('Amount')}
+                        label={amountLabel().label}
                         required={true}
                         value={maker.amount}
                         type='number'
@@ -618,29 +634,39 @@ const MakerForm = ({
                         onChange={(e) => setMaker({ ...maker, amount: e.target.value })}
                       />
                     </Tooltip>
+                    {fav.mode === 'swap' ? (
+                      <FormHelperText>{amountLabel().helper}</FormHelperText>
+                    ) : null}
                   </Grid>
 
-                  <Grid item xs={6}>
-                    <Select
-                      fullWidth
-                      sx={{ backgroundColor: theme.palette.background.paper, borderRadius: '4px' }}
-                      required={true}
-                      inputProps={{
-                        style: { textAlign: 'center' },
-                      }}
-                      value={fav.currency == 0 ? 1 : fav.currency}
-                      onChange={(e) => handleCurrencyChange(e.target.value)}
-                    >
-                      {Object.entries(currencyDict).map(([key, value]) => (
-                        <MenuItem key={key} value={parseInt(key)}>
-                          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                            <FlagWithProps code={value} />
-                            {' ' + value}
-                          </div>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </Grid>
+                  {fav.mode === 'fiat' ? (
+                    <Grid item xs={6}>
+                      <Select
+                        fullWidth
+                        sx={{
+                          backgroundColor: theme.palette.background.paper,
+                          borderRadius: '4px',
+                        }}
+                        required={true}
+                        inputProps={{
+                          style: { textAlign: 'center' },
+                        }}
+                        value={fav.currency == 0 ? 1 : fav.currency}
+                        onChange={(e) => handleCurrencyChange(e.target.value)}
+                      >
+                        {Object.entries(currencyDict).map(([key, value]) => (
+                          <MenuItem key={key} value={parseInt(key)}>
+                            <div
+                              style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}
+                            >
+                              <FlagWithProps code={value} />
+                              {' ' + value}
+                            </div>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </Grid>
+                  ) : null}
                 </Grid>
               </Grid>
             </Collapse>
