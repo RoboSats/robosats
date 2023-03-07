@@ -5,9 +5,12 @@ import { Paper, Alert, AlertTitle, Button, Link } from '@mui/material';
 import { getHost } from '../utils';
 
 const UnsafeAlert = (): JSX.Element => {
-  const { settings, setSettings, windowSize } = useContext<AppContextProps>(AppContext);
+  const { windowSize } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const [show, setShow] = useState<boolean>(true);
+
+  const [unsafeClient, setUnsafeClient] = useState<boolean>(false);
+  const [selfHostedClient, setSelfHostedClient] = useState<boolean>(false);
 
   // To do. Read from Coordinators Obj.
   const safe_urls = [
@@ -20,25 +23,20 @@ const UnsafeAlert = (): JSX.Element => {
 
   const checkClient = () => {
     const http = new XMLHttpRequest();
-    const host = getHost();
-    const unsafeClient = !safe_urls.includes(host);
+    const h = getHost();
+    const unsafe = !safe_urls.includes(h);
+    let selfHosted = false;
+
     try {
-      http.open('HEAD', `${location.protocol}//${host}/selfhosted`, false);
+      http.open('HEAD', `${location.protocol}//${h}/selfhosted`, false);
       http.send();
-      setSettings({
-        ...settings,
-        host,
-        unsafeClient,
-        selfhostedClient: http.status === 200,
-      });
+      selfHosted = http.status === 200;
     } catch {
-      setSettings({
-        ...settings,
-        host,
-        unsafeClient,
-        selfhostedClient: false,
-      });
+      selfHosted = false;
     }
+
+    setUnsafeClient(unsafe);
+    setSelfHostedClient(selfHosted);
   };
 
   useEffect(() => {
@@ -51,7 +49,7 @@ const UnsafeAlert = (): JSX.Element => {
   }
 
   // Show selfhosted notice
-  else if (settings.selfhostedClient) {
+  else if (selfHostedClient) {
     return (
       <div>
         <Paper elevation={6} className='unsafeAlert'>
@@ -75,7 +73,7 @@ const UnsafeAlert = (): JSX.Element => {
   }
 
   // Show unsafe alert
-  else if (settings.unsafeClient) {
+  else if (unsafeClient) {
     return (
       <Paper elevation={6} className='unsafeAlert'>
         {windowSize.width > 57 ? (
