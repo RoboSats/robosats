@@ -53,7 +53,7 @@ const UpdateClientDialog = ({
           <ListItemButton
             component='a'
             target='_blank'
-            href={`https://github.com/Reckless-Satoshi/robosats/releases/tag/${coordinatorVersion}`}
+            href={`https://github.com/Reckless-Satoshi/robosats/releases/tag/${coordinatorVersion}-alpha`}
             rel='noreferrer'
           >
             <ListItemIcon>
