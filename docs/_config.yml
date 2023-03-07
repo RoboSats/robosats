@@ -31,7 +31,6 @@ masthead_title           : # overrides the website title displayed in the masthe
 words_per_minute         :
 robosats:
   node_id                : 0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e
-  donation_address       : bc1qj3p8k9dufx8f9r4hc5dmls2letgcya48q2jart
   maker_fee              : 0.025        # In percent (%)
   taker_fee              : 0.175        # In percent (%)
   total_fee              : 0.2          # In percent (%)
@@ -43,6 +42,8 @@ robosats:
   default_bond_size      : 3            # In percent (%)
   min_bond_size          : 2            # In percent (%)
   max_bond_size          : 15           # In percent (%)
+  leaddev_paynym         : "+royallimit702"
+  leaddev_paynym_code    : PM8TJXe1ePPRWsptq9cEEP3VqX8Z1k8NCctjRy4VSe6Zx7KyGn4LG7NqUZHV22yh8iEipfswP1uJYdnvRT1Zw7N6z9wNp69LMdPhLspo61aEi3MgRHL3
 comments:
   provider               : # false (default), "disqus", "discourse", "facebook", "staticman", "staticman_v2", "utterances", "giscus", "custom"
   disqus:
