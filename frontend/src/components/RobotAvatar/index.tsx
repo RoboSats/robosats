@@ -5,10 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { SendReceiveIcon } from '../Icons';
 import { apiClient } from '../../services/api';
 import placeholder from './placeholder.json';
+import { PatternSharp } from '@mui/icons-material';
 
 interface Props {
   nickname: string | undefined;
   smooth?: boolean;
+  coordinator?: boolean;
   flipHorizontally?: boolean;
   style?: object;
   imageStyle?: object;
@@ -35,6 +37,7 @@ const RobotAvatar: React.FC<Props> = ({
   avatarClass = 'flippedSmallAvatar',
   imageStyle = {},
   onLoad = () => {},
+  coordinator = false,
   baseUrl,
 }) => {
   const { t } = useTranslation();
@@ -42,6 +45,7 @@ const RobotAvatar: React.FC<Props> = ({
   const [avatarSrc, setAvatarSrc] = useState<string>();
   const [nicknameReady, setNicknameReady] = useState<boolean>(false);
 
+  const path = coordinator ? '/static/federation/' : '/static/assets/avatars/';
   const backgroundData =
     placeholderType == 'generating' ? placeholder.generating : placeholder.loading;
   const backgroundImage = `url(data:${backgroundData.mime};base64,${backgroundData.data})`;
@@ -55,13 +59,11 @@ const RobotAvatar: React.FC<Props> = ({
   useEffect(() => {
     if (nickname != undefined) {
       if (window.NativeRobosats === undefined) {
-        setAvatarSrc(baseUrl + '/static/assets/avatars/' + nickname + '.png');
+        setAvatarSrc(baseUrl + path + nickname + '.png');
         setNicknameReady(true);
       } else {
         setNicknameReady(true);
-        apiClient
-          .fileImageUrl(baseUrl, '/static/assets/avatars/' + nickname + '.png')
-          .then(setAvatarSrc);
+        apiClient.fileImageUrl(baseUrl, path + nickname + '.png').then(setAvatarSrc);
       }
     } else {
       setNicknameReady(false);

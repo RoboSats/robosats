@@ -36,6 +36,7 @@ interface SettingsFormProps {
 
 const SettingsForm = ({ dense = false, showNetwork = false }: SettingsFormProps): JSX.Element => {
   const { fav, setFav, settings, setSettings } = useContext<AppContextProps>(AppContext);
+
   const theme = useTheme();
   const { t } = useTranslation();
   const fontSizes = [
@@ -159,30 +160,26 @@ const SettingsForm = ({ dense = false, showNetwork = false }: SettingsFormProps)
             </ToggleButtonGroup>
           </ListItem>
 
-          {showNetwork ? (
-            <ListItem>
-              <ListItemIcon>
-                <Link />
-              </ListItemIcon>
-              <ToggleButtonGroup
-                exclusive={true}
-                value={settings.network}
-                onChange={(e, network) => {
-                  setSettings({ ...settings, network });
-                  systemClient.setItem('settings_network', network);
-                }}
-              >
-                <ToggleButton value='mainnet' color='primary'>
-                  {t('Mainnet')}
-                </ToggleButton>
-                <ToggleButton value='testnet' color='secondary'>
-                  {t('Testnet')}
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </ListItem>
-          ) : (
-            <></>
-          )}
+          <ListItem>
+            <ListItemIcon>
+              <Link />
+            </ListItemIcon>
+            <ToggleButtonGroup
+              exclusive={true}
+              value={settings.network}
+              onChange={(e, network) => {
+                setSettings({ ...settings, network });
+                systemClient.setItem('settings_network', network);
+              }}
+            >
+              <ToggleButton value='mainnet' color='primary'>
+                {t('Mainnet')}
+              </ToggleButton>
+              <ToggleButton value='testnet' color='secondary'>
+                {t('Testnet')}
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </ListItem>
         </List>
       </Grid>
     </Grid>

@@ -8,21 +8,21 @@ import {
   Maker,
   Robot,
   Garage,
-  Info,
   Settings,
   Favorites,
   defaultMaker,
-  defaultInfo,
   Coordinator,
+  Exchange,
   Order,
+  Version,
 } from '../models';
 
 import { apiClient } from '../services/api';
 import { systemClient } from '../services/System';
-import { checkVer, getHost, tokenStrength } from '../utils';
+import { getClientVersion, getHost, tokenStrength } from '../utils';
 import { sha256 } from 'js-sha256';
 
-import defaultCoordinators from '../../static/federation.json';
+import defaultFederation from '../../static/federation.json';
 import { useTheme } from '@mui/material';
 
 const getWindowSize = function (fontSize: number) {
@@ -79,7 +79,6 @@ export interface AppContextProps {
   settings: Settings;
   setSettings: (state: Settings) => void;
   book: Book;
-  info: Info;
   garage: Garage;
   setGarage: (state: Garage) => void;
   currentSlot: number;
@@ -94,6 +93,8 @@ export interface AppContextProps {
   clearOrder: () => void;
   robot: Robot;
   setRobot: (state: Robot) => void;
+  exchange: Exchange;
+  setExchange: (state: Exchange) => void;
   focusedCoordinator: number;
   setFocusedCoordinator: (state: number) => void;
   baseUrl: string;
@@ -157,7 +158,6 @@ const closeAll = {
 //   clearOrder: () => null,
 //   robot: new Robot(),
 //   setRobot: () => null,
-//   info: defaultExchange,
 //   setExchange: () => null,
 //   focusedCoordinator: 0,
 //   setFocusedCoordinator: () => null,
@@ -214,18 +214,22 @@ export const AppContextProvider = ({
   const [currentSlot, setCurrentSlot] = useState<number>(garage.slots.length - 1);
   const [robot, setRobot] = useState<Robot>(new Robot(garage.slots[currentSlot].robot));
   const [maker, setMaker] = useState<Maker>(defaultMaker);
-  const [info, setInfo] = useState<Info>(defaultInfo);
-  const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
+  const [exchange, setExchange] = useState<Exchange>(new Exchange());
+  const [federation, setFederation] = useState<Coordinator[]>(
+    defaultFederation.map((c) => new Coordinator(c)),
+  );
+  console.log(federation);
+  const [focusedCoordinator, setFocusedCoordinator] = useState<number>(0);
   const [baseUrl, setBaseUrl] = useState<string>('');
-  const [fav, setFav] = useState<Favorites>({ type: null, mode: 'fiat', currency: 0 });
+  const [fav, setFav] = useState<Favorites>({ type: null, currency: 0, mode: 'fiat' });
 
   const [delay, setDelay] = useState<number>(60000);
-  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(setInterval(() => null, delay));
+  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
+    setInterval(() => null, delay),
+  );
   const [order, setOrder] = useState<Order | undefined>(undefined);
   const [badOrder, setBadOrder] = useState<string | undefined>(undefined);
 
-  const entryPage: Page | '' =
-    window.NativeRobosats === undefined ? window.location.pathname.split('/')[1] : '';
   const [page, setPage] = useState<Page>(entryPage == '' ? 'robot' : entryPage);
   const [slideDirection, setSlideDirection] = useState<SlideDirection>({
     in: undefined,
@@ -234,19 +238,11 @@ export const AppContextProvider = ({
   const [currentOrder, setCurrentOrder] = useState<number | undefined>(undefined);
 
   const navbarHeight = 2.5;
-  const closeAll = {
-    more: false,
-    learn: false,
-    community: false,
-    info: false,
-    coordinator: false,
-    stats: false,
-    update: false,
-    profile: false,
-  };
+  const clientVersion = getClientVersion();
+
   const [open, setOpen] = useState<OpenDialogs>(closeAll);
 
-  const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
+  const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(() =>
     getWindowSize(theme.typography.fontSize),
   );
 
@@ -277,18 +273,12 @@ export const AppContextProvider = ({
 
   useEffect(() => {
     let host = '';
-    let protocol = '';
     if (window.NativeRobosats === undefined) {
       host = getHost();
-      protocol = location.protocol;
     } else {
-      protocol = 'http:';
-      host =
-        settings.network === 'mainnet'
-          ? coordinators[0].mainnetOnion
-          : coordinators[0].testnetOnion;
+      host = federation[0][`${settings.network}Onion`];
     }
-    setBaseUrl(`${protocol}//${host}`);
+    setBaseUrl(`http://${host}`);
   }, [settings.network]);
 
   useEffect(() => {
@@ -309,46 +299,62 @@ export const AppContextProvider = ({
     );
   };
 
-  const fetchLimits = async () => {
-    setLimits({ ...limits, loading: true });
-    const data = apiClient.get(baseUrl, '/api/limits/').then((data) => {
-      setLimits({ list: data ?? [], loading: false });
-      return data;
+  const fetchLimits = function () {
+    federation.map((coordinator, i) => {
+      if (coordinator.enabled === true) {
+        coordinator.fetchLimits({ bitcoin: 'mainnet', network: 'Clearnet' }, () =>
+          setFederation((f) => {
+            return f;
+          }),
+        );
+      }
     });
-    return await data;
   };
 
   const fetchInfo = function () {
-    setInfo({ ...info, loading: true });
-    apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
-      const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
-      setInfo({
-        ...data,
-        openUpdateClient: versionInfo.updateAvailable,
-        coordinatorVersion: versionInfo.coordinatorVersion,
-        clientVersion: versionInfo.clientVersion,
-        loading: false,
-      });
-      setSettings({ ...settings, network: data.network });
+    federation.map((coordinator, i) => {
+      if (coordinator.enabled === true) {
+        coordinator.fetchInfo({ bitcoin: 'mainnet', network: 'Clearnet' }, () =>
+          setFederation((f) => {
+            return f;
+          }),
+        );
+      }
     });
   };
 
   useEffect(() => {
-    if (open.stats || open.coordinator || info.coordinatorVersion == 'v?.?.?') {
-      if (window.NativeRobosats === undefined || torStatus == '"Done"') {
-        fetchInfo();
-      }
-    }
-  }, [open.stats, open.coordinator, torStatus]);
+    exchange.updateInfo(federation, () =>
+      setExchange((i) => {
+        return i;
+      }),
+    );
+    exchange.updateLimits(federation, () =>
+      setExchange((i) => {
+        return i;
+      }),
+    );
+    //exchange.updateBook(federation, () => setExchange((i)=> {return i}));
+  }); //, [federation]);
 
   useEffect(() => {
-    // Sets Setting network from coordinator API param if accessing via web
-    if (settings.network == undefined && info.network) {
-      setSettings((settings: Settings) => {
-        return { ...settings, network: info.network };
-      });
+    if (open.exchange) {
+      fetchInfo();
     }
-  }, [info]);
+  }, [open.exchange, open.coordinator, torStatus]);
+
+  useEffect(() => {
+    fetchInfo();
+  }, []);
+
+  // useEffect(() => {
+  //   // Sets Setting network from coordinator API param if accessing via web
+  //   if (settings.network == undefined && info.network) {
+  //     setSettings((settings: Settings) => {
+  //       return { ...settings, network: info.network };
+  //     });
+  //   }
+  // }, [info]);
 
   // Fetch current order at load and in a loop
   useEffect(() => {
@@ -494,13 +500,14 @@ export const AppContextProvider = ({
         setSettings,
         book,
         setBook,
+        federation,
+        setFederation,
         garage,
         setGarage,
         currentSlot,
         setCurrentSlot,
         fetchBook,
         limits,
-        info,
         setLimits,
         fetchLimits,
         maker,
@@ -509,6 +516,10 @@ export const AppContextProvider = ({
         robot,
         setRobot,
         fetchRobot,
+        exchange,
+        setExchange,
+        focusedCoordinator,
+        setFocusedCoordinator,
         baseUrl,
         setBaseUrl,
         fav,
@@ -529,6 +540,7 @@ export const AppContextProvider = ({
         open,
         setOpen,
         windowSize,
+        clientVersion,
       }}
     >
       {children}

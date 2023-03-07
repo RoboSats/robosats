@@ -13,20 +13,11 @@ import { BarChart, FormatListBulleted } from '@mui/icons-material';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 const BookPage = (): JSX.Element => {
-  const {
-    robot,
-    fetchBook,
-    clearOrder,
-    windowSize,
-    setPage,
-    setCurrentOrder,
-    baseUrl,
-    book,
-    setDelay,
-    setOrder,
-  } = useContext<AppContextProps>(AppContext);
+  const { robot, fetchBook, clearOrder, windowSize, setPage, setCurrentOrder, setDelay, setOrder } =
+    useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const history = useHistory();
+
   const [view, setView] = useState<'list' | 'depth'>('list');
   const [openMaker, setOpenMaker] = useState<boolean>(false);
   const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
@@ -50,7 +41,8 @@ const BookPage = (): JSX.Element => {
       history.push('/order/' + id);
       setPage('order');
       setCurrentOrder(id);
-      onViewOrder();
+      setOrder(undefined);
+      setDelay(10000);
     } else {
       setOpenNoRobot(true);
     }

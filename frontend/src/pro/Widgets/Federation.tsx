@@ -1,14 +1,12 @@
 import React, { useContext } from 'react';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
-
-import { Book, Favorites } from '../../models';
 import { Paper } from '@mui/material';
-import BookTable from '../../components/BookTable';
 import { GridItem } from 'react-grid-layout';
+import FederationTable from '../../components/FederationTable';
 
-interface BookWidgetProps {
+interface FederationWidgetProps {
   layout: GridItem;
-  gridCellSize?: number;
+  gridCellSize: number;
   style?: Object;
   className?: string;
   onMouseDown?: () => void;
@@ -16,36 +14,37 @@ interface BookWidgetProps {
   onTouchEnd?: () => void;
 }
 
-const BookWidget = React.forwardRef(
+const FederationWidget = React.forwardRef(
   (
     {
       layout,
-      gridCellSize = 2,
+      gridCellSize,
       style,
       className,
       onMouseDown,
       onMouseUp,
       onTouchEnd,
-    }: BookWidgetProps,
+    }: FederationWidgetProps,
     ref,
   ) => {
-    const { book, windowSize, fav } = useContext<AppContextProps>(AppContext);
+    const { federation, setFederation, setFocusedCoordinator, open, setOpen, baseUrl } =
+      useContext<AppContextProps>(AppContext);
     return React.useMemo(() => {
       return (
         <Paper elevation={3} style={{ width: '100%', height: '100%' }}>
-          <BookTable
-            elevation={0}
-            fillContainer={true}
+          <FederationTable
+            federation={federation}
+            setFederation={setFederation}
+            setFocusedCoordinator={setFocusedCoordinator}
+            openCoordinator={() => setOpen({ ...open, coordinator: true })}
+            baseUrl={baseUrl}
             maxWidth={layout.w * gridCellSize} // EM units
             maxHeight={layout.h * gridCellSize} // EM units
-            fullWidth={windowSize.width} // EM units
-            fullHeight={windowSize.height} // EM units
-            defaultFullscreen={false}
           />
         </Paper>
       );
-    }, [book, layout, windowSize, fav]);
+    }, [federation]);
   },
 );
 
-export default BookWidget;
+export default FederationWidget;

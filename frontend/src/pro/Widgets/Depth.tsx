@@ -27,7 +27,7 @@ const DepthChartWidget = React.forwardRef(
     ref,
   ) => {
     const theme = useTheme();
-    const { fav, book, limits } = useContext<AppContextProps>(AppContext);
+    const { fav, book, limits, exchange } = useContext<AppContextProps>(AppContext);
     return React.useMemo(() => {
       return (
         <Paper elevation={3} style={{ width: '100%', height: '100%' }}>

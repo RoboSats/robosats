@@ -1,23 +1,54 @@
 [
   {
-    "alias": "Inception",
-    "enabled": "true",
-    "description": "RoboSats original and experimental coordinator",
-    "coverLetter": "N/A",
+    "alias": "Experimental",
+    "description": "RoboSats node for development and experimentation.",
+    "motto": "P2P FTW!",
     "contact": {
       "email": "robosats@protonmail.com",
-      "telegram": "@robosats",
-      "twitter": "@robosats",
+      "telegram": "robosats",
+      "twitter": "robosats",
+      "reddit": "r/robosats",
       "matrix": "#robosats:matrix.org",
-      "website": "learn.robosats.com"
+      "website": "https://learn.robosats.com",
+      "nostr": "npub17pqgxxtga6u4du83f5tq9pgqk6fkuwlhvyrn4m7plvtepvgmjpys6dl4zl",
+      "pgp": "keys.openpgp.org/vks/v1/by-fingerprint/B4AB5F19113D4125DDF217739C4585B561315571",
+      "fingerprint": "B4AB5F19113D4125DDF217739C4585B561315571"
     },
-    "color": "#9C27B0",
-    "mainnetOnion": "robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
-    "mainnetClearnet": "unsafe.robosats.com",
-    "testnetOnion": "robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
-    "testnetClearnet": "unsafe.testnet.robosats.com",
+    "badges": {
+      "isFounder": true,
+      "donatesToDevFund": 1,
+      "privacyFriendly": true,
+      "robotsLove": true,
+      "noLimits": true
+    },
+    "color": "#1976d2",
+    "mainnetOnion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
+    "mainnetClearnet": "http://127.0.0.1:8000",
+    "mainnetI2P": "aaaaaaaaaaaaaaaaaaaaaaaaaaaa.I2P",
+    "testnetOnion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+    "testnetClearnet": "https://unsafe.testnet.robosats.com",
+    "testnetI2P": "aaaaaaaaaaaaaaaaaaaaaaaaaaaa.I2P",
     "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
-    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"],
-    "logo": "/static/federation/inception.svg"
+    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
+  },
+  {
+    "alias": "IncTest",
+    "description": "Testnettt development and experimental coordinator",
+    "motto": "Yoooo!",
+    "isFounder": false,
+    "contact": {
+      "email": "robosats@protonmail.com",
+      "telegram": "robosats",
+      "twitter": "robosats",
+      "matrix": "#robosats:matrix.org",
+      "website": "https://learn.robosats.com"
+    },
+    "color": "#1976d2",
+    "mainnetOnion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+    "mainnetClearnet": "http://127.0.0.1:12596",
+    "testnetOnion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+    "testnetClearnet": "https://unsafe.testnet.robosats.com",
+    "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
+    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
   }
 ]

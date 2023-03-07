@@ -43,7 +43,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   elevation = 6,
   onOrderClicked = () => null,
 }) => {
-  const { book, fav, info, limits, baseUrl } = useContext<AppContextProps>(AppContext);
+  const { book, fav, exchange, limits, baseUrl } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
   const [enrichedOrders, setEnrichedOrders] = useState<Order[]>([]);
@@ -94,16 +94,16 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setXRange(maxRange);
       setRangeSteps(rangeSteps);
     } else {
-      if (info.last_day_nonkyc_btc_premium === undefined) {
+      if (exchange.info?.last_day_nonkyc_btc_premium === undefined) {
         const premiums: number[] = enrichedOrders.map((order) => order?.premium || 0);
         setCenter(~~matchMedian(premiums));
       } else {
-        setCenter(info.last_day_nonkyc_btc_premium);
+        setCenter(exchange.info?.last_day_nonkyc_btc_premium);
       }
       setXRange(8);
       setRangeSteps(0.5);
     }
-  }, [enrichedOrders, xType, info.last_day_nonkyc_btc_premium, currencyCode]);
+  }, [enrichedOrders, xType, exchange.info, currencyCode]);
 
   const generateSeries: () => void = () => {
     const sortedOrders: PublicOrder[] =

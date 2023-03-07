@@ -1,9 +1,7 @@
 import React, { useContext } from 'react';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
-
 import MakerForm from '../../components/MakerForm';
-import { LimitList, Maker, Favorites } from '../../models';
 import { Paper } from '@mui/material';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface MakerWidgetProps {
   style?: Object;
