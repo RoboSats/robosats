@@ -2,7 +2,6 @@ import React, { useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Grid, Paper, Collapse, Typography } from '@mui/material';
-
 import { filterOrders } from '../../utils';
 
 import MakerForm from '../../components/MakerForm';

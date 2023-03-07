@@ -1,10 +1,21 @@
 import React, { useContext } from 'react';
 import { Grid, Paper } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
-import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import FederationTable from '../../components/FederationTable';
 
 const SettingsPage = (): JSX.Element => {
-  const { windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
+  const {
+    windowSize,
+    navbarHeight,
+    federation,
+    setFederation,
+    setFocusedCoordinator,
+    baseUrl,
+    settings,
+    setOpen,
+    open,
+  } = useContext<UseAppStoreType>(AppContext);
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
 
   return (
@@ -21,6 +32,17 @@ const SettingsPage = (): JSX.Element => {
       <Grid container>
         <Grid item>
           <SettingsForm showNetwork={!(window.NativeRobosats === undefined)} />
+        </Grid>
+        <Grid item>
+          <FederationTable
+            federation={federation}
+            setFederation={setFederation}
+            setFocusedCoordinator={setFocusedCoordinator}
+            openCoordinator={() => setOpen({ ...open, coordinator: true })}
+            baseUrl={baseUrl}
+            maxHeight={10}
+            network={settings.network}
+          />
         </Grid>
       </Grid>
     </Paper>

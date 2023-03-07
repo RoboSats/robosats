@@ -8,18 +8,18 @@ import {
   Maker,
   Robot,
   Garage,
-  Info,
   Settings,
   Favorites,
   defaultMaker,
-  defaultInfo,
   Coordinator,
+  Exchange,
   Order,
+  Version,
 } from '../models';
 
 import { apiClient } from '../services/api';
 import { systemClient } from '../services/System';
-import { checkVer, getHost, tokenStrength } from '../utils';
+import { getClientVersion, getHost, tokenStrength } from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
@@ -138,13 +138,19 @@ export const useAppStore = () => {
     return new Robot(garage.slots[currentSlot].robot);
   });
   const [maker, setMaker] = useState<Maker>(defaultMaker);
-  const [info, setInfo] = useState<Info>(defaultInfo);
-  const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
+  const [exchange, setExchange] = useState<Exchange>(new Exchange());
+  const [federation, setFederation] = useState<Coordinator[]>(
+    defaultFederation.map((c) => new Coordinator(c)),
+  );
+  console.log(federation);
+  const [focusedCoordinator, setFocusedCoordinator] = useState<number>(0);
   const [baseUrl, setBaseUrl] = useState<string>('');
-  const [fav, setFav] = useState<Favorites>({ type: null, mode: 'fiat', currency: 0 });
+  const [fav, setFav] = useState<Favorites>({ type: null, currency: 0, mode: 'fiat' });
 
   const [delay, setDelay] = useState<number>(60000);
-  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(setInterval(() => null, delay));
+  const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
+    setInterval(() => null, delay),
+  );
   const [order, setOrder] = useState<Order | undefined>(undefined);
   const [badOrder, setBadOrder] = useState<string | undefined>(undefined);
 
@@ -156,9 +162,11 @@ export const useAppStore = () => {
   const [currentOrder, setCurrentOrder] = useState<number | undefined>(undefined);
 
   const navbarHeight = 2.5;
+  const clientVersion = getClientVersion();
+
   const [open, setOpen] = useState<OpenDialogs>(closeAll);
 
-  const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
+  const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(() =>
     getWindowSize(theme.typography.fontSize),
   );
 
@@ -189,18 +197,12 @@ export const useAppStore = () => {
 
   useEffect(() => {
     let host = '';
-    let protocol = '';
     if (window.NativeRobosats === undefined) {
       host = getHost();
-      protocol = location.protocol;
     } else {
-      protocol = 'http:';
-      host =
-        settings.network === 'mainnet'
-          ? coordinators[0].mainnetOnion
-          : coordinators[0].testnetOnion;
+      host = federation[0][`${settings.network}Onion`];
     }
-    setBaseUrl(`${protocol}//${host}`);
+    setBaseUrl(`http://${host}`);
   }, [settings.network]);
 
   useEffect(() => {
@@ -223,46 +225,62 @@ export const useAppStore = () => {
     );
   };
 
-  const fetchLimits = async () => {
-    setLimits({ ...limits, loading: true });
-    const data = apiClient.get(baseUrl, '/api/limits/').then((data) => {
-      setLimits({ list: data ?? [], loading: false });
-      return data;
+  const fetchLimits = function () {
+    federation.map((coordinator, i) => {
+      if (coordinator.enabled === true) {
+        coordinator.fetchLimits({ bitcoin: 'mainnet', network: 'Clearnet' }, () =>
+          setFederation((f) => {
+            return f;
+          }),
+        );
+      }
     });
-    return await data;
   };
 
   const fetchInfo = function () {
-    setInfo({ ...info, loading: true });
-    apiClient.get(baseUrl, '/api/info/').then((data: Info) => {
-      const versionInfo: any = checkVer(data.version.major, data.version.minor, data.version.patch);
-      setInfo({
-        ...data,
-        openUpdateClient: versionInfo.updateAvailable,
-        coordinatorVersion: versionInfo.coordinatorVersion,
-        clientVersion: versionInfo.clientVersion,
-        loading: false,
-      });
-      setSettings({ ...settings, network: data.network });
+    federation.map((coordinator, i) => {
+      if (coordinator.enabled === true) {
+        coordinator.fetchInfo({ bitcoin: 'mainnet', network: 'Clearnet' }, () =>
+          setFederation((f) => {
+            return f;
+          }),
+        );
+      }
     });
   };
 
   useEffect(() => {
-    if (open.stats || open.coordinator || info.coordinatorVersion == 'v?.?.?') {
-      if (window.NativeRobosats === undefined || torStatus == '"Done"') {
-        fetchInfo();
-      }
-    }
-  }, [open.stats, open.coordinator]);
+    exchange.updateInfo(federation, () =>
+      setExchange((i) => {
+        return i;
+      }),
+    );
+    exchange.updateLimits(federation, () =>
+      setExchange((i) => {
+        return i;
+      }),
+    );
+    //exchange.updateBook(federation, () => setExchange((i)=> {return i}));
+  }); //, [federation]);
 
   useEffect(() => {
-    // Sets Setting network from coordinator API param if accessing via web
-    if (settings.network == undefined && info.network) {
-      setSettings((settings: Settings) => {
-        return { ...settings, network: info.network };
-      });
+    if (open.exchange) {
+      fetchInfo();
     }
-  }, [info]);
+  }, [open.exchange, open.coordinator, torStatus]);
+
+  useEffect(() => {
+    fetchInfo();
+  }, []);
+
+  // useEffect(() => {
+  //   // Sets Setting network from coordinator API param if accessing via web
+  //   if (settings.network == undefined && info.network) {
+  //     setSettings((settings: Settings) => {
+  //       return { ...settings, network: info.network };
+  //     });
+  //   }
+  // }, [info]);
 
   // Fetch current order at load and in a loop
   useEffect(() => {
@@ -424,6 +442,10 @@ export const useAppStore = () => {
     robot,
     setRobot,
     fetchRobot,
+    exchange,
+    setExchange,
+    focusedCoordinator,
+    setFocusedCoordinator,
     baseUrl,
     setBaseUrl,
     fav,
@@ -443,6 +465,7 @@ export const useAppStore = () => {
     open,
     setOpen,
     windowSize,
+    clientVersion,
   };
 };
 

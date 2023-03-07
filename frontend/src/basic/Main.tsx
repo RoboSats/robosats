@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box, Slide, Typography, styled } from '@mui/material';
+import { UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
 
 import RobotPage from './RobotPage';
 import MakerPage from './MakerPage';
@@ -11,10 +12,8 @@ import NavBar from './NavBar';
 import MainDialogs from './MainDialogs';
 
 import RobotAvatar from '../components/RobotAvatar';
-
 import { useTranslation } from 'react-i18next';
 import Notifications from '../components/Notifications';
-import { UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
 
 const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
 

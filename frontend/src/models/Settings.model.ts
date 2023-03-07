@@ -1,6 +1,5 @@
 import i18n from '../i18n/Web';
 import { systemClient } from '../services/System';
-import type Coordinator from './Coordinator.model';
 
 export type Language =
   | 'en'
@@ -47,8 +46,7 @@ class BaseSettings {
   public fontSize: number = 14;
   public language?: Language;
   public freezeViewports: boolean = false;
-  public network: 'mainnet' | 'testnet' = 'mainnet';
-  public coordinator: Coordinator | undefined = undefined;
+  public network: 'mainnet' | 'testnet' | undefined = undefined;
   public host?: string;
   public unsafeClient: boolean = false;
   public selfhostedClient: boolean = false;

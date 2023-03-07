@@ -17,29 +17,28 @@ import {
 import RobotAvatar from '../../components/RobotAvatar';
 import { AppContext, UseAppStoreType, closeAll } from '../../contexts/AppContext';
 
-interface NavBarProps {
-  width: number;
-  height: number;
-}
 
-const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
+const NavBar = (): JSX.Element => {
+  const theme = useTheme();
+  const { t } = useTranslation();
   const {
-    robot,
     page,
-    settings,
     setPage,
+    robot,
+    settings,
     setSlideDirection,
     open,
     setOpen,
+    windowSize,
     currentOrder,
+    navbarHeight,
     baseUrl,
   } = useContext<UseAppStoreType>(AppContext);
 
-  const theme = useTheme();
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const smallBar = width < 50;
+  const smallBar = windowSize.width < 50;
+  const color = settings.network === 'mainnet' ? 'primary' : 'secondary';
 
   const tabSx = smallBar
     ? { position: 'relative', bottom: robot.avatarLoaded ? '0.9em' : '0.13em', minWidth: '1em' }
@@ -90,7 +89,13 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
   return (
     <Paper
       elevation={6}
-      sx={{ height: `${height}em`, width: `100%`, position: 'fixed', bottom: 0, borderRadius: 0 }}
+      sx={{
+        height: `${navbarHeight}em`,
+        width: `100%`,
+        position: 'fixed',
+        bottom: 0,
+        borderRadius: 0,
+      }}
     >
       <Tabs
         TabIndicatorProps={{ sx: { height: '0.3em', position: 'absolute', top: 0 } }}
@@ -165,7 +170,7 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
             open.more ? null : setOpen({ ...open, more: true });
           }}
           icon={
-            <MoreTooltip open={open} setOpen={setOpen} closeAll={closeAll}>
+            <MoreTooltip>
               <MoreHoriz />
             </MoreTooltip>
           }

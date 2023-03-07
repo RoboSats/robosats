@@ -1,4 +1,3 @@
-import { Paper } from '@mui/material';
 import React, { Component } from 'react';
 
 interface ErrorBoundaryProps {

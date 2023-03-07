@@ -38,7 +38,14 @@ const BookPage = (): JSX.Element => {
   const onOrderClicked = function (id: number) {
     if (robot.avatarLoaded) {
       navigate('/order/' + id);
+<<<<<<< HEAD
       onViewOrder();
+=======
+      setPage('order');
+      setCurrentOrder(id);
+      setOrder(undefined);
+      setDelay(10000);
+>>>>>>> Add federation table, exchange model and other UI elements of the federation layer (#379)
     } else {
       setOpenNoRobot(true);
     }
