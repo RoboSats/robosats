@@ -8,7 +8,6 @@ import {
   Maker,
   Robot,
   Garage,
-  Info,
   Settings,
   Favorites,
   defaultMaker,

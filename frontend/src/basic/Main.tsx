@@ -14,7 +14,6 @@ import MainDialogs from './MainDialogs';
 import RobotAvatar from '../components/RobotAvatar';
 import { useTranslation } from 'react-i18next';
 import Notifications from '../components/Notifications';
-import { AppContextProps, AppContext } from '../contexts/AppContext';
 
 const Main = (): JSX.Element => {
   const { t } = useTranslation();

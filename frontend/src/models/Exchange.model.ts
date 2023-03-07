@@ -51,59 +51,61 @@ export class Exchange {
   public info?: ExchangeInfo = defaultExchangeInfo;
   public limits?: LimitList;
 
-  updateInfo = (federation: Coordinator[], callback: () => void) => {
-    this.info = undefined;
-    const addUp: toAdd[] = [
-      'num_public_buy_orders',
-      'num_public_sell_orders',
-      'book_liquidity',
-      'active_robots_today',
-      'last_day_volume',
-      'lifetime_volume',
-    ];
+  updateInfo = () => null;
+  // updateInfo = (federation: Coordinator[], callback: () => void) => {
+  //   this.info = undefined;
+  //   const addUp: toAdd[] = [
+  //     'num_public_buy_orders',
+  //     'num_public_sell_orders',
+  //     'book_liquidity',
+  //     'active_robots_today',
+  //     'last_day_volume',
+  //     'lifetime_volume',
+  //   ];
 
-    addUp.map((key) => {
-      let value = 0;
-      federation.map((coordinator) => {
-        if (coordinator.info) {
-          value = value + coordinator.info[key];
-        }
-      });
-      this.info[key] = value;
-    });
+  //   addUp.map((key) => {
+  //     let value = 0;
+  //     federation.map((coordinator) => {
+  //       if (coordinator.info) {
+  //         value = value + coordinator.info[key];
+  //       }
+  //     });
+  //     this.info[key] = value;
+  //   });
 
-    let premiums: number[] = [];
-    let volumes: number[] = [];
-    let highestVersion = { major: 0, minor: 0, patch: 0 };
-    federation.map((coordinator, index) => {
-      if (coordinator.info) {
-        this.info.onlineCoordinators = this.info.onlineCoordinators + 1;
-        premiums[index] = coordinator.info.last_day_nonkyc_btc_premium;
-        volumes[index] = coordinator.info.last_day_volume;
-        highestVersion = getHigherVer(highestVersion, coordinator.info.version);
-      }
-    });
-    this.info.last_day_nonkyc_btc_premium = weightedMean(premiums, volumes);
-    this.info.version = highestVersion;
-    this.info.totalCoordinators = federation.length;
-    return callback();
-  };
+  //   let premiums: number[] = [];
+  //   let volumes: number[] = [];
+  //   let highestVersion = { major: 0, minor: 0, patch: 0 };
+  //   federation.map((coordinator, index) => {
+  //     if (coordinator.info) {
+  //       this.info.onlineCoordinators = this.info.onlineCoordinators + 1;
+  //       premiums[index] = coordinator.info.last_day_nonkyc_btc_premium;
+  //       volumes[index] = coordinator.info.last_day_volume;
+  //       highestVersion = getHigherVer(highestVersion, coordinator.info.version);
+  //     }
+  //   });
+  //   this.info.last_day_nonkyc_btc_premium = weightedMean(premiums, volumes);
+  //   this.info.version = highestVersion;
+  //   this.info.totalCoordinators = federation.length;
+  //   return callback();
+  // };
 
-  updateLimits = (federation: Coordinator[], callback: () => void) => {
-    let newLimits: LimitList = {};
-    federation.map((coordinator, index) => {
-      if (coordinator.limits) {
-        for (const currency in coordinator.limits) {
-          newLimits[currency] = compareUpdateLimit(
-            newLimits[currency],
-            coordinator.limits[currency],
-          );
-        }
-      }
-      this.limits = newLimits;
-    });
-    return callback();
-  };
+  updateLimits = () => null;
+  // updateLimits = (federation: Coordinator[], callback: () => void) => {
+  //   let newLimits: LimitList = {};
+  //   federation.map((coordinator, index) => {
+  //     if (coordinator.limits) {
+  //       for (const currency in coordinator.limits) {
+  //         newLimits[currency] = compareUpdateLimit(
+  //           newLimits[currency],
+  //           coordinator.limits[currency],
+  //         );
+  //       }
+  //     }
+  //     this.limits = newLimits;
+  //   });
+  //   return callback();
+  // };
 }
 
 export default Exchange;

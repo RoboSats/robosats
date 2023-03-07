@@ -34,19 +34,9 @@ interface SettingsFormProps {
   showNetwork?: boolean;
 }
 
-<<<<<<< HEAD
 const SettingsForm = ({ dense = false, showNetwork = false }: SettingsFormProps): JSX.Element => {
   const { fav, setFav, settings, setSettings } = useContext<AppContextProps>(AppContext);
 
-=======
-const SettingsForm = ({
-  fav,
-  setFav,
-  dense = false,
-  settings,
-  setSettings,
-}: SettingsFormProps): JSX.Element => {
->>>>>>> Update by rebasing to latest main and fix conflicts
   const theme = useTheme();
   const { t } = useTranslation();
   const fontSizes = [

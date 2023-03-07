@@ -6,7 +6,17 @@ import { AppContextProps, AppContext } from '../../contexts/AppContext';
 import FederationTable from '../../components/FederationTable';
 
 const SettingsPage = (): JSX.Element => {
-  const { windowSize, navbarHeight, federation, setFederation, setFocusedCoordinator, baseUrl, settings} = useContext<AppContextProps>(AppContext);
+  const {
+    windowSize,
+    navbarHeight,
+    federation,
+    setFederation,
+    setFocusedCoordinator,
+    baseUrl,
+    settings,
+    setOpen,
+    open,
+  } = useContext<AppContextProps>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
@@ -25,7 +35,7 @@ const SettingsPage = (): JSX.Element => {
       <Grid container>
         <Grid item>
           <SettingsForm showNetwork={!(window.NativeRobosats === undefined)} />
-          </Grid>
+        </Grid>
         <Grid item>
           <FederationTable
             federation={federation}
@@ -36,7 +46,7 @@ const SettingsPage = (): JSX.Element => {
             maxHeight={10}
             network={settings.network}
           />
-          </Grid>
+        </Grid>
       </Grid>
     </Paper>
   );

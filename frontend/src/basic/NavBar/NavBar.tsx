@@ -28,6 +28,7 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
   const {
     page,
     setPage,
+    robot,
     settings,
     setSlideDirection,
     open,
@@ -38,7 +39,7 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
     navbarHeight,
     baseUrl,
   } = useContext<AppContextProps>(AppContext);
-  
+
   const history = useHistory();
   const smallBar = windowSize.width < 50;
   const color = settings.network === 'mainnet' ? 'primary' : 'secondary';

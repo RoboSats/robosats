@@ -41,10 +41,7 @@ const defaultLayout: Layout = [
 ];
 
 const Main = (): JSX.Element => {
-  const {
-    settings,
-    windowSize,
-  } = useContext<AppContextProps>(AppContext);
+  const { settings, windowSize } = useContext<AppContextProps>(AppContext);
 
   const theme = useTheme();
   const em: number = theme.typography.fontSize;

@@ -44,7 +44,7 @@ const RobotAvatar: React.FC<Props> = ({
   const theme = useTheme();
   const [avatarSrc, setAvatarSrc] = useState<string>();
   const [nicknameReady, setNicknameReady] = useState<boolean>(false);
-  
+
   const path = coordinator ? '/static/federation/' : '/static/assets/avatars/';
   const backgroundData =
     placeholderType == 'generating' ? placeholder.generating : placeholder.loading;
@@ -63,9 +63,7 @@ const RobotAvatar: React.FC<Props> = ({
         setNicknameReady(true);
       } else {
         setNicknameReady(true);
-        apiClient
-          .fileImageUrl(baseUrl, path + nickname + '.png')
-          .then(setAvatarSrc);
+        apiClient.fileImageUrl(baseUrl, path + nickname + '.png').then(setAvatarSrc);
       }
     } else {
       setNicknameReady(false);
