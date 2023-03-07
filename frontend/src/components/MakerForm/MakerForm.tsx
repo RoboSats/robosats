@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   InputAdornment,
@@ -63,7 +63,7 @@ const MakerForm = ({
   onOrderCreated = () => null,
   hasRobot = true,
 }: MakerFormProps): JSX.Element => {
-  const { fav, setFav, limits, fetchLimits, maker, setMaker, setPage, baseUrl } =
+  const { fav, setFav, limits, info, maker, setMaker, setPage, baseUrl } =
     useContext<AppContextProps>(AppContext);
 
   const { t } = useTranslation();
@@ -73,7 +73,6 @@ const MakerForm = ({
   const [satoshisLimits, setSatoshisLimits] = useState<number[]>([20000, 4000000]);
   const [currentPrice, setCurrentPrice] = useState<number | string>('...');
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
-  const [swapSats, setSwapSats] = useState<number>(0);
 
   const [openDialogs, setOpenDialogs] = useState<boolean>(false);
   const [submittingRequest, setSubmittingRequest] = useState<boolean>(false);
@@ -176,7 +175,7 @@ const MakerForm = ({
   };
 
   const handlePremiumChange = function (e: object) {
-    const max = 999;
+    const max = fav.mode === 'fiat' ? 999 : 99;
     const min = -100;
     const newPremium = Math.floor(e.target.value * Math.pow(10, 2)) / Math.pow(10, 2);
     let premium: number = newPremium;
@@ -300,23 +299,23 @@ const MakerForm = ({
     }
   };
 
-  const minAmountError = function () {
+  const minAmountError = useMemo(() => {
     return (
       maker.minAmount < amountLimits[0] * 0.99 ||
       maker.maxAmount < maker.minAmount ||
       maker.minAmount < maker.maxAmount / (maxRangeAmountMultiple + 0.15) ||
       maker.minAmount * (minRangeAmountMultiple - 0.1) > maker.maxAmount
     );
-  };
+  }, [maker.minAmount, maker.maxAmount, amountLimits]);
 
-  const maxAmountError = function () {
+  const maxAmountError = useMemo(() => {
     return (
       maker.maxAmount > amountLimits[1] * 1.01 ||
       maker.maxAmount < maker.minAmount ||
       maker.minAmount < maker.maxAmount / (maxRangeAmountMultiple + 0.15) ||
       maker.minAmount * (minRangeAmountMultiple - 0.1) > maker.maxAmount
     );
-  };
+  }, [maker.minAmount, maker.maxAmount, amountLimits]);
 
   const resetRange = function (advancedOptions: boolean) {
     const index = fav.currency === 0 ? 1 : fav.currency;
@@ -369,34 +368,37 @@ const MakerForm = ({
     });
   };
 
-  const amountLabel = function () {
+  const amountLabel = useMemo(() => {
     let label = t('Amount');
     let helper = '';
+    let swapSats = 0;
     if (fav.mode === 'swap') {
-      if (fav.type === 0) {
-        label = t('Onchain amount to send');
-        helper = t('You receive {{swapSats}} LN Sats', { swapSats });
-      } else if (fav.type === 1) {
-        label = t('Onchain amount to receive');
-        helper = t('You send {{swapSats}} LN Sats', { swapSats });
+      if (fav.type === 1) {
+        swapSats = maker.amount * 100000000 * (1 - maker.premium / 100) * (1 - info.maker_fee);
+        label = t('Onchain amount to send (BTC)');
+        helper = t('You receive {{sats}} Lightning Sats', { sats: pn(Math.round(swapSats)) });
+      } else if (fav.type === 0) {
+        swapSats = maker.amount * 100000000 * (1 - maker.premium / 100) * (1 + info.maker_fee);
+        label = t('Onchain amount to receive (BTC)');
+        helper = t('You send {{sats}} Lightning Sats', { sats: pn(Math.round(swapSats)) });
       }
     }
-    return { label, helper };
-  };
+    return { label, helper, swapSats };
+  }, [fav, maker.amount, maker.premium, info]);
 
-  const disableSubmit = function () {
+  const disableSubmit = useMemo(() => {
     return (
       fav.type == null ||
       (maker.amount != '' &&
         !maker.advancedOptions &&
         (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
       (maker.amount == null && (!maker.advancedOptions || limits.loading)) ||
-      (maker.advancedOptions && (minAmountError() || maxAmountError())) ||
+      (maker.advancedOptions && (minAmountError || maxAmountError)) ||
       (maker.amount <= 0 && !maker.advancedOptions) ||
       (maker.isExplicit && (maker.badSatoshisText != '' || maker.satoshis == '')) ||
       (!maker.isExplicit && maker.badPremiumText != '')
     );
-  };
+  }, [maker, amountLimits, limits, fav.type]);
 
   const clearMaker = function () {
     setFav({ ...fav, type: null });
@@ -409,7 +411,7 @@ const MakerForm = ({
         component='h2'
         variant='subtitle2'
         align='center'
-        color={disableSubmit() ? 'text.secondary' : 'text.primary'}
+        color={disableSubmit ? 'text.secondary' : 'text.primary'}
       >
         {fav.type == null
           ? t(fav.mode === 'fiat' ? 'Order for ' : 'Swap of ')
@@ -579,8 +581,8 @@ const MakerForm = ({
                 handleCurrencyChange={handleCurrencyChange}
                 amountLimits={amountLimits}
                 maxAmount={maker.maxAmount}
-                minAmountError={minAmountError()}
-                maxAmountError={maxAmountError()}
+                minAmountError={minAmountError}
+                maxAmountError={maxAmountError}
                 handleMinAmountChange={handleMinAmountChange}
                 handleMaxAmountChange={handleMaxAmountChange}
               />
@@ -619,7 +621,7 @@ const MakerForm = ({
                               })
                             : null
                         }
-                        label={amountLabel().label}
+                        label={amountLabel.label}
                         required={true}
                         value={maker.amount}
                         type='number'
@@ -634,8 +636,8 @@ const MakerForm = ({
                         onChange={(e) => setMaker({ ...maker, amount: e.target.value })}
                       />
                     </Tooltip>
-                    {fav.mode === 'swap' ? (
-                      <FormHelperText>{amountLabel().helper}</FormHelperText>
+                    {fav.mode === 'swap' && maker.amount != '' ? (
+                      <FormHelperText>{amountLabel.helper}</FormHelperText>
                     ) : null}
                   </Grid>
 
@@ -940,7 +942,7 @@ const MakerForm = ({
           <Grid container direction='row' justifyItems='center' alignItems='center' spacing={1}>
             <Grid item>
               {/* conditions to disable the make button */}
-              {disableSubmit() ? (
+              {disableSubmit ? (
                 <Tooltip enterTouchDelay={0} title={t('You must fill the form correctly')}>
                   <div>
                     <Button disabled color='primary' variant='contained'>
