@@ -369,18 +369,28 @@ const MakerForm = ({
   };
 
   const amountLabel = useMemo(() => {
+    const defaultRoutingBudget = 0.001;
     let label = t('Amount');
     let helper = '';
     let swapSats = 0;
     if (fav.mode === 'swap') {
       if (fav.type === 1) {
-        swapSats = maker.amount * 100000000 * (1 - maker.premium / 100) * (1 - info.maker_fee);
+        swapSats =
+          maker.amount *
+          100000000 *
+          (1 - maker.premium / 100) *
+          (1 - info.maker_fee) *
+          (1 - defaultRoutingBudget);
         label = t('Onchain amount to send (BTC)');
-        helper = t('You receive {{sats}} Lightning Sats', { sats: pn(Math.round(swapSats)) });
+        helper = t('You receive approx {{sats}} LN Sats (fees might vary)', {
+          sats: pn(Math.round(swapSats)),
+        });
       } else if (fav.type === 0) {
         swapSats = maker.amount * 100000000 * (1 - maker.premium / 100) * (1 + info.maker_fee);
         label = t('Onchain amount to receive (BTC)');
-        helper = t('You send {{sats}} Lightning Sats', { sats: pn(Math.round(swapSats)) });
+        helper = t('You send approx {{sats}} LN Sats (fees might vary)', {
+          sats: pn(Math.round(swapSats)),
+        });
       }
     }
     return { label, helper, swapSats };
@@ -637,7 +647,9 @@ const MakerForm = ({
                       />
                     </Tooltip>
                     {fav.mode === 'swap' && maker.amount != '' ? (
-                      <FormHelperText>{amountLabel.helper}</FormHelperText>
+                      <FormHelperText sx={{ textAlign: 'center' }}>
+                        {amountLabel.helper}
+                      </FormHelperText>
                     ) : null}
                   </Grid>
 

@@ -43,7 +43,7 @@ export const WebLNDialog = ({
               />
               {isBuyer
                 ? t('Invoice not received, please check your WebLN wallet.')
-                : t('Payment not received, please check your WebLN wallet.')}
+                : t('Amount not yet locked, please check your WebLN wallet.')}
             </>
           ) : (
             <>

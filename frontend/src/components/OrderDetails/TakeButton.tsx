@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -30,7 +30,6 @@ interface TakeButtonProps {
   setOrder: (state: Order) => void;
   baseUrl: string;
   hasRobot: boolean;
-  setPage: (state: Page) => void;
 }
 
 interface OpenDialogsProps {
@@ -39,13 +38,7 @@ interface OpenDialogsProps {
 }
 const closeAll = { inactiveMaker: false, confirmation: false };
 
-const TakeButton = ({
-  order,
-  setOrder,
-  baseUrl,
-  setPage,
-  hasRobot,
-}: TakeButtonProps): JSX.Element => {
+const TakeButton = ({ order, setOrder, baseUrl, hasRobot }: TakeButtonProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -103,7 +96,7 @@ const TakeButton = ({
     }
   };
 
-  const amountHelperText = function () {
+  const amountHelperText = useMemo(() => {
     const amount = order.currency == 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
     if (amount < Number(order.min_amount) && takeAmount != '') {
       return t('Too low');
@@ -112,7 +105,7 @@ const TakeButton = ({
     } else {
       return null;
     }
-  };
+  }, [order, takeAmount]);
 
   const onTakeOrderClicked = function () {
     if (order.maker_status == 'Inactive') {
@@ -122,7 +115,7 @@ const TakeButton = ({
     }
   };
 
-  const invalidTakeAmount = function () {
+  const invalidTakeAmount = useMemo(() => {
     const amount = order.currency == 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
     return (
       amount < Number(order.min_amount) ||
@@ -130,7 +123,7 @@ const TakeButton = ({
       takeAmount == '' ||
       takeAmount == null
     );
-  };
+  }, [takeAmount, order]);
 
   const takeOrderButton = function () {
     if (order.has_range) {
@@ -157,8 +150,8 @@ const TakeButton = ({
                 title={t('Enter amount of fiat to exchange for bitcoin')}
               >
                 <TextField
-                  error={takeAmount === '' ? false : invalidTakeAmount()}
-                  helperText={amountHelperText()}
+                  error={takeAmount === '' ? false : invalidTakeAmount}
+                  helperText={amountHelperText}
                   label={t('Amount {{currencyCode}}', { currencyCode })}
                   size='small'
                   type='number'
@@ -176,7 +169,7 @@ const TakeButton = ({
             <Grid item>
               <div
                 style={{
-                  display: invalidTakeAmount() ? '' : 'none',
+                  display: invalidTakeAmount ? '' : 'none',
                 }}
               >
                 <Tooltip
@@ -201,7 +194,7 @@ const TakeButton = ({
               </div>
               <div
                 style={{
-                  display: invalidTakeAmount() ? 'none' : '',
+                  display: invalidTakeAmount ? 'none' : '',
                 }}
               >
                 <LoadingButton
@@ -276,7 +269,6 @@ const TakeButton = ({
       <ConfirmationDialog
         open={open.confirmation}
         onClose={() => setOpen({ ...open, confirmation: false })}
-        setPage={setPage}
         onClickDone={() => {
           takeOrder();
           setLoadingTake(true);

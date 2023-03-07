@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   List,
@@ -13,6 +13,7 @@ import {
   Collapse,
   useTheme,
   Typography,
+  IconButton,
 } from '@mui/material';
 
 import Countdown, { CountdownRenderProps, zeroPad } from 'react-countdown';
@@ -26,37 +27,39 @@ import {
   Payments,
   Article,
   HourglassTop,
+  ExpandLess,
+  ExpandMore,
 } from '@mui/icons-material';
 import { PaymentStringAsIcons } from '../../components/PaymentMethods';
-import { FlagWithProps } from '../Icons';
+import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
 
-import { Order } from '../../models';
+import { Order, Info } from '../../models';
 import { statusBadgeColor, pn, amountToString } from '../../utils';
-import { Page } from '../../basic/NavBar';
 import TakeButton from './TakeButton';
 
 interface OrderDetailsProps {
   order: Order;
   setOrder: (state: Order) => void;
+  info: Info;
   baseUrl: string;
   hasRobot: boolean;
-  setPage: (state: Page) => void;
 }
 
 const OrderDetails = ({
   order,
+  info,
   setOrder,
   baseUrl,
-  setPage,
   hasRobot,
 }: OrderDetailsProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 
   const currencyCode: string = currencies[`${order.currency}`];
+  const [showSwapDetails, setShowSwapDetails] = useState<boolean>(false);
 
-  const AmountString = function () {
+  const amountString = useMemo(() => {
     // precision to 8 decimal if currency is BTC otherwise 4 decimals
     if (order.currency == 1000) {
       return (
@@ -75,7 +78,7 @@ const OrderDetails = ({
         order.max_amount,
       );
     }
-  };
+  }, [order.currency, order.amount, order.min_amount, order.max_amount, order.has_range]);
 
   // Countdown Renderer callback with condition
   const countdownRenderer = function ({
@@ -138,6 +141,64 @@ const OrderDetails = ({
     }
   };
 
+  const computeSats = (amount: string, premium: number, fee: number, routingBudget: number = 0) => {
+    return pn(
+      Math.round(amount * 100000000 * (1 - premium / 100) * (1 + fee) * (1 - routingBudget)),
+    );
+  };
+
+  const swap = useMemo(() => {
+    let send: string = '';
+    let receive: string = '';
+    let sendSats: number = 0;
+    let receiveSats: number = 0;
+    let swapSats: string = '';
+
+    const isSwapIn = (order.type == 0 && order.is_maker) || (order.type == 1 && !order.is_maker);
+    const tradeFee = order.is_maker ? info.maker_fee : info.taker_fee;
+    const defaultRoutingBudget = 0.001;
+    if (order.currency === 1000) {
+      if (isSwapIn) {
+        if (order.amount) {
+          swapSats = computeSats(order.amount, order.premium, -tradeFee, defaultRoutingBudget);
+        } else {
+          const swapMin = computeSats(
+            order.min_amount,
+            order.premium,
+            -tradeFee,
+            defaultRoutingBudget,
+          );
+          const swapMax = computeSats(
+            order.max_amount,
+            order.premium,
+            -tradeFee,
+            defaultRoutingBudget,
+          );
+          swapSats = `${swapMin}-${swapMax}`;
+        }
+        send = t('You send via {{method}} {{amount}}', {
+          amount: amountString,
+          method: order.payment_method,
+        });
+        receive = t('You receive via Lightning approx {{amount}} Sats', { amount: swapSats });
+      } else {
+        if (order.amount) {
+          swapSats = computeSats(order.amount, order.premium, tradeFee);
+        } else {
+          const swapMin = computeSats(order.min_amount, order.premium, tradeFee);
+          const swapMax = computeSats(order.max_amount, order.premium, tradeFee);
+          swapSats = `${swapMin}-${swapMax}`;
+        }
+        send = t('You send via Lightning {{amount}} Sats', { amount: swapSats });
+        receive = t('You receive via {{method}} {{amount}}', {
+          amount: amountString,
+          method: order.payment_method,
+        });
+      }
+    }
+    return { send, receive, isSwapIn };
+  }, [order.currency, order.amount, order.has_range]);
+
   return (
     <Grid container spacing={0}>
       <Grid item xs={12}>
@@ -185,7 +246,6 @@ const OrderDetails = ({
               </ListItemAvatar>
             </ListItem>
           </Collapse>
-
           <Divider>
             <Chip label={t('Order Details')} />
           </Divider>
@@ -216,10 +276,42 @@ const OrderDetails = ({
               </div>
             </ListItemIcon>
             <ListItemText
-              primary={AmountString()}
-              secondary={order.amount && !order.has_range ? 'Amount' : 'Amount Range'}
+              primary={amountString}
+              secondary={order.amount ? 'Amount' : 'Amount Range'}
             />
+            <ListItemIcon>
+              <IconButton onClick={() => setShowSwapDetails(!showSwapDetails)}>
+                {showSwapDetails ? <ExpandLess /> : <ExpandMore color='primary' />}
+              </IconButton>
+            </ListItemIcon>
           </ListItem>
+
+          {order.currency === 1000 ? (
+            <Collapse in={showSwapDetails}>
+              <List dense={true} sx={{ position: 'relative', bottom: '0.5em' }}>
+                <ListItem>
+                  <ListItemIcon sx={{ position: 'relative', left: '0.3em' }}>
+                    <SendReceiveIcon
+                      sx={{ transform: 'scaleX(-1)', width: '0.9em', opacity: 0.7 }}
+                      color='secondary'
+                    />
+                  </ListItemIcon>
+                  <Typography variant='body2'>{swap.send}</Typography>
+                </ListItem>
+
+                <ListItem>
+                  <ListItemIcon sx={{ position: 'relative', left: '0.3em' }}>
+                    <SendReceiveIcon
+                      sx={{ left: '0.1em', width: '0.9em', opacity: 0.7 }}
+                      color='primary'
+                    />
+                  </ListItemIcon>
+                  <Typography variant='body2'>{swap.receive}</Typography>
+                </ListItem>
+              </List>
+            </Collapse>
+          ) : null}
+
           <Divider />
 
           <ListItem>
@@ -327,13 +419,7 @@ const OrderDetails = ({
 
         {!order.is_participant ? (
           <Grid item xs={12}>
-            <TakeButton
-              order={order}
-              setOrder={setOrder}
-              baseUrl={baseUrl}
-              setPage={setPage}
-              hasRobot={hasRobot}
-            />
+            <TakeButton order={order} setOrder={setOrder} baseUrl={baseUrl} hasRobot={hasRobot} />
           </Grid>
         ) : (
           <></>
