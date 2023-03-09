@@ -17,7 +17,7 @@ You can donate in three ways:
 
  - **Directly tip the developer working on the features you like.** Check the [active PRs](https://github.com/Reckless-Satoshi/robosats/pulls) and show your support to the developers with via Lightning tips. Simply write a message, for example "@developer_name, I would like to fund your development of this feature with 6000 Sats". The developer should reply with a LN invoice with a long expiration time.
 
- - **Tip the lead developer via Paynym (BIP47)** [Paynym.is/{{site.robosats.leaddev_paynym}}](https://paynym.is/*{{site.robosats.leaddev_paynym}}*) Paynym code:
+ - **Tip the lead developer via Paynym (BIP47): [{{site.robosats.leaddev_paynym}}](https://paynym.is/{{site.robosats.leaddev_paynym}})** paynym code:
  ```
  {{site.robosats.leaddev_paynym_code}}
  ```
