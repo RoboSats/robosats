@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   InputAdornment,
@@ -36,7 +36,7 @@ import { FlagWithProps } from '../Icons';
 import AutocompletePayments from './AutocompletePayments';
 import AmountRange from './AmountRange';
 import currencyDict from '../../../static/assets/currencies.json';
-import { amountToString, pn } from '../../utils';
+import { amountToString, computeSats, pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
@@ -80,23 +80,6 @@ const MakerForm = ({
   const maxRangeAmountMultiple = 7.8;
   const minRangeAmountMultiple = 1.6;
   const amountSafeThresholds = [1.03, 0.98];
-
-  // useEffect(() => {
-  //   setCurrencyCode(currencyDict[fav.currency == 0 ? 1 : fav.currency]);
-  //   if (Object.keys(limits.list).length === 0) {
-  //     fetchLimits().then((data) => {
-  //       updateAmountLimits(data, fav.currency, maker.premium);
-  //       updateCurrentPrice(data, fav.currency, maker.premium);
-  //       updateSatoshisLimits(data);
-  //     });
-  //   } else {
-  //     updateAmountLimits(limits.list, fav.currency, maker.premium);
-  //     updateCurrentPrice(limits.list, fav.currency, maker.premium);
-  //     updateSatoshisLimits(limits.list);
-
-  //     fetchLimits();
-  //   }
-  // }, []);
 
   const updateAmountLimits = function (limitList: LimitList, currency: number, premium: number) {
     const index = currency == 0 ? 1 : currency;
@@ -375,21 +358,25 @@ const MakerForm = ({
     let swapSats = 0;
     if (fav.mode === 'swap') {
       if (fav.type === 1) {
-        swapSats =
-          maker.amount *
-          100000000 *
-          (1 - maker.premium / 100) *
-          (1 - info.maker_fee) *
-          (1 - defaultRoutingBudget);
+        swapSats = computeSats({
+          amount: Number(maker.amount),
+          premium: Number(maker.premium),
+          fee: -info.maker_fee,
+          routingBudget: defaultRoutingBudget,
+        });
         label = t('Onchain amount to send (BTC)');
-        helper = t('You receive approx {{sats}} LN Sats (fees might vary)', {
-          sats: pn(Math.round(swapSats)),
+        helper = t('You receive approx {{swapSats}} LN Sats (fees might vary)', {
+          swapSats,
         });
       } else if (fav.type === 0) {
-        swapSats = maker.amount * 100000000 * (1 - maker.premium / 100) * (1 + info.maker_fee);
+        swapSats = computeSats({
+          amount: Number(maker.amount),
+          premium: Number(maker.premium),
+          fee: info.maker_fee,
+        });
         label = t('Onchain amount to receive (BTC)');
-        helper = t('You send approx {{sats}} LN Sats (fees might vary)', {
-          sats: pn(Math.round(swapSats)),
+        helper = t('You send approx {{swapSats}} LN Sats (fees might vary)', {
+          swapSats,
         });
       }
     }

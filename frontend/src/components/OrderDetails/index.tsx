@@ -35,7 +35,7 @@ import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
 
 import { Order, Info } from '../../models';
-import { statusBadgeColor, pn, amountToString } from '../../utils';
+import { statusBadgeColor, pn, amountToString, computeSats } from '../../utils';
 import TakeButton from './TakeButton';
 
 interface OrderDetailsProps {
@@ -141,17 +141,9 @@ const OrderDetails = ({
     }
   };
 
-  const computeSats = (amount: string, premium: number, fee: number, routingBudget: number = 0) => {
-    return pn(
-      Math.round(amount * 100000000 * (1 - premium / 100) * (1 + fee) * (1 - routingBudget)),
-    );
-  };
-
   const swap = useMemo(() => {
     let send: string = '';
     let receive: string = '';
-    let sendSats: number = 0;
-    let receiveSats: number = 0;
     let swapSats: string = '';
 
     const isSwapIn = (order.type == 0 && order.is_maker) || (order.type == 1 && !order.is_maker);
@@ -160,33 +152,48 @@ const OrderDetails = ({
     if (order.currency === 1000) {
       if (isSwapIn) {
         if (order.amount) {
-          swapSats = computeSats(order.amount, order.premium, -tradeFee, defaultRoutingBudget);
+          swapSats = computeSats({
+            amount: order.amount,
+            premium: order.premium,
+            fee: -tradeFee,
+            routingBudget: defaultRoutingBudget,
+          });
         } else {
-          const swapMin = computeSats(
-            order.min_amount,
-            order.premium,
-            -tradeFee,
-            defaultRoutingBudget,
-          );
-          const swapMax = computeSats(
-            order.max_amount,
-            order.premium,
-            -tradeFee,
-            defaultRoutingBudget,
-          );
+          const swapMin = computeSats({
+            amount: Number(order.min_amount),
+            premium: order.premium,
+            fee: -tradeFee,
+            routingBudget: defaultRoutingBudget,
+          });
+          const swapMax = computeSats({
+            amount: Number(order.max_amount),
+            premium: order.premium,
+            fee: -tradeFee,
+            routingBudget: defaultRoutingBudget,
+          });
           swapSats = `${swapMin}-${swapMax}`;
         }
         send = t('You send via {{method}} {{amount}}', {
           amount: amountString,
           method: order.payment_method,
         });
-        receive = t('You receive via Lightning approx {{amount}} Sats', { amount: swapSats });
+        receive = t('You receive via Lightning {{amount}} Sats (routing budget may vary)', {
+          amount: swapSats,
+        });
       } else {
         if (order.amount) {
-          swapSats = computeSats(order.amount, order.premium, tradeFee);
+          swapSats = computeSats({ amount: order.amount, premium: order.premium, fee: tradeFee });
         } else {
-          const swapMin = computeSats(order.min_amount, order.premium, tradeFee);
-          const swapMax = computeSats(order.max_amount, order.premium, tradeFee);
+          const swapMin = computeSats({
+            amount: order.min_amount,
+            premium: order.premium,
+            fee: tradeFee,
+          });
+          const swapMax = computeSats({
+            amount: order.max_amount,
+            premium: order.premium,
+            fee: tradeFee,
+          });
           swapSats = `${swapMin}-${swapMax}`;
         }
         send = t('You send via Lightning {{amount}} Sats', { amount: swapSats });
