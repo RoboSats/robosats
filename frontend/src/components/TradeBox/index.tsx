@@ -9,6 +9,7 @@ import {
   ConfirmCancelDialog,
   ConfirmCollabCancelDialog,
   ConfirmDisputeDialog,
+  ConfirmFiatSentDialog,
   ConfirmFiatReceivedDialog,
   WebLNDialog,
 } from './Dialogs';
@@ -44,9 +45,8 @@ import {
   defaultDispute,
 } from './Forms';
 
-import { Order, Settings } from '../../models';
+import { Order, Robot, Settings } from '../../models';
 import { EncryptedChatMessage } from './EncryptedChat';
-import { systemClient } from '../../services/System';
 import CollabCancelAlert from './CollabCancelAlert';
 import { Bolt } from '@mui/icons-material';
 
@@ -77,6 +77,7 @@ const noLoadingButtons: loadingButtonsProps = {
 interface OpenDialogProps {
   confirmCancel: boolean;
   confirmCollabCancel: boolean;
+  confirmFiatSent: boolean;
   confirmFiatReceived: boolean;
   confirmDispute: boolean;
   webln: boolean;
@@ -85,6 +86,7 @@ interface OpenDialogProps {
 const closeAll: OpenDialogProps = {
   confirmCancel: false,
   confirmCollabCancel: false,
+  confirmFiatSent: false,
   confirmFiatReceived: false,
   confirmDispute: false,
   webln: false,
@@ -464,7 +466,7 @@ const TradeBox = ({
           <ChatPrompt
             order={order}
             robot={robot}
-            onClickConfirmSent={confirmFiatSent}
+            onClickConfirmSent={() => setOpen({ ...open, confirmFiatSent: true })}
             onClickConfirmReceived={() => setOpen({ ...open, confirmFiatReceived: true })}
             loadingSent={loadingButtons.fiatSent}
             loadingReceived={loadingButtons.fiatReceived}
@@ -646,6 +648,13 @@ const TradeBox = ({
         onCollabCancelClick={cancel}
         loading={loadingButtons.cancel}
         peerAskedCancel={order.pending_cancel}
+      />
+      <ConfirmFiatSentDialog
+        open={open.confirmFiatSent}
+        order={order}
+        loadingButton={loadingButtons.fiatSent}
+        onClose={() => setOpen(closeAll)}
+        onConfirmClick={confirmFiatSent}
       />
       <ConfirmFiatReceivedDialog
         open={open.confirmFiatReceived}
