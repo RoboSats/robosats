@@ -53,6 +53,18 @@ const App = () => {
     loadCookie('garage').then(() => injectMessageResolve(reponseId));
   };
 
+  const onCatch = (dataId: string, event: any) => {
+    let json = '{}'
+    if (event.message) {
+      const reponse = /Request Response Code \((?<code>\d*)\)\: (?<json>\{.*\})/.exec(event.message)
+      json = reponse?.groups?.json ?? '{}'
+    }
+    injectMessageResolve(dataId, {
+      headers: {},
+      json: JSON.parse(json)
+    });
+  }
+
   const onMessage = async (event: WebViewMessageEvent) => {
     const data = JSON.parse(event.nativeEvent.data);
     if (data.category === 'http') {
@@ -63,7 +75,7 @@ const App = () => {
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })
-          .catch(sendTorStatus)
+          .catch((e) => onCatch(data.id, e))
           .finally(sendTorStatus);
       } else if (data.type === 'post') {
         torClient
@@ -71,7 +83,7 @@ const App = () => {
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })
-          .catch(sendTorStatus)
+          .catch((e) => onCatch(data.id, e))
           .finally(sendTorStatus);
       } else if (data.type === 'delete') {
         torClient
@@ -79,7 +91,7 @@ const App = () => {
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })
-          .catch(sendTorStatus)
+          .catch((e) => onCatch(data.id, e))
           .finally(sendTorStatus);
       } else if (data.type === 'xhr') {
         torClient
@@ -87,7 +99,7 @@ const App = () => {
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })
-          .catch(sendTorStatus)
+          .catch((e) => onCatch(data.id, e))
           .finally(sendTorStatus);
       }
     } else if (data.category === 'system') {
@@ -116,7 +128,7 @@ const App = () => {
     } catch (error) {}
   };
 
-  const sendTorStatus = async () => {
+  const sendTorStatus = async (event?: any) => {
     NetInfo.fetch().then(async (state) => {
       let daemonStatus = 'ERROR';
       if (state.isInternetReachable) {
