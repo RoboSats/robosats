@@ -448,7 +448,7 @@
   "Agree and open dispute": "Concordar e abrir disputa",
   "#49": "Phrases in components/TradeBox/Prompts/LockInvoice.tsx",
   "Confirm you sent {{amount}} {{currencyCode}}?": "Confirm you sent {{amount}} {{currencyCode}}?",
-  "Confirming that you sent {{amount}} {{currencyCode}} will allow your peer to finalize the trade. If you have not sent it and still proceed to confirm, you risk losing your bond.": "Confirming that you sent {{amount}} {{currencyCode}} will allow your peer to finalize the trade. If you have not sent it and still proceed to confirm, you risk losing your bond.",
+  "Confirming that you sent {{amount}} {{currencyCode}} will allow your peer to finalize the trade. If you have not yet sent it and you still proceed to falsely confirm, you risk losing your bond.": "Confirming that you sent {{amount}} {{currencyCode}} will allow your peer to finalize the trade. If you have not yet sent it and you still proceed to falsely confirm, you risk losing your bond.",
   "#50": "Phrases in components/TradeBox/Prompts/Expired.tsx",
   "This is a hold invoice, it will freeze in your wallet. It will be charged only if you cancel or lose a dispute.": "Esta é uma invoice de espera, ela será congelada em sua carteira. Será cobrado apenas se você cancelar ou perder uma disputa.",
   "This is a hold invoice, it will freeze in your wallet. It will be released to the buyer once you confirm to have received the {{currencyCode}}.": "Esta é uma invoice de espera, ela será congelada em sua carteira. Ele será liberado para o comprador assim que você confirmar o recebimento do {{currencyCode}}.",
