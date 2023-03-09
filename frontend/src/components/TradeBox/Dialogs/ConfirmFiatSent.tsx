@@ -40,7 +40,7 @@ export const ConfirmFiatSentDialog = ({
       <DialogContent>
         <DialogContentText id='alert-dialog-description'>
           {t(
-            'Confirming that you sent {{amount}} {{currencyCode}} will allow your peer to finalize the trade. If you have not sent it and still proceed to confirm, you risk losing your bond.',
+            'Confirming that you sent {{amount}} {{currencyCode}} will allow your peer to finalize the trade. If you have not yet sent it and you still proceed to falsely confirm, you risk losing your bond.',
             { currencyCode, amount },
           )}
         </DialogContentText>
