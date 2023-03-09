@@ -54,16 +54,18 @@ const App = () => {
   };
 
   const onCatch = (dataId: string, event: any) => {
-    let json = '{}'
+    let json = '{}';
     if (event.message) {
-      const reponse = /Request Response Code \((?<code>\d*)\)\: (?<json>\{.*\})/.exec(event.message)
-      json = reponse?.groups?.json ?? '{}'
+      const reponse = /Request Response Code \((?<code>\d*)\)\: (?<json>\{.*\})/.exec(
+        event.message,
+      );
+      json = reponse?.groups?.json ?? '{}';
     }
     injectMessageResolve(dataId, {
       headers: {},
-      json: JSON.parse(json)
+      json: JSON.parse(json),
     });
-  }
+  };
 
   const onMessage = async (event: WebViewMessageEvent) => {
     const data = JSON.parse(event.nativeEvent.data);
