@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import { Grid, Paper, Collapse, Typography } from '@mui/material';
@@ -32,17 +32,23 @@ const MakerPage = (): JSX.Element => {
   const [showMatches, setShowMatches] = useState<boolean>(false);
   const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
 
-  const matches = filterOrders({
-    orders: book.orders,
-    baseFilter: { currency: fav.currency === 0 ? 1 : fav.currency, type: fav.type, mode: fav.mode },
-    paymentMethods: maker.paymentMethods,
-    amountFilter: {
-      amount: maker.amount,
-      minAmount: maker.minAmount,
-      maxAmount: maker.maxAmount,
-      threshold: 0.7,
-    },
-  });
+  const matches = useMemo(() => {
+    return filterOrders({
+      orders: book.orders,
+      baseFilter: {
+        currency: fav.currency === 0 ? 1 : fav.currency,
+        type: fav.type,
+        mode: fav.mode,
+      },
+      paymentMethods: maker.paymentMethods,
+      amountFilter: {
+        amount: maker.amount,
+        minAmount: maker.minAmount,
+        maxAmount: maker.maxAmount,
+        threshold: 0.7,
+      },
+    });
+  }, [book.orders, fav, maker.amount, maker.minAmount, maker.maxAmount]);
 
   const onViewOrder = function () {
     setOrder(undefined);

@@ -198,33 +198,6 @@ export const LightningPayoutForm = ({
       .finally(() => setLoadingLnproxy(false));
   };
 
-  // const fetchLnproxy = function () {
-  //   setLoadingLnproxy(true);
-  //   fetch(
-  //     lnproxyUrl() +
-  //       `/api/${lightning.lnproxyInvoice.toLocaleLowerCase()}${
-  //         lightning.lnproxyBudgetSats > 0
-  //           ? `?routing_msat=${lightning.lnproxyBudgetSats * 1000}`
-  //           : ''
-  //       }`,
-  //   )
-  //     .then((response) => response.text())
-  //     .then((text) => {
-  //       if (text.includes('lnproxy error')) {
-  //         setLightning({ ...lightning, badLnproxy: text });
-  //       } else {
-  //         const invoice = text.replace('\n', '');
-  //         setLightning({ ...lightning, invoice, badLnproxy: '' });
-  //       }
-  //     })
-  //     .catch(() => {
-  //       setLightning({ ...lightning, badLnproxy: 'Lnproxy server uncaught error' });
-  //     })
-  //     .finally(() => {
-  //       setLoadingLnproxy(false);
-  //     });
-  // };
-
   const handleAdvancedOptions = function (checked: boolean) {
     if (checked) {
       setLightning({
