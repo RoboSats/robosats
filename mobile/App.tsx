@@ -55,14 +55,17 @@ const App = () => {
 
   const onCatch = (dataId: string, event: any) => {
     let json = '{}';
+    let code = 500;
     if (event.message) {
       const reponse = /Request Response Code \((?<code>\d*)\)\: (?<json>\{.*\})/.exec(
         event.message,
       );
       json = reponse?.groups?.json ?? '{}';
+      code = reponse?.groups?.code ?  parseInt(reponse?.groups?.code) : 500;
     }
     injectMessageResolve(dataId, {
       headers: {},
+      respCode: code,
       json: JSON.parse(json),
     });
   };
