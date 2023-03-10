@@ -140,7 +140,7 @@ class LNNode:
             amount=int(onchainpayment.sent_satoshis),
             sat_per_vbyte=int(onchainpayment.mining_fee_rate),
             label=str("Payout order #" + str(onchainpayment.order_paid_TX.id)),
-            spend_unconfirmed=True,
+            spend_unconfirmed=config("SPEND_UNCONFIRMED", default=False, cast=bool),
         )
 
         # Cheap security measure to ensure there has been some non-deterministic time between request and DB check
