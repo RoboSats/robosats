@@ -286,11 +286,13 @@ const OrderDetails = ({
               primary={amountString}
               secondary={order.amount ? 'Amount' : 'Amount Range'}
             />
-            <ListItemIcon>
-              <IconButton onClick={() => setShowSwapDetails(!showSwapDetails)}>
-                {showSwapDetails ? <ExpandLess /> : <ExpandMore color='primary' />}
-              </IconButton>
-            </ListItemIcon>
+            {order.currency === 1000 ? (
+              <ListItemIcon>
+                <IconButton onClick={() => setShowSwapDetails(!showSwapDetails)}>
+                  {showSwapDetails ? <ExpandLess /> : <ExpandMore color='primary' />}
+                </IconButton>
+              </ListItemIcon>
+            ) : null}
           </ListItem>
 
           {order.currency === 1000 ? (
