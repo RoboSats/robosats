@@ -61,7 +61,7 @@ const App = () => {
         event.message,
       );
       json = reponse?.groups?.json ?? '{}';
-      code = reponse?.groups?.code ?  parseInt(reponse?.groups?.code) : 500;
+      code = reponse?.groups?.code ? parseInt(reponse?.groups?.code) : 500;
     }
     injectMessageResolve(dataId, {
       headers: {},
