@@ -1,5 +1,5 @@
 # Set up
-*Attention: to use RoboSats you do not need to run the stack, simply visit the website and that's it! This setup guide is intended for developer contributors and platform operators.*
+*Attention: to use RoboSats you do not need to run the stack, simply visit the website and that's it! This setup guide is intended for developer contributors and coordinator operators.*
 
 # Frontend Development Only
 Running the full stack is not easy, since RoboSats needs of many services. However, contributing to the frontend development can be done with a minimal setup!
@@ -8,9 +8,9 @@ You can develop frontend-only features using the mainnet backend of the platform
 
 ```bash
 cd nodeapp
-docker-compose up
+docker-compose -f docker-compose-dev.yml up
 # Press Ctrl+C to exit the process
-# Visit 127.0.0.1:12596
+# Check out 127.0.0.1:12596 on your browser
 ```
 
 You can edit the frontend code in `/frontend/src/` to make the changes you want. Within a few seconds, the `npm-dev` container process will pack the code into the local `main.js`. Visit `127.0.0.1:12596` and you will see your changes on the frontend.
