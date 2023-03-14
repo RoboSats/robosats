@@ -18,7 +18,7 @@ from . import router_pb2 as routerrpc
 from . import router_pb2_grpc as routerstub
 
 #######
-# Should work with LND (c-lightning in the future if there are features that deserve the work)
+# Works with LND (c-lightning in the future for multi-vendor resiliance)
 #######
 
 # Read tls.cert from file or .env variable string encoded as base64
@@ -36,6 +36,8 @@ except Exception:
     MACAROON = b64decode(config("LND_MACAROON_BASE64"))
 
 LND_GRPC_HOST = config("LND_GRPC_HOST")
+DISABLE_ONCHAIN = config("DISABLE_ONCHAIN", cast=bool, default=True)
+MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
 
 
 class LNNode:
@@ -131,7 +133,7 @@ class LNNode:
     def pay_onchain(cls, onchainpayment, queue_code=5, on_mempool_code=2):
         """Send onchain transaction for buyer payouts"""
 
-        if config("DISABLE_ONCHAIN", cast=bool):
+        if DISABLE_ONCHAIN or onchainpayment.sent_satoshis > MAX_SWAP_AMOUNT:
             return False
 
         request = lnrpc.SendCoinsRequest(

@@ -611,16 +611,23 @@ class Logics:
         )  # Trading fee to buyer is charged here.
 
         # context necessary for the user to submit an onchain address
-        MIN_SWAP_AMOUNT = int(config("MIN_SWAP_AMOUNT"))
+        MIN_SWAP_AMOUNT = config("MIN_SWAP_AMOUNT", cast=int, default=20000)
+        MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
 
         if context["invoice_amount"] < MIN_SWAP_AMOUNT:
             context["swap_allowed"] = False
             context[
                 "swap_failure_reason"
-            ] = "Order amount is too small to be eligible for a swap"
+            ] = f"Order amount is smaller than the minimum swap available of {MIN_SWAP_AMOUNT} Sats"
+            return True, context
+        elif context["invoice_amount"] > MAX_SWAP_AMOUNT:
+            context["swap_allowed"] = False
+            context[
+                "swap_failure_reason"
+            ] = f"Order amount is bigger than the maximum swap available of {MAX_SWAP_AMOUNT} Sats"
             return True, context
 
-        if config("DISABLE_ONCHAIN", cast=bool):
+        if config("DISABLE_ONCHAIN", cast=bool, default=True):
             context["swap_allowed"] = False
             context["swap_failure_reason"] = "On-the-fly submarine swaps are dissabled"
             return True, context
