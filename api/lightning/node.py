@@ -144,9 +144,9 @@ class LNNode:
 
         # Cheap security measure to ensure there has been some non-deterministic time between request and DB check
         delay = (
-            secrets.randbelow(2**256) / (2**256) * 5
+            secrets.randbelow(2**256) / (2**256) * 10
         )  # Random uniform 0 to 5 secs with good entropy
-        time.sleep(delay)
+        time.sleep(3 + delay)
 
         if onchainpayment.status == queue_code:
             # Changing the state to "MEMPO" should be atomic with SendCoins.
