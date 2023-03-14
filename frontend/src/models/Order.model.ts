@@ -94,6 +94,8 @@ export interface Order {
   num_satoshis: number;
   sent_satoshis: number;
   txid: string;
+  tx_queued: boolean;
+  address: string;
   network: 'mainnet' | 'testnet';
 }
 

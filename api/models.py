@@ -185,10 +185,11 @@ class OnchainPayment(models.Model):
 
     class Status(models.IntegerChoices):
         CREAT = 0, "Created"  # User was given platform fees and suggested mining fees
-        VALID = 1, "Valid"  # Valid onchain address submitted
+        VALID = 1, "Valid"  # Valid onchain address and fee submitted
         MEMPO = 2, "In mempool"  # Tx is sent to mempool
-        CONFI = 3, "Confirmed"  # Tx is confirme +2 blocks
+        CONFI = 3, "Confirmed"  # Tx is confirmed +2 blocks
         CANCE = 4, "Cancelled"  # Cancelled tx
+        QUEUE = 5, "Queued"  # Payment is queued to be sent out
 
     def get_balance():
         balance = BalanceLog.objects.create()
@@ -441,10 +442,10 @@ class Order(models.Model):
     # in dispute
     is_disputed = models.BooleanField(default=False, null=False)
     maker_statement = models.TextField(
-        max_length=5000, null=True, default=None, blank=True
+        max_length=10000, null=True, default=None, blank=True
     )
     taker_statement = models.TextField(
-        max_length=5000, null=True, default=None, blank=True
+        max_length=10000, null=True, default=None, blank=True
     )
 
     # LNpayments

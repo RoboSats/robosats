@@ -486,6 +486,7 @@
   "RoboSats gets better with more liquidity and users. Tell a bitcoiner friend about Robosats!": "RoboSats bude lepší s větší likviditou a uživateli. Pověz svým přátelům o Robosats!",
   "Thank you for using Robosats!": "Děkujeme, že používáš Robosats!",
   "Your TXID": "Tvé TXID",
+  "Sending coins to": "Sending coins to",
   "Start Again": "Začít znovu",
   "Renew": "Renew",
   "#58": "Phrases in components/TradeBox/Prompts/TakerFound.tsx",

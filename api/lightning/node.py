@@ -1,6 +1,5 @@
 import hashlib
 import os
-import random
 import secrets
 import time
 from base64 import b64decode
@@ -129,7 +128,7 @@ class LNNode:
         }
 
     @classmethod
-    def pay_onchain(cls, onchainpayment, valid_code=1, on_mempool_code=2):
+    def pay_onchain(cls, onchainpayment, queue_code=5, on_mempool_code=2):
         """Send onchain transaction for buyer payouts"""
 
         if config("DISABLE_ONCHAIN", cast=bool):
@@ -144,9 +143,12 @@ class LNNode:
         )
 
         # Cheap security measure to ensure there has been some non-deterministic time between request and DB check
-        time.sleep(random.uniform(0.5, 10))
+        delay = (
+            secrets.randbelow(2**256) / (2**256) * 10
+        )  # Random uniform 0 to 5 secs with good entropy
+        time.sleep(3 + delay)
 
-        if onchainpayment.status == valid_code:
+        if onchainpayment.status == queue_code:
             # Changing the state to "MEMPO" should be atomic with SendCoins.
             onchainpayment.status = on_mempool_code
             onchainpayment.save()

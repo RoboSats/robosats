@@ -11,6 +11,7 @@ import {
   Tooltip,
   IconButton,
   Button,
+  CircularProgress,
 } from '@mui/material';
 import currencies from '../../../../static/assets/currencies.json';
 import TradeSummary from '../TradeSummary';
@@ -145,6 +146,43 @@ export const SuccessfulPrompt = ({
               }
             >
               {order.txid}
+            </Link>
+          </Typography>
+        </Alert>
+      </Collapse>
+
+      <Collapse in={order.tx_queued && order.address != undefined}>
+        <Alert severity='info'>
+          <AlertTitle>
+            <CircularProgress sx={{ maxWidth: '0.8em', maxHeight: '0.8em' }} />
+            <a> </a>
+            {t('Sending coins to')}
+            <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
+              <IconButton
+                color='inherit'
+                onClick={() => {
+                  systemClient.copyToClipboard(order.address);
+                }}
+              >
+                <ContentCopy sx={{ width: '0.8em', height: '0.8em' }} />
+              </IconButton>
+            </Tooltip>
+          </AlertTitle>
+          <Typography
+            variant='body2'
+            align='center'
+            sx={{ wordWrap: 'break-word', width: '15.71em' }}
+          >
+            <Link
+              target='_blank'
+              href={
+                'http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/' +
+                (order.network == 'testnet' ? 'testnet/' : '') +
+                'address/' +
+                order.address
+              }
+            >
+              {order.address}
             </Link>
           </Typography>
         </Alert>
