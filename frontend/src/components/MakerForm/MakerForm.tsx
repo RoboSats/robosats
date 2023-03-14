@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   InputAdornment,
@@ -63,7 +63,7 @@ const MakerForm = ({
   onOrderCreated = () => null,
   hasRobot = true,
 }: MakerFormProps): JSX.Element => {
-  const { fav, setFav, limits, info, maker, setMaker, setPage, baseUrl } =
+  const { fav, setFav, limits, fetchLimits, info, maker, setMaker, setPage, baseUrl } =
     useContext<AppContextProps>(AppContext);
 
   const { t } = useTranslation();
@@ -80,6 +80,23 @@ const MakerForm = ({
   const maxRangeAmountMultiple = 7.8;
   const minRangeAmountMultiple = 1.6;
   const amountSafeThresholds = [1.03, 0.98];
+
+  useEffect(() => {
+    setCurrencyCode(currencyDict[fav.currency == 0 ? 1 : fav.currency]);
+    if (Object.keys(limits.list).length === 0) {
+      fetchLimits().then((data) => {
+        updateAmountLimits(data, fav.currency, maker.premium);
+        updateCurrentPrice(data, fav.currency, maker.premium);
+        updateSatoshisLimits(data);
+      });
+    } else {
+      updateAmountLimits(limits.list, fav.currency, maker.premium);
+      updateCurrentPrice(limits.list, fav.currency, maker.premium);
+      updateSatoshisLimits(limits.list);
+
+      fetchLimits();
+    }
+  }, []);
 
   const updateAmountLimits = function (limitList: LimitList, currency: number, premium: number) {
     const index = currency == 0 ? 1 : currency;
