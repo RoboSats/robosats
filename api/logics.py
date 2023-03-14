@@ -481,9 +481,9 @@ class Logics:
                 "bad_request": "Only orders in dispute accept dispute statements"
             }
 
-        if len(statement) > 5000:
+        if len(statement) > 10000:
             return False, {
-                "bad_statement": "The statement is longer than 5000 characters"
+                "bad_statement": "The statement is longer than 10000 characters"
             }
 
         if len(statement) < 100:
@@ -554,7 +554,7 @@ class Logics:
         confirmed = onchain_payment.balance.onchain_confirmed
         reserve = 300000  # We assume a reserve of 300K Sats (3 times higher than LND's default anchor reserve)
         pending_txs = OnchainPayment.objects.filter(
-            status=OnchainPayment.Status.VALID
+            status__in=[OnchainPayment.Status.VALID, OnchainPayment.Status.QUEUE]
         ).aggregate(Sum("num_satoshis"))["num_satoshis__sum"]
 
         if pending_txs is None:
@@ -1049,13 +1049,6 @@ class Logics:
         safe_cltv_expiry_secs = cltv_expiry_secs * MAX_MINING_NETWORK_SPEEDUP_EXPECTED
         # Convert to blocks using assummed average block time (~8 mins/block)
         cltv_expiry_blocks = int(safe_cltv_expiry_secs / (BLOCK_TIME * 60))
-        print(
-            invoice_concept,
-            " cltv_expiry_hours:",
-            cltv_expiry_secs / 3600,
-            " cltv_expiry_blocks:",
-            cltv_expiry_blocks,
-        )
 
         return cltv_expiry_blocks
 
@@ -1442,20 +1435,16 @@ class Logics:
         else:
             if not order.payout_tx.status == OnchainPayment.Status.VALID:
                 return False
-
-            valid = LNNode.pay_onchain(
-                order.payout_tx,
-                valid_code=OnchainPayment.Status.VALID,
-                on_mempool_code=OnchainPayment.Status.MEMPO,
-            )
-            if valid:
+            else:
+                # Add onchain payment to queue
                 order.status = Order.Status.SUC
+                order.payout_tx.status = OnchainPayment.Status.QUEUE
+                order.payout_tx.save()
                 order.save()
                 send_message.delay(order.id, "trade_successful")
                 order.contract_finalization_time = timezone.now()
                 order.save()
                 return True
-            return False
 
     @classmethod
     def confirm_fiat(cls, order, user):

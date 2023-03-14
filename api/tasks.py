@@ -97,6 +97,7 @@ def follow_send_payment(hash):
         payment_request=lnpayment.invoice,
         fee_limit_sat=fee_limit_sat,
         timeout_seconds=timeout_seconds,
+        allow_self_payment=True,
     )
 
     order = lnpayment.order_paid_LN
