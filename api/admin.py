@@ -290,6 +290,7 @@ class OnchainPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "address",
         "concept",
         "status",
+        "broascasted",
         "num_satoshis",
         "hash",
         "swap_fee_rate",

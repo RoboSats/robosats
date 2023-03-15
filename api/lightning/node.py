@@ -158,7 +158,9 @@ class LNNode:
                 request, metadata=[("macaroon", MACAROON.hex())]
             )
 
-            onchainpayment.txid = response.txid
+            if response.txid:
+                onchainpayment.txid = response.txid
+                onchainpayment.broadcasted = True
             onchainpayment.save()
             return True
 

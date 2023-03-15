@@ -203,6 +203,8 @@ class OnchainPayment(models.Model):
         choices=Status.choices, null=False, default=Status.CREAT
     )
 
+    broadcasted = models.BooleanField(default=False, null=False, blank=False)
+
     # payment info
     address = models.CharField(
         max_length=100, unique=False, default=None, null=True, blank=True
