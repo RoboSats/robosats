@@ -152,45 +152,66 @@ class Command(BaseCommand):
 
         queryset_retries = LNPayment.objects.filter(
             type=LNPayment.Types.NORM,
-            status__in=[LNPayment.Status.VALIDI, LNPayment.Status.FAILRO],
+            status=LNPayment.Status.FAILRO,
             in_flight=False,
+            routing_attempts__in=[1, 2],
             last_routing_time__lt=(
                 timezone.now() - timedelta(minutes=int(config("RETRY_TIME")))
             ),
         )
 
-        queryset = queryset.union(queryset_retries)
+        # Payments that still have the in_flight flag whose last payment attempt was +3 min ago
+        # are probably stuck. We retry them. The follow_send_invoice() task can also do TrackPaymentV2 if the
+        # previous attempt is still ongoing
+        queryset_stuck = LNPayment.objects.filter(
+            type=LNPayment.Types.NORM,
+            status__in=[LNPayment.Status.FAILRO, LNPayment.Status.FLIGHT],
+            in_flight=True,
+            last_routing_time__lt=(timezone.now() - timedelta(minutes=3)),
+        )
 
-        if len(queryset) > 0:
-            for lnpayment in queryset:
+        queryset = queryset.union(queryset_retries).union(queryset_stuck)
+
+        for lnpayment in queryset:
+            # Checks that this onchain payment is part of an order with a settled escrow
+            if not hasattr(lnpayment, "order_paid_LN"):
+                self.stdout.write(f"Ln payment {str(lnpayment)} has no parent order!")
+                return
+            order = lnpayment.order_paid_LN
+            if order.trade_escrow.status == LNPayment.Status.SETLED:
                 follow_send_payment.delay(lnpayment.payment_hash)
 
     def send_onchain_payments(self):
 
         queryset = OnchainPayment.objects.filter(
             status=OnchainPayment.Status.QUEUE,
+            broadcasted=False,
         )
 
-        if len(queryset) > 0:
-            for onchainpayment in queryset:
-                # Checks that this onchain payment is part of an order with a settled escrow
-                if not hasattr(onchainpayment, "order_paid_TX"):
-                    self.stdout.write(
-                        f"Onchain payment {str(onchainpayment)} has no parent order!"
-                    )
-                    return
-                order = onchainpayment.order_paid_TX
-                if order.trade_escrow.status == LNPayment.Status.SETLED:
-                    # Sends out onchainpayment
-                    LNNode.pay_onchain(
-                        onchainpayment,
-                        OnchainPayment.Status.QUEUE,
-                        OnchainPayment.Status.MEMPO,
-                    )
-                else:
-                    self.stdout.write(
-                        f"Onchain payment {str(onchainpayment)} for order {str(order)} escrow is not settled!"
-                    )
+        for onchainpayment in queryset:
+            # Checks that this onchain payment is part of an order with a settled escrow
+            if not hasattr(onchainpayment, "order_paid_TX"):
+                self.stdout.write(
+                    f"Onchain payment {str(onchainpayment)} has no parent order!"
+                )
+                return
+            order = onchainpayment.order_paid_TX
+            if (
+                order.trade_escrow.status == LNPayment.Status.SETLED
+                and order.trade_escrow.num_satoshis >= onchainpayment.num_satoshis
+            ):
+                # Sends out onchainpayment
+                LNNode.pay_onchain(
+                    onchainpayment,
+                    OnchainPayment.Status.QUEUE,
+                    OnchainPayment.Status.MEMPO,
+                )
+                onchainpayment.save()
+
+            else:
+                self.stdout.write(
+                    f"Onchain payment {str(onchainpayment)} for order {str(order)} escrow is not settled!"
+                )
 
     def update_order_status(self, lnpayment):
         """Background process following LND hold invoices
