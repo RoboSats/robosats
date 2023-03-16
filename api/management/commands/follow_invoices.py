@@ -154,12 +154,23 @@ class Command(BaseCommand):
             type=LNPayment.Types.NORM,
             status=LNPayment.Status.FAILRO,
             in_flight=False,
+            routing_attempts__in=[1, 2],
             last_routing_time__lt=(
                 timezone.now() - timedelta(minutes=int(config("RETRY_TIME")))
             ),
         )
 
-        queryset = queryset.union(queryset_retries)
+        # Payments that still have the in_flight flag whose last payment attempt was +3 min ago
+        # are probably stuck. We retry them. The follow_send_invoice() task can also do TrackPaymentV2 if the
+        # previous attempt is still ongoing
+        queryset_stuck = LNPayment.objects.filter(
+            type=LNPayment.Types.NORM,
+            status__in=[LNPayment.Status.FAILRO, LNPayment.Status.FLIGHT],
+            in_flight=True,
+            last_routing_time__lt=(timezone.now() - timedelta(minutes=3)),
+        )
+
+        queryset = queryset.union(queryset_retries).union(queryset_stuck)
 
         for lnpayment in queryset:
             # Checks that this onchain payment is part of an order with a settled escrow
@@ -185,7 +196,10 @@ class Command(BaseCommand):
                 )
                 return
             order = onchainpayment.order_paid_TX
-            if order.trade_escrow.status == LNPayment.Status.SETLED:
+            if (
+                order.trade_escrow.status == LNPayment.Status.SETLED
+                and order.trade_escrow.num_satoshis >= onchainpayment.num_satoshis
+            ):
                 # Sends out onchainpayment
                 LNNode.pay_onchain(
                     onchainpayment,
