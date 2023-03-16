@@ -86,6 +86,7 @@ const FlagWithProps = ({ code, width = '1.428em', height = '1.428em' }: Props): 
   if (code === 'ETB') flag = <Flags.ET {...defaultProps} />;
   if (code === 'GEL') flag = <Flags.GE {...defaultProps} />;
   if (code === 'UGX') flag = <Flags.UG {...defaultProps} />;
+  if (code === 'RSD') flag = <Flags.RS {...defaultProps} />;
   if (code === 'ANY') flag = <EarthIcon {...defaultProps} />;
   if (code === 'XAU') flag = <GoldIcon {...defaultProps} />;
   if (code === 'BTC') flag = <SwapCallsIcon color='primary' />;
