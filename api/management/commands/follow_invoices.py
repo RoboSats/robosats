@@ -178,7 +178,10 @@ class Command(BaseCommand):
                 self.stdout.write(f"Ln payment {str(lnpayment)} has no parent order!")
                 return
             order = lnpayment.order_paid_LN
-            if order.trade_escrow.status == LNPayment.Status.SETLED:
+            if (
+                order.trade_escrow.status == LNPayment.Status.SETLED
+                and order.is_swap is False
+            ):
                 follow_send_payment.delay(lnpayment.payment_hash)
 
     def send_onchain_payments(self):
@@ -199,6 +202,7 @@ class Command(BaseCommand):
             if (
                 order.trade_escrow.status == LNPayment.Status.SETLED
                 and order.trade_escrow.num_satoshis >= onchainpayment.num_satoshis
+                and order.is_swap is True
             ):
                 # Sends out onchainpayment
                 LNNode.pay_onchain(

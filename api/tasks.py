@@ -148,7 +148,7 @@ def follow_send_payment(hash):
             }
 
         if response.status == 2:  # Status 2 'SUCCEEDED'
-            print(f"SUCCEEDED. Order: {order.id}. Hash: {hash}")
+            print(f"Order: {order.id} SUCCEEDED. Hash: {hash}")
             lnpayment.status = LNPayment.Status.SUCCED
             lnpayment.fee = float(response.fee_msat) / 1000
             lnpayment.preimage = response.payment_preimage
@@ -184,8 +184,8 @@ def follow_send_payment(hash):
             results = {"succeded": False, "context": "The payout invoice has expired"}
             return results
 
-        if "payment is in transition" in str(e):
-            print(f"Order: {order.id}. ALREADY IN TRANSITION. Hash: {hash}.")
+        elif "payment is in transition" in str(e):
+            print(f"Order: {order.id} ALREADY IN TRANSITION. Hash: {hash}.")
 
             request = LNNode.routerrpc.TrackPaymentRequest(
                 payment_hash=bytes.fromhex(hash)
@@ -195,6 +195,21 @@ def follow_send_payment(hash):
                 request, metadata=[("macaroon", MACAROON.hex())]
             ):
                 handle_response(response)
+
+        elif "invoice is already paid" in str(e):
+            print(f"Order: {order.id} ALREADY PAID. Hash: {hash}.")
+
+            request = LNNode.routerrpc.TrackPaymentRequest(
+                payment_hash=bytes.fromhex(hash)
+            )
+
+            for response in LNNode.routerstub.TrackPaymentV2(
+                request, metadata=[("macaroon", MACAROON.hex())]
+            ):
+                handle_response(response)
+
+        else:
+            print(str(e))
 
 
 @shared_task(name="payments_cleansing")
