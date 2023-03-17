@@ -28,6 +28,7 @@ def users_cleansing():
                 user.profile.pending_rewards > 0
                 or user.profile.earned_rewards > 0
                 or user.profile.claimed_rewards > 0
+                or user.profile.telegram_enabled is True
             ):
                 continue
             if not user.profile.total_contracts == 0:
