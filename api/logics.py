@@ -566,9 +566,9 @@ class Logics:
         ):  # Not enough onchain balance to commit for this swap.
             return False
 
-        suggested_mining_fee_rate = LNNode.estimate_fee(amount_sats=preliminary_amount)[
-            "mining_fee_rate"
-        ]
+        suggested_mining_fee_rate = LNNode.estimate_fee(
+            amount_sats=preliminary_amount, target_conf=2
+        )["mining_fee_rate"]
 
         # Hardcap mining fee suggested at 100 sats/vbyte
         if suggested_mining_fee_rate > 100:
@@ -683,25 +683,29 @@ class Logics:
                 "bad_request": "Only the buyer of this order can provide a payout address."
             }
         # not the right time to submit
-        if (
-            not (
-                order.taker_bond.status
-                == order.maker_bond.status
-                == LNPayment.Status.LOCKED
-            )
-            and not order.status == Order.Status.FAI
-        ):
-            return False, {"bad_request": "You cannot submit an adress are not locked."}
-        # not a valid address (does not accept Taproot as of now)
+        if not (
+            order.taker_bond.status
+            == order.maker_bond.status
+            == LNPayment.Status.LOCKED
+        ) or order.status not in [Order.Status.WFI, Order.Status.WF2]:
+            return False, {"bad_request": "You cannot submit an address now."}
+        # not a valid address
         valid, context = validate_onchain_address(address)
         if not valid:
             return False, context
 
+        num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
         if mining_fee_rate:
             # not a valid mining fee
-            if float(mining_fee_rate) < 2:
+            min_mining_fee_rate = LNNode.estimate_fee(
+                amount_sats=num_satoshis, target_conf=12
+            )["mining_fee_rate"]
+
+            min_mining_fee_rate = max(2, min_mining_fee_rate)
+
+            if float(mining_fee_rate) < min_mining_fee_rate:
                 return False, {
-                    "bad_address": "The mining fee is too low, must be higher than 2 Sat/vbyte"
+                    "bad_address": f"The mining fee is too low. Must be higher than {min_mining_fee_rate} Sat/vbyte"
                 }
             elif float(mining_fee_rate) > 100:
                 return False, {
@@ -715,7 +719,7 @@ class Logics:
         tx = order.payout_tx
         tx.address = address
         tx.mining_fee_sats = int(tx.mining_fee_rate * 200)
-        tx.num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
+        tx.num_satoshis = num_satoshis
         tx.sent_satoshis = int(
             float(tx.num_satoshis)
             - float(tx.num_satoshis) * float(tx.swap_fee_rate) / 100

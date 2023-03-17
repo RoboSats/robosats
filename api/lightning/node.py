@@ -77,9 +77,9 @@ class LNNode:
     def estimate_fee(cls, amount_sats, target_conf=2, min_confs=1):
         """Returns estimated fee for onchain payouts"""
 
-        # We assume segwit. Use robosats donation address as shortcut so there is no need of user inputs
+        # We assume segwit. Use hardcoded address as shortcut so there is no need of user inputs yet.
         request = lnrpc.EstimateFeeRequest(
-            AddrToAmount={"bc1q3cpp7ww92n6zp04hv40kd3eyy5avgughx6xqnx": amount_sats},
+            AddrToAmount={"bc1qgxwaqe4m9mypd7ltww53yv3lyxhcfnhzzvy5j3": amount_sats},
             target_conf=target_conf,
             min_confs=min_confs,
             spend_unconfirmed=False,
