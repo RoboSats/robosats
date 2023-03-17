@@ -55,6 +55,7 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'MercadoPago', icon: 'mercadopago' },
   { name: 'Monero', icon: 'monero' },
   { name: 'USDT', icon: 'usdt' },
+  { name: 'L-USDt', icon: 'usdt-liquid' },
   { name: 'Airtel Money', icon: 'airtel' },
   { name: 'MTN Money', icon: 'mtn' },
   { name: 'M-Pesa', icon: 'mpesa' },
