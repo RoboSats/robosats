@@ -82,6 +82,8 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'Amazon SE GiftCard', icon: 'amazonse' },
   { name: 'Amazon SG GiftCard', icon: 'amazonsg' },
   { name: 'Amazon TR GiftCard', icon: 'amazontr' },
+  { name: 'Tinkoff QR', icon: 'tinkoffqr' },
+  { name: 'SBP', icon: 'sbp' },
 ];
 
 export const swapMethods: PaymentMethod[] = [
