@@ -16,6 +16,7 @@ interface OrderPageProps {
 const OrderPage = ({ locationOrderId }: OrderPageProps): JSX.Element => {
   const {
     windowSize,
+    info,
     order,
     robot,
     settings,
@@ -103,7 +104,7 @@ const OrderPage = ({ locationOrderId }: OrderPageProps): JSX.Element => {
                     order={order}
                     setOrder={setOrder}
                     baseUrl={baseUrl}
-                    setPage={setPage}
+                    info={info}
                     hasRobot={robot.avatarLoaded}
                   />
                 </Paper>
@@ -156,7 +157,7 @@ const OrderPage = ({ locationOrderId }: OrderPageProps): JSX.Element => {
                     order={order}
                     setOrder={setOrder}
                     baseUrl={baseUrl}
-                    setPage={setPage}
+                    info={info}
                     hasRobot={robot.avatarLoaded}
                   />
                 </div>
@@ -188,7 +189,7 @@ const OrderPage = ({ locationOrderId }: OrderPageProps): JSX.Element => {
               order={order}
               setOrder={setOrder}
               baseUrl={baseUrl}
-              setPage={setPage}
+              info={info}
               hasRobot={robot.avatarLoaded}
             />
           </Paper>

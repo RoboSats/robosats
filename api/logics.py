@@ -481,9 +481,9 @@ class Logics:
                 "bad_request": "Only orders in dispute accept dispute statements"
             }
 
-        if len(statement) > 5000:
+        if len(statement) > 10000:
             return False, {
-                "bad_statement": "The statement is longer than 5000 characters"
+                "bad_statement": "The statement is longer than 10000 characters"
             }
 
         if len(statement) < 100:
@@ -554,7 +554,7 @@ class Logics:
         confirmed = onchain_payment.balance.onchain_confirmed
         reserve = 300000  # We assume a reserve of 300K Sats (3 times higher than LND's default anchor reserve)
         pending_txs = OnchainPayment.objects.filter(
-            status=OnchainPayment.Status.VALID
+            status__in=[OnchainPayment.Status.VALID, OnchainPayment.Status.QUEUE]
         ).aggregate(Sum("num_satoshis"))["num_satoshis__sum"]
 
         if pending_txs is None:
@@ -566,9 +566,10 @@ class Logics:
         ):  # Not enough onchain balance to commit for this swap.
             return False
 
-        suggested_mining_fee_rate = LNNode.estimate_fee(amount_sats=preliminary_amount)[
-            "mining_fee_rate"
-        ]
+        suggested_mining_fee_rate = LNNode.estimate_fee(
+            amount_sats=preliminary_amount,
+            target_conf=config("SUGGESTED_TARGET_CONF", cast=int, default=2),
+        )["mining_fee_rate"]
 
         # Hardcap mining fee suggested at 100 sats/vbyte
         if suggested_mining_fee_rate > 100:
@@ -611,16 +612,23 @@ class Logics:
         )  # Trading fee to buyer is charged here.
 
         # context necessary for the user to submit an onchain address
-        MIN_SWAP_AMOUNT = int(config("MIN_SWAP_AMOUNT"))
+        MIN_SWAP_AMOUNT = config("MIN_SWAP_AMOUNT", cast=int, default=20000)
+        MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
 
         if context["invoice_amount"] < MIN_SWAP_AMOUNT:
             context["swap_allowed"] = False
             context[
                 "swap_failure_reason"
-            ] = "Order amount is too small to be eligible for a swap"
+            ] = f"Order amount is smaller than the minimum swap available of {MIN_SWAP_AMOUNT} Sats"
+            return True, context
+        elif context["invoice_amount"] > MAX_SWAP_AMOUNT:
+            context["swap_allowed"] = False
+            context[
+                "swap_failure_reason"
+            ] = f"Order amount is bigger than the maximum swap available of {MAX_SWAP_AMOUNT} Sats"
             return True, context
 
-        if config("DISABLE_ONCHAIN", cast=bool):
+        if config("DISABLE_ONCHAIN", cast=bool, default=True):
             context["swap_allowed"] = False
             context["swap_failure_reason"] = "On-the-fly submarine swaps are dissabled"
             return True, context
@@ -676,25 +684,30 @@ class Logics:
                 "bad_request": "Only the buyer of this order can provide a payout address."
             }
         # not the right time to submit
-        if (
-            not (
-                order.taker_bond.status
-                == order.maker_bond.status
-                == LNPayment.Status.LOCKED
-            )
-            and not order.status == Order.Status.FAI
-        ):
-            return False, {"bad_request": "You cannot submit an adress are not locked."}
-        # not a valid address (does not accept Taproot as of now)
+        if not (
+            order.taker_bond.status
+            == order.maker_bond.status
+            == LNPayment.Status.LOCKED
+        ) or order.status not in [Order.Status.WFI, Order.Status.WF2]:
+            return False, {"bad_request": "You cannot submit an address now."}
+        # not a valid address
         valid, context = validate_onchain_address(address)
         if not valid:
             return False, context
 
+        num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
         if mining_fee_rate:
             # not a valid mining fee
-            if float(mining_fee_rate) < 2:
+            min_mining_fee_rate = LNNode.estimate_fee(
+                amount_sats=num_satoshis,
+                target_conf=config("MINIMUM_TARGET_CONF", cast=int, default=24),
+            )["mining_fee_rate"]
+
+            min_mining_fee_rate = max(2, min_mining_fee_rate)
+
+            if float(mining_fee_rate) < min_mining_fee_rate:
                 return False, {
-                    "bad_address": "The mining fee is too low, must be higher than 2 Sat/vbyte"
+                    "bad_address": f"The mining fee is too low. Must be higher than {min_mining_fee_rate} Sat/vbyte"
                 }
             elif float(mining_fee_rate) > 100:
                 return False, {
@@ -708,7 +721,7 @@ class Logics:
         tx = order.payout_tx
         tx.address = address
         tx.mining_fee_sats = int(tx.mining_fee_rate * 200)
-        tx.num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
+        tx.num_satoshis = num_satoshis
         tx.sent_satoshis = int(
             float(tx.num_satoshis)
             - float(tx.num_satoshis) * float(tx.swap_fee_rate) / 100
@@ -1049,13 +1062,6 @@ class Logics:
         safe_cltv_expiry_secs = cltv_expiry_secs * MAX_MINING_NETWORK_SPEEDUP_EXPECTED
         # Convert to blocks using assummed average block time (~8 mins/block)
         cltv_expiry_blocks = int(safe_cltv_expiry_secs / (BLOCK_TIME * 60))
-        print(
-            invoice_concept,
-            " cltv_expiry_hours:",
-            cltv_expiry_secs / 3600,
-            " cltv_expiry_blocks:",
-            cltv_expiry_blocks,
-        )
 
         return cltv_expiry_blocks
 
@@ -1442,20 +1448,16 @@ class Logics:
         else:
             if not order.payout_tx.status == OnchainPayment.Status.VALID:
                 return False
-
-            valid = LNNode.pay_onchain(
-                order.payout_tx,
-                valid_code=OnchainPayment.Status.VALID,
-                on_mempool_code=OnchainPayment.Status.MEMPO,
-            )
-            if valid:
+            else:
+                # Add onchain payment to queue
                 order.status = Order.Status.SUC
+                order.payout_tx.status = OnchainPayment.Status.QUEUE
+                order.payout_tx.save()
                 order.save()
                 send_message.delay(order.id, "trade_successful")
                 order.contract_finalization_time = timezone.now()
                 order.save()
                 return True
-            return False
 
     @classmethod
     def confirm_fiat(cls, order, user):

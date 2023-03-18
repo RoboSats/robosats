@@ -116,7 +116,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
           hiddenLabel
           variant='standard'
           size='small'
-          defaultValue={invoice ?? 'Undefined: BOLT11 invoice not received'}
+          value={invoice ?? 'Undefined: BOLT11 invoice not received'}
           disabled={true}
           helperText={helperText}
           color='secondary'

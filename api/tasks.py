@@ -28,6 +28,7 @@ def users_cleansing():
                 user.profile.pending_rewards > 0
                 or user.profile.earned_rewards > 0
                 or user.profile.claimed_rewards > 0
+                or user.profile.telegram_enabled is True
             ):
                 continue
             if not user.profile.total_contracts == 0:
@@ -86,6 +87,8 @@ def follow_send_payment(hash):
     from api.models import LNPayment, Order
 
     lnpayment = LNPayment.objects.get(payment_hash=hash)
+    lnpayment.last_routing_time = timezone.now()
+    lnpayment.save()
 
     # Default is 0ppm. Set by the user over API. Client's default is 1000 ppm.
     fee_limit_sat = int(
@@ -97,77 +100,79 @@ def follow_send_payment(hash):
         payment_request=lnpayment.invoice,
         fee_limit_sat=fee_limit_sat,
         timeout_seconds=timeout_seconds,
+        allow_self_payment=True,
     )
 
     order = lnpayment.order_paid_LN
+    if order.trade_escrow.num_satoshis < lnpayment.num_satoshis:
+        print(f"Order: {order.id} Payout is larger than collateral !?")
+        return
+
+    def handle_response(response):
+        lnpayment.status = LNPayment.Status.FLIGHT
+        lnpayment.in_flight = True
+        lnpayment.save()
+        order.status = Order.Status.PAY
+        order.save()
+
+        if response.status == 0:  # Status 0 'UNKNOWN'
+            # Not sure when this status happens
+            print(f"Order: {order.id} UNKNOWN. Hash {hash}")
+            lnpayment.in_flight = False
+            lnpayment.save()
+
+        if response.status == 1:  # Status 1 'IN_FLIGHT'
+            print(f"Order: {order.id} IN_FLIGHT. Hash {hash}")
+
+        if response.status == 3:  # Status 3 'FAILED'
+            lnpayment.status = LNPayment.Status.FAILRO
+            lnpayment.last_routing_time = timezone.now()
+            lnpayment.routing_attempts += 1
+            lnpayment.failure_reason = response.failure_reason
+            lnpayment.in_flight = False
+            if lnpayment.routing_attempts > 2:
+                lnpayment.status = LNPayment.Status.EXPIRE
+                lnpayment.routing_attempts = 0
+            lnpayment.save()
+
+            order.status = Order.Status.FAI
+            order.expires_at = timezone.now() + timedelta(
+                seconds=order.t_to_expire(Order.Status.FAI)
+            )
+            order.save()
+            print(
+                f"Order: {order.id} FAILED. Hash: {hash} Reason: {LNNode.payment_failure_context[response.failure_reason]}"
+            )
+            return {
+                "succeded": False,
+                "context": f"payment failure reason: {LNNode.payment_failure_context[response.failure_reason]}",
+            }
+
+        if response.status == 2:  # Status 2 'SUCCEEDED'
+            print(f"Order: {order.id} SUCCEEDED. Hash: {hash}")
+            lnpayment.status = LNPayment.Status.SUCCED
+            lnpayment.fee = float(response.fee_msat) / 1000
+            lnpayment.preimage = response.payment_preimage
+            lnpayment.save()
+            order.status = Order.Status.SUC
+            order.expires_at = timezone.now() + timedelta(
+                seconds=order.t_to_expire(Order.Status.SUC)
+            )
+            order.save()
+            results = {"succeded": True}
+            return results
+
     try:
         for response in LNNode.routerstub.SendPaymentV2(
             request, metadata=[("macaroon", MACAROON.hex())]
         ):
 
-            lnpayment.in_flight = True
-            lnpayment.save()
-
-            if response.status == 0:  # Status 0 'UNKNOWN'
-                # Not sure when this status happens
-                lnpayment.in_flight = False
-                lnpayment.save()
-
-            if response.status == 1:  # Status 1 'IN_FLIGHT'
-                print("IN_FLIGHT")
-                lnpayment.status = LNPayment.Status.FLIGHT
-                lnpayment.in_flight = True
-                lnpayment.save()
-                order.status = Order.Status.PAY
-                order.save()
-
-            if response.status == 3:  # Status 3 'FAILED'
-                print("FAILED")
-                lnpayment.status = LNPayment.Status.FAILRO
-                lnpayment.last_routing_time = timezone.now()
-                lnpayment.routing_attempts += 1
-                lnpayment.failure_reason = response.failure_reason
-                lnpayment.in_flight = False
-                if lnpayment.routing_attempts > 2:
-                    lnpayment.status = LNPayment.Status.EXPIRE
-                    lnpayment.routing_attempts = 0
-                lnpayment.save()
-
-                order.status = Order.Status.FAI
-                order.expires_at = timezone.now() + timedelta(
-                    seconds=order.t_to_expire(Order.Status.FAI)
-                )
-                order.save()
-                context = {
-                    "routing_failed": LNNode.payment_failure_context[
-                        response.failure_reason
-                    ],
-                    "IN_FLIGHT": False,
-                }
-
-                # If failed due to not route, reset mission control. (This won't scale well, just a temporary fix)
-                # ResetMC deactivate temporary for tests
-                # if response.failure_reason==2:
-                #    LNNode.resetmc()
-
-                return False, context
-
-            if response.status == 2:  # Status 2 'SUCCEEDED'
-                print("SUCCEEDED")
-                lnpayment.status = LNPayment.Status.SUCCED
-                lnpayment.fee = float(response.fee_msat) / 1000
-                lnpayment.preimage = response.payment_preimage
-                lnpayment.save()
-                order.status = Order.Status.SUC
-                order.expires_at = timezone.now() + timedelta(
-                    seconds=order.t_to_expire(Order.Status.SUC)
-                )
-                order.save()
-                return True, None
+            handle_response(response)
 
     except Exception as e:
+
         if "invoice expired" in str(e):
-            print("INVOICE EXPIRED")
+            print(f"Order: {order.id}. INVOICE EXPIRED. Hash: {hash}")
             lnpayment.status = LNPayment.Status.EXPIRE
             lnpayment.last_routing_time = timezone.now()
             lnpayment.in_flight = False
@@ -177,8 +182,35 @@ def follow_send_payment(hash):
                 seconds=order.t_to_expire(Order.Status.FAI)
             )
             order.save()
-            context = {"routing_failed": "The payout invoice has expired"}
-            return False, context
+            results = {"succeded": False, "context": "The payout invoice has expired"}
+            return results
+
+        elif "payment is in transition" in str(e):
+            print(f"Order: {order.id} ALREADY IN TRANSITION. Hash: {hash}.")
+
+            request = LNNode.routerrpc.TrackPaymentRequest(
+                payment_hash=bytes.fromhex(hash)
+            )
+
+            for response in LNNode.routerstub.TrackPaymentV2(
+                request, metadata=[("macaroon", MACAROON.hex())]
+            ):
+                handle_response(response)
+
+        elif "invoice is already paid" in str(e):
+            print(f"Order: {order.id} ALREADY PAID. Hash: {hash}.")
+
+            request = LNNode.routerrpc.TrackPaymentRequest(
+                payment_hash=bytes.fromhex(hash)
+            )
+
+            for response in LNNode.routerstub.TrackPaymentV2(
+                request, metadata=[("macaroon", MACAROON.hex())]
+            ):
+                handle_response(response)
+
+        else:
+            print(str(e))
 
 
 @shared_task(name="payments_cleansing")

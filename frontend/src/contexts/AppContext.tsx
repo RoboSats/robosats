@@ -49,7 +49,7 @@ const statusToDelay = [
   100000, // 'In dispute'
   999999, // 'Collaboratively cancelled'
   10000, // 'Sending satoshis to buyer'
-  999999, // 'Sucessful trade'
+  60000, // 'Sucessful trade'
   30000, // 'Failed lightning network routing'
   300000, // 'Wait for dispute resolution'
   300000, // 'Maker lost dispute'
@@ -339,7 +339,7 @@ export const AppContextProvider = ({
         fetchInfo();
       }
     }
-  }, [open.stats, open.coordinator]);
+  }, [open.stats, open.coordinator, torStatus]);
 
   useEffect(() => {
     // Sets Setting network from coordinator API param if accessing via web

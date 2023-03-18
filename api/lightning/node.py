@@ -1,6 +1,5 @@
 import hashlib
 import os
-import random
 import secrets
 import time
 from base64 import b64decode
@@ -19,7 +18,7 @@ from . import router_pb2 as routerrpc
 from . import router_pb2_grpc as routerstub
 
 #######
-# Should work with LND (c-lightning in the future if there are features that deserve the work)
+# Works with LND (c-lightning in the future for multi-vendor resiliance)
 #######
 
 # Read tls.cert from file or .env variable string encoded as base64
@@ -37,6 +36,8 @@ except Exception:
     MACAROON = b64decode(config("LND_MACAROON_BASE64"))
 
 LND_GRPC_HOST = config("LND_GRPC_HOST")
+DISABLE_ONCHAIN = config("DISABLE_ONCHAIN", cast=bool, default=True)
+MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
 
 
 class LNNode:
@@ -76,9 +77,9 @@ class LNNode:
     def estimate_fee(cls, amount_sats, target_conf=2, min_confs=1):
         """Returns estimated fee for onchain payouts"""
 
-        # We assume segwit. Use robosats donation address as shortcut so there is no need of user inputs
+        # We assume segwit. Use hardcoded address as shortcut so there is no need of user inputs yet.
         request = lnrpc.EstimateFeeRequest(
-            AddrToAmount={"bc1q3cpp7ww92n6zp04hv40kd3eyy5avgughx6xqnx": amount_sats},
+            AddrToAmount={"bc1qgxwaqe4m9mypd7ltww53yv3lyxhcfnhzzvy5j3": amount_sats},
             target_conf=target_conf,
             min_confs=min_confs,
             spend_unconfirmed=False,
@@ -129,10 +130,10 @@ class LNNode:
         }
 
     @classmethod
-    def pay_onchain(cls, onchainpayment, valid_code=1, on_mempool_code=2):
+    def pay_onchain(cls, onchainpayment, queue_code=5, on_mempool_code=2):
         """Send onchain transaction for buyer payouts"""
 
-        if config("DISABLE_ONCHAIN", cast=bool):
+        if DISABLE_ONCHAIN or onchainpayment.sent_satoshis > MAX_SWAP_AMOUNT:
             return False
 
         request = lnrpc.SendCoinsRequest(
@@ -140,13 +141,16 @@ class LNNode:
             amount=int(onchainpayment.sent_satoshis),
             sat_per_vbyte=int(onchainpayment.mining_fee_rate),
             label=str("Payout order #" + str(onchainpayment.order_paid_TX.id)),
-            spend_unconfirmed=True,
+            spend_unconfirmed=config("SPEND_UNCONFIRMED", default=False, cast=bool),
         )
 
         # Cheap security measure to ensure there has been some non-deterministic time between request and DB check
-        time.sleep(random.uniform(0.5, 10))
+        delay = (
+            secrets.randbelow(2**256) / (2**256) * 10
+        )  # Random uniform 0 to 5 secs with good entropy
+        time.sleep(3 + delay)
 
-        if onchainpayment.status == valid_code:
+        if onchainpayment.status == queue_code:
             # Changing the state to "MEMPO" should be atomic with SendCoins.
             onchainpayment.status = on_mempool_code
             onchainpayment.save()
@@ -154,7 +158,9 @@ class LNNode:
                 request, metadata=[("macaroon", MACAROON.hex())]
             )
 
-            onchainpayment.txid = response.txid
+            if response.txid:
+                onchainpayment.txid = response.txid
+                onchainpayment.broadcasted = True
             onchainpayment.save()
             return True
 

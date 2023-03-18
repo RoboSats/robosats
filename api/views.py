@@ -471,12 +471,15 @@ class OrderView(viewsets.ViewSet):
                     if order.is_swap:
                         data["num_satoshis"] = order.payout_tx.num_satoshis
                         data["sent_satoshis"] = order.payout_tx.sent_satoshis
+                        data["network"] = str(config("NETWORK"))
                         if order.payout_tx.status in [
                             OnchainPayment.Status.MEMPO,
                             OnchainPayment.Status.CONFI,
                         ]:
                             data["txid"] = order.payout_tx.txid
-                            data["network"] = str(config("NETWORK"))
+                        elif order.payout_tx.status == OnchainPayment.Status.QUEUE:
+                            data["tx_queued"] = True
+                            data["address"] = order.payout_tx.address
 
         return Response(data, status.HTTP_200_OK)
 

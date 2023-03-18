@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -9,15 +9,15 @@ import {
   Button,
 } from '@mui/material';
 import { useHistory } from 'react-router-dom';
-import { Page } from '../../basic/NavBar';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  setPage: (state: Page) => void;
 }
 
-const NoRobotDialog = ({ open, onClose, setPage }: Props): JSX.Element => {
+const NoRobotDialog = ({ open, onClose }: Props): JSX.Element => {
+  const { setPage } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const history = useHistory();
 

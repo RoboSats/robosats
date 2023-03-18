@@ -100,7 +100,7 @@ services:
     volumes:
       - .:/usr/src/robosats
       - ./node/lnd:/lnd
-    command: celery -A robosats worker --loglevel=WARNING
+    command: celery -A robosats worker --loglevel=INFO --concurrency 4 --max-tasks-per-child=4 --max-memory-per-child=200000
     depends_on:
       - redis
     network_mode: service:tor

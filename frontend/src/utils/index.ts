@@ -9,3 +9,4 @@ export { default as saveAsJson } from './saveFile';
 export { default as statusBadgeColor } from './statusBadgeColor';
 export { genBase62Token, tokenStrength } from './token';
 export { default as getWebln } from './webln';
+export { default as computeSats } from './computeSats';

@@ -55,6 +55,7 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'MercadoPago', icon: 'mercadopago' },
   { name: 'Monero', icon: 'monero' },
   { name: 'USDT', icon: 'usdt' },
+  { name: 'L-USDt', icon: 'usdtliquid' },
   { name: 'Airtel Money', icon: 'airtel' },
   { name: 'MTN Money', icon: 'mtn' },
   { name: 'M-Pesa', icon: 'mpesa' },
@@ -81,6 +82,8 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'Amazon SE GiftCard', icon: 'amazonse' },
   { name: 'Amazon SG GiftCard', icon: 'amazonsg' },
   { name: 'Amazon TR GiftCard', icon: 'amazontr' },
+  { name: 'Tinkoff QR', icon: 'tinkoffqr' },
+  { name: 'SBP', icon: 'sbp' },
 ];
 
 export const swapMethods: PaymentMethod[] = [

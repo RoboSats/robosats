@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Tooltip, TextField, Grid, Paper } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
@@ -72,6 +72,13 @@ const EncryptedSocketChat: React.FC<Props> = ({
       setConnection(undefined);
     }
   }, [status]);
+
+  useLayoutEffect(() => {
+    // On component unmount close reconnecting-websockets
+    return () => {
+      connection?.close();
+    };
+  }, []);
 
   useEffect(() => {
     if (messages.length > messageCount) {

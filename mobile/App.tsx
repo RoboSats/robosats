@@ -53,6 +53,23 @@ const App = () => {
     loadCookie('garage').then(() => injectMessageResolve(reponseId));
   };
 
+  const onCatch = (dataId: string, event: any) => {
+    let json = '{}';
+    let code = 500;
+    if (event.message) {
+      const reponse = /Request Response Code \((?<code>\d*)\)\: (?<json>\{.*\})/.exec(
+        event.message,
+      );
+      json = reponse?.groups?.json ?? '{}';
+      code = reponse?.groups?.code ? parseInt(reponse?.groups?.code) : 500;
+    }
+    injectMessageResolve(dataId, {
+      headers: {},
+      respCode: code,
+      json: JSON.parse(json),
+    });
+  };
+
   const onMessage = async (event: WebViewMessageEvent) => {
     const data = JSON.parse(event.nativeEvent.data);
     if (data.category === 'http') {
@@ -63,7 +80,7 @@ const App = () => {
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })
-          .catch(sendTorStatus)
+          .catch((e) => onCatch(data.id, e))
           .finally(sendTorStatus);
       } else if (data.type === 'post') {
         torClient
@@ -71,7 +88,7 @@ const App = () => {
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })
-          .catch(sendTorStatus)
+          .catch((e) => onCatch(data.id, e))
           .finally(sendTorStatus);
       } else if (data.type === 'delete') {
         torClient
@@ -79,7 +96,7 @@ const App = () => {
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })
-          .catch(sendTorStatus)
+          .catch((e) => onCatch(data.id, e))
           .finally(sendTorStatus);
       } else if (data.type === 'xhr') {
         torClient
@@ -87,7 +104,7 @@ const App = () => {
           .then((response: object) => {
             injectMessageResolve(data.id, response);
           })
-          .catch(sendTorStatus)
+          .catch((e) => onCatch(data.id, e))
           .finally(sendTorStatus);
       }
     } else if (data.category === 'system') {
@@ -116,7 +133,7 @@ const App = () => {
     } catch (error) {}
   };
 
-  const sendTorStatus = async () => {
+  const sendTorStatus = async (event?: any) => {
     NetInfo.fetch().then(async (state) => {
       let daemonStatus = 'ERROR';
       if (state.isInternetReachable) {

@@ -9,7 +9,7 @@ django-timezone-field==4.2.3
 djangorestframework==3.13.1
 channels==3.0.4
 channels-redis==3.3.1
-celery==5.2.3
+celery==5.2.7
 grpcio==1.43.0
 googleapis-common-protos==1.53.0
 grpcio-tools==1.43.0
@@ -21,7 +21,7 @@ ring==0.9.1
 git+https://github.com/Reckless-Satoshi/Robohash.git
 scipy==1.8.0
 gunicorn==20.1.0
-psycopg2==2.9.3
+psycopg2==2.9.5
 SQLAlchemy==1.4.31
 django-import-export==2.7.1
 requests[socks]
