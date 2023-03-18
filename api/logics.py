@@ -567,7 +567,8 @@ class Logics:
             return False
 
         suggested_mining_fee_rate = LNNode.estimate_fee(
-            amount_sats=preliminary_amount, target_conf=2
+            amount_sats=preliminary_amount,
+            target_conf=config("SUGGESTED_TARGET_CONF", cast=int, default=2),
         )["mining_fee_rate"]
 
         # Hardcap mining fee suggested at 100 sats/vbyte
@@ -698,7 +699,8 @@ class Logics:
         if mining_fee_rate:
             # not a valid mining fee
             min_mining_fee_rate = LNNode.estimate_fee(
-                amount_sats=num_satoshis, target_conf=12
+                amount_sats=num_satoshis,
+                target_conf=config("MINIMUM_TARGET_CONF", cast=int, default=24),
             )["mining_fee_rate"]
 
             min_mining_fee_rate = max(2, min_mining_fee_rate)
