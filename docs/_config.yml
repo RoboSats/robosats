@@ -42,7 +42,9 @@ robosats:
   default_bond_size      : 3            # In percent (%)
   min_bond_size          : 2            # In percent (%)
   max_bond_size          : 15           # In percent (%)
-  leaddev_paynym         : +wispymud0cc
+  paynym                 : +blackunit9ce
+  paynym_code            : PM8TJZRfXHS44bAPebWRFDE6jWunYtMGN8axye7LD7oaY6A2XXYRGXR6jVVXxZv5smCQE1Ryhq58VgLVbg4oFer2P5KU4rT7ANkAHdvXcRXGS5VzDtqQ
+  leaddev_paynym         : "+wispymud0cc"
   leaddev_paynym_code    : PM8TJbmeBtJg1m9YY2gq2Uk2QajKvuEgGfh3tM3n7AHHRUJhQ9NZoVCheunq62gUxgHi6DtR9NjaomCCw8SByVvnkdQZ4fHe6oTuP2Hw5M1G35KXuZiH
 comments:
   provider               : # false (default), "disqus", "discourse", "facebook", "staticman", "staticman_v2", "utterances", "giscus", "custom"
