@@ -13,6 +13,9 @@ src: "_pages/docs/tutorials/videos-en.md"
 #### BTC Sessions (Lightning): Buy and Sell BTC with no ID
 <iframe width="560" height="315" src="https://www.youtube.com/embed/XW_wzRz_BDI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
+#### theBTCcourse: How to Buy & Sell Bitcoin on RoboSats (v0.4.2)
+<iframe width="560" height="315" src="https://www.youtube.com/embed/52snf3x2KKA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
 #### BTC Sessions (Onchain): Build a NON-KYC Stack: Buy, mix and store.
 <iframe width="560" height="315" src="https://www.youtube.com/embed/4gfmm8x2F9M?start=219" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
