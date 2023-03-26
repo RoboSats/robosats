@@ -5,8 +5,8 @@ from decouple import config
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from api.messages import Telegram
 from api.models import Profile
+from api.notifications import Telegram
 from api.utils import get_session
 
 

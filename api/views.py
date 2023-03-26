@@ -19,8 +19,8 @@ from robohash import Robohash
 from scipy.stats import entropy
 
 from api.logics import Logics
-from api.messages import Telegram
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Profile
+from api.notifications import Telegram
 from api.oas_schemas import (
     BookViewSchema,
     HistoricalViewSchema,

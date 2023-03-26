@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from api.lightning.node import LNNode
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, User
-from api.tasks import send_message
+from api.tasks import send_notification
 from api.utils import validate_onchain_address
 
 FEE = float(config("FEE"))
@@ -314,7 +314,7 @@ class Logics:
             order.status = Order.Status.EXP
             order.expiry_reason = Order.ExpiryReasons.NTAKEN
             order.save()
-            send_message.delay(order.id, "order_expired_untaken")
+            send_notification.delay(order_id=order.id, message="order_expired_untaken")
             return True
 
         elif order.status == Order.Status.TAK:
@@ -368,7 +368,7 @@ class Logics:
                 order.trade_escrow = None
                 order.payout = None
                 cls.publish_order(order)
-                send_message.delay(order.id, "order_published")
+                send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
                 cls.add_slashed_rewards(taker_bond, order.maker.profile)
                 return True
@@ -399,7 +399,7 @@ class Logics:
                 order.taker_bond = None
                 order.trade_escrow = None
                 cls.publish_order(order)
-                send_message.delay(order.id, "order_published")
+                send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
                 cls.add_slashed_rewards(taker_bond, order.maker.profile)
                 return True
@@ -470,7 +470,7 @@ class Logics:
                 ).append(str(order.id))
             profile.save()
 
-        send_message.delay(order.id, "dispute_opened")
+        send_notification.delay(order_id=order.id, message="dispute_opened")
         return True, None
 
     def dispute_statement(order, user, statement):
@@ -815,7 +815,7 @@ class Logics:
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.CHA)
             )
-            send_message.delay(order.id, "fiat_exchange_starts")
+            send_notification.delay(order_id=order.id, message="fiat_exchange_starts")
 
         # If the order status is 'Waiting for both'. Move forward to 'waiting for escrow'
         elif order.status == Order.Status.WF2:
@@ -828,7 +828,9 @@ class Logics:
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.CHA)
                 )
-                send_message.delay(order.id, "fiat_exchange_starts")
+                send_notification.delay(
+                    order_id=order.id, message="fiat_exchange_starts"
+                )
             else:
                 order.status = Order.Status.WFE
 
@@ -915,7 +917,9 @@ class Logics:
             if cls.return_bond(order.maker_bond):
                 order.status = Order.Status.UCA
                 order.save()
-                send_message.delay(order.id, "public_order_cancelled")
+                send_notification.delay(
+                    order_id=order.id, message="public_order_cancelled"
+                )
                 return True, None
 
         # 2.b) When maker cancels after bond and before taker bond is locked
@@ -928,7 +932,9 @@ class Logics:
                 cls.cancel_bond(order.taker_bond)
                 order.status = Order.Status.UCA
                 order.save()
-                send_message.delay(order.id, "public_order_cancelled")
+                send_notification.delay(
+                    order_id=order.id, message="public_order_cancelled"
+                )
                 return True, None
 
         # 3) When taker cancels before bond
@@ -978,7 +984,7 @@ class Logics:
                 order.payout = None
                 order.trade_escrow = None
                 cls.publish_order(order)
-                send_message.delay(order.id, "order_published")
+                send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
                 cls.add_slashed_rewards(order.taker_bond, order.maker.profile)
                 return True, None
@@ -1026,7 +1032,7 @@ class Logics:
         cls.return_escrow(order)
         order.status = Order.Status.CCA
         order.save()
-        send_message.delay(order.id, "collaborative_cancelled")
+        send_notification.delay(order_id=order.id, message="collaborative_cancelled")
         return
 
     @classmethod
@@ -1040,7 +1046,7 @@ class Logics:
             order.last_satoshis = cls.satoshis_now(order)
             order.last_satoshis_time = timezone.now()
         order.save()
-        # send_message.delay(order.id,'order_published') # too spammy
+        # send_notification.delay(order_id=order.id,'order_published') # too spammy
         return
 
     def compute_cltv_expiry_blocks(order, invoice_concept):
@@ -1071,7 +1077,7 @@ class Logics:
             return True
         elif LNNode.validate_hold_invoice_locked(order.maker_bond):
             cls.publish_order(order)
-            send_message.delay(order.id, "order_published")
+            send_notification.delay(order_id=order.id, message="order_published")
             return True
         return False
 
@@ -1176,7 +1182,7 @@ class Logics:
             MarketTick.log_a_tick(order)
         except Exception:
             pass
-        send_message.delay(order.id, "order_taken_confirmed")
+        send_notification.delay(order_id=order.id, message="order_taken_confirmed")
         return True
 
     @classmethod
@@ -1272,7 +1278,7 @@ class Logics:
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.CHA)
             )
-            send_message.delay(order.id, "fiat_exchange_starts")
+            send_notification.delay(order_id=order.id, message="fiat_exchange_starts")
         order.save()
 
     @classmethod
@@ -1439,7 +1445,7 @@ class Logics:
             order.payout.status = LNPayment.Status.FLIGHT
             order.payout.save()
             order.save()
-            send_message.delay(order.id, "trade_successful")
+            send_notification.delay(order_id=order.id, message="trade_successful")
             order.contract_finalization_time = timezone.now()
             order.save()
             return True
@@ -1454,7 +1460,7 @@ class Logics:
                 order.payout_tx.status = OnchainPayment.Status.QUEUE
                 order.payout_tx.save()
                 order.save()
-                send_message.delay(order.id, "trade_successful")
+                send_notification.delay(order_id=order.id, message="trade_successful")
                 order.contract_finalization_time = timezone.now()
                 order.save()
                 return True

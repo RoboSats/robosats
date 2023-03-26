@@ -7,7 +7,7 @@ from api.utils import get_session
 
 
 class Telegram:
-    """Simple telegram messages by requesting to API"""
+    """Simple telegram messages using TG's API"""
 
     session = get_session()
     site = config("HOST_NAME")
@@ -153,4 +153,35 @@ class Telegram:
             else:
                 text = f"Hey {order.maker.username}, your order with ID {str(order.id)} is public in the order book."
             self.send_message(order.maker.profile.telegram_chat_id, text)
+        return
+
+    def new_chat_message(self, order, chat_message):
+        """
+        Sends a TG notification for a new in-app chat message if
+        the last chat was at least CHAT_NOTIFICATION_TIMEGAP minutes ago.
+        """
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from chat.models import Message
+
+        TIMEGAP = config("CHAT_NOTIFICATION_TIMEGAP", cast=int, default=5)
+        if chat_message.index > 1:
+            previous_message = Message.objects.get(
+                chatroom=chat_message.chatroom, index=(chat_message.index - 1)
+            )
+            notification_reason = f"(You receive this notification only because more than {TIMEGAP} minutes have passed since the last in-chat message)"
+            if previous_message.created_at > timezone.now() - timedelta(
+                minutes=TIMEGAP
+            ):
+                return
+        else:
+            notification_reason = f"(You receive this notification because this was the first in-chat message. You will only be notified again if there is a gap bigger than {TIMEGAP} minutes between messages)"
+
+        user = chat_message.receiver
+        if user.profile.telegram_enabled:
+            text = f"Hey {user.username}, a new chat message in-app was sent to you by {chat_message.sender.username} for order ID {str(order.id)}. {notification_reason}"
+            self.send_message(user.profile.telegram_chat_id, text)
+
         return

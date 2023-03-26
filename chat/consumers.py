@@ -4,6 +4,7 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 from api.models import Order
+from api.tasks import send_notification
 from chat.models import ChatRoom, Message
 
 
@@ -78,6 +79,9 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
             receiver=receiver,
             PGP_message=PGP_message,
         )
+
+        # send Telegram notification for new message (if conditions apply)
+        send_notification.delay(chat_message_id=msg_obj.id, message="new_chat_message")
         return msg_obj
 
     @database_sync_to_async
