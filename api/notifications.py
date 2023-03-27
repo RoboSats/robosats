@@ -49,9 +49,9 @@ class Telegram:
         lang = user.profile.telegram_lang_code
 
         if lang == "es":
-            text = f"Hola {user.username}, te enviaré notificaciones sobre tus órdenes en RoboSats."
+            text = f"🔔 Hola {user.username}, te enviaré notificaciones sobre tus órdenes en RoboSats."
         else:
-            text = f"Hey {user.username}, I will send you notifications about your RoboSats orders."
+            text = f"🔔 Hey {user.username}, I will send you notifications about your RoboSats orders."
         self.send_message(user.profile.telegram_chat_id, text)
         user.profile.telegram_welcomed = True
         user.profile.save()
@@ -61,17 +61,17 @@ class Telegram:
         if order.maker.profile.telegram_enabled:
             lang = order.maker.profile.telegram_lang_code
             if lang == "es":
-                text = f"Hey {order.maker.username} ¡Tu orden con ID {order.id} ha sido tomada por {order.taker.username}!🥳   Visita http://{self.site}/order/{order.id} para continuar."
+                text = f"✅ Hey {order.maker.username} ¡Tu orden con ID {order.id} ha sido tomada por {order.taker.username}!🥳   Visita http://{self.site}/order/{order.id} para continuar."
             else:
-                text = f"Hey {order.maker.username}, your order was taken by {order.taker.username}!🥳   Visit http://{self.site}/order/{order.id} to proceed with the trade."
+                text = f"✅ Hey {order.maker.username}, your order was taken by {order.taker.username}!🥳   Visit http://{self.site}/order/{order.id} to proceed with the trade."
             self.send_message(order.maker.profile.telegram_chat_id, text)
 
         if order.taker.profile.telegram_enabled:
             lang = order.taker.profile.telegram_lang_code
             if lang == "es":
-                text = f"Hey {order.taker.username}, acabas de tomar la orden con ID {order.id}."
+                text = f"✅ Hey {order.taker.username}, acabas de tomar la orden con ID {order.id}."
             else:
-                text = f"Hey {order.taker.username}, you just took the order with ID {order.id}."
+                text = f"✅ Hey {order.taker.username}, you just took the order with ID {order.id}."
             self.send_message(order.taker.profile.telegram_chat_id, text)
 
         return
@@ -81,9 +81,9 @@ class Telegram:
             if user.profile.telegram_enabled:
                 lang = user.profile.telegram_lang_code
                 if lang == "es":
-                    text = f"Hey {user.username}, el depósito de garantía y el recibo del comprador han sido recibidos. Es hora de enviar el dinero fiat. Visita http://{self.site}/order/{order.id} para hablar con tu contraparte."
+                    text = f"✅ Hey {user.username}, el depósito de garantía y el recibo del comprador han sido recibidos. Es hora de enviar el dinero fiat. Visita http://{self.site}/order/{order.id} para hablar con tu contraparte."
                 else:
-                    text = f"Hey {user.username}, the escrow and invoice have been submitted. The fiat exchange starts now via the platform chat. Visit http://{self.site}/order/{order.id} to talk with your counterpart."
+                    text = f"✅ Hey {user.username}, the escrow and invoice have been submitted. The fiat exchange starts now via the platform chat. Visit http://{self.site}/order/{order.id} to talk with your counterpart."
                 self.send_message(user.profile.telegram_chat_id, text)
         return
 
@@ -91,9 +91,9 @@ class Telegram:
         if order.maker.profile.telegram_enabled:
             lang = order.maker.profile.telegram_lang_code
             if lang == "es":
-                text = f"Hey {order.maker.username}, tu orden con ID {order.id} ha expirado sin ser tomada por ningún robot. Visita http://{self.site}/order/{order.id} para renovarla."
+                text = f"😪 Hey {order.maker.username}, tu orden con ID {order.id} ha expirado sin ser tomada por ningún robot. Visita http://{self.site}/order/{order.id} para renovarla."
             else:
-                text = f"Hey {order.maker.username}, your order with ID {order.id} has expired without a taker. Visit http://{self.site}/order/{order.id} to renew it."
+                text = f"😪 Hey {order.maker.username}, your order with ID {order.id} has expired without a taker. Visit http://{self.site}/order/{order.id} to renew it."
             self.send_message(order.maker.profile.telegram_chat_id, text)
         return
 
@@ -102,9 +102,9 @@ class Telegram:
             if user.profile.telegram_enabled:
                 lang = user.profile.telegram_lang_code
                 if lang == "es":
-                    text = f"¡Tu orden con ID {order.id} ha finalizado exitosamente!⚡ Únete a nosotros en @robosats_es y ayúdanos a mejorar."
+                    text = f"🥳 ¡Tu orden con ID {order.id} ha finalizado exitosamente!⚡ Únete a nosotros en @robosats_es y ayúdanos a mejorar."
                 else:
-                    text = f"Your order with ID {order.id} has finished successfully!⚡ Join us @robosats and help us improve."
+                    text = f"🥳 Your order with ID {order.id} has finished successfully!⚡ Join us @robosats and help us improve."
                 self.send_message(user.profile.telegram_chat_id, text)
         return
 
@@ -112,9 +112,9 @@ class Telegram:
         if order.maker.profile.telegram_enabled:
             lang = order.maker.profile.telegram_lang_code
             if lang == "es":
-                text = f"Hey {order.maker.username}, has cancelado tu orden pública con ID {order.id}."
+                text = f"❌ Hey {order.maker.username}, has cancelado tu orden pública con ID {order.id}."
             else:
-                text = f"Hey {order.maker.username}, you have cancelled your public order with ID {order.id}."
+                text = f"❌ Hey {order.maker.username}, you have cancelled your public order with ID {order.id}."
             self.send_message(order.maker.profile.telegram_chat_id, text)
         return
 
@@ -123,9 +123,9 @@ class Telegram:
             if user.profile.telegram_enabled:
                 lang = user.profile.telegram_lang_code
                 if lang == "es":
-                    text = f"Hey {user.username}, tu orden con ID {str(order.id)} fue cancelada colaborativamente."
+                    text = f"❌ Hey {user.username}, tu orden con ID {str(order.id)} fue cancelada colaborativamente."
                 else:
-                    text = f"Hey {user.username}, your order with ID {str(order.id)} has been collaboratively cancelled."
+                    text = f"❌ Hey {user.username}, your order with ID {str(order.id)} has been collaboratively cancelled."
                 self.send_message(user.profile.telegram_chat_id, text)
         return
 
@@ -134,9 +134,9 @@ class Telegram:
             if user.profile.telegram_enabled:
                 lang = user.profile.telegram_lang_code
                 if lang == "es":
-                    text = f"Hey {user.username}, la orden con ID {str(order.id)} ha entrado en disputa."
+                    text = f"⚖️ Hey {user.username}, la orden con ID {str(order.id)} ha entrado en disputa."
                 else:
-                    text = f"Hey {user.username}, a dispute has been opened on your order with ID {str(order.id)}."
+                    text = f"⚖️ Hey {user.username}, a dispute has been opened on your order with ID {str(order.id)}."
                 self.send_message(user.profile.telegram_chat_id, text)
         return
 
@@ -149,9 +149,9 @@ class Telegram:
                 return
             order = queryset.last()
             if lang == "es":
-                text = f"Hey {order.maker.username}, tu orden con ID {str(order.id)} es pública en el libro de ordenes."
+                text = f"✅ Hey {order.maker.username}, tu orden con ID {str(order.id)} es pública en el libro de ordenes."
             else:
-                text = f"Hey {order.maker.username}, your order with ID {str(order.id)} is public in the order book."
+                text = f"✅ Hey {order.maker.username}, your order with ID {str(order.id)} is public in the order book."
             self.send_message(order.maker.profile.telegram_chat_id, text)
         return
 
@@ -181,7 +181,7 @@ class Telegram:
 
         user = chat_message.receiver
         if user.profile.telegram_enabled:
-            text = f"Hey {user.username}, a new chat message in-app was sent to you by {chat_message.sender.username} for order ID {str(order.id)}. {notification_reason}"
+            text = f"💬 Hey {user.username}, a new chat message in-app was sent to you by {chat_message.sender.username} for order ID {str(order.id)}. {notification_reason}"
             self.send_message(user.profile.telegram_chat_id, text)
 
         return

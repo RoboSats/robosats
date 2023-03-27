@@ -423,6 +423,7 @@
   "disconnected": "ej ansluten",
   "Activate slow mode (use it when the connection is slow)": "Activate slow mode (use it when the connection is slow)",
   "Peer": "Peer",
+  "...waiting": "...waiting",
   "#42": "Phrases in components/TradeBox/EncryptedChat/EncryptedTurtleChat/index.tsx",
   "#43": "Phrases in components/TradeBox/EncryptedChat/ChatBottom/index.tsx",
   "Verify your privacy": "Verifiera din integritet",
