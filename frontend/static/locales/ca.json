@@ -423,6 +423,7 @@
   "disconnected": "desconnectat",
   "Activate slow mode (use it when the connection is slow)": "Activar mode lent (utilitza'l quan la connexió sigui lenta)",
   "Peer": "Ell",
+  "...waiting": "...waiting",
   "#42": "Phrases in components/TradeBox/EncryptedChat/EncryptedTurtleChat/index.tsx",
   "#43": "Phrases in components/TradeBox/EncryptedChat/ChatBottom/index.tsx",
   "Verify your privacy": "Verifica la teva privacitat",

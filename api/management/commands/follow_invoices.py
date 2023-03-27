@@ -9,7 +9,7 @@ from django.utils import timezone
 from api.lightning.node import LNNode
 from api.logics import Logics
 from api.models import LNPayment, OnchainPayment, Order
-from api.tasks import follow_send_payment, send_message
+from api.tasks import follow_send_payment, send_notification
 
 MACAROON = b64decode(config("LND_MACAROON_BASE64"))
 
@@ -228,7 +228,9 @@ class Command(BaseCommand):
                 # It is a maker bond => Publish order.
                 if hasattr(lnpayment, "order_made"):
                     Logics.publish_order(lnpayment.order_made)
-                    send_message.delay(lnpayment.order_made.id, "order_published")
+                    send_notification.delay(
+                        order_id=lnpayment.order_made.id, message="order_published"
+                    )
                     return
 
                 # It is a taker bond => close contract.

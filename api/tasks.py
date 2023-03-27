@@ -313,19 +313,26 @@ def cache_market():
     return results
 
 
-@shared_task(name="send_message", ignore_result=True)
-def send_message(order_id, message):
+@shared_task(name="send_notification", ignore_result=True)
+def send_notification(order_id=None, chat_message_id=None, message=None):
 
-    from api.models import Order
+    if order_id:
+        from api.models import Order
 
-    order = Order.objects.get(id=order_id)
+        order = Order.objects.get(id=order_id)
+    elif chat_message_id:
+        from chat.models import Message
+
+        chat_message = Message.objects.get(id=chat_message_id)
+        order = chat_message.order
+
     taker_enabled = (
         False if order.taker is None else order.taker.profile.telegram_enabled
     )
     if not (order.maker.profile.telegram_enabled or taker_enabled):
         return
 
-    from api.messages import Telegram
+    from api.notifications import Telegram
 
     telegram = Telegram()
 
@@ -358,5 +365,8 @@ def send_message(order_id, message):
 
     elif message == "collaborative_cancelled":
         telegram.collaborative_cancelled(order)
+
+    elif message == "new_chat_message":
+        telegram.new_chat_message(order, chat_message)
 
     return

@@ -423,6 +423,7 @@
   "disconnected": "離線",
   "Activate slow mode (use it when the connection is slow)": "Activate slow mode (use it when the connection is slow)",
   "Peer": "對等方",
+  "...waiting": "...waiting",
   "#42": "Phrases in components/TradeBox/EncryptedChat/EncryptedTurtleChat/index.tsx",
   "#43": "Phrases in components/TradeBox/EncryptedChat/ChatBottom/index.tsx",
   "Verify your privacy": "驗證你的隱私",
