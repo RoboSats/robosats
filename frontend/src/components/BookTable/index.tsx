@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -68,16 +68,19 @@ const BookTable = ({
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
 
   // all sizes in 'em'
-  const fontSize = theme.typography.fontSize;
-  const verticalHeightFrame = 3.25 + (showControls ? 3.7 : 0) + (showFooter ? 2.35 : 0);
-  const verticalHeightRow = 3.25;
-  const defaultPageSize = Math.max(
-    Math.floor(
-      ((fullscreen ? fullHeight * 0.9 : maxHeight) - verticalHeightFrame) / verticalHeightRow,
-    ),
-    1,
-  );
-  const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
+  const [fontSize, defaultPageSize, height] = useMemo(() => {
+    const fontSize = theme.typography.fontSize;
+    const verticalHeightFrame = 3.25 + (showControls ? 3.7 : 0) + (showFooter ? 2.35 : 0);
+    const verticalHeightRow = 3.25;
+    const defaultPageSize = Math.max(
+      Math.floor(
+        ((fullscreen ? fullHeight * 0.9 : maxHeight) - verticalHeightFrame) / verticalHeightRow,
+      ),
+      1,
+    );
+    const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
+    return [fontSize, defaultPageSize, height];
+  }, [theme.typography.fontSize, maxHeight, fullscreen, fullHeight, showControls, showFooter]);
 
   const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
   useEffect(() => {
@@ -624,7 +627,9 @@ const BookTable = ({
     return [columns, width * 0.875 + 0.15];
   };
 
-  const [columns, width] = filteredColumns(fullscreen ? fullWidth : maxWidth);
+  const [columns, width] = useMemo(() => {
+    return filteredColumns(fullscreen ? fullWidth : maxWidth);
+  }, [maxWidth, fullscreen, fullWidth]);
 
   const Footer = function () {
     return (
@@ -690,7 +695,7 @@ const BookTable = ({
     );
   };
 
-  const gridComponents = function () {
+  const gridComponents = useMemo(() => {
     const components: GridComponentProps = {
       LoadingOverlay: LinearProgress,
     };
@@ -706,7 +711,17 @@ const BookTable = ({
       components.Toolbar = BookControl;
     }
     return components;
-  };
+  }, [showNoResults, showFooter, showControls, fullscreen]);
+
+  const filteredOrders = useMemo(() => {
+    return showControls
+      ? filterOrders({
+          orders,
+          baseFilter: fav,
+          paymentMethods,
+        })
+      : orders;
+  }, [showControls, orders, fav, paymentMethods]);
 
   if (!fullscreen) {
     return (
@@ -722,19 +737,11 @@ const BookTable = ({
           localeText={localeText}
           rowHeight={3.714 * theme.typography.fontSize}
           headerHeight={3.25 * theme.typography.fontSize}
-          rows={
-            showControls
-              ? filterOrders({
-                  orders,
-                  baseFilter: fav,
-                  paymentMethods,
-                })
-              : orders
-          }
+          rows={filteredOrders}
           loading={book.loading}
           columns={columns}
           hideFooter={!showFooter}
-          components={gridComponents()}
+          components={gridComponents}
           componentsProps={{
             toolbar: {
               width,
@@ -762,19 +769,11 @@ const BookTable = ({
             localeText={localeText}
             rowHeight={3.714 * theme.typography.fontSize}
             headerHeight={3.25 * theme.typography.fontSize}
-            rows={
-              showControls
-                ? filterOrders({
-                    orders,
-                    baseFilter: fav,
-                    paymentMethods,
-                  })
-                : orders
-            }
+            rows={filteredOrders}
             loading={book.loading}
             columns={columns}
             hideFooter={!showFooter}
-            components={gridComponents()}
+            components={gridComponents}
             componentsProps={{
               toolbar: {
                 width,
