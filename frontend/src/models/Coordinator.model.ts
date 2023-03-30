@@ -18,9 +18,9 @@ export type Version = { major: number | null; minor: number | null; patch: numbe
 export interface Badges {
   isFounder?: boolean | undefined;
   donatesToDevFund?: number | undefined;
-  privacyFriendly?: boolean | undefined;
+  hasGoodOpSec?: boolean | undefined;
   robotsLove?: boolean | undefined;
-  noLimits?: string | undefined;
+  hasLargeLimits?: string | undefined;
 }
 
 export interface Info {
@@ -54,10 +54,11 @@ export interface EndpointProps {
 export class Coordinator {
   constructor(value: Coordinator) {
     this.alias = value.alias;
+    this.shortalias = value.shortalias;
     this.description = value.description;
-    this.isFounder = value.isFounder;
     this.motto = value.motto;
     this.color = value.color;
+    this.policies = value.policies;
     this.contact = value.contact;
     this.badges = value.badges;
     this.mainnetOnion = value.mainnetOnion;
@@ -70,11 +71,12 @@ export class Coordinator {
   }
 
   public alias: string;
+  public shortalias: string;
   public enabled?: boolean = true;
   public description: string;
-  public isFounder?: boolean = false;
   public motto: string;
   public color: string;
+  public policies: Object;
   public contact: Contact | undefined;
   public badges?: Badges | undefined;
   public mainnetOnion: string | undefined;

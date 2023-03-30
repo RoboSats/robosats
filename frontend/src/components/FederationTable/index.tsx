@@ -85,7 +85,7 @@ const FederationTable = ({
           >
             <ListItemAvatar>
               <RobotAvatar
-                nickname={params.row.alias}
+                nickname={params.row.shortalias}
                 coordinator={true}
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}

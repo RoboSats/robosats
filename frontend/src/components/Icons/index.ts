@@ -1,6 +1,7 @@
 export { default as AmbossIcon } from './Amboss';
 export { default as BitcoinIcon } from './Bitcoin';
 export { default as BitcoinSignIcon } from './BitcoinSign';
+export { default as NostrIcon } from './Nostr';
 export { default as BuySatsIcon } from './BuySats';
 export { default as BuySatsCheckedIcon } from './BuySatsChecked';
 export { default as EarthIcon } from './Earth';
@@ -15,6 +16,13 @@ export { default as SendReceiveIcon } from './SendReceive';
 export { default as ExportIcon } from './Export';
 export { default as UserNinjaIcon } from './UserNinja';
 export { default as TorIcon } from './Tor';
+
+// Badges
+export { default as BadgeFounder } from './BadgeFounder';
+export { default as BadgeDevFund } from './BadgeDevFund';
+export { default as BadgePrivacy } from './BadgePrivacy';
+export { default as BadgeLimits } from './BadgeLimits';
+export { default as BadgeLoved } from './BadgeLoved';
 
 // Flags with props
 export { default as FlagWithProps } from './WorldFlags';

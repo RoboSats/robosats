@@ -19,7 +19,6 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Badge,
 } from '@mui/material';
 
 import {
@@ -31,16 +30,6 @@ import {
   Book,
   Reddit,
   Security,
-  NoStrollerOutlined,
-  Spoke,
-  WorkspacePremium,
-} from '@mui/icons-material';
-import LinkIcon from '@mui/icons-material/Link';
-
-import { pn } from '../../utils';
-import { Contact, Coordinator } from '../../models';
-import RobotAvatar from '../RobotAvatar';
-import {
   Bolt,
   Description,
   Dns,
@@ -53,9 +42,25 @@ import {
   Tag,
   Twitter,
 } from '@mui/icons-material';
-import { AmbossIcon, BitcoinSignIcon, RoboSatsNoTextIcon } from '../Icons';
+import LinkIcon from '@mui/icons-material/Link';
+
+import { pn } from '../../utils';
+import { Contact, Coordinator } from '../../models';
+import RobotAvatar from '../RobotAvatar';
+import {
+  AmbossIcon,
+  BitcoinSignIcon,
+  RoboSatsNoTextIcon,
+  BadgeFounder,
+  BadgeDevFund,
+  BadgePrivacy,
+  BadgeLoved,
+  BadgeLimits,
+  NostrIcon,
+} from '../Icons';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
 import { systemClient } from '../../services/System';
+import { Badges } from '../../models/Coordinator.model';
 
 interface Props {
   open: boolean;
@@ -84,7 +89,11 @@ const ContactButtons = ({
       {nostr ? (
         <Grid item>
           <Tooltip
-            title={<Typography variant='body2'>{`Nostr pubkey copied! ${nostr}`}</Typography>}
+            title={
+              <Typography variant='body2'>
+                {t('Nostr pubkey copied! {{nostr}}', { nostr })}
+              </Typography>
+            }
             open={showNostr}
           >
             <IconButton
@@ -94,7 +103,7 @@ const ContactButtons = ({
                 systemClient.copyToClipboard(nostr);
               }}
             >
-              <Spoke />
+              <NostrIcon />
             </IconButton>
           </Tooltip>
         </Grid>
@@ -104,7 +113,7 @@ const ContactButtons = ({
 
       {pgp ? (
         <Grid item>
-          <Tooltip enterTouchDelay={0} enterDelay={500} enterNextDelay={2000} title={'PGP'}>
+          <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('See PGP Key')}>
             <IconButton component='a' target='_blank' href={`https://${pgp}`} rel='noreferrer'>
               <Security />
             </IconButton>
@@ -116,9 +125,11 @@ const ContactButtons = ({
 
       {email ? (
         <Grid item>
-          <IconButton component='a' href={`mailto: ${email}`}>
-            <Email />
-          </IconButton>
+          <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Send Email')}>
+            <IconButton component='a' href={`mailto: ${email}`}>
+              <Email />
+            </IconButton>
+          </Tooltip>
         </Grid>
       ) : (
         <></>
@@ -126,14 +137,16 @@ const ContactButtons = ({
 
       {telegram ? (
         <Grid item>
-          <IconButton
-            component='a'
-            target='_blank'
-            href={`https://t.me/${telegram}`}
-            rel='noreferrer'
-          >
-            <Send />
-          </IconButton>
+          <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Telegram')}>
+            <IconButton
+              component='a'
+              target='_blank'
+              href={`https://t.me/${telegram}`}
+              rel='noreferrer'
+            >
+              <Send />
+            </IconButton>
+          </Tooltip>
         </Grid>
       ) : (
         <></>
@@ -141,14 +154,16 @@ const ContactButtons = ({
 
       {twitter ? (
         <Grid item>
-          <IconButton
-            component='a'
-            target='_blank'
-            href={`https://twitter.com/${twitter}`}
-            rel='noreferrer'
-          >
-            <Twitter />
-          </IconButton>
+          <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Twitter')}>
+            <IconButton
+              component='a'
+              target='_blank'
+              href={`https://twitter.com/${twitter}`}
+              rel='noreferrer'
+            >
+              <Twitter />
+            </IconButton>
+          </Tooltip>
         </Grid>
       ) : (
         <></>
@@ -156,14 +171,16 @@ const ContactButtons = ({
 
       {reddit ? (
         <Grid item>
-          <IconButton
-            component='a'
-            target='_blank'
-            href={`https://reddit.com/${reddit}`}
-            rel='noreferrer'
-          >
-            <Reddit />
-          </IconButton>
+          <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Reddit')}>
+            <IconButton
+              component='a'
+              target='_blank'
+              href={`https://reddit.com/${reddit}`}
+              rel='noreferrer'
+            >
+              <Reddit />
+            </IconButton>
+          </Tooltip>
         </Grid>
       ) : (
         <></>
@@ -171,9 +188,11 @@ const ContactButtons = ({
 
       {website ? (
         <Grid item>
-          <IconButton component='a' target='_blank' href={website} rel='noreferrer'>
-            <Language />
-          </IconButton>
+          <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Website')}>
+            <IconButton component='a' target='_blank' href={website} rel='noreferrer'>
+              <Language />
+            </IconButton>
+          </Tooltip>
         </Grid>
       ) : (
         <></>
@@ -182,7 +201,11 @@ const ContactButtons = ({
       {matrix ? (
         <Grid item>
           <Tooltip
-            title={<Typography variant='body2'>{`Matrix copied! ${matrix}`}</Typography>}
+            title={
+              <Typography variant='body2'>
+                {t('Matrix channel copied! {{matrix}}', { matrix })}
+              </Typography>
+            }
             open={showMatrix}
           >
             <IconButton
@@ -203,19 +226,93 @@ const ContactButtons = ({
   );
 };
 
-const FounderBadge = (): JSX.Element => {
+interface BadgesProps {
+  badges: Badges | undefined;
+}
+
+const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
+  const { t } = useTranslation();
+  const sxProps = {
+    width: '3em',
+    height: '3em',
+    filter: 'drop-shadow(3px 3px 3px RGB(0,0,0,0.3))',
+  };
   return (
-    <Tooltip
-      enterTouchDelay={0}
-      enterDelay={100}
-      enterNextDelay={1000}
-      title={'Awarded for contributing to the creation of the federation in testnet'}
-    >
-      <WorkspacePremium
-        sx={{ position: 'relative', left: '0.5em', width: '1.5em', height: '1.5em' }}
-        color='primary'
-      />
-    </Tooltip>
+    <Grid container direction='row' alignItems='center' justifyContent='center' spacing={1}>
+      {badges?.isFounder ? (
+        <Tooltip
+          title={
+            <Typography align='center' variant='body2'>
+              {t('Founder: coordinating trades since the testnet federation.')}
+            </Typography>
+          }
+        >
+          <Grid item>
+            <BadgeFounder sx={sxProps} />
+          </Grid>
+        </Tooltip>
+      ) : null}
+
+      {badges?.donatesToDevFund > 20 ? (
+        <Tooltip
+          title={
+            <Typography align='center' variant='body2'>
+              {t('Development fund supporter: donates {{percent}}% to make RoboSats better.', {
+                percent: badges.donatesToDevFund,
+              })}
+            </Typography>
+          }
+        >
+          <Grid item>
+            <BadgeDevFund sx={sxProps} />
+          </Grid>
+        </Tooltip>
+      ) : null}
+
+      {badges?.hasGoodOpSec ? (
+        <Tooltip
+          title={
+            <Typography align='center' variant='body2'>
+              {t(
+                'Good OpSec: the coordinator follows best practices to protect his and your privacy.',
+              )}
+            </Typography>
+          }
+        >
+          <Grid item>
+            <BadgePrivacy sx={sxProps} />
+          </Grid>
+        </Tooltip>
+      ) : null}
+
+      {badges?.robotsLove ? (
+        <Tooltip
+          title={
+            <Typography align='center' variant='body2'>
+              {t('Loved by robots: receives positive comments by robots over the internet.')}
+            </Typography>
+          }
+        >
+          <Grid item>
+            <BadgeLoved sx={sxProps} />
+          </Grid>
+        </Tooltip>
+      ) : null}
+
+      {badges?.hasLargeLimits ? (
+        <Tooltip
+          title={
+            <Typography align='center' variant='body2'>
+              {t('Large limits: the coordinator has large trade limits.')}
+            </Typography>
+          }
+        >
+          <Grid item>
+            <BadgeLimits sx={sxProps} />
+          </Grid>
+        </Tooltip>
+      ) : null}
+    </Grid>
   );
 };
 
@@ -229,7 +326,7 @@ const CoordinatorDialog = ({
   const { t } = useTranslation();
   const { clientVersion } = useContext<AppContextProps>(AppContext);
 
-  const [expanded, setExpanded] = useState<'summary' | 'stats' | undefined>(undefined);
+  const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
 
   const listItemProps = { sx: { maxHeight: '3em' } };
   const coordinatorVersion = `v${coordinator?.info?.version?.major ?? '?'}.${
@@ -246,19 +343,14 @@ const CoordinatorDialog = ({
           <ListItem sx={{ display: 'flex', justifyContent: 'center' }}>
             <Grid container direction='column' alignItems='center' padding={0}>
               <Grid item>
-                <Badge
-                  badgeContent={coordinator?.isFounder ? <FounderBadge /> : ''}
-                  overlap='circular'
-                >
-                  <RobotAvatar
-                    nickname={coordinator?.alias}
-                    coordinator={true}
-                    style={{ width: '5.5em', height: '5.5em' }}
-                    smooth={true}
-                    flipHorizontally={false}
-                    baseUrl={baseUrl}
-                  />
-                </Badge>
+                <RobotAvatar
+                  nickname={coordinator?.shortalias}
+                  coordinator={true}
+                  style={{ width: '7.5em', height: '7.5em' }}
+                  smooth={true}
+                  flipHorizontally={false}
+                  baseUrl={baseUrl}
+                />
               </Grid>
               <Grid item>
                 <Typography align='center' variant='body2'>
@@ -269,6 +361,10 @@ const CoordinatorDialog = ({
                 <ContactButtons {...coordinator?.contact} />
               </Grid>
             </Grid>
+          </ListItem>
+
+          <ListItem>
+            <BadgesHall badges={coordinator?.badges} />
           </ListItem>
 
           <ListItem>
@@ -321,6 +417,30 @@ const CoordinatorDialog = ({
             <></>
           )}
         </List>
+
+        {coordinator?.policies ? (
+          <Box>
+            <Accordion
+              expanded={expanded === 'policies'}
+              onChange={() => setExpanded(expanded === 'policies' ? undefined : 'policies')}
+            >
+              <AccordionSummary expandIcon={<ExpandMore />}>
+                <Typography>{t('Policies')}</Typography>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: 0 }}>
+                <List dense>
+                  {Object.keys(coordinator?.policies).map((key, index) => (
+                    <ListItem key={index} sx={{ maxWidth: '24em' }}>
+                      <ListItemIcon>{index + 1}</ListItemIcon>
+                      <ListItemText primary={key} secondary={coordinator?.policies[key]} />
+                    </ListItem>
+                  ))}
+                </List>
+              </AccordionDetails>
+            </Accordion>
+          </Box>
+        ) : null}
+
         {coordinator?.loadingInfo ? (
           <Box style={{ display: 'flex', justifyContent: 'center' }}>
             <CircularProgress />
