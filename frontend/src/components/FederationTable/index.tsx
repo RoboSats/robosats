@@ -31,8 +31,8 @@ const FederationTable = ({
   setFederation,
   setFocusedCoordinator,
   openCoordinator,
-  maxWidth = 100,
-  maxHeight = 30,
+  maxWidth = 90,
+  maxHeight = 50,
   fillContainer = false,
   baseUrl,
 }: FederationTableProps): JSX.Element => {

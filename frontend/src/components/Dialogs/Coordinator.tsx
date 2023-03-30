@@ -237,10 +237,12 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
     height: '3em',
     filter: 'drop-shadow(3px 3px 3px RGB(0,0,0,0.3))',
   };
+  const tooltipProps = { enterTouchDelay: 0, enterNextDelay: 2000 };
   return (
     <Grid container direction='row' alignItems='center' justifyContent='center' spacing={1}>
       {badges?.isFounder ? (
         <Tooltip
+          {...tooltipProps}
           title={
             <Typography align='center' variant='body2'>
               {t('Founder: coordinating trades since the testnet federation.')}
@@ -255,6 +257,7 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
 
       {badges?.donatesToDevFund > 20 ? (
         <Tooltip
+          {...tooltipProps}
           title={
             <Typography align='center' variant='body2'>
               {t('Development fund supporter: donates {{percent}}% to make RoboSats better.', {
@@ -271,6 +274,7 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
 
       {badges?.hasGoodOpSec ? (
         <Tooltip
+          {...tooltipProps}
           title={
             <Typography align='center' variant='body2'>
               {t(
@@ -287,6 +291,7 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
 
       {badges?.robotsLove ? (
         <Tooltip
+          {...tooltipProps}
           title={
             <Typography align='center' variant='body2'>
               {t('Loved by robots: receives positive comments by robots over the internet.')}
@@ -301,6 +306,7 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
 
       {badges?.hasLargeLimits ? (
         <Tooltip
+          {...tooltipProps}
           title={
             <Typography align='center' variant='body2'>
               {t('Large limits: the coordinator has large trade limits.')}
@@ -418,35 +424,32 @@ const CoordinatorDialog = ({
           )}
         </List>
 
-        {coordinator?.policies ? (
-          <Box>
-            <Accordion
-              expanded={expanded === 'policies'}
-              onChange={() => setExpanded(expanded === 'policies' ? undefined : 'policies')}
-            >
-              <AccordionSummary expandIcon={<ExpandMore />}>
-                <Typography>{t('Policies')}</Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{ padding: 0 }}>
-                <List dense>
-                  {Object.keys(coordinator?.policies).map((key, index) => (
-                    <ListItem key={index} sx={{ maxWidth: '24em' }}>
-                      <ListItemIcon>{index + 1}</ListItemIcon>
-                      <ListItemText primary={key} secondary={coordinator?.policies[key]} />
-                    </ListItem>
-                  ))}
-                </List>
-              </AccordionDetails>
-            </Accordion>
-          </Box>
-        ) : null}
-
         {coordinator?.loadingInfo ? (
           <Box style={{ display: 'flex', justifyContent: 'center' }}>
             <CircularProgress />
           </Box>
         ) : coordinator?.info ? (
           <Box>
+            {coordinator?.policies ? (
+              <Accordion
+                expanded={expanded === 'policies'}
+                onChange={() => setExpanded(expanded === 'policies' ? undefined : 'policies')}
+              >
+                <AccordionSummary expandIcon={<ExpandMore />}>
+                  <Typography>{t('Policies')}</Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ padding: 0 }}>
+                  <List dense>
+                    {Object.keys(coordinator?.policies).map((key, index) => (
+                      <ListItem key={index} sx={{ maxWidth: '24em' }}>
+                        <ListItemIcon>{index + 1}</ListItemIcon>
+                        <ListItemText primary={key} secondary={coordinator?.policies[key]} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </AccordionDetails>
+              </Accordion>
+            ) : null}
             <Accordion
               expanded={expanded === 'summary'}
               onChange={() => setExpanded(expanded === 'summary' ? undefined : 'summary')}

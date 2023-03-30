@@ -70,5 +70,21 @@
     "testnetClearnet": "https://unsafe.testnet.robosats.com",
     "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
     "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
+  },
+  {
+    "alias": "Local Dev",
+    "shortalias": "local",
+    "description": "Local development backend",
+    "motto": "Buidl",
+    "color": "#000000",
+    "testnetOnion": "http://robodevs7ixniseezbv7uryxhamtz3hvcelzfwpx3rvoipttjomrmpqd.onion",
+    "testnetClearnet": "http://127.0.0.1:8000",
+    "mainnetOnion": "",
+    "mainnetClearnet": "",
+    "policies": {
+      "Development Policy": "Don't look around, just buidl"
+    },
+    "mainnetNodesPubkeys": ["..."],
+    "testnetNodesPubkeys": ["..."]
   }
 ]

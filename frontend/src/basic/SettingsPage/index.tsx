@@ -40,7 +40,7 @@ const SettingsPage = (): JSX.Element => {
             setFocusedCoordinator={setFocusedCoordinator}
             openCoordinator={() => setOpen({ ...open, coordinator: true })}
             baseUrl={baseUrl}
-            maxHeight={10}
+            maxHeight={14}
             network={settings.network}
           />
         </Grid>
