@@ -426,6 +426,7 @@
   "Order current rate:": "อัตราปัจจุบันของคำสั่งซื้อ:",
   "Order for ": "สั่งซื้อสำหรับ",
   "Password": "รหัสผ่าน",
+  "Description": "คำอธิบาย",
   "Premium over Market (%)": "ค่าพรีเมี่ยมเหนือตลาด (%)",
   "Public Duration (HH:mm)": "ระยะเวลาเปิดเผยต่อสาธารณะ (ชม:นาที)",
   "Public order length": "ความยาวคำสั่งซื้อต่อสาธารณะ",
