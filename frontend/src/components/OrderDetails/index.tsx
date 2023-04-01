@@ -27,7 +27,7 @@ import {
 import Countdown, { type CountdownRenderProps, zeroPad } from 'react-countdown';
 import RobotAvatar from '../../components/RobotAvatar';
 import currencies from '../../../static/assets/currencies.json';
-import { AccessTime, PriceChange, Payments, HourglassTop, Map, Warning } from '@mui/icons-material';
+import { AccessTime, PriceChange, Payments, HourglassTop, Map, Warning, TextSnippet } from '@mui/icons-material';
 import { fiatMethods, PaymentStringAsIcons, swapMethods } from '../../components/PaymentMethods';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
@@ -414,6 +414,25 @@ const OrderDetails = ({
               )}
             </ListItem>
             <Divider />
+
+            {currentOrder?.description !== undefined ? (
+              <>
+                <ListItem>
+                  <ListItemIcon>
+                    <TextSnippet />
+                  </ListItemIcon>
+
+                  <ListItemText
+                    primary={t('Description')}
+                    secondary={t('{{description}}', {
+                      description: currentOrder?.description,
+                    })}
+                  />  
+                </ListItem>
+                <Divider />
+              </>
+            ) : null}
+
 
             {/* If there is live Price and Premium data, show it. Otherwise show the order maker settings */}
             <ListItem>

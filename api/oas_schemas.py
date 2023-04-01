@@ -91,6 +91,7 @@ class OrderViewSchema:
             - `maker_status`
             - `taker_status`
             - `price_now`
+            - `description`
 
             ### Order Status
 
