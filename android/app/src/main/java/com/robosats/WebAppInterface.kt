@@ -41,7 +41,7 @@ class WebAppInterface(private val context: MainActivity, private val webView: We
 
     // Security patterns for input validation
     private val UUID_PATTERN = Pattern.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", Pattern.CASE_INSENSITIVE)
-    private val SAFE_STRING_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s_\\-.,:;!?()\\[\\]{}]*$")
+    private val SAFE_STRING_PATTERN = Pattern.compile("^[a-zA-Z0-9\s_\-.,:;!?()\[\]{}\"]*$")
 
     // Maximum length for input strings
     private val MAX_INPUT_LENGTH = 1000
