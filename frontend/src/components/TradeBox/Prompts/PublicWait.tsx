@@ -49,23 +49,23 @@ export const PublicWaitPrompt = ({
     const similarOrders = orders.filter(bookOrder =>
       // Public -> 1
       bookOrder?.currency == order.currency && order.status == 1
-    )
-    return similarOrders.length
+    );
+    return similarOrders.length;
   }, [federation.book]);
 
   const premiumPercentile = useMemo((): number => {
     const orders = Object.values(federation.book) ?? [];
     const querySet = orders.filter(bookOrder =>
       bookOrder?.currency == order.currency && order.status == 1 && bookOrder.type == order.type
-    )
+    );
 
     if (querySet.length <= 1) {
-      return 0.5
+      return 0.5;
     }
 
-    const premiums = querySet.map(similarOrder => parseFloat(similarOrder?.premium ?? '0'))
-    const sumPremium = premiums.reduce((sum, rate) => sum + (rate < order.premium ? 1 : 0), 0)
-    const percentile = (sumPremium / premiums.length) * 100
+    const premiums = querySet.map(similarOrder => parseFloat(similarOrder?.premium ?? '0'));
+    const sumPremium = premiums.reduce((sum, rate) => sum + (rate < order.premium ? 1 : 0), 0);
+    const percentile = (sumPremium / premiums.length) * 100;
     
     return Math.floor(parseFloat(percentile.toFixed(2)));
   }, [federation.book]);
