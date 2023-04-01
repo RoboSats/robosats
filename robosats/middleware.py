@@ -7,6 +7,7 @@ from django.contrib.auth.models import AnonymousUser, User, update_last_login
 from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
 from django.http import JsonResponse
+from rest_framework import status
 from rest_framework.authtoken.models import Token
 
 from api.errors import new_error
@@ -76,7 +77,7 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             return response
 
         if not is_valid_token(token_sha256_b91):
-            return JsonResponse(new_error(7000), status=400)
+            return JsonResponse(new_error(7001), status=status.HTTP_400_BAD_REQUEST)
 
         # Check if it is an existing robot.
         try:
@@ -123,7 +124,7 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 encrypted_private_key = request.COOKIES.get("encrypted_private_key", "")
 
             if not public_key or not encrypted_private_key or not nostr_pubkey:
-                return JsonResponse(new_error(7001), status=400)
+                return JsonResponse(new_error(7002), status=status.HTTP_400_BAD_REQUEST)
 
             (
                 valid,
@@ -132,7 +133,7 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 encrypted_private_key,
             ) = validate_pgp_keys(public_key, encrypted_private_key)
             if not valid:
-                return JsonResponse(new_error(7002, {"bad_keys_context": bad_keys_context}), status=400)
+                return JsonResponse(new_error(7003, {"bad_keys_context": bad_keys_context}), status=status.HTTP_400_BAD_REQUEST)
 
             # Hash the token_sha256, only 1 iteration.
             # This is the second SHA256 of the user token, aka RoboSats ID
@@ -165,6 +166,11 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             user.save()
 
         response = self.get_response(request)
+        return response
+    
+    def process_template_response(self, request, response):
+        if response.status_code == status.HTTP_401_UNAUTHORIZED:
+            response.data = new_error(7003)
         return response
 
 

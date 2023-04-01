@@ -93,6 +93,7 @@ ERRORS = {
     7000: "Robot token SHA256 was provided in the header. However it is not a valid 39 or 40 characters Base91 string.",
     7001: "On the first request to a RoboSats coordinator, you must provide as well a valid public and encrypted private PGP keys and a nostr pubkey",
     7002: "Invalid keys: {bad_keys_context}",
+    7003: "Authentication credentials were not provided.",
 }
 
 def new_error(code: int, parameters: dict = None) -> dict:
