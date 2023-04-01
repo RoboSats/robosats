@@ -433,6 +433,25 @@ const OrderDetails = ({
             </ListItem>
             <Divider />
 
+            {currentOrder?.description !== undefined ? (
+              <>
+                <ListItem>
+                  <ListItemIcon>
+                    <TextSnippet />
+                  </ListItemIcon>
+
+                  <ListItemText
+                    primary={t('Description')}
+                    secondary={t('{{description}}', {
+                      description: currentOrder?.description,
+                    })}
+                  />  
+                </ListItem>
+                <Divider />
+              </>
+            ) : null}
+
+
             {/* If there is live Price and Premium data, show it. Otherwise show the order maker settings */}
             <ListItem>
               <ListItemIcon>
