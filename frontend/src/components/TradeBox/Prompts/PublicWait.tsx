@@ -30,7 +30,7 @@ export const PublicWaitPrompt = ({
   onClickPauseOrder,
 }: PublicWaitPrompProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation, federationUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
 
   const currencyCode = currencies[order.currency.toString()];
 
@@ -51,7 +51,7 @@ export const PublicWaitPrompt = ({
       bookOrder?.currency == order.currency && order.status == 1
     );
     return similarOrders.length;
-  }, [federation.book]);
+  }, [federationUpdatedAt]);
 
   const premiumPercentile = useMemo((): number => {
     const orders = Object.values(federation.book) ?? [];
@@ -68,7 +68,7 @@ export const PublicWaitPrompt = ({
     const percentile = (sumPremium / premiums.length) * 100;
     
     return Math.floor(parseFloat(percentile.toFixed(2)));
-  }, [federation.book]);
+  }, [federationUpdatedAt]);
 
   return (
     <List dense={true}>
