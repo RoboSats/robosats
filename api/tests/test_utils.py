@@ -1,10 +1,9 @@
-from unittest.mock import MagicMock, Mock, mock_open, patch
+from unittest.mock import Mock, mock_open, patch
 
 import numpy as np
 from decouple import config
 from django.test import TestCase
 
-from api.models import Order
 from api.utils import (
     base91_to_hex,
     bitcoind_rpc,
