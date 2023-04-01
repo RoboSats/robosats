@@ -86,6 +86,7 @@ class Order {
   latitude: number = 0;
   longitude: number = 0;
   password: string | undefined = undefined;
+  description: string | undefined = undefined;
   premium_now: number | undefined = undefined;
   tg_enabled: boolean = false; // deprecated
   tg_token: string = '';
@@ -201,6 +202,7 @@ class Order {
       latitude: this.latitude,
       longitude: this.longitude,
       password: this.password,
+      description: this.description,
     };
 
     if (slot) {
