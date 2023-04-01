@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from hmac import compare_digest
 
 from decouple import config
 from django.conf import settings
@@ -558,11 +559,12 @@ class OrderView(viewsets.ViewSet):
                 if not valid:
                     return Response(context, status=status.HTTP_409_CONFLICT)
 
-                if order.password is not None and order.password != password:
-                    return Response(
-                        {"bad_request": "Wrong password"},
-                        status=status.HTTP_403_FORBIDDEN,
-                    )
+                if order.password is not None:
+                    if password is None or not compare_digest(order.password, password):
+                        return Response(
+                            {"bad_request": "Wrong password"},
+                            status=status.HTTP_403_FORBIDDEN,
+                        )
 
                 # For order with amount range, set the amount now.
                 if order.has_range:
