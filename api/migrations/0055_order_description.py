@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='order',
             name='description',
-            field=models.TextField(blank=True, default=None, max_length=200, null=True),
+            field=models.TextField(blank=True, default=None, max_length=240, null=True),
         ),
     ]
