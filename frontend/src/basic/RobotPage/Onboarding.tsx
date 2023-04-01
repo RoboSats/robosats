@@ -89,7 +89,7 @@ const Onboarding = ({ setView, inputToken, setInputToken }: OnboardingProps): Re
                       <Alert variant='outlined' severity='info'>
                         <b>{`${t('Store it somewhere safe!')} `}</b>
                         {t(
-                          `This token is the one and only key to your robot and trade. You will need it later to recover your order or check its status.`,
+                          `This token is the one and only key to your robot, you will need it later to recover your order. Keep it secret, sharing it could put your funds at risk.`,
                         )}
                       </Alert>
                     </Grid>
