@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Typography,
@@ -36,16 +36,18 @@ const BookControl = ({
   paymentMethod,
   setPaymentMethods,
 }: BookControlProps): JSX.Element => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const theme = useTheme();
 
-  const typeZeroText = fav.mode === 'fiat' ? 'Buy' : 'Swap In';
-  const typeOneText = fav.mode === 'fiat' ? 'Sell' : 'Swap Out';
-
-  const smallestToolbarWidth = (typeZeroText.length + typeOneText.length) * 0.7 + 12;
-  const mediumToolbarWidth = smallestToolbarWidth + 12;
-  const verboseToolbarWidth =
-    mediumToolbarWidth + (t('and use').length + t('pay with').length) * 0.6;
+  const [typeZeroText, typeOneText, small, medium, large] = useMemo(() => {
+    const typeZeroText = fav.mode === 'fiat' ? t('Buy') : t('Swap In');
+    const typeOneText = fav.mode === 'fiat' ? t('Sell') : t('Swap Out');
+    const small =
+      (typeZeroText.length + typeOneText.length) * 0.7 + (fav.mode == 'fiat' ? 16 : 7.5);
+    const medium = small + 13;
+    const large = medium + (t('and use').length + t('pay with').length) * 0.6 + 5;
+    return [typeZeroText, typeOneText, small, medium, large];
+  }, [i18n.language, fav.mode]);
 
   const handleCurrencyChange = function (e) {
     const currency = e.target.value;
@@ -72,7 +74,7 @@ const BookControl = ({
         spacing={0.5}
         sx={{ height: '3.4em', padding: '0.2em' }}
       >
-        {width > verboseToolbarWidth ? (
+        {width > large ? (
           <Grid item sx={{ position: 'relative', top: '0.5em' }}>
             <Typography variant='caption' color='text.secondary'>
               {t('I want to')}
@@ -80,7 +82,7 @@ const BookControl = ({
           </Grid>
         ) : null}
 
-        {width > smallestToolbarWidth + 5 ? (
+        {width > small ? (
           <Grid item>
             <Tooltip
               placement='bottom'
@@ -139,7 +141,7 @@ const BookControl = ({
           </ToggleButtonGroup>
         </Grid>
 
-        {width > verboseToolbarWidth && fav.mode === 'fiat' ? (
+        {width > large && fav.mode === 'fiat' ? (
           <Grid item sx={{ position: 'relative', top: '0.5em' }}>
             <Typography variant='caption' color='text.secondary'>
               {t('and use')}
@@ -192,7 +194,7 @@ const BookControl = ({
           </Grid>
         ) : null}
 
-        {width > verboseToolbarWidth ? (
+        {width > large ? (
           <Grid item sx={{ position: 'relative', top: '0.5em' }}>
             <Typography variant='caption' color='text.secondary'>
               {fav.currency == 1000 ? t(fav.type === 0 ? 'to' : 'from') : t('pay with')}
@@ -200,7 +202,7 @@ const BookControl = ({
           </Grid>
         ) : null}
 
-        {width > mediumToolbarWidth ? (
+        {width > medium ? (
           <Grid item>
             <AutocompletePayments
               sx={{
@@ -228,7 +230,7 @@ const BookControl = ({
           </Grid>
         ) : null}
 
-        {width > smallestToolbarWidth && width < mediumToolbarWidth ? (
+        {width > small && width <= medium ? (
           <Grid item>
             <Select
               sx={{
