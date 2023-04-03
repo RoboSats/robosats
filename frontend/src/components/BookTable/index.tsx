@@ -15,7 +15,12 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
-import { DataGrid, GridPagination } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  GridColumnVisibilityModel,
+  GridPagination,
+  GridPaginationModel,
+} from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { PublicOrder } from '../../models';
 import { filterOrders, hexToRgb, statusBadgeColor, pn, amountToString } from '../../utils';
@@ -63,7 +68,11 @@ const BookTable = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const orders = orderList ?? book.orders;
-  const [pageSize, setPageSize] = useState(0);
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
+    pageSize: 0,
+    page: 0,
+  });
+  const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>({});
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
 
@@ -82,12 +91,12 @@ const BookTable = ({
     return [fontSize, defaultPageSize, height];
   }, [theme.typography.fontSize, maxHeight, fullscreen, fullHeight, showControls, showFooter]);
 
-  const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
   useEffect(() => {
-    if (useDefaultPageSize) {
-      setPageSize(defaultPageSize);
-    }
-  });
+    setPaginationModel({
+      pageSize: book.loading && orders.length == 0 ? 0 : defaultPageSize,
+      page: paginationModel.page,
+    });
+  }, [book.loading, orders, defaultPageSize]);
 
   const premiumColor = function (baseColor: string, accentColor: string, point: number) {
     const baseRGB = hexToRgb(baseColor);
@@ -141,6 +150,7 @@ const BookTable = ({
     filterValueFalse: t('false'),
     columnMenuLabel: t('Menu'),
     columnMenuShowColumns: t('Show columns'),
+    columnMenuManageColumns: t('Manage columns'),
     columnMenuFilter: t('Filter'),
     columnMenuHideColumn: t('Hide'),
     columnMenuUnsort: t('Unsort'),
@@ -152,9 +162,8 @@ const BookTable = ({
     booleanCellFalseLabel: t('no'),
   };
 
-  const robotObj = function (width: number, hide: boolean) {
+  const robotObj = function (width: number) {
     return {
-      hide,
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
@@ -180,9 +189,8 @@ const BookTable = ({
     };
   };
 
-  const robotSmallObj = function (width: number, hide: boolean) {
+  const robotSmallObj = function (width: number) {
     return {
-      hide,
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
@@ -207,9 +215,8 @@ const BookTable = ({
     };
   };
 
-  const typeObj = function (width: number, hide: boolean) {
+  const typeObj = function (width: number) {
     return {
-      hide,
       field: 'type',
       headerName: t('Is'),
       width: width * fontSize,
@@ -220,9 +227,8 @@ const BookTable = ({
     };
   };
 
-  const amountObj = function (width: number, hide: boolean) {
+  const amountObj = function (width: number) {
     return {
-      hide,
       field: 'amount',
       headerName: t('Amount'),
       type: 'number',
@@ -269,9 +275,8 @@ const BookTable = ({
     };
   };
 
-  const paymentObj = function (width: number, hide: boolean) {
+  const paymentObj = function (width: number) {
     return {
-      hide,
       field: 'payment_method',
       headerName: fav.mode === 'fiat' ? t('Payment Method') : t('Destination'),
       width: width * fontSize,
@@ -290,10 +295,9 @@ const BookTable = ({
     };
   };
 
-  const paymentSmallObj = function (width: number, hide: boolean) {
+  const paymentSmallObj = function (width: number) {
     return {
-      hide,
-      field: 'payment_icons',
+      field: 'payment_method',
       headerName: t('Pay'),
       width: width * fontSize,
       renderCell: (params: any) => {
@@ -316,9 +320,8 @@ const BookTable = ({
     };
   };
 
-  const priceObj = function (width: number, hide: boolean) {
+  const priceObj = function (width: number) {
     return {
-      hide,
       field: 'price',
       headerName: t('Price'),
       type: 'number',
@@ -332,14 +335,13 @@ const BookTable = ({
     };
   };
 
-  const premiumObj = function (width: number, hide: boolean) {
+  const premiumObj = function (width: number) {
     // coloring premium texts based on 4 params:
     // Hardcoded: a sell order at 0% is an outstanding premium
     // Hardcoded: a buy order at 10% is an outstanding premium
     const sellStandardPremium = 10;
     const buyOutstandingPremium = 10;
     return {
-      hide,
       field: 'premium',
       headerName: t('Premium'),
       type: 'number',
@@ -382,9 +384,8 @@ const BookTable = ({
     };
   };
 
-  const timerObj = function (width: number, hide: boolean) {
+  const timerObj = function (width: number) {
     return {
-      hide,
       field: 'escrow_duration',
       headerName: t('Timer'),
       type: 'number',
@@ -397,9 +398,8 @@ const BookTable = ({
     };
   };
 
-  const expiryObj = function (width: number, hide: boolean) {
+  const expiryObj = function (width: number) {
     return {
-      hide,
       field: 'expires_at',
       headerName: t('Expiry'),
       type: 'string',
@@ -441,9 +441,8 @@ const BookTable = ({
     };
   };
 
-  const satoshisObj = function (width: number, hide: boolean) {
+  const satoshisObj = function (width: number) {
     return {
-      hide,
       field: 'satoshis_now',
       headerName: t('Sats now'),
       type: 'number',
@@ -460,9 +459,8 @@ const BookTable = ({
     };
   };
 
-  const idObj = function (width: number, hide: boolean) {
+  const idObj = function (width: number) {
     return {
-      hide,
       field: 'id',
       headerName: 'Order ID',
       width: width * fontSize,
@@ -478,9 +476,8 @@ const BookTable = ({
     };
   };
 
-  const bondObj = function (width: number, hide: boolean) {
+  const bondObj = function (width: number) {
     return {
-      hide,
       field: 'bond_size',
       headerName: t('Bond'),
       type: 'number',
@@ -516,7 +513,7 @@ const BookTable = ({
         object: premiumObj,
       },
     },
-    paymentMethod: {
+    payment_method: {
       priority: 4,
       order: 6,
       normal: {
@@ -528,7 +525,7 @@ const BookTable = ({
         object: paymentSmallObj,
       },
     },
-    robot: {
+    maker_nick: {
       priority: 5,
       order: 1,
       normal: {
@@ -564,7 +561,7 @@ const BookTable = ({
         object: timerObj,
       },
     },
-    satoshisNow: {
+    satoshis_now: {
       priority: 9,
       order: 9,
       normal: {
@@ -580,7 +577,7 @@ const BookTable = ({
         object: typeObj,
       },
     },
-    bond: {
+    bond_size: {
       priority: 11,
       order: 10,
       normal: {
@@ -601,6 +598,7 @@ const BookTable = ({
   const filteredColumns = function (maxWidth: number) {
     const useSmall = maxWidth < 70;
     const selectedColumns: object[] = [];
+    let columnVisibilityModel: GridColumnVisibilityModel = {};
     let width: number = 0;
 
     for (const [key, value] of Object.entries(columnSpecs)) {
@@ -609,9 +607,11 @@ const BookTable = ({
 
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
-        selectedColumns.push([colObject(colWidth, false), value.order]);
+        selectedColumns.push([colObject(colWidth), value.order]);
+        columnVisibilityModel[key] = true;
       } else {
-        selectedColumns.push([colObject(colWidth, true), value.order]);
+        selectedColumns.push([colObject(colWidth), value.order]);
+        columnVisibilityModel[key] = false;
       }
     }
 
@@ -624,6 +624,7 @@ const BookTable = ({
       return item[0];
     });
 
+    setColumnVisibilityModel(columnVisibilityModel);
     return [columns, width * 0.875 + 0.15];
   };
 
@@ -740,6 +741,10 @@ const BookTable = ({
           rows={filteredOrders}
           loading={book.loading}
           columns={columns}
+          columnVisibilityModel={columnVisibilityModel}
+          onColumnVisibilityModelChange={(newColumnVisibilityModel) =>
+            setColumnVisibilityModel(newColumnVisibilityModel)
+          }
           hideFooter={!showFooter}
           components={gridComponents}
           componentsProps={{
@@ -751,11 +756,10 @@ const BookTable = ({
               setPaymentMethods,
             },
           }}
-          pageSize={book.loading && orders.length == 0 ? 0 : pageSize}
-          rowsPerPageOptions={width < 22 ? [] : [0, pageSize, defaultPageSize * 2, 50, 100]}
-          onPageSizeChange={(newPageSize) => {
-            setPageSize(newPageSize);
-            setUseDefaultPageSize(false);
+          paginationModel={paginationModel}
+          pageSizeOptions={width < 22 ? [] : [0, defaultPageSize, defaultPageSize * 2, 50, 100]}
+          onPaginationModelChange={(newPaginationModel) => {
+            setPaginationModel(newPaginationModel);
           }}
           onRowClick={(params: any) => onOrderClicked(params.row.id)}
         />
@@ -774,6 +778,10 @@ const BookTable = ({
             columns={columns}
             hideFooter={!showFooter}
             components={gridComponents}
+            columnVisibilityModel={columnVisibilityModel}
+            onColumnVisibilityModelChange={(newColumnVisibilityModel) =>
+              setColumnVisibilityModel(newColumnVisibilityModel)
+            }
             componentsProps={{
               toolbar: {
                 width,
@@ -783,11 +791,10 @@ const BookTable = ({
                 setPaymentMethods,
               },
             }}
-            pageSize={book.loading && orders.length == 0 ? 0 : pageSize}
-            rowsPerPageOptions={[0, pageSize, defaultPageSize * 2, 50, 100]}
-            onPageSizeChange={(newPageSize) => {
-              setPageSize(newPageSize);
-              setUseDefaultPageSize(false);
+            paginationModel={paginationModel}
+            pageSizeOptions={width < 22 ? [] : [0, defaultPageSize, defaultPageSize * 2, 50, 100]}
+            onPaginationModelChange={(newPaginationModel) => {
+              setPaginationModel(newPaginationModel);
             }}
             onRowClick={(params: any) => onOrderClicked(params.row.id)}
           />
