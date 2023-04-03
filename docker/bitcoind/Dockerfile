@@ -1,4 +1,4 @@
-FROM ruimarinho/bitcoin-core:22-alpine
+FROM ruimarinho/bitcoin-core:24.0.1-alpine
 
 ARG LOCAL_USER_ID=9999
 ARG LOCAL_GROUP_ID=9999
