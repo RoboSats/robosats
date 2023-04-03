@@ -343,14 +343,14 @@ const CoordinatorDialog = ({
     <Dialog open={open} onClose={onClose}>
       <DialogContent>
         <Typography align='center' component='h5' variant='h5'>
-          {`${coordinator?.alias}`}
+          {`${coordinator?.longAlias}`}
         </Typography>
         <List dense>
           <ListItem sx={{ display: 'flex', justifyContent: 'center' }}>
             <Grid container direction='column' alignItems='center' padding={0}>
               <Grid item>
                 <RobotAvatar
-                  nickname={coordinator?.shortalias}
+                  nickname={coordinator?.shortAlias}
                   coordinator={true}
                   style={{ width: '7.5em', height: '7.5em' }}
                   smooth={true}

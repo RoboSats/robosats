@@ -1,7 +1,7 @@
-[
-  {
-    "alias": "Experimental",
-    "shortalias": "exp",
+{
+  "exp": {
+    "longAlias": "Experimental",
+    "shortAlias": "exp",
     "description": "RoboSats node for development and experimentation.",
     "motto": "P2P FTW!",
     "color": "#1976d2",
@@ -29,18 +29,22 @@
       "Privacy Policy": "...",
       "Data Policy": "..."
     },
-    "mainnetOnion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
-    "mainnetClearnet": "http://127.0.0.1:8000",
-    "mainnetI2P": "http://r7r4sckft6ptmk4r2jajiuqbowqyxiwsle4iyg4fijtoordc6z7a.b32.i2p",
-    "testnetOnion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
-    "testnetClearnet": "https://unsafe.testnet.robosats.com",
-    "testnetI2P": "aaaaaaaaaaaaaaaaaaaaaaaaaaaa.I2P",
+    "mainnet": {
+      "Onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
+      "Clearnet": "https://unsafe.robosats.com",
+      "I2P": "http://r7r4sckft6ptmk4r2jajiuqbowqyxiwsle4iyg4fijtoordc6z7a.b32.i2p"
+    },
+    "testnet": {
+      "Onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+      "Clearnet": "https://unsafe.testnet.robosats.com",
+      "I2P": "aaaaaaaaaaaaaaaaaaaaaaaaaaaa.I2P"
+    },
     "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
     "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
   },
-  {
-    "alias": "Example Coordinator",
-    "shortalias": "excoor",
+  "template": {
+    "longAlias": "Example Coordinator",
+    "shortAlias": "template",
     "description": "This is the description for an example coordinator",
     "motto": "Don't trust, verify (...and stack Sats p2p)",
     "color": "#000000",
@@ -64,27 +68,35 @@
       "Privacy Policy": "...",
       "Data Policy": "..."
     },
-    "mainnetOnion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
-    "mainnetClearnet": "http://127.0.0.1:12596",
-    "testnetOnion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
-    "testnetClearnet": "https://unsafe.testnet.robosats.com",
+    "mainnet": {
+      "Onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+      "Clearnet": "https://127.0.0.1:12596"
+    },
+    "testnet": {
+      "Onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+      "Clearnet": "https://unsafe.testnet.robosats.com"
+    },
     "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
     "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
   },
-  {
-    "alias": "Local Dev",
-    "shortalias": "local",
+  "local": {
+    "longAlias": "Local Dev",
+    "shortAlias": "local",
     "description": "Local development backend",
     "motto": "Buidl",
     "color": "#000000",
-    "testnetOnion": "http://robodevs7ixniseezbv7uryxhamtz3hvcelzfwpx3rvoipttjomrmpqd.onion",
-    "testnetClearnet": "http://127.0.0.1:8000",
-    "mainnetOnion": "",
-    "mainnetClearnet": "",
+    "testnet": {
+      "Onion": "http://robodevs7ixniseezbv7uryxhamtz3hvcelzfwpx3rvoipttjomrmpqd.onion",
+      "Clearnet": "http://127.0.0.1:8000"
+    },
+    "mainnet": {
+      "Onion": "",
+      "Clearnet": ""
+    },
     "policies": {
       "Development Policy": "Don't look around, just buidl"
     },
     "mainnetNodesPubkeys": ["..."],
     "testnetNodesPubkeys": ["..."]
   }
-]
+}

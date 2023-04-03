@@ -51,27 +51,31 @@ export interface EndpointProps {
   bitcoin: 'mainnet' | 'testnet';
   network: 'Clearnet' | 'Onion' | 'I2P';
 }
+
+export interface Origins {
+  Clearnet: string | undefined;
+  Onion: string | undefined;
+  I2P: string | undefined;
+}
+
 export class Coordinator {
   constructor(value: Coordinator) {
-    this.alias = value.alias;
-    this.shortalias = value.shortalias;
+    this.longAlias = value.longAlias;
+    this.shortAlias = value.shortAlias;
     this.description = value.description;
     this.motto = value.motto;
     this.color = value.color;
     this.policies = value.policies;
     this.contact = value.contact;
     this.badges = value.badges;
-    this.mainnetOnion = value.mainnetOnion;
-    this.mainnetClearnet = value.mainnetClearnet;
-    this.mainnetI2P = value.mainnetI2P;
-    this.testnetOnion = value.testnetOnion;
-    this.testnetI2P = value.testnetI2P;
+    this.mainnet = value.mainnet;
+    this.testnet = value.testnet;
     this.mainnetNodesPubkeys = value.mainnetNodesPubkeys;
     this.testnetNodesPubkeys = value.testnetNodesPubkeys;
   }
 
-  public alias: string;
-  public shortalias: string;
+  public longAlias: string;
+  public shortAlias: string;
   public enabled?: boolean = true;
   public description: string;
   public motto: string;
@@ -79,12 +83,8 @@ export class Coordinator {
   public policies: Object;
   public contact: Contact | undefined;
   public badges?: Badges | undefined;
-  public mainnetOnion: string | undefined;
-  public mainnetClearnet: string | undefined;
-  public mainnetI2P: string | undefined;
-  public testnetOnion: string | undefined;
-  public testnetClearnet: string | undefined;
-  public testnetI2P: string | undefined;
+  public mainnet: Origins;
+  public testnet: Origins;
   public mainnetNodesPubkeys: string[] | undefined;
   public testnetNodesPubkeys: string[] | undefined;
 
@@ -95,10 +95,10 @@ export class Coordinator {
 
   fetchInfo = ({ bitcoin, network }: EndpointProps, callback: () => void) => {
     this.loadingInfo = true;
-    const url = this[`${bitcoin}${network}`];
+    const url = this[bitcoin][network];
     if (url != undefined) {
       apiClient
-        .get(url, '/api/info/', { mode: 'no-cors' })
+        .get(url, '/api/info/', { mode: 'cors' })
         .then((data: Info) => {
           this.info = data;
         })
@@ -114,10 +114,10 @@ export class Coordinator {
 
   fetchLimits = ({ bitcoin, network }: EndpointProps, callback: () => void) => {
     this.loadingLimits = true;
-    const url = this[`${bitcoin}${network}`];
+    const url = this[bitcoin][network];
     if (url != undefined) {
       apiClient
-        .get(url, '/api/limits/', { mode: 'no-cors' })
+        .get(url, '/api/limits/', { mode: 'cors' })
         .then((data: LimitList) => {
           this.limits = data;
         })

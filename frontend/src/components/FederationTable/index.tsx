@@ -16,8 +16,8 @@ import RobotAvatar from '../RobotAvatar';
 import { Check, Close } from '@mui/icons-material';
 
 interface FederationTableProps {
-  federation: Coordinator[];
-  setFederation: (state: Coordinator[]) => void;
+  federation: { [key: string]: Coordinator };
+  setFederation: (state: { [key: string]: Coordinator }) => void;
   setFocusedCoordinator: (state: number) => void;
   openCoordinator: () => void;
   maxWidth?: number;
@@ -62,30 +62,30 @@ const FederationTable = ({
     noResultsOverlayLabel: t('No coordinators found.'),
   };
 
-  const onClickCoordinator = function (alias: string) {
-    federation.map((coordinator, index) => {
-      if (coordinator.alias === alias) {
-        setFocusedCoordinator(index);
-        openCoordinator();
-      }
-    });
+  const onClickCoordinator = function (shortAlias: string) {
+    // Object.values(federation).map((coordinator, index) => {
+    //   if (coordinator.shortAlias === shortAlias) {
+    setFocusedCoordinator(shortAlias);
+    openCoordinator();
+    //   }
+    // });
   };
 
   const aliasObj = function (width: number, hide: boolean) {
     return {
       hide,
-      field: 'alias',
+      field: 'longAlias',
       headerName: t('Coordinator'),
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
           <ListItemButton
             style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}
-            onClick={() => onClickCoordinator(params.row.alias)}
+            onClick={() => onClickCoordinator(params.row.shortAlias)}
           >
             <ListItemAvatar>
               <RobotAvatar
-                nickname={params.row.shortalias}
+                nickname={params.row.shortAlias}
                 coordinator={true}
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
@@ -93,7 +93,7 @@ const FederationTable = ({
                 baseUrl={baseUrl}
               />
             </ListItemAvatar>
-            <ListItemText primary={params.row.alias} />
+            <ListItemText primary={params.row.longAlias} />
           </ListItemButton>
         );
       },
@@ -103,18 +103,18 @@ const FederationTable = ({
   const aliasSmallObj = function (width: number, hide: boolean) {
     return {
       hide,
-      field: 'alias',
+      field: 'longAlias',
       headerName: t('Coordinator'),
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
           <ListItemButton
             style={{ cursor: 'pointer', position: 'relative', left: '-1.64em' }}
-            onClick={() => onClickCoordinator(params.row.alias)}
+            onClick={() => onClickCoordinator(params.row.shortAlias)}
           >
             <ListItemAvatar>
               <RobotAvatar
-                nickname={params.row.alias}
+                nickname={params.row.shortAlias}
                 coordinator={true}
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
@@ -136,7 +136,10 @@ const FederationTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
-          <Checkbox checked={params.row.enabled} onClick={() => onEnableChange(params.row.alias)} />
+          <Checkbox
+            checked={params.row.enabled}
+            onClick={() => onEnableChange(params.row.shortAlias)}
+          />
         );
       },
     };
@@ -150,7 +153,10 @@ const FederationTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
-          <div style={{ cursor: 'pointer' }} onClick={() => onClickCoordinator(params.row.alias)}>
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => onClickCoordinator(params.row.shortAlias)}
+          >
             {params.row.loadingInfo ? (
               <CircularProgress thickness={0.35 * fontSize} size={2 * fontSize} />
             ) : params.row.info ? (
@@ -226,14 +232,16 @@ const FederationTable = ({
 
   const [columns, width] = filteredColumns();
 
-  const onEnableChange = function (alias: string) {
-    const newFederation = federation.map((coordinator) => {
-      if (coordinator.alias === alias) {
-        return { ...coordinator, enabled: !coordinator.enabled };
-      }
-      return coordinator;
-    });
-    setFederation(newFederation);
+  const onEnableChange = function (shortAlias: string) {
+    federation[shortAlias].enabled = !federation[shortAlias].enabled;
+    setFederation(federation);
+    // const newFederation = federation.map((coordinator) => {
+    //   if (coordinator.alias === alias) {
+    //     return { ...coordinator, enabled: !coordinator.enabled };
+    //   }
+    //   return coordinator;
+    // });
+    // setFederation(newFederation);
   };
 
   return (
@@ -248,8 +256,8 @@ const FederationTable = ({
         localeText={localeText}
         rowHeight={3.714 * theme.typography.fontSize}
         headerHeight={3.25 * theme.typography.fontSize}
-        rows={federation}
-        getRowId={(params: any) => params.alias}
+        rows={Object.values(federation)}
+        getRowId={(params: any) => params.shortAlias}
         columns={columns}
         checkboxSelection={false}
         pageSize={pageSize}

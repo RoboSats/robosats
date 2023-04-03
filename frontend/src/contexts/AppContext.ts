@@ -71,6 +71,10 @@ export interface fetchRobotProps {
   setBadRequest?: (state: string) => void;
 }
 
+export interface Federation {
+  [key: string]: Coordinator;
+}
+
 export type TorStatus = 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
 
 const entryPage: Page | '' =
@@ -139,11 +143,14 @@ export const useAppStore = () => {
   });
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [exchange, setExchange] = useState<Exchange>(new Exchange());
-  const [federation, setFederation] = useState<Coordinator[]>(
-    defaultFederation.map((c) => new Coordinator(c)),
+  const [federation, setFederation] = useState<Federation>(
+    Object.entries(defaultFederation).reduce((acc, [key, value]) => {
+      acc[key] = new Coordinator(value);
+      return acc;
+    }, {}),
   );
   console.log(federation);
-  const [focusedCoordinator, setFocusedCoordinator] = useState<number>(0);
+  const [focusedCoordinator, setFocusedCoordinator] = useState<string>('');
   const [baseUrl, setBaseUrl] = useState<string>('');
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0, mode: 'fiat' });
 
@@ -226,9 +233,9 @@ export const useAppStore = () => {
   };
 
   const fetchLimits = function () {
-    federation.map((coordinator, i) => {
+    Object.entries(federation).map(([shortAlias, coordinator]) => {
       if (coordinator.enabled === true) {
-        coordinator.fetchLimits({ bitcoin: 'mainnet', network: 'Clearnet' }, () =>
+        coordinator.fetchLimits({ bitcoin: 'mainnet', network: 'Onion' }, () =>
           setFederation((f) => {
             return f;
           }),
@@ -238,9 +245,9 @@ export const useAppStore = () => {
   };
 
   const fetchInfo = function () {
-    federation.map((coordinator, i) => {
+    Object.entries(federation).map(([shortAlias, coordinator]) => {
       if (coordinator.enabled === true) {
-        coordinator.fetchInfo({ bitcoin: 'mainnet', network: 'Clearnet' }, () =>
+        coordinator.fetchInfo({ bitcoin: 'mainnet', network: 'Onion' }, () =>
           setFederation((f) => {
             return f;
           }),
