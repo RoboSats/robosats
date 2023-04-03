@@ -29,7 +29,7 @@ import {
   PriceChange,
   Book,
   Reddit,
-  Security,
+  Key,
   Bolt,
   Description,
   Dns,
@@ -85,20 +85,26 @@ const ContactButtons = ({
   const [showNostr, setShowNostr] = useState<boolean>(false);
 
   return (
-    <Grid container direction='row' alignItems='center' justifyItems='space-between'>
+    <Grid container direction='row' alignItems='center' justifyContent='center'>
       {nostr ? (
         <Grid item>
           <Tooltip
             title={
-              <Typography variant='body2'>
-                {t('Nostr pubkey copied! {{nostr}}', { nostr })}
-              </Typography>
+              <div>
+                <Typography variant='body2'>
+                  {t('...Opening on Nostr gateway. Pubkey copied!')}
+                </Typography>
+                <Typography variant='body2'>
+                  <i>{nostr}</i>
+                </Typography>
+              </div>
             }
             open={showNostr}
           >
             <IconButton
               onClick={() => {
                 setShowNostr(true);
+                setTimeout(() => window.open(`https://gateway.nostr.com/${nostr}`, '_blank'), 1500);
                 setTimeout(() => setShowNostr(false), 10000);
                 systemClient.copyToClipboard(nostr);
               }}
@@ -115,7 +121,7 @@ const ContactButtons = ({
         <Grid item>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('See PGP Key')}>
             <IconButton component='a' target='_blank' href={`https://${pgp}`} rel='noreferrer'>
-              <Security />
+              <Key />
             </IconButton>
           </Tooltip>
         </Grid>
@@ -261,7 +267,7 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
           title={
             <Typography align='center' variant='body2'>
               {t('Development fund supporter: donates {{percent}}% to make RoboSats better.', {
-                percent: badges.donatesToDevFund,
+                percent: badges?.donatesToDevFund,
               })}
             </Typography>
           }

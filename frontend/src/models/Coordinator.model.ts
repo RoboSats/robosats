@@ -1,4 +1,4 @@
-import { LimitList } from '.';
+import { LimitList, PublicOrder } from '.';
 import { apiClient } from '../services/api';
 
 export interface Contact {
@@ -88,10 +88,12 @@ export class Coordinator {
   public mainnetNodesPubkeys: string[] | undefined;
   public testnetNodesPubkeys: string[] | undefined;
 
+  public orders: PublicOrder[] = [];
+  public loadingBook: boolean = true;
   public info?: Info | undefined = undefined;
-  public loadingInfo?: boolean = true;
+  public loadingInfo: boolean = true;
   public limits?: LimitList | undefined = undefined;
-  public loadingLimits?: boolean = true;
+  public loadingLimits: boolean = true;
 
   fetchInfo = ({ bitcoin, network }: EndpointProps, callback: () => void) => {
     this.loadingInfo = true;
@@ -110,6 +112,25 @@ export class Coordinator {
         });
     }
     return callback();
+  };
+
+  fetchBook = ({ bitcoin, network }: EndpointProps, callback: (orders) => void) => {
+    this.loadingBook = true;
+    const url = this[bitcoin][network];
+    if (url != undefined) {
+      apiClient
+        .get(url, '/api/book/', { mode: 'cors' })
+        .then((data) => {
+          this.orders = data.not_found ? [] : data;
+        })
+        .catch(() => {
+          this.loadingBook = false;
+        })
+        .finally(() => {
+          this.loadingBook = false;
+        });
+    }
+    return callback(this.orders);
   };
 
   fetchLimits = ({ bitcoin, network }: EndpointProps, callback: () => void) => {

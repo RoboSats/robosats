@@ -15,6 +15,7 @@ import {
   Exchange,
   Order,
   Version,
+  PublicOrder,
 } from '../models';
 
 import { apiClient } from '../services/api';
@@ -207,7 +208,7 @@ export const useAppStore = () => {
     if (window.NativeRobosats === undefined) {
       host = getHost();
     } else {
-      host = federation[0][`${settings.network}Onion`];
+      host = federation[0][settings.network].Clearnet;
     }
     setBaseUrl(`http://${host}`);
   }, [settings.network]);
@@ -221,21 +222,36 @@ export const useAppStore = () => {
   };
 
   const fetchBook = function () {
-    setBook((book) => {
-      return { ...book, loading: true };
+    Object.entries(federation).map(([shortAlias, coordinator]) => {
+      if (coordinator.enabled === true) {
+        coordinator.fetchBook({ bitcoin: 'mainnet', network: 'Clearnet' }, (orders) => {
+          setFederation((f) => {
+            return f;
+          });
+          setBook((book) => {
+            return { orders, loading: false };
+          });
+        });
+      }
     });
-    apiClient.get(baseUrl, '/api/book/').then((data: any) =>
-      setBook({
-        loading: false,
-        orders: data.not_found ? [] : data,
-      }),
-    );
   };
+
+  // useEffect(() => {
+  //   setBook({orders:book.orders,loading:true})
+  //   let newBook:PublicOrder[] = []
+  //   Object.values(federation).map((coordinator)=> {
+  //     if (coordinator.enabled) {
+  //       newBook.push(coordinator.orders)
+  //     }
+  //     setBook({orders:newBook,loading:false})
+  //   })
+  //   console.log("book",book)
+  // },[federation])
 
   const fetchLimits = function () {
     Object.entries(federation).map(([shortAlias, coordinator]) => {
-      if (coordinator.enabled === true) {
-        coordinator.fetchLimits({ bitcoin: 'mainnet', network: 'Onion' }, () =>
+      if (coordinator.enabled) {
+        coordinator.fetchLimits({ bitcoin: 'mainnet', network: 'Clearnet' }, () =>
           setFederation((f) => {
             return f;
           }),
@@ -246,8 +262,8 @@ export const useAppStore = () => {
 
   const fetchInfo = function () {
     Object.entries(federation).map(([shortAlias, coordinator]) => {
-      if (coordinator.enabled === true) {
-        coordinator.fetchInfo({ bitcoin: 'mainnet', network: 'Onion' }, () =>
+      if (coordinator.enabled) {
+        coordinator.fetchInfo({ bitcoin: 'mainnet', network: 'Clearnet' }, () =>
           setFederation((f) => {
             return f;
           }),

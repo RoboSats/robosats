@@ -23,7 +23,7 @@ const SettingsPage = (): JSX.Element => {
       elevation={12}
       sx={{
         padding: '0.6em',
-        width: '18em',
+        width: '20em',
         maxHeight: `${maxHeight}em`,
         overflow: 'auto',
         overflowX: 'clip',
