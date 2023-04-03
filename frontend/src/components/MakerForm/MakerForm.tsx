@@ -27,8 +27,8 @@ import {
 
 import { LimitList, defaultMaker } from '../../models';
 
-import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
-import DateFnsUtils from '@date-io/date-fns';
+import { LocalizationProvider, MobileTimePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ConfirmationDialog } from '../Dialogs';
 import { apiClient } from '../../services/api';
 
@@ -812,28 +812,29 @@ const MakerForm = ({
             <Collapse in={maker.advancedOptions}>
               <Grid container spacing={1}>
                 <Grid item xs={12}>
-                  <LocalizationProvider dateAdapter={DateFnsUtils}>
-                    <TimePicker
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <MobileTimePicker
                       ampm={false}
+                      localeText={{ timePickerToolbarTitle: t('Public order length') }}
                       openTo='hours'
                       views={['hours', 'minutes']}
                       inputFormat='HH:mm'
                       mask='__:__'
-                      components={{
-                        OpenPickerIcon: HourglassTop,
-                      }}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position='end'>
-                            <HourglassTop />
-                          </InputAdornment>
-                        ),
-                        style: {
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: '4px',
+                      componentsProps={{
+                        textField: {
+                          InputProps: {
+                            style: {
+                              backgroundColor: theme.palette.background.paper,
+                              borderRadius: '4px',
+                            },
+                            endAdornment: (
+                              <InputAdornment position='end'>
+                                <HourglassTop />
+                              </InputAdornment>
+                            ),
+                          },
                         },
                       }}
-                      renderInput={(props) => <TextField {...props} />}
                       label={t('Public Duration (HH:mm)')}
                       value={maker.publicExpiryTime}
                       onChange={handleChangePublicDuration}
@@ -844,28 +845,29 @@ const MakerForm = ({
                 </Grid>
 
                 <Grid item xs={12}>
-                  <LocalizationProvider dateAdapter={DateFnsUtils}>
-                    <TimePicker
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <MobileTimePicker
                       ampm={false}
+                      localeText={{ timePickerToolbarTitle: t('Escrow/invoice step length') }}
                       openTo='hours'
                       views={['hours', 'minutes']}
                       inputFormat='HH:mm'
                       mask='__:__'
-                      components={{
-                        OpenPickerIcon: HourglassTop,
-                      }}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position='end'>
-                            <HourglassTop />
-                          </InputAdornment>
-                        ),
-                        style: {
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: '4px',
+                      componentsProps={{
+                        textField: {
+                          InputProps: {
+                            style: {
+                              backgroundColor: theme.palette.background.paper,
+                              borderRadius: '4px',
+                            },
+                            endAdornment: (
+                              <InputAdornment position='end'>
+                                <HourglassTop />
+                              </InputAdornment>
+                            ),
+                          },
                         },
                       }}
-                      renderInput={(props) => <TextField {...props} />}
                       label={t('Escrow/Invoice Timer (HH:mm)')}
                       value={maker.escrowExpiryTime}
                       onChange={handleChangeEscrowDuration}
