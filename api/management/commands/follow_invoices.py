@@ -29,11 +29,11 @@ class Command(BaseCommand):
             try:
                 self.follow_hold_invoices()
             except Exception as e:
-                self.stdout.write(str(e))
+                self.stderr.write(str(e))
             try:
                 self.send_payments()
             except Exception as e:
-                self.stdout.write(str(e))
+                self.stderr.write(str(e))
 
     def follow_hold_invoices(self):
         """Follows and updates LNpayment objects
@@ -90,15 +90,15 @@ class Command(BaseCommand):
                 # If it fails at finding the invoice: it has been canceled.
                 # In RoboSats DB we make a distinction between cancelled and returned (LND does not)
                 if "unable to locate invoice" in str(e):
-                    self.stdout.write(str(e))
+                    self.stderr.write(str(e))
                     hold_lnpayment.status = LNPayment.Status.CANCEL
 
                 # LND restarted.
                 if "wallet locked, unlock it" in str(e):
-                    self.stdout.write(str(timezone.now()) + " :: Wallet Locked")
+                    self.stderr.write(str(timezone.now()) + " :: Wallet Locked")
                 # Other write to logs
                 else:
-                    self.stdout.write(str(e))
+                    self.stderr.write(str(e))
 
             new_status = LNPayment.Status(hold_lnpayment.status).label
 
@@ -175,7 +175,7 @@ class Command(BaseCommand):
         for lnpayment in queryset:
             # Checks that this onchain payment is part of an order with a settled escrow
             if not hasattr(lnpayment, "order_paid_LN"):
-                self.stdout.write(f"Ln payment {str(lnpayment)} has no parent order!")
+                self.stderr.write(f"Ln payment {str(lnpayment)} has no parent order!")
                 return
             order = lnpayment.order_paid_LN
             if (
@@ -194,7 +194,7 @@ class Command(BaseCommand):
         for onchainpayment in queryset:
             # Checks that this onchain payment is part of an order with a settled escrow
             if not hasattr(onchainpayment, "order_paid_TX"):
-                self.stdout.write(
+                self.stderr.write(
                     f"Onchain payment {str(onchainpayment)} has no parent order!"
                 )
                 return
@@ -213,7 +213,7 @@ class Command(BaseCommand):
                 onchainpayment.save()
 
             else:
-                self.stdout.write(
+                self.stderr.write(
                     f"Onchain payment {str(onchainpayment)} for order {str(order)} escrow is not settled!"
                 )
 
@@ -244,13 +244,27 @@ class Command(BaseCommand):
                     Logics.trade_escrow_received(lnpayment.order_escrow)
                     return
 
+                # A locked invoice that has no order attached is an inconsistency (must be due to internal error).
+                # This has been rarely observed in the experimental coordinator, but the invoice must be cancelled otherwise
+                # it will take until CLTV expiry height to unlock (risking force closure).
+                else:
+                    self.stderr.write(
+                        f"Weird! bond with hash {lnpayment.payment_hash} was locked, yet it is not related to any order. It will be instantly cancelled."
+                    )
+                    LNNode.cancel_return_hold_invoice(lnpayment.payment_hash)
+                    lnpayment.status = LNPayment.Status.RETNED
+                    lnpayment.save()
+                    return
+
             except Exception as e:
-                self.stdout.write(str(e))
+                self.stderr.write(
+                    f"Exception when handling newly LOCKED invoice with hash {lnpayment.payment_hash}: {str(e)}"
+                )
 
         # If the LNPayment goes to CANCEL from INVGEN, the invoice had expired
         # If it goes to CANCEL from LOCKED the bond was unlocked. Order had expired in both cases.
         # Testing needed for end of time trades!
-        if lnpayment.status == LNPayment.Status.CANCEL:
+        elif lnpayment.status == LNPayment.Status.CANCEL:
             if hasattr(lnpayment, "order_made"):
                 Logics.order_expires(lnpayment.order_made)
                 return
@@ -265,5 +279,5 @@ class Command(BaseCommand):
 
         # TODO If a lnpayment goes from LOCKED to INVGEN. Totally weird
         # halt the order
-        if lnpayment.status == LNPayment.Status.INVGEN:
+        elif lnpayment.status == LNPayment.Status.INVGEN:
             pass
