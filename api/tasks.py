@@ -1,7 +1,7 @@
 from celery import shared_task
 
 
-@shared_task(name="users_cleansing")
+@shared_task(name="users_cleansing", time_limit=600)
 def users_cleansing():
     """
     Deletes users never used 12 hours after creation
@@ -47,7 +47,7 @@ def users_cleansing():
     return results
 
 
-@shared_task(name="give_rewards")
+@shared_task(name="give_rewards", time_limit=180)
 def give_rewards():
     """
     Referral rewards go from pending to earned.
@@ -74,7 +74,7 @@ def give_rewards():
     return results
 
 
-@shared_task(name="follow_send_payment")
+@shared_task(name="follow_send_payment", time_limit=180)
 def follow_send_payment(hash):
     """Sends sats to buyer, continuous update"""
 
@@ -108,7 +108,7 @@ def follow_send_payment(hash):
         print(f"Order: {order.id} Payout is larger than collateral !?")
         return
 
-    def handle_response(response):
+    def handle_response(response, was_in_transit=False):
         lnpayment.status = LNPayment.Status.FLIGHT
         lnpayment.in_flight = True
         lnpayment.save()
@@ -123,6 +123,14 @@ def follow_send_payment(hash):
 
         if response.status == 1:  # Status 1 'IN_FLIGHT'
             print(f"Order: {order.id} IN_FLIGHT. Hash {hash}")
+
+            # If payment was already "payment is in transition" we do not
+            # want to spawn a new thread every 3 minutes to check on it.
+            # in case this thread dies, let's move the last_routing_time
+            # 20 minutes in the future so another thread spawns.
+            if was_in_transit:
+                lnpayment.last_routing_time = timezone.now() + timedelta(minutes=20)
+                lnpayment.save()
 
         if response.status == 3:  # Status 3 'FAILED'
             lnpayment.status = LNPayment.Status.FAILRO
@@ -195,7 +203,7 @@ def follow_send_payment(hash):
             for response in LNNode.routerstub.TrackPaymentV2(
                 request, metadata=[("macaroon", MACAROON.hex())]
             ):
-                handle_response(response)
+                handle_response(response, was_in_transit=True)
 
         elif "invoice is already paid" in str(e):
             print(f"Order: {order.id} ALREADY PAID. Hash: {hash}.")
@@ -213,7 +221,7 @@ def follow_send_payment(hash):
             print(str(e))
 
 
-@shared_task(name="payments_cleansing")
+@shared_task(name="payments_cleansing", time_limit=600)
 def payments_cleansing():
     """
     Deletes cancelled payments (hodl invoices never locked) that
@@ -275,7 +283,7 @@ def payments_cleansing():
     return results
 
 
-@shared_task(name="cache_external_market_prices", ignore_result=True)
+@shared_task(name="cache_external_market_prices", ignore_result=True, time_limit=120)
 def cache_market():
 
     from django.utils import timezone
@@ -313,7 +321,7 @@ def cache_market():
     return results
 
 
-@shared_task(name="send_notification", ignore_result=True)
+@shared_task(name="send_notification", ignore_result=True, time_limit=120)
 def send_notification(order_id=None, chat_message_id=None, message=None):
 
     if order_id:
