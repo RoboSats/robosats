@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import PaymentIcon from './Icons';
 import { Tooltip } from '@mui/material';
@@ -7,15 +7,22 @@ import { fiatMethods, swapMethods } from './MethodList';
 const ns = [{ name: 'not specified', icon: 'notspecified' }];
 const methods = ns.concat(swapMethods).concat(fiatMethods);
 
-const StringAsIcons: React.FC = (props) => {
+interface Props {
+  othersText: string;
+  verbose: boolean;
+  size: number;
+  text: string;
+}
+
+const StringAsIcons: React.FC = ({ othersText, verbose, size, text }: Props) => {
   const { t } = useTranslation();
 
-  const parseText = () => {
+  const parsedText = useMemo(() => {
     const rows = [];
-    let custom_methods = props.text;
+    let custom_methods = text;
     // Adds icons for each PaymentMethod that matches
     methods.forEach((method, i) => {
-      if (props.text.includes(method.name)) {
+      if (text.includes(method.name)) {
         custom_methods = custom_methods.replace(method.name, '');
         rows.push(
           <Tooltip
@@ -27,11 +34,11 @@ const StringAsIcons: React.FC = (props) => {
             <div
               style={{
                 display: 'inline-block',
-                width: props.size + 2,
-                height: props.size,
+                width: size + 2,
+                height: size,
               }}
             >
-              <PaymentIcon width={props.size} height={props.size} icon={method.icon} />
+              <PaymentIcon width={size} height={size} icon={method.icon} />
             </div>
           </Tooltip>,
         );
@@ -52,24 +59,24 @@ const StringAsIcons: React.FC = (props) => {
           key={'pushed'}
           placement='top'
           enterTouchDelay={0}
-          title={props.verbose ? props.othersText : props.othersText + ': ' + custom_methods}
+          title={verbose ? othersText : othersText + ': ' + custom_methods}
         >
           <div
             style={{
               position: 'relative',
               display: 'inline-block',
-              width: props.size + 2,
-              maxHeight: props.size,
+              width: size + 2,
+              maxHeight: size,
               top: '-1px',
             }}
           >
-            <PaymentIcon width={props.size * 1.1} height={props.size * 1.1} icon={'custom'} />
+            <PaymentIcon width={size * 1.1} height={size * 1.1} icon={'custom'} />
           </div>
         </Tooltip>,
       );
     }
 
-    if (props.verbose) {
+    if (verbose) {
       return (
         <>
           {rows}{' '}
@@ -82,10 +89,10 @@ const StringAsIcons: React.FC = (props) => {
     } else {
       return rows;
     }
-  };
+  }, []);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>{parseText()}</div>
+    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>{parsedText}</div>
   );
 };
 
