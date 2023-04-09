@@ -335,11 +335,11 @@ export const AppContextProvider = ({
 
   useEffect(() => {
     if (open.stats || open.coordinator || info.coordinatorVersion == 'v?.?.?') {
-      if (window.NativeRobosats === undefined || torStatus == '"Done"') {
+      if (window.NativeRobosats === undefined) {
         fetchInfo();
       }
     }
-  }, [open.stats, open.coordinator, torStatus]);
+  }, [open.stats, open.coordinator]);
 
   useEffect(() => {
     // Sets Setting network from coordinator API param if accessing via web

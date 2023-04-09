@@ -117,11 +117,6 @@ const ProfileDialog = ({
     e.preventDefault();
   };
 
-  const handleClickEnableTelegram = () => {
-    window.open('https://t.me/' + robot.tgBotName + '?start=' + robot.tgToken, '_blank').focus();
-    setOpenEnableTelegram(false);
-  };
-
   const setStealthInvoice = (wantsStealth: boolean) => {
     apiClient
       .put(baseUrl, '/api/stealth/', { wantsStealth })
@@ -238,7 +233,6 @@ const ProfileDialog = ({
             onClose={() => setOpenEnableTelegram(false)}
             tgBotName={robot.tgBotName}
             tgToken={robot.tgToken}
-            onClickEnable={handleClickEnableTelegram}
           />
 
           <ListItem>
