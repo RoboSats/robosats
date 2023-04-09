@@ -80,10 +80,10 @@ const EnableTelegramDialog = ({ open, onClose, tgBotName, tgToken }: Props): JSX
       <DialogActions>
         <Button onClick={onClose}> {t('Go back')} </Button>
         <Button onClick={handleClickOpenBrowser} autoFocus>
-          {t('Open in browser')}
+          {t('Browser')}
           <NewTabIcon sx={{ width: '0.7em', height: '0.7em' }} />
         </Button>
-        <Button onClick={handleOpenTG}>{t('Open in TG')}</Button>
+        <Button onClick={handleOpenTG}>{t('Enable')}</Button>
       </DialogActions>
     </Dialog>
   );
