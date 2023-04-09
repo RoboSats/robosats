@@ -144,6 +144,7 @@
   "#23": "Phrases in components/Dialogs/EnableTelegram.tsx",
   "Enable TG Notifications": "ใช้การแจ้งเตือน Telegram",
   "You will be taken to a conversation with RoboSats telegram bot. Simply open the chat and press Start. Note that by enabling telegram notifications you might lower your level of anonymity.": "คุณจะเข้าไปยังแชทกับ telegram bot ของ RoboSats ให้คุณกด Start อย่างไรก็ตาม การใช้การแจ้งเตือน telegram จะลดระดับการปกปิดตัวตนของคุณ",
+  "Browser": "Browser",
   "Enable": "เปิดใช้งาน",
   "#24": "Phrases in components/Dialogs/CoordinatorSummary.tsx",
   "Coordinator Summary": "Coordinator Summary",

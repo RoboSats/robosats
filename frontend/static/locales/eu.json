@@ -144,6 +144,7 @@
   "#23": "Phrases in components/Dialogs/EnableTelegram.tsx",
   "Enable TG Notifications": "Baimendu TG Jakinarazpenak",
   "You will be taken to a conversation with RoboSats telegram bot. Simply open the chat and press Start. Note that by enabling telegram notifications you might lower your level of anonymity.": "RoboSats telegrama botarekin hitz egingo duzu. Zabaldu berriketa eta sakatu Start. Telegrama bidez anonimotasun maila jaitsi zenezake.",
+  "Browser": "Browser",
   "Enable": "Baimendu",
   "#24": "Phrases in components/Dialogs/CoordinatorSummary.tsx",
   "Coordinator Summary": "Coordinator Summary",
