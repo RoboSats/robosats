@@ -48,6 +48,10 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
     );
   };
 
+  const handleClickQR = () => {
+    window.open(`lightning:${invoice}`);
+  };
+
   return (
     <Grid
       container
@@ -82,6 +86,11 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
               justifyContent: 'center',
               padding: '0.5em',
               borderRadius: '0.3em',
+              border: '1px solid',
+              borderColor: theme.palette.mode === 'dark' ? '#434343' : '#c4c4c4',
+              '&:hover': {
+                borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#2f2f2f',
+              },
             }}
           >
             <QRCode
@@ -89,9 +98,7 @@ export const LockInvoicePrompt = ({ order, concept }: LockInvoicePromptProps): J
               fgColor={theme.palette.text.primary}
               value={invoice ?? 'Undefined: BOLT11 invoice not received'}
               size={theme.typography.fontSize * 21.8}
-              onClick={() => {
-                systemClient.copyToClipboard(invoice);
-              }}
+              onClick={handleClickQR}
             />
           </Box>
         </Tooltip>
