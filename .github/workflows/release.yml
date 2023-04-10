@@ -83,6 +83,23 @@ jobs:
         with:
           body: ${{ steps.changelog.outputs.changelog }}
 
+      # Upload app-universal-release APK artifact asset
+      - name: 'Download universal APK Artifact'
+        uses: actions/download-artifact@v3
+        with:
+          name: robosats-${{ needs.check-versions.outputs.semver }}-universal.apk
+          path: .
+      - name: 'Upload universal APK Asset'
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: app-universal-release.apk
+          asset_name: robosats-${{ needs.check-versions.outputs.semver }}-universal.apk
+          asset_content_type: application/apk
+
       # Upload app-arm64-v8a-release APK artifact asset
       - name: 'Download arm64-v8a APK Artifact'
         uses: actions/download-artifact@v3

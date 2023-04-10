@@ -63,6 +63,14 @@ jobs:
         uses: pr-mpt/actions-commit-hash@v1
 
       # Create artifacts (only for Release)
+      # Create app-universal-release APK artifact asset for Release
+      - name: 'Upload universal .apk Release Artifact (for Release)'
+        uses: actions/upload-artifact@v3
+        if: inputs.semver != ''  # If this workflow is called from release.yml
+        with:
+          name: robosats-${{ inputs.semver }}-universal.apk
+          path: mobile/android/app/build/outputs/apk/release/app-universal-release.apk
+
       # Create app-arm64-v8a-release APK artifact asset for Release
       - name: 'Upload arm64-v8a .apk Release Artifact (for Release)'
         uses: actions/upload-artifact@v3
@@ -107,6 +115,19 @@ jobs:
           changelog: mobile/CHANGELOG.md
           draft: false
           prerelease: true
+
+      # Upload universal APK to pre-release
+      - name: 'Upload universal Pre-release APK Asset'
+        id: upload-release-universal-apk-asset
+        if: inputs.semver == '' # only if this workflow is not called from a push to tag (a Release)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./mobile/android/app/build/outputs/apk/release/app-universal-release.apk
+          asset_name: robosats-${{ steps.commit.outputs.short }}-universal.apk
+          asset_content_type: application/apk
 
       # Upload arm64-v8a APK to pre-release
       - name: 'Upload arm64-v8a Pre-release APK Asset'
