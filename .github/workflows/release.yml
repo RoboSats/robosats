@@ -90,7 +90,7 @@ jobs:
           name: robosats-${{ needs.check-versions.outputs.semver }}-universal.apk
           path: .
       - name: 'Upload universal APK Asset'
-        id: upload-release-asset
+        id: upload-universal-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -107,7 +107,7 @@ jobs:
           name: robosats-${{ needs.check-versions.outputs.semver }}-arm64-v8a.apk
           path: .
       - name: 'Upload arm64-v8a APK Asset'
-        id: upload-release-asset
+        id: upload-arm64-v8a-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -124,7 +124,7 @@ jobs:
           name: robosats-${{ needs.check-versions.outputs.semver }}-armeabi-v7a.apk
           path: .
       - name: 'Upload armeabi-v7a APK Asset'
-        id: upload-release-asset
+        id: upload-armeabi-v7a-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -141,7 +141,7 @@ jobs:
           name: robosats-${{ needs.check-versions.outputs.semver }}-x86_64.apk
           path: .
       - name: 'Upload x86_64 APK Asset'
-        id: upload-release-asset
+        id: upload-x86_64-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -158,7 +158,7 @@ jobs:
           name: robosats-${{ needs.check-versions.outputs.semver }}-x86.apk
           path: .
       - name: 'Upload x86 APK Asset'
-        id: upload-release-asset
+        id: upload-x86-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
