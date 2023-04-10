@@ -249,9 +249,8 @@ const BookTable = ({
     };
   };
 
-  const currencyObj = function (width: number, hide: boolean) {
+  const currencyObj = function (width: number) {
     return {
-      hide: fav.mode === 'swap' ? true : hide,
       field: 'currency',
       headerName: t('Currency'),
       width: width * fontSize,
@@ -602,6 +601,11 @@ const BookTable = ({
     let width: number = 0;
 
     for (const [key, value] of Object.entries(columnSpecs)) {
+      // do not use col currency on swaps
+      if (fav.mode === 'swap' && key === 'currency') {
+        continue;
+      }
+
       const colWidth = useSmall && value.small ? value.small.width : value.normal.width;
       const colObject = useSmall && value.small ? value.small.object : value.normal.object;
 
@@ -630,7 +634,7 @@ const BookTable = ({
 
   const [columns, width] = useMemo(() => {
     return filteredColumns(fullscreen ? fullWidth : maxWidth);
-  }, [maxWidth, fullscreen, fullWidth]);
+  }, [maxWidth, fullscreen, fullWidth, fav.mode]);
 
   const Footer = function () {
     return (
