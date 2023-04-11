@@ -64,8 +64,10 @@ class LNNode:
     @classmethod
     def decode_payreq(cls, invoice):
         """Decodes a lightning payment request (invoice)"""
-        # TODO: no decodepay in cln-grpc yet
-        return "response"
+        request = noderpc.DecodeBolt11Request(bolt11=invoice)
+
+        response = cls.stub.DecodeBolt11(request)
+        return response
 
     @classmethod
     def estimate_fee(cls, amount_sats, target_conf=2, min_confs=1):
@@ -75,8 +77,9 @@ class LNNode:
 
         response = cls.stub.Feerates(request)
 
-        # TODO missing "mining_fee_sats" because no weight
+        # "opening" -> ~12 block target
         return {
+            "mining_fee_sats": response.onchain_fee_estimates.opening_channel_satoshis,
             "mining_fee_rate": response.perkb.opening/1000,
         }
 
@@ -122,15 +125,16 @@ class LNNode:
         remote_balance_sat = 0
         for peer in response.peers:
             for channel in peer.channels:
-                local_balance_sat += channel.to_us_msat.msat // 1_000
-                remote_balance_sat += (channel.total_msat.msat-channel.to_us_msat.msat) // 1_000
+                if channel.state == 2: # CHANNELD_NORMAL
+                    local_balance_sat += channel.to_us_msat.msat // 1_000
+                    remote_balance_sat += (channel.total_msat.msat-channel.to_us_msat.msat) // 1_000
         
-        # TODO no idea what is meant by unsettled/pending balance exactly
+        # TODO no idea what is meant by unsettled/pending balance here exactly
         return {
             "local_balance": local_balance_sat,
             "remote_balance": remote_balance_sat,
-            "unsettled_local_balance": response.unsettled_local_balance.sat,
-            "unsettled_remote_balance": response.unsettled_remote_balance.sat,
+            "unsettled_local_balance": 0,
+            "unsettled_remote_balance": 0,
         }
 
     @classmethod
@@ -140,7 +144,11 @@ class LNNode:
         if DISABLE_ONCHAIN or onchainpayment.sent_satoshis > MAX_SWAP_AMOUNT:
             return False
 
-        request = noderpc.WithdrawRequest(destination=onchainpayment.address,satoshi=int(onchainpayment.sent_satoshis), feerate=str(str(int(onchainpayment.mining_fee_rate)*1_000)+"perkb"), minconf=TODO)
+        request = noderpc.WithdrawRequest(
+            destination=onchainpayment.address,satoshi=int(onchainpayment.sent_satoshis),
+            feerate=str(int(onchainpayment.mining_fee_rate)*1_000)+"perkb",
+            minconf=int(not config("SPEND_UNCONFIRMED", default=False, cast=bool))
+        )
         
         # Cheap security measure to ensure there has been some non-deterministic time between request and DB check
         delay = (
@@ -196,11 +204,12 @@ class LNNode:
         request = noderpc.InvoiceRequest(
             description=description,
             amount_msat=num_satoshis * 1_000,
-            label=TODO, # needs to be a unique string
+            label="TODO", # TODO needs to be a unique string
             expiry=int(
                 invoice_expiry * 1.5
             ),  # actual expiry is padded by 50%, if tight, wrong client system clock will say invoice is expired.
             cltv=cltv_expiry_blocks,
+            preimage=preimage, # preimage is actually optional in cln, as cln would generate one by default
         )
         response = cls.stub.HodlInvoice(request)
 
@@ -236,15 +245,15 @@ class LNNode:
         if response.state == 2:  # CANCELLED
             pass
         if response.state == 3:  # ACCEPTED (LOCKED)
-            lnpayment.expiry_height = response.htlcs[0].expiry_height #TODO
+            lnpayment.expiry_height = response.htlc_cltv
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save()
             return True
 
     @classmethod
     def resetmc(cls):
-        # don't think an equivalent exists for cln
-        return True
+        # don't think an equivalent exists for cln, maybe deleting gossip_store file?
+        return False
 
     @classmethod
     def validate_ln_invoice(cls, invoice, num_satoshis, routing_budget_ppm):
@@ -269,7 +278,7 @@ class LNNode:
 
         # Some wallet providers (e.g. Muun) force routing through a private channel with high fees >1500ppm
         # These payments will fail. So it is best to let the user know in advance this invoice is not valid.
-        route_hints = payreq_decoded.route_hints
+        route_hints = payreq_decoded.route_hints.hints
 
         # Max amount RoboSats will pay for routing
         if routing_budget_ppm == 0:
@@ -288,10 +297,10 @@ class LNNode:
             for hinted_route in route_hints:
                 route_cost = 0
                 # ...add up the cost of every hinted hop...
-                for hop_hint in hinted_route.hop_hints:
-                    route_cost += hop_hint.fee_base_msat / 1000
+                for hop_hint in hinted_route.hops:
+                    route_cost += hop_hint.feebase.msat / 1_000
                     route_cost += (
-                        hop_hint.fee_proportional_millionths * num_satoshis / 1000000
+                        hop_hint.feeprop * num_satoshis / 1_000_000
                     )
 
                 # ...and store the cost of the route to the array
@@ -304,13 +313,13 @@ class LNNode:
                 }
                 return payout
 
-        if payreq_decoded.num_satoshis == 0:
+        if payreq_decoded.amount_msat == 0:
             payout["context"] = {
                 "bad_invoice": "The invoice provided has no explicit amount"
             }
             return payout
 
-        if not payreq_decoded.num_satoshis == num_satoshis:
+        if not payreq_decoded.amount_msat // 1_000 == num_satoshis:
             payout["context"] = {
                 "bad_invoice": "The invoice provided is not for "
                 + "{:,}".format(num_satoshis)
@@ -360,11 +369,24 @@ class LNNode:
         try: 
             response = cls.stub.Pay(request)
             
-            lnpayment.status = LNPayment.Status.SUCCED
-            lnpayment.fee = float(response.amount_sent_msat - response.amount_msat) / 1000
-            lnpayment.preimage = response.payment_preimage
-            lnpayment.save()
-            return True, None
+            if response.status == 0: #COMPLETE
+                lnpayment.status = LNPayment.Status.SUCCED
+                lnpayment.fee = float(response.amount_sent_msat - response.amount_msat) / 1000
+                lnpayment.preimage = response.payment_preimage
+                lnpayment.save()
+                return True, None
+            elif response.status == 1: #PENDING
+                failure_reason = str("PENDING")
+                lnpayment.failure_reason = failure_reason
+                lnpayment.status = LNPayment.Status.FLIGHT
+                lnpayment.save()
+                return False, failure_reason
+            else: # status == 2 FAILED
+                failure_reason = str("FAILED")
+                lnpayment.failure_reason = failure_reason
+                lnpayment.status = LNPayment.Status.FAILRO
+                lnpayment.save()
+                return False, failure_reason
         except grpc._channel._InactiveRpcError as e:
             status_code = int(e.details().split('code: Some(')[1].split(')')[0])
             failure_reason = cls.payment_failure_context[status_code]

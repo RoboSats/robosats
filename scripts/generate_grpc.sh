@@ -25,10 +25,9 @@ curl -o verrpc.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/m
 python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. verrpc.proto
 
 # generate cln grpc definitions
-curl -o node.proto -s https://raw.githubusercontent.com/daywalker90/lightning/master/cln-grpc/proto/node.proto
-python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. node.proto
-curl -o primitives.proto -s https://raw.githubusercontent.com/daywalker90/lightning/master/cln-grpc/proto/primitives.proto
-python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. primitives.proto
+curl -o node.proto -s https://raw.githubusercontent.com/daywalker90/lightning/hodlvoice/cln-grpc/proto/node.proto
+curl -o primitives.proto -s https://raw.githubusercontent.com/daywalker90/lightning/hodlvoice/cln-grpc/proto/primitives.proto
+python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. node.proto primitives.proto
 
 # delete googleapis
 rm -r googleapis
