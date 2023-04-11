@@ -92,7 +92,7 @@ const BookPage = (): JSX.Element => {
         <Dialog open={openMaker} onClose={() => setOpenMaker(false)}>
           <Box sx={{ maxWidth: '18em', padding: '0.5em' }}>
             <MakerForm
-              hasRobot={robot.AvatarLoaded}
+              hasRobot={robot.avatarLoaded}
               onOrderCreated={(id) => {
                 clearOrder();
                 setCurrentOrder(id);
