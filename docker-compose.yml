@@ -160,6 +160,23 @@ services:
       LND_REST_PORT: 8080
       AUTO_UNLOCK_PWD: ${AUTO_UNLOCK_PWD}
 
+  cln:
+    image: btcpayserver/lightning:v23.02-1-amd64
+    restart: always
+    network_mode: service:tor
+    container_name: cln-dev
+    depends_on:
+      - tor
+      - bitcoind
+    volumes:
+      - ./node/tor/data:/var/lib/tor
+      - ./node/tor/config:/etc/tor
+      - ./node/cln:/root/.lightning
+    command: lightningd
+    environment:
+      LIGHTNINGD_NETWORK: testnet
+      LIGHTNINGD_CHAIN: btc
+
   bitcoind:
     build: ./docker/bitcoind
     container_name: btc-dev
