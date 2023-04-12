@@ -160,6 +160,22 @@ services:
       LND_REST_PORT: 8080
       AUTO_UNLOCK_PWD: ${AUTO_UNLOCK_PWD}
 
+  cln:
+    build: ./docker/cln
+    restart: always
+    network_mode: service:tor
+    container_name: cln-dev
+    depends_on:
+      - tor
+      - bitcoind
+      - postgres-cln
+    volumes:
+      - ./node/tor/data:/var/lib/tor
+      - ./node/tor/config:/etc/tor
+      - ./node/cln:/root/.lightning
+      - ./node/bitcoin:/root/.bitcoin
+    command: lightningd
+
   bitcoind:
     build: ./docker/bitcoind
     container_name: btc-dev
@@ -184,6 +200,19 @@ services:
     network_mode: service:tor
     volumes:
       - ./node/db:/var/lib/postgresql/data
+
+  postgres-cln:
+    image: postgres:14.2-alpine
+    container_name: cln-sql-dev
+    restart: always
+    environment:
+      PGUSER: user
+      PGDATABASE: cln
+      POSTGRES_PASSWORD: pass
+      PGPORT: 5433
+    network_mode: service:tor
+    volumes:
+      - ./node/cln-db:/var/lib/postgresql/data
 
 volumes:
   redisdata:
