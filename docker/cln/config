@@ -1,0 +1,8 @@
+network=testnet
+proxy=127.0.0.1:9050
+bind-addr=127.0.0.1:9736
+addr=statictor:127.0.0.1:9051
+always-use-proxy=true
+important-plugin=/root/.lightning/plugins/cln-grpc-hodl
+# wallet=postgres://user:pass@localhost:5433/cln
+# bookkeeper-db=postgres://user:pass@localhost:5433/cln

@@ -161,21 +161,20 @@ services:
       AUTO_UNLOCK_PWD: ${AUTO_UNLOCK_PWD}
 
   cln:
-    image: btcpayserver/lightning:v23.02-1-amd64
+    build: ./docker/cln
     restart: always
     network_mode: service:tor
     container_name: cln-dev
     depends_on:
       - tor
       - bitcoind
+      - postgres-cln
     volumes:
       - ./node/tor/data:/var/lib/tor
       - ./node/tor/config:/etc/tor
       - ./node/cln:/root/.lightning
+      - ./node/bitcoin:/root/.bitcoin
     command: lightningd
-    environment:
-      LIGHTNINGD_NETWORK: testnet
-      LIGHTNINGD_CHAIN: btc
 
   bitcoind:
     build: ./docker/bitcoind
@@ -201,6 +200,19 @@ services:
     network_mode: service:tor
     volumes:
       - ./db:/var/lib/postgresql/data
+
+  postgres-cln:
+    image: postgres:14.2-alpine
+    container_name: cln-sql-dev
+    restart: always
+    environment:
+      PGUSER: user
+      PGDATABASE: cln
+      POSTGRES_PASSWORD: pass
+      PGPORT: 5433
+    network_mode: service:tor
+    volumes:
+      - ./node/cln-db:/var/lib/postgresql/data
 
 volumes:
   redisdata:
