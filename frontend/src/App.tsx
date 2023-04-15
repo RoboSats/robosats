@@ -12,6 +12,7 @@ import i18n from './i18n/Web';
 
 import { systemClient } from './services/System';
 import { Settings } from './models';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const makeTheme = function (settings: Settings) {
   const theme: Theme = createTheme({
@@ -40,17 +41,19 @@ const App = (): JSX.Element => {
   }, []);
 
   return (
-    <Suspense fallback='loading language'>
-      <I18nextProvider i18n={i18n}>
-        <ThemeProvider theme={theme}>
-          <AppContextProvider settings={settings} setSettings={setSettings}>
-            <CssBaseline />
-            {window.NativeRobosats === undefined ? <UnsafeAlert /> : <TorConnectionBadge />}
-            <Main />
-          </AppContextProvider>
-        </ThemeProvider>
-      </I18nextProvider>
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback='loading language'>
+        <I18nextProvider i18n={i18n}>
+          <ThemeProvider theme={theme}>
+            <AppContextProvider settings={settings} setSettings={setSettings}>
+              <CssBaseline />
+              {window.NativeRobosats === undefined ? <UnsafeAlert /> : <TorConnectionBadge />}
+              <Main />
+            </AppContextProvider>
+          </ThemeProvider>
+        </I18nextProvider>
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 
