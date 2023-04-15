@@ -123,7 +123,7 @@ services:
     container_name: i2p-dev
     network_mode: host
     volumes:
-      - ./docker/i2p/i2pconfig:/i2p/.i2p
+      - ./node/i2p/i2pconfig:/i2p/.i2p
 
   tor:
     build: ./docker/tor
@@ -183,7 +183,7 @@ services:
       POSTGRES_PASSWORD: example
     network_mode: service:tor
     volumes:
-      - ./db:/var/lib/postgresql/data
+      - ./node/db:/var/lib/postgresql/data
 
 volumes:
   redisdata:
