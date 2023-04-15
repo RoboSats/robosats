@@ -5,13 +5,15 @@ RUN mkdir -p /usr/src/frontend
 # specifying the working dir inside the container
 WORKDIR /usr/src/frontend
 
-# copy current dir's content to container's WORKDIR root i.e. all the contents of the robosats app
+# copy current workdir
 COPY package.json package.json
 COPY package-lock.json package-lock.json
+COPY entrypoint.sh entrypoint.sh
+RUN chmod +x entrypoint.sh
 
-# packages we use
+# install packages
 RUN npm install
+RUN mv node_modules /tmp/node_modules
 
-# launch
-
+ENTRYPOINT [ "/usr/src/frontend/entrypoint.sh" ]
 CMD ["npm", "run", "build"]
