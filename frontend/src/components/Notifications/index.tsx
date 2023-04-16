@@ -9,7 +9,7 @@ import {
   styled,
   tooltipClasses,
 } from '@mui/material';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Order } from '../../models';
 import Close from '@mui/icons-material/Close';
 import { Page } from '../../basic/NavBar';
@@ -68,8 +68,7 @@ const Notifications = ({
   openProfile,
 }: NotificationsProps): JSX.Element => {
   const { t } = useTranslation();
-  const theme = useTheme();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [message, setMessage] = useState<NotificationMessage>(emptyNotificationMessage);
   const [inFocus, setInFocus] = useState<boolean>(true);
@@ -86,7 +85,7 @@ const Notifications = ({
 
   const moveToOrderPage = function () {
     setPage('order');
-    history.push(`/order/${order?.id}`);
+    navigate(`/order/${order?.id}`);
     setShow(false);
   };
 
