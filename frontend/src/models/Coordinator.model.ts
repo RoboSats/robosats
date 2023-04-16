@@ -130,7 +130,7 @@ export class Coordinator {
           this.loadingBook = false;
         });
     }
-    return callback(this.orders);
+    return this;
   };
 
   fetchLimits = ({ bitcoin, network }: EndpointProps, callback: () => void) => {

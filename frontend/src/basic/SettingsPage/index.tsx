@@ -9,7 +9,7 @@ const SettingsPage = (): JSX.Element => {
     windowSize,
     navbarHeight,
     federation,
-    setFederation,
+    dispatchFederation,
     setFocusedCoordinator,
     baseUrl,
     settings,
@@ -36,7 +36,7 @@ const SettingsPage = (): JSX.Element => {
         <Grid item>
           <FederationTable
             federation={federation}
-            setFederation={setFederation}
+            dispatchFederation={dispatchFederation}
             setFocusedCoordinator={setFocusedCoordinator}
             openCoordinator={() => setOpen({ ...open, coordinator: true })}
             baseUrl={baseUrl}

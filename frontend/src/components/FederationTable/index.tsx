@@ -13,11 +13,11 @@ import { DataGrid } from '@mui/x-data-grid';
 import { Coordinator } from '../../models';
 
 import RobotAvatar from '../RobotAvatar';
-import { Check, Close } from '@mui/icons-material';
+import { Link, LinkOff } from '@mui/icons-material';
 
 interface FederationTableProps {
   federation: { [key: string]: Coordinator };
-  setFederation: (state: { [key: string]: Coordinator }) => void;
+  dispatchFederation: () => void;
   setFocusedCoordinator: (state: number) => void;
   openCoordinator: () => void;
   maxWidth?: number;
@@ -28,7 +28,7 @@ interface FederationTableProps {
 
 const FederationTable = ({
   federation,
-  setFederation,
+  dispatchFederation,
   setFocusedCoordinator,
   openCoordinator,
   maxWidth = 90,
@@ -158,11 +158,11 @@ const FederationTable = ({
             onClick={() => onClickCoordinator(params.row.shortAlias)}
           >
             {params.row.loadingInfo ? (
-              <CircularProgress thickness={0.35 * fontSize} size={2 * fontSize} />
+              <CircularProgress thickness={0.35 * fontSize} size={1.5 * fontSize} />
             ) : params.row.info ? (
-              <Check color='success' />
+              <Link color='success' />
             ) : (
-              <Close color='error' />
+              <LinkOff color='error' />
             )}
           </div>
         );
@@ -233,15 +233,11 @@ const FederationTable = ({
   const [columns, width] = filteredColumns();
 
   const onEnableChange = function (shortAlias: string) {
-    federation[shortAlias].enabled = !federation[shortAlias].enabled;
-    setFederation(federation);
-    // const newFederation = federation.map((coordinator) => {
-    //   if (coordinator.alias === alias) {
-    //     return { ...coordinator, enabled: !coordinator.enabled };
-    //   }
-    //   return coordinator;
-    // });
-    // setFederation(newFederation);
+    if (federation[shortAlias].enabled) {
+      dispatchFederation({ type: 'disable', payload: { shortAlias } });
+    } else {
+      dispatchFederation({ type: 'enable', payload: { shortAlias } });
+    }
   };
 
   return (

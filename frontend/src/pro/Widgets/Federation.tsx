@@ -27,14 +27,20 @@ const FederationWidget = React.forwardRef(
     }: FederationWidgetProps,
     ref,
   ) => {
-    const { federation, setFederation, setFocusedCoordinator, open, setOpen, baseUrl } =
-      useContext<AppContextProps>(AppContext);
+    const {
+      federation,
+      // setFederation,
+      setFocusedCoordinator,
+      open,
+      setOpen,
+      baseUrl,
+    } = useContext<AppContextProps>(AppContext);
     return React.useMemo(() => {
       return (
         <Paper elevation={3} style={{ width: '100%', height: '100%' }}>
           <FederationTable
             federation={federation}
-            setFederation={setFederation}
+            // setFederation={setFederation}
             setFocusedCoordinator={setFocusedCoordinator}
             openCoordinator={() => setOpen({ ...open, coordinator: true })}
             baseUrl={baseUrl}
