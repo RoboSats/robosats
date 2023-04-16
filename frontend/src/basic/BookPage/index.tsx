@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Grid, ButtonGroup, Dialog, Box } from '@mui/material';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import DepthChart from '../../components/Charts/DepthChart';
 
 import { NoRobotDialog } from '../../components/Dialogs';
@@ -26,7 +26,7 @@ const BookPage = (): JSX.Element => {
     setOrder,
   } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'depth'>('list');
   const [openMaker, setOpenMaker] = useState<boolean>(false);
   const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
@@ -47,7 +47,7 @@ const BookPage = (): JSX.Element => {
 
   const onOrderClicked = function (id: number) {
     if (robot.avatarLoaded) {
-      history.push('/order/' + id);
+      navigate('/order/' + id);
       setPage('order');
       setCurrentOrder(id);
       onViewOrder();
@@ -97,7 +97,7 @@ const BookPage = (): JSX.Element => {
                 clearOrder();
                 setCurrentOrder(id);
                 setPage('order');
-                history.push('/order/' + id);
+                navigate('/order/' + id);
               }}
             />
           </Box>

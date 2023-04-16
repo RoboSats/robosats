@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   Box,
@@ -48,7 +48,7 @@ const Onboarding = ({
   baseUrl,
 }: OnboardingProps): JSX.Element => {
   const { t } = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [step, setStep] = useState<'1' | '2' | '3'>('1');
   const [generatedToken, setGeneratedToken] = useState<boolean>(false);
@@ -63,7 +63,7 @@ const Onboarding = ({
 
   const changePage = function (newPage: Page) {
     setPage(newPage);
-    history.push(`/${newPage}`);
+    navigate(`/${newPage}`);
   };
 
   return (

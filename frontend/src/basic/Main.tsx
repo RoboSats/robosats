@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { HashRouter, BrowserRouter, Switch, Route } from 'react-router-dom';
+import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box, Slide, Typography } from '@mui/material';
 
 import RobotPage from './RobotPage';
@@ -15,6 +15,8 @@ import RobotAvatar from '../components/RobotAvatar';
 import { useTranslation } from 'react-i18next';
 import Notifications from '../components/Notifications';
 import { AppContextProps, AppContext } from '../contexts/AppContext';
+
+const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
 
 const Main = (): JSX.Element => {
   const { t } = useTranslation();
@@ -33,11 +35,8 @@ const Main = (): JSX.Element => {
     navbarHeight,
   } = useContext<AppContextProps>(AppContext);
 
-  const Router = window.NativeRobosats === undefined ? BrowserRouter : HashRouter;
-  const basename = window.NativeRobosats === undefined ? '' : window.location.pathname;
-
   return (
-    <Router basename={basename}>
+    <Router>
       <RobotAvatar
         style={{ display: 'none' }}
         nickname={robot.nickname}
@@ -70,74 +69,87 @@ const Main = (): JSX.Element => {
           transform: `translate(-50%, -50%) translate(0,  -${navbarHeight / 2}em`,
         }}
       >
-        <Switch>
+        <Routes>
+          {['/robot/:refCode?', '/', ''].map((path, index) => {
+            return (
+              <Route
+                path={path}
+                element={
+                  <Slide
+                    direction={page === 'robot' ? slideDirection.in : slideDirection.out}
+                    in={page === 'robot'}
+                    appear={slideDirection.in != undefined}
+                  >
+                    <div>
+                      <RobotPage />
+                    </div>
+                  </Slide>
+                }
+                key={index}
+              />
+            );
+          })}
+
           <Route
-            path={['/robot/:refCode?', '/']}
-            exact
-            render={(props: any) => (
+            path={'/offers'}
+            element={
               <Slide
-                direction={page === 'robot' ? slideDirection.in : slideDirection.out}
-                in={page === 'robot'}
+                direction={page === 'offers' ? slideDirection.in : slideDirection.out}
+                in={page === 'offers'}
                 appear={slideDirection.in != undefined}
               >
                 <div>
-                  <RobotPage />
+                  <BookPage />
                 </div>
               </Slide>
-            )}
+            }
           />
 
-          <Route path={'/offers'}>
-            <Slide
-              direction={page === 'offers' ? slideDirection.in : slideDirection.out}
-              in={page === 'offers'}
-              appear={slideDirection.in != undefined}
-            >
-              <div>
-                <BookPage />
-              </div>
-            </Slide>
-          </Route>
-
-          <Route path='/create'>
-            <Slide
-              direction={page === 'create' ? slideDirection.in : slideDirection.out}
-              in={page === 'create'}
-              appear={slideDirection.in != undefined}
-            >
-              <div>
-                <MakerPage />
-              </div>
-            </Slide>
-          </Route>
+          <Route
+            path='/create'
+            element={
+              <Slide
+                direction={page === 'create' ? slideDirection.in : slideDirection.out}
+                in={page === 'create'}
+                appear={slideDirection.in != undefined}
+              >
+                <div>
+                  <MakerPage />
+                </div>
+              </Slide>
+            }
+          />
 
           <Route
             path='/order/:orderId'
-            render={(props: any) => (
+            element={
               <Slide
                 direction={page === 'order' ? slideDirection.in : slideDirection.out}
                 in={page === 'order'}
                 appear={slideDirection.in != undefined}
               >
                 <div>
-                  <OrderPage locationOrderId={props.match.params.orderId} />
+                  <OrderPage />
                 </div>
               </Slide>
-            )}
+            }
           />
 
-          <Route path='/settings'>
-            <Slide
-              direction={page === 'settings' ? slideDirection.in : slideDirection.out}
-              in={page === 'settings'}
-              appear={slideDirection.in != undefined}
-            >
-              <div>
-                <SettingsPage />
-              </div>
-            </Slide>
-          </Route>
-        </Switch>
+          <Route
+            path='/settings'
+            element={
+              <Slide
+                direction={page === 'settings' ? slideDirection.in : slideDirection.out}
+                in={page === 'settings'}
+                appear={slideDirection.in != undefined}
+              >
+                <div>
+                  <SettingsPage />
+                </div>
+              </Slide>
+            }
+          />
+        </Routes>
       </Box>
       <div style={{ alignContent: 'center', display: 'flex' }}>
         <NavBar width={windowSize.width} height={navbarHeight} />

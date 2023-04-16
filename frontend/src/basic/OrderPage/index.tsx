@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Tab, Tabs, Paper, CircularProgress, Grid, Typography, Box } from '@mui/material';
-import { useHistory } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
@@ -9,11 +9,7 @@ import OrderDetails from '../../components/OrderDetails';
 import { apiClient } from '../../services/api';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
-interface OrderPageProps {
-  locationOrderId: number;
-}
-
-const OrderPage = ({ locationOrderId }: OrderPageProps): JSX.Element => {
+const OrderPage = (): JSX.Element => {
   const {
     windowSize,
     info,
@@ -29,14 +25,15 @@ const OrderPage = ({ locationOrderId }: OrderPageProps): JSX.Element => {
     navbarHeight,
   } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
+  const params = useParams();
 
   const doublePageWidth: number = 50;
   const maxHeight: number = (windowSize.height - navbarHeight) * 0.85 - 3;
 
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
 
-  useEffect(() => setCurrentOrder(locationOrderId), []);
+  useEffect(() => setCurrentOrder(Number(params.orderId)), []);
 
   const renewOrder = function () {
     if (order != undefined) {
@@ -60,7 +57,7 @@ const OrderPage = ({ locationOrderId }: OrderPageProps): JSX.Element => {
         if (data.bad_request) {
           setBadOrder(data.bad_request);
         } else if (data.id) {
-          history.push('/order/' + data.id);
+          navigate('/order/' + data.id);
           setCurrentOrder(data.id);
         }
       });
@@ -68,7 +65,7 @@ const OrderPage = ({ locationOrderId }: OrderPageProps): JSX.Element => {
   };
 
   const startAgain = function () {
-    history.push('/robot');
+    navigate('/robot');
     setPage('robot');
   };
   return (

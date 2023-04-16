@@ -1,6 +1,6 @@
 import React, { useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Grid, Paper, Collapse, Typography } from '@mui/material';
 
 import { filterOrders } from '../../utils';
@@ -26,7 +26,7 @@ const MakerPage = (): JSX.Element => {
     setDelay,
   } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
   const [showMatches, setShowMatches] = useState<boolean>(false);
@@ -57,7 +57,7 @@ const MakerPage = (): JSX.Element => {
 
   const onOrderClicked = function (id: number) {
     if (robot.avatarLoaded) {
-      history.push('/order/' + id);
+      navigate('/order/' + id);
       setPage('order');
       setCurrentOrder(id);
       onViewOrder();
@@ -105,7 +105,7 @@ const MakerPage = (): JSX.Element => {
               clearOrder();
               setCurrentOrder(id);
               setPage('order');
-              history.push('/order/' + id);
+              navigate('/order/' + id);
             }}
             hasRobot={robot.avatarLoaded}
             disableRequest={matches.length > 0 && !showMatches}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@mui/material/styles';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import {
   Badge,
@@ -62,7 +62,7 @@ const ProfileDialog = ({
   setCurrentOrder,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const theme = useTheme();
   const host = getHost();
 
@@ -181,7 +181,7 @@ const ProfileDialog = ({
           {robot.activeOrderId ? (
             <ListItemButton
               onClick={() => {
-                history.push('/order/' + robot.activeOrderId);
+                navigate('/order/' + robot.activeOrderId);
                 setPage('order');
                 setCurrentOrder(robot.activeOrderId);
                 onClose();
@@ -200,7 +200,7 @@ const ProfileDialog = ({
           ) : robot.lastOrderId ? (
             <ListItemButton
               onClick={() => {
-                history.push('/order/' + robot.lastOrderId);
+                navigate('/order/' + robot.lastOrderId);
                 setPage('order');
                 setCurrentOrder(robot.lastOrderId);
                 onClose();

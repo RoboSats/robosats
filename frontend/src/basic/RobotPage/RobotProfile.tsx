@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Button,
   Grid,
@@ -56,7 +56,7 @@ const RobotProfile = ({
     useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -157,7 +157,7 @@ const RobotProfile = ({
           <Grid item>
             <Button
               onClick={() => {
-                history.push('/order/' + robot.activeOrderId);
+                navigate('/order/' + robot.activeOrderId);
                 setPage('order');
                 setCurrentOrder(robot.activeOrderId);
               }}
@@ -172,7 +172,7 @@ const RobotProfile = ({
             <Grid item>
               <Button
                 onClick={() => {
-                  history.push('/order/' + robot.lastOrderId);
+                  navigate('/order/' + robot.lastOrderId);
                   setPage('order');
                   setCurrentOrder(robot.lastOrderId);
                 }}

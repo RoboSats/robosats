@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, Tab, Paper, useTheme } from '@mui/material';
 import MoreTooltip from './MoreTooltip';
 
@@ -38,7 +38,7 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
 
   const theme = useTheme();
   const { t } = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const smallBar = width < 50;
 
   const tabSx = smallBar
@@ -68,7 +68,7 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
       setPage(newPage);
       const param = newPage === 'order' ? currentOrder ?? '' : '';
       setTimeout(
-        () => history.push(`/${newPage}/${param}`),
+        () => navigate(`/${newPage}/${param}`),
         theme.transitions.duration.leavingScreen * 3,
       );
     }

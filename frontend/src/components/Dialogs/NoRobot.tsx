@@ -8,7 +8,7 @@ import {
   DialogContentText,
   Button,
 } from '@mui/material';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface Props {
@@ -19,12 +19,12 @@ interface Props {
 const NoRobotDialog = ({ open, onClose }: Props): JSX.Element => {
   const { setPage } = useContext<AppContextProps>(AppContext);
   const { t } = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleClickGenerate = function () {
     onClose();
     setPage('robot');
-    history.push('/robot');
+    navigate('/robot');
   };
 
   return (
