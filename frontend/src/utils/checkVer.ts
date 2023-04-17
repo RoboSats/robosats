@@ -11,7 +11,7 @@ export const getClientVersion = function () {
   return { semver, short, long };
 };
 
-export const getHigherVer = (ver0: Version, ver1: Version) => {
+export const getHigherVer = (ver0: Version, ver1: Version): Version => {
   if (ver1.major == null || ver0.minor == null || ver0.patch == null) {
     return ver0;
   } else if (ver0.major > ver1.major) {

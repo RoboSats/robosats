@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -13,30 +13,30 @@ import {
   LinearProgress,
 } from '@mui/material';
 
-import { Inventory, Sell, SmartToy, PriceChange, Book } from '@mui/icons-material';
+import { Inventory, Sell, SmartToy, PriceChange, Book, Groups3 } from '@mui/icons-material';
 
 import { pn } from '../../utils';
-import { Coordinator, Info } from '../../models';
 import { BitcoinSignIcon } from '../Icons';
 import { Equalizer } from '@mui/icons-material';
+import { AppContext, AppContextProps } from '../../contexts/AppContext';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  info: Info;
-  federation: Coordinator[];
 }
 
-const ExchangeDialog = ({ open = false, onClose, federation }: Props): JSX.Element => {
+const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
+  const { exchange } = useContext<AppContextProps>(AppContext);
 
-  // Implement aggregation of federation functions
-  // Add counter for coordinators online, coordinators loading, coordinators offline
+  const loadingProgress = useMemo(() => {
+    return (exchange.onlineCoordinators / exchange.totalCoordinators) * 100;
+  }, [exchange.onlineCoordinators, exchange.totalCoordinators]);
 
   return (
     <Dialog open={open} onClose={onClose}>
-      {/* <div style={info.loading ? {} : { display: 'none' }}>
-        <LinearProgress />
+      <div style={loadingProgress < 100 ? {} : { display: 'none' }}>
+        <LinearProgress variant='determinate' value={loadingProgress} />
       </div>
       <DialogContent>
         <Typography component='h5' variant='h5'>
@@ -46,10 +46,37 @@ const ExchangeDialog = ({ open = false, onClose, federation }: Props): JSX.Eleme
         <List dense>
           <ListItem>
             <ListItemIcon>
+              <Groups3 />
+            </ListItemIcon>
+
+            <ListItemText
+              primary={exchange.onlineCoordinators}
+              secondary={t('Online RoboSats coordinators')}
+            />
+          </ListItem>
+
+          <Divider />
+          <ListItem>
+            <ListItemIcon>
+              <Groups3 />
+            </ListItemIcon>
+
+            <ListItemText
+              primary={exchange.totalCoordinators}
+              secondary={t('Enabled RoboSats coordinators')}
+            />
+          </ListItem>
+
+          <Divider />
+          <ListItem>
+            <ListItemIcon>
               <Inventory />
             </ListItemIcon>
 
-            <ListItemText primary={info.num_public_buy_orders} secondary={t('Public buy orders')} />
+            <ListItemText
+              primary={exchange.info.num_public_buy_orders}
+              secondary={t('Public buy orders')}
+            />
           </ListItem>
 
           <Divider />
@@ -60,7 +87,7 @@ const ExchangeDialog = ({ open = false, onClose, federation }: Props): JSX.Eleme
             </ListItemIcon>
 
             <ListItemText
-              primary={info.num_public_sell_orders}
+              primary={exchange.info.num_public_sell_orders}
               secondary={t('Public sell orders')}
             />
           </ListItem>
@@ -73,7 +100,7 @@ const ExchangeDialog = ({ open = false, onClose, federation }: Props): JSX.Eleme
             </ListItemIcon>
 
             <ListItemText
-              primary={`${pn(info.book_liquidity)} Sats`}
+              primary={`${pn(exchange.info.book_liquidity)} Sats`}
               secondary={t('Book liquidity')}
             />
           </ListItem>
@@ -85,7 +112,10 @@ const ExchangeDialog = ({ open = false, onClose, federation }: Props): JSX.Eleme
               <SmartToy />
             </ListItemIcon>
 
-            <ListItemText primary={info.active_robots_today} secondary={t('Today active robots')} />
+            <ListItemText
+              primary={exchange.info.active_robots_today}
+              secondary={t('Today active robots')}
+            />
           </ListItem>
 
           <Divider />
@@ -96,7 +126,7 @@ const ExchangeDialog = ({ open = false, onClose, federation }: Props): JSX.Eleme
             </ListItemIcon>
 
             <ListItemText
-              primary={`${info.last_day_nonkyc_btc_premium}%`}
+              primary={`${exchange.info.last_day_nonkyc_btc_premium}%`}
               secondary={t('24h non-KYC bitcoin premium')}
             />
           </ListItem>
@@ -116,7 +146,7 @@ const ExchangeDialog = ({ open = false, onClose, federation }: Props): JSX.Eleme
                   flexWrap: 'wrap',
                 }}
               >
-                {pn(info.last_day_volume)}
+                {pn(exchange.info.last_day_volume)}
                 <BitcoinSignIcon sx={{ width: 14, height: 14 }} color={'text.secondary'} />
               </div>
             </ListItemText>
@@ -137,14 +167,13 @@ const ExchangeDialog = ({ open = false, onClose, federation }: Props): JSX.Eleme
                   flexWrap: 'wrap',
                 }}
               >
-                {pn(info.lifetime_volume)}
+                {pn(exchange.info.lifetime_volume)}
                 <BitcoinSignIcon sx={{ width: 14, height: 14 }} color={'text.secondary'} />
               </div>
             </ListItemText>
           </ListItem>
-
-        </List> */}
-      {/* </DialogContent> */}
+        </List>
+      </DialogContent>
     </Dialog>
   );
 };

@@ -39,7 +39,11 @@ const loadApp = () => {
     setTimeout(loadApp, 200);
   } else {
     const root = ReactDOM.createRoot(document.getElementById('app') ?? new HTMLElement());
-    root.render(<App />);
+    root.render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    );
   }
 };
 

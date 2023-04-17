@@ -63,7 +63,7 @@ const MakerForm = ({
   onOrderCreated = () => null,
   hasRobot = true,
 }: MakerFormProps): JSX.Element => {
-  const { fav, setFav, limits, fetchLimits, info, maker, setMaker, baseUrl } =
+  const { fav, setFav, limits, fetchFederationLimits, info, maker, setMaker, baseUrl } =
     useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
@@ -84,17 +84,17 @@ const MakerForm = ({
   useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency == 0 ? 1 : fav.currency]);
     if (Object.keys(limits.list).length === 0) {
-      fetchLimits().then((data) => {
-        updateAmountLimits(data, fav.currency, maker.premium);
-        updateCurrentPrice(data, fav.currency, maker.premium);
-        updateSatoshisLimits(data);
-      });
+      // fetchFederationLimits().then((data) => {
+      //   updateAmountLimits(data, fav.currency, maker.premium);
+      //   updateCurrentPrice(data, fav.currency, maker.premium);
+      //   updateSatoshisLimits(data);
+      // });
     } else {
       updateAmountLimits(limits.list, fav.currency, maker.premium);
       updateCurrentPrice(limits.list, fav.currency, maker.premium);
       updateSatoshisLimits(limits.list);
 
-      fetchLimits();
+      fetchFederationLimits();
     }
   }, []);
 

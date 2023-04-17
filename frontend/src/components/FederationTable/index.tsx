@@ -1,14 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Box,
-  ListItemButton,
-  ListItemText,
-  ListItemAvatar,
-  useTheme,
-  Checkbox,
-  CircularProgress,
-} from '@mui/material';
+import { Box, useTheme, Checkbox, CircularProgress, Typography, Grid } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { Coordinator } from '../../models';
 
@@ -63,27 +55,27 @@ const FederationTable = ({
   };
 
   const onClickCoordinator = function (shortAlias: string) {
-    // Object.values(federation).map((coordinator, index) => {
-    //   if (coordinator.shortAlias === shortAlias) {
     setFocusedCoordinator(shortAlias);
     openCoordinator();
-    //   }
-    // });
   };
 
-  const aliasObj = function (width: number, hide: boolean) {
+  const aliasObj = function (width: number) {
     return {
-      hide,
       field: 'longAlias',
       headerName: t('Coordinator'),
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
-          <ListItemButton
-            style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}
+          <Grid
+            container
+            direction='row'
+            sx={{ cursor: 'pointer', position: 'relative', left: '-0.3em', width: '50em' }}
+            wrap={false}
             onClick={() => onClickCoordinator(params.row.shortAlias)}
+            alignItems='center'
+            spacing={1}
           >
-            <ListItemAvatar>
+            <Grid item>
               <RobotAvatar
                 nickname={params.row.shortAlias}
                 coordinator={true}
@@ -92,45 +84,18 @@ const FederationTable = ({
                 flipHorizontally={true}
                 baseUrl={baseUrl}
               />
-            </ListItemAvatar>
-            <ListItemText primary={params.row.longAlias} />
-          </ListItemButton>
+            </Grid>
+            <Grid item>
+              <Typography>{params.row.longAlias}</Typography>
+            </Grid>
+          </Grid>
         );
       },
     };
   };
 
-  const aliasSmallObj = function (width: number, hide: boolean) {
+  const enabledObj = function (width: number) {
     return {
-      hide,
-      field: 'longAlias',
-      headerName: t('Coordinator'),
-      width: width * fontSize,
-      renderCell: (params: any) => {
-        return (
-          <ListItemButton
-            style={{ cursor: 'pointer', position: 'relative', left: '-1.64em' }}
-            onClick={() => onClickCoordinator(params.row.shortAlias)}
-          >
-            <ListItemAvatar>
-              <RobotAvatar
-                nickname={params.row.shortAlias}
-                coordinator={true}
-                style={{ width: '3.215em', height: '3.215em' }}
-                smooth={true}
-                flipHorizontally={true}
-                baseUrl={baseUrl}
-              />
-            </ListItemAvatar>
-          </ListItemButton>
-        );
-      },
-    };
-  };
-
-  const enabledObj = function (width: number, hide: boolean) {
-    return {
-      hide,
       field: 'enabled',
       headerName: t('Enabled'),
       width: width * fontSize,
@@ -145,9 +110,8 @@ const FederationTable = ({
     };
   };
 
-  const upObj = function (width: number, hide: boolean) {
+  const upObj = function (width: number) {
     return {
-      hide,
       field: 'up',
       headerName: t('Up'),
       width: width * fontSize,
@@ -157,7 +121,7 @@ const FederationTable = ({
             style={{ cursor: 'pointer' }}
             onClick={() => onClickCoordinator(params.row.shortAlias)}
           >
-            {params.row.loadingInfo ? (
+            {params.row.loadingInfo && params.row.enabled ? (
               <CircularProgress thickness={0.35 * fontSize} size={1.5 * fontSize} />
             ) : params.row.info ? (
               <Link color='success' />
@@ -177,10 +141,6 @@ const FederationTable = ({
       normal: {
         width: 12.1,
         object: aliasObj,
-      },
-      small: {
-        width: 4.1,
-        object: aliasSmallObj,
       },
     },
     up: {
@@ -202,7 +162,7 @@ const FederationTable = ({
   };
 
   const filteredColumns = function () {
-    const useSmall = maxWidth < 70;
+    const useSmall = maxWidth < 30;
     const selectedColumns: object[] = [];
     let width: number = 0;
 
@@ -253,7 +213,7 @@ const FederationTable = ({
         rowHeight={3.714 * theme.typography.fontSize}
         headerHeight={3.25 * theme.typography.fontSize}
         rows={Object.values(federation)}
-        getRowId={(params: any) => params.shortAlias}
+        getRowId={(params: Coordinator) => params.shortAlias}
         columns={columns}
         checkboxSelection={false}
         pageSize={pageSize}

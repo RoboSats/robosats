@@ -66,7 +66,7 @@ interface BookTableProps {
   showControls?: boolean;
   showFooter?: boolean;
   showNoResults?: boolean;
-  onOrderClicked?: (id: number) => void;
+  onOrderClicked?: (id: number, shortAlias: string) => void;
 }
 
 const BookTable = ({
@@ -83,11 +83,15 @@ const BookTable = ({
   showNoResults = true,
   onOrderClicked = () => null,
 }: BookTableProps): JSX.Element => {
-  const { book, fetchFederationBook, fav, setFav, baseUrl } = useContext<UseAppStoreType>(AppContext);
+  const { book, fetchFederationBook, fav, setFav, setFocusedCoordinator, setOpen, baseUrl } = useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
   const orders = orderList ?? book.orders;
+  const loadingProgress = useMemo(() => {
+    return (book.loadedCoordinators / book.totalCoordinators) * 100;
+  }, [book.loadedCoordinators, book.totalCoordinators]);
+
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     pageSize: 0,
     page: 0,
@@ -170,14 +174,21 @@ const BookTable = ({
     };
   }, []);
 
+<<<<<<< HEAD
   const robotObj = useCallback((width: number) => {
+=======
+  const robotCol = function (width: number) {
+>>>>>>> Fix exchange state
     return {
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
-          <ListItemButton style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}>
+          <ListItemButton
+            style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}
+            onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
+          >
             <ListItemAvatar>
               <RobotAvatar
                 nickname={params.row.maker_nick}
@@ -198,46 +209,101 @@ const BookTable = ({
     };
   }, []);
 
+<<<<<<< HEAD
   const robotSmallObj = useCallback((width: number) => {
+=======
+  const robotSmallCol = function (width: number) {
+>>>>>>> Fix exchange state
     return {
       field: 'maker_nick',
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
-          <div style={{ position: 'relative', left: '-1.64em' }}>
-            <ListItemButton style={{ cursor: 'pointer' }}>
+          <div
+            style={{ position: 'relative', left: '-0.34em', cursor: 'pointer' }}
+            onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
+          >
+            <RobotAvatar
+              nickname={params.row.maker_nick}
+              smooth={true}
+              flipHorizontally={true}
+              style={{ width: '3.215em', height: '3.215em' }}
+              orderType={params.row.type}
+              statusColor={statusBadgeColor(params.row.maker_status)}
+              tooltip={t(params.row.maker_status)}
+              baseUrl={baseUrl}
+            />
+          </div>
+        );
+      },
+    };
+  };
+
+  const onClickCoordinator = function (shortAlias: string) {
+    setFocusedCoordinator(shortAlias);
+    setOpen((open) => {
+      return { ...open, coordinator: true };
+    });
+  };
+
+  const coordinatorCol = function (width: number) {
+    return {
+      field: 'coordinatorShortAlias',
+      headerName: t('Host'),
+      width: width * fontSize,
+      renderCell: (params: any) => {
+        return (
+          <ListItemButton
+            style={{ cursor: 'pointer', position: 'relative', left: '-1.54em' }}
+            onClick={() => onClickCoordinator(params.row.coordinatorShortAlias)}
+          >
+            <ListItemAvatar>
               <RobotAvatar
-                nickname={params.row.maker_nick}
+                nickname={params.row.coordinatorShortAlias}
+                coordinator={true}
+                style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
                 flipHorizontally={true}
-                style={{ width: '3.215em', height: '3.215em' }}
-                orderType={params.row.type}
-                statusColor={statusBadgeColor(params.row.maker_status)}
-                tooltip={t(params.row.maker_status)}
                 baseUrl={baseUrl}
                 small={true}
               />
-            </ListItemButton>
+            </ListItemAvatar>
+          </ListItemButton>
+        );
+      },
+    };
+  }, []);
+
+<<<<<<< HEAD
+  const typeObj = useCallback((width: number) => {
+=======
+  const typeCol = function (width: number) {
+>>>>>>> Fix exchange state
+    return {
+      field: 'type',
+      headerName: t('Is'),
+      width: width * fontSize,
+      renderCell: (params: any) => {
+        return (
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
+          >
+            {params.row.type
+              ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
+              : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In')}
           </div>
         );
       },
     };
   }, []);
 
-  const typeObj = useCallback((width: number) => {
-    return {
-      field: 'type',
-      headerName: t('Is'),
-      width: width * fontSize,
-      renderCell: (params: any) =>
-        params.row.type
-          ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
-          : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In'),
-    };
-  }, []);
-
+<<<<<<< HEAD
   const amountObj = useCallback((width: number) => {
+=======
+  const amountCol = function (width: number) {
+>>>>>>> Fix exchange state
     return {
       field: 'amount',
       headerName: t('Amount'),
@@ -250,7 +316,10 @@ const BookTable = ({
         const maxAmount =
           fav.mode === 'swap' ? params.row.max_amount * 100000 : params.row.max_amount;
         return (
-          <div style={{ cursor: 'pointer' }}>
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
+          >
             {amountToString(amount, params.row.has_range, minAmount, maxAmount) +
               (fav.mode === 'swap' ? 'K Sats' : '')}
           </div>
@@ -259,7 +328,11 @@ const BookTable = ({
     };
   }, []);
 
+<<<<<<< HEAD
   const currencyObj = useCallback((width: number) => {
+=======
+  const currencyCol = function (width: number) {
+>>>>>>> Fix exchange state
     return {
       field: 'currency',
       headerName: t('Currency'),
@@ -274,6 +347,7 @@ const BookTable = ({
               alignItems: 'center',
               flexWrap: 'wrap',
             }}
+            onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
           >
             {currencyCode}
             <div style={{ width: '0.3em' }} />
@@ -284,14 +358,21 @@ const BookTable = ({
     };
   }, []);
 
+<<<<<<< HEAD
   const paymentObj = useCallback((width: number) => {
+=======
+  const paymentCol = function (width: number) {
+>>>>>>> Fix exchange state
     return {
       field: 'payment_method',
       headerName: fav.mode === 'fiat' ? t('Payment Method') : t('Destination'),
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
-          <div style={{ cursor: 'pointer' }}>
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
+          >
             <PaymentStringAsIcons
               othersText={t('Others')}
               verbose={true}
@@ -304,7 +385,11 @@ const BookTable = ({
     };
   }, []);
 
+<<<<<<< HEAD
   const paymentSmallObj = useCallback((width: number) => {
+=======
+  const paymentSmallCol = function (width: number) {
+>>>>>>> Fix exchange state
     return {
       field: 'payment_method',
       headerName: t('Pay'),
@@ -317,6 +402,7 @@ const BookTable = ({
               left: '-4px',
               cursor: 'pointer',
             }}
+            onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
           >
             <PaymentStringAsIcons
               othersText={t('Others')}
@@ -329,7 +415,11 @@ const BookTable = ({
     };
   }, []);
 
+<<<<<<< HEAD
   const priceObj = useCallback((width: number) => {
+=======
+  const priceCol = function (width: number) {
+>>>>>>> Fix exchange state
     return {
       field: 'price',
       headerName: t('Price'),
@@ -338,13 +428,22 @@ const BookTable = ({
       renderCell: (params: any) => {
         const currencyCode = currencyDict[params.row.currency.toString()];
         return (
-          <div style={{ cursor: 'pointer' }}>{`${pn(params.row.price)} ${currencyCode}/BTC`}</div>
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
+          >
+            {`${pn(params.row.price)} ${currencyCode}/BTC`}
+          </div>
         );
       },
     };
   }, []);
 
+<<<<<<< HEAD
   const premiumObj = useCallback((width: number) => {
+=======
+  const premiumCol = function (width: number) {
+>>>>>>> Fix exchange state
     // coloring premium texts based on 4 params:
     // Hardcoded: a sell order at 0% is an outstanding premium
     // Hardcoded: a buy order at 10% is an outstanding premium
@@ -382,7 +481,10 @@ const BookTable = ({
             enterTouchDelay={0}
             title={pn(params.row.price) + ' ' + currencyCode + '/BTC'}
           >
-            <div style={{ cursor: 'pointer' }}>
+            <div
+              style={{ cursor: 'pointer' }}
+              onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
+            >
               <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
                 {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
               </Typography>
@@ -393,7 +495,11 @@ const BookTable = ({
     };
   }, []);
 
+<<<<<<< HEAD
   const timerObj = useCallback((width: number) => {
+=======
+  const timerCol = function (width: number) {
+>>>>>>> Fix exchange state
     return {
       field: 'escrow_duration',
       headerName: t('Timer'),
@@ -402,12 +508,23 @@ const BookTable = ({
       renderCell: (params: any) => {
         const hours = Math.round(params.row.escrow_duration / 3600);
         const minutes = Math.round((params.row.escrow_duration - hours * 3600) / 60);
-        return <div style={{ cursor: 'pointer' }}>{hours > 0 ? `${hours}h` : `${minutes}m`}</div>;
+        return (
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
+          >
+            {hours > 0 ? `${hours}h` : `${minutes}m`}
+          </div>
+        );
       },
     };
   }, []);
 
+<<<<<<< HEAD
   const expiryObj = useCallback((width: number) => {
+=======
+  const expiryCol = function (width: number) {
+>>>>>>> Fix exchange state
     return {
       field: 'expires_at',
       headerName: t('Expiry'),
@@ -420,7 +537,10 @@ const BookTable = ({
         const hours = Math.round(timeToExpiry / (3600 * 1000));
         const minutes = Math.round((timeToExpiry - hours * (3600 * 1000)) / 60000);
         return (
-          <Box sx={{ position: 'relative', display: 'inline-flex', left: '0.3em' }}>
+          <Box
+            sx={{ position: 'relative', display: 'inline-flex', left: '0.3em' }}
+            onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
+          >
             <CircularProgress
               value={percent}
               color={percent < 15 ? 'error' : percent < 30 ? 'warning' : 'success'}
@@ -450,7 +570,11 @@ const BookTable = ({
     };
   }, []);
 
+<<<<<<< HEAD
   const satoshisObj = useCallback((width: number) => {
+=======
+  const satoshisCol = function (width: number) {
+>>>>>>> Fix exchange state
     return {
       field: 'satoshis_now',
       headerName: t('Sats now'),
@@ -458,7 +582,10 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
-          <div style={{ cursor: 'pointer' }}>
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
+          >
             {params.row.satoshis_now > 1000000
               ? `${pn(Math.round(params.row.satoshis_now / 10000) / 100)} M`
               : `${pn(Math.round(params.row.satoshis_now / 1000))} K`}
@@ -468,14 +595,21 @@ const BookTable = ({
     };
   }, []);
 
+<<<<<<< HEAD
   const idObj = useCallback((width: number) => {
+=======
+  const idCol = function (width: number) {
+>>>>>>> Fix exchange state
     return {
       field: 'id',
       headerName: 'Order ID',
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
-          <div style={{ cursor: 'pointer' }}>
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
+          >
             <Typography variant='caption' color='text.secondary'>
               {`#${params.row.id}`}
             </Typography>
@@ -485,18 +619,28 @@ const BookTable = ({
     };
   }, []);
 
+<<<<<<< HEAD
   const bondObj = useCallback((width: number) => {
+=======
+  const bondCol = function (width: number) {
+>>>>>>> Fix exchange state
     return {
       field: 'bond_size',
       headerName: t('Bond'),
       type: 'number',
       width: width * fontSize,
       renderCell: (params: any) => {
-        return <div style={{ cursor: 'pointer' }}>{`${Number(params.row.bond_size)}%`}</div>;
+        return (
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => onOrderClicked(params.row.id, params.row.coordinatorShortAlias)}
+          >{`${Number(params.row.bond_size)}%`}</div>
+        );
       },
     };
   }, []);
 
+<<<<<<< HEAD
   const columnSpecs = useMemo(() => {
     return {
       amount: {
@@ -602,6 +746,119 @@ const BookTable = ({
           width: 4.8,
           object: idObj,
         },
+=======
+  const columnSpecs = {
+    amount: {
+      priority: 1,
+      order: 5,
+      normal: {
+        width: fav.mode === 'swap' ? 9.5 : 6.5,
+        object: amountCol,
+      },
+    },
+    currency: {
+      priority: 2,
+      order: 6,
+      normal: {
+        width: fav.mode === 'swap' ? 0 : 5.9,
+        object: currencyCol,
+      },
+    },
+    premium: {
+      priority: 3,
+      order: 12,
+      normal: {
+        width: 6,
+        object: premiumCol,
+      },
+    },
+    payment_method: {
+      priority: 4,
+      order: 7,
+      normal: {
+        width: 12.85,
+        object: paymentCol,
+      },
+      small: {
+        width: 4.4,
+        object: paymentSmallCol,
+      },
+    },
+    maker_nick: {
+      priority: 5,
+      order: 1,
+      normal: {
+        width: 17.14,
+        object: robotCol,
+      },
+      small: {
+        width: 4.1,
+        object: robotSmallCol,
+      },
+    },
+    coordinatorShortAlias: {
+      priority: 5,
+      order: 3,
+      normal: {
+        width: 4.1,
+        object: coordinatorCol,
+      },
+    },
+    price: {
+      priority: 6,
+      order: 11,
+      normal: {
+        width: 10,
+        object: priceCol,
+      },
+    },
+    expires_at: {
+      priority: 7,
+      order: 8,
+      normal: {
+        width: 5,
+        object: expiryCol,
+      },
+    },
+    escrow_duration: {
+      priority: 8,
+      order: 9,
+      normal: {
+        width: 4.8,
+        object: timerCol,
+      },
+    },
+    satoshis_now: {
+      priority: 9,
+      order: 10,
+      normal: {
+        width: 6,
+        object: satoshisCol,
+      },
+    },
+    type: {
+      priority: 10,
+      order: 2,
+      normal: {
+        width: fav.mode === 'swap' ? 7 : 4.3,
+        object: typeCol,
+      },
+    },
+    bond_size: {
+      priority: 11,
+      order: 11,
+      normal: {
+        width: 4.2,
+        object: bondCol,
+      },
+    },
+    id: {
+      priority: 12,
+      order: 13,
+      normal: {
+        width: 4.8,
+        object: idCol,
+>>>>>>> Fix exchange state
       },
     };
   }, []);
@@ -755,6 +1012,7 @@ const BookTable = ({
           rowHeight={3.714 * theme.typography.fontSize}
           headerHeight={3.25 * theme.typography.fontSize}
           rows={filteredOrders}
+          getRowId={(params: PublicOrder) => `${params.coordinatorShortAlias}/${params.id}`}
           loading={book.loading}
           columns={columns}
           columnVisibilityModel={columnVisibilityModel}
@@ -771,13 +1029,16 @@ const BookTable = ({
               paymentMethod: paymentMethods,
               setPaymentMethods,
             },
+            loadingOverlay: {
+              variant: 'determinate',
+              value: loadingProgress,
+            },
           }}
           paginationModel={paginationModel}
           pageSizeOptions={width < 22 ? [] : [0, defaultPageSize, defaultPageSize * 2, 50, 100]}
           onPaginationModelChange={(newPaginationModel) => {
             setPaginationModel(newPaginationModel);
           }}
-          onRowClick={(params: any) => onOrderClicked(params.row.id)}
         />
       </Paper>
     );
@@ -812,7 +1073,6 @@ const BookTable = ({
             onPaginationModelChange={(newPaginationModel) => {
               setPaginationModel(newPaginationModel);
             }}
-            onRowClick={(params: any) => onOrderClicked(params.row.id)}
           />
         </Paper>
       </Dialog>
