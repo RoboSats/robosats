@@ -204,9 +204,6 @@ class LNNode:
         # The preimage is a random hash of 256 bits entropy
         preimage = hashlib.sha256(secrets.token_bytes(nbytes=32)).digest()
 
-        # Its hash is used to generate the hold invoice
-        r_hash = hashlib.sha256(preimage).digest()
-
         request = noderpc.InvoiceRequest(
             description=description,
             amount_msat=num_satoshis * 1_000,
