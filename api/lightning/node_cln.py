@@ -196,7 +196,7 @@ class LNNode:
 
     @classmethod
     def gen_hold_invoice(
-        cls, num_satoshis, description, invoice_expiry, cltv_expiry_blocks
+        cls, num_satoshis, description, invoice_expiry, cltv_expiry_blocks, order_id , receiver_robot, time 
     ):
         """Generates hold invoice"""
 
@@ -210,7 +210,7 @@ class LNNode:
         request = noderpc.InvoiceRequest(
             description=description,
             amount_msat=num_satoshis * 1_000,
-            label="TODO", # TODO needs to be a unique string
+            label=str(order_id) + "_" + str(receiver_robot) + "_" + str(time),
             expiry=int(
                 invoice_expiry * 1.5
             ),  # actual expiry is padded by 50%, if tight, wrong client system clock will say invoice is expired.
