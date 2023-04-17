@@ -408,3 +408,11 @@ class LNNode:
             response.status == 1
         )   # CLN states: UNPAID = 0, PAID = 1, EXPIRED = 2, this is clns own invoice-lookup
             # so just a check for paid/unpaid/expired not hodl-invoice related states like ACCEPTED/CANCELED
+
+    @classmethod
+    def get_lnd_version(cls):
+        request = noderpc.GetinfoRequest()
+        response = cls.stub.Getinfo(request)
+
+        return response.version
+    
