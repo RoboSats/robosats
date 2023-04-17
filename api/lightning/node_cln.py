@@ -123,18 +123,24 @@ class LNNode:
 
         local_balance_sat = 0
         remote_balance_sat = 0
+        unsettled_local_balance = 0
+        unsettled_remote_balance = 0
         for peer in response.peers:
             for channel in peer.channels:
                 if channel.state == 2: # CHANNELD_NORMAL
                     local_balance_sat += channel.to_us_msat.msat // 1_000
                     remote_balance_sat += (channel.total_msat.msat-channel.to_us_msat.msat) // 1_000
+                for htlc in channel.htlcs:
+                    if htlc.direction == 0: #IN
+                        unsettled_local_balance += htlc.amount_msat // 1_000
+                    elif htlc.direction == 1: #OUT
+                        unsettled_remote_balance += htlc.amount_msat // 1_000
         
-        # TODO no idea what is meant by unsettled/pending balance here exactly
         return {
             "local_balance": local_balance_sat,
             "remote_balance": remote_balance_sat,
-            "unsettled_local_balance": 0,
-            "unsettled_remote_balance": 0,
+            "unsettled_local_balance": unsettled_local_balance,
+            "unsettled_remote_balance": unsettled_remote_balance,
         }
 
     @classmethod
