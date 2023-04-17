@@ -1,3 +1,4 @@
+import { Paper } from '@mui/material';
 import React, { Component } from 'react';
 
 interface ErrorBoundaryProps {
@@ -30,8 +31,8 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
   render() {
     if (this.state.hasError) {
       return (
-        <div>
-          <h1>Something went wrong. Restarting app in 10 seconds...</h1>
+        <div style={{ overflow: 'auto', height: '100%', width: '100%', background: 'white' }}>
+          <h2>Something is borked! Restarting app in 10 seconds...</h2>
           <p>
             <b>Error:</b> {this.state.error.name}
           </p>
