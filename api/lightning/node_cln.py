@@ -368,7 +368,6 @@ class LNNode:
             retry_for=timeout_seconds,
         )
 
-        #maybe use waitsendpay here?
         try: 
             response = cls.stub.Pay(request)
             
