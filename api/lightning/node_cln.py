@@ -2,7 +2,6 @@ import hashlib
 import os
 import secrets
 import time
-from base64 import b64decode
 from datetime import datetime, timedelta
 from celery import shared_task
 
@@ -13,8 +12,8 @@ from django.utils import timezone
 
 from . import node_pb2 as noderpc
 from . import node_pb2_grpc as nodestub
-from . import primitives_pb2 as primitivesrpc
-from . import primitives_pb2_grpc as primitivesstub
+# from . import primitives_pb2 as primitivesrpc
+# from . import primitives_pb2_grpc as primitivesstub
 
 #######
 # Works with CLN
