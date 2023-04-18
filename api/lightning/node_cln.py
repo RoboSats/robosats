@@ -411,7 +411,7 @@ class LNNode:
             # so just a check for paid/unpaid/expired not hodl-invoice related states like ACCEPTED/CANCELED
 
     @classmethod
-    def get_lnd_version(cls):
+    def get_cln_version(cls):
         request = noderpc.GetinfoRequest()
         response = cls.stub.Getinfo(request)
 
