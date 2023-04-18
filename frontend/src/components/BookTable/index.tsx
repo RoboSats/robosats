@@ -83,7 +83,8 @@ const BookTable = ({
   showNoResults = true,
   onOrderClicked = () => null,
 }: BookTableProps): JSX.Element => {
-  const { book, fetchFederationBook, fav, setFav, setFocusedCoordinator, setOpen, baseUrl } = useContext<UseAppStoreType>(AppContext);
+  const { book, fetchFederationBook, fav, setFav, setFocusedCoordinator, setOpen, baseUrl } =
+    useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -174,11 +175,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const robotObj = useCallback((width: number) => {
-=======
-  const robotCol = function (width: number) {
->>>>>>> Fix exchange state
     return {
       field: 'maker_nick',
       headerName: t('Robot'),
@@ -209,11 +206,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const robotSmallObj = useCallback((width: number) => {
-=======
-  const robotSmallCol = function (width: number) {
->>>>>>> Fix exchange state
     return {
       field: 'maker_nick',
       headerName: t('Robot'),
@@ -238,7 +231,7 @@ const BookTable = ({
         );
       },
     };
-  };
+  }, []);
 
   const onClickCoordinator = function (shortAlias: string) {
     setFocusedCoordinator(shortAlias);
@@ -247,7 +240,7 @@ const BookTable = ({
     });
   };
 
-  const coordinatorCol = function (width: number) {
+  const coordinatorObj = useCallback((width: number) => {
     return {
       field: 'coordinatorShortAlias',
       headerName: t('Host'),
@@ -275,11 +268,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const typeObj = useCallback((width: number) => {
-=======
-  const typeCol = function (width: number) {
->>>>>>> Fix exchange state
     return {
       field: 'type',
       headerName: t('Is'),
@@ -299,11 +288,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const amountObj = useCallback((width: number) => {
-=======
-  const amountCol = function (width: number) {
->>>>>>> Fix exchange state
     return {
       field: 'amount',
       headerName: t('Amount'),
@@ -328,11 +313,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const currencyObj = useCallback((width: number) => {
-=======
-  const currencyCol = function (width: number) {
->>>>>>> Fix exchange state
     return {
       field: 'currency',
       headerName: t('Currency'),
@@ -358,11 +339,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const paymentObj = useCallback((width: number) => {
-=======
-  const paymentCol = function (width: number) {
->>>>>>> Fix exchange state
     return {
       field: 'payment_method',
       headerName: fav.mode === 'fiat' ? t('Payment Method') : t('Destination'),
@@ -385,11 +362,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const paymentSmallObj = useCallback((width: number) => {
-=======
-  const paymentSmallCol = function (width: number) {
->>>>>>> Fix exchange state
     return {
       field: 'payment_method',
       headerName: t('Pay'),
@@ -415,11 +388,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const priceObj = useCallback((width: number) => {
-=======
-  const priceCol = function (width: number) {
->>>>>>> Fix exchange state
     return {
       field: 'price',
       headerName: t('Price'),
@@ -439,11 +408,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const premiumObj = useCallback((width: number) => {
-=======
-  const premiumCol = function (width: number) {
->>>>>>> Fix exchange state
     // coloring premium texts based on 4 params:
     // Hardcoded: a sell order at 0% is an outstanding premium
     // Hardcoded: a buy order at 10% is an outstanding premium
@@ -495,11 +460,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const timerObj = useCallback((width: number) => {
-=======
-  const timerCol = function (width: number) {
->>>>>>> Fix exchange state
     return {
       field: 'escrow_duration',
       headerName: t('Timer'),
@@ -520,11 +481,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const expiryObj = useCallback((width: number) => {
-=======
-  const expiryCol = function (width: number) {
->>>>>>> Fix exchange state
     return {
       field: 'expires_at',
       headerName: t('Expiry'),
@@ -570,11 +527,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const satoshisObj = useCallback((width: number) => {
-=======
-  const satoshisCol = function (width: number) {
->>>>>>> Fix exchange state
     return {
       field: 'satoshis_now',
       headerName: t('Sats now'),
@@ -595,11 +548,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const idObj = useCallback((width: number) => {
-=======
-  const idCol = function (width: number) {
->>>>>>> Fix exchange state
     return {
       field: 'id',
       headerName: 'Order ID',
@@ -619,11 +568,7 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const bondObj = useCallback((width: number) => {
-=======
-  const bondCol = function (width: number) {
->>>>>>> Fix exchange state
     return {
       field: 'bond_size',
       headerName: t('Bond'),
@@ -640,12 +585,11 @@ const BookTable = ({
     };
   }, []);
 
-<<<<<<< HEAD
   const columnSpecs = useMemo(() => {
     return {
       amount: {
         priority: 1,
-        order: 4,
+        order: 5,
         normal: {
           width: fav.mode === 'swap' ? 9.5 : 6.5,
           object: amountObj,
@@ -653,7 +597,7 @@ const BookTable = ({
       },
       currency: {
         priority: 2,
-        order: 5,
+        order: 6,
         normal: {
           width: fav.mode === 'swap' ? 0 : 5.9,
           object: currencyObj,
@@ -661,7 +605,7 @@ const BookTable = ({
       },
       premium: {
         priority: 3,
-        order: 11,
+        order: 12,
         normal: {
           width: 6,
           object: premiumObj,
@@ -669,7 +613,7 @@ const BookTable = ({
       },
       payment_method: {
         priority: 4,
-        order: 6,
+        order: 7,
         normal: {
           width: 12.85,
           object: paymentObj,
@@ -691,9 +635,17 @@ const BookTable = ({
           object: robotSmallObj,
         },
       },
+      coordinatorShortAlias: {
+        priority: 5,
+        order: 3,
+        normal: {
+          width: 4.1,
+          object: coordinatorObj,
+        },
+      },
       price: {
         priority: 6,
-        order: 10,
+        order: 11,
         normal: {
           width: 10,
           object: priceObj,
@@ -701,7 +653,7 @@ const BookTable = ({
       },
       expires_at: {
         priority: 7,
-        order: 7,
+        order: 8,
         normal: {
           width: 5,
           object: expiryObj,
@@ -709,7 +661,7 @@ const BookTable = ({
       },
       escrow_duration: {
         priority: 8,
-        order: 8,
+        order: 9,
         normal: {
           width: 4.8,
           object: timerObj,
@@ -717,7 +669,7 @@ const BookTable = ({
       },
       satoshis_now: {
         priority: 9,
-        order: 9,
+        order: 10,
         normal: {
           width: 6,
           object: satoshisObj,
@@ -733,7 +685,7 @@ const BookTable = ({
       },
       bond_size: {
         priority: 11,
-        order: 10,
+        order: 11,
         normal: {
           width: 4.2,
           object: bondObj,
@@ -741,124 +693,11 @@ const BookTable = ({
       },
       id: {
         priority: 12,
-        order: 12,
+        order: 13,
         normal: {
           width: 4.8,
           object: idObj,
         },
-=======
-  const columnSpecs = {
-    amount: {
-      priority: 1,
-      order: 5,
-      normal: {
-        width: fav.mode === 'swap' ? 9.5 : 6.5,
-        object: amountCol,
-      },
-    },
-    currency: {
-      priority: 2,
-      order: 6,
-      normal: {
-        width: fav.mode === 'swap' ? 0 : 5.9,
-        object: currencyCol,
-      },
-    },
-    premium: {
-      priority: 3,
-      order: 12,
-      normal: {
-        width: 6,
-        object: premiumCol,
-      },
-    },
-    payment_method: {
-      priority: 4,
-      order: 7,
-      normal: {
-        width: 12.85,
-        object: paymentCol,
-      },
-      small: {
-        width: 4.4,
-        object: paymentSmallCol,
-      },
-    },
-    maker_nick: {
-      priority: 5,
-      order: 1,
-      normal: {
-        width: 17.14,
-        object: robotCol,
-      },
-      small: {
-        width: 4.1,
-        object: robotSmallCol,
-      },
-    },
-    coordinatorShortAlias: {
-      priority: 5,
-      order: 3,
-      normal: {
-        width: 4.1,
-        object: coordinatorCol,
-      },
-    },
-    price: {
-      priority: 6,
-      order: 11,
-      normal: {
-        width: 10,
-        object: priceCol,
-      },
-    },
-    expires_at: {
-      priority: 7,
-      order: 8,
-      normal: {
-        width: 5,
-        object: expiryCol,
-      },
-    },
-    escrow_duration: {
-      priority: 8,
-      order: 9,
-      normal: {
-        width: 4.8,
-        object: timerCol,
-      },
-    },
-    satoshis_now: {
-      priority: 9,
-      order: 10,
-      normal: {
-        width: 6,
-        object: satoshisCol,
-      },
-    },
-    type: {
-      priority: 10,
-      order: 2,
-      normal: {
-        width: fav.mode === 'swap' ? 7 : 4.3,
-        object: typeCol,
-      },
-    },
-    bond_size: {
-      priority: 11,
-      order: 11,
-      normal: {
-        width: 4.2,
-        object: bondCol,
-      },
-    },
-    id: {
-      priority: 12,
-      order: 13,
-      normal: {
-        width: 4.8,
-        object: idCol,
->>>>>>> Fix exchange state
       },
     };
   }, []);

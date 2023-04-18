@@ -83,6 +83,7 @@ const FederationTable = ({
                 smooth={true}
                 flipHorizontally={true}
                 baseUrl={baseUrl}
+                small={true}
               />
             </Grid>
             <Grid item>

@@ -4,16 +4,12 @@ import { Avatar, Badge, Tooltip, useTheme } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import { apiClient } from '../../services/api';
 import placeholder from './placeholder.json';
-import { PatternSharp } from '@mui/icons-material';
 
 interface Props {
   nickname: string | undefined;
   smooth?: boolean;
-<<<<<<< HEAD
-  small?: boolean;
-=======
   coordinator?: boolean;
->>>>>>> Add federation table, exchange model and other UI elements of the federation layer (#379)
+  small?: boolean;
   flipHorizontally?: boolean;
   style?: object;
   imageStyle?: object;
@@ -67,7 +63,9 @@ const RobotAvatar: React.FC<Props> = ({
         setNicknameReady(true);
       } else {
         setNicknameReady(true);
-        apiClient.fileImageUrl(baseUrl, `${path}${nickname}${small ? '.small' : ''}.webp`).then(setAvatarSrc);
+        apiClient
+          .fileImageUrl(baseUrl, `${path}${nickname}${small ? '.small' : ''}.webp`)
+          .then(setAvatarSrc);
       }
     } else {
       setNicknameReady(false);

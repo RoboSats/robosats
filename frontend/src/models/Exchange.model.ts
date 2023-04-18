@@ -55,7 +55,7 @@ export const updateExchangeInfo = (federation: Federation) => {
       highestVersion = getHigherVer(highestVersion, coordinator.info.version);
     }
   });
-  info.last_day_nonkyc_btc_premium = weightedMean(premiums, volumes).toPrecision(3);
+  info.last_day_nonkyc_btc_premium = weightedMean(premiums, volumes);
   info.version = highestVersion;
   return info;
 };

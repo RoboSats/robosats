@@ -126,7 +126,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
             </ListItemIcon>
 
             <ListItemText
-              primary={`${exchange.info.last_day_nonkyc_btc_premium}%`}
+              primary={`${exchange.info.last_day_nonkyc_btc_premium.toPrecision(3)}%`}
               secondary={t('24h non-KYC bitcoin premium')}
             />
           </ListItem>

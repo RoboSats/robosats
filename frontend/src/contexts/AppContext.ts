@@ -13,7 +13,6 @@ import {
   Coordinator,
   Exchange,
   Order,
-  Version,
   PublicOrder,
   Limits,
   defaultExchange,
@@ -25,7 +24,7 @@ import { systemClient } from '../services/System';
 import { getClientVersion, getHost, tokenStrength } from '../utils';
 import { sha256 } from 'js-sha256';
 
-import defaultCoordinators from '../../static/federation.json';
+import defaultFederation from '../../static/federation.json';
 import { updateExchangeInfo } from '../models/Exchange.model';
 import { createTheme, Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
@@ -278,7 +277,7 @@ export const useAppStore = () => {
     if (window.NativeRobosats === undefined) {
       host = getHost();
     } else {
-      host = federation[0][settings.network].Clearnet;
+      host = federation[0][settings.network].Onion;
     }
     setBaseUrl(`http://${host}`);
 

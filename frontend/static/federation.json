@@ -69,7 +69,7 @@
       "Data Policy": "..."
     },
     "mainnet": {
-      "Onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+      "Onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
       "Clearnet": "http://127.0.0.1:12596"
     },
     "testnet": {

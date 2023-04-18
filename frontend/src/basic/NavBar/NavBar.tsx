@@ -17,7 +17,6 @@ import {
 import RobotAvatar from '../../components/RobotAvatar';
 import { AppContext, UseAppStoreType, closeAll } from '../../contexts/AppContext';
 
-
 const NavBar = (): JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
