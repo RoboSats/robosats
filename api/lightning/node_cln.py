@@ -21,13 +21,13 @@ from . import primitives_pb2_grpc as primitivesstub
 #######
 
 # Load the client's certificate and key
-with open(os.path.join(config("CLN_DIR"),'client.pem'), 'rb') as f:
+with open(os.path.join(config("CLN_DIR"), 'client.pem'), 'rb') as f:
     client_cert = f.read()
-with open(os.path.join(config("CLN_DIR"),'client-key.pem'), 'rb') as f:
+with open(os.path.join(config("CLN_DIR"), 'client-key.pem'), 'rb') as f:
     client_key = f.read()
 
 # Load the server's certificate
-with open(os.path.join(config("CLN_DIR"),'server.pem'), 'rb') as f:
+with open(os.path.join(config("CLN_DIR"), 'server.pem'), 'rb') as f:
     server_cert = f.read()
 
 
@@ -41,7 +41,8 @@ class LNNode:
     os.environ["GRPC_SSL_CIPHER_SUITES"] = "HIGH+ECDSA"
 
     # Create the SSL credentials object
-    creds = grpc.ssl_channel_credentials(root_certificates=server_cert, private_key=client_key, certificate_chain=client_cert)
+    creds = grpc.ssl_channel_credentials(
+        root_certificates=server_cert, private_key=client_key, certificate_chain=client_cert)
     # Create the gRPC channel using the SSL credentials
     channel = grpc.secure_channel(CLN_GRPC_HOST, creds)
 
@@ -98,13 +99,13 @@ class LNNode:
         confirmed_balance = 0
         total_balance = 0
         for utxo in response.outputs:
-                if not utxo.reserved:
-                    if utxo.status == 0: # UNCONFIRMED
-                        unconfirmed_balance += utxo.amount_msat.msat // 1_000
-                        total_balance += utxo.amount_msat.msat // 1_000
-                    elif utxo.status == 1: # CONFIRMED
-                        confirmed_balance += utxo.amount_msat.msat // 1_000
-                        total_balance += utxo.amount_msat.msat // 1_000
+            if not utxo.reserved:
+                if utxo.status == 0:  # UNCONFIRMED
+                    unconfirmed_balance += utxo.amount_msat.msat // 1_000
+                    total_balance += utxo.amount_msat.msat // 1_000
+                elif utxo.status == 1:  # CONFIRMED
+                    confirmed_balance += utxo.amount_msat.msat // 1_000
+                    total_balance += utxo.amount_msat.msat // 1_000
 
         return {
             "total_balance": total_balance,
@@ -128,13 +129,14 @@ class LNNode:
         unsettled_remote_balance = 0
         for peer in response.peers:
             for channel in peer.channels:
-                if channel.state == 2: # CHANNELD_NORMAL
+                if channel.state == 2:  # CHANNELD_NORMAL
                     local_balance_sat += channel.to_us_msat.msat // 1_000
-                    remote_balance_sat += (channel.total_msat.msat-channel.to_us_msat.msat) // 1_000
+                    remote_balance_sat += (channel.total_msat.msat -
+                                           channel.to_us_msat.msat) // 1_000
                 for htlc in channel.htlcs:
-                    if htlc.direction == 0: #IN
+                    if htlc.direction == 0:  # IN
                         unsettled_local_balance += htlc.amount_msat // 1_000
-                    elif htlc.direction == 1: #OUT
+                    elif htlc.direction == 1:  # OUT
                         unsettled_remote_balance += htlc.amount_msat // 1_000
 
         return {
@@ -152,7 +154,8 @@ class LNNode:
             return False
 
         request = noderpc.WithdrawRequest(
-            destination=onchainpayment.address,satoshi=int(onchainpayment.sent_satoshis),
+            destination=onchainpayment.address, satoshi=int(
+                onchainpayment.sent_satoshis),
             feerate=str(int(onchainpayment.mining_fee_rate)*1_000)+"perkb",
             minconf=int(not config("SPEND_UNCONFIRMED", default=False, cast=bool))
         )
@@ -182,7 +185,8 @@ class LNNode:
     @classmethod
     def cancel_return_hold_invoice(cls, payment_hash):
         """Cancels or returns a hold invoice"""
-        request = noderpc.HodlInvoiceCancelRequest(payment_hash=bytes.fromhex(payment_hash))
+        request = noderpc.HodlInvoiceCancelRequest(
+            payment_hash=bytes.fromhex(payment_hash))
         response = cls.stub.HodlInvoiceCancel(request)
 
         return response.state == 1  # True if state is CANCELED, false otherwise.
@@ -190,14 +194,15 @@ class LNNode:
     @classmethod
     def settle_hold_invoice(cls, preimage):
         """settles a hold invoice"""
-        request = noderpc.HodlInvoiceSettleRequest(payment_hash=hashlib.sha256(bytes.fromhex(preimage)).digest())
+        request = noderpc.HodlInvoiceSettleRequest(
+            payment_hash=hashlib.sha256(bytes.fromhex(preimage)).digest())
         response = cls.stub.HodlInvoiceSettle(request)
 
         return response.state == 2  # True if state is SETTLED, false otherwise.
 
     @classmethod
     def gen_hold_invoice(
-        cls, num_satoshis, description, invoice_expiry, cltv_expiry_blocks, order_id , receiver_robot, time
+        cls, num_satoshis, description, invoice_expiry, cltv_expiry_blocks, order_id, receiver_robot, time
     ):
         """Generates hold invoice"""
 
@@ -213,7 +218,7 @@ class LNNode:
                 invoice_expiry * 1.5
             ),  # actual expiry is padded by 50%, if tight, wrong client system clock will say invoice is expired.
             cltv=cltv_expiry_blocks,
-            preimage=preimage, # preimage is actually optional in cln, as cln would generate one by default
+            preimage=preimage,  # preimage is actually optional in cln, as cln would generate one by default
         )
         response = cls.stub.HodlInvoice(request)
 
@@ -372,19 +377,20 @@ class LNNode:
         try:
             response = cls.stub.Pay(request)
 
-            if response.status == 0: #COMPLETE
+            if response.status == 0:  # COMPLETE
                 lnpayment.status = LNPayment.Status.SUCCED
-                lnpayment.fee = float(response.amount_sent_msat - response.amount_msat) / 1000
+                lnpayment.fee = float(response.amount_sent_msat -
+                                      response.amount_msat) / 1000
                 lnpayment.preimage = response.payment_preimage
                 lnpayment.save()
                 return True, None
-            elif response.status == 1: #PENDING
+            elif response.status == 1:  # PENDING
                 failure_reason = str("PENDING")
                 lnpayment.failure_reason = failure_reason
                 lnpayment.status = LNPayment.Status.FLIGHT
                 lnpayment.save()
                 return False, failure_reason
-            else: # status == 2 FAILED
+            else:  # status == 2 FAILED
                 failure_reason = str("FAILED")
                 lnpayment.failure_reason = failure_reason
                 lnpayment.status = LNPayment.Status.FAILRO
@@ -393,11 +399,10 @@ class LNNode:
         except grpc._channel._InactiveRpcError as e:
             status_code = int(e.details().split('code: Some(')[1].split(')')[0])
             failure_reason = cls.payment_failure_context[status_code]
-            lnpayment.failure_reason = status_code # or failure_reason ?
+            lnpayment.failure_reason = status_code  # or failure_reason ?
             lnpayment.status = LNPayment.Status.FAILRO
             lnpayment.save()
             return False, failure_reason
-
 
     @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):
@@ -408,7 +413,7 @@ class LNNode:
         return (
             response.status == 1
         )   # CLN states: UNPAID = 0, PAID = 1, EXPIRED = 2, this is clns own invoice-lookup
-            # so just a check for paid/unpaid/expired not hodl-invoice related states like ACCEPTED/CANCELED
+        # so just a check for paid/unpaid/expired not hodl-invoice related states like ACCEPTED/CANCELED
 
     @classmethod
     def get_cln_version(cls):
@@ -435,14 +440,16 @@ class LNNode:
 
         # Default is 0ppm. Set by the user over API. Client's default is 1000 ppm.
         fee_limit_sat = int(
-            float(lnpayment.num_satoshis) * float(lnpayment.routing_budget_ppm) / 1000000
+            float(lnpayment.num_satoshis) *
+            float(lnpayment.routing_budget_ppm) / 1000000
         )
         timeout_seconds = int(config("PAYOUT_TIMEOUT_SECONDS"))
 
         request = noderpc.PayRequest(
             bolt11=lnpayment.invoice,
             maxfee=fee_limit_sat,
-            retry_for=timeout_seconds, #retry_for is not quite the same as a timeout. Pay can still take SIGNIFICANTLY longer to return if htlcs are stuck!
+            # retry_for is not quite the same as a timeout. Pay can still take SIGNIFICANTLY longer to return if htlcs are stuck!
+            retry_for=timeout_seconds,
             # allow_self_payment=True, No such thing in pay command and self_payments do not work with pay!
         )
 
@@ -473,7 +480,7 @@ class LNNode:
                 lnpayment.status = LNPayment.Status.FAILRO
                 lnpayment.last_routing_time = timezone.now()
                 lnpayment.routing_attempts += 1
-                lnpayment.failure_reason = -1 #no failure_reason in non-error pay response with stauts FAILED
+                lnpayment.failure_reason = -1  # no failure_reason in non-error pay response with stauts FAILED
                 lnpayment.in_flight = False
                 if lnpayment.routing_attempts > 2:
                     lnpayment.status = LNPayment.Status.EXPIRE
@@ -496,7 +503,8 @@ class LNNode:
             if response.status == 0:  # Status 2 'COMPLETE'
                 print(f"Order: {order.id} SUCCEEDED. Hash: {hash}")
                 lnpayment.status = LNPayment.Status.SUCCED
-                lnpayment.fee = float(response.amount_sent_msat.msat - response.amount_msat.msat) / 1000
+                lnpayment.fee = float(response.amount_sent_msat.msat -
+                                      response.amount_msat.msat) / 1000
                 lnpayment.preimage = response.payment_preimage
                 lnpayment.save()
                 order.status = Order.Status.SUC
@@ -514,7 +522,7 @@ class LNNode:
         except grpc._channel._InactiveRpcError as e:
             if "code: Some" in str(e):
                 status_code = int(e.details().split('code: Some(')[1].split(')')[0])
-                if status_code == 201: #Already paid with this hash using different amount or destination
+                if status_code == 201:  # Already paid with this hash using different amount or destination
                     # i don't think this can happen really, since we don't use the amount_msat in request and if you just try 'pay' 2x where the first time it succeeds you get the same non-error result the 2nd time.
                     # Listpays has some different fields as pay aswell, so not sure this makes sense
                     print(f"Order: {order.id} ALREADY PAID. Hash: {hash}.")
@@ -525,7 +533,8 @@ class LNNode:
 
                     for response in cls.stub.ListPays(request):
                         handle_response(response)
-                elif status_code == 203 or status_code == 205 or status_code == 206:  #Permanent failure at destination. or Unable to find a route. or Route too expensive.
+                # Permanent failure at destination. or Unable to find a route. or Route too expensive.
+                elif status_code == 203 or status_code == 205 or status_code == 206:
                     lnpayment.status = LNPayment.Status.FAILRO
                     lnpayment.last_routing_time = timezone.now()
                     lnpayment.routing_attempts += 1
@@ -548,7 +557,7 @@ class LNNode:
                         "succeded": False,
                         "context": f"payment failure reason: {cls.payment_failure_context[status_code]}",
                     }
-                elif status_code == 207:  #invoice expired
+                elif status_code == 207:  # invoice expired
                     print(f"Order: {order.id}. INVOICE EXPIRED. Hash: {hash}")
                     lnpayment.status = LNPayment.Status.EXPIRE
                     lnpayment.last_routing_time = timezone.now()
@@ -559,9 +568,10 @@ class LNNode:
                         seconds=order.t_to_expire(Order.Status.FAI)
                     )
                     order.save()
-                    results = {"succeded": False, "context": "The payout invoice has expired"}
+                    results = {"succeded": False,
+                               "context": "The payout invoice has expired"}
                     return results
-                else: #-1 and 210 (don't know when 210 happens exactly)
+                else:  # -1 and 210 (don't know when 210 happens exactly)
                     print(str(e))
             else:
                 print(str(e))
