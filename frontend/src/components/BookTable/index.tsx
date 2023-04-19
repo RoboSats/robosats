@@ -32,7 +32,7 @@ import RobotAvatar from '../RobotAvatar';
 
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 interface BookTableProps {
   orderList?: PublicOrder[];
@@ -63,7 +63,7 @@ const BookTable = ({
   showNoResults = true,
   onOrderClicked = () => null,
 }: BookTableProps): JSX.Element => {
-  const { book, fetchBook, fav, setFav, baseUrl } = useContext<AppContextProps>(AppContext);
+  const { book, fetchBook, fav, setFav, baseUrl } = useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
   const theme = useTheme();

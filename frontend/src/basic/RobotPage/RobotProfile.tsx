@@ -18,7 +18,7 @@ import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { Page } from '../NavBar';
 import { Slot, Robot } from '../../models';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 
@@ -53,7 +53,7 @@ const RobotProfile = ({
   width,
 }: RobotProfileProps): JSX.Element => {
   const { currentSlot, garage, setCurrentSlot, windowSize } =
-    useContext<AppContextProps>(AppContext);
+    useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();

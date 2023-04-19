@@ -1,8 +1,8 @@
-import React, { Suspense } from 'react';
+import React, { StrictMode, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import Main from './basic/Main';
-import { CssBaseline } from '@mui/material';
-import { AppContextProvider } from './contexts/AppContext';
+import { CssBaseline, ThemeProvider } from '@mui/material';
+import { AppContext, useAppStore } from './contexts/AppContext';
 import UnsafeAlert from './components/UnsafeAlert';
 import TorConnectionBadge from './components/TorConnection';
 
@@ -13,18 +13,23 @@ import { systemClient } from './services/System';
 import ErrorBoundary from './components/ErrorBoundary';
 
 const App = (): JSX.Element => {
+  const store = useAppStore();
   return (
-    <ErrorBoundary>
-      <Suspense fallback='loading'>
-        <I18nextProvider i18n={i18n}>
-          <AppContextProvider>
-            <CssBaseline />
-            {window.NativeRobosats === undefined ? <UnsafeAlert /> : <TorConnectionBadge />}
-            <Main />
-          </AppContextProvider>
-        </I18nextProvider>
-      </Suspense>
-    </ErrorBoundary>
+    <StrictMode>
+      <ErrorBoundary>
+        <Suspense fallback='loading'>
+          <I18nextProvider i18n={i18n}>
+            <AppContext.Provider value={store}>
+              <ThemeProvider theme={store.theme}>
+                <CssBaseline />
+                {window.NativeRobosats === undefined ? <UnsafeAlert /> : <TorConnectionBadge />}
+                <Main />
+              </ThemeProvider>
+            </AppContext.Provider>
+          </I18nextProvider>
+        </Suspense>
+      </ErrorBoundary>
+    </StrictMode>
   );
 };
 

@@ -8,7 +8,6 @@ import { systemClient } from '../../services/System';
 interface TokenInputProps {
   robot: Robot;
   editable?: boolean;
-  showDownload?: boolean;
   fullWidth?: boolean;
   loading?: boolean;
   setRobot: (state: Robot) => void;
@@ -42,16 +41,6 @@ const TokenInput = ({
     setShowCopied(false);
   }, [inputToken]);
 
-  const createJsonFile = () => {
-    return {
-      token: robot.token,
-      token_shannon_entropy: robot.shannonEntropy,
-      token_bit_entropy: robot.bitsEntropy,
-      public_key: robot.pubKey,
-      encrypted_private_key: robot.encPrivKey,
-    };
-  };
-
   if (loading) {
     return <LinearProgress sx={{ height: '0.8em' }} />;
   } else {
@@ -84,7 +73,9 @@ const TokenInput = ({
                   systemClient.copyToClipboard(inputToken);
                   setShowCopied(true);
                   setTimeout(() => setShowCopied(false), 1000);
-                  setRobot({ ...robot, copiedToken: true });
+                  setRobot((robot) => {
+                    return { ...robot, copiedToken: true };
+                  });
                 }}
               >
                 <ContentCopy sx={{ width: '1em', height: '1em' }} />

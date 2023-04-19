@@ -40,7 +40,7 @@ import { amountToString, computeSats, pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 interface MakerFormProps {
   disableRequest?: boolean;
@@ -64,7 +64,7 @@ const MakerForm = ({
   hasRobot = true,
 }: MakerFormProps): JSX.Element => {
   const { fav, setFav, limits, fetchLimits, info, maker, setMaker, setPage, baseUrl } =
-    useContext<AppContextProps>(AppContext);
+    useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
   const theme = useTheme();

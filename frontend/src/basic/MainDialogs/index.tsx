@@ -9,7 +9,7 @@ import {
   UpdateClientDialog,
 } from '../../components/Dialogs';
 import { pn } from '../../utils';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType, closeAll } from '../../contexts/AppContext';
 
 export interface OpenDialogs {
   more: boolean;
@@ -23,18 +23,8 @@ export interface OpenDialogs {
 }
 
 const MainDialogs = (): JSX.Element => {
-  const {
-    open,
-    setOpen,
-    info,
-    limits,
-    closeAll,
-    robot,
-    setRobot,
-    setPage,
-    setCurrentOrder,
-    baseUrl,
-  } = useContext<AppContextProps>(AppContext);
+  const { open, setOpen, info, limits, robot, setRobot, setPage, setCurrentOrder, baseUrl } =
+    useContext<UseAppStoreType>(AppContext);
 
   const [maxAmount, setMaxAmount] = useState<string>('...loading...');
 

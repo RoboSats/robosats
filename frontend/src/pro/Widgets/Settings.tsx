@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { AppContextProps, AppContext } from '../../contexts/AppContext';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { Settings } from '../../models';
 import { Paper } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
@@ -14,7 +14,7 @@ interface SettingsWidgetProps {
 
 const SettingsWidget = React.forwardRef(
   ({ style, className, onMouseDown, onMouseUp, onTouchEnd }: SettingsWidgetProps, ref) => {
-    const { settings } = useContext<AppContextProps>(AppContext);
+    const { settings } = useContext<UseAppStoreType>(AppContext);
     return React.useMemo(() => {
       return (
         <Paper

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 import MakerForm from '../../components/MakerForm';
 import { LimitList, Maker, Favorites } from '../../models';
@@ -15,7 +15,7 @@ interface MakerWidgetProps {
 
 const MakerWidget = React.forwardRef(
   ({ style, className, onMouseDown, onMouseUp, onTouchEnd }: MakerWidgetProps, ref) => {
-    const { maker, fav, limits } = useContext<AppContextProps>(AppContext);
+    const { maker, fav, limits } = useContext<UseAppStoreType>(AppContext);
     return React.useMemo(() => {
       return (
         <Paper

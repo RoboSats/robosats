@@ -26,7 +26,7 @@ import { amountToString, matchMedian, statusBadgeColor } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
 import { PaymentStringAsIcons } from '../../PaymentMethods';
 import getNivoScheme from '../NivoScheme';
-import { AppContextProps, AppContext } from '../../../contexts/AppContext';
+import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 
 interface DepthChartProps {
   maxWidth: number;
@@ -43,7 +43,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   elevation = 6,
   onOrderClicked = () => null,
 }) => {
-  const { book, fav, info, limits, baseUrl } = useContext<AppContextProps>(AppContext);
+  const { book, fav, info, limits, baseUrl } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
   const [enrichedOrders, setEnrichedOrders] = useState<Order[]>([]);

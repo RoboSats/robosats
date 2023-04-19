@@ -1,13 +1,10 @@
 import React, { useContext } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Grid, Paper, useTheme } from '@mui/material';
+import { Grid, Paper } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
-import { AppContextProps, AppContext } from '../../contexts/AppContext';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 const SettingsPage = (): JSX.Element => {
-  const { windowSize, navbarHeight } = useContext<AppContextProps>(AppContext);
-  const theme = useTheme();
-  const { t } = useTranslation();
+  const { windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
 
   return (

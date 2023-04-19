@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Box, CircularProgress, Tooltip } from '@mui/material';
 import { TorIcon } from './Icons';
 import { useTranslation } from 'react-i18next';
-import { AppContext, AppContextProps } from '../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../contexts/AppContext';
 
 interface TorIndicatorProps {
   color: 'inherit' | 'error' | 'warning' | 'success' | 'primary' | 'secondary' | 'info' | undefined;
@@ -55,7 +55,7 @@ const TorIndicator = ({
 };
 
 const TorConnectionBadge = (): JSX.Element => {
-  const { torStatus } = useContext<AppContextProps>(AppContext);
+  const { torStatus } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
 
   if (window?.NativeRobosats == null) {
