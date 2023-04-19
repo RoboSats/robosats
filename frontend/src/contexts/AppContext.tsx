@@ -23,7 +23,8 @@ import { checkVer, getHost, tokenStrength } from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
-import { useTheme } from '@mui/material';
+import { ThemeProvider, createTheme, Theme } from '@mui/material/styles';
+import i18n from '../i18n/Web';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -138,66 +139,37 @@ const closeAll = {
   profile: false,
 };
 
-// export const initialState = {
-//   federation: defaultFederation,
-//   setFederation: () => null,
-//   settings: new Settings(),
-//   setSettings: () => null,
-//   book: { orders: [], loading: true },
-//   setBook: () => null,
-//   fetchBook: () => null,
-//   limits: {
-//     list: [],
-//     loading: true,
-//   },
-//   setLimits:() => null,
-//   fetchLimits: ()=> null,
-//   maker: defaultMaker,
-//   setMaker: () => null,
-//   clearOrder: () => null,
-//   robot: new Robot(),
-//   setRobot: () => null,
-//   info: defaultExchange,
-//   setExchange: () => null,
-//   focusedCoordinator: 0,
-//   setFocusedCoordinator: () => null,
-//   baseUrl: '',
-//   setBaseUrl: () => null,
-//   fav: { type: null, currency: 0 },
-//   setFav: () => null,
-//   order: undefined,
-//   setOrder: () => null,
-//   badOrder: '',
-//   setBadOrder: () => null,
-//   setDelay: () => null,
-//   page: entryPage == '' ? 'robot' : entryPage,
-//   setPage: () => null,
-//   slideDirection: {
-//     in: undefined,
-//     out: undefined,
-//   },
-//   setSlideDirection: () => null,
-//   currentOrder: undefined,
-//   setCurrentOrder: () => null,
-//   navbarHeight: 2.5,
-//   closeAll,
-//   open: closeAll,
-//   setOpen: () => null,
-//   windowSize: getWindowSize(14),
-// }
+const initialSettings = new Settings();
+
+const makeTheme = function (settings: Settings) {
+  const theme: Theme = createTheme({
+    palette: {
+      mode: settings.mode,
+      background: {
+        default: settings.mode === 'dark' ? '#070707' : '#fff',
+      },
+    },
+    typography: { fontSize: settings.fontSize },
+  });
+
+  return theme;
+};
 
 export interface AppContextProviderProps {
   children: React.ReactNode;
-  settings: Settings;
-  setSettings: (state: Settings) => void;
 }
 
-export const AppContextProvider = ({
-  children,
-  settings,
-  setSettings,
-}: AppContextProviderProps): JSX.Element => {
-  const theme = useTheme();
+export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.Element => {
+  const [theme, setTheme] = useState<Theme>(makeTheme(initialSettings));
+  const [settings, setSettings] = useState<Settings>(initialSettings);
+
+  useEffect(() => {
+    setTheme(makeTheme(settings));
+  }, [settings.fontSize, settings.mode]);
+
+  useEffect(() => {
+    i18n.changeLanguage(settings.language);
+  }, []);
 
   // All app data structured
   const [torStatus, setTorStatus] = useState<TorStatus>('NOTINIT');
@@ -531,7 +503,7 @@ export const AppContextProvider = ({
         windowSize,
       }}
     >
-      {children}
+      <ThemeProvider theme={theme}>{children}</ThemeProvider>
     </AppContext.Provider>
   );
 };
