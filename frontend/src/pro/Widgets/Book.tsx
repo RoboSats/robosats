@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 import { Book, Favorites } from '../../models';
 import { Paper } from '@mui/material';
@@ -34,7 +34,7 @@ const BookWidget = React.forwardRef(
     }: BookWidgetProps,
     ref,
   ) => {
-    const { book, windowSize, fav } = useContext<AppContextProps>(AppContext);
+    const { book, windowSize, fav } = useContext<UseAppStoreType>(AppContext);
     return React.useMemo(() => {
       return (
         <Paper elevation={3} style={{ width: '100%', height: '100%' }}>

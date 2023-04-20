@@ -14,7 +14,7 @@ import RobotAvatar from '../components/RobotAvatar';
 
 import { useTranslation } from 'react-i18next';
 import Notifications from '../components/Notifications';
-import { AppContextProps, AppContext } from '../contexts/AppContext';
+import { UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
 
 const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
 
@@ -29,11 +29,10 @@ const Main = (): JSX.Element => {
     page,
     setPage,
     slideDirection,
-    closeAll,
     setOpen,
     windowSize,
     navbarHeight,
-  } = useContext<AppContextProps>(AppContext);
+  } = useContext<UseAppStoreType>(AppContext);
 
   return (
     <Router>
@@ -41,7 +40,11 @@ const Main = (): JSX.Element => {
         style={{ display: 'none' }}
         nickname={robot.nickname}
         baseUrl={baseUrl}
-        onLoad={() => setRobot({ ...robot, avatarLoaded: true })}
+        onLoad={() =>
+          setRobot((robot) => {
+            return { ...robot, avatarLoaded: true };
+          })
+        }
       />
       <Notifications
         order={order}

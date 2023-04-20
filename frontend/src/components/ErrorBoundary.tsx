@@ -12,6 +12,8 @@ interface ErrorBoundaryState {
 }
 
 export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  // In case the app crashes this component will restart it in 10 seconds
+  // It will also print an obnoxious error message (useful for end users to grab a screenshot and report)
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {

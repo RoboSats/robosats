@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppContextProps, AppContext } from '../../contexts/AppContext';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import {
   Grid,
   Paper,
@@ -35,7 +35,7 @@ interface SettingsFormProps {
 }
 
 const SettingsForm = ({ dense = false, showNetwork = false }: SettingsFormProps): JSX.Element => {
-  const { fav, setFav, settings, setSettings } = useContext<AppContextProps>(AppContext);
+  const { fav, setFav, settings, setSettings } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
   const fontSizes = [

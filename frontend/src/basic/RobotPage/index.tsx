@@ -13,18 +13,17 @@ import {
 import { useParams } from 'react-router-dom';
 
 import { Robot } from '../../models';
-import { apiClient } from '../../services/api';
 import Onboarding from './Onboarding';
 import Welcome from './Welcome';
 import RobotProfile from './RobotProfile';
 import Recovery from './Recovery';
 import { TorIcon } from '../../components/Icons';
 import { genKey } from '../../pgp';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 const RobotPage = (): JSX.Element => {
   const { robot, setRobot, setPage, setCurrentOrder, fetchRobot, torStatus, windowSize, baseUrl } =
-    useContext<AppContextProps>(AppContext);
+    useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const params = useParams();
   const refCode = params.refCode;
@@ -138,7 +137,7 @@ const RobotPage = (): JSX.Element => {
           <Onboarding
             setView={setView}
             robot={robot}
-            setRobot={() => null}
+            setRobot={setRobot}
             badRequest={badRequest}
             inputToken={inputToken}
             setInputToken={setInputToken}
@@ -152,7 +151,7 @@ const RobotPage = (): JSX.Element => {
           <RobotProfile
             setView={setView}
             robot={robot}
-            setRobot={() => null}
+            setRobot={setRobot}
             setCurrentOrder={setCurrentOrder}
             badRequest={badRequest}
             getGenerateRobot={getGenerateRobot}
@@ -170,7 +169,7 @@ const RobotPage = (): JSX.Element => {
           <Recovery
             setView={setView}
             robot={robot}
-            setRobot={() => null}
+            setRobot={setRobot}
             badRequest={badRequest}
             inputToken={inputToken}
             setInputToken={setInputToken}

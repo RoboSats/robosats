@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { systemClient } from '../../services/System';
 import ContentCopy from '@mui/icons-material/ContentCopy';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 interface Props {
   open: boolean;
@@ -24,7 +24,7 @@ interface Props {
 }
 
 const StoreTokenDialog = ({ open, onClose, onClickBack, onClickDone }: Props): JSX.Element => {
-  const { robot } = useContext<AppContextProps>(AppContext);
+  const { robot } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
 
   return (

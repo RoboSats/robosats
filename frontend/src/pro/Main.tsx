@@ -12,7 +12,7 @@ import {
 import ToolBar from '../pro/ToolBar';
 import LandingDialog from '../pro/LandingDialog';
 
-import { AppContext, AppContextProps } from '../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../contexts/AppContext';
 
 // To Do. Add dotted grid when layout is not frozen
 // ${freeze ?
@@ -71,7 +71,7 @@ const Main = (): JSX.Element => {
     windowSize,
     badOrder,
     setBadOrder,
-  } = useContext<AppContextProps>(AppContext);
+  } = useContext<UseAppStoreType>(AppContext);
 
   const theme = useTheme();
   const em: number = theme.typography.fontSize;

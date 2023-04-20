@@ -8,7 +8,7 @@ import { filterOrders } from '../../utils';
 import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
 
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 import { NoRobotDialog } from '../../components/Dialogs';
 
 const MakerPage = (): JSX.Element => {
@@ -24,7 +24,7 @@ const MakerPage = (): JSX.Element => {
     setPage,
     setOrder,
     setDelay,
-  } = useContext<AppContextProps>(AppContext);
+  } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
 

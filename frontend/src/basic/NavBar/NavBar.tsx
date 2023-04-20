@@ -15,7 +15,7 @@ import {
   MoreHoriz,
 } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType, closeAll } from '../../contexts/AppContext';
 
 interface NavBarProps {
   width: number;
@@ -31,10 +31,9 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
     setSlideDirection,
     open,
     setOpen,
-    closeAll,
     currentOrder,
     baseUrl,
-  } = useContext<AppContextProps>(AppContext);
+  } = useContext<UseAppStoreType>(AppContext);
 
   const theme = useTheme();
   const { t } = useTranslation();

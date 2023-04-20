@@ -7,7 +7,7 @@ import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
 
 import { apiClient } from '../../services/api';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 const OrderPage = (): JSX.Element => {
   const {
@@ -23,7 +23,7 @@ const OrderPage = (): JSX.Element => {
     setPage,
     baseUrl,
     navbarHeight,
-  } = useContext<AppContextProps>(AppContext);
+  } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams();

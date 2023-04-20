@@ -10,7 +10,7 @@ import BookTable from '../../components/BookTable';
 
 // Icons
 import { BarChart, FormatListBulleted } from '@mui/icons-material';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 const BookPage = (): JSX.Element => {
   const {
@@ -24,7 +24,7 @@ const BookPage = (): JSX.Element => {
     book,
     setDelay,
     setOrder,
-  } = useContext<AppContextProps>(AppContext);
+  } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'depth'>('list');

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme, styled, Grid, IconButton } from '@mui/material';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
-
+import { closeAll } from '../../contexts/AppContext';
 import { OpenDialogs } from '../MainDialogs';
 
 import { BubbleChart, Info, People, PriceChange, School } from '@mui/icons-material';
@@ -22,11 +22,10 @@ const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
 interface MoreTooltipProps {
   open: OpenDialogs;
   setOpen: (state: OpenDialogs) => void;
-  closeAll: OpenDialogs;
   children: JSX.Element;
 }
 
-const MoreTooltip = ({ open, setOpen, closeAll, children }: MoreTooltipProps): JSX.Element => {
+const MoreTooltip = ({ open, setOpen, children }: MoreTooltipProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   return (

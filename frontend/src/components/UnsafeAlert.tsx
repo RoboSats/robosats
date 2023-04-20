@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { AppContext, AppContextProps } from '../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../contexts/AppContext';
 import { useTranslation, Trans } from 'react-i18next';
 import { Paper, Alert, AlertTitle, Button, Link } from '@mui/material';
 import { getHost } from '../utils';
 
 const UnsafeAlert = (): JSX.Element => {
-  const { windowSize } = useContext<AppContextProps>(AppContext);
+  const { windowSize } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const [show, setShow] = useState<boolean>(true);
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import { Page } from '../basic/NavBar';
 import { OpenDialogs } from '../basic/MainDialogs';
 
@@ -23,7 +23,8 @@ import { checkVer, getHost, tokenStrength } from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
-import { useTheme } from '@mui/material';
+import { createTheme, Theme } from '@mui/material/styles';
+import i18n from '../i18n/Web';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -72,61 +73,10 @@ export interface fetchRobotProps {
 
 export type TorStatus = 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
 
-export interface AppContextProps {
-  torStatus: TorStatus;
-  federation: Coordinator[];
-  setFederation: (state: Coordinator[]) => void;
-  settings: Settings;
-  setSettings: (state: Settings) => void;
-  book: Book;
-  info: Info;
-  garage: Garage;
-  setGarage: (state: Garage) => void;
-  currentSlot: number;
-  setCurrentSlot: (state: number) => void;
-  setBook: (state: Book) => void;
-  fetchBook: () => void;
-  limits: { list: LimitList; loading: boolean };
-  setLimits: (state: { list: LimitList; loading: boolean }) => void;
-  fetchLimits: () => void;
-  maker: Maker;
-  setMaker: (state: Maker) => void;
-  clearOrder: () => void;
-  robot: Robot;
-  setRobot: (state: Robot) => void;
-  focusedCoordinator: number;
-  setFocusedCoordinator: (state: number) => void;
-  baseUrl: string;
-  setBaseUrl: (state: string) => void;
-  fav: Favorites;
-  setFav: (state: Favorites) => void;
-  order: Order | undefined;
-  setOrder: (state: Order | undefined) => void;
-  badOrder: string;
-  setBadOrder: (state: string | undefined) => void;
-  setDelay: (state: number) => void;
-  page: Page;
-  setPage: (state: Page) => void;
-  slideDirection: SlideDirection;
-  setSlideDirection: (state: SlideDirection) => void;
-  currentOrder: number | undefined;
-  setCurrentOrder: (state: number) => void;
-  navbarHeight: number;
-  closeAll: OpenDialogs;
-  open: OpenDialogs;
-  setOpen: (state: OpenDialogs) => void;
-  windowSize: { width: number; height: number };
-  clientVersion: {
-    semver: Version;
-    short: string;
-    long: string;
-  };
-}
-
 const entryPage: Page | '' =
   window.NativeRobosats === undefined ? window.location.pathname.split('/')[1] : '';
 
-const closeAll = {
+export const closeAll = {
   more: false,
   learn: false,
   community: false,
@@ -138,66 +88,40 @@ const closeAll = {
   profile: false,
 };
 
-// export const initialState = {
-//   federation: defaultFederation,
-//   setFederation: () => null,
-//   settings: new Settings(),
-//   setSettings: () => null,
-//   book: { orders: [], loading: true },
-//   setBook: () => null,
-//   fetchBook: () => null,
-//   limits: {
-//     list: [],
-//     loading: true,
-//   },
-//   setLimits:() => null,
-//   fetchLimits: ()=> null,
-//   maker: defaultMaker,
-//   setMaker: () => null,
-//   clearOrder: () => null,
-//   robot: new Robot(),
-//   setRobot: () => null,
-//   info: defaultExchange,
-//   setExchange: () => null,
-//   focusedCoordinator: 0,
-//   setFocusedCoordinator: () => null,
-//   baseUrl: '',
-//   setBaseUrl: () => null,
-//   fav: { type: null, currency: 0 },
-//   setFav: () => null,
-//   order: undefined,
-//   setOrder: () => null,
-//   badOrder: '',
-//   setBadOrder: () => null,
-//   setDelay: () => null,
-//   page: entryPage == '' ? 'robot' : entryPage,
-//   setPage: () => null,
-//   slideDirection: {
-//     in: undefined,
-//     out: undefined,
-//   },
-//   setSlideDirection: () => null,
-//   currentOrder: undefined,
-//   setCurrentOrder: () => null,
-//   navbarHeight: 2.5,
-//   closeAll,
-//   open: closeAll,
-//   setOpen: () => null,
-//   windowSize: getWindowSize(14),
-// }
+const makeTheme = function (settings: Settings) {
+  const theme: Theme = createTheme({
+    palette: {
+      mode: settings.mode,
+      background: {
+        default: settings.mode === 'dark' ? '#070707' : '#fff',
+      },
+    },
+    typography: { fontSize: settings.fontSize },
+  });
 
-export interface AppContextProviderProps {
-  children: React.ReactNode;
-  settings: Settings;
-  setSettings: (state: Settings) => void;
-}
+  return theme;
+};
 
-export const AppContextProvider = ({
-  children,
-  settings,
-  setSettings,
-}: AppContextProviderProps): JSX.Element => {
-  const theme = useTheme();
+const initialSettings = new Settings();
+const initialTheme = makeTheme(initialSettings);
+const initialGarage = new Garage();
+const initialSlot = initialGarage.slots.length - 1;
+const initialRobot = new Robot(initialGarage.slots[initialSlot].robot);
+
+export const useAppStore = () => {
+  // State provided right at the top level of the app. A chaotic bucket of everything.
+  // Contains app-wide state and functions. Triggers re-renders on the full tree often.
+
+  const [theme, setTheme] = useState<Theme>(initialTheme);
+  const [settings, setSettings] = useState<Settings>(initialSettings);
+
+  useEffect(() => {
+    setTheme(makeTheme(settings));
+  }, [settings.fontSize, settings.mode]);
+
+  useEffect(() => {
+    i18n.changeLanguage(settings.language);
+  }, []);
 
   // All app data structured
   const [torStatus, setTorStatus] = useState<TorStatus>('NOTINIT');
@@ -206,13 +130,9 @@ export const AppContextProvider = ({
     list: [],
     loading: true,
   });
-  const [garage, setGarage] = useState<Garage>(() => {
-    const initialState = { setGarage };
-    const newGarage = new Garage(initialState);
-    return newGarage;
-  });
-  const [currentSlot, setCurrentSlot] = useState<number>(garage.slots.length - 1);
-  const [robot, setRobot] = useState<Robot>(new Robot(garage.slots[currentSlot].robot));
+  const [garage, setGarage] = useState<Garage>(initialGarage);
+  const [currentSlot, setCurrentSlot] = useState<number>(initialSlot);
+  const [robot, setRobot] = useState<Robot>(initialRobot);
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
@@ -224,8 +144,6 @@ export const AppContextProvider = ({
   const [order, setOrder] = useState<Order | undefined>(undefined);
   const [badOrder, setBadOrder] = useState<string | undefined>(undefined);
 
-  const entryPage: Page | '' =
-    window.NativeRobosats === undefined ? window.location.pathname.split('/')[1] : '';
   const [page, setPage] = useState<Page>(entryPage == '' ? 'robot' : entryPage);
   const [slideDirection, setSlideDirection] = useState<SlideDirection>({
     in: undefined,
@@ -234,16 +152,6 @@ export const AppContextProvider = ({
   const [currentOrder, setCurrentOrder] = useState<number | undefined>(undefined);
 
   const navbarHeight = 2.5;
-  const closeAll = {
-    more: false,
-    learn: false,
-    community: false,
-    info: false,
-    coordinator: false,
-    stats: false,
-    update: false,
-    profile: false,
-  };
   const [open, setOpen] = useState<OpenDialogs>(closeAll);
 
   const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(
@@ -252,7 +160,7 @@ export const AppContextProvider = ({
 
   useEffect(() => {
     window.addEventListener('torStatus', (event) => {
-      // UX improv: delay the "Conencted" status by 10 secs to avoid long waits for first requests
+      // Trick to improve UX on Android webview: delay the "Connected to TOR" status by 5 secs to avoid long waits on the first request.
       setTimeout(() => setTorStatus(event?.detail), event?.detail === '"Done"' ? 5000 : 0);
     });
   }, []);
@@ -486,54 +394,50 @@ export const AppContextProvider = ({
     }
   }, [open.profile, baseUrl]);
 
-  return (
-    <AppContext.Provider
-      value={{
-        torStatus,
-        settings,
-        setSettings,
-        book,
-        setBook,
-        garage,
-        setGarage,
-        currentSlot,
-        setCurrentSlot,
-        fetchBook,
-        limits,
-        info,
-        setLimits,
-        fetchLimits,
-        maker,
-        setMaker,
-        clearOrder,
-        robot,
-        setRobot,
-        fetchRobot,
-        baseUrl,
-        setBaseUrl,
-        fav,
-        setFav,
-        order,
-        setOrder,
-        badOrder,
-        setBadOrder,
-        setDelay,
-        page,
-        setPage,
-        slideDirection,
-        setSlideDirection,
-        currentOrder,
-        setCurrentOrder,
-        navbarHeight,
-        closeAll,
-        open,
-        setOpen,
-        windowSize,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
-  );
+  return {
+    theme,
+    torStatus,
+    settings,
+    setSettings,
+    book,
+    setBook,
+    garage,
+    setGarage,
+    currentSlot,
+    setCurrentSlot,
+    fetchBook,
+    limits,
+    info,
+    setLimits,
+    fetchLimits,
+    maker,
+    setMaker,
+    clearOrder,
+    robot,
+    setRobot,
+    fetchRobot,
+    baseUrl,
+    setBaseUrl,
+    fav,
+    setFav,
+    order,
+    setOrder,
+    badOrder,
+    setBadOrder,
+    setDelay,
+    page,
+    setPage,
+    slideDirection,
+    setSlideDirection,
+    currentOrder,
+    setCurrentOrder,
+    navbarHeight,
+    open,
+    setOpen,
+    windowSize,
+  };
 };
 
-export const AppContext = React.createContext();
+export type UseAppStoreType = ReturnType<typeof useAppStore>;
+
+export const AppContext = createContext<UseAppStoreType | null>(null);

@@ -22,7 +22,6 @@ import { apiClient } from '../../services/api';
 
 import { Order } from '../../models';
 import { ConfirmationDialog } from '../Dialogs';
-import { Page } from '../../basic/NavBar';
 import { LoadingButton } from '@mui/lab';
 
 interface TakeButtonProps {
