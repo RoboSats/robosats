@@ -2,14 +2,14 @@ import { pn } from './prettyNumbers';
 
 interface computeSatsProps {
   amount: number;
-  premium: number;
+  premium?: number;
   fee: number;
   routingBudget?: number;
   rate?: number;
 }
 const computeSats = ({
   amount,
-  premium,
+  premium = 0,
   fee,
   routingBudget = 0,
   rate = 1,

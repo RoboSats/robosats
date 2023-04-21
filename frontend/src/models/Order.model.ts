@@ -26,7 +26,7 @@ export interface Order {
   expires_at: Date;
   type: number;
   currency: number;
-  amount: string;
+  amount: number;
   has_range: boolean;
   min_amount: string;
   max_amount: string;
@@ -46,6 +46,7 @@ export interface Order {
   maker_status: 'Active' | 'Seen recently' | 'Inactive';
   taker_status: 'Active' | 'Seen recently' | 'Inactive';
   price_now: number | undefined;
+  satoshis_now: number;
   premium_now: number | undefined;
   premium_percentile: number;
   num_similar_orders: number;
