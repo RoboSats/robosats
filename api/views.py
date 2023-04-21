@@ -267,11 +267,14 @@ class OrderView(viewsets.ViewSet):
 
         # 3.b) Non participants can view details (but only if PUB)
         if not data["is_participant"] and order.status == Order.Status.PUB:
+            data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
+            data["satoshis_now"] = Logics.satoshis_now(order)
             return Response(data, status=status.HTTP_200_OK)
 
         # 4) If order is between public and WF2
         if order.status >= Order.Status.PUB and order.status < Order.Status.WF2:
             data["price_now"], data["premium_now"] = Logics.price_and_premium_now(order)
+            data["satoshis_now"] = Logics.satoshis_now(order)
 
             # 4. a) If maker and Public/Paused, add premium percentile
             # num similar orders, and maker information to enable telegram notifications.
@@ -294,6 +297,7 @@ class OrderView(viewsets.ViewSet):
         data["is_fiat_sent"] = order.is_fiat_sent
         data["is_disputed"] = order.is_disputed
         data["ur_nick"] = request.user.username
+        data["satoshis_now"] = order.last_satoshis
 
         # Add whether hold invoices are LOCKED (ACCEPTED)
         # Is there a maker bond? If so, True if locked, False otherwise

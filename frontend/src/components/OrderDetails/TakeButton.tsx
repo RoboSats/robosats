@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -13,6 +13,7 @@ import {
   TextField,
   useTheme,
   Typography,
+  FormHelperText,
 } from '@mui/material';
 
 import Countdown from 'react-countdown';
@@ -23,12 +24,14 @@ import { apiClient } from '../../services/api';
 import { Order } from '../../models';
 import { ConfirmationDialog } from '../Dialogs';
 import { LoadingButton } from '@mui/lab';
+import { computeSats, pn } from '../../utils';
 
 interface TakeButtonProps {
   order: Order;
   setOrder: (state: Order) => void;
   baseUrl: string;
   hasRobot: boolean;
+  info: Info;
 }
 
 interface OpenDialogsProps {
@@ -37,7 +40,7 @@ interface OpenDialogsProps {
 }
 const closeAll = { inactiveMaker: false, confirmation: false };
 
-const TakeButton = ({ order, setOrder, baseUrl, hasRobot }: TakeButtonProps): JSX.Element => {
+const TakeButton = ({ order, setOrder, baseUrl, hasRobot, info }: TakeButtonProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -45,6 +48,25 @@ const TakeButton = ({ order, setOrder, baseUrl, hasRobot }: TakeButtonProps): JS
   const [badRequest, setBadRequest] = useState<string>('');
   const [loadingTake, setLoadingTake] = useState<boolean>(false);
   const [open, setOpen] = useState<OpenDialogsProps>(closeAll);
+  const [satoshis, setSatoshis] = useState<string>('');
+
+  const satoshisNow = () => {
+    const tradeFee = info.taker_fee;
+    const defaultRoutingBudget = 0.001;
+    const btc_now = order.satoshis_now / 100000000;
+    const rate = order.amount ? order.amount / btc_now : order.max_amount / btc_now;
+    const satoshis = computeSats({
+      amount: Number(takeAmount),
+      routingBudget: order.is_buyer ? defaultRoutingBudget : 0,
+      fee: tradeFee,
+      rate: rate,
+    });
+    return satoshis;
+  };
+
+  useEffect(() => {
+    setSatoshis(satoshisNow());
+  }, [order.satoshis_now, takeAmount]);
 
   const currencyCode: string = order.currency == 1000 ? 'Sats' : currencies[`${order.currency}`];
 
@@ -139,74 +161,91 @@ const TakeButton = ({ order, setOrder, baseUrl, hasRobot }: TakeButtonProps): JS
             },
           }}
         >
-          <Grid container direction='row' alignItems='flex-start' justifyContent='space-evenly'>
-            <Grid item sx={{ width: '12em' }}>
-              <Tooltip
-                placement='top'
-                enterTouchDelay={500}
-                enterDelay={700}
-                enterNextDelay={2000}
-                title={t('Enter amount of fiat to exchange for bitcoin')}
-              >
-                <TextField
-                  error={takeAmount === '' ? false : invalidTakeAmount}
-                  helperText={amountHelperText}
-                  label={t('Amount {{currencyCode}}', { currencyCode })}
-                  size='small'
-                  type='number'
-                  required={true}
-                  value={takeAmount}
-                  inputProps={{
-                    min: order.min_amount,
-                    max: order.max_amount,
-                    style: { textAlign: 'center' },
-                  }}
-                  onChange={handleTakeAmountChange}
-                />
-              </Tooltip>
-            </Grid>
-            <Grid item>
-              <div
-                style={{
-                  display: invalidTakeAmount ? '' : 'none',
-                }}
-              >
+          <Grid container direction='column' alignItems='center'>
+            <Grid
+              item
+              container
+              direction='row'
+              alignItems='flex-start'
+              justifyContent='space-evenly'
+            >
+              <Grid item sx={{ width: '12em' }}>
                 <Tooltip
                   placement='top'
-                  enterTouchDelay={0}
-                  enterDelay={500}
-                  enterNextDelay={1200}
-                  title={t('You must specify an amount first')}
+                  enterTouchDelay={500}
+                  enterDelay={700}
+                  enterNextDelay={2000}
+                  title={t('Enter amount of fiat to exchange for bitcoin')}
                 >
-                  <div>
-                    <LoadingButton
-                      loading={loadingTake}
-                      sx={{ height: '2.8em' }}
-                      variant='outlined'
-                      color='primary'
-                      disabled={true}
-                    >
-                      {t('Take Order')}
-                    </LoadingButton>
-                  </div>
+                  <TextField
+                    error={takeAmount === '' ? false : invalidTakeAmount}
+                    helperText={amountHelperText}
+                    label={t('Amount {{currencyCode}}', { currencyCode })}
+                    size='small'
+                    type='number'
+                    required={true}
+                    value={takeAmount}
+                    inputProps={{
+                      min: order.min_amount,
+                      max: order.max_amount,
+                      style: { textAlign: 'center' },
+                    }}
+                    onChange={handleTakeAmountChange}
+                  />
                 </Tooltip>
-              </div>
-              <div
-                style={{
-                  display: invalidTakeAmount ? 'none' : '',
-                }}
-              >
-                <LoadingButton
-                  loading={loadingTake}
-                  sx={{ height: '2.8em' }}
-                  variant='outlined'
-                  color='primary'
-                  onClick={onTakeOrderClicked}
+              </Grid>
+              <Grid item>
+                <div
+                  style={{
+                    display: invalidTakeAmount ? '' : 'none',
+                  }}
                 >
-                  {t('Take Order')}
-                </LoadingButton>
-              </div>
+                  <Tooltip
+                    placement='top'
+                    enterTouchDelay={0}
+                    enterDelay={500}
+                    enterNextDelay={1200}
+                    title={t('You must specify an amount first')}
+                  >
+                    <div>
+                      <LoadingButton
+                        loading={loadingTake}
+                        sx={{ height: '2.8em' }}
+                        variant='outlined'
+                        color='primary'
+                        disabled={true}
+                      >
+                        {t('Take Order')}
+                      </LoadingButton>
+                    </div>
+                  </Tooltip>
+                </div>
+                <div
+                  style={{
+                    display: invalidTakeAmount ? 'none' : '',
+                  }}
+                >
+                  <LoadingButton
+                    loading={loadingTake}
+                    sx={{ height: '2.8em' }}
+                    variant='outlined'
+                    color='primary'
+                    onClick={onTakeOrderClicked}
+                  >
+                    {t('Take Order')}
+                  </LoadingButton>
+                </div>
+              </Grid>
             </Grid>
+            {satoshis != '0' && satoshis != '' && !invalidTakeAmount ? (
+              <Grid item>
+                <FormHelperText sx={{ position: 'relative', top: '0.15em' }}>
+                  {order.type === 1
+                    ? t('You will receive {{satoshis}} Sats (Approx)', { satoshis })
+                    : t('You will send {{satoshis}} Sats (Approx)', { satoshis })}
+                </FormHelperText>
+              </Grid>
+            ) : null}
           </Grid>
         </Box>
       );

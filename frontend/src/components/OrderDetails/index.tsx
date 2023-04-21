@@ -57,7 +57,7 @@ const OrderDetails = ({
   const theme = useTheme();
 
   const currencyCode: string = currencies[`${order.currency}`];
-  const [showSwapDetails, setShowSwapDetails] = useState<boolean>(false);
+  const [showSatsDetails, setShowSatsDetails] = useState<boolean>(false);
 
   const amountString = useMemo(() => {
     // precision to 8 decimal if currency is BTC otherwise 4 decimals
@@ -71,11 +71,13 @@ const OrderDetails = ({
         ) + ' Sats'
       );
     } else {
-      return amountToString(
-        order.amount,
-        order.amount ? false : order.has_range,
-        order.min_amount,
-        order.max_amount,
+      return (
+        amountToString(
+          order.amount,
+          order.amount ? false : order.has_range,
+          order.min_amount,
+          order.max_amount,
+        ) + ` ${currencyCode}`
       );
     }
   }, [order.currency, order.amount, order.min_amount, order.max_amount, order.has_range]);
@@ -141,70 +143,76 @@ const OrderDetails = ({
     }
   };
 
-  const swap = useMemo(() => {
+  const satsSummary = useMemo(() => {
     let send: string = '';
     let receive: string = '';
-    let swapSats: string = '';
+    let sats: string = '';
 
-    const isSwapIn = (order.type == 0 && order.is_maker) || (order.type == 1 && !order.is_maker);
+    const isBuyer = (order.type == 0 && order.is_maker) || (order.type == 1 && !order.is_maker);
     const tradeFee = order.is_maker ? info.maker_fee : info.taker_fee;
     const defaultRoutingBudget = 0.001;
-    if (order.currency === 1000) {
-      if (isSwapIn) {
-        if (order.amount) {
-          swapSats = computeSats({
-            amount: order.amount,
-            premium: order.premium,
-            fee: -tradeFee,
-            routingBudget: defaultRoutingBudget,
-          });
-        } else {
-          const swapMin = computeSats({
-            amount: Number(order.min_amount),
-            premium: order.premium,
-            fee: -tradeFee,
-            routingBudget: defaultRoutingBudget,
-          });
-          const swapMax = computeSats({
-            amount: Number(order.max_amount),
-            premium: order.premium,
-            fee: -tradeFee,
-            routingBudget: defaultRoutingBudget,
-          });
-          swapSats = `${swapMin}-${swapMax}`;
-        }
-        send = t('You send via {{method}} {{amount}}', {
-          amount: amountString,
-          method: order.payment_method,
-        });
-        receive = t('You receive via Lightning {{amount}} Sats (routing budget may vary)', {
-          amount: swapSats,
+    const btc_now = order.satoshis_now / 100000000;
+    const rate = order.amount ? order.amount / btc_now : order.max_amount / btc_now;
+
+    if (isBuyer) {
+      if (order.amount) {
+        sats = computeSats({
+          amount: order.amount,
+          fee: -tradeFee,
+          routingBudget: defaultRoutingBudget,
+          rate: rate,
         });
       } else {
-        if (order.amount) {
-          swapSats = computeSats({ amount: order.amount, premium: order.premium, fee: tradeFee });
-        } else {
-          const swapMin = computeSats({
-            amount: order.min_amount,
-            premium: order.premium,
-            fee: tradeFee,
-          });
-          const swapMax = computeSats({
-            amount: order.max_amount,
-            premium: order.premium,
-            fee: tradeFee,
-          });
-          swapSats = `${swapMin}-${swapMax}`;
-        }
-        send = t('You send via Lightning {{amount}} Sats', { amount: swapSats });
-        receive = t('You receive via {{method}} {{amount}}', {
-          amount: amountString,
-          method: order.payment_method,
+        const min = computeSats({
+          amount: Number(order.min_amount),
+          fee: -tradeFee,
+          routingBudget: defaultRoutingBudget,
+          rate: rate,
         });
+        const max = computeSats({
+          amount: Number(order.max_amount),
+          fee: -tradeFee,
+          routingBudget: defaultRoutingBudget,
+          rate: rate,
+        });
+        sats = `${min}-${max}`;
       }
+      send = t('You send via {{method}} {{amount}}', {
+        amount: amountString,
+        method: order.payment_method,
+        currencyCode,
+      });
+      receive = t('You receive via Lightning {{amount}} Sats (Approx)', {
+        amount: sats,
+      });
+    } else {
+      if (order.amount) {
+        sats = computeSats({
+          amount: order.amount,
+          fee: tradeFee,
+          rate: rate,
+        });
+      } else {
+        const min = computeSats({
+          amount: order.min_amount,
+          fee: tradeFee,
+          rate: rate,
+        });
+        const max = computeSats({
+          amount: order.max_amount,
+          fee: tradeFee,
+          rate: rate,
+        });
+        sats = `${min}-${max}`;
+      }
+      send = t('You send via Lightning {{amount}} Sats (Approx)', { amount: sats });
+      receive = t('You receive via {{method}} {{amount}}', {
+        amount: amountString,
+        method: order.payment_method,
+      });
     }
-    return { send, receive, isSwapIn };
-  }, [order.currency, order.amount, order.has_range]);
+    return { send, receive };
+  }, [order.currency, order.satoshis_now, order.amount, order.has_range]);
 
   return (
     <Grid container spacing={0}>
@@ -286,40 +294,36 @@ const OrderDetails = ({
               primary={amountString}
               secondary={order.amount ? 'Amount' : 'Amount Range'}
             />
-            {order.currency === 1000 ? (
-              <ListItemIcon>
-                <IconButton onClick={() => setShowSwapDetails(!showSwapDetails)}>
-                  {showSwapDetails ? <ExpandLess /> : <ExpandMore color='primary' />}
-                </IconButton>
-              </ListItemIcon>
-            ) : null}
+            <ListItemIcon>
+              <IconButton onClick={() => setShowSatsDetails(!showSatsDetails)}>
+                {showSatsDetails ? <ExpandLess /> : <ExpandMore color='primary' />}
+              </IconButton>
+            </ListItemIcon>
           </ListItem>
 
-          {order.currency === 1000 ? (
-            <Collapse in={showSwapDetails}>
-              <List dense={true} sx={{ position: 'relative', bottom: '0.5em' }}>
-                <ListItem>
-                  <ListItemIcon sx={{ position: 'relative', left: '0.3em' }}>
-                    <SendReceiveIcon
-                      sx={{ transform: 'scaleX(-1)', width: '0.9em', opacity: 0.7 }}
-                      color='secondary'
-                    />
-                  </ListItemIcon>
-                  <Typography variant='body2'>{swap.send}</Typography>
-                </ListItem>
+          <Collapse in={showSatsDetails}>
+            <List dense={true} sx={{ position: 'relative', bottom: '0.5em' }}>
+              <ListItem>
+                <ListItemIcon sx={{ position: 'relative', left: '0.3em' }}>
+                  <SendReceiveIcon
+                    sx={{ transform: 'scaleX(-1)', width: '0.9em', opacity: 0.7 }}
+                    color='secondary'
+                  />
+                </ListItemIcon>
+                <Typography variant='body2'>{satsSummary.send}</Typography>
+              </ListItem>
 
-                <ListItem>
-                  <ListItemIcon sx={{ position: 'relative', left: '0.3em' }}>
-                    <SendReceiveIcon
-                      sx={{ left: '0.1em', width: '0.9em', opacity: 0.7 }}
-                      color='primary'
-                    />
-                  </ListItemIcon>
-                  <Typography variant='body2'>{swap.receive}</Typography>
-                </ListItem>
-              </List>
-            </Collapse>
-          ) : null}
+              <ListItem>
+                <ListItemIcon sx={{ position: 'relative', left: '0.3em' }}>
+                  <SendReceiveIcon
+                    sx={{ left: '0.1em', width: '0.9em', opacity: 0.7 }}
+                    color='primary'
+                  />
+                </ListItemIcon>
+                <Typography variant='body2'>{satsSummary.receive}</Typography>
+              </ListItem>
+            </List>
+          </Collapse>
 
           <Divider />
 
@@ -428,7 +432,13 @@ const OrderDetails = ({
 
         {!order.is_participant ? (
           <Grid item xs={12}>
-            <TakeButton order={order} setOrder={setOrder} baseUrl={baseUrl} hasRobot={hasRobot} />
+            <TakeButton
+              order={order}
+              setOrder={setOrder}
+              baseUrl={baseUrl}
+              hasRobot={hasRobot}
+              info={info}
+            />
           </Grid>
         ) : (
           <></>
