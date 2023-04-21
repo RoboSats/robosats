@@ -383,6 +383,7 @@ const TradeBox = ({
           );
         };
         bondStatus = 'hide'; // To do: show bond status according to expiry message.
+        break;
 
       // 6: 'Waiting for trade collateral and buyer invoice'
       case 6:
