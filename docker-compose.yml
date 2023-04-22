@@ -177,7 +177,7 @@ services:
     depends_on:
       - tor
       - bitcoind
-      - postgres-cln
+      # - postgres-cln
     volumes:
       - ./node/tor/data:/var/lib/tor
       - ./node/tor/config:/etc/tor
@@ -210,18 +210,19 @@ services:
     volumes:
       - ./node/db:/var/lib/postgresql/data
 
-  postgres-cln:
-    image: postgres:14.2-alpine
-    container_name: cln-sql-dev
-    restart: always
-    environment:
-      PGUSER: user
-      PGDATABASE: cln
-      POSTGRES_PASSWORD: pass
-      PGPORT: 5433
-    network_mode: service:tor
-    volumes:
-      - ./node/cln-db:/var/lib/postgresql/data
+  # # Postgresql for CLN
+  # postgres-cln:
+  #   image: postgres:14.2-alpine
+  #   container_name: cln-sql-dev
+  #   restart: always
+  #   environment:
+  #     PGUSER: user
+  #     PGDATABASE: cln
+  #     POSTGRES_PASSWORD: pass
+  #     PGPORT: 5433
+  #   network_mode: service:tor
+  #   volumes:
+  #     - ./node/cln-db:/var/lib/postgresql/data
 
 volumes:
   redisdata:
