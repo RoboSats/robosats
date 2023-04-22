@@ -46,15 +46,6 @@ class Command(BaseCommand):
         objects and do InvoiceLookupV2 every X seconds to update their state 'live'
         """
 
-        lnd_state_to_lnpayment_status = {
-            0: LNPayment.Status.INVGEN,  # OPEN
-            1: LNPayment.Status.SETLED,  # SETTLED
-            2: LNPayment.Status.CANCEL,  # CANCELLED
-            3: LNPayment.Status.LOCKED,  # ACCEPTED
-        }
-
-        stub = LNNode.invoicesstub
-
         # time it for debugging
         t0 = time.time()
         queryset = LNPayment.objects.filter(
@@ -69,38 +60,9 @@ class Command(BaseCommand):
 
         for idx, hold_lnpayment in enumerate(queryset):
             old_status = LNPayment.Status(hold_lnpayment.status).label
-            try:
-                # this is similar to LNNnode.validate_hold_invoice_locked
-                request = LNNode.invoicesrpc.LookupInvoiceMsg(
-                    payment_hash=bytes.fromhex(hold_lnpayment.payment_hash)
-                )
-                response = stub.LookupInvoiceV2(
-                    request, metadata=[("macaroon", MACAROON.hex())]
-                )
-                hold_lnpayment.status = lnd_state_to_lnpayment_status[response.state]
 
-                # try saving expiry height
-                if hasattr(response, "htlcs"):
-                    try:
-                        hold_lnpayment.expiry_height = response.htlcs[0].expiry_height
-                    except Exception:
-                        pass
-
-            except Exception as e:
-                # If it fails at finding the invoice: it has been canceled.
-                # In RoboSats DB we make a distinction between cancelled and returned (LND does not)
-                if "unable to locate invoice" in str(e):
-                    self.stderr.write(str(e))
-                    hold_lnpayment.status = LNPayment.Status.CANCEL
-
-                # LND restarted.
-                if "wallet locked, unlock it" in str(e):
-                    self.stderr.write(str(timezone.now()) + " :: Wallet Locked")
-                # Other write to logs
-                else:
-                    self.stderr.write(str(e))
-
-            new_status = LNPayment.Status(hold_lnpayment.status).label
+            status = LNNode.lookup_invoice_status(hold_lnpayment)
+            new_status = LNPayment.Status(status).label
 
             # Only save the hold_payments that change (otherwise this function does not scale)
             changed = not old_status == new_status

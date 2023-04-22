@@ -257,6 +257,60 @@ class LNNode:
             return True
 
     @classmethod
+    def lookup_invoice_status(cls, lnpayment):
+        """
+        Returns the status (as LNpayment.Status) of the given payment_hash
+        If unchanged, returns the previous status
+        """
+        from api.models import LNPayment
+
+        status = lnpayment.status
+
+        lnd_response_state_to_lnpayment_status = {
+            0: LNPayment.Status.INVGEN,  # OPEN
+            1: LNPayment.Status.SETLED,  # SETTLED
+            2: LNPayment.Status.CANCEL,  # CANCELLED
+            3: LNPayment.Status.LOCKED,  # ACCEPTED
+        }
+
+        try:
+            # this is similar to LNNnode.validate_hold_invoice_locked
+            request = invoicesrpc.LookupInvoiceMsg(
+                payment_hash=bytes.fromhex(lnpayment.payment_hash)
+            )
+            response = cls.invoicesstub.LookupInvoiceV2(request)
+
+            # try saving expiry height
+            if hasattr(response, "htlcs"):
+                try:
+                    lnpayment.expiry_height = response.htlcs[0].expiry_height
+                except Exception:
+                    pass
+
+            status = lnd_response_state_to_lnpayment_status[response.state]
+            lnpayment.status = status
+            lnpayment.save()
+
+        except Exception as e:
+            # If it fails at finding the invoice: it has been canceled.
+            # In RoboSats DB we make a distinction between cancelled and returned (LND does not)
+            if "unable to locate invoice" in str(e):
+                print(str(e))
+                status = LNPayment.Status.CANCEL
+                lnpayment.status = status
+                lnpayment.save()
+
+            # LND restarted.
+            if "wallet locked, unlock it" in str(e):
+                print(str(timezone.now()) + " :: Wallet Locked")
+
+            # Other write to logs
+            else:
+                print(str(e))
+
+        return status
+
+    @classmethod
     def resetmc(cls):
         request = routerrpc.ResetMissionControlRequest()
         _ = cls.routerstub.ResetMissionControl(request)
