@@ -16,6 +16,8 @@ from . import lightning_pb2 as lnrpc
 from . import lightning_pb2_grpc as lightningstub
 from . import router_pb2 as routerrpc
 from . import router_pb2_grpc as routerstub
+from . import verrpc_pb2 as verrpc
+from . import verrpc_pb2_grpc as verrpcstub
 
 #######
 # Works with LND (c-lightning in the future for multi-vendor resiliance)
@@ -44,16 +46,23 @@ class LNNode:
 
     os.environ["GRPC_SSL_CIPHER_SUITES"] = "HIGH+ECDSA"
 
-    creds = grpc.ssl_channel_credentials(CERT)
-    channel = grpc.secure_channel(LND_GRPC_HOST, creds)
+    def metadata_callback(context, callback):
+        callback([("macaroon", MACAROON.hex())], None)
+
+    ssl_creds = grpc.ssl_channel_credentials(CERT)
+    auth_creds = grpc.metadata_call_credentials(metadata_callback)
+    combined_creds = grpc.composite_channel_credentials(ssl_creds, auth_creds)
+    channel = grpc.secure_channel(LND_GRPC_HOST, combined_creds)
 
     lightningstub = lightningstub.LightningStub(channel)
     invoicesstub = invoicesstub.InvoicesStub(channel)
     routerstub = routerstub.RouterStub(channel)
+    verrpcstub = verrpcstub.VersionerStub(channel)
 
     lnrpc = lnrpc
     invoicesrpc = invoicesrpc
     routerrpc = routerrpc
+    verrpc = verrpc
 
     payment_failure_context = {
         0: "Payment isn't failed (yet)",
@@ -65,12 +74,20 @@ class LNNode:
     }
 
     @classmethod
+    def get_version(cls):
+        try:
+            request = verrpc.VersionRequest()
+            response = cls.verrpcstub.GetVersion(request)
+            return response.version
+        except Exception as e:
+            print(e)
+            return None
+
+    @classmethod
     def decode_payreq(cls, invoice):
         """Decodes a lightning payment request (invoice)"""
         request = lnrpc.PayReqString(pay_req=invoice)
-        response = cls.lightningstub.DecodePayReq(
-            request, metadata=[("macaroon", MACAROON.hex())]
-        )
+        response = cls.lightningstub.DecodePayReq(request)
         return response
 
     @classmethod
@@ -85,9 +102,7 @@ class LNNode:
             spend_unconfirmed=False,
         )
 
-        response = cls.lightningstub.EstimateFee(
-            request, metadata=[("macaroon", MACAROON.hex())]
-        )
+        response = cls.lightningstub.EstimateFee(request)
 
         return {
             "mining_fee_sats": response.fee_sat,
@@ -101,9 +116,7 @@ class LNNode:
     def wallet_balance(cls):
         """Returns onchain balance"""
         request = lnrpc.WalletBalanceRequest()
-        response = cls.lightningstub.WalletBalance(
-            request, metadata=[("macaroon", MACAROON.hex())]
-        )
+        response = cls.lightningstub.WalletBalance(request)
 
         return {
             "total_balance": response.total_balance,
@@ -118,9 +131,7 @@ class LNNode:
     def channel_balance(cls):
         """Returns channels balance"""
         request = lnrpc.ChannelBalanceRequest()
-        response = cls.lightningstub.ChannelBalance(
-            request, metadata=[("macaroon", MACAROON.hex())]
-        )
+        response = cls.lightningstub.ChannelBalance(request)
 
         return {
             "local_balance": response.local_balance.sat,
@@ -154,9 +165,7 @@ class LNNode:
             # Changing the state to "MEMPO" should be atomic with SendCoins.
             onchainpayment.status = on_mempool_code
             onchainpayment.save()
-            response = cls.lightningstub.SendCoins(
-                request, metadata=[("macaroon", MACAROON.hex())]
-            )
+            response = cls.lightningstub.SendCoins(request)
 
             if response.txid:
                 onchainpayment.txid = response.txid
@@ -172,9 +181,7 @@ class LNNode:
     def cancel_return_hold_invoice(cls, payment_hash):
         """Cancels or returns a hold invoice"""
         request = invoicesrpc.CancelInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
-        response = cls.invoicesstub.CancelInvoice(
-            request, metadata=[("macaroon", MACAROON.hex())]
-        )
+        response = cls.invoicesstub.CancelInvoice(request)
         # Fix this: tricky because canceling sucessfully an invoice has no response. TODO
         return str(response) == ""  # True if no response, false otherwise.
 
@@ -182,9 +189,7 @@ class LNNode:
     def settle_hold_invoice(cls, preimage):
         """settles a hold invoice"""
         request = invoicesrpc.SettleInvoiceMsg(preimage=bytes.fromhex(preimage))
-        response = cls.invoicesstub.SettleInvoice(
-            request, metadata=[("macaroon", MACAROON.hex())]
-        )
+        response = cls.invoicesstub.SettleInvoice(request)
         # Fix this: tricky because settling sucessfully an invoice has None response. TODO
         return str(response) == ""  # True if no response, false otherwise.
 
@@ -210,9 +215,7 @@ class LNNode:
             ),  # actual expiry is padded by 50%, if tight, wrong client system clock will say invoice is expired.
             cltv_expiry=cltv_expiry_blocks,
         )
-        response = cls.invoicesstub.AddHoldInvoice(
-            request, metadata=[("macaroon", MACAROON.hex())]
-        )
+        response = cls.invoicesstub.AddHoldInvoice(request)
 
         hold_payment["invoice"] = response.payment_request
         payreq_decoded = cls.decode_payreq(hold_payment["invoice"])
@@ -236,9 +239,7 @@ class LNNode:
         request = invoicesrpc.LookupInvoiceMsg(
             payment_hash=bytes.fromhex(lnpayment.payment_hash)
         )
-        response = cls.invoicesstub.LookupInvoiceV2(
-            request, metadata=[("macaroon", MACAROON.hex())]
-        )
+        response = cls.invoicesstub.LookupInvoiceV2(request)
 
         # Will fail if 'unable to locate invoice'. Happens if invoice expiry
         # time has passed (but these are 15% padded at the moment). Should catch it
@@ -258,9 +259,7 @@ class LNNode:
     @classmethod
     def resetmc(cls):
         request = routerrpc.ResetMissionControlRequest()
-        _ = cls.routerstub.ResetMissionControl(
-            request, metadata=[("macaroon", MACAROON.hex())]
-        )
+        _ = cls.routerstub.ResetMissionControl(request)
         return True
 
     @classmethod
@@ -373,9 +372,7 @@ class LNNode:
             timeout_seconds=timeout_seconds,
         )
 
-        for response in cls.routerstub.SendPaymentV2(
-            request, metadata=[("macaroon", MACAROON.hex())]
-        ):
+        for response in cls.routerstub.SendPaymentV2(request):
 
             if response.status == 0:  # Status 0 'UNKNOWN'
                 # Not sure when this status happens
@@ -411,9 +408,7 @@ class LNNode:
     def double_check_htlc_is_settled(cls, payment_hash):
         """Just as it sounds. Better safe than sorry!"""
         request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
-        response = cls.invoicesstub.LookupInvoiceV2(
-            request, metadata=[("macaroon", MACAROON.hex())]
-        )
+        response = cls.invoicesstub.LookupInvoiceV2(request)
 
         return (
             response.state == 1
