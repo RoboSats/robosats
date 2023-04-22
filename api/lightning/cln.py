@@ -49,8 +49,6 @@ class CLNNode:
     stub = nodestub.NodeStub(channel)
 
     noderpc = noderpc
-    # invoicesrpc = invoicesrpc
-    # routerrpc = routerrpc
 
     payment_failure_context = {
         -1: "Catchall nonspecific error.",
