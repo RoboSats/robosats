@@ -118,23 +118,16 @@ def get_exchange_rates(currencies):
     return median_rates.tolist()
 
 
+lnd_version_cache = {}
+
+
+@ring.dict(lnd_version_cache, expire=3600)
 def get_lnd_version():
 
-    # If dockerized, return LND_VERSION envvar used for docker image.
-    # Otherwise it would require LND's version.grpc libraries...
-    try:
-        lnd_version = config("LND_VERSION")
-        return lnd_version
-    except Exception:
-        pass
+    from api.lightning.node import LNNode
 
-    # If not dockerized and LND is local, read from CLI
-    try:
-        stream = os.popen("lnd --version")
-        lnd_version = stream.read()[:-1]
-        return lnd_version
-    except Exception:
-        return ""
+    print(LNNode.get_version())
+    return LNNode.get_version()
 
 
 robosats_commit_cache = {}
@@ -163,7 +156,6 @@ def get_robosats_version():
     with open("version.json") as f:
         version_dict = json.load(f)
 
-    print(version_dict)
     return version_dict
 
 
@@ -177,7 +169,6 @@ def compute_premium_percentile(order):
         currency=order.currency, status=Order.Status.PUB, type=order.type
     ).exclude(id=order.id)
 
-    print(len(queryset))
     if len(queryset) <= 1:
         return 0.5
 
