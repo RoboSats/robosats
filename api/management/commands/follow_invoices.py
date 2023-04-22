@@ -39,7 +39,7 @@ class Command(BaseCommand):
         """Follows and updates LNpayment objects
         until settled or canceled
 
-        Background: SubscribeInvoices stub iterator would be great to use here.
+        LND Background: SubscribeInvoices stub iterator would be great to use here.
         However, it only sends updates when the invoice is OPEN (new) or SETTLED.
         We are very interested on the other two states (CANCELLED and ACCEPTED).
         Therefore, this thread (follow_invoices) will iterate over all LNpayment

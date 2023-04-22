@@ -459,6 +459,137 @@ class LNNode:
         return False
 
     @classmethod
+    def follow_send_payment(cls, lnpayment, fee_limit_sat, timeout_seconds):
+        """
+        Sends sats to buyer, continuous update.
+        Has a lot of boilerplate to correctly handle every possible condition and failure case.
+        """
+        from api.models import LNPayment, Order
+
+        hash = lnpayment.payment_hash
+
+        request = cls.routerrpc.SendPaymentRequest(
+            payment_request=lnpayment.invoice,
+            fee_limit_sat=fee_limit_sat,
+            timeout_seconds=timeout_seconds,
+            allow_self_payment=True,
+        )
+
+        order = lnpayment.order_paid_LN
+        if order.trade_escrow.num_satoshis < lnpayment.num_satoshis:
+            print(f"Order: {order.id} Payout is larger than collateral !?")
+            return
+
+        def handle_response(response, was_in_transit=False):
+            lnpayment.status = LNPayment.Status.FLIGHT
+            lnpayment.in_flight = True
+            lnpayment.save()
+            order.status = Order.Status.PAY
+            order.save()
+
+            if response.status == 0:  # Status 0 'UNKNOWN'
+                # Not sure when this status happens
+                print(f"Order: {order.id} UNKNOWN. Hash {hash}")
+                lnpayment.in_flight = False
+                lnpayment.save()
+
+            if response.status == 1:  # Status 1 'IN_FLIGHT'
+                print(f"Order: {order.id} IN_FLIGHT. Hash {hash}")
+
+                # If payment was already "payment is in transition" we do not
+                # want to spawn a new thread every 3 minutes to check on it.
+                # in case this thread dies, let's move the last_routing_time
+                # 20 minutes in the future so another thread spawns.
+                if was_in_transit:
+                    lnpayment.last_routing_time = timezone.now() + timedelta(minutes=20)
+                    lnpayment.save()
+
+            if response.status == 3:  # Status 3 'FAILED'
+                lnpayment.status = LNPayment.Status.FAILRO
+                lnpayment.last_routing_time = timezone.now()
+                lnpayment.routing_attempts += 1
+                lnpayment.failure_reason = response.failure_reason
+                lnpayment.in_flight = False
+                if lnpayment.routing_attempts > 2:
+                    lnpayment.status = LNPayment.Status.EXPIRE
+                    lnpayment.routing_attempts = 0
+                lnpayment.save()
+
+                order.status = Order.Status.FAI
+                order.expires_at = timezone.now() + timedelta(
+                    seconds=order.t_to_expire(Order.Status.FAI)
+                )
+                order.save()
+                print(
+                    f"Order: {order.id} FAILED. Hash: {hash} Reason: {LNNode.payment_failure_context[response.failure_reason]}"
+                )
+                return {
+                    "succeded": False,
+                    "context": f"payment failure reason: {LNNode.payment_failure_context[response.failure_reason]}",
+                }
+
+            if response.status == 2:  # Status 2 'SUCCEEDED'
+                print(f"Order: {order.id} SUCCEEDED. Hash: {hash}")
+                lnpayment.status = LNPayment.Status.SUCCED
+                lnpayment.fee = float(response.fee_msat) / 1000
+                lnpayment.preimage = response.payment_preimage
+                lnpayment.save()
+                order.status = Order.Status.SUC
+                order.expires_at = timezone.now() + timedelta(
+                    seconds=order.t_to_expire(Order.Status.SUC)
+                )
+                order.save()
+                results = {"succeded": True}
+                return results
+
+        try:
+            for response in cls.routerstub.SendPaymentV2(request):
+
+                handle_response(response)
+
+        except Exception as e:
+
+            if "invoice expired" in str(e):
+                print(f"Order: {order.id}. INVOICE EXPIRED. Hash: {hash}")
+                lnpayment.status = LNPayment.Status.EXPIRE
+                lnpayment.last_routing_time = timezone.now()
+                lnpayment.in_flight = False
+                lnpayment.save()
+                order.status = Order.Status.FAI
+                order.expires_at = timezone.now() + timedelta(
+                    seconds=order.t_to_expire(Order.Status.FAI)
+                )
+                order.save()
+                results = {
+                    "succeded": False,
+                    "context": "The payout invoice has expired",
+                }
+                return results
+
+            elif "payment is in transition" in str(e):
+                print(f"Order: {order.id} ALREADY IN TRANSITION. Hash: {hash}.")
+
+                request = routerrpc.TrackPaymentRequest(
+                    payment_hash=bytes.fromhex(hash)
+                )
+
+                for response in cls.routerstub.TrackPaymentV2(request):
+                    handle_response(response, was_in_transit=True)
+
+            elif "invoice is already paid" in str(e):
+                print(f"Order: {order.id} ALREADY PAID. Hash: {hash}.")
+
+                request = routerrpc.TrackPaymentRequest(
+                    payment_hash=bytes.fromhex(hash)
+                )
+
+                for response in cls.routerstub.TrackPaymentV2(request):
+                    handle_response(response)
+
+            else:
+                print(str(e))
+
+    @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):
         """Just as it sounds. Better safe than sorry!"""
         request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
