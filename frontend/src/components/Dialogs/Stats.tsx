@@ -66,12 +66,23 @@ const StatsDialog = ({ open = false, onClose, info }: Props): JSX.Element => {
 
           <Divider />
 
-          <ListItem>
-            <ListItemIcon>
-              <BoltIcon />
-            </ListItemIcon>
-            <ListItemText primary={info.lnd_version} secondary={t('LND version')} />
-          </ListItem>
+          {info.lnd_version ? (
+            <ListItem>
+              <ListItemIcon>
+                <BoltIcon />
+              </ListItemIcon>
+              <ListItemText primary={info.lnd_version} secondary={t('LND version')} />
+            </ListItem>
+          ) : null}
+
+          {info.lnd_version ? (
+            <ListItem>
+              <ListItemIcon>
+                <BoltIcon />
+              </ListItemIcon>
+              <ListItemText primary={info.cln_version} secondary={t('CLN version')} />
+            </ListItem>
+          ) : null}
 
           <Divider />
 

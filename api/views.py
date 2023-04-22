@@ -49,6 +49,7 @@ from api.serializers import (
 from api.utils import (
     compute_avg_premium,
     compute_premium_percentile,
+    get_cln_version,
     get_lnd_version,
     get_robosats_commit,
     get_robosats_version,
@@ -910,6 +911,7 @@ class InfoView(ListAPIView):
         context["last_day_volume"] = round(total_volume, 8)
         context["lifetime_volume"] = round(lifetime_volume, 8)
         context["lnd_version"] = get_lnd_version()
+        context["cln_version"] = get_cln_version()
         context["robosats_running_commit_hash"] = get_robosats_commit()
         context["version"] = get_robosats_version()
         context["alternative_site"] = config("ALTERNATIVE_SITE")

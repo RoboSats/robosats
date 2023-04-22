@@ -42,7 +42,7 @@ DISABLE_ONCHAIN = config("DISABLE_ONCHAIN", cast=bool, default=True)
 MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
 
 
-class LNNode:
+class LNDNode:
 
     os.environ["GRPC_SSL_CIPHER_SUITES"] = "HIGH+ECDSA"
 
@@ -521,11 +521,11 @@ class LNNode:
                 )
                 order.save()
                 print(
-                    f"Order: {order.id} FAILED. Hash: {hash} Reason: {LNNode.payment_failure_context[response.failure_reason]}"
+                    f"Order: {order.id} FAILED. Hash: {hash} Reason: {cls.payment_failure_context[response.failure_reason]}"
                 )
                 return {
                     "succeded": False,
-                    "context": f"payment failure reason: {LNNode.payment_failure_context[response.failure_reason]}",
+                    "context": f"payment failure reason: {cls.payment_failure_context[response.failure_reason]}",
                 }
 
             if response.status == 2:  # Status 2 'SUCCEEDED'
