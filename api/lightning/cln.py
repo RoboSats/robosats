@@ -61,6 +61,16 @@ class CLNNode:
     }
 
     @classmethod
+    def get_version(cls):
+        try:
+            request = noderpc.GetinfoRequest()
+            response = cls.stub.Getinfo(request)
+            return response.version
+        except Exception as e:
+            print(e)
+            return None
+
+    @classmethod
     def decode_payreq(cls, invoice):
         """Decodes a lightning payment request (invoice)"""
         request = noderpc.DecodeBolt11Request(bolt11=invoice)
@@ -411,13 +421,6 @@ class CLNNode:
             response.status == 1
         )   # CLN states: UNPAID = 0, PAID = 1, EXPIRED = 2, this is clns own invoice-lookup
         # so just a check for paid/unpaid/expired not hodl-invoice related states like ACCEPTED/CANCELED
-
-    @classmethod
-    def get_version(cls):
-        request = noderpc.GetinfoRequest()
-        response = cls.stub.Getinfo(request)
-
-        return response.version
 
     @classmethod
     @shared_task(name="follow_send_payment", time_limit=180)
