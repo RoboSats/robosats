@@ -261,7 +261,7 @@ class CLNNode:
         if response.state == 2:  # CANCELLED
             pass
         if response.state == 3:  # ACCEPTED (LOCKED)
-            lnpayment.expiry_height = response.htlc_cltv
+            lnpayment.expiry_height = response.htlc_expiry
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save()
             return True
