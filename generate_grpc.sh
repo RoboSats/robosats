@@ -33,3 +33,6 @@ sed -i 's/^import .*_pb2 as/from . \0/' router_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' lightning_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' invoices_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' verrpc_pb2_grpc.py
+
+sed -i 's/^import .*_pb2 as/from . \0/' node_pb2.py
+sed -i 's/^import .*_pb2 as/from . \0/' node_pb2_grpc.py
