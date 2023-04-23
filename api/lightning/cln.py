@@ -3,7 +3,6 @@ import os
 import secrets
 import time
 from datetime import datetime, timedelta
-from celery import shared_task
 
 import grpc
 import ring
@@ -12,21 +11,19 @@ from django.utils import timezone
 
 from . import node_pb2 as noderpc
 from . import node_pb2_grpc as nodestub
-# from . import primitives_pb2 as primitivesrpc
-# from . import primitives_pb2_grpc as primitivesstub
 
 #######
 # Works with CLN
 #######
 
 # Load the client's certificate and key
-with open(os.path.join(config("CLN_DIR"), 'client.pem'), 'rb') as f:
+with open(os.path.join(config("CLN_DIR"), "client.pem"), "rb") as f:
     client_cert = f.read()
-with open(os.path.join(config("CLN_DIR"), 'client-key.pem'), 'rb') as f:
+with open(os.path.join(config("CLN_DIR"), "client-key.pem"), "rb") as f:
     client_key = f.read()
 
 # Load the server's certificate
-with open(os.path.join(config("CLN_DIR"), 'server.pem'), 'rb') as f:
+with open(os.path.join(config("CLN_DIR"), "server.pem"), "rb") as f:
     server_cert = f.read()
 
 
@@ -41,7 +38,10 @@ class CLNNode:
 
     # Create the SSL credentials object
     creds = grpc.ssl_channel_credentials(
-        root_certificates=server_cert, private_key=client_key, certificate_chain=client_cert)
+        root_certificates=server_cert,
+        private_key=client_key,
+        certificate_chain=client_cert,
+    )
     # Create the gRPC channel using the SSL credentials
     channel = grpc.secure_channel(CLN_GRPC_HOST, creds)
 
@@ -89,7 +89,7 @@ class CLNNode:
         # "opening" -> ~12 block target
         return {
             "mining_fee_sats": response.onchain_fee_estimates.opening_channel_satoshis,
-            "mining_fee_rate": response.perkb.opening/1000,
+            "mining_fee_rate": response.perkb.opening / 1000,
         }
 
     wallet_balance_cache = {}
@@ -138,8 +138,9 @@ class CLNNode:
             for channel in peer.channels:
                 if channel.state == 2:  # CHANNELD_NORMAL
                     local_balance_sat += channel.to_us_msat.msat // 1_000
-                    remote_balance_sat += (channel.total_msat.msat -
-                                           channel.to_us_msat.msat) // 1_000
+                    remote_balance_sat += (
+                        channel.total_msat.msat - channel.to_us_msat.msat
+                    ) // 1_000
                 for htlc in channel.htlcs:
                     if htlc.direction == 0:  # IN
                         unsettled_local_balance += htlc.amount_msat // 1_000
@@ -161,10 +162,10 @@ class CLNNode:
             return False
 
         request = noderpc.WithdrawRequest(
-            destination=onchainpayment.address, satoshi=int(
-                onchainpayment.sent_satoshis),
-            feerate=str(int(onchainpayment.mining_fee_rate)*1_000)+"perkb",
-            minconf=int(not config("SPEND_UNCONFIRMED", default=False, cast=bool))
+            destination=onchainpayment.address,
+            satoshi=int(onchainpayment.sent_satoshis),
+            feerate=str(int(onchainpayment.mining_fee_rate) * 1_000) + "perkb",
+            minconf=int(not config("SPEND_UNCONFIRMED", default=False, cast=bool)),
         )
 
         # Cheap security measure to ensure there has been some non-deterministic time between request and DB check
@@ -193,7 +194,8 @@ class CLNNode:
     def cancel_return_hold_invoice(cls, payment_hash):
         """Cancels or returns a hold invoice"""
         request = noderpc.HodlInvoiceCancelRequest(
-            payment_hash=bytes.fromhex(payment_hash))
+            payment_hash=bytes.fromhex(payment_hash)
+        )
         response = cls.stub.HodlInvoiceCancel(request)
 
         return response.state == 1  # True if state is CANCELED, false otherwise.
@@ -202,14 +204,22 @@ class CLNNode:
     def settle_hold_invoice(cls, preimage):
         """settles a hold invoice"""
         request = noderpc.HodlInvoiceSettleRequest(
-            payment_hash=hashlib.sha256(bytes.fromhex(preimage)).digest())
+            payment_hash=hashlib.sha256(bytes.fromhex(preimage)).digest()
+        )
         response = cls.stub.HodlInvoiceSettle(request)
 
         return response.state == 2  # True if state is SETTLED, false otherwise.
 
     @classmethod
     def gen_hold_invoice(
-        cls, num_satoshis, description, invoice_expiry, cltv_expiry_blocks, order_id, receiver_robot, time
+        cls,
+        num_satoshis,
+        description,
+        invoice_expiry,
+        cltv_expiry_blocks,
+        order_id,
+        receiver_robot,
+        time,
     ):
         """Generates hold invoice"""
 
@@ -308,7 +318,8 @@ class CLNNode:
             if "empty result for listdatastore_state" in str(e):
                 print(str(e))
                 request2 = noderpc.ListinvoicesRequest(
-                    payment_hash=bytes.fromhex(lnpayment.payment_hash))
+                    payment_hash=bytes.fromhex(lnpayment.payment_hash)
+                )
                 try:
                     response2 = cls.stub.ListInvoices(request2).invoices
                 except Exception as e:
@@ -380,9 +391,7 @@ class CLNNode:
                 # ...add up the cost of every hinted hop...
                 for hop_hint in hinted_route.hops:
                     route_cost += hop_hint.feebase.msat / 1_000
-                    route_cost += (
-                        hop_hint.feeprop * num_satoshis / 1_000_000
-                    )
+                    route_cost += hop_hint.feeprop * num_satoshis / 1_000_000
 
                 # ...and store the cost of the route to the array
                 routes_cost.append(route_cost)
@@ -451,8 +460,9 @@ class CLNNode:
 
             if response.status == 0:  # COMPLETE
                 lnpayment.status = LNPayment.Status.SUCCED
-                lnpayment.fee = float(response.amount_sent_msat -
-                                      response.amount_msat) / 1000
+                lnpayment.fee = (
+                    float(response.amount_sent_msat - response.amount_msat) / 1000
+                )
                 lnpayment.preimage = response.payment_preimage
                 lnpayment.save()
                 return True, None
@@ -469,7 +479,7 @@ class CLNNode:
                 lnpayment.save()
                 return False, failure_reason
         except grpc._channel._InactiveRpcError as e:
-            status_code = int(e.details().split('code: Some(')[1].split(')')[0])
+            status_code = int(e.details().split("code: Some(")[1].split(")")[0])
             failure_reason = cls.payment_failure_context[status_code]
             lnpayment.failure_reason = status_code  # or failure_reason ?
             lnpayment.status = LNPayment.Status.FAILRO
@@ -477,7 +487,6 @@ class CLNNode:
             return False, failure_reason
 
     @classmethod
-    @shared_task(name="follow_send_payment", time_limit=180)
     def follow_send_payment(cls, hash):
         """Sends sats to buyer, continuous update"""
 
@@ -494,8 +503,9 @@ class CLNNode:
 
         # Default is 0ppm. Set by the user over API. Client's default is 1000 ppm.
         fee_limit_sat = int(
-            float(lnpayment.num_satoshis) *
-            float(lnpayment.routing_budget_ppm) / 1000000
+            float(lnpayment.num_satoshis)
+            * float(lnpayment.routing_budget_ppm)
+            / 1000000
         )
         timeout_seconds = int(config("PAYOUT_TIMEOUT_SECONDS"))
 
@@ -534,7 +544,9 @@ class CLNNode:
                 lnpayment.status = LNPayment.Status.FAILRO
                 lnpayment.last_routing_time = timezone.now()
                 lnpayment.routing_attempts += 1
-                lnpayment.failure_reason = -1  # no failure_reason in non-error pay response with stauts FAILED
+                lnpayment.failure_reason = (
+                    -1
+                )  # no failure_reason in non-error pay response with stauts FAILED
                 lnpayment.in_flight = False
                 if lnpayment.routing_attempts > 2:
                     lnpayment.status = LNPayment.Status.EXPIRE
@@ -557,8 +569,10 @@ class CLNNode:
             if response.status == 0:  # Status 2 'COMPLETE'
                 print(f"Order: {order.id} SUCCEEDED. Hash: {hash}")
                 lnpayment.status = LNPayment.Status.SUCCED
-                lnpayment.fee = float(response.amount_sent_msat.msat -
-                                      response.amount_msat.msat) / 1000
+                lnpayment.fee = (
+                    float(response.amount_sent_msat.msat - response.amount_msat.msat)
+                    / 1000
+                )
                 lnpayment.preimage = response.payment_preimage
                 lnpayment.save()
                 order.status = Order.Status.SUC
@@ -575,8 +589,10 @@ class CLNNode:
 
         except grpc._channel._InactiveRpcError as e:
             if "code: Some" in str(e):
-                status_code = int(e.details().split('code: Some(')[1].split(')')[0])
-                if status_code == 201:  # Already paid with this hash using different amount or destination
+                status_code = int(e.details().split("code: Some(")[1].split(")")[0])
+                if (
+                    status_code == 201
+                ):  # Already paid with this hash using different amount or destination
                     # i don't think this can happen really, since we don't use the amount_msat in request and if you just try 'pay' 2x where the first time it succeeds you get the same non-error result the 2nd time.
                     # Listpays has some different fields as pay aswell, so not sure this makes sense
                     print(f"Order: {order.id} ALREADY PAID. Hash: {hash}.")
@@ -622,8 +638,10 @@ class CLNNode:
                         seconds=order.t_to_expire(Order.Status.FAI)
                     )
                     order.save()
-                    results = {"succeded": False,
-                               "context": "The payout invoice has expired"}
+                    results = {
+                        "succeded": False,
+                        "context": "The payout invoice has expired",
+                    }
                     return results
                 else:  # -1 and 210 (don't know when 210 happens exactly)
                     print(str(e))
@@ -641,5 +659,5 @@ class CLNNode:
 
         return (
             response.status == 1
-        )   # CLN states: UNPAID = 0, PAID = 1, EXPIRED = 2, this is clns own invoice-lookup
+        )  # CLN states: UNPAID = 0, PAID = 1, EXPIRED = 2, this is clns own invoice-lookup
         # so just a check for paid/unpaid/expired not hodl-invoice related states like ACCEPTED/CANCELED
