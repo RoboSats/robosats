@@ -267,6 +267,71 @@ class CLNNode:
             return True
 
     @classmethod
+    def lookup_invoice_status(cls, lnpayment):
+        """
+        Returns the status (as LNpayment.Status) of the given payment_hash
+        If unchanged, returns the previous status
+        """
+        from api.models import LNPayment
+
+        status = lnpayment.status
+
+        cln_response_state_to_lnpayment_status = {
+            0: LNPayment.Status.INVGEN,  # OPEN
+            1: LNPayment.Status.SETLED,  # SETTLED
+            2: LNPayment.Status.CANCEL,  # CANCELLED
+            3: LNPayment.Status.LOCKED,  # ACCEPTED
+        }
+
+        try:
+            # this is similar to LNNnode.validate_hold_invoice_locked
+            request = noderpc.HodlInvoiceLookupRequest(
+                payment_hash=bytes.fromhex(lnpayment.payment_hash)
+            )
+            response = cls.stub.HodlInvoiceLookup(request)
+
+            # try saving expiry height
+            if hasattr(response, "htlc_expiry"):
+                try:
+                    lnpayment.expiry_height = response.htlc_expiry
+                except Exception:
+                    pass
+
+            status = cln_response_state_to_lnpayment_status[response.state]
+            lnpayment.status = status
+            lnpayment.save()
+
+        except Exception as e:
+            # If it fails at finding the invoice: it has been expired for more than an hour (and could be paid or just expired).
+            # In RoboSats DB we make a distinction between cancelled and returned
+            #  (cln-grpc-hodl has separate state for hodl-invoices, which it forgets after an invoice expired more than an hour ago)
+            if "empty result for listdatastore_state" in str(e):
+                print(str(e))
+                request2 = noderpc.ListinvoicesRequest(
+                    payment_hash=bytes.fromhex(lnpayment.payment_hash))
+                try:
+                    response2 = cls.stub.ListInvoices(request2).invoices
+                except Exception as e:
+                    print(str(e))
+
+                if response2[0].status == "paid":
+                    status = LNPayment.Status.SETLED
+                    lnpayment.status = status
+                    lnpayment.save()
+                elif response2[0].status == "expired":
+                    status = LNPayment.Status.CANCEL
+                    lnpayment.status = status
+                    lnpayment.save()
+                else:
+                    print(str(e))
+
+            # Other write to logs
+            else:
+                print(str(e))
+
+        return status
+
+    @classmethod
     def resetmc(cls):
         # don't think an equivalent exists for cln, maybe deleting gossip_store file?
         return False
