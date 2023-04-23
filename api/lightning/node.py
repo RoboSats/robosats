@@ -1,6 +1,6 @@
 from decouple import config
 
-LN_vendor = config("LNNODE", cast=str, default="LND")
+LN_vendor = config("LNVENDOR", cast=str, default="LND")
 
 if LN_vendor == "LND":
     from api.lightning.lnd import LNDNode
