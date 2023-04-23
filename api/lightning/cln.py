@@ -477,17 +477,6 @@ class CLNNode:
             return False, failure_reason
 
     @classmethod
-    def double_check_htlc_is_settled(cls, payment_hash):
-        """Just as it sounds. Better safe than sorry!"""
-        request = noderpc.ListinvoicesRequest(payment_hash=bytes.fromhex(payment_hash))
-        response = cls.stub.ListInvoices(request)
-
-        return (
-            response.status == 1
-        )   # CLN states: UNPAID = 0, PAID = 1, EXPIRED = 2, this is clns own invoice-lookup
-        # so just a check for paid/unpaid/expired not hodl-invoice related states like ACCEPTED/CANCELED
-
-    @classmethod
     @shared_task(name="follow_send_payment", time_limit=180)
     def follow_send_payment(cls, hash):
         """Sends sats to buyer, continuous update"""
@@ -643,3 +632,14 @@ class CLNNode:
 
         except Exception as e:
             print(str(e))
+
+    @classmethod
+    def double_check_htlc_is_settled(cls, payment_hash):
+        """Just as it sounds. Better safe than sorry!"""
+        request = noderpc.ListinvoicesRequest(payment_hash=bytes.fromhex(payment_hash))
+        response = cls.stub.ListInvoices(request)
+
+        return (
+            response.status == 1
+        )   # CLN states: UNPAID = 0, PAID = 1, EXPIRED = 2, this is clns own invoice-lookup
+        # so just a check for paid/unpaid/expired not hodl-invoice related states like ACCEPTED/CANCELED
