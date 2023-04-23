@@ -64,7 +64,9 @@ class CLNNode:
     def get_version(cls):
         try:
             request = noderpc.GetinfoRequest()
+            print(request)
             response = cls.stub.Getinfo(request)
+            print(response)
             return response.version
         except Exception as e:
             print(e)
