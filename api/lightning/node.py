@@ -78,7 +78,7 @@ class LNNode:
         try:
             request = verrpc.VersionRequest()
             response = cls.verrpcstub.GetVersion(request)
-            return response.version
+            return "v" + response.version
         except Exception as e:
             print(e)
             return None
