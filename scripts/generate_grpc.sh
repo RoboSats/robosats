@@ -33,6 +33,7 @@ python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. n
 rm -r googleapis
 
 # patch generated files relative imports
+# LND
 sed -i 's/^import .*_pb2 as/from . \0/' router_pb2.py
 sed -i 's/^import .*_pb2 as/from . \0/' signer_pb2.py
 sed -i 's/^import .*_pb2 as/from . \0/' invoices_pb2.py
@@ -42,6 +43,8 @@ sed -i 's/^import .*_pb2 as/from . \0/' signer_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' lightning_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' invoices_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' verrpc_pb2_grpc.py
+
+# CLN
 sed -i 's/^import .*_pb2 as/from . \0/' node_pb2.py
 sed -i 's/^import .*_pb2 as/from . \0/' node_pb2_grpc.py
 
