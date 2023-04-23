@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Box, Slide, Typography } from '@mui/material';
+import { Box, Slide, Typography, styled } from '@mui/material';
 
 import RobotPage from './RobotPage';
 import MakerPage from './MakerPage';
@@ -18,7 +18,22 @@ import { UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
 
 const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
 
-const Main = (): JSX.Element => {
+const TestnetTypography = styled(Typography)({
+  height: 0,
+});
+
+interface MainBoxProps {
+  navbarHeight: number;
+}
+
+const MainBox = styled(Box)<MainBoxProps>((props) => ({
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: `translate(-50%, -50%) translate(0,  -${props.navbarHeight / 2}em)`,
+}));
+
+const Main: React.FC = () => {
   const { t } = useTranslation();
   const {
     settings,
@@ -55,23 +70,14 @@ const Main = (): JSX.Element => {
         windowWidth={windowSize.width}
       />
       {settings.network === 'testnet' ? (
-        <div style={{ height: 0 }}>
-          <Typography color='secondary' align='center'>
-            <i>{t('Using Testnet Bitcoin')}</i>
-          </Typography>
-        </div>
+        <TestnetTypography color='secondary' align='center'>
+          <i>{t('Using Testnet Bitcoin')}</i>
+        </TestnetTypography>
       ) : (
         <></>
       )}
 
-      <Box
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: `translate(-50%, -50%) translate(0,  -${navbarHeight / 2}em`,
-        }}
-      >
+      <MainBox navbarHeight={navbarHeight}>
         <Routes>
           {['/robot/:refCode?', '/', ''].map((path, index) => {
             return (
@@ -153,10 +159,8 @@ const Main = (): JSX.Element => {
             }
           />
         </Routes>
-      </Box>
-      <div style={{ alignContent: 'center', display: 'flex' }}>
-        <NavBar width={windowSize.width} height={navbarHeight} />
-      </div>
+      </MainBox>
+      <NavBar width={windowSize.width} height={navbarHeight} />
       <MainDialogs />
     </Router>
   );

@@ -16,6 +16,7 @@ import {
 } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import { AppContext, UseAppStoreType, closeAll } from '../../contexts/AppContext';
+import styled from '@emotion/styled';
 
 interface NavBarProps {
   width: number;
