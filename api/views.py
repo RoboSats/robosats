@@ -925,9 +925,12 @@ class InfoView(ListAPIView):
         )
         context["bond_size"] = float(config("DEFAULT_BOND_SIZE"))
 
-        context["current_swap_fee_rate"] = Logics.compute_swap_fee_rate(
-            BalanceLog.objects.latest("time")
-        )
+        try:
+            context["current_swap_fee_rate"] = Logics.compute_swap_fee_rate(
+                BalanceLog.objects.latest("time")
+            )
+        except BalanceLog.DoesNotExist:
+            context["current_swap_fee_rate"] = 0
 
         return Response(context, status.HTTP_200_OK)
 
