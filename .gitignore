@@ -654,6 +654,9 @@ api/lightning/invoices*
 api/lightning/router*
 api/lightning/verrpc*
 api/lightning/googleapis*
+api/lightning/primitive*
+api/lightning/node_*
+api/lightning/node.*
 frontend/static/locales/collected_phrases.json
 frontend/static/admin*
 frontend/static/rest_framework*
