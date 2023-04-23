@@ -11,3 +11,4 @@ docker-compose.yml
 .github
 .git
 node
+api/lightning/googleapis
