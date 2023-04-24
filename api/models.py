@@ -444,10 +444,10 @@ class Order(models.Model):
     # in dispute
     is_disputed = models.BooleanField(default=False, null=False)
     maker_statement = models.TextField(
-        max_length=10000, null=True, default=None, blank=True
+        max_length=50000, null=True, default=None, blank=True
     )
     taker_statement = models.TextField(
-        max_length=10000, null=True, default=None, blank=True
+        max_length=50000, null=True, default=None, blank=True
     )
 
     # LNpayments
