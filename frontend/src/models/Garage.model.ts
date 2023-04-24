@@ -28,7 +28,6 @@ class Garage {
   delete = () => {
     this.slots = [emptySlot];
     systemClient.deleteItem('garage');
-    this.save();
   };
 
   updateRobot: (robot: Robot, index: number) => void = (robot, index) => {

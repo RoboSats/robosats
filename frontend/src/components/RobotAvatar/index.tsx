@@ -50,6 +50,8 @@ const RobotAvatar: React.FC<Props> = ({
       ? theme.palette.mode === 'dark'
         ? 'loadingAvatarDark'
         : 'loadingAvatar'
+      : theme.palette.mode === 'dark'
+      ? 'generatingAvatarDark'
       : 'generatingAvatar';
 
   useEffect(() => {
