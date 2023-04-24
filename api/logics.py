@@ -552,7 +552,8 @@ class Logics:
         # Compute a safer available  onchain liquidity: (confirmed_utxos - reserve - pending_outgoing_txs))
         # Accounts for already committed outgoing TX for previous users.
         confirmed = onchain_payment.balance.onchain_confirmed
-        reserve = 300000  # We assume a reserve of 300K Sats (3 times higher than LND's default anchor reserve)
+        # We assume a reserve of 300K Sats (3 times higher than LND's default anchor reserve)
+        reserve = 300000
         pending_txs = OnchainPayment.objects.filter(
             status__in=[OnchainPayment.Status.VALID, OnchainPayment.Status.QUEUE]
         ).aggregate(Sum("num_satoshis"))["num_satoshis__sum"]
@@ -784,7 +785,8 @@ class Logics:
             concept=LNPayment.Concepts.PAYBUYER,
             type=LNPayment.Types.NORM,
             sender=User.objects.get(username=ESCROW_USERNAME),
-            order_paid_LN=order,  # In case this user has other payouts, update the one related to this order.
+            # In case this user has other payouts, update the one related to this order.
+            order_paid_LN=order,
             receiver=user,
             routing_budget_ppm=routing_budget_ppm,
             routing_budget_sats=routing_budget_sats,
@@ -1118,6 +1120,9 @@ class Logics:
                 description,
                 invoice_expiry=order.t_to_expire(Order.Status.WFB),
                 cltv_expiry_blocks=cls.compute_cltv_expiry_blocks(order, "maker_bond"),
+                order_id=order.id,
+                lnpayment_concept=LNPayment.Concepts.MAKEBOND.label,
+                time=int(timezone.now().timestamp()),
             )
         except Exception as e:
             print(str(e))
@@ -1234,6 +1239,9 @@ class Logics:
                 description,
                 invoice_expiry=order.t_to_expire(Order.Status.TAK),
                 cltv_expiry_blocks=cls.compute_cltv_expiry_blocks(order, "taker_bond"),
+                order_id=order.id,
+                lnpayment_concept=LNPayment.Concepts.TAKEBOND.label,
+                time=int(timezone.now().timestamp()),
             )
 
         except Exception as e:
@@ -1330,6 +1338,9 @@ class Logics:
                 cltv_expiry_blocks=cls.compute_cltv_expiry_blocks(
                     order, "trade_escrow"
                 ),
+                order_id=order.id,
+                lnpayment_concept=LNPayment.Concepts.TRESCROW.label,
+                time=int(timezone.now().timestamp()),
             )
 
         except Exception as e:
