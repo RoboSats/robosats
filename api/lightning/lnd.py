@@ -193,9 +193,7 @@ class LNDNode:
         return str(response) == ""  # True if no response, false otherwise.
 
     @classmethod
-    def gen_hold_invoice(
-        cls, num_satoshis, description, invoice_expiry, cltv_expiry_blocks
-    ):
+    def gen_hold_invoice(cls, num_satoshis, description, invoice_expiry, cltv_expiry_blocks, order_id, lnpayment_concept, time):
         """Generates hold invoice"""
 
         hold_payment = {}
