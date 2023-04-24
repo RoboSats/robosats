@@ -11,6 +11,7 @@ from django.utils import timezone
 
 from . import node_pb2 as noderpc
 from . import node_pb2_grpc as nodestub
+from . import primitives_pb2 as primitives__pb2
 
 #######
 # Works with CLN
@@ -213,16 +214,7 @@ class CLNNode:
         return response.state == 2  # True if state is SETTLED, false otherwise.
 
     @classmethod
-    def gen_hold_invoice(
-        cls,
-        num_satoshis,
-        description,
-        invoice_expiry,
-        cltv_expiry_blocks,
-        order_id,
-        receiver_robot,
-        time,
-    ):
+    def gen_hold_invoice(cls, num_satoshis, description, invoice_expiry, cltv_expiry_blocks, order_id, lnpayment_concept, time):
         """Generates hold invoice"""
 
         hold_payment = {}
@@ -231,8 +223,9 @@ class CLNNode:
 
         request = noderpc.InvoiceRequest(
             description=description,
-            amount_msat=num_satoshis * 1_000,
-            label=str(order_id) + "_" + str(receiver_robot) + "_" + str(time),
+            amount_msat=primitives__pb2.AmountOrAny(
+                amount=primitives__pb2.Amount(msat=num_satoshis * 1_000)),
+            label=f"Order:{order_id}-{lnpayment_concept}-{time}",
             expiry=int(
                 invoice_expiry * 1.5
             ),  # actual expiry is padded by 50%, if tight, wrong client system clock will say invoice is expired.
@@ -244,11 +237,13 @@ class CLNNode:
         hold_payment["invoice"] = response.bolt11
         payreq_decoded = cls.decode_payreq(hold_payment["invoice"])
         hold_payment["preimage"] = preimage.hex()
-        hold_payment["payment_hash"] = response.payment_hash
+        hold_payment["payment_hash"] = response.payment_hash.hex()
         hold_payment["created_at"] = timezone.make_aware(
             datetime.fromtimestamp(payreq_decoded.timestamp)
         )
-        hold_payment["expires_at"] = response.expires_at
+        hold_payment["expires_at"] = timezone.make_aware(
+            datetime.fromtimestamp(response.expires_at)
+        )
         hold_payment["cltv_expiry"] = cltv_expiry_blocks
 
         return hold_payment
