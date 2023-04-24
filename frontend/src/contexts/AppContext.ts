@@ -102,18 +102,16 @@ const makeTheme = function (settings: Settings) {
   return theme;
 };
 
-const initialSettings = new Settings();
-const initialTheme = makeTheme(initialSettings);
-const initialGarage = new Garage();
-const initialSlot = initialGarage.slots.length - 1;
-const initialRobot = new Robot(initialGarage.slots[initialSlot].robot);
-
 export const useAppStore = () => {
   // State provided right at the top level of the app. A chaotic bucket of everything.
   // Contains app-wide state and functions. Triggers re-renders on the full tree often.
 
-  const [theme, setTheme] = useState<Theme>(initialTheme);
-  const [settings, setSettings] = useState<Settings>(initialSettings);
+  const [settings, setSettings] = useState<Settings>(() => {
+    return new Settings();
+  });
+  const [theme, setTheme] = useState<Theme>(() => {
+    return makeTheme(settings);
+  });
 
   useEffect(() => {
     setTheme(makeTheme(settings));
@@ -130,9 +128,15 @@ export const useAppStore = () => {
     list: [],
     loading: true,
   });
-  const [garage, setGarage] = useState<Garage>(initialGarage);
-  const [currentSlot, setCurrentSlot] = useState<number>(initialSlot);
-  const [robot, setRobot] = useState<Robot>(initialRobot);
+  const [garage, setGarage] = useState<Garage>(() => {
+    return new Garage();
+  });
+  const [currentSlot, setCurrentSlot] = useState<number>(() => {
+    return garage.slots.length - 1;
+  });
+  const [robot, setRobot] = useState<Robot>(() => {
+    return new Robot(garage.slots[currentSlot].robot);
+  });
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [info, setInfo] = useState<Info>(defaultInfo);
   const [coordinators, setCoordinators] = useState<Coordinator[]>(defaultCoordinators);
