@@ -492,7 +492,7 @@ class UpdateOrderSerializer(serializers.Serializer):
     routing_budget_ppm = serializers.IntegerField(
         default=0,
         min_value=0,
-        max_value=100000,
+        max_value=100001,
         allow_null=True,
         required=False,
         help_text="Max budget to allocate for routing in PPM",
@@ -501,7 +501,7 @@ class UpdateOrderSerializer(serializers.Serializer):
         max_length=100, allow_null=True, allow_blank=True, default=None
     )
     statement = serializers.CharField(
-        max_length=11000, allow_null=True, allow_blank=True, default=None
+        max_length=500000, allow_null=True, allow_blank=True, default=None
     )
     action = serializers.ChoiceField(
         choices=(

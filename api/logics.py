@@ -431,15 +431,22 @@ class Logics:
 
     @classmethod
     def automatic_dispute_resolution(cls, order):
-        """Simple case where a dispute can be solved with a priori knowledge.
-        For example, a dispute that opens at expiration on an order where one of the participants never sent a message on the chat
-        and never marked 'fiat sent' . By solving the dispute automatically before flagging it as dispute, we avoid having to settle the bonds"""
+        """Simple case where a dispute can be solved with a
+        priori knowledge. For example, a dispute that opens
+        at expiration on an order where one of the participants
+        never sent a message on the chat and never marked 'fiat
+        sent'. By solving the dispute automatically before
+        flagging it as dispute, we avoid having to settle the
+        bonds"""
 
-        # If fiat has been marked as sent, automatic dispute resolution is not possible.
+        # If fiat has been marked as sent, automatic dispute
+        # resolution is not possible.
         if order.is_fiat_sent:
             return False
 
-        # If the order has not entered dispute due to time expire (a user triggered it), automatic dispute resolution is not possible.
+        # If the order has not entered dispute due to time expire
+        # (a user triggered it), automatic dispute resolution is
+        # not possible.
         if order.expires_at >= timezone.now():
             return False
 
@@ -451,22 +458,22 @@ class Logics:
         )
 
         if num_messages_maker == num_messages_taker == 0:
-            cls.cancel_escrow(order)
+            cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.settle_bond(order.taker_bond)
             order.status = Order.Status.DIS
 
         elif num_messages_maker == 0:
-            cls.cancel_escrow(order)
+            cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
-            cls.cancel_bond(order.taker_bond)
+            cls.return_bond(order.taker_bond)
             cls.add_slashed_rewards(order.maker_bond, order.taker.profile)
             order.status = Order.Status.MLD
 
         elif num_messages_maker == 0:
-            cls.cancel_escrow(order)
+            cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
-            cls.cancel_bond(order.taker_bond)
+            cls.return_bond(order.taker_bond)
             cls.add_slashed_rewards(order.taker_bond, order.maker.profile)
             order.status = Order.Status.TLD
         else:
@@ -539,9 +546,9 @@ class Logics:
                 "bad_request": "Only orders in dispute accept dispute statements"
             }
 
-        if len(statement) > 10000:
+        if len(statement) > 50000:
             return False, {
-                "bad_statement": "The statement is longer than 10000 characters"
+                "bad_statement": "The statement and chatlogs are longer than 50000 characters"
             }
 
         if len(statement) < 100:
