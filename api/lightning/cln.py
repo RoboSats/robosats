@@ -146,9 +146,9 @@ class CLNNode:
                     ) // 1_000
                 for htlc in channel.htlcs:
                     if htlc.direction == 0:  # IN
-                        unsettled_local_balance += htlc.amount_msat // 1_000
+                        unsettled_local_balance += htlc.amount_msat.msat // 1_000
                     elif htlc.direction == 1:  # OUT
-                        unsettled_remote_balance += htlc.amount_msat // 1_000
+                        unsettled_remote_balance += htlc.amount_msat.msat // 1_000
 
         return {
             "local_balance": local_balance_sat,
