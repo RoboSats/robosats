@@ -551,20 +551,35 @@ class LNNode:
 
             if "invoice expired" in str(e):
                 print(f"Order: {order.id}. INVOICE EXPIRED. Hash: {hash}")
-                lnpayment.status = LNPayment.Status.EXPIRE
-                lnpayment.last_routing_time = timezone.now()
-                lnpayment.in_flight = False
-                lnpayment.save()
-                order.status = Order.Status.FAI
-                order.expires_at = timezone.now() + timedelta(
-                    seconds=order.t_to_expire(Order.Status.FAI)
-                )
-                order.save()
-                results = {
-                    "succeded": False,
-                    "context": "The payout invoice has expired",
-                }
-                return results
+                # An expired invoice can already be in-flight. Check.
+                try:
+                    request = routerrpc.TrackPaymentRequest(
+                        payment_hash=bytes.fromhex(hash)
+                    )
+
+                    for response in cls.routerstub.TrackPaymentV2(request):
+                        handle_response(response, was_in_transit=True)
+
+                except Exception as e:
+                    if "payment isn't initiated" in str(e):
+                        print(
+                            f"Order: {order.id}. The expired invoice had not been initiated. Hash: {hash}"
+                        )
+
+                        lnpayment.status = LNPayment.Status.EXPIRE
+                        lnpayment.last_routing_time = timezone.now()
+                        lnpayment.in_flight = False
+                        lnpayment.save()
+                        order.status = Order.Status.FAI
+                        order.expires_at = timezone.now() + timedelta(
+                            seconds=order.t_to_expire(Order.Status.FAI)
+                        )
+                        order.save()
+                        results = {
+                            "succeded": False,
+                            "context": "The payout invoice has expired",
+                        }
+                        return results
 
             elif "payment is in transition" in str(e):
                 print(f"Order: {order.id} ALREADY IN TRANSITION. Hash: {hash}.")
