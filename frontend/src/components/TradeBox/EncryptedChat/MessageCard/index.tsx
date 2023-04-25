@@ -36,6 +36,7 @@ const MessageCard: React.FC<Props> = ({ message, isTaker, userConnected, baseUrl
             statusColor={userConnected ? 'success' : 'error'}
             nickname={message.userNick}
             baseUrl={baseUrl}
+            small={true}
           />
         }
         style={{ backgroundColor: cardColor }}

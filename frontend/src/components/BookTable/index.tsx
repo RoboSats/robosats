@@ -180,6 +180,7 @@ const BookTable = ({
                 statusColor={statusBadgeColor(params.row.maker_status)}
                 tooltip={t(params.row.maker_status)}
                 baseUrl={baseUrl}
+                small={true}
               />
             </ListItemAvatar>
             <ListItemText primary={params.row.maker_nick} />
@@ -207,6 +208,7 @@ const BookTable = ({
                 statusColor={statusBadgeColor(params.row.maker_status)}
                 tooltip={t(params.row.maker_status)}
                 baseUrl={baseUrl}
+                small={true}
               />
             </ListItemButton>
           </div>

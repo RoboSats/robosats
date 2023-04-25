@@ -226,6 +226,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 statusColor={statusBadgeColor(order.maker_status)}
                 tooltip={t(order.maker_status)}
                 baseUrl={baseUrl}
+                small={true}
               />
             </Grid>
           </Grid>

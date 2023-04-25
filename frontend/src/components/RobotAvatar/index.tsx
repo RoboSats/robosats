@@ -9,6 +9,7 @@ import placeholder from './placeholder.json';
 interface Props {
   nickname: string | undefined;
   smooth?: boolean;
+  small?: boolean;
   flipHorizontally?: boolean;
   style?: object;
   imageStyle?: object;
@@ -29,6 +30,7 @@ const RobotAvatar: React.FC<Props> = ({
   tooltip,
   tooltipPosition = 'right',
   smooth = false,
+  small = false,
   flipHorizontally = false,
   placeholderType = 'loading',
   style = {},
@@ -57,12 +59,12 @@ const RobotAvatar: React.FC<Props> = ({
   useEffect(() => {
     if (nickname != undefined) {
       if (window.NativeRobosats === undefined) {
-        setAvatarSrc(baseUrl + '/static/assets/avatars/' + nickname + '.png');
+        setAvatarSrc(`${baseUrl}/static/assets/avatars/${nickname}${small ? '.small' : ''}.webp`);
         setNicknameReady(true);
       } else {
         setNicknameReady(true);
         apiClient
-          .fileImageUrl(baseUrl, '/static/assets/avatars/' + nickname + '.png')
+          .fileImageUrl(baseUrl, `/static/assets/avatars/${nickname}${small ? '.small' : ''}.webp`)
           .then(setAvatarSrc);
       }
     } else {

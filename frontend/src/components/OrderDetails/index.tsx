@@ -226,6 +226,7 @@ const OrderDetails = ({
                 tooltip={t(order.maker_status)}
                 orderType={order.type}
                 baseUrl={baseUrl}
+                small={true}
               />
             </ListItemAvatar>
             <ListItemText
@@ -257,6 +258,7 @@ const OrderDetails = ({
                   tooltip={t(order.taker_status)}
                   orderType={order.type === 0 ? 1 : 0}
                   baseUrl={baseUrl}
+                  small={true}
                 />
               </ListItemAvatar>
             </ListItem>
