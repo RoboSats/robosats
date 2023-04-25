@@ -116,6 +116,7 @@ const TradeSummary = ({
               baseUrl={baseUrl}
               style={{ height: '1.5em', width: '1.5em' }}
               nickname={makerNick}
+              small={true}
             />
             &nbsp;
             {t('Maker')}
@@ -131,6 +132,7 @@ const TradeSummary = ({
               avatarClass='smallAvatar'
               style={{ height: '1.5em', width: '1.5em' }}
               nickname={takerNick}
+              small={true}
             />
           </ToggleButton>
         </ToggleButtonGroup>

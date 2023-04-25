@@ -687,9 +687,19 @@ class UserView(APIView):
         rh.assemble(roboset="set1", bgset="any")  # for backgrounds ON
 
         # Does not replace image if existing (avoid re-avatar in case of nick collusion)
-        image_path = avatar_path.joinpath(nickname + ".png")
+        # Deprecate "png" and keep "webp" only after v0.4.4
+        image_path = avatar_path.joinpath(nickname + ".webp")
         if not image_path.exists():
             with open(image_path, "wb") as f:
+                rh.img.save(f, format="WEBP", quality=80)
+
+            image_small_path = avatar_path.joinpath(nickname + ".small.webp")
+            with open(image_small_path, "wb") as f:
+                resized_img = rh.img.resize((80, 80))
+                resized_img.save(f, format="WEBP", quality=80)
+
+            png_path = avatar_path.joinpath(nickname + ".png")
+            with open(png_path, "wb") as f:
                 rh.img.save(f, format="png", optimize=True)
 
         # Create new credentials and login if nickname is new
@@ -716,7 +726,7 @@ class UserView(APIView):
 
             context["referral_code"] = token_urlsafe(8)
             user.profile.referral_code = context["referral_code"]
-            user.profile.avatar = "static/assets/avatars/" + nickname + ".png"
+            user.profile.avatar = "static/assets/avatars/" + nickname + ".webp"
 
             # Noticed some PGP keys replaced at re-login. Should not happen.
             # Let's implement this sanity check "If profile has not keys..."

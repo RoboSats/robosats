@@ -285,6 +285,7 @@ const RobotProfile = ({
                               style={{ width: '2.6em', height: '2.6em' }}
                               placeholderType='loading'
                               baseUrl={baseUrl}
+                              small={true}
                             />
                           </Grid>
                           <Grid item>
