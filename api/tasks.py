@@ -84,6 +84,9 @@ def follow_send_payment(hash):
     from api.lightning.node import LNNode
     from api.models import LNPayment
 
+    if config("DEBUG_PERMISSIONED_PAYOUTS", cast=bool, default=False):
+        return
+
     lnpayment = LNPayment.objects.get(payment_hash=hash)
     lnpayment.last_routing_time = timezone.now()
     lnpayment.save()
