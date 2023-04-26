@@ -23,7 +23,7 @@ export interface OpenDialogs {
 }
 
 const MainDialogs = (): JSX.Element => {
-  const { open, setOpen, info, limits, robot, setRobot, setPage, setCurrentOrder, baseUrl } =
+  const { open, setOpen, info, limits, robot, setRobot, setCurrentOrder, baseUrl } =
     useContext<UseAppStoreType>(AppContext);
 
   const [maxAmount, setMaxAmount] = useState<string>('...loading...');
@@ -74,7 +74,6 @@ const MainDialogs = (): JSX.Element => {
         onClose={() => setOpen({ ...open, profile: false })}
         robot={robot}
         setRobot={setRobot}
-        setPage={setPage}
         setCurrentOrder={setCurrentOrder}
       />
     </>

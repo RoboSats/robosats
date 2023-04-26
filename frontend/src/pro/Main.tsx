@@ -62,8 +62,6 @@ const Main = (): JSX.Element => {
     setFav,
     baseUrl,
     order,
-    page,
-    setPage,
     currentOrder,
     setCurrentOrder,
     open,

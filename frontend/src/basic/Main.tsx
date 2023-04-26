@@ -42,7 +42,6 @@ const Main: React.FC = () => {
     baseUrl,
     order,
     page,
-    setPage,
     slideDirection,
     setOpen,
     windowSize,
@@ -66,7 +65,6 @@ const Main: React.FC = () => {
         page={page}
         openProfile={() => setOpen({ ...closeAll, profile: true })}
         rewards={robot.earnedRewards}
-        setPage={setPage}
         windowWidth={windowSize.width}
       />
       {settings.network === 'testnet' ? (

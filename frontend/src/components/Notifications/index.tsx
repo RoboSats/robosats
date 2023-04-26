@@ -18,7 +18,6 @@ interface NotificationsProps {
   order: Order | undefined;
   rewards: number | undefined;
   page: Page;
-  setPage: (state: Page) => void;
   openProfile: () => void;
   windowWidth: number;
 }
@@ -63,7 +62,6 @@ const Notifications = ({
   order,
   rewards,
   page,
-  setPage,
   windowWidth,
   openProfile,
 }: NotificationsProps): JSX.Element => {
@@ -84,7 +82,6 @@ const Notifications = ({
   const basePageTitle = t('RoboSats - Simple and Private Bitcoin Exchange');
 
   const moveToOrderPage = function () {
-    setPage('order');
     navigate(`/order/${order?.id}`);
     setShow(false);
   };

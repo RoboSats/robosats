@@ -47,20 +47,10 @@ interface Props {
   onClose: () => void;
   robot: Robot;
   setRobot: (state: Robot) => void;
-  setPage: (state: Page) => void;
-  setCurrentOrder: (state: number) => void;
   baseUrl: string;
 }
 
-const ProfileDialog = ({
-  open = false,
-  baseUrl,
-  onClose,
-  robot,
-  setRobot,
-  setPage,
-  setCurrentOrder,
-}: Props): JSX.Element => {
+const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Props): JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -181,9 +171,7 @@ const ProfileDialog = ({
           {robot.activeOrderId ? (
             <ListItemButton
               onClick={() => {
-                navigate('/order/' + robot.activeOrderId);
-                setPage('order');
-                setCurrentOrder(robot.activeOrderId);
+                navigate(`/order/${robot.activeOrderId}`);
                 onClose();
               }}
             >
@@ -200,9 +188,7 @@ const ProfileDialog = ({
           ) : robot.lastOrderId ? (
             <ListItemButton
               onClick={() => {
-                navigate('/order/' + robot.lastOrderId);
-                setPage('order');
-                setCurrentOrder(robot.lastOrderId);
+                navigate(`/order/${robot.lastOrderId}`);
                 onClose();
               }}
             >

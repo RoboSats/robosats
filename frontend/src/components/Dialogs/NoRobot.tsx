@@ -9,7 +9,6 @@ import {
   Button,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 interface Props {
   open: boolean;
@@ -17,13 +16,11 @@ interface Props {
 }
 
 const NoRobotDialog = ({ open, onClose }: Props): JSX.Element => {
-  const { setPage } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleClickGenerate = function () {
     onClose();
-    setPage('robot');
     navigate('/robot');
   };
 

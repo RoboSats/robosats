@@ -22,7 +22,7 @@ import { genKey } from '../../pgp';
 import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 const RobotPage = (): JSX.Element => {
-  const { robot, setRobot, setPage, setCurrentOrder, fetchRobot, torStatus, windowSize, baseUrl } =
+  const { robot, setRobot, setCurrentOrder, fetchRobot, torStatus, windowSize, baseUrl } =
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const params = useParams();
@@ -142,7 +142,6 @@ const RobotPage = (): JSX.Element => {
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
-            setPage={setPage}
             baseUrl={baseUrl}
           />
         ) : null}
@@ -160,7 +159,6 @@ const RobotPage = (): JSX.Element => {
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
-            setPage={setPage}
             baseUrl={baseUrl}
           />
         ) : null}
@@ -174,7 +172,6 @@ const RobotPage = (): JSX.Element => {
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
-            setPage={setPage}
             baseUrl={baseUrl}
           />
         ) : null}

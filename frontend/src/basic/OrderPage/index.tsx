@@ -20,7 +20,6 @@ const OrderPage = (): JSX.Element => {
     setCurrentOrder,
     badOrder,
     setBadOrder,
-    setPage,
     baseUrl,
     navbarHeight,
   } = useContext<UseAppStoreType>(AppContext);
@@ -33,7 +32,7 @@ const OrderPage = (): JSX.Element => {
 
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
 
-  useEffect(() => setCurrentOrder(Number(params.orderId)), []);
+  useEffect(() => setCurrentOrder(Number(params.orderId)), [params.orderId]);
 
   const renewOrder = function () {
     if (order != undefined) {
@@ -58,16 +57,13 @@ const OrderPage = (): JSX.Element => {
           setBadOrder(data.bad_request);
         } else if (data.id) {
           navigate('/order/' + data.id);
-          setCurrentOrder(data.id);
         }
       });
     }
   };
 
-  const startAgain = function () {
-    navigate('/robot');
-    setPage('robot');
-  };
+  const startAgain = () => navigate('/robot');
+
   return (
     <Box>
       {order == undefined && badOrder == undefined ? <CircularProgress /> : null}

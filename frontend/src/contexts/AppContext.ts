@@ -336,13 +336,15 @@ export const useAppStore = () => {
 
     apiClient.post(baseUrl, '/api/user/', requestBody).then((data: any) => {
       let newRobot = robot;
-      setCurrentOrder(
-        data.active_order_id
-          ? data.active_order_id
-          : data.last_order_id
-          ? data.last_order_id
-          : null,
-      );
+      if (currentOrder === undefined) {
+        setCurrentOrder(
+          data.active_order_id
+            ? data.active_order_id
+            : data.last_order_id
+            ? data.last_order_id
+            : null,
+        );
+      }
       if (data.bad_request) {
         setBadRequest(data.bad_request);
         newRobot = {

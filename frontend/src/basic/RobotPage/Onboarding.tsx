@@ -32,7 +32,6 @@ interface OnboardingProps {
   setInputToken: (state: string) => void;
   getGenerateRobot: (token: string) => void;
   badRequest: string | undefined;
-  setPage: (state: Page) => void;
   baseUrl: string;
 }
 
@@ -44,7 +43,6 @@ const Onboarding = ({
   setRobot,
   badRequest,
   getGenerateRobot,
-  setPage,
   baseUrl,
 }: OnboardingProps): JSX.Element => {
   const { t } = useTranslation();
@@ -59,11 +57,6 @@ const Onboarding = ({
     setInputToken(genBase62Token(36));
     setLoading(true);
     setTimeout(() => setLoading(false), 1000);
-  };
-
-  const changePage = function (newPage: Page) {
-    setPage(newPage);
-    navigate(`/${newPage}`);
   };
 
   return (
@@ -246,11 +239,11 @@ const Onboarding = ({
 
             <Grid item>
               <ButtonGroup variant='contained'>
-                <Button color='primary' onClick={() => changePage('offers')}>
+                <Button color='primary' onClick={() => navigate('/offers')}>
                   <Storefront /> <div style={{ width: '0.5em' }} />
                   {t('Offers')}
                 </Button>
-                <Button color='secondary' onClick={() => changePage('create')}>
+                <Button color='secondary' onClick={() => navigate('/create')}>
                   <AddBox /> <div style={{ width: '0.5em' }} />
                   {t('Create')}
                 </Button>
