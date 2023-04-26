@@ -38,7 +38,15 @@ const MakerPage = (): JSX.Element => {
         threshold: 0.7,
       },
     });
-  }, [book.orders, fav, maker.premium, maker.amount, maker.minAmount, maker.maxAmount]);
+  }, [
+    book.orders,
+    fav,
+    maker.premium,
+    maker.amount,
+    maker.minAmount,
+    maker.maxAmount,
+    maker.paymentMethods,
+  ]);
 
   const onViewOrder = function () {
     setOrder(undefined);
