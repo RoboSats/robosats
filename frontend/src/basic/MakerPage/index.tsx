@@ -40,6 +40,7 @@ const MakerPage = (): JSX.Element => {
         type: fav.type,
         mode: fav.mode,
       },
+      premium: Number(maker.premium) ?? null,
       paymentMethods: maker.paymentMethods,
       amountFilter: {
         amount: maker.amount,
@@ -48,7 +49,7 @@ const MakerPage = (): JSX.Element => {
         threshold: 0.7,
       },
     });
-  }, [book.orders, fav, maker.amount, maker.minAmount, maker.maxAmount]);
+  }, [book.orders, fav, maker.premium, maker.amount, maker.minAmount, maker.maxAmount]);
 
   const onViewOrder = function () {
     setOrder(undefined);
