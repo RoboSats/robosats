@@ -63,7 +63,7 @@ const MakerForm = ({
   onOrderCreated = () => null,
   hasRobot = true,
 }: MakerFormProps): JSX.Element => {
-  const { fav, setFav, limits, fetchLimits, info, maker, setMaker, setPage, baseUrl } =
+  const { fav, setFav, limits, fetchLimits, info, maker, setMaker, baseUrl } =
     useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
@@ -457,7 +457,6 @@ const MakerForm = ({
       <ConfirmationDialog
         open={openDialogs}
         onClose={() => setOpenDialogs(false)}
-        setPage={setPage}
         onClickDone={handleCreateOrder}
         hasRobot={hasRobot}
       />

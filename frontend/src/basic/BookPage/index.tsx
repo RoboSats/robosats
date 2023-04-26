@@ -13,18 +13,8 @@ import { BarChart, FormatListBulleted } from '@mui/icons-material';
 import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 const BookPage = (): JSX.Element => {
-  const {
-    robot,
-    fetchBook,
-    clearOrder,
-    windowSize,
-    setPage,
-    setCurrentOrder,
-    baseUrl,
-    book,
-    setDelay,
-    setOrder,
-  } = useContext<UseAppStoreType>(AppContext);
+  const { robot, fetchBook, windowSize, book, setDelay, setOrder } =
+    useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'depth'>('list');
@@ -48,8 +38,6 @@ const BookPage = (): JSX.Element => {
   const onOrderClicked = function (id: number) {
     if (robot.avatarLoaded) {
       navigate('/order/' + id);
-      setPage('order');
-      setCurrentOrder(id);
       onViewOrder();
     } else {
       setOpenNoRobot(true);
@@ -87,15 +75,13 @@ const BookPage = (): JSX.Element => {
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1} sx={{ minWidth: 400 }}>
-      <NoRobotDialog open={openNoRobot} onClose={() => setOpenNoRobot(false)} setPage={setPage} />
+      <NoRobotDialog open={openNoRobot} onClose={() => setOpenNoRobot(false)} />
       {openMaker ? (
         <Dialog open={openMaker} onClose={() => setOpenMaker(false)}>
           <Box sx={{ maxWidth: '18em', padding: '0.5em' }}>
             <MakerForm
               hasRobot={robot.avatarLoaded}
               onOrderCreated={(id) => {
-                clearOrder();
-                setCurrentOrder(id);
                 setPage('order');
                 navigate('/order/' + id);
               }}

@@ -32,7 +32,6 @@ interface RobotProfileProps {
   logoutRobot: () => void;
   inputToken: string;
   setInputToken: (state: string) => void;
-  setPage: (state: Page) => void;
   baseUrl: string;
   badRequest: string;
   width: number;
@@ -46,7 +45,6 @@ const RobotProfile = ({
   setInputToken,
   setCurrentOrder,
   logoutRobot,
-  setPage,
   setView,
   badRequest,
   baseUrl,
@@ -157,8 +155,7 @@ const RobotProfile = ({
           <Grid item>
             <Button
               onClick={() => {
-                navigate('/order/' + robot.activeOrderId);
-                setPage('order');
+                navigate(`/order/${robot.activeOrderId}`);
                 setCurrentOrder(robot.activeOrderId);
               }}
             >
@@ -172,8 +169,7 @@ const RobotProfile = ({
             <Grid item>
               <Button
                 onClick={() => {
-                  navigate('/order/' + robot.lastOrderId);
-                  setPage('order');
+                  navigate(`/order/${robot.lastOrderId}`);
                   setCurrentOrder(robot.lastOrderId);
                 }}
               >

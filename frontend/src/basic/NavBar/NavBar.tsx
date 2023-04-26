@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Tabs, Tab, Paper, useTheme } from '@mui/material';
 import MoreTooltip from './MoreTooltip';
 
@@ -38,11 +38,13 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
   const theme = useTheme();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const smallBar = width < 50;
 
   const tabSx = smallBar
     ? { position: 'relative', bottom: robot.avatarLoaded ? '0.9em' : '0.13em', minWidth: '1em' }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
+
   const pagesPosition = {
     robot: 1,
     offers: 2,
@@ -50,6 +52,11 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
     order: 4,
     settings: 5,
   };
+
+  useEffect(() => {
+    const pathPage = location.pathname.split('/')[1];
+    setPage(pathPage);
+  }, [location]);
 
   const handleSlideDirection = function (oldPage: Page, newPage: Page) {
     const oldPos: number = pagesPosition[oldPage];

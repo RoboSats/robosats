@@ -12,19 +12,8 @@ import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 import { NoRobotDialog } from '../../components/Dialogs';
 
 const MakerPage = (): JSX.Element => {
-  const {
-    robot,
-    book,
-    fav,
-    maker,
-    clearOrder,
-    windowSize,
-    setCurrentOrder,
-    navbarHeight,
-    setPage,
-    setOrder,
-    setDelay,
-  } = useContext<UseAppStoreType>(AppContext);
+  const { robot, book, fav, maker, windowSize, navbarHeight, setOrder, setDelay } =
+    useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -58,8 +47,6 @@ const MakerPage = (): JSX.Element => {
   const onOrderClicked = function (id: number) {
     if (robot.avatarLoaded) {
       navigate('/order/' + id);
-      setPage('order');
-      setCurrentOrder(id);
       onViewOrder();
     } else {
       setOpenNoRobot(true);
@@ -68,7 +55,7 @@ const MakerPage = (): JSX.Element => {
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1}>
-      <NoRobotDialog open={openNoRobot} onClose={() => setOpenNoRobot(false)} setPage={setPage} />
+      <NoRobotDialog open={openNoRobot} onClose={() => setOpenNoRobot(false)} />
       <Grid item>
         <Collapse in={matches.length > 0 && showMatches}>
           <Grid container direction='column' alignItems='center' spacing={1}>
@@ -102,9 +89,6 @@ const MakerPage = (): JSX.Element => {
         >
           <MakerForm
             onOrderCreated={(id) => {
-              clearOrder();
-              setCurrentOrder(id);
-              setPage('order');
               navigate('/order/' + id);
             }}
             hasRobot={robot.avatarLoaded}
