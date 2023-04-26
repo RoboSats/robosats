@@ -89,7 +89,7 @@ const StringAsIcons: React.FC = ({ othersText, verbose, size, text }: Props) => 
     } else {
       return rows;
     }
-  }, []);
+  }, [text]);
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>{parsedText}</div>
