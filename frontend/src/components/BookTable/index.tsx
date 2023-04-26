@@ -79,7 +79,7 @@ const BookTable = ({
   // all sizes in 'em'
   const [fontSize, defaultPageSize, height] = useMemo(() => {
     const fontSize = theme.typography.fontSize;
-    const verticalHeightFrame = 3.25 + (showControls ? 3.7 : 0) + (showFooter ? 2.35 : 0);
+    const verticalHeightFrame = 3.25 + (showControls ? 3.7 : 0.35) + (showFooter ? 2.35 : 0);
     const verticalHeightRow = 3.25;
     const defaultPageSize = Math.max(
       Math.floor(
