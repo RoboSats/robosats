@@ -55,8 +55,9 @@ const TakeButton = ({ order, setOrder, baseUrl, hasRobot, info }: TakeButtonProp
     const defaultRoutingBudget = 0.001;
     const btc_now = order.satoshis_now / 100000000;
     const rate = order.amount ? order.amount / btc_now : order.max_amount / btc_now;
+    const amount = order.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
     const satoshis = computeSats({
-      amount: Number(takeAmount),
+      amount: amount,
       routingBudget: order.is_buyer ? defaultRoutingBudget : 0,
       fee: tradeFee,
       rate: rate,

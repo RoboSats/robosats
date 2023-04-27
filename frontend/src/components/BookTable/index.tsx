@@ -14,6 +14,7 @@ import {
   LinearProgress,
   IconButton,
   Tooltip,
+  LinearProgressProps,
 } from '@mui/material';
 import {
   DataGrid,
@@ -664,11 +665,11 @@ const BookTable = ({
   };
 
   interface GridComponentProps {
-    LoadingOverlay: JSX.Element;
-    NoResultsOverlay?: JSX.Element;
-    NoRowsOverlay?: JSX.Element;
-    Footer?: JSX.Element;
-    Toolbar?: JSX.Element;
+    LoadingOverlay: (props: LinearProgressProps) => JSX.Element;
+    NoResultsOverlay?: (props: any) => JSX.Element;
+    NoRowsOverlay?: (props: any) => JSX.Element;
+    Footer?: (props: any) => JSX.Element;
+    Toolbar?: (props: any) => JSX.Element;
   }
 
   const NoResultsOverlay = function () {
