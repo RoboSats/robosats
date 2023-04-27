@@ -21,6 +21,11 @@ class ChatRoomAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     )
     change_links = ["order", "maker", "taker"]
     search_fields = ["id"]
+    raw_id_fields = (
+        "order",
+        "maker",
+        "taker",
+    )
 
 
 @admin.register(Message)
@@ -38,3 +43,9 @@ class MessageAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     search_fields = ["id", "index"]
     ordering = ["-chatroom_id", "-index"]
     list_filter = ("chatroom",)
+    raw_id_fields = (
+        "order",
+        "chatroom",
+        "receiver",
+        "sender",
+    )

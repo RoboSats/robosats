@@ -272,6 +272,10 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "order_escrow",
         "order_paid_LN",
     )
+    raw_id_fields = (
+        "receiver",
+        "sender",
+    )
     list_filter = ("type", "concept", "status")
     ordering = ("-expires_at",)
     search_fields = [
@@ -301,6 +305,10 @@ class OnchainPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     change_links = (
         "balance",
         "order_paid_TX",
+    )
+    raw_id_fields = (
+        "receiver",
+        "balance",
     )
     list_display_links = ("id", "address", "concept")
     list_filter = ("concept", "status")
