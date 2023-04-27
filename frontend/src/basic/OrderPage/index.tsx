@@ -17,6 +17,8 @@ const OrderPage = (): JSX.Element => {
     robot,
     settings,
     setOrder,
+    clearOrder,
+    currentOrder,
     setCurrentOrder,
     badOrder,
     setBadOrder,
@@ -32,7 +34,12 @@ const OrderPage = (): JSX.Element => {
 
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
 
-  useEffect(() => setCurrentOrder(Number(params.orderId)), [params.orderId]);
+  useEffect(() => {
+    setCurrentOrder(Number(params.orderId));
+    if (currentOrder != params.orderId) {
+      clearOrder();
+    }
+  }, [params.orderId]);
 
   const renewOrder = function () {
     if (order != undefined) {

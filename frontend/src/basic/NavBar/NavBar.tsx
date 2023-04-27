@@ -54,8 +54,11 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
   };
 
   useEffect(() => {
-    const pathPage = location.pathname.split('/')[1];
-    setPage(pathPage);
+    // change tab (page) into the current route
+    const pathPage: Page = location.pathname.split('/')[1];
+    if (pathPage) {
+      setPage(pathPage);
+    }
   }, [location]);
 
   const handleSlideDirection = function (oldPage: Page, newPage: Page) {
