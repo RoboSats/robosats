@@ -51,7 +51,7 @@ const TakeButton = ({ order, setOrder, baseUrl, hasRobot, info }: TakeButtonProp
   const [satoshis, setSatoshis] = useState<string>('');
 
   const satoshisNow = () => {
-    const tradeFee = info.taker_fee;
+    const tradeFee = info?.taker_fee ?? 0;
     const defaultRoutingBudget = 0.001;
     const btc_now = order.satoshis_now / 100000000;
     const rate = order.amount ? order.amount / btc_now : order.max_amount / btc_now;
@@ -67,7 +67,7 @@ const TakeButton = ({ order, setOrder, baseUrl, hasRobot, info }: TakeButtonProp
 
   useEffect(() => {
     setSatoshis(satoshisNow());
-  }, [order.satoshis_now, takeAmount]);
+  }, [order.satoshis_now, takeAmount, info]);
 
   const currencyCode: string = order.currency == 1000 ? 'Sats' : currencies[`${order.currency}`];
 

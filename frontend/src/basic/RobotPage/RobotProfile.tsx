@@ -16,7 +16,6 @@ import {
 import { Bolt, Add, DeleteSweep, Logout, Download } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
-import { Page } from '../NavBar';
 import { Slot, Robot } from '../../models';
 import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
@@ -156,7 +155,6 @@ const RobotProfile = ({
             <Button
               onClick={() => {
                 navigate(`/order/${robot.activeOrderId}`);
-                setCurrentOrder(robot.activeOrderId);
               }}
             >
               {t('Active order #{{orderID}}', { orderID: robot.activeOrderId })}
@@ -170,7 +168,6 @@ const RobotProfile = ({
               <Button
                 onClick={() => {
                   navigate(`/order/${robot.lastOrderId}`);
-                  setCurrentOrder(robot.lastOrderId);
                 }}
               >
                 {t('Last order #{{orderID}}', { orderID: robot.lastOrderId })}

@@ -149,7 +149,7 @@ const OrderDetails = ({
     let sats: string = '';
 
     const isBuyer = (order.type == 0 && order.is_maker) || (order.type == 1 && !order.is_maker);
-    const tradeFee = order.is_maker ? info.maker_fee : info.taker_fee;
+    const tradeFee = order.is_maker ? info?.maker_fee ?? 0 : info?.taker_fee ?? 0;
     const defaultRoutingBudget = 0.001;
     const btc_now = order.satoshis_now / 100000000;
     const rate = order.amount ? order.amount / btc_now : order.max_amount / btc_now;

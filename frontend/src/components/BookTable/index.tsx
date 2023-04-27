@@ -15,6 +15,7 @@ import {
   IconButton,
   Tooltip,
   LinearProgressProps,
+  styled,
 } from '@mui/material';
 import {
   DataGrid,
@@ -34,6 +35,12 @@ import RobotAvatar from '../RobotAvatar';
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+
+const ClickThroughDataGrid = styled(DataGrid)({
+  '& .MuiDataGrid-overlayWrapperInner': {
+    pointerEvents: 'none',
+  },
+});
 
 interface BookTableProps {
   orderList?: PublicOrder[];
@@ -741,7 +748,7 @@ const BookTable = ({
             : { width: `${width}em`, height: `${height}em`, overflow: 'auto' }
         }
       >
-        <DataGrid
+        <ClickThroughDataGrid
           localeText={localeText}
           rowHeight={3.714 * theme.typography.fontSize}
           headerHeight={3.25 * theme.typography.fontSize}
@@ -776,7 +783,7 @@ const BookTable = ({
     return (
       <Dialog open={fullscreen} fullScreen={true}>
         <Paper style={{ width: '100%', height: '100%', overflow: 'auto' }}>
-          <DataGrid
+          <ClickThroughDataGrid
             localeText={localeText}
             rowHeight={3.714 * theme.typography.fontSize}
             headerHeight={3.25 * theme.typography.fontSize}

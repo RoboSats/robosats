@@ -35,9 +35,9 @@ const OrderPage = (): JSX.Element => {
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
 
   useEffect(() => {
-    setCurrentOrder(Number(params.orderId));
     if (currentOrder != params.orderId) {
       clearOrder();
+      setCurrentOrder(Number(params.orderId));
     }
   }, [params.orderId]);
 
