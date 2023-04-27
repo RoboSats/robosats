@@ -14,7 +14,6 @@ export interface PublicOrder {
   premium: number;
   satoshis: number;
   satoshis_now: number;
-  bondless_taker: boolean;
   bond_size: number;
   maker: number;
   escrow_duration: number;

@@ -28,7 +28,6 @@ class MakerViewSchema:
             - `public_duration` - **{PUBLIC_DURATION}**
             - `escrow_duration` - **{ESCROW_DURATION}**
             - `bond_size` -  **{BOND_SIZE}**
-            - `bondless_taker` - **false**
             - `has_range` - **false**
             - `premium` - **0**
             """
@@ -81,7 +80,6 @@ class OrderViewSchema:
             - `is_explicit`
             - `premium`
             - `satoshis`
-            - `bondless_taker`
             - `maker`
             - `taker`
             - `escrow_duration`
@@ -272,10 +270,10 @@ class OrderViewSchema:
                   collaborativelly cancelling orders for both parties.
             - `confirm`
               - This is a **crucial** action. This confirms the sending and
-                recieving of fiat depending on whether you are a buyer or
+                receiving of fiat depending on whether you are a buyer or
                 seller. There is not much RoboSats can do to actually confirm
                 and verify the fiat payment channel. It is up to you to make
-                sure of the correct amount was recieved before you confirm.
+                sure of the correct amount was received before you confirm.
                 This action is only allowed when status is either `9` (Sending
                 fiat - In chatroom) or `10` (Fiat sent - In chatroom)
                 - If you are the buyer, it simply sets `fiat_sent` to `true`
@@ -283,11 +281,16 @@ class OrderViewSchema:
                   method selected by the seller and signals the seller that the
                   fiat payment was done.
                 - If you are the seller, be very careful and double check
-                  before perorming this action. Check that your fiat payment
-                  method was successful in recieving the funds and whether it
+                  before performing this action. Check that your fiat payment
+                  method was successful in receiving the funds and whether it
                   was the correct amount. This action settles the escrow and
                   pays the buyer and sets the the order status to `13` (Sending
                   satohis to buyer) and eventually to `14` (successful trade).
+            - `undo_confirm`
+              - This action will undo the fiat_sent confirmation by the buyer
+                it is allowed only once the fiat is confirmed as sent and can
+                enable the collaborative cancellation option if an off-robosats
+                payment cannot be completed or is blocked.
             - `dispute`
               - This action is allowed only if status is `9` or `10`. It sets
                 the order status to `11` (In dispute) and sets `is_disputed` to
@@ -298,11 +301,11 @@ class OrderViewSchema:
                 bond.
             - `submit_statement`
               - This action updates the dispute statement. Allowed only when
-                status is `11` (In dispute). `satement` must be sent in the
+                status is `11` (In dispute). `statement` must be sent in the
                 request body and should be a string. 100 chars < length of
-                `statement` < 5000 chars. You need to discribe the reason for
+                `statement` < 5000 chars. You need to describe the reason for
                 raising a dispute. The `(m|t)aker_statement` field is set
-                respectively. Only when both parties have submitted thier
+                respectively. Only when both parties have submitted their
                 dispute statement, the order status changes to `16` (Waiting
                 for dispute resolution)
             - `rate_user`
@@ -789,10 +792,6 @@ class LimitViewSchema:
                             "type": "integer",
                             "description": "Maximum amount allowed in an order in the particular currency",
                         },
-                        "max_bondless_amount": {
-                            "type": "integer",
-                            "description": "Maximum amount allowed in a bondless order",
-                        },
                     },
                 },
             },
@@ -806,7 +805,6 @@ class LimitViewSchema:
                         "price": "42069.69",
                         "min_amount": "4.2",
                         "max_amount": "420.69",
-                        "max_bondless_amount": "10.1",
                     },
                 },
                 status_codes=[200],
@@ -846,7 +844,6 @@ class HistoricalViewSchema:
                         "price": "42069.69",
                         "min_amount": "4.2",
                         "max_amount": "420.69",
-                        "max_bondless_amount": "10.1",
                     },
                 },
                 status_codes=[200],

@@ -62,7 +62,6 @@ class ListOrderSerializer(serializers.ModelSerializer):
             "is_explicit",
             "premium",
             "satoshis",
-            "bondless_taker",
             "maker",
             "taker",
             "escrow_duration",
@@ -337,7 +336,6 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "is_explicit",
             "premium",
             "satoshis",
-            "bondless_taker",
             "maker",
             "taker",
             "escrow_duration",
@@ -430,7 +428,6 @@ class OrderPublicSerializer(serializers.ModelSerializer):
             "is_explicit",
             "premium",
             "satoshis",
-            "bondless_taker",
             "maker",
             "maker_nick",
             "maker_status",
@@ -460,10 +457,6 @@ class MakeOrderSerializer(serializers.ModelSerializer):
         default=False,
         help_text="Whether the order specifies a range of amount or a fixed amount.\n\nIf `true`, then `min_amount` and `max_amount` fields are **required**.\n\n If `false` then `amount` is **required**",
     )
-    bondless_taker = serializers.BooleanField(
-        default=False,
-        help_text="Whether bondless takers are allowed for this order or not",
-    )
 
     class Meta:
         model = Order
@@ -481,7 +474,6 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "public_duration",
             "escrow_duration",
             "bond_size",
-            "bondless_taker",
         )
 
 
@@ -513,6 +505,7 @@ class UpdateOrderSerializer(serializers.Serializer):
             "dispute",
             "cancel",
             "confirm",
+            "undo_confirm",
             "rate_user",
             "rate_platform",
         ),

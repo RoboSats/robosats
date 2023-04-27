@@ -13,7 +13,9 @@ interface ChatPromptProps {
   order: Order;
   robot: Robot;
   onClickConfirmSent: () => void;
+  onClickUndoConfirmSent: () => void;
   loadingSent: boolean;
+  loadingUndoSent: boolean;
   onClickConfirmReceived: () => void;
   loadingReceived: boolean;
   onClickDispute: () => void;
@@ -27,8 +29,10 @@ export const ChatPrompt = ({
   order,
   robot,
   onClickConfirmSent,
+  onClickUndoConfirmSent,
   onClickConfirmReceived,
   loadingSent,
+  loadingUndoSent,
   loadingReceived,
   onClickDispute,
   loadingDispute,
@@ -40,6 +44,7 @@ export const ChatPrompt = ({
 
   const [sentButton, setSentButton] = useState<boolean>(false);
   const [receivedButton, setReceivedButton] = useState<boolean>(false);
+  const [undoSentButton, setUndoSentButton] = useState<boolean>(false);
   const [enableDisputeButton, setEnableDisputeButton] = useState<boolean>(false);
   const [enableDisputeTime, setEnableDisputeTime] = useState<Date>(new Date(order.expires_at));
   const [text, setText] = useState<string>('');
@@ -56,10 +61,10 @@ export const ChatPrompt = ({
   };
 
   useEffect(() => {
-    // open dispute button enables 12h before expiry
+    // open dispute button enables 18h before expiry
     const now = Date.now();
     const expires_at = new Date(order.expires_at);
-    expires_at.setHours(expires_at.getHours() - 12);
+    expires_at.setHours(expires_at.getHours() - 18);
     setEnableDisputeButton(now > expires_at);
     setEnableDisputeTime(expires_at);
 
@@ -68,6 +73,7 @@ export const ChatPrompt = ({
       if (order.is_buyer) {
         setSentButton(true);
         setReceivedButton(false);
+        setUndoSentButton(false);
         setText(
           t(
             "Say hi! Ask for payment details and click 'Confirm Sent' as soon as the payment is sent.",
@@ -75,6 +81,7 @@ export const ChatPrompt = ({
         );
       } else {
         setSentButton(false);
+        setUndoSentButton(false);
         setReceivedButton(false);
         setText(
           t(
@@ -90,10 +97,12 @@ export const ChatPrompt = ({
       // Fiat has been sent already
       if (order.is_buyer) {
         setSentButton(false);
+        setUndoSentButton(true);
         setReceivedButton(false);
         setText(t('Wait for the seller to confirm he has received the payment.'));
       } else {
         setSentButton(false);
+        setUndoSentButton(false);
         setReceivedButton(true);
         setText(t("The buyer has sent the fiat. Click 'Confirm Received' once you receive it."));
       }
@@ -165,6 +174,20 @@ export const ChatPrompt = ({
               onClick={onClickConfirmSent}
             >
               {t('Confirm {{amount}} {{currencyCode}} sent', { currencyCode, amount })}
+            </LoadingButton>
+          </Collapse>
+        ) : (
+          <></>
+        )}
+        {undoSentButton ? (
+          <Collapse in={undoSentButton}>
+            <LoadingButton
+              size='small'
+              sx={{ color: 'text.secondary' }}
+              loading={loadingUndoSent}
+              onClick={onClickUndoConfirmSent}
+            >
+              {t('Payment failed?')}
             </LoadingButton>
           </Collapse>
         ) : (

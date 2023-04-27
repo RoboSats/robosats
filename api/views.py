@@ -114,7 +114,6 @@ class MakerView(CreateAPIView):
         public_duration = serializer.data.get("public_duration")
         escrow_duration = serializer.data.get("escrow_duration")
         bond_size = serializer.data.get("bond_size")
-        bondless_taker = serializer.data.get("bondless_taker")
 
         # Optional params
         if public_duration is None:
@@ -123,8 +122,6 @@ class MakerView(CreateAPIView):
             escrow_duration = ESCROW_DURATION
         if bond_size is None:
             bond_size = BOND_SIZE
-        if bondless_taker is None:
-            bondless_taker = False
         if has_range is None:
             has_range = False
 
@@ -168,7 +165,6 @@ class MakerView(CreateAPIView):
             public_duration=public_duration,
             escrow_duration=escrow_duration,
             bond_size=bond_size,
-            bondless_taker=bondless_taker,
         )
 
         order.last_satoshis = order.t0_satoshis = Logics.satoshis_now(order)
@@ -455,7 +451,6 @@ class OrderView(viewsets.ViewSet):
         ]:
             data["public_duration"] = order.public_duration
             data["bond_size"] = order.bond_size
-            data["bondless_taker"] = order.bondless_taker
 
             # Adds trade summary
             if order.status in [Order.Status.SUC, Order.Status.PAY, Order.Status.FAI]:
@@ -501,7 +496,7 @@ class OrderView(viewsets.ViewSet):
 
         order = Order.objects.get(id=order_id)
 
-        # action is either 1)'take', 2)'confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice'
+        # action is either 1)'take', 2)'confirm', 2.b)'undo_confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice'
         # 5.b)'update_address' 6)'submit_statement' (in dispute), 7)'rate_user' , 8)'rate_platform'
         action = serializer.data.get("action")
         invoice = serializer.data.get("invoice")
@@ -571,6 +566,12 @@ class OrderView(viewsets.ViewSet):
         # 4) If action is confirm
         elif action == "confirm":
             valid, context = Logics.confirm_fiat(order, request.user)
+            if not valid:
+                return Response(context, status.HTTP_400_BAD_REQUEST)
+
+        # 4.b) If action is confirm
+        elif action == "undo_confirm":
+            valid, context = Logics.undo_confirm_fiat_sent(order, request.user)
             if not valid:
                 return Response(context, status.HTTP_400_BAD_REQUEST)
 
@@ -1015,7 +1016,6 @@ class LimitView(ListAPIView):
         # Trade limits as BTC
         min_trade = float(config("MIN_TRADE")) / 100000000
         max_trade = float(config("MAX_TRADE")) / 100000000
-        max_bondless_trade = float(config("MAX_TRADE_BONDLESS_TAKER")) / 100000000
 
         payload = {}
         queryset = Currency.objects.all().order_by("currency")
@@ -1028,7 +1028,6 @@ class LimitView(ListAPIView):
                 "price": exchange_rate,
                 "min_amount": min_trade * exchange_rate,
                 "max_amount": max_trade * exchange_rate,
-                "max_bondless_amount": max_bondless_trade * exchange_rate,
             }
 
         return Response(payload, status.HTTP_200_OK)
