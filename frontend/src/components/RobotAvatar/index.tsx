@@ -22,6 +22,11 @@ interface Props {
   baseUrl: string;
 }
 
+interface BackgroundData {
+  mime: string;
+  data: string;
+}
+
 const RobotAvatar: React.FC<Props> = ({
   nickname,
   orderType,
@@ -40,9 +45,11 @@ const RobotAvatar: React.FC<Props> = ({
 }) => {
   const [avatarSrc, setAvatarSrc] = useState<string>();
   const [nicknameReady, setNicknameReady] = useState<boolean>(false);
+  const [activeBackground, setActiveBackground] = useState<boolean>(true);
 
-  const backgroundData =
-    placeholderType == 'generating' ? placeholder.generating : placeholder.loading;
+  const [backgroundData] = useState<BackgroundData>(
+    placeholderType == 'generating' ? placeholder.generating : placeholder.loading,
+  );
   const backgroundImage = `url(data:${backgroundData.mime};base64,${backgroundData.data})`;
   const className = placeholderType == 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
@@ -59,6 +66,7 @@ const RobotAvatar: React.FC<Props> = ({
       }
     } else {
       setNicknameReady(false);
+      setActiveBackground(true);
     }
   }, [nickname]);
 
@@ -81,13 +89,12 @@ const RobotAvatar: React.FC<Props> = ({
         <div
           style={{
             ...style,
-            imageRendering: 'high-quality',
             backgroundSize: '100%',
             borderRadius: '50%',
             transform: flipHorizontally ? 'scaleX(-1)' : '',
             border: '0.3px solid #55555',
             filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
-            backgroundImage,
+            backgroundImage: activeBackground ? backgroundImage : '',
           }}
         >
           <div className={className}>
@@ -98,6 +105,7 @@ const RobotAvatar: React.FC<Props> = ({
                 border: '0.3px solid #55555',
                 filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
                 ...imageStyle,
+                onLoad: setTimeout(() => setActiveBackground(false), 300),
               }}
             />
           </div>
