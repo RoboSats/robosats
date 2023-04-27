@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SmoothImage from 'react-smooth-image';
 import { Avatar, Badge, Tooltip, useTheme } from '@mui/material';
-import { useTranslation } from 'react-i18next';
 import { SendReceiveIcon } from '../Icons';
 import { apiClient } from '../../services/api';
 import placeholder from './placeholder.json';
@@ -23,6 +22,11 @@ interface Props {
   baseUrl: string;
 }
 
+interface BackgroundData {
+  mime: string;
+  data: string;
+}
+
 const RobotAvatar: React.FC<Props> = ({
   nickname,
   orderType,
@@ -39,22 +43,15 @@ const RobotAvatar: React.FC<Props> = ({
   onLoad = () => {},
   baseUrl,
 }) => {
-  const { t } = useTranslation();
-  const theme = useTheme();
   const [avatarSrc, setAvatarSrc] = useState<string>();
   const [nicknameReady, setNicknameReady] = useState<boolean>(false);
+  const [activeBackground, setActiveBackground] = useState<boolean>(true);
 
-  const backgroundData =
-    placeholderType == 'generating' ? placeholder.generating : placeholder.loading;
+  const [backgroundData] = useState<BackgroundData>(
+    placeholderType == 'generating' ? placeholder.generating : placeholder.loading,
+  );
   const backgroundImage = `url(data:${backgroundData.mime};base64,${backgroundData.data})`;
-  const className =
-    placeholderType == 'loading'
-      ? theme.palette.mode === 'dark'
-        ? 'loadingAvatarDark'
-        : 'loadingAvatar'
-      : theme.palette.mode === 'dark'
-      ? 'generatingAvatarDark'
-      : 'generatingAvatar';
+  const className = placeholderType == 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
   useEffect(() => {
     if (nickname != undefined) {
@@ -69,6 +66,7 @@ const RobotAvatar: React.FC<Props> = ({
       }
     } else {
       setNicknameReady(false);
+      setActiveBackground(true);
     }
   }, [nickname]);
 
@@ -85,19 +83,18 @@ const RobotAvatar: React.FC<Props> = ({
     </div>
   );
 
-  const getAvatar = () => {
+  const avatar = useMemo(() => {
     if (smooth) {
       return (
         <div
           style={{
             ...style,
-            imageRendering: 'high-quality',
             backgroundSize: '100%',
             borderRadius: '50%',
             transform: flipHorizontally ? 'scaleX(-1)' : '',
             border: '0.3px solid #55555',
             filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
-            backgroundImage,
+            backgroundImage: activeBackground ? backgroundImage : '',
           }}
         >
           <div className={className}>
@@ -108,6 +105,7 @@ const RobotAvatar: React.FC<Props> = ({
                 border: '0.3px solid #55555',
                 filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
                 ...imageStyle,
+                onLoad: setTimeout(() => setActiveBackground(false), 300),
               }}
             />
           </div>
@@ -128,10 +126,10 @@ const RobotAvatar: React.FC<Props> = ({
         />
       );
     }
-  };
+  }, [nickname, nicknameReady, avatarSrc]);
 
-  const getAvatarWithBadges = () => {
-    let component = getAvatar();
+  const getAvatarWithBadges = useCallback(() => {
+    let component = avatar;
 
     if (statusColor) {
       component = (
@@ -153,16 +151,17 @@ const RobotAvatar: React.FC<Props> = ({
       );
     }
 
+    if (tooltip) {
+      component = (
+        <Tooltip placement={tooltipPosition} enterTouchDelay={0} title={tooltip}>
+          {component}
+        </Tooltip>
+      );
+    }
     return component;
-  };
+  }, [avatar]);
 
-  return tooltip ? (
-    <Tooltip placement={tooltipPosition} enterTouchDelay={0} title={tooltip}>
-      {getAvatarWithBadges()}
-    </Tooltip>
-  ) : (
-    getAvatarWithBadges()
-  );
+  return getAvatarWithBadges();
 };
 
 export default RobotAvatar;

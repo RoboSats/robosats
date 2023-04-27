@@ -176,56 +176,11 @@ input[type='number'] {
   }
 }
 
-@keyframes animatedLoadingBackground {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: 0 80px;
-  }
-}
-
-@keyframes animatedGeneratingBackground {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: 0 200px;
-  }
-}
-
 .loadingAvatar {
   background-size: 100%;
   border-radius: 50%;
   border: 0.3px solid #555;
   filter: dropShadow(0.5px 0.5px 0.5px #000000);
-  background-image: linear-gradient(
-    0deg,
-    #ffffffab 0%,
-    #cfcfcfc2 40%,
-    #a3a3a3cc 60%,
-    #ffffffab 100%
-  );
-  background-position: 0px 0px;
-  background-repeat: repeat;
-  animation: animatedLoadingBackground 5s linear infinite;
-}
-
-.loadingAvatarDark {
-  background-size: 100%;
-  border-radius: 50%;
-  border: 0.3px solid #555;
-  filter: dropShadow(0.5px 0.5px 0.5px #000000);
-  background-image: linear-gradient(
-    0deg,
-    #6e6e6ec2 0%,
-    #14141479 40%,
-    #14141479 60%,
-    #6e6e6ec2 100%
-  );
-  background-position: 0px 0px;
-  background-repeat: repeat;
-  animation: animatedLoadingBackground 5s linear infinite;
 }
 
 .generatingAvatar {
@@ -234,32 +189,4 @@ input[type='number'] {
   outline: 2px solid #555;
   outline-offset: -2px;
   filter: dropShadow(1px 1px 1px #000000);
-  background-image: linear-gradient(
-    0deg,
-    #ffffff00 0%,
-    #dbdbdb93 40%,
-    #f7f7f791 60%,
-    #ffffff00 100%
-  );
-  background-position: 0px 0px;
-  background-repeat: repeat;
-  animation: animatedGeneratingBackground 5s linear infinite;
-}
-
-.generatingAvatarDark {
-  background-size: 100%;
-  border-radius: 50%;
-  outline: 2px solid #555;
-  outline-offset: -2px;
-  filter: dropShadow(1px 1px 1px #000000);
-  background-image: linear-gradient(
-    0deg,
-    #6e6e6e00 0%,
-    #14141479 40%,
-    #14141479 60%,
-    #6e6e6e00 100%
-  );
-  background-position: 0px 0px;
-  background-repeat: repeat;
-  animation: animatedGeneratingBackground 5s linear infinite;
 }
