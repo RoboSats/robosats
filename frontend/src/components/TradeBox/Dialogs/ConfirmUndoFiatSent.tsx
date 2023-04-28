@@ -41,7 +41,7 @@ export const ConfirmUndoFiatSentDialog = ({
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{t('Confirm revert confirmation of fiat sent?')}</DialogTitle>
+      <DialogTitle>{t('Revert the confirmation of fiat sent?')}</DialogTitle>
       <DialogContent>
         <DialogContentText id='alert-dialog-description'>
           {t(

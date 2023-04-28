@@ -445,7 +445,7 @@
   "If the order is cancelled now you will lose your bond.": "Si cancelas la orden ahora perderás tu fianza.",
   "Confirm Cancel": "Confirmar cancelación",
   "#46": "Phrases in components/TradeBox/Dialogs/ConfirmCollabCancel.tsx",
-  "Confirm revert confirmation of fiat sent?": "Confirm revert confirmation of fiat sent?",
+  "Revert the confirmation of fiat sent?": "Revert the confirmation of fiat sent?",
   "READ. In case your payment to the seller has been blocked and it is absolutely impossible to finish the trade, you can revert your confirmation of \"Fiat sent\". Do so only if you and the seller have ALREADY AGREED in the chat to proceed to a collaborative cancellation. After confirming, the \"Collaborative cancel\" button will be visible again. Only click this button if you know what you are doing. First time users of RoboSats are highly discouraged from performing this action! Make 100% sure your payment has failed and the amount is in your account.": "READ. In case your payment to the seller has been blocked and it is absolutely impossible to finish the trade, you can revert your confirmation of \"Fiat sent\". Do so only if you and the seller have ALREADY AGREED in the chat to proceed to a collaborative cancellation. After confirming, the \"Collaborative cancel\" button will be visible again. Only click this button if you know what you are doing. First time users of RoboSats are highly discouraged from performing this action! Make 100% sure your payment has failed and the amount is in your account.",
   "Wait ({{time}})": "Wait ({{time}})",
   "#47": "Phrases in components/TradeBox/Dialogs/WebLN.tsx",
