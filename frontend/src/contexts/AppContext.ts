@@ -212,7 +212,9 @@ export const useAppStore = () => {
   };
 
   const fetchBook = function () {
-    setBook({ ...book, loading: true });
+    setBook((book) => {
+      return { ...book, loading: true };
+    });
     apiClient.get(baseUrl, '/api/book/').then((data: any) =>
       setBook({
         loading: false,
