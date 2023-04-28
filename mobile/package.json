@@ -23,7 +23,7 @@
     "v8-android-nointl": "^10.100.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.9",
+    "@babel/core": "^7.21.4",
     "@babel/runtime": "^7.12.5",
     "@react-native-community/eslint-config": "^2.0.0",
     "@types/jest": "^26.0.23",
