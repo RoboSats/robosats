@@ -12,7 +12,7 @@ channels-redis==3.3.1
 celery==5.2.7
 grpcio==1.54.0
 googleapis-common-protos==1.53.0
-grpcio-tools==1.43.0
+grpcio-tools==1.54.0
 numpy==1.22.2
 Pillow==9.3.0
 python-decouple==3.5
