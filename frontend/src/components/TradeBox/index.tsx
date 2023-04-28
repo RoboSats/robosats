@@ -10,6 +10,7 @@ import {
   ConfirmCollabCancelDialog,
   ConfirmDisputeDialog,
   ConfirmFiatSentDialog,
+  ConfirmUndoFiatSentDialog,
   ConfirmFiatReceivedDialog,
   WebLNDialog,
 } from './Dialogs';
@@ -79,6 +80,7 @@ interface OpenDialogProps {
   confirmCancel: boolean;
   confirmCollabCancel: boolean;
   confirmFiatSent: boolean;
+  confirmUndoFiatSent: boolean;
   confirmFiatReceived: boolean;
   confirmDispute: boolean;
   webln: boolean;
@@ -88,6 +90,7 @@ const closeAll: OpenDialogProps = {
   confirmCancel: false,
   confirmCollabCancel: false,
   confirmFiatSent: false,
+  confirmUndoFiatSent: false,
   confirmFiatReceived: false,
   confirmDispute: false,
   webln: false,
@@ -136,6 +139,7 @@ const TradeBox = ({
       | 'dispute'
       | 'pause'
       | 'confirm'
+      | 'undo_confirm'
       | 'update_invoice'
       | 'update_address'
       | 'submit_statement'
@@ -207,6 +211,11 @@ const TradeBox = ({
   const confirmFiatSent = function () {
     setLoadingButtons({ ...noLoadingButtons, fiatSent: true });
     submitAction({ action: 'confirm' });
+  };
+
+  const confirmUndoFiatSent = function () {
+    setLoadingButtons({ ...noLoadingButtons, undoFiatSent: true });
+    submitAction({ action: 'undo_confirm' });
   };
 
   const updateInvoice = function (invoice: string) {
@@ -476,8 +485,10 @@ const TradeBox = ({
               order={order}
               robot={robot}
               onClickConfirmSent={() => setOpen({ ...open, confirmFiatSent: true })}
+              onClickUndoConfirmSent={() => setOpen({ ...open, confirmUndoFiatSent: true })}
               onClickConfirmReceived={() => setOpen({ ...open, confirmFiatReceived: true })}
               loadingSent={loadingButtons.fiatSent}
+              loadingUndoSent={loadingButtons.undoFiatSent}
               loadingReceived={loadingButtons.fiatReceived}
               onClickDispute={() => setOpen({ ...open, confirmDispute: true })}
               loadingDispute={loadingButtons.openDispute}
@@ -680,6 +691,13 @@ const TradeBox = ({
         loadingButton={loadingButtons.fiatSent}
         onClose={() => setOpen(closeAll)}
         onConfirmClick={confirmFiatSent}
+      />
+      <ConfirmUndoFiatSentDialog
+        open={open.confirmUndoFiatSent}
+        order={order}
+        loadingButton={loadingButtons.undoFiatSent}
+        onClose={() => setOpen(closeAll)}
+        onConfirmClick={confirmUndoFiatSent}
       />
       <ConfirmFiatReceivedDialog
         open={open.confirmFiatReceived}

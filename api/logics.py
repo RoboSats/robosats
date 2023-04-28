@@ -1589,6 +1589,27 @@ class Logics:
         order.save()
         return True, None
 
+    @classmethod
+    def undo_confirm_fiat_sent(cls, order, user):
+        """If Order is in the CHAT states:
+        If user is buyer: fiat_sent goes to true.
+        """
+        if not cls.is_buyer(order, user):
+            return False, {
+                "bad_request": "Only the buyer can undo the fiat sent confirmation."
+            }
+
+        if order.status != Order.Status.FSE:
+            return False, {
+                "bad_request": "Only orders in Chat and with fiat sent confirmed can be reverted."
+            }
+        order.status = Order.Status.CHA
+        order.is_fiat_sent = False
+        order.reverted_fiat_sent = True
+        order.save()
+
+        return True, None
+
     def pause_unpause_public_order(order, user):
         if not order.maker == user:
             return False, {

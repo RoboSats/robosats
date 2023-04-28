@@ -31,10 +31,9 @@ export interface Order {
   min_amount: string;
   max_amount: string;
   payment_method: string;
-  is_explicit: true;
+  is_explicit: boolean;
   premium: number;
   satoshis: number;
-  bondless_taker: true;
   maker: number;
   taker: number;
   escrow_duration: number;

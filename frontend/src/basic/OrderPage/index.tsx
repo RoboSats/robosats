@@ -57,7 +57,6 @@ const OrderPage = (): JSX.Element => {
         public_duration: order.public_duration,
         escrow_duration: order.escrow_duration,
         bond_size: order.bond_size,
-        bondless_taker: order.bondless_taker,
       };
       apiClient.post(baseUrl, '/api/make/', body).then((data: any) => {
         if (data.bad_request) {

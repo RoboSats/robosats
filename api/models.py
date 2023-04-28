@@ -346,7 +346,6 @@ class Order(models.Model):
     payment_method = models.CharField(
         max_length=70, null=False, default="not specified", blank=True
     )
-    bondless_taker = models.BooleanField(default=False, null=False, blank=False)
     # order pricing method. A explicit amount of sats, or a relative premium above/below market.
     is_explicit = models.BooleanField(default=False, null=False)
     # marked to market
@@ -440,6 +439,7 @@ class Order(models.Model):
     taker_asked_cancel = models.BooleanField(default=False, null=False)
 
     is_fiat_sent = models.BooleanField(default=False, null=False)
+    reverted_fiat_sent = models.BooleanField(default=False, null=False)
 
     # in dispute
     is_disputed = models.BooleanField(default=False, null=False)
