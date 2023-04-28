@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -41,6 +41,18 @@ const ClickThroughDataGrid = styled(DataGrid)({
     pointerEvents: 'none',
   },
 });
+
+const premiumColor = function (baseColor: string, accentColor: string, point: number) {
+  const baseRGB = hexToRgb(baseColor);
+  const accentRGB = hexToRgb(accentColor);
+  const redDiff = accentRGB[0] - baseRGB[0];
+  const red = baseRGB[0] + redDiff * point;
+  const greenDiff = accentRGB[1] - baseRGB[1];
+  const green = baseRGB[1] + greenDiff * point;
+  const blueDiff = accentRGB[2] - baseRGB[2];
+  const blue = baseRGB[2] + blueDiff * point;
+  return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${0.7 + point * 0.3})`;
+};
 
 interface BookTableProps {
   orderList?: PublicOrder[];
@@ -106,71 +118,59 @@ const BookTable = ({
     });
   }, [book.loading, orders, defaultPageSize]);
 
-  const premiumColor = function (baseColor: string, accentColor: string, point: number) {
-    const baseRGB = hexToRgb(baseColor);
-    const accentRGB = hexToRgb(accentColor);
-    const redDiff = accentRGB[0] - baseRGB[0];
-    const red = baseRGB[0] + redDiff * point;
-    const greenDiff = accentRGB[1] - baseRGB[1];
-    const green = baseRGB[1] + greenDiff * point;
-    const blueDiff = accentRGB[2] - baseRGB[2];
-    const blue = baseRGB[2] + blueDiff * point;
-    return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${
-      0.7 + point * 0.3
-    })`;
-  };
+  const localeText = useMemo(() => {
+    return {
+      MuiTablePagination: { labelRowsPerPage: t('Orders per page:') },
+      noResultsOverlayLabel: t('No results found.'),
+      errorOverlayDefaultLabel: t('An error occurred.'),
+      toolbarColumns: t('Columns'),
+      toolbarColumnsLabel: t('Select columns'),
+      columnsPanelTextFieldLabel: t('Find column'),
+      columnsPanelTextFieldPlaceholder: t('Column title'),
+      columnsPanelDragIconLabel: t('Reorder column'),
+      columnsPanelShowAllButton: t('Show all'),
+      columnsPanelHideAllButton: t('Hide all'),
+      filterPanelAddFilter: t('Add filter'),
+      filterPanelDeleteIconLabel: t('Delete'),
+      filterPanelLinkOperator: t('Logic operator'),
+      filterPanelOperators: t('Operator'),
+      filterPanelOperatorAnd: t('And'),
+      filterPanelOperatorOr: t('Or'),
+      filterPanelColumns: t('Columns'),
+      filterPanelInputLabel: t('Value'),
+      filterPanelInputPlaceholder: t('Filter value'),
+      filterOperatorContains: t('contains'),
+      filterOperatorEquals: t('equals'),
+      filterOperatorStartsWith: t('starts with'),
+      filterOperatorEndsWith: t('ends with'),
+      filterOperatorIs: t('is'),
+      filterOperatorNot: t('is not'),
+      filterOperatorAfter: t('is after'),
+      filterOperatorOnOrAfter: t('is on or after'),
+      filterOperatorBefore: t('is before'),
+      filterOperatorOnOrBefore: t('is on or before'),
+      filterOperatorIsEmpty: t('is empty'),
+      filterOperatorIsNotEmpty: t('is not empty'),
+      filterOperatorIsAnyOf: t('is any of'),
+      filterValueAny: t('any'),
+      filterValueTrue: t('true'),
+      filterValueFalse: t('false'),
+      columnMenuLabel: t('Menu'),
+      columnMenuShowColumns: t('Show columns'),
+      columnMenuManageColumns: t('Manage columns'),
+      columnMenuFilter: t('Filter'),
+      columnMenuHideColumn: t('Hide'),
+      columnMenuUnsort: t('Unsort'),
+      columnMenuSortAsc: t('Sort by ASC'),
+      columnMenuSortDesc: t('Sort by DESC'),
+      columnHeaderFiltersLabel: t('Show filters'),
+      columnHeaderSortIconLabel: t('Sort'),
+      booleanCellTrueLabel: t('yes'),
+      booleanCellFalseLabel: t('no'),
+    };
+  }, []);
 
-  const localeText = {
-    MuiTablePagination: { labelRowsPerPage: t('Orders per page:') },
-    noResultsOverlayLabel: t('No results found.'),
-    errorOverlayDefaultLabel: t('An error occurred.'),
-    toolbarColumns: t('Columns'),
-    toolbarColumnsLabel: t('Select columns'),
-    columnsPanelTextFieldLabel: t('Find column'),
-    columnsPanelTextFieldPlaceholder: t('Column title'),
-    columnsPanelDragIconLabel: t('Reorder column'),
-    columnsPanelShowAllButton: t('Show all'),
-    columnsPanelHideAllButton: t('Hide all'),
-    filterPanelAddFilter: t('Add filter'),
-    filterPanelDeleteIconLabel: t('Delete'),
-    filterPanelLinkOperator: t('Logic operator'),
-    filterPanelOperators: t('Operator'),
-    filterPanelOperatorAnd: t('And'),
-    filterPanelOperatorOr: t('Or'),
-    filterPanelColumns: t('Columns'),
-    filterPanelInputLabel: t('Value'),
-    filterPanelInputPlaceholder: t('Filter value'),
-    filterOperatorContains: t('contains'),
-    filterOperatorEquals: t('equals'),
-    filterOperatorStartsWith: t('starts with'),
-    filterOperatorEndsWith: t('ends with'),
-    filterOperatorIs: t('is'),
-    filterOperatorNot: t('is not'),
-    filterOperatorAfter: t('is after'),
-    filterOperatorOnOrAfter: t('is on or after'),
-    filterOperatorBefore: t('is before'),
-    filterOperatorOnOrBefore: t('is on or before'),
-    filterOperatorIsEmpty: t('is empty'),
-    filterOperatorIsNotEmpty: t('is not empty'),
-    filterOperatorIsAnyOf: t('is any of'),
-    filterValueAny: t('any'),
-    filterValueTrue: t('true'),
-    filterValueFalse: t('false'),
-    columnMenuLabel: t('Menu'),
-    columnMenuShowColumns: t('Show columns'),
-    columnMenuManageColumns: t('Manage columns'),
-    columnMenuFilter: t('Filter'),
-    columnMenuHideColumn: t('Hide'),
-    columnMenuUnsort: t('Unsort'),
-    columnMenuSortAsc: t('Sort by ASC'),
-    columnMenuSortDesc: t('Sort by DESC'),
-    columnHeaderFiltersLabel: t('Show filters'),
-    columnHeaderSortIconLabel: t('Sort'),
-    booleanCellTrueLabel: t('yes'),
-    booleanCellFalseLabel: t('no'),
-  };
-
-  const robotObj = function (width: number) {
+  const robotObj = useCallback((width: number) => {
     return {
       field: 'maker_nick',
       headerName: t('Robot'),
@@ -196,9 +196,9 @@ const BookTable = ({
         );
       },
     };
-  };
+  }, []);
 
-  const robotSmallObj = function (width: number) {
+  const robotSmallObj = useCallback((width: number) => {
     return {
       field: 'maker_nick',
       headerName: t('Robot'),
@@ -223,9 +223,9 @@ const BookTable = ({
         );
       },
     };
-  };
+  }, []);
 
-  const typeObj = function (width: number) {
+  const typeObj = useCallback((width: number) => {
     return {
       field: 'type',
       headerName: t('Is'),
@@ -235,9 +235,9 @@ const BookTable = ({
           ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
           : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In'),
     };
-  };
+  }, []);
 
-  const amountObj = function (width: number) {
+  const amountObj = useCallback((width: number) => {
     return {
       field: 'amount',
       headerName: t('Amount'),
@@ -257,9 +257,9 @@ const BookTable = ({
         );
       },
     };
-  };
+  }, []);
 
-  const currencyObj = function (width: number) {
+  const currencyObj = useCallback((width: number) => {
     return {
       field: 'currency',
       headerName: t('Currency'),
@@ -282,9 +282,9 @@ const BookTable = ({
         );
       },
     };
-  };
+  }, []);
 
-  const paymentObj = function (width: number) {
+  const paymentObj = useCallback((width: number) => {
     return {
       field: 'payment_method',
       headerName: fav.mode === 'fiat' ? t('Payment Method') : t('Destination'),
@@ -302,9 +302,9 @@ const BookTable = ({
         );
       },
     };
-  };
+  }, []);
 
-  const paymentSmallObj = function (width: number) {
+  const paymentSmallObj = useCallback((width: number) => {
     return {
       field: 'payment_method',
       headerName: t('Pay'),
@@ -327,9 +327,9 @@ const BookTable = ({
         );
       },
     };
-  };
+  }, []);
 
-  const priceObj = function (width: number) {
+  const priceObj = useCallback((width: number) => {
     return {
       field: 'price',
       headerName: t('Price'),
@@ -342,9 +342,9 @@ const BookTable = ({
         );
       },
     };
-  };
+  }, []);
 
-  const premiumObj = function (width: number) {
+  const premiumObj = useCallback((width: number) => {
     // coloring premium texts based on 4 params:
     // Hardcoded: a sell order at 0% is an outstanding premium
     // Hardcoded: a buy order at 10% is an outstanding premium
@@ -391,9 +391,9 @@ const BookTable = ({
         );
       },
     };
-  };
+  }, []);
 
-  const timerObj = function (width: number) {
+  const timerObj = useCallback((width: number) => {
     return {
       field: 'escrow_duration',
       headerName: t('Timer'),
@@ -405,9 +405,9 @@ const BookTable = ({
         return <div style={{ cursor: 'pointer' }}>{hours > 0 ? `${hours}h` : `${minutes}m`}</div>;
       },
     };
-  };
+  }, []);
 
-  const expiryObj = function (width: number) {
+  const expiryObj = useCallback((width: number) => {
     return {
       field: 'expires_at',
       headerName: t('Expiry'),
@@ -448,9 +448,9 @@ const BookTable = ({
         );
       },
     };
-  };
+  }, []);
 
-  const satoshisObj = function (width: number) {
+  const satoshisObj = useCallback((width: number) => {
     return {
       field: 'satoshis_now',
       headerName: t('Sats now'),
@@ -466,9 +466,9 @@ const BookTable = ({
         );
       },
     };
-  };
+  }, []);
 
-  const idObj = function (width: number) {
+  const idObj = useCallback((width: number) => {
     return {
       field: 'id',
       headerName: 'Order ID',
@@ -483,9 +483,9 @@ const BookTable = ({
         );
       },
     };
-  };
+  }, []);
 
-  const bondObj = function (width: number) {
+  const bondObj = useCallback((width: number) => {
     return {
       field: 'bond_size',
       headerName: t('Bond'),
@@ -495,114 +495,116 @@ const BookTable = ({
         return <div style={{ cursor: 'pointer' }}>{`${Number(params.row.bond_size)}%`}</div>;
       },
     };
-  };
+  }, []);
 
-  const columnSpecs = {
-    amount: {
-      priority: 1,
-      order: 4,
-      normal: {
-        width: fav.mode === 'swap' ? 9.5 : 6.5,
-        object: amountObj,
+  const columnSpecs = useMemo(() => {
+    return {
+      amount: {
+        priority: 1,
+        order: 4,
+        normal: {
+          width: fav.mode === 'swap' ? 9.5 : 6.5,
+          object: amountObj,
+        },
       },
-    },
-    currency: {
-      priority: 2,
-      order: 5,
-      normal: {
-        width: fav.mode === 'swap' ? 0 : 5.9,
-        object: currencyObj,
+      currency: {
+        priority: 2,
+        order: 5,
+        normal: {
+          width: fav.mode === 'swap' ? 0 : 5.9,
+          object: currencyObj,
+        },
       },
-    },
-    premium: {
-      priority: 3,
-      order: 11,
-      normal: {
-        width: 6,
-        object: premiumObj,
+      premium: {
+        priority: 3,
+        order: 11,
+        normal: {
+          width: 6,
+          object: premiumObj,
+        },
       },
-    },
-    payment_method: {
-      priority: 4,
-      order: 6,
-      normal: {
-        width: 12.85,
-        object: paymentObj,
+      payment_method: {
+        priority: 4,
+        order: 6,
+        normal: {
+          width: 12.85,
+          object: paymentObj,
+        },
+        small: {
+          width: 4.4,
+          object: paymentSmallObj,
+        },
       },
-      small: {
-        width: 4.4,
-        object: paymentSmallObj,
+      maker_nick: {
+        priority: 5,
+        order: 1,
+        normal: {
+          width: 17.14,
+          object: robotObj,
+        },
+        small: {
+          width: 4.1,
+          object: robotSmallObj,
+        },
       },
-    },
-    maker_nick: {
-      priority: 5,
-      order: 1,
-      normal: {
-        width: 17.14,
-        object: robotObj,
+      price: {
+        priority: 6,
+        order: 10,
+        normal: {
+          width: 10,
+          object: priceObj,
+        },
       },
-      small: {
-        width: 4.1,
-        object: robotSmallObj,
+      expires_at: {
+        priority: 7,
+        order: 7,
+        normal: {
+          width: 5,
+          object: expiryObj,
+        },
       },
-    },
-    price: {
-      priority: 6,
-      order: 10,
-      normal: {
-        width: 10,
-        object: priceObj,
+      escrow_duration: {
+        priority: 8,
+        order: 8,
+        normal: {
+          width: 4.8,
+          object: timerObj,
+        },
       },
-    },
-    expires_at: {
-      priority: 7,
-      order: 7,
-      normal: {
-        width: 5,
-        object: expiryObj,
+      satoshis_now: {
+        priority: 9,
+        order: 9,
+        normal: {
+          width: 6,
+          object: satoshisObj,
+        },
       },
-    },
-    escrow_duration: {
-      priority: 8,
-      order: 8,
-      normal: {
-        width: 4.8,
-        object: timerObj,
+      type: {
+        priority: 10,
+        order: 2,
+        normal: {
+          width: fav.mode === 'swap' ? 7 : 4.3,
+          object: typeObj,
+        },
       },
-    },
-    satoshis_now: {
-      priority: 9,
-      order: 9,
-      normal: {
-        width: 6,
-        object: satoshisObj,
+      bond_size: {
+        priority: 11,
+        order: 10,
+        normal: {
+          width: 4.2,
+          object: bondObj,
+        },
       },
-    },
-    type: {
-      priority: 10,
-      order: 2,
-      normal: {
-        width: fav.mode === 'swap' ? 7 : 4.3,
-        object: typeObj,
+      id: {
+        priority: 12,
+        order: 12,
+        normal: {
+          width: 4.8,
+          object: idObj,
+        },
       },
-    },
-    bond_size: {
-      priority: 11,
-      order: 10,
-      normal: {
-        width: 4.2,
-        object: bondObj,
-      },
-    },
-    id: {
-      priority: 12,
-      order: 12,
-      normal: {
-        width: 4.8,
-        object: idObj,
-      },
-    },
-  };
+    };
+  }, []);
 
   const filteredColumns = function (maxWidth: number) {
     const useSmall = maxWidth < 70;
