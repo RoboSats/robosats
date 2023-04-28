@@ -31,6 +31,6 @@ drf-spectacular==0.24.0
 drf-spectacular-sidecar==2022.9.1
 black==22.8.0
 isort==5.10.1
-flake8==5.0.4
+flake8==6.0.0
 pyflakes==2.5.0
 django-cors-headers==3.13.0
