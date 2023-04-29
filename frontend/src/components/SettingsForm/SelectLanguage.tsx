@@ -13,6 +13,7 @@ const menuLanuguages = [
   { name: 'Polski', i18nCode: 'pl', flag: Flags.PL },
   { name: 'Français', i18nCode: 'fr', flag: Flags.FR },
   { name: 'Русский', i18nCode: 'ru', flag: Flags.RU },
+  { name: '日本語', i18nCode: 'ja', flag: Flags.JP },
   { name: 'Italiano', i18nCode: 'it', flag: Flags.IT },
   { name: 'Português', i18nCode: 'pt', flag: Flags.BR },
   { name: '简体', i18nCode: 'zh-si', flag: Flags.CN },
