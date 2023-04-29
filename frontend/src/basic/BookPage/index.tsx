@@ -13,7 +13,7 @@ import { BarChart, FormatListBulleted } from '@mui/icons-material';
 import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 const BookPage = (): JSX.Element => {
-  const { robot, fetchBook, windowSize, book, setDelay, setOrder } =
+  const { robot, fetchBook, windowSize, setDelay, setOrder } =
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -82,7 +82,6 @@ const BookPage = (): JSX.Element => {
             <MakerForm
               hasRobot={robot.avatarLoaded}
               onOrderCreated={(id) => {
-                setPage('order');
                 navigate('/order/' + id);
               }}
             />
