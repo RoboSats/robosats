@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Grid, Paper } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, hostUrl, UseAppStoreType } from '../../contexts/AppContext';
 import FederationTable from '../../components/FederationTable';
 
 const SettingsPage = (): JSX.Element => {
@@ -11,7 +11,6 @@ const SettingsPage = (): JSX.Element => {
     federation,
     dispatchFederation,
     setFocusedCoordinator,
-    baseUrl,
     settings,
     setOpen,
     open,
@@ -39,7 +38,7 @@ const SettingsPage = (): JSX.Element => {
             dispatchFederation={dispatchFederation}
             setFocusedCoordinator={setFocusedCoordinator}
             openCoordinator={() => setOpen({ ...open, coordinator: true })}
-            baseUrl={baseUrl}
+            baseUrl={hostUrl}
             maxHeight={14}
             network={settings.network}
           />

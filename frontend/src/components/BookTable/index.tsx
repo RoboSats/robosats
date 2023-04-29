@@ -34,7 +34,7 @@ import RobotAvatar from '../RobotAvatar';
 
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, hostUrl, origin, UseAppStoreType } from '../../contexts/AppContext';
 
 const ClickThroughDataGrid = styled(DataGrid)({
   '& .MuiDataGrid-overlayWrapperInner': {
@@ -83,8 +83,16 @@ const BookTable = ({
   showNoResults = true,
   onOrderClicked = () => null,
 }: BookTableProps): JSX.Element => {
-  const { book, fetchFederationBook, fav, setFav, setFocusedCoordinator, setOpen, baseUrl } =
-    useContext<UseAppStoreType>(AppContext);
+  const {
+    book,
+    federation,
+    fetchFederationBook,
+    fav,
+    setFav,
+    setFocusedCoordinator,
+    settings,
+    setOpen,
+  } = useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -195,7 +203,7 @@ const BookTable = ({
                 orderType={params.row.type}
                 statusColor={statusBadgeColor(params.row.maker_status)}
                 tooltip={t(params.row.maker_status)}
-                baseUrl={baseUrl}
+                baseUrl={federation[params.row.coordinatorShortAlias][settings.network][origin]}
                 small={true}
               />
             </ListItemAvatar>
@@ -225,7 +233,7 @@ const BookTable = ({
               orderType={params.row.type}
               statusColor={statusBadgeColor(params.row.maker_status)}
               tooltip={t(params.row.maker_status)}
-              baseUrl={baseUrl}
+              baseUrl={federation[params.row.coordinatorShortAlias][settings.network][origin]}
             />
           </div>
         );
@@ -258,7 +266,7 @@ const BookTable = ({
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
                 flipHorizontally={true}
-                baseUrl={baseUrl}
+                baseUrl={hostUrl}
                 small={true}
               />
             </ListItemAvatar>

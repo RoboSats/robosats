@@ -15,7 +15,7 @@ import {
   MoreHoriz,
 } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
-import { AppContext, UseAppStoreType, closeAll } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType, closeAll, hostUrl } from '../../contexts/AppContext';
 
 const NavBar = (): JSX.Element => {
   const theme = useTheme();
@@ -31,7 +31,6 @@ const NavBar = (): JSX.Element => {
     windowSize,
     currentOrder,
     navbarHeight,
-    baseUrl,
   } = useContext<UseAppStoreType>(AppContext);
 
   const navigate = useNavigate();
@@ -73,7 +72,8 @@ const NavBar = (): JSX.Element => {
     } else {
       handleSlideDirection(page, newPage);
       setPage(newPage);
-      const param = newPage === 'order' ? currentOrder ?? '' : '';
+      const param =
+        newPage === 'order' ? `${currentOrder.shortAlias}/${currentOrder.id}` ?? '' : '';
       setTimeout(
         () => navigate(`/${newPage}/${param}`),
         theme.transitions.duration.leavingScreen * 3,
@@ -115,7 +115,7 @@ const NavBar = (): JSX.Element => {
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
                 nickname={robot.nickname}
-                baseUrl={baseUrl}
+                baseUrl={hostUrl}
               />
             ) : (
               <></>
@@ -149,7 +149,7 @@ const NavBar = (): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!robot.avatarLoaded || currentOrder == undefined}
+          disabled={!robot.avatarLoaded || currentOrder.id == null}
           icon={<Assignment />}
           iconPosition='start'
         />

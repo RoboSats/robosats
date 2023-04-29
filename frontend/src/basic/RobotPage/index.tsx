@@ -19,10 +19,10 @@ import RobotProfile from './RobotProfile';
 import Recovery from './Recovery';
 import { TorIcon } from '../../components/Icons';
 import { genKey } from '../../pgp';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, hostUrl, UseAppStoreType } from '../../contexts/AppContext';
 
 const RobotPage = (): JSX.Element => {
-  const { robot, setRobot, setCurrentOrder, fetchRobot, torStatus, windowSize, baseUrl } =
+  const { robot, setRobot, fetchRobot, torStatus, windowSize } =
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const params = useParams();
@@ -142,7 +142,7 @@ const RobotPage = (): JSX.Element => {
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
-            baseUrl={baseUrl}
+            baseUrl={hostUrl}
           />
         ) : null}
 
@@ -151,7 +151,6 @@ const RobotPage = (): JSX.Element => {
             setView={setView}
             robot={robot}
             setRobot={setRobot}
-            setCurrentOrder={setCurrentOrder}
             badRequest={badRequest}
             getGenerateRobot={getGenerateRobot}
             logoutRobot={logoutRobot}
@@ -159,7 +158,7 @@ const RobotPage = (): JSX.Element => {
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
-            baseUrl={baseUrl}
+            baseUrl={hostUrl}
           />
         ) : null}
 
@@ -172,7 +171,7 @@ const RobotPage = (): JSX.Element => {
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
-            baseUrl={baseUrl}
+            baseUrl={hostUrl}
           />
         ) : null}
       </Paper>

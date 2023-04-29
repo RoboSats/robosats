@@ -20,13 +20,13 @@ import {
 } from '@mui/material';
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { PublicOrder, LimitList, Order } from '../../../models';
+import { PublicOrder, Order } from '../../../models';
 import RobotAvatar from '../../RobotAvatar';
 import { amountToString, matchMedian, statusBadgeColor } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
 import { PaymentStringAsIcons } from '../../PaymentMethods';
 import getNivoScheme from '../NivoScheme';
-import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
+import { UseAppStoreType, AppContext, hostUrl, origin } from '../../../contexts/AppContext';
 
 interface DepthChartProps {
   maxWidth: number;
@@ -43,7 +43,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
   elevation = 6,
   onOrderClicked = () => null,
 }) => {
-  const { book, fav, exchange, limits, baseUrl } = useContext<UseAppStoreType>(AppContext);
+  const { book, federation, fav, exchange, limits, settings } =
+    useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
   const [enrichedOrders, setEnrichedOrders] = useState<Order[]>([]);
@@ -225,7 +226,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 orderType={order.type}
                 statusColor={statusBadgeColor(order.maker_status)}
                 tooltip={t(order.maker_status)}
-                baseUrl={baseUrl}
+                baseUrl={federation[order.coordinatorShortAlias][settings.network][origin]}
                 small={true}
               />
             </Grid>

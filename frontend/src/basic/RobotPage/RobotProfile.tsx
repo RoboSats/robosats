@@ -17,7 +17,7 @@ import { Bolt, Add, DeleteSweep, Logout, Download } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { Slot, Robot } from '../../models';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, hostUrl, UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 
@@ -27,11 +27,8 @@ interface RobotProfileProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   getGenerateRobot: (token: string, slot?: number) => void;
   inputToken: string;
-  setCurrentOrder: (state: number) => void;
   logoutRobot: () => void;
-  inputToken: string;
   setInputToken: (state: string) => void;
-  baseUrl: string;
   badRequest: string;
   width: number;
 }
@@ -42,11 +39,9 @@ const RobotProfile = ({
   inputToken,
   getGenerateRobot,
   setInputToken,
-  setCurrentOrder,
   logoutRobot,
   setView,
   badRequest,
-  baseUrl,
   width,
 }: RobotProfileProps): JSX.Element => {
   const { currentSlot, garage, setCurrentSlot, windowSize } =
@@ -139,7 +134,7 @@ const RobotProfile = ({
             }}
             tooltip={t('This is your trading avatar')}
             tooltipPosition='top'
-            baseUrl={baseUrl}
+            baseUrl={hostUrl}
           />
           {robot.found && !robot.lastOrderId ? (
             <Typography align='center' variant='h6'>
@@ -277,7 +272,7 @@ const RobotProfile = ({
                               smooth={true}
                               style={{ width: '2.6em', height: '2.6em' }}
                               placeholderType='loading'
-                              baseUrl={baseUrl}
+                              baseUrl={hostUrl}
                               small={true}
                             />
                           </Grid>

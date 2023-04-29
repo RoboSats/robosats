@@ -30,14 +30,14 @@
       "Data Policy": "..."
     },
     "mainnet": {
-      "Onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
-      "Clearnet": "https://unsafe.robosats.com",
-      "I2P": "http://r7r4sckft6ptmk4r2jajiuqbowqyxiwsle4iyg4fijtoordc6z7a.b32.i2p"
+      "onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
+      "clearnet": "https://unsafe.robosats.com",
+      "i2p": "http://r7r4sckft6ptmk4r2jajiuqbowqyxiwsle4iyg4fijtoordc6z7a.b32.i2p"
     },
     "testnet": {
-      "Onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
-      "Clearnet": "https://unsafe.testnet.robosats.com",
-      "I2P": ""
+      "onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+      "clearnet": "https://unsafe.testnet.robosats.com",
+      "i2p": ""
     },
     "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
     "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
@@ -69,12 +69,12 @@
       "Data Policy": "..."
     },
     "mainnet": {
-      "Onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
-      "Clearnet": "http://127.0.0.1:12596"
+      "onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
+      "clearnet": "http://127.0.0.1:12596"
     },
     "testnet": {
-      "Onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
-      "Clearnet": "https://unsafe.testnet.robosats.com"
+      "onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+      "clearnet": "https://unsafe.testnet.robosats.com"
     },
     "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
     "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
@@ -86,12 +86,12 @@
     "motto": "Buidl",
     "color": "#000000",
     "testnet": {
-      "Onion": "http://robodevs7ixniseezbv7uryxhamtz3hvcelzfwpx3rvoipttjomrmpqd.onion",
-      "Clearnet": "http://127.0.0.1:8000"
+      "onion": "http://robodevs7ixniseezbv7uryxhamtz3hvcelzfwpx3rvoipttjomrmpqd.onion",
+      "clearnet": "http://127.0.0.1:8000"
     },
     "mainnet": {
-      "Onion": "",
-      "Clearnet": ""
+      "onion": "",
+      "clearnet": ""
     },
     "policies": {
       "Development Policy": "Don't look around, just buidl"

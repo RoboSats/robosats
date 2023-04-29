@@ -6,6 +6,7 @@ import { Coordinator } from '../../models';
 
 import RobotAvatar from '../RobotAvatar';
 import { Link, LinkOff } from '@mui/icons-material';
+import { hostUrl } from '../../contexts/AppContext';
 
 interface FederationTableProps {
   federation: { [key: string]: Coordinator };
@@ -15,7 +16,6 @@ interface FederationTableProps {
   maxWidth?: number;
   maxHeight?: number;
   fillContainer?: boolean;
-  baseUrl: string;
 }
 
 const FederationTable = ({
@@ -26,7 +26,6 @@ const FederationTable = ({
   maxWidth = 90,
   maxHeight = 50,
   fillContainer = false,
-  baseUrl,
 }: FederationTableProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -82,7 +81,7 @@ const FederationTable = ({
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
                 flipHorizontally={true}
-                baseUrl={baseUrl}
+                baseUrl={hostUrl}
                 small={true}
               />
             </Grid>

@@ -40,7 +40,7 @@ import { amountToString, computeSats, pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, hostUrl, UseAppStoreType } from '../../contexts/AppContext';
 
 interface MakerFormProps {
   disableRequest?: boolean;
@@ -63,7 +63,7 @@ const MakerForm = ({
   onOrderCreated = () => null,
   hasRobot = true,
 }: MakerFormProps): JSX.Element => {
-  const { fav, setFav, limits, fetchFederationLimits, info, maker, setMaker, baseUrl } =
+  const { fav, setFav, limits, fetchFederationLimits, info, maker, setMaker } =
     useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
@@ -251,7 +251,7 @@ const MakerForm = ({
         escrow_duration: maker.escrowDuration,
         bond_size: maker.bondSize,
       };
-      apiClient.post(baseUrl, '/api/make/', body).then((data: object) => {
+      apiClient.post(hostUrl, '/api/make/', body).then((data: object) => {
         setBadRequest(data.bad_request);
         if (data.id) {
           onOrderCreated(data.id);

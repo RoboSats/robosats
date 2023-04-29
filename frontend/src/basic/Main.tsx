@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box, Slide, Typography, styled } from '@mui/material';
-import { UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
+import { UseAppStoreType, AppContext, closeAll, hostUrl } from '../contexts/AppContext';
 
 import RobotPage from './RobotPage';
 import MakerPage from './MakerPage';
@@ -38,7 +38,6 @@ const Main: React.FC = () => {
     settings,
     robot,
     setRobot,
-    baseUrl,
     order,
     page,
     slideDirection,
@@ -52,7 +51,7 @@ const Main: React.FC = () => {
       <RobotAvatar
         style={{ display: 'none' }}
         nickname={robot.nickname}
-        baseUrl={baseUrl}
+        baseUrl={hostUrl}
         onLoad={() =>
           setRobot((robot) => {
             return { ...robot, avatarLoaded: true };
@@ -127,7 +126,7 @@ const Main: React.FC = () => {
           />
 
           <Route
-            path='/order/:orderId'
+            path='/order/:shortAlias/:orderId'
             element={
               <Slide
                 direction={page === 'order' ? slideDirection.in : slideDirection.out}

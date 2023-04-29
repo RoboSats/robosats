@@ -37,6 +37,31 @@ const getWindowSize = function (fontSize: number) {
   };
 };
 
+const getHostUrl = (network = 'mainnet') => {
+  let host = '';
+  let protocol = '';
+  let origin = '';
+  if (window.NativeRobosats === undefined) {
+    host = getHost();
+    protocol = location.protocol;
+  } else {
+    host = defaultFederation.exp[network].Onion;
+    protocol = 'http:';
+  }
+  const hostUrl = `${protocol}//${host}`;
+  if (window.NativeRobosats != undefined || host.includes('.onion')) {
+    origin = 'onion';
+  } else if (host.includes('i2p')) {
+    origin = 'i2p';
+  } else {
+    origin = 'clearnet';
+  }
+
+  return [hostUrl, origin];
+};
+
+export const [hostUrl, origin] = getHostUrl();
+
 // Refresh delays (ms) according to Order status
 const statusToDelay = [
   3000, // 'Waiting for maker bond'
@@ -209,7 +234,6 @@ export const useAppStore = () => {
   }, []);
 
   // All app data structured
-  const network = 'Clearnet';
   const [torStatus, setTorStatus] = useState<TorStatus>('NOTINIT');
   const [book, setBook] = useState<Book>(initialBook);
   const [limits, setLimits] = useState<Limits>(initialLimits);
@@ -227,7 +251,6 @@ export const useAppStore = () => {
   const [federation, dispatchFederation] = useReducer(reduceFederation, initialFederation);
 
   const [focusedCoordinator, setFocusedCoordinator] = useState<string>('');
-  const [baseUrl, setBaseUrl] = useState<string>('');
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0, mode: 'fiat' });
 
   const [delay, setDelay] = useState<number>(60000);
@@ -242,7 +265,10 @@ export const useAppStore = () => {
     in: undefined,
     out: undefined,
   });
-  const [currentOrder, setCurrentOrder] = useState<number | undefined>(undefined);
+  const [currentOrder, setCurrentOrder] = useState<{
+    shortAlias: string | null;
+    id: number | null;
+  }>({ shortAlias: null, id: null });
 
   const navbarHeight = 2.5;
   const clientVersion = getClientVersion();
@@ -273,14 +299,6 @@ export const useAppStore = () => {
   }, []);
 
   useEffect(() => {
-    let host = '';
-    if (window.NativeRobosats === undefined) {
-      host = getHost();
-    } else {
-      host = federation[0][settings.network].Onion;
-    }
-    setBaseUrl(`http://${host}`);
-
     // On bitcoin network change we reset book, limits and federation info and fetch everything again
     setBook(initialBook);
     setLimits(initialLimits);
@@ -300,7 +318,7 @@ export const useAppStore = () => {
 
   // fetch Limits
   const fetchCoordinatorLimits = async (coordinator: Coordinator) => {
-    const url = coordinator[settings.network][network];
+    const url = coordinator[settings.network][origin];
     const limits = await apiClient
       .get(url, '/api/limits/')
       .then((data) => {
@@ -331,7 +349,7 @@ export const useAppStore = () => {
 
   // fetch Books
   const fetchCoordinatorBook = async (coordinator: Coordinator) => {
-    const url = coordinator[settings.network][network];
+    const url = coordinator[settings.network][origin];
     const book = await apiClient
       .get(url, '/api/book/')
       .then((data) => {
@@ -360,7 +378,7 @@ export const useAppStore = () => {
 
   // fetch Info
   const fetchCoordinatorInfo = async (coordinator: Coordinator) => {
-    const url = coordinator[settings.network][network];
+    const url = coordinator[settings.network][origin];
     const info = await apiClient
       .get(url, '/api/info/')
       .then((data) => {
@@ -386,8 +404,6 @@ export const useAppStore = () => {
       }
     });
   };
-
-  console.log(exchange);
 
   const updateBook = () => {
     setBook((book) => {
@@ -486,7 +502,7 @@ export const useAppStore = () => {
 
   // Fetch current order at load and in a loop
   useEffect(() => {
-    if (currentOrder != undefined && (page == 'order' || (order == badOrder) == undefined)) {
+    if (currentOrder.id != null && (page == 'order' || (order == badOrder) == undefined)) {
       fetchOrder();
     }
   }, [currentOrder, page]);
@@ -516,8 +532,13 @@ export const useAppStore = () => {
   };
 
   const fetchOrder = function () {
-    if (currentOrder != undefined) {
-      apiClient.get(baseUrl, '/api/order/?order_id=' + currentOrder).then(orderReceived);
+    if (currentOrder.shortAlias != null) {
+      apiClient
+        .get(
+          federation[currentOrder.shortAlias][settings.network][origin],
+          '/api/order/?order_id=' + currentOrder.id,
+        )
+        .then(orderReceived);
     }
   };
 
@@ -556,9 +577,9 @@ export const useAppStore = () => {
       requestBody.encrypted_private_key = newKeys?.encPrivKey ?? oldRobot.encPrivKey;
     }
 
-    apiClient.post(baseUrl, '/api/user/', requestBody).then((data: any) => {
+    apiClient.post(hostUrl, '/api/user/', requestBody).then((data: any) => {
       let newRobot = robot;
-      if (currentOrder === undefined) {
+      if (currentOrder === null) {
         setCurrentOrder(
           data.active_order_id
             ? data.active_order_id
@@ -613,14 +634,14 @@ export const useAppStore = () => {
   };
 
   useEffect(() => {
-    if (baseUrl != '' && page != 'robot') {
+    if (hostUrl != '' && page != 'robot') {
       if (open.profile && robot.avatarLoaded) {
         fetchRobot({ action: 'refresh' }); // refresh/update existing robot
       } else if (!robot.avatarLoaded && robot.token && robot.encPrivKey && robot.pubKey) {
         fetchRobot({ action: 'generate' }); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
-  }, [open.profile, baseUrl]);
+  }, [open.profile, hostUrl]);
 
   return {
     theme,
@@ -649,8 +670,6 @@ export const useAppStore = () => {
     setExchange,
     focusedCoordinator,
     setFocusedCoordinator,
-    baseUrl,
-    setBaseUrl,
     fav,
     setFav,
     order,

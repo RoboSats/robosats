@@ -46,15 +46,10 @@ export interface Info {
   loading: boolean;
 }
 
-export interface EndpointProps {
-  bitcoin: 'mainnet' | 'testnet';
-  network: 'Clearnet' | 'Onion' | 'I2P';
-}
-
 export interface Origins {
-  Clearnet: string | undefined;
-  Onion: string | undefined;
-  I2P: string | undefined;
+  clearnet: string | undefined;
+  onion: string | undefined;
+  i2p: string | undefined;
 }
 
 export class Coordinator {

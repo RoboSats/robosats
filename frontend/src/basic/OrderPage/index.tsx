@@ -7,7 +7,7 @@ import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
 
 import { apiClient } from '../../services/api';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, hostUrl, UseAppStoreType } from '../../contexts/AppContext';
 
 const OrderPage = (): JSX.Element => {
   const {
@@ -22,7 +22,6 @@ const OrderPage = (): JSX.Element => {
     setCurrentOrder,
     badOrder,
     setBadOrder,
-    baseUrl,
     navbarHeight,
   } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
@@ -35,9 +34,10 @@ const OrderPage = (): JSX.Element => {
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
 
   useEffect(() => {
-    if (currentOrder != params.orderId) {
+    const newOrder = { shortAlias: params.shortAlias, id: Number(params.orderId) };
+    if (currentOrder != newOrder) {
       clearOrder();
-      setCurrentOrder(Number(params.orderId));
+      setCurrentOrder(newOrder);
     }
   }, [params.orderId]);
 
@@ -58,7 +58,7 @@ const OrderPage = (): JSX.Element => {
         escrow_duration: order.escrow_duration,
         bond_size: order.bond_size,
       };
-      apiClient.post(baseUrl, '/api/make/', body).then((data: any) => {
+      apiClient.post(hostUrl, '/api/make/', body).then((data: any) => {
         if (data.bad_request) {
           setBadOrder(data.bad_request);
         } else if (data.id) {
@@ -102,7 +102,7 @@ const OrderPage = (): JSX.Element => {
                   <OrderDetails
                     order={order}
                     setOrder={setOrder}
-                    baseUrl={baseUrl}
+                    baseUrl={hostUrl}
                     info={info}
                     hasRobot={robot.avatarLoaded}
                   />
@@ -123,7 +123,7 @@ const OrderPage = (): JSX.Element => {
                     settings={settings}
                     setOrder={setOrder}
                     setBadOrder={setBadOrder}
-                    baseUrl={baseUrl}
+                    baseUrl={hostUrl}
                     onRenewOrder={renewOrder}
                     onStartAgain={startAgain}
                   />
@@ -155,7 +155,7 @@ const OrderPage = (): JSX.Element => {
                   <OrderDetails
                     order={order}
                     setOrder={setOrder}
-                    baseUrl={baseUrl}
+                    baseUrl={hostUrl}
                     info={info}
                     hasRobot={robot.avatarLoaded}
                   />
@@ -167,7 +167,7 @@ const OrderPage = (): JSX.Element => {
                     settings={settings}
                     setOrder={setOrder}
                     setBadOrder={setBadOrder}
-                    baseUrl={baseUrl}
+                    baseUrl={hostUrl}
                     onRenewOrder={renewOrder}
                     onStartAgain={startAgain}
                   />
@@ -187,7 +187,7 @@ const OrderPage = (): JSX.Element => {
             <OrderDetails
               order={order}
               setOrder={setOrder}
-              baseUrl={baseUrl}
+              baseUrl={hostUrl}
               info={info}
               hasRobot={robot.avatarLoaded}
             />

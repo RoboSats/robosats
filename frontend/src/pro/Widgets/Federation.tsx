@@ -33,7 +33,6 @@ const FederationWidget = React.forwardRef(
       setFocusedCoordinator,
       open,
       setOpen,
-      baseUrl,
     } = useContext<AppContextProps>(AppContext);
     return React.useMemo(() => {
       return (
@@ -43,7 +42,6 @@ const FederationWidget = React.forwardRef(
             // setFederation={setFederation}
             setFocusedCoordinator={setFocusedCoordinator}
             openCoordinator={() => setOpen({ ...open, coordinator: true })}
-            baseUrl={baseUrl}
             maxWidth={layout.w * gridCellSize} // EM units
             maxHeight={layout.h * gridCellSize} // EM units
           />

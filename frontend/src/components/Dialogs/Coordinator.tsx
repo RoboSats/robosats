@@ -58,7 +58,7 @@ import {
   BadgeLimits,
   NostrIcon,
 } from '../Icons';
-import { AppContext, AppContextProps } from '../../contexts/AppContext';
+import { AppContext, AppContextProps, hostUrl } from '../../contexts/AppContext';
 import { systemClient } from '../../services/System';
 import { Badges } from '../../models/Coordinator.model';
 
@@ -67,7 +67,6 @@ interface Props {
   onClose: () => void;
   coordinator: Coordinator | undefined;
   network: 'mainnet' | 'testnet' | undefined;
-  baseUrl: string;
 }
 
 const ContactButtons = ({
@@ -328,13 +327,7 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
   );
 };
 
-const CoordinatorDialog = ({
-  open = false,
-  onClose,
-  coordinator,
-  network,
-  baseUrl,
-}: Props): JSX.Element => {
+const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Props): JSX.Element => {
   const { t } = useTranslation();
   const { clientVersion } = useContext<AppContextProps>(AppContext);
 
@@ -361,7 +354,7 @@ const CoordinatorDialog = ({
                   style={{ width: '7.5em', height: '7.5em' }}
                   smooth={true}
                   flipHorizontally={false}
-                  baseUrl={baseUrl}
+                  baseUrl={hostUrl}
                 />
               </Grid>
               <Grid item>
