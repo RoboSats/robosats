@@ -19,7 +19,7 @@ from robohash import Robohash
 from scipy.stats import entropy
 
 from api.logics import Logics
-from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Profile
+from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Robot
 from api.notifications import Telegram
 from api.oas_schemas import (
     BookViewSchema,
@@ -231,7 +231,7 @@ class OrderView(viewsets.ViewSet):
         # if user is under a limit (penalty), inform him.
         is_penalized, time_out = Logics.is_penalized(request.user)
         if is_penalized:
-            data["penalty"] = request.user.profile.penalty_expiration
+            data["penalty"] = request.user.robot.penalty_expiration
 
         # Add booleans if user is maker, taker, partipant, buyer or seller
         data["is_maker"] = order.maker == request.user
@@ -726,28 +726,28 @@ class UserView(APIView):
             login(request, user)
 
             context["referral_code"] = token_urlsafe(8)
-            user.profile.referral_code = context["referral_code"]
-            user.profile.avatar = "static/assets/avatars/" + nickname + ".webp"
+            user.robot.referral_code = context["referral_code"]
+            user.robot.avatar = "static/assets/avatars/" + nickname + ".webp"
 
             # Noticed some PGP keys replaced at re-login. Should not happen.
-            # Let's implement this sanity check "If profile has not keys..."
-            if not user.profile.public_key:
-                user.profile.public_key = public_key
-            if not user.profile.encrypted_private_key:
-                user.profile.encrypted_private_key = encrypted_private_key
+            # Let's implement this sanity check "If robot has not keys..."
+            if not user.robot.public_key:
+                user.robot.public_key = public_key
+            if not user.robot.encrypted_private_key:
+                user.robot.encrypted_private_key = encrypted_private_key
 
             # If the ref_code was created by another robot, this robot was referred.
-            queryset = Profile.objects.filter(referral_code=ref_code)
+            queryset = Robot.objects.filter(referral_code=ref_code)
             if len(queryset) == 1:
-                user.profile.is_referred = True
-                user.profile.referred_by = queryset[0]
+                user.robot.is_referred = True
+                user.robot.referred_by = queryset[0]
 
-            user.profile.save()
+            user.robot.save()
 
             context = {**context, **Telegram.get_context(user)}
-            context["public_key"] = user.profile.public_key
-            context["encrypted_private_key"] = user.profile.encrypted_private_key
-            context["wants_stealth"] = user.profile.wants_stealth
+            context["public_key"] = user.robot.public_key
+            context["encrypted_private_key"] = user.robot.encrypted_private_key
+            context["wants_stealth"] = user.robot.wants_stealth
             return Response(context, status=status.HTTP_201_CREATED)
 
         # log in user and return pub/priv keys if existing
@@ -755,11 +755,11 @@ class UserView(APIView):
             user = authenticate(request, username=nickname, password=token_sha256)
             if user is not None:
                 login(request, user)
-                context["public_key"] = user.profile.public_key
-                context["encrypted_private_key"] = user.profile.encrypted_private_key
-                context["earned_rewards"] = user.profile.earned_rewards
-                context["referral_code"] = str(user.profile.referral_code)
-                context["wants_stealth"] = user.profile.wants_stealth
+                context["public_key"] = user.robot.public_key
+                context["encrypted_private_key"] = user.robot.encrypted_private_key
+                context["earned_rewards"] = user.robot.earned_rewards
+                context["referral_code"] = str(user.robot.referral_code)
+                context["wants_stealth"] = user.robot.wants_stealth
 
                 # Adds/generate telegram token and whether it is enabled
                 context = {**context, **Telegram.get_context(user)}
@@ -806,8 +806,8 @@ class UserView(APIView):
                 },
                 status.HTTP_400_BAD_REQUEST,
             )
-        # Check if has already a profile with
-        if user.profile.total_contracts > 0:
+        # Check if has already a robot with
+        if user.robot.total_contracts > 0:
             return Response(
                 {
                     "bad_request": "Maybe a mistake? User cannot be deleted as it has completed trades"
@@ -1070,7 +1070,7 @@ class StealthView(UpdateAPIView):
 
         stealth = serializer.data.get("wantsStealth")
 
-        request.user.profile.wants_stealth = stealth
-        request.user.profile.save()
+        request.user.robot.wants_stealth = stealth
+        request.user.robot.save()
 
         return Response({"wantsStealth": stealth})

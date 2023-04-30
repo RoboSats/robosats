@@ -13,7 +13,7 @@ from django.dispatch import receiver
 from django.utils.html import mark_safe
 
 
-class Profile(models.Model):
+class Robot(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     # PGP keys, used for E2E chat encryption. Priv key is encrypted with user's passphrase (highEntropyToken)
@@ -105,19 +105,19 @@ class Profile(models.Model):
     wants_stealth = models.BooleanField(default=True, null=False)
 
     @receiver(post_save, sender=User)
-    def create_user_profile(sender, instance, created, **kwargs):
+    def create_user_robot(sender, instance, created, **kwargs):
         if created:
-            Profile.objects.create(user=instance)
+            Robot.objects.create(user=instance)
 
     @receiver(post_save, sender=User)
-    def save_user_profile(sender, instance, **kwargs):
-        instance.profile.save()
+    def save_user_robot(sender, instance, **kwargs):
+        instance.robot.save()
 
     @receiver(pre_delete, sender=User)
     def del_avatar_from_disk(sender, instance, **kwargs):
         try:
             avatar_file = Path(
-                settings.AVATAR_ROOT + instance.profile.avatar.url.split("/")[-1]
+                settings.AVATAR_ROOT + instance.robot.avatar.url.split("/")[-1]
             )
             avatar_file.unlink()
         except Exception:

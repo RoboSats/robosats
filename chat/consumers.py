@@ -118,10 +118,10 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         order = Order.objects.get(id=self.order_id)
 
         if order.maker == self.user:
-            return order.taker.profile.public_key
+            return order.taker.robot.public_key
 
         if order.taker == self.user:
-            return order.maker.profile.public_key
+            return order.maker.robot.public_key
 
     @database_sync_to_async
     def get_all_PGP_messages(self):

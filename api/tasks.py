@@ -22,16 +22,16 @@ def users_cleansing():
     # And do not have an active trade, any past contract or any reward.
     deleted_users = []
     for user in queryset:
-        # Try an except, due to unknown cause for users lacking profiles.
+        # Try an except, due to unknown cause for users lacking robots.
         try:
             if (
-                user.profile.pending_rewards > 0
-                or user.profile.earned_rewards > 0
-                or user.profile.claimed_rewards > 0
-                or user.profile.telegram_enabled is True
+                user.robot.pending_rewards > 0
+                or user.robot.earned_rewards > 0
+                or user.robot.claimed_rewards > 0
+                or user.robot.telegram_enabled is True
             ):
                 continue
-            if not user.profile.total_contracts == 0:
+            if not user.robot.total_contracts == 0:
                 continue
             valid, _, _ = Logics.validate_already_maker_or_taker(user)
             if valid:
@@ -53,22 +53,22 @@ def give_rewards():
     Referral rewards go from pending to earned.
     Happens asynchronously so the referral program cannot be easily used to spy.
     """
-    from api.models import Profile
+    from api.models import Robot
 
     # Users who's last login has not been in the last 6 hours
-    queryset = Profile.objects.filter(pending_rewards__gt=0)
+    queryset = Robot.objects.filter(pending_rewards__gt=0)
 
     # And do not have an active trade, any past contract or any reward.
     results = {}
-    for profile in queryset:
-        given_reward = profile.pending_rewards
-        profile.earned_rewards += given_reward
-        profile.pending_rewards = 0
-        profile.save()
+    for robot in queryset:
+        given_reward = robot.pending_rewards
+        robot.earned_rewards += given_reward
+        robot.pending_rewards = 0
+        robot.save()
 
-        results[profile.user.username] = {
+        results[robot.user.username] = {
             "given_reward": given_reward,
-            "earned_rewards": profile.earned_rewards,
+            "earned_rewards": robot.earned_rewards,
         }
 
     return results
@@ -214,10 +214,8 @@ def send_notification(order_id=None, chat_message_id=None, message=None):
         chat_message = Message.objects.get(id=chat_message_id)
         order = chat_message.order
 
-    taker_enabled = (
-        False if order.taker is None else order.taker.profile.telegram_enabled
-    )
-    if not (order.maker.profile.telegram_enabled or taker_enabled):
+    taker_enabled = False if order.taker is None else order.taker.robot.telegram_enabled
+    if not (order.maker.robot.telegram_enabled or taker_enabled):
         return
 
     from api.notifications import Telegram
