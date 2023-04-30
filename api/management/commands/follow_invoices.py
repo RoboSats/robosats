@@ -59,16 +59,16 @@ class Command(BaseCommand):
         at_least_one_changed = False
 
         for idx, hold_lnpayment in enumerate(queryset):
-            old_status = LNPayment.Status(hold_lnpayment.status).label
+            old_status = hold_lnpayment.status
 
-            status = LNNode.lookup_invoice_status(hold_lnpayment)
-            new_status = LNPayment.Status(status).label
+            new_status = LNNode.lookup_invoice_status(hold_lnpayment)
 
             # Only save the hold_payments that change (otherwise this function does not scale)
             changed = not old_status == new_status
             if changed:
                 # self.handle_status_change(hold_lnpayment, old_status)
                 self.update_order_status(hold_lnpayment)
+                hold_lnpayment.status = new_status
                 hold_lnpayment.save()
 
                 # Report for debugging
