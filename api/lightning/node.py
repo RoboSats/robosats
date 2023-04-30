@@ -288,8 +288,6 @@ class LNNode:
                     pass
 
             status = lnd_response_state_to_lnpayment_status[response.state]
-            lnpayment.status = status
-            lnpayment.save()
 
         except Exception as e:
             # If it fails at finding the invoice: it has been canceled.
@@ -297,8 +295,6 @@ class LNNode:
             if "unable to locate invoice" in str(e):
                 print(str(e))
                 status = LNPayment.Status.CANCEL
-                lnpayment.status = status
-                lnpayment.save()
 
             # LND restarted.
             if "wallet locked, unlock it" in str(e):
