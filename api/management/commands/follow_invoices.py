@@ -65,20 +65,22 @@ class Command(BaseCommand):
 
             # Only save the hold_payments that change (otherwise this function does not scale)
             changed = not old_status == new_status
+
             if changed:
                 # self.handle_status_change(hold_lnpayment, old_status)
-                self.update_order_status(hold_lnpayment)
                 hold_lnpayment.status = new_status
+                self.update_order_status(hold_lnpayment)
                 hold_lnpayment.save()
 
                 # Report for debugging
-                new_status = LNPayment.Status(hold_lnpayment.status).label
+                old = LNPayment.Status(old_status).label
+                new = LNPayment.Status(hold_lnpayment.status).label
                 debug["invoices"].append(
                     {
                         idx: {
                             "payment_hash": str(hold_lnpayment.payment_hash),
-                            "old_status": old_status,
-                            "new_status": new_status,
+                            "old_status": old,
+                            "new_status": new,
                         }
                     }
                 )
