@@ -1,0 +1,31 @@
+import json
+
+from django.core.validators import MinValueValidator
+from django.db import models
+from django.utils import timezone
+
+
+class Currency(models.Model):
+
+    currency_dict = json.load(open("frontend/static/assets/currencies.json"))
+    currency_choices = [(int(val), label) for val, label in list(currency_dict.items())]
+
+    currency = models.PositiveSmallIntegerField(
+        choices=currency_choices, null=False, unique=True
+    )
+    exchange_rate = models.DecimalField(
+        max_digits=18,
+        decimal_places=4,
+        default=None,
+        null=True,
+        validators=[MinValueValidator(0)],
+    )
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        # returns currency label ( 3 letters code)
+        return self.currency_dict[str(self.currency)]
+
+    class Meta:
+        verbose_name = "Cached market currency"
+        verbose_name_plural = "Currencies"

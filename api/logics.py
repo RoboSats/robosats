@@ -4,11 +4,12 @@ from datetime import timedelta
 
 import gnupg
 from decouple import config
+from django.contrib.auth.models import User
 from django.db.models import Q, Sum
 from django.utils import timezone
 
 from api.lightning.node import LNNode
-from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, User
+from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order
 from api.tasks import send_notification
 from api.utils import validate_onchain_address
 from chat.models import Message

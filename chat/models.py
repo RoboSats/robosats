@@ -1,7 +1,8 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 
-from api.models import Order, User
+from api.models import Order
 
 
 class ChatRoom(models.Model):

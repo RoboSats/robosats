@@ -2,11 +2,12 @@ from datetime import timedelta
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from django.contrib.auth.models import User
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 
-from api.models import Order, User
+from api.models import Order
 from api.tasks import send_notification
 from chat.models import ChatRoom, Message
 from chat.serializers import ChatSerializer, PostMessageSerializer

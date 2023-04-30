@@ -90,7 +90,16 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "currency",
         "status",
     )
-    search_fields = ["id", "amount", "min_amount", "max_amount"]
+    search_fields = [
+        "id",
+        "reference",
+        "maker",
+        "taker",
+        "amount",
+        "min_amount",
+        "max_amount",
+    ]
+    readonly_fields = ["reference"]
 
     actions = [
         "maker_wins",
