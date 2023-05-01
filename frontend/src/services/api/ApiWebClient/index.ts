@@ -5,7 +5,7 @@ class ApiWebClient implements ApiClient {
   private readonly getHeaders: () => HeadersInit = () => {
     return {
       'Content-Type': 'application/json',
-      'X-CSRFToken': systemClient.getCookie('csrftoken') || '',
+      // 'X-CSRFToken': systemClient.getCookie('csrftoken') || '',
     };
   };
 

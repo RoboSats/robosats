@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { SafeAreaView, Text, Platform, Appearance } from 'react-native';
 import TorClient from './services/Tor';
@@ -31,7 +31,7 @@ const App = () => {
     );
   };
 
-  const init = (reponseId: string) => {
+  const init = (responseId: string) => {
     const loadCookie = async (key: string) => {
       return await EncryptedStorage.getItem(key).then((value) => {
         if (value) {
@@ -44,13 +44,13 @@ const App = () => {
     };
 
     EncryptedStorage.removeItem('sessionid');
-    EncryptedStorage.removeItem('csrftoken');
+    // EncryptedStorage.removeItem('csrftoken');
     loadCookie('robot_token');
     loadCookie('settings_fontsize_basic');
     loadCookie('settings_language');
     loadCookie('settings_mode');
     loadCookie('settings_network');
-    loadCookie('garage').then(() => injectMessageResolve(reponseId));
+    loadCookie('garage').then(() => injectMessageResolve(responseId));
   };
 
   const onCatch = (dataId: string, event: any) => {

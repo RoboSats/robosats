@@ -54,19 +54,6 @@ ALLOWED_HOSTS = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-CSRF_TRUSTED_ORIGINS = [
-    f'http://{config("HOST_NAME")}',
-    f'http://{config("HOST_NAME2")}',
-    f'http://{config("I2P_ALIAS")}',
-    f'http://{config("I2P_LONG")}',
-    f'http://{config("LOCAL_ALIAS")}',
-    "http://localhost",
-    "http://*.onion",
-    "http://*",
-    "https://*.com",
-    "https://*",
-]
-
 # Allows Session Cookie to be read by Javascript on Client side.
 SESSION_COOKIE_HTTPONLY = False
 
@@ -158,7 +145,8 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
+    "robosats.middleware.DisableCSRFMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
