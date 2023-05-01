@@ -6,7 +6,7 @@ django-model-utils==4.2.0
 django-private-chat2==1.0.2
 django-redis==5.2.0
 django-timezone-field==5.0
-djangorestframework==3.13.1
+djangorestframework==3.14.0
 channels==3.0.4
 channels-redis==3.3.1
 celery==5.2.7
