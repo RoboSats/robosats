@@ -267,9 +267,9 @@ class Logics:
             price = exchange_rate * (1 + float(premium) / 100)
         else:
             amount = order.amount if not order.has_range else order.max_amount
-            order_rate = float(amount) / (float(order.satoshis) / 100000000)
+            order_rate = float(amount) / (float(order.satoshis) / 100_000_000)
             premium = order_rate / exchange_rate - 1
-            premium = int(premium * 10000) / 100  # 2 decimals left
+            premium = int(premium * 10_000) / 100  # 2 decimals left
             price = order_rate
 
         significant_digits = 5
@@ -547,9 +547,9 @@ class Logics:
                 "bad_request": "Only orders in dispute accept dispute statements"
             }
 
-        if len(statement) > 50000:
+        if len(statement) > 50_000:
             return False, {
-                "bad_statement": "The statement and chatlogs are longer than 50000 characters"
+                "bad_statement": "The statement and chat logs are longer than 50,000 characters"
             }
 
         if len(statement) < 100:
@@ -618,7 +618,7 @@ class Logics:
         # Compute a safer available  onchain liquidity: (confirmed_utxos - reserve - pending_outgoing_txs))
         # Accounts for already committed outgoing TX for previous users.
         confirmed = onchain_payment.balance.onchain_confirmed
-        reserve = 300000  # We assume a reserve of 300K Sats (3 times higher than LND's default anchor reserve)
+        reserve = 300_000  # We assume a reserve of 300K Sats (3 times higher than LND's default anchor reserve)
         pending_txs = OnchainPayment.objects.filter(
             status__in=[OnchainPayment.Status.VALID, OnchainPayment.Status.QUEUE]
         ).aggregate(Sum("num_satoshis"))["num_satoshis__sum"]
@@ -678,8 +678,8 @@ class Logics:
         )  # Trading fee to buyer is charged here.
 
         # context necessary for the user to submit an onchain address
-        MIN_SWAP_AMOUNT = config("MIN_SWAP_AMOUNT", cast=int, default=20000)
-        MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
+        MIN_SWAP_AMOUNT = config("MIN_SWAP_AMOUNT", cast=int, default=20_000)
+        MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500_000)
 
         if context["invoice_amount"] < MIN_SWAP_AMOUNT:
             context["swap_allowed"] = False
@@ -838,7 +838,7 @@ class Logics:
 
         num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
         routing_budget_sats = float(num_satoshis) * (
-            float(routing_budget_ppm) / 1000000
+            float(routing_budget_ppm) / 1_000_000
         )
         num_satoshis = int(num_satoshis - routing_budget_sats)
         payout = LNNode.validate_ln_invoice(invoice, num_satoshis, routing_budget_ppm)
@@ -1713,7 +1713,7 @@ class Logics:
             )
         )  # 1000 ppm or 10 sats
 
-        routing_budget_ppm = (routing_budget_sats / float(num_satoshis)) * 1000000
+        routing_budget_ppm = (routing_budget_sats / float(num_satoshis)) * 1_000_000
         reward_payout = LNNode.validate_ln_invoice(
             invoice, num_satoshis, routing_budget_ppm
         )
@@ -1824,7 +1824,7 @@ class Logics:
 
         platform_summary = {}
         platform_summary["contract_exchange_rate"] = float(order.amount) / (
-            float(order.last_satoshis) / 100000000
+            float(order.last_satoshis) / 100_000_000
         )
         if order.last_satoshis_time is not None:
             platform_summary["contract_timestamp"] = order.last_satoshis_time

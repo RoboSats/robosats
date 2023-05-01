@@ -1017,8 +1017,8 @@ class LimitView(ListAPIView):
     def get(self, request):
 
         # Trade limits as BTC
-        min_trade = float(config("MIN_TRADE")) / 100000000
-        max_trade = float(config("MAX_TRADE")) / 100000000
+        min_trade = float(config("MIN_TRADE")) / 100_000_000
+        max_trade = float(config("MAX_TRADE")) / 100_000_000
 
         payload = {}
         queryset = Currency.objects.all().order_by("currency")

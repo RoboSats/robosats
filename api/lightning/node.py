@@ -39,7 +39,7 @@ except Exception:
 
 LND_GRPC_HOST = config("LND_GRPC_HOST")
 DISABLE_ONCHAIN = config("DISABLE_ONCHAIN", cast=bool, default=True)
-MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
+MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500_000)
 
 
 class LNNode:
@@ -345,7 +345,7 @@ class LNNode:
             )
         else:
             max_routing_fee_sats = int(
-                float(num_satoshis) * float(routing_budget_ppm) / 1000000
+                float(num_satoshis) * float(routing_budget_ppm) / 1_000_000
             )
 
         if route_hints:
@@ -357,7 +357,7 @@ class LNNode:
                 for hop_hint in hinted_route.hop_hints:
                     route_cost += hop_hint.fee_base_msat / 1000
                     route_cost += (
-                        hop_hint.fee_proportional_millionths * num_satoshis / 1000000
+                        hop_hint.fee_proportional_millionths * num_satoshis / 1_000_000
                     )
 
                 # ...and store the cost of the route to the array

@@ -93,7 +93,7 @@ def follow_send_payment(hash):
 
     # Default is 0ppm. Set by the user over API. Client's default is 1000 ppm.
     fee_limit_sat = int(
-        float(lnpayment.num_satoshis) * float(lnpayment.routing_budget_ppm) / 1000000
+        float(lnpayment.num_satoshis) * float(lnpayment.routing_budget_ppm) / 1_000_000
     )
     timeout_seconds = config("PAYOUT_TIMEOUT_SECONDS", cast=int, default=90)
 
