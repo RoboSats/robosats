@@ -50,7 +50,6 @@ import { Order, Robot, Settings } from '../../models';
 import { EncryptedChatMessage } from './EncryptedChat';
 import CollabCancelAlert from './CollabCancelAlert';
 import { Bolt } from '@mui/icons-material';
-import es from 'date-fns/esm/locale/es/index.js';
 
 interface loadingButtonsProps {
   cancel: boolean;
