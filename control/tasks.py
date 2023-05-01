@@ -13,7 +13,7 @@ def do_accounting():
     from django.db.models import Sum
     from django.utils import timezone
 
-    from api.models import LNPayment, MarketTick, OnchainPayment, Order, Profile
+    from api.models import LNPayment, MarketTick, OnchainPayment, Order, Robot
     from control.models import AccountingDay
 
     all_payments = LNPayment.objects.all()
@@ -149,11 +149,11 @@ def do_accounting():
             else:
                 outstanding_pending_disputes = 0
 
-            accounted_day.outstanding_earned_rewards = Profile.objects.all().aggregate(
+            accounted_day.outstanding_earned_rewards = Robot.objects.all().aggregate(
                 Sum("earned_rewards")
             )["earned_rewards__sum"]
             accounted_day.outstanding_pending_disputes = outstanding_pending_disputes
-            accounted_day.lifetime_rewards_claimed = Profile.objects.all().aggregate(
+            accounted_day.lifetime_rewards_claimed = Robot.objects.all().aggregate(
                 Sum("claimed_rewards")
             )["claimed_rewards__sum"]
             if accounted_yesterday is not None:

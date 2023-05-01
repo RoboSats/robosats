@@ -6,14 +6,14 @@ from django.contrib.auth.models import Group, User
 from django_admin_relation_links import AdminChangeLinksMixin
 
 from api.logics import Logics
-from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Profile
+from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Robot
 
 admin.site.unregister(Group)
 admin.site.unregister(User)
 
 
-class ProfileInline(admin.StackedInline):
-    model = Profile
+class RobotInline(admin.StackedInline):
+    model = Robot
     can_delete = False
     fields = ("avatar_tag",)
     readonly_fields = ["avatar_tag"]
@@ -23,22 +23,22 @@ class ProfileInline(admin.StackedInline):
 # extended users with avatars
 @admin.register(User)
 class EUserAdmin(AdminChangeLinksMixin, UserAdmin):
-    inlines = [ProfileInline]
+    inlines = [RobotInline]
     list_display = (
         "avatar_tag",
         "id",
-        "profile_link",
+        "robot_link",
         "username",
         "last_login",
         "date_joined",
         "is_staff",
     )
     list_display_links = ("id", "username")
-    change_links = ("profile",)
+    change_links = ("robot",)
     ordering = ("-id",)
 
     def avatar_tag(self, obj):
-        return obj.profile.avatar_tag()
+        return obj.robot.avatar_tag()
 
 
 @admin.register(Order)
@@ -90,7 +90,16 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "currency",
         "status",
     )
-    search_fields = ["id", "amount", "min_amount", "max_amount"]
+    search_fields = [
+        "id",
+        "reference",
+        "maker",
+        "taker",
+        "amount",
+        "min_amount",
+        "max_amount",
+    ]
+    readonly_fields = ["reference"]
 
     actions = [
         "maker_wins",
@@ -103,7 +112,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     def maker_wins(self, request, queryset):
         """
         Solves a dispute on favor of the maker.
-        Adds Sats to compensations (earned_rewards) of the maker profile.
+        Adds Sats to compensations (earned_rewards) of the maker robot.
         """
         for order in queryset:
             if (
@@ -120,8 +129,8 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                     trade_sats = order.trade_escrow.num_satoshis
 
                 order.status = Order.Status.TLD
-                order.maker.profile.earned_rewards = own_bond_sats + trade_sats
-                order.maker.profile.save()
+                order.maker.robot.earned_rewards = own_bond_sats + trade_sats
+                order.maker.robot.save()
                 order.save()
                 self.message_user(
                     request,
@@ -140,7 +149,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     def taker_wins(self, request, queryset):
         """
         Solves a dispute on favor of the taker.
-        Adds Sats to compensations (earned_rewards) of the taker profile.
+        Adds Sats to compensations (earned_rewards) of the taker robot.
         """
         for order in queryset:
             if (
@@ -157,8 +166,8 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                     trade_sats = order.trade_escrow.num_satoshis
 
                 order.status = Order.Status.MLD
-                order.taker.profile.earned_rewards = own_bond_sats + trade_sats
-                order.taker.profile.save()
+                order.taker.robot.earned_rewards = own_bond_sats + trade_sats
+                order.taker.robot.save()
                 order.save()
                 self.message_user(
                     request,
@@ -183,18 +192,18 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.status in [Order.Status.DIS, Order.Status.WFR]
                 and order.is_disputed
             ):
-                order.maker_bond.sender.profile.earned_rewards += (
+                order.maker_bond.sender.robot.earned_rewards += (
                     order.maker_bond.num_satoshis
                 )
-                order.maker_bond.sender.profile.save()
-                order.taker_bond.sender.profile.earned_rewards += (
+                order.maker_bond.sender.robot.save()
+                order.taker_bond.sender.robot.earned_rewards += (
                     order.taker_bond.num_satoshis
                 )
-                order.taker_bond.sender.profile.save()
-                order.trade_escrow.sender.profile.earned_rewards += (
+                order.taker_bond.sender.robot.save()
+                order.trade_escrow.sender.robot.earned_rewards += (
                     order.trade_escrow.num_satoshis
                 )
-                order.trade_escrow.sender.profile.save()
+                order.trade_escrow.sender.robot.save()
                 order.status = Order.Status.CCA
                 order.save()
                 self.message_user(
@@ -315,8 +324,8 @@ class OnchainPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     search_fields = ["address", "num_satoshis", "receiver__username", "txid"]
 
 
-@admin.register(Profile)
-class UserProfileAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
+@admin.register(Robot)
+class UserRobotAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     list_display = (
         "avatar_tag",
         "id",

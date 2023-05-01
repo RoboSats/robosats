@@ -3,19 +3,18 @@ import time
 
 from .utils import human_format
 
-"""
-Deterministic nick generator from SHA256 hash.
-
-It builds Nicknames as:
-Adverb + Adjective + Noun + Numeric(0-999)
-
-With the current English dictionaries there
-is a total of to 450*4800*12500*1000 =
-28 Trillion deterministic nicks
-"""
-
 
 class NickGenerator:
+    """
+    Deterministic nick generator from SHA256 hash.
+
+    It builds Nicknames as:
+    Adverb + Adjective + Noun + Numeric(0-999)
+
+    With the current English dictionaries there
+    is a total of to 450*4800*12500*1000 =
+    28 Trillion deterministic nicks"""
+
     def __init__(
         self,
         lang="English",
@@ -128,7 +127,7 @@ class NickGenerator:
         self,
         primer_hash=None,
         max_length=25,
-        max_iter=10000,
+        max_iter=10_000,
     ):
         """
         Generates Nicks that are short.
@@ -149,7 +148,7 @@ class NickGenerator:
                 i = i + 1
         return "", 0, 0, i
 
-    def compute_pool_size_loss(self, max_length=22, max_iter=1000000, num_runs=5000):
+    def compute_pool_size_loss(self, max_length=22, max_iter=1_000_000, num_runs=5000):
         """
         Computes median an average loss of
         nick pool diversity due to max_lenght
@@ -162,7 +161,7 @@ class NickGenerator:
         attempts = []
         for i in range(num_runs):
 
-            string = str(random.uniform(0, 1000000))
+            string = str(random.uniform(0, 1_000_000))
             hash = hashlib.sha256(str.encode(string)).hexdigest()
 
             _, _, pool_size, tries = self.short_from_SHA256(hash, max_length)
@@ -188,7 +187,7 @@ if __name__ == "__main__":
     nick_lang = "English"  # Spanish
     hash = hashlib.sha256(b"No one expected such cool nick!!").hexdigest()
     max_length = 22
-    max_iter = 100000000
+    max_iter = 100_000_000
 
     # Initialized nick generator
     GenNick = NickGenerator(lang=nick_lang)
@@ -215,7 +214,7 @@ if __name__ == "__main__":
     random.seed(1)
 
     for i in range(100):
-        string = str(random.uniform(0, 1000000))
+        string = str(random.uniform(0, 1_000_000))
         hash = hashlib.sha256(str.encode(string)).hexdigest()
         print(
             GenNick.short_from_SHA256(hash, max_length=max_length, max_iter=max_iter)[0]

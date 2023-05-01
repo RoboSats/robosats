@@ -4,11 +4,12 @@ from datetime import timedelta
 
 import gnupg
 from decouple import config
+from django.contrib.auth.models import User
 from django.db.models import Q, Sum
 from django.utils import timezone
 
 from api.lightning.node import LNNode
-from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, User
+from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order
 from api.tasks import send_notification
 from api.utils import validate_onchain_address
 from chat.models import Message
@@ -266,9 +267,9 @@ class Logics:
             price = exchange_rate * (1 + float(premium) / 100)
         else:
             amount = order.amount if not order.has_range else order.max_amount
-            order_rate = float(amount) / (float(order.satoshis) / 100000000)
+            order_rate = float(amount) / (float(order.satoshis) / 100_000_000)
             premium = order_rate / exchange_rate - 1
-            premium = int(premium * 10000) / 100  # 2 decimals left
+            premium = int(premium * 10_000) / 100  # 2 decimals left
             price = order_rate
 
         significant_digits = 5
@@ -352,7 +353,7 @@ class Logics:
                 order.expiry_reason = Order.ExpiryReasons.NESCRO
                 order.save()
                 # Reward taker with part of the maker bond
-                cls.add_slashed_rewards(order.maker_bond, order.taker.profile)
+                cls.add_slashed_rewards(order.maker_bond, order.taker.robot)
                 return True
 
             # If maker is buyer, settle the taker's bond order goes back to public
@@ -371,7 +372,7 @@ class Logics:
                 cls.publish_order(order)
                 send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
-                cls.add_slashed_rewards(taker_bond, order.maker.profile)
+                cls.add_slashed_rewards(taker_bond, order.maker.robot)
                 return True
 
         elif order.status == Order.Status.WFI:
@@ -388,7 +389,7 @@ class Logics:
                 order.expiry_reason = Order.ExpiryReasons.NINVOI
                 order.save()
                 # Reward taker with part of the maker bond
-                cls.add_slashed_rewards(order.maker_bond, order.taker.profile)
+                cls.add_slashed_rewards(order.maker_bond, order.taker.robot)
                 return True
 
             # If maker is seller settle the taker's bond, order goes back to public
@@ -402,7 +403,7 @@ class Logics:
                 cls.publish_order(order)
                 send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
-                cls.add_slashed_rewards(taker_bond, order.maker.profile)
+                cls.add_slashed_rewards(taker_bond, order.maker.robot)
                 return True
 
         elif order.status in [Order.Status.CHA, Order.Status.FSE]:
@@ -417,11 +418,11 @@ class Logics:
         """The taker did not lock the taker_bond. Now he has to go"""
         # Add a time out to the taker
         if order.taker:
-            profile = order.taker.profile
-            profile.penalty_expiration = timezone.now() + timedelta(
+            robot = order.taker.robot
+            robot.penalty_expiration = timezone.now() + timedelta(
                 seconds=PENALTY_TIMEOUT
             )
-            profile.save()
+            robot.save()
 
         # Make order public again
         order.taker = None
@@ -467,14 +468,14 @@ class Logics:
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)
-            cls.add_slashed_rewards(order.maker_bond, order.taker.profile)
+            cls.add_slashed_rewards(order.maker_bond, order.taker.robot)
             order.status = Order.Status.MLD
 
         elif num_messages_maker == 0:
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)
-            cls.add_slashed_rewards(order.taker_bond, order.maker.profile)
+            cls.add_slashed_rewards(order.taker_bond, order.maker.robot)
             order.status = Order.Status.TLD
         else:
             return False
@@ -525,15 +526,15 @@ class Logics:
 
         # User could be None if a dispute is open automatically due to weird expiration.
         if user is not None:
-            profile = user.profile
-            profile.num_disputes = profile.num_disputes + 1
-            if profile.orders_disputes_started is None:
-                profile.orders_disputes_started = [str(order.id)]
+            robot = user.robot
+            robot.num_disputes = robot.num_disputes + 1
+            if robot.orders_disputes_started is None:
+                robot.orders_disputes_started = [str(order.id)]
             else:
-                profile.orders_disputes_started = list(
-                    profile.orders_disputes_started
+                robot.orders_disputes_started = list(
+                    robot.orders_disputes_started
                 ).append(str(order.id))
-            profile.save()
+            robot.save()
 
         send_notification.delay(order_id=order.id, message="dispute_opened")
         return True, None
@@ -546,9 +547,9 @@ class Logics:
                 "bad_request": "Only orders in dispute accept dispute statements"
             }
 
-        if len(statement) > 50000:
+        if len(statement) > 50_000:
             return False, {
-                "bad_statement": "The statement and chatlogs are longer than 50000 characters"
+                "bad_statement": "The statement and chat logs are longer than 50,000 characters"
             }
 
         if len(statement) < 100:
@@ -617,7 +618,7 @@ class Logics:
         # Compute a safer available  onchain liquidity: (confirmed_utxos - reserve - pending_outgoing_txs))
         # Accounts for already committed outgoing TX for previous users.
         confirmed = onchain_payment.balance.onchain_confirmed
-        reserve = 300000  # We assume a reserve of 300K Sats (3 times higher than LND's default anchor reserve)
+        reserve = 300_000  # We assume a reserve of 300K Sats (3 times higher than LND's default anchor reserve)
         pending_txs = OnchainPayment.objects.filter(
             status__in=[OnchainPayment.Status.VALID, OnchainPayment.Status.QUEUE]
         ).aggregate(Sum("num_satoshis"))["num_satoshis__sum"]
@@ -668,7 +669,7 @@ class Logics:
 
         fee_sats = order.last_satoshis * fee_fraction
 
-        reward_tip = int(config("REWARD_TIP")) if user.profile.is_referred else 0
+        reward_tip = int(config("REWARD_TIP")) if user.robot.is_referred else 0
 
         context = {}
         # context necessary for the user to submit a LN invoice
@@ -677,8 +678,8 @@ class Logics:
         )  # Trading fee to buyer is charged here.
 
         # context necessary for the user to submit an onchain address
-        MIN_SWAP_AMOUNT = config("MIN_SWAP_AMOUNT", cast=int, default=20000)
-        MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
+        MIN_SWAP_AMOUNT = config("MIN_SWAP_AMOUNT", cast=int, default=20_000)
+        MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500_000)
 
         if context["invoice_amount"] < MIN_SWAP_AMOUNT:
             context["swap_allowed"] = False
@@ -728,7 +729,7 @@ class Logics:
 
         fee_sats = order.last_satoshis * fee_fraction
 
-        reward_tip = int(config("REWARD_TIP")) if user.profile.is_referred else 0
+        reward_tip = int(config("REWARD_TIP")) if user.robot.is_referred else 0
 
         if cls.is_seller(order, user):
             escrow_amount = round(
@@ -837,7 +838,7 @@ class Logics:
 
         num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
         routing_budget_sats = float(num_satoshis) * (
-            float(routing_budget_ppm) / 1000000
+            float(routing_budget_ppm) / 1_000_000
         )
         num_satoshis = int(num_satoshis - routing_budget_sats)
         payout = LNNode.validate_ln_invoice(invoice, num_satoshis, routing_budget_ppm)
@@ -910,33 +911,33 @@ class Logics:
         order.save()
         return True
 
-    def add_profile_rating(profile, rating):
-        """adds a new rating to a user profile"""
+    def add_robot_rating(robot, rating):
+        """adds a new rating to a user robot"""
 
         # TODO Unsafe, does not update ratings, it adds more ratings everytime a new rating is clicked.
-        profile.total_ratings += 1
-        latest_ratings = profile.latest_ratings
+        robot.total_ratings += 1
+        latest_ratings = robot.latest_ratings
         if latest_ratings is None:
-            profile.latest_ratings = [rating]
-            profile.avg_rating = rating
+            robot.latest_ratings = [rating]
+            robot.avg_rating = rating
 
         else:
             latest_ratings = ast.literal_eval(latest_ratings)
             latest_ratings.append(rating)
-            profile.latest_ratings = latest_ratings
-            profile.avg_rating = sum(list(map(int, latest_ratings))) / len(
+            robot.latest_ratings = latest_ratings
+            robot.avg_rating = sum(list(map(int, latest_ratings))) / len(
                 latest_ratings
             )  # Just an average, but it is a list of strings. Has to be converted to int.
 
-        profile.save()
+        robot.save()
 
     def is_penalized(user):
         """Checks if a user that is not participant of orders
         has a limit on taking or making a order"""
 
-        if user.profile.penalty_expiration:
-            if user.profile.penalty_expiration > timezone.now():
-                time_out = (user.profile.penalty_expiration - timezone.now()).seconds
+        if user.robot.penalty_expiration:
+            if user.robot.penalty_expiration > timezone.now():
+                time_out = (user.robot.penalty_expiration - timezone.now()).seconds
                 return True, time_out
 
         return False, None
@@ -1032,7 +1033,7 @@ class Logics:
                 order.status = Order.Status.UCA
                 order.save()
                 # Reward taker with part of the maker bond
-                cls.add_slashed_rewards(order.maker_bond, order.taker.profile)
+                cls.add_slashed_rewards(order.maker_bond, order.taker.robot)
                 return True, None
 
         # 4.b) When taker cancel after bond (before escrow)
@@ -1051,7 +1052,7 @@ class Logics:
                 cls.publish_order(order)
                 send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
-                cls.add_slashed_rewards(order.taker_bond, order.maker.profile)
+                cls.add_slashed_rewards(order.taker_bond, order.maker.robot)
                 return True, None
 
         # 5) When trade collateral has been posted (after escrow)
@@ -1171,7 +1172,7 @@ class Logics:
         order.last_satoshis_time = timezone.now()
         bond_satoshis = int(order.last_satoshis * order.bond_size / 100)
 
-        if user.profile.wants_stealth:
+        if user.robot.wants_stealth:
             description = f"This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally. Payment reference: {order.reference}"
         else:
             description = f"RoboSats - Publishing '{str(order)}' - Maker bond - This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally."
@@ -1236,11 +1237,11 @@ class Logics:
         order.status = Order.Status.WF2
         order.save()
 
-        # Both users profiles are added one more contract // Unsafe can add more than once.
-        order.maker.profile.total_contracts += 1
-        order.taker.profile.total_contracts += 1
-        order.maker.profile.save()
-        order.taker.profile.save()
+        # Both users robots are added one more contract // Unsafe can add more than once.
+        order.maker.robot.total_contracts += 1
+        order.taker.robot.total_contracts += 1
+        order.maker.robot.save()
+        order.taker.robot.save()
 
         # Log a market tick
         try:
@@ -1284,7 +1285,7 @@ class Logics:
         order.last_satoshis_time = timezone.now()
         bond_satoshis = int(order.last_satoshis * order.bond_size / 100)
         pos_text = "Buying" if cls.is_buyer(order, user) else "Selling"
-        if user.profile.wants_stealth:
+        if user.robot.wants_stealth:
             description = f"This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally. Payment reference: {order.reference}"
         else:
             description = (
@@ -1381,7 +1382,7 @@ class Logics:
         escrow_satoshis = cls.escrow_amount(order, user)[1][
             "escrow_amount"
         ]  # Amount was fixed when taker bond was locked, fee applied here
-        if user.profile.wants_stealth:
+        if user.robot.wants_stealth:
             description = f"This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally. Payment reference: {order.reference}"
         else:
             description = f"RoboSats - Escrow amount for '{str(order)}' - It WILL FREEZE IN YOUR WALLET. It will be released to the buyer once you confirm you received the fiat. It will automatically return if buyer does not confirm the payment."
@@ -1645,12 +1646,12 @@ class Logics:
         if order.status in rating_allowed_status:
             # if maker, rates taker
             if order.maker == user and order.maker_rated is False:
-                cls.add_profile_rating(order.taker.profile, rating)
+                cls.add_robot_rating(order.taker.robot, rating)
                 order.maker_rated = True
                 order.save()
             # if taker, rates maker
             if order.taker == user and order.taker_rated is False:
-                cls.add_profile_rating(order.maker.profile, rating)
+                cls.add_robot_rating(order.maker.robot, rating)
                 order.taker_rated = True
                 order.save()
         else:
@@ -1660,8 +1661,8 @@ class Logics:
 
     @classmethod
     def rate_platform(cls, user, rating):
-        user.profile.platform_rating = rating
-        user.profile.save()
+        user.robot.platform_rating = rating
+        user.robot.save()
         return True, None
 
     @classmethod
@@ -1671,27 +1672,27 @@ class Logics:
         If participants of the order were referred, the reward is given to the referees.
         """
 
-        if order.maker.profile.is_referred:
-            profile = order.maker.profile.referred_by
-            profile.pending_rewards += int(config("REWARD_TIP"))
-            profile.save()
+        if order.maker.robot.is_referred:
+            robot = order.maker.robot.referred_by
+            robot.pending_rewards += int(config("REWARD_TIP"))
+            robot.save()
 
-        if order.taker.profile.is_referred:
-            profile = order.taker.profile.referred_by
-            profile.pending_rewards += int(config("REWARD_TIP"))
-            profile.save()
+        if order.taker.robot.is_referred:
+            robot = order.taker.robot.referred_by
+            robot.pending_rewards += int(config("REWARD_TIP"))
+            robot.save()
 
         return
 
     @classmethod
-    def add_slashed_rewards(cls, bond, profile):
+    def add_slashed_rewards(cls, bond, robot):
         """
         When a bond is slashed due to overtime, rewards the user that was waiting.
         """
         reward_fraction = float(config("SLASHED_BOND_REWARD_SPLIT"))
         reward = int(bond.num_satoshis * reward_fraction)
-        profile.earned_rewards += reward
-        profile.save()
+        robot.earned_rewards += reward
+        robot.save()
 
         return
 
@@ -1700,10 +1701,10 @@ class Logics:
 
         # only a user with positive withdraw balance can use this
 
-        if user.profile.earned_rewards < 1:
+        if user.robot.earned_rewards < 1:
             return False, {"bad_invoice": "You have not earned rewards"}
 
-        num_satoshis = user.profile.earned_rewards
+        num_satoshis = user.robot.earned_rewards
 
         routing_budget_sats = int(
             max(
@@ -1712,7 +1713,7 @@ class Logics:
             )
         )  # 1000 ppm or 10 sats
 
-        routing_budget_ppm = (routing_budget_sats / float(num_satoshis)) * 1000000
+        routing_budget_ppm = (routing_budget_sats / float(num_satoshis)) * 1_000_000
         reward_payout = LNNode.validate_ln_invoice(
             invoice, num_satoshis, routing_budget_ppm
         )
@@ -1738,21 +1739,21 @@ class Logics:
         except Exception:
             return False, {"bad_invoice": "Give me a new invoice"}
 
-        user.profile.earned_rewards = 0
-        user.profile.save()
+        user.robot.earned_rewards = 0
+        user.robot.save()
 
         # Pays the invoice.
         paid, failure_reason = LNNode.pay_invoice(lnpayment)
         if paid:
-            user.profile.earned_rewards = 0
-            user.profile.claimed_rewards += num_satoshis
-            user.profile.save()
+            user.robot.earned_rewards = 0
+            user.robot.claimed_rewards += num_satoshis
+            user.robot.save()
             return True, None
 
         # If fails, adds the rewards again.
         else:
-            user.profile.earned_rewards = num_satoshis
-            user.profile.save()
+            user.robot.earned_rewards = num_satoshis
+            user.robot.save()
             context = {}
             context["bad_invoice"] = failure_reason
             return False, context
@@ -1823,7 +1824,7 @@ class Logics:
 
         platform_summary = {}
         platform_summary["contract_exchange_rate"] = float(order.amount) / (
-            float(order.last_satoshis) / 100000000
+            float(order.last_satoshis) / 100_000_000
         )
         if order.last_satoshis_time is not None:
             platform_summary["contract_timestamp"] = order.last_satoshis_time

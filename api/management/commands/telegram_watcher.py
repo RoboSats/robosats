@@ -5,7 +5,7 @@ from decouple import config
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from api.models import Profile
+from api.models import Robot
 from api.notifications import Telegram
 from api.utils import get_session
 
@@ -52,12 +52,12 @@ class Command(BaseCommand):
                 if len(parts) < 2:
                     self.telegram.send_message(
                         chat_id=result["message"]["from"]["id"],
-                        text='You must enable the notifications bot using the RoboSats client. Click on your "Robot profile" -> "Enable Telegram" and follow the link or scan the QR code.',
+                        text='You must enable the notifications bot using the RoboSats client. Click on your "Robot robot" -> "Enable Telegram" and follow the link or scan the QR code.',
                     )
                     continue
                 token = parts[-1]
-                profile = Profile.objects.filter(telegram_token=token).first()
-                if not profile:
+                robot = Robot.objects.filter(telegram_token=token).first()
+                if not robot:
                     self.telegram.send_message(
                         chat_id=result["message"]["from"]["id"],
                         text=f'Wops, invalid token! There is no Robot with telegram chat token "{token}"',
@@ -68,13 +68,13 @@ class Command(BaseCommand):
                 while attempts >= 0:
                     try:
                         with transaction.atomic():
-                            profile.telegram_chat_id = result["message"]["from"]["id"]
-                            profile.telegram_lang_code = result["message"]["from"][
+                            robot.telegram_chat_id = result["message"]["from"]["id"]
+                            robot.telegram_lang_code = result["message"]["from"][
                                 "language_code"
                             ]
-                            self.telegram.welcome(profile.user)
-                            profile.telegram_enabled = True
-                            profile.save()
+                            self.telegram.welcome(robot.user)
+                            robot.telegram_enabled = True
+                            robot.save()
                             break
                     except Exception:
                         time.sleep(5)
