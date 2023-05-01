@@ -6,7 +6,7 @@ django-model-utils==4.3.1
 django-redis==5.2.0
 django-timezone-field==5.0
 djangorestframework==3.14.0
-channels==3.0.4
+channels==4.0.0
 channels-redis==3.3.1
 celery==5.2.7
 grpcio==1.54.0
