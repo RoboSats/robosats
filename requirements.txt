@@ -30,7 +30,7 @@ daphne==3.0.2
 drf-spectacular==0.26.2
 drf-spectacular-sidecar==2023.4.1
 black==22.8.0
-isort==5.10.1
+isort==5.12.0
 flake8==6.0.0
 pyflakes==3.0.1
 django-cors-headers==3.13.0
