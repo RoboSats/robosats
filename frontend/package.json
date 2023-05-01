@@ -64,7 +64,7 @@
     "file-replace-loader": "^1.4.0",
     "i18next": "^21.6.14",
     "i18next-browser-languagedetector": "^7.0.1",
-    "i18next-http-backend": "^1.4.0",
+    "i18next-http-backend": "^2.2.0",
     "install": "^0.13.0",
     "js-sha256": "^0.9.0",
     "light-bolt11-decoder": "^3.0.0",
