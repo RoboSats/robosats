@@ -68,7 +68,7 @@
     "install": "^0.13.0",
     "js-sha256": "^0.9.0",
     "light-bolt11-decoder": "^3.0.0",
-    "npm": "^8.19.1",
+    "npm": "^9.6.5",
     "openpgp": "^5.2.1",
     "react": "^18.2.0",
     "react-countdown": "^2.3.2",
