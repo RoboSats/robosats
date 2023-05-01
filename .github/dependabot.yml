@@ -3,20 +3,25 @@ updates:
   - package-ecosystem: "npm"
     directory: "/mobile"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "friday"
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "saturday"
   - package-ecosystem: "gradle"
     directory: "/mobile/android"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "sunday"
   - package-ecosystem: "bundler"
     directory: "/docs"
     schedule:
-      interval: "daily"
+      interval: "monthly"
+      day: "tuesday"
