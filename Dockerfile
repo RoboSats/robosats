@@ -23,7 +23,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # install lnd/cln grpc services
-RUN sh generate_grpc.sh
+# RUN sh generate_grpc.sh
 
 EXPOSE 8000
 
