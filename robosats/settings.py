@@ -36,7 +36,7 @@ STATIC_ROOT = "/usr/src/static/"
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if os.environ.get("DEVELOPMENT"):
+if config("DEVELOPMENT", default=False):
     DEBUG = True
     STATIC_ROOT = "frontend/static/"
 
@@ -53,7 +53,19 @@ ALLOWED_HOSTS = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
-CSRF_TRUSTED_ORIGINS = ["http://*", "https://*"]
+
+CSRF_TRUSTED_ORIGINS = [
+    f'http://{config("HOST_NAME")}',
+    f'http://{config("HOST_NAME2")}',
+    f'http://{config("I2P_ALIAS")}',
+    f'http://{config("I2P_LONG")}',
+    f'http://{config("LOCAL_ALIAS")}',
+    "http://localhost",
+    "http://*.onion",
+    "http://*",
+    "https://*.com",
+    "https://*",
+]
 
 # Allows Session Cookie to be read by Javascript on Client side.
 SESSION_COOKIE_HTTPONLY = False

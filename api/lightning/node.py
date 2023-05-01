@@ -20,20 +20,20 @@ from . import verrpc_pb2 as verrpc
 from . import verrpc_pb2_grpc as verrpcstub
 
 #######
-# Works with LND (c-lightning in the future for multi-vendor resiliance)
+# Works with LND (c-lightning in the future for multi-vendor resilience)
 #######
 
 # Read tls.cert from file or .env variable string encoded as base64
 try:
-    CERT = open(os.path.join(config("LND_DIR"), "tls.cert"), "rb").read()
+    with open(os.path.join(config("LND_DIR"), "tls.cert"), "rb") as f:
+        CERT = f.read()
 except Exception:
     CERT = b64decode(config("LND_CERT_BASE64"))
 
 # Read macaroon from file or .env variable string encoded as base64
 try:
-    MACAROON = open(
-        os.path.join(config("LND_DIR"), config("MACAROON_path")), "rb"
-    ).read()
+    with open(os.path.join(config("LND_DIR"), config("MACAROON_path")), "rb") as f:
+        MACAROON = f.read()
 except Exception:
     MACAROON = b64decode(config("LND_MACAROON_BASE64"))
 

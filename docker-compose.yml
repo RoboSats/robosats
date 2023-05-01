@@ -35,7 +35,7 @@ services:
       - .:/usr/src/robosats
       - ./node/lnd:/lnd
     network_mode: service:tor
-    command: python3 -Wa -u manage.py runserver 0.0.0.0:8000
+    command: python3 -u manage.py runserver 0.0.0.0:8000
 
   frontend:
     build: ./frontend
