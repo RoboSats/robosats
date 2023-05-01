@@ -6,8 +6,8 @@ django-model-utils==4.3.1
 django-redis==5.2.0
 django-timezone-field==5.0
 djangorestframework==3.14.0
-channels==3.0.4
-channels-redis==3.3.1
+channels==4.0.0
+channels-redis==4.1.0
 celery==5.2.7
 grpcio==1.54.0
 googleapis-common-protos==1.59.0
@@ -25,10 +25,10 @@ SQLAlchemy==2.0.12
 django-import-export==3.2.0
 requests[socks]
 python-gnupg==0.5.0
-daphne==3.0.2
+daphne==4.0.0
 drf-spectacular==0.26.2
 drf-spectacular-sidecar==2023.4.1
-black==23.3.0
+black==22.8.0
 isort==5.12.0
 flake8==6.0.0
 pyflakes==3.0.1

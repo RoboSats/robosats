@@ -49,9 +49,11 @@ ALLOWED_HOSTS = [
     config("I2P_LONG"),
     config("LOCAL_ALIAS"),
     "127.0.0.1",
+    "localhost",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = ["http://*", "https://*"]
 
 # Allows Session Cookie to be read by Javascript on Client side.
 SESSION_COOKIE_HTTPONLY = False
@@ -81,15 +83,16 @@ if os.environ.get("LOG_TO_CONSOLE"):
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "channels",
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
-    "channels",
     "django_celery_beat",
     "django_celery_results",
     "import_export",
