@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@react-native-clipboard/clipboard": "^1.11.2",
-    "@react-native-community/netinfo": "^9.3.4",
+    "@react-native-community/netinfo": "^9.3.9",
     "react": "^18.0.0",
     "react-native": "^0.69.6",
     "react-native-encrypted-storage": "^4.0.3",
