@@ -68,13 +68,13 @@ jobs:
     # Docker images tagged only with short commit hash
     - name: 'Invoke Coodinator Image CI'
       if: inputs.semver == ''
-      uses: benc-uk/workflow-dispatch@v1
+      uses: benc-uk/workflow-dispatch@v121
       with:
         workflow: 'Docker: Coordinator'
         token: ${{ secrets.PERSONAL_TOKEN }}
     - name: 'Invoke Client App Build CI/CD workflow'
       if: inputs.semver == ''
-      uses: benc-uk/workflow-dispatch@v1
+      uses: benc-uk/workflow-dispatch@v121
       with:
         workflow: 'Docker: Client'
         token: ${{ secrets.PERSONAL_TOKEN }}
