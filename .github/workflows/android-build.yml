@@ -60,7 +60,7 @@ jobs:
 
       - name: 'Get Commit Hash'
         id: commit
-        uses: pr-mpt/actions-commit-hash@v1
+        uses: pr-mpt/actions-commit-hash@v2
 
       # Create artifacts (only for Release)
       # Create app-universal-release APK artifact asset for Release
