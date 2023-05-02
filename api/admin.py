@@ -93,9 +93,15 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     search_fields = [
         "id",
         "reference",
-        "maker",
-        "taker",
+        "maker__username",
+        "taker__username",
         "amount",
+        "payout__payment_hash",
+        "maker_bond__payment_hash",
+        "taker_bond__payment_hash",
+        "trade_escrow__payment_hash",
+        "payout_tx__txid",
+        "payout_tx__address",
         "min_amount",
         "max_amount",
     ]
@@ -105,7 +111,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "maker_wins",
         "taker_wins",
         "return_everything",
-        "compite_median_trade_time",
+        "compute_median_trade_time",
     ]
 
     @admin.action(description="Solve dispute: maker wins")
@@ -220,7 +226,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 )
 
     @admin.action(description="Compute median trade completion time")
-    def compite_median_trade_time(self, request, queryset):
+    def compute_median_trade_time(self, request, queryset):
         """
         Computes the median time from an order taken to finishing
         successfully for the set of selected orders.
@@ -289,6 +295,7 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     ordering = ("-expires_at",)
     search_fields = [
         "payment_hash",
+        "preimage",
         "num_satoshis",
         "sender__username",
         "receiver__username",
