@@ -4,12 +4,12 @@ updates:
     directory: "/mobile"
     schedule:
       interval: "weekly"
-      day: "friday"
+      day: "saturday"
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
       interval: "weekly"
-      day: "saturday"
+      day: "friday"
   - package-ecosystem: "gradle"
     directory: "/mobile/android"
     schedule:
@@ -25,3 +25,13 @@ updates:
     schedule:
       interval: "monthly"
       day: "tuesday"
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
