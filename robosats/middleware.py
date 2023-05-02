@@ -1,3 +1,23 @@
+import hashlib
+from pathlib import Path
+
+from django.conf import settings
+from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import AuthenticationFailed
+from robohash import Robohash
+
+from api.nick_generator.nick_generator import NickGenerator
+from api.utils import is_valid_sha256_hex, validate_pgp_keys
+
+NickGen = NickGenerator(
+    lang="English", use_adv=False, use_adj=True, use_noun=True, max_num=999
+)
+
+avatar_path = Path(settings.AVATAR_ROOT)
+avatar_path.mkdir(parents=True, exist_ok=True)
+
+
 class DisableCSRFMiddleware(object):
     def __init__(self, get_response):
         self.get_response = get_response
@@ -5,4 +25,99 @@ class DisableCSRFMiddleware(object):
     def __call__(self, request):
         setattr(request, "_dont_enforce_csrf_checks", True)
         response = self.get_response(request)
+        return response
+
+
+class RobotTokenSHA256AuthenticationMiddleWare:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+
+        token_sha256 = request.COOKIES.get("token_sha256", "")
+
+        if not token_sha256:
+            # Unauthenticated request
+            response = self.get_response(request)
+            return response
+
+        if not is_valid_sha256_hex(token_sha256):
+            response = self.get_response(request)
+            raise AuthenticationFailed(
+                "Robot token SHA256 was provided as header. However it is now a valid hash. It must be exactly 64 characters long and hexadecimal."
+            )
+
+        try:
+            # Has a token, check if it is an existing robot.
+            token = Token.objects.get(key=token_sha256[0:40])
+            user = token.user
+            request.user = user
+            request.auth = token
+
+        except Token.DoesNotExist:
+            # If we get here the user does not have a robot on this coordinator
+            # Let's create a new user & robot on-the-fly.
+
+            # The first ever request to a coordinator must include public key (and encrypted priv key as of now).
+            public_key = request.POST.get("public_key")
+            encrypted_private_key = request.POST.get("encrypted_private_key")
+
+            if not public_key or not encrypted_private_key:
+                raise AuthenticationFailed(
+                    "On the first request to a RoboSats coordinator, you must provide as well a valid public and encrypted private PGP keys"
+                )
+
+            (
+                valid,
+                bad_keys_context,
+                public_key,
+                encrypted_private_key,
+            ) = validate_pgp_keys(public_key, encrypted_private_key)
+            if not valid:
+                raise AuthenticationFailed(bad_keys_context)
+
+            # Hash the token_sha256, only 1 iteration.
+            # This is the second SHA256 of the user token, aka RoboSats ID
+            hash = hashlib.sha256(token_sha256.encode("utf-8")).hexdigest()
+
+            # Generate nickname deterministically
+            nickname = NickGen.short_from_SHA256(hash, max_length=18)[0]
+            user = User.objects.create_user(username=nickname, password=None)
+            # Django rest_framework authtokens are limited to 40 characters.
+            # We can only use the first 40 chars of a token, this is secure enough (over 128 bits entropy)
+            token = Token.objects.create(key=token_sha256[0:40], user=user)
+
+            # Add PGP keys to user
+            if not user.robot.public_key:
+                user.robot.public_key = public_key
+            if not user.robot.encrypted_private_key:
+                user.robot.encrypted_private_key = encrypted_private_key
+
+            # Generate avatar. Does not replace if existing.
+            image_path = avatar_path.joinpath(nickname + ".webp")
+            if not image_path.exists():
+
+                rh = Robohash(hash)
+                rh.assemble(roboset="set1", bgset="any")  # for backgrounds ON
+                with open(image_path, "wb") as f:
+                    rh.img.save(f, format="WEBP", quality=80)
+
+                image_small_path = avatar_path.joinpath(nickname + ".small.webp")
+                with open(image_small_path, "wb") as f:
+                    resized_img = rh.img.resize((80, 80))
+                    resized_img.save(f, format="WEBP", quality=80)
+
+            user.robot.avatar = "static/assets/avatars/" + nickname + ".webp"
+            user.save()
+
+            request.user = user
+            request.auth = token
+
+        response = self.get_response(request)
+
+        # # Move these and add Active / Past order into a novel login / Robot Endpoint
+        # response.data['token_sha256'] = Token.objects.get(user=user).key
+        # response.data['public_key'] = user.robot.public_key
+        # response.data['encrypted_private_key'] = user.robot.encrypted_private_key
+
         return response

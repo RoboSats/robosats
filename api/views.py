@@ -12,7 +12,9 @@ from django.db.models import Q, Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from robohash import Robohash
@@ -52,6 +54,7 @@ from api.utils import (
     get_lnd_version,
     get_robosats_commit,
     get_robosats_version,
+    validate_pgp_keys,
 )
 from chat.models import Message
 from control.models import AccountingDay, BalanceLog
@@ -72,6 +75,8 @@ avatar_path.mkdir(parents=True, exist_ok=True)
 
 class MakerView(CreateAPIView):
     serializer_class = MakeOrderSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(**MakerViewSchema.post)
     def post(self, request):
@@ -715,7 +720,7 @@ class UserView(APIView):
                 bad_keys_context,
                 public_key,
                 encrypted_private_key,
-            ) = Logics.validate_pgp_keys(public_key, encrypted_private_key)
+            ) = validate_pgp_keys(public_key, encrypted_private_key)
             if not valid:
                 return Response(bad_keys_context, status.HTTP_400_BAD_REQUEST)
 
