@@ -74,7 +74,7 @@ jobs:
         echo ${{ steps.commit.outputs.long }}>"commit_sha.txt"
 
     - name: 'Build and push Docker image'
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       with:
         context: .
         push: true
