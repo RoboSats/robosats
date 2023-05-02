@@ -161,15 +161,20 @@ const TradeBox = ({
     rating,
   }: SubmitActionProps) {
     apiClient
-      .post(baseUrl, '/api/order/?order_id=' + order.id, {
-        action,
-        invoice,
-        routing_budget_ppm,
-        address,
-        mining_fee_rate,
-        statement,
-        rating,
-      })
+      .post(
+        baseUrl,
+        '/api/order/?order_id=' + order.id,
+        {
+          action,
+          invoice,
+          routing_budget_ppm,
+          address,
+          mining_fee_rate,
+          statement,
+          rating,
+        },
+        robot.tokenSHA256,
+      )
       .catch(() => {
         setOpen(closeAll);
         setLoadingButtons({ ...noLoadingButtons });

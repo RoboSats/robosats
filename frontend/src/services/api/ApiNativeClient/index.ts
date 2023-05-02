@@ -5,21 +5,16 @@ class ApiNativeClient implements ApiClient {
   private assetsCache: { [path: string]: string } = {};
   private assetsPromises: { [path: string]: Promise<string | undefined> } = {};
 
-  private readonly getHeaders: () => HeadersInit = () => {
+  private readonly getHeaders: (tokenSHA256?: string) => HeadersInit = (tokenSHA256) => {
     let headers = {
       'Content-Type': 'application/json',
     };
 
-    const robotToken = systemClient.getItem('robot_token');
-    if (robotToken) {
-      const sessionid = systemClient.getCookie('sessionid');
-      const token_sha256 = systemClient.getCookie('token_sha256');
-
+    if (tokenSHA256) {
       headers = {
         ...headers,
         ...{
-          ROBOT_TOKEN_SHA256: token_sha256,
-          Cookie: `sessionid=${sessionid}`,
+          Authorization: `Token ${tokenSHA256.substring(0, 40)}`,
         },
       };
     }
@@ -45,43 +40,46 @@ class ApiNativeClient implements ApiClient {
     return await new Promise((res, _rej) => res({}));
   };
 
-  public delete: (baseUrl: string, path: string) => Promise<object | undefined> = async (
-    baseUrl,
-    path,
-  ) => {
+  public delete: (
+    baseUrl: string,
+    path: string,
+    tokenSHA256?: string,
+  ) => Promise<object | undefined> = async (baseUrl, path, tokenSHA256) => {
     return await window.NativeRobosats?.postMessage({
       category: 'http',
       type: 'delete',
       baseUrl,
       path,
-      headers: this.getHeaders(),
+      headers: this.getHeaders(tokenSHA256),
     }).then(this.parseResponse);
   };
 
-  public post: (baseUrl: string, path: string, body: object) => Promise<object | undefined> =
-    async (baseUrl, path, body) => {
-      return await window.NativeRobosats?.postMessage({
-        category: 'http',
-        type: 'post',
-        baseUrl,
-        path,
-        body,
-        headers: this.getHeaders(),
-      }).then(this.parseResponse);
-    };
-
-  public get: (baseUrl: string, path: string) => Promise<object | undefined> = async (
-    baseUrl,
-    path,
-  ) => {
+  public post: (
+    baseUrl: string,
+    path: string,
+    body: object,
+    tokenSHA256?: string,
+  ) => Promise<object | undefined> = async (baseUrl, path, body, tokenSHA256) => {
     return await window.NativeRobosats?.postMessage({
       category: 'http',
-      type: 'get',
+      type: 'post',
       baseUrl,
       path,
-      headers: this.getHeaders(),
+      body,
+      headers: this.getHeaders(tokenSHA256),
     }).then(this.parseResponse);
   };
+
+  public get: (baseUrl: string, path: string, tokenSHA256?: string) => Promise<object | undefined> =
+    async (baseUrl, path, tokenSHA256) => {
+      return await window.NativeRobosats?.postMessage({
+        category: 'http',
+        type: 'get',
+        baseUrl,
+        path,
+        headers: this.getHeaders(tokenSHA256),
+      }).then(this.parseResponse);
+    };
 
   public fileImageUrl: (baseUrl: string, path: string) => Promise<string | undefined> = async (
     baseUrl,

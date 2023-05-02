@@ -80,7 +80,6 @@ const BookPage = (): JSX.Element => {
         <Dialog open={openMaker} onClose={() => setOpenMaker(false)}>
           <Box sx={{ maxWidth: '18em', padding: '0.5em' }}>
             <MakerForm
-              hasRobot={robot.avatarLoaded}
               onOrderCreated={(id) => {
                 navigate('/order/' + id);
               }}

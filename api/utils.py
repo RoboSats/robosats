@@ -292,8 +292,8 @@ def validate_pgp_keys(pub_key, enc_priv_key):
     return True, None, pub_key, enc_priv_key
 
 
-def is_valid_sha256_hex(hash):
-    if len(hash) != 64:
+def is_valid_token_sha256(hash):
+    if len(hash) != 40:
         return False
     valid_chars = set("0123456789abcdef")
 

@@ -1,4 +1,5 @@
 import hashlib
+import json
 from pathlib import Path
 
 from django.conf import settings
@@ -8,7 +9,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from robohash import Robohash
 
 from api.nick_generator.nick_generator import NickGenerator
-from api.utils import is_valid_sha256_hex, validate_pgp_keys
+from api.utils import is_valid_token_sha256, validate_pgp_keys
 
 NickGen = NickGenerator(
     lang="English", use_adv=False, use_adj=True, use_noun=True, max_num=999
@@ -29,38 +30,45 @@ class DisableCSRFMiddleware(object):
 
 
 class RobotTokenSHA256AuthenticationMiddleWare:
+    """
+    Builds on django-rest-framework Token Authentication.
+
+    The robot token SHA256 is taken from the header. Given that the Token.key
+    field max_length is limited to 40, only 40 chars of the 64 are used.
+
+    If the token exists, the requests passes through. If the token is valid and new,
+    a new user/robot is created (PGP keys are required in the request body).
+    """
+
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
 
-        token_sha256 = request.COOKIES.get("token_sha256", "")
+        token_sha256 = request.META.get("HTTP_AUTHORIZATION", "").replace("Token ", "")
 
         if not token_sha256:
             # Unauthenticated request
             response = self.get_response(request)
             return response
 
-        if not is_valid_sha256_hex(token_sha256):
-            response = self.get_response(request)
+        if not is_valid_token_sha256(token_sha256):
             raise AuthenticationFailed(
-                "Robot token SHA256 was provided as header. However it is now a valid hash. It must be exactly 64 characters long and hexadecimal."
+                "Robot token SHA256 was provided in the header. However it is not a valid shorten hex hash. It must be exactly 40 characters long and hexadecimal."
             )
 
+        # Check if it is an existing robot.
         try:
-            # Has a token, check if it is an existing robot.
-            token = Token.objects.get(key=token_sha256[0:40])
-            user = token.user
-            request.user = user
-            request.auth = token
+            Token.objects.get(key=token_sha256)
 
         except Token.DoesNotExist:
             # If we get here the user does not have a robot on this coordinator
             # Let's create a new user & robot on-the-fly.
 
             # The first ever request to a coordinator must include public key (and encrypted priv key as of now).
-            public_key = request.POST.get("public_key")
-            encrypted_private_key = request.POST.get("encrypted_private_key")
+            body = json.loads(request.body)
+            public_key = body.get("public_key")
+            encrypted_private_key = body.get("encrypted_private_key")
 
             if not public_key or not encrypted_private_key:
                 raise AuthenticationFailed(
@@ -83,11 +91,12 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             # Generate nickname deterministically
             nickname = NickGen.short_from_SHA256(hash, max_length=18)[0]
             user = User.objects.create_user(username=nickname, password=None)
+
             # Django rest_framework authtokens are limited to 40 characters.
             # We can only use the first 40 chars of a token, this is secure enough (over 128 bits entropy)
-            token = Token.objects.create(key=token_sha256[0:40], user=user)
+            Token.objects.create(key=token_sha256, user=user)
 
-            # Add PGP keys to user
+            # Add PGP keys to the new user
             if not user.robot.public_key:
                 user.robot.public_key = public_key
             if not user.robot.encrypted_private_key:
@@ -110,14 +119,5 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             user.robot.avatar = "static/assets/avatars/" + nickname + ".webp"
             user.save()
 
-            request.user = user
-            request.auth = token
-
         response = self.get_response(request)
-
-        # # Move these and add Active / Past order into a novel login / Robot Endpoint
-        # response.data['token_sha256'] = Token.objects.get(user=user).key
-        # response.data['public_key'] = user.robot.public_key
-        # response.data['encrypted_private_key'] = user.robot.encrypted_private_key
-
         return response

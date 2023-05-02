@@ -100,7 +100,6 @@ const MakerPage = (): JSX.Element => {
             onOrderCreated={(id) => {
               navigate('/order/' + id);
             }}
-            hasRobot={robot.avatarLoaded}
             disableRequest={matches.length > 0 && !showMatches}
             collapseAll={showMatches}
             onSubmit={() => setShowMatches(matches.length > 0)}

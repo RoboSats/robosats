@@ -1,22 +1,32 @@
 import { ApiClient } from '..';
-import { systemClient } from '../../System';
 
 class ApiWebClient implements ApiClient {
-  private readonly getHeaders: () => HeadersInit = () => {
-    return {
+  private readonly getHeaders: (tokenSHA256?: string) => HeadersInit = (tokenSHA256) => {
+    let headers = {
       'Content-Type': 'application/json',
-      ROBOT_TOKEN_SHA256: systemClient.getCookie('token_sha256') || '',
     };
+
+    if (tokenSHA256) {
+      headers = {
+        ...headers,
+        ...{
+          Authorization: `Token ${tokenSHA256.substring(0, 40)}`,
+        },
+      };
+    }
+
+    return headers;
   };
 
-  public post: (baseUrl: string, path: string, body: object) => Promise<object> = async (
-    baseUrl,
-    path,
-    body,
-  ) => {
+  public post: (
+    baseUrl: string,
+    path: string,
+    body: object,
+    tokenSHA256?: string,
+  ) => Promise<object> = async (baseUrl, path, body, tokenSHA256) => {
     const requestOptions = {
       method: 'POST',
-      headers: this.getHeaders(),
+      headers: this.getHeaders(tokenSHA256),
       body: JSON.stringify(body),
     };
 
@@ -25,14 +35,15 @@ class ApiWebClient implements ApiClient {
     );
   };
 
-  public put: (baseUrl: string, path: string, body: object) => Promise<object> = async (
-    baseUrl,
-    path,
-    body,
-  ) => {
+  public put: (
+    baseUrl: string,
+    path: string,
+    body: object,
+    tokenSHA256?: string,
+  ) => Promise<object> = async (baseUrl, path, body, tokenSHA256) => {
     const requestOptions = {
       method: 'PUT',
-      headers: this.getHeaders(),
+      headers: this.getHeaders(tokenSHA256),
       body: JSON.stringify(body),
     };
     return await fetch(baseUrl + path, requestOptions).then(
@@ -40,18 +51,28 @@ class ApiWebClient implements ApiClient {
     );
   };
 
-  public delete: (baseUrl: string, path: string) => Promise<object> = async (baseUrl, path) => {
+  public delete: (baseUrl: string, path: string, tokenSHA256?: string) => Promise<object> = async (
+    baseUrl,
+    path,
+    tokenSHA256,
+  ) => {
     const requestOptions = {
       method: 'DELETE',
-      headers: this.getHeaders(),
+      headers: this.getHeaders(tokenSHA256),
     };
     return await fetch(baseUrl + path, requestOptions).then(
       async (response) => await response.json(),
     );
   };
 
-  public get: (baseUrl: string, path: string) => Promise<object> = async (baseUrl, path) => {
-    return await fetch(baseUrl + path).then(async (response) => await response.json());
+  public get: (baseUrl: string, path: string, tokenSHA256?: string) => Promise<object> = async (
+    baseUrl,
+    path,
+    tokenSHA256,
+  ) => {
+    return await fetch(baseUrl + path, { headers: this.getHeaders(tokenSHA256) }).then(
+      async (response) => await response.json(),
+    );
   };
 }
 

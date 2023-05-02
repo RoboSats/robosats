@@ -50,7 +50,6 @@ interface MakerFormProps {
   onReset?: () => void;
   submitButtonLabel?: string;
   onOrderCreated?: (id: number) => void;
-  hasRobot?: boolean;
 }
 
 const MakerForm = ({
@@ -61,9 +60,8 @@ const MakerForm = ({
   onReset = () => {},
   submitButtonLabel = 'Create Order',
   onOrderCreated = () => null,
-  hasRobot = true,
 }: MakerFormProps): JSX.Element => {
-  const { fav, setFav, limits, fetchLimits, info, maker, setMaker, baseUrl } =
+  const { fav, setFav, limits, fetchLimits, info, maker, setMaker, baseUrl, robot } =
     useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
@@ -251,7 +249,7 @@ const MakerForm = ({
         escrow_duration: maker.escrowDuration,
         bond_size: maker.bondSize,
       };
-      apiClient.post(baseUrl, '/api/make/', body).then((data: object) => {
+      apiClient.post(baseUrl, '/api/make/', body, robot.tokenSHA256).then((data: object) => {
         setBadRequest(data.bad_request);
         if (data.id) {
           onOrderCreated(data.id);
@@ -466,7 +464,7 @@ const MakerForm = ({
         open={openDialogs}
         onClose={() => setOpenDialogs(false)}
         onClickDone={handleCreateOrder}
-        hasRobot={hasRobot}
+        hasRobot={robot.avatarLoaded}
       />
       <Collapse in={limits.list.length == 0}>
         <div style={{ display: limits.list.length == 0 ? '' : 'none' }}>

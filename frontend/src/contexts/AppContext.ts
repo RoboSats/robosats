@@ -297,7 +297,9 @@ export const useAppStore = () => {
 
   const fetchOrder = function () {
     if (currentOrder != undefined) {
-      apiClient.get(baseUrl, '/api/order/?order_id=' + currentOrder).then(orderReceived);
+      apiClient
+        .get(baseUrl, '/api/order/?order_id=' + currentOrder, robot.tokenSHA256)
+        .then(orderReceived);
     }
   };
 
@@ -325,6 +327,8 @@ export const useAppStore = () => {
     const requestBody = {};
     if (action == 'login' || action == 'refresh') {
       requestBody.token_sha256 = sha256(token);
+      requestBody.public_key = newKeys?.pubKey ?? oldRobot.pubKey;
+      requestBody.encrypted_private_key = newKeys?.encPrivKey ?? oldRobot.encPrivKey;
     } else if (action == 'generate' && token != null) {
       const strength = tokenStrength(token);
       requestBody.token_sha256 = sha256(token);
@@ -336,7 +340,7 @@ export const useAppStore = () => {
       requestBody.encrypted_private_key = newKeys?.encPrivKey ?? oldRobot.encPrivKey;
     }
 
-    apiClient.post(baseUrl, '/api/user/', requestBody).then((data: any) => {
+    apiClient.post(baseUrl, '/api/user/', requestBody, sha256(token)).then((data: any) => {
       let newRobot = robot;
       if (currentOrder === undefined) {
         setCurrentOrder(
@@ -368,6 +372,7 @@ export const useAppStore = () => {
           ...oldRobot,
           nickname: data.nickname,
           token,
+          tokenSHA256: sha256(token),
           loading: false,
           activeOrderId: data.active_order_id ?? null,
           lastOrderId: data.last_order_id ?? null,
@@ -387,7 +392,6 @@ export const useAppStore = () => {
         setRobot(newRobot);
         garage.updateRobot(newRobot, targetSlot);
         setCurrentSlot(targetSlot);
-        systemClient.setItem('robot_token', token);
       }
     });
   };

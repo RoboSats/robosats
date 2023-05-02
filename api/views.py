@@ -80,6 +80,7 @@ class MakerView(CreateAPIView):
 
     @extend_schema(**MakerViewSchema.post)
     def post(self, request):
+
         serializer = self.serializer_class(data=request.data)
 
         if not request.user.is_authenticated:
@@ -183,6 +184,8 @@ class MakerView(CreateAPIView):
 
 
 class OrderView(viewsets.ViewSet):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = UpdateOrderSerializer
     lookup_url_kwarg = "order_id"
 
@@ -622,7 +625,49 @@ class OrderView(viewsets.ViewSet):
         return self.get(request)
 
 
+class RobotView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+        """
+        Respond with Nickname, pubKey, privKey.
+        """
+        user = request.user
+        context = {}
+        context["public_key"] = user.robot.public_key
+        context["encrypted_private_key"] = user.robot.encrypted_private_key
+        context["earned_rewards"] = user.robot.earned_rewards
+        context["referral_code"] = str(user.robot.referral_code)
+        context["wants_stealth"] = user.robot.wants_stealth
+
+        # Adds/generate telegram token and whether it is enabled
+        context = {**context, **Telegram.get_context(user)}
+
+        # return active order or last made order if any
+        has_no_active_order, _, order = Logics.validate_already_maker_or_taker(
+            request.user
+        )
+        if not has_no_active_order:
+            context["active_order_id"] = order.id
+        else:
+            last_order = Order.objects.filter(
+                Q(maker=request.user) | Q(taker=request.user)
+            ).last()
+            if last_order:
+                context["last_order_id"] = last_order.id
+
+        # Sends the welcome back message.
+        context["found"] = "We found your Robot avatar. Welcome back!"
+        return Response(context, status=status.HTTP_202_ACCEPTED)
+
+
 class UserView(APIView):
+    """
+    Deprecated. UserView has been completely replaced by the smaller RobotView in
+    combination with the RobotTokenSHA256 middleware (on-the-fly robot generation)
+    """
+
     NickGen = NickGenerator(
         lang="English", use_adv=False, use_adj=True, use_noun=True, max_num=999
     )
