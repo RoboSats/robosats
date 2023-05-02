@@ -7,6 +7,7 @@ import translationEN from '../../static/locales/en.json';
 import translationES from '../../static/locales/es.json';
 import translationDE from '../../static/locales/de.json';
 import translationRU from '../../static/locales/ru.json';
+import translationJA from '../../static/locales/ja.json';
 import translationPL from '../../static/locales/pl.json';
 import translationFR from '../../static/locales/fr.json';
 import translationCA from '../../static/locales/ca.json';
@@ -25,6 +26,7 @@ const config = {
     es: { translations: translationES },
     ru: { translations: translationRU },
     de: { translations: translationDE },
+    ja: { translations: translationJA },
     pl: { translations: translationPL },
     fr: { translations: translationFR },
     ca: { translations: translationCA },
