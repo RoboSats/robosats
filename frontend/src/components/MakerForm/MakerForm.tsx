@@ -428,10 +428,16 @@ const MakerForm = ({
         color={disableSubmit ? 'text.secondary' : 'text.primary'}
       >
         {fav.type == null
-          ? t(fav.mode === 'fiat' ? 'Order for ' : 'Swap of ')
+          ? fav.mode === 'fiat'
+            ? t('Order for ')
+            : t('Swap of ')
           : fav.type == 1
-          ? t(fav.mode === 'fiat' ? 'Buy BTC for ' : 'Swap into LN ')
-          : t(fav.mode === 'fiat' ? 'Sell BTC for ' : 'Swap out of LN ')}
+          ? fav.mode === 'fiat'
+            ? t('Buy BTC for ')
+            : t('Swap into LN ')
+          : fav.mode === 'fiat'
+          ? t('Sell BTC for ')
+          : t('Swap out of LN ')}
         {fav.mode === 'fiat'
           ? amountToString(maker.amount, maker.advancedOptions, maker.minAmount, maker.maxAmount)
           : amountToString(
@@ -444,7 +450,9 @@ const MakerForm = ({
         {maker.isExplicit
           ? t(' of {{satoshis}} Satoshis', { satoshis: pn(maker.satoshis) })
           : maker.premium == 0
-          ? t(fav.mode === 'fiat' ? ' at market price' : '')
+          ? fav.mode === 'fiat'
+            ? t(' at market price')
+            : ''
           : maker.premium > 0
           ? t(' at a {{premium}}% premium', { premium: maker.premium })
           : t(' at a {{discount}}% discount', { discount: -maker.premium })}
