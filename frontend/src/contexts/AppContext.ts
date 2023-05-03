@@ -18,8 +18,7 @@ import {
 } from '../models';
 
 import { apiClient } from '../services/api';
-import { systemClient } from '../services/System';
-import { checkVer, getHost, tokenStrength } from '../utils';
+import { checkVer, getHost, hexToBase91, tokenStrength } from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
@@ -319,11 +318,11 @@ export const useAppStore = () => {
     const oldRobot = robot;
     const targetSlot = slot ?? currentSlot;
     const token = newToken ?? oldRobot.token;
+    const tokenSHA256 = hexToBase91(sha256(token));
     if (action != 'refresh') {
       setRobot(new Robot());
     }
     setBadRequest('');
-
     const requestBody = {};
     if (action == 'login' || action == 'refresh') {
       requestBody.token_sha256 = sha256(token);
@@ -340,7 +339,7 @@ export const useAppStore = () => {
       requestBody.encrypted_private_key = newKeys?.encPrivKey ?? oldRobot.encPrivKey;
     }
 
-    apiClient.post(baseUrl, '/api/user/', requestBody, sha256(token)).then((data: any) => {
+    apiClient.post(baseUrl, '/api/user/', requestBody, tokenSHA256).then((data: any) => {
       let newRobot = robot;
       if (currentOrder === undefined) {
         setCurrentOrder(
@@ -372,7 +371,7 @@ export const useAppStore = () => {
           ...oldRobot,
           nickname: data.nickname,
           token,
-          tokenSHA256: sha256(token),
+          tokenSHA256,
           loading: false,
           activeOrderId: data.active_order_id ?? null,
           lastOrderId: data.last_order_id ?? null,

@@ -6,6 +6,7 @@ import gnupg
 import numpy as np
 import requests
 import ring
+from base91 import decode
 from decouple import config
 
 from api.models import Order
@@ -292,12 +293,16 @@ def validate_pgp_keys(pub_key, enc_priv_key):
     return True, None, pub_key, enc_priv_key
 
 
-def is_valid_token_sha256(hash):
-    if len(hash) != 40:
-        return False
-    valid_chars = set("0123456789abcdef")
+def base91_to_hex(base91_str: str) -> str:
+    bytes_data = decode(base91_str)
+    return bytes_data.hex()
 
-    for char in hash.lower():
-        if char not in valid_chars:
-            return False
-    return True
+
+def is_valid_token(token: str) -> bool:
+    num_chars = len(token)
+
+    if not 38 < num_chars < 41:
+        return False
+
+    charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&()*+,./:;<=>?@[]^_`{|}~"'
+    return all(c in charset for c in token)

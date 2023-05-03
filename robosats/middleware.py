@@ -4,12 +4,13 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed
 from robohash import Robohash
 
 from api.nick_generator.nick_generator import NickGenerator
-from api.utils import is_valid_token_sha256, validate_pgp_keys
+from api.utils import base91_to_hex, is_valid_token, validate_pgp_keys
 
 NickGen = NickGenerator(
     lang="English", use_adv=False, use_adj=True, use_noun=True, max_num=999
@@ -33,8 +34,9 @@ class RobotTokenSHA256AuthenticationMiddleWare:
     """
     Builds on django-rest-framework Token Authentication.
 
-    The robot token SHA256 is taken from the header. Given that the Token.key
-    field max_length is limited to 40, only 40 chars of the 64 are used.
+    The robot token SHA256 is taken from the header. The token SHA256 must
+    be encoded as Base91 of 39 or 40 characters in length. This is the max length of
+    django DRF token keys.
 
     If the token exists, the requests passes through. If the token is valid and new,
     a new user/robot is created (PGP keys are required in the request body).
@@ -45,21 +47,23 @@ class RobotTokenSHA256AuthenticationMiddleWare:
 
     def __call__(self, request):
 
-        token_sha256 = request.META.get("HTTP_AUTHORIZATION", "").replace("Token ", "")
+        token_sha256_b91 = request.META.get("HTTP_AUTHORIZATION", "").replace(
+            "Token ", ""
+        )
 
-        if not token_sha256:
+        if not token_sha256_b91:
             # Unauthenticated request
             response = self.get_response(request)
             return response
 
-        if not is_valid_token_sha256(token_sha256):
+        if not is_valid_token(token_sha256_b91):
             raise AuthenticationFailed(
-                "Robot token SHA256 was provided in the header. However it is not a valid shorten hex hash. It must be exactly 40 characters long and hexadecimal."
+                "Robot token SHA256 was provided in the header. However it is not a valid 39 or 40 characters Base91 string."
             )
 
         # Check if it is an existing robot.
         try:
-            Token.objects.get(key=token_sha256)
+            Token.objects.get(key=token_sha256_b91)
 
         except Token.DoesNotExist:
             # If we get here the user does not have a robot on this coordinator
@@ -69,6 +73,8 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             body = json.loads(request.body)
             public_key = body.get("public_key")
             encrypted_private_key = body.get("encrypted_private_key")
+
+            token_sha256 = base91_to_hex(token_sha256_b91)
 
             if not public_key or not encrypted_private_key:
                 raise AuthenticationFailed(
@@ -90,11 +96,19 @@ class RobotTokenSHA256AuthenticationMiddleWare:
 
             # Generate nickname deterministically
             nickname = NickGen.short_from_SHA256(hash, max_length=18)[0]
-            user = User.objects.create_user(username=nickname, password=None)
+
+            # DEPRECATE. Using Try and Except only as a temporary measure.
+            # This will allow existing robots to be added upgraded with a token.key
+            # After v0.5.0, only the following should remain
+            # `user = User.objects.create_user(username=nickname, password=None)`
+            try:
+                user = User.objects.create_user(username=nickname, password=None)
+            except IntegrityError:
+                user = User.objects.get(username=nickname)
 
             # Django rest_framework authtokens are limited to 40 characters.
-            # We can only use the first 40 chars of a token, this is secure enough (over 128 bits entropy)
-            Token.objects.create(key=token_sha256, user=user)
+            # We use base91 so we can store the full entropy in the field.
+            Token.objects.create(key=token_sha256_b91, user=user)
 
             # Add PGP keys to the new user
             if not user.robot.public_key:
