@@ -707,8 +707,20 @@ class RobotViewSchema:
                         "description": "Whether the user prefers stealth invoices",
                     },
                     "found": {
+                        "type": "boolean",
+                        "description": "Robot had been created in the past. Only if the robot was created +5 mins ago.",
+                    },
+                    "tg_enabled": {
+                        "type": "boolean",
+                        "description": "The robot has telegram notifications enabled",
+                    },
+                    "tg_token": {
                         "type": "string",
-                        "description": "Welcome back message. Only if the robot was created +5 mins ago.",
+                        "description": "Token to enable telegram with /start <tg_token>",
+                    },
+                    "tg_bot_name": {
+                        "type": "string",
+                        "description": "Name of the coordinator's telegram bot",
                     },
                     "active_order_id": {
                         "type": "integer",

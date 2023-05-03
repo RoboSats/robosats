@@ -43,7 +43,7 @@ const RobotPage = (): JSX.Element => {
     }
     if (robot.nickname == null && robot.token) {
       if (window.NativeRobosats === undefined || torStatus == '"Done"') {
-        fetchRobot({ action: 'generate', setBadRequest });
+        fetchRobot({});
       }
     }
   }, [torStatus]);
@@ -52,15 +52,12 @@ const RobotPage = (): JSX.Element => {
     setInputToken(token);
     genKey(token).then(function (key) {
       fetchRobot({
-        action: 'generate',
         newKeys: {
           pubKey: key.publicKeyArmored,
           encPrivKey: key.encryptedPrivateKeyArmored,
         },
         newToken: token,
         slot,
-        refCode,
-        setBadRequest,
       });
     });
   };
@@ -153,7 +150,6 @@ const RobotPage = (): JSX.Element => {
             setRobot={setRobot}
             setCurrentOrder={setCurrentOrder}
             badRequest={badRequest}
-            getGenerateRobot={getGenerateRobot}
             logoutRobot={logoutRobot}
             width={width}
             inputToken={inputToken}

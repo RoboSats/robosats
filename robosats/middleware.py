@@ -1,5 +1,4 @@
 import hashlib
-import json
 from pathlib import Path
 
 from django.conf import settings
@@ -69,12 +68,9 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             # If we get here the user does not have a robot on this coordinator
             # Let's create a new user & robot on-the-fly.
 
-            # The first ever request to a coordinator must include public key (and encrypted priv key as of now).
-            body = json.loads(request.body)
-            public_key = body.get("public_key")
-            encrypted_private_key = body.get("encrypted_private_key")
-
-            token_sha256 = base91_to_hex(token_sha256_b91)
+            # The first ever request to a coordinator must include cookies for the public key (and encrypted priv key as of now).
+            public_key = request.COOKIES.get("public_key")
+            encrypted_private_key = request.COOKIES.get("encrypted_private_key", "")
 
             if not public_key or not encrypted_private_key:
                 raise AuthenticationFailed(
@@ -92,6 +88,7 @@ class RobotTokenSHA256AuthenticationMiddleWare:
 
             # Hash the token_sha256, only 1 iteration.
             # This is the second SHA256 of the user token, aka RoboSats ID
+            token_sha256 = base91_to_hex(token_sha256_b91)
             hash = hashlib.sha256(token_sha256.encode("utf-8")).hexdigest()
 
             # Generate nickname deterministically
@@ -104,6 +101,7 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             try:
                 user = User.objects.create_user(username=nickname, password=None)
             except IntegrityError:
+                # UNIQUE constrain failed, user exist. Get it.
                 user = User.objects.get(username=nickname)
 
             # Django rest_framework authtokens are limited to 40 characters.

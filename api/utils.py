@@ -234,9 +234,9 @@ def validate_pgp_keys(pub_key, enc_priv_key):
     """Validates PGP valid keys. Formats them in a way understandable by the frontend"""
     gpg = gnupg.GPG()
 
-    # Standarize format with linux linebreaks '\n'. Windows users submitting their own keys have '\r\n' breaking communication.
-    enc_priv_key = enc_priv_key.replace("\r\n", "\n")
-    pub_key = pub_key.replace("\r\n", "\n")
+    # Standardize format with linux linebreaks '\n'. Windows users submitting their own keys have '\r\n' breaking communication.
+    enc_priv_key = enc_priv_key.replace("\r\n", "\n").replace("\\", "\n")
+    pub_key = pub_key.replace("\r\n", "\n").replace("\\", "\n")
 
     # Try to import the public key
     import_pub_result = gpg.import_keys(pub_key)

@@ -659,9 +659,9 @@ class RobotView(APIView):
             if last_order:
                 context["last_order_id"] = last_order.id
 
-        # Sends the welcome back message, only if created +5 mins ago
+        # Robot was found, only if created +5 mins ago
         if user.date_joined < (timezone.now() - timedelta(minutes=5)):
-            context["found"] = "We found your Robot avatar. Welcome back!"
+            context["found"] = True
 
         return Response(context, status=status.HTTP_200_OK)
 

@@ -10,16 +10,15 @@ class Robot {
 
   public nickname?: string;
   public token?: string;
+  public bitsEntropy?: number;
+  public shannonEntropy?: number;
   public tokenSHA256?: string;
   public pubKey?: string;
   public encPrivKey?: string;
-  public bitsEntropy?: number;
-  public shannonEntropy?: number;
   public stealthInvoices: boolean = true;
   public activeOrderId?: number;
   public lastOrderId?: number;
   public earnedRewards: number = 0;
-  public referralCode: string = '';
   public tgEnabled: boolean = false;
   public tgBotName: string = 'unknown';
   public tgToken: string = 'unknown';

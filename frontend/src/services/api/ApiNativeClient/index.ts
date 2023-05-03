@@ -18,6 +18,17 @@ class ApiNativeClient implements ApiClient {
         },
       };
     }
+    const encrypted_private_key = systemClient.getCookie('encrypted_private_key');
+    const public_key = systemClient.getCookie('public_key');
+
+    if (encrypted_private_key && public_key) {
+      headers = {
+        ...headers,
+        ...{
+          Cookie: `public_key=${public_key};encrypted_private_key=${encrypted_private_key}`,
+        },
+      };
+    }
 
     return headers;
   };
