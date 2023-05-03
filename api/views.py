@@ -32,6 +32,7 @@ from api.oas_schemas import (
     OrderViewSchema,
     PriceViewSchema,
     RewardViewSchema,
+    RobotViewSchema,
     StealthViewSchema,
     TickViewSchema,
     UserViewSchema,
@@ -53,7 +54,6 @@ from api.utils import (
     compute_premium_percentile,
     get_lnd_version,
     get_robosats_commit,
-    get_robosats_version,
     validate_pgp_keys,
 )
 from chat.models import Message
@@ -629,17 +629,19 @@ class RobotView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, format=None):
+    @extend_schema(**RobotViewSchema.get)
+    def get(self, request, format=None):
         """
         Respond with Nickname, pubKey, privKey.
         """
         user = request.user
         context = {}
+        context["nickname"] = user.username
         context["public_key"] = user.robot.public_key
         context["encrypted_private_key"] = user.robot.encrypted_private_key
         context["earned_rewards"] = user.robot.earned_rewards
-        context["referral_code"] = str(user.robot.referral_code)
         context["wants_stealth"] = user.robot.wants_stealth
+        context["last_login"] = user.last_login
 
         # Adds/generate telegram token and whether it is enabled
         context = {**context, **Telegram.get_context(user)}
@@ -657,14 +659,16 @@ class RobotView(APIView):
             if last_order:
                 context["last_order_id"] = last_order.id
 
-        # Sends the welcome back message.
-        context["found"] = "We found your Robot avatar. Welcome back!"
-        return Response(context, status=status.HTTP_202_ACCEPTED)
+        # Sends the welcome back message, only if created +5 mins ago
+        if user.date_joined < (timezone.now() - timedelta(minutes=5)):
+            context["found"] = "We found your Robot avatar. Welcome back!"
+
+        return Response(context, status=status.HTTP_200_OK)
 
 
 class UserView(APIView):
     """
-    Deprecated. UserView has been completely replaced by the smaller RobotView in
+    Deprecated. UserView will be completely replaced by the smaller RobotView in
     combination with the RobotTokenSHA256 middleware (on-the-fly robot generation)
     """
 
@@ -674,6 +678,7 @@ class UserView(APIView):
 
     serializer_class = UserGenSerializer
 
+    @extend_schema(**UserViewSchema.post)
     def post(self, request, format=None):
         """
         Get a new user derived from a high entropy token
@@ -972,7 +977,7 @@ class InfoView(ListAPIView):
         context["lifetime_volume"] = round(lifetime_volume, 8)
         context["lnd_version"] = get_lnd_version()
         context["robosats_running_commit_hash"] = get_robosats_commit()
-        context["version"] = get_robosats_version()
+        context["version"] = settings.VERSION
         context["alternative_site"] = config("ALTERNATIVE_SITE")
         context["alternative_name"] = config("ALTERNATIVE_NAME")
         context["node_alias"] = config("NODE_ALIAS")

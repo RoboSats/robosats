@@ -467,6 +467,23 @@ class UserViewSchema:
                         "description": "Whether the user prefers stealth invoices",
                     },
                     "found": {"type": "string", "description": "Welcome back message"},
+                    "tg_enabled": {
+                        "type": "boolean",
+                        "description": "The robot has telegram notifications enabled",
+                    },
+                    "tg_token": {
+                        "type": "string",
+                        "description": "Token to enable telegram with /start <tg_token>",
+                    },
+                    "tg_bot_name": {
+                        "type": "string",
+                        "description": "Name of the coordinator's telegram bot",
+                    },
+                    "last_login": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Last time seen",
+                    },
                     "active_order_id": {
                         "type": "integer",
                         "description": "Active order id if present",
@@ -618,6 +635,102 @@ class BookViewSchema:
                 ),
                 type=int,
                 enum=[0, 1, 2],
+            ),
+        ],
+    }
+
+
+class RobotViewSchema:
+    get = {
+        "summary": "Get robot info",
+        "description": textwrap.dedent(
+            """
+            DEPRECATED: Use `/robot` GET.
+
+            Get robot info 🤖
+
+            An authenticated request (has the token's sha256 hash encoded as base 91 in the Authorization header) will be
+            returned the information about the state of a robot.
+
+            Make sure you generate your token using cryptographically secure methods. [Here's]() the function the Javascript
+            client uses to generate the tokens. Since the server only receives the hash of the
+            token, it is responsibility of the client to create a strong token. Check
+            [here](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/src/utils/token.js)
+            to see how the Javascript client creates a random strong token and how it validates entropy is optimal for tokens
+            created by the user at will.
+
+            `public_key` - PGP key associated with the user (Armored ASCII format)
+            `encrypted_private_key` - Private PGP key. This is only stored on the backend for later fetching by
+            the frontend and the key can't really be used by the server since it's protected by the token
+            that only the client knows. Will be made an optional parameter in a future release.
+            On the Javascript client, It's passphrase is set to be the secret token generated.
+
+            A gpg key can be created by:
+
+            ```shell
+            gpg --full-gen-key
+            ```
+
+            it's public key can be exported in ascii armored format with:
+
+            ```shell
+            gpg --export --armor <key-id | email | name>
+            ```
+
+            and it's private key can be exported in ascii armored format with:
+
+            ```shell
+            gpg --export-secret-keys --armor <key-id | email | name>
+            ```
+
+            """
+        ),
+        "responses": {
+            200: {
+                "type": "object",
+                "properties": {
+                    "encrypted_private_key": {
+                        "type": "string",
+                        "description": "Armored ASCII PGP private key block",
+                    },
+                    "nickname": {
+                        "type": "string",
+                        "description": "Username generated (Robot name)",
+                    },
+                    "public_key": {
+                        "type": "string",
+                        "description": "Armored ASCII PGP public key block",
+                    },
+                    "wants_stealth": {
+                        "type": "boolean",
+                        "default": False,
+                        "description": "Whether the user prefers stealth invoices",
+                    },
+                    "found": {
+                        "type": "string",
+                        "description": "Welcome back message. Only if the robot was created +5 mins ago.",
+                    },
+                    "active_order_id": {
+                        "type": "integer",
+                        "description": "Active order id if present",
+                    },
+                    "last_order_id": {
+                        "type": "integer",
+                        "description": "Last order id if present",
+                    },
+                },
+            },
+        },
+        "examples": [
+            OpenApiExample(
+                "Successfully retrieved robot",
+                value={
+                    "nickname": "SatoshiNakamoto21",
+                    "public_key": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n......\n......",
+                    "encrypted_private_key": "-----BEGIN PGP PRIVATE KEY BLOCK-----\n\n......\n......",
+                    "wants_stealth": True,
+                },
+                status_codes=[200],
             ),
         ],
     }

@@ -149,18 +149,6 @@ def get_robosats_commit():
     return commit_hash
 
 
-robosats_version_cache = {}
-
-
-@ring.dict(robosats_commit_cache, expire=99999)
-def get_robosats_version():
-
-    with open("version.json") as f:
-        version_dict = json.load(f)
-
-    return version_dict
-
-
 premium_percentile = {}
 
 
