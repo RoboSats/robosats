@@ -114,7 +114,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
 
   const setStealthInvoice = (wantsStealth: boolean) => {
     apiClient
-      .put(baseUrl, '/api/stealth/', { wantsStealth })
+      .put(baseUrl, '/api/stealth/', { wantsStealth }, robot.tokenSHA256)
       .then((data) => setRobot({ ...robot, stealthInvoices: data?.wantsStealth }));
   };
 

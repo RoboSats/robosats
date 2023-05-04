@@ -12,6 +12,9 @@ from django.db.models import Q, Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
+from rest_framework.authentication import (
+    SessionAuthentication,  # DEPRECATE session authentication
+)
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -75,7 +78,7 @@ avatar_path.mkdir(parents=True, exist_ok=True)
 
 class MakerView(CreateAPIView):
     serializer_class = MakeOrderSerializer
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(**MakerViewSchema.post)
@@ -184,7 +187,7 @@ class MakerView(CreateAPIView):
 
 
 class OrderView(viewsets.ViewSet):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = UpdateOrderSerializer
     lookup_url_kwarg = "order_id"
@@ -626,7 +629,7 @@ class OrderView(viewsets.ViewSet):
 
 
 class RobotView(APIView):
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(**RobotViewSchema.get)
@@ -1000,17 +1003,14 @@ class InfoView(ListAPIView):
 
 
 class RewardView(CreateAPIView):
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
     serializer_class = ClaimRewardSerializer
 
     @extend_schema(**RewardViewSchema.post)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
-
-        if not request.user.is_authenticated:
-            return Response(
-                {"bad_request": "Woops! It seems you do not have a robot avatar"},
-                status.HTTP_400_BAD_REQUEST,
-            )
 
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -1107,18 +1107,14 @@ class HistoricalView(ListAPIView):
 
 
 class StealthView(UpdateAPIView):
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
 
     serializer_class = StealthSerializer
 
     @extend_schema(**StealthViewSchema.put)
     def put(self, request):
         serializer = self.serializer_class(data=request.data)
-
-        if not request.user.is_authenticated:
-            return Response(
-                {"bad_request": "Woops! It seems you do not have a robot avatar"},
-                status.HTTP_400_BAD_REQUEST,
-            )
 
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
