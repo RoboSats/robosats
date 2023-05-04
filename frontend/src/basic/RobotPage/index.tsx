@@ -20,18 +20,19 @@ import Recovery from './Recovery';
 import { TorIcon } from '../../components/Icons';
 import { genKey } from '../../pgp';
 import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { validateTokenEntropy } from '../../utils';
 
 const RobotPage = (): JSX.Element => {
-  const { robot, setRobot, setCurrentOrder, fetchRobot, torStatus, windowSize, baseUrl } =
+  const { robot, setRobot, fetchRobot, torStatus, windowSize, baseUrl } =
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const params = useParams();
-  const refCode = params.refCode;
+  const url_token = params.token;
   const width = Math.min(windowSize.width * 0.8, 28);
   const maxHeight = windowSize.height * 0.85 - 3;
   const theme = useTheme();
 
-  const [badRequest, setBadRequest] = useState<string | undefined>(undefined);
+  const [badToken, setBadToken] = useState<string>('');
   const [inputToken, setInputToken] = useState<string>('');
   const [view, setView] = useState<'welcome' | 'onboarding' | 'recovery' | 'profile'>(
     robot.token ? 'profile' : 'welcome',
@@ -41,12 +42,24 @@ const RobotPage = (): JSX.Element => {
     if (robot.token) {
       setInputToken(robot.token);
     }
-    if (robot.nickname == null && robot.token) {
+    const token = url_token ?? robot.token;
+    if (robot.nickname == null && token) {
       if (window.NativeRobosats === undefined || torStatus == '"Done"') {
-        fetchRobot({});
+        getGenerateRobot(token);
+        setView('profile');
       }
     }
   }, [torStatus]);
+
+  useEffect(() => {
+    if (inputToken.length < 20) {
+      setBadToken(t('The token is too short'));
+    } else if (!validateTokenEntropy(inputToken).hasEnoughEntropy) {
+      setBadToken(t('Not enough entropy, make it more complex'));
+    } else {
+      setBadToken('');
+    }
+  }, [inputToken]);
 
   const getGenerateRobot = (token: string, slot?: number) => {
     setInputToken(token);
@@ -135,7 +148,7 @@ const RobotPage = (): JSX.Element => {
             setView={setView}
             robot={robot}
             setRobot={setRobot}
-            badRequest={badRequest}
+            badToken={badToken}
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
@@ -148,8 +161,6 @@ const RobotPage = (): JSX.Element => {
             setView={setView}
             robot={robot}
             setRobot={setRobot}
-            setCurrentOrder={setCurrentOrder}
-            badRequest={badRequest}
             logoutRobot={logoutRobot}
             width={width}
             inputToken={inputToken}
@@ -164,11 +175,10 @@ const RobotPage = (): JSX.Element => {
             setView={setView}
             robot={robot}
             setRobot={setRobot}
-            badRequest={badRequest}
+            badToken={badToken}
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
-            baseUrl={baseUrl}
           />
         ) : null}
       </Paper>

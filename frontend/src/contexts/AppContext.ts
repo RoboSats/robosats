@@ -18,7 +18,7 @@ import {
 } from '../models';
 
 import { apiClient } from '../services/api';
-import { checkVer, getHost, hexToBase91, tokenStrength } from '../utils';
+import { checkVer, getHost, hexToBase91, validateTokenEntropy } from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
@@ -314,12 +314,9 @@ export const useAppStore = () => {
   }: fetchRobotProps): void {
     const token = newToken ?? robot.token ?? '';
 
-    const { enoughEntropy, bitsEntropy, shannonEntropy } = {
-      enoughEntropy: true,
-      bitsEntropy: 130,
-      shannonEntropy: 0.8,
-    }; //() => {}
-    if (!enoughEntropy) {
+    const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
+
+    if (!hasEnoughEntropy) {
       return;
     }
 
@@ -359,6 +356,7 @@ export const useAppStore = () => {
           tgBotName: data.tg_bot_name,
           tgToken: data.tg_token,
           found: data?.found,
+          last_login: data.last_login,
           bitsEntropy,
           shannonEntropy,
           pubKey: data.public_key,

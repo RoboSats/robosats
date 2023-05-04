@@ -73,10 +73,6 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
     setWeblnEnabled(webln !== undefined);
   }, []);
 
-  const copyReferralCodeHandler = () => {
-    systemClient.copyToClipboard(`http://${host}/robot/${robot.referralCode}`);
-  };
-
   const handleWeblnInvoiceClicked = async (e: any) => {
     e.preventDefault();
     if (robot.earnedRewards) {
@@ -270,29 +266,6 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
                   />
                 </Grid>
               </Tooltip>
-            </ListItemText>
-          </ListItem>
-
-          <ListItem>
-            <ListItemIcon>
-              <PersonAddAltIcon />
-            </ListItemIcon>
-
-            <ListItemText secondary={t('Share to earn 100 Sats per trade')}>
-              <TextField
-                label={t('Your referral link')}
-                value={host + '/robot/' + robot.referralCode}
-                size='small'
-                InputProps={{
-                  endAdornment: (
-                    <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!') || ''}>
-                      <IconButton onClick={copyReferralCodeHandler}>
-                        <ContentCopy />
-                      </IconButton>
-                    </Tooltip>
-                  ),
-                }}
-              />
             </ListItemText>
           </ListItem>
 

@@ -14,7 +14,7 @@ interface TokenInputProps {
   inputToken: string;
   autoFocusTarget?: 'textfield' | 'copyButton' | 'none';
   onPressEnter: () => void;
-  badRequest: string | undefined;
+  badToken?: string;
   setInputToken: (state: string) => void;
   showCopy?: boolean;
   label?: string;
@@ -30,7 +30,7 @@ const TokenInput = ({
   onPressEnter,
   autoFocusTarget = 'textfield',
   inputToken,
-  badRequest,
+  badToken = '',
   loading = false,
   setInputToken,
 }: TokenInputProps): JSX.Element => {
@@ -46,7 +46,7 @@ const TokenInput = ({
   } else {
     return (
       <TextField
-        error={!!badRequest}
+        error={inputToken.length > 20 ? !!badToken : false}
         disabled={!editable}
         required={true}
         label={label || undefined}
@@ -55,7 +55,7 @@ const TokenInput = ({
         fullWidth={fullWidth}
         sx={{ borderColor: 'primary' }}
         variant={editable ? 'outlined' : 'filled'}
-        helperText={badRequest}
+        helperText={badToken}
         size='medium'
         onChange={(e) => setInputToken(e.target.value)}
         onKeyPress={(e) => {

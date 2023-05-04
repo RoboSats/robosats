@@ -11,12 +11,10 @@ import {
   LinearProgress,
   Link,
   Typography,
-  useTheme,
   Accordion,
   AccordionSummary,
   AccordionDetails,
 } from '@mui/material';
-import { Page } from '../NavBar';
 import { Robot } from '../../models';
 import { Casino, Bolt, Check, Storefront, AddBox, School } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
@@ -31,7 +29,7 @@ interface OnboardingProps {
   inputToken: string;
   setInputToken: (state: string) => void;
   getGenerateRobot: (token: string) => void;
-  badRequest: string | undefined;
+  badToken: string;
   baseUrl: string;
 }
 
@@ -41,7 +39,7 @@ const Onboarding = ({
   inputToken,
   setInputToken,
   setRobot,
-  badRequest,
+  badToken,
   getGenerateRobot,
   baseUrl,
 }: OnboardingProps): JSX.Element => {
@@ -102,7 +100,7 @@ const Onboarding = ({
                         inputToken={inputToken}
                         setInputToken={setInputToken}
                         setRobot={setRobot}
-                        badRequest={badRequest}
+                        badToken={badToken}
                         robot={robot}
                         onPressEnter={() => null}
                       />

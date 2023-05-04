@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Grid, Typography, useTheme } from '@mui/material';
+import { Button, Grid, Typography } from '@mui/material';
 import { Robot } from '../../models';
 import TokenInput from './TokenInput';
 import Key from '@mui/icons-material/Key';
@@ -10,6 +10,7 @@ interface RecoveryProps {
   setRobot: (state: Robot) => void;
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   inputToken: string;
+  badToken: string;
   setInputToken: (state: string) => void;
   getGenerateRobot: (token: string) => void;
 }
@@ -18,21 +19,16 @@ const Recovery = ({
   robot,
   setRobot,
   inputToken,
+  badToken,
   setView,
   setInputToken,
   getGenerateRobot,
 }: RecoveryProps): JSX.Element => {
   const { t } = useTranslation();
 
-  const recoveryDisabled = () => {
-    return !(inputToken.length > 20);
-  };
   const onClickRecover = () => {
-    if (recoveryDisabled()) {
-    } else {
-      getGenerateRobot(inputToken);
-      setView('profile');
-    }
+    getGenerateRobot(inputToken);
+    setView('profile');
   };
 
   return (
@@ -56,16 +52,11 @@ const Recovery = ({
           label={t('Paste token here')}
           robot={robot}
           onPressEnter={onClickRecover}
-          badRequest={''}
+          badToken={badToken}
         />
       </Grid>
       <Grid item>
-        <Button
-          variant='contained'
-          size='large'
-          disabled={recoveryDisabled()}
-          onClick={onClickRecover}
-        >
+        <Button variant='contained' size='large' disabled={!!badToken} onClick={onClickRecover}>
           <Key /> <div style={{ width: '0.5em' }} />
           {t('Recover')}
         </Button>
