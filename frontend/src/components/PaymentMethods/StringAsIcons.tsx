@@ -14,7 +14,7 @@ interface Props {
   text: string;
 }
 
-const StringAsIcons: React.FC = ({ othersText, verbose, size, text }: Props) => {
+const StringAsIcons: React.FC = ({ othersText, verbose, size, text = '' }: Props) => {
   const { t } = useTranslation();
 
   const parsedText = useMemo(() => {

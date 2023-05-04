@@ -94,9 +94,14 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
     setShowRewardsSpinner(true);
 
     apiClient
-      .post(baseUrl, '/api/reward/', {
-        invoice: rewardInvoice,
-      })
+      .post(
+        baseUrl,
+        '/api/reward/',
+        {
+          invoice: rewardInvoice,
+        },
+        robot.tokenSHA256,
+      )
       .then((data: any) => {
         setBadInvoice(data.bad_invoice ?? '');
         setShowRewardsSpinner(false);

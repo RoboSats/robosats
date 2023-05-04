@@ -1,15 +1,17 @@
 import hashlib
 from pathlib import Path
 
+from channels.db import database_sync_to_async
+from channels.middleware import BaseMiddleware
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from django.db import IntegrityError
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed
 from robohash import Robohash
 
 from api.nick_generator.nick_generator import NickGenerator
-from api.utils import base91_to_hex, is_valid_token, validate_pgp_keys
+from api.utils import base91_to_hex, hex_to_base91, is_valid_token, validate_pgp_keys
 
 NickGen = NickGenerator(
     lang="English", use_adv=False, use_adj=True, use_noun=True, max_num=999
@@ -133,3 +135,34 @@ class RobotTokenSHA256AuthenticationMiddleWare:
 
         response = self.get_response(request)
         return response
+
+
+# Authenticate WebSockets connections using DRF tokens
+
+
+@database_sync_to_async
+def get_user(token_key):
+    try:
+        token = Token.objects.get(key=token_key)
+        return token.user
+    except Token.DoesNotExist:
+        return AnonymousUser()
+
+
+class TokenAuthMiddleware(BaseMiddleware):
+    def __init__(self, inner):
+        super().__init__(inner)
+
+    async def __call__(self, scope, receive, send):
+        try:
+            token_key = (
+                dict((x.split("=") for x in scope["query_string"].decode().split("&")))
+            ).get("token_sha256_hex", None)
+            token_key = hex_to_base91(token_key)
+            print(token_key)
+        except ValueError:
+            token_key = None
+        scope["user"] = (
+            AnonymousUser() if token_key is None else await get_user(token_key)
+        )
+        return await super().__call__(scope, receive, send)

@@ -6,7 +6,7 @@ import gnupg
 import numpy as np
 import requests
 import ring
-from base91 import decode
+from base91 import decode, encode
 from decouple import config
 
 from api.models import Order
@@ -284,6 +284,12 @@ def validate_pgp_keys(pub_key, enc_priv_key):
 def base91_to_hex(base91_str: str) -> str:
     bytes_data = decode(base91_str)
     return bytes_data.hex()
+
+
+def hex_to_base91(hex_str: str) -> str:
+    hex_bytes = bytes.fromhex(hex_str)
+    base91_str = encode(hex_bytes)
+    return base91_str
 
 
 def is_valid_token(token: str) -> bool:

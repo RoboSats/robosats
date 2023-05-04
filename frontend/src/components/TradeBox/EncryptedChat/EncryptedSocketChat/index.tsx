@@ -14,6 +14,7 @@ import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
 import { EncryptedChatMessage, ServerMessage } from '..';
 import ChatBottom from '../ChatBottom';
+import { sha256 } from 'js-sha256';
 
 interface Props {
   orderId: number;
@@ -92,19 +93,24 @@ const EncryptedSocketChat: React.FC<Props> = ({
   }, [serverMessages]);
 
   const connectWebsocket = () => {
-    websocketClient.open(`ws://${window.location.host}/ws/chat/${orderId}/`).then((connection) => {
-      setConnection(connection);
-      setConnected(true);
+    websocketClient
+      .open(
+        `ws://${window.location.host}/ws/chat/${orderId}/?token_sha256_hex=${sha256(robot.token)}`,
+      )
+      .then((connection) => {
+        setConnection(connection);
+        setConnected(true);
 
-      connection.send({
-        message: robot.pubKey,
-        nick: userNick,
+        connection.send({
+          message: robot.pubKey,
+          nick: userNick,
+          authorization: `Token ${robot.tokenSHA256}`,
+        });
+
+        connection.onMessage((message) => setServerMessages((prev) => [...prev, message]));
+        connection.onClose(() => setConnected(false));
+        connection.onError(() => setConnected(false));
       });
-
-      connection.onMessage((message) => setServerMessages((prev) => [...prev, message]));
-      connection.onClose(() => setConnected(false));
-      connection.onError(() => setConnected(false));
-    });
   };
 
   const createJsonFile: () => object = () => {
@@ -135,6 +141,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
         connection.send({
           message: `-----SERVE HISTORY-----`,
           nick: userNick,
+          authorization: `Token ${robot.tokenSHA256}`,
         });
       }
       // If we receive an encrypted message
@@ -206,6 +213,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       connection.send({
         message: value,
         nick: userNick,
+        authorization: `Token ${robot.tokenSHA256}`,
       });
       setValue('');
     }
@@ -221,6 +229,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
             connection.send({
               message: encryptedMessage.toString().split('\n').join('\\'),
               nick: userNick,
+              authorization: `Token ${robot.tokenSHA256}`,
             });
           }
         })

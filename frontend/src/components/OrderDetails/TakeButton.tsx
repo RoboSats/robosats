@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -21,16 +21,16 @@ import Countdown from 'react-countdown';
 import currencies from '../../../static/assets/currencies.json';
 import { apiClient } from '../../services/api';
 
-import { Order } from '../../models';
+import { Order, Info } from '../../models';
 import { ConfirmationDialog } from '../Dialogs';
 import { LoadingButton } from '@mui/lab';
-import { computeSats, pn } from '../../utils';
+import { computeSats } from '../../utils';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 interface TakeButtonProps {
   order: Order;
   setOrder: (state: Order) => void;
   baseUrl: string;
-  hasRobot: boolean;
   info: Info;
 }
 
@@ -40,9 +40,10 @@ interface OpenDialogsProps {
 }
 const closeAll = { inactiveMaker: false, confirmation: false };
 
-const TakeButton = ({ order, setOrder, baseUrl, hasRobot, info }: TakeButtonProps): JSX.Element => {
+const TakeButton = ({ order, setOrder, baseUrl, info }: TakeButtonProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { robot } = useContext<UseAppStoreType>(AppContext);
 
   const [takeAmount, setTakeAmount] = useState<string>('');
   const [badRequest, setBadRequest] = useState<string>('');
@@ -277,10 +278,15 @@ const TakeButton = ({ order, setOrder, baseUrl, hasRobot, info }: TakeButtonProp
   const takeOrder = function () {
     setLoadingTake(true);
     apiClient
-      .post(baseUrl, '/api/order/?order_id=' + order.id, {
-        action: 'take',
-        amount: order.currency == 1000 ? takeAmount / 100000000 : takeAmount,
-      })
+      .post(
+        baseUrl,
+        '/api/order/?order_id=' + order.id,
+        {
+          action: 'take',
+          amount: order.currency == 1000 ? takeAmount / 100000000 : takeAmount,
+        },
+        robot.tokenSHA256,
+      )
       .then((data) => {
         setLoadingTake(false);
         if (data.bad_request) {
@@ -313,7 +319,7 @@ const TakeButton = ({ order, setOrder, baseUrl, hasRobot, info }: TakeButtonProp
           setLoadingTake(true);
           setOpen(closeAll);
         }}
-        hasRobot={hasRobot}
+        hasRobot={robot.avatarLoaded}
       />
       <InactiveMakerDialog />
     </Box>

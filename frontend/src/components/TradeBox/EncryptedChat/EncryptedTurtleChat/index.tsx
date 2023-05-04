@@ -76,7 +76,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
 
   const loadMessages: () => void = () => {
     apiClient
-      .get(baseUrl, `/api/chat/?order_id=${orderId}&offset=${lastIndex}`)
+      .get(baseUrl, `/api/chat/?order_id=${orderId}&offset=${lastIndex}`, robot.tokenSHA256)
       .then((results: any) => {
         if (results) {
           setPeerConnected(results.peer_connected);
@@ -167,11 +167,16 @@ const EncryptedTurtleChat: React.FC<Props> = ({
     // If input string contains '#' send unencrypted and unlogged message
     else if (value.substring(0, 1) == '#') {
       apiClient
-        .post(baseUrl, `/api/chat/`, {
-          PGP_message: value,
-          order_id: orderId,
-          offset: lastIndex,
-        })
+        .post(
+          baseUrl,
+          `/api/chat/`,
+          {
+            PGP_message: value,
+            order_id: orderId,
+            offset: lastIndex,
+          },
+          robot.tokenSHA256,
+        )
         .then((response) => {
           if (response != null) {
             if (response.messages) {
@@ -192,11 +197,16 @@ const EncryptedTurtleChat: React.FC<Props> = ({
       encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, robot.token)
         .then((encryptedMessage) => {
           apiClient
-            .post(baseUrl, `/api/chat/`, {
-              PGP_message: encryptedMessage.toString().split('\n').join('\\'),
-              order_id: orderId,
-              offset: lastIndex,
-            })
+            .post(
+              baseUrl,
+              `/api/chat/`,
+              {
+                PGP_message: encryptedMessage.toString().split('\n').join('\\'),
+                order_id: orderId,
+                offset: lastIndex,
+              },
+              robot.tokenSHA256,
+            )
             .then((response) => {
               if (response != null) {
                 setPeerConnected(response.peer_connected);
