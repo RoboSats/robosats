@@ -128,6 +128,7 @@ services:
     command: celery -A robosats beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
       - .:/usr/src/robosats
+      - ./node/lnd:/lnd
       - ./node/cln:/cln
     depends_on:
       - redis
