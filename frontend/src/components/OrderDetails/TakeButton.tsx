@@ -285,7 +285,7 @@ const TakeButton = ({ order, setOrder, baseUrl, info }: TakeButtonProps): JSX.El
           action: 'take',
           amount: order.currency == 1000 ? takeAmount / 100000000 : takeAmount,
         },
-        robot.tokenSHA256,
+        { tokenSHA256: robot.tokenSHA256 },
       )
       .then((data) => {
         setLoadingTake(false);

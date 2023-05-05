@@ -1,76 +1,75 @@
-import { ApiClient } from '..';
+import { ApiClient, Auth } from '..';
+import { systemClient } from '../../System';
 
 class ApiWebClient implements ApiClient {
-  private readonly getHeaders: (tokenSHA256?: string) => HeadersInit = (tokenSHA256) => {
+  private readonly getHeaders: (auth?: Auth) => HeadersInit = (auth) => {
     let headers = {
       'Content-Type': 'application/json',
     };
 
-    if (tokenSHA256) {
+    if (auth) {
       headers = {
         ...headers,
         ...{
-          Authorization: `Token ${tokenSHA256}`,
+          Authorization: `Token ${auth.tokenSHA256}`,
         },
       };
+    }
+
+    // set cookies before sending the request
+    if (auth?.keys) {
+      systemClient.setCookie('public_key', auth.keys.pubKey);
+      systemClient.setCookie('encrypted_private_key', auth.keys.encPrivKey);
     }
 
     return headers;
   };
 
-  public post: (
-    baseUrl: string,
-    path: string,
-    body: object,
-    tokenSHA256?: string,
-  ) => Promise<object> = async (baseUrl, path, body, tokenSHA256) => {
-    const requestOptions = {
-      method: 'POST',
-      headers: this.getHeaders(tokenSHA256),
-      body: JSON.stringify(body),
+  public post: (baseUrl: string, path: string, body: object, auth?: Auth) => Promise<object> =
+    async (baseUrl, path, body, auth) => {
+      const requestOptions = {
+        method: 'POST',
+        headers: this.getHeaders(auth),
+        body: JSON.stringify(body),
+      };
+
+      return await fetch(baseUrl + path, requestOptions).then(
+        async (response) => await response.json(),
+      );
     };
 
-    return await fetch(baseUrl + path, requestOptions).then(
-      async (response) => await response.json(),
-    );
-  };
-
-  public put: (
-    baseUrl: string,
-    path: string,
-    body: object,
-    tokenSHA256?: string,
-  ) => Promise<object> = async (baseUrl, path, body, tokenSHA256) => {
-    const requestOptions = {
-      method: 'PUT',
-      headers: this.getHeaders(tokenSHA256),
-      body: JSON.stringify(body),
+  public put: (baseUrl: string, path: string, body: object, auth?: Auth) => Promise<object> =
+    async (baseUrl, path, body, auth) => {
+      const requestOptions = {
+        method: 'PUT',
+        headers: this.getHeaders(auth),
+        body: JSON.stringify(body),
+      };
+      return await fetch(baseUrl + path, requestOptions).then(
+        async (response) => await response.json(),
+      );
     };
-    return await fetch(baseUrl + path, requestOptions).then(
-      async (response) => await response.json(),
-    );
-  };
 
-  public delete: (baseUrl: string, path: string, tokenSHA256?: string) => Promise<object> = async (
+  public delete: (baseUrl: string, path: string, auth?: Auth) => Promise<object> = async (
     baseUrl,
     path,
-    tokenSHA256,
+    auth,
   ) => {
     const requestOptions = {
       method: 'DELETE',
-      headers: this.getHeaders(tokenSHA256),
+      headers: this.getHeaders(auth),
     };
     return await fetch(baseUrl + path, requestOptions).then(
       async (response) => await response.json(),
     );
   };
 
-  public get: (baseUrl: string, path: string, tokenSHA256?: string) => Promise<object> = async (
+  public get: (baseUrl: string, path: string, auth?: Auth) => Promise<object> = async (
     baseUrl,
     path,
-    tokenSHA256,
+    auth,
   ) => {
-    return await fetch(baseUrl + path, { headers: this.getHeaders(tokenSHA256) }).then(
+    return await fetch(baseUrl + path, { headers: this.getHeaders(auth) }).then(
       async (response) => await response.json(),
     );
   };

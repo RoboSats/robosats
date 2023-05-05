@@ -173,7 +173,7 @@ const TradeBox = ({
           statement,
           rating,
         },
-        robot.tokenSHA256,
+        { tokenSHA256: robot.tokenSHA256 },
       )
       .catch(() => {
         setOpen(closeAll);

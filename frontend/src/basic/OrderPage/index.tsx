@@ -58,13 +58,15 @@ const OrderPage = (): JSX.Element => {
         escrow_duration: order.escrow_duration,
         bond_size: order.bond_size,
       };
-      apiClient.post(baseUrl, '/api/make/', body, robot.tokenSHA256).then((data: any) => {
-        if (data.bad_request) {
-          setBadOrder(data.bad_request);
-        } else if (data.id) {
-          navigate('/order/' + data.id);
-        }
-      });
+      apiClient
+        .post(baseUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
+        .then((data: any) => {
+          if (data.bad_request) {
+            setBadOrder(data.bad_request);
+          } else if (data.id) {
+            navigate('/order/' + data.id);
+          }
+        });
     }
   };
 

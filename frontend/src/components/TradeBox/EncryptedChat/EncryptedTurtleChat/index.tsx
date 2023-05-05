@@ -76,7 +76,9 @@ const EncryptedTurtleChat: React.FC<Props> = ({
 
   const loadMessages: () => void = () => {
     apiClient
-      .get(baseUrl, `/api/chat/?order_id=${orderId}&offset=${lastIndex}`, robot.tokenSHA256)
+      .get(baseUrl, `/api/chat/?order_id=${orderId}&offset=${lastIndex}`, {
+        tokenSHA256: robot.tokenSHA256,
+      })
       .then((results: any) => {
         if (results) {
           setPeerConnected(results.peer_connected);
@@ -175,7 +177,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
             order_id: orderId,
             offset: lastIndex,
           },
-          robot.tokenSHA256,
+          { tokenSHA256: robot.tokenSHA256 },
         )
         .then((response) => {
           if (response != null) {

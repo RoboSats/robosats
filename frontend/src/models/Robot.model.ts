@@ -2,7 +2,7 @@ class Robot {
   constructor(garageRobot?: Robot) {
     if (garageRobot != null) {
       this.token = garageRobot?.token ?? undefined;
-      this.tokenSHA256 = garageRobot?.tokenSHA256 ?? undefined;
+      this.tokenSHA256 = garageRobot?.tokenSHA256 ?? '';
       this.pubKey = garageRobot?.pubKey ?? undefined;
       this.encPrivKey = garageRobot?.encPrivKey ?? undefined;
     }
@@ -12,7 +12,7 @@ class Robot {
   public token?: string;
   public bitsEntropy?: number;
   public shannonEntropy?: number;
-  public tokenSHA256?: string;
+  public tokenSHA256: string = '';
   public pubKey?: string;
   public encPrivKey?: string;
   public stealthInvoices: boolean = true;
