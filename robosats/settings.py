@@ -11,6 +11,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
+import json
 import os
 import textwrap
 from pathlib import Path
@@ -34,6 +35,9 @@ DEBUG = False
 STATIC_URL = "static/"
 STATIC_ROOT = "/usr/src/static/"
 
+# RoboSats version
+with open("version.json") as f:
+    VERSION = json.load(f)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if config("DEVELOPMENT", default=False):
@@ -92,6 +96,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
+    "rest_framework.authtoken",
     "django_celery_beat",
     "django_celery_results",
     "import_export",
@@ -105,10 +110,13 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ],
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "RoboSats REST API v0",
+    "TITLE": "RoboSats REST API",
     "DESCRIPTION": textwrap.dedent(
         """
         REST API Documentation for [RoboSats](https://learn.robosats.com) - A Simple and Private LN P2P Exchange
@@ -123,7 +131,7 @@ SPECTACULAR_SETTINGS = {
 
         """
     ),
-    "VERSION": "0.1.0",
+    "VERSION": f"{VERSION['major']}.{VERSION['minor']}.{VERSION['patch']}",
     "SERVE_INCLUDE_SCHEMA": False,
     "SWAGGER_UI_DIST": "SIDECAR",  # shorthand to use the sidecar instead
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
@@ -145,9 +153,9 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    # "django.middleware.csrf.CsrfViewMiddleware",
     "robosats.middleware.DisableCSRFMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "robosats.middleware.RobotTokenSHA256AuthenticationMiddleWare",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",

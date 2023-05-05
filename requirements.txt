@@ -33,3 +33,4 @@ isort==5.12.0
 flake8==6.0.0
 pyflakes==3.0.1
 django-cors-headers==3.14.0
+base91==1.0.1

@@ -6,7 +6,7 @@ urlpatterns = [
     path("", basic),
     path("create/", basic),
     path("robot/", basic),
-    path("robot/<refCode>", basic),
+    path("robot/<token>", basic),
     path("offers/", basic),
     path("order/<int:orderId>", basic),
     path("settings/", basic),

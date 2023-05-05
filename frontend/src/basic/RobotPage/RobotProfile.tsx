@@ -27,12 +27,9 @@ interface RobotProfileProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   getGenerateRobot: (token: string, slot?: number) => void;
   inputToken: string;
-  setCurrentOrder: (state: number) => void;
   logoutRobot: () => void;
-  inputToken: string;
   setInputToken: (state: string) => void;
   baseUrl: string;
-  badRequest: string;
   width: number;
 }
 
@@ -42,10 +39,8 @@ const RobotProfile = ({
   inputToken,
   getGenerateRobot,
   setInputToken,
-  setCurrentOrder,
   logoutRobot,
   setView,
-  badRequest,
   baseUrl,
   width,
 }: RobotProfileProps): JSX.Element => {
@@ -227,7 +222,6 @@ const RobotProfile = ({
               label={t('Store your token safely')}
               setInputToken={setInputToken}
               setRobot={setRobot}
-              badRequest={badRequest}
               robot={robot}
               onPressEnter={() => null}
             />

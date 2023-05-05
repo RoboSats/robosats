@@ -13,12 +13,21 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+from decouple import config
+from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
+VERSION = settings.VERSION
+
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("coordinator/", admin.site.urls),
     path("api/", include("api.urls")),
     # path('chat/', include('chat.urls')),
     path("", include("frontend.urls")),
 ]
+
+admin.site.site_header = f"RoboSats Coordinator: {config('COORDINATOR_ALIAS', cast=str, default='NoAlias')} (v{VERSION['major']}.{VERSION['minor']}.{VERSION['patch']})"
+admin.site.index_title = "Coordinator administration"
+admin.site.site_title = "RoboSats Coordinator Admin"

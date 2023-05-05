@@ -2,9 +2,11 @@ import json
 import logging
 import os
 
+import gnupg
 import numpy as np
 import requests
 import ring
+from base91 import decode, encode
 from decouple import config
 
 from api.models import Order
@@ -147,18 +149,6 @@ def get_robosats_commit():
     return commit_hash
 
 
-robosats_version_cache = {}
-
-
-@ring.dict(robosats_commit_cache, expire=99999)
-def get_robosats_version():
-
-    with open("version.json") as f:
-        version_dict = json.load(f)
-
-    return version_dict
-
-
 premium_percentile = {}
 
 
@@ -238,3 +228,75 @@ def compute_avg_premium(queryset):
     else:
         weighted_median_premium = 0.0
     return weighted_median_premium, total_volume
+
+
+def validate_pgp_keys(pub_key, enc_priv_key):
+    """Validates PGP valid keys. Formats them in a way understandable by the frontend"""
+    gpg = gnupg.GPG()
+
+    # Standardize format with linux linebreaks '\n'. Windows users submitting their own keys have '\r\n' breaking communication.
+    enc_priv_key = enc_priv_key.replace("\r\n", "\n").replace("\\", "\n")
+    pub_key = pub_key.replace("\r\n", "\n").replace("\\", "\n")
+
+    # Try to import the public key
+    import_pub_result = gpg.import_keys(pub_key)
+    if not import_pub_result.imported == 1:
+        # If a robot is deleted and it is rebuilt with the same pubKey, the key will not be imported again
+        # so we assert that the import error is "Not actually changed"
+        if "Not actually changed" not in import_pub_result.results[0]["text"]:
+            return (
+                False,
+                {
+                    "bad_request": "Your PGP public key does not seem valid.\n"
+                    + f"Stderr: {str(import_pub_result.stderr)}\n"
+                    + f"ReturnCode: {str(import_pub_result.returncode)}\n"
+                    + f"Summary: {str(import_pub_result.summary)}\n"
+                    + f"Results: {str(import_pub_result.results)}\n"
+                    + f"Imported: {str(import_pub_result.imported)}\n"
+                },
+                None,
+                None,
+            )
+    # Exports the public key again for uniform formatting.
+    pub_key = gpg.export_keys(import_pub_result.fingerprints[0])
+
+    # Try to import the encrypted private key (without passphrase)
+    import_priv_result = gpg.import_keys(enc_priv_key)
+    if not import_priv_result.sec_imported == 1:
+        if "Not actually changed" not in import_priv_result.results[0]["text"]:
+            return (
+                False,
+                {
+                    "bad_request": "Your PGP encrypted private key does not seem valid.\n"
+                    + f"Stderr: {str(import_priv_result.stderr)}\n"
+                    + f"ReturnCode: {str(import_priv_result.returncode)}\n"
+                    + f"Summary: {str(import_priv_result.summary)}\n"
+                    + f"Results: {str(import_priv_result.results)}\n"
+                    + f"Sec Imported: {str(import_priv_result.sec_imported)}\n"
+                },
+                None,
+                None,
+            )
+
+    return True, None, pub_key, enc_priv_key
+
+
+def base91_to_hex(base91_str: str) -> str:
+    bytes_data = decode(base91_str)
+    return bytes_data.hex()
+
+
+def hex_to_base91(hex_str: str) -> str:
+    hex_bytes = bytes.fromhex(hex_str)
+    base91_str = encode(hex_bytes)
+    return base91_str
+
+
+def is_valid_token(token: str) -> bool:
+    num_chars = len(token)
+
+    if not 38 < num_chars < 41:
+        return False
+
+    charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&()*+,./:;<=>?@[]^_`{|}~"'
+    return all(c in charset for c in token)

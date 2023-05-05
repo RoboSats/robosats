@@ -12,7 +12,12 @@ from django.db.models import Q, Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
+from rest_framework.authentication import (
+    SessionAuthentication,  # DEPRECATE session authentication
+)
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from robohash import Robohash
@@ -30,6 +35,7 @@ from api.oas_schemas import (
     OrderViewSchema,
     PriceViewSchema,
     RewardViewSchema,
+    RobotViewSchema,
     StealthViewSchema,
     TickViewSchema,
     UserViewSchema,
@@ -51,7 +57,7 @@ from api.utils import (
     compute_premium_percentile,
     get_lnd_version,
     get_robosats_commit,
-    get_robosats_version,
+    validate_pgp_keys,
 )
 from chat.models import Message
 from control.models import AccountingDay, BalanceLog
@@ -72,9 +78,12 @@ avatar_path.mkdir(parents=True, exist_ok=True)
 
 class MakerView(CreateAPIView):
     serializer_class = MakeOrderSerializer
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(**MakerViewSchema.post)
     def post(self, request):
+
         serializer = self.serializer_class(data=request.data)
 
         if not request.user.is_authenticated:
@@ -178,6 +187,8 @@ class MakerView(CreateAPIView):
 
 
 class OrderView(viewsets.ViewSet):
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = UpdateOrderSerializer
     lookup_url_kwarg = "order_id"
 
@@ -617,13 +628,60 @@ class OrderView(viewsets.ViewSet):
         return self.get(request)
 
 
+class RobotView(APIView):
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(**RobotViewSchema.get)
+    def get(self, request, format=None):
+        """
+        Respond with Nickname, pubKey, privKey.
+        """
+        user = request.user
+        context = {}
+        context["nickname"] = user.username
+        context["public_key"] = user.robot.public_key
+        context["encrypted_private_key"] = user.robot.encrypted_private_key
+        context["earned_rewards"] = user.robot.earned_rewards
+        context["wants_stealth"] = user.robot.wants_stealth
+        context["last_login"] = user.last_login
+
+        # Adds/generate telegram token and whether it is enabled
+        context = {**context, **Telegram.get_context(user)}
+
+        # return active order or last made order if any
+        has_no_active_order, _, order = Logics.validate_already_maker_or_taker(
+            request.user
+        )
+        if not has_no_active_order:
+            context["active_order_id"] = order.id
+        else:
+            last_order = Order.objects.filter(
+                Q(maker=request.user) | Q(taker=request.user)
+            ).last()
+            if last_order:
+                context["last_order_id"] = last_order.id
+
+        # Robot was found, only if created +5 mins ago
+        if user.date_joined < (timezone.now() - timedelta(minutes=5)):
+            context["found"] = True
+
+        return Response(context, status=status.HTTP_200_OK)
+
+
 class UserView(APIView):
+    """
+    Deprecated. UserView will be completely replaced by the smaller RobotView in
+    combination with the RobotTokenSHA256 middleware (on-the-fly robot generation)
+    """
+
     NickGen = NickGenerator(
         lang="English", use_adv=False, use_adj=True, use_noun=True, max_num=999
     )
 
     serializer_class = UserGenSerializer
 
+    @extend_schema(**UserViewSchema.post)
     def post(self, request, format=None):
         """
         Get a new user derived from a high entropy token
@@ -715,7 +773,7 @@ class UserView(APIView):
                 bad_keys_context,
                 public_key,
                 encrypted_private_key,
-            ) = Logics.validate_pgp_keys(public_key, encrypted_private_key)
+            ) = validate_pgp_keys(public_key, encrypted_private_key)
             if not valid:
                 return Response(bad_keys_context, status.HTTP_400_BAD_REQUEST)
 
@@ -922,7 +980,7 @@ class InfoView(ListAPIView):
         context["lifetime_volume"] = round(lifetime_volume, 8)
         context["lnd_version"] = get_lnd_version()
         context["robosats_running_commit_hash"] = get_robosats_commit()
-        context["version"] = get_robosats_version()
+        context["version"] = settings.VERSION
         context["alternative_site"] = config("ALTERNATIVE_SITE")
         context["alternative_name"] = config("ALTERNATIVE_NAME")
         context["node_alias"] = config("NODE_ALIAS")
@@ -945,17 +1003,14 @@ class InfoView(ListAPIView):
 
 
 class RewardView(CreateAPIView):
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
     serializer_class = ClaimRewardSerializer
 
     @extend_schema(**RewardViewSchema.post)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
-
-        if not request.user.is_authenticated:
-            return Response(
-                {"bad_request": "Woops! It seems you do not have a robot avatar"},
-                status.HTTP_400_BAD_REQUEST,
-            )
 
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -1052,18 +1107,14 @@ class HistoricalView(ListAPIView):
 
 
 class StealthView(UpdateAPIView):
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
 
     serializer_class = StealthSerializer
 
     @extend_schema(**StealthViewSchema.put)
     def put(self, request):
         serializer = self.serializer_class(data=request.data)
-
-        if not request.user.is_authenticated:
-            return Response(
-                {"bad_request": "Woops! It seems you do not have a robot avatar"},
-                status.HTTP_400_BAD_REQUEST,
-            )
 
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)

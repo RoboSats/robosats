@@ -77,7 +77,7 @@ const Main: React.FC = () => {
 
       <MainBox navbarHeight={navbarHeight}>
         <Routes>
-          {['/robot/:refCode?', '/', ''].map((path, index) => {
+          {['/robot/:token?', '/', ''].map((path, index) => {
             return (
               <Route
                 path={path}

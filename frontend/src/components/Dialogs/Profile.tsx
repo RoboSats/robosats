@@ -73,10 +73,6 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
     setWeblnEnabled(webln !== undefined);
   }, []);
 
-  const copyReferralCodeHandler = () => {
-    systemClient.copyToClipboard(`http://${host}/robot/${robot.referralCode}`);
-  };
-
   const handleWeblnInvoiceClicked = async (e: any) => {
     e.preventDefault();
     if (robot.earnedRewards) {
@@ -94,9 +90,14 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
     setShowRewardsSpinner(true);
 
     apiClient
-      .post(baseUrl, '/api/reward/', {
-        invoice: rewardInvoice,
-      })
+      .post(
+        baseUrl,
+        '/api/reward/',
+        {
+          invoice: rewardInvoice,
+        },
+        robot.tokenSHA256,
+      )
       .then((data: any) => {
         setBadInvoice(data.bad_invoice ?? '');
         setShowRewardsSpinner(false);
@@ -109,7 +110,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
 
   const setStealthInvoice = (wantsStealth: boolean) => {
     apiClient
-      .put(baseUrl, '/api/stealth/', { wantsStealth })
+      .put(baseUrl, '/api/stealth/', { wantsStealth }, robot.tokenSHA256)
       .then((data) => setRobot({ ...robot, stealthInvoices: data?.wantsStealth }));
   };
 
@@ -265,29 +266,6 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
                   />
                 </Grid>
               </Tooltip>
-            </ListItemText>
-          </ListItem>
-
-          <ListItem>
-            <ListItemIcon>
-              <PersonAddAltIcon />
-            </ListItemIcon>
-
-            <ListItemText secondary={t('Share to earn 100 Sats per trade')}>
-              <TextField
-                label={t('Your referral link')}
-                value={host + '/robot/' + robot.referralCode}
-                size='small'
-                InputProps={{
-                  endAdornment: (
-                    <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!') || ''}>
-                      <IconButton onClick={copyReferralCodeHandler}>
-                        <ContentCopy />
-                      </IconButton>
-                    </Tooltip>
-                  ),
-                }}
-              />
             </ListItemText>
           </ListItem>
 

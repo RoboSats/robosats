@@ -11014,7 +11014,7 @@ nouns = [
     "Zostera",
     "Zosterops",
     "Zouave",
-    "Zu/is",
+    "Zuis",
     "Zubr",
     "Zucchini",
     "Zuche",

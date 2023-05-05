@@ -18,13 +18,13 @@ import {
 } from '../models';
 
 import { apiClient } from '../services/api';
-import { systemClient } from '../services/System';
-import { checkVer, getHost, tokenStrength } from '../utils';
+import { checkVer, getHost, hexToBase91, validateTokenEntropy } from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
 import { createTheme, Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
+import { systemClient } from '../services/System';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -63,12 +63,10 @@ export interface SlideDirection {
 }
 
 export interface fetchRobotProps {
-  action?: 'login' | 'generate' | 'refresh';
-  newKeys?: { encPrivKey: string; pubKey: string } | null;
-  newToken?: string | null;
-  refCode?: string | null;
-  slot?: number | null;
-  setBadRequest?: (state: string) => void;
+  newKeys?: { encPrivKey: string; pubKey: string };
+  newToken?: string;
+  slot?: number;
+  isRefresh?: boolean;
 }
 
 export type TorStatus = 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
@@ -297,7 +295,9 @@ export const useAppStore = () => {
 
   const fetchOrder = function () {
     if (currentOrder != undefined) {
-      apiClient.get(baseUrl, '/api/order/?order_id=' + currentOrder).then(orderReceived);
+      apiClient
+        .get(baseUrl, '/api/order/?order_id=' + currentOrder, robot.tokenSHA256)
+        .then(orderReceived);
     }
   };
 
@@ -307,97 +307,87 @@ export const useAppStore = () => {
   };
 
   const fetchRobot = function ({
-    action = 'login',
-    newKeys = null,
-    newToken = null,
-    refCode = null,
-    slot = null,
-    setBadRequest = () => {},
-  }: fetchRobotProps) {
-    const oldRobot = robot;
+    newToken,
+    newKeys,
+    slot,
+    isRefresh = false,
+  }: fetchRobotProps): void {
+    const token = newToken ?? robot.token ?? '';
+
+    const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
+
+    if (!hasEnoughEntropy) {
+      return;
+    }
+
+    const tokenSHA256 = hexToBase91(sha256(token));
     const targetSlot = slot ?? currentSlot;
-    const token = newToken ?? oldRobot.token;
-    if (action != 'refresh') {
-      setRobot(new Robot());
-    }
-    setBadRequest('');
+    const encPrivKey = newKeys?.encPrivKey ?? robot.encPrivKey ?? '';
+    const pubKey = newKeys?.pubKey ?? robot.pubKey ?? '';
 
-    const requestBody = {};
-    if (action == 'login' || action == 'refresh') {
-      requestBody.token_sha256 = sha256(token);
-    } else if (action == 'generate' && token != null) {
-      const strength = tokenStrength(token);
-      requestBody.token_sha256 = sha256(token);
-      requestBody.unique_values = strength.uniqueValues;
-      requestBody.counts = strength.counts;
-      requestBody.length = token.length;
-      requestBody.ref_code = refCode;
-      requestBody.public_key = newKeys?.pubKey ?? oldRobot.pubKey;
-      requestBody.encrypted_private_key = newKeys?.encPrivKey ?? oldRobot.encPrivKey;
-    }
+    // On first authenticated request, pubkey and privkey must be in header cookies
+    systemClient.setCookie('public_key', pubKey.split('\n').join('\\'));
+    systemClient.setCookie('encrypted_private_key', encPrivKey.split('\n').join('\\'));
 
-    apiClient.post(baseUrl, '/api/user/', requestBody).then((data: any) => {
-      let newRobot = robot;
-      if (currentOrder === undefined) {
-        setCurrentOrder(
-          data.active_order_id
-            ? data.active_order_id
-            : data.last_order_id
-            ? data.last_order_id
-            : null,
-        );
-      }
-      if (data.bad_request) {
-        setBadRequest(data.bad_request);
-        newRobot = {
-          ...oldRobot,
-          loading: false,
-          nickname: data.nickname ?? oldRobot.nickname,
-          activeOrderId: data.active_order_id ?? null,
-          referralCode: data.referral_code ?? oldRobot.referralCode,
-          earnedRewards: data.earned_rewards ?? oldRobot.earnedRewards,
-          lastOrderId: data.last_order_id ?? oldRobot.lastOrderId,
-          stealthInvoices: data.wants_stealth ?? robot.stealthInvoices,
-          tgEnabled: data.tg_enabled,
-          tgBotName: data.tg_bot_name,
-          tgToken: data.tg_token,
-          found: false,
+    if (!isRefresh) {
+      setRobot((robot) => {
+        return {
+          ...robot,
+          loading: true,
+          avatarLoaded: false,
         };
-      } else {
-        newRobot = {
-          ...oldRobot,
+      });
+    }
+
+    apiClient
+      .get(baseUrl, '/api/robot/', tokenSHA256)
+      .then((data: any) => {
+        const newRobot = {
+          avatarLoaded: isRefresh ? robot.avatarLoaded : false,
           nickname: data.nickname,
           token,
+          tokenSHA256,
           loading: false,
           activeOrderId: data.active_order_id ?? null,
           lastOrderId: data.last_order_id ?? null,
-          referralCode: data.referral_code,
           earnedRewards: data.earned_rewards ?? 0,
           stealthInvoices: data.wants_stealth,
           tgEnabled: data.tg_enabled,
           tgBotName: data.tg_bot_name,
           tgToken: data.tg_token,
           found: data?.found,
-          bitsEntropy: data.token_bits_entropy,
-          shannonEntropy: data.token_shannon_entropy,
+          last_login: data.last_login,
+          bitsEntropy,
+          shannonEntropy,
           pubKey: data.public_key,
           encPrivKey: data.encrypted_private_key,
           copiedToken: !!data.found,
         };
+        if (currentOrder === undefined) {
+          setCurrentOrder(
+            data.active_order_id
+              ? data.active_order_id
+              : data.last_order_id
+              ? data.last_order_id
+              : null,
+          );
+        }
         setRobot(newRobot);
         garage.updateRobot(newRobot, targetSlot);
         setCurrentSlot(targetSlot);
-        systemClient.setItem('robot_token', token);
-      }
-    });
+      })
+      .finally(() => {
+        systemClient.deleteCookie('public_key');
+        systemClient.deleteCookie('encrypted_private_key');
+      });
   };
 
   useEffect(() => {
     if (baseUrl != '' && page != 'robot') {
       if (open.profile && robot.avatarLoaded) {
-        fetchRobot({ action: 'refresh' }); // refresh/update existing robot
+        fetchRobot({ isRefresh: true }); // refresh/update existing robot
       } else if (!robot.avatarLoaded && robot.token && robot.encPrivKey && robot.pubKey) {
-        fetchRobot({ action: 'generate' }); // create new robot with existing token and keys (on network and coordinator change)
+        fetchRobot({}); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
   }, [open.profile, baseUrl]);
