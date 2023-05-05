@@ -14,10 +14,11 @@ class ApiNativeClient implements ApiClient {
       headers = {
         ...headers,
         ...{
-          Authorization: `Token ${tokenSHA256.substring(0, 40)}`,
+          Authorization: `Token ${tokenSHA256}`,
         },
       };
     }
+
     const encrypted_private_key = systemClient.getCookie('encrypted_private_key');
     const public_key = systemClient.getCookie('public_key');
 

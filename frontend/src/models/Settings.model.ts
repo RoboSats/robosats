@@ -30,7 +30,7 @@ class BaseSettings {
         ? 'dark'
         : 'light';
 
-    this.lightQRs = systemClient.getItem('settings_lightQRs') === 'true';
+    this.lightQRs = systemClient.getItem('settings_light_qr') === 'true';
 
     const languageCookie = systemClient.getItem('settings_language');
     this.language =

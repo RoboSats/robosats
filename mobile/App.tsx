@@ -43,12 +43,11 @@ const App = () => {
       });
     };
 
-    EncryptedStorage.removeItem('sessionid');
     loadCookie('robot_token');
     loadCookie('settings_fontsize_basic');
     loadCookie('settings_language');
     loadCookie('settings_mode');
-    loadCookie('settings_lightQRs');
+    loadCookie('settings_light_qr');
     loadCookie('settings_network');
     loadCookie('garage').then(() => injectMessageResolve(responseId));
   };

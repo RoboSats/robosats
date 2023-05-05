@@ -10,7 +10,7 @@ class ApiWebClient implements ApiClient {
       headers = {
         ...headers,
         ...{
-          Authorization: `Token ${tokenSHA256.substring(0, 40)}`,
+          Authorization: `Token ${tokenSHA256}`,
         },
       };
     }

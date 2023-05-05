@@ -159,7 +159,7 @@ const SettingsForm = ({ dense = false, showNetwork = false }: SettingsFormProps)
                       onChange={(e) => {
                         const lightQRs = !e.target.checked;
                         setSettings({ ...settings, lightQRs });
-                        systemClient.setItem('settings_lightQRs', lightQRs);
+                        systemClient.setItem('settings_light_qr', String(lightQRs));
                       }}
                     />
                   }
