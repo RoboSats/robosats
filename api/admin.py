@@ -342,8 +342,6 @@ class UserRobotAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "earned_rewards",
         "claimed_rewards",
         "platform_rating",
-        "total_ratings",
-        "avg_rating",
         "num_disputes",
         "lost_disputes",
     )

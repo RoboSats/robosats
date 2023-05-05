@@ -1568,37 +1568,6 @@ class Logics:
         return True, None
 
     @classmethod
-    def rate_counterparty(cls, order, user, rating):
-        """
-        Not in use
-        """
-
-        rating_allowed_status = [
-            Order.Status.PAY,
-            Order.Status.SUC,
-            Order.Status.FAI,
-            Order.Status.MLD,
-            Order.Status.TLD,
-        ]
-
-        # If the trade is finished
-        if order.status in rating_allowed_status:
-            # if maker, rates taker
-            if order.maker == user and order.maker_rated is False:
-                cls.add_robot_rating(order.taker.robot, rating)
-                order.maker_rated = True
-                order.save()
-            # if taker, rates maker
-            if order.taker == user and order.taker_rated is False:
-                cls.add_robot_rating(order.maker.robot, rating)
-                order.taker_rated = True
-                order.save()
-        else:
-            return False, {"bad_request": "You cannot rate your counterparty yet."}
-
-        return True, None
-
-    @classmethod
     def rate_platform(cls, user, rating):
         user.robot.platform_rating = rating
         user.robot.save()

@@ -501,7 +501,6 @@ class UpdateOrderSerializer(serializers.Serializer):
             "cancel",
             "confirm",
             "undo_confirm",
-            "rate_user",
             "rate_platform",
         ),
         allow_null=False,

@@ -598,9 +598,8 @@ class OrderView(viewsets.ViewSet):
 
         # 6) If action is rate
         elif action == "rate_user" and rating:
-            valid, context = Logics.rate_counterparty(order, request.user, rating)
-            if not valid:
-                return Response(context, status.HTTP_400_BAD_REQUEST)
+            """No user rating"""
+            pass
 
         # 7) If action is rate_platform
         elif action == "rate_platform" and rating:

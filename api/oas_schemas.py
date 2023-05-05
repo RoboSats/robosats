@@ -308,15 +308,6 @@ class OrderViewSchema:
                 respectively. Only when both parties have submitted their
                 dispute statement, the order status changes to `16` (Waiting
                 for dispute resolution)
-            - `rate_user`
-              - You can rate your counterparty using this action. You can rate
-                your user from `1-5` using the `rate` field in the request
-                body. Only allowed in the following states:
-                - `13` - Sending satoshis to buyer
-                - `14` - Sucessful trade
-                - `15` - Failed lightning network routing
-                - `17` - Maker lost dispute
-                - `18` - Taker lost dispute
             - `rate_platform`
               - Let us know how much you love (or hate 😢) RoboSats.
                 You can rate the platform from `1-5` using the `rate` field in the request body

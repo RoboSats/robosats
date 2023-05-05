@@ -2,11 +2,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.validators import (
-    MaxValueValidator,
-    MinValueValidator,
-    validate_comma_separated_integer_list,
-)
+from django.core.validators import validate_comma_separated_integer_list
 from django.db import models
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
@@ -34,23 +30,6 @@ class Robot(models.Model):
     # Total trades
     total_contracts = models.PositiveIntegerField(null=False, default=0)
 
-    # Ratings stored as a comma separated integer list
-    total_ratings = models.PositiveIntegerField(null=False, default=0)
-    latest_ratings = models.CharField(
-        max_length=999,
-        null=True,
-        default=None,
-        validators=[validate_comma_separated_integer_list],
-        blank=True,
-    )  # Will only store latest rating
-    avg_rating = models.DecimalField(
-        max_digits=4,
-        decimal_places=1,
-        default=None,
-        null=True,
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
-        blank=True,
-    )
     # Used to deep link telegram chat in case telegram notifications are enabled
     telegram_token = models.CharField(max_length=20, null=True, blank=True)
     telegram_chat_id = models.BigIntegerField(null=True, default=None, blank=True)
