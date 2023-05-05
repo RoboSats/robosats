@@ -25,8 +25,7 @@ def users_cleansing():
         # Try an except, due to unknown cause for users lacking robots.
         try:
             if (
-                user.robot.pending_rewards > 0
-                or user.robot.earned_rewards > 0
+                user.robot.earned_rewards > 0
                 or user.robot.claimed_rewards > 0
                 or user.robot.telegram_enabled is True
             ):
@@ -44,33 +43,6 @@ def users_cleansing():
         "num_deleted": len(deleted_users),
         "deleted_users": deleted_users,
     }
-    return results
-
-
-@shared_task(name="give_rewards", time_limit=180)
-def give_rewards():
-    """
-    Referral rewards go from pending to earned.
-    Happens asynchronously so the referral program cannot be easily used to spy.
-    """
-    from api.models import Robot
-
-    # Users who's last login has not been in the last 6 hours
-    queryset = Robot.objects.filter(pending_rewards__gt=0)
-
-    # And do not have an active trade, any past contract or any reward.
-    results = {}
-    for robot in queryset:
-        given_reward = robot.pending_rewards
-        robot.earned_rewards += given_reward
-        robot.pending_rewards = 0
-        robot.save()
-
-        results[robot.user.username] = {
-            "given_reward": given_reward,
-            "earned_rewards": robot.earned_rewards,
-        }
-
     return results
 
 

@@ -427,10 +427,6 @@ class UserViewSchema:
                         "type": "string",
                         "description": "Armored ASCII PGP public key block",
                     },
-                    "referral_code": {
-                        "type": "string",
-                        "description": "User's referral code",
-                    },
                     "token_bits_entropy": {"type": "integer"},
                     "token_shannon_entropy": {"type": "integer"},
                     "wants_stealth": {
@@ -454,10 +450,6 @@ class UserViewSchema:
                     "public_key": {
                         "type": "string",
                         "description": "Armored ASCII PGP public key block",
-                    },
-                    "referral_code": {
-                        "type": "string",
-                        "description": "User's referral code",
                     },
                     "token_bits_entropy": {"type": "integer"},
                     "token_shannon_entropy": {"type": "integer"},
@@ -548,7 +540,6 @@ class UserViewSchema:
                     "token_shannon_entropy": 0.7714559798089662,
                     "token_bits_entropy": 169.21582985307933,
                     "nickname": "StackerMan420",
-                    "referral_code": "lfvv4-ppNi1",
                     "public_key": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n......\n......",
                     "encrypted_private_key": "-----BEGIN PGP PRIVATE KEY BLOCK-----\n\n......\n......",
                     "wants_stealth": False,
@@ -771,10 +762,6 @@ class InfoViewSchema:
             - Fees
               - maker and taker fees
               - on-chain swap fees
-            - Robot (If autheticated)
-              - nickname
-              - referral code
-              - earned rewards
             """
         ),
     }

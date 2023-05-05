@@ -37,11 +37,6 @@ class InfoSerializer(serializers.Serializer):
     current_swap_fee_rate = serializers.FloatField(
         help_text="Swap fees to perform on-chain transaction (percent)"
     )
-    nickname = serializers.CharField(help_text="Currenlty logged in Robot name")
-    referral_code = serializers.CharField(help_text="Logged in users's referral code")
-    earned_rewards = serializers.IntegerField(
-        help_text="Logged in user's earned rewards in satoshis"
-    )
 
 
 class ListOrderSerializer(serializers.ModelSerializer):

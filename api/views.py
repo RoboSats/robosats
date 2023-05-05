@@ -2,7 +2,6 @@ import hashlib
 from datetime import datetime, timedelta
 from math import log2
 from pathlib import Path
-from secrets import token_urlsafe
 
 from decouple import config
 from django.conf import settings
@@ -24,7 +23,7 @@ from robohash import Robohash
 from scipy.stats import entropy
 
 from api.logics import Logics
-from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Robot
+from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order
 from api.notifications import Telegram
 from api.oas_schemas import (
     BookViewSchema,
@@ -705,7 +704,6 @@ class UserView(APIView):
         token_sha256 = serializer.data.get("token_sha256")
         public_key = serializer.data.get("public_key")
         encrypted_private_key = serializer.data.get("encrypted_private_key")
-        ref_code = serializer.data.get("ref_code")
 
         # Now the server only receives a hash of the token. So server trusts the client
         # with computing length, counts and unique_values to confirm the high entropy of the token
@@ -783,8 +781,6 @@ class UserView(APIView):
             user = authenticate(request, username=nickname, password=token_sha256)
             login(request, user)
 
-            context["referral_code"] = token_urlsafe(8)
-            user.robot.referral_code = context["referral_code"]
             user.robot.avatar = "static/assets/avatars/" + nickname + ".webp"
 
             # Noticed some PGP keys replaced at re-login. Should not happen.
@@ -793,12 +789,6 @@ class UserView(APIView):
                 user.robot.public_key = public_key
             if not user.robot.encrypted_private_key:
                 user.robot.encrypted_private_key = encrypted_private_key
-
-            # If the ref_code was created by another robot, this robot was referred.
-            queryset = Robot.objects.filter(referral_code=ref_code)
-            if len(queryset) == 1:
-                user.robot.is_referred = True
-                user.robot.referred_by = queryset[0]
 
             user.robot.save()
 
@@ -816,7 +806,6 @@ class UserView(APIView):
                 context["public_key"] = user.robot.public_key
                 context["encrypted_private_key"] = user.robot.encrypted_private_key
                 context["earned_rewards"] = user.robot.earned_rewards
-                context["referral_code"] = str(user.robot.referral_code)
                 context["wants_stealth"] = user.robot.wants_stealth
 
                 # Adds/generate telegram token and whether it is enabled

@@ -337,10 +337,8 @@ class UserRobotAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "avatar_tag",
         "id",
         "user_link",
-        "is_referred",
         "telegram_enabled",
         "total_contracts",
-        "pending_rewards",
         "earned_rewards",
         "claimed_rewards",
         "platform_rating",
@@ -349,11 +347,8 @@ class UserRobotAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "num_disputes",
         "lost_disputes",
     )
-    raw_id_fields = (
-        "user",
-        "referred_by",
-    )
-    list_editable = ["pending_rewards", "earned_rewards"]
+    raw_id_fields = ("user",)
+    list_editable = ["earned_rewards"]
     list_display_links = ("avatar_tag", "id")
     change_links = ["user"]
     readonly_fields = ["avatar_tag"]

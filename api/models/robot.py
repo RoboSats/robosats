@@ -58,19 +58,6 @@ class Robot(models.Model):
     telegram_lang_code = models.CharField(max_length=10, null=True, blank=True)
     telegram_welcomed = models.BooleanField(default=False, null=False)
 
-    # Referral program
-    is_referred = models.BooleanField(default=False, null=False)
-    referred_by = models.ForeignKey(
-        "self",
-        related_name="referee",
-        on_delete=models.SET_NULL,
-        null=True,
-        default=None,
-        blank=True,
-    )
-    referral_code = models.CharField(max_length=15, null=True, blank=True)
-    # Recent rewards from referred trades that will be "earned" at a later point to difficult espionage.
-    pending_rewards = models.PositiveIntegerField(null=False, default=0)
     # Claimable rewards
     earned_rewards = models.PositiveIntegerField(null=False, default=0)
     # Total claimed rewards

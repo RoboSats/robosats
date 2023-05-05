@@ -618,12 +618,10 @@ class Logics:
 
         fee_sats = order.last_satoshis * fee_fraction
 
-        reward_tip = int(config("REWARD_TIP")) if user.robot.is_referred else 0
-
         context = {}
         # context necessary for the user to submit a LN invoice
         context["invoice_amount"] = round(
-            order.last_satoshis - fee_sats - reward_tip
+            order.last_satoshis - fee_sats
         )  # Trading fee to buyer is charged here.
 
         # context necessary for the user to submit an onchain address
@@ -678,11 +676,9 @@ class Logics:
 
         fee_sats = order.last_satoshis * fee_fraction
 
-        reward_tip = int(config("REWARD_TIP")) if user.robot.is_referred else 0
-
         if cls.is_seller(order, user):
             escrow_amount = round(
-                order.last_satoshis + fee_sats + reward_tip
+                order.last_satoshis + fee_sats
             )  # Trading fee to seller is charged here.
 
         return True, {"escrow_amount": escrow_amount}
@@ -1523,12 +1519,6 @@ class Logics:
                     # !!! KEY LINE - PAYS THE BUYER INVOICE !!!
                     cls.pay_buyer(order)
 
-                    # Add referral rewards (safe)
-                    try:
-                        cls.add_rewards(order)
-                    except Exception:
-                        pass
-
                     return True, None
 
         else:
@@ -1613,25 +1603,6 @@ class Logics:
         user.robot.platform_rating = rating
         user.robot.save()
         return True, None
-
-    @classmethod
-    def add_rewards(cls, order):
-        """
-        This function is called when a trade is finished.
-        If participants of the order were referred, the reward is given to the referees.
-        """
-
-        if order.maker.robot.is_referred:
-            robot = order.maker.robot.referred_by
-            robot.pending_rewards += int(config("REWARD_TIP"))
-            robot.save()
-
-        if order.taker.robot.is_referred:
-            robot = order.taker.robot.referred_by
-            robot.pending_rewards += int(config("REWARD_TIP"))
-            robot.save()
-
-        return
 
     @classmethod
     def add_slashed_rewards(cls, slashed_bond, staked_bond):
