@@ -75,7 +75,7 @@ const MakerForm = ({
   const [openDialogs, setOpenDialogs] = useState<boolean>(false);
   const [submittingRequest, setSubmittingRequest] = useState<boolean>(false);
 
-  const maxRangeAmountMultiple = 7.8;
+  const maxRangeAmountMultiple = 14.8;
   const minRangeAmountMultiple = 1.6;
   const amountSafeThresholds = [1.03, 0.98];
 

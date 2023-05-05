@@ -134,9 +134,9 @@ class Logics:
                     + "{:,}".format(MIN_TRADE)
                     + " Sats"
                 }
-            elif min_sats < max_sats / 8:
+            elif min_sats < max_sats / 15:
                 return False, {
-                    "bad_request": "Your order amount range is too large. Max amount can only be 8 times bigger than min amount"
+                    "bad_request": "Your order amount range is too large. Max amount can only be 15 times bigger than min amount"
                 }
 
         return True, None
@@ -302,7 +302,7 @@ class Logics:
                 order.expiry_reason = Order.ExpiryReasons.NESCRO
                 order.save()
                 # Reward taker with part of the maker bond
-                cls.add_slashed_rewards(order.maker_bond, order.taker.robot)
+                cls.add_slashed_rewards(order.maker_bond, order.taker_bond)
                 return True
 
             # If maker is buyer, settle the taker's bond order goes back to public
@@ -321,7 +321,7 @@ class Logics:
                 cls.publish_order(order)
                 send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
-                cls.add_slashed_rewards(taker_bond, order.maker.robot)
+                cls.add_slashed_rewards(taker_bond, order.maker_bond)
                 return True
 
         elif order.status == Order.Status.WFI:
@@ -338,7 +338,7 @@ class Logics:
                 order.expiry_reason = Order.ExpiryReasons.NINVOI
                 order.save()
                 # Reward taker with part of the maker bond
-                cls.add_slashed_rewards(order.maker_bond, order.taker.robot)
+                cls.add_slashed_rewards(order.maker_bond, order.taker_bond)
                 return True
 
             # If maker is seller settle the taker's bond, order goes back to public
@@ -352,7 +352,7 @@ class Logics:
                 cls.publish_order(order)
                 send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
-                cls.add_slashed_rewards(taker_bond, order.maker.robot)
+                cls.add_slashed_rewards(taker_bond, order.maker_bond)
                 return True
 
         elif order.status in [Order.Status.CHA, Order.Status.FSE]:
@@ -417,14 +417,14 @@ class Logics:
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)
-            cls.add_slashed_rewards(order.maker_bond, order.taker.robot)
+            cls.add_slashed_rewards(order.maker_bond, order.taker_bond)
             order.status = Order.Status.MLD
 
         elif num_messages_maker == 0:
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)
-            cls.add_slashed_rewards(order.taker_bond, order.maker.robot)
+            cls.add_slashed_rewards(order.taker_bond, order.maker_bond)
             order.status = Order.Status.TLD
         else:
             return False
@@ -982,7 +982,7 @@ class Logics:
                 order.status = Order.Status.UCA
                 order.save()
                 # Reward taker with part of the maker bond
-                cls.add_slashed_rewards(order.maker_bond, order.taker.robot)
+                cls.add_slashed_rewards(order.maker_bond, order.taker_bond)
                 return True, None
 
         # 4.b) When taker cancel after bond (before escrow)
@@ -1001,7 +1001,7 @@ class Logics:
                 cls.publish_order(order)
                 send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
-                cls.add_slashed_rewards(order.taker_bond, order.maker.robot)
+                cls.add_slashed_rewards(order.taker_bond, order.maker_bond)
                 return True, None
 
         # 5) When trade collateral has been posted (after escrow)
@@ -1634,14 +1634,36 @@ class Logics:
         return
 
     @classmethod
-    def add_slashed_rewards(cls, bond, robot):
+    def add_slashed_rewards(cls, slashed_bond, staked_bond):
         """
         When a bond is slashed due to overtime, rewards the user that was waiting.
+
+        slashed_bond is the bond settled by the robot who forfeits his bond.
+        staked_bond is the bond that was at stake by the robot who is rewarded.
+
+        It may happen that the Sats at stake by the maker are larger than the Sats
+        at stake by the taker (range amount orders where the taker does not take the
+        maximum available). In those cases, the change is added back also to the robot
+        that was slashed (discounted by the forfeited amount).
         """
-        reward_fraction = float(config("SLASHED_BOND_REWARD_SPLIT"))
-        reward = int(bond.num_satoshis * reward_fraction)
-        robot.earned_rewards += reward
-        robot.save()
+        reward_fraction = config("SLASHED_BOND_REWARD_SPLIT", cast=float, default=0.5)
+
+        if staked_bond.num_satoshis < slashed_bond.num_satoshis:
+            slashed_satoshis = min(slashed_bond.num_satoshis, staked_bond.num_satoshis)
+            slashed_return = int(slashed_bond.num_satoshis - slashed_satoshis)
+        else:
+            slashed_satoshis = slashed_bond.num_satoshis
+            slashed_return = 0
+
+        reward = int(slashed_satoshis * reward_fraction)
+        rewarded_robot = staked_bond.sender.robot
+        rewarded_robot.earned_rewards += reward
+        rewarded_robot.save()
+
+        if slashed_return > 100:
+            slashed_robot = slashed_bond.sender.robot
+            slashed_robot.earned_rewards += slashed_return
+            slashed_robot.save()
 
         return
 
