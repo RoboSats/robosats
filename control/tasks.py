@@ -1,7 +1,7 @@
 from celery import shared_task
 
 
-@shared_task(name="do_accounting")
+@shared_task(name="do_accounting", time_limit=60)
 def do_accounting():
     """
     Does all accounting from the beginning of time
@@ -179,7 +179,7 @@ def do_accounting():
     return result
 
 
-@shared_task(name="compute_node_balance", ignore_result=True)
+@shared_task(name="compute_node_balance", ignore_result=True, time_limit=10)
 def compute_node_balance():
     """
     Queries LND for channel and wallet balance
