@@ -18,7 +18,7 @@
     "react-native": "^0.69.6",
     "react-native-encrypted-storage": "^4.0.3",
     "react-native-tor": "^0.1.8",
-    "react-native-v8": "^1.5.0",
+    "react-native-v8": "^2.1.3",
     "react-native-webview": "^12.0.2",
     "v8-android-nointl": "^10.100.1"
   },
