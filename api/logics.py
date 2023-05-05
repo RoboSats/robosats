@@ -636,9 +636,9 @@ class Logics:
             target_conf=config("SUGGESTED_TARGET_CONF", cast=int, default=2),
         )["mining_fee_rate"]
 
-        # Hardcap mining fee suggested at 100 sats/vbyte
-        if suggested_mining_fee_rate > 100:
-            suggested_mining_fee_rate = 100
+        # Hardcap mining fee suggested at 300 sats/vbyte
+        if suggested_mining_fee_rate > 300:
+            suggested_mining_fee_rate = 300
 
         onchain_payment.suggested_mining_fee_rate = max(
             2.05, LNNode.estimate_fee(amount_sats=preliminary_amount)["mining_fee_rate"]
@@ -774,24 +774,29 @@ class Logics:
                 return False, {
                     "bad_address": f"The mining fee is too low. Must be higher than {min_mining_fee_rate} Sat/vbyte"
                 }
-            elif float(mining_fee_rate) > 100:
+            elif float(mining_fee_rate) > 500:
                 return False, {
-                    "bad_address": "The mining fee is too high, must be less than 100 Sats/vbyte"
+                    "bad_address": "The mining fee is too high, must be less than 500 Sats/vbyte"
                 }
             order.payout_tx.mining_fee_rate = float(mining_fee_rate)
-        # If not mining ee provider use backend's suggested fee rate
+        # If not mining fee provider use backend's suggested fee rate
         else:
             order.payout_tx.mining_fee_rate = order.payout_tx.suggested_mining_fee_rate
 
         tx = order.payout_tx
         tx.address = address
-        tx.mining_fee_sats = int(tx.mining_fee_rate * 200)
+        tx.mining_fee_sats = int(tx.mining_fee_rate * 280)
         tx.num_satoshis = num_satoshis
         tx.sent_satoshis = int(
             float(tx.num_satoshis)
             - float(tx.num_satoshis) * float(tx.swap_fee_rate) / 100
             - float(tx.mining_fee_sats)
         )
+
+        if float(tx.sent_satoshis) < 20_000:
+            return False, {
+                "bad_address": "The amount remaining after subtracting mining fee is close to dust limit."
+            }
         tx.status = OnchainPayment.Status.VALID
         tx.save()
 

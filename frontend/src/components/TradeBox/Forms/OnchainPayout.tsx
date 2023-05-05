@@ -35,9 +35,9 @@ export const OnchainPayoutForm = ({
   const { t } = useTranslation();
 
   const minMiningFee = 2;
-  const maxMiningFee = 100;
+  const maxMiningFee = 500;
   const invalidFee = onchain.miningFee < minMiningFee || onchain.miningFee > maxMiningFee;
-  const costPerVByte = 200;
+  const costPerVByte = 280;
 
   const handleMiningFeeChange = (e) => {
     const miningFee = Number(e.target.value);
