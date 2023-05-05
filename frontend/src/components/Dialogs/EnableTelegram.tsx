@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@mui/material/styles';
 import QRCode from 'react-qr-code';
@@ -13,6 +13,7 @@ import {
   Grid,
 } from '@mui/material';
 import { NewTabIcon } from '../Icons';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 interface Props {
   open: boolean;
@@ -22,6 +23,7 @@ interface Props {
 }
 
 const EnableTelegramDialog = ({ open, onClose, tgBotName, tgToken }: Props): JSX.Element => {
+  const { settings } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -49,7 +51,7 @@ const EnableTelegramDialog = ({ open, onClose, tgBotName, tgToken }: Props): JSX
               sx={{
                 width: 290,
                 display: 'flex',
-                backgroundColor: theme.palette.background.paper,
+                backgroundColor: settings.lightQRs ? '#fff' : theme.palette.background.paper,
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '0.5em',
@@ -63,7 +65,7 @@ const EnableTelegramDialog = ({ open, onClose, tgBotName, tgToken }: Props): JSX
             >
               <QRCode
                 bgColor={'rgba(255, 255, 255, 0)'}
-                fgColor={theme.palette.text.primary}
+                fgColor={settings.lightQRs ? '#000000' : theme.palette.text.primary}
                 value={'tg://resolve?domain=' + tgBotName + '&start=' + tgToken}
                 size={275}
                 onClick={handleOpenTG}

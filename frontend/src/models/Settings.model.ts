@@ -30,6 +30,8 @@ class BaseSettings {
         ? 'dark'
         : 'light';
 
+    this.lightQRs = systemClient.getItem('settings_lightQRs') === 'true';
+
     const languageCookie = systemClient.getItem('settings_language');
     this.language =
       languageCookie !== ''
@@ -45,6 +47,7 @@ class BaseSettings {
   public frontend: 'basic' | 'pro' = 'basic';
   public mode: 'light' | 'dark' = 'light';
   public fontSize: number = 14;
+  public lightQRs: boolean = false;
   public language?: Language;
   public freezeViewports: boolean = false;
   public network: 'mainnet' | 'testnet' = 'mainnet';

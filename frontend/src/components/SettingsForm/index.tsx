@@ -25,6 +25,7 @@ import {
   Link,
   AccountBalance,
   AttachMoney,
+  QrCode,
 } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 import SwapCalls from '@mui/icons-material/SwapCalls';
@@ -112,6 +113,61 @@ const SettingsForm = ({ dense = false, showNetwork = false }: SettingsFormProps)
                 />
               }
             />
+            {settings.mode === 'dark' ? (
+              <>
+                <ListItemIcon>
+                  <QrCode />
+                </ListItemIcon>
+                <FormControlLabel
+                  sx={{ position: 'relative', right: '1.5em', width: '3em' }}
+                  labelPlacement='end'
+                  label={settings.lightQRs ? t('Light') : t('Dark')}
+                  control={
+                    <Switch
+                      checked={!settings.lightQRs}
+                      checkedIcon={
+                        <Paper
+                          elevation={3}
+                          sx={{
+                            width: '1.2em',
+                            height: '1.2em',
+                            borderRadius: '0.4em',
+                            backgroundColor: 'white',
+                            position: 'relative',
+                            top: `${7 - 0.5 * theme.typography.fontSize}px`,
+                          }}
+                        >
+                          <DarkMode sx={{ width: '0.8em', height: '0.8em', color: '#666' }} />
+                        </Paper>
+                      }
+                      icon={
+                        <Paper
+                          elevation={3}
+                          sx={{
+                            width: '1.2em',
+                            height: '1.2em',
+                            borderRadius: '0.4em',
+                            backgroundColor: 'white',
+                            padding: '0.07em',
+                            position: 'relative',
+                            top: `${7 - 0.5 * theme.typography.fontSize}px`,
+                          }}
+                        >
+                          <LightMode sx={{ width: '0.67em', height: '0.67em', color: '#666' }} />
+                        </Paper>
+                      }
+                      onChange={(e) => {
+                        const lightQRs = !e.target.checked;
+                        setSettings({ ...settings, lightQRs });
+                        systemClient.setItem('settings_lightQRs', lightQRs);
+                      }}
+                    />
+                  }
+                />
+              </>
+            ) : (
+              <></>
+            )}
           </ListItem>
 
           <ListItem>

@@ -44,11 +44,11 @@ const App = () => {
     };
 
     EncryptedStorage.removeItem('sessionid');
-    // EncryptedStorage.removeItem('csrftoken');
     loadCookie('robot_token');
     loadCookie('settings_fontsize_basic');
     loadCookie('settings_language');
     loadCookie('settings_mode');
+    loadCookie('settings_lightQRs');
     loadCookie('settings_network');
     loadCookie('garage').then(() => injectMessageResolve(responseId));
   };

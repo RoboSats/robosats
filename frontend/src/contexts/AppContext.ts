@@ -113,7 +113,7 @@ export const useAppStore = () => {
 
   useEffect(() => {
     setTheme(makeTheme(settings));
-  }, [settings.fontSize, settings.mode]);
+  }, [settings.fontSize, settings.mode, settings.lightQRs]);
 
   useEffect(() => {
     i18n.changeLanguage(settings.language);
