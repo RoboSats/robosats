@@ -53,11 +53,7 @@ const BookPage = (): JSX.Element => {
         {doubleView ? (
           <></>
         ) : (
-          <Button
-            color='inherit'
-            style={{ color: '#111111' }}
-            onClick={() => setView(view === 'depth' ? 'list' : 'depth')}
-          >
+          <Button onClick={() => setView(view === 'depth' ? 'list' : 'depth')}>
             {view == 'depth' ? (
               <>
                 <FormatListBulleted /> {t('List')}
