@@ -67,21 +67,15 @@ jobs:
       semver: ${{ needs.check-versions.outputs.semver }}
 
   release:
+    permissions: write-all
     needs: [check-versions, coordinator-image, client-image, android-build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: "Generate Release Changelog"
-        id: changelog
-        uses: heinrichreimer/github-changelog-generator-action@v2.3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Release
         id: create-release
         uses: softprops/action-gh-release@v1
-        with:
-          body: ${{ steps.changelog.outputs.changelog }}
 
       # Upload app-universal-release APK artifact asset
       - name: 'Download universal APK Artifact'

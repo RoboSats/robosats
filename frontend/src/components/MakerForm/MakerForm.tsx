@@ -249,13 +249,15 @@ const MakerForm = ({
         escrow_duration: maker.escrowDuration,
         bond_size: maker.bondSize,
       };
-      apiClient.post(baseUrl, '/api/make/', body, robot.tokenSHA256).then((data: object) => {
-        setBadRequest(data.bad_request);
-        if (data.id) {
-          onOrderCreated(data.id);
-        }
-        setSubmittingRequest(false);
-      });
+      apiClient
+        .post(baseUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
+        .then((data: object) => {
+          setBadRequest(data.bad_request);
+          if (data.id) {
+            onOrderCreated(data.id);
+          }
+          setSubmittingRequest(false);
+        });
     }
     setOpenDialogs(false);
   };

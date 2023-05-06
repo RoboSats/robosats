@@ -296,7 +296,7 @@ export const useAppStore = () => {
   const fetchOrder = function () {
     if (currentOrder != undefined) {
       apiClient
-        .get(baseUrl, '/api/order/?order_id=' + currentOrder, robot.tokenSHA256)
+        .get(baseUrl, '/api/order/?order_id=' + currentOrder, { tokenSHA256: robot.tokenSHA256 })
         .then(orderReceived);
     }
   };
@@ -325,9 +325,14 @@ export const useAppStore = () => {
     const encPrivKey = newKeys?.encPrivKey ?? robot.encPrivKey ?? '';
     const pubKey = newKeys?.pubKey ?? robot.pubKey ?? '';
 
-    // On first authenticated request, pubkey and privkey must be in header cookies
-    systemClient.setCookie('public_key', pubKey.split('\n').join('\\'));
-    systemClient.setCookie('encrypted_private_key', encPrivKey.split('\n').join('\\'));
+    // On first authenticated requests, pubkey and privkey are needed in header cookies
+    const auth = {
+      tokenSHA256,
+      keys: {
+        pubKey: pubKey.split('\n').join('\\'),
+        encPrivKey: encPrivKey.split('\n').join('\\'),
+      },
+    };
 
     if (!isRefresh) {
       setRobot((robot) => {
@@ -340,7 +345,7 @@ export const useAppStore = () => {
     }
 
     apiClient
-      .get(baseUrl, '/api/robot/', tokenSHA256)
+      .get(baseUrl, '/api/robot/', auth)
       .then((data: any) => {
         const newRobot = {
           avatarLoaded: isRefresh ? robot.avatarLoaded : false,

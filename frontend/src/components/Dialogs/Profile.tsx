@@ -30,17 +30,13 @@ import { EnableTelegramDialog } from '.';
 import BoltIcon from '@mui/icons-material/Bolt';
 import SendIcon from '@mui/icons-material/Send';
 import NumbersIcon from '@mui/icons-material/Numbers';
-import ContentCopy from '@mui/icons-material/ContentCopy';
-import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { UserNinjaIcon } from '../Icons';
 
-import { systemClient } from '../../services/System';
 import { getHost, getWebln } from '../../utils';
 import RobotAvatar from '../RobotAvatar';
 import { apiClient } from '../../services/api';
 import { Robot } from '../../models';
-import { Page } from '../../basic/NavBar';
 
 interface Props {
   open: boolean;
@@ -96,7 +92,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
         {
           invoice: rewardInvoice,
         },
-        robot.tokenSHA256,
+        { tokenSHA256: robot.tokenSHA256 },
       )
       .then((data: any) => {
         setBadInvoice(data.bad_invoice ?? '');
@@ -110,7 +106,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
 
   const setStealthInvoice = (wantsStealth: boolean) => {
     apiClient
-      .put(baseUrl, '/api/stealth/', { wantsStealth }, robot.tokenSHA256)
+      .post(baseUrl, '/api/stealth/', { wantsStealth }, { tokenSHA256: robot.tokenSHA256 })
       .then((data) => setRobot({ ...robot, stealthInvoices: data?.wantsStealth }));
   };
 
