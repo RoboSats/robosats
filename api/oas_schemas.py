@@ -956,7 +956,7 @@ class HistoricalViewSchema:
 
 
 class StealthViewSchema:
-    put = {
+    post = {
         "summary": "Update stealth option",
         "description": "Update stealth invoice option for the user",
         "responses": {

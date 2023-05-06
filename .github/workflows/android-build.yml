@@ -15,6 +15,7 @@ on:
 
 jobs:
   build-android:
+    permissions: write-all
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
@@ -65,7 +66,7 @@ jobs:
       # Create artifacts (only for Release)
       # Create app-universal-release APK artifact asset for Release
       - name: 'Upload universal .apk Release Artifact (for Release)'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2
         if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-universal.apk
@@ -73,7 +74,7 @@ jobs:
 
       # Create app-arm64-v8a-release APK artifact asset for Release
       - name: 'Upload arm64-v8a .apk Release Artifact (for Release)'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2
         if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-arm64-v8a.apk
@@ -81,7 +82,7 @@ jobs:
 
       # Create app-armeabi-v7a-release APK artifact asset for Release
       - name: 'Upload armeabi-v7a .apk Release Artifact (for Release)'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2
         if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-armeabi-v7a.apk
@@ -89,7 +90,7 @@ jobs:
 
       # Create app-x86_64-release APK artifact asset for Release
       - name: 'Upload x86_64 .apk Release Artifact (for Release)'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2
         if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-x86_64.apk
@@ -97,7 +98,7 @@ jobs:
 
       # Create app-x86-release APK artifact asset for Release
       - name: 'Upload x86 .apk Release Artifact (for Release)'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2
         if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-x86.apk
@@ -106,14 +107,10 @@ jobs:
       - name: 'Create Pre-release'
         id: create_release
         if: inputs.semver == ''  # only if this workflow is not called from a push to tag (a Release)
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1.12.0
         with:
-          tag_name: android-${{ steps.commit.outputs.short }}
-          release_name: robosats-android-${{ steps.commit.outputs.short }}
-          changelog: mobile/CHANGELOG.md
-          draft: false
+          tag: android-${{ steps.commit.outputs.short }}
+          name: robosats-android-${{ steps.commit.outputs.short }}
           prerelease: true
 
       # Upload universal APK to pre-release

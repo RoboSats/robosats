@@ -15,7 +15,7 @@ from rest_framework.authentication import (
     SessionAuthentication,  # DEPRECATE session authentication
 )
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -1094,14 +1094,14 @@ class HistoricalView(ListAPIView):
         return Response(payload, status.HTTP_200_OK)
 
 
-class StealthView(UpdateAPIView):
+class StealthView(APIView):
     authentication_classes = [TokenAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     serializer_class = StealthSerializer
 
-    @extend_schema(**StealthViewSchema.put)
-    def put(self, request):
+    @extend_schema(**StealthViewSchema.post)
+    def post(self, request):
         serializer = self.serializer_class(data=request.data)
 
         if not serializer.is_valid():
