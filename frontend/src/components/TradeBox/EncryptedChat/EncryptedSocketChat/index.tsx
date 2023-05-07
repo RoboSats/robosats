@@ -44,7 +44,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const audio = new Audio(`/static/assets/sounds/chat-open.mp3`);
+  const [audio] = useState(() => new Audio(`/static/assets/sounds/chat-open.mp3`));
   const [connected, setConnected] = useState<boolean>(false);
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
   const [peerPubKey, setPeerPubKey] = useState<string>();

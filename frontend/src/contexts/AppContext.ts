@@ -294,10 +294,11 @@ export const useAppStore = () => {
   };
 
   const fetchOrder = function () {
-    if (currentOrder != undefined) {
+    if (currentOrder) {
       apiClient
         .get(baseUrl, '/api/order/?order_id=' + currentOrder, { tokenSHA256: robot.tokenSHA256 })
-        .then(orderReceived);
+        .then(orderReceived)
+        .catch(orderReceived);
     }
   };
 
