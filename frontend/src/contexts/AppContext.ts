@@ -276,7 +276,7 @@ export const useAppStore = () => {
   }, [delay, currentOrder, page, badOrder]);
 
   const orderReceived = function (data: any) {
-    if (data.bad_request != undefined) {
+    if (data.bad_request) {
       setBadOrder(data.bad_request);
       setDelay(99999999);
       setOrder(undefined);

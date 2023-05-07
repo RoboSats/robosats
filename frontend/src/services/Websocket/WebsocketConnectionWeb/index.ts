@@ -3,7 +3,12 @@ import { WebsocketConnection } from '..';
 
 class WebsocketConnectionWeb implements WebsocketConnection {
   constructor(path: string) {
-    this.rws = new ReconnectingWebSocket(path, [], { connectionTimeout: 15000 });
+    this.rws = new ReconnectingWebSocket(path, [], {
+      connectionTimeout: 15000,
+      reconnectionDelayGrowFactor: 1.5,
+      maxRetries: 15,
+      maxReconnectionDelay: 1000000,
+    });
   }
 
   public rws: ReconnectingWebSocket;

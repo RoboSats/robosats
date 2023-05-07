@@ -160,7 +160,6 @@ class TokenAuthMiddleware(BaseMiddleware):
                 dict((x.split("=") for x in scope["query_string"].decode().split("&")))
             ).get("token_sha256_hex", None)
             token_key = hex_to_base91(token_key)
-            print(token_key)
         except ValueError:
             token_key = None
         scope["user"] = (

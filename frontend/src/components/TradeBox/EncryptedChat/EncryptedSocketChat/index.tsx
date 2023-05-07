@@ -105,7 +105,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
         connection.send({
           message: robot.pubKey,
           nick: userNick,
-          authorization: `Token ${robot.tokenSHA256}`,
         });
 
         connection.onMessage((message) => setServerMessages((prev) => [...prev, message]));
@@ -142,7 +141,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
         connection.send({
           message: `-----SERVE HISTORY-----`,
           nick: userNick,
-          authorization: `Token ${robot.tokenSHA256}`,
         });
       }
       // If we receive an encrypted message
@@ -214,7 +212,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
       connection.send({
         message: value,
         nick: userNick,
-        authorization: `Token ${robot.tokenSHA256}`,
       });
       setValue('');
     }
@@ -230,7 +227,6 @@ const EncryptedSocketChat: React.FC<Props> = ({
             connection.send({
               message: encryptedMessage.toString().split('\n').join('\\'),
               nick: userNick,
-              authorization: `Token ${robot.tokenSHA256}`,
             });
           }
         })
