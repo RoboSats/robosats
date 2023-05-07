@@ -162,7 +162,8 @@ class TokenAuthMiddleware(BaseMiddleware):
             token_key = hex_to_base91(token_key)
         except ValueError:
             token_key = None
+
         scope["user"] = (
-            AnonymousUser() if token_key is None else await get_user(token_key)
+            scope["user"] if token_key is None else await get_user(token_key)
         )
         return await super().__call__(scope, receive, send)

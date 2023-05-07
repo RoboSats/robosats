@@ -4,12 +4,15 @@ from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group, User
 from django_admin_relation_links import AdminChangeLinksMixin
+from rest_framework.authtoken.admin import TokenAdmin
+from rest_framework.authtoken.models import TokenProxy
 
 from api.logics import Logics
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Robot
 
 admin.site.unregister(Group)
 admin.site.unregister(User)
+admin.site.unregister(TokenProxy)
 
 
 class RobotInline(admin.StackedInline):
@@ -39,6 +42,22 @@ class EUserAdmin(AdminChangeLinksMixin, UserAdmin):
 
     def avatar_tag(self, obj):
         return obj.robot.avatar_tag()
+
+
+# extended tokens with raw id fields and avatars
+@admin.register(TokenProxy)
+class ETokenAdmin(AdminChangeLinksMixin, TokenAdmin):
+    raw_id_fields = ["user"]
+    list_display = (
+        "avatar_tag",
+        "key",
+        "user_link",
+    )
+    list_display_links = ("key",)
+    change_links = ("user",)
+
+    def avatar_tag(self, obj):
+        return obj.user.robot.avatar_tag()
 
 
 @admin.register(Order)

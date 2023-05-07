@@ -28,6 +28,6 @@ urlpatterns = [
     path("", include("frontend.urls")),
 ]
 
-admin.site.site_header = f"RoboSats Coordinator: {config('COORDINATOR_ALIAS', cast=str, default='NoAlias')} {config('NETWORK', cast=str, default='')} (v{VERSION['major']}.{VERSION['minor']}.{VERSION['patch']})"
+admin.site.site_header = f"RoboSats Coordinator: {config('COORDINATOR_ALIAS', cast=str, default='NoAlias')} {config('NETWORK', cast=str, default='')} (v{VERSION['major']}.{VERSION['minor']}.{VERSION['patch']})".title()
 admin.site.index_title = "Coordinator administration"
 admin.site.site_title = "RoboSats Coordinator Admin"
