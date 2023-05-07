@@ -308,7 +308,7 @@ const OrderDetails = ({
               <ListItem>
                 <ListItemIcon sx={{ position: 'relative', left: '0.3em' }}>
                   <SendReceiveIcon
-                    sx={{ transform: 'scaleX(-1)', width: '0.9em', opacity: 0.7 }}
+                    sx={{ transform: 'scaleX(-1)', width: '0.9em', opacity: 0.9 }}
                     color='secondary'
                   />
                 </ListItemIcon>
@@ -318,7 +318,7 @@ const OrderDetails = ({
               <ListItem>
                 <ListItemIcon sx={{ position: 'relative', left: '0.3em' }}>
                   <SendReceiveIcon
-                    sx={{ left: '0.1em', width: '0.9em', opacity: 0.7 }}
+                    sx={{ left: '0.1em', width: '0.9em', opacity: 0.9 }}
                     color='primary'
                   />
                 </ListItemIcon>

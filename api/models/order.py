@@ -157,8 +157,6 @@ class Order(models.Model):
         default=None,
         blank=True,
     )  # unique = True, a taker can only take one order
-    maker_last_seen = models.DateTimeField(null=True, default=None, blank=True)
-    taker_last_seen = models.DateTimeField(null=True, default=None, blank=True)
 
     # When collaborative cancel is needed and one partner has cancelled.
     maker_asked_cancel = models.BooleanField(default=False, null=False)

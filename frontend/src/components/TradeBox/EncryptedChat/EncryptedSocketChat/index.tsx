@@ -76,6 +76,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
     // On component unmount close reconnecting-websockets
     return () => {
       connection?.close();
+      setConnection(undefined);
     };
   }, []);
 

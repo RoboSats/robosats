@@ -4,7 +4,7 @@ from pathlib import Path
 from channels.db import database_sync_to_async
 from channels.middleware import BaseMiddleware
 from django.conf import settings
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth.models import AnonymousUser, User, update_last_login
 from django.db import IntegrityError
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed
@@ -64,7 +64,8 @@ class RobotTokenSHA256AuthenticationMiddleWare:
 
         # Check if it is an existing robot.
         try:
-            Token.objects.get(key=token_sha256_b91)
+            token = Token.objects.get(key=token_sha256_b91)
+            update_last_login(None, token.user)
 
         except Token.DoesNotExist:
             # If we get here the user does not have a robot on this coordinator

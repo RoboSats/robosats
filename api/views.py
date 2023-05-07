@@ -256,20 +256,12 @@ class OrderView(viewsets.ViewSet):
             )
 
         # WRITE Update last_seen for maker and taker.
-        # Note down that the taker/maker was here recently, so counterpart knows if the user is paying attention.
         data["maker_nick"] = str(order.maker)
-        if order.maker == request.user:
-            order.maker_last_seen = timezone.now()
-            order.save()
-        if order.taker == request.user:
-            order.taker_last_seen = timezone.now()
-            order.save()
 
         # Add activity status of participants based on last_seen
-        if order.taker_last_seen is not None:
-            data["taker_status"] = Logics.user_activity_status(order.taker_last_seen)
-        if order.maker_last_seen is not None:
-            data["maker_status"] = Logics.user_activity_status(order.maker_last_seen)
+        data["maker_status"] = Logics.user_activity_status(order.maker.last_login)
+        if order.taker is not None:
+            data["taker_status"] = Logics.user_activity_status(order.taker.last_login)
 
         # 3.b) Non participants can view details (but only if PUB)
         if not data["is_participant"] and order.status == Order.Status.PUB:
@@ -904,7 +896,7 @@ class BookView(ListAPIView):
             data["satoshis_now"] = Logics.satoshis_now(order)
             # Compute current premium for those orders that are explicitly priced.
             data["price"], data["premium"] = Logics.price_and_premium_now(order)
-            data["maker_status"] = Logics.user_activity_status(order.maker_last_seen)
+            data["maker_status"] = Logics.user_activity_status(order.maker.last_login)
             for key in (
                 "status",
                 "taker",

@@ -207,7 +207,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
                 order_id: orderId,
                 offset: lastIndex,
               },
-              robot.tokenSHA256,
+              { tokenSHA256: robot.tokenSHA256 },
             )
             .then((response) => {
               if (response != null) {

@@ -72,7 +72,7 @@ class ChatView(viewsets.ViewSet):
 
         # Poor idea: is_peer_connected() mockup. Update connection status based on last time a GET request was sent
         if chatroom.maker == request.user:
-            chatroom.taker_connected = order.taker_last_seen > (
+            chatroom.taker_connected = order.taker.last_login > (
                 timezone.now() - timedelta(minutes=1)
             )
             chatroom.maker_connected = True
@@ -80,7 +80,7 @@ class ChatView(viewsets.ViewSet):
             peer_connected = chatroom.taker_connected
             peer_public_key = order.taker.robot.public_key
         elif chatroom.taker == request.user:
-            chatroom.maker_connected = order.maker_last_seen > (
+            chatroom.maker_connected = order.maker.last_login > (
                 timezone.now() - timedelta(minutes=1)
             )
             chatroom.taker_connected = True
