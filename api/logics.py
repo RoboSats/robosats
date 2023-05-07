@@ -1708,6 +1708,8 @@ class Logics:
                     summary["received_sats"] = order.payout_tx.sent_satoshis
                 else:
                     summary["received_sats"] = order.payout.num_satoshis
+                    summary["payment_hash"] = order.payout.payment_hash
+                    summary["preimage"] = order.payout.preimage
                 summary["trade_fee_sats"] = round(
                     order.last_satoshis
                     - summary["received_sats"]
@@ -1717,6 +1719,8 @@ class Logics:
                 if users[order_user] == user and order.is_swap:
                     summary["is_swap"] = order.is_swap
                     summary["received_onchain_sats"] = order.payout_tx.sent_satoshis
+                    summary["address"] = order.payout_tx.address
+                    summary["txid"] = order.payout_tx.txid
                     summary["mining_fee_sats"] = order.payout_tx.mining_fee_sats
                     summary["swap_fee_sats"] = round(
                         order.payout_tx.num_satoshis
@@ -1752,19 +1756,8 @@ class Logics:
             )
         if not order.is_swap:
             platform_summary["routing_budget_sats"] = order.payout.routing_budget_sats
-            # Start Deprecated after v0.3.1
-            platform_summary["routing_fee_sats"] = order.payout.fee
-            # End Deprecated after v0.3.1
             platform_summary["trade_revenue_sats"] = int(
-                order.trade_escrow.num_satoshis
-                - order.payout.num_satoshis
-                # Start Deprecated after v0.3.1 (will be `- order.payout.routing_budget_sats`)
-                - (
-                    order.payout.fee
-                    if order.payout.routing_budget_sats == 0
-                    else order.payout.routing_budget_sats
-                )
-                # End Deprecated after v0.3.1
+                order.trade_escrow.num_satoshis - order.payout.num_satoshis
             )
         else:
             platform_summary["routing_fee_sats"] = 0

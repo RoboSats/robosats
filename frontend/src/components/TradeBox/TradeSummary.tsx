@@ -24,7 +24,6 @@ import {
   Schedule,
   PriceChange,
   LockOpen,
-  Download,
   AccountBalance,
   Route,
   AccountBox,

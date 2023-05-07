@@ -9,6 +9,10 @@ export interface TradeRobotSummary {
   sent_sats: number;
   received_fiat: number;
   trade_fee_sats: number;
+  payment_hash?: string;
+  preimage?: string;
+  address?: string;
+  txid?: string;
 }
 
 export interface TradeCoordinatorSummary {
