@@ -70,7 +70,7 @@ class Command(BaseCommand):
                 # self.handle_status_change(hold_lnpayment, old_status)
                 hold_lnpayment.status = new_status
                 self.update_order_status(hold_lnpayment)
-                hold_lnpayment.save()
+                hold_lnpayment.save(update_fields=["status"])
 
                 # Report for debugging
                 old = LNPayment.Status(old_status).label
@@ -174,7 +174,6 @@ class Command(BaseCommand):
                     OnchainPayment.Status.QUEUE,
                     OnchainPayment.Status.MEMPO,
                 )
-                onchainpayment.save()
 
             else:
                 self.stderr.write(
@@ -215,9 +214,9 @@ class Command(BaseCommand):
                     self.stderr.write(
                         f"Weird! bond with hash {lnpayment.payment_hash} was locked, yet it is not related to any order. It will be instantly cancelled."
                     )
-                    LNNode.cancel_return_hold_invoice(lnpayment.payment_hash)
-                    lnpayment.status = LNPayment.Status.RETNED
-                    lnpayment.save()
+                    if LNNode.cancel_return_hold_invoice(lnpayment.payment_hash):
+                        lnpayment.status = LNPayment.Status.RETNED
+                        lnpayment.save(update_fields=["status"])
                     return
 
             except Exception as e:

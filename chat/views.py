@@ -76,7 +76,6 @@ class ChatView(viewsets.ViewSet):
                 timezone.now() - timedelta(minutes=1)
             )
             chatroom.maker_connected = True
-            chatroom.save()
             peer_connected = chatroom.taker_connected
             peer_public_key = order.taker.robot.public_key
         elif chatroom.taker == request.user:
@@ -84,9 +83,10 @@ class ChatView(viewsets.ViewSet):
                 timezone.now() - timedelta(minutes=1)
             )
             chatroom.taker_connected = True
-            chatroom.save()
             peer_connected = chatroom.maker_connected
             peer_public_key = order.maker.robot.public_key
+
+        chatroom.save(update_fields=["maker_connected", "taker_connected"])
 
         messages = []
         for message in queryset:

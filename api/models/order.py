@@ -221,6 +221,14 @@ class Order(models.Model):
         blank=True,
     )
 
+    # coordinator proceeds (sats revenue for this order)
+    proceeds = models.PositiveBigIntegerField(
+        default=0,
+        null=True,
+        validators=[MinValueValidator(0)],
+        blank=True,
+    )
+
     # ratings
     maker_rated = models.BooleanField(default=False, null=False)
     taker_rated = models.BooleanField(default=False, null=False)

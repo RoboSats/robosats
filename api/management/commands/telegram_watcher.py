@@ -74,7 +74,13 @@ class Command(BaseCommand):
                             ]
                             self.telegram.welcome(robot.user)
                             robot.telegram_enabled = True
-                            robot.save()
+                            robot.save(
+                                update_field=[
+                                    "telegram_lang_code",
+                                    "telegram_chat_id",
+                                    "telegram_enabled",
+                                ]
+                            )
                             break
                     except Exception:
                         time.sleep(5)

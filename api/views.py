@@ -1102,6 +1102,6 @@ class StealthView(APIView):
         stealth = serializer.data.get("wantsStealth")
 
         request.user.robot.wants_stealth = stealth
-        request.user.robot.save()
+        request.user.robot.save(update_fields=["wants_stealth"])
 
         return Response({"wantsStealth": stealth})

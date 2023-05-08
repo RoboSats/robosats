@@ -164,13 +164,13 @@ class LNNode:
         if onchainpayment.status == queue_code:
             # Changing the state to "MEMPO" should be atomic with SendCoins.
             onchainpayment.status = on_mempool_code
-            onchainpayment.save()
+            onchainpayment.save(update_fields=["status"])
             response = cls.lightningstub.SendCoins(request)
 
             if response.txid:
                 onchainpayment.txid = response.txid
                 onchainpayment.broadcasted = True
-            onchainpayment.save()
+            onchainpayment.save(update_fields=["txid", "broadcasted"])
             return True
 
         elif onchainpayment.status == on_mempool_code:
@@ -253,7 +253,7 @@ class LNNode:
         if response.state == 3:  # ACCEPTED (LOCKED)
             lnpayment.expiry_height = response.htlcs[0].expiry_height
             lnpayment.status = LNPayment.Status.LOCKED
-            lnpayment.save()
+            lnpayment.save(update_fields=["expiry_height", "status"])
             return True
 
     @classmethod
@@ -442,14 +442,14 @@ class LNNode:
                 failure_reason = cls.payment_failure_context[response.failure_reason]
                 lnpayment.failure_reason = response.failure_reason
                 lnpayment.status = LNPayment.Status.FAILRO
-                lnpayment.save()
+                lnpayment.save(update_fields=["failure_reason", "status"])
                 return False, failure_reason
 
             if response.status == 2:  # STATUS 'SUCCEEDED'
                 lnpayment.status = LNPayment.Status.SUCCED
                 lnpayment.fee = float(response.fee_msat) / 1000
                 lnpayment.preimage = response.payment_preimage
-                lnpayment.save()
+                lnpayment.save(update_fields=["fee", "status", "preimage"])
                 return True, None
 
         return False
@@ -479,15 +479,15 @@ class LNNode:
         def handle_response(response, was_in_transit=False):
             lnpayment.status = LNPayment.Status.FLIGHT
             lnpayment.in_flight = True
-            lnpayment.save()
+            lnpayment.save(update_fields=["in_flight", "status"])
             order.status = Order.Status.PAY
-            order.save()
+            order.save(update_fields=["status"])
 
             if response.status == 0:  # Status 0 'UNKNOWN'
                 # Not sure when this status happens
                 print(f"Order: {order.id} UNKNOWN. Hash {hash}")
                 lnpayment.in_flight = False
-                lnpayment.save()
+                lnpayment.save(update_fields=["in_flight"])
 
             if response.status == 1:  # Status 1 'IN_FLIGHT'
                 print(f"Order: {order.id} IN_FLIGHT. Hash {hash}")
@@ -498,7 +498,7 @@ class LNNode:
                 # 20 minutes in the future so another thread spawns.
                 if was_in_transit:
                     lnpayment.last_routing_time = timezone.now() + timedelta(minutes=20)
-                    lnpayment.save()
+                    lnpayment.save(update_fields=["last_routing_time"])
 
             if response.status == 3:  # Status 3 'FAILED'
                 lnpayment.status = LNPayment.Status.FAILRO
@@ -509,13 +509,21 @@ class LNNode:
                 if lnpayment.routing_attempts > 2:
                     lnpayment.status = LNPayment.Status.EXPIRE
                     lnpayment.routing_attempts = 0
-                lnpayment.save()
+                lnpayment.save(
+                    update_fields=[
+                        "status",
+                        "last_routing_time",
+                        "routing_attempts",
+                        "failure_reason",
+                        "in_flight",
+                    ]
+                )
 
                 order.status = Order.Status.FAI
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.FAI)
                 )
-                order.save()
+                order.save(update_fields=["status", "expires_at"])
                 print(
                     f"Order: {order.id} FAILED. Hash: {hash} Reason: {cls.payment_failure_context[response.failure_reason]}"
                 )
@@ -529,12 +537,14 @@ class LNNode:
                 lnpayment.status = LNPayment.Status.SUCCED
                 lnpayment.fee = float(response.fee_msat) / 1000
                 lnpayment.preimage = response.payment_preimage
-                lnpayment.save()
+                lnpayment.save(update_fields=["status", "fee", "preimage"])
+
                 order.status = Order.Status.SUC
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.SUC)
                 )
-                order.save()
+                order.save(update_fields=["status", "expires_at"])
+
                 results = {"succeded": True}
                 return results
 
@@ -565,12 +575,16 @@ class LNNode:
                         lnpayment.status = LNPayment.Status.EXPIRE
                         lnpayment.last_routing_time = timezone.now()
                         lnpayment.in_flight = False
-                        lnpayment.save()
+                        lnpayment.save(
+                            update_fields=["status", "last_routing_time", "in_flight"]
+                        )
+
                         order.status = Order.Status.FAI
                         order.expires_at = timezone.now() + timedelta(
                             seconds=order.t_to_expire(Order.Status.FAI)
                         )
-                        order.save()
+                        order.save(update_fields=["status", "expires_at"])
+
                         results = {
                             "succeded": False,
                             "context": "The payout invoice has expired",

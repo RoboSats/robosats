@@ -61,7 +61,7 @@ def follow_send_payment(hash):
 
     lnpayment = LNPayment.objects.get(payment_hash=hash)
     lnpayment.last_routing_time = timezone.now()
-    lnpayment.save()
+    lnpayment.save(update_fields=["last_routing_time"])
 
     # Default is 0ppm. Set by the user over API. Client's default is 1000 ppm.
     fee_limit_sat = int(
