@@ -297,8 +297,7 @@ export const useAppStore = () => {
     if (currentOrder) {
       apiClient
         .get(baseUrl, '/api/order/?order_id=' + currentOrder, { tokenSHA256: robot.tokenSHA256 })
-        .then(orderReceived)
-        .catch(orderReceived);
+        .then(orderReceived);
     }
   };
 
