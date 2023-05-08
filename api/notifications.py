@@ -22,7 +22,7 @@ class Telegram:
 
         if user.robot.telegram_token is None:
             user.robot.telegram_token = token_urlsafe(15)
-            user.robot.save()
+            user.robot.save(update_fields=["telegram_token"])
 
         context["tg_token"] = user.robot.telegram_token
         context["tg_bot_name"] = config("TELEGRAM_BOT_NAME")
@@ -54,7 +54,7 @@ class Telegram:
             text = f"🔔 Hey {user.username}, I will send you notifications about your RoboSats orders."
         self.send_message(user.robot.telegram_chat_id, text)
         user.robot.telegram_welcomed = True
-        user.robot.save()
+        user.robot.save(update_fields=["telegram_welcomed"])
         return
 
     def order_taken_confirmed(self, order):

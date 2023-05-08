@@ -17,8 +17,6 @@ class Command(BaseCommand):
         """Continuously checks order expiration times for 1 hour. If order
         has expires, it calls the logics module for expiration handling."""
 
-        # TODO handle 'database is locked'
-
         do_nothing = [
             Order.Status.UCA,
             Order.Status.EXP,
@@ -61,7 +59,7 @@ class Command(BaseCommand):
                     if "unable to locate invoice" in str(e):
                         self.stdout.write(str(e))
                         order.status = Order.Status.EXP
-                        order.save()
+                        order.save(update_fields=["status"])
                         debug["expired_orders"].append({idx: context})
 
             if debug["num_expired_orders"] > 0:
@@ -69,7 +67,8 @@ class Command(BaseCommand):
                 self.stdout.write(str(debug))
 
     def handle(self, *args, **options):
-        """Never mind database locked error, keep going, print them out"""
+        """Never mind database locked error, keep going, print them out.
+        Not an issue with PostgresQL"""
         try:
             self.clean_orders()
         except Exception as e:

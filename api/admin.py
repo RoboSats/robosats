@@ -153,10 +153,11 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 else:
                     trade_sats = order.trade_escrow.num_satoshis
 
-                order.status = Order.Status.TLD
                 order.maker.robot.earned_rewards = own_bond_sats + trade_sats
-                order.maker.robot.save()
-                order.save()
+                order.maker.robot.save(update_fields=["earned_rewards"])
+                order.status = Order.Status.TLD
+                order.save(update_fields=["status"])
+
                 self.message_user(
                     request,
                     f"Dispute of order {order.id} solved successfully on favor of the maker",
@@ -190,10 +191,12 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 else:
                     trade_sats = order.trade_escrow.num_satoshis
 
-                order.status = Order.Status.MLD
                 order.taker.robot.earned_rewards = own_bond_sats + trade_sats
-                order.taker.robot.save()
-                order.save()
+                order.taker.robot.save(update_fields=["earned_rewards"])
+
+                order.status = Order.Status.MLD
+                order.save(update_fields=["status"])
+
                 self.message_user(
                     request,
                     f"Dispute of order {order.id} solved successfully on favor of the taker",
@@ -220,17 +223,21 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.maker_bond.sender.robot.earned_rewards += (
                     order.maker_bond.num_satoshis
                 )
-                order.maker_bond.sender.robot.save()
+                order.maker_bond.sender.robot.save(update_fields=["earned_rewards"])
+
                 order.taker_bond.sender.robot.earned_rewards += (
                     order.taker_bond.num_satoshis
                 )
-                order.taker_bond.sender.robot.save()
+
+                order.taker_bond.sender.robot.save(update_fields=["earned_rewards"])
                 order.trade_escrow.sender.robot.earned_rewards += (
                     order.trade_escrow.num_satoshis
                 )
-                order.trade_escrow.sender.robot.save()
+                order.trade_escrow.sender.robot.save(update_fields=["earned_rewards"])
+
                 order.status = Order.Status.CCA
-                order.save()
+                order.save(update_fields=["status"])
+
                 self.message_user(
                     request,
                     f"Dispute of order {order.id} solved successfully, everything returned as compensations",

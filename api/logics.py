@@ -1,4 +1,3 @@
-import ast
 import math
 from datetime import timedelta
 
@@ -173,7 +172,7 @@ class Logics:
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.TAK)
             )
-            order.save()
+            order.save(update_fields=["amount", "taker", "status", "expires_at"])
             return True, None
 
     def is_buyer(order, user):
@@ -257,14 +256,14 @@ class Logics:
             order.status = Order.Status.EXP
             order.expiry_reason = Order.ExpiryReasons.NMBOND
             cls.cancel_bond(order.maker_bond)
-            order.save()
+            order.save(update_fields=["status", "expiry_reason"])
             return True
 
         elif order.status in [Order.Status.PUB, Order.Status.PAU]:
             cls.return_bond(order.maker_bond)
             order.status = Order.Status.EXP
             order.expiry_reason = Order.ExpiryReasons.NTAKEN
-            order.save()
+            order.save(update_fields=["status", "expiry_reason"])
             send_notification.delay(order_id=order.id, message="order_expired_untaken")
             return True
 
@@ -284,7 +283,7 @@ class Logics:
             cls.cancel_escrow(order)
             order.status = Order.Status.EXP
             order.expiry_reason = Order.ExpiryReasons.NESINV
-            order.save()
+            order.save(update_fields=["status", "expiry_reason"])
             return True
 
         elif order.status == Order.Status.WFE:
@@ -300,9 +299,9 @@ class Logics:
                     pass
                 order.status = Order.Status.EXP
                 order.expiry_reason = Order.ExpiryReasons.NESCRO
-                order.save()
+                order.save(update_fields=["status", "expiry_reason"])
                 # Reward taker with part of the maker bond
-                cls.add_slashed_rewards(order.maker_bond, order.taker_bond)
+                cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
                 return True
 
             # If maker is buyer, settle the taker's bond order goes back to public
@@ -314,14 +313,10 @@ class Logics:
                 except Exception:
                     pass
                 taker_bond = order.taker_bond
-                order.taker = None
-                order.taker_bond = None
-                order.trade_escrow = None
-                order.payout = None
                 cls.publish_order(order)
                 send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
-                cls.add_slashed_rewards(taker_bond, order.maker_bond)
+                cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
                 return True
 
         elif order.status == Order.Status.WFI:
@@ -336,9 +331,9 @@ class Logics:
                 cls.return_escrow(order)
                 order.status = Order.Status.EXP
                 order.expiry_reason = Order.ExpiryReasons.NINVOI
-                order.save()
+                order.save(update_fields=["status", "expiry_reason"])
                 # Reward taker with part of the maker bond
-                cls.add_slashed_rewards(order.maker_bond, order.taker_bond)
+                cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
                 return True
 
             # If maker is seller settle the taker's bond, order goes back to public
@@ -346,13 +341,10 @@ class Logics:
                 cls.settle_bond(order.taker_bond)
                 cls.return_escrow(order)
                 taker_bond = order.taker_bond
-                order.taker = None
-                order.taker_bond = None
-                order.trade_escrow = None
                 cls.publish_order(order)
                 send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
-                cls.add_slashed_rewards(taker_bond, order.maker_bond)
+                cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
                 return True
 
         elif order.status in [Order.Status.CHA, Order.Status.FSE]:
@@ -371,11 +363,9 @@ class Logics:
             robot.penalty_expiration = timezone.now() + timedelta(
                 seconds=PENALTY_TIMEOUT
             )
-            robot.save()
+            robot.save(update_fields=["penalty_expiration"])
 
         # Make order public again
-        order.taker = None
-        order.taker_bond = None
         cls.publish_order(order)
         return True
 
@@ -417,14 +407,14 @@ class Logics:
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)
-            cls.add_slashed_rewards(order.maker_bond, order.taker_bond)
+            cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
             order.status = Order.Status.MLD
 
         elif num_messages_maker == 0:
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)
-            cls.add_slashed_rewards(order.taker_bond, order.maker_bond)
+            cls.add_slashed_rewards(order, order.taker_bond, order.maker_bond)
             order.status = Order.Status.TLD
         else:
             return False
@@ -433,7 +423,7 @@ class Logics:
         order.expires_at = timezone.now() + timedelta(
             seconds=order.t_to_expire(Order.Status.DIS)
         )
-        order.save()
+        order.save(update_fields=["status", "is_disputed", "expires_at"])
         send_notification.delay(order_id=order.id, message="dispute_opened")
 
         return True
@@ -471,7 +461,7 @@ class Logics:
         order.expires_at = timezone.now() + timedelta(
             seconds=order.t_to_expire(Order.Status.DIS)
         )
-        order.save()
+        order.save(update_fields=["is_disputed", "status", "expires_at"])
 
         # User could be None if a dispute is open automatically due to weird expiration.
         if user is not None:
@@ -483,7 +473,7 @@ class Logics:
                 robot.orders_disputes_started = list(
                     robot.orders_disputes_started
                 ).append(str(order.id))
-            robot.save()
+            robot.save(update_fields=["num_disputes", "orders_disputes_started"])
 
         send_notification.delay(order_id=order.id, message="dispute_opened")
         return True, None
@@ -508,8 +498,10 @@ class Logics:
 
         if order.maker == user:
             order.maker_statement = statement
+            order.save(update_fields=["maker_statement"])
         else:
             order.taker_statement = statement
+            order.save(update_fields=["taker_statement"])
 
         # If both statements are in, move status to wait for dispute resolution
         if order.maker_statement not in [None, ""] and order.taker_statement not in [
@@ -520,8 +512,8 @@ class Logics:
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.WFR)
             )
+            order.save(update_fields=["status", "expires_at"])
 
-        order.save()
         return True, None
 
     def compute_swap_fee_rate(balance):
@@ -586,20 +578,18 @@ class Logics:
             target_conf=config("SUGGESTED_TARGET_CONF", cast=int, default=2),
         )["mining_fee_rate"]
 
-        # Hardcap mining fee suggested at 300 sats/vbyte
-        if suggested_mining_fee_rate > 300:
-            suggested_mining_fee_rate = 300
+        # Hardcap mining fee suggested at 1000 sats/vbyte
+        if suggested_mining_fee_rate > 1000:
+            suggested_mining_fee_rate = 1000
 
-        onchain_payment.suggested_mining_fee_rate = max(
-            2.05, LNNode.estimate_fee(amount_sats=preliminary_amount)["mining_fee_rate"]
-        )
+        onchain_payment.suggested_mining_fee_rate = max(2.05, suggested_mining_fee_rate)
         onchain_payment.swap_fee_rate = cls.compute_swap_fee_rate(
             onchain_payment.balance
         )
         onchain_payment.save()
 
         order.payout_tx = onchain_payment
-        order.save()
+        order.save(update_fields=["payout_tx"])
         return True
 
     @classmethod
@@ -747,7 +737,7 @@ class Logics:
         tx.save()
 
         order.is_swap = True
-        order.save()
+        order.save(update_fields=["is_swap"])
 
         cls.move_state_updated_payout_method(order)
 
@@ -817,7 +807,7 @@ class Logics:
         )
 
         order.is_swap = False
-        order.save()
+        order.save(update_fields=["payout", "is_swap"])
 
         cls.move_state_updated_payout_method(order)
 
@@ -856,30 +846,10 @@ class Logics:
                 order.status = Order.Status.PAY
                 order.payout.status = LNPayment.Status.FLIGHT
                 order.payout.routing_attempts = 0
-                order.payout.save()
+                order.payout.save(update_fields=["status", "routing_attempts"])
 
-        order.save()
+        order.save(update_fields=["status", "expires_at"])
         return True
-
-    def add_robot_rating(robot, rating):
-        """adds a new rating to a user robot"""
-
-        # TODO Unsafe, does not update ratings, it adds more ratings everytime a new rating is clicked.
-        robot.total_ratings += 1
-        latest_ratings = robot.latest_ratings
-        if latest_ratings is None:
-            robot.latest_ratings = [rating]
-            robot.avg_rating = rating
-
-        else:
-            latest_ratings = ast.literal_eval(latest_ratings)
-            latest_ratings.append(rating)
-            robot.latest_ratings = latest_ratings
-            robot.avg_rating = sum(list(map(int, latest_ratings))) / len(
-                latest_ratings
-            )  # Just an average, but it is a list of strings. Has to be converted to int.
-
-        robot.save()
 
     def is_penalized(user):
         """Checks if a user that is not participant of orders
@@ -918,7 +888,7 @@ class Logics:
         if order.status == Order.Status.WFB and order.maker == user:
             cls.cancel_bond(order.maker_bond)
             order.status = Order.Status.UCA
-            order.save()
+            order.save(update_fields=["status"])
             return True, None
 
         # 2.a) When maker cancels after bond
@@ -932,7 +902,7 @@ class Logics:
             # Return the maker bond (Maker gets returned the bond for cancelling public order)
             if cls.return_bond(order.maker_bond):
                 order.status = Order.Status.UCA
-                order.save()
+                order.save(update_fields=["status"])
                 send_notification.delay(
                     order_id=order.id, message="public_order_cancelled"
                 )
@@ -947,7 +917,7 @@ class Logics:
             if cls.return_bond(order.maker_bond):
                 cls.cancel_bond(order.taker_bond)
                 order.status = Order.Status.UCA
-                order.save()
+                order.save(update_fields=["status"])
                 send_notification.delay(
                     order_id=order.id, message="public_order_cancelled"
                 )
@@ -981,9 +951,9 @@ class Logics:
 
             if valid:
                 order.status = Order.Status.UCA
-                order.save()
+                order.save(update_fields=["status"])
                 # Reward taker with part of the maker bond
-                cls.add_slashed_rewards(order.maker_bond, order.taker_bond)
+                cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
                 return True, None
 
         # 4.b) When taker cancel after bond (before escrow)
@@ -996,13 +966,11 @@ class Logics:
             # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.taker_bond)
             if valid:
-                order.taker = None
-                order.payout = None
-                order.trade_escrow = None
+                taker_bond = order.taker_bond
                 cls.publish_order(order)
                 send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
-                cls.add_slashed_rewards(order.taker_bond, order.maker_bond)
+                cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
                 return True, None
 
         # 5) When trade collateral has been posted (after escrow)
@@ -1026,12 +994,12 @@ class Logics:
             # Otherwise just make true the asked for cancel flags
             elif user == order.taker:
                 order.taker_asked_cancel = True
-                order.save()
+                order.save(update_fields=["taker_asked_cancel"])
                 return True, None
 
             elif user == order.maker:
                 order.maker_asked_cancel = True
-                order.save()
+                order.save(update_fields=["maker_asked_cancel"])
                 return True, None
 
         else:
@@ -1047,7 +1015,7 @@ class Logics:
         cls.return_bond(order.taker_bond)
         cls.return_escrow(order)
         order.status = Order.Status.CCA
-        order.save()
+        order.save(update_fields=["status"])
         send_notification.delay(order_id=order.id, message="collaborative_cancelled")
         return
 
@@ -1061,7 +1029,16 @@ class Logics:
             order.amount = None
             order.last_satoshis = cls.satoshis_now(order)
             order.last_satoshis_time = timezone.now()
-        order.save()
+
+        # clear fields in case of re-publishing after expiry
+        order.taker = None
+        order.taker_bond = None
+        order.trade_escrow = None
+        order.payout = None
+        order.payout_tx = None
+
+        order.save()  # update all fields
+
         # send_notification.delay(order_id=order.id,'order_published') # too spammy
         return
 
@@ -1088,16 +1065,6 @@ class Logics:
         return cltv_expiry_blocks
 
     @classmethod
-    def is_maker_bond_locked(cls, order):
-        if order.maker_bond.status == LNPayment.Status.LOCKED:
-            return True
-        elif LNNode.validate_hold_invoice_locked(order.maker_bond):
-            cls.publish_order(order)
-            send_notification.delay(order_id=order.id, message="order_published")
-            return True
-        return False
-
-    @classmethod
     def gen_maker_hold_invoice(cls, order, user):
 
         # Do not gen and cancel if order is older than expiry time
@@ -1109,13 +1076,10 @@ class Logics:
 
         # Return the previous invoice if there was one and is still unpaid
         if order.maker_bond:
-            if cls.is_maker_bond_locked(order):
-                return False, None
-            elif order.maker_bond.status == LNPayment.Status.INVGEN:
-                return True, {
-                    "bond_invoice": order.maker_bond.invoice,
-                    "bond_satoshis": order.maker_bond.num_satoshis,
-                }
+            return True, {
+                "bond_invoice": order.maker_bond.invoice,
+                "bond_satoshis": order.maker_bond.num_satoshis,
+            }
 
         # If there was no maker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
@@ -1162,7 +1126,7 @@ class Logics:
             cltv_expiry=hold_payment["cltv_expiry"],
         )
 
-        order.save()
+        order.save(update_fields=["last_satoshis", "last_satoshis_time", "maker_bond"])
         return True, {
             "bond_invoice": hold_payment["invoice"],
             "bond_satoshis": bond_satoshis,
@@ -1178,20 +1142,27 @@ class Logics:
         order.last_satoshis = cls.satoshis_now(order)
         order.last_satoshis_time = timezone.now()
         order.taker_bond.status = LNPayment.Status.LOCKED
-        order.taker_bond.save()
+        order.taker_bond.save(update_fields=["status"])
 
         # With the bond confirmation the order is extended 'public_order_duration' hours
         order.expires_at = timezone.now() + timedelta(
             seconds=order.t_to_expire(Order.Status.WF2)
         )
         order.status = Order.Status.WF2
-        order.save()
+        order.save(
+            update_fields=[
+                "last_satoshis",
+                "last_satoshis_time",
+                "expires_at",
+                "status",
+            ]
+        )
 
         # Both users robots are added one more contract // Unsafe can add more than once.
         order.maker.robot.total_contracts += 1
         order.taker.robot.total_contracts += 1
-        order.maker.robot.save()
-        order.taker.robot.save()
+        order.maker.robot.save(update_fields=["total_contracts"])
+        order.taker.robot.save(update_fields=["total_contracts"])
 
         # Log a market tick
         try:
@@ -1200,15 +1171,6 @@ class Logics:
             pass
         send_notification.delay(order_id=order.id, message="order_taken_confirmed")
         return True
-
-    @classmethod
-    def is_taker_bond_locked(cls, order):
-        if order.taker_bond.status == LNPayment.Status.LOCKED:
-            return True
-        elif LNNode.validate_hold_invoice_locked(order.taker_bond):
-            cls.finalize_contract(order)
-            return True
-        return False
 
     @classmethod
     def gen_taker_hold_invoice(cls, order, user):
@@ -1222,13 +1184,10 @@ class Logics:
 
         # Do not gen if a taker invoice exist. Do not return if it is already locked. Return the old one if still waiting.
         if order.taker_bond:
-            if cls.is_taker_bond_locked(order):
-                return False, None
-            elif order.taker_bond.status == LNPayment.Status.INVGEN:
-                return True, {
-                    "bond_invoice": order.taker_bond.invoice,
-                    "bond_satoshis": order.taker_bond.num_satoshis,
-                }
+            return True, {
+                "bond_invoice": order.taker_bond.invoice,
+                "bond_satoshis": order.taker_bond.num_satoshis,
+            }
 
         # If there was no taker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
@@ -1277,7 +1236,14 @@ class Logics:
         order.expires_at = timezone.now() + timedelta(
             seconds=order.t_to_expire(Order.Status.TAK)
         )
-        order.save()
+        order.save(
+            update_fields=[
+                "expires_at",
+                "last_satoshis_time",
+                "taker_bond",
+                "expires_at",
+            ]
+        )
         return True, {
             "bond_invoice": hold_payment["invoice"],
             "bond_satoshis": bond_satoshis,
@@ -1288,24 +1254,15 @@ class Logics:
         # If status is 'Waiting for both' move to Waiting for invoice
         if order.status == Order.Status.WF2:
             order.status = Order.Status.WFI
+            order.save(update_fields=["status"])
         # If status is 'Waiting for invoice' move to Chat
         elif order.status == Order.Status.WFE:
             order.status = Order.Status.CHA
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.CHA)
             )
+            order.save(update_fields=["status", "expires_at"])
             send_notification.delay(order_id=order.id, message="fiat_exchange_starts")
-        order.save()
-
-    @classmethod
-    def is_trade_escrow_locked(cls, order):
-        if order.trade_escrow.status == LNPayment.Status.LOCKED:
-            cls.trade_escrow_received(order)
-            return True
-        elif LNNode.validate_hold_invoice_locked(order.trade_escrow):
-            cls.trade_escrow_received(order)
-            return True
-        return False
 
     @classmethod
     def gen_escrow_hold_invoice(cls, order, user):
@@ -1319,14 +1276,10 @@ class Logics:
 
         # Do not gen if an escrow invoice exist. Do not return if it is already locked. Return the old one if still waiting.
         if order.trade_escrow:
-            # Check if status is INVGEN and still not expired
-            if cls.is_trade_escrow_locked(order):
-                return False, None
-            elif order.trade_escrow.status == LNPayment.Status.INVGEN:
-                return True, {
-                    "escrow_invoice": order.trade_escrow.invoice,
-                    "escrow_satoshis": order.trade_escrow.num_satoshis,
-                }
+            return True, {
+                "escrow_invoice": order.trade_escrow.invoice,
+                "escrow_satoshis": order.trade_escrow.num_satoshis,
+            }
 
         # If there was no taker_bond object yet, generate one
         escrow_satoshis = cls.escrow_amount(order, user)[1][
@@ -1370,7 +1323,7 @@ class Logics:
             cltv_expiry=hold_payment["cltv_expiry"],
         )
 
-        order.save()
+        order.save(update_fields=["trade_escrow"])
         return True, {
             "escrow_invoice": hold_payment["invoice"],
             "escrow_satoshis": escrow_satoshis,
@@ -1380,21 +1333,21 @@ class Logics:
         """Settles the trade escrow hold invoice"""
         if LNNode.settle_hold_invoice(order.trade_escrow.preimage):
             order.trade_escrow.status = LNPayment.Status.SETLED
-            order.trade_escrow.save()
+            order.trade_escrow.save(update_fields=["status"])
             return True
 
     def settle_bond(bond):
         """Settles the bond hold invoice"""
         if LNNode.settle_hold_invoice(bond.preimage):
             bond.status = LNPayment.Status.SETLED
-            bond.save()
+            bond.save(update_fields=["status"])
             return True
 
     def return_escrow(order):
         """returns the trade escrow"""
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.RETNED
-            order.trade_escrow.save()
+            order.trade_escrow.save(update_fields=["status"])
             return True
 
     def cancel_escrow(order):
@@ -1402,7 +1355,7 @@ class Logics:
         # Same as return escrow, but used when the invoice was never LOCKED
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.CANCEL
-            order.trade_escrow.save()
+            order.trade_escrow.save(update_fields=["status"])
             return True
 
     def return_bond(bond):
@@ -1412,12 +1365,12 @@ class Logics:
         try:
             LNNode.cancel_return_hold_invoice(bond.payment_hash)
             bond.status = LNPayment.Status.RETNED
-            bond.save()
+            bond.save(update_fields=["status"])
             return True
         except Exception as e:
             if "invoice already settled" in str(e):
                 bond.status = LNPayment.Status.SETLED
-                bond.save()
+                bond.save(update_fields=["status"])
                 return True
             else:
                 raise e
@@ -1427,7 +1380,7 @@ class Logics:
 
         if order.payout_tx:
             order.payout_tx.status = OnchainPayment.Status.CANCE
-            order.payout_tx.save()
+            order.payout_tx.save(update_fields=["status"])
             return True
         else:
             return False
@@ -1440,12 +1393,12 @@ class Logics:
         try:
             LNNode.cancel_return_hold_invoice(bond.payment_hash)
             bond.status = LNPayment.Status.CANCEL
-            bond.save()
+            bond.save(update_fields=["status"])
             return True
         except Exception as e:
             if "invoice already settled" in str(e):
                 bond.status = LNPayment.Status.SETLED
-                bond.save()
+                bond.save(update_fields=["status"])
                 return True
             else:
                 raise e
@@ -1457,13 +1410,14 @@ class Logics:
         # Pay to buyer invoice
         if not order.is_swap:
             # Background process "follow_invoices" will try to pay this invoice until success
-            order.status = Order.Status.PAY
             order.payout.status = LNPayment.Status.FLIGHT
-            order.payout.save()
-            order.save()
-            send_notification.delay(order_id=order.id, message="trade_successful")
+            order.payout.save(update_fields=["status"])
+
+            order.status = Order.Status.PAY
             order.contract_finalization_time = timezone.now()
-            order.save()
+            order.save(update_fields=["status", "contract_finalization_time"])
+
+            send_notification.delay(order_id=order.id, message="trade_successful")
             return True
 
         # Pay onchain to address
@@ -1472,13 +1426,14 @@ class Logics:
                 return False
             else:
                 # Add onchain payment to queue
-                order.status = Order.Status.SUC
                 order.payout_tx.status = OnchainPayment.Status.QUEUE
-                order.payout_tx.save()
-                order.save()
-                send_notification.delay(order_id=order.id, message="trade_successful")
+                order.payout_tx.save(update_fields=["status"])
+
+                order.status = Order.Status.SUC
                 order.contract_finalization_time = timezone.now()
-                order.save()
+                order.save(update_fields=["status", "contract_finalization_time"])
+
+                send_notification.delay(order_id=order.id, message="trade_successful")
                 return True
 
     @classmethod
@@ -1493,6 +1448,7 @@ class Logics:
             if cls.is_buyer(order, user):
                 order.status = Order.Status.FSE
                 order.is_fiat_sent = True
+                order.save(update_fields=["status", "is_fiat_sent"])
 
             # If seller and fiat was sent, SETTLE ESCROW AND PAY BUYER INVOICE
             elif cls.is_seller(order, user):
@@ -1515,6 +1471,7 @@ class Logics:
                 # !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
                 if cls.settle_escrow(order):
                     order.trade_escrow.status = LNPayment.Status.SETLED
+                    order.trade_escrow.save(update_fields=["status"])
 
                 # Double check the escrow is settled.
                 if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash):
@@ -1524,6 +1481,9 @@ class Logics:
                     # !!! KEY LINE - PAYS THE BUYER INVOICE !!!
                     cls.pay_buyer(order)
 
+                    # Computes coordinator trade revenue
+                    cls.compute_proceeds(order)
+
                     return True, None
 
         else:
@@ -1531,7 +1491,6 @@ class Logics:
                 "bad_request": "You cannot confirm the fiat payment at this stage"
             }
 
-        order.save()
         return True, None
 
     @classmethod
@@ -1551,7 +1510,7 @@ class Logics:
         order.status = Order.Status.CHA
         order.is_fiat_sent = False
         order.reverted_fiat_sent = True
-        order.save()
+        order.save(update_fields=["status", "is_fiat_sent", "reverted_fiat_sent"])
 
         return True, None
 
@@ -1569,17 +1528,18 @@ class Logics:
                 return False, {
                     "bad_request": "You can only pause/unpause an order that is either public or paused"
                 }
-        order.save()
+            order.save(update_fields=["status"])
+
         return True, None
 
     @classmethod
     def rate_platform(cls, user, rating):
         user.robot.platform_rating = rating
-        user.robot.save()
+        user.robot.save(update_fields=["platform_rating"])
         return True, None
 
     @classmethod
-    def add_slashed_rewards(cls, slashed_bond, staked_bond):
+    def add_slashed_rewards(cls, order, slashed_bond, staked_bond):
         """
         When a bond is slashed due to overtime, rewards the user that was waiting.
 
@@ -1603,12 +1563,16 @@ class Logics:
         reward = int(slashed_satoshis * reward_fraction)
         rewarded_robot = staked_bond.sender.robot
         rewarded_robot.earned_rewards += reward
-        rewarded_robot.save()
+        rewarded_robot.save(update_fields=["earned_rewards"])
 
         if slashed_return > 100:
             slashed_robot = slashed_bond.sender.robot
             slashed_robot.earned_rewards += slashed_return
-            slashed_robot.save()
+            slashed_robot.save(update_fields=["earned_rewards"])
+
+        proceeds = int(slashed_satoshis * (1 - reward_fraction))
+        order.proceeds += proceeds
+        order.save(update_fields=["proceeds"])
 
         return
 
@@ -1656,23 +1620,38 @@ class Logics:
             return False, {"bad_invoice": "Give me a new invoice"}
 
         user.robot.earned_rewards = 0
-        user.robot.save()
+        user.robot.save(update_fields=["earned_rewards"])
 
         # Pays the invoice.
         paid, failure_reason = LNNode.pay_invoice(lnpayment)
         if paid:
             user.robot.earned_rewards = 0
             user.robot.claimed_rewards += num_satoshis
-            user.robot.save()
+            user.robot.save(update_fields=["earned_rewards", "claimed_rewards"])
             return True, None
 
         # If fails, adds the rewards again.
         else:
             user.robot.earned_rewards = num_satoshis
-            user.robot.save()
+            user.robot.save(update_fields=["earned_rewards"])
             context = {}
             context["bad_invoice"] = failure_reason
             return False, context
+
+    @classmethod
+    def compute_proceeds(cls, order):
+        """
+        Computes Coordinator trade proceeds for finished orders.
+        """
+
+        if order.is_swap:
+            payout_sats = order.payout_tx.sent_satoshis + order.payout_tx.mining_fee
+            order.proceeds += int(order.trade_escrow.num_satoshis - payout_sats)
+        else:
+            payout_sats = order.payout.num_satoshis + order.payout.fee
+            order.proceeds += int(order.trade_escrow.num_satoshis - payout_sats)
+
+        order.save(update_fields=["proceeds"])
 
     @classmethod
     def summarize_trade(cls, order, user):
@@ -1750,7 +1729,7 @@ class Logics:
             platform_summary["contract_timestamp"] = order.last_satoshis_time
             if order.contract_finalization_time is None:
                 order.contract_finalization_time = timezone.now()
-                order.save()
+                order.save(update_fields=["contract_finalization_time"])
             platform_summary["contract_total_time"] = (
                 order.contract_finalization_time - order.last_satoshis_time
             )
