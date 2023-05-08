@@ -1064,16 +1064,6 @@ class Logics:
         return cltv_expiry_blocks
 
     @classmethod
-    def is_maker_bond_locked(cls, order):
-        if order.maker_bond.status == LNPayment.Status.LOCKED:
-            return True
-        elif LNNode.validate_hold_invoice_locked(order.maker_bond):
-            cls.publish_order(order)
-            send_notification.delay(order_id=order.id, message="order_published")
-            return True
-        return False
-
-    @classmethod
     def gen_maker_hold_invoice(cls, order, user):
 
         # Do not gen and cancel if order is older than expiry time
@@ -1085,13 +1075,10 @@ class Logics:
 
         # Return the previous invoice if there was one and is still unpaid
         if order.maker_bond:
-            if cls.is_maker_bond_locked(order):
-                return False, None
-            elif order.maker_bond.status == LNPayment.Status.INVGEN:
-                return True, {
-                    "bond_invoice": order.maker_bond.invoice,
-                    "bond_satoshis": order.maker_bond.num_satoshis,
-                }
+            return True, {
+                "bond_invoice": order.maker_bond.invoice,
+                "bond_satoshis": order.maker_bond.num_satoshis,
+            }
 
         # If there was no maker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
@@ -1185,15 +1172,6 @@ class Logics:
         return True
 
     @classmethod
-    def is_taker_bond_locked(cls, order):
-        if order.taker_bond.status == LNPayment.Status.LOCKED:
-            return True
-        elif LNNode.validate_hold_invoice_locked(order.taker_bond):
-            cls.finalize_contract(order)
-            return True
-        return False
-
-    @classmethod
     def gen_taker_hold_invoice(cls, order, user):
 
         # Do not gen and kick out the taker if order is older than expiry time
@@ -1205,13 +1183,10 @@ class Logics:
 
         # Do not gen if a taker invoice exist. Do not return if it is already locked. Return the old one if still waiting.
         if order.taker_bond:
-            if cls.is_taker_bond_locked(order):
-                return False, None
-            elif order.taker_bond.status == LNPayment.Status.INVGEN:
-                return True, {
-                    "bond_invoice": order.taker_bond.invoice,
-                    "bond_satoshis": order.taker_bond.num_satoshis,
-                }
+            return True, {
+                "bond_invoice": order.taker_bond.invoice,
+                "bond_satoshis": order.taker_bond.num_satoshis,
+            }
 
         # If there was no taker_bond object yet, generates one
         order.last_satoshis = cls.satoshis_now(order)
@@ -1289,16 +1264,6 @@ class Logics:
             send_notification.delay(order_id=order.id, message="fiat_exchange_starts")
 
     @classmethod
-    def is_trade_escrow_locked(cls, order):
-        if order.trade_escrow.status == LNPayment.Status.LOCKED:
-            cls.trade_escrow_received(order)
-            return True
-        elif LNNode.validate_hold_invoice_locked(order.trade_escrow):
-            cls.trade_escrow_received(order)
-            return True
-        return False
-
-    @classmethod
     def gen_escrow_hold_invoice(cls, order, user):
 
         # Do not generate if escrow deposit time has expired
@@ -1310,14 +1275,10 @@ class Logics:
 
         # Do not gen if an escrow invoice exist. Do not return if it is already locked. Return the old one if still waiting.
         if order.trade_escrow:
-            # Check if status is INVGEN and still not expired
-            if cls.is_trade_escrow_locked(order):
-                return False, None
-            elif order.trade_escrow.status == LNPayment.Status.INVGEN:
-                return True, {
-                    "escrow_invoice": order.trade_escrow.invoice,
-                    "escrow_satoshis": order.trade_escrow.num_satoshis,
-                }
+            return True, {
+                "escrow_invoice": order.trade_escrow.invoice,
+                "escrow_satoshis": order.trade_escrow.num_satoshis,
+            }
 
         # If there was no taker_bond object yet, generate one
         escrow_satoshis = cls.escrow_amount(order, user)[1][
@@ -1519,6 +1480,9 @@ class Logics:
                     # !!! KEY LINE - PAYS THE BUYER INVOICE !!!
                     cls.pay_buyer(order)
 
+                    # Computes coordinator trade revenue
+                    cls.compute_proceeds(order)
+
                     return True, None
 
         else:
@@ -1672,6 +1636,21 @@ class Logics:
             context = {}
             context["bad_invoice"] = failure_reason
             return False, context
+
+    @classmethod
+    def compute_proceeds(cls, order):
+        """
+        Computes Coordinator trade proceeds for finished orders.
+        """
+
+        if order.is_swap:
+            payout_sats = order.payout_tx.sent_satoshis + order.payout_tx.mining_fee
+            order.proceeds = int(order.trade_escrow.num_satoshis - payout_sats)
+        else:
+            payout_sats = order.payout.num_satoshis + order.payout.fee
+            order.proceeds = int(order.trade_escrow.num_satoshis - payout_sats)
+
+        order.save(update_fields=["proceeds"])
 
     @classmethod
     def summarize_trade(cls, order, user):
