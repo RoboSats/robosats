@@ -498,10 +498,10 @@ class Logics:
 
         if order.maker == user:
             order.maker_statement = statement
-            order.save(update_field=["maker_statement"])
+            order.save(update_fields=["maker_statement"])
         else:
             order.taker_statement = statement
-            order.save(update_field=["taker_statement"])
+            order.save(update_fields=["taker_statement"])
 
         # If both statements are in, move status to wait for dispute resolution
         if order.maker_statement not in [None, ""] and order.taker_statement not in [
@@ -512,7 +512,7 @@ class Logics:
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.WFR)
             )
-            order.save(update_field=["status", "expires_at"])
+            order.save(update_fields=["status", "expires_at"])
 
         return True, None
 
@@ -737,7 +737,7 @@ class Logics:
         tx.save()
 
         order.is_swap = True
-        order.save(update_field=["is_swap"])
+        order.save(update_fields=["is_swap"])
 
         cls.move_state_updated_payout_method(order)
 
@@ -807,7 +807,7 @@ class Logics:
         )
 
         order.is_swap = False
-        order.save(update_field=["payout", "is_swap"])
+        order.save(update_fields=["payout", "is_swap"])
 
         cls.move_state_updated_payout_method(order)
 
@@ -966,10 +966,11 @@ class Logics:
             # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.taker_bond)
             if valid:
+                taker_bond = order.taker_bond
                 cls.publish_order(order)
                 send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
-                cls.add_slashed_rewards(order, order.taker_bond, order.maker_bond)
+                cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
                 return True, None
 
         # 5) When trade collateral has been posted (after escrow)
@@ -1470,7 +1471,7 @@ class Logics:
                 # !!! KEY LINE - SETTLES THE TRADE ESCROW !!!
                 if cls.settle_escrow(order):
                     order.trade_escrow.status = LNPayment.Status.SETLED
-                    order.trade_escrow.save(update_field=["status"])
+                    order.trade_escrow.save(update_fields=["status"])
 
                 # Double check the escrow is settled.
                 if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash):
@@ -1645,10 +1646,10 @@ class Logics:
 
         if order.is_swap:
             payout_sats = order.payout_tx.sent_satoshis + order.payout_tx.mining_fee
-            order.proceeds = int(order.trade_escrow.num_satoshis - payout_sats)
+            order.proceeds += int(order.trade_escrow.num_satoshis - payout_sats)
         else:
             payout_sats = order.payout.num_satoshis + order.payout.fee
-            order.proceeds = int(order.trade_escrow.num_satoshis - payout_sats)
+            order.proceeds += int(order.trade_escrow.num_satoshis - payout_sats)
 
         order.save(update_fields=["proceeds"])
 

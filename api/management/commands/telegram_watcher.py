@@ -75,7 +75,7 @@ class Command(BaseCommand):
                             self.telegram.welcome(robot.user)
                             robot.telegram_enabled = True
                             robot.save(
-                                update_field=[
+                                update_fields=[
                                     "telegram_lang_code",
                                     "telegram_chat_id",
                                     "telegram_enabled",
