@@ -16,14 +16,14 @@ We do, however, get approached by very enthusiastic bitcoiners who want to boots
 You can donate the following ways:
 
  - **Zap us on Nostr:**
- All Nostr zaps will go towards the social media team.  
+ All Nostr zaps will go towards the social media team.
  Here is the nPub for RoboSats account :
- 
+
  ```
 npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82
- ``` 
+ ```
 
- - **Directly tip the developer working on the features you like.** Check the [active PRs](https://github.com/Reckless-Satoshi/robosats/pulls) and show your support to the developers with via Lightning tips. Simply write a message, for example "@developer_name, I would like to fund your development of this feature with 6000 Sats". The developer should reply with a LN invoice with a long expiration time.
+ - **Directly tip the developer working on the features you like.** Check the [active PRs](https://github.com/RoboSats/robosats/pulls) and show your support to the developers with via Lightning tips. Simply write a message, for example "@developer_name, I would like to fund your development of this feature with 6000 Sats". The developer should reply with a LN invoice with a long expiration time.
 
  - **Tip the RoboSats devfund via Paynym (BIP47): [{{site.robosats.paynym}}](https://paynym.is/{{site.robosats.paynym}})** paynym code:
 

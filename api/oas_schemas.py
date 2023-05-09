@@ -367,7 +367,7 @@ class UserViewSchema:
             using cryptographically secure methods. [Here's]() the function the Javascript
             client uses to generate the tokens. Since the server only recieves the hash of the
             token, it trusts the client with computing `length`, `counts` and `unique_values`
-            correctly. Check [here](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/src/utils/token.js#L13)
+            correctly. Check [here](https://github.com/RoboSats/robosats/blob/main/frontend/src/utils/token.js#L13)
             to see how the Javascript client copmutes these values. These values are optional,
             but if provided, the api computes the entropy of the token adds two additional
             fields to the response JSON - `token_shannon_entropy` and `token_bits_entropy`.
@@ -601,7 +601,7 @@ class BookViewSchema:
                 location=OpenApiParameter.QUERY,
                 description=(
                     "The currency id to filter by. Currency IDs can be found [here]"
-                    "(https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/static/assets/currencies.json). "
+                    "(https://github.com/RoboSats/robosats/blob/main/frontend/static/assets/currencies.json). "
                     "Value of `0` means ANY currency"
                 ),
                 type=int,
@@ -637,7 +637,7 @@ class RobotViewSchema:
             Make sure you generate your token using cryptographically secure methods. [Here's]() the function the Javascript
             client uses to generate the tokens. Since the server only receives the hash of the
             token, it is responsibility of the client to create a strong token. Check
-            [here](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/src/utils/token.js)
+            [here](https://github.com/RoboSats/robosats/blob/main/frontend/src/utils/token.js)
             to see how the Javascript client creates a random strong token and how it validates entropy is optimal for tokens
             created by the user at will.
 

@@ -436,13 +436,13 @@ class OrderPublicSerializer(serializers.ModelSerializer):
 class MakeOrderSerializer(serializers.ModelSerializer):
     currency = serializers.IntegerField(
         required=True,
-        help_text="Currency id. See [here](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/static/assets/currencies.json) for a list of all IDs",
+        help_text="Currency id. See [here](https://github.com/RoboSats/robosats/blob/main/frontend/static/assets/currencies.json) for a list of all IDs",
     )
     payment_method = serializers.CharField(
         max_length=70,
         default="not specified",
         required=False,
-        help_text="Can be any string. The UI recognizes [these payment methods](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/src/components/payment-methods/Methods.js) and displays them with a logo.",
+        help_text="Can be any string. The UI recognizes [these payment methods](https://github.com/RoboSats/robosats/blob/main/frontend/src/components/payment-methods/Methods.js) and displays them with a logo.",
     )
     is_explicit = serializers.BooleanField(
         default=False,

@@ -96,7 +96,7 @@ Since messages are signed by the robots keeping the log our robot token is very 
 
 The frontend application of RoboSats that runs on your browser does the job of encrypting, decrypting an verifying every message. But in this tutorial we have independently verified it works as intended: we have verified that **only the person with access to the robot token can read (decrypt) and sign messages** during a RoboSats trade.
 
-**ProTip:** In order to independently verify that your token is absolutely secret and never sent to a third party you will need to run a HTTP request packet sniffer. You can also check by yourself the [frontend source code](https://github.com/Reckless-Satoshi/robosats/tree/main/frontend/src).
+**ProTip:** In order to independently verify that your token is absolutely secret and never sent to a third party you will need to run a HTTP request packet sniffer. You can also check by yourself the [frontend source code](https://github.com/RoboSats/robosats/tree/main/frontend/src).
 {: .notice--secondary}
 
 ## Legacy: Why encryption is needed?

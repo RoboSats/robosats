@@ -104,7 +104,7 @@ export const SuccessfulPrompt = ({
                 Telegram
               </Link>
               {' / '}
-              <Link target='_blank' href='https://github.com/Reckless-Satoshi/robosats/issues'>
+              <Link target='_blank' href='https://github.com/RoboSats/robosats/issues'>
                 Github
               </Link>
               )

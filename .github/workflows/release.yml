@@ -37,31 +37,31 @@ jobs:
 
 
   django-test:
-    uses: reckless-satoshi/robosats/.github/workflows/django-test.yml@main
+    uses: RoboSats/robosats/.github/workflows/django-test.yml@main
     needs: check-versions
 
   frontend-build:
-    uses: reckless-satoshi/robosats/.github/workflows/frontend-build.yml@main
+    uses: RoboSats/robosats/.github/workflows/frontend-build.yml@main
     needs: check-versions
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
 
   coordinator-image:
-    uses: reckless-satoshi/robosats/.github/workflows/coordinator-image.yml@main
+    uses: RoboSats/robosats/.github/workflows/coordinator-image.yml@main
     needs: [django-test, frontend-build]
     secrets: inherit
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
 
   client-image:
-    uses: reckless-satoshi/robosats/.github/workflows/client-image.yml@main
+    uses: RoboSats/robosats/.github/workflows/client-image.yml@main
     needs: frontend-build
     secrets: inherit
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
 
   android-build:
-    uses: reckless-satoshi/robosats/.github/workflows/android-build.yml@main
+    uses: RoboSats/robosats/.github/workflows/android-build.yml@main
     needs: [frontend-build, check-versions]
     with:
       semver: ${{ needs.check-versions.outputs.semver }}

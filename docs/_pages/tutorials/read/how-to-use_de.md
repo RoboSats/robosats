@@ -103,7 +103,7 @@ Als erstes musst du eine kleine Kaution hinterlegen (nur {{site.robosats.default
 <img src="/assets/images/how-to-use/contract-box-1.png"  width="370" />
 </div>
 
-Scanne oder kopiere die Invoice in deine Lightning Wallet. Sie könnte als Zahlung angezeigt werden, die sich auf dem Transportweg befindet, einfrieren oder sogar scheinbar deine Wallet zerstören. Du solltest immer auf der RoboSats-Website überprüfen, ob die Kaution gesperrt wurde (deine Wallet wird dir das wahrscheinlich nicht sagen! Siehe [kompatible wallets](https://github.com/Reckless-Satoshi/robosats/issues/44))
+Scanne oder kopiere die Invoice in deine Lightning Wallet. Sie könnte als Zahlung angezeigt werden, die sich auf dem Transportweg befindet, einfrieren oder sogar scheinbar deine Wallet zerstören. Du solltest immer auf der RoboSats-Website überprüfen, ob die Kaution gesperrt wurde (deine Wallet wird dir das wahrscheinlich nicht sagen! Siehe [kompatible wallets](https://github.com/RoboSats/robosats/issues/44))
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-2.png"  width="370" />
@@ -161,13 +161,13 @@ Auf der Maker Seite musst du nur die Währung, die Angebotsart (Kauf/Verkauf) un
 <img src="/assets/images/how-to-use/contract-box-7.png"  width="370" />
 </div>
 
-Du musst die Invoice mit deinem Lightning Wallet kopieren oder scannen, um deine Kaution für den Treuhandgeber zu sperren (nur 1% des Handelsbetrags). Durch das Sperren dieser Kaution wissen die Taker, dass du vertrauenswürdig bist und dich verpflichtest, diesen Handel zu vollenden. In deiner Wallet könnte es als eine Zahlung angezeigt werden, die auf dem Weg ist, einfrieren oder sogar deine Wallet scheinbar zerstören. Du solltest immer auf der RoboSats-Website überprüfen, ob die Kaution gesperrt wurde (deine Wallet wird dir das wahrscheinlich nicht sagen! Siehe [Kompatible Wallets](https://github.com/Reckless-Satoshi/robosats/issues/44))
+Du musst die Invoice mit deinem Lightning Wallet kopieren oder scannen, um deine Kaution für den Treuhandgeber zu sperren (nur 1% des Handelsbetrags). Durch das Sperren dieser Kaution wissen die Taker, dass du vertrauenswürdig bist und dich verpflichtest, diesen Handel zu vollenden. In deiner Wallet könnte es als eine Zahlung angezeigt werden, die auf dem Weg ist, einfrieren oder sogar deine Wallet scheinbar zerstören. Du solltest immer auf der RoboSats-Website überprüfen, ob die Kaution gesperrt wurde (deine Wallet wird dir das wahrscheinlich nicht sagen! Siehe [Kompatible Wallets](https://github.com/RoboSats/robosats/issues/44))
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-8.png"  width="370" />
 </div>
 
-Dein Angebot ist {{site.robosats.hours_public_default}} Stunden lang öffentlich zugänglich. Du kannst die verbleibende Zeit bis zum Ablauf überprüfen, indem du die Registerkarte "Order" anklickst. Du kannst das Angebot jederzeit stornieren, bevor es von einem anderen Roboter angenommen wird. Lasse die Registerkarte " Order " offen, um [mit diesem Ton](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3) benachrichtigt zu werden. Am besten ist es, wenn du dies auf einem Desktop-Computer machst und die Lautstärke einstellst, damit du nicht verpasst, wenn dein Auftrag angenommen wird. Das kann lange dauern! Vielleicht vergisst du es sogar! Du kannst auch Telegram-Benachrichtigungen aktivieren, indem du auf "Enable Telegram Notification" und dann im Chat auf "Start" drückst. Du erhältst eine Willkommensnachricht als Bestätigung der aktivierten Benachrichtigungen. Eine weitere Nachricht wird gesendet, sobald ein Abnehmer für dein Angebot gefunden ist.
+Dein Angebot ist {{site.robosats.hours_public_default}} Stunden lang öffentlich zugänglich. Du kannst die verbleibende Zeit bis zum Ablauf überprüfen, indem du die Registerkarte "Order" anklickst. Du kannst das Angebot jederzeit stornieren, bevor es von einem anderen Roboter angenommen wird. Lasse die Registerkarte " Order " offen, um [mit diesem Ton](https://github.com/RoboSats/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3) benachrichtigt zu werden. Am besten ist es, wenn du dies auf einem Desktop-Computer machst und die Lautstärke einstellst, damit du nicht verpasst, wenn dein Auftrag angenommen wird. Das kann lange dauern! Vielleicht vergisst du es sogar! Du kannst auch Telegram-Benachrichtigungen aktivieren, indem du auf "Enable Telegram Notification" und dann im Chat auf "Start" drückst. Du erhältst eine Willkommensnachricht als Bestätigung der aktivierten Benachrichtigungen. Eine weitere Nachricht wird gesendet, sobald ein Abnehmer für dein Angebot gefunden ist.
 
 *Hinweis: Wenn du dein Angebot vergisst und es ein Roboter annimmt und seine Kaution sperrt, riskierst du, deine eigene Kaution zu verlieren, weil du die nächsten Schritte des Handels nicht erfüllst.
 

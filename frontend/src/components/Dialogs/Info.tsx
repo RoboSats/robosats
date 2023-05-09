@@ -46,7 +46,7 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
           </p>
           <p>
             {t('RoboSats is an open source project ')}{' '}
-            <Link href='https://github.com/reckless-satoshi/robosats'>{t('(GitHub).')}</Link>
+            <Link href='https://github.com/RoboSats/robosats'>{t('(GitHub).')}</Link>
           </p>
         </Typography>
 
@@ -196,10 +196,7 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
               <p>
                 {' '}
                 {t('You can build more trust on RoboSats by inspecting the source code.')}{' '}
-                <Link href='https://github.com/reckless-satoshi/robosats'>
-                  {' '}
-                  {t('Project source code')}
-                </Link>
+                <Link href='https://github.com/RoboSats/robosats'> {t('Project source code')}</Link>
                 .{' '}
               </p>
             </Typography>

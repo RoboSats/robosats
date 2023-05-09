@@ -25,7 +25,7 @@ paths:
         name: currency
         schema:
           type: integer
-        description: The currency id to filter by. Currency IDs can be found [here](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/static/assets/currencies.json).
+        description: The currency id to filter by. Currency IDs can be found [here](https://github.com/RoboSats/robosats/blob/main/frontend/static/assets/currencies.json).
           Value of `0` means ANY currency
       - in: query
         name: type
@@ -1116,7 +1116,7 @@ components:
           maximum: 32767
         currency:
           type: integer
-          description: Currency id. See [here](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/static/assets/currencies.json)
+          description: Currency id. See [here](https://github.com/RoboSats/robosats/blob/main/frontend/static/assets/currencies.json)
             for a list of all IDs
         amount:
           type: string
@@ -1145,7 +1145,7 @@ components:
         payment_method:
           type: string
           default: not specified
-          description: Can be any string. The UI recognizes [these payment methods](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/src/components/payment-methods/Methods.js)
+          description: Can be any string. The UI recognizes [these payment methods](https://github.com/RoboSats/robosats/blob/main/frontend/src/components/payment-methods/Methods.js)
             and displays them with a logo.
           maxLength: 70
         is_explicit:

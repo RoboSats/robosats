@@ -1,15 +1,15 @@
 ## RoboSats - Buy and sell Satoshis Privately
-[![Coordinator CI](https://github.com/Reckless-Satoshi/robosats/actions/workflows/coordinator-image.yml/badge.svg?branch=main)](https://github.com/Reckless-Satoshi/robosats/actions/workflows/coordinator-image.yml)
-[![Frontend Build](https://github.com/Reckless-Satoshi/robosats/actions/workflows/frontend-build.yml/badge.svg?branch=main)](https://github.com/Reckless-Satoshi/robosats/actions/workflows/frontend-build.yml)
-[![release](https://img.shields.io/badge/release-v0.1.0%20MVP-red)](https://github.com/Reckless-Satoshi/robosats/releases)
-[![AGPL-3.0 license](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/Reckless-Satoshi/robosats/blob/main/LICENSE)
+[![Coordinator CI](https://github.com/RoboSats/robosats/actions/workflows/coordinator-image.yml/badge.svg?branch=main)](https://github.com/RoboSats/robosats/actions/workflows/coordinator-image.yml)
+[![Frontend Build](https://github.com/RoboSats/robosats/actions/workflows/frontend-build.yml/badge.svg?branch=main)](https://github.com/RoboSats/robosats/actions/workflows/frontend-build.yml)
+[![release](https://img.shields.io/badge/release-v0.1.0%20MVP-red)](https://github.com/RoboSats/robosats/releases)
+[![AGPL-3.0 license](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/RoboSats/robosats/blob/main/LICENSE)
 [![Telegram](https://img.shields.io/badge/chat-telegram-brightgreen)](https://t.me/robosats)
 
 RoboSats is a simple and private way to exchange bitcoin for national currencies. Robosats simplifies the peer-to-peer user experience and uses lightning hold invoices to minimize custody and trust requirements. The deterministically generated avatars help users stick to best privacy practices.
 
 
 <div align="center">
-  <img width="75%" src="https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png">
+  <img width="75%" src="https://raw.githubusercontent.com/RoboSats/robosats/main/frontend/static/assets/images/robosats-0.1.1-banner.png">
 </div>
 
 ## Try it out!
@@ -57,11 +57,11 @@ Alice wants to buy satoshis privately:
 Check out our [Contribution Guide](https://learn.robosats.com/contribute/) to find how you can make RoboSats great.
 
 ### ⚡Developer Rewards ⚡
-Check out the [Developer Rewards Panel](https://github.com/users/Reckless-Satoshi/projects/2/views/5) for tasks paid in Sats.
+Check out the [Developer Rewards Panel](https://github.com/users/RoboSats/projects/2/views/5) for tasks paid in Sats.
 
 ## Sponsors
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Reckless-Satoshi/robosats/main/docs/assets/images/sponsors/hrf.png" width="300px">
+  <img src="https://raw.githubusercontent.com/RoboSats/robosats/main/docs/assets/images/sponsors/hrf.png" width="300px">
 </div>
 
 ## Inspiration

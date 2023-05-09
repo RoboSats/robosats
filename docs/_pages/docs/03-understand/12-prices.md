@@ -18,7 +18,7 @@ When making an order, there are two different pricing methods available:
 
 When browsing the order book, the bitcoin-fiat price of live orders you see are automatically adjusted to include the order’s corresponding premium. Refer to [Understand > Premium](https://learn.robosats.com/docs/premium/) for additional information on premiums.
 
-If a fiat currency isn't available on RoboSats, then one can easily add a new currency by opening a pull request on [GitHub](https://github.com/Reckless-Satoshi/robosats)!
+If a fiat currency isn't available on RoboSats, then one can easily add a new currency by opening a pull request on [GitHub](https://github.com/RoboSats/robosats)!
 
 ## **Prices in Practice**
 
@@ -85,11 +85,11 @@ Feel free to suggest additional API providers! RoboSats calculates the median bi
 
 All currencies available in yadio.io and blockchain.info APIs should be available in RoboSats as well.
 
-Don't see a currency you want to trade with? It is very easy for contributors to add a new currency by opening a pull request on the [GitHub](https://github.com/Reckless-Satoshi/robosats).
+Don't see a currency you want to trade with? It is very easy for contributors to add a new currency by opening a pull request on the [GitHub](https://github.com/RoboSats/robosats).
 
-First, check the current [currencies.json](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/static/assets/currencies.json) file to verify if the currency you are seeking is indeed missing from RoboSats.
+First, check the current [currencies.json](https://github.com/RoboSats/robosats/blob/main/frontend/static/assets/currencies.json) file to verify if the currency you are seeking is indeed missing from RoboSats.
 
-If you find a currency that is missing from RoboSats and also available in any of the two referenced APIs, then you can directly edit the currencies.json and [FlagsWithProps.tsx](https://github.com/Reckless-Satoshi/robosats/blob/main/frontend/src/components/FlagWithProps/FlagWithProps.tsx) files.
+If you find a currency that is missing from RoboSats and also available in any of the two referenced APIs, then you can directly edit the currencies.json and [FlagsWithProps.tsx](https://github.com/RoboSats/robosats/blob/main/frontend/src/components/FlagWithProps/FlagWithProps.tsx) files.
 
 After merging the pull request, the added currency will now be available in RoboSats!
 

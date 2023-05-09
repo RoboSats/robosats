@@ -129,7 +129,7 @@ const StatsDialog = ({ open = false, onClose, info }: Props): JSX.Element => {
             <ListItemText secondary={t('Coordinator commit hash')}>
               <Link
                 target='_blank'
-                href={`https://github.com/Reckless-Satoshi/robosats/tree/${info.robosats_running_commit_hash}`}
+                href={`https://github.com/RoboSats/robosats/tree/${info.robosats_running_commit_hash}`}
                 rel='noreferrer'
               >
                 {`${info.robosats_running_commit_hash.slice(0, 12)}...`}

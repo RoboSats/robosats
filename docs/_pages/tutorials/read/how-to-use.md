@@ -111,7 +111,7 @@ First thing is to lock a small fidelity bond (just {{site.robosats.default_bond_
 <img src="/assets/images/how-to-use/contract-box-1.png"  width="370" />
 </div>
 
-Scan or copy the invoice into your lightning wallet. It might show as a payment that is on transit, freeze or even seemingly break your wallet. You should always check on the RoboSats website whether the bond has been locked (your wallet will probably not tell you! Check [wallet compatibility list](https://github.com/Reckless-Satoshi/robosats/issues/44))
+Scan or copy the invoice into your lightning wallet. It might show as a payment that is on transit, freeze or even seemingly break your wallet. You should always check on the RoboSats website whether the bond has been locked (your wallet will probably not tell you! Check [wallet compatibility list](https://github.com/RoboSats/robosats/issues/44))
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-2.png"  width="370" />
@@ -169,13 +169,13 @@ In the maker page you are only required to enter the currency, order type (buy/s
 <img src="/assets/images/how-to-use/contract-box-7.png"  width="370" />
 </div>
 
-You have to copy or scan the invoice with your lightning wallet in order to lock your fidelity maker bond (just 1% of the trade amount)). By locking this bond, the takers know you can be trusted and are committed to follow with this trade. In your wallet it might show as a payment that is on transit, freeze or even seemingly break your wallet. You should always check on the RoboSats website whether the bond has been locked (your wallet will probably not tell you! Check [wallet compatibility list](https://github.com/Reckless-Satoshi/robosats/issues/44))
+You have to copy or scan the invoice with your lightning wallet in order to lock your fidelity maker bond (just 1% of the trade amount)). By locking this bond, the takers know you can be trusted and are committed to follow with this trade. In your wallet it might show as a payment that is on transit, freeze or even seemingly break your wallet. You should always check on the RoboSats website whether the bond has been locked (your wallet will probably not tell you! Check [wallet compatibility list](https://github.com/RoboSats/robosats/issues/44))
 
 <div align="center">
 <img src="/assets/images/how-to-use/contract-box-8.png"  width="370" />
 </div>
 
-Your order will be public for {{site.robosats.hours_public_default}} hours. You can check the time left to expiration by checking the "Order" tab. It can be canceled at any time without penalty before it is taken by another robot. Keep the contract tab open to be notified [with this sound](https://github.com/Reckless-Satoshi/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3). It might be best to do this on a desktop computer and turn on the volume, so you do not miss when your order is taken. It might take long! Maybe you even forget! You can also enable telegram notifications by pressing "Enable Telegram Notification" and then pressing "Start" in the chat. You will receive a welcome message as confirmation of the enabled notifications. Another message will be sent once a taker for your order is found.
+Your order will be public for {{site.robosats.hours_public_default}} hours. You can check the time left to expiration by checking the "Order" tab. It can be canceled at any time without penalty before it is taken by another robot. Keep the contract tab open to be notified [with this sound](https://github.com/RoboSats/robosats/raw/main/frontend/static/assets/sounds/taker-found.mp3). It might be best to do this on a desktop computer and turn on the volume, so you do not miss when your order is taken. It might take long! Maybe you even forget! You can also enable telegram notifications by pressing "Enable Telegram Notification" and then pressing "Start" in the chat. You will receive a welcome message as confirmation of the enabled notifications. Another message will be sent once a taker for your order is found.
 
 *Note: If you forget your order and a robot takes it and locks his fidelity bond, you risk losing your own fidelity bond by not fulfilling the next contract steps.*
 

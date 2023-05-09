@@ -620,5 +620,5 @@
   "You must have a robot avatar to see the order details": "你必须有机器人头像才能看到订单详情",
   "This order has been cancelled collaborativelly": "这张订单已被合作取消",
   "This order is not available": "这张订单不可用",
-  "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues": "在仓库里工作的机器人没懂你的意思。请在  Github https://github.com/reckless-satoshi/robosats/issues 上填写出差问题"
+  "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/RoboSats/robosats/issues": "在仓库里工作的机器人没懂你的意思。请在  Github https://github.com/RoboSats/robosats/issues 上填写出差问题"
 }

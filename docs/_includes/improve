@@ -2,5 +2,5 @@
 
 Learn RoboSats is a joint effort of the RoboSats community. If you have used RoboSats before, you are already an expert! Help improve this documentation.
 
-**ProTip:** You can directly [edit this page <i class="fa-brands fa-github-alt"></i>](https://github.com/Reckless-Satoshi/robosats/blob/main/docs/{{page.src}}) and open a [Pull Request <i class="fa-solid fa-code-pull-request"/>](https://github.com/Reckless-Satoshi/robosats/pulls). Your changes will show right here.
+**ProTip:** You can directly [edit this page <i class="fa-brands fa-github-alt"></i>](https://github.com/RoboSats/robosats/blob/main/docs/{{page.src}}) and open a [Pull Request <i class="fa-solid fa-code-pull-request"/>](https://github.com/RoboSats/robosats/pulls). Your changes will show right here.
 {: .notice--primary}

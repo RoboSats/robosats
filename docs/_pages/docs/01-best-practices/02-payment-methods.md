@@ -20,7 +20,7 @@ Note: This guidance is modified from Bisq's <a href="https://bisq.wiki/Trading_r
 
 ### For both bitcoin buyer and seller
 
-  1. Make sure to checking out the  <a href="https://github.com/Reckless-Satoshi/robosats/blob/main/docs/how-to-use.md">How to use </a>section before begin trading.<br>
+  1. Make sure to checking out the  <a href="https://github.com/RoboSats/robosats/blob/main/docs/how-to-use.md">How to use </a>section before begin trading.<br>
   2. State the agreement clearly to prevent misunderstanding.<br>
   3. The fiat payment method should be able to send and receive instantly because the hodl invoice had an expiration time of 24 hours.<br>
 if the timer reaches the expiration, it could trigger a dispute and could lead to a loss of fidelity bond.<br>

@@ -1,6 +1,6 @@
 # Contributing to Robosats
 
-Anyone is welcome to contribute to Robosats. If you're looking for somewhere to start contributing, check out the [good first issue](https://github.com/reckless-satoshi/robosats/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue") list.
+Anyone is welcome to contribute to Robosats. If you're looking for somewhere to start contributing, check out the [good first issue](https://github.com/RoboSats/robosats/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue") list.
 
 
 This contributing guide is based on the [Bisq contributing guide](https://github.com/bisq-network/bisq/blob/master/CONTRIBUTING.md). While the scope and complexity of RoboSats is more managable, following best practices is free.

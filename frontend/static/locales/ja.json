@@ -620,5 +620,5 @@
   "You must have a robot avatar to see the order details": "注文の詳細を見るには、ロボットのアバターが必要です。",
   "This order has been cancelled collaborativelly": "この注文は共同でキャンセルされました",
   "This order is not available": "この注文は利用できません",
-  "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues": "倉庫で働くロボティック・サトシたちはあなたを理解できませんでした。GitHubのバグレポートに記入してください：https://github.com/reckless-satoshi/robosats/issues"
+  "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/RoboSats/robosats/issues": "倉庫で働くロボティック・サトシたちはあなたを理解できませんでした。GitHubのバグレポートに記入してください：https://github.com/RoboSats/robosats/issues"
 }

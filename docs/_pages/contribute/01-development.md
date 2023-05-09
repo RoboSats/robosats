@@ -10,7 +10,7 @@ toc_sticky: true
 src: "_pages/contribute/01-development.md"
 ---
 
-Everyone can contribute to the development of the Robotic Satoshis Open Source Project. If you're looking for somewhere to start contributing, check out the [good first issue](https://github.com/reckless-satoshi/robosats/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue") list.
+Everyone can contribute to the development of the Robotic Satoshis Open Source Project. If you're looking for somewhere to start contributing, check out the [good first issue](https://github.com/RoboSats/robosats/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue") list.
 
 
 This contributing guide is based on the [Bisq contributing guide](https://github.com/bisq-network/bisq/blob/master/CONTRIBUTING.md). While the scope and complexity of RoboSats is more manageable, following best practices is free.

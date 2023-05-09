@@ -255,7 +255,6 @@ class OrderView(viewsets.ViewSet):
                 status.HTTP_403_FORBIDDEN,
             )
 
-        # WRITE Update last_seen for maker and taker.
         data["maker_nick"] = str(order.maker)
 
         # Add activity status of participants based on last_seen
@@ -610,7 +609,7 @@ class OrderView(viewsets.ViewSet):
             return Response(
                 {
                     "bad_request": "The Robotic Satoshis working in the warehouse did not understand you. "
-                    + "Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues"
+                    + "Please, fill a Bug Issue in Github https://github.com/RoboSats/robosats/issues"
                 },
                 status.HTTP_501_NOT_IMPLEMENTED,
             )

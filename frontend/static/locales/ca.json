@@ -620,5 +620,5 @@
   "You must have a robot avatar to see the order details": "Has de tenir un avatar robot per veure els detalls de l'ordre",
   "This order has been cancelled collaborativelly": "Aquesta ordre ha estat cancel·lada col·laborativament",
   "This order is not available": "Aquesta ordre no està disponible",
-  "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/reckless-satoshi/robosats/issues": "Els Satoshis Robotics que treballen al magatzem no t'han entès. Si us plau, omple un un problema d'error a Github https://github.com/reckless-satoshi/robosats/issues"
+  "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/RoboSats/robosats/issues": "Els Satoshis Robotics que treballen al magatzem no t'han entès. Si us plau, omple un un problema d'error a Github https://github.com/RoboSats/robosats/issues"
 }
