@@ -128,7 +128,7 @@ const RobotAvatar: React.FC<Props> = ({
         />
       );
     }
-  }, [nickname, nicknameReady, avatarSrc]);
+  }, [nickname, nicknameReady, avatarSrc, statusColor, tooltip]);
 
   const getAvatarWithBadges = useCallback(() => {
     let component = avatar;

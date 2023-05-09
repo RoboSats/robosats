@@ -151,7 +151,7 @@ export const SuccessfulPrompt = ({
         </Alert>
       </Collapse>
 
-      <Collapse in={order.tx_queued && order.address != undefined}>
+      <Collapse in={order.tx_queued && order.address != undefined && !order.txid}>
         <Alert severity='info'>
           <AlertTitle>
             <CircularProgress sx={{ maxWidth: '0.8em', maxHeight: '0.8em' }} />
