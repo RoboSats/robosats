@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Button, Box, Grid, Typography, TextField, Tooltip, useTheme } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
 import QRCode from 'react-qr-code';
-import { Order } from '../../../models';
+import { type Order } from '../../../models';
 import { systemClient } from '../../../services/System';
 import currencies from '../../../../static/assets/currencies.json';
 import WalletsButton from '../WalletsButton';
-import { AppContext, UseAppStoreType } from '../../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
 
 interface LockInvoicePromptProps {
   order: Order;

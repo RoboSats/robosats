@@ -14,7 +14,7 @@ import { LoadingButton } from '@mui/lab';
 
 import currencies from '../../../../static/assets/currencies.json';
 
-import { Order } from '../../../models';
+import { type Order } from '../../../models';
 import { PauseCircle, Storefront, Percent } from '@mui/icons-material';
 
 interface PublicWaitPrompProps {

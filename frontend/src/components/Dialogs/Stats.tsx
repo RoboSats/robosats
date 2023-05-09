@@ -25,7 +25,7 @@ import EqualizerIcon from '@mui/icons-material/Equalizer';
 import { AmbossIcon, BitcoinSignIcon, RoboSatsNoTextIcon } from '../Icons';
 
 import { pn } from '../../utils';
-import { Info } from '../../models';
+import { type Info } from '../../models';
 
 interface Props {
   open: boolean;

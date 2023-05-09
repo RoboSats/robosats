@@ -1,12 +1,14 @@
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import { WebsocketConnection } from '..';
+import { type WebsocketConnection } from '..';
 
 class WebsocketConnectionWeb implements WebsocketConnection {
   constructor(path: string) {
     this.rws = new ReconnectingWebSocket(path, [], {
+      WebSocket,
+      minReconnectionDelay: 15000,
       connectionTimeout: 15000,
-      reconnectionDelayGrowFactor: 1.5,
-      maxRetries: 15,
+      reconnectionDelayGrowFactor: 2,
+      maxRetries: 4,
       maxReconnectionDelay: 1000000,
     });
   }

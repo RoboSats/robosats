@@ -15,7 +15,7 @@ import {
   AccordionSummary,
   AccordionDetails,
 } from '@mui/material';
-import { Robot } from '../../models';
+import { type Robot } from '../../models';
 import { Casino, Bolt, Check, Storefront, AddBox, School } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
@@ -54,7 +54,9 @@ const Onboarding = ({
     setGeneratedToken(true);
     setInputToken(genBase62Token(36));
     setLoading(true);
-    setTimeout(() => setLoading(false), 1000);
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
   };
 
   return (
@@ -209,7 +211,13 @@ const Onboarding = ({
             ) : null}
             <Grid item>
               <Collapse in={!!(robot.avatarLoaded && robot.nickname)}>
-                <Button onClick={() => setStep('3')} variant='contained' size='large'>
+                <Button
+                  onClick={() => {
+                    setStep('3');
+                  }}
+                  variant='contained'
+                  size='large'
+                >
                   <Check />
                   {t('Continue')}
                 </Button>
@@ -237,11 +245,21 @@ const Onboarding = ({
 
             <Grid item>
               <ButtonGroup variant='contained'>
-                <Button color='primary' onClick={() => navigate('/offers')}>
+                <Button
+                  color='primary'
+                  onClick={() => {
+                    navigate('/offers');
+                  }}
+                >
                   <Storefront /> <div style={{ width: '0.5em' }} />
                   {t('Offers')}
                 </Button>
-                <Button color='secondary' onClick={() => navigate('/create')}>
+                <Button
+                  color='secondary'
+                  onClick={() => {
+                    navigate('/create');
+                  }}
+                >
                   <AddBox /> <div style={{ width: '0.5em' }} />
                   {t('Create')}
                 </Button>
@@ -273,7 +291,12 @@ const Onboarding = ({
               </Button>
             </Grid>
             <Grid item sx={{ position: 'relative', top: '0.6em' }}>
-              <Button color='inherit' onClick={() => setView('profile')}>
+              <Button
+                color='inherit'
+                onClick={() => {
+                  setView('profile');
+                }}
+              >
                 {t('See profile')}
               </Button>
             </Grid>

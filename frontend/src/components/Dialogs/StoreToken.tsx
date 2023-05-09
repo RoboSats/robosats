@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { systemClient } from '../../services/System';
 import ContentCopy from '@mui/icons-material/ContentCopy';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 interface Props {
   open: boolean;
@@ -49,7 +49,11 @@ const StoreTokenDialog = ({ open, onClose, onClickBack, onClickDone }: Props): J
             InputProps={{
               endAdornment: (
                 <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
-                  <IconButton onClick={() => systemClient.copyToClipboard(robot.token)}>
+                  <IconButton
+                    onClick={() => {
+                      systemClient.copyToClipboard(robot.token);
+                    }}
+                  >
                     <ContentCopy color='primary' />
                   </IconButton>
                 </Tooltip>

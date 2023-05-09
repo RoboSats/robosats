@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useContext } from 'react';
 import {
   ResponsiveLine,
-  Serie,
-  Datum,
-  PointTooltipProps,
-  PointMouseHandler,
-  Point,
-  CustomLayer,
+  type Serie,
+  type Datum,
+  type PointTooltipProps,
+  type PointMouseHandler,
+  type Point,
+  type CustomLayer,
 } from '@nivo/line';
 import {
   Box,
@@ -20,13 +20,13 @@ import {
 } from '@mui/material';
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { PublicOrder, LimitList, Order } from '../../../models';
+import { type PublicOrder, LimitList, type Order } from '../../../models';
 import RobotAvatar from '../../RobotAvatar';
 import { amountToString, matchMedian, statusBadgeColor } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
 import { PaymentStringAsIcons } from '../../PaymentMethods';
 import getNivoScheme from '../NivoScheme';
-import { UseAppStoreType, AppContext } from '../../../contexts/AppContext';
+import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
 
 interface DepthChartProps {
   maxWidth: number;
@@ -316,7 +316,13 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 alignItems='flex-start'
                 style={{ paddingLeft: '1em' }}
               >
-                <Select variant='standard' value={xType} onChange={(e) => setXType(e.target.value)}>
+                <Select
+                  variant='standard'
+                  value={xType}
+                  onChange={(e) => {
+                    setXType(e.target.value);
+                  }}
+                >
                   <MenuItem value={'premium'}>
                     <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                       {t('Premium')}
@@ -333,7 +339,11 @@ const DepthChart: React.FC<DepthChartProps> = ({
             <Grid container direction='row' justifyContent='center' alignItems='center'>
               <Grid container justifyContent='center' alignItems='center'>
                 <Grid item>
-                  <IconButton onClick={() => setXRange(xRange + rangeSteps)}>
+                  <IconButton
+                    onClick={() => {
+                      setXRange(xRange + rangeSteps);
+                    }}
+                  >
                     <RemoveCircleOutline />
                   </IconButton>
                 </Grid>
@@ -345,7 +355,12 @@ const DepthChart: React.FC<DepthChartProps> = ({
                   </Box>
                 </Grid>
                 <Grid item>
-                  <IconButton onClick={() => setXRange(xRange - rangeSteps)} disabled={xRange <= 1}>
+                  <IconButton
+                    onClick={() => {
+                      setXRange(xRange - rangeSteps);
+                    }}
+                    disabled={xRange <= 1}
+                  >
                     <AddCircleOutline />
                   </IconButton>
                 </Grid>

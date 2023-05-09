@@ -1,20 +1,20 @@
 import React, { createContext, useEffect, useState } from 'react';
-import { Page } from '../basic/NavBar';
-import { OpenDialogs } from '../basic/MainDialogs';
+import { type Page } from '../basic/NavBar';
+import { type OpenDialogs } from '../basic/MainDialogs';
 
 import {
-  Book,
-  LimitList,
-  Maker,
+  type Book,
+  type LimitList,
+  type Maker,
   Robot,
   Garage,
-  Info,
+  type Info,
   Settings,
-  Favorites,
+  type Favorites,
   defaultMaker,
   defaultInfo,
-  Coordinator,
-  Order,
+  type Coordinator,
+  type Order,
 } from '../models';
 
 import { apiClient } from '../services/api';
@@ -22,7 +22,7 @@ import { checkVer, getHost, hexToBase91, validateTokenEntropy } from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultCoordinators from '../../static/federation.json';
-import { createTheme, Theme } from '@mui/material/styles';
+import { createTheme, type Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
 import { systemClient } from '../services/System';
 
@@ -163,7 +163,12 @@ export const useAppStore = () => {
   useEffect(() => {
     window.addEventListener('torStatus', (event) => {
       // Trick to improve UX on Android webview: delay the "Connected to TOR" status by 5 secs to avoid long waits on the first request.
-      setTimeout(() => setTorStatus(event?.detail), event?.detail === '"Done"' ? 5000 : 0);
+      setTimeout(
+        () => {
+          setTorStatus(event?.detail);
+        },
+        event?.detail === '"Done"' ? 5000 : 0,
+      );
     });
   }, []);
 
@@ -213,12 +218,12 @@ export const useAppStore = () => {
     setBook((book) => {
       return { ...book, loading: true };
     });
-    apiClient.get(baseUrl, '/api/book/').then((data: any) =>
+    apiClient.get(baseUrl, '/api/book/').then((data: any) => {
       setBook({
         loading: false,
         orders: data.not_found ? [] : data,
-      }),
-    );
+      });
+    });
   };
 
   const fetchLimits = async () => {
@@ -272,7 +277,9 @@ export const useAppStore = () => {
   useEffect(() => {
     clearInterval(timer);
     setTimer(setInterval(fetchOrder, delay));
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+    };
   }, [delay, currentOrder, page, badOrder]);
 
   const orderReceived = function (data: any) {

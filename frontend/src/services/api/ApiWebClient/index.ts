@@ -1,4 +1,4 @@
-import { ApiClient, Auth } from '..';
+import { type ApiClient, type Auth } from '..';
 import { systemClient } from '../../System';
 
 class ApiWebClient implements ApiClient {
@@ -7,7 +7,7 @@ class ApiWebClient implements ApiClient {
       'Content-Type': 'application/json',
     };
 
-    if (auth) {
+    if (auth != null) {
       headers = {
         ...headers,
         ...{
@@ -17,7 +17,7 @@ class ApiWebClient implements ApiClient {
     }
 
     // set cookies before sending the request
-    if (auth?.keys) {
+    if (auth?.keys != null) {
       systemClient.setCookie('public_key', auth.keys.pubKey);
       systemClient.setCookie('encrypted_private_key', auth.keys.encPrivKey);
     }

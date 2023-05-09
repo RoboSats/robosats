@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Tabs, Tab, Paper, useTheme } from '@mui/material';
 import MoreTooltip from './MoreTooltip';
 
-import { Page } from '.';
+import { type Page } from '.';
 
 import {
   SettingsApplications,
@@ -15,7 +15,7 @@ import {
   MoreHoriz,
 } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
-import { AppContext, UseAppStoreType, closeAll } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
 
 interface NavBarProps {
   width: number;
@@ -76,10 +76,9 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
       handleSlideDirection(page, newPage);
       setPage(newPage);
       const param = newPage === 'order' ? currentOrder ?? '' : '';
-      setTimeout(
-        () => navigate(`/${newPage}/${param}`),
-        theme.transitions.duration.leavingScreen * 3,
-      );
+      setTimeout(() => {
+        navigate(`/${newPage}/${param}`);
+      }, theme.transitions.duration.leavingScreen * 3);
     }
   };
 
@@ -104,7 +103,9 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
           sx={{ ...tabSx, minWidth: '2.5em', width: '2.5em', maxWidth: '4em' }}
           value='none'
           disabled={robot.nickname === null}
-          onClick={() => setOpen({ ...closeAll, profile: !open.profile })}
+          onClick={() => {
+            setOpen({ ...closeAll, profile: !open.profile });
+          }}
           icon={
             robot.nickname && robot.avatarLoaded ? (
               <RobotAvatar

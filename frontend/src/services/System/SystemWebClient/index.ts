@@ -1,4 +1,4 @@
-import { SystemClient } from '..';
+import { type SystemClient } from '..';
 
 class SystemWebClient implements SystemClient {
   public loading = false;

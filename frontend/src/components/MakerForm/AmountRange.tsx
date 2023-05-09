@@ -132,7 +132,9 @@ function AmountRange({
               }}
               value={currency == 0 ? 1 : currency}
               renderValue={() => currencyCode}
-              onChange={(e) => handleCurrencyChange(e.target.value)}
+              onChange={(e) => {
+                handleCurrencyChange(e.target.value);
+              }}
             >
               {Object.entries(currencyDict).map(([key, value]) => (
                 <MenuItem key={key} value={parseInt(key)}>

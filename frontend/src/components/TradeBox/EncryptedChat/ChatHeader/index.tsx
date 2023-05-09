@@ -53,7 +53,9 @@ const ChatHeader: React.FC<Props> = ({ connected, peerConnected, turtleMode, set
               <IconButton
                 size='small'
                 color={turtleMode ? 'primary' : 'inherit'}
-                onClick={() => setTurtleMode(!turtleMode)}
+                onClick={() => {
+                  setTurtleMode(!turtleMode);
+                }}
               >
                 <WifiTetheringError />
               </IconButton>

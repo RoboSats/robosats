@@ -23,7 +23,7 @@ import BookIcon from '@mui/icons-material/Book';
 import LinkIcon from '@mui/icons-material/Link';
 
 import { pn } from '../../utils';
-import { Info } from '../../models';
+import { type Info } from '../../models';
 
 interface Props {
   open: boolean;

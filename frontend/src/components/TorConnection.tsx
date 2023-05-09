@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Box, CircularProgress, Tooltip } from '@mui/material';
 import { TorIcon } from './Icons';
 import { useTranslation } from 'react-i18next';
-import { AppContext, UseAppStoreType } from '../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../contexts/AppContext';
 
 interface TorIndicatorProps {
   color: 'inherit' | 'error' | 'warning' | 'success' | 'primary' | 'secondary' | 'info' | undefined;

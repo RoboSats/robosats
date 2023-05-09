@@ -88,7 +88,12 @@ const UpdateClientDialog = ({
 
           <Divider />
 
-          <ListItemButton component='a' onClick={() => location.reload(true)}>
+          <ListItemButton
+            component='a'
+            onClick={() => {
+              location.reload(true);
+            }}
+          >
             <ListItemIcon>
               <WebIcon color='primary' sx={{ height: 32, width: 32 }} />
             </ListItemIcon>

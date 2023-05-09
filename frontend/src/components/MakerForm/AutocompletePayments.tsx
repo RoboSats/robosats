@@ -226,9 +226,13 @@ export default function AutocompletePayments(props) {
     value: props.value,
     options: props.optionsType == 'fiat' ? fiatMethods : swapMethods,
     getOptionLabel: (option) => option.name,
-    onInputChange: (e) => setVal(e ? (e.target.value ? e.target.value : '') : ''),
+    onInputChange: (e) => {
+      setVal(e ? (e.target.value ? e.target.value : '') : '');
+    },
     onChange: (event, value) => props.onAutocompleteChange(value),
-    onClose: () => setVal(() => ''),
+    onClose: () => {
+      setVal(() => '');
+    },
   });
 
   const [val, setVal] = useState('');

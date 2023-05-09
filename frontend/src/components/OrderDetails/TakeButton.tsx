@@ -21,11 +21,11 @@ import Countdown from 'react-countdown';
 import currencies from '../../../static/assets/currencies.json';
 import { apiClient } from '../../services/api';
 
-import { Order, Info } from '../../models';
+import { type Order, type Info } from '../../models';
 import { ConfirmationDialog } from '../Dialogs';
 import { LoadingButton } from '@mui/lab';
 import { computeSats } from '../../utils';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 interface TakeButtonProps {
   order: Order;
@@ -58,10 +58,10 @@ const TakeButton = ({ order, setOrder, baseUrl, info }: TakeButtonProps): JSX.El
     const rate = order.amount ? order.amount / btc_now : order.max_amount / btc_now;
     const amount = order.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
     const satoshis = computeSats({
-      amount: amount,
+      amount,
       routingBudget: order.is_buyer ? defaultRoutingBudget : 0,
       fee: tradeFee,
-      rate: rate,
+      rate,
     });
     return satoshis;
   };
@@ -74,7 +74,12 @@ const TakeButton = ({ order, setOrder, baseUrl, info }: TakeButtonProps): JSX.El
 
   const InactiveMakerDialog = function () {
     return (
-      <Dialog open={open.inactiveMaker} onClose={() => setOpen({ ...open, inactiveMaker: false })}>
+      <Dialog
+        open={open.inactiveMaker}
+        onClose={() => {
+          setOpen({ ...open, inactiveMaker: false });
+        }}
+      >
         <DialogTitle>{t('The maker is away')}</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -84,10 +89,19 @@ const TakeButton = ({ order, setOrder, baseUrl, info }: TakeButtonProps): JSX.El
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(closeAll)} autoFocus>
+          <Button
+            onClick={() => {
+              setOpen(closeAll);
+            }}
+            autoFocus
+          >
             {t('Go back')}
           </Button>
-          <Button onClick={() => setOpen({ inactiveMaker: false, confirmation: true })}>
+          <Button
+            onClick={() => {
+              setOpen({ inactiveMaker: false, confirmation: true });
+            }}
+          >
             {t('Sounds fine')}
           </Button>
         </DialogActions>
@@ -313,7 +327,9 @@ const TakeButton = ({ order, setOrder, baseUrl, info }: TakeButtonProps): JSX.El
 
       <ConfirmationDialog
         open={open.confirmation}
-        onClose={() => setOpen({ ...open, confirmation: false })}
+        onClose={() => {
+          setOpen({ ...open, confirmation: false });
+        }}
         onClickDone={() => {
           takeOrder();
           setLoadingTake(true);

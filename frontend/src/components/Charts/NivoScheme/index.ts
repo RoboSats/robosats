@@ -1,5 +1,5 @@
-import { Theme as NivoTheme } from '@nivo/core';
-import { Theme as MuiTheme } from '@mui/material/styles';
+import { type Theme as NivoTheme } from '@nivo/core';
+import { type Theme as MuiTheme } from '@mui/material/styles';
 
 export const getNivoScheme: (theme: MuiTheme) => NivoTheme = (theme) => {
   const lightMode = {

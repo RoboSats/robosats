@@ -7,7 +7,7 @@ import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
 
 import { apiClient } from '../../services/api';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 const OrderPage = (): JSX.Element => {
   const {
@@ -70,7 +70,9 @@ const OrderPage = (): JSX.Element => {
     }
   };
 
-  const startAgain = () => navigate('/robot');
+  const startAgain = () => {
+    navigate('/robot');
+  };
 
   return (
     <Box>
@@ -138,7 +140,9 @@ const OrderPage = (): JSX.Element => {
               <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '21em' }}>
                 <Tabs
                   value={tab}
-                  onChange={(mouseEvent, value) => setTab(value)}
+                  onChange={(mouseEvent, value) => {
+                    setTab(value);
+                  }}
                   variant='fullWidth'
                 >
                   <Tab label={t('Order')} value='order' />

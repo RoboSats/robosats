@@ -1,4 +1,4 @@
-import { Robot, Order } from '.';
+import { Robot, type Order } from '.';
 import { systemClient } from '../services/System';
 import { saveAsJson } from '../utils';
 export interface Slot {

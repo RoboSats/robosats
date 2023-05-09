@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { Settings } from '../../models';
 import { Paper } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';

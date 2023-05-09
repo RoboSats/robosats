@@ -73,7 +73,9 @@ const Welcome = ({ setView, width, getGenerateRobot }: WelcomeProps): JSX.Elemen
                 size='large'
                 color='primary'
                 variant='contained'
-                onClick={() => setView('onboarding')}
+                onClick={() => {
+                  setView('onboarding');
+                }}
               >
                 <RocketLaunch />
                 <div style={{ width: '0.5em' }} />
@@ -91,7 +93,9 @@ const Welcome = ({ setView, width, getGenerateRobot }: WelcomeProps): JSX.Elemen
                 size='small'
                 color='secondary'
                 variant='contained'
-                onClick={() => setView('recovery')}
+                onClick={() => {
+                  setView('recovery');
+                }}
               >
                 <Key /> <div style={{ width: '0.5em' }} />
                 {t('Recovery')}

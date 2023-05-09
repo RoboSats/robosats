@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
-import { Book, Favorites } from '../../models';
+import { type Book, type Favorites } from '../../models';
 import { Paper } from '@mui/material';
 import BookTable from '../../components/BookTable';
 

@@ -1,4 +1,4 @@
-import { WebsocketClient, WebsocketConnection } from '..';
+import { type WebsocketClient, type WebsocketConnection } from '..';
 import WebsocketConnectionWeb from '../WebsocketConnectionWeb';
 
 class WebsocketWebClient implements WebsocketClient {

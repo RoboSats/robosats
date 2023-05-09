@@ -1,4 +1,4 @@
-import { PublicOrder, Favorites } from '../models';
+import { type PublicOrder, type Favorites } from '../models';
 
 interface AmountFilter {
   amount: string;

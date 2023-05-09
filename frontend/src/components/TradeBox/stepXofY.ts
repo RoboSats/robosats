@@ -1,4 +1,4 @@
-import { Order } from '../../models';
+import { type Order } from '../../models';
 
 const stepXofY = function (order: Order): string {
   // set y value

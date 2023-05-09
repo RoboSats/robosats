@@ -1,5 +1,5 @@
 import React, { useEffect, useContext, useState } from 'react';
-import GridLayout, { Layout } from 'react-grid-layout';
+import GridLayout, { type Layout } from 'react-grid-layout';
 import { Grid, styled, useTheme } from '@mui/material';
 
 import {
@@ -12,7 +12,7 @@ import {
 import ToolBar from '../pro/ToolBar';
 import LandingDialog from '../pro/LandingDialog';
 
-import { AppContext, UseAppStoreType } from '../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../contexts/AppContext';
 
 // To Do. Add dotted grid when layout is not frozen
 // ${freeze ?
@@ -83,7 +83,12 @@ const Main = (): JSX.Element => {
     <Grid container direction='column' sx={{ width: `${windowSize.width}em` }}>
       <Grid item>
         <ToolBar height={`${toolbarHeight}em`} settings={settings} setSettings={setSettings} />
-        <LandingDialog open={openLanding} onClose={() => setOpenLanding(!openLanding)} />
+        <LandingDialog
+          open={openLanding}
+          onClose={() => {
+            setOpenLanding(!openLanding);
+          }}
+        />
       </Grid>
 
       <Grid item>
@@ -101,7 +106,9 @@ const Main = (): JSX.Element => {
           isResizable={!settings.freezeViewports}
           rowHeight={gridCellSize * em} // rows are 2em high
           autoSize={true}
-          onLayoutChange={(layout: Layout) => setLayout(layout)}
+          onLayoutChange={(layout: Layout) => {
+            setLayout(layout);
+          }}
         >
           <div key='Maker'>
             <MakerWidget />

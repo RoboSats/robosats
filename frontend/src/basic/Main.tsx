@@ -14,7 +14,7 @@ import RobotAvatar from '../components/RobotAvatar';
 
 import { useTranslation } from 'react-i18next';
 import Notifications from '../components/Notifications';
-import { UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
+import { type UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
 
 const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
 
@@ -54,16 +54,18 @@ const Main: React.FC = () => {
         style={{ display: 'none' }}
         nickname={robot.nickname}
         baseUrl={baseUrl}
-        onLoad={() =>
+        onLoad={() => {
           setRobot((robot) => {
             return { ...robot, avatarLoaded: true };
-          })
-        }
+          });
+        }}
       />
       <Notifications
         order={order}
         page={page}
-        openProfile={() => setOpen({ ...closeAll, profile: true })}
+        openProfile={() => {
+          setOpen({ ...closeAll, profile: true });
+        }}
         rewards={robot.earnedRewards}
         windowWidth={windowSize.width}
       />

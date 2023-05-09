@@ -39,15 +39,15 @@ import BondStatus from './BondStatus';
 import CancelButton from './CancelButton';
 import {
   defaultLightning,
-  LightningForm,
+  type LightningForm,
   defaultOnchain,
-  OnchainForm,
-  DisputeForm,
+  type OnchainForm,
+  type DisputeForm,
   defaultDispute,
 } from './Forms';
 
-import { Order, Robot, Settings } from '../../models';
-import { EncryptedChatMessage } from './EncryptedChat';
+import { type Order, type Robot, type Settings } from '../../models';
+import { type EncryptedChatMessage } from './EncryptedChat';
 import CollabCancelAlert from './CollabCancelAlert';
 import { Bolt } from '@mui/icons-material';
 
@@ -259,7 +259,9 @@ const TradeBox = ({
   };
 
   const handleWebln = async (order: Order) => {
-    const webln = await getWebln().catch(() => console.log('WebLN not available'));
+    const webln = await getWebln().catch(() => {
+      console.log('WebLN not available');
+    });
     // If Webln implements locked payments compatibility, this logic might be simplier
     if (webln == undefined) {
       return null;
@@ -488,13 +490,21 @@ const TradeBox = ({
             <ChatPrompt
               order={order}
               robot={robot}
-              onClickConfirmSent={() => setOpen({ ...open, confirmFiatSent: true })}
-              onClickUndoConfirmSent={() => setOpen({ ...open, confirmUndoFiatSent: true })}
-              onClickConfirmReceived={() => setOpen({ ...open, confirmFiatReceived: true })}
+              onClickConfirmSent={() => {
+                setOpen({ ...open, confirmFiatSent: true });
+              }}
+              onClickUndoConfirmSent={() => {
+                setOpen({ ...open, confirmUndoFiatSent: true });
+              }}
+              onClickConfirmReceived={() => {
+                setOpen({ ...open, confirmFiatReceived: true });
+              }}
               loadingSent={loadingButtons.fiatSent}
               loadingUndoSent={loadingButtons.undoFiatSent}
               loadingReceived={loadingButtons.fiatReceived}
-              onClickDispute={() => setOpen({ ...open, confirmDispute: true })}
+              onClickDispute={() => {
+                setOpen({ ...open, confirmDispute: true });
+              }}
               loadingDispute={loadingButtons.openDispute}
               baseUrl={baseUrl}
               messages={messages}
@@ -668,23 +678,31 @@ const TradeBox = ({
     <Box>
       <WebLNDialog
         open={open.webln}
-        onClose={() => setOpen(closeAll)}
+        onClose={() => {
+          setOpen(closeAll);
+        }}
         waitingWebln={waitingWebln}
         isBuyer={order.is_buyer}
       />
       <ConfirmDisputeDialog
         open={open.confirmDispute}
-        onClose={() => setOpen(closeAll)}
+        onClose={() => {
+          setOpen(closeAll);
+        }}
         onAgreeClick={openDispute}
       />
       <ConfirmCancelDialog
         open={open.confirmCancel}
-        onClose={() => setOpen(closeAll)}
+        onClose={() => {
+          setOpen(closeAll);
+        }}
         onCancelClick={cancel}
       />
       <ConfirmCollabCancelDialog
         open={open.confirmCollabCancel}
-        onClose={() => setOpen(closeAll)}
+        onClose={() => {
+          setOpen(closeAll);
+        }}
         onCollabCancelClick={cancel}
         loading={loadingButtons.cancel}
         peerAskedCancel={order.pending_cancel}
@@ -693,21 +711,27 @@ const TradeBox = ({
         open={open.confirmFiatSent}
         order={order}
         loadingButton={loadingButtons.fiatSent}
-        onClose={() => setOpen(closeAll)}
+        onClose={() => {
+          setOpen(closeAll);
+        }}
         onConfirmClick={confirmFiatSent}
       />
       <ConfirmUndoFiatSentDialog
         open={open.confirmUndoFiatSent}
         order={order}
         loadingButton={loadingButtons.undoFiatSent}
-        onClose={() => setOpen(closeAll)}
+        onClose={() => {
+          setOpen(closeAll);
+        }}
         onConfirmClick={confirmUndoFiatSent}
       />
       <ConfirmFiatReceivedDialog
         open={open.confirmFiatReceived}
         order={order}
         loadingButton={loadingButtons.fiatReceived}
-        onClose={() => setOpen(closeAll)}
+        onClose={() => {
+          setOpen(closeAll);
+        }}
         onConfirmClick={confirmFiatReceived}
       />
       <CollabCancelAlert order={order} />
@@ -745,8 +769,12 @@ const TradeBox = ({
           <CancelButton
             order={order}
             onClickCancel={cancel}
-            openCancelDialog={() => setOpen({ ...closeAll, confirmCancel: true })}
-            openCollabCancelDialog={() => setOpen({ ...closeAll, confirmCollabCancel: true })}
+            openCancelDialog={() => {
+              setOpen({ ...closeAll, confirmCancel: true });
+            }}
+            openCollabCancelDialog={() => {
+              setOpen({ ...closeAll, confirmCollabCancel: true });
+            }}
             loading={loadingButtons.cancel}
           />
         </Grid>

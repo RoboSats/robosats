@@ -18,7 +18,7 @@ import TradeSummary from '../TradeSummary';
 import { Favorite, RocketLaunch, ContentCopy, Refresh } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 
-import { Order } from '../../../models';
+import { type Order } from '../../../models';
 import { systemClient } from '../../../services/System';
 
 interface SuccessfulPromptProps {

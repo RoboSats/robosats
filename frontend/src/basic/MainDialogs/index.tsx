@@ -9,7 +9,7 @@ import {
   UpdateClientDialog,
 } from '../../components/Dialogs';
 import { pn } from '../../utils';
-import { AppContext, UseAppStoreType, closeAll } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
 
 export interface OpenDialogs {
   more: boolean;
@@ -46,32 +46,49 @@ const MainDialogs = (): JSX.Element => {
         open={open.update}
         coordinatorVersion={info.coordinatorVersion}
         clientVersion={info.clientVersion}
-        onClose={() => setOpen({ ...open, update: false })}
+        onClose={() => {
+          setOpen({ ...open, update: false });
+        }}
       />
       <InfoDialog
         open={open.info}
         maxAmount={maxAmount}
-        onClose={() => setOpen({ ...open, info: false })}
+        onClose={() => {
+          setOpen({ ...open, info: false });
+        }}
       />
-      <LearnDialog open={open.learn} onClose={() => setOpen({ ...open, learn: false })} />
+      <LearnDialog
+        open={open.learn}
+        onClose={() => {
+          setOpen({ ...open, learn: false });
+        }}
+      />
       <CommunityDialog
         open={open.community}
-        onClose={() => setOpen({ ...open, community: false })}
+        onClose={() => {
+          setOpen({ ...open, community: false });
+        }}
       />
       <CoordinatorSummaryDialog
         open={open.coordinator}
-        onClose={() => setOpen({ ...open, coordinator: false })}
+        onClose={() => {
+          setOpen({ ...open, coordinator: false });
+        }}
         info={info}
       />
       <StatsDialog
         open={open.stats}
-        onClose={() => setOpen({ ...open, stats: false })}
+        onClose={() => {
+          setOpen({ ...open, stats: false });
+        }}
         info={info}
       />
       <ProfileDialog
         open={open.profile}
         baseUrl={baseUrl}
-        onClose={() => setOpen({ ...open, profile: false })}
+        onClose={() => {
+          setOpen({ ...open, profile: false });
+        }}
         robot={robot}
         setRobot={setRobot}
         setCurrentOrder={setCurrentOrder}

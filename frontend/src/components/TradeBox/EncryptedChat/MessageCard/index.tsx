@@ -9,7 +9,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopy from '@mui/icons-material/ContentCopy';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { EncryptedChatMessage } from '..';
+import { type EncryptedChatMessage } from '..';
 
 interface Props {
   message: EncryptedChatMessage;
@@ -81,7 +81,9 @@ const MessageCard: React.FC<Props> = ({ message, isTaker, userConnected, baseUrl
               <div style={{ width: '1.4em' }}>
                 <IconButton
                   sx={{ height: '1.2em', width: '1.2em', position: 'relative', right: '0.15em' }}
-                  onClick={() => setShowPGP(!showPGP)}
+                  onClick={() => {
+                    setShowPGP(!showPGP);
+                  }}
                 >
                   <VisibilityIcon
                     color={showPGP ? 'primary' : 'inherit'}
@@ -97,11 +99,11 @@ const MessageCard: React.FC<Props> = ({ message, isTaker, userConnected, baseUrl
                 <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
                   <IconButton
                     sx={{ height: '0.8em', width: '0.8em' }}
-                    onClick={() =>
+                    onClick={() => {
                       systemClient.copyToClipboard(
                         showPGP ? message.encryptedMessage : message.plainTextMessage,
-                      )
-                    }
+                      );
+                    }}
                   >
                     <ContentCopy
                       sx={{

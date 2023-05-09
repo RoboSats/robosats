@@ -29,6 +29,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       window.location.reload();
     }, 30000);
   }
+
   render() {
     if (this.state.hasError) {
       return (

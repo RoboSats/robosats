@@ -13,7 +13,7 @@ import {
   Grid,
 } from '@mui/material';
 import { NewTabIcon } from '../Icons';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 interface Props {
   open: boolean;

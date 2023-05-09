@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 import MakerForm from '../../components/MakerForm';
 import { LimitList, Maker, Favorites } from '../../models';

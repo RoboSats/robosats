@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconButton, LinearProgress, TextField, Tooltip } from '@mui/material';
-import { Robot } from '../../models';
+import { type Robot } from '../../models';
 import { ContentCopy } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
 
@@ -57,7 +57,9 @@ const TokenInput = ({
         variant={editable ? 'outlined' : 'filled'}
         helperText={badToken}
         size='medium'
-        onChange={(e) => setInputToken(e.target.value)}
+        onChange={(e) => {
+          setInputToken(e.target.value);
+        }}
         onKeyPress={(e) => {
           if (e.key === 'Enter') {
             onPressEnter();
@@ -72,7 +74,9 @@ const TokenInput = ({
                 onClick={() => {
                   systemClient.copyToClipboard(inputToken);
                   setShowCopied(true);
-                  setTimeout(() => setShowCopied(false), 1000);
+                  setTimeout(() => {
+                    setShowCopied(false);
+                  }, 1000);
                   setRobot((robot) => {
                     return { ...robot, copiedToken: true };
                   });

@@ -1,13 +1,17 @@
-import { NativeRobosatsPromise, NativeWebViewMessage, NativeWebViewMessageSystem } from './index.d';
+import {
+  type NativeRobosatsPromise,
+  type NativeWebViewMessage,
+  type NativeWebViewMessageSystem,
+} from './index.d';
 
 class NativeRobosats {
   public torDaemonStatus = 'NOTINIT';
 
   private messageCounter: number = 0;
 
-  private pendingMessages: { [id: number]: NativeRobosatsPromise } = {};
+  private pendingMessages: Record<number, NativeRobosatsPromise> = {};
 
-  public cookies: { [key: string]: string } = {};
+  public cookies: Record<string, string> = {};
 
   public loadCookie = (cookie: { key: string; value: string }) => {
     this.cookies[cookie.key] = cookie.value;
@@ -44,7 +48,7 @@ class NativeRobosats {
     }
   };
 
-  public postMessage: (message: NativeWebViewMessage) => Promise<{ [key: string]: any }> = async (
+  public postMessage: (message: NativeWebViewMessage) => Promise<Record<string, any>> = async (
     message,
   ) => {
     this.messageCounter += 1;

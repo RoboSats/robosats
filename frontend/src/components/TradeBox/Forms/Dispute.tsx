@@ -52,7 +52,9 @@ export const DisputeStatementForm = ({
           }}
           multiline
           rows={4}
-          onChange={(e) => setDispute({ ...dispute, statement: e.target.value })}
+          onChange={(e) => {
+            setDispute({ ...dispute, statement: e.target.value });
+          }}
         />
       </Grid>
       <Grid item>
@@ -67,7 +69,9 @@ export const DisputeStatementForm = ({
             control={
               <Checkbox
                 checked={dispute.attachLogs}
-                onChange={() => setDispute({ ...dispute, attachLogs: !dispute.attachLogs })}
+                onChange={() => {
+                  setDispute({ ...dispute, attachLogs: !dispute.attachLogs });
+                }}
               />
             }
             label={t('Attach chat logs')}

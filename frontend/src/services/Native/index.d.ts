@@ -1,4 +1,4 @@
-import NativeRobosats from './index';
+import type NativeRobosats from './index';
 
 declare global {
   interface Window {

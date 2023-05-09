@@ -14,17 +14,17 @@ import {
   LinearProgress,
   IconButton,
   Tooltip,
-  LinearProgressProps,
+  type LinearProgressProps,
   styled,
 } from '@mui/material';
 import {
   DataGrid,
-  GridColumnVisibilityModel,
+  type GridColumnVisibilityModel,
   GridPagination,
-  GridPaginationModel,
+  type GridPaginationModel,
 } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
-import { PublicOrder } from '../../models';
+import { type PublicOrder } from '../../models';
 import { filterOrders, hexToRgb, statusBadgeColor, pn, amountToString } from '../../utils';
 import BookControl from './BookControl';
 
@@ -34,7 +34,7 @@ import RobotAvatar from '../RobotAvatar';
 
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 const ClickThroughDataGrid = styled(DataGrid)({
   '& .MuiDataGrid-overlayWrapperInner': {
@@ -609,7 +609,7 @@ const BookTable = ({
   const filteredColumns = function (maxWidth: number) {
     const useSmall = maxWidth < 70;
     const selectedColumns: object[] = [];
-    let columnVisibilityModel: GridColumnVisibilityModel = {};
+    const columnVisibilityModel: GridColumnVisibilityModel = {};
     let width: number = 0;
 
     for (const [key, value] of Object.entries(columnSpecs)) {
@@ -654,12 +654,20 @@ const BookTable = ({
         <Grid item>
           <Grid container alignItems='center' direction='row'>
             <Grid item xs={6}>
-              <IconButton onClick={() => setFullscreen(!fullscreen)}>
+              <IconButton
+                onClick={() => {
+                  setFullscreen(!fullscreen);
+                }}
+              >
                 {fullscreen ? <FullscreenExit /> : <Fullscreen />}
               </IconButton>
             </Grid>
             <Grid item xs={6}>
-              <IconButton onClick={() => fetchBook()}>
+              <IconButton
+                onClick={() => {
+                  fetchBook();
+                }}
+              >
                 <Refresh />
               </IconButton>
             </Grid>
@@ -758,9 +766,9 @@ const BookTable = ({
           loading={book.loading}
           columns={columns}
           columnVisibilityModel={columnVisibilityModel}
-          onColumnVisibilityModelChange={(newColumnVisibilityModel) =>
-            setColumnVisibilityModel(newColumnVisibilityModel)
-          }
+          onColumnVisibilityModelChange={(newColumnVisibilityModel) => {
+            setColumnVisibilityModel(newColumnVisibilityModel);
+          }}
           hideFooter={!showFooter}
           components={gridComponents}
           componentsProps={{
@@ -777,7 +785,9 @@ const BookTable = ({
           onPaginationModelChange={(newPaginationModel) => {
             setPaginationModel(newPaginationModel);
           }}
-          onRowClick={(params: any) => onOrderClicked(params.row.id)}
+          onRowClick={(params: any) => {
+            onOrderClicked(params.row.id);
+          }}
         />
       </Paper>
     );
@@ -795,9 +805,9 @@ const BookTable = ({
             hideFooter={!showFooter}
             components={gridComponents}
             columnVisibilityModel={columnVisibilityModel}
-            onColumnVisibilityModelChange={(newColumnVisibilityModel) =>
-              setColumnVisibilityModel(newColumnVisibilityModel)
-            }
+            onColumnVisibilityModelChange={(newColumnVisibilityModel) => {
+              setColumnVisibilityModel(newColumnVisibilityModel);
+            }}
             componentsProps={{
               toolbar: {
                 width,
@@ -812,7 +822,9 @@ const BookTable = ({
             onPaginationModelChange={(newPaginationModel) => {
               setPaginationModel(newPaginationModel);
             }}
-            onRowClick={(params: any) => onOrderClicked(params.row.id)}
+            onRowClick={(params: any) => {
+              onOrderClicked(params.row.id);
+            }}
           />
         </Paper>
       </Dialog>

@@ -25,7 +25,7 @@ import {
   IconButton,
 } from '@mui/material';
 
-import { LimitList, defaultMaker } from '../../models';
+import { type LimitList, defaultMaker } from '../../models';
 
 import { LocalizationProvider, MobileTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -40,7 +40,7 @@ import { amountToString, computeSats, pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 interface MakerFormProps {
   disableRequest?: boolean;
@@ -464,7 +464,9 @@ const MakerForm = ({
     <Box>
       <ConfirmationDialog
         open={openDialogs}
-        onClose={() => setOpenDialogs(false)}
+        onClose={() => {
+          setOpenDialogs(false);
+        }}
         onClickDone={handleCreateOrder}
         hasRobot={robot.avatarLoaded}
       />
@@ -531,7 +533,9 @@ const MakerForm = ({
                     <Checkbox
                       sx={{ position: 'relative', bottom: '0.3em' }}
                       checked={fav.mode == 'swap'}
-                      onClick={() => handleCurrencyChange(fav.mode == 'swap' ? 1 : 1000)}
+                      onClick={() => {
+                        handleCurrencyChange(fav.mode == 'swap' ? 1 : 1000);
+                      }}
                     />
                   </FormControl>
                 </Grid>
@@ -547,12 +551,12 @@ const MakerForm = ({
                       <Button
                         size={maker.advancedOptions ? 'small' : 'large'}
                         variant='contained'
-                        onClick={() =>
+                        onClick={() => {
                           setFav({
                             ...fav,
                             type: 1,
-                          })
-                        }
+                          });
+                        }}
                         disableElevation={fav.type == 1}
                         sx={{
                           backgroundColor: fav.type == 1 ? 'primary.main' : 'background.paper',
@@ -567,12 +571,12 @@ const MakerForm = ({
                       <Button
                         size={maker.advancedOptions ? 'small' : 'large'}
                         variant='contained'
-                        onClick={() =>
+                        onClick={() => {
                           setFav({
                             ...fav,
                             type: 0,
-                          })
-                        }
+                          });
+                        }}
                         disableElevation={fav.type == 0}
                         color='secondary'
                         sx={{
@@ -654,7 +658,9 @@ const MakerForm = ({
                             borderRadius: '4px',
                           },
                         }}
-                        onChange={(e) => setMaker({ ...maker, amount: e.target.value })}
+                        onChange={(e) => {
+                          setMaker({ ...maker, amount: e.target.value });
+                        }}
                       />
                     </Tooltip>
                     {fav.mode === 'swap' && maker.amount != '' ? (
@@ -677,7 +683,9 @@ const MakerForm = ({
                           style: { textAlign: 'center' },
                         }}
                         value={fav.currency == 0 ? 1 : fav.currency}
-                        onChange={(e) => handleCurrencyChange(e.target.value)}
+                        onChange={(e) => {
+                          handleCurrencyChange(e.target.value);
+                        }}
                       >
                         {Object.entries(currencyDict).map(([key, value]) => (
                           <MenuItem key={key} value={parseInt(key)}>
@@ -946,7 +954,9 @@ const MakerForm = ({
                           ]}
                           min={2}
                           max={15}
-                          onChange={(e) => setMaker({ ...maker, bondSize: e.target.value })}
+                          onChange={(e) => {
+                            setMaker({ ...maker, bondSize: e.target.value });
+                          }}
                         />
                       </Grid>
                     </Grid>

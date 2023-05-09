@@ -30,7 +30,7 @@ import {
   Link,
 } from '@mui/icons-material';
 import { RoboSatsNoTextIcon, SendReceiveIcon, BitcoinIcon } from '../Icons';
-import { TradeCoordinatorSummary, TradeRobotSummary } from '../../models/Order.model';
+import { type TradeCoordinatorSummary, type TradeRobotSummary } from '../../models/Order.model';
 import { systemClient } from '../../services/System';
 
 interface Props {
@@ -110,7 +110,13 @@ const TradeSummary = ({
         }}
       >
         <ToggleButtonGroup size='small' value={buttonValue} exclusive>
-          <ToggleButton value={0} disableRipple={true} onClick={() => setButtonValue(0)}>
+          <ToggleButton
+            value={0}
+            disableRipple={true}
+            onClick={() => {
+              setButtonValue(0);
+            }}
+          >
             <RobotAvatar
               baseUrl={baseUrl}
               style={{ height: '1.5em', width: '1.5em' }}
@@ -120,10 +126,22 @@ const TradeSummary = ({
             &nbsp;
             {t('Maker')}
           </ToggleButton>
-          <ToggleButton value={1} disableRipple={true} onClick={() => setButtonValue(1)}>
+          <ToggleButton
+            value={1}
+            disableRipple={true}
+            onClick={() => {
+              setButtonValue(1);
+            }}
+          >
             <RoboSatsNoTextIcon />
           </ToggleButton>
-          <ToggleButton value={2} disableRipple={true} onClick={() => setButtonValue(2)}>
+          <ToggleButton
+            value={2}
+            disableRipple={true}
+            onClick={() => {
+              setButtonValue(2);
+            }}
+          >
             {t('Taker')}
             &nbsp;
             <RobotAvatar

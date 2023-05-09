@@ -37,7 +37,11 @@ function CredentialTextfield(props) {
           InputProps={{
             endAdornment: (
               <Tooltip disableHoverListener enterTouchDelay={0} title={props.copiedTitle}>
-                <IconButton onClick={() => systemClient.copyToClipboard(props.value)}>
+                <IconButton
+                  onClick={() => {
+                    systemClient.copyToClipboard(props.value);
+                  }}
+                >
                   <ContentCopy />
                 </IconButton>
               </Tooltip>
@@ -144,14 +148,14 @@ const AuditPGPDialog = ({
                 size='small'
                 color='primary'
                 variant='contained'
-                onClick={() =>
+                onClick={() => {
                   saveAsJson('keys_' + orderId + '.json', {
                     own_public_key: own_pub_key,
                     peer_public_key: peer_pub_key,
                     encrypted_private_key: own_enc_priv_key,
                     passphrase,
-                  })
-                }
+                  });
+                }}
               >
                 <div style={{ width: 26, height: 18 }}>
                   <ExportIcon sx={{ width: 18, height: 18 }} />
@@ -176,7 +180,9 @@ const AuditPGPDialog = ({
                 size='small'
                 color='primary'
                 variant='contained'
-                onClick={() => saveAsJson('messages_' + orderId + '.json', messages)}
+                onClick={() => {
+                  saveAsJson('messages_' + orderId + '.json', messages);
+                }}
               >
                 <div style={{ width: 28, height: 20 }}>
                   <ExportIcon sx={{ width: 18, height: 18 }} />

@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme, styled, Grid, IconButton } from '@mui/material';
-import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
+import Tooltip, { type TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import { closeAll } from '../../contexts/AppContext';
-import { OpenDialogs } from '../MainDialogs';
+import { type OpenDialogs } from '../MainDialogs';
 
 import { BubbleChart, Info, People, PriceChange, School } from '@mui/icons-material';
 
@@ -45,7 +45,9 @@ const MoreTooltip = ({ open, setOpen, children }: MoreTooltipProps): JSX.Element
                 sx={{
                   color: open.info ? theme.palette.primary.main : theme.palette.text.secondary,
                 }}
-                onClick={() => setOpen({ ...closeAll, info: !open.info })}
+                onClick={() => {
+                  setOpen({ ...closeAll, info: !open.info });
+                }}
               >
                 <Info />
               </IconButton>
@@ -58,7 +60,9 @@ const MoreTooltip = ({ open, setOpen, children }: MoreTooltipProps): JSX.Element
                 sx={{
                   color: open.learn ? theme.palette.primary.main : theme.palette.text.secondary,
                 }}
-                onClick={() => setOpen({ ...closeAll, learn: !open.learn })}
+                onClick={() => {
+                  setOpen({ ...closeAll, learn: !open.learn });
+                }}
               >
                 <School />
               </IconButton>
@@ -75,7 +79,9 @@ const MoreTooltip = ({ open, setOpen, children }: MoreTooltipProps): JSX.Element
                 sx={{
                   color: open.community ? theme.palette.primary.main : theme.palette.text.secondary,
                 }}
-                onClick={() => setOpen({ ...closeAll, community: !open.community })}
+                onClick={() => {
+                  setOpen({ ...closeAll, community: !open.community });
+                }}
               >
                 <People />
               </IconButton>
@@ -90,7 +96,9 @@ const MoreTooltip = ({ open, setOpen, children }: MoreTooltipProps): JSX.Element
                     ? theme.palette.primary.main
                     : theme.palette.text.secondary,
                 }}
-                onClick={() => setOpen({ ...closeAll, coordinator: !open.coordinator })}
+                onClick={() => {
+                  setOpen({ ...closeAll, coordinator: !open.coordinator });
+                }}
               >
                 <PriceChange />
               </IconButton>
@@ -103,7 +111,9 @@ const MoreTooltip = ({ open, setOpen, children }: MoreTooltipProps): JSX.Element
                 sx={{
                   color: open.stats ? theme.palette.primary.main : theme.palette.text.secondary,
                 }}
-                onClick={() => setOpen({ ...closeAll, stats: !open.stats })}
+                onClick={() => {
+                  setOpen({ ...closeAll, stats: !open.stats });
+                }}
               >
                 <BubbleChart />
               </IconButton>

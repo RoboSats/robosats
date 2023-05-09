@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Select, MenuItem, useTheme, Grid, Typography } from '@mui/material';
-import Language from '../../models/Language.model';
+import type Language from '../../models/Language.model';
 
 import Flags from 'country-flag-icons/react/3x2';
 import { CataloniaFlag, BasqueCountryFlag } from '../Icons';

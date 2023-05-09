@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
-import Countdown, { CountdownRenderProps, zeroPad } from 'react-countdown';
+import Countdown, { type CountdownRenderProps, zeroPad } from 'react-countdown';
 
-import { Order, Settings } from '../../../models';
-import { LightningForm, LightningPayoutForm } from '../Forms';
+import { type Order, type Settings } from '../../../models';
+import { type LightningForm, LightningPayoutForm } from '../Forms';
 
 interface RoutingFailedPromptProps {
   order: Order;

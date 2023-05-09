@@ -18,7 +18,7 @@ import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
 import { FlagWithProps } from '../Icons';
 
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import { Favorites } from '../../models';
+import { type Favorites } from '../../models';
 import SwapCalls from '@mui/icons-material/SwapCalls';
 
 interface BookControlProps {
@@ -259,7 +259,9 @@ const BookControl = ({
                 style: { textAlign: 'center' },
               }}
               value={paymentMethod[0] ? paymentMethod[0] : 'ANY'}
-              onChange={(e) => setPaymentMethods(e.target.value == 'ANY' ? [] : [e.target.value])}
+              onChange={(e) => {
+                setPaymentMethods(e.target.value == 'ANY' ? [] : [e.target.value]);
+              }}
             >
               <MenuItem value={'ANY'}>
                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>

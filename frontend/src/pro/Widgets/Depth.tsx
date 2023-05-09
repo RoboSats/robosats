@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { Paper, useTheme } from '@mui/material';
 import DepthChart from '../../components/Charts/DepthChart';
 

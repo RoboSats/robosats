@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { AppContext, UseAppStoreType } from '../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../contexts/AppContext';
 import { useTranslation, Trans } from 'react-i18next';
 import { Paper, Alert, AlertTitle, Button, Link } from '@mui/material';
 import { getHost } from '../utils';
@@ -57,7 +57,12 @@ const UnsafeAlert = (): JSX.Element => {
             severity='success'
             sx={{ maxHeight: '8em' }}
             action={
-              <Button color='success' onClick={() => setShow(false)}>
+              <Button
+                color='success'
+                onClick={() => {
+                  setShow(false);
+                }}
+              >
                 {t('Hide')}
               </Button>
             }
@@ -80,7 +85,15 @@ const UnsafeAlert = (): JSX.Element => {
           <Alert
             severity='warning'
             sx={{ maxHeight: '7em' }}
-            action={<Button onClick={() => setShow(false)}>{t('Hide')}</Button>}
+            action={
+              <Button
+                onClick={() => {
+                  setShow(false);
+                }}
+              >
+                {t('Hide')}
+              </Button>
+            }
           >
             <AlertTitle>{t('You are not using RoboSats privately')}</AlertTitle>
             <Trans i18nKey='desktop_unsafe_alert'>
@@ -120,7 +133,12 @@ const UnsafeAlert = (): JSX.Element => {
               <a> site.</a>
             </Trans>
             <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-              <Button className='hideAlertButton' onClick={() => setShow(false)}>
+              <Button
+                className='hideAlertButton'
+                onClick={() => {
+                  setShow(false);
+                }}
+              >
                 {t('Hide')}
               </Button>
             </div>

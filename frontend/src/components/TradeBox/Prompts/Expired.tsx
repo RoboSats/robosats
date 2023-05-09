@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Grid, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 
-import { Order } from '../../../models';
+import { type Order } from '../../../models';
 
 interface ExpiredPromptProps {
   order: Order;

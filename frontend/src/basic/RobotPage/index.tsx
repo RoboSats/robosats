@@ -19,7 +19,7 @@ import RobotProfile from './RobotProfile';
 import Recovery from './Recovery';
 import { TorIcon } from '../../components/Icons';
 import { genKey } from '../../pgp';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { validateTokenEntropy } from '../../utils';
 
 const RobotPage = (): JSX.Element => {

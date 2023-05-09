@@ -8,7 +8,7 @@ import {
   DialogContentText,
   Button,
 } from '@mui/material';
-import { Order } from '../../../models';
+import { type Order } from '../../../models';
 import { LoadingButton } from '@mui/lab';
 
 interface ConfirmUndoFiatSentDialogProps {
@@ -30,7 +30,9 @@ export const ConfirmUndoFiatSentDialog = ({
 
   useEffect(() => {
     if (time > 0 && open) {
-      setTimeout(() => setTime(time - 1), 1000);
+      setTimeout(() => {
+        setTime(time - 1);
+      }, 1000);
     }
   }, [time, open]);
 

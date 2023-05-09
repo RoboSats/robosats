@@ -8,7 +8,7 @@ import { filterOrders } from '../../utils';
 import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
 
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { NoRobotDialog } from '../../components/Dialogs';
 
 const MakerPage = (): JSX.Element => {
@@ -64,7 +64,12 @@ const MakerPage = (): JSX.Element => {
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1}>
-      <NoRobotDialog open={openNoRobot} onClose={() => setOpenNoRobot(false)} />
+      <NoRobotDialog
+        open={openNoRobot}
+        onClose={() => {
+          setOpenNoRobot(false);
+        }}
+      />
       <Grid item>
         <Collapse in={matches.length > 0 && showMatches}>
           <Grid container direction='column' alignItems='center' spacing={1}>
@@ -102,8 +107,12 @@ const MakerPage = (): JSX.Element => {
             }}
             disableRequest={matches.length > 0 && !showMatches}
             collapseAll={showMatches}
-            onSubmit={() => setShowMatches(matches.length > 0)}
-            onReset={() => setShowMatches(false)}
+            onSubmit={() => {
+              setShowMatches(matches.length > 0);
+            }}
+            onReset={() => {
+              setShowMatches(false);
+            }}
             submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
           />
         </Paper>

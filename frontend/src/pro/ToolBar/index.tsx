@@ -2,7 +2,7 @@ import React from 'react';
 import { Paper, Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import { Lock, LockOpen } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { Settings } from '../../models';
+import { type Settings } from '../../models';
 
 interface ToolBarProps {
   settings: Settings;
@@ -39,9 +39,9 @@ const ToolBar = ({ height = '3em', settings, setSettings }: ToolBarProps): JSX.E
             enterNextDelay={2000}
           >
             <IconButton
-              onClick={() =>
-                setSettings({ ...settings, freezeViewports: !settings.freezeViewports })
-              }
+              onClick={() => {
+                setSettings({ ...settings, freezeViewports: !settings.freezeViewports });
+              }}
               sx={{ position: 'fixed', right: '1em', top: '0em', color: 'text.secondary' }}
             >
               {settings.freezeViewports ? <Lock color='primary' /> : <LockOpen color='secondary' />}

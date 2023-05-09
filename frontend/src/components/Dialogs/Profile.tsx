@@ -33,10 +33,10 @@ import NumbersIcon from '@mui/icons-material/Numbers';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { UserNinjaIcon } from '../Icons';
 
-import { getHost, getWebln } from '../../utils';
+import { getWebln } from '../../utils';
 import RobotAvatar from '../RobotAvatar';
 import { apiClient } from '../../services/api';
-import { Robot } from '../../models';
+import { type Robot } from '../../models';
 
 interface Props {
   open: boolean;
@@ -50,7 +50,6 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
-  const host = getHost();
 
   const [rewardInvoice, setRewardInvoice] = useState<string>('');
   const [showRewardsSpinner, setShowRewardsSpinner] = useState<boolean>(false);
@@ -60,13 +59,20 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
   const [weblnEnabled, setWeblnEnabled] = useState<boolean>(false);
   const [openEnableTelegram, setOpenEnableTelegram] = useState<boolean>(false);
 
+  const handleWebln = async () => {
+    const webln = await getWebln()
+      .then(() => {
+        setWeblnEnabled(true);
+      })
+      .catch(() => {
+        setWeblnEnabled(false);
+        console.log('WebLN not available');
+      });
+    return webln;
+  };
+
   useEffect(() => {
-    const handleWebln = async (order: Order) => {
-      const webln = await getWebln().catch(() => console.log('WebLN not available'));
-      return webln;
-    };
-    const webln = handleWebln();
-    setWeblnEnabled(webln !== undefined);
+    handleWebln();
   }, []);
 
   const handleWeblnInvoiceClicked = async (e: any) => {
@@ -107,7 +113,9 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
   const setStealthInvoice = (wantsStealth: boolean) => {
     apiClient
       .post(baseUrl, '/api/stealth/', { wantsStealth }, { tokenSHA256: robot.tokenSHA256 })
-      .then((data) => setRobot({ ...robot, stealthInvoices: data?.wantsStealth }));
+      .then((data) => {
+        setRobot({ ...robot, stealthInvoices: data?.wantsStealth });
+      });
   };
 
   return (
@@ -213,7 +221,9 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
 
           <EnableTelegramDialog
             open={openEnableTelegram}
-            onClose={() => setOpenEnableTelegram(false)}
+            onClose={() => {
+              setOpenEnableTelegram(false);
+            }}
             tgBotName={robot.tgBotName}
             tgToken={robot.tgToken}
           />
@@ -229,7 +239,12 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
                   <b>{t('Telegram enabled')}</b>
                 </Typography>
               ) : (
-                <Button color='primary' onClick={() => setOpenEnableTelegram(true)}>
+                <Button
+                  color='primary'
+                  onClick={() => {
+                    setOpenEnableTelegram(true);
+                  }}
+                >
                   {t('Enable Telegram Notifications')}
                 </Button>
               )}
@@ -256,7 +271,9 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
                     control={
                       <Switch
                         checked={robot.stealthInvoices}
-                        onChange={() => setStealthInvoice(!robot.stealthInvoices)}
+                        onChange={() => {
+                          setStealthInvoice(!robot.stealthInvoices);
+                        }}
                       />
                     }
                   />
@@ -280,7 +297,9 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
                   <Grid item xs={3}>
                     <Button
                       disabled={robot.earnedRewards === 0}
-                      onClick={() => setOpenClaimRewards(true)}
+                      onClick={() => {
+                        setOpenClaimRewards(true);
+                      }}
                       variant='contained'
                       size='small'
                     >
@@ -309,7 +328,9 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
                   <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 80 }}>
                     <Button
                       sx={{ maxHeight: 38 }}
-                      onClick={(e) => handleSubmitInvoiceClicked(e, rewardInvoice)}
+                      onClick={(e) => {
+                        handleSubmitInvoiceClicked(e, rewardInvoice);
+                      }}
                       variant='contained'
                       color='primary'
                       size='small'
@@ -319,12 +340,14 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
                     </Button>
                   </Grid>
                 </Grid>
-                {weblnEnabled && (
+                {weblnEnabled ? (
                   <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
                     <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 240 }}>
                       <Button
                         sx={{ maxHeight: 38, minWidth: 230 }}
-                        onClick={async (e) => await handleWeblnInvoiceClicked(e)}
+                        onClick={async (e) => {
+                          await handleWeblnInvoiceClicked(e);
+                        }}
                         variant='contained'
                         color='primary'
                         size='small'
@@ -334,6 +357,8 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
                       </Button>
                     </Grid>
                   </Grid>
+                ) : (
+                  <></>
                 )}
               </form>
             )}

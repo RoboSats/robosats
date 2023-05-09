@@ -16,7 +16,7 @@ import {
   IconButton,
 } from '@mui/material';
 
-import Countdown, { CountdownRenderProps, zeroPad } from 'react-countdown';
+import Countdown, { type CountdownRenderProps, zeroPad } from 'react-countdown';
 import RobotAvatar from '../../components/RobotAvatar';
 
 import currencies from '../../../static/assets/currencies.json';
@@ -34,7 +34,7 @@ import { PaymentStringAsIcons } from '../../components/PaymentMethods';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
 
-import { Order, Info } from '../../models';
+import { type Order, type Info } from '../../models';
 import { statusBadgeColor, pn, amountToString, computeSats } from '../../utils';
 import TakeButton from './TakeButton';
 
@@ -160,20 +160,20 @@ const OrderDetails = ({
           amount: order.amount,
           fee: -tradeFee,
           routingBudget: defaultRoutingBudget,
-          rate: rate,
+          rate,
         });
       } else {
         const min = computeSats({
           amount: Number(order.min_amount),
           fee: -tradeFee,
           routingBudget: defaultRoutingBudget,
-          rate: rate,
+          rate,
         });
         const max = computeSats({
           amount: Number(order.max_amount),
           fee: -tradeFee,
           routingBudget: defaultRoutingBudget,
-          rate: rate,
+          rate,
         });
         sats = `${min}-${max}`;
       }
@@ -190,18 +190,18 @@ const OrderDetails = ({
         sats = computeSats({
           amount: order.amount,
           fee: tradeFee,
-          rate: rate,
+          rate,
         });
       } else {
         const min = computeSats({
           amount: order.min_amount,
           fee: tradeFee,
-          rate: rate,
+          rate,
         });
         const max = computeSats({
           amount: order.max_amount,
           fee: tradeFee,
-          rate: rate,
+          rate,
         });
         sats = `${min}-${max}`;
       }
@@ -297,7 +297,11 @@ const OrderDetails = ({
               secondary={order.amount ? 'Amount' : 'Amount Range'}
             />
             <ListItemIcon>
-              <IconButton onClick={() => setShowSatsDetails(!showSatsDetails)}>
+              <IconButton
+                onClick={() => {
+                  setShowSatsDetails(!showSatsDetails);
+                }}
+              >
                 {showSatsDetails ? <ExpandLess /> : <ExpandMore color='primary' />}
               </IconButton>
             </ListItemIcon>

@@ -34,7 +34,14 @@ const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile 
           enterNextDelay={2000}
           title={t('Verify your privacy')}
         >
-          <Button size='small' color='primary' variant='outlined' onClick={() => setAudit(!audit)}>
+          <Button
+            size='small'
+            color='primary'
+            variant='outlined'
+            onClick={() => {
+              setAudit(!audit);
+            }}
+          >
             <KeyIcon sx={{ width: '0.8em', height: '0.8em' }} />
             {t('Audit PGP')}{' '}
           </Button>
@@ -54,7 +61,9 @@ const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile 
               size='small'
               color='primary'
               variant='outlined'
-              onClick={() => saveAsJson('complete_log_chat_' + orderId + '.json', createJsonFile())}
+              onClick={() => {
+                saveAsJson('complete_log_chat_' + orderId + '.json', createJsonFile());
+              }}
             >
               <div style={{ width: '1.4em', height: '1.4em' }}>
                 <ExportIcon sx={{ width: '0.8em', height: '0.8em' }} />
@@ -68,7 +77,9 @@ const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile 
               size='small'
               color='primary'
               variant='outlined'
-              onClick={() => systemClient.copyToClipboard(JSON.stringify(createJsonFile()))}
+              onClick={() => {
+                systemClient.copyToClipboard(JSON.stringify(createJsonFile()));
+              }}
             >
               <div style={{ width: '1.4em', height: '1.4em' }}>
                 <ExportIcon sx={{ width: '0.8em', height: '0.8em' }} />

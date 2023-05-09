@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { AuditPGPDialog } from '../../../Dialogs';
-import { Robot } from '../../../../models';
+import { type Robot } from '../../../../models';
 
 // Icons
 import CircularProgress from '@mui/material/CircularProgress';
@@ -11,7 +11,7 @@ import KeyIcon from '@mui/icons-material/Key';
 import { useTheme } from '@mui/system';
 import MessageCard from '../MessageCard';
 import ChatHeader from '../ChatHeader';
-import { EncryptedChatMessage, ServerMessage } from '..';
+import { type EncryptedChatMessage, type ServerMessage } from '..';
 import { apiClient } from '../../../../services/api';
 import ChatBottom from '../ChatBottom';
 
@@ -222,7 +222,9 @@ const EncryptedTurtleChat: React.FC<Props> = ({
               setValue('');
             });
         })
-        .catch((error) => setError(error.toString()));
+        .catch((error) => {
+          setError(error.toString());
+        });
     }
     e.preventDefault();
   };
@@ -237,14 +239,18 @@ const EncryptedTurtleChat: React.FC<Props> = ({
     >
       <AuditPGPDialog
         open={audit}
-        onClose={() => setAudit(false)}
+        onClose={() => {
+          setAudit(false);
+        }}
         orderId={Number(orderId)}
         messages={messages}
         own_pub_key={robot.pubKey || ''}
         own_enc_priv_key={robot.encPrivKey || ''}
         peer_pub_key={peerPubKey || 'Not received yet'}
         passphrase={robot.token || ''}
-        onClickBack={() => setAudit(false)}
+        onClickBack={() => {
+          setAudit(false);
+        }}
       />
 
       <Grid item>

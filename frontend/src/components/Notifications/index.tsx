@@ -5,14 +5,14 @@ import {
   Alert,
   useTheme,
   IconButton,
-  TooltipProps,
+  type TooltipProps,
   styled,
   tooltipClasses,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Order } from '../../models';
+import { type Order } from '../../models';
 import Close from '@mui/icons-material/Close';
-import { Page } from '../../basic/NavBar';
+import { type Page } from '../../basic/NavBar';
 
 interface NotificationsProps {
   order: Order | undefined;
@@ -28,7 +28,7 @@ interface NotificationMessage {
   onClick: () => void;
   sound: HTMLAudioElement | undefined;
   timeout: number;
-  pageTitle: String;
+  pageTitle: string;
 }
 
 const audio = {
@@ -207,7 +207,9 @@ const Notifications = ({
     if (message.title != '') {
       setMessage(message);
       setShow(true);
-      setTimeout(() => setShow(false), message.timeout);
+      setTimeout(() => {
+        setShow(false);
+      }, message.timeout);
       if (message.sound != null) {
         message.sound.play();
       }

@@ -12,7 +12,7 @@ import { LoadingButton } from '@mui/lab';
 
 interface ConfirmCollabCancelDialogProps {
   open: boolean;
-  loading: Boolean;
+  loading: boolean;
   onClose: () => void;
   onCollabCancelClick: () => void;
   peerAskedCancel: boolean;

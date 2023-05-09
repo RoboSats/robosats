@@ -10,7 +10,7 @@ import BookTable from '../../components/BookTable';
 
 // Icons
 import { BarChart, FormatListBulleted } from '@mui/icons-material';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 const BookPage = (): JSX.Element => {
   const { robot, fetchBook, windowSize, setDelay, setOrder } =
@@ -47,13 +47,22 @@ const BookPage = (): JSX.Element => {
   const NavButtons = function () {
     return (
       <ButtonGroup variant='contained' color='inherit'>
-        <Button color='primary' onClick={() => setOpenMaker(true)}>
+        <Button
+          color='primary'
+          onClick={() => {
+            setOpenMaker(true);
+          }}
+        >
           {t('Create')}
         </Button>
         {doubleView ? (
           <></>
         ) : (
-          <Button onClick={() => setView(view === 'depth' ? 'list' : 'depth')}>
+          <Button
+            onClick={() => {
+              setView(view === 'depth' ? 'list' : 'depth');
+            }}
+          >
             {view == 'depth' ? (
               <>
                 <FormatListBulleted /> {t('List')}
@@ -71,9 +80,19 @@ const BookPage = (): JSX.Element => {
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1} sx={{ minWidth: 400 }}>
-      <NoRobotDialog open={openNoRobot} onClose={() => setOpenNoRobot(false)} />
+      <NoRobotDialog
+        open={openNoRobot}
+        onClose={() => {
+          setOpenNoRobot(false);
+        }}
+      />
       {openMaker ? (
-        <Dialog open={openMaker} onClose={() => setOpenMaker(false)}>
+        <Dialog
+          open={openMaker}
+          onClose={() => {
+            setOpenMaker(false);
+          }}
+        >
           <Box sx={{ maxWidth: '18em', padding: '0.5em' }}>
             <MakerForm
               onOrderCreated={(id) => {

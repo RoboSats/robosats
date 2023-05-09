@@ -4,10 +4,15 @@ import { Grid, Typography, ToggleButtonGroup, ToggleButton } from '@mui/material
 
 import currencies from '../../../../static/assets/currencies.json';
 
-import { Order, Settings } from '../../../models';
+import { type Order, type Settings } from '../../../models';
 import { pn } from '../../../utils';
 import { Bolt, Link } from '@mui/icons-material';
-import { LightningPayoutForm, LightningForm, OnchainPayoutForm, OnchainForm } from '../Forms';
+import {
+  LightningPayoutForm,
+  type LightningForm,
+  OnchainPayoutForm,
+  type OnchainForm,
+} from '../Forms';
 
 interface PayoutPrompProps {
   order: Order;
@@ -71,7 +76,9 @@ export const PayoutPrompt = ({
           size='small'
           value={tab}
           exclusive
-          onChange={(mouseEvent, value) => setTab(value == null ? tab : value)}
+          onChange={(mouseEvent, value) => {
+            setTab(value == null ? tab : value);
+          }}
         >
           <ToggleButton value='lightning'>
             <div

@@ -6,8 +6,6 @@ export interface Limit {
   max_bondless_amount: number;
 }
 
-export interface LimitList {
-  [currencyCode: string]: Limit;
-}
+export type LimitList = Record<string, Limit>;
 
 export default Limit;

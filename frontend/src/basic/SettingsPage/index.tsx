@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Grid, Paper } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
-import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 const SettingsPage = (): JSX.Element => {
   const { windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@mui/material';
-import { Order } from '../../models';
+import { type Order } from '../../models';
 
 interface CollabCancelAlertProps {
   order: Order;

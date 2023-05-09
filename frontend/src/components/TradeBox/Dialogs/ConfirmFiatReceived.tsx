@@ -8,7 +8,7 @@ import {
   DialogContentText,
   Button,
 } from '@mui/material';
-import { Order } from '../../../models';
+import { type Order } from '../../../models';
 import currencies from '../../../../static/assets/currencies.json';
 import { pn } from '../../../utils';
 import { LoadingButton } from '@mui/lab';

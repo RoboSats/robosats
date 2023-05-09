@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid, Typography } from '@mui/material';
-import { DisputeForm, DisputeStatementForm } from '../Forms';
+import { type DisputeForm, DisputeStatementForm } from '../Forms';
 
 interface DisputePromptProps {
   loading: boolean;

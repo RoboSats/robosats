@@ -16,8 +16,8 @@ import {
 import { Bolt, Add, DeleteSweep, Logout, Download } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
-import { Slot, Robot } from '../../models';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { type Slot, type Robot } from '../../models';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 
@@ -298,7 +298,12 @@ const RobotProfile = ({
 
               {window.NativeRobosats === undefined ? (
                 <Grid item>
-                  <Button color='primary' onClick={() => garage.download()}>
+                  <Button
+                    color='primary'
+                    onClick={() => {
+                      garage.download();
+                    }}
+                  >
                     <Download />
                   </Button>
                 </Grid>

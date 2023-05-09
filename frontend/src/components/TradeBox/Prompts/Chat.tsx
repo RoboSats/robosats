@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { Grid, Typography, Tooltip, Collapse, IconButton } from '@mui/material';
 import currencies from '../../../../static/assets/currencies.json';
 
-import { Order, Robot } from '../../../models';
+import { type Order, type Robot } from '../../../models';
 import { pn } from '../../../utils';
-import EncryptedChat, { EncryptedChatMessage } from '../EncryptedChat';
+import EncryptedChat, { type EncryptedChatMessage } from '../EncryptedChat';
 import Countdown, { zeroPad } from 'react-countdown';
 import { LoadingButton } from '@mui/lab';
 

@@ -1,4 +1,4 @@
-import { SystemClient } from '..';
+import { type SystemClient } from '..';
 import NativeRobosats from '../../Native';
 
 class SystemNativeClient implements SystemClient {

@@ -1,16 +1,16 @@
-import { ApiClient, Auth } from '..';
+import { type ApiClient, type Auth } from '..';
 import { systemClient } from '../../System';
 
 class ApiNativeClient implements ApiClient {
-  private assetsCache: { [path: string]: string } = {};
-  private assetsPromises: { [path: string]: Promise<string | undefined> } = {};
+  private assetsCache: Record<string, string> = {};
+  private assetsPromises: Record<string, Promise<string | undefined>> = {};
 
   private readonly getHeaders: (auth?: Auth) => HeadersInit = (auth) => {
     let headers = {
       'Content-Type': 'application/json',
     };
 
-    if (auth) {
+    if (auth != null) {
       headers = {
         ...headers,
         ...{
@@ -19,7 +19,7 @@ class ApiNativeClient implements ApiClient {
       };
     }
 
-    if (auth?.keys) {
+    if (auth?.keys != null) {
       headers = {
         ...headers,
         ...{
@@ -31,7 +31,7 @@ class ApiNativeClient implements ApiClient {
     return headers;
   };
 
-  private readonly parseResponse = (response: { [key: string]: any }): object => {
+  private readonly parseResponse = (response: Record<string, any>): object => {
     if (response.headers['set-cookie']) {
       response.headers['set-cookie'].forEach((cookie: string) => {
         const keySplit: string[] = cookie.split('=');
@@ -46,7 +46,9 @@ class ApiNativeClient implements ApiClient {
     path,
     body,
   ) => {
-    return await new Promise((res, _rej) => res({}));
+    return await new Promise((res, _rej) => {
+      res({});
+    });
   };
 
   public delete: (baseUrl: string, path: string, auth?: Auth) => Promise<object | undefined> =

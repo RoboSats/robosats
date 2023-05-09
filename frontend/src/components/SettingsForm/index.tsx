@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import {
   Grid,
   Paper,

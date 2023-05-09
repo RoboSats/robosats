@@ -21,7 +21,7 @@ import {
   FormHelperText,
 } from '@mui/material';
 
-import { Order, Settings } from '../../../models';
+import { type Order, type Settings } from '../../../models';
 import { decode } from 'light-bolt11-decoder';
 import WalletsButton from '../WalletsButton';
 import { LoadingButton } from '@mui/lab';
@@ -195,7 +195,9 @@ export const LightningPayoutForm = ({
       .catch(() => {
         setLightning({ ...lightning, badLnproxy: 'Lnproxy server uncaught error' });
       })
-      .finally(() => setLoadingLnproxy(false));
+      .finally(() => {
+        setLoadingLnproxy(false);
+      });
   };
 
   const handleAdvancedOptions = function (checked: boolean) {
@@ -291,7 +293,9 @@ export const LightningPayoutForm = ({
         <Switch
           size='small'
           checked={lightning.advancedOptions}
-          onChange={(e) => handleAdvancedOptions(e.target.checked)}
+          onChange={(e) => {
+            handleAdvancedOptions(e.target.checked);
+          }}
         />
         <SelfImprovement sx={{ color: 'text.primary' }} />
       </Grid>
@@ -375,13 +379,13 @@ export const LightningPayoutForm = ({
                   >
                     <div>
                       <FormControlLabel
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setLightning({
                             ...lightning,
                             useLnproxy: e.target.checked,
                             invoice: e.target.checked ? '' : lightning.invoice,
-                          })
-                        }
+                          });
+                        }}
                         checked={lightning.useLnproxy}
                         control={<Checkbox />}
                         label={
@@ -419,9 +423,9 @@ export const LightningPayoutForm = ({
                             label={t('Server')}
                             labelId='select-label'
                             value={lightning.lnproxyServer}
-                            onChange={(e) =>
-                              setLightning({ ...lightning, lnproxyServer: Number(e.target.value) })
-                            }
+                            onChange={(e) => {
+                              setLightning({ ...lightning, lnproxyServer: Number(e.target.value) });
+                            }}
                           >
                             {lnproxies.map((lnproxyServer, index) => (
                               <MenuItem key={index} value={index}>
@@ -494,13 +498,13 @@ export const LightningPayoutForm = ({
                 <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
                   <IconButton
                     sx={{ height: '0.5em' }}
-                    onClick={() =>
+                    onClick={() => {
                       systemClient.copyToClipboard(
                         lightning.useLnproxy
                           ? String(lightning.lnproxyAmount)
                           : String(lightning.amount),
-                      )
-                    }
+                      );
+                    }}
                   >
                     <ContentCopy sx={{ width: '0.8em' }} />
                   </IconButton>
@@ -523,9 +527,9 @@ export const LightningPayoutForm = ({
                     style: { textAlign: 'center' },
                   }}
                   variant='outlined'
-                  onChange={(e) =>
-                    setLightning({ ...lightning, lnproxyInvoice: e.target.value ?? '' })
-                  }
+                  onChange={(e) => {
+                    setLightning({ ...lightning, lnproxyInvoice: e.target.value ?? '' });
+                  }}
                 />
               ) : (
                 <></>
@@ -547,7 +551,9 @@ export const LightningPayoutForm = ({
                 multiline={!lightning.useLnproxy}
                 minRows={3}
                 maxRows={5}
-                onChange={(e) => setLightning({ ...lightning, invoice: e.target.value ?? '' })}
+                onChange={(e) => {
+                  setLightning({ ...lightning, invoice: e.target.value ?? '' });
+                }}
               />
             </Grid>
 
@@ -572,7 +578,9 @@ export const LightningPayoutForm = ({
               <LoadingButton
                 loading={loading}
                 disabled={lightning.invoice.length < 20 || lightning.badInvoice != ''}
-                onClick={() => onClickSubmit(lightning.invoice)}
+                onClick={() => {
+                  onClickSubmit(lightning.invoice);
+                }}
                 variant='outlined'
                 color='primary'
               >

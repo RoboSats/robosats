@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid, Typography, TextField, List, Divider, ListItemText, ListItem } from '@mui/material';
-import { Order } from '../../../models';
+import { type Order } from '../../../models';
 import { LoadingButton } from '@mui/lab';
 import { pn } from '../../../utils';
 
@@ -124,7 +124,9 @@ export const OnchainPayoutForm = ({
               inputProps={{
                 style: { textAlign: 'center' },
               }}
-              onChange={(e) => setOnchain({ ...onchain, address: e.target.value })}
+              onChange={(e) => {
+                setOnchain({ ...onchain, address: e.target.value });
+              }}
             />
           </Grid>
           <Grid item xs={5}>
