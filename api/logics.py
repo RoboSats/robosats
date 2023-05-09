@@ -381,7 +381,7 @@ class Logics:
 
         # If fiat has been marked as sent, automatic dispute
         # resolution is not possible.
-        if order.is_fiat_sent:
+        if order.is_fiat_sent and not order.reverted_fiat_sent:
             return False
 
         # If the order has not entered dispute due to time expire
@@ -410,7 +410,7 @@ class Logics:
             cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
             order.status = Order.Status.MLD
 
-        elif num_messages_maker == 0:
+        elif num_messages_taker == 0:
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)
