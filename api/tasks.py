@@ -169,6 +169,9 @@ def cache_market():
         print("SOFT LIMIT REACHED. Could not fetch current external market prices.")
         return
 
+    if not exchange_rates:
+        return
+
     results = {}
     for i in range(
         len(Currency.currency_dict.values())

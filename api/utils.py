@@ -108,8 +108,27 @@ def get_exchange_rates(currencies):
                     except Exception:
                         yadio_rates.append(np.nan)
                 api_rates.append(yadio_rates)
-        except Exception:
-            print(f"Could not fetch BTC prices from {api_url}")
+
+            # Tor proxied requests to bitpay.com will fail. Skip if USE_TOR is enabled.
+            elif "bitpay.com" in api_url and not USE_TOR:
+                headers = {
+                    "X-Accept-Version": "2.0.0",
+                    "Content-type": "application/json",
+                }
+                bitpay_prices = session.get(api_url, headers=headers).json()
+                bitpay_prices = {
+                    item["code"]: item["rate"] for item in bitpay_prices["data"]
+                }
+                bitpay_rates = []
+                for currency in currencies:
+                    try:
+                        bitpay_rates.append(float(bitpay_prices[currency]))
+                    except Exception:
+                        bitpay_rates.append(np.nan)
+                api_rates.append(bitpay_rates)
+
+        except Exception as e:
+            print(f"Could not fetch BTC prices from {api_url}: {str(e)}")
             pass
 
     if len(api_rates) == 0:
