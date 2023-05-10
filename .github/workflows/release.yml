@@ -6,6 +6,9 @@ on:
     tags:
       - "v*.*.*"
 
+
+permissions: write-all
+
 jobs:
   check-versions:
     runs-on: ubuntu-latest
@@ -67,7 +70,6 @@ jobs:
       semver: ${{ needs.check-versions.outputs.semver }}
 
   release:
-    permissions: write-all
     needs: [check-versions, coordinator-image, client-image, android-build]
     runs-on: ubuntu-latest
     steps:
