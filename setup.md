@@ -32,7 +32,7 @@ You can edit the frontend code in `/frontend/src/` to make the changes you want.
 
 4. On another terminal `npm install -g http-server`
 
-5. Then run `http-server "robosats/frontend/static/`
+5. Then run `http-server "robosats/frontend/static/"`
 
 6. Install [Requestly](https://requestly.io/) extension in your browser, it's a lightweight proxy. We want to use it so our browser grabs our local `main.js` instead of the remote. There are many alternatives to Requestly (be aware that Requestly might not respect your privacy. Didn't research it).
 
