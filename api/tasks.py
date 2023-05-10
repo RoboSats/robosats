@@ -1,4 +1,5 @@
 from celery import shared_task
+from celery.exceptions import SoftTimeLimitExceeded
 
 
 @shared_task(name="users_cleansing", time_limit=600)
@@ -46,7 +47,7 @@ def users_cleansing():
     return results
 
 
-@shared_task(name="follow_send_payment", time_limit=180)
+@shared_task(name="follow_send_payment", time_limit=180, soft_time_limit=175)
 def follow_send_payment(hash):
     """Sends sats to buyer, continuous update"""
 
@@ -68,8 +69,18 @@ def follow_send_payment(hash):
         float(lnpayment.num_satoshis) * float(lnpayment.routing_budget_ppm) / 1_000_000
     )
     timeout_seconds = config("PAYOUT_TIMEOUT_SECONDS", cast=int, default=90)
+    try:
+        results = LNNode.follow_send_payment(lnpayment, fee_limit_sat, timeout_seconds)
 
-    results = LNNode.follow_send_payment(lnpayment, fee_limit_sat, timeout_seconds)
+    except SoftTimeLimitExceeded:
+        # If the 3 minutes have been consumed without follow_send_payment()
+        # finishing (failed/successful) we set the last routing time as 'now'
+        # so the next check happens in 3 minutes, instead of right now.
+        lnpayment.last_routing_time = timezone.now()
+        lnpayment.save(update_fields=["last_routing_time"])
+        print(f"Order: {lnpayment.order_paid_LN} SOFT TIME LIMIT REACHED. Hash: {hash}")
+        results = {}
+
     return results
 
 
@@ -135,8 +146,15 @@ def payments_cleansing():
     return results
 
 
-@shared_task(name="cache_external_market_prices", ignore_result=True, time_limit=120)
+@shared_task(
+    name="cache_external_market_prices",
+    ignore_result=True,
+    time_limit=120,
+    soft_time_limit=115,
+)
 def cache_market():
+
+    import math
 
     from django.utils import timezone
 
@@ -144,7 +162,12 @@ def cache_market():
     from .utils import get_exchange_rates
 
     currency_codes = list(Currency.currency_dict.values())
-    exchange_rates = get_exchange_rates(currency_codes)
+
+    try:
+        exchange_rates = get_exchange_rates(currency_codes)
+    except SoftTimeLimitExceeded:
+        print("SOFT LIMIT REACHED. Could not fetch current external market prices.")
+        return
 
     results = {}
     for i in range(
@@ -155,7 +178,7 @@ def cache_market():
         results[i] = {currency_codes[i], rate}
 
         # Do not update if no new rate was found
-        if str(rate) == "nan":
+        if math.isnan(rate):
             continue
 
         # Create / Update database cached prices

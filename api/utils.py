@@ -72,7 +72,7 @@ def validate_onchain_address(address):
 market_cache = {}
 
 
-@ring.dict(market_cache, expire=3)  # keeps in cache for 3 seconds
+@ring.dict(market_cache, expire=30)  # keeps in cache for 30 seconds
 def get_exchange_rates(currencies):
     """
     Params: list of currency codes.
@@ -109,6 +109,7 @@ def get_exchange_rates(currencies):
                         yadio_rates.append(np.nan)
                 api_rates.append(yadio_rates)
         except Exception:
+            print(f"Could not fetch BTC prices from {api_url}")
             pass
 
     if len(api_rates) == 0:
