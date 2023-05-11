@@ -85,6 +85,7 @@ const BookPage = (): JSX.Element => {
         onClose={() => {
           setOpenNoRobot(false);
         }}
+        onClickGenerateRobot={() => navigate('/robot')}
       />
       {openMaker ? (
         <Dialog
@@ -98,6 +99,7 @@ const BookPage = (): JSX.Element => {
               onOrderCreated={(id) => {
                 navigate('/order/' + id);
               }}
+              onClickGenerateRobot={() => navigate('/robot')}
             />
           </Box>
         </Dialog>

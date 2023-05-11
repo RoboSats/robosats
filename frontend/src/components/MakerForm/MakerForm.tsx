@@ -50,6 +50,7 @@ interface MakerFormProps {
   onReset?: () => void;
   submitButtonLabel?: string;
   onOrderCreated?: (id: number) => void;
+  onClickGenerateRobot?: () => void;
 }
 
 const MakerForm = ({
@@ -60,12 +61,14 @@ const MakerForm = ({
   onReset = () => {},
   submitButtonLabel = 'Create Order',
   onOrderCreated = () => null,
+  onClickGenerateRobot = () => null,
 }: MakerFormProps): JSX.Element => {
   const { fav, setFav, limits, fetchLimits, info, maker, setMaker, baseUrl, robot } =
     useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
+
   const [badRequest, setBadRequest] = useState<string | null>(null);
   const [amountLimits, setAmountLimits] = useState<number[]>([1, 1000]);
   const [satoshisLimits, setSatoshisLimits] = useState<number[]>([20000, 4000000]);
@@ -469,6 +472,7 @@ const MakerForm = ({
         }}
         onClickDone={handleCreateOrder}
         hasRobot={robot.avatarLoaded}
+        onClickGenerateRobot={onClickGenerateRobot}
       />
       <Collapse in={limits.list.length == 0}>
         <div style={{ display: limits.list.length == 0 ? '' : 'none' }}>

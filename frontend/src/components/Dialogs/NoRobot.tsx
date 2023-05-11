@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -8,21 +8,19 @@ import {
   DialogContentText,
   Button,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 
 interface Props {
   open: boolean;
   onClose: () => void;
+  onClickGenerateRobot?: () => void;
 }
 
-const NoRobotDialog = ({ open, onClose }: Props): JSX.Element => {
+const NoRobotDialog = ({
+  open,
+  onClose,
+  onClickGenerateRobot = () => null,
+}: Props): JSX.Element => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-
-  const handleClickGenerate = function () {
-    onClose();
-    navigate('/robot');
-  };
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -35,7 +33,14 @@ const NoRobotDialog = ({ open, onClose }: Props): JSX.Element => {
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClickGenerate}>{t('Generate Robot')}</Button>
+        <Button
+          onClick={() => {
+            onClickGenerateRobot();
+            onClose();
+          }}
+        >
+          {t('Generate Robot')}
+        </Button>
       </DialogActions>
     </Dialog>
   );
