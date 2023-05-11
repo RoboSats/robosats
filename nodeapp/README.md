@@ -1,12 +1,12 @@
 # RoboSats client app for sovereign nodes
 
-RoboSats app for soverign nodes ( Umbrel, Citadel, Start9 ...). This app serves the RoboSats frontend app directly from your own node and redirects all API requests to RoboSats P2P market coordinator through your node's TOR proxy.
+RoboSats app for sovereign nodes ( Umbrel, Citadel, Start9 ...). This app serves the RoboSats frontend app directly from your own node and redirects all API requests to RoboSats P2P market coordinator through your node's TOR proxy.
 
 At the moment it has no special integration with your local lightning wallet (e.g. LND). This can be achieved easily by installing a WebLN compatible extension in your browser (e.g. getAlby).
 
 # How it works
 
-The container launches two processes: 1) A `socat` that will expose RoboSats coordinator API over HTTP on localhost:81 using the docker orchestration TOR socks proxy and 2) a `http-server` that serves all static files (including the Javascript client app) directly from your own node (should reduce loading times by a lot). Every request that cannot be served by your node http-server will be forwarded to the RoboSats coordinator (that is: API calls and Robot avatar images). Nginx is used to bypass `http-server` for websockets directly into the `socat` bridge as `http-server` does not support websockets connections.
+The container launches two processes: 1) A set of `socat` that will expose RoboSats coordinators API over HTTP on localhost:81 using the docker orchestration TOR socks proxy and 2) Nginx, used to direct every request where needed and serve the client app locally.
 
 # Why host your own RoboSats client
 
@@ -18,4 +18,4 @@ Advantages over a full over-the-internet RoboSats experience:
 
 # Future upgrades
 
-1. Increase availability by procesing API requests via I2P when TOR is not available.
+1. Increase availability by processing API requests via I2P when TOR is not available.

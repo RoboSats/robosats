@@ -71,7 +71,7 @@ export interface fetchRobotProps {
 
 export type TorStatus = 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
 
-const entryPage: Page | '' =
+let entryPage: Page | '' | 'index.html' =
   window.NativeRobosats === undefined ? window.location.pathname.split('/')[1] : '';
 
 export const closeAll = {
@@ -146,7 +146,9 @@ export const useAppStore = () => {
   const [order, setOrder] = useState<Order | undefined>(undefined);
   const [badOrder, setBadOrder] = useState<string | undefined>(undefined);
 
-  const [page, setPage] = useState<Page>(entryPage == '' ? 'robot' : entryPage);
+  const [page, setPage] = useState<Page>(
+    entryPage == '' || entryPage == 'index.html' ? 'robot' : entryPage,
+  );
   const [slideDirection, setSlideDirection] = useState<SlideDirection>({
     in: undefined,
     out: undefined,
