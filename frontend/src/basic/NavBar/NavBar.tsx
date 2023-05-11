@@ -56,6 +56,10 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
   useEffect(() => {
     // change tab (page) into the current route
     const pathPage: Page = location.pathname.split('/')[1];
+    if (pathPage == 'index.html') {
+      navigate('/robot');
+      setPage('robot');
+    }
     if (pathPage) {
       setPage(pathPage);
     }

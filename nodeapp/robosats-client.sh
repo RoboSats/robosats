@@ -1,11 +1,13 @@
-#!/bin/bash
+#!/bin/sh
 
-# Runs three simple services on a single container (why? simpler deployment)
-# 1) http-server: serves client app and static files within the image. Sends API requests to socat bridge.
-# 2) socat: exposes remote RoboSats backend from TOR socks to http//localhost:81.
-# 3) nginx: is just a hack to bypass http-server directly to socat for websocket connections (http-server does not support WS)
+# Runs two simple services on a single container.
+# 1) socat: exposes remote RoboSats backend from TOR socks to http//localhost:81.
+#    Every robosat coordinators needs a tor bridge
+# 2) nginx: does the magic of redirecting every request to either local (the app, static,
+#    languages) or remote (for each coordinator, either API or WS, and static avatar)
 
-client_server="npm exec http-server -- . -p 9000 -P http://127.0.0.1:81 -i false -d false"
-backend_tor_bridge="socat tcp4-LISTEN:81,reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${ROBOSATS_ONION:-robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+# Every robosat coordinators needs a tor bridge. So far only experimental coordinator available.
+experimental_onion=robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion
+experimental_socat="socat tcp4-LISTEN:81,reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${experimental_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
-$client_server & $backend_tor_bridge & nginx -g "daemon off;"
+$experimental_socat & nginx -g "daemon off;"
