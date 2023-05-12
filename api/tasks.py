@@ -51,6 +51,8 @@ def users_cleansing():
 def follow_send_payment(hash):
     """Sends sats to buyer, continuous update"""
 
+    from datetime import timedelta
+
     from decouple import config
     from django.utils import timezone
 
@@ -73,12 +75,14 @@ def follow_send_payment(hash):
         results = LNNode.follow_send_payment(lnpayment, fee_limit_sat, timeout_seconds)
 
     except SoftTimeLimitExceeded:
-        # If the 3 minutes have been consumed without follow_send_payment()
-        # finishing (failed/successful) we set the last routing time as 'now'
-        # so the next check happens in 3 minutes, instead of right now.
-        lnpayment.last_routing_time = timezone.now()
+        # If the 175 seconds have been consumed without follow_send_payment()
+        # returning, we set the last routing time as 'in 10 minutes'
+        # so the next check happens in 10 minutes, instead of right now.
+        lnpayment.last_routing_time = timezone.now() + timedelta(minutes=10)
         lnpayment.save(update_fields=["last_routing_time"])
-        print(f"Order: {lnpayment.order_paid_LN} SOFT TIME LIMIT REACHED. Hash: {hash}")
+        print(
+            f"Order: {lnpayment.order_paid_LN.id} SOFT TIME LIMIT REACHED. Hash: {hash}"
+        )
         results = {}
 
     return results
@@ -165,38 +169,39 @@ def cache_market():
 
     try:
         exchange_rates = get_exchange_rates(currency_codes)
+
+        if not exchange_rates:
+            return
+
+        results = {}
+        for i in range(
+            len(Currency.currency_dict.values())
+        ):  # currencies are indexed starting at 1 (USD)
+
+            rate = exchange_rates[i]
+            results[i] = {currency_codes[i], rate}
+
+            # Do not update if no new rate was found
+            if math.isnan(rate):
+                continue
+
+            # Create / Update database cached prices
+            currency_key = list(Currency.currency_dict.keys())[i]
+            Currency.objects.update_or_create(
+                id=int(currency_key),
+                currency=int(currency_key),
+                # if there is a Cached market prices matching that id, it updates it with defaults below
+                defaults={
+                    "exchange_rate": float(rate),
+                    "timestamp": timezone.now(),
+                },
+            )
+
+        return results
+
     except SoftTimeLimitExceeded:
         print("SOFT LIMIT REACHED. Could not fetch current external market prices.")
         return
-
-    if not exchange_rates:
-        return
-
-    results = {}
-    for i in range(
-        len(Currency.currency_dict.values())
-    ):  # currencies are indexed starting at 1 (USD)
-
-        rate = exchange_rates[i]
-        results[i] = {currency_codes[i], rate}
-
-        # Do not update if no new rate was found
-        if math.isnan(rate):
-            continue
-
-        # Create / Update database cached prices
-        currency_key = list(Currency.currency_dict.keys())[i]
-        Currency.objects.update_or_create(
-            id=int(currency_key),
-            currency=int(currency_key),
-            # if there is a Cached market prices matching that id, it updates it with defaults below
-            defaults={
-                "exchange_rate": float(rate),
-                "timestamp": timezone.now(),
-            },
-        )
-
-    return results
 
 
 @shared_task(name="send_notification", ignore_result=True, time_limit=120)
