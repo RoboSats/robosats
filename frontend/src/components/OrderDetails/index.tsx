@@ -44,6 +44,7 @@ interface OrderDetailsProps {
   info: Info;
   baseUrl: string;
   hasRobot: boolean;
+  onClickGenerateRobot?: () => void;
 }
 
 const OrderDetails = ({
@@ -52,6 +53,7 @@ const OrderDetails = ({
   setOrder,
   baseUrl,
   hasRobot,
+  onClickGenerateRobot = () => null,
 }: OrderDetailsProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -444,6 +446,7 @@ const OrderDetails = ({
               baseUrl={baseUrl}
               hasRobot={hasRobot}
               info={info}
+              onClickGenerateRobot={onClickGenerateRobot}
             />
           </Grid>
         ) : (

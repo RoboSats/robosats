@@ -69,6 +69,7 @@ const MakerPage = (): JSX.Element => {
         onClose={() => {
           setOpenNoRobot(false);
         }}
+        onClickGenerateRobot={() => navigate('/robot')}
       />
       <Grid item>
         <Collapse in={matches.length > 0 && showMatches}>
@@ -114,6 +115,7 @@ const MakerPage = (): JSX.Element => {
               setShowMatches(false);
             }}
             submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
+            onClickGenerateRobot={() => navigate('/robot')}
           />
         </Paper>
       </Grid>

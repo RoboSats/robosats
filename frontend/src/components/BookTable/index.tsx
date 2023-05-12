@@ -344,54 +344,57 @@ const BookTable = ({
     };
   }, []);
 
-  const premiumObj = useCallback((width: number) => {
-    // coloring premium texts based on 4 params:
-    // Hardcoded: a sell order at 0% is an outstanding premium
-    // Hardcoded: a buy order at 10% is an outstanding premium
-    const sellStandardPremium = 10;
-    const buyOutstandingPremium = 10;
-    return {
-      field: 'premium',
-      headerName: t('Premium'),
-      type: 'number',
-      width: width * fontSize,
-      renderCell: (params: any) => {
-        const currencyCode = currencyDict[params.row.currency.toString()];
-        let fontColor = `rgb(0,0,0)`;
-        if (params.row.type === 0) {
-          var premiumPoint = params.row.premium / buyOutstandingPremium;
-          premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
-          fontColor = premiumColor(
-            theme.palette.text.primary,
-            theme.palette.secondary.dark,
-            premiumPoint,
+  const premiumObj = useCallback(
+    (width: number) => {
+      // coloring premium texts based on 4 params:
+      // Hardcoded: a sell order at 0% is an outstanding premium
+      // Hardcoded: a buy order at 10% is an outstanding premium
+      const sellStandardPremium = 10;
+      const buyOutstandingPremium = 10;
+      return {
+        field: 'premium',
+        headerName: t('Premium'),
+        type: 'number',
+        width: width * fontSize,
+        renderCell: (params: any) => {
+          const currencyCode = currencyDict[params.row.currency.toString()];
+          let fontColor = `rgb(0,0,0)`;
+          if (params.row.type === 0) {
+            var premiumPoint = params.row.premium / buyOutstandingPremium;
+            premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
+            fontColor = premiumColor(
+              theme.palette.text.primary,
+              theme.palette.secondary.dark,
+              premiumPoint,
+            );
+          } else {
+            var premiumPoint = (sellStandardPremium - params.row.premium) / sellStandardPremium;
+            premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
+            fontColor = premiumColor(
+              theme.palette.text.primary,
+              theme.palette.primary.dark,
+              premiumPoint,
+            );
+          }
+          const fontWeight = 400 + Math.round(premiumPoint * 5) * 100;
+          return (
+            <Tooltip
+              placement='left'
+              enterTouchDelay={0}
+              title={pn(params.row.price) + ' ' + currencyCode + '/BTC'}
+            >
+              <div style={{ cursor: 'pointer' }}>
+                <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
+                  {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
+                </Typography>
+              </div>
+            </Tooltip>
           );
-        } else {
-          var premiumPoint = (sellStandardPremium - params.row.premium) / sellStandardPremium;
-          premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
-          fontColor = premiumColor(
-            theme.palette.text.primary,
-            theme.palette.primary.dark,
-            premiumPoint,
-          );
-        }
-        const fontWeight = 400 + Math.round(premiumPoint * 5) * 100;
-        return (
-          <Tooltip
-            placement='left'
-            enterTouchDelay={0}
-            title={pn(params.row.price) + ' ' + currencyCode + '/BTC'}
-          >
-            <div style={{ cursor: 'pointer' }}>
-              <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
-                {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
-              </Typography>
-            </div>
-          </Tooltip>
-        );
-      },
-    };
-  }, []);
+        },
+      };
+    },
+    [theme],
+  );
 
   const timerObj = useCallback((width: number) => {
     return {

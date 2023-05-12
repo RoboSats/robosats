@@ -1,12 +1,12 @@
 import React from 'react';
 import { NoRobotDialog, StoreTokenDialog } from '.';
-import { Page } from '../../basic/NavBar';
 
 interface ConfirmationDialogProps {
   open: boolean;
   onClose: () => void;
   onClickDone: () => void;
   hasRobot: boolean;
+  onClickGenerateRobot?: () => void;
 }
 
 const ConfirmationDialog = ({
@@ -14,6 +14,7 @@ const ConfirmationDialog = ({
   onClose,
   hasRobot,
   onClickDone,
+  onClickGenerateRobot = () => null,
 }: ConfirmationDialogProps): JSX.Element => {
   return hasRobot ? (
     <StoreTokenDialog
@@ -23,7 +24,7 @@ const ConfirmationDialog = ({
       onClickDone={onClickDone}
     />
   ) : (
-    <NoRobotDialog open={open} onClose={onClose} />
+    <NoRobotDialog open={open} onClose={onClose} onClickGenerateRobot={onClickGenerateRobot} />
   );
 };
 

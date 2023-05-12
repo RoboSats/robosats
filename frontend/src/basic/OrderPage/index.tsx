@@ -109,6 +109,7 @@ const OrderPage = (): JSX.Element => {
                     baseUrl={baseUrl}
                     info={info}
                     hasRobot={robot.avatarLoaded}
+                    onClickGenerateRobot={() => navigate('/robot')}
                   />
                 </Paper>
               </Grid>
@@ -164,6 +165,7 @@ const OrderPage = (): JSX.Element => {
                     baseUrl={baseUrl}
                     info={info}
                     hasRobot={robot.avatarLoaded}
+                    onClickGenerateRobot={() => navigate('/robot')}
                   />
                 </div>
                 <div style={{ display: tab == 'contract' ? '' : 'none' }}>
@@ -196,6 +198,7 @@ const OrderPage = (): JSX.Element => {
               baseUrl={baseUrl}
               info={info}
               hasRobot={robot.avatarLoaded}
+              onClickGenerateRobot={() => navigate('/robot')}
             />
           </Paper>
         )
