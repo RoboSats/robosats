@@ -412,8 +412,8 @@ class Logics:
 
         elif num_messages_taker == 0:
             cls.return_escrow(order)
-            cls.settle_bond(order.maker_bond)
-            cls.return_bond(order.taker_bond)
+            cls.settle_bond(order.taker_bond)
+            cls.return_bond(order.maker_bond)
             cls.add_slashed_rewards(order, order.taker_bond, order.maker_bond)
             order.status = Order.Status.TLD
         else:
