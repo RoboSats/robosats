@@ -4,16 +4,16 @@
 # Frontend Development Only
 Running the full stack is not easy, since RoboSats needs of many services. However, contributing to the frontend development can be done with a minimal setup!
 ## With Docker
-You can develop frontend-only features using the mainnet backend of the platform by simply running the sorverign node app locally and the `npm-dev` container. The orchestration in `/nodeapp/docker-compose.yml` will run a Tor proxy and torify all requests, as well as, watch for changes to the frontend source files, build it, and place it in the right `/static/`
+You can develop frontend-only features using the mainnet backend of the platform by simply running the sovereign node app locally and the `npm-dev` container. The orchestration in `/nodeapp/docker-compose.yml` will run a Tor proxy and torify all requests, as well as, watch for changes to the frontend source files, build it, and place it in the right `/static/`
 
 ```bash
 cd nodeapp
-docker-compose -f docker-compose-dev.yml up
+docker-compose up
 # Press Ctrl+C to exit the process
-# Check out 127.0.0.1:12596 on your browser
+# Check out http://localhost:12596 on your browser
 ```
 
-You can edit the frontend code in `/frontend/src/` to make the changes you want. Within a few seconds, the `npm-dev` container process will pack the code into the local `main.js`. Visit `127.0.0.1:12596` and you will see your changes on the frontend.
+You can edit the frontend code in `/frontend/src/` to make the changes you want. Within a few seconds, the `npm-dev` container process will pack the code into the local `main.js`. Visit `http://localhost:12596` and you will see your changes on the frontend.
 
 
 ## Without Docker

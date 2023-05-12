@@ -1,0 +1,21 @@
+version: '3.9'
+# Example deployment of a local robosats-client using
+# 'latest' tag from docker-hub
+services:
+  robosats:
+    image: recksato/robosats-client:latest
+    container_name: robosats
+    restart: always
+    environment:
+      TOR_PROXY_IP: 127.0.0.1
+      TOR_PROXY_PORT: 9050
+    network_mode: service:tor
+  tor:
+    build: ../docker/tor
+    container_name: tor
+    restart: always
+    environment:
+      LOCAL_USER_ID: 1000
+      LOCAL_GROUP_ID: 1000
+    ports:
+      - 12596:12596

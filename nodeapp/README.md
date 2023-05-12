@@ -8,6 +8,11 @@ At the moment it has no special integration with your local lightning wallet (e.
 
 The container launches two processes: 1) A set of `socat` that will expose RoboSats coordinators API over HTTP on localhost:81 using the docker orchestration TOR socks proxy and 2) Nginx, used to direct every request where needed and serve the client app locally.
 
+# Docker compose example
+You can run the client locally with the provided example orchestration. It has both, a TOR proxy container and the robosats client.
+`docker-compose -f docker-compose-example.yml up`
+Then just visit http://localhost:12596
+
 # Why host your own RoboSats client
 
 Advantages over a full over-the-internet RoboSats experience:
