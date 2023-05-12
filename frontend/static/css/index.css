@@ -130,7 +130,7 @@ input[type='number'] {
   transform: scaleX(-1);
   border: 1.3px solid #90caf9;
   -webkit-filter: grayscale(100%);
-  filter: grayscale(100%) brightness(100%) contrast(150%) drop-shadow(0.7px 0.7px 0.7px #000000);
+  filter: grayscale(100%) brightness(50%) contrast(150%) drop-shadow(0.7px 0.7px 0.7px #000000);
 }
 
 .navBarAvatarDark:after {
