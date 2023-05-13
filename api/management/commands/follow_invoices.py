@@ -1,5 +1,4 @@
 import time
-from base64 import b64decode
 from datetime import timedelta
 
 from decouple import config
@@ -11,7 +10,15 @@ from api.logics import Logics
 from api.models import LNPayment, OnchainPayment, Order
 from api.tasks import follow_send_payment, send_notification
 
-MACAROON = b64decode(config("LND_MACAROON_BASE64"))
+
+def is_same_status(a: LNPayment.Status, b: LNPayment.Status) -> bool:
+    """
+    Returns whether the state of two lnpayments is the same.
+    LNpayment status can be either Cancelled or Returned. For LND these two are the same (Cancelled).
+    """
+    cancel = LNPayment.Status.CANCEL
+    retned = LNPayment.Status.RETNED
+    return a == b or cancel in (a, b) and retned in (a, b)
 
 
 class Command(BaseCommand):
@@ -34,6 +41,15 @@ class Command(BaseCommand):
                 self.send_payments()
             except Exception as e:
                 self.stderr.write(str(e))
+
+    def is_same_status(a: LNPayment.Status, b: LNPayment.Status) -> bool:
+        """
+        Returns whether the state of two lnpayments is the same.
+        LNpayment status can be either Cancelled or Returned. For LND these two are the same (Cancelled).
+        """
+        cancel = LNPayment.Status.CANCEL
+        retned = LNPayment.Status.RETNED
+        return a == b or cancel in (a, b) and retned in (a, b)
 
     def follow_hold_invoices(self):
         """Follows and updates LNpayment objects
@@ -67,18 +83,27 @@ class Command(BaseCommand):
             changed = not old_status == new_status
 
             if changed:
-                # self.handle_status_change(hold_lnpayment, old_status)
-                hold_lnpayment.status = new_status
-                self.update_order_status(hold_lnpayment)
-                hold_lnpayment.save(update_fields=["status"])
+                # there might be a few miliseconds to a full second delay when looping over many
+                # invoices. We make sure the lnpayment status has not been changed already by re-reading
+                # from DB.
+                lnpayment = LNPayment.objects.get(
+                    payment_hash=hold_lnpayment.payment_hash
+                )  # re-read
+                if is_same_status(lnpayment.status, new_status):
+                    continue
+
+                # if these are still different, we update the lnpayment with its new status.
+                lnpayment.status = new_status
+                self.update_order_status(lnpayment)
+                lnpayment.save(update_fields=["status"])
 
                 # Report for debugging
                 old = LNPayment.Status(old_status).label
-                new = LNPayment.Status(hold_lnpayment.status).label
+                new = LNPayment.Status(lnpayment.status).label
                 debug["invoices"].append(
                     {
                         idx: {
-                            "payment_hash": str(hold_lnpayment.payment_hash),
+                            "payment_hash": str(lnpayment.payment_hash),
                             "old_status": old,
                             "new_status": new,
                         }
