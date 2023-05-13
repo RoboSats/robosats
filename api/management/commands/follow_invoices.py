@@ -77,7 +77,7 @@ class Command(BaseCommand):
         for idx, hold_lnpayment in enumerate(queryset):
             old_status = hold_lnpayment.status
 
-            new_status = LNNode.lookup_invoice_status(hold_lnpayment)
+            new_status, expiry_height = LNNode.lookup_invoice_status(hold_lnpayment)
 
             # Only save the hold_payments that change (otherwise this function does not scale)
             changed = not old_status == new_status
@@ -94,8 +94,9 @@ class Command(BaseCommand):
 
                 # if these are still different, we update the lnpayment with its new status.
                 lnpayment.status = new_status
+                lnpayment.expiry_height = expiry_height
                 self.update_order_status(lnpayment)
-                lnpayment.save(update_fields=["status"])
+                lnpayment.save(update_fields=["status", "expiry_height"])
 
                 # Report for debugging
                 old = LNPayment.Status(old_status).label
