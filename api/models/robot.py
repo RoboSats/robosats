@@ -56,7 +56,7 @@ class Robot(models.Model):
 
     # RoboHash
     avatar = models.ImageField(
-        default=("static/assets/avatars/" + "unknown_avatar.png"),
+        default=("static/assets/avatars/" + "unknown_avatar.webp"),
         verbose_name="Avatar",
         blank=True,
     )

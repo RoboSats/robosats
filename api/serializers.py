@@ -519,64 +519,6 @@ class UpdateOrderSerializer(serializers.Serializer):
     )
 
 
-class UserGenSerializer(serializers.Serializer):
-    # Mandatory fields
-    token_sha256 = serializers.CharField(
-        min_length=64,
-        max_length=64,
-        allow_null=False,
-        allow_blank=False,
-        required=True,
-        help_text="SHA256 of user secret",
-    )
-    # Optional fields
-    # (PGP keys are mandatory for new users, but optional for logins)
-    public_key = serializers.CharField(
-        max_length=2000,
-        allow_null=False,
-        allow_blank=False,
-        required=False,
-        help_text="Armored ASCII PGP public key block",
-    )
-    encrypted_private_key = serializers.CharField(
-        max_length=2000,
-        allow_null=False,
-        allow_blank=False,
-        required=False,
-        help_text="Armored ASCII PGP encrypted private key block",
-    )
-
-    ref_code = serializers.CharField(
-        max_length=30,
-        allow_null=True,
-        allow_blank=True,
-        required=False,
-        default=None,
-        help_text="Referal code",
-    )
-    counts = serializers.ListField(
-        child=serializers.IntegerField(),
-        allow_null=True,
-        required=False,
-        default=None,
-        help_text="Counts of the unique characters in the token",
-    )
-    length = serializers.IntegerField(
-        allow_null=True,
-        default=None,
-        required=False,
-        min_value=1,
-        help_text="Length of the token",
-    )
-    unique_values = serializers.IntegerField(
-        allow_null=True,
-        default=None,
-        required=False,
-        min_value=1,
-        help_text="Number of unique values in the token",
-    )
-
-
 class ClaimRewardSerializer(serializers.Serializer):
     invoice = serializers.CharField(
         max_length=2000,
