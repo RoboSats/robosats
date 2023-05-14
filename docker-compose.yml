@@ -53,7 +53,6 @@ services:
     environment:
       TOR_PROXY_IP: 127.0.0.1
       TOR_PROXY_PORT: 9050
-      ROBOSATS_ONION: robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion
     network_mode: service:tor
     volumes:
       - ./nodeapp/:/usr/src/robosats/
@@ -64,6 +63,8 @@ services:
     image: backend
     restart: always
     container_name: clord-dev
+    environment:
+      SKIP_COLLECT_STATIC: "true"
     command: python3 manage.py clean_orders
     volumes:
       - .:/usr/src/robosats
@@ -77,6 +78,8 @@ services:
     depends_on:
       - bitcoind
       - lnd
+    environment:
+      SKIP_COLLECT_STATIC: "true"
     command: python3 manage.py follow_invoices
     volumes:
       - .:/usr/src/robosats
@@ -87,6 +90,8 @@ services:
     image: backend
     container_name: tg-dev
     restart: always
+    environment:
+      SKIP_COLLECT_STATIC: "true"
     command: python3 manage.py telegram_watcher
     volumes:
       - .:/usr/src/robosats
@@ -99,6 +104,7 @@ services:
     restart: always
     environment:
       REDIS_URL: redis://localhost:6379
+      SKIP_COLLECT_STATIC: "true"
     volumes:
       - .:/usr/src/robosats
       - ./node/lnd:/lnd
@@ -113,6 +119,7 @@ services:
     restart: always
     environment:
       REDIS_URL: redis://localhost:6379
+      SKIP_COLLECT_STATIC: "true"
     command: celery -A robosats beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
       - .:/usr/src/robosats
