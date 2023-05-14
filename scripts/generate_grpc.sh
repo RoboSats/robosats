@@ -31,3 +31,9 @@ sed -i 's/^import .*_pb2 as/from . \0/' router_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' lightning_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' invoices_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' verrpc_pb2_grpc.py
+
+# On development environments the local volume will be mounted over these files. We copy pb2 and grpc files to /tmp/.
+# This way, we can find if these files are missing with our entrypoint.sh and copy them into the volume.
+
+cp -r *_pb2.py /tmp/
+cp -r *_grpc.py /tmp/
