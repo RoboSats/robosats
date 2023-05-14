@@ -2,6 +2,9 @@ FROM alpine:3.18.0
 
 LABEL maintainer="Reckless_Satoshi https://github.com/reckless-satoshi"
 
+# Needs a copy or symlink of /frontend/static in /nodeapp/static
+# Github client release workflow copies /frontend/static here
+
 RUN mkdir -p /usr/src/robosats
 WORKDIR /usr/src/robosats
 
