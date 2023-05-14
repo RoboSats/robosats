@@ -174,15 +174,13 @@ export const LightningPayoutForm = ({
 
   const fetchLnproxy = function () {
     setLoadingLnproxy(true);
+    let body = {
+      invoice: lightning.lnproxyInvoice,
+      description: '',
+      routing_msat: lightning.lnproxyBudgetSats > 0 ? lightning.lnproxyBudgetSats * 1000 : '',
+    };
     apiClient
-      .get(
-        lnproxyUrl(),
-        `/api/${lightning.lnproxyInvoice}${
-          lightning.lnproxyBudgetSats > 0
-            ? `?routing_msat=${lightning.lnproxyBudgetSats * 1000}`
-            : ''
-        }&format=json`,
-      )
+      .post(lnproxyUrl(), '', body)
       .then((data) => {
         if (data.reason) {
           setLightning({ ...lightning, badLnproxy: data.reason });
