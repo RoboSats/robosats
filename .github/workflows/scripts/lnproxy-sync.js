@@ -24,7 +24,7 @@ for (let url of rawRelays) {
     clearnetCount++;
   }
 
-  let relayName = `LNProxy ${relayType}${relayType === "TOR" ? torCount : ''}${relayType === "I2P" ? i2pCount : ''}${relayType === "Clearnet" ? clearnetCount : ''}`;
+  let relayName = `${relayType}${relayType === "TOR" ? torCount : ''}${relayType === "I2P" ? i2pCount : ''}${relayType === "Clearnet" ? clearnetCount : ''} ${url.split('/')[2].substring(0,6)}`
 
   formattedRelays.push({
     name: relayName,
