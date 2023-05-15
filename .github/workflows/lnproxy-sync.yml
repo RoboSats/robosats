@@ -16,7 +16,7 @@ jobs:
       - name: Fetch and process JSON
         run: |
           curl https://github.com/shyfire131/lnproxy-webui2/blob/17d6131a72a92978e5c0dc57ab2b2fbe467c7722/assets/relays.json -o lnproxy_tmplist.json
-          node .github/workflows/lnproxy-sync.js
+          node .github/workflows/scripts/lnproxy-sync.js
 
       - name: Commit and push if it's not up to date
         run: |
