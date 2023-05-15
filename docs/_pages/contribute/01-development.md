@@ -10,30 +10,30 @@ toc_sticky: true
 src: "_pages/contribute/01-development.md"
 ---
 
-Everyone can contribute to the development of the Robotic Satoshis Open Source Project. If you're looking for somewhere to start contributing, check out the [good first issue](https://github.com/RoboSats/robosats/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue") list.
+Everyone can contribute to the development of the Robotic Satoshis (RoboSats) open source project. If you're looking for somewhere to start contributing, then check out the issue list sharing the ["good first issue"](https://github.com/RoboSats/robosats/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue") label; such issues are good for newcomers.
 
 
 This contributing guide is based on the [Bisq contributing guide](https://github.com/bisq-network/bisq/blob/master/CONTRIBUTING.md). While the scope and complexity of RoboSats is more manageable, following best practices is free.
 
 ## Communication Channels
 
-- **Matrix:** [RoboSats Development](https://matrix.to/#/#robosats:matrix.org) - Our main developer communcation chat
+- **Matrix:** [RoboSats Development Group](https://matrix.to/#/#robosats:matrix.org). Main developer communication group chat.
 
-- **Telegram:**
-  Most general communication about RoboSats happens on the main Telegram group. However, public community driven support is available in other languages.
-  * EN [t.me/robosats](https://t.me/robosats) (main)
-  * ES [t.me/robosats_es](https://t.me/robosats_es)
-  * RU [t.me/robosats_ru](https://t.me/robosats_ru)
-  * PT [t.me/robosats_pt](https://t.me/robosats_pt)
-  * CN [t.me/robosats_cn](https://t.me/robosats_cn)
+- **Telegram:** [RoboSats Main Group EN🇬🇧](https://t.me/robosats). General discussion about RoboSats and any community-driven support happens publicly in the main Telegram group (English). If you're wanting to hang out with other cool robots and/or have questions about RoboSats, then those discussions happen in Telegram. There are more groups available for public, community-driven support in other languages:
+  - ES🇪🇸 [t.me/robosats_es](https://t.me/robosats_es)
+  - RU🇷🇺 [t.me/robosats_ru](https://t.me/robosats_ru)
+  - PT🇵🇹 [t.me/robosats_pt](https://t.me/robosats_pt)
+  - CN🇨🇳 [t.me/robosats_cn](https://t.me/robosats_cn)
 
-Discussion about code changes happens in GitHub issues and pull requests.
+- **Twitter:** [RoboSats](https://twitter.com/RoboSats). Provides important project updates, tips and tricks of using RoboSats, and other privacy-centric commentary. Questions may be asked to the Twitter account; however, Twitter limits the number of characters in a tweet and response and makes answering questions restrictive. It's best to direct your questions to the aforementioned public Telegram support group for a faster and more detailed response from community members!
 
+- **Nostr:** [npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82](https://snort.social/p/npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82). Relays Twitter tweets and similarly responds to questions. While character limit is no issue, it's still best to direct your questions to the aforementioned public Telegram support group for a faster response from community members!
+
+Discussion about code changes happens in GitHub issues and pull requests (PRs). 
 
 ## Contributor Workflow
 
 All RoboSats contributors submit changes via pull requests. The workflow is as follows:
-
  - Fork the repository
  - Create a topic branch from the `main` branch
  - Commit patches
@@ -42,7 +42,6 @@ All RoboSats contributors submit changes via pull requests. The workflow is as f
  - Make changes to the pull request if reviewers request them and request a re-review
 
 Pull requests should be focused on a single change. Do not mix, for example, refactorings with a bug fix or implementation of a new feature. This practice makes it easier for fellow contributors to review each pull request.
-
 
 ## Reviewing Pull Requests
 
@@ -62,15 +61,15 @@ Please note that Pull Requests marked `NACK` and/or GitHub's `Change requested` 
 
 [Check the current state of the Developer Compensated tasks in the Github Project](https://github.com/users/Reckless-Satoshi/projects/2/views/5)
 
-At the moment RoboSats is a young and unfunded project. However, it has shown the ability to generate revenue, although it barely covers the running costs. A developer compensation program is the the best way to ensure the sustained support of the code base. For the time being, code contributions to the core project will be given small rewards: more akin to kudos than a meaningful monetary compensation. The pilot procedure for compensated development:
+At the moment, RoboSats is a young and unfunded project, but has shown the ability to generate enough revenue to barely cover operational costs. A developer compensation program is the best way to ensure the sustained support of the code base. For the time being, code contributions to the core project will be given small rewards more akin to a tip than a meaningful monetary compensation. The pilot procedure for compensated development:
 
 1. The developer opens a PR with the description of the work that will be done, optionally including the amount of Sats he thinks the work deserves.
-2. An offer/negotiation takes place to set an amount of Sats until agreement. Everyone is welcome to express opinion on whether the compensation is right for the PR.
+2. An offer/negotiation takes place to set an amount of Sats until agreed upon. Everyone is welcome to express opinion on whether the compensation is right for the PR.
 3. The work happens: buidl, buidl, buidl!
 4. The review takes place. Once maintainers give the OK for the merge...
-5. The developer submits a LN invoice (with a long expiration time). The invoice is paid at merge.
+5. The developer submits an LN invoice (with a long expiration time). The invoice is paid at merge.
 
-Every step (negotiation, code submission, review and invoice submission) must take place publicly in GitHub (i.e., no private messaging). Please contact the team lead for development (@reckless-satoshi) upfront if you have doubts whether your contribution is suitable for compensation. Currently, only contributions to the frontend or backend core functionality and maintainence are eligible for compensations (that excludes, for the time being, art, translations, etc...).
+Every step (negotiation, code submission, review and invoice submission) must take place publicly in GitHub (i.e., no private messaging and the like). Please contact the team lead for development (@reckless-satoshi) upfront if you have doubts whether your contribution is suitable for compensation. Currently, only contributions to the frontend or backend core functionality and maintainence are eligible for compensations (for the time being, that excludes: art, translations, etc.).
 
 ## Style and Coding Conventions
 
@@ -89,7 +88,6 @@ From https://chris.beams.io/posts/git-commit/#seven-rules:
  5. Use the imperative mood in the subject line
  6. Wrap the body at 72 characters (*)
  7. Use the body to explain what and why vs. how
-
 
 ### Sign your commits with GPG
 
