@@ -1,6 +1,7 @@
 import hashlib
 import os
 import secrets
+import struct
 import time
 from base64 import b64decode
 from datetime import datetime, timedelta
@@ -16,8 +17,10 @@ from . import lightning_pb2 as lnrpc
 from . import lightning_pb2_grpc as lightningstub
 from . import router_pb2 as routerrpc
 from . import router_pb2_grpc as routerstub
+from . import signer_pb2 as signerrpc
+from . import signer_pb2_grpc as signerstub
 from . import verrpc_pb2 as verrpc
-from . import verrpc_pb2_grpc as verrpcstub
+from . import verrpc_pb2_grpc as verstub
 
 #######
 # Works with LND (c-lightning in the future for multi-vendor resilience)
@@ -57,12 +60,8 @@ class LNNode:
     lightningstub = lightningstub.LightningStub(channel)
     invoicesstub = invoicesstub.InvoicesStub(channel)
     routerstub = routerstub.RouterStub(channel)
-    verrpcstub = verrpcstub.VersionerStub(channel)
-
-    lnrpc = lnrpc
-    invoicesrpc = invoicesrpc
-    routerrpc = routerrpc
-    verrpc = verrpc
+    signerstub = signerstub.SignerStub(channel)
+    verstub = verstub.VersionerStub(channel)
 
     payment_failure_context = {
         0: "Payment isn't failed (yet)",
@@ -77,7 +76,7 @@ class LNNode:
     def get_version(cls):
         try:
             request = verrpc.VersionRequest()
-            response = cls.verrpcstub.GetVersion(request)
+            response = cls.verstub.GetVersion(request)
             return "v" + response.version
         except Exception as e:
             print(e)
@@ -466,7 +465,7 @@ class LNNode:
 
         hash = lnpayment.payment_hash
 
-        request = cls.routerrpc.SendPaymentRequest(
+        request = routerrpc.SendPaymentRequest(
             payment_request=lnpayment.invoice,
             fee_limit_sat=fee_limit_sat,
             timeout_seconds=timeout_seconds,
@@ -615,6 +614,82 @@ class LNNode:
 
             else:
                 print(str(e))
+
+    @classmethod
+    def send_keysend(
+        cls, target_pubkey, message, num_satoshis, routing_budget_sats, timeout, sign
+    ):
+        # Thank you @cryptosharks131 / lndg for the inspiration
+        # Source https://github.com/cryptosharks131/lndg/blob/master/keysend.py
+
+        from api.models import LNPayment
+
+        ALLOW_SELF_KEYSEND = config("ALLOW_SELF_KEYSEND", cast=bool, default=False)
+        keysend_payment = {}
+        keysend_payment["created_at"] = timezone.now()
+        keysend_payment["expires_at"] = timezone.now()
+        try:
+            secret = secrets.token_bytes(32)
+            hashed_secret = hashlib.sha256(secret).hexdigest()
+            custom_records = [
+                (5482373484, secret),
+            ]
+            keysend_payment["preimage"] = secret.hex()
+            keysend_payment["payment_hash"] = hashed_secret
+
+            msg = str(message)
+
+            if len(msg) > 0:
+                custom_records.append(
+                    (34349334, bytes.fromhex(msg.encode("utf-8").hex()))
+                )
+                if sign:
+                    self_pubkey = cls.lightningstub.GetInfo(
+                        lnrpc.GetInfoRequest()
+                    ).identity_pubkey
+                    timestamp = struct.pack(">i", int(time.time()))
+                    signature = cls.signerstub.SignMessage(
+                        signerrpc.SignMessageReq(
+                            msg=(
+                                bytes.fromhex(self_pubkey)
+                                + bytes.fromhex(target_pubkey)
+                                + timestamp
+                                + bytes.fromhex(msg.encode("utf-8").hex())
+                            ),
+                            key_loc=signerrpc.KeyLocator(key_family=6, key_index=0),
+                        )
+                    ).signature
+                    custom_records.append((34349337, signature))
+                    custom_records.append((34349339, bytes.fromhex(self_pubkey)))
+                    custom_records.append((34349343, timestamp))
+
+            request = routerrpc.SendPaymentRequest(
+                dest=bytes.fromhex(target_pubkey),
+                dest_custom_records=custom_records,
+                fee_limit_sat=routing_budget_sats,
+                timeout_seconds=timeout,
+                amt=num_satoshis,
+                payment_hash=bytes.fromhex(hashed_secret),
+                allow_self_payment=ALLOW_SELF_KEYSEND,
+            )
+            for response in cls.routerstub.SendPaymentV2(request):
+                if response.status == 1:
+                    keysend_payment["status"] = LNPayment.Status.FLIGHT
+                if response.status == 2:
+                    keysend_payment["fee"] = float(response.fee_msat) / 1000
+                    keysend_payment["status"] = LNPayment.Status.SUCCED
+                if response.status == 3:
+                    keysend_payment["status"] = LNPayment.Status.FAILRO
+                    keysend_payment["failure_reason"] = response.failure_reason
+                if response.status == 0:
+                    print("Unknown Error")
+        except Exception as e:
+            if "self-payments not allowed" in str(e):
+                print("Self keysend is not allowed")
+            else:
+                print("Error while sending keysend payment! Error: " + str(e))
+
+        return True, keysend_payment
 
     @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):

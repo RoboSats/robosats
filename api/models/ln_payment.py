@@ -9,6 +9,7 @@ class LNPayment(models.Model):
     class Types(models.IntegerChoices):
         NORM = 0, "Regular invoice"
         HOLD = 1, "hold invoice"
+        KEYS = 2, "Keysend"
 
     class Concepts(models.IntegerChoices):
         MAKEBOND = 0, "Maker bond"
@@ -16,6 +17,7 @@ class LNPayment(models.Model):
         TRESCROW = 2, "Trade escrow"
         PAYBUYER = 3, "Payment to buyer"
         WITHREWA = 4, "Withdraw rewards"
+        DEVDONAT = 5, "Devfund donation"
 
     class Status(models.IntegerChoices):
         INVGEN = 0, "Generated"
@@ -114,6 +116,13 @@ class LNPayment(models.Model):
         related_name="receiver",
         on_delete=models.SET_NULL,
         null=True,
+        default=None,
+    )
+    order_donated = models.ForeignKey(
+        "api.Order",
+        related_name="order_donated",
+        null=True,
+        on_delete=models.SET_NULL,
         default=None,
     )
 

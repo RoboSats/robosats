@@ -43,10 +43,6 @@ app.conf.beat_schedule = {
         "task": "payments_cleansing",
         "schedule": crontab(hour=0, minute=0),
     },
-    "give-rewards": {  # Referral rewards go from 'pending' to 'earned' at midnight
-        "task": "give_rewards",
-        "schedule": crontab(hour=0, minute=0),
-    },
     "do-accounting": {  # Does accounting for the last day
         "task": "do_accounting",
         "schedule": crontab(hour=23, minute=59),
