@@ -5,9 +5,6 @@ from channels.layers import get_channel_layer
 from django.contrib.auth.models import User
 from django.utils import timezone
 from rest_framework import status, viewsets
-from rest_framework.authentication import (
-    SessionAuthentication,  # DEPRECATE session Authentication
-)
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -20,7 +17,7 @@ from chat.serializers import ChatSerializer, PostMessageSerializer
 
 class ChatView(viewsets.ViewSet):
     serializer_class = PostMessageSerializer
-    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     lookup_url_kwarg = ["order_id", "offset"]
