@@ -166,7 +166,12 @@ export const LightningPayoutForm = ({
   useEffect(() => {
     setNoMatchingLnProxies('');
     if (filteredProxies.length === 0) {
-      setNoMatchingLnProxies(`No proxies available for ${bitcoinNetwork} over ${internetNetwork}`); //TODO: translate
+      setNoMatchingLnProxies(
+        t(`No proxies available for {{bitcoinNetwork}} over {{internetNetwork}}`, {
+          bitcoinNetwork,
+          internetNetwork: t(internetNetwork),
+        }),
+      );
     }
   }, [lightning.useLnproxy]);
 
