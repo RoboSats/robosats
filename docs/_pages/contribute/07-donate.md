@@ -11,7 +11,7 @@ src: "_pages/contribute/07-donate.md"
 
 We do not think RoboSats development should rely on donations in order to stay alive. The objective of the project is to generate enough revenue to cover for development, server, liquidity and promotional costs. The **best way to donate to RoboSats is to actively make use of the tool** and tell your friends.
 
-We do, however, get approached by very enthusiastic bitcoiners who want to boots RoboSats' development and longevity further. We very much appreciate these donations, specially since the platform is still very young and still runs at net loss.
+We do, however, get approached by very enthusiastic bitcoiners who want to boost RoboSats' development and longevity further. We very much appreciate these donations, especially since the platform is still very young and still runs at net loss.
 
 You can donate the following ways:
 
@@ -23,7 +23,7 @@ You can donate the following ways:
 npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82
  ```
 
- - **Directly tip the developer working on the features you like.** Check the [active PRs](https://github.com/RoboSats/robosats/pulls) and show your support to the developers with via Lightning tips. Simply write a message, for example "@developer_name, I would like to fund your development of this feature with 6000 Sats". The developer should reply with a LN invoice with a long expiration time.
+ - **Directly tip the developer working on the features you like.** Check the [active PRs](https://github.com/RoboSats/robosats/pulls) and show your support to the developers with via Lightning tips. Simply write a message, for example "@developer_name, I would like to fund your development of this feature with 6000 Sats". The developer should reply with an LN invoice with a long expiration time.
 
  - **Tip the RoboSats devfund via Paynym (BIP47): [{{site.robosats.paynym}}](https://paynym.is/{{site.robosats.paynym}})** paynym code:
 
