@@ -3,7 +3,7 @@ name: Syncs relay list from lnproxy.org and stores in format used by RoboSats
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '0 * * * *'  # Run every hour
+    - cron:  '0 12 * * 0'  # Run every Sunday at noon
 
 jobs:
   sync:
