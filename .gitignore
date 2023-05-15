@@ -623,9 +623,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-# Django
-*migrations*
-
 # Celery
 django
 
@@ -637,15 +634,13 @@ docker/i2p
 
 # robosats
 frontend/static/assets/avatars*
-api/lightning/lightning*
-api/lightning/invoices*
-api/lightning/router*
-api/lightning/verrpc*
-api/lightning/googleapis*
+api/lightning/*_grpc.py
+api/lightning/*_pb2.py
 frontend/static/locales/collected_phrases.json
 frontend/static/admin*
 frontend/static/rest_framework*
 frontend/static/import_export*
+frontend/static/drf_spectacular_sidecar/
 frontend/src/components/PaymentMethods/Icons/code*
 frontend/src/components/PaymentMethods/Icons/webp*
 frontend/static/frontend/**
