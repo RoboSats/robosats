@@ -32,6 +32,7 @@ interface TakeButtonProps {
   setOrder: (state: Order) => void;
   baseUrl: string;
   info: Info;
+  onClickGenerateRobot?: () => void;
 }
 
 interface OpenDialogsProps {
@@ -40,7 +41,13 @@ interface OpenDialogsProps {
 }
 const closeAll = { inactiveMaker: false, confirmation: false };
 
-const TakeButton = ({ order, setOrder, baseUrl, info }: TakeButtonProps): JSX.Element => {
+const TakeButton = ({
+  order,
+  setOrder,
+  baseUrl,
+  info,
+  onClickGenerateRobot = () => null,
+}: TakeButtonProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { robot } = useContext<UseAppStoreType>(AppContext);
@@ -336,6 +343,7 @@ const TakeButton = ({ order, setOrder, baseUrl, info }: TakeButtonProps): JSX.El
           setOpen(closeAll);
         }}
         hasRobot={robot.avatarLoaded}
+        onClickGenerateRobot={onClickGenerateRobot}
       />
       <InactiveMakerDialog />
     </Box>

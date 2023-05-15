@@ -1,7 +1,16 @@
 FROM alpine:3.18.0
 
+LABEL maintainer="Reckless_Satoshi https://github.com/reckless-satoshi"
+
+# Needs a copy or symlink of /frontend/static in /nodeapp/static
+# Github client release workflow copies /frontend/static here
+
 RUN mkdir -p /usr/src/robosats
 WORKDIR /usr/src/robosats
+
+RUN set -x \
+    && addgroup -g 101 -S nginx \
+    && adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx
 
 COPY . .
 COPY ./nginx.conf /etc/nginx/nginx.conf

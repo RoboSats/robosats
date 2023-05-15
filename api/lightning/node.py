@@ -265,6 +265,7 @@ class LNNode:
         from api.models import LNPayment
 
         status = lnpayment.status
+        expiry_height = 0
 
         lnd_response_state_to_lnpayment_status = {
             0: LNPayment.Status.INVGEN,  # OPEN
@@ -280,14 +281,15 @@ class LNNode:
             )
             response = cls.invoicesstub.LookupInvoiceV2(request)
 
-            # try saving expiry height
+            status = lnd_response_state_to_lnpayment_status[response.state]
+
+            # get expiry height
             if hasattr(response, "htlcs"):
                 try:
-                    lnpayment.expiry_height = response.htlcs[0].expiry_height
+                    for htlc in response.htlcs:
+                        expiry_height = max(expiry_height, htlc.expiry_height)
                 except Exception:
                     pass
-
-            status = lnd_response_state_to_lnpayment_status[response.state]
 
         except Exception as e:
             # If it fails at finding the invoice: it has been canceled.
@@ -304,7 +306,7 @@ class LNNode:
             else:
                 print(str(e))
 
-        return status
+        return status, expiry_height
 
     @classmethod
     def resetmc(cls):

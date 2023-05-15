@@ -56,6 +56,8 @@ services:
       ROBOSATS_ONION: robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion
     network_mode: service:tor
     volumes:
+      - ./nodeapp/:/usr/src/robosats/
+      - ./nodeapp/nginx.conf:/etc/nginx/nginx.conf
       - ./frontend/static:/usr/src/robosats/static
 
   clean-orders:

@@ -37,6 +37,7 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'Pago Movil BDV', icon: 'pagomovilbdv' },
   { name: 'SPEI', icon: 'spei' },
   { name: 'PIX', icon: 'pix' },
+  { name: 'Pouch.ph', icon: 'pouch' },
   { name: 'PayID', icon: 'payid' },
   { name: 'Paysafe', icon: 'paysafe' },
   { name: 'Sber Bank', icon: 'sberbank' },
