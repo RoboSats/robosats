@@ -1,11 +1,20 @@
 [
   {
-    "name": "↬ Lnproxy Dev",
-    "mainnetClearnet": "https://lnproxy.org",
-    "mainnetTOR": "http://rdq6tvulanl7aqtupmoboyk2z3suzkdwurejwyjyjf4itr3zhxrm2lad.onion",
-    "mainnetI2P": "undefined",
-    "testnetClearnet": "undefined",
-    "testnetTOR": "undefined",
-    "testnetI2P": "undefined"
+    "name": "LNProxy TOR1",
+    "url": "http://w3sqmns2ct7ai2wiwzq5uplp2pqglpm6qpeey4blvn6agj3jr5abthqd.onion/spec",
+    "relayType": "TOR",
+    "network": "mainnet"
+  },
+  {
+    "name": "LNProxy TOR2",
+    "url": "http://rdq6tvulanl7aqtupmoboyk2z3suzkdwurejwyjyjf4itr3zhxrm2lad.onion/spec",
+    "relayType": "TOR",
+    "network": "mainnet"
+  },
+  {
+    "name": "LNProxy Clearnet1",
+    "url": "https://lnproxy.org/spec",
+    "relayType": "Clearnet",
+    "network": "mainnet"
   }
 ]
