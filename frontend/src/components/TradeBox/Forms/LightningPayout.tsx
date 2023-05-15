@@ -146,7 +146,7 @@ export const LightningPayoutForm = ({
     }
   }, [lightning.lnproxyInvoice, lightning.lnproxyAmount]);
 
-  //filter lnproxies when component mounts
+  //filter lnproxies when the network settings are updated
   let bitcoinNetwork: string = 'mainnet';
   let internetNetwork: 'Clearnet' | 'I2P' | 'TOR' = 'Clearnet';
   useEffect(() => {
@@ -160,15 +160,15 @@ export const LightningPayoutForm = ({
     filteredProxies = lnproxies
       .filter((node) => node.relayType == internetNetwork)
       .filter((node) => node.network == bitcoinNetwork);
-  }, []);
+  }, [settings.network]);
 
   //if "use lnproxy" checkbox is enabled, but there are no matching proxies, enter error state
   useEffect(() => {
     setNoMatchingLnProxies('');
     if (filteredProxies.length === 0) {
       setNoMatchingLnProxies(
-        t(`No proxies available for {{bitcoinNetwork}} over {{internetNetwork}}`, {
-          bitcoinNetwork,
+        t(`No proxies available for {{bitcoinNetwork}} bitcoin over {{internetNetwork}}`, {
+          bitcoinNetwork: settings?.network ?? 'mainnet',
           internetNetwork: t(internetNetwork),
         }),
       );
