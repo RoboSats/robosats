@@ -2,8 +2,6 @@ FROM python:3.11.3-slim-bullseye
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN mkdir -p /usr/src/robosats
-
-# specifying the working dir inside the container
 WORKDIR /usr/src/robosats
 
 RUN apt-get update -qq && \
@@ -23,8 +21,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # install lnd/cln grpc services
-RUN sh generate_grpc.sh
+RUN sh scripts/generate_grpc.sh
+RUN chmod +x scripts/entrypoint.sh
 
 EXPOSE 8000
+ENTRYPOINT [ "/usr/src/robosats/scripts/entrypoint.sh" ]
 
 CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]

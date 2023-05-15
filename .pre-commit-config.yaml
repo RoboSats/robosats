@@ -1,6 +1,7 @@
 # TODO
 # add a hook which automatically generates the OpenApi schema on API changes
 # and places them in an appropriate location
+exclude: '(api|chat|control)/migrations/.*'
 repos:
   - repo: 'https://github.com/pre-commit/pre-commit-hooks'
     rev: v2.3.0

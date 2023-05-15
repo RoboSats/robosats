@@ -67,12 +67,7 @@ Then visit `127.0.0.1:4000` on your browser. Once you save changes on a file it 
 
 Spinning up docker for the first time
 ```bash
-docker-compose build --no-cache
-# Install LND python dependencies into local repository
-docker run --mount type=bind,src=$(pwd),dst=/usr/src/robosats backend sh generate_grpc.sh
 docker-compose up -d
-docker exec -it django-dev python3 manage.py makemigrations api control chat
-docker exec -it django-dev python3 manage.py migrate
 docker exec -it django-dev python3 manage.py createsuperuser
 # Once requested for the new superuser name, make sure to use the same name you have in the .env-sample variable ESCROW_USERNAME. By default 'admin'.
 docker-compose restart
