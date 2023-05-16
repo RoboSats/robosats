@@ -160,7 +160,7 @@ export const LightningPayoutForm = ({
     filteredProxies = lnproxies
       .filter((node) => node.relayType == internetNetwork)
       .filter((node) => node.network == bitcoinNetwork);
-  }, [settings.network]);
+  }, [settings]);
 
   //if "use lnproxy" checkbox is enabled, but there are no matching proxies, enter error state
   useEffect(() => {
@@ -177,11 +177,13 @@ export const LightningPayoutForm = ({
 
   const fetchLnproxy = function () {
     setLoadingLnproxy(true);
-    let body = {
+    let body: { invoice: string; description: string; routing_msat?: string } = {
       invoice: lightning.lnproxyInvoice,
       description: '',
-      routing_msat: lightning.lnproxyBudgetSats > 0 ? lightning.lnproxyBudgetSats * 1000 : '',
     };
+    if (lightning.lnproxyBudgetSats > 0) {
+      body['routing_msat'] = String(lightning.lnproxyBudgetSats * 1000);
+    }
     apiClient
       .post(filteredProxies[lightning.lnproxyServer]['url'], '', body)
       .then((data) => {
