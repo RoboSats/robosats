@@ -16,6 +16,10 @@ python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_pyt
 curl -o router.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/routerrpc/router.proto
 python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. router.proto
 
+# LND Signer proto
+curl -o signer.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/signrpc/signer.proto
+python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. signer.proto
+
 # LND Versioner proto
 curl -o verrpc.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/master/lnrpc/verrpc/verrpc.proto
 python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. verrpc.proto
@@ -25,9 +29,11 @@ rm -r googleapis
 
 # patch generated files relative imports
 sed -i 's/^import .*_pb2 as/from . \0/' router_pb2.py
+sed -i 's/^import .*_pb2 as/from . \0/' signer_pb2.py
 sed -i 's/^import .*_pb2 as/from . \0/' invoices_pb2.py
 sed -i 's/^import .*_pb2 as/from . \0/' verrpc_pb2.py
 sed -i 's/^import .*_pb2 as/from . \0/' router_pb2_grpc.py
+sed -i 's/^import .*_pb2 as/from . \0/' signer_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' lightning_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' invoices_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' verrpc_pb2_grpc.py

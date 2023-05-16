@@ -88,6 +88,58 @@ def follow_send_payment(hash):
     return results
 
 
+@shared_task(name="send_devfund_donation", time_limit=300, soft_time_limit=295)
+def send_devfund_donation(order_id, proceeds, reason):
+    """Sends a fraction of order.proceeds via keysend as
+    donation to the RoboSats Open Source project devfund.
+    """
+    from decouple import config
+    from django.contrib.auth.models import User
+
+    from api.lightning.node import LNNode
+    from api.models import LNPayment, Order
+
+    if config("NETWORK", cast=str) == "testnet":
+        target_pubkey = (
+            "03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"
+        )
+    else:
+        target_pubkey = (
+            "0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"
+        )
+
+    order = Order.objects.get(id=order_id)
+    coordinator_alias = config("COORDINATOR_ALIAS", cast=str, default="NoAlias")
+    donation_fraction = max(0.05, config("DEVFUND", cast=float, default=0.2))
+    message = f"Devfund donation; {coordinator_alias}; {order}; {donation_fraction}; {reason};"
+    num_satoshis = int(proceeds * donation_fraction)
+    routing_budget_sats = int(max(5, num_satoshis * 0.000_1))
+    timeout = 280
+    sign = False
+
+    valid, keysend_payment = LNNode.send_keysend(
+        target_pubkey, message, num_satoshis, routing_budget_sats, timeout, sign
+    )
+    if not valid:
+        return False
+
+    LNPayment.objects.create(
+        concept=LNPayment.Concepts.DEVDONAT,
+        type=LNPayment.Types.KEYS,
+        sender=User.objects.get(
+            username=config("ESCROW_USERNAME", cast=str, default="admin")
+        ),
+        invoice=f"Target pubkey: {target_pubkey}; At: {keysend_payment['created_at']}",
+        routing_budget_sats=routing_budget_sats,
+        description=message,
+        num_satoshis=num_satoshis,
+        order_donated=order,
+        **keysend_payment,
+    )
+
+    return True
+
+
 @shared_task(name="payments_cleansing", time_limit=600)
 def payments_cleansing():
     """

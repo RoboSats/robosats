@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from api.lightning.node import LNNode
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order
-from api.tasks import send_notification
+from api.tasks import send_devfund_donation, send_notification
 from api.utils import validate_onchain_address
 from chat.models import Message
 
@@ -1066,7 +1066,6 @@ class Logics:
 
     @classmethod
     def gen_maker_hold_invoice(cls, order, user):
-
         # Do not gen and cancel if order is older than expiry time
         if order.expires_at < timezone.now():
             cls.order_expires(order)
@@ -1570,9 +1569,10 @@ class Logics:
             slashed_robot.earned_rewards += slashed_return
             slashed_robot.save(update_fields=["earned_rewards"])
 
-        proceeds = int(slashed_satoshis * (1 - reward_fraction))
-        order.proceeds += proceeds
+        new_proceeds = int(slashed_satoshis * (1 - reward_fraction))
+        order.proceeds += new_proceeds
         order.save(update_fields=["proceeds"])
+        send_devfund_donation.delay(order.id, new_proceeds, "slashed bond")
 
         return
 
@@ -1645,13 +1645,17 @@ class Logics:
         """
 
         if order.is_swap:
-            payout_sats = order.payout_tx.sent_satoshis + order.payout_tx.mining_fee
-            order.proceeds += int(order.trade_escrow.num_satoshis - payout_sats)
+            payout_sats = (
+                order.payout_tx.sent_satoshis + order.payout_tx.mining_fee_sats
+            )
+            new_proceeds = int(order.trade_escrow.num_satoshis - payout_sats)
         else:
             payout_sats = order.payout.num_satoshis + order.payout.fee
-            order.proceeds += int(order.trade_escrow.num_satoshis - payout_sats)
+            new_proceeds = int(order.trade_escrow.num_satoshis - payout_sats)
 
+        order.proceeds += new_proceeds
         order.save(update_fields=["proceeds"])
+        send_devfund_donation.delay(order.id, new_proceeds, "successful order")
 
     @classmethod
     def summarize_trade(cls, order, user):
