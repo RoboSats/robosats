@@ -12,8 +12,7 @@ src: "_pages/contribute/01-development.md"
 
 Everyone can contribute to the development of the Robotic Satoshis (RoboSats) open source project. If you're looking for somewhere to start contributing, then check out the issue list sharing the ["good first issue"](https://github.com/RoboSats/robosats/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue") label; such issues are good for newcomers.
 
-
-This contributing guide is based on the [Bisq contributing guide](https://github.com/bisq-network/bisq/blob/master/CONTRIBUTING.md). While the scope and complexity of RoboSats is more manageable, following best practices is free.
+This contributing guide is based on the [Bisq contributing guide](https://github.com/bisq-network/bisq/blob/master/CONTRIBUTING.md). Following best FOSS practices helps development remain organized as the project grows with new features and is continually optimized. Future contibutors will thank you for following these best practices and making your work easier to build on!
 
 ## Communication Channels
 
@@ -25,7 +24,7 @@ This contributing guide is based on the [Bisq contributing guide](https://github
   - PT🇵🇹 [t.me/robosats_pt](https://t.me/robosats_pt)
   - CN🇨🇳 [t.me/robosats_cn](https://t.me/robosats_cn)
 
-- **Twitter:** [RoboSats](https://twitter.com/RoboSats). Provides important project updates, tips and tricks of using RoboSats, and other privacy-centric commentary. Questions may be asked to the Twitter account; however, Twitter limits the number of characters in a tweet and response and makes answering questions restrictive. It's best to direct your questions to the aforementioned public Telegram support group for a faster and more detailed response from community members!
+- **Twitter:** [RoboSats](https://twitter.com/RoboSats). Provides important project updates, tips and tricks of using RoboSats, and other privacy-centric commentary. Questions may be asked to the Twitter account; however, Twitter limits the number of characters in a tweet and makes responding to questions restrictive. It's best to direct your questions to the aforementioned public Telegram support group for a faster and more detailed response from community members!
 
 - **Nostr:** [npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82](https://snort.social/p/npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82). Relays Twitter tweets and similarly responds to questions. While character limit is no issue, it's still best to direct your questions to the aforementioned public Telegram support group for a faster response from community members!
 
@@ -48,7 +47,6 @@ Pull requests should be focused on a single change. Do not mix, for example, ref
 Robosats follows the review workflow established by the Bitcoin Core project. The following is adapted from the [Bitcoin Core contributor documentation](https://github.com/bitcoin/bitcoin/blob/master/CONTRIBUTING.md#peer-review):
 
 Anyone may participate in peer review which is expressed by comments in the pull request. Typically reviewers will review the code for obvious errors, as well as test out the patch set and opine on the technical merits of the patch. Project maintainers take into account the peer review when determining if there is consensus to merge a pull request (remember that discussions may have been spread out over GitHub and Telegram). The following language is used within pull-request comments:
-
  - `ACK` means "I have tested the code and I agree it should be merged";
  - `NACK` means "I disagree this should be merged", and must be accompanied by sound technical justification. NACKs without accompanying reasoning may be disregarded;
  - `utACK` means "I have not tested the code, but I have reviewed it and it looks OK, I agree it can be merged";
