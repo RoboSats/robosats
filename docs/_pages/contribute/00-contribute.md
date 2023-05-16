@@ -8,7 +8,9 @@ sidebar:
 src: "_pages/contribute/00-contribute.md"
 ---
 
-RoboSats is a fully community driven project. You can help RoboSats get better in many different ways.
+RoboSats is a fully open source project and, as such, a community-driven effort! You can help RoboSats improve in many different ways (you don't even need to know how to code). Help by translating, creating guides, simply telling others to use RoboSats, and more!
+
+Check them out:
 
 1. [Development](/contribute/code/)
 2. [Translations](/contribute/languages/)
@@ -18,4 +20,4 @@ RoboSats is a fully community driven project. You can help RoboSats get better i
 6. [Tell someone](/contribute/outreach/)
 7. [Donate](/contribute/donate/)
 
-{% include wip %}
+{% include improve %}

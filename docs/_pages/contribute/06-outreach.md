@@ -5,7 +5,22 @@ permalink: /contribute/outreach/
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/bullhorn.svg"/>Outreach'
   nav: contribute
+toc: true
+toc_sticky: true
 src: "_pages/contribute/06-outreach.md"
 ---
 
-{% include wip %}
+
+The single best way to support RoboSats is by simply using it and telling others to try it out! Without peers providing liquidity to the order books, peer-to-peer exchanges like us would cease to exist! When peers use RoboSats and invite others to give it a try, liquidity grows and then the platform can support even more users!
+
+The best we can do is reason with users of why they should value their privacy and avoid anti-privacy exchanges. Refer to this [article](https://bitcoinmagazine.com/culture/the-value-of-p2p-bitcoin-exchanges), written by a RoboSats contributor, explaining some of the reasons why users should consider protecting their privacy and using P2P exchanges like RoboSats.
+
+## Social Media
+
+Social media is a great opportunity for word-of-mouth advertising of RoboSats. If you had a great experience using RoboSats or have interesting insight to share about the project, please do say something! Shout it from the robo-heavens!
+
+For example, you could create a tweet and tag the [RoboSats Twitter](https://twitter.com/RoboSats) account so that we can retweet it! Note that not all tweets are guaranteed retweets. Similarly, you could post on Nostr and tag RoboSats Nostr (npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82) account so that it can be shared with others.
+
+Any help would be greatly appreciated in this sector! More order book liquidity attracts more users and thus more users get to take advantage of buying and selling bitcoin privately!
+
+{% include improve %}
