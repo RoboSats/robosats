@@ -103,7 +103,7 @@ INSTALLED_APPS = [
     "api",
     "chat",
     "control",
-    "frontend.apps.FrontendConfig",
+    "frontend",
     "drf_spectacular",
     "drf_spectacular_sidecar",  # required for Django collectstatic discovery
 ]
