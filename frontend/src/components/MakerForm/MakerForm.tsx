@@ -77,6 +77,7 @@ const MakerForm = ({
 
   const [openDialogs, setOpenDialogs] = useState<boolean>(false);
   const [submittingRequest, setSubmittingRequest] = useState<boolean>(false);
+  const [amountRangeEnabled, setAmountRangeEnabled] = useState<boolean>(true);
 
   const maxRangeAmountMultiple = 14.8;
   const minRangeAmountMultiple = 1.6;
@@ -137,7 +138,8 @@ const MakerForm = ({
     });
     updateAmountLimits(limits.list, newCurrency, maker.premium);
     updateCurrentPrice(limits.list, newCurrency, maker.premium);
-    if (maker.advancedOptions) {
+
+    if (makerHasAmountRange) {
       setMaker({
         ...maker,
         minAmount: parseFloat(Number(limits.list[newCurrency].max_amount * 0.25).toPrecision(2)),
@@ -145,6 +147,10 @@ const MakerForm = ({
       });
     }
   };
+
+  const makerHasAmountRange = useMemo(() => {
+    return maker.advancedOptions && amountRangeEnabled;
+  }, [maker.advancedOptions, amountRangeEnabled]);
 
   const handlePaymentMethodChange = function (paymentArray: string[]) {
     let str = '';
@@ -239,10 +245,10 @@ const MakerForm = ({
       const body = {
         type: fav.type == 0 ? 1 : 0,
         currency: fav.currency == 0 ? 1 : fav.currency,
-        amount: maker.advancedOptions ? null : maker.amount,
-        has_range: maker.advancedOptions,
-        min_amount: maker.advancedOptions ? maker.minAmount : null,
-        max_amount: maker.advancedOptions ? maker.maxAmount : null,
+        amount: makerHasAmountRange ? null : maker.amount,
+        has_range: makerHasAmountRange,
+        min_amount: makerHasAmountRange ? maker.minAmount : null,
+        max_amount: makerHasAmountRange ? maker.maxAmount : null,
         payment_method:
           maker.paymentMethodsText === '' ? 'not specified' : maker.paymentMethodsText,
         is_explicit: maker.isExplicit,
@@ -371,6 +377,13 @@ const MakerForm = ({
     });
   };
 
+  const handleClickAmountRangeEnabled = function (
+    _e: React.ChangeEvent<HTMLInputElement>,
+    checked: boolean,
+  ) {
+    setAmountRangeEnabled(checked);
+  };
+
   const amountLabel = useMemo(() => {
     const defaultRoutingBudget = 0.001;
     let label = t('Amount');
@@ -406,16 +419,16 @@ const MakerForm = ({
   const disableSubmit = useMemo(() => {
     return (
       fav.type == null ||
-      (maker.amount != '' &&
-        !maker.advancedOptions &&
+      (!makerHasAmountRange &&
+        maker.amount != '' &&
         (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
-      (maker.amount == null && (!maker.advancedOptions || limits.loading)) ||
-      (maker.advancedOptions && (minAmountError || maxAmountError)) ||
-      (maker.amount <= 0 && !maker.advancedOptions) ||
+      (maker.amount == null && (!makerHasAmountRange || limits.loading)) ||
+      (makerHasAmountRange && (minAmountError || maxAmountError)) ||
+      (!makerHasAmountRange && maker.amount <= 0) ||
       (maker.isExplicit && (maker.badSatoshisText != '' || maker.satoshis == '')) ||
       (!maker.isExplicit && maker.badPremiumText != '')
     );
-  }, [maker, amountLimits, limits, fav.type]);
+  }, [maker, amountLimits, limits, fav.type, makerHasAmountRange]);
 
   const clearMaker = function () {
     setFav({ ...fav, type: null });
@@ -442,10 +455,10 @@ const MakerForm = ({
           ? t('Sell BTC for ')
           : t('Swap out of LN ')}
         {fav.mode === 'fiat'
-          ? amountToString(maker.amount, maker.advancedOptions, maker.minAmount, maker.maxAmount)
+          ? amountToString(maker.amount, makerHasAmountRange, maker.minAmount, maker.maxAmount)
           : amountToString(
               maker.amount * 100000000,
-              maker.advancedOptions,
+              makerHasAmountRange,
               maker.minAmount * 100000000,
               maker.maxAmount * 100000000,
             )}
@@ -602,6 +615,25 @@ const MakerForm = ({
 
           <Grid item sx={{ width: '100%' }}>
             <Collapse in={maker.advancedOptions}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    size='small'
+                    disabled={!maker.advancedOptions}
+                    checked={amountRangeEnabled}
+                    onChange={handleClickAmountRangeEnabled}
+                  />
+                }
+                sx={{
+                  paddingLeft: '1em',
+                  color: 'text.secondary',
+                  marginTop: '-0.5em',
+                  paddingBottom: '0.5em',
+                }}
+                label={amountRangeEnabled ? t('Amount Range') : t('Exact Amount')}
+              />
+            </Collapse>
+            <Collapse in={makerHasAmountRange}>
               <AmountRange
                 minAmount={maker.minAmount}
                 handleRangeAmountChange={handleRangeAmountChange}
@@ -616,7 +648,7 @@ const MakerForm = ({
                 handleMaxAmountChange={handleMaxAmountChange}
               />
             </Collapse>
-            <Collapse in={!maker.advancedOptions}>
+            <Collapse in={!makerHasAmountRange}>
               <Grid item>
                 <Grid container alignItems='stretch' style={{ display: 'flex' }}>
                   <Grid item xs={fav.mode === 'fiat' ? 6 : 12}>
@@ -633,8 +665,8 @@ const MakerForm = ({
                     >
                       <TextField
                         fullWidth
-                        disabled={maker.advancedOptions}
-                        variant={maker.advancedOptions ? 'filled' : 'outlined'}
+                        disabled={makerHasAmountRange}
+                        variant={makerHasAmountRange ? 'filled' : 'outlined'}
                         error={
                           maker.amount != '' &&
                           (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])
