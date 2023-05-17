@@ -189,8 +189,8 @@ export const LightningPayoutForm = ({
       .then((data) => {
         if (data.reason) {
           setLightning({ ...lightning, badLnproxy: data.reason });
-        } else if (data.wpr) {
-          setLightning({ ...lightning, invoice: data.wpr, badLnproxy: '' });
+        } else if (data.proxy_invoice) {
+          setLightning({ ...lightning, invoice: data.proxy_invoice, badLnproxy: '' });
         } else {
           setLightning({ ...lightning, badLnproxy: 'Unknown lnproxy response' });
         }
