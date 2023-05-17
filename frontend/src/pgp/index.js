@@ -6,7 +6,9 @@ import {
   encrypt,
   decrypt,
   createMessage,
+  createCleartextMessage,
   readMessage,
+  sign,
 } from 'openpgp/lightweight';
 import { sha256 } from 'js-sha256';
 
@@ -81,4 +83,20 @@ export async function decryptMessage(
   } catch (e) {
     return { decryptedMessage: decrypted, validSignature: false };
   }
+}
+
+// Sign a cleartext message
+export async function signCleartextMessage(message, privateKeyArmored, passphrase) {
+  const privateKey = await decryptKey({
+    privateKey: await readPrivateKey({ armoredKey: privateKeyArmored }),
+    passphrase,
+  });
+
+  const unsignedMessage = await createCleartextMessage({ text: message });
+  const signedMessage = await sign({
+    message: unsignedMessage,
+    signingKeys: privateKey,
+  });
+
+  return signedMessage;
 }

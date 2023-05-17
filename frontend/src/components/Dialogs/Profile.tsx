@@ -12,7 +12,6 @@ import {
   Divider,
   FormControlLabel,
   Grid,
-  IconButton,
   List,
   ListItemAvatar,
   ListItemButton,
@@ -37,6 +36,7 @@ import { getWebln } from '../../utils';
 import RobotAvatar from '../RobotAvatar';
 import { apiClient } from '../../services/api';
 import { type Robot } from '../../models';
+import { signCleartextMessage } from '../../pgp';
 
 interface Props {
   open: boolean;
@@ -90,23 +90,27 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
   const handleSubmitInvoiceClicked = (e: any, rewardInvoice: string) => {
     setBadInvoice('');
     setShowRewardsSpinner(true);
-
-    apiClient
-      .post(
-        baseUrl,
-        '/api/reward/',
-        {
-          invoice: rewardInvoice,
-        },
-        { tokenSHA256: robot.tokenSHA256 },
-      )
-      .then((data: any) => {
-        setBadInvoice(data.bad_invoice ?? '');
-        setShowRewardsSpinner(false);
-        setWithdrawn(data.successful_withdrawal);
-        setOpenClaimRewards(!data.successful_withdrawal);
-        setRobot({ ...robot, earnedRewards: data.successful_withdrawal ? 0 : robot.earnedRewards });
-      });
+    signCleartextMessage(rewardInvoice, robot.encPrivKey, robot.token).then((signedInvoice) => {
+      apiClient
+        .post(
+          baseUrl,
+          '/api/reward/',
+          {
+            invoice: signedInvoice,
+          },
+          { tokenSHA256: robot.tokenSHA256 },
+        )
+        .then((data: any) => {
+          setBadInvoice(data.bad_invoice ?? '');
+          setShowRewardsSpinner(false);
+          setWithdrawn(data.successful_withdrawal);
+          setOpenClaimRewards(!data.successful_withdrawal);
+          setRobot({
+            ...robot,
+            earnedRewards: data.successful_withdrawal ? 0 : robot.earnedRewards,
+          });
+        });
+    });
     e.preventDefault();
   };
 
