@@ -3,3 +3,4 @@ static/rest_framework/**
 static/admin/**
 static/frontend/**
 static/import_export/**
+static/drf_spectacular_sidecar/**

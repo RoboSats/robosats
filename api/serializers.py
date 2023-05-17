@@ -474,7 +474,11 @@ class MakeOrderSerializer(serializers.ModelSerializer):
 
 class UpdateOrderSerializer(serializers.Serializer):
     invoice = serializers.CharField(
-        max_length=2000, allow_null=True, allow_blank=True, default=None
+        max_length=15000,
+        allow_null=True,
+        allow_blank=True,
+        default=None,
+        help_text="Invoice used for payouts. Must be PGP signed with the robot's public key. The expected Armored PGP header is -----BEGIN PGP SIGNED MESSAGE-----\nHash: SHA512\n\n",
     )
     routing_budget_ppm = serializers.IntegerField(
         default=0,
@@ -485,7 +489,11 @@ class UpdateOrderSerializer(serializers.Serializer):
         help_text="Max budget to allocate for routing in PPM",
     )
     address = serializers.CharField(
-        max_length=100, allow_null=True, allow_blank=True, default=None
+        max_length=15000,
+        allow_null=True,
+        allow_blank=True,
+        default=None,
+        help_text="Onchain address used for payouts. Must be PGP signed with the robot's public key. The expected Armored PGP header is -----BEGIN PGP SIGNED MESSAGE-----\nHash: SHA512\n\n",
     )
     statement = serializers.CharField(
         max_length=500_000, allow_null=True, allow_blank=True, default=None

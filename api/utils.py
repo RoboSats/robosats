@@ -301,6 +301,29 @@ def validate_pgp_keys(pub_key, enc_priv_key):
     return True, None, pub_key, enc_priv_key
 
 
+def verify_signed_message(pub_key, signed_message):
+    """
+    Verifies a signed cleartext PGP message. Returns whether the signature
+    is valid (was made by the given pub_key) and the content of the message.
+    """
+    gpg = gnupg.GPG()
+
+    # import the public key
+    import_result = gpg.import_keys(pub_key)
+
+    # verify the signed message
+    verified = gpg.verify(signed_message)
+
+    if verified.fingerprint == import_result.fingerprints[0]:
+        header = "-----BEGIN PGP SIGNED MESSAGE-----\nHash: SHA512\n\n"
+        footer = "-----BEGIN PGP SIGNATURE-----"
+        cleartext_message = signed_message.split(header)[1].split(footer)[0].strip()
+
+        return True, cleartext_message
+    else:
+        return False, None
+
+
 def base91_to_hex(base91_str: str) -> str:
     bytes_data = decode(base91_str)
     return bytes_data.hex()

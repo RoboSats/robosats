@@ -57,6 +57,7 @@ from api.utils import (
     get_lnd_version,
     get_robosats_commit,
     validate_pgp_keys,
+    verify_signed_message,
 )
 from chat.models import Message
 from control.models import AccountingDay, BalanceLog
@@ -500,9 +501,9 @@ class OrderView(viewsets.ViewSet):
         # action is either 1)'take', 2)'confirm', 2.b)'undo_confirm', 3)'cancel', 4)'dispute' , 5)'update_invoice'
         # 5.b)'update_address' 6)'submit_statement' (in dispute), 7)'rate_user' , 8)'rate_platform'
         action = serializer.data.get("action")
-        invoice = serializer.data.get("invoice")
+        pgp_invoice = serializer.data.get("invoice")
         routing_budget_ppm = serializer.data.get("routing_budget_ppm", 0)
-        address = serializer.data.get("address")
+        pgp_address = serializer.data.get("address")
         mining_fee_rate = serializer.data.get("mining_fee_rate")
         statement = serializer.data.get("statement")
         rating = serializer.data.get("rating")
@@ -544,6 +545,22 @@ class OrderView(viewsets.ViewSet):
 
         # 2) If action is 'update invoice'
         elif action == "update_invoice":
+            # DEPRECATE post v0.5.1.
+            if "---" not in pgp_invoice:
+                valid_signature = True
+                invoice = pgp_invoice
+            else:
+                # END DEPRECATE.
+                valid_signature, invoice = verify_signed_message(
+                    request.user.robot.public_key, pgp_invoice
+                )
+
+            if not valid_signature:
+                return Response(
+                    {"bad_request": "The PGP signed cleartext message is not valid."},
+                    status.HTTP_400_BAD_REQUEST,
+                )
+
             valid, context = Logics.update_invoice(
                 order, request.user, invoice, routing_budget_ppm
             )
@@ -552,6 +569,22 @@ class OrderView(viewsets.ViewSet):
 
         # 2.b) If action is 'update address'
         elif action == "update_address":
+            # DEPRECATE post v0.5.1.
+            if "---" not in pgp_address:
+                valid_signature = True
+                address = pgp_address
+            else:
+                # END DEPRECATE.
+                valid_signature, address = verify_signed_message(
+                    request.user.robot.public_key, pgp_address
+                )
+
+            if not valid_signature:
+                return Response(
+                    {"bad_request": "The PGP signed cleartext message is not valid."},
+                    status.HTTP_400_BAD_REQUEST,
+                )
+
             valid, context = Logics.update_address(
                 order, request.user, address, mining_fee_rate
             )
@@ -994,7 +1027,23 @@ class RewardView(CreateAPIView):
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        invoice = serializer.data.get("invoice")
+        pgp_invoice = serializer.data.get("invoice")
+
+        # DEPRECATE post v0.5.1.
+        if "---" not in pgp_invoice:
+            valid_signature = True
+            invoice = pgp_invoice
+        else:
+            # END DEPRECATE.
+            valid_signature, invoice = verify_signed_message(
+                request.user.robot.public_key, pgp_invoice
+            )
+
+        if not valid_signature:
+            return Response(
+                {"bad_request": "The PGP signed cleartext message is not valid."},
+                status.HTTP_400_BAD_REQUEST,
+            )
 
         valid, context = Logics.withdraw_rewards(request.user, invoice)
 

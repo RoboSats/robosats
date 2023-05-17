@@ -50,6 +50,7 @@ import { type Order, type Robot, type Settings } from '../../models';
 import { type EncryptedChatMessage } from './EncryptedChat';
 import CollabCancelAlert from './CollabCancelAlert';
 import { Bolt } from '@mui/icons-material';
+import { signCleartextMessage } from '../../pgp';
 
 interface loadingButtonsProps {
   cancel: boolean;
@@ -224,19 +225,23 @@ const TradeBox = ({
 
   const updateInvoice = function (invoice: string) {
     setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
-    submitAction({
-      action: 'update_invoice',
-      invoice,
-      routing_budget_ppm: lightning.routingBudgetPPM,
+    signCleartextMessage(invoice, robot.encPrivKey, robot.token).then((signedInvoice) => {
+      submitAction({
+        action: 'update_invoice',
+        invoice: signedInvoice,
+        routing_budget_ppm: lightning.routingBudgetPPM,
+      });
     });
   };
 
   const updateAddress = function () {
     setLoadingButtons({ ...noLoadingButtons, submitAddress: true });
-    submitAction({
-      action: 'update_address',
-      address: onchain.address,
-      mining_fee_rate: onchain.miningFee,
+    signCleartextMessage(onchain.address, robot.encPrivKey, robot.token).then((signedAddress) => {
+      submitAction({
+        action: 'update_address',
+        address: signedAddress,
+        mining_fee_rate: onchain.miningFee,
+      });
     });
   };
 
