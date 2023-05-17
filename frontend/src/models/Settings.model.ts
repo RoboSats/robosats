@@ -1,5 +1,6 @@
 import i18n from '../i18n/Web';
 import { systemClient } from '../services/System';
+import { getHost } from '../utils';
 import type Coordinator from './Coordinator.model';
 
 export type Language =
@@ -42,6 +43,7 @@ class BaseSettings {
 
     const networkCookie = systemClient.getItem('settings_network');
     this.network = networkCookie !== '' ? networkCookie : 'mainnet';
+    this.host = getHost();
   }
 
   public frontend: 'basic' | 'pro' = 'basic';
