@@ -1,0 +1,30 @@
+name: Syncs relay list from lnproxy.org and stores in format used by RoboSats
+
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '0 12 * * 0'  # Run every Sunday at noon
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Fetch and process JSON
+        run: |
+          curl https://github.com/shyfire131/lnproxy-webui2/blob/17d6131a72a92978e5c0dc57ab2b2fbe467c7722/assets/relays.json -o lnproxy_tmplist.json
+          node .github/workflows/scripts/lnproxy-sync.js
+
+      - name: Commit and push if it's not up to date
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ./frontend/static/lnproxies.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "Updated LNProxy relay list"
+          git push
+
+      - name: Remove tmp lnproxy json file
+        run: rm lnproxy_tmplist.json

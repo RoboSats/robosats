@@ -30,9 +30,10 @@ import { pn } from '../../../utils';
 import { ContentCopy, Help, SelfImprovement } from '@mui/icons-material';
 import { apiClient } from '../../../services/api';
 
-import lnproxies from '../../../../static/lnproxies.json';
 import { systemClient } from '../../../services/System';
 
+import lnproxies from '../../../../static/lnproxies.json';
+let filteredProxies: { [key: string]: any }[] = [];
 export interface LightningForm {
   invoice: string;
   amount: number;
@@ -92,7 +93,7 @@ export const LightningPayoutForm = ({
   const theme = useTheme();
 
   const [loadingLnproxy, setLoadingLnproxy] = useState<boolean>(false);
-  const [badLnproxyServer, setBadLnproxyServer] = useState<string>('');
+  const [noMatchingLnProxies, setNoMatchingLnProxies] = useState<string>('');
 
   const computeInvoiceAmount = function () {
     const tradeAmount = order.trade_satoshis;
@@ -145,49 +146,51 @@ export const LightningPayoutForm = ({
     }
   }, [lightning.lnproxyInvoice, lightning.lnproxyAmount]);
 
-  const lnproxyUrl = function () {
-    const bitcoinNetwork = settings?.network ?? 'mainnet';
-    let internetNetwork: 'Clearnet' | 'I2P' | 'TOR' = 'Clearnet';
+  //filter lnproxies when the network settings are updated
+  let bitcoinNetwork: string = 'mainnet';
+  let internetNetwork: 'Clearnet' | 'I2P' | 'TOR' = 'Clearnet';
+  useEffect(() => {
+    bitcoinNetwork = settings?.network ?? 'mainnet';
     if (settings.host?.includes('.i2p')) {
       internetNetwork = 'I2P';
     } else if (settings.host?.includes('.onion') || window.NativeRobosats != undefined) {
       internetNetwork = 'TOR';
     }
 
-    const url = lnproxies[lightning.lnproxyServer][`${bitcoinNetwork}${internetNetwork}`];
-    if (url != 'undefined') {
-      return url;
-    } else {
-      setBadLnproxyServer(
-        t(`Server not available for {{bitcoinNetwork}} bitcoin over {{internetNetwork}}`, {
-          bitcoinNetwork,
+    filteredProxies = lnproxies
+      .filter((node) => node.relayType == internetNetwork)
+      .filter((node) => node.network == bitcoinNetwork);
+  }, [settings]);
+
+  //if "use lnproxy" checkbox is enabled, but there are no matching proxies, enter error state
+  useEffect(() => {
+    setNoMatchingLnProxies('');
+    if (filteredProxies.length === 0) {
+      setNoMatchingLnProxies(
+        t(`No proxies available for {{bitcoinNetwork}} bitcoin over {{internetNetwork}}`, {
+          bitcoinNetwork: settings?.network ?? 'mainnet',
           internetNetwork: t(internetNetwork),
         }),
       );
     }
-  };
-
-  useEffect(() => {
-    setBadLnproxyServer('');
-    lnproxyUrl();
-  }, [lightning.lnproxyServer]);
+  }, [lightning.useLnproxy]);
 
   const fetchLnproxy = function () {
     setLoadingLnproxy(true);
+    let body: { invoice: string; description: string; routing_msat?: string } = {
+      invoice: lightning.lnproxyInvoice,
+      description: '',
+    };
+    if (lightning.lnproxyBudgetSats > 0) {
+      body['routing_msat'] = String(lightning.lnproxyBudgetSats * 1000);
+    }
     apiClient
-      .get(
-        lnproxyUrl(),
-        `/api/${lightning.lnproxyInvoice}${
-          lightning.lnproxyBudgetSats > 0
-            ? `?routing_msat=${lightning.lnproxyBudgetSats * 1000}`
-            : ''
-        }&format=json`,
-      )
+      .post(filteredProxies[lightning.lnproxyServer]['url'], '', body)
       .then((data) => {
         if (data.reason) {
           setLightning({ ...lightning, badLnproxy: data.reason });
-        } else if (data.wpr) {
-          setLightning({ ...lightning, invoice: data.wpr, badLnproxy: '' });
+        } else if (data.proxy_invoice) {
+          setLightning({ ...lightning, invoice: data.proxy_invoice, badLnproxy: '' });
         } else {
           setLightning({ ...lightning, badLnproxy: 'Unknown lnproxy response' });
         }
@@ -416,7 +419,7 @@ export const LightningPayoutForm = ({
                       spacing={1}
                     >
                       <Grid item>
-                        <FormControl error={badLnproxyServer != ''}>
+                        <FormControl error={noMatchingLnProxies != ''}>
                           <InputLabel id='select-label'>{t('Server')}</InputLabel>
                           <Select
                             sx={{ width: '14em' }}
@@ -427,14 +430,14 @@ export const LightningPayoutForm = ({
                               setLightning({ ...lightning, lnproxyServer: Number(e.target.value) });
                             }}
                           >
-                            {lnproxies.map((lnproxyServer, index) => (
+                            {filteredProxies.map((lnproxyServer, index) => (
                               <MenuItem key={index} value={index}>
                                 <Typography>{lnproxyServer.name}</Typography>
                               </MenuItem>
                             ))}
                           </Select>
-                          {badLnproxyServer != '' ? (
-                            <FormHelperText>{t(badLnproxyServer)}</FormHelperText>
+                          {noMatchingLnProxies != '' ? (
+                            <FormHelperText>{t(noMatchingLnProxies)}</FormHelperText>
                           ) : (
                             <></>
                           )}
@@ -563,7 +566,7 @@ export const LightningPayoutForm = ({
                   loading={loadingLnproxy}
                   disabled={
                     lightning.lnproxyInvoice.length < 20 ||
-                    badLnproxyServer != '' ||
+                    noMatchingLnProxies != '' ||
                     lightning.badLnproxy != ''
                   }
                   onClick={fetchLnproxy}
