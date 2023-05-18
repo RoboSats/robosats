@@ -318,6 +318,7 @@ class LNPaymentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     raw_id_fields = (
         "receiver",
         "sender",
+        "order_donated",
     )
     list_filter = ("type", "concept", "status")
     ordering = ("-expires_at",)

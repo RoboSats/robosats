@@ -124,6 +124,7 @@ class LNPayment(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         default=None,
+        blank=True,
     )
 
     def __str__(self):
