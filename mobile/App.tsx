@@ -5,6 +5,7 @@ import TorClient from './services/Tor';
 import Clipboard from '@react-native-clipboard/clipboard';
 import NetInfo from '@react-native-community/netinfo';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import { name as app_name, version as app_version } from './package.json';
 
 const backgroundColors = {
   light: 'white',
@@ -157,6 +158,7 @@ const App = () => {
         }}
         onMessage={onMessage}
         // @ts-expect-error
+        userAgent={`${app_name} v${app_version} Android`}
         style={{ backgroundColor: backgroundColors[colorScheme] }}
         ref={(ref) => (webViewRef.current = ref)}
         overScrollMode='never'
