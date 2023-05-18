@@ -607,6 +607,12 @@ class LNDNode:
                     payment_hash=bytes.fromhex(hash)
                 )
 
+                for response in cls.routerstub.TrackPaymentV2(request):
+                    handle_response(response)
+
+            else:
+                print(str(e))
+
     @classmethod
     def send_keysend(
         cls, target_pubkey, message, num_satoshis, routing_budget_sats, timeout, sign
@@ -688,3 +694,7 @@ class LNDNode:
         """Just as it sounds. Better safe than sorry!"""
         request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
         response = cls.invoicesstub.LookupInvoiceV2(request)
+
+        return (
+            response.state == 1
+        )  # LND states: 0 OPEN, 1 SETTLED, 3 ACCEPTED, GRPC_ERROR status 5 when cancelled/returned
