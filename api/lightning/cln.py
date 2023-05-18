@@ -221,7 +221,7 @@ class CLNNode:
 
         # constant 100h invoice expiry because cln has to cancel htlcs if invoice expires
         # or it can't associate them anymore
-        invoice_expiry = 360000
+        invoice_expiry = cltv_expiry_blocks * 10 * 60
 
         hold_payment = {}
         # The preimage is a random hash of 256 bits entropy
