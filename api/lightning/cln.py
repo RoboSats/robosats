@@ -670,6 +670,89 @@ class CLNNode:
                     print(str(e))
 
     @classmethod
+    def send_keysend(
+        cls, target_pubkey, message, num_satoshis, routing_budget_sats, timeout, sign
+    ):
+        # keysends for dev donations
+        from api.models import LNPayment
+
+        # config("ALLOW_SELF_KEYSEND", cast=bool, default=False)
+        ALLOW_SELF_KEYSEND = False
+        keysend_payment = {}
+        keysend_payment["created_at"] = timezone.now()
+        keysend_payment["expires_at"] = timezone.now()
+        try:
+            custom_records = []
+
+            msg = str(message)
+
+            if len(msg) > 0:
+                custom_records.append(primitives__pb2.TlvEntry(
+                    type=34349334, value=bytes.fromhex(msg.encode("utf-8").hex()))
+                )
+                if sign:
+                    self_pubkey = cls.stub.GetInfo(
+                        noderpc.GetinfoRequest()
+                    ).id
+                    timestamp = struct.pack(">i", int(time.time()))
+                    signature = cls.stub.SignMessage(
+                        noderpc.SignmessageRequest(
+                            message=(
+                                bytes.fromhex(self_pubkey)
+                                + bytes.fromhex(target_pubkey)
+                                + timestamp
+                                + bytes.fromhex(msg.encode("utf-8").hex())
+                            ),
+                        )
+                    ).zbase
+                    custom_records.append(primitives__pb2.TlvEntry(
+                        type=34349337, value=signature))
+                    custom_records.append(primitives__pb2.TlvEntry(
+                        type=34349339, value=bytes.fromhex(self_pubkey)))
+                    custom_records.append(primitives__pb2.TlvEntry(
+                        type=34349343, value=timestamp))
+
+            # no maxfee for Keysend
+            maxfeepercent = (routing_budget_sats / num_satoshis) * 100
+            request = noderpc.KeysendRequest(
+                destination=bytes.fromhex(target_pubkey),
+                extratlvs=primitives__pb2.TlvStream(entries=custom_records),
+                maxfeepercent=maxfeepercent,
+                retry_for=timeout,
+                amount_msat=primitives__pb2.Amount(msat=num_satoshis * 1000),
+            )
+            response = cls.stub.KeySend(request)
+
+            keysend_payment["preimage"] = response.payment_preimage.hex()
+            keysend_payment["payment_hash"] = response.payment_hash.hex()
+
+            waitreq = noderpc.WaitsendpayRequest(
+                payment_hash=response.payment_hash, timeout=timeout)
+            try:
+                waitresp = cls.stub.WaitSendPay(waitreq)
+                keysend_payment["fee"] = float(
+                    waitresp.amount_sent_msat.msat - waitresp.amount_msat.msat) / 1000
+                keysend_payment["status"] = LNPayment.Status.SUCCED
+            except grpc._channel._InactiveRpcError as e:
+                if "code: Some" in str(e):
+                    status_code = int(e.details().split("code: Some(")[1].split(")")[0])
+                if status_code == 200:  # Timed out before the payment could complete.
+                    keysend_payment["status"] = LNPayment.Status.FLIGHT
+                elif status_code == 208:
+                    print(
+                        f"A payment for {response.payment_hash.hex()} was never made and there is nothing to wait for")
+                else:
+                    keysend_payment["status"] = LNPayment.Status.FAILRO
+                    keysend_payment["failure_reason"] = response.failure_reason
+            except Exception as e:
+                print("Error while sending keysend payment! Error: " + str(e))
+
+        except Exception as e:
+            print("Error while sending keysend payment! Error: " + str(e))
+
+        return True, keysend_payment
+
+    @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):
         """Just as it sounds. Better safe than sorry!"""
         request = noderpc.ListinvoicesRequest(payment_hash=bytes.fromhex(payment_hash))
