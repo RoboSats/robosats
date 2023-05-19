@@ -514,91 +514,28 @@ class CLNNode:
             print(f"Order: {order.id} Payout is larger than collateral !?")
             return
 
-        def handle_response(response, was_in_transit=False):
-            lnpayment.status = LNPayment.Status.FLIGHT
-            lnpayment.in_flight = True
-            lnpayment.save(update_fields=["in_flight", "status"])
-            order.status = Order.Status.PAY
-            order.save(update_fields=["status"])
+        was_in_transit = False
+        for i in range(3):
+            try:
+                response = cls.stub.Pay(request)
+                lnpayment.status = LNPayment.Status.FLIGHT
+                lnpayment.in_flight = True
+                lnpayment.save(update_fields=["in_flight", "status"])
+                order.status = Order.Status.PAY
+                order.save(update_fields=["status"])
 
-            if response.status == 1:  # Status 1 'PENDING'
-                print(f"Order: {order.id} IN_FLIGHT. Hash {hash}")
+                if response.status == 1:  # Status 1 'PENDING'
+                    print(f"Order: {order.id} IN_FLIGHT. Hash {hash}")
 
-                # If payment was already "payment is in transition" we do not
-                # want to spawn a new thread every 3 minutes to check on it.
-                # in case this thread dies, let's move the last_routing_time
-                # 20 minutes in the future so another thread spawns.
-                if was_in_transit:
-                    lnpayment.last_routing_time = timezone.now() + timedelta(minutes=20)
-                    lnpayment.save(update_fields=["last_routing_time"])
+                    # If payment was already "payment is in transition" we do not
+                    # want to spawn a new thread every 3 minutes to check on it.
+                    # in case this thread dies, let's move the last_routing_time
+                    # 20 minutes in the future so another thread spawns.
+                    if was_in_transit:
+                        lnpayment.last_routing_time = timezone.now() + timedelta(minutes=20)
+                        lnpayment.save(update_fields=["last_routing_time"])
 
-            if response.status == 2:  # Status 3 'FAILED'
-                lnpayment.status = LNPayment.Status.FAILRO
-                lnpayment.last_routing_time = timezone.now()
-                lnpayment.routing_attempts += 1
-                lnpayment.failure_reason = LNPayment.FailureReason.NOROUTE
-                lnpayment.in_flight = False
-                if lnpayment.routing_attempts > 2:
-                    lnpayment.status = LNPayment.Status.EXPIRE
-                    lnpayment.routing_attempts = 0
-                lnpayment.save(
-                    update_fields=[
-                        "status",
-                        "last_routing_time",
-                        "routing_attempts",
-                        "failure_reason",
-                        "in_flight",
-                    ]
-                )
-
-                order.status = Order.Status.FAI
-                order.expires_at = timezone.now() + timedelta(
-                    seconds=order.t_to_expire(Order.Status.FAI)
-                )
-                order.save(update_fields=["status", "expires_at"])
-                print(
-                    f"Order: {order.id} FAILED. Hash: {hash} Reason: {cls.payment_failure_context[-1]}"
-                )
-                return {
-                    "succeded": False,
-                    "context": f"payment failure reason: {cls.payment_failure_context[-1]}",
-                }
-
-            if response.status == 0:  # Status 2 'COMPLETE'
-                print(f"Order: {order.id} SUCCEEDED. Hash: {hash}")
-                lnpayment.status = LNPayment.Status.SUCCED
-                lnpayment.fee = (
-                    float(response.amount_sent_msat.msat - response.amount_msat.msat)
-                    / 1000
-                )
-                lnpayment.preimage = response.payment_preimage.hex()
-                lnpayment.save(update_fields=["status", "fee", "preimage"])
-                order.status = Order.Status.SUC
-                order.expires_at = timezone.now() + timedelta(
-                    seconds=order.t_to_expire(Order.Status.SUC)
-                )
-                order.save(update_fields=["status", "expires_at"])
-
-                results = {"succeded": True}
-                return results
-
-        try:
-            response = cls.stub.Pay(request)
-            handle_response(response)
-
-        except grpc._channel._InactiveRpcError as e:
-            if "code: Some" in str(e):
-                status_code = int(e.details().split("code: Some(")[1].split(")")[0])
-                if (
-                    status_code == 201
-                ):  # Already paid with this hash using different amount or destination
-                    # i don't think this can happen really, since we don't use the amount_msat in request
-                    # and if you just try 'pay' 2x where the first time it succeeds you get the same
-                    # non-error result the 2nd time.
-                    print(f"Order: {order.id} ALREADY PAID. Hash: {hash}.")
-
-                # Permanent failure at destination. or Unable to find a route. or Route too expensive.
-                elif status_code == 203 or status_code == 205 or status_code == 206 or status_code == 210:
+                if response.status == 2:  # Status 3 'FAILED'
                     lnpayment.status = LNPayment.Status.FAILRO
                     lnpayment.last_routing_time = timezone.now()
                     lnpayment.routing_attempts += 1
@@ -609,7 +546,12 @@ class CLNNode:
                         lnpayment.routing_attempts = 0
                     lnpayment.save(
                         update_fields=[
-                            "status", "last_routing_time", "routing_attempts", "in_flight", "failure_reason"]
+                            "status",
+                            "last_routing_time",
+                            "routing_attempts",
+                            "failure_reason",
+                            "in_flight",
+                        ]
                     )
 
                     order.status = Order.Status.FAI
@@ -618,37 +560,114 @@ class CLNNode:
                     )
                     order.save(update_fields=["status", "expires_at"])
                     print(
-                        f"Order: {order.id} FAILED. Hash: {hash} Reason: {cls.payment_failure_context[status_code]}"
+                        f"Order: {order.id} FAILED. Hash: {hash} Reason: {cls.payment_failure_context[-1]}"
                     )
                     return {
                         "succeded": False,
-                        "context": f"payment failure reason: {cls.payment_failure_context[status_code]}",
+                        "context": f"payment failure reason: {cls.payment_failure_context[-1]}",
                     }
-                elif status_code == 207:  # invoice expired
-                    print(f"Order: {order.id}. INVOICE EXPIRED. Hash: {hash}")
 
-                    lnpayment.status = LNPayment.Status.EXPIRE
-                    lnpayment.last_routing_time = timezone.now()
-                    lnpayment.in_flight = False
-                    lnpayment.save(
-                        update_fields=["status", "last_routing_time", "in_flight"])
-                    order.status = Order.Status.FAI
+                if response.status == 0:  # Status 2 'COMPLETE'
+                    print(f"Order: {order.id} SUCCEEDED. Hash: {hash}")
+                    lnpayment.status = LNPayment.Status.SUCCED
+                    lnpayment.fee = (
+                        float(response.amount_sent_msat.msat - response.amount_msat.msat)
+                        / 1000
+                    )
+                    lnpayment.preimage = response.payment_preimage.hex()
+                    lnpayment.save(update_fields=["status", "fee", "preimage"])
+                    order.status = Order.Status.SUC
                     order.expires_at = timezone.now() + timedelta(
-                        seconds=order.t_to_expire(Order.Status.FAI)
+                        seconds=order.t_to_expire(Order.Status.SUC)
                     )
                     order.save(update_fields=["status", "expires_at"])
-                    results = {
-                        "succeded": False,
-                        "context": "The payout invoice has expired",
-                    }
-                    return results
-                else:  # -1 (general error)
-                    print(str(e))
-            else:
-                print(str(e))
 
-        except Exception as e:
-            print(str(e))
+                    results = {"succeded": True}
+                    return results
+
+            except grpc._channel._InactiveRpcError as e:
+                if "code: Some" in str(e):
+                    status_code = int(e.details().split("code: Some(")[1].split(")")[0])
+                    if (
+                        status_code == 201
+                    ):  # Already paid with this hash using different amount or destination
+                        # i don't think this can happen really, since we don't use the amount_msat in request
+                        # and if you just try 'pay' 2x where the first time it succeeds you get the same
+                        # non-error result the 2nd time.
+                        print(
+                            f"Order: {order.id} ALREADY PAID using different amount or destination THIS SHOULD NEVER HAPPEN! Hash: {hash}.")
+
+                    # Permanent failure at destination. or Unable to find a route. or Route too expensive.
+                    elif status_code == 203 or status_code == 205 or status_code == 206 or status_code == 210:
+                        lnpayment.status = LNPayment.Status.FAILRO
+                        lnpayment.last_routing_time = timezone.now()
+                        lnpayment.routing_attempts += 1
+                        lnpayment.failure_reason = LNPayment.FailureReason.NOROUTE
+                        lnpayment.in_flight = False
+                        if lnpayment.routing_attempts > 2:
+                            lnpayment.status = LNPayment.Status.EXPIRE
+                            lnpayment.routing_attempts = 0
+                        lnpayment.save(
+                            update_fields=[
+                                "status", "last_routing_time", "routing_attempts", "in_flight", "failure_reason"]
+                        )
+
+                        order.status = Order.Status.FAI
+                        order.expires_at = timezone.now() + timedelta(
+                            seconds=order.t_to_expire(Order.Status.FAI)
+                        )
+                        order.save(update_fields=["status", "expires_at"])
+                        print(
+                            f"Order: {order.id} FAILED. Hash: {hash} Reason: {cls.payment_failure_context[status_code]}"
+                        )
+                        return {
+                            "succeded": False,
+                            "context": f"payment failure reason: {cls.payment_failure_context[status_code]}",
+                        }
+                    elif status_code == 207:  # invoice expired
+                        print(f"Order: {order.id}. INVOICE EXPIRED. Hash: {hash}")
+
+                        request_listpays = noderpc.ListpaysRequest(payment_hash=hash)
+                        try:
+                            response_listpays = cls.stub.ListPays(request_listpays)
+                        except Exception as e:
+                            print(str(e))
+
+                        if len(response_listpays.pays) == 0:
+                            print(
+                                f"Order: {order.id}. UNUSUAL: Payment for expired invoice not found. Hash: {hash}")
+                            continue
+
+                        still_inflight = False
+                        for pay in response_listpays.pays:
+                            if pay.status == 0:
+                                still_inflight = True
+                            elif pay.status == 2:
+                                print(
+                                    f"Order: {order.id} Payment got accepted after invoice expiry! Hash: {hash}")
+
+                        if still_inflight:
+                            was_in_transit = True
+                        else:
+                            lnpayment.status = LNPayment.Status.EXPIRE
+                            lnpayment.last_routing_time = timezone.now()
+                            lnpayment.in_flight = False
+                            lnpayment.save(
+                                update_fields=["status", "last_routing_time", "in_flight"])
+                            order.status = Order.Status.FAI
+                            order.expires_at = timezone.now() + timedelta(
+                                seconds=order.t_to_expire(Order.Status.FAI)
+                            )
+                            order.save(update_fields=["status", "expires_at"])
+                            results = {
+                                "succeded": False,
+                                "context": "The payout invoice has expired",
+                            }
+                            return results
+                    else:  # -1 (general error)
+                        print(str(e))
+                else:
+                    print(str(e))
 
     @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):
