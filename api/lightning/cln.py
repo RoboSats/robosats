@@ -535,7 +535,7 @@ class CLNNode:
                         lnpayment.last_routing_time = timezone.now() + timedelta(minutes=20)
                         lnpayment.save(update_fields=["last_routing_time"])
 
-                if response.status == 2:  # Status 3 'FAILED'
+                if response.status == 2:  # Status 2 'FAILED'
                     lnpayment.status = LNPayment.Status.FAILRO
                     lnpayment.last_routing_time = timezone.now()
                     lnpayment.routing_attempts += 1
@@ -567,7 +567,7 @@ class CLNNode:
                         "context": f"payment failure reason: {cls.payment_failure_context[-1]}",
                     }
 
-                if response.status == 0:  # Status 2 'COMPLETE'
+                if response.status == 0:  # Status 0 'COMPLETE'
                     print(f"Order: {order.id} SUCCEEDED. Hash: {hash}")
                     lnpayment.status = LNPayment.Status.SUCCED
                     lnpayment.fee = (
