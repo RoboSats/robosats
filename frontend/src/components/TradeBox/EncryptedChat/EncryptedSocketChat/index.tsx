@@ -312,6 +312,12 @@ const EncryptedSocketChat: React.FC<Props> = ({
                 label={t('Type a message')}
                 variant='standard'
                 size='small'
+                multiline
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    onButtonClicked(e);
+                  }
+                }}
                 helperText={
                   connected
                     ? peerPubKey
