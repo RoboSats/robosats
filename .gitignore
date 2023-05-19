@@ -646,7 +646,6 @@ frontend/src/components/PaymentMethods/Icons/webp*
 frontend/static/frontend/**
 docs/.jekyll-cache*
 docs/_site*
-commit_sha.txt
 node
 
 # mobile frontend js
