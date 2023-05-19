@@ -300,6 +300,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
                 variant='standard'
                 size='small'
                 multiline
+                maxRows={3}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     onButtonClicked(e);
@@ -312,7 +313,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
                 fullWidth={true}
               />
             </Grid>
-            <Grid item alignItems='flex-end' style={{ display: 'flex' }} xs={3}>
+            <Grid item alignItems='stretch' style={{ display: 'flex' }} xs={3}>
               <Button
                 disabled={waitingEcho || !peerPubKey}
                 type='submit'
