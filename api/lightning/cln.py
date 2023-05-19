@@ -201,7 +201,13 @@ class CLNNode:
         request = noderpc.HodlInvoiceCancelRequest(
             payment_hash=bytes.fromhex(payment_hash)
         )
-        response = cls.stub.HodlInvoiceCancel(request)
+        try:
+            response = cls.stub.HodlInvoiceCancel(request)
+        except Exception as e:
+            if "Timed out" in str(e):
+                return True
+            else:
+                raise e
 
         return response.state == 1  # True if state is CANCELED, false otherwise.
 
@@ -211,7 +217,13 @@ class CLNNode:
         request = noderpc.HodlInvoiceSettleRequest(
             payment_hash=hashlib.sha256(bytes.fromhex(preimage)).digest()
         )
-        response = cls.stub.HodlInvoiceSettle(request)
+        try:
+            response = cls.stub.HodlInvoiceSettle(request)
+        except Exception as e:
+            if "Timed out" in str(e):
+                return True
+            else:
+                raise e
 
         return response.state == 2  # True if state is SETTLED, false otherwise.
 
