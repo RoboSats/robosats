@@ -476,21 +476,19 @@ class CLNNode:
                 lnpayment.save(update_fields=["fee", "status", "preimage"])
                 return True, None
             elif response.status == 1:  # PENDING
-                failure_reason = str("PENDING")
-                lnpayment.failure_reason = failure_reason
+                lnpayment.failure_reason = LNPayment.FailureReason.NOTYETF
                 lnpayment.status = LNPayment.Status.FLIGHT
                 lnpayment.save(update_fields=["failure_reason", "status"])
                 return False, failure_reason
             else:  # status == 2 FAILED
-                failure_reason = str("FAILED")
-                lnpayment.failure_reason = failure_reason
+                lnpayment.failure_reason = LNPayment.FailureReason.NOROUTE
                 lnpayment.status = LNPayment.Status.FAILRO
                 lnpayment.save(update_fields=["failure_reason", "status"])
                 return False, failure_reason
         except grpc._channel._InactiveRpcError as e:
             status_code = int(e.details().split("code: Some(")[1].split(")")[0])
             failure_reason = cls.payment_failure_context[status_code]
-            lnpayment.failure_reason = status_code  # or failure_reason ?
+            lnpayment.failure_reason = LNPayment.FailureReason.NOROUTE
             lnpayment.status = LNPayment.Status.FAILRO
             lnpayment.save(update_fields=["failure_reason", "status"])
             return False, failure_reason
@@ -538,9 +536,7 @@ class CLNNode:
                 lnpayment.status = LNPayment.Status.FAILRO
                 lnpayment.last_routing_time = timezone.now()
                 lnpayment.routing_attempts += 1
-                lnpayment.failure_reason = (
-                    -1
-                )  # no failure_reason in non-error pay response with stauts FAILED
+                lnpayment.failure_reason = LNPayment.FailureReason.NOROUTE
                 lnpayment.in_flight = False
                 if lnpayment.routing_attempts > 2:
                     lnpayment.status = LNPayment.Status.EXPIRE
@@ -602,11 +598,11 @@ class CLNNode:
                     print(f"Order: {order.id} ALREADY PAID. Hash: {hash}.")
 
                 # Permanent failure at destination. or Unable to find a route. or Route too expensive.
-                elif status_code == 203 or status_code == 205 or status_code == 206:
+                elif status_code == 203 or status_code == 205 or status_code == 206 or status_code == 210:
                     lnpayment.status = LNPayment.Status.FAILRO
                     lnpayment.last_routing_time = timezone.now()
                     lnpayment.routing_attempts += 1
-                    lnpayment.failure_reason = status_code
+                    lnpayment.failure_reason = LNPayment.FailureReason.NOROUTE
                     lnpayment.in_flight = False
                     if lnpayment.routing_attempts > 2:
                         lnpayment.status = LNPayment.Status.EXPIRE
@@ -646,7 +642,7 @@ class CLNNode:
                         "context": "The payout invoice has expired",
                     }
                     return results
-                else:  # -1 and 210 (don't know when 210 happens exactly)
+                else:  # -1 (general error)
                     print(str(e))
             else:
                 print(str(e))
