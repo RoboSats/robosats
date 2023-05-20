@@ -201,13 +201,7 @@ class CLNNode:
         request = noderpc.HodlInvoiceCancelRequest(
             payment_hash=bytes.fromhex(payment_hash)
         )
-        try:
-            response = cls.stub.HodlInvoiceCancel(request)
-        except Exception as e:
-            if "Timed out" in str(e):
-                return True
-            else:
-                raise e
+        response = cls.stub.HodlInvoiceCancel(request)
 
         return response.state == 2  # True if state is CANCELED, false otherwise.
 
@@ -217,13 +211,7 @@ class CLNNode:
         request = noderpc.HodlInvoiceSettleRequest(
             payment_hash=hashlib.sha256(bytes.fromhex(preimage)).digest()
         )
-        try:
-            response = cls.stub.HodlInvoiceSettle(request)
-        except Exception as e:
-            if "Timed out" in str(e):
-                return True
-            else:
-                raise e
+        response = cls.stub.HodlInvoiceSettle(request)
 
         return response.state == 1  # True if state is SETTLED, false otherwise.
 
@@ -755,10 +743,14 @@ class CLNNode:
     @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):
         """Just as it sounds. Better safe than sorry!"""
-        request = noderpc.ListinvoicesRequest(payment_hash=bytes.fromhex(payment_hash))
-        response = cls.stub.ListInvoices(request)
+        request = noderpc.HodlInvoiceLookupRequest(
+            payment_hash=bytes.fromhex(payment_hash))
+        try:
+            response = cls.stub.HodlInvoiceLookup(request)
+        except Exception as e:
+            if "Timed out" in str(e):
+                return False
+            else:
+                raise e
 
-        return (
-            response.invoices[0].status == 1
-        )  # CLN states: UNPAID = 0, PAID = 1, EXPIRED = 2, this is clns own invoice-lookup
-        # so just a check for paid/unpaid/expired not hodl-invoice related states like ACCEPTED/CANCELED
+        return response.state == 1
