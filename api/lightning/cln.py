@@ -505,12 +505,14 @@ class CLNNode:
         was_in_transit = False
         for i in range(3):
             try:
-                response = cls.stub.Pay(request)
                 lnpayment.status = LNPayment.Status.FLIGHT
                 lnpayment.in_flight = True
                 lnpayment.save(update_fields=["in_flight", "status"])
+
                 order.status = Order.Status.PAY
                 order.save(update_fields=["status"])
+
+                response = cls.stub.Pay(request)
 
                 if response.status == 1:  # Status 1 'PENDING'
                     print(f"Order: {order.id} IN_FLIGHT. Hash {hash}")
