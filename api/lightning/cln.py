@@ -209,7 +209,7 @@ class CLNNode:
             else:
                 raise e
 
-        return response.state == 1  # True if state is CANCELED, false otherwise.
+        return response.state == 2  # True if state is CANCELED, false otherwise.
 
     @classmethod
     def settle_hold_invoice(cls, preimage):
@@ -225,7 +225,7 @@ class CLNNode:
             else:
                 raise e
 
-        return response.state == 2  # True if state is SETTLED, false otherwise.
+        return response.state == 1  # True if state is SETTLED, false otherwise.
 
     @classmethod
     def gen_hold_invoice(cls, num_satoshis, description, invoice_expiry, cltv_expiry_blocks, order_id, lnpayment_concept, time):
