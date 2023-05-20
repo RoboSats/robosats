@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 
 import gnupg
 import numpy as np
