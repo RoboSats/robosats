@@ -139,15 +139,15 @@ class CLNNode:
         unsettled_local_balance = 0
         unsettled_remote_balance = 0
         for channel in response.channels:
-            if channel.state == 2:  # CHANNELD_NORMAL
+            if channel.state == noderpc.ListpeerchannelsChannels.ListpeerchannelsChannelsState.CHANNELD_NORMAL:
                 local_balance_sat += channel.to_us_msat.msat // 1_000
                 remote_balance_sat += (
                     channel.total_msat.msat - channel.to_us_msat.msat
                 ) // 1_000
             for htlc in channel.htlcs:
-                if htlc.direction == 0:  # IN
+                if htlc.direction == noderpc.ListpeerchannelsChannelsHtlcs.ListpeerchannelsChannelsHtlcsDirection.IN:
                     unsettled_local_balance += htlc.amount_msat.msat // 1_000
-                elif htlc.direction == 1:  # OUT
+                elif htlc.direction == noderpc.ListpeerchannelsChannelsHtlcs.ListpeerchannelsChannelsHtlcsDirection.OUT:
                     unsettled_remote_balance += htlc.amount_msat.msat // 1_000
 
         return {
@@ -203,7 +203,7 @@ class CLNNode:
         )
         response = cls.stub.HodlInvoiceCancel(request)
 
-        return response.state == 2  # True if state is CANCELED, false otherwise.
+        return response.state == noderpc.HodlInvoiceCancelResponse.Hodlstate.CANCELED
 
     @classmethod
     def settle_hold_invoice(cls, preimage):
@@ -213,7 +213,7 @@ class CLNNode:
         )
         response = cls.stub.HodlInvoiceSettle(request)
 
-        return response.state == 1  # True if state is SETTLED, false otherwise.
+        return response.state == noderpc.HodlInvoiceSettleResponse.Hodlstate.SETTLED
 
     @classmethod
     def gen_hold_invoice(cls, num_satoshis, description, invoice_expiry, cltv_expiry_blocks, order_id, lnpayment_concept, time):
@@ -265,13 +265,13 @@ class CLNNode:
         # Will fail if 'unable to locate invoice'. Happens if invoice expiry
         # time has passed (but these are 15% padded at the moment). Should catch it
         # and report back that the invoice has expired (better robustness)
-        if response.state == 0:  # OPEN
+        if response.state == noderpc.HodlInvoiceLookupResponse.Hodlstate.OPEN:
             pass
-        if response.state == 1:  # SETTLED
+        if response.state == noderpc.HodlInvoiceLookupResponse.Hodlstate.SETTLED:
             pass
-        if response.state == 2:  # CANCELLED
+        if response.state == noderpc.HodlInvoiceLookupResponse.Hodlstate.CANCELED:
             pass
-        if response.state == 3:  # ACCEPTED (LOCKED)
+        if response.state == noderpc.HodlInvoiceLookupResponse.Hodlstate.ACCEPTED:
             lnpayment.expiry_height = response.htlc_expiry
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save(update_fields=["expiry_height", "status"])
@@ -325,9 +325,9 @@ class CLNNode:
                 except Exception as e:
                     print(str(e))
 
-                if response2[0].status == "paid":
+                if response2[0].status == noderpc.ListinvoicesInvoices.ListinvoicesInvoicesStatus.PAID:
                     status = LNPayment.Status.SETLED
-                elif response2[0].status == "expired":
+                elif response2[0].status == noderpc.ListinvoicesInvoices.ListinvoicesInvoicesStatus.EXPIRED:
                     status = LNPayment.Status.CANCEL
                 else:
                     print(str(e))
@@ -454,7 +454,7 @@ class CLNNode:
         try:
             response = cls.stub.Pay(request)
 
-            if response.status == 0:  # COMPLETE
+            if response.status == noderpc.PayResponse.PayStatus.COMPLETE:
                 lnpayment.status = LNPayment.Status.SUCCED
                 lnpayment.fee = (
                     float(response.amount_sent_msat.msat -
@@ -463,12 +463,12 @@ class CLNNode:
                 lnpayment.preimage = response.payment_preimage.hex()
                 lnpayment.save(update_fields=["fee", "status", "preimage"])
                 return True, None
-            elif response.status == 1:  # PENDING
+            elif response.status == noderpc.PayResponse.PayStatus.PENDING:
                 lnpayment.failure_reason = LNPayment.FailureReason.NOTYETF
                 lnpayment.status = LNPayment.Status.FLIGHT
                 lnpayment.save(update_fields=["failure_reason", "status"])
                 return False, failure_reason
-            else:  # status == 2 FAILED
+            else:  # response.status == noderpc.PayResponse.PayStatus.FAILED
                 lnpayment.failure_reason = LNPayment.FailureReason.NOROUTE
                 lnpayment.status = LNPayment.Status.FAILRO
                 lnpayment.save(update_fields=["failure_reason", "status"])
@@ -513,7 +513,7 @@ class CLNNode:
                     time.sleep(2)
                     continue
 
-                if (len(response_listpays.pays) == 0 or response_listpays.pays[0].status != 0):
+                if (len(response_listpays.pays) == 0 or response_listpays.pays[0].status != noderpc.ListpaysPays.ListpaysPaysStatus.PENDING):
                     return response_listpays
                 else:
                     time.sleep(2)
@@ -529,14 +529,14 @@ class CLNNode:
 
                 response = cls.stub.Pay(request)
 
-                if response.status == 1:  # Status 1 'PENDING'
+                if response.status == noderpc.PayResponse.PayStatus.PENDING:
                     print(f"Order: {order.id} IN_FLIGHT. Hash {hash}")
 
                     watchpayment()
 
                     handle_response()
 
-                if response.status == 2:  # Status 2 'FAILED'
+                if response.status == noderpc.PayResponse.PayStatus.FAILED:
                     lnpayment.status = LNPayment.Status.FAILRO
                     lnpayment.last_routing_time = timezone.now()
                     lnpayment.routing_attempts += 1
@@ -568,7 +568,7 @@ class CLNNode:
                         "context": f"payment failure reason: {cls.payment_failure_context[-1]}",
                     }
 
-                if response.status == 0:  # Status 0 'COMPLETE'
+                if response.status == noderpc.PayResponse.PayStatus.COMPLETE:
                     print(f"Order: {order.id} SUCCEEDED. Hash: {hash}")
                     lnpayment.status = LNPayment.Status.SUCCED
                     lnpayment.fee = (
@@ -631,7 +631,7 @@ class CLNNode:
                         last_payresponse = watchpayment()
 
                         # check if succeeded while pending and expired
-                        if len(last_payresponse.pays) > 0 and last_payresponse.pays[0].status == 2:
+                        if len(last_payresponse.pays) > 0 and last_payresponse.pays[0].status == noderpc.ListpaysPays.ListpaysPaysStatus.COMPLETE:
                             handle_response()
                         else:
                             lnpayment.status = LNPayment.Status.EXPIRE
@@ -752,4 +752,4 @@ class CLNNode:
             else:
                 raise e
 
-        return response.state == 1
+        return response.state == noderpc.HodlInvoiceLookupResponse.Hodlstate.SETTLED
