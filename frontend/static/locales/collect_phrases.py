@@ -7,6 +7,7 @@ locale dictionary by matching existing translations.
 import json
 import os
 import re
+from collections import OrderedDict
 
 from handcrafted import phrases
 
@@ -16,33 +17,40 @@ match = r"(.*?[a-zA-Z].*?)"
 pattern = f"{prefix}{match}{suffix}"
 
 extensions = [".ts", ".tsx", ".js", "jsx"]
-strings_dict = {}
+strings_dict = OrderedDict()
+src_path = "../../src"
 counter = 1
 
-# Look for all matching i18n keys
-for root, dirs, files in os.walk("../../src"):
+# Look for all matching i18n keys in src_path
+for root, dirs, files in os.walk(src_path):
+    dirs.sort()
+    files.sort()
     for file in files:
         if file.endswith(tuple(extensions)):
             filepath = os.path.join(root, file)
             with open(filepath, "r", encoding="utf-8") as f:
                 contents = f.read()
-                matches = re.findall(pattern, contents)
+                matches = sorted(re.findall(pattern, contents))
                 if len(matches) > 0:
-                    strings_dict[f"#{counter}"] = f"Phrases in {filepath[10:]}"
+                    rel_filepath_in_src = os.path.relpath(filepath, src_path)
+                    strings_dict[f"#{counter}"] = f"Phrases in {rel_filepath_in_src}"
                     counter += 1
-                for match in matches:
-                    strings_dict[match] = match
+                    for match in matches:
+                        strings_dict[match] = match
+
+all_phrases = OrderedDict()
+all_phrases.update(strings_dict)
+all_phrases.update(phrases)
 
 # Load existing locale dics and replace keys
 locales = [f for f in os.listdir(".") if f.endswith(".json")]
-all_phrases = {**strings_dict, **phrases}
 for locale in locales:
-    new_phrases = {}
+    new_phrases = OrderedDict()
     with open(locale, "r", encoding="utf-8") as f:
         old_phrases = json.load(f)
-        for key in all_phrases:
-            # update dictionary with new keys on /src/
-            if key in old_phrases:
+        for key in all_phrases.keys():
+            # update dictionary with new keys on /src/, but ignore the counter of files keys
+            if key in old_phrases and not re.match(r"^#\d+$", key):
                 new_phrases[key] = old_phrases[key]
             else:
                 new_phrases[key] = all_phrases[key]
