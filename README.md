@@ -37,9 +37,6 @@ https://user-images.githubusercontent.com/90936742/167310017-dc211a05-dd5e-4ef4-
 - **[Português](https://learn.robosats.com/watch/pt)**
 - **[Polski](https://learn.robosats.com/watch/pl)**
 
-### Reviews
-- **[Athena Alpha](https://www.athena-alpha.com/robosats-review/)**
-
 ## How it works
 
 Alice wants to buy satoshis privately:
@@ -55,7 +52,6 @@ Alice wants to buy satoshis privately:
 10. Bob and Alice's bonds return automatically, since they complied by the rules.
 11. The bonds would be charged (lost) in case of unilateral cancellation or cheating (lost dispute).
 
-
 ## Contribute to the Robotic Satoshis Open Source Project
 Check out our [Contribution Guide](https://learn.robosats.com/contribute/) to find how you can make RoboSats great.
 
@@ -66,6 +62,9 @@ Check out the [Developer Rewards Panel](https://github.com/users/RoboSats/projec
 <div align="center">
   <img src="https://raw.githubusercontent.com/RoboSats/robosats/main/docs/assets/images/sponsors/hrf.png" width="300px">
 </div>
+
+## Reviews
+- **[Athena Alpha](https://www.athena-alpha.com/robosats-review/)**
 
 ## Inspiration
 The concept of a simple custody-minimized lightning exchange with hold invoices is inspired in [P2PLNBOT](https://github.com/grunch/p2plnbot) by @grunch
