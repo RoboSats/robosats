@@ -37,6 +37,9 @@ https://user-images.githubusercontent.com/90936742/167310017-dc211a05-dd5e-4ef4-
 - **[Português](https://learn.robosats.com/watch/pt)**
 - **[Polski](https://learn.robosats.com/watch/pl)**
 
+### Reviews
+- **[Athena Alpha](https://www.athena-alpha.com/robosats-review/)**
+
 ## How it works
 
 Alice wants to buy satoshis privately:
