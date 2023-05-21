@@ -126,7 +126,14 @@ const MessageCard: React.FC<Props> = ({ message, isTaker, userConnected, baseUrl
               {message.encryptedMessage}{' '}
             </a>
           ) : (
-            message.plainTextMessage
+            <>
+              {message.plainTextMessage.split('\n').map((messageLine, idx) => (
+                <span key={idx}>
+                  {messageLine}
+                  <br />
+                </span>
+              ))}
+            </>
           )
         }
         subheaderTypographyProps={{
