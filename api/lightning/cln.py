@@ -111,10 +111,10 @@ class CLNNode:
         total_balance = 0
         for utxo in response.outputs:
             if not utxo.reserved:
-                if utxo.status == 0:  # UNCONFIRMED
+                if utxo.status == noderpc.ListfundsOutputs.ListfundsOutputsStatus.UNCONFIRMED:
                     unconfirmed_balance += utxo.amount_msat.msat // 1_000
                     total_balance += utxo.amount_msat.msat // 1_000
-                elif utxo.status == 1:  # CONFIRMED
+                elif utxo.status == noderpc.ListfundsOutputs.ListfundsOutputsStatus.CONFIRMED:
                     confirmed_balance += utxo.amount_msat.msat // 1_000
                     total_balance += utxo.amount_msat.msat // 1_000
 
