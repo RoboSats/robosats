@@ -60,3 +60,6 @@ feature_row:
 
 #### Sponsors
 <img src="/assets/images/sponsors/hrf.png" width="300px"/>
+
+#### Reviews
+<a href="https://www.athena-alpha.com/robosats-review/" title="Athena Alpha - RoboSats Review"><img src="https://www.athena-alpha.com/wp-content/uploads/2022/11/Athena-Alpha-Logo-Black-Transparent-Background.webp" width="160px"></a>
