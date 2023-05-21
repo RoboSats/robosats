@@ -616,7 +616,8 @@ class CLNNode:
                 elif status_code == 207:  # invoice expired
                     print(f"Order: {order.id}. INVOICE EXPIRED. Hash: {hash}")
 
-                    request_listpays = noderpc.ListpaysRequest(payment_hash=hash)
+                    request_listpays = noderpc.ListpaysRequest(
+                        payment_hash=bytes.fromhex(hash))
                     try:
                         response_listpays = cls.stub.ListPays(request_listpays)
                     except Exception as e:
