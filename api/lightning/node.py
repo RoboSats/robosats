@@ -243,13 +243,13 @@ class LNNode:
         # Will fail if 'unable to locate invoice'. Happens if invoice expiry
         # time has passed (but these are 15% padded at the moment). Should catch it
         # and report back that the invoice has expired (better robustness)
-        if response.state == 0:  # OPEN
+        if response.state == lnrpc.Invoice.InvoiceState.OPEN:  # OPEN
             pass
-        if response.state == 1:  # SETTLED
+        if response.state == lnrpc.Invoice.InvoiceState.SETTLED:  # SETTLED
             pass
-        if response.state == 2:  # CANCELLED
+        if response.state == lnrpc.Invoice.InvoiceState.CANCELED:  # CANCELED
             pass
-        if response.state == 3:  # ACCEPTED (LOCKED)
+        if response.state == lnrpc.Invoice.InvoiceState.ACCEPTED:  # ACCEPTED (LOCKED)
             lnpayment.expiry_height = response.htlcs[0].expiry_height
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save(update_fields=["expiry_height", "status"])
@@ -269,7 +269,7 @@ class LNNode:
         lnd_response_state_to_lnpayment_status = {
             0: LNPayment.Status.INVGEN,  # OPEN
             1: LNPayment.Status.SETLED,  # SETTLED
-            2: LNPayment.Status.CANCEL,  # CANCELLED
+            2: LNPayment.Status.CANCEL,  # CANCELED
             3: LNPayment.Status.LOCKED,  # ACCEPTED
         }
 
@@ -292,7 +292,7 @@ class LNNode:
 
         except Exception as e:
             # If it fails at finding the invoice: it has been canceled.
-            # In RoboSats DB we make a distinction between cancelled and returned (LND does not)
+            # In RoboSats DB we make a distinction between CANCELED and returned (LND does not)
             if "unable to locate invoice" in str(e):
                 print(str(e))
                 status = LNPayment.Status.CANCEL
@@ -425,14 +425,20 @@ class LNNode:
 
         for response in cls.routerstub.SendPaymentV2(request):
 
-            if response.status == 0:  # Status 0 'UNKNOWN'
+            if (
+                response.status == lnrpc.Payment.PaymentStatus.UNKNOWN
+            ):  # Status 0 'UNKNOWN'
                 # Not sure when this status happens
                 pass
 
-            if response.status == 1:  # Status 1 'IN_FLIGHT'
+            if (
+                response.status == lnrpc.Payment.PaymentStatus.IN_FLIGHT
+            ):  # Status 1 'IN_FLIGHT'
                 pass
 
-            if response.status == 3:  # Status 3 'FAILED'
+            if (
+                response.status == lnrpc.Payment.PaymentStatus.FAILED
+            ):  # Status 3 'FAILED'
                 """0	Payment isn't failed (yet).
                 1	There are more routes to try, but the payment timeout was exceeded.
                 2	All possible routes were tried and failed permanently. Or were no routes to the destination at all.
@@ -446,7 +452,9 @@ class LNNode:
                 lnpayment.save(update_fields=["failure_reason", "status"])
                 return False, failure_reason
 
-            if response.status == 2:  # STATUS 'SUCCEEDED'
+            if (
+                response.status == lnrpc.Payment.PaymentStatus.SUCCEEDED
+            ):  # STATUS 'SUCCEEDED'
                 lnpayment.status = LNPayment.Status.SUCCED
                 lnpayment.fee = float(response.fee_msat) / 1000
                 lnpayment.preimage = response.payment_preimage
@@ -484,13 +492,17 @@ class LNNode:
             order.status = Order.Status.PAY
             order.save(update_fields=["status"])
 
-            if response.status == 0:  # Status 0 'UNKNOWN'
+            if (
+                response.status == lnrpc.Payment.PaymentStatus.UNKNOWN
+            ):  # Status 0 'UNKNOWN'
                 # Not sure when this status happens
                 print(f"Order: {order.id} UNKNOWN. Hash {hash}")
                 lnpayment.in_flight = False
                 lnpayment.save(update_fields=["in_flight"])
 
-            if response.status == 1:  # Status 1 'IN_FLIGHT'
+            if (
+                response.status == lnrpc.Payment.PaymentStatus.IN_FLIGHT
+            ):  # Status 1 'IN_FLIGHT'
                 print(f"Order: {order.id} IN_FLIGHT. Hash {hash}")
 
                 # If payment was already "payment is in transition" we do not
@@ -501,7 +513,9 @@ class LNNode:
                     lnpayment.last_routing_time = timezone.now() + timedelta(minutes=20)
                     lnpayment.save(update_fields=["last_routing_time"])
 
-            if response.status == 3:  # Status 3 'FAILED'
+            if (
+                response.status == lnrpc.Payment.PaymentStatus.FAILED
+            ):  # Status 3 'FAILED'
                 lnpayment.status = LNPayment.Status.FAILRO
                 lnpayment.last_routing_time = timezone.now()
                 lnpayment.routing_attempts += 1
@@ -533,7 +547,9 @@ class LNNode:
                     "context": f"payment failure reason: {cls.payment_failure_context[response.failure_reason]}",
                 }
 
-            if response.status == 2:  # Status 2 'SUCCEEDED'
+            if (
+                response.status == lnrpc.Payment.PaymentStatus.SUCCEEDED
+            ):  # Status 2 'SUCCEEDED'
                 print(f"Order: {order.id} SUCCEEDED. Hash: {hash}")
                 lnpayment.status = LNPayment.Status.SUCCED
                 lnpayment.fee = float(response.fee_msat) / 1000
@@ -673,15 +689,15 @@ class LNNode:
                 allow_self_payment=ALLOW_SELF_KEYSEND,
             )
             for response in cls.routerstub.SendPaymentV2(request):
-                if response.status == 1:
+                if response.status == lnrpc.Payment.PaymentStatus.IN_FLIGHT:
                     keysend_payment["status"] = LNPayment.Status.FLIGHT
-                if response.status == 2:
+                if response.status == lnrpc.Payment.PaymentStatus.SUCCEEDED:
                     keysend_payment["fee"] = float(response.fee_msat) / 1000
                     keysend_payment["status"] = LNPayment.Status.SUCCED
-                if response.status == 3:
+                if response.status == lnrpc.Payment.PaymentStatus.FAILED:
                     keysend_payment["status"] = LNPayment.Status.FAILRO
                     keysend_payment["failure_reason"] = response.failure_reason
-                if response.status == 0:
+                if response.status == lnrpc.Payment.PaymentStatus.UNKNOWN:
                     print("Unknown Error")
         except Exception as e:
             if "self-payments not allowed" in str(e):
@@ -698,5 +714,5 @@ class LNNode:
         response = cls.invoicesstub.LookupInvoiceV2(request)
 
         return (
-            response.state == 1
-        )  # LND states: 0 OPEN, 1 SETTLED, 3 ACCEPTED, GRPC_ERROR status 5 when cancelled/returned
+            response.state == lnrpc.Invoice.InvoiceState.SETTLED
+        )  # LND states: 0 OPEN, 1 SETTLED, 3 ACCEPTED, GRPC_ERROR status 5 when CANCELED/returned
