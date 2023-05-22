@@ -8,7 +8,8 @@ export interface Info {
   last_day_nonkyc_btc_premium: number;
   last_day_volume: number;
   lifetime_volume: number;
-  lnd_version: string;
+  lnd_version?: string;
+  cln_version?: string;
   robosats_running_commit_hash: string;
   alternative_site: string;
   alternative_name: string;
@@ -35,7 +36,8 @@ export const defaultInfo: Info = {
   last_day_nonkyc_btc_premium: 0,
   last_day_volume: 0,
   lifetime_volume: 0,
-  lnd_version: 'v0.0.0-beta',
+  lnd_version: '0.0.0-beta',
+  cln_version: '0.0.0',
   robosats_running_commit_hash: '000000000000000',
   alternative_site: 'RoboSats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion',
   alternative_name: 'RoboSats Mainnet',

@@ -34,6 +34,7 @@ services:
     volumes:
       - .:/usr/src/robosats
       - ./node/lnd:/lnd
+      - ./node/cln:/cln
     network_mode: service:tor
     command: python3 -u manage.py runserver 0.0.0.0:8000
 
@@ -69,6 +70,7 @@ services:
     volumes:
       - .:/usr/src/robosats
       - ./node/lnd:/lnd
+      - ./node/cln:/cln
     network_mode: service:tor
 
   follow-invoices:
@@ -84,6 +86,7 @@ services:
     volumes:
       - .:/usr/src/robosats
       - ./node/lnd:/lnd
+      - ./node/cln:/cln
     network_mode: service:tor
 
   telegram-watcher:
@@ -96,6 +99,7 @@ services:
     volumes:
       - .:/usr/src/robosats
       - ./node/lnd:/lnd
+      - ./node/cln:/cln
     network_mode: service:tor
 
   celery-worker:
@@ -108,6 +112,7 @@ services:
     volumes:
       - .:/usr/src/robosats
       - ./node/lnd:/lnd
+      - ./node/cln:/cln
     command: celery -A robosats worker --loglevel=INFO --concurrency 4 --max-tasks-per-child=4 --max-memory-per-child=200000
     depends_on:
       - redis
@@ -123,6 +128,8 @@ services:
     command: celery -A robosats beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
       - .:/usr/src/robosats
+      - ./node/lnd:/lnd
+      - ./node/cln:/cln
     depends_on:
       - redis
     network_mode: service:tor
@@ -169,6 +176,22 @@ services:
       LND_REST_PORT: 8080
       AUTO_UNLOCK_PWD: ${AUTO_UNLOCK_PWD}
 
+  cln:
+    build: ./docker/cln
+    restart: always
+    network_mode: service:tor
+    container_name: cln-dev
+    depends_on:
+      - tor
+      - bitcoind
+      # - postgres-cln
+    volumes:
+      - ./node/tor/data:/var/lib/tor
+      - ./node/tor/config:/etc/tor
+      - ./node/cln:/root/.lightning
+      - ./node/bitcoin:/root/.bitcoin
+    command: lightningd
+
   bitcoind:
     build: ./docker/bitcoind
     container_name: btc-dev
@@ -193,6 +216,20 @@ services:
     network_mode: service:tor
     volumes:
       - ./node/db:/var/lib/postgresql/data
+
+  # # Postgresql for CLN
+  # postgres-cln:
+  #   image: postgres:14.2-alpine
+  #   container_name: cln-sql-dev
+  #   restart: always
+  #   environment:
+  #     PGUSER: user
+  #     PGDATABASE: cln
+  #     POSTGRES_PASSWORD: pass
+  #     PGPORT: 5433
+  #   network_mode: service:tor
+  #   volumes:
+  #     - ./node/cln-db:/var/lib/postgresql/data
 
 volumes:
   redisdata:
