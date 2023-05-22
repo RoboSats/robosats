@@ -3,11 +3,14 @@ name: Sync lnproxy relays
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '0 12 * * 0'  # Run every Sunday at noon
+    - cron: "0 12 * * 0" # Run every Sunday at noon
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
