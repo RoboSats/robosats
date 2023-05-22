@@ -3,19 +3,22 @@ name: Sync lnproxy relays
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '0 12 * * 0'  # Run every Sunday at noon
+    - cron: "0 12 * * 0" # Run every Sunday at noon
 
 jobs:
   sync:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Fetch and process JSON
         run: |
-          curl https://raw.githubusercontent.com/shyfire131/lnproxy-webui2/17d6131a72a92978e5c0dc57ab2b2fbe467c7722/assets/relays.json -o lnproxy_tmplist.json
+          curl https://raw.githubusercontent.com/lnproxy/lnproxy-webui2/main/assets/relays.json -o lnproxy_tmplist.json
           node .github/workflows/scripts/lnproxy-sync.js
 
       - name: Commit and push if it's not up to date
