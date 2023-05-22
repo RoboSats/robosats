@@ -497,11 +497,13 @@ class CLNNode:
                 lnpayment.save(update_fields=["fee", "status", "preimage"])
                 return True, None
             elif response.status == noderpc.PayResponse.PayStatus.PENDING:
+                failure_reason = "Payment isn't failed (yet)"
                 lnpayment.failure_reason = LNPayment.FailureReason.NOTYETF
                 lnpayment.status = LNPayment.Status.FLIGHT
                 lnpayment.save(update_fields=["failure_reason", "status"])
                 return False, failure_reason
             else:  # response.status == noderpc.PayResponse.PayStatus.FAILED
+                failure_reason = "All possible routes were tried and failed permanently. Or were no routes to the destination at all."
                 lnpayment.failure_reason = LNPayment.FailureReason.NOROUTE
                 lnpayment.status = LNPayment.Status.FAILRO
                 lnpayment.save(update_fields=["failure_reason", "status"])
