@@ -17,11 +17,9 @@ if [ "$EXPOSE_TCP" == "true" ]; then
     socat "TCP4-listen:$LIGHTNINGD_RPC_PORT,fork,reuseaddr" "UNIX-CONNECT:${networkdatadir}/lightning-rpc" &
     fg %-
 else
-    #exec lightningd --network="${LIGHTNINGD_NETWORK}" "$@"
-    if [ ! -f /root/.lightning/plugins ]; then
-        mkdir -p /root/.lightning/plugins
-        cp /tmp/cln-grpc-hodl /root/.lightning/plugins/cln-grpc-hodl
-    fi
+    # Always copy the cln-grpc-hodl plugin into the plugins directory on start up
+    mkdir -p /root/.lightning/plugins
+    cp /tmp/cln-grpc-hodl /root/.lightning/plugins/cln-grpc-hodl
     if [ ! -f /root/.lightning/config ]; then
         cp /tmp/config /root/.lightning/config
     fi
