@@ -63,3 +63,5 @@ feature_row:
 
 #### Reviews
 <a href="https://www.athena-alpha.com/robosats-review/" title="Athena Alpha - RoboSats Review"><img src="https://www.athena-alpha.com/wp-content/uploads/2022/11/Athena-Alpha-Logo-Black-Transparent-Background.webp" width="160px"></a>
+<a href="https://kycnot.me/exchange/robosats" title="KYC Not Me - RoboSats Review">KYCNOT.ME</a>
+<a href="https://bitcoinmagazine.com/business/robosats-private-bitcoin-exchange" title="Bitcoin Magazine - RoboSats Review"><img src="https://cdn.shopify.com/s/files/1/0714/1869/files/Bitcoin_Magazine_Logos_1.png" width="160px"></a>
