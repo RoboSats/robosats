@@ -9,6 +9,12 @@ sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/chalkboard-user.svg"/>How to use'
   nav: tutorial
 ---
+## How To Use (v0.5.0)
+
+![sharerobosats1](https://github.com/RoboSats/robosats/assets/64638670/0f73e57d-a7c4-454f-a5df-1e038e039af3)
+### <a href="https://bitcoiner.guide/robosats/" target="_blank">Learn How To Use RoboSats P2P Exchange</a>
+QnA's guide explains the importance of noKYC Bitcoin, breaks down some RoboSats jargon, gives a full feature explanation and a step by step guide to completing your first trade with RoboSats.
+
 ## How to Use (v0.3.3)
 ![image](https://user-images.githubusercontent.com/97640728/218118681-520e7fa6-52e9-4740-b488-1d294f833de6.png)
 ### <a href="https://www.athena-alpha.com/how-to-buy-bitcoins-using-robosats/" target="_blank">How To Buy Bitcoins Using RoboSats: Fastest KYC Free Sats In The West</a>
