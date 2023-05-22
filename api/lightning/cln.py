@@ -111,10 +111,16 @@ class CLNNode:
         total_balance = 0
         for utxo in response.outputs:
             if not utxo.reserved:
-                if utxo.status == noderpc.ListfundsOutputs.ListfundsOutputsStatus.UNCONFIRMED:
+                if (
+                    utxo.status
+                    == noderpc.ListfundsOutputs.ListfundsOutputsStatus.UNCONFIRMED
+                ):
                     unconfirmed_balance += utxo.amount_msat.msat // 1_000
                     total_balance += utxo.amount_msat.msat // 1_000
-                elif utxo.status == noderpc.ListfundsOutputs.ListfundsOutputsStatus.CONFIRMED:
+                elif (
+                    utxo.status
+                    == noderpc.ListfundsOutputs.ListfundsOutputsStatus.CONFIRMED
+                ):
                     confirmed_balance += utxo.amount_msat.msat // 1_000
                     total_balance += utxo.amount_msat.msat // 1_000
 
@@ -139,15 +145,24 @@ class CLNNode:
         unsettled_local_balance = 0
         unsettled_remote_balance = 0
         for channel in response.channels:
-            if channel.state == noderpc.ListpeerchannelsChannels.ListpeerchannelsChannelsState.CHANNELD_NORMAL:
+            if (
+                channel.state
+                == noderpc.ListpeerchannelsChannels.ListpeerchannelsChannelsState.CHANNELD_NORMAL
+            ):
                 local_balance_sat += channel.to_us_msat.msat // 1_000
                 remote_balance_sat += (
                     channel.total_msat.msat - channel.to_us_msat.msat
                 ) // 1_000
             for htlc in channel.htlcs:
-                if htlc.direction == noderpc.ListpeerchannelsChannelsHtlcs.ListpeerchannelsChannelsHtlcsDirection.IN:
+                if (
+                    htlc.direction
+                    == noderpc.ListpeerchannelsChannelsHtlcs.ListpeerchannelsChannelsHtlcsDirection.IN
+                ):
                     unsettled_local_balance += htlc.amount_msat.msat // 1_000
-                elif htlc.direction == noderpc.ListpeerchannelsChannelsHtlcs.ListpeerchannelsChannelsHtlcsDirection.OUT:
+                elif (
+                    htlc.direction
+                    == noderpc.ListpeerchannelsChannelsHtlcs.ListpeerchannelsChannelsHtlcsDirection.OUT
+                ):
                     unsettled_remote_balance += htlc.amount_msat.msat // 1_000
 
         return {
@@ -167,9 +182,11 @@ class CLNNode:
         request = noderpc.WithdrawRequest(
             destination=onchainpayment.address,
             satoshi=primitives__pb2.AmountOrAll(
-                amount=primitives__pb2.Amount(msat=onchainpayment.sent_satoshis * 1_000)),
+                amount=primitives__pb2.Amount(msat=onchainpayment.sent_satoshis * 1_000)
+            ),
             feerate=primitives__pb2.Feerate(
-                perkb=int(onchainpayment.mining_fee_rate) * 1_000),
+                perkb=int(onchainpayment.mining_fee_rate) * 1_000
+            ),
             minconf=int(not config("SPEND_UNCONFIRMED", default=False, cast=bool)),
         )
 
@@ -216,7 +233,16 @@ class CLNNode:
         return response.state == noderpc.HodlInvoiceSettleResponse.Hodlstate.SETTLED
 
     @classmethod
-    def gen_hold_invoice(cls, num_satoshis, description, invoice_expiry, cltv_expiry_blocks, order_id, lnpayment_concept, time):
+    def gen_hold_invoice(
+        cls,
+        num_satoshis,
+        description,
+        invoice_expiry,
+        cltv_expiry_blocks,
+        order_id,
+        lnpayment_concept,
+        time,
+    ):
         """Generates hold invoice"""
 
         # constant 100h invoice expiry because cln has to cancel htlcs if invoice expires
@@ -230,7 +256,8 @@ class CLNNode:
         request = noderpc.InvoiceRequest(
             description=description,
             amount_msat=primitives__pb2.AmountOrAny(
-                amount=primitives__pb2.Amount(msat=num_satoshis * 1_000)),
+                amount=primitives__pb2.Amount(msat=num_satoshis * 1_000)
+            ),
             label=f"Order:{order_id}-{lnpayment_concept}-{time}",
             expiry=invoice_expiry,
             cltv=cltv_expiry_blocks,
@@ -325,9 +352,15 @@ class CLNNode:
                 except Exception as e:
                     print(str(e))
 
-                if response2[0].status == noderpc.ListinvoicesInvoices.ListinvoicesInvoicesStatus.PAID:
+                if (
+                    response2[0].status
+                    == noderpc.ListinvoicesInvoices.ListinvoicesInvoicesStatus.PAID
+                ):
                     status = LNPayment.Status.SETLED
-                elif response2[0].status == noderpc.ListinvoicesInvoices.ListinvoicesInvoicesStatus.EXPIRED:
+                elif (
+                    response2[0].status
+                    == noderpc.ListinvoicesInvoices.ListinvoicesInvoicesStatus.EXPIRED
+                ):
                     status = LNPayment.Status.CANCEL
                 else:
                     print(str(e))
@@ -457,8 +490,8 @@ class CLNNode:
             if response.status == noderpc.PayResponse.PayStatus.COMPLETE:
                 lnpayment.status = LNPayment.Status.SUCCED
                 lnpayment.fee = (
-                    float(response.amount_sent_msat.msat -
-                          response.amount_msat.msat) / 1000
+                    float(response.amount_sent_msat.msat - response.amount_msat.msat)
+                    / 1000
                 )
                 lnpayment.preimage = response.payment_preimage.hex()
                 lnpayment.save(update_fields=["fee", "status", "preimage"])
@@ -494,7 +527,7 @@ class CLNNode:
         request = noderpc.PayRequest(
             bolt11=lnpayment.invoice,
             maxfee=primitives__pb2.Amount(msat=fee_limit_sat * 1_000),
-            retry_for=timeout_seconds
+            retry_for=timeout_seconds,
         )
 
         order = lnpayment.order_paid_LN
@@ -503,8 +536,7 @@ class CLNNode:
             return
 
         def watchpayment():
-            request_listpays = noderpc.ListpaysRequest(
-                payment_hash=bytes.fromhex(hash))
+            request_listpays = noderpc.ListpaysRequest(payment_hash=bytes.fromhex(hash))
             while True:
                 try:
                     response_listpays = cls.stub.ListPays(request_listpays)
@@ -513,7 +545,11 @@ class CLNNode:
                     time.sleep(2)
                     continue
 
-                if (len(response_listpays.pays) == 0 or response_listpays.pays[0].status != noderpc.ListpaysPays.ListpaysPaysStatus.PENDING):
+                if (
+                    len(response_listpays.pays) == 0
+                    or response_listpays.pays[0].status
+                    != noderpc.ListpaysPays.ListpaysPaysStatus.PENDING
+                ):
                     return response_listpays
                 else:
                     time.sleep(2)
@@ -572,7 +608,9 @@ class CLNNode:
                     print(f"Order: {order.id} SUCCEEDED. Hash: {hash}")
                     lnpayment.status = LNPayment.Status.SUCCED
                     lnpayment.fee = (
-                        float(response.amount_sent_msat.msat - response.amount_msat.msat)
+                        float(
+                            response.amount_sent_msat.msat - response.amount_msat.msat
+                        )
                         / 1000
                     )
                     lnpayment.preimage = response.payment_preimage.hex()
@@ -596,10 +634,16 @@ class CLNNode:
                         # and if you just try 'pay' 2x where the first time it succeeds you get the same
                         # non-error result the 2nd time.
                         print(
-                            f"Order: {order.id} ALREADY PAID using different amount or destination THIS SHOULD NEVER HAPPEN! Hash: {hash}.")
+                            f"Order: {order.id} ALREADY PAID using different amount or destination THIS SHOULD NEVER HAPPEN! Hash: {hash}."
+                        )
 
                     # Permanent failure at destination. or Unable to find a route. or Route too expensive.
-                    elif status_code == 203 or status_code == 205 or status_code == 206 or status_code == 210:
+                    elif (
+                        status_code == 203
+                        or status_code == 205
+                        or status_code == 206
+                        or status_code == 210
+                    ):
                         lnpayment.status = LNPayment.Status.FAILRO
                         lnpayment.last_routing_time = timezone.now()
                         lnpayment.routing_attempts += 1
@@ -610,7 +654,12 @@ class CLNNode:
                             lnpayment.routing_attempts = 0
                         lnpayment.save(
                             update_fields=[
-                                "status", "last_routing_time", "routing_attempts", "in_flight", "failure_reason"]
+                                "status",
+                                "last_routing_time",
+                                "routing_attempts",
+                                "in_flight",
+                                "failure_reason",
+                            ]
                         )
 
                         order.status = Order.Status.FAI
@@ -631,14 +680,23 @@ class CLNNode:
                         last_payresponse = watchpayment()
 
                         # check if succeeded while pending and expired
-                        if len(last_payresponse.pays) > 0 and last_payresponse.pays[0].status == noderpc.ListpaysPays.ListpaysPaysStatus.COMPLETE:
+                        if (
+                            len(last_payresponse.pays) > 0
+                            and last_payresponse.pays[0].status
+                            == noderpc.ListpaysPays.ListpaysPaysStatus.COMPLETE
+                        ):
                             handle_response()
                         else:
                             lnpayment.status = LNPayment.Status.EXPIRE
                             lnpayment.last_routing_time = timezone.now()
                             lnpayment.in_flight = False
                             lnpayment.save(
-                                update_fields=["status", "last_routing_time", "in_flight"])
+                                update_fields=[
+                                    "status",
+                                    "last_routing_time",
+                                    "in_flight",
+                                ]
+                            )
                             order.status = Order.Status.FAI
                             order.expires_at = timezone.now() + timedelta(
                                 seconds=order.t_to_expire(Order.Status.FAI)
@@ -663,8 +721,9 @@ class CLNNode:
         # keysends for dev donations
         from api.models import LNPayment
 
+        # Cannot perform selfpayments
         # config("ALLOW_SELF_KEYSEND", cast=bool, default=False)
-        ALLOW_SELF_KEYSEND = False
+
         keysend_payment = {}
         keysend_payment["created_at"] = timezone.now()
         keysend_payment["expires_at"] = timezone.now()
@@ -674,13 +733,13 @@ class CLNNode:
             msg = str(message)
 
             if len(msg) > 0:
-                custom_records.append(primitives__pb2.TlvEntry(
-                    type=34349334, value=bytes.fromhex(msg.encode("utf-8").hex()))
+                custom_records.append(
+                    primitives__pb2.TlvEntry(
+                        type=34349334, value=bytes.fromhex(msg.encode("utf-8").hex())
+                    )
                 )
                 if sign:
-                    self_pubkey = cls.stub.GetInfo(
-                        noderpc.GetinfoRequest()
-                    ).id
+                    self_pubkey = cls.stub.GetInfo(noderpc.GetinfoRequest()).id
                     timestamp = struct.pack(">i", int(time.time()))
                     signature = cls.stub.SignMessage(
                         noderpc.SignmessageRequest(
@@ -692,12 +751,17 @@ class CLNNode:
                             ),
                         )
                     ).zbase
-                    custom_records.append(primitives__pb2.TlvEntry(
-                        type=34349337, value=signature))
-                    custom_records.append(primitives__pb2.TlvEntry(
-                        type=34349339, value=bytes.fromhex(self_pubkey)))
-                    custom_records.append(primitives__pb2.TlvEntry(
-                        type=34349343, value=timestamp))
+                    custom_records.append(
+                        primitives__pb2.TlvEntry(type=34349337, value=signature)
+                    )
+                    custom_records.append(
+                        primitives__pb2.TlvEntry(
+                            type=34349339, value=bytes.fromhex(self_pubkey)
+                        )
+                    )
+                    custom_records.append(
+                        primitives__pb2.TlvEntry(type=34349343, value=timestamp)
+                    )
 
             # no maxfee for Keysend
             maxfeepercent = (routing_budget_sats / num_satoshis) * 100
@@ -714,11 +778,14 @@ class CLNNode:
             keysend_payment["payment_hash"] = response.payment_hash.hex()
 
             waitreq = noderpc.WaitsendpayRequest(
-                payment_hash=response.payment_hash, timeout=timeout)
+                payment_hash=response.payment_hash, timeout=timeout
+            )
             try:
                 waitresp = cls.stub.WaitSendPay(waitreq)
-                keysend_payment["fee"] = float(
-                    waitresp.amount_sent_msat.msat - waitresp.amount_msat.msat) / 1000
+                keysend_payment["fee"] = (
+                    float(waitresp.amount_sent_msat.msat - waitresp.amount_msat.msat)
+                    / 1000
+                )
                 keysend_payment["status"] = LNPayment.Status.SUCCED
             except grpc._channel._InactiveRpcError as e:
                 if "code: Some" in str(e):
@@ -727,7 +794,8 @@ class CLNNode:
                     keysend_payment["status"] = LNPayment.Status.FLIGHT
                 elif status_code == 208:
                     print(
-                        f"A payment for {response.payment_hash.hex()} was never made and there is nothing to wait for")
+                        f"A payment for {response.payment_hash.hex()} was never made and there is nothing to wait for"
+                    )
                 else:
                     keysend_payment["status"] = LNPayment.Status.FAILRO
                     keysend_payment["failure_reason"] = response.failure_reason
@@ -743,7 +811,8 @@ class CLNNode:
     def double_check_htlc_is_settled(cls, payment_hash):
         """Just as it sounds. Better safe than sorry!"""
         request = noderpc.HodlInvoiceLookupRequest(
-            payment_hash=bytes.fromhex(payment_hash))
+            payment_hash=bytes.fromhex(payment_hash)
+        )
         try:
             response = cls.stub.HodlInvoiceLookup(request)
         except Exception as e:
