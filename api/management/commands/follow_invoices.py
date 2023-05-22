@@ -59,22 +59,34 @@ class Command(BaseCommand):
         However, it only sends updates when the invoice is OPEN (new) or SETTLED.
         We are very interested on the other two states (CANCELLED and ACCEPTED).
         Therefore, this thread (follow_invoices) will iterate over all LNpayments in
-        INVGEN status and do InvoiceLookupV2 every X seconds to update their status.
+        INVGEN / LOCKED status and do InvoiceLookupV2 every X seconds to update their status.
         """
 
         # time it for debugging
         t0 = time.time()
+
         queryset = LNPayment.objects.filter(
             type=LNPayment.Types.HOLD,
+            status__in=[LNPayment.Status.INVGEN, LNPayment.Status.LOCKED],
+        )
+
+        generated_invoices = queryset.filter(
             status=LNPayment.Status.INVGEN,
         )
 
+        old_locked_invoices = queryset.filter(
+            status=LNPayment.Status.LOCKED,
+            created_at__lt=timezone.now() - timedelta(hours=48),
+        )
+
+        invoices_to_lookup = generated_invoices | old_locked_invoices
+
         debug = {}
-        debug["num_active_invoices"] = len(queryset)
+        debug["num_active_invoices"] = len(invoices_to_lookup)
         debug["invoices"] = []
         at_least_one_changed = False
 
-        for idx, hold_lnpayment in enumerate(queryset):
+        for idx, hold_lnpayment in enumerate(invoices_to_lookup):
             old_status = hold_lnpayment.status
 
             new_status, expiry_height = LNNode.lookup_invoice_status(hold_lnpayment)
@@ -135,13 +147,16 @@ class Command(BaseCommand):
 
         queryset = LNPayment.objects.filter(
             type=LNPayment.Types.NORM,
+            status__in=[LNPayment.Status.FAILRO, LNPayment.Status.FLIGHT],
+        )
+
+        new_invoices_to_pay = queryset.filter(
             status=LNPayment.Status.FLIGHT,
             in_flight=False,
             routing_attempts=0,
         )
 
-        queryset_retries = LNPayment.objects.filter(
-            type=LNPayment.Types.NORM,
+        retry_invoices = queryset.filter(
             status=LNPayment.Status.FAILRO,
             in_flight=False,
             routing_attempts__in=[1, 2],
@@ -153,16 +168,14 @@ class Command(BaseCommand):
         # Payments that still have the in_flight flag whose last payment attempt was +3 min ago
         # are probably stuck. We retry them. The follow_send_invoice() task can also do TrackPaymentV2 if the
         # previous attempt is still ongoing
-        queryset_stuck = LNPayment.objects.filter(
-            type=LNPayment.Types.NORM,
-            status__in=[LNPayment.Status.FAILRO, LNPayment.Status.FLIGHT],
+        stuck_invoices = queryset.filter(
             in_flight=True,
             last_routing_time__lt=(timezone.now() - timedelta(minutes=3)),
         )
 
-        queryset = queryset.union(queryset_retries).union(queryset_stuck)
+        invoices_to_pay = stuck_invoices | retry_invoices | new_invoices_to_pay
 
-        for lnpayment in queryset:
+        for lnpayment in invoices_to_pay:
             # Checks that this onchain payment is part of an order with a settled escrow
             if not hasattr(lnpayment, "order_paid_LN"):
                 self.stderr.write(f"Ln payment {str(lnpayment)} has no parent order!")
