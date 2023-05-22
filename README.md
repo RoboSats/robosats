@@ -65,6 +65,9 @@ Check out the [Developer Rewards Panel](https://github.com/users/RoboSats/projec
 
 ## Reviews
 - **[Athena Alpha](https://www.athena-alpha.com/robosats-review/)**
+- **[Bitcoin Magazine](https://bitcoinmagazine.com/business/robosats-private-bitcoin-exchange)**
+- **[KYC? Not Me!](https://kycnot.me/exchange/robosats)**
+- **[H17N Bitcoin](https://h17n.com/exchange/robosats/)**
 
 ## Inspiration
 The concept of a simple custody-minimized lightning exchange with hold invoices is inspired in [P2PLNBOT](https://github.com/grunch/p2plnbot) by @grunch
