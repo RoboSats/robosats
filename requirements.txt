@@ -15,7 +15,7 @@ grpcio-tools==1.54.2
 numpy==1.24.3
 Pillow==9.5.0
 python-decouple==3.8
-requests==2.30.0
+requests==2.31.0
 ring==0.10.1
 git+https://github.com/RoboSats/Robohash.git
 scipy==1.10.1
