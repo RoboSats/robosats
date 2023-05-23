@@ -75,7 +75,7 @@ const StatsDialog = ({ open = false, onClose, info }: Props): JSX.Element => {
             </ListItem>
           ) : null}
 
-          {info.lnd_version ? (
+          {info.cln_version ? (
             <ListItem>
               <ListItemIcon>
                 <BoltIcon />
