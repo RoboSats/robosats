@@ -145,10 +145,20 @@ lnd_version_cache = {}
 @ring.dict(lnd_version_cache, expire=3600)
 def get_lnd_version():
 
-    from api.lightning.node import LNNode
+    from api.lightning.lnd import LNDNode
 
-    print(LNNode.get_version())
-    return LNNode.get_version()
+    return LNDNode.get_version()
+
+
+cln_version_cache = {}
+
+
+@ring.dict(cln_version_cache, expire=3600)
+def get_cln_version():
+
+    from api.lightning.cln import CLNNode
+
+    return CLNNode.get_version()
 
 
 robosats_commit_cache = {}
