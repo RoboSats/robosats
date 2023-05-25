@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import { Paper, useTheme } from '@mui/material';
+import { Paper } from '@mui/material';
 import DepthChart from '../../components/Charts/DepthChart';
 
 interface DepthChartWidgetProps {
@@ -26,8 +26,7 @@ const DepthChartWidget = React.forwardRef(
     }: DepthChartWidgetProps,
     ref,
   ) => {
-    const theme = useTheme();
-    const { fav, book, limits } = useContext<UseAppStoreType>(AppContext);
+    const { fav, book, limits, exchange } = useContext<UseAppStoreType>(AppContext);
     return React.useMemo(() => {
       return (
         <Paper elevation={3} style={{ width: '100%', height: '100%' }}>
@@ -39,7 +38,7 @@ const DepthChartWidget = React.forwardRef(
           />
         </Paper>
       );
-    }, [fav.currency, book, limits, layout]);
+    }, [fav.currency, book, limits, exchange, layout]);
   },
 );
 

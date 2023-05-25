@@ -33,7 +33,7 @@ import { apiClient } from '../../../services/api';
 import { systemClient } from '../../../services/System';
 
 import lnproxies from '../../../../static/lnproxies.json';
-let filteredProxies: { [key: string]: any }[] = [];
+let filteredProxies: Array<Record<string, any>> = [];
 export interface LightningForm {
   invoice: string;
   amount: number;
@@ -146,7 +146,7 @@ export const LightningPayoutForm = ({
     }
   }, [lightning.lnproxyInvoice, lightning.lnproxyAmount]);
 
-  //filter lnproxies when the network settings are updated
+  // filter lnproxies when the network settings are updated
   let bitcoinNetwork: string = 'mainnet';
   let internetNetwork: 'Clearnet' | 'I2P' | 'TOR' = 'Clearnet';
   useEffect(() => {
@@ -162,7 +162,7 @@ export const LightningPayoutForm = ({
       .filter((node) => node.network == bitcoinNetwork);
   }, [settings]);
 
-  //if "use lnproxy" checkbox is enabled, but there are no matching proxies, enter error state
+  // if "use lnproxy" checkbox is enabled, but there are no matching proxies, enter error state
   useEffect(() => {
     setNoMatchingLnProxies('');
     if (filteredProxies.length === 0) {
@@ -177,15 +177,15 @@ export const LightningPayoutForm = ({
 
   const fetchLnproxy = function () {
     setLoadingLnproxy(true);
-    let body: { invoice: string; description: string; routing_msat?: string } = {
+    const body: { invoice: string; description: string; routing_msat?: string } = {
       invoice: lightning.lnproxyInvoice,
       description: '',
     };
     if (lightning.lnproxyBudgetSats > 0) {
-      body['routing_msat'] = String(lightning.lnproxyBudgetSats * 1000);
+      body.routing_msat = String(lightning.lnproxyBudgetSats * 1000);
     }
     apiClient
-      .post(filteredProxies[lightning.lnproxyServer]['url'], '', body)
+      .post(filteredProxies[lightning.lnproxyServer].url, '', body)
       .then((data) => {
         if (data.reason) {
           setLightning({ ...lightning, badLnproxy: data.reason });

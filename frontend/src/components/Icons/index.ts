@@ -18,6 +18,13 @@ export { default as TorIcon } from './Tor';
 export { default as SimplexIcon } from './Simplex';
 export { default as NostrIcon } from './Nostr';
 
+// Badges
+export { default as BadgeFounder } from './BadgeFounder';
+export { default as BadgeDevFund } from './BadgeDevFund';
+export { default as BadgePrivacy } from './BadgePrivacy';
+export { default as BadgeLimits } from './BadgeLimits';
+export { default as BadgeLoved } from './BadgeLoved';
+
 // Flags with props
 export { default as FlagWithProps } from './WorldFlags';
 // Some Flags missing on react-flags

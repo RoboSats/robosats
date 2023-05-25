@@ -15,31 +15,28 @@ import {
   MoreHoriz,
 } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
-import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType, closeAll, hostUrl } from '../../contexts/AppContext';
 
-interface NavBarProps {
-  width: number;
-  height: number;
-}
-
-const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
+const NavBar = (): JSX.Element => {
+  const theme = useTheme();
+  const { t } = useTranslation();
   const {
-    robot,
     page,
-    settings,
     setPage,
+    robot,
+    settings,
     setSlideDirection,
     open,
     setOpen,
+    windowSize,
     currentOrder,
-    baseUrl,
+    navbarHeight,
   } = useContext<UseAppStoreType>(AppContext);
 
-  const theme = useTheme();
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const smallBar = width < 50;
+  const smallBar = windowSize.width < 50;
+  const color = settings.network === 'mainnet' ? 'primary' : 'secondary';
 
   const tabSx = smallBar
     ? { position: 'relative', bottom: robot.avatarLoaded ? '0.9em' : '0.13em', minWidth: '1em' }
@@ -79,7 +76,8 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
     } else {
       handleSlideDirection(page, newPage);
       setPage(newPage);
-      const param = newPage === 'order' ? currentOrder ?? '' : '';
+      const param =
+        newPage === 'order' ? `${currentOrder.shortAlias}/${currentOrder.id}` ?? '' : '';
       setTimeout(() => {
         navigate(`/${newPage}/${param}`);
       }, theme.transitions.duration.leavingScreen * 3);
@@ -93,14 +91,20 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
   return (
     <Paper
       elevation={6}
-      sx={{ height: `${height}em`, width: `100%`, position: 'fixed', bottom: 0, borderRadius: 0 }}
+      sx={{
+        height: `${navbarHeight}em`,
+        width: `100%`,
+        position: 'fixed',
+        bottom: 0,
+        borderRadius: 0,
+      }}
     >
       <Tabs
         TabIndicatorProps={{ sx: { height: '0.3em', position: 'absolute', top: 0 } }}
         variant='fullWidth'
         value={page}
-        indicatorColor={settings.network === 'mainnet' ? 'primary' : 'secondary'}
-        textColor={settings.network === 'mainnet' ? 'primary' : 'secondary'}
+        indicatorColor={color}
+        textColor={color}
         onChange={changePage}
       >
         <Tab
@@ -116,7 +120,7 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
                 nickname={robot.nickname}
-                baseUrl={baseUrl}
+                baseUrl={hostUrl}
               />
             ) : (
               <></>
@@ -150,7 +154,7 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!robot.avatarLoaded || currentOrder == undefined}
+          disabled={!robot.avatarLoaded || currentOrder.id == null}
           icon={<Assignment />}
           iconPosition='start'
         />
@@ -170,7 +174,7 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
             open.more ? null : setOpen({ ...open, more: true });
           }}
           icon={
-            <MoreTooltip open={open} setOpen={setOpen} closeAll={closeAll}>
+            <MoreTooltip>
               <MoreHoriz />
             </MoreTooltip>
           }

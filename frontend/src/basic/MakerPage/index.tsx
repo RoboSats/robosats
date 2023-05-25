@@ -2,7 +2,6 @@ import React, { useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Grid, Paper, Collapse, Typography } from '@mui/material';
-
 import { filterOrders } from '../../utils';
 
 import MakerForm from '../../components/MakerForm';
@@ -69,7 +68,9 @@ const MakerPage = (): JSX.Element => {
         onClose={() => {
           setOpenNoRobot(false);
         }}
-        onClickGenerateRobot={() => navigate('/robot')}
+        onClickGenerateRobot={() => {
+          navigate('/robot');
+        }}
       />
       <Grid item>
         <Collapse in={matches.length > 0 && showMatches}>
@@ -115,7 +116,9 @@ const MakerPage = (): JSX.Element => {
               setShowMatches(false);
             }}
             submitButtonLabel={matches.length > 0 && !showMatches ? 'Submit' : 'Create order'}
-            onClickGenerateRobot={() => navigate('/robot')}
+            onClickGenerateRobot={() => {
+              navigate('/robot');
+            }}
           />
         </Paper>
       </Grid>

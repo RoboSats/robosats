@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -17,24 +17,32 @@ import {
 import WebIcon from '@mui/icons-material/Web';
 import AndroidIcon from '@mui/icons-material/Android';
 import UpcomingIcon from '@mui/icons-material/Upcoming';
+import { checkVer } from '../../utils';
+import { type Version } from '../../models';
 
 interface Props {
-  open: boolean;
-  clientVersion: string;
-  coordinatorVersion: string;
+  coordinatorVersion: Version;
+  clientVersion: Version;
   onClose: () => void;
 }
 
-const UpdateClientDialog = ({
-  open = false,
-  clientVersion,
-  coordinatorVersion,
-  onClose,
-}: Props): JSX.Element => {
+const UpdateDialog = ({ coordinatorVersion, clientVersion }: Props): JSX.Element => {
   const { t } = useTranslation();
+  const [open, setOpen] = useState<boolean>(() => checkVer(coordinatorVersion));
+  const coordinatorString = `v${coordinatorVersion.major}-${coordinatorVersion.minor}-${coordinatorVersion.patch}`;
+  const clientString = `v${clientVersion.major}-${clientVersion.minor}-${clientVersion.patch}`;
+
+  useEffect(() => {
+    setOpen(checkVer(coordinatorVersion));
+  }, [coordinatorVersion]);
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog
+      open={open}
+      onClose={() => {
+        setOpen(false);
+      }}
+    >
       <DialogContent>
         <Typography component='h5' variant='h5'>
           {t('Update your RoboSats client')}
@@ -45,7 +53,7 @@ const UpdateClientDialog = ({
         <Typography>
           {t(
             'The RoboSats coordinator is on version {{coordinatorVersion}}, but your client app is {{clientVersion}}. This version mismatch might lead to a bad user experience.',
-            { coordinatorVersion, clientVersion },
+            { coordinatorString, clientString },
           )}
         </Typography>
 
@@ -107,7 +115,13 @@ const UpdateClientDialog = ({
           </ListItemButton>
 
           <DialogActions>
-            <Button onClick={onClose}>{t('Go away!')}</Button>
+            <Button
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              {t('Go away!')}
+            </Button>
           </DialogActions>
         </List>
       </DialogContent>
@@ -115,4 +129,4 @@ const UpdateClientDialog = ({
   );
 };
 
-export default UpdateClientDialog;
+export default UpdateDialog;

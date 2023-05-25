@@ -20,13 +20,13 @@ import {
 } from '@mui/material';
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { type PublicOrder, LimitList, type Order } from '../../../models';
+import { type PublicOrder, type Order } from '../../../models';
 import RobotAvatar from '../../RobotAvatar';
 import { amountToString, matchMedian, statusBadgeColor } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
 import { PaymentStringAsIcons } from '../../PaymentMethods';
 import getNivoScheme from '../NivoScheme';
-import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
+import { type UseAppStoreType, AppContext, hostUrl, origin } from '../../../contexts/AppContext';
 
 interface DepthChartProps {
   maxWidth: number;
@@ -43,7 +43,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
   elevation = 6,
   onOrderClicked = () => null,
 }) => {
-  const { book, fav, info, limits, baseUrl } = useContext<UseAppStoreType>(AppContext);
+  const { book, federation, fav, exchange, limits, settings } =
+    useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
   const [enrichedOrders, setEnrichedOrders] = useState<Order[]>([]);
@@ -94,16 +95,16 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setXRange(maxRange);
       setRangeSteps(rangeSteps);
     } else {
-      if (info.last_day_nonkyc_btc_premium === undefined) {
+      if (exchange.info?.last_day_nonkyc_btc_premium === undefined) {
         const premiums: number[] = enrichedOrders.map((order) => order?.premium || 0);
         setCenter(~~matchMedian(premiums));
       } else {
-        setCenter(info.last_day_nonkyc_btc_premium);
+        setCenter(exchange.info?.last_day_nonkyc_btc_premium);
       }
       setXRange(8);
       setRangeSteps(0.5);
     }
-  }, [enrichedOrders, xType, info.last_day_nonkyc_btc_premium, currencyCode]);
+  }, [enrichedOrders, xType, exchange.info, currencyCode]);
 
   const generateSeries: () => void = () => {
     const sortedOrders: PublicOrder[] =
@@ -225,7 +226,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 orderType={order.type}
                 statusColor={statusBadgeColor(order.maker_status)}
                 tooltip={t(order.maker_status)}
-                baseUrl={baseUrl}
+                baseUrl={federation[order.coordinatorShortAlias][settings.network][origin]}
                 small={true}
               />
             </Grid>

@@ -34,7 +34,7 @@ import RobotAvatar from '../RobotAvatar';
 
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, hostUrl, origin, type UseAppStoreType } from '../../contexts/AppContext';
 
 const ClickThroughDataGrid = styled(DataGrid)({
   '& .MuiDataGrid-overlayWrapperInner': {
@@ -86,7 +86,7 @@ interface BookTableProps {
   showControls?: boolean;
   showFooter?: boolean;
   showNoResults?: boolean;
-  onOrderClicked?: (id: number) => void;
+  onOrderClicked?: (id: number, shortAlias: string) => void;
 }
 
 const BookTable = ({
@@ -103,11 +103,24 @@ const BookTable = ({
   showNoResults = true,
   onOrderClicked = () => null,
 }: BookTableProps): JSX.Element => {
-  const { book, fetchBook, fav, setFav, baseUrl } = useContext<UseAppStoreType>(AppContext);
+  const {
+    book,
+    federation,
+    fetchFederationBook,
+    fav,
+    setFav,
+    setFocusedCoordinator,
+    settings,
+    setOpen,
+  } = useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
   const orders = orderList ?? book.orders;
+  const loadingProgress = useMemo(() => {
+    return (book.loadedCoordinators / book.totalCoordinators) * 100;
+  }, [book.loadedCoordinators, book.totalCoordinators]);
+
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     pageSize: 0,
     page: 0,
@@ -197,7 +210,12 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
-          <ListItemButton style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}>
+          <ListItemButton
+            style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
             <ListItemAvatar>
               <RobotAvatar
                 nickname={params.row.maker_nick}
@@ -207,7 +225,7 @@ const BookTable = ({
                 orderType={params.row.type}
                 statusColor={statusBadgeColor(params.row.maker_status)}
                 tooltip={t(params.row.maker_status)}
-                baseUrl={baseUrl}
+                baseUrl={federation[params.row.coordinatorShortAlias][settings.network][origin]}
                 small={true}
               />
             </ListItemAvatar>
@@ -225,21 +243,60 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
-          <div style={{ position: 'relative', left: '-1.64em' }}>
-            <ListItemButton style={{ cursor: 'pointer' }}>
+          <div
+            style={{ position: 'relative', left: '-0.34em', cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
+            <RobotAvatar
+              nickname={params.row.maker_nick}
+              smooth={true}
+              flipHorizontally={true}
+              style={{ width: '3.215em', height: '3.215em' }}
+              orderType={params.row.type}
+              statusColor={statusBadgeColor(params.row.maker_status)}
+              tooltip={t(params.row.maker_status)}
+              baseUrl={federation[params.row.coordinatorShortAlias][settings.network][origin]}
+            />
+          </div>
+        );
+      },
+    };
+  }, []);
+
+  const onClickCoordinator = function (shortAlias: string) {
+    setFocusedCoordinator(shortAlias);
+    setOpen((open) => {
+      return { ...open, coordinator: true };
+    });
+  };
+
+  const coordinatorObj = useCallback((width: number) => {
+    return {
+      field: 'coordinatorShortAlias',
+      headerName: t('Host'),
+      width: width * fontSize,
+      renderCell: (params: any) => {
+        return (
+          <ListItemButton
+            style={{ cursor: 'pointer', position: 'relative', left: '-1.54em' }}
+            onClick={() => {
+              onClickCoordinator(params.row.coordinatorShortAlias);
+            }}
+          >
+            <ListItemAvatar>
               <RobotAvatar
-                nickname={params.row.maker_nick}
+                nickname={params.row.coordinatorShortAlias}
+                coordinator={true}
+                style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
                 flipHorizontally={true}
-                style={{ width: '3.215em', height: '3.215em' }}
-                orderType={params.row.type}
-                statusColor={statusBadgeColor(params.row.maker_status)}
-                tooltip={t(params.row.maker_status)}
-                baseUrl={baseUrl}
+                baseUrl={hostUrl}
                 small={true}
               />
-            </ListItemButton>
-          </div>
+            </ListItemAvatar>
+          </ListItemButton>
         );
       },
     };
@@ -250,10 +307,20 @@ const BookTable = ({
       field: 'type',
       headerName: t('Is'),
       width: width * fontSize,
-      renderCell: (params: any) =>
-        params.row.type
-          ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
-          : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In'),
+      renderCell: (params: any) => {
+        return (
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
+            {params.row.type
+              ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
+              : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In')}
+          </div>
+        );
+      },
     };
   }, []);
 
@@ -270,7 +337,12 @@ const BookTable = ({
         const maxAmount =
           fav.mode === 'swap' ? params.row.max_amount * 100000 : params.row.max_amount;
         return (
-          <div style={{ cursor: 'pointer' }}>
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
             {amountToString(amount, params.row.has_range, minAmount, maxAmount) +
               (fav.mode === 'swap' ? 'K Sats' : '')}
           </div>
@@ -294,6 +366,9 @@ const BookTable = ({
               alignItems: 'center',
               flexWrap: 'wrap',
             }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
           >
             {currencyCode}
             <div style={{ width: '0.3em' }} />
@@ -311,7 +386,12 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
-          <div style={{ cursor: 'pointer' }}>
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
             <PaymentStringAsIcons
               othersText={t('Others')}
               verbose={true}
@@ -337,6 +417,9 @@ const BookTable = ({
               left: '-4px',
               cursor: 'pointer',
             }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
           >
             <PaymentStringAsIcons
               othersText={t('Others')}
@@ -358,7 +441,14 @@ const BookTable = ({
       renderCell: (params: any) => {
         const currencyCode = currencyDict[params.row.currency.toString()];
         return (
-          <div style={{ cursor: 'pointer' }}>{`${pn(params.row.price)} ${currencyCode}/BTC`}</div>
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
+            {`${pn(params.row.price)} ${currencyCode}/BTC`}
+          </div>
         );
       },
     };
@@ -403,7 +493,12 @@ const BookTable = ({
               enterTouchDelay={0}
               title={pn(params.row.price) + ' ' + currencyCode + '/BTC'}
             >
-              <div style={{ cursor: 'pointer' }}>
+              <div
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+                }}
+              >
                 <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
                   {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
                 </Typography>
@@ -425,7 +520,16 @@ const BookTable = ({
       renderCell: (params: any) => {
         const hours = Math.round(params.row.escrow_duration / 3600);
         const minutes = Math.round((params.row.escrow_duration - hours * 3600) / 60);
-        return <div style={{ cursor: 'pointer' }}>{hours > 0 ? `${hours}h` : `${minutes}m`}</div>;
+        return (
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
+            {hours > 0 ? `${hours}h` : `${minutes}m`}
+          </div>
+        );
       },
     };
   }, []);
@@ -443,7 +547,12 @@ const BookTable = ({
         const hours = Math.round(timeToExpiry / (3600 * 1000));
         const minutes = Math.round((timeToExpiry - hours * (3600 * 1000)) / 60000);
         return (
-          <Box sx={{ position: 'relative', display: 'inline-flex', left: '0.3em' }}>
+          <Box
+            sx={{ position: 'relative', display: 'inline-flex', left: '0.3em' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
             <CircularProgress
               value={percent}
               color={percent < 15 ? 'error' : percent < 30 ? 'warning' : 'success'}
@@ -481,7 +590,12 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
-          <div style={{ cursor: 'pointer' }}>
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
             {params.row.satoshis_now > 1000000
               ? `${pn(Math.round(params.row.satoshis_now / 10000) / 100)} M`
               : `${pn(Math.round(params.row.satoshis_now / 1000))} K`}
@@ -498,7 +612,12 @@ const BookTable = ({
       width: width * fontSize,
       renderCell: (params: any) => {
         return (
-          <div style={{ cursor: 'pointer' }}>
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >
             <Typography variant='caption' color='text.secondary'>
               {`#${params.row.id}`}
             </Typography>
@@ -515,7 +634,14 @@ const BookTable = ({
       type: 'number',
       width: width * fontSize,
       renderCell: (params: any) => {
-        return <div style={{ cursor: 'pointer' }}>{`${Number(params.row.bond_size)}%`}</div>;
+        return (
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
+            }}
+          >{`${Number(params.row.bond_size)}%`}</div>
+        );
       },
     };
   }, []);
@@ -524,7 +650,7 @@ const BookTable = ({
     return {
       amount: {
         priority: 1,
-        order: 4,
+        order: 5,
         normal: {
           width: fav.mode === 'swap' ? 9.5 : 6.5,
           object: amountObj,
@@ -532,7 +658,7 @@ const BookTable = ({
       },
       currency: {
         priority: 2,
-        order: 5,
+        order: 6,
         normal: {
           width: fav.mode === 'swap' ? 0 : 5.9,
           object: currencyObj,
@@ -540,7 +666,7 @@ const BookTable = ({
       },
       premium: {
         priority: 3,
-        order: 11,
+        order: 12,
         normal: {
           width: 6,
           object: premiumObj,
@@ -548,7 +674,7 @@ const BookTable = ({
       },
       payment_method: {
         priority: 4,
-        order: 6,
+        order: 7,
         normal: {
           width: 12.85,
           object: paymentObj,
@@ -570,9 +696,17 @@ const BookTable = ({
           object: robotSmallObj,
         },
       },
+      coordinatorShortAlias: {
+        priority: 5,
+        order: 3,
+        normal: {
+          width: 4.1,
+          object: coordinatorObj,
+        },
+      },
       price: {
         priority: 6,
-        order: 10,
+        order: 11,
         normal: {
           width: 10,
           object: priceObj,
@@ -580,7 +714,7 @@ const BookTable = ({
       },
       expires_at: {
         priority: 7,
-        order: 7,
+        order: 8,
         normal: {
           width: 5,
           object: expiryObj,
@@ -588,7 +722,7 @@ const BookTable = ({
       },
       escrow_duration: {
         priority: 8,
-        order: 8,
+        order: 9,
         normal: {
           width: 4.8,
           object: timerObj,
@@ -596,7 +730,7 @@ const BookTable = ({
       },
       satoshis_now: {
         priority: 9,
-        order: 9,
+        order: 10,
         normal: {
           width: 6,
           object: satoshisObj,
@@ -612,7 +746,7 @@ const BookTable = ({
       },
       bond_size: {
         priority: 11,
-        order: 10,
+        order: 11,
         normal: {
           width: 4.2,
           object: bondObj,
@@ -620,7 +754,7 @@ const BookTable = ({
       },
       id: {
         priority: 12,
-        order: 12,
+        order: 13,
         normal: {
           width: 4.8,
           object: idObj,
@@ -686,11 +820,7 @@ const BookTable = ({
               </IconButton>
             </Grid>
             <Grid item xs={6}>
-              <IconButton
-                onClick={() => {
-                  fetchBook();
-                }}
-              >
+              <IconButton onClick={fetchFederationBook}>
                 <Refresh />
               </IconButton>
             </Grid>
@@ -786,6 +916,7 @@ const BookTable = ({
           rowHeight={3.714 * theme.typography.fontSize}
           headerHeight={3.25 * theme.typography.fontSize}
           rows={filteredOrders}
+          getRowId={(params: PublicOrder) => `${params.coordinatorShortAlias}/${params.id}`}
           loading={book.loading}
           columns={columns}
           columnVisibilityModel={columnVisibilityModel}
@@ -802,14 +933,15 @@ const BookTable = ({
               paymentMethod: paymentMethods,
               setPaymentMethods,
             },
+            loadingOverlay: {
+              variant: 'determinate',
+              value: loadingProgress,
+            },
           }}
           paginationModel={paginationModel}
           pageSizeOptions={width < 22 ? [] : [0, defaultPageSize, defaultPageSize * 2, 50, 100]}
           onPaginationModelChange={(newPaginationModel) => {
             setPaginationModel(newPaginationModel);
-          }}
-          onRowClick={(params: any) => {
-            onOrderClicked(params.row.id);
           }}
         />
       </Paper>
@@ -844,9 +976,6 @@ const BookTable = ({
             pageSizeOptions={width < 22 ? [] : [0, defaultPageSize, defaultPageSize * 2, 50, 100]}
             onPaginationModelChange={(newPaginationModel) => {
               setPaginationModel(newPaginationModel);
-            }}
-            onRowClick={(params: any) => {
-              onOrderClicked(params.row.id);
             }}
           />
         </Paper>

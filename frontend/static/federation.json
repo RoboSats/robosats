@@ -1,23 +1,102 @@
-[
-  {
-    "alias": "Inception",
-    "enabled": "true",
-    "description": "RoboSats original and experimental coordinator",
-    "coverLetter": "N/A",
+{
+  "exp": {
+    "longAlias": "Experimental",
+    "shortAlias": "exp",
+    "description": "RoboSats node for development and experimentation.",
+    "motto": "P2P FTW!",
+    "color": "#1976d2",
     "contact": {
       "email": "robosats@protonmail.com",
-      "telegram": "@robosats",
-      "twitter": "@robosats",
+      "telegram": "robosats",
+      "twitter": "robosats",
+      "reddit": "r/robosats",
       "matrix": "#robosats:matrix.org",
-      "website": "learn.robosats.com"
+      "website": "https://learn.robosats.com",
+      "nostr": "npub17pqgxxtga6u4du83f5tq9pgqk6fkuwlhvyrn4m7plvtepvgmjpys6dl4zl",
+      "pgp": "keys.openpgp.org/vks/v1/by-fingerprint/B4AB5F19113D4125DDF217739C4585B561315571",
+      "fingerprint": "B4AB5F19113D4125DDF217739C4585B561315571"
     },
-    "color": "#9C27B0",
-    "mainnetOnion": "robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
-    "mainnetClearnet": "unsafe.robosats.com",
-    "testnetOnion": "robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
-    "testnetClearnet": "unsafe.testnet.robosats.com",
+    "badges": {
+      "isFounder": true,
+      "donatesToDevFund": 25,
+      "hasGoodOpSec": true,
+      "robotsLove": true,
+      "hasLargeLimits": true
+    },
+    "policies": {
+      "Policy Name 1": "Experimental coordinator used for development. Use at your own risk.",
+      "Policy Name 2": "Experimental coordinator used for development. Use at your own risk.",
+      "Privacy Policy": "...",
+      "Data Policy": "..."
+    },
+    "mainnet": {
+      "onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
+      "clearnet": "https://unsafe.robosats.com",
+      "i2p": "http://r7r4sckft6ptmk4r2jajiuqbowqyxiwsle4iyg4fijtoordc6z7a.b32.i2p"
+    },
+    "testnet": {
+      "onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+      "clearnet": "https://unsafe.testnet.robosats.com",
+      "i2p": ""
+    },
     "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
-    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"],
-    "logo": "/static/federation/inception.svg"
+    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
+  },
+  "temp": {
+    "longAlias": "Template",
+    "shortAlias": "temp",
+    "description": "This is the description for an example coordinator",
+    "motto": "Don't trust, verify",
+    "color": "#000000",
+    "contact": {
+      "email": "contact@contact.com",
+      "telegram": "examplecoordinator",
+      "twitter": "examplecoordinator",
+      "matrix": "#example:matrix.org",
+      "website": "https://example.coordinator.com"
+    },
+    "badges": {
+      "isFounder": true,
+      "donatesToDevFund": 25,
+      "hasGoodOpSec": true,
+      "robotsLove": true,
+      "hasLargeLimits": true
+    },
+    "policies": {
+      "Rule #1": "You do not talk about RoboSats Club",
+      "Rule #2": "You DO NOT talk about RoboSats Club",
+      "Privacy Policy": "...",
+      "Data Policy": "..."
+    },
+    "mainnet": {
+      "onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
+      "clearnet": "http://127.0.0.1:12596"
+    },
+    "testnet": {
+      "onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
+      "clearnet": "https://unsafe.testnet.robosats.com"
+    },
+    "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
+    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
+  },
+  "local": {
+    "longAlias": "Local Dev",
+    "shortAlias": "local",
+    "description": "Local development backend",
+    "motto": "Buidl",
+    "color": "#000000",
+    "testnet": {
+      "onion": "http://robodevs7ixniseezbv7uryxhamtz3hvcelzfwpx3rvoipttjomrmpqd.onion",
+      "clearnet": "http://127.0.0.1:8000"
+    },
+    "mainnet": {
+      "onion": "",
+      "clearnet": ""
+    },
+    "policies": {
+      "Development Policy": "Don't look around, just buidl"
+    },
+    "mainnetNodesPubkeys": ["..."],
+    "testnetNodesPubkeys": ["..."]
   }
-]
+}
