@@ -19,17 +19,18 @@ from . import primitives_pb2 as primitives__pb2
 #######
 
 # Load the client's certificate and key
-with open(os.path.join(config("CLN_DIR"), "client.pem"), "rb") as f:
+CLN_DIR = config("CLN_DIR", cast=str, default="/cln/testnet/")
+with open(os.path.join(CLN_DIR, "client.pem"), "rb") as f:
     client_cert = f.read()
-with open(os.path.join(config("CLN_DIR"), "client-key.pem"), "rb") as f:
+with open(os.path.join(CLN_DIR, "client-key.pem"), "rb") as f:
     client_key = f.read()
 
 # Load the server's certificate
-with open(os.path.join(config("CLN_DIR"), "server.pem"), "rb") as f:
+with open(os.path.join(CLN_DIR, "server.pem"), "rb") as f:
     server_cert = f.read()
 
 
-CLN_GRPC_HOST = config("CLN_GRPC_HOST")
+CLN_GRPC_HOST = config("CLN_GRPC_HOST", cast=str, default="localhost:9999")
 DISABLE_ONCHAIN = config("DISABLE_ONCHAIN", cast=bool, default=True)
 MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
 

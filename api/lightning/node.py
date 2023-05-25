@@ -1,16 +1,16 @@
 from decouple import config
 
-LN_vendor = config("LNVENDOR", cast=str, default="LND")
+LNVENDOR = config("LNVENDOR", cast=str, default="LND")
 
-if LN_vendor == "LND":
+if LNVENDOR == "LND":
     from api.lightning.lnd import LNDNode
 
     LNNode = LNDNode
-elif LN_vendor == "CLN":
+elif LNVENDOR == "CLN":
     from api.lightning.cln import CLNNode
 
     LNNode = CLNNode
 else:
     raise ValueError(
-        f'Invalid Lightning Node vendor: {LN_vendor}. Must be either "LND" or "CLN"'
+        f'Invalid Lightning Node vendor: {LNVENDOR}. Must be either "LND" or "CLN"'
     )

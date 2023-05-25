@@ -14,6 +14,7 @@ logger = logging.getLogger("api.utils")
 
 TOR_PROXY = config("TOR_PROXY", default="127.0.0.1:9050")
 USE_TOR = config("USE_TOR", cast=bool, default=True)
+LNVENDOR = config("LNVENDOR", cast=str, default="LND")
 
 
 def get_session():
@@ -144,10 +145,12 @@ lnd_version_cache = {}
 
 @ring.dict(lnd_version_cache, expire=3600)
 def get_lnd_version():
+    try:
+        from api.lightning.lnd import LNDNode
 
-    from api.lightning.lnd import LNDNode
-
-    return LNDNode.get_version()
+        return LNDNode.get_version()
+    except Exception:
+        return None
 
 
 cln_version_cache = {}
@@ -155,10 +158,12 @@ cln_version_cache = {}
 
 @ring.dict(cln_version_cache, expire=3600)
 def get_cln_version():
+    try:
+        from api.lightning.cln import CLNNode
 
-    from api.lightning.cln import CLNNode
-
-    return CLNNode.get_version()
+        return CLNNode.get_version()
+    except Exception:
+        return None
 
 
 robosats_commit_cache = {}
