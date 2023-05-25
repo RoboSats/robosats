@@ -1,12 +1,13 @@
 export { default as AuditPGPDialog } from './AuditPGP';
 export { default as CommunityDialog } from './Community';
-export { default as InfoDialog } from './Info';
+export { default as AboutDialog } from './About';
 export { default as LearnDialog } from './Learn';
 export { default as NoRobotDialog } from './NoRobot';
 export { default as StoreTokenDialog } from './StoreToken';
 export { default as ConfirmationDialog } from './Confirmation';
-export { default as CoordinatorSummaryDialog } from './CoordinatorSummary';
+export { default as ExchangeDialog } from './Exchange';
+export { default as CoordinatorDialog } from './Coordinator';
 export { default as ProfileDialog } from './Profile';
-export { default as StatsDialog } from './Stats';
+export { default as ClientDialog } from './Client';
 export { default as EnableTelegramDialog } from './EnableTelegram';
-export { default as UpdateClientDialog } from './UpdateClient';
+export { default as UpdateDialog } from './Update';

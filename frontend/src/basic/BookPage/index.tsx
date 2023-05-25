@@ -13,7 +13,7 @@ import { BarChart, FormatListBulleted } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 const BookPage = (): JSX.Element => {
-  const { robot, fetchBook, windowSize, setDelay, setOrder } =
+  const { robot, fetchFederationBook, windowSize, setDelay, clearOrder } =
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -27,18 +27,14 @@ const BookPage = (): JSX.Element => {
   const chartWidthEm = width - maxBookTableWidth;
 
   useEffect(() => {
-    fetchBook();
+    fetchFederationBook();
   }, []);
 
-  const onViewOrder = function () {
-    setOrder(undefined);
-    setDelay(10000);
-  };
-
-  const onOrderClicked = function (id: number) {
+  const onOrderClicked = function (id: number, shortAlias: string) {
     if (robot.avatarLoaded) {
-      navigate('/order/' + id);
-      onViewOrder();
+      clearOrder();
+      setDelay(10000);
+      navigate(`/order/${shortAlias}/${id}`);
     } else {
       setOpenNoRobot(true);
     }
@@ -85,7 +81,9 @@ const BookPage = (): JSX.Element => {
         onClose={() => {
           setOpenNoRobot(false);
         }}
-        onClickGenerateRobot={() => navigate('/robot')}
+        onClickGenerateRobot={() => {
+          navigate('/robot');
+        }}
       />
       {openMaker ? (
         <Dialog
@@ -99,7 +97,9 @@ const BookPage = (): JSX.Element => {
               onOrderCreated={(id) => {
                 navigate('/order/' + id);
               }}
-              onClickGenerateRobot={() => navigate('/robot')}
+              onClickGenerateRobot={() => {
+                navigate('/robot');
+              }}
             />
           </Box>
         </Dialog>

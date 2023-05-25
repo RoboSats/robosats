@@ -21,6 +21,7 @@ import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { genBase62Token } from '../../utils';
 import { NewTabIcon } from '../../components/Icons';
+import { hostUrl } from '../../contexts/AppContext';
 
 interface OnboardingProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
@@ -41,7 +42,6 @@ const Onboarding = ({
   setRobot,
   badToken,
   getGenerateRobot,
-  baseUrl,
 }: OnboardingProps): JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -174,7 +174,7 @@ const Onboarding = ({
                   width: '12.4em',
                 }}
                 tooltipPosition='top'
-                baseUrl={baseUrl}
+                baseUrl={hostUrl}
               />
             </Grid>
 

@@ -8,6 +8,7 @@ import {
   BookWidget,
   DepthChartWidget,
   SettingsWidget,
+  FederationWidget,
 } from '../pro/Widgets';
 import ToolBar from '../pro/ToolBar';
 import LandingDialog from '../pro/LandingDialog';
@@ -41,35 +42,7 @@ const defaultLayout: Layout = [
 ];
 
 const Main = (): JSX.Element => {
-  const {
-    book,
-    fetchBook,
-    maker,
-    setMaker,
-    setSettings,
-    clearOrder,
-    torStatus,
-    settings,
-    limits,
-    fetchLimits,
-    robot,
-    setRobot,
-    fetchRobot,
-    setOrder,
-    setDelay,
-    info,
-    fav,
-    setFav,
-    baseUrl,
-    order,
-    currentOrder,
-    setCurrentOrder,
-    open,
-    setOpen,
-    windowSize,
-    badOrder,
-    setBadOrder,
-  } = useContext<UseAppStoreType>(AppContext);
+  const { settings, windowSize } = useContext<UseAppStoreType>(AppContext);
 
   const theme = useTheme();
   const em: number = theme.typography.fontSize;
@@ -82,7 +55,7 @@ const Main = (): JSX.Element => {
   return (
     <Grid container direction='column' sx={{ width: `${windowSize.width}em` }}>
       <Grid item>
-        <ToolBar height={`${toolbarHeight}em`} settings={settings} setSettings={setSettings} />
+        <ToolBar height={`${toolbarHeight}em`} />
         <LandingDialog
           open={openLanding}
           onClose={() => {
@@ -131,8 +104,8 @@ const Main = (): JSX.Element => {
           <div key='Trade'>
             <PlaceholderWidget label='Trade Box' />
           </div>
-          <div key='Other'>
-            <PlaceholderWidget label='Other' />
+          <div key='Federation'>
+            <FederationWidget layout={layout[7]} gridCellSize={gridCellSize} />
           </div>
         </StyledRGL>
       </Grid>

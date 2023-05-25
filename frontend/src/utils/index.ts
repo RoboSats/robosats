@@ -1,9 +1,10 @@
-export { default as checkVer } from './checkVer';
+export { checkVer, getHigherVer, getClientVersion } from './checkVer';
 export { default as filterOrders } from './filterOrders';
 export { default as getHost } from './getHost';
 export { default as hexToRgb } from './hexToRgb';
 export { default as hexToBase91 } from './hexToBase91';
 export { default as matchMedian } from './match';
+export { default as weightedMean } from './weightedMean';
 export { default as pn } from './prettyNumbers';
 export { amountToString } from './prettyNumbers';
 export { default as saveAsJson } from './saveFile';

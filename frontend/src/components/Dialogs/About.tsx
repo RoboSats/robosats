@@ -22,7 +22,7 @@ interface Props {
   onClose: () => void;
 }
 
-const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
+const AboutDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
 
   return (
@@ -263,4 +263,4 @@ const InfoDialog = ({ maxAmount, open, onClose }: Props): JSX.Element => {
   );
 };
 
-export default InfoDialog;
+export default AboutDialog;
