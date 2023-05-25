@@ -4,16 +4,11 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { type Book, type Favorites } from '../../models';
 import { Paper } from '@mui/material';
 import BookTable from '../../components/BookTable';
+import { type GridItem } from 'react-grid-layout';
 
 interface BookWidgetProps {
-  baseUrl: string;
-  layout: any;
+  layout: GridItem;
   gridCellSize?: number;
-  book: Book;
-  fetchBook: () => void;
-  fav: Favorites;
-  setFav: (state: Favorites) => void;
-  windowSize: { width: number; height: number };
   style?: Object;
   className?: string;
   onMouseDown?: () => void;

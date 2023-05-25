@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box, Slide, Typography, styled } from '@mui/material';
+import { type UseAppStoreType, AppContext, closeAll, hostUrl } from '../contexts/AppContext';
 
 import RobotPage from './RobotPage';
 import MakerPage from './MakerPage';
@@ -11,10 +12,8 @@ import NavBar from './NavBar';
 import MainDialogs from './MainDialogs';
 
 import RobotAvatar from '../components/RobotAvatar';
-
 import { useTranslation } from 'react-i18next';
 import Notifications from '../components/Notifications';
-import { type UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
 
 const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
 
@@ -39,7 +38,6 @@ const Main: React.FC = () => {
     settings,
     robot,
     setRobot,
-    baseUrl,
     order,
     page,
     slideDirection,
@@ -53,7 +51,7 @@ const Main: React.FC = () => {
       <RobotAvatar
         style={{ display: 'none' }}
         nickname={robot.nickname}
-        baseUrl={baseUrl}
+        baseUrl={hostUrl}
         onLoad={() => {
           setRobot((robot) => {
             return { ...robot, avatarLoaded: true };
@@ -130,7 +128,7 @@ const Main: React.FC = () => {
           />
 
           <Route
-            path='/order/:orderId'
+            path='/order/:shortAlias/:orderId'
             element={
               <Slide
                 direction={page === 'order' ? slideDirection.in : slideDirection.out}
@@ -160,7 +158,7 @@ const Main: React.FC = () => {
           />
         </Routes>
       </MainBox>
-      <NavBar width={windowSize.width} height={navbarHeight} />
+      <NavBar />
       <MainDialogs />
     </Router>
   );

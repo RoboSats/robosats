@@ -40,7 +40,7 @@ import { amountToString, computeSats, pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, hostUrl, type UseAppStoreType } from '../../contexts/AppContext';
 
 interface MakerFormProps {
   disableRequest?: boolean;
@@ -63,7 +63,7 @@ const MakerForm = ({
   onOrderCreated = () => null,
   onClickGenerateRobot = () => null,
 }: MakerFormProps): JSX.Element => {
-  const { fav, setFav, limits, fetchLimits, info, maker, setMaker, baseUrl, robot } =
+  const { fav, setFav, limits, fetchFederationLimits, info, maker, setMaker, robot } =
     useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
@@ -86,17 +86,17 @@ const MakerForm = ({
   useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency == 0 ? 1 : fav.currency]);
     if (Object.keys(limits.list).length === 0) {
-      fetchLimits().then((data) => {
-        updateAmountLimits(data, fav.currency, maker.premium);
-        updateCurrentPrice(data, fav.currency, maker.premium);
-        updateSatoshisLimits(data);
-      });
+      // fetchFederationLimits().then((data) => {
+      //   updateAmountLimits(data, fav.currency, maker.premium);
+      //   updateCurrentPrice(data, fav.currency, maker.premium);
+      //   updateSatoshisLimits(data);
+      // });
     } else {
       updateAmountLimits(limits.list, fav.currency, maker.premium);
       updateCurrentPrice(limits.list, fav.currency, maker.premium);
       updateSatoshisLimits(limits.list);
 
-      fetchLimits();
+      fetchFederationLimits();
     }
   }, []);
 
@@ -269,7 +269,7 @@ const MakerForm = ({
         bond_size: maker.bondSize,
       };
       apiClient
-        .post(baseUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
+        .post(hostUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
         .then((data: object) => {
           setBadRequest(data.bad_request);
           if (data.id) {
