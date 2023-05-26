@@ -423,6 +423,7 @@ const MakerForm = ({
       (!makerHasAmountRange &&
         maker.amount != '' &&
         (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
+      maker.badPaymentMethod ||
       (maker.amount == null && (!makerHasAmountRange || limits.loading)) ||
       (makerHasAmountRange && (minAmountError || maxAmountError)) ||
       (!makerHasAmountRange && maker.amount <= 0) ||
@@ -745,7 +746,6 @@ const MakerForm = ({
           <Grid item xs={12}>
             <AutocompletePayments
               onAutocompleteChange={handlePaymentMethodChange}
-              // listBoxProps={{ sx: { width: '15.3em', maxHeight: '20em' } }}
               optionsType={fav.mode}
               error={maker.badPaymentMethod}
               helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
@@ -760,6 +760,12 @@ const MakerForm = ({
               asFilter={false}
               value={maker.paymentMethods}
             />
+
+            {maker.badPaymentMethod && (
+              <FormHelperText error={true}>
+                {t('Must be shorter than 65 characters')}
+              </FormHelperText>
+            )}
           </Grid>
 
           {!maker.advancedOptions && pricingMethods ? (
