@@ -47,7 +47,7 @@ locales = [f for f in os.listdir(".") if f.endswith(".json")]
 for locale in locales:
     new_phrases = OrderedDict()
     with open(locale, "r", encoding="utf-8") as f:
-        old_phrases = json.load(f)
+        old_phrases = json.load(f, object_pairs_hook=OrderedDict)
         for key in all_phrases.keys():
             # update dictionary with new keys on /src/, but ignore the counter of files keys
             if key in old_phrases and not re.match(r"^#\d+$", key):
@@ -55,8 +55,10 @@ for locale in locales:
             else:
                 new_phrases[key] = all_phrases[key]
 
-    with open(locale, "w", encoding="utf-8") as f:
-        json.dump(new_phrases, f, ensure_ascii=False)
+    # don't change the file if there aren't new keys (order matters)
+    if new_phrases != old_phrases:
+        with open(locale, "w", encoding="utf-8") as f:
+            json.dump(new_phrases, f, ensure_ascii=False)
 
 with open("./collected_phrases.json", "w", encoding="utf-8") as f:
     json.dump(all_phrases, f, ensure_ascii=False)

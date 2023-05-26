@@ -181,27 +181,28 @@ const MakerForm = ({
     });
   };
 
-  const handlePremiumChange = function (e: object) {
-    const max = fav.mode === 'fiat' ? 999 : 99;
-    const min = -100;
-    const newPremium = Math.floor(e.target.value * Math.pow(10, 2)) / Math.pow(10, 2);
-    let premium: number = newPremium;
-    let badPremiumText: string = '';
-    if (newPremium > 999) {
-      badPremiumText = t('Must be less than {{max}}%', { max });
-      premium = 999;
-    } else if (newPremium <= -100) {
-      badPremiumText = t('Must be more than {{min}}%', { min });
-      premium = -99.99;
-    }
-    updateCurrentPrice(limits.list, fav.currency, premium);
-    updateAmountLimits(limits.list, fav.currency, premium);
-    setMaker({
-      ...maker,
-      premium,
-      badPremiumText,
-    });
-  };
+  const handlePremiumChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> =
+    function ({ target: { value } }) {
+      const max = fav.mode === 'fiat' ? 999 : 99;
+      const min = -100;
+      const newPremium = Math.floor(Number(value) * Math.pow(10, 2)) / Math.pow(10, 2);
+      let premium: number = isNaN(newPremium) ? 0 : newPremium;
+      let badPremiumText: string = '';
+      if (newPremium > 999) {
+        badPremiumText = t('Must be less than {{max}}%', { max });
+        premium = 999;
+      } else if (newPremium <= -100) {
+        badPremiumText = t('Must be more than {{min}}%', { min });
+        premium = -99.99;
+      }
+      updateCurrentPrice(limits.list, fav.currency, premium);
+      updateAmountLimits(limits.list, fav.currency, premium);
+      setMaker({
+        ...maker,
+        premium: isNaN(newPremium) || value === '' ? '' : premium,
+        badPremiumText,
+      });
+    };
 
   const handleSatoshisChange = function (e: object) {
     const newSatoshis = e.target.value;
