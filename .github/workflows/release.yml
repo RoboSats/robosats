@@ -77,6 +77,9 @@ jobs:
       - name: Release
         id: create-release
         uses: softprops/action-gh-release@v1
+        with:
+          body_path: release_notes.md
+          generate_release_notes: true
 
       # Upload app-universal-release APK artifact asset
       - name: 'Download universal APK Artifact'
