@@ -44,7 +44,7 @@ reboot
 
 ## Create Emulator (or connect Android phone and install adb)
 
-Use the GUI of Android studio to create a new virtual devide. As of 23/06/2022 we are using a Pixel 5 as template and System image R API level 30 Android 11.0
+Use the GUI of Android studio to create a new virtual device. As of 26/03/2023 we are using a Pixel 5 as template and System image Tiramisu API level 33
 
 If using a phone, start the USB debugging mode.
 
@@ -63,17 +63,25 @@ Make sure you have the `main.js` file created on `robosats/mobile/html/Web.bundl
 npm run dev
 ```
 
-Point a terminal to `/robosats/mobile/`
+Launch your emulator if you are using one:
+
+```
+cd ~/Android/Sdk/tools && ./emulator -avd <DEVICE_NAME>
+```
+
+Point a terminal to `/robosats/mobile/` to start metro
 
 ```
 npm start
 ```
 
-on another temrinal also in `/robosats/mobile/`
+And on another terminal, also in `/robosats/mobile/`, build and install the debug app
 
 ```
 npx react-native run-android
 ```
+
+You can also use `react-native run-android --mode=release` to fully test the release builds of the app.
 
 # OSX
 
