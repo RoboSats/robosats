@@ -561,7 +561,7 @@
   "Onchain": "Onchain",
   "#65": "Phrases in components/TradeBox/Prompts/PayoutWait.tsx",
   "Just hang on for a moment. If the buyer does not cooperate, you will get back the trade collateral and your bond automatically. In addition, you will receive a compensation (check the rewards in your profile).": "กรุณารออีกซักครู่ ถ้าผู้ซื้อไม่ให้ความร่วมมือ คุณจะได้รับเหรียญที่นำมาวางและ bond คืนโดยอัตโนมัติ และคุณจะได้รับเงินชดเชยด้วย (สามารถตรวจสอบได้ในส่วนของรางวัลในโปรไฟล์ของท่าน)",
-  "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.": "เรากำลังรอผู้ซื้อส่ง invoice รับเหรียญให้เรา หลังจากนั้นคุณจะได้แชทคุยกับผู้ซื้อเพื่อชี้แจงรายละเอียดสำหรับการชำระเงินเฟียต",
+  "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the payment details.": "เรากำลังรอผู้ซื้อส่ง invoice รับเหรียญให้เรา หลังจากนั้นคุณจะได้แชทคุยกับผู้ซื้อเพื่อชี้แจงรายละเอียดสำหรับการชำระเงินเฟียต",
   "#66": "Phrases in components/TradeBox/Prompts/PublicWait.tsx",
   "Among public {{currencyCode}} orders (higher is cheaper)": "สำหรับรายการที่เป็น {{currencyCode}} (ยิ่งสูงยิ่งถูก)",
   "If the order expires untaken, your bond will return to you (no action needed).": "ถ้ารายการซื้อขายของคุณไม่มีใครรับ คุณจะได้รับการปลดล็อกเหรียญที่กักกันใน bond ของคุณคืนโดยอัตโนมัติ",

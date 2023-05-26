@@ -561,7 +561,7 @@
   "Onchain": "Onchain",
   "#65": "Phrases in components/TradeBox/Prompts/PayoutWait.tsx",
   "Just hang on for a moment. If the buyer does not cooperate, you will get back the trade collateral and your bond automatically. In addition, you will receive a compensation (check the rewards in your profile).": "Vydrž chvíli. Pokud kupující nespolupracuje, automaticky získáš zpět svojí kauci a předmět obchodu satoshi. Kromě toho obdržíš kompenzaci (zkontroluj odměny ve svém profilu).",
-  "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.": "Čekáme, až kupující vloží lightning invoice. Jakmile tak učiní, budeš moct se s ním moct dohodnout fiat platbě.",
+  "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the payment details.": "Čekáme, až kupující vloží lightning invoice. Jakmile tak učiní, budeš moct se s ním moct dohodnout platbě.",
   "#66": "Phrases in components/TradeBox/Prompts/PublicWait.tsx",
   "Among public {{currencyCode}} orders (higher is cheaper)": "Mezi veřejnými {{currencyCode}} nabídkami (vyšší je levnější)",
   "If the order expires untaken, your bond will return to you (no action needed).": "Pokud nabídka vyprší nepříjmuta, tak kauce se ti vrátí (není potřeba žádné akce).",

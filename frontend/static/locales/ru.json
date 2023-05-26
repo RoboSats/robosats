@@ -561,7 +561,7 @@
   "Onchain": "Ончейн",
   "#65": "Phrases in components/TradeBox/Prompts/PayoutWait.tsx",
   "Just hang on for a moment. If the buyer does not cooperate, you will get back the trade collateral and your bond automatically. In addition, you will receive a compensation (check the rewards in your profile).": "Просто немного подождите. Если покупатель не будет сотрудничать, Вы автоматически вернёте свой депозит и залог. Кроме того, Вы получите компенсацию (проверьте вознаграждение в своем профиле).",
-  "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.": "Мы ждём, пока покупатель разместит Lightning инвойс. Как только он это сделает, Вы сможете напрямую сообщить реквизиты фиатного платежа.",
+  "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the payment details.": "Мы ждём, пока покупатель разместит Lightning инвойс. Как только он это сделает, Вы сможете напрямую сообщить реквизиты фиатного платежа.",
   "#66": "Phrases in components/TradeBox/Prompts/PublicWait.tsx",
   "Among public {{currencyCode}} orders (higher is cheaper)": "Среди публичных {{currencyCode}} ордеров (чем выше, тем дешевле)",
   "If the order expires untaken, your bond will return to you (no action needed).": "Если Ваш ордер не будет принят и срок его действия истечёт, Ваша залог вернётся к Вам (никаких действий не требуется).",

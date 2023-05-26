@@ -561,7 +561,7 @@
   "Onchain": "オンチェーン",
   "#65": "Phrases in components/TradeBox/Prompts/PayoutWait.tsx",
   "Just hang on for a moment. If the buyer does not cooperate, you will get back the trade collateral and your bond automatically. In addition, you will receive a compensation (check the rewards in your profile).": "もうしばらくお待ちください。もし買い手が協力しない場合、取引担保と担保金が自動的に返金されます。さらに、報酬を受け取ることができます（プロフィールで報酬を確認してください）。",
-  "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.": "買い手がライトニングインボイスを投稿するのを待っています。投稿されたら、直接フィアット通貨決済の詳細を通知できます。",
+  "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the payment details.": "買い手がライトニングインボイスを投稿するのを待っています。投稿されたら、直接フィアット通貨決済の詳細を通知できます。",
   "#66": "Phrases in components/TradeBox/Prompts/PublicWait.tsx",
   "Among public {{currencyCode}} orders (higher is cheaper)": "{{currencyCode}}の公開注文の中で（高い方が安い）",
   "If the order expires untaken, your bond will return to you (no action needed).": "オーダーが期限切れになっても取られない場合、あなたの担保金はあなたに戻ります（何も行動する必要はありません）。",

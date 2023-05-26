@@ -561,7 +561,7 @@
   "Onchain": "鏈上",
   "#65": "Phrases in components/TradeBox/Prompts/PayoutWait.tsx",
   "Just hang on for a moment. If the buyer does not cooperate, you will get back the trade collateral and your bond automatically. In addition, you will receive a compensation (check the rewards in your profile).": "請稍等片刻。如果買方不配合，你將自動取回交易抵押和保證金。此外，你將獲得補償（查看你個人資料中的獎勵）。",
-  "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.": "我們正在等待買方發布閃電發票。 一旦發布，你將能夠直接溝通法幣付款詳情。",
+  "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the payment details.": "我們正在等待買方發布閃電發票。 一旦發布，你將能夠直接溝通法幣付款詳情。",
   "#66": "Phrases in components/TradeBox/Prompts/PublicWait.tsx",
   "Among public {{currencyCode}} orders (higher is cheaper)": "在公開的 {{currencyCode}} 訂單中（越高排位越便宜）",
   "If the order expires untaken, your bond will return to you (no action needed).": "如果訂單到期前未執行，你的保證金將退還給你（無需採取任何行動）。",

@@ -561,7 +561,7 @@
   "Onchain": "Onchain",
   "#65": "Phrases in components/TradeBox/Prompts/PayoutWait.tsx",
   "Just hang on for a moment. If the buyer does not cooperate, you will get back the trade collateral and your bond automatically. In addition, you will receive a compensation (check the rewards in your profile).": "Patientez un instant. Si l'acheteur ne coopère pas, vous récupérez automatiquement le dépôt de garantie et votre caution. En outre, vous recevrez une compensation (vérifiez les récompenses dans votre profil).",
-  "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the fiat payment details.": "Nous attendons que l'acheteur dépose une facture lightning. Dès qu'il l'aura fait, vous pourrez communiquer directement les détails du paiement fiat.",
+  "We are waiting for the buyer to post a lightning invoice. Once he does, you will be able to directly communicate the payment details.": "Nous attendons que l'acheteur dépose une facture lightning. Dès qu'il l'aura fait, vous pourrez communiquer directement les détails du paiement.",
   "#66": "Phrases in components/TradeBox/Prompts/PublicWait.tsx",
   "Among public {{currencyCode}} orders (higher is cheaper)": "Parmi les ordres publics en {{currencyCode}} (la plus élevée est la moins chère)",
   "If the order expires untaken, your bond will return to you (no action needed).": "Si l'ordre expire sans être prise, votre caution vous sera rendue (aucune action n'est nécessaire).",
