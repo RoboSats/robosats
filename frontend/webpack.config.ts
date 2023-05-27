@@ -67,6 +67,10 @@ const configMobile: Configuration = {
           from: path.resolve(__dirname, 'static/css'),
           to: path.resolve(__dirname, '../mobile/html/Web.bundle/css'),
         },
+        {
+          from: path.resolve(__dirname, 'static/assets/sounds'),
+          to: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/sounds'),
+        },
       ],
     }),
   ],

@@ -31,11 +31,15 @@ interface NotificationMessage {
   pageTitle: string;
 }
 
+const path =
+  window.NativeRobosats === undefined
+    ? '/static/assets/sounds'
+    : 'file:///android_asset/Web.bundle/assets/sounds';
 const audio = {
-  chat: new Audio(`/static/assets/sounds/chat-open.mp3`),
-  takerFound: new Audio(`/static/assets/sounds/taker-found.mp3`),
-  ding: new Audio(`/static/assets/sounds/locked-invoice.mp3`),
-  successful: new Audio(`/static/assets/sounds/successful.mp3`),
+  chat: new Audio(`${path}/chat-open.mp3`),
+  takerFound: new Audio(`${path}/taker-found.mp3`),
+  ding: new Audio(`${path}/locked-invoice.mp3`),
+  successful: new Audio(`${path}/successful.mp3`),
 };
 
 const emptyNotificationMessage: NotificationMessage = {
