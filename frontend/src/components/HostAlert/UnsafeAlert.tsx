@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { AppContext, type UseAppStoreType } from '../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { useTranslation, Trans } from 'react-i18next';
 import { Paper, Alert, AlertTitle, Button, Link } from '@mui/material';
-import { getHost } from '../utils';
+import { getHost } from '../../utils';
 
 const UnsafeAlert = (): JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
@@ -10,7 +10,6 @@ const UnsafeAlert = (): JSX.Element => {
   const [show, setShow] = useState<boolean>(true);
 
   const [unsafeClient, setUnsafeClient] = useState<boolean>(false);
-  const [selfHostedClient, setSelfHostedClient] = useState<boolean>(false);
 
   // To do. Read from Coordinators Obj.
   const safe_urls = [
@@ -25,18 +24,8 @@ const UnsafeAlert = (): JSX.Element => {
     const http = new XMLHttpRequest();
     const h = getHost();
     const unsafe = !safe_urls.includes(h);
-    let selfHosted = false;
-
-    try {
-      http.open('HEAD', `${location.protocol}//${h}/selfhosted`, false);
-      http.send();
-      selfHosted = http.status === 200;
-    } catch {
-      selfHosted = false;
-    }
 
     setUnsafeClient(unsafe);
-    setSelfHostedClient(selfHosted);
   };
 
   useEffect(() => {
@@ -46,35 +35,6 @@ const UnsafeAlert = (): JSX.Element => {
   // If alert is hidden return null
   if (!show) {
     return <></>;
-  }
-
-  // Show selfhosted notice
-  else if (selfHostedClient) {
-    return (
-      <div>
-        <Paper elevation={6} className='unsafeAlert'>
-          <Alert
-            severity='success'
-            sx={{ maxHeight: '8em' }}
-            action={
-              <Button
-                color='success'
-                onClick={() => {
-                  setShow(false);
-                }}
-              >
-                {t('Hide')}
-              </Button>
-            }
-          >
-            <AlertTitle>{t('You are self-hosting RoboSats')}</AlertTitle>
-            {t(
-              'RoboSats client is served from your own node granting you the strongest security and privacy.',
-            )}
-          </Alert>
-        </Paper>
-      </div>
-    );
   }
 
   // Show unsafe alert

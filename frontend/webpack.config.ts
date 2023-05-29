@@ -31,6 +31,93 @@ const configWeb: Configuration = {
   },
 };
 
+const configWebSelfhosted: Configuration = {
+  ...config,
+  module: {
+    ...config.module,
+    rules: [
+      ...(config?.module?.rules || []),
+      {
+        test: path.resolve(__dirname, 'src/models/Settings.default.basic.ts'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/models/Settings.default.basic.selfhosted.ts'),
+          async: true,
+        },
+      },
+    ],
+  },
+  output: {
+    path: path.resolve(__dirname, 'static/frontend'),
+    filename: 'basic.selfhosted.js',
+  },
+};
+
+const configWebPro: Configuration = {
+  ...config,
+  module: {
+    ...config.module,
+    rules: [
+      ...(config?.module?.rules || []),
+      {
+        test: path.resolve(__dirname, 'src/basic/Main.tsx'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/pro/Main.tsx'),
+          async: true,
+        },
+      },
+      {
+        test: path.resolve(__dirname, 'src/models/Settings.default.basic.ts'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/models/Settings.default.pro.ts'),
+          async: true,
+        },
+      },
+    ],
+  },
+  output: {
+    path: path.resolve(__dirname, 'static/frontend'),
+    filename: 'pro.js',
+  },
+};
+
+const configWebProSelfhosted: Configuration = {
+  ...config,
+  module: {
+    ...config.module,
+    rules: [
+      ...(config?.module?.rules || []),
+      {
+        test: path.resolve(__dirname, 'src/basic/Main.tsx'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/pro/Main.tsx'),
+          async: true,
+        },
+      },
+      {
+        test: path.resolve(__dirname, 'src/models/Settings.default.basic.ts'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/models/Settings.default.pro.selfhosted.ts'),
+          async: true,
+        },
+      },
+    ],
+  },
+  output: {
+    path: path.resolve(__dirname, 'static/frontend'),
+    filename: 'pro.selfhosted.js',
+  },
+};
+
 const configMobile: Configuration = {
   ...config,
   module: {
@@ -80,36 +167,4 @@ const configMobile: Configuration = {
   },
 };
 
-const configWebPro: Configuration = {
-  ...config,
-  module: {
-    ...config.module,
-    rules: [
-      ...(config?.module?.rules || []),
-      {
-        test: path.resolve(__dirname, 'src/basic/Main.tsx'),
-        loader: 'file-replace-loader',
-        options: {
-          condition: 'if-replacement-exists',
-          replacement: path.resolve(__dirname, 'src/pro/Main.tsx'),
-          async: true,
-        },
-      },
-      {
-        test: path.resolve(__dirname, 'src/models/Settings.default.basic.ts'),
-        loader: 'file-replace-loader',
-        options: {
-          condition: 'if-replacement-exists',
-          replacement: path.resolve(__dirname, 'src/models/Settings.default.pro.ts'),
-          async: true,
-        },
-      },
-    ],
-  },
-  output: {
-    path: path.resolve(__dirname, 'static/frontend'),
-    filename: 'pro.js',
-  },
-};
-
-export default [configWeb, configWebPro, configMobile];
+export default [configWeb, configWebPro, configWebSelfhosted, configWebProSelfhosted, configMobile];
