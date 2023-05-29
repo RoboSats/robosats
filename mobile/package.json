@@ -13,21 +13,19 @@
   },
   "dependencies": {
     "@react-native-clipboard/clipboard": "^1.11.2",
-    "@react-native-community/netinfo": "^9.3.9",
-    "react": "^18.0.0",
-    "react-native": "^0.69.6",
+    "@react-native-community/netinfo": "^9.3.10",
+    "react": "18.2.0",
+    "react-native": "^0.71.8",
     "react-native-encrypted-storage": "^4.0.3",
     "react-native-tor": "^0.1.8",
-    "react-native-v8": "^1.5.0",
-    "react-native-webview": "^12.1.0",
-    "v8-android-nointl": "^10.100.1"
+    "react-native-webview": "^12.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
     "@babel/runtime": "^7.12.5",
     "@react-native-community/eslint-config": "^3.2.0",
     "@types/jest": "^29.5.1",
-    "@types/react-native": "^0.69.0",
+    "@types/react-native": "^0.71.3",
     "@types/react-test-renderer": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^5.59.2",
     "@typescript-eslint/parser": "^5.59.6",
@@ -45,7 +43,7 @@
     "jest": "^29.5.0",
     "metro-react-native-babel-preset": "^0.75.1",
     "prettier": "^2.8.8",
-    "react-test-renderer": "18.0.0",
+    "react-test-renderer": "18.2.0",
     "typescript": "^5.0.4"
   },
   "resolutions": {

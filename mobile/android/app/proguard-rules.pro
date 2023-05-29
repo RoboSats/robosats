@@ -8,3 +8,8 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# Keep some of the react-native-tor classes
+-keep class com.sifir.tor.TorServiceParam { *; }
+-keep class com.sifir.tor.TcpSocksStream { *; }
+-keep class com.sifir.tor.OwnedTorService { *; }
