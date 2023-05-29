@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import Main from './basic/Main';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { AppContext, useAppStore } from './contexts/AppContext';
-import UnsafeAlert from './components/UnsafeAlert';
+import HostAlert from './components/HostAlert';
 import TorConnectionBadge from './components/TorConnection';
 
 import { I18nextProvider } from 'react-i18next';
@@ -22,7 +22,7 @@ const App = (): JSX.Element => {
             <AppContext.Provider value={store}>
               <ThemeProvider theme={store.theme}>
                 <CssBaseline />
-                {window.NativeRobosats === undefined ? <UnsafeAlert /> : <TorConnectionBadge />}
+                {window.NativeRobosats === undefined ? <HostAlert /> : <TorConnectionBadge />}
                 <Main />
               </ThemeProvider>
             </AppContext.Provider>
