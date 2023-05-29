@@ -36,7 +36,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: 'Install LND gRPC Dependencies'
-      run: bash generate_grpc.sh
+      run: bash ./scripts/generate_grpc.sh
     - name: 'Create .env File'
       run: |
         mv .env-sample .env

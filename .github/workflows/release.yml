@@ -6,6 +6,8 @@ on:
     tags:
       - "v*.*.*"
 
+permissions: write-all
+
 jobs:
   check-versions:
     runs-on: ubuntu-latest
@@ -36,9 +38,9 @@ jobs:
         fi
 
 
-  django-test:
-    uses: RoboSats/robosats/.github/workflows/django-test.yml@main
-    needs: check-versions
+  # django-test:
+  #   uses: RoboSats/robosats/.github/workflows/django-test.yml@main
+  #   needs: check-versions
 
   frontend-build:
     uses: RoboSats/robosats/.github/workflows/frontend-build.yml@main
@@ -48,7 +50,7 @@ jobs:
 
   coordinator-image:
     uses: RoboSats/robosats/.github/workflows/coordinator-image.yml@main
-    needs: [django-test, frontend-build]
+    needs: [frontend-build] # django-test,
     secrets: inherit
     with:
       semver: ${{ needs.check-versions.outputs.semver }}
@@ -67,8 +69,6 @@ jobs:
       semver: ${{ needs.check-versions.outputs.semver }}
 
   release:
-    permissions:
-      contents: write
     needs: [check-versions, coordinator-image, client-image, android-build]
     runs-on: ubuntu-latest
     steps:

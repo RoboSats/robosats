@@ -20,7 +20,7 @@ jobs:
       - name: Fetch and process lnproxy relay JSON file
         run: |
           curl https://raw.githubusercontent.com/lnproxy/lnproxy-webui2/main/assets/relays.json -o lnproxy_tmplist.json
-          node .github/workflows/scripts/lnproxy-sync.js
+          node ./scripts/lnproxy-sync.js
           git add ./frontend/static/lnproxies.json
 
       - name: Remove tmp lnproxy json file
