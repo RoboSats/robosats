@@ -205,7 +205,7 @@ class OrderViewSchema:
             Update an order
 
             `action` field is required and determines what is to be done. Below
-            is an explaination of what each action does:
+            is an explanation of what each action does:
 
             - `take`
               - If the order has not expired and is still public, on a
@@ -220,13 +220,14 @@ class OrderViewSchema:
             - `update_invoice`
               - This action only is valid if you are the buyer. The `invoice`
                 field needs to be present in the body and the value must be a
-                valid LN invoice. Make sure to perform this action only when
+                valid LN invoice as cleartext PGP message signed with the robot key. Make sure to perform this action only when
                 both the bonds are locked. i.e The status of your order is
-                atleast `6` (Waiting for trade collateral and buyer invoice)
+                at least `6` (Waiting for trade collateral and buyer invoice)
             - `update_address`
               - This action is only valid if you are the buyer. This action is
                 used to set an on-chain payout address if you wish to have your
-                payout be recieved on-chain. This enables on-chain swap for the
+                payout be received on-chain. Only valid if there is an address in the body as
+                cleartext PGP message signed with the robot key. This enables on-chain swap for the
                 order, so even if you earlier had submitted a LN invoice, it
                 will be ignored. You get to choose the `mining_fee_rate` as
                 well. Mining fee rate is specified in sats/vbyte.
@@ -237,7 +238,7 @@ class OrderViewSchema:
                 - `11` - In dispute
                 - `12` - Collaboratively cancelled
                 - `13` - Sending satoshis to buyer
-                - `14` - Sucessful trade
+                - `14` - Successful trade
                 - `15` - Failed lightning network routing
                 - `17` - Maker lost dispute
                 - `18` - Taker lost dispute
@@ -246,13 +247,13 @@ class OrderViewSchema:
                 mid-trade so use this action carefully:
 
                 - As a maker if you cancel an order after you have locked your
-                  maker bond, you are returend your bond. This may change in
+                  maker bond, you are returned your bond. This may change in
                   the future to prevent DDoSing the LN node and you won't be
-                  returend the maker bond.
+                  returned the maker bond.
                 - As a taker there is a time penalty involved if you `take` an
                   order and cancel it without locking the taker bond.
                 - For both taker or maker, if you cancel the order when both
-                  have locked thier bonds (status = `6` or `7`), you loose your
+                  have locked their bonds (status = `6` or `7`), you loose your
                   bond and a percent of it goes as "rewards" to your
                   counterparty and some of it the platform keeps. This is to
                   discourage wasting time and DDoSing the platform.
@@ -761,7 +762,7 @@ class InfoViewSchema:
 class RewardViewSchema:
     post = {
         "summary": "Withdraw reward",
-        "description": "Withdraw user reward by submitting an invoice",
+        "description": "Withdraw user reward by submitting an invoice. The invoice must be send as cleartext PGP message signed with the robot key",
         "responses": {
             200: {
                 "type": "object",
