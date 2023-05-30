@@ -35,6 +35,7 @@ const path =
   window.NativeRobosats === undefined
     ? '/static/assets/sounds'
     : 'file:///android_asset/Web.bundle/assets/sounds';
+
 const audio = {
   chat: new Audio(`${path}/chat-open.mp3`),
   takerFound: new Audio(`${path}/taker-found.mp3`),
