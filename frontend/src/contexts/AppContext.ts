@@ -596,7 +596,7 @@ export const useAppStore = () => {
     }
 
     apiClient
-      .get(hostUrl, '/api/robot/', auth)
+      .get(url, '/api/robot/', auth)
       .then((data: any) => {
         const newRobot = {
           avatarLoaded: isRefresh ? robot.avatarLoaded : false,
@@ -655,7 +655,7 @@ export const useAppStore = () => {
   };
 
   useEffect(() => {
-    if (hostUrl != '' && page != 'robot') {
+    if (page != 'robot') {
       if (open.profile && robot.avatarLoaded) {
         fetchFederationRobot({ isRefresh: true }); // refresh/update existing robot
       } else if (!robot.avatarLoaded && robot.token && robot.encPrivKey && robot.pubKey) {
