@@ -471,7 +471,7 @@
   "#43": "Phrases in components/TradeBox/Dialogs/ConfirmFiatReceived.tsx",
   "Confirm": "确认",
   "Confirm you received {{amount}} {{currencyCode}}?": "确认你已收到 {{amount}} {{currencyCode}}？",
-  "Confirming that you received {{amount}} {{currencyCode}} will finalize the trade. The satoshis in the escrow will be released to the buyer. Only confirm after {{amount}} {{currencyCode}} have arrived to your account. Note that if you if you have received the payment and do not click confirm, you risk losing your bond.": "确认你已收到{{amount}} {{currencyCode}}时交易会被结算。在托管中的聪会被释放给买方。仅当{{amount}} {{currencyCode}}已到达你的帐户后才应确认。请注意，如果你已收到付款但是不点击确认，则可能失去你的保证金。",
+  "Confirming that you received {{amount}} {{currencyCode}} will finalize the trade. The satoshis in the escrow will be released to the buyer. Only confirm after {{amount}} {{currencyCode}} have arrived to your account. Note that if you have received the payment and do not click confirm, you risk losing your bond.": "确认你已收到{{amount}} {{currencyCode}}时交易会被结算。在托管中的聪会被释放给买方。仅当{{amount}} {{currencyCode}}已到达你的帐户后才应确认。请注意，如果你已收到付款但是不点击确认，则可能失去你的保证金。",
   "#44": "Phrases in components/TradeBox/Dialogs/ConfirmFiatSent.tsx",
   "Confirm you sent {{amount}} {{currencyCode}}?": "确认你已发送{{amount}} {{currencyCode}}？",
   "Confirming that you sent {{amount}} {{currencyCode}} will allow your peer to finalize the trade. If you have not yet sent it and you still proceed to falsely confirm, you risk losing your bond.": "确认你已发送{{amount}} {{currencyCode}}将允许你的对等方结算交易。如果你还没有付款但仍然虚假确认，则有可能失去你的保证金。",
