@@ -1,4 +1,4 @@
-django==4.2.1
+django==4.2.2
 django-admin-relation-links==0.2.5
 django-celery-beat==2.5.0
 django-celery-results==2.5.1
@@ -8,7 +8,7 @@ django-timezone-field==5.0
 djangorestframework==3.14.0
 channels==4.0.0
 channels-redis==4.1.0
-celery==5.2.7
+celery==5.3.0
 grpcio==1.54.2
 googleapis-common-protos==1.59.0
 grpcio-tools==1.54.2
@@ -21,7 +21,7 @@ git+https://github.com/RoboSats/Robohash.git
 scipy==1.10.1
 gunicorn==20.1.0
 psycopg2==2.9.6
-SQLAlchemy==2.0.15
+SQLAlchemy==2.0.16
 django-import-export==3.2.0
 requests[socks]
 python-gnupg==0.5.0
