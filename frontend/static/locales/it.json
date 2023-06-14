@@ -622,7 +622,7 @@
   "Invoice expired. You did not confirm taking the order in time.": "Fattura scaduta. Non hai confermato la presa in carico dell'ordine in tempo.",
   "Invalid Order Id": "Id Ordine non valido",
   "You must have a robot avatar to see the order details": "Devi avere un avatar robot per vedere i dettagli dell'ordine",
-  "This order has been cancelled collaborativelly": "Questo ordine è statao annullato collaborativamente",
+  "This order has been cancelled collaborativelly": "Questo ordine è stato annullato collaborativamente",
   "This order is not available": "Questo ordine non è disponibile",
   "The Robotic Satoshis working in the warehouse did not understand you. Please, fill a Bug Issue in Github https://github.com/RoboSats/robosats/issues": "I Satoshi robotici che lavorano nel magazzino non ti hanno capito. Compilare una segnalazione di bug in Github https://github.com/RoboSats/robosats/issues."
 }
