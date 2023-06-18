@@ -17,7 +17,7 @@ There isn't a lot of text in RoboSats; however, it might be best to split the wo
 
 ## How To Contribute a New Translation
 
-Simply create a new translation file in `frontend/src/static/locales` [link to GitHub](https://github.com/RoboSats/robosats/tree/main/frontend/static/locales). In `locales` there is a single file with a json dictionary for every language. In order to create a new translation, simply copy `en.json` (the master text) into a new file named after the language's [ISO 639 two character code](https://www.loc.gov/standards/iso639-2/php/English_list.php).
+Simply create a new translation file in `frontend/static/locales` [link to GitHub](https://github.com/RoboSats/robosats/tree/main/frontend/static/locales). In `locales` there is a single file with a json dictionary for every language. In order to create a new translation, simply copy `en.json` (the master text) into a new file named after the language's [ISO 639 two character code](https://www.loc.gov/standards/iso639-2/php/English_list.php).
 
 ## Guidelines
 
