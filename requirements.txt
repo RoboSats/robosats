@@ -10,7 +10,7 @@ channels==4.0.0
 channels-redis==4.1.0
 celery==5.3.0
 grpcio==1.54.2
-googleapis-common-protos==1.59.0
+googleapis-common-protos==1.59.1
 grpcio-tools==1.54.2
 numpy==1.24.3
 Pillow==9.5.0
