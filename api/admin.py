@@ -130,6 +130,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "maker_wins",
         "taker_wins",
         "return_everything",
+        "successful_trade",
         "compute_median_trade_time",
     ]
 
@@ -241,6 +242,46 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 self.message_user(
                     request,
                     f"Dispute of order {order.id} solved successfully, everything returned as compensations",
+                    messages.SUCCESS,
+                )
+
+            else:
+                self.message_user(
+                    request,
+                    f"Order {order.id} is not in a disputed state",
+                    messages.ERROR,
+                )
+
+    @admin.action(description="Solve dispute: successful trade")
+    def successful_trade(self, request, queryset):
+        """
+        Solves a dispute as if the trade had been successful, i.e.,
+        returns both bonds (added as compensations) and triggers the payout.
+        """
+        for order in queryset:
+            if (
+                order.status in [Order.Status.DIS, Order.Status.WFR]
+                and order.is_disputed
+            ):
+
+                order.maker.robot.earned_rewards = order.maker_bond.num_satoshis
+                order.maker.robot.save(update_fields=["earned_rewards"])
+                order.taker.robot.earned_rewards = order.taker_bond.num_satoshis
+                order.taker.robot.save(update_fields=["earned_rewards"])
+
+                if order.is_swap:
+                    order.payout_tx.status = OnchainPayment.Status.VALID
+                    order.payout_tx.save(update_fields=["status"])
+                    order.status = Order.Status.SUC
+                else:
+                    order.status = Order.Status.PAY
+                order.save(update_fields=["status"])
+
+                Logics.pay_buyer(order)
+
+                self.message_user(
+                    request,
+                    f"Dispute of order {order.id} solved as successful trade",
                     messages.SUCCESS,
                 )
 
