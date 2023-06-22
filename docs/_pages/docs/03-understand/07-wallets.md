@@ -38,7 +38,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[Blue](#bluewallet-mobile)|[1.4.4](https://bluewallet.io/)|{{page.phone}}|{{page.good}}|{{page.unclear}}|{{page.unclear}}|{{page.good}}|{{page.unclear}}|
 |[WoS](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.unclear}}|
-|[Blink](#blink-wallet)|[2.2.67](https://www.blink.sv/)|{{page.phone}}|{{page.unclear}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.unclear}}|(https://github.com/RoboSats/robosats/issues/44#issuecomment-1126318591)|
+|[Blink](#blink-mobile-former-bitcoin-beach-wallet)|[2.2.67](https://www.blink.sv/)|{{page.phone}}|{{page.unclear}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.unclear}}|(https://github.com/RoboSats/robosats/issues/44#issuecomment-1126318591)|
 |[Alby](#alby-browser-extension)|[v1.14.2](https://github.com/getAlby/lightning-browser-extension)|{{page.laptop}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 
 1. **UX:** Does the wallet convey clearly that there is an "ongoing" payment (hodl invoice)?
