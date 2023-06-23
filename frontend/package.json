@@ -63,7 +63,7 @@
     "country-flag-icons": "^1.4.25",
     "date-fns": "^2.28.0",
     "file-replace-loader": "^1.4.0",
-    "i18next": "^22.4.15",
+    "i18next": "^23.2.3",
     "i18next-browser-languagedetector": "^7.0.1",
     "i18next-http-backend": "^2.2.0",
     "install": "^0.13.0",
