@@ -38,7 +38,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[Blue](#bluewallet-mobile)|[1.4.4](https://bluewallet.io/)|{{page.phone}}|{{page.good}}|{{page.unclear}}|{{page.unclear}}|{{page.good}}|{{page.unclear}}|
 |[WoS](https://github.com/RoboSats/robosats/issues/44#issue-1135544303)|[1.15.0](https://www.walletofsatoshi.com/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Phoenix](#phoenix-mobile)|[35-1.4.20](https://phoenix.acinq.co/)|{{page.phone}}|{{page.good}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.unclear}}|
-|[Blink](#blink-mobile-former-bitcoin-beach-wallet)|[2.2.67](https://www.blink.sv/)|{{page.phone}}|{{page.unclear}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.unclear}}|(https://github.com/RoboSats/robosats/issues/44#issuecomment-1126318591)|
+|[Blink](#blink-mobile-former-bitcoin-beach-wallet)|[2.2.73](https://www.blink.sv/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|(https://github.com/RoboSats/robosats/issues/44#issuecomment-1126318591)|
 |[Alby](#alby-browser-extension)|[v1.14.2](https://github.com/getAlby/lightning-browser-extension)|{{page.laptop}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 
 1. **UX:** Does the wallet convey clearly that there is an "ongoing" payment (hodl invoice)?
@@ -79,7 +79,7 @@ Phoenix works very well as an order taker. Phoenix will also work well as an ord
 It works well. But they are having issues in the custodial mode. Escrows that RoboSats returns are charged to users (so Bluewallet is keeping that balance?). Bonds that are slashed...are charged twice by Blue! More info once they reply to us. EDIT: Blue has confirmed they are working to soon solve these accounting bugs!
 
 ### Blink (Mobile, former Bitcoin Beach Wallet)
-Currently hodl invoices don't work correctly and get charged to users, bonds which are older than some minutes are lost. Payouts work fine.
+Works well with Robosats. Hodl invoices (Bonds) show as "Pending" in the transaction history. Payouts to the Blink wallet function as intended. Custodial wallet by Galoy which originated from the Bitcoin Beach project in El Salvador (formerly known as "Bitcoin Beach Wallet").
 
 ### OBW (Mobile)
 One of the simplest and one of the best. The hodl invoice shows as "on fly", it is no custodial and it allows to create our own channels, to buy one from a liquidity provider or use Hosted Channels. It is maintained by the great Fiatjaf and it is a fork of the abandoned SBW.
