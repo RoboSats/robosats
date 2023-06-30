@@ -140,11 +140,17 @@ const MakerForm = ({
     updateCurrentPrice(limits.list, newCurrency, maker.premium);
 
     if (makerHasAmountRange) {
-      setMaker({
-        ...maker,
-        minAmount: parseFloat(Number(limits.list[newCurrency].max_amount * 0.25).toPrecision(2)),
-        maxAmount: parseFloat(Number(limits.list[newCurrency].max_amount * 0.75).toPrecision(2)),
-      });
+      const min_amount = parseFloat(Number(limits.list[newCurrency].min_amount).toPrecision(2));
+      const max_amount = parseFloat(Number(limits.list[newCurrency].max_amount).toPrecision(2));
+      if (parseFloat(maker.minAmount) < min_amount || parseFloat(maker.minAmount) > max_amount
+      || parseFloat(maker.maxAmount) > max_amount || parseFloat(maker.maxAmount) < min_amount)
+      {
+        setMaker({
+          ...maker,
+          minAmount: parseFloat(Number(limits.list[newCurrency].max_amount * 0.25).toPrecision(2)),
+          maxAmount: parseFloat(Number(limits.list[newCurrency].max_amount * 0.75).toPrecision(2)),
+        });
+      };
     }
   };
 
