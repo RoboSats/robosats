@@ -22,7 +22,7 @@ Choose a competitive premium and incentivize fellow robots to provide liquidity 
 
 Create an order, then input the "Premium over Market (%)" which can be a positive, negative, or zero percentage value. By default, the order premium is priced relative to the bitcoin-fiat market rate.
 
-Or, instead of the default setting, makers can select the explicit pricing method by choosing an exact amount of satoshis to exchange for the fiat amount given.
+Or, instead of the default setting, makers can select the explicit pricing method** by choosing an exact amount of Sats to exchange for the fiat amount given.
 
 When selecting a premium, consider the payment method(s) and amount you have chosen; these, along with your desired premium, will compete with other live orders to incentivize and entice robot takers. Experiment with different premiums to find what works best for your specific orders.
 
@@ -33,14 +33,16 @@ In short:
 * **Negative** premium: trade BTC at a discount with respect to the average price in centralized exchanges.
 * **Zero** premium: trade BTC at no price difference with respect to the average price in centralized exchanges.
 * **Relative** pricing method: let the price premium move with the bitcoin-fiat market rate.
-* **Explicit** pricing method: set a price premium using a fixed amount of satoshis.
+* **Explicit** pricing method: set a price premium using a fixed amount of Sats.
 * **Premium Rank**: indicates how your order premium ranks among all public orders with the same currency, ranging from 0% (smallest premium) to 100% (largest premium).
 
-When making the order, you will see a text summary describing your order below the "Create Order" button. For example, buying bitcoin for $100 at a +5.00% premium relative to the market rate would read: "Create a BTC buy order for 100 USD at a 5% premium."
+When making the order, you will see a text summary describing your order below the "Create Order" button. For example, buying bitcoin for $100 at a +5.00% premium relative to the market rate would read: "Buy BTC for 100 USD at a 5% premium"
 
 If a mistake is made when selecting a premium, or the order is not taken within your time preference, then the order can be easily cancelled to make a new one.
 
 Note that the percent value is limited to within two decimal places. Furthermore, format the decimal values using "." (point) and not "," (comma) as the decimal separator.
+
+***The explicit pricing method has been removed as an option for technical reasons, but could potentially come back in future updates. Currently, order pricing is only relative to the market rate.*
 
 ## **Why Have Premiums?**
 
