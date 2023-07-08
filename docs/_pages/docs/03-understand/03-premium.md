@@ -42,6 +42,12 @@ If a mistake is made when selecting a premium, or the order is not taken within 
 
 Note that the percent value is limited to within two decimal places. Furthermore, format the decimal values using "." (point) and not "," (comma) as the decimal separator.
 
+So... what *should* you choose for a premium? Generally speaking, most robots want their order taken fast. A simple approach when deciding a competitive premium is to first take a peek at the existing order book. Review the existing offers and notice the premiums that are associated with your desired currency and payment method. Make your order more desirable than others by choosing a premium that is slightly higher (buyer) or lower (seller) than any existing order premium associated with your desired currency and payment method.
+
+For example, you (buyer) find that the highest premium across existing orders associated with your desired currency and payment method is at 5% premium. Create an order with the exact same conditions but a slightly higher premium than your competitor. Now, sellers browsing the order book will compare orders and notice that your order gives them more fiat for their precious Sats and will be more tempted to take your order!
+
+But your competing order makers might notice their existing order no longer has the highest premium on the order book and thus cancel their order to create a new one for some premium higher than yours... Watch out for a premium war!
+
 ***The explicit pricing method has been removed as an option for technical reasons, but could potentially come back in future updates. Currently, order pricing is only relative to the market rate.*
 
 ## **Why Have Premiums?**
