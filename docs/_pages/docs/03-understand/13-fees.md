@@ -12,7 +12,7 @@ src: "_pages/docs/03-understand/13-fees.md"
 
 RoboSats charges a {{site.robosats.total_fee}}% fee of the total trade amount; this fee is distributed between the order maker and the order taker who pay {{site.robosats.maker_fee}}% and {{site.robosats.taker_fee}}%, respectively.
 
-The platform fees are summarized in the table below to emphasize the fee percentage depends on whether you make or take the order, not if you are the buyer or seller:
+The platform fees are summarized in the table below to emphasize the fee percentage depends on whether you make or take the order:
 
 | Side   | Maker                        | Taker                        |
 |--------|------------------------------|------------------------------|
@@ -27,16 +27,16 @@ The total fee ({{site.robosats.total_fee}}%) is split between the maker and take
 
 In practice, the fees are applied when the user is presented with submitting the trade escrow (seller) or payout invoice (buyer) after the taker bond is locked.
 
-If the order pricing is *relative*, then the amount of satoshis being traded relative to the fiat exchange rate (we'll call `trade_sats`) fluctuates until the taker bond is locked. In cases of *explicit* order pricing, the amount of satoshis being traded is fixed. Refer to [Understand > Prices](https://learn.robosats.com/docs/prices/) for additional information regarding relative and explicit pricing methods.
+If the order pricing is *relative*, then the amount of Sats being traded relative to the fiat exchange rate (we'll call `trade_sats`) fluctuates until the taker bond is locked. In cases of *explicit* order pricing, the amount of Sats being traded is fixed. Refer to [Understand > Prices](/docs/prices/) for additional information regarding relative and explicit pricing methods.
 
-Until the taker bond is locked, the order's price continues to move with the market over time. Once the taker bond is locked for a relatively priced order, the amount of satoshis being traded is calculated as follows:
+Until the taker bond is locked, the order's price continues to move with the market over time. Once the taker bond is locked for a relatively priced order, the amount of Sats being traded is calculated as follows:
 
 ````
 premium_rate = CEX_rate * (1 + (premium / 100))
 trade_sats = amount / premium_rate
 ````
 
-where `trade_sats` is the satoshis to be traded, `premium` is what the order maker defined during order creation, and `CEX_rate` is the current bitcoin exchange price given the currency you are using.
+where `trade_sats` is the Sats to be traded, `premium` is what the order maker defined during order creation, and `CEX_rate` is the current bitcoin exchange price given the currency you are using.
 
 The platform fees (`fee_sats`) associated with your order are calculated using the `trade_sats` variable:
 * For maker:
@@ -70,7 +70,7 @@ In essence, RoboSats adds to the `escrow_amount`, deducts from the `payout_amoun
 
 Fees work to improve the platform's end-user experience through continuing development, offering multilingual support, and building out guides for interacting with the platform.
 
-Fees in turn reward the volunteer GitHub developers and contributors for completing tasks that are [elligible for earning bitcoin](https://github.com/users/Reckless-Satoshi/projects/2). Check it out! If you earn satoshis for your contributions, then fees incurred while using RoboSats would be sufficiently covered!
+Fees in turn reward the volunteer GitHub developers and contributors for completing tasks that are [elligible for earning bitcoin](https://github.com/users/Reckless-Satoshi/projects/2). Check it out! If you earn Sats for your contributions, then fees incurred while using RoboSats would be sufficiently covered!
 
 Implementing fees also helps mitigate the opportunity for denial of service attacks by malicious bots congesting the RoboSats coordinator.
 
@@ -84,12 +84,12 @@ When choosing to receive bitcoin on-chain, an overview of the mining fee (`fee_m
 payout_amount = trade_sats - fee_sats - fee_mining - fee_swap
 ````
 
-The swap fee is an additional fee that RoboSats charges for making the on-chain payment and the mining fee is the on-chain fee rate in sats/vbyte which can be customized to suit your needs. Refer to [Understand > On-Chain Payouts](https://learn.robosats.com/docs/on-chain-payouts/) for additional information regarding on-chain payouts.
+The swap fee is an additional fee that RoboSats charges for making the on-chain payment and the mining fee is the on-chain fee rate in sats/vbyte which can be customized to suit your needs. Refer to [Understand > On-Chain Payouts](/docs/on-chain-payouts/) for additional information regarding on-chain payouts.
 
 RoboSats leverages the speed and security of the Lightning Network, therefore payments sent through the Lightning Network may incur fees depending on the necessary "path" that payment must take.
 
-Users can receive payments privately through [lnproxy](https://lnproxy.org/), a simple Lightning Network privacy tool, but your routing budget may increase to cover extra fees incurred by the lnproxy server. Refer to [Best Practices > Proxy Wallets](https://learn.robosats.com/docs/proxy-wallets/) for more on receiving privately.
+Users can receive payments privately through [lnproxy](https://lnproxy.org/), a simple Lightning Network privacy tool, but your routing budget may increase to cover extra fees incurred by the lnproxy server. Refer to [Best Practices > Proxy Wallets](/docs/proxy-wallets/) for more on receiving privately.
 
-The user has the option to specify the Lightning Network routing budget which may help reduce routing failures. Refer to [Quick Start > Lightning Network](https://learn.robosats.com/docs/lightning/) for additional information on routing failures.
+The user has the option to specify the Lightning Network routing budget which may help reduce routing failures. Refer to [Quick Start > Lightning Network](/docs/lightning/) for additional information on routing failures.
 
 {% include improve %}
