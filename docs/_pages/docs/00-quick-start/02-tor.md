@@ -18,4 +18,6 @@ A supported alternative to TOR is the [I2P project](/docs/access/#-privately-wit
 
 Utilizing TOR has drawbacks such as lower network connection speeds, sporadic [downtime](https://status.torproject.org/) due to DDoS, and imperfect privacy with regards to website fingerprinting techniques.
 
+Keep this in mind when using RoboSats. It is important to back up your robot's secret token in the event TOR network experiences connection issues.
+
 {% include improve %}
