@@ -25,6 +25,7 @@ import defaultCoordinators from '../../static/federation.json';
 import { createTheme, type Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
 import { systemClient } from '../services/System';
+import { robohash } from '../components/RobotAvatar/RobohashGenerator';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -225,6 +226,12 @@ export const useAppStore = () => {
         loading: false,
         orders: data.not_found ? [] : data,
       });
+      // Anticipatory concurrent avatar generation for all robots in order book
+      if (data[0]) {
+        for (const order of data) {
+          robohash.generate(order.maker_nick, 64);
+        }
+      }
     });
   };
 
@@ -322,6 +329,10 @@ export const useAppStore = () => {
     isRefresh = false,
   }: fetchRobotProps): void {
     const token = newToken ?? robot.token ?? '';
+    const hash_id = sha256(sha256(token));
+
+    robohash.generate(hash_id, 64);
+    robohash.generate(hash_id, 256);
 
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
 
@@ -356,6 +367,11 @@ export const useAppStore = () => {
     apiClient
       .get(baseUrl, '/api/robot/', auth)
       .then((data: any) => {
+        // TODO remove when using hash_id as robohash
+        robohash.generate(data.nickname, 64);
+        robohash.generate(data.nickname, 256);
+        // END TODO
+
         const newRobot = {
           avatarLoaded: isRefresh ? robot.avatarLoaded : false,
           nickname: data.nickname,

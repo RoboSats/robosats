@@ -5,6 +5,9 @@ import { SendReceiveIcon } from '../Icons';
 import { apiClient } from '../../services/api';
 import placeholder from './placeholder.json';
 
+import { async_generate_robohash } from 'robo-identities-wasm';
+import { robohash } from './RobohashGenerator';
+
 interface Props {
   nickname: string | undefined;
   smooth?: boolean;
@@ -54,9 +57,18 @@ const RobotAvatar: React.FC<Props> = ({
   const className = placeholderType == 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
   useEffect(() => {
+    if (nickname) {
+      robohash
+        .generate(nickname, small ? 64 : 256)
+        .then((avatar) => setAvatarSrc(avatar))
+        .catch(() => setAvatarSrc(''));
+    }
+  }, [nickname]);
+
+  useEffect(() => {
     if (nickname != undefined) {
       if (window.NativeRobosats === undefined) {
-        setAvatarSrc(`${baseUrl}/static/assets/avatars/${nickname}${small ? '.small' : ''}.webp`);
+        // setAvatarSrc(`${baseUrl}/static/assets/avatars/${nickname}${small ? '.small' : ''}.webp`);
         setNicknameReady(true);
       } else {
         setNicknameReady(true);

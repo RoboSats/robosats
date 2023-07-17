@@ -18,6 +18,7 @@ const config: Configuration = {
       },
     ],
   },
+  experiments: { asyncWebAssembly: true },
   resolve: {
     extensions: ['.tsx', '.ts', '.jsx', '.js'],
   },
