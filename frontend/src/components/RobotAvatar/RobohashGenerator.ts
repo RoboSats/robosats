@@ -4,11 +4,12 @@ class RoboGenerator {
   private workers: Worker[] = [];
 
   constructor() {
-    // limit to 16 workers
-    const numCores = Math.min(navigator.hardwareConcurrency || 2, 16);
+    // limit to 8 workers
+    const numCores = Math.min(navigator.hardwareConcurrency || 1, 8);
 
     for (let i = 0; i < numCores; i++) {
-      this.workers.push(new Worker(new URL('./robohash.worker.ts', import.meta.url)));
+      const worker = new Worker(new URL('./robohash.worker.ts', import.meta.url));
+      this.workers.push(worker);
     }
   }
 
@@ -58,7 +59,7 @@ class RoboGenerator {
       setTimeout(() => {
         cleanup();
         reject(new Error('Generation timed out'));
-      }, 10000); // Adjust the timeout duration if needed
+      }, 5000); // Adjust the timeout duration as needed
     });
 
     return await this.assetsPromises[cacheKey];

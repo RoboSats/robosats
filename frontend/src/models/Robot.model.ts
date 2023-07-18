@@ -2,6 +2,7 @@ class Robot {
   constructor(garageRobot?: Robot) {
     if (garageRobot != null) {
       this.token = garageRobot?.token ?? undefined;
+      this.hash_id = garageRobot?.hash_id ?? undefined;
       this.tokenSHA256 = garageRobot?.tokenSHA256 ?? '';
       this.pubKey = garageRobot?.pubKey ?? undefined;
       this.encPrivKey = garageRobot?.encPrivKey ?? undefined;
@@ -10,6 +11,7 @@ class Robot {
 
   public nickname?: string;
   public token?: string;
+  public hash_id?: string;
   public bitsEntropy?: number;
   public shannonEntropy?: number;
   public tokenSHA256: string = '';

@@ -59,7 +59,7 @@ const RobotAvatar: React.FC<Props> = ({
   useEffect(() => {
     if (nickname) {
       robohash
-        .generate(nickname, small ? 64 : 256)
+        .generate(nickname, small ? 'small' : 'large')
         .then((avatar) => setAvatarSrc(avatar))
         .catch(() => setAvatarSrc(''));
     }

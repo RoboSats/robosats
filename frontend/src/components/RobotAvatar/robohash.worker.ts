@@ -6,7 +6,7 @@ self.addEventListener('message', async (event) => {
 
   // Generate the image using async_image_base
   const t0 = performance.now();
-  const avatarB64 = await async_generate_robohash(hash, size);
+  const avatarB64 = await async_generate_robohash(hash, size == 'small' ? 80 : 256);
   const imageUrl = `data:image/png;base64,${avatarB64}`;
   const t1 = performance.now();
   console.log(`Worker ${workerIndex} :: Time to generate avatar: ${t1 - t0} ms`);

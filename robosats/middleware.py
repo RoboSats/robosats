@@ -103,6 +103,7 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             # `user = User.objects.create_user(username=nickname, password=None)`
             try:
                 user = User.objects.create_user(username=nickname, password=None)
+                user.robot.hash_id = hash
             except IntegrityError:
                 # UNIQUE constrain failed, user exist. Get it.
                 user = User.objects.get(username=nickname)

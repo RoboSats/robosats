@@ -229,7 +229,7 @@ export const useAppStore = () => {
       // Anticipatory concurrent avatar generation for all robots in order book
       if (data[0]) {
         for (const order of data) {
-          robohash.generate(order.maker_nick, 64);
+          robohash.generate(order.maker_nick, 'small');
         }
       }
     });
@@ -331,8 +331,8 @@ export const useAppStore = () => {
     const token = newToken ?? robot.token ?? '';
     const hash_id = sha256(sha256(token));
 
-    robohash.generate(hash_id, 64);
-    robohash.generate(hash_id, 256);
+    robohash.generate(hash_id, 'small');
+    robohash.generate(hash_id, 'large');
 
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
 
@@ -368,8 +368,8 @@ export const useAppStore = () => {
       .get(baseUrl, '/api/robot/', auth)
       .then((data: any) => {
         // TODO remove when using hash_id as robohash
-        robohash.generate(data.nickname, 64);
-        robohash.generate(data.nickname, 256);
+        robohash.generate(data.nickname, 'small');
+        robohash.generate(data.nickname, 'large');
         // END TODO
 
         const newRobot = {
