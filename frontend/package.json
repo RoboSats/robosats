@@ -52,7 +52,7 @@
     "@emotion/styled": "^11.11.0",
     "@mui/base": "^5.0.0-beta.7",
     "@mui/icons-material": "^5.14.0",
-    "@mui/lab": "^5.0.0-alpha.136",
+    "@mui/lab": "^5.0.0-alpha.137",
     "@mui/material": "^5.14.0",
     "@mui/system": "^5.14.0",
     "@mui/x-data-grid": "^6.10.0",
