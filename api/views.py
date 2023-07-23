@@ -1091,9 +1091,33 @@ class TickView(ListAPIView):
 
     @extend_schema(**TickViewSchema.get)
     def get(self, request):
-        data = self.serializer_class(
-            self.queryset.all(), many=True, read_only=True
-        ).data
+        start_date_str = request.query_params.get("start")
+        end_date_str = request.query_params.get("end")
+
+        # Perform the query with date range filtering
+        try:
+            if start_date_str:
+                start_date = datetime.strptime(start_date_str, "%d-%m-%Y").date()
+                self.queryset = self.queryset.filter(timestamp__gte=start_date)
+            if end_date_str:
+                end_date = datetime.strptime(end_date_str, "%d-%m-%Y").date()
+                self.queryset = self.queryset.filter(timestamp__lte=end_date)
+        except ValueError:
+            return Response(
+                {"bad_request": "Invalid date format"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check if the number of ticks exceeds the limit
+        if self.queryset.count() > 5000:
+            return Response(
+                {
+                    "bad_request": "More than 5000 market ticks have been found. Please, narrow the date range"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        data = self.serializer_class(self.queryset, many=True, read_only=True).data
         return Response(data, status=status.HTTP_200_OK)
 
 
