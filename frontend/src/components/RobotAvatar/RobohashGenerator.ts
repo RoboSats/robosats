@@ -13,7 +13,10 @@ class RoboGenerator {
     }
   }
 
-  public generate: (hash: string, size: number) => Promise<string> = async (hash, size) => {
+  public generate: (hash: string, size: 'small' | 'large') => Promise<string> = async (
+    hash,
+    size,
+  ) => {
     const cacheKey = `${size}px;${hash}`;
     if (this.assetsCache[cacheKey]) {
       return this.assetsCache[cacheKey];

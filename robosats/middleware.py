@@ -67,6 +67,17 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             token = Token.objects.get(key=token_sha256_b91)
             update_last_login(None, token.user)
 
+            # DEPRECATE After v0.5.2
+            # Will add hash_id to robots created before 0.5.2.
+            # Can be completely deleted after the transitional period
+            if not token.user.robot.hash_id:
+                robot = token.user.robot
+                token_sha256 = base91_to_hex(token_sha256_b91)
+                hash = hashlib.sha256(token_sha256.encode("utf-8")).hexdigest()
+                robot.hash_id = hash
+                robot.save()
+            # END DEPRECATE
+
         except Token.DoesNotExist:
             # If we get here the user does not have a robot on this coordinator
             # Let's create a new user & robot on-the-fly.
@@ -103,10 +114,12 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             # `user = User.objects.create_user(username=nickname, password=None)`
             try:
                 user = User.objects.create_user(username=nickname, password=None)
-                user.robot.hash_id = hash
             except IntegrityError:
                 # UNIQUE constrain failed, user exist. Get it.
                 user = User.objects.get(username=nickname)
+
+            # Save hash_id
+            user.robot.hash_id = hash
 
             # Django rest_framework authtokens are limited to 40 characters.
             # We use base91 so we can store the full entropy in the field.

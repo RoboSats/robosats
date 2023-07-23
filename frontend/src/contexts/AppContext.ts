@@ -26,6 +26,7 @@ import { createTheme, type Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
 import { systemClient } from '../services/System';
 import { robohash } from '../components/RobotAvatar/RobohashGenerator';
+import { generate_roboname } from 'robo-identities-wasm';
 
 const getWindowSize = function (fontSize: number) {
   // returns window size in EM units
@@ -331,6 +332,7 @@ export const useAppStore = () => {
     const token = newToken ?? robot.token ?? '';
     const hash_id = sha256(sha256(token));
 
+    const nickname = generate_roboname(hash_id);
     robohash.generate(hash_id, 'small');
     robohash.generate(hash_id, 'large');
 
@@ -367,14 +369,10 @@ export const useAppStore = () => {
     apiClient
       .get(baseUrl, '/api/robot/', auth)
       .then((data: any) => {
-        // TODO remove when using hash_id as robohash
-        robohash.generate(data.nickname, 'small');
-        robohash.generate(data.nickname, 'large');
-        // END TODO
-
         const newRobot = {
           avatarLoaded: isRefresh ? robot.avatarLoaded : false,
-          nickname: data.nickname,
+          nickname,
+          hash_id,
           token,
           tokenSHA256,
           loading: false,
