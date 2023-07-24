@@ -14,9 +14,9 @@ When selling bitcoin, a trade escrow is used as an assurance of security. RoboSa
 
 The alotted time to pay (lock) a trade escrow is determined by the order maker. The escrow's expiry timer defaults to {{site.robosats.hours_submit_escrow}} hours; however, this can be customized to range anywhere from 1 to 8 hours.
 
-If the seller fails to lock their trade escrow within the given time limit, then the seller forfeits their fidelity bond. Refer to [Understand > Bonds](https://learn.robosats.com/docs/bonds/) for additional information on fidelity bonds. In addition, if a dispute is opened, then the Satoshis in escrow are released to the dispute winner.
+If the seller fails to lock their trade escrow within the given time limit, then the seller forfeits their fidelity bond. Refer to [Understand > Bonds](/docs/bonds/) for additional information on fidelity bonds. In addition, if a dispute is opened, then the Satoshis in escrow are released to the dispute winner.
 
-Be sure to use a Lightning wallet that plays well with RoboSats, refer to [Understand > Wallets](https://learn.robosats.com/docs/wallets/) for additional information.
+Be sure to use a Lightning wallet that plays well with RoboSats, refer to [Understand > Wallets](/docs/wallets/) for additional information.
 
 *Note: The term "seller" refers to selling bitcoin while "buyer" refers to buying bitcoin.*
 
@@ -32,11 +32,11 @@ This method is, at the moment, the safest approach to ensuring peers hold up to 
 
 ## **How to Submit a Trade Escrow**
 
-First, refer to [Understand > Wallets](https://learn.robosats.com/docs/wallets/) for compatible Lightning wallets that will help make using RoboSats a smoother experience. Depending on the wallet, the locked funds might show as a payment that is in transit, frozen, or even appearing to fail. Check the wallet compatability list!
+First, refer to [Understand > Wallets](/docs/wallets/) for compatible Lightning wallets that will help make using RoboSats a smoother experience. Depending on the wallet, the locked funds might show as a payment that is in transit, frozen, or even appearing to fail. Check the wallet compatability list!
 
 Read the relevant guide depending on if you are making or taking an order to sell bitcoin:
-* **Maker**: Create an order and modify the order conditions to your liking. The order can be customized to require an "Escrow/Invoice Timer" (expiry timer) other than the default of {{site.robosats.hours_submit_escrow}} hours, ranging anywhere from 1 to 8 hours. When your published order gets taken and the taker has submitted their fidelity bond, use the shown QR code found in the "Contract Box" with your Lightning wallet to lock the indicated amount of sats as collateral (escrow). *Note: Escrow funds are released to the buyer once you select "Confirm Fiat Received" which settles the order. Only confirm after the fiat has arrived in your account.*
-* **Taker**: Browse the order book and find an order to your liking. Click "Take Order" and lock your fidelity bond. Immediately after submitting the bond, use the following QR code found in the "Contract Box" with your Lightning wallet to lock the indicated amount of sats as collateral (escrow). *Note: Escrow funds are released to the buyer once you select "Confirm Fiat Received" which settles the order. Only confirm after the fiat has arrived in your account.*
+* **Maker**: Create an order and modify the order conditions to your liking. The order can be customized to require an "Escrow/Invoice Timer" (expiry timer) other than the default of {{site.robosats.hours_submit_escrow}} hours, ranging anywhere from 1 to 8 hours. When your published order gets taken and the taker has submitted their fidelity bond, use the shown QR code with your Lightning wallet to lock the indicated amount of sats as collateral (escrow). *Note: Escrow funds are released to the buyer once you select "Confirm Fiat Received" which settles the order. Only confirm after the fiat has arrived in your account.*
+* **Taker**: Browse the order book and find an order to your liking. Click "Take Order" and lock your fidelity bond. Immediately after submitting the bond, use the shown QR code with your Lightning wallet to lock the indicated amount of sats as collateral (escrow). *Note: Escrow funds are released to the buyer once you select "Confirm Fiat Received" which settles the order. Only confirm after the fiat has arrived in your account.*
 
 As soon as the order taker locks their bond, the buyer and seller are required to submit the payout invoice and trade escrow, respectively, within the given time limit.
 
@@ -46,7 +46,7 @@ If the seller locks the escrow funds before the buyer has provided the payout in
 
 If the seller doesn't lock the escrow funds at all, then the order will expire and the seller forfeits their bond. Half of the lost bond goes to the buyer as compensation for wasted time. Similarly, if the buyer does not provide the payout invoice within the given time limit, then the buyer forfeits their bond where half goes to the seller. The remaining half of a forfeitted bond is "donated" to RoboSats!
 
-After the order is taken, it cannot be cancelled except if both the maker and taker agree to collaboratively cancel during the peer-to-peer chat stage. More importantly, after the seller clicks "Confirm Fiat Received", the order is considered successful and cannot enter into dispute nor be collaboratively cancelled anymore.
+After the order is taken, it cannot be cancelled except if both the maker and taker agree to collaboratively cancel during the peer-to-peer chat stage. More importantly, after the seller clicks "Confirm Fiat Received", the order is considered successful and cannot enter into dispute nor be collaboratively cancelled anymore. Therefore, it is strongly recommended to use a payment method without chargeback risk (irreversible).
 
 ## **How and When the Escrow is Released**
 
@@ -64,7 +64,7 @@ The cheating robot will risk losing that dispute and consequently forfeit their 
 
 Don't forget about your order! If your peer sent the fiat and the order timer expires before you confirm the fiat was received, then you will risk losing the following dispute which will in turn cause your bond to be forfeitted. Take care to remember your order and back up your robot’s unique token!
 
-Due to the time limits involved in the order process, it is recommended to use instant fiat payment methods to avoid exceeding the expiry timer. Be aware of fiat payment methods that allow the buyer to contact their fiat institution and chargeback the transaction. It is recommended to use payment methods that are irreversible. Refer to [Best Practices > Payment Methods](https://learn.robosats.com/docs/payment-methods/) for additional information.
+Due to the time limits involved in the order process, it is recommended to use instant fiat payment methods to avoid exceeding the expiry timer. Be aware of fiat payment methods that allow the buyer to contact their fiat institution and chargeback the transaction. It is recommended to use payment methods that are irreversible. Refer to [Best Practices > Payment Methods](/docs/payment-methods/) for additional information.
 
 Although a very small window of time (about one second), the trade escrow could be permanently lost if RoboSats were shutdown or suddenly disappeared between the seller confirming fiat was received and the moment the buyer's Lightning wallet registers the released escrow funds. Use a well-connected Lightning wallet with sufficient inbound liquidity to help avoid routing failures and subsequently minimize any such window of opportunity.
 
@@ -72,6 +72,6 @@ Although a very small window of time (about one second), the trade escrow could 
 
 Some Lightning wallets have difficulty with recognizing the Lightning hold invoice as a hold on your funds. As the seller, it is necessary to use a wallet that allows for multiple pending HTLCs since you will need to lock funds for a bond and then an escrow.
 
-If issues arise, please reach out to the RoboSats SimpleX group; but beware of scammers that may directly contact you and impersonate RoboSats staff! RoboSats staff will never directly contact you first. See [Contribute > Code > Communication Channels](https://learn.robosats.com/contribute/code/#communication-channels) for the SimpleX group link.
+If issues arise, please reach out to the RoboSats SimpleX group; but beware of scammers that may directly contact you and impersonate RoboSats staff! RoboSats staff will never directly contact you first. See [Contribute > Code > Communication Channels](/contribute/code/#communication-channels) for the SimpleX group link.
 
 {% include improve %}

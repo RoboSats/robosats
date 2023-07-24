@@ -10,25 +10,19 @@ toc_sticky: true
 src: "_pages/contribute/01-development.md"
 ---
 
-Everyone can contribute to the development of the Robotic Satoshis (RoboSats) open source project. If you're looking for somewhere to start contributing, then check out the issue list sharing the ["good first issue"](https://github.com/RoboSats/robosats/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue") label; such issues are good for newcomers.
+Everyone can contribute to the development of the RoboSats open source project. If you're looking for somewhere to start contributing, then check out the issue list sharing the ["good first issue"](https://github.com/RoboSats/robosats/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue") label; such issues are good for newcomers.
 
 This contributing guide is based on the [Bisq contributing guide](https://github.com/bisq-network/bisq/blob/master/CONTRIBUTING.md). Following best FOSS practices helps development remain organized as the project grows with new features and is continually optimized. Future contibutors will thank you for following these best practices and making your work easier to build on!
 
 ## Communication Channels
 
-- **Matrix:** [RoboSats Development Group](https://matrix.to/#/#robosats:matrix.org). Main developer communication group chat.
+*!!! Beware of scammers impersonating RoboSats admins. Admins will NEVER privately message/call you.*
 
-- **Telegram:** [RoboSats Main Group EN🇬🇧](https://t.me/robosats). General discussion about RoboSats and any community-driven support happens publicly in the main Telegram group (English). If you're wanting to hang out with other cool robots and/or have questions about RoboSats, then those discussions happen in Telegram. There are more groups available for public, community-driven support in other languages:
-  - ES🇪🇸 [t.me/robosats_es](https://t.me/robosats_es)
-  - RU🇷🇺 [t.me/robosats_ru](https://t.me/robosats_ru)
-  - PT🇵🇹 [t.me/robosats_pt](https://t.me/robosats_pt)
-  - CN🇨🇳 [t.me/robosats_cn](https://t.me/robosats_cn)
+- **Simplex:** [RoboSats Main Group](https://simplex.chat/contact#/?v=1-2&smp=smp%3A%2F%2F0YuTwO05YJWS8rkjn9eLJDjQhFKvIYd8d4xG8X1blIU%3D%40smp8.simplex.im%2FyEX_vdhWew_FkovCQC3mRYRWZB1j_cBq%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAnrf9Jw3Ajdp4EQw71kqA64VgsIIzw8YNn68WjF09jFY%253D%26srv%3Dbeccx4yfxxbvyhqypaavemqurytl6hozr47wfc7uuecacjqdvwpw2xid.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22hWnMVPnJl-KT3-virDk0JA%3D%3D%22%7D). Got questions or a problem? Find community-driven support in the public SimpleX group chat. If you're wanting to hang out with other cool robots and learn more about RoboSats, then those discussions happen in SimpleX, Nostr, and Matrix group chats.
 
-- **Twitter:** [RoboSats](https://twitter.com/RoboSats). Provides important project updates, tips and tricks of using RoboSats, and other privacy-centric commentary. Questions may be asked to the Twitter account; however, Twitter limits the number of characters in a tweet and makes responding to questions restrictive. It's best to direct your questions to the aforementioned public Telegram support group for a faster and more detailed response from community members!
+- **Nostr:** [RoboSats General Group](https://snort.social/e/note1tfwvglg8xz8420pfgav0dc9mqekv02nkpck2axefklrema7lk6wszmwxdy). Hang out with other cool robots and do not hesitate to ask questions about RoboSats! Also, the [RoboSats Nostr account](https://snort.social/p/npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82) (npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82) provides important project updates, tips and tricks of using RoboSats, and other privacy-centric commentary. Questions and engagement are welcome. Keep in mind: problems requiring RoboSats staff support should be directed to the main SimpleX group chat instead, where responses are quicker and staff can further investigate your problem.
 
-- **Nostr:** [npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82](https://snort.social/p/npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82). Relays Twitter tweets and similarly responds to questions. While character limit is no issue, it's still best to direct your questions to the aforementioned public Telegram support group for a faster response from community members!
-
-Discussion about code changes happens in GitHub issues and pull requests (PRs). 
+- **Matrix:** [RoboSats Development Group](https://matrix.to/#/#robosats:matrix.org). Main developer communication group chat where open and technical discussions about development takes place. Discussion about code changes happens in GitHub issues and pull requests (PRs).
 
 ## Contributor Workflow
 
