@@ -15,6 +15,8 @@ export { default as SendReceiveIcon } from './SendReceive';
 export { default as ExportIcon } from './Export';
 export { default as UserNinjaIcon } from './UserNinja';
 export { default as TorIcon } from './Tor';
+export { default as SimplexIcon } from './Simplex';
+export { default as NostrIcon } from './Nostr';
 
 // Flags with props
 export { default as FlagWithProps } from './WorldFlags';
