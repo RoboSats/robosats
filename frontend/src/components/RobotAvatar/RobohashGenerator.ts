@@ -28,6 +28,7 @@ class RoboGenerator {
     const worker = this.workers[workerIndex];
 
     this.assetsPromises[cacheKey] = new Promise<string>((resolve, reject) => {
+      // const avatarB64 = async_generate_robohash(hash, size == 'small' ? 80 : 256).then((avatarB64)=> resolve(`data:image/png;base64,${avatarB64}`));
       // Create a message object with the necessary data
       const message = { hash, size, cacheKey, workerIndex };
 

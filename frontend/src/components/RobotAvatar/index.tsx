@@ -1,11 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SmoothImage from 'react-smooth-image';
-import { Avatar, Badge, Tooltip, useTheme } from '@mui/material';
+import { Avatar, Badge, Tooltip } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import { apiClient } from '../../services/api';
 import placeholder from './placeholder.json';
-
-import { async_generate_robohash } from 'robo-identities-wasm';
 import { robohash } from './RobohashGenerator';
 
 interface Props {
