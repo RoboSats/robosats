@@ -627,7 +627,7 @@ const BookTable = ({
         },
       },
     };
-  }, []);
+  }, [fav.mode]);
 
   const filteredColumns = function (maxWidth: number) {
     const useSmall = maxWidth < 70;
