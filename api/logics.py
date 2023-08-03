@@ -168,11 +168,11 @@ class Logics:
             if order.has_range:
                 order.amount = amount
             order.taker = user
-            order.status = Order.Status.TAK
+            order.update_status(Order.Status.TAK)
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.TAK)
             )
-            order.save(update_fields=["amount", "taker", "status", "expires_at"])
+            order.save(update_fields=["amount", "taker", "expires_at"])
             order.log(f"Taken by {user} for {order.amount} fiat units")
             return True, None
 
@@ -253,10 +253,10 @@ class Logics:
             return False
 
         elif order.status == Order.Status.WFB:
-            order.status = Order.Status.EXP
+            order.update_status(Order.Status.EXP)
             order.expiry_reason = Order.ExpiryReasons.NMBOND
             cls.cancel_bond(order.maker_bond)
-            order.save(update_fields=["status", "expiry_reason"])
+            order.save(update_fields=["expiry_reason"])
 
             order.log("Order expired while waiting for maker bond")
             order.log("Maker bond was cancelled")
@@ -265,9 +265,9 @@ class Logics:
 
         elif order.status in [Order.Status.PUB, Order.Status.PAU]:
             cls.return_bond(order.maker_bond)
-            order.status = Order.Status.EXP
+            order.update_status(Order.Status.EXP)
             order.expiry_reason = Order.ExpiryReasons.NTAKEN
-            order.save(update_fields=["status", "expiry_reason"])
+            order.save(update_fields=["expiry_reason"])
             send_notification.delay(order_id=order.id, message="order_expired_untaken")
 
             order.log("Order expired while public or paused")
@@ -293,9 +293,9 @@ class Logics:
             cls.settle_bond(order.maker_bond)
             cls.settle_bond(order.taker_bond)
             cls.cancel_escrow(order)
-            order.status = Order.Status.EXP
+            order.update_status(Order.Status.EXP)
             order.expiry_reason = Order.ExpiryReasons.NESINV
-            order.save(update_fields=["status", "expiry_reason"])
+            order.save(update_fields=["expiry_reason"])
 
             order.log(
                 "Order expired while waiting for both buyer invoice and seller escrow"
@@ -316,9 +316,9 @@ class Logics:
                     cls.cancel_escrow(order)
                 except Exception:
                     pass
-                order.status = Order.Status.EXP
+                order.update_status(Order.Status.EXP)
                 order.expiry_reason = Order.ExpiryReasons.NESCRO
-                order.save(update_fields=["status", "expiry_reason"])
+                order.save(update_fields=["expiry_reason"])
                 # Reward taker with part of the maker bond
                 cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
 
@@ -357,9 +357,9 @@ class Logics:
                 cls.settle_bond(order.maker_bond)
                 cls.return_bond(order.taker_bond)
                 cls.return_escrow(order)
-                order.status = Order.Status.EXP
+                order.update_status(Order.Status.EXP)
                 order.expiry_reason = Order.ExpiryReasons.NINVOI
-                order.save(update_fields=["status", "expiry_reason"])
+                order.save(update_fields=["expiry_reason"])
                 # Reward taker with part of the maker bond
                 cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
 
@@ -443,7 +443,7 @@ class Logics:
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.settle_bond(order.taker_bond)
-            order.status = Order.Status.DIS
+            order.update_status(Order.Status.DIS)
 
             order.log("Maker bond was <b>settled</b>")
             order.log("Taker bond was <b>settled</b>")
@@ -456,7 +456,7 @@ class Logics:
             cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)
             cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
-            order.status = Order.Status.MLD
+            order.update_status(Order.Status.MLD)
 
             order.log("Maker bond was <b>settled</b>")
             order.log("Taker bond was <b>unlocked</b>")
@@ -469,7 +469,7 @@ class Logics:
             cls.settle_bond(order.taker_bond)
             cls.return_bond(order.maker_bond)
             cls.add_slashed_rewards(order, order.taker_bond, order.maker_bond)
-            order.status = Order.Status.TLD
+            order.update_status(Order.Status.TLD)
 
             order.log("Maker bond was <b>unlocked</b>")
             order.log("Taker bond was <b>settled</b>")
@@ -483,7 +483,7 @@ class Logics:
         order.expires_at = timezone.now() + timedelta(
             seconds=order.t_to_expire(Order.Status.DIS)
         )
-        order.save(update_fields=["status", "is_disputed", "expires_at"])
+        order.save(update_fields=["is_disputed", "expires_at"])
         send_notification.delay(order_id=order.id, message="dispute_opened")
 
         return True
@@ -516,11 +516,11 @@ class Logics:
             cls.settle_bond(order.taker_bond)
 
         order.is_disputed = True
-        order.status = Order.Status.DIS
+        order.update_status(Order.Status.DIS)
         order.expires_at = timezone.now() + timedelta(
             seconds=order.t_to_expire(Order.Status.DIS)
         )
-        order.save(update_fields=["is_disputed", "status", "expires_at"])
+        order.save(update_fields=["is_disputed", "expires_at"])
 
         # User could be None if a dispute is open automatically due to time expiration.
         if user is not None:
@@ -535,7 +535,7 @@ class Logics:
             robot.save(update_fields=["num_disputes", "orders_disputes_started"])
 
         send_notification.delay(order_id=order.id, message="dispute_opened")
-        order.log(f"Dispute was opened {'' if not user else f'by {user}'}")
+        order.log(f"Dispute was opened {f'by {user}' if user else ''}")
         order.log("Maker bond was <b>settled</b>")
         order.log("Taker bond was <b>settled</b>")
 
@@ -571,13 +571,15 @@ class Logics:
             None,
             "",
         ]:
-            order.status = Order.Status.WFR
+            order.update_status(Order.Status.WFR)
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.WFR)
             )
             order.save(update_fields=["status", "expires_at"])
 
-        order.log(f"Dispute statement submitted by {user}")
+        order.log(
+            f"Dispute statement submitted by {user} with length of {len(statement)} chars"
+        )
         return True, None
 
     def compute_swap_fee_rate(balance):
@@ -654,6 +656,11 @@ class Logics:
 
         order.payout_tx = onchain_payment
         order.save(update_fields=["payout_tx"])
+
+        order.log(
+            f"Empty {order.payout_tx} was created. Available onchain balance is {available_onchain} Sats"
+        )
+
         return True
 
     @classmethod
@@ -687,17 +694,28 @@ class Logics:
             context[
                 "swap_failure_reason"
             ] = f"Order amount is smaller than the minimum swap available of {MIN_SWAP_AMOUNT} Sats"
+            order.log(
+                f"Onchain payment option was not offered: amount is smaller than the minimum swap available of {MIN_SWAP_AMOUNT} Sats",
+                level="WARN",
+            )
             return True, context
         elif context["invoice_amount"] > MAX_SWAP_AMOUNT:
             context["swap_allowed"] = False
             context[
                 "swap_failure_reason"
             ] = f"Order amount is bigger than the maximum swap available of {MAX_SWAP_AMOUNT} Sats"
+            order.log(
+                f"Onchain payment option was not offered: amount is bigger than the maximum swap available of {MAX_SWAP_AMOUNT} Sats",
+                level="WARN",
+            )
             return True, context
 
         if config("DISABLE_ONCHAIN", cast=bool, default=True):
             context["swap_allowed"] = False
-            context["swap_failure_reason"] = "On-the-fly submarine swaps are dissabled"
+            context["swap_failure_reason"] = "On-the-fly submarine swaps are disabled"
+            order.log(
+                "Onchain payment option was not offered: on-the-fly submarine swaps are disabled"
+            )
             return True, context
 
         if order.payout_tx is None:
@@ -705,11 +723,18 @@ class Logics:
             valid = cls.create_onchain_payment(
                 order, user, preliminary_amount=context["invoice_amount"]
             )
+            order.log(
+                f"Suggested mining fee is {order.payout_tx.suggested_mining_fee_rate} Sats/vbyte, the swap fee rate is {order.payout_tx.swap_fee_rate}%"
+            )
             if not valid:
                 context["swap_allowed"] = False
                 context[
                     "swap_failure_reason"
                 ] = "Not enough onchain liquidity available to offer a swap"
+                order.log(
+                    "Onchain payment option was not offered: onchain liquidity available to offer a swap",
+                    level="WARN",
+                )
                 return True, context
 
         context["swap_allowed"] = True
@@ -741,7 +766,7 @@ class Logics:
     def update_address(cls, order, user, address, mining_fee_rate):
         # Empty address?
         if not address:
-            return False, {"bad_address": "You submitted an empty invoice"}
+            return False, {"bad_address": "You submitted an empty address"}
         # only the buyer can post a buyer address
         if not cls.is_buyer(order, user):
             return False, {
@@ -753,10 +778,15 @@ class Logics:
             == order.maker_bond.status
             == LNPayment.Status.LOCKED
         ) or order.status not in [Order.Status.WFI, Order.Status.WF2]:
+            order.log(
+                f"Robot {user} attempted to submit an address while the order was in status {order.status}",
+                level="ERROR",
+            )
             return False, {"bad_request": "You cannot submit an address now."}
         # not a valid address
         valid, context = validate_onchain_address(address)
         if not valid:
+            order.log(f"The address {address} is not valid", level="WARN")
             return False, context
 
         num_satoshis = cls.payout_amount(order, user)[1]["invoice_amount"]
@@ -770,10 +800,18 @@ class Logics:
             min_mining_fee_rate = max(2, min_mining_fee_rate)
 
             if float(mining_fee_rate) < min_mining_fee_rate:
+                order.log(
+                    f"The onchain fee {float(mining_fee_rate)} Sats/vbytes proposed by {user} is less than the current minimum mining fee {min_mining_fee_rate} Sats",
+                    level="WARN",
+                )
                 return False, {
                     "bad_address": f"The mining fee is too low. Must be higher than {min_mining_fee_rate} Sat/vbyte"
                 }
             elif float(mining_fee_rate) > 500:
+                order.log(
+                    f"The onchain fee {float(mining_fee_rate)} Sats/vbytes proposed by {user} is higher than the absolute maximum mining fee 500 Sats",
+                    level="WARN",
+                )
                 return False, {
                     "bad_address": "The mining fee is too high, must be less than 500 Sats/vbyte"
                 }
@@ -793,6 +831,10 @@ class Logics:
         )
 
         if float(tx.sent_satoshis) < 20_000:
+            order.log(
+                f"The onchain Sats to be sent ({float(tx.sent_satoshis)}) are below the dust limit of 20,000 Sats",
+                level="WARN",
+            )
             return False, {
                 "bad_address": "The amount remaining after subtracting mining fee is close to dust limit."
             }
@@ -802,6 +844,9 @@ class Logics:
         order.is_swap = True
         order.save(update_fields=["is_swap"])
 
+        order.log(
+            f"Robot {user} added an onchain address {address[:6]}...{address[-4:]} as payout method. Amount to be sent is {tx.sent_satoshis} Sats, mining fee is {tx.mining_fee_sats} Sats"
+        )
         cls.move_state_updated_payout_method(order)
 
         return True, None
@@ -810,6 +855,7 @@ class Logics:
     def update_invoice(cls, order, user, invoice, routing_budget_ppm):
         # Empty invoice?
         if not invoice:
+            order.log(f"Robot {user} submitted an empty invoice", level="WARN")
             return False, {"bad_invoice": "You submitted an empty invoice"}
         # only the buyer can post a buyer invoice
         if not cls.is_buyer(order, user):
@@ -827,12 +873,12 @@ class Logics:
             and not order.status == Order.Status.FAI
         ):
             return False, {
-                "bad_request": "You cannot submit a invoice while bonds are not locked."
+                "bad_request": "You cannot submit an invoice while bonds are not locked."
             }
         if order.status == Order.Status.FAI:
             if order.payout.status != LNPayment.Status.EXPIRE:
                 return False, {
-                    "bad_request": "You cannot submit an invoice only after expiration or 3 failed attempts"
+                    "bad_request": "You can only submit an invoice after expiration or 3 failed attempts"
                 }
 
         # cancel onchain_payout if existing
@@ -872,6 +918,10 @@ class Logics:
         order.is_swap = False
         order.save(update_fields=["payout", "is_swap"])
 
+        order.log(
+            f"Robot {user} added the invoice {order.payout.payment_hash} as payout method. Amount to be sent is {order.payout.num_satoshis} Sats, routing budget is {order.payout.routing_budget_sats} Sats ({order.payout.routing_budget_ppm}ppm)"
+        )
+
         cls.move_state_updated_payout_method(order)
 
         return True, None
@@ -880,7 +930,7 @@ class Logics:
     def move_state_updated_payout_method(cls, order):
         # If the order status is 'Waiting for invoice'. Move forward to 'chat'
         if order.status == Order.Status.WFI:
-            order.status = Order.Status.CHA
+            order.update_status(Order.Status.CHA)
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.CHA)
             )
@@ -890,10 +940,11 @@ class Logics:
         elif order.status == Order.Status.WF2:
             # If the escrow does not exist, or is not locked move to WFE.
             if order.trade_escrow is None:
-                order.status = Order.Status.WFE
+                order.update_status(Order.Status.WFE)
+
             # If the escrow is locked move to Chat.
             elif order.trade_escrow.status == LNPayment.Status.LOCKED:
-                order.status = Order.Status.CHA
+                order.update_status(Order.Status.CHA)
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.CHA)
                 )
@@ -901,17 +952,17 @@ class Logics:
                     order_id=order.id, message="fiat_exchange_starts"
                 )
             else:
-                order.status = Order.Status.WFE
+                order.update_status(Order.Status.WFE)
 
         # If the order status is 'Failed Routing'. Retry payment.
         elif order.status == Order.Status.FAI:
             if LNNode.double_check_htlc_is_settled(order.trade_escrow.payment_hash):
-                order.status = Order.Status.PAY
+                order.update_status(Order.Status.PAY)
                 order.payout.status = LNPayment.Status.FLIGHT
                 order.payout.routing_attempts = 0
                 order.payout.save(update_fields=["status", "routing_attempts"])
 
-        order.save(update_fields=["status", "expires_at"])
+        order.save(update_fields=["expires_at"])
         return True
 
     def is_penalized(user):
@@ -949,8 +1000,7 @@ class Logics:
         # status becomes "cancelled"
         if order.status == Order.Status.WFB and order.maker == user:
             cls.cancel_bond(order.maker_bond)
-            order.status = Order.Status.UCA
-            order.save(update_fields=["status"])
+            order.update_status(Order.Status.UCA)
             return True, None
 
         # 2.a) When maker cancels after bond
@@ -963,8 +1013,7 @@ class Logics:
         ):
             # Return the maker bond (Maker gets returned the bond for cancelling public order)
             if cls.return_bond(order.maker_bond):
-                order.status = Order.Status.UCA
-                order.save(update_fields=["status"])
+                order.update_status(Order.Status.UCA)
                 send_notification.delay(
                     order_id=order.id, message="public_order_cancelled"
                 )
@@ -978,8 +1027,7 @@ class Logics:
             # Return the maker bond (Maker gets returned the bond for cancelling public order)
             if cls.return_bond(order.maker_bond):
                 cls.cancel_bond(order.taker_bond)
-                order.status = Order.Status.UCA
-                order.save(update_fields=["status"])
+                order.update_status(Order.Status.UCA)
                 send_notification.delay(
                     order_id=order.id, message="public_order_cancelled"
                 )
@@ -1012,8 +1060,7 @@ class Logics:
             cls.return_bond(order.taker_bond)  # returns taker bond
 
             if valid:
-                order.status = Order.Status.UCA
-                order.save(update_fields=["status"])
+                order.update_status(Order.Status.UCA)
                 # Reward taker with part of the maker bond
                 cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
                 return True, None
@@ -1075,8 +1122,7 @@ class Logics:
         cls.return_bond(order.maker_bond)
         cls.return_bond(order.taker_bond)
         cls.return_escrow(order)
-        order.status = Order.Status.CCA
-        order.save(update_fields=["status"])
+        order.update_status(Order.Status.CCA)
         send_notification.delay(order_id=order.id, message="collaborative_cancelled")
         return
 
@@ -1211,13 +1257,12 @@ class Logics:
         order.expires_at = timezone.now() + timedelta(
             seconds=order.t_to_expire(Order.Status.WF2)
         )
-        order.status = Order.Status.WF2
+        order.update_status(Order.Status.WF2)
         order.save(
             update_fields=[
                 "last_satoshis",
                 "last_satoshis_time",
                 "expires_at",
-                "status",
             ]
         )
 
@@ -1233,6 +1278,9 @@ class Logics:
         except Exception:
             pass
         send_notification.delay(order_id=order.id, message="order_taken_confirmed")
+        order.log(
+            f"<b>Contract formalized. </b>Maker: {order.maker}. Taker: {order.taker}. API median price {order.currency.exchange_rate} {Currency.currency_choices(order.currency.currency).label}/BTC. Premium is {order.premium}. Contract size {order.last_satoshis} Sats"
+        )
         return True
 
     @classmethod
@@ -1318,15 +1366,14 @@ class Logics:
         """Moves the order forward"""
         # If status is 'Waiting for both' move to Waiting for invoice
         if order.status == Order.Status.WF2:
-            order.status = Order.Status.WFI
-            order.save(update_fields=["status"])
+            order.update_status(Order.Status.WFI)
         # If status is 'Waiting for invoice' move to Chat
         elif order.status == Order.Status.WFE:
-            order.status = Order.Status.CHA
+            order.update_status(Order.Status.CHA)
             order.expires_at = timezone.now() + timedelta(
                 seconds=order.t_to_expire(Order.Status.CHA)
             )
-            order.save(update_fields=["status", "expires_at"])
+            order.save(update_fields=["expires_at"])
             send_notification.delay(order_id=order.id, message="fiat_exchange_starts")
 
     @classmethod
@@ -1349,6 +1396,8 @@ class Logics:
         escrow_satoshis = cls.escrow_amount(order, user)[1][
             "escrow_amount"
         ]  # Amount was fixed when taker bond was locked, fee applied here
+        order.log(f"Escrow invoice amount is calculated as {escrow_satoshis} Sats")
+
         if user.robot.wants_stealth:
             description = f"This payment WILL FREEZE IN YOUR WALLET, check on the website if it was successful. It will automatically return unless you cheat or cancel unilaterally. Payment reference: {order.reference}"
         else:
@@ -1483,9 +1532,9 @@ class Logics:
             order.payout.status = LNPayment.Status.FLIGHT
             order.payout.save(update_fields=["status"])
 
-            order.status = Order.Status.PAY
+            order.update_status(Order.Status.PAY)
             order.contract_finalization_time = timezone.now()
-            order.save(update_fields=["status", "contract_finalization_time"])
+            order.save(update_fields=["contract_finalization_time"])
 
             send_notification.delay(order_id=order.id, message="trade_successful")
             return True
@@ -1499,9 +1548,9 @@ class Logics:
                 order.payout_tx.status = OnchainPayment.Status.QUEUE
                 order.payout_tx.save(update_fields=["status"])
 
-                order.status = Order.Status.SUC
+                order.update_status(Order.Status.SUC)
                 order.contract_finalization_time = timezone.now()
-                order.save(update_fields=["status", "contract_finalization_time"])
+                order.save(update_fields=["contract_finalization_time"])
 
                 send_notification.delay(order_id=order.id, message="trade_successful")
                 return True
@@ -1516,9 +1565,9 @@ class Logics:
         if order.status == Order.Status.CHA or order.status == Order.Status.FSE:
             # If buyer, settle escrow and mark fiat sent
             if cls.is_buyer(order, user):
-                order.status = Order.Status.FSE
+                order.update_status(Order.Status.FSE)
                 order.is_fiat_sent = True
-                order.save(update_fields=["status", "is_fiat_sent"])
+                order.save(update_fields=["is_fiat_sent"])
 
             # If seller and fiat was sent, SETTLE ESCROW AND PAY BUYER INVOICE
             elif cls.is_seller(order, user):
@@ -1577,10 +1626,10 @@ class Logics:
             return False, {
                 "bad_request": "Only orders in Chat and with fiat sent confirmed can be reverted."
             }
-        order.status = Order.Status.CHA
+        order.update_status(Order.Status.CHA)
         order.is_fiat_sent = False
         order.reverted_fiat_sent = True
-        order.save(update_fields=["status", "is_fiat_sent", "reverted_fiat_sent"])
+        order.save(update_fields=["is_fiat_sent", "reverted_fiat_sent"])
 
         return True, None
 
@@ -1591,14 +1640,13 @@ class Logics:
             }
         else:
             if order.status == Order.Status.PUB:
-                order.status = Order.Status.PAU
+                order.update_status(Order.Status.PAU)
             elif order.status == Order.Status.PAU:
-                order.status = Order.Status.PUB
+                order.update_status(Order.Status.PUB)
             else:
                 return False, {
                     "bad_request": "You can only pause/unpause an order that is either public or paused"
                 }
-            order.save(update_fields=["status"])
 
         return True, None
 

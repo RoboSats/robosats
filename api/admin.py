@@ -128,7 +128,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     readonly_fields = ("reference", "pretty_logs")
 
     def pretty_logs(self, obj):
-        return format_html(obj.logs)
+        return format_html(f"<table>{obj.logs}</table>")
 
     actions = [
         "maker_wins",

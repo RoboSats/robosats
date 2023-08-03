@@ -236,7 +236,11 @@ class Order(models.Model):
     taker_platform_rated = models.BooleanField(default=False, null=False)
 
     logs = models.TextField(
-        max_length=80_000, null=True, default="", blank=True, editable=False
+        max_length=80_000,
+        null=True,
+        default="<thead><tr><b><th>Timestamp</th><th>Level</th><th>Event</th></b></tr></thead>",
+        blank=True,
+        editable=False,
     )
 
     def __str__(self):
@@ -287,12 +291,21 @@ class Order(models.Model):
             timestamp = timezone.now().replace(microsecond=0).isoformat()
             level_in_tag = "" if level == "INFO" else "<b>"
             level_out_tag = "" if level == "INFO" else "</b>"
-            self.logs += (
-                f"[{timestamp}] | {level_in_tag}{level}{level_out_tag} | {event} <br/>"
+            self.logs = (
+                self.logs
+                + f"<tr><td>{timestamp}</td> <td>{level_in_tag}{level}{level_out_tag}</td> <td>{event}</td></tr>"
             )
             self.save(update_fields=["logs"])
         except Exception:
             pass
+
+    def update_status(self, new_status):
+        old_status = self.status
+        self.status = new_status
+        self.save(update_fields=["status"])
+        self.log(
+            f"Order state went from {old_status}: <i>{Order.Status(old_status).label}</i> to {new_status}: <i>{Order.Status(new_status).label}</i>"
+        )
 
 
 @receiver(pre_delete, sender=Order)
