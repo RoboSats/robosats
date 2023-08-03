@@ -124,7 +124,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "min_amount",
         "max_amount",
     ]
-    readonly_fields = ["reference"]
+    readonly_fields = ("reference", "logs")
 
     actions = [
         "maker_wins",

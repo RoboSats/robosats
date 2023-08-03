@@ -235,6 +235,10 @@ class Order(models.Model):
     maker_platform_rated = models.BooleanField(default=False, null=False)
     taker_platform_rated = models.BooleanField(default=False, null=False)
 
+    logs = models.TextField(
+        max_length=80_000, null=True, default=None, blank=True, editable=False
+    )
+
     def __str__(self):
         if self.has_range and self.amount is None:
             amt = str(float(self.min_amount)) + "-" + str(float(self.max_amount))
@@ -243,7 +247,6 @@ class Order(models.Model):
         return f"Order {self.id}: {self.Types(self.type).label} BTC for {amt} {self.currency}"
 
     def t_to_expire(self, status):
-
         t_to_expire = {
             0: config(
                 "EXP_MAKER_BOND_INVOICE", cast=int, default=300
