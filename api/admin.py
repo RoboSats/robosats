@@ -263,7 +263,6 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.status in [Order.Status.DIS, Order.Status.WFR]
                 and order.is_disputed
             ):
-
                 order.maker.robot.earned_rewards = order.maker_bond.num_satoshis
                 order.maker.robot.save(update_fields=["earned_rewards"])
                 order.taker.robot.earned_rewards = order.taker_bond.num_satoshis
@@ -421,7 +420,7 @@ class UserRobotAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     change_links = ["user"]
     readonly_fields = ["avatar_tag"]
     search_fields = ["user__username", "id"]
-    readonly_fields = ("public_key", "encrypted_private_key")
+    readonly_fields = ("hash_id", "public_key", "encrypted_private_key")
 
 
 @admin.register(Currency)
