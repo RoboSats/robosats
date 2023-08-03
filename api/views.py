@@ -183,6 +183,7 @@ class MakerView(CreateAPIView):
             return Response(context, status.HTTP_400_BAD_REQUEST)
 
         order.save()
+        order.log(f"Order {order.id} created by {request.user}")
         return Response(ListOrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
 

@@ -173,6 +173,7 @@ class Logics:
                 seconds=order.t_to_expire(Order.Status.TAK)
             )
             order.save(update_fields=["amount", "taker", "status", "expires_at"])
+            order.log(f"Taken by {user} for {order.amount} fiat units")
             return True, None
 
     def is_buyer(order, user):
@@ -204,7 +205,6 @@ class Logics:
             satoshis_now = cls.calc_sats(
                 amount, order.currency.exchange_rate, order.premium
             )
-
         return int(satoshis_now)
 
     def price_and_premium_now(order):
@@ -257,6 +257,10 @@ class Logics:
             order.expiry_reason = Order.ExpiryReasons.NMBOND
             cls.cancel_bond(order.maker_bond)
             order.save(update_fields=["status", "expiry_reason"])
+
+            order.log("Order expired while waiting for maker bond")
+            order.log("Maker bond was cancelled")
+
             return True
 
         elif order.status in [Order.Status.PUB, Order.Status.PAU]:
@@ -265,11 +269,19 @@ class Logics:
             order.expiry_reason = Order.ExpiryReasons.NTAKEN
             order.save(update_fields=["status", "expiry_reason"])
             send_notification.delay(order_id=order.id, message="order_expired_untaken")
+
+            order.log("Order expired while public or paused")
+            order.log("Maker bond was <b>unlocked</b>")
+
             return True
 
         elif order.status == Order.Status.TAK:
             cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
+
+            order.log("Order expired while waiting for taker bond")
+            order.log("Taker bond was cancelled")
+
             return True
 
         elif order.status == Order.Status.WF2:
@@ -284,6 +296,13 @@ class Logics:
             order.status = Order.Status.EXP
             order.expiry_reason = Order.ExpiryReasons.NESINV
             order.save(update_fields=["status", "expiry_reason"])
+
+            order.log(
+                "Order expired while waiting for both buyer invoice and seller escrow"
+            )
+            order.log("Maker bond was <b>settled</b>")
+            order.log("Taker bond was <b>settled</b>")
+
             return True
 
         elif order.status == Order.Status.WFE:
@@ -302,6 +321,11 @@ class Logics:
                 order.save(update_fields=["status", "expiry_reason"])
                 # Reward taker with part of the maker bond
                 cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
+
+                order.log("Order expired while waiting for escrow of the maker/seller")
+                order.log("Maker bond was <b>settled</b>")
+                order.log("Taker bond was <b>unlocked</b>")
+
                 return True
 
             # If maker is buyer, settle the taker's bond order goes back to public
@@ -317,6 +341,10 @@ class Logics:
                 send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
                 cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
+
+                order.log("Order expired while waiting for escrow of the taker/seller")
+                order.log("Taker bond was <b>settled</b>")
+
                 return True
 
         elif order.status == Order.Status.WFI:
@@ -334,6 +362,11 @@ class Logics:
                 order.save(update_fields=["status", "expiry_reason"])
                 # Reward taker with part of the maker bond
                 cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
+
+                order.log("Order expired while waiting for invoice of the maker/buyer")
+                order.log("Maker bond was <b>settled</b>")
+                order.log("Taker bond was <b>unlocked</b>")
+
                 return True
 
             # If maker is seller settle the taker's bond, order goes back to public
@@ -345,6 +378,10 @@ class Logics:
                 send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
                 cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
+
+                order.log("Order expired while waiting for invoice of the taker/buyer")
+                order.log("Taker bond was <b>settled</b>")
+
                 return True
 
         elif order.status in [Order.Status.CHA, Order.Status.FSE]:
@@ -352,6 +389,9 @@ class Logics:
             # was opened. Hint: a seller-scammer could persuade a buyer to not click "fiat
             # sent", we assume this is a dispute case by default.
             cls.open_dispute(order)
+            order.log(
+                "Order expired during chat and a dispute was opened automatically"
+            )
             return True
 
     @classmethod
@@ -367,6 +407,8 @@ class Logics:
 
         # Make order public again
         cls.publish_order(order)
+
+        order.log("Taker was kicked out of the order")
         return True
 
     @classmethod
@@ -403,6 +445,12 @@ class Logics:
             cls.settle_bond(order.taker_bond)
             order.status = Order.Status.DIS
 
+            order.log("Maker bond was <b>settled</b>")
+            order.log("Taker bond was <b>settled</b>")
+            order.log(
+                "No robot wrote in the chat, the dispute cannot be solved automatically"
+            )
+
         elif num_messages_maker == 0:
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
@@ -410,12 +458,24 @@ class Logics:
             cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
             order.status = Order.Status.MLD
 
+            order.log("Maker bond was <b>settled</b>")
+            order.log("Taker bond was <b>unlocked</b>")
+            order.log(
+                "<b>The dispute was solved automatically:</b> 'Maker lost dispute', the maker did not write in the chat"
+            )
+
         elif num_messages_taker == 0:
             cls.return_escrow(order)
             cls.settle_bond(order.taker_bond)
             cls.return_bond(order.maker_bond)
             cls.add_slashed_rewards(order, order.taker_bond, order.maker_bond)
             order.status = Order.Status.TLD
+
+            order.log("Maker bond was <b>unlocked</b>")
+            order.log("Taker bond was <b>settled</b>")
+            order.log(
+                "<b>The dispute was solved automatically:</b> 'Taker lost dispute', the maker did not write in the chat"
+            )
         else:
             return False
 
@@ -430,7 +490,6 @@ class Logics:
 
     @classmethod
     def open_dispute(cls, order, user=None):
-
         # Always settle escrow and bonds during a dispute. Disputes
         # can take long to resolve, it might trigger force closure
         # for unresolved HTLCs) Dispute winner will have to submit a
@@ -463,7 +522,7 @@ class Logics:
         )
         order.save(update_fields=["is_disputed", "status", "expires_at"])
 
-        # User could be None if a dispute is open automatically due to weird expiration.
+        # User could be None if a dispute is open automatically due to time expiration.
         if user is not None:
             robot = user.robot
             robot.num_disputes = robot.num_disputes + 1
@@ -476,6 +535,10 @@ class Logics:
             robot.save(update_fields=["num_disputes", "orders_disputes_started"])
 
         send_notification.delay(order_id=order.id, message="dispute_opened")
+        order.log(f"Dispute was opened {'' if not user else f'by {user}'}")
+        order.log("Maker bond was <b>settled</b>")
+        order.log("Taker bond was <b>settled</b>")
+
         return True, None
 
     def dispute_statement(order, user, statement):
@@ -514,10 +577,10 @@ class Logics:
             )
             order.save(update_fields=["status", "expires_at"])
 
+        order.log(f"Dispute statement submitted by {user}")
         return True, None
 
     def compute_swap_fee_rate(balance):
-
         shape = str(config("SWAP_FEE_SHAPE"))
 
         if shape == "linear":
@@ -676,7 +739,6 @@ class Logics:
 
     @classmethod
     def update_address(cls, order, user, address, mining_fee_rate):
-
         # Empty address?
         if not address:
             return False, {"bad_address": "You submitted an empty invoice"}
@@ -746,7 +808,6 @@ class Logics:
 
     @classmethod
     def update_invoice(cls, order, user, invoice, routing_budget_ppm):
-
         # Empty invoice?
         if not invoice:
             return False, {"bad_invoice": "You submitted an empty invoice"}
@@ -866,7 +927,6 @@ class Logics:
 
     @classmethod
     def cancel_order(cls, order, user, state=None):
-
         # Do not change order status if an is in order
         # any of these status
         do_not_cancel = [
@@ -982,7 +1042,6 @@ class Logics:
         # When the second user asks for cancel. Order is totally cancelled.
         # Must have a small cost for both parties to prevent node DDOS.
         elif order.status in [Order.Status.WFI, Order.Status.CHA]:
-
             # if the maker had asked, and now the taker does: cancel order, return everything
             if order.maker_asked_cancel and user == order.taker:
                 cls.collaborative_cancel(order)
@@ -1178,7 +1237,6 @@ class Logics:
 
     @classmethod
     def gen_taker_hold_invoice(cls, order, user):
-
         # Do not gen and kick out the taker if order is older than expiry time
         if order.expires_at < timezone.now():
             cls.order_expires(order)
@@ -1273,7 +1331,6 @@ class Logics:
 
     @classmethod
     def gen_escrow_hold_invoice(cls, order, user):
-
         # Do not generate if escrow deposit time has expired
         if order.expires_at < timezone.now():
             cls.order_expires(order)
@@ -1344,6 +1401,7 @@ class Logics:
         if LNNode.settle_hold_invoice(order.trade_escrow.preimage):
             order.trade_escrow.status = LNPayment.Status.SETLED
             order.trade_escrow.save(update_fields=["status"])
+            order.log("Trade escrow was settled")
             return True
 
     def settle_bond(bond):
@@ -1358,6 +1416,7 @@ class Logics:
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.RETNED
             order.trade_escrow.save(update_fields=["status"])
+            order.log("Trade escrow was unlocked")
             return True
 
     def cancel_escrow(order):
@@ -1366,6 +1425,7 @@ class Logics:
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.CANCEL
             order.trade_escrow.save(update_fields=["status"])
+            order.log("Trade escrow was cancelled")
             return True
 
     def return_bond(bond):
@@ -1450,10 +1510,10 @@ class Logics:
     def confirm_fiat(cls, order, user):
         """If Order is in the CHAT states:
         If user is buyer: fiat_sent goes to true.
-        If User is seller and fiat_sent is true: settle the escrow and pay buyer invoice!"""
+        If User is seller and fiat_sent is true: settle the escrow and pay buyer invoice!
+        """
 
         if order.status == Order.Status.CHA or order.status == Order.Status.FSE:
-
             # If buyer, settle escrow and mark fiat sent
             if cls.is_buyer(order, user):
                 order.status = Order.Status.FSE
@@ -1589,7 +1649,6 @@ class Logics:
 
     @classmethod
     def withdraw_rewards(cls, user, invoice):
-
         # only a user with positive withdraw balance can use this
 
         if user.robot.earned_rewards < 1:
@@ -1681,7 +1740,6 @@ class Logics:
 
         users = {"taker": order.taker, "maker": order.maker}
         for order_user in users:
-
             summary = {}
             summary["trade_fee_percent"] = (
                 FEE * MAKER_FEE_SPLIT

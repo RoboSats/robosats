@@ -3,6 +3,7 @@ from statistics import median
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group, User
+from django.utils.html import format_html
 from django_admin_relation_links import AdminChangeLinksMixin
 from rest_framework.authtoken.admin import TokenAdmin
 from rest_framework.authtoken.models import TokenProxy
@@ -124,7 +125,10 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "min_amount",
         "max_amount",
     ]
-    readonly_fields = ("reference", "logs")
+    readonly_fields = ("reference", "pretty_logs")
+
+    def pretty_logs(self, obj):
+        return format_html(obj.logs)
 
     actions = [
         "maker_wins",

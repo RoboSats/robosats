@@ -236,7 +236,7 @@ class Order(models.Model):
     taker_platform_rated = models.BooleanField(default=False, null=False)
 
     logs = models.TextField(
-        max_length=80_000, null=True, default=None, blank=True, editable=False
+        max_length=80_000, null=True, default="", blank=True, editable=False
     )
 
     def __str__(self):
@@ -276,6 +276,23 @@ class Order(models.Model):
         }
 
         return t_to_expire[status]
+
+    def log(self, event="empty event", level="INFO"):
+        """
+        log() adds a new line to the Order.log field. We wrap it all in a
+        try/catch block since this function is called inside the main request->response
+        pipe and any error here would lead to a 500 response.
+        """
+        try:
+            timestamp = timezone.now().replace(microsecond=0).isoformat()
+            level_in_tag = "" if level == "INFO" else "<b>"
+            level_out_tag = "" if level == "INFO" else "</b>"
+            self.logs += (
+                f"[{timestamp}] | {level_in_tag}{level}{level_out_tag} | {event} <br/>"
+            )
+            self.save(update_fields=["logs"])
+        except Exception:
+            pass
 
 
 @receiver(pre_delete, sender=Order)
