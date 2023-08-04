@@ -160,8 +160,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
 
                 order.maker.robot.earned_rewards = own_bond_sats + trade_sats
                 order.maker.robot.save(update_fields=["earned_rewards"])
-                order.status = Order.Status.TLD
-                order.save(update_fields=["status"])
+                order.update_status(Order.Status.TLD)
 
                 self.message_user(
                     request,
@@ -199,8 +198,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.taker.robot.earned_rewards = own_bond_sats + trade_sats
                 order.taker.robot.save(update_fields=["earned_rewards"])
 
-                order.status = Order.Status.MLD
-                order.save(update_fields=["status"])
+                order.update_status(Order.Status.MLD)
 
                 self.message_user(
                     request,
@@ -240,8 +238,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 )
                 order.trade_escrow.sender.robot.save(update_fields=["earned_rewards"])
 
-                order.status = Order.Status.CCA
-                order.save(update_fields=["status"])
+                order.update_status(Order.Status.CCA)
 
                 self.message_user(
                     request,
@@ -275,10 +272,9 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 if order.is_swap:
                     order.payout_tx.status = OnchainPayment.Status.VALID
                     order.payout_tx.save(update_fields=["status"])
-                    order.status = Order.Status.SUC
+                    order.update_status(Order.Status.SUC)
                 else:
-                    order.status = Order.Status.PAY
-                order.save(update_fields=["status"])
+                    order.update_status(Order.Status.PAY)
 
                 Logics.pay_buyer(order)
 

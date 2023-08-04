@@ -293,7 +293,7 @@ class Order(models.Model):
             level_out_tag = "" if level == "INFO" else "</b>"
             self.logs = (
                 self.logs
-                + f"<tr><td>{timestamp}</td> <td>{level_in_tag}{level}{level_out_tag}</td> <td>{event}</td></tr>"
+                + f'<tr><td>{timestamp}</td> <td>{level_in_tag}{level}{level_out_tag}</td> <td style="max-width: 34em">{event}</td></tr>'
             )
             self.save(update_fields=["logs"])
         except Exception:

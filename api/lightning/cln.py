@@ -36,7 +36,6 @@ MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
 
 
 class CLNNode:
-
     os.environ["GRPC_SSL_CIPHER_SUITES"] = "HIGH+ECDSA"
 
     # Create the SSL credentials object
@@ -563,8 +562,7 @@ class CLNNode:
                 lnpayment.in_flight = True
                 lnpayment.save(update_fields=["in_flight", "status"])
 
-                order.status = Order.Status.PAY
-                order.save(update_fields=["status"])
+                order.update_status(Order.Status.PAY)
 
                 response = cls.stub.Pay(request)
 
@@ -594,11 +592,11 @@ class CLNNode:
                         ]
                     )
 
-                    order.status = Order.Status.FAI
+                    order.update_status(Order.Status.FAI)
                     order.expires_at = timezone.now() + timedelta(
                         seconds=order.t_to_expire(Order.Status.FAI)
                     )
-                    order.save(update_fields=["status", "expires_at"])
+                    order.save(update_fields=["expires_at"])
                     print(
                         f"Order: {order.id} FAILED. Hash: {hash} Reason: {cls.payment_failure_context[-1]}"
                     )
@@ -618,11 +616,11 @@ class CLNNode:
                     )
                     lnpayment.preimage = response.payment_preimage.hex()
                     lnpayment.save(update_fields=["status", "fee", "preimage"])
-                    order.status = Order.Status.SUC
+                    order.update_status(Order.Status.SUC)
                     order.expires_at = timezone.now() + timedelta(
                         seconds=order.t_to_expire(Order.Status.SUC)
                     )
-                    order.save(update_fields=["status", "expires_at"])
+                    order.save(update_fields=["expires_at"])
 
                     results = {"succeded": True}
                     return results
@@ -665,11 +663,11 @@ class CLNNode:
                             ]
                         )
 
-                        order.status = Order.Status.FAI
+                        order.update_status(Order.Status.FAI)
                         order.expires_at = timezone.now() + timedelta(
                             seconds=order.t_to_expire(Order.Status.FAI)
                         )
-                        order.save(update_fields=["status", "expires_at"])
+                        order.save(update_fields=["expires_at"])
                         print(
                             f"Order: {order.id} FAILED. Hash: {hash} Reason: {cls.payment_failure_context[status_code]}"
                         )
@@ -700,11 +698,11 @@ class CLNNode:
                                     "in_flight",
                                 ]
                             )
-                            order.status = Order.Status.FAI
+                            order.update_status(Order.Status.FAI)
                             order.expires_at = timezone.now() + timedelta(
                                 seconds=order.t_to_expire(Order.Status.FAI)
                             )
-                            order.save(update_fields=["status", "expires_at"])
+                            order.save(update_fields=["expires_at"])
                             results = {
                                 "succeded": False,
                                 "context": "The payout invoice has expired",

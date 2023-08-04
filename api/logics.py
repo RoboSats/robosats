@@ -1001,11 +1001,15 @@ class Logics:
         if order.status == Order.Status.WFB and order.maker == user:
             cls.cancel_bond(order.maker_bond)
             order.update_status(Order.Status.UCA)
+
+            order.log("Order expired while waiting for maker bond")
+            order.log("Maker bond was cancelled")
+
             return True, None
 
         # 2.a) When maker cancels after bond
         #
-        # The order dissapears from book and goes to cancelled. If strict, maker is charged the bond
+        # The order disapears from book and goes to cancelled. If strict, maker is charged the bond
         # to prevent DDOS on the LN node and order book. If not strict, maker is returned
         # the bond (more user friendly).
         elif (
@@ -1017,6 +1021,10 @@ class Logics:
                 send_notification.delay(
                     order_id=order.id, message="public_order_cancelled"
                 )
+
+                order.log("Order cancelled by maker while public or paused")
+                order.log("Maker bond was <b>unlocked</b>")
+
                 return True, None
 
         # 2.b) When maker cancels after bond and before taker bond is locked
@@ -1031,6 +1039,11 @@ class Logics:
                 send_notification.delay(
                     order_id=order.id, message="public_order_cancelled"
                 )
+
+                order.log("Order cancelled by maker before the taker locked the bond")
+                order.log("Maker bond was <b>unlocked</b>")
+                order.log("Taker bond was <b>cancelled</b>")
+
                 return True, None
 
         # 3) When taker cancels before bond
@@ -1040,6 +1053,9 @@ class Logics:
             # adds a timeout penalty
             cls.cancel_bond(order.taker_bond)
             cls.kick_taker(order)
+
+            order.log("Taker cancelled before locking the bond")
+
             return True, None
 
         # 4) When taker or maker cancel after bond (before escrow)
@@ -1063,6 +1079,11 @@ class Logics:
                 order.update_status(Order.Status.UCA)
                 # Reward taker with part of the maker bond
                 cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
+
+                order.log("Maker cancelled before escrow was locked")
+                order.log("Maker bond was <b>settled</b>")
+                order.log("Taker bond was <b>unlocked</b>")
+
                 return True, None
 
         # 4.b) When taker cancel after bond (before escrow)
@@ -1080,6 +1101,11 @@ class Logics:
                 send_notification.delay(order_id=order.id, message="order_published")
                 # Reward maker with part of the taker bond
                 cls.add_slashed_rewards(order, taker_bond, order.maker_bond)
+
+                order.log("Taker cancelled before escrow was locked")
+                order.log("Taker bond was <b>settled</b>")
+                order.log("Maker bond was <b>unlocked</b>")
+
                 return True, None
 
         # 5) When trade collateral has been posted (after escrow)
@@ -1092,25 +1118,32 @@ class Logics:
             # if the maker had asked, and now the taker does: cancel order, return everything
             if order.maker_asked_cancel and user == order.taker:
                 cls.collaborative_cancel(order)
+                order.log("Taker accepted the collaborative cancellation")
                 return True, None
 
             # if the taker had asked, and now the maker does: cancel order, return everything
             elif order.taker_asked_cancel and user == order.maker:
                 cls.collaborative_cancel(order)
+                order.log("Maker accepted the collaborative cancellation")
                 return True, None
 
             # Otherwise just make true the asked for cancel flags
             elif user == order.taker:
                 order.taker_asked_cancel = True
                 order.save(update_fields=["taker_asked_cancel"])
+                order.log("Taker asked for collaborative cancellation")
                 return True, None
 
             elif user == order.maker:
                 order.maker_asked_cancel = True
                 order.save(update_fields=["maker_asked_cancel"])
+                order.log("Maker asked for collaborative cancellation")
                 return True, None
 
         else:
+            order.log(
+                f"Cancel request was sent by {user} on an invalid status {order.status}: <i>{Order.Status(order.status).label}</i>"
+            )
             return False, {"bad_request": "You cannot cancel this order"}
 
     @classmethod
@@ -1124,6 +1157,12 @@ class Logics:
         cls.return_escrow(order)
         order.update_status(Order.Status.CCA)
         send_notification.delay(order_id=order.id, message="collaborative_cancelled")
+
+        order.log("Order was collaboratively cancelled")
+        order.log("Maker bond was <b>unlocked</b>")
+        order.log("Taker bond was <b>unlocked</b>")
+        order.log("Trade escrow was <b>unlocked</b>")
+
         return
 
     @classmethod
@@ -1146,7 +1185,7 @@ class Logics:
 
         order.save()  # update all fields
 
-        # send_notification.delay(order_id=order.id,'order_published') # too spammy
+        order.log("Order {order} is public in the order book")
         return
 
     def compute_cltv_expiry_blocks(order, invoice_concept):
@@ -1236,6 +1275,9 @@ class Logics:
         )
 
         order.save(update_fields=["last_satoshis", "last_satoshis_time", "maker_bond"])
+
+        order.log(f"Maker bond invoice {hold_payment['payment_hash']} was created")
+
         return True, {
             "bond_invoice": hold_payment["invoice"],
             "bond_satoshis": bond_satoshis,
@@ -1357,6 +1399,9 @@ class Logics:
                 "expires_at",
             ]
         )
+
+        order.log(f"Taker bond invoice {hold_payment['payment_hash']} was created")
+
         return True, {
             "bond_invoice": hold_payment["invoice"],
             "bond_satoshis": bond_satoshis,
@@ -1440,6 +1485,9 @@ class Logics:
         )
 
         order.save(update_fields=["trade_escrow"])
+
+        order.log(f"Trade escrow invoice {hold_payment['payment_hash']} was created")
+
         return True, {
             "escrow_invoice": hold_payment["invoice"],
             "escrow_satoshis": escrow_satoshis,
@@ -1500,6 +1548,9 @@ class Logics:
         if order.payout_tx:
             order.payout_tx.status = OnchainPayment.Status.CANCE
             order.payout_tx.save(update_fields=["status"])
+
+            order.log(f"Onchain payment {order.payout_tx} was cancelled")
+
             return True
         else:
             return False
@@ -1537,6 +1588,7 @@ class Logics:
             order.save(update_fields=["contract_finalization_time"])
 
             send_notification.delay(order_id=order.id, message="trade_successful")
+            order.log("<b>Paying buyer invoice</b>")
             return True
 
         # Pay onchain to address
@@ -1553,6 +1605,7 @@ class Logics:
                 order.save(update_fields=["contract_finalization_time"])
 
                 send_notification.delay(order_id=order.id, message="trade_successful")
+                order.log("<b>Paying buyer onchain address</b>")
                 return True
 
     @classmethod
@@ -1563,11 +1616,13 @@ class Logics:
         """
 
         if order.status == Order.Status.CHA or order.status == Order.Status.FSE:
-            # If buyer, settle escrow and mark fiat sent
+            # If buyer mark fiat sent
             if cls.is_buyer(order, user):
                 order.update_status(Order.Status.FSE)
                 order.is_fiat_sent = True
                 order.save(update_fields=["is_fiat_sent"])
+
+                order.log("Buyer confirmed 'fiat sent'")
 
             # If seller and fiat was sent, SETTLE ESCROW AND PAY BUYER INVOICE
             elif cls.is_seller(order, user):
@@ -1597,6 +1652,8 @@ class Logics:
                     # RETURN THE BONDS
                     cls.return_bond(order.taker_bond)
                     cls.return_bond(order.maker_bond)
+                    order.log("Taker bond was <b>unlocked</b>")
+                    order.log("Maker bond was <b>unlocked</b>")
                     # !!! KEY LINE - PAYS THE BUYER INVOICE !!!
                     cls.pay_buyer(order)
 
