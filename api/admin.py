@@ -10,6 +10,7 @@ from rest_framework.authtoken.models import TokenProxy
 
 from api.logics import Logics
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Robot
+from api.utils import objects_to_hyperlinks
 
 admin.site.unregister(Group)
 admin.site.unregister(User)
@@ -125,10 +126,11 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "min_amount",
         "max_amount",
     ]
-    readonly_fields = ("reference", "pretty_logs")
+    readonly_fields = ("reference", "_logs")
 
-    def pretty_logs(self, obj):
-        return format_html(f"<table>{obj.logs}</table>")
+    def _logs(self, obj):
+        with_hyperlinks = objects_to_hyperlinks(obj.logs)
+        return format_html(f'<table style="max-width: 75em">{with_hyperlinks}</table>')
 
     actions = [
         "maker_wins",

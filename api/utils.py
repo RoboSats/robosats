@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 
 import gnupg
 import numpy as np
@@ -377,3 +378,15 @@ def is_valid_token(token: str) -> bool:
 
     charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&()*+,./:;<=>?@[]^_`{|}~"'
     return all(c in charset for c in token)
+
+
+def objects_to_hyperlinks(logs: str) -> str:
+    objects = ["LNPayment", "Robot", "Order", "OnchainPayment"]
+    for obj in objects:
+        logs = re.sub(
+            rf"{obj}\(([0-9a-fA-F]+),\s*([^)]+)\)",
+            lambda m: f'<b><a href="/coordinator/api/{obj.lower()}/{m.group(1)}">{m.group(2)}</a></b>',
+            logs,
+            flags=re.DOTALL,
+        )
+    return logs

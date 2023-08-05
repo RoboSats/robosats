@@ -1276,7 +1276,9 @@ class Logics:
 
         order.save(update_fields=["last_satoshis", "last_satoshis_time", "maker_bond"])
 
-        order.log(f"Maker bond invoice {hold_payment['payment_hash']} was created")
+        order.log(
+            f"Maker bond LNPayment({order.maker_bond.payment_hash},{str(order.maker_bond)}) was created"
+        )
 
         return True, {
             "bond_invoice": hold_payment["invoice"],
