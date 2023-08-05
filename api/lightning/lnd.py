@@ -169,10 +169,17 @@ class LNDNode:
                 onchainpayment.txid = response.txid
                 onchainpayment.broadcasted = True
             onchainpayment.save(update_fields=["txid", "broadcasted"])
+            onchainpayment.order_paid_TX.log(
+                f"TX OnchainPayment({onchainpayment.id},{response.txid}) in <b>mempool</b>"
+            )
             return True
 
         elif onchainpayment.status == on_mempool_code:
             # Bug, double payment attempted
+            onchainpayment.order_paid_TX.log(
+                f"Attempted to re-broadcast OnchainPayment({onchainpayment.id},{onchainpayment}) already in mempool",
+                level="ERROR",
+            )
             return True
 
     @classmethod
@@ -540,13 +547,22 @@ class LNDNode:
                 )
 
                 order.update_status(Order.Status.FAI)
+
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.FAI)
                 )
-                order.save(update_fields=["status", "expires_at"])
+                order.save(update_fields=["expires_at"])
+
+                str_failure_reason = cls.payment_failure_context[
+                    response.failure_reason
+                ]
                 print(
-                    f"Order: {order.id} FAILED. Hash: {hash} Reason: {cls.payment_failure_context[response.failure_reason]}"
+                    f"Order: {order.id} FAILED. Hash: {hash} Reason: {str_failure_reason}"
                 )
+                order.log(
+                    f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>failed</b>. Failure reason: {str_failure_reason})"
+                )
+
                 return {
                     "succeded": False,
                     "context": f"payment failure reason: {cls.payment_failure_context[response.failure_reason]}",
@@ -565,7 +581,11 @@ class LNDNode:
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.SUC)
                 )
-                order.save(update_fields=["status", "expires_at"])
+                order.save(update_fields=["expires_at"])
+
+                order.log(
+                    f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>succeeded</b>"
+                )
 
                 results = {"succeded": True}
                 return results
@@ -603,7 +623,11 @@ class LNDNode:
                         order.expires_at = timezone.now() + timedelta(
                             seconds=order.t_to_expire(Order.Status.FAI)
                         )
-                        order.save(update_fields=["status", "expires_at"])
+                        order.save(update_fields=["expires_at"])
+
+                        order.log(
+                            f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>had expired</b>"
+                        )
 
                         results = {
                             "succeded": False,

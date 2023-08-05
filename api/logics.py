@@ -173,7 +173,9 @@ class Logics:
                 seconds=order.t_to_expire(Order.Status.TAK)
             )
             order.save(update_fields=["amount", "taker", "expires_at"])
-            order.log(f"Taken by {user} for {order.amount} fiat units")
+            order.log(
+                f"Taken by Robot({user.robot.id},{user.username}) for {order.amount} fiat units"
+            )
             return True, None
 
     def is_buyer(order, user):
@@ -535,7 +537,9 @@ class Logics:
             robot.save(update_fields=["num_disputes", "orders_disputes_started"])
 
         send_notification.delay(order_id=order.id, message="dispute_opened")
-        order.log(f"Dispute was opened {f'by {user}' if user else ''}")
+        order.log(
+            f"Dispute was opened {f'by Robot({user.robot.id},{user.username})' if user else ''}"
+        )
         order.log("Maker bond was <b>settled</b>")
         order.log("Taker bond was <b>settled</b>")
 
@@ -578,7 +582,7 @@ class Logics:
             order.save(update_fields=["status", "expires_at"])
 
         order.log(
-            f"Dispute statement submitted by {user} with length of {len(statement)} chars"
+            f"Dispute statement submitted by Robot({user.robot.id},{user.username}) with length of {len(statement)} chars"
         )
         return True, None
 
@@ -658,7 +662,7 @@ class Logics:
         order.save(update_fields=["payout_tx"])
 
         order.log(
-            f"Empty {order.payout_tx} was created. Available onchain balance is {available_onchain} Sats"
+            f"Empty OnchainPayment({order.payout_tx.id},{order.payout_tx}) was created. Available onchain balance is {available_onchain} Sats"
         )
 
         return True
@@ -779,7 +783,7 @@ class Logics:
             == LNPayment.Status.LOCKED
         ) or order.status not in [Order.Status.WFI, Order.Status.WF2]:
             order.log(
-                f"Robot {user} attempted to submit an address while the order was in status {order.status}",
+                f"Robot({user.robot.id},{user.username}) attempted to submit an address while the order was in status {order.status}",
                 level="ERROR",
             )
             return False, {"bad_request": "You cannot submit an address now."}
@@ -801,7 +805,7 @@ class Logics:
 
             if float(mining_fee_rate) < min_mining_fee_rate:
                 order.log(
-                    f"The onchain fee {float(mining_fee_rate)} Sats/vbytes proposed by {user} is less than the current minimum mining fee {min_mining_fee_rate} Sats",
+                    f"The onchain fee {float(mining_fee_rate)} Sats/vbytes proposed by Robot({user.robot.id},{user.username}) is less than the current minimum mining fee {min_mining_fee_rate} Sats",
                     level="WARN",
                 )
                 return False, {
@@ -809,7 +813,7 @@ class Logics:
                 }
             elif float(mining_fee_rate) > 500:
                 order.log(
-                    f"The onchain fee {float(mining_fee_rate)} Sats/vbytes proposed by {user} is higher than the absolute maximum mining fee 500 Sats",
+                    f"The onchain fee {float(mining_fee_rate)} Sats/vbytes proposed by Robot({user.robot.id},{user.username}) is higher than the absolute maximum mining fee 500 Sats",
                     level="WARN",
                 )
                 return False, {
@@ -845,7 +849,7 @@ class Logics:
         order.save(update_fields=["is_swap"])
 
         order.log(
-            f"Robot {user} added an onchain address {address[:6]}...{address[-4:]} as payout method. Amount to be sent is {tx.sent_satoshis} Sats, mining fee is {tx.mining_fee_sats} Sats"
+            f"Robot({user.robot.id},{user.username}) added an onchain address OnchainPayment({tx.id},{address[:6]}...{address[-4:]}) as payout method. Amount to be sent is {tx.sent_satoshis} Sats, mining fee is {tx.mining_fee_sats} Sats"
         )
         cls.move_state_updated_payout_method(order)
 
@@ -855,7 +859,10 @@ class Logics:
     def update_invoice(cls, order, user, invoice, routing_budget_ppm):
         # Empty invoice?
         if not invoice:
-            order.log(f"Robot {user} submitted an empty invoice", level="WARN")
+            order.log(
+                f"Robot({user.robot.id},{user.username}) submitted an empty invoice",
+                level="WARN",
+            )
             return False, {"bad_invoice": "You submitted an empty invoice"}
         # only the buyer can post a buyer invoice
         if not cls.is_buyer(order, user):
@@ -919,7 +926,7 @@ class Logics:
         order.save(update_fields=["payout", "is_swap"])
 
         order.log(
-            f"Robot {user} added the invoice {order.payout.payment_hash} as payout method. Amount to be sent is {order.payout.num_satoshis} Sats, routing budget is {order.payout.routing_budget_sats} Sats ({order.payout.routing_budget_ppm}ppm)"
+            f"Robot({user.robot.id},{user.username}) added the invoice LNPayment({order.payout.payment_hash},{order.payout.payment_hash}) as payout method. Amount to be sent is {order.payout.num_satoshis} Sats, routing budget is {order.payout.routing_budget_sats} Sats ({order.payout.routing_budget_ppm}ppm)"
         )
 
         cls.move_state_updated_payout_method(order)
@@ -1142,7 +1149,7 @@ class Logics:
 
         else:
             order.log(
-                f"Cancel request was sent by {user} on an invalid status {order.status}: <i>{Order.Status(order.status).label}</i>"
+                f"Cancel request was sent by Robot({user.robot.id},{user.username}) on an invalid status {order.status}: <i>{Order.Status(order.status).label}</i>"
             )
             return False, {"bad_request": "You cannot cancel this order"}
 
@@ -1185,7 +1192,7 @@ class Logics:
 
         order.save()  # update all fields
 
-        order.log("Order {order} is public in the order book")
+        order.log(f"Order({order.id},{str(order)}) is public in the order book")
         return
 
     def compute_cltv_expiry_blocks(order, invoice_concept):
@@ -1318,12 +1325,15 @@ class Logics:
 
         # Log a market tick
         try:
-            MarketTick.log_a_tick(order)
+            market_tick = MarketTick.log_a_tick(order)
+            order.log(
+                f"New Market Tick logged as MarketTick({market_tick.id},{market_tick})"
+            )
         except Exception:
             pass
         send_notification.delay(order_id=order.id, message="order_taken_confirmed")
         order.log(
-            f"<b>Contract formalized. </b>Maker: {order.maker}. Taker: {order.taker}. API median price {order.currency.exchange_rate} {Currency.currency_choices(order.currency.currency).label}/BTC. Premium is {order.premium}. Contract size {order.last_satoshis} Sats"
+            f"<b>Contract formalized.</b> Maker: Robot({order.maker.robot},{order.maker.username}). Taker: Robot({order.taker.robot},{order.taker.username}). API median price {order.currency.exchange_rate} {Currency.currency_choices(order.currency.currency).label}/BTC. Premium is {order.premium}. Contract size {order.last_satoshis} Sats"
         )
         return True
 
@@ -1402,7 +1412,9 @@ class Logics:
             ]
         )
 
-        order.log(f"Taker bond invoice {hold_payment['payment_hash']} was created")
+        order.log(
+            f"Taker bond invoice LNPayment({hold_payment['payment_hash']},{str(order.taker_bond)}) was created"
+        )
 
         return True, {
             "bond_invoice": hold_payment["invoice"],
@@ -1488,7 +1500,9 @@ class Logics:
 
         order.save(update_fields=["trade_escrow"])
 
-        order.log(f"Trade escrow invoice {hold_payment['payment_hash']} was created")
+        order.log(
+            f"Trade escrow invoice LNPayment({hold_payment['payment_hash']},{str(order.trade_escrow)}) was created"
+        )
 
         return True, {
             "escrow_invoice": hold_payment["invoice"],
@@ -1551,7 +1565,9 @@ class Logics:
             order.payout_tx.status = OnchainPayment.Status.CANCE
             order.payout_tx.save(update_fields=["status"])
 
-            order.log(f"Onchain payment {order.payout_tx} was cancelled")
+            order.log(
+                f"Onchain payment OnchainPayment({order.payout_tx.id},{str(order.payout_tx)}) was cancelled"
+            )
 
             return True
         else:
@@ -1690,6 +1706,10 @@ class Logics:
         order.reverted_fiat_sent = True
         order.save(update_fields=["is_fiat_sent", "reverted_fiat_sent"])
 
+        order.log(
+            f"Buyer Robot({user.robot.id},{user.username}) reverted the confirmation of 'fiat sent'"
+        )
+
         return True, None
 
     def pause_unpause_public_order(order, user):
@@ -1700,9 +1720,19 @@ class Logics:
         else:
             if order.status == Order.Status.PUB:
                 order.update_status(Order.Status.PAU)
+                order.log(
+                    f"Robot({user.robot.id},{user.username}) paused the public order"
+                )
             elif order.status == Order.Status.PAU:
                 order.update_status(Order.Status.PUB)
+                order.log(
+                    f"Robot({user.robot.id},{user.username}) made public the paused order"
+                )
             else:
+                order.log(
+                    f"Robot({user.robot.id},{user.username}) tried to pause/unpause an order that was not public or paused",
+                    level="WARN",
+                )
                 return False, {
                     "bad_request": "You can only pause/unpause an order that is either public or paused"
                 }
@@ -1751,7 +1781,9 @@ class Logics:
         order.proceeds += new_proceeds
         order.save(update_fields=["proceeds"])
         send_devfund_donation.delay(order.id, new_proceeds, "slashed bond")
-
+        order.log(
+            f"Robot({rewarded_robot.id},{rewarded_robot.user.username}) was rewarded {reward} Sats. Robot({slashed_robot.id},{slashed_robot.user.username}) was returned {slashed_return} Sats)"
+        )
         return
 
     @classmethod
@@ -1832,6 +1864,11 @@ class Logics:
 
         order.proceeds += new_proceeds
         order.save(update_fields=["proceeds"])
+
+        order.log(
+            f"Order({order.id},{str(order)}) proceedings are incremented by {new_proceeds} Sats, totalling {order.proceeds} Sats"
+        )
+
         send_devfund_donation.delay(order.id, new_proceeds, "successful order")
 
     @classmethod

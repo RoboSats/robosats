@@ -381,7 +381,14 @@ def is_valid_token(token: str) -> bool:
 
 
 def objects_to_hyperlinks(logs: str) -> str:
-    objects = ["LNPayment", "Robot", "Order", "OnchainPayment"]
+    """
+    Parses strings that have Object(ID,NAME) that match API models.
+    For example Robot(ID,NAME) will be parsed into
+    <b><a href="/coordinator/api/robot/ID/change}">NAME</a></b>
+
+    Used to format pretty logs for the Order admin panel.
+    """
+    objects = ["LNPayment", "Robot", "Order", "OnchainPayment", "MarketTick"]
     for obj in objects:
         logs = re.sub(
             rf"{obj}\(([0-9a-fA-F]+),\s*([^)]+)\)",

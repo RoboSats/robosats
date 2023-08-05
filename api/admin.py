@@ -130,7 +130,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
 
     def _logs(self, obj):
         with_hyperlinks = objects_to_hyperlinks(obj.logs)
-        return format_html(f'<table style="max-width: 75em">{with_hyperlinks}</table>')
+        return format_html(f'<table style="width: 100%">{with_hyperlinks}</table>')
 
     actions = [
         "maker_wins",

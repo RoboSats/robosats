@@ -70,9 +70,11 @@ class MarketTick(models.Model):
             market_exchange_rate = float(order.currency.exchange_rate)
             premium = 100 * (price / market_exchange_rate - 1)
 
-            MarketTick.objects.create(
+            market_tick = MarketTick.objects.create(
                 price=price, volume=volume, premium=premium, currency=order.currency
             )
+
+            return market_tick
 
     def __str__(self):
         return f"Tick: {str(self.id)[:8]}"
