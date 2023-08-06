@@ -1081,6 +1081,7 @@ class Logics:
             # Settle the maker bond (Maker loses the bond for canceling an ongoing trade)
             valid = cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)  # returns taker bond
+            cls.cancel_escrow(order)
 
             if valid:
                 order.update_status(Order.Status.UCA)
@@ -1125,26 +1126,34 @@ class Logics:
             # if the maker had asked, and now the taker does: cancel order, return everything
             if order.maker_asked_cancel and user == order.taker:
                 cls.collaborative_cancel(order)
-                order.log("Taker accepted the collaborative cancellation")
+                order.log(
+                    f"Taker Robot({user.robot.id},{user.username}) accepted the collaborative cancellation"
+                )
                 return True, None
 
             # if the taker had asked, and now the maker does: cancel order, return everything
             elif order.taker_asked_cancel and user == order.maker:
                 cls.collaborative_cancel(order)
-                order.log("Maker accepted the collaborative cancellation")
+                order.log(
+                    f"Maker Robot({user.robot.id},{user.username}) accepted the collaborative cancellation"
+                )
                 return True, None
 
             # Otherwise just make true the asked for cancel flags
             elif user == order.taker:
                 order.taker_asked_cancel = True
                 order.save(update_fields=["taker_asked_cancel"])
-                order.log("Taker asked for collaborative cancellation")
+                order.log(
+                    f"Taker Robot({user.robot.id},{user.username}) asked for collaborative cancellation"
+                )
                 return True, None
 
             elif user == order.maker:
                 order.maker_asked_cancel = True
                 order.save(update_fields=["maker_asked_cancel"])
-                order.log("Maker asked for collaborative cancellation")
+                order.log(
+                    f"Maker Robot({user.robot.id},{user.username}) asked for collaborative cancellation"
+                )
                 return True, None
 
         else:
@@ -1514,7 +1523,7 @@ class Logics:
         if LNNode.settle_hold_invoice(order.trade_escrow.preimage):
             order.trade_escrow.status = LNPayment.Status.SETLED
             order.trade_escrow.save(update_fields=["status"])
-            order.log("Trade escrow was settled")
+            order.log("Trade escrow was <b>settled</b>")
             return True
 
     def settle_bond(bond):
@@ -1529,7 +1538,7 @@ class Logics:
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.RETNED
             order.trade_escrow.save(update_fields=["status"])
-            order.log("Trade escrow was unlocked")
+            order.log("Trade escrow was <b>unlocked</b>")
             return True
 
     def cancel_escrow(order):
@@ -1538,7 +1547,7 @@ class Logics:
         if LNNode.cancel_return_hold_invoice(order.trade_escrow.payment_hash):
             order.trade_escrow.status = LNPayment.Status.CANCEL
             order.trade_escrow.save(update_fields=["status"])
-            order.log("Trade escrow was cancelled")
+            order.log("Trade escrow was <b>cancelled</b>")
             return True
 
     def return_bond(bond):
@@ -1566,7 +1575,7 @@ class Logics:
             order.payout_tx.save(update_fields=["status"])
 
             order.log(
-                f"Onchain payment OnchainPayment({order.payout_tx.id},{str(order.payout_tx)}) was cancelled"
+                f"Onchain payment OnchainPayment({order.payout_tx.id},{str(order.payout_tx)}) was <b>cancelled</b>"
             )
 
             return True

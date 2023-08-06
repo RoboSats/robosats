@@ -391,7 +391,7 @@ def objects_to_hyperlinks(logs: str) -> str:
     objects = ["LNPayment", "Robot", "Order", "OnchainPayment", "MarketTick"]
     for obj in objects:
         logs = re.sub(
-            rf"{obj}\(([0-9a-fA-F]+),\s*([^)]+)\)",
+            rf"{obj}\(([0-9a-fA-F\-A-F]+),\s*([^)]+)\)",
             lambda m: f'<b><a href="/coordinator/api/{obj.lower()}/{m.group(1)}">{m.group(2)}</a></b>',
             logs,
             flags=re.DOTALL,
