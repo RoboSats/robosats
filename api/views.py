@@ -84,7 +84,6 @@ class MakerView(CreateAPIView):
 
     @extend_schema(**MakerViewSchema.post)
     def post(self, request):
-
         serializer = self.serializer_class(data=request.data)
 
         if not request.user.is_authenticated:
@@ -371,7 +370,6 @@ class OrderView(viewsets.ViewSet):
         elif data["is_buyer"] and (
             order.status == Order.Status.WF2 or order.status == Order.Status.WFI
         ):
-
             # If the two bonds are locked, reply with an AMOUNT and onchain swap cost so he can send the buyer invoice/address.
             if (
                 order.maker_bond.status
@@ -414,7 +412,6 @@ class OrderView(viewsets.ViewSet):
 
         # 9) If status is 'DIS' and all HTLCS are in LOCKED
         elif order.status == Order.Status.DIS:
-
             # add whether the dispute statement has been received
             if data["is_maker"]:
                 data["statement_submitted"] = (
@@ -942,7 +939,6 @@ class BookView(ListAPIView):
 
 
 class InfoView(ListAPIView):
-
     serializer_class = InfoSerializer
 
     @extend_schema(**InfoViewSchema.get)
@@ -983,7 +979,7 @@ class InfoView(ListAPIView):
         if not len(queryset) == 0:
             volume_contracted = []
             for tick in queryset:
-                volume_contracted.append(tick.volume)
+                volume_contracted.append(tick.volume if tick.volume else 0)
             lifetime_volume = sum(volume_contracted)
         else:
             lifetime_volume = 0
@@ -1057,12 +1053,10 @@ class RewardView(CreateAPIView):
 
 
 class PriceView(ListAPIView):
-
     serializer_class = PriceSerializer
 
     @extend_schema(**PriceViewSchema.get)
     def get(self, request):
-
         payload = {}
         queryset = Currency.objects.all().order_by("currency")
 
@@ -1085,7 +1079,6 @@ class PriceView(ListAPIView):
 
 
 class TickView(ListAPIView):
-
     queryset = MarketTick.objects.all()
     serializer_class = TickSerializer
 
@@ -1124,7 +1117,6 @@ class TickView(ListAPIView):
 class LimitView(ListAPIView):
     @extend_schema(**LimitViewSchema.get)
     def get(self, request):
-
         # Trade limits as BTC
         min_trade = float(config("MIN_TRADE")) / 100_000_000
         max_trade = float(config("MAX_TRADE")) / 100_000_000
