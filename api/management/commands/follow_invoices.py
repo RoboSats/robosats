@@ -22,7 +22,6 @@ def is_same_status(a: LNPayment.Status, b: LNPayment.Status) -> bool:
 
 
 class Command(BaseCommand):
-
     help = "Follows all active hold invoices, sends out payments"
     rest = 5  # seconds between consecutive checks for invoice updates
 
@@ -188,7 +187,6 @@ class Command(BaseCommand):
                 follow_send_payment.delay(lnpayment.payment_hash)
 
     def send_onchain_payments(self):
-
         queryset = OnchainPayment.objects.filter(
             status=OnchainPayment.Status.QUEUE,
             broadcasted=False,
@@ -229,6 +227,7 @@ class Command(BaseCommand):
             try:
                 # It is a maker bond => Publish order.
                 if hasattr(lnpayment, "order_made"):
+                    lnpayment.order_made.log("Maker bond <b>locked</b>")
                     Logics.publish_order(lnpayment.order_made)
                     send_notification.delay(
                         order_id=lnpayment.order_made.id, message="order_published"
@@ -238,11 +237,13 @@ class Command(BaseCommand):
                 # It is a taker bond => close contract.
                 elif hasattr(lnpayment, "order_taken"):
                     if lnpayment.order_taken.status == Order.Status.TAK:
+                        lnpayment.order_taken.log("Taker bond <b>locked</b>")
                         Logics.finalize_contract(lnpayment.order_taken)
                         return
 
                 # It is a trade escrow => move foward order status.
                 elif hasattr(lnpayment, "order_escrow"):
+                    lnpayment.order_escrow.log("Trade escrow <b>locked</b>")
                     Logics.trade_escrow_received(lnpayment.order_escrow)
                     return
 

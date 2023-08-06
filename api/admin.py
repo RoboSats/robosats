@@ -3,12 +3,14 @@ from statistics import median
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group, User
+from django.utils.html import format_html
 from django_admin_relation_links import AdminChangeLinksMixin
 from rest_framework.authtoken.admin import TokenAdmin
 from rest_framework.authtoken.models import TokenProxy
 
 from api.logics import Logics
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order, Robot
+from api.utils import objects_to_hyperlinks
 
 admin.site.unregister(Group)
 admin.site.unregister(User)
@@ -124,7 +126,11 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
         "min_amount",
         "max_amount",
     ]
-    readonly_fields = ["reference"]
+    readonly_fields = ("reference", "_logs")
+
+    def _logs(self, obj):
+        with_hyperlinks = objects_to_hyperlinks(obj.logs)
+        return format_html(f'<table style="width: 100%">{with_hyperlinks}</table>')
 
     actions = [
         "maker_wins",
@@ -156,8 +162,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
 
                 order.maker.robot.earned_rewards = own_bond_sats + trade_sats
                 order.maker.robot.save(update_fields=["earned_rewards"])
-                order.status = Order.Status.TLD
-                order.save(update_fields=["status"])
+                order.update_status(Order.Status.TLD)
 
                 self.message_user(
                     request,
@@ -195,8 +200,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 order.taker.robot.earned_rewards = own_bond_sats + trade_sats
                 order.taker.robot.save(update_fields=["earned_rewards"])
 
-                order.status = Order.Status.MLD
-                order.save(update_fields=["status"])
+                order.update_status(Order.Status.MLD)
 
                 self.message_user(
                     request,
@@ -236,8 +240,7 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 )
                 order.trade_escrow.sender.robot.save(update_fields=["earned_rewards"])
 
-                order.status = Order.Status.CCA
-                order.save(update_fields=["status"])
+                order.update_status(Order.Status.CCA)
 
                 self.message_user(
                     request,
@@ -271,10 +274,9 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
                 if order.is_swap:
                     order.payout_tx.status = OnchainPayment.Status.VALID
                     order.payout_tx.save(update_fields=["status"])
-                    order.status = Order.Status.SUC
+                    order.update_status(Order.Status.SUC)
                 else:
-                    order.status = Order.Status.PAY
-                order.save(update_fields=["status"])
+                    order.update_status(Order.Status.PAY)
 
                 Logics.pay_buyer(order)
 
