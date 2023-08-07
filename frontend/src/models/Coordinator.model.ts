@@ -1,4 +1,4 @@
-import { Robot, type LimitList, type PublicOrder } from '.';
+import { type Robot, type LimitList, type PublicOrder } from '.';
 
 export interface Contact {
   nostr?: string | undefined;

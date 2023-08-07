@@ -50,7 +50,7 @@ const Onboarding = ({
   const [generatedToken, setGeneratedToken] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const generateToken = () => {
+  const generateToken = (): void => {
     setGeneratedToken(true);
     setInputToken(genBase62Token(36));
     setLoading(true);
@@ -63,7 +63,7 @@ const Onboarding = ({
     <Box>
       <Accordion expanded={step === '1'} disableGutters={true}>
         <AccordionSummary>
-          <Typography variant='h5' color={step == '1' ? 'text.primary' : 'text.disabled'}>
+          <Typography variant='h5' color={step === '1' ? 'text.primary' : 'text.disabled'}>
             {t('1. Generate a token')}
           </Typography>
         </AccordionSummary>
@@ -141,7 +141,7 @@ const Onboarding = ({
 
       <Accordion expanded={step === '2'} disableGutters={true}>
         <AccordionSummary>
-          <Typography variant='h5' color={step == '2' ? 'text.primary' : 'text.disabled'}>
+          <Typography variant='h5' color={step === '2' ? 'text.primary' : 'text.disabled'}>
             {t('2. Meet your robot identity')}
           </Typography>
         </AccordionSummary>
@@ -149,7 +149,7 @@ const Onboarding = ({
           <Grid container direction='column' alignItems='center' spacing={1}>
             <Grid item>
               <Typography>
-                {robot.avatarLoaded && robot.nickname ? (
+                {robot.avatarLoaded && Boolean(robot.nickname) ? (
                   t('This is your trading avatar')
                 ) : (
                   <>
@@ -178,7 +178,7 @@ const Onboarding = ({
               />
             </Grid>
 
-            {robot.avatarLoaded && robot.nickname ? (
+            {robot.avatarLoaded && Boolean(robot.nickname) ? (
               <Grid item>
                 <Typography align='center'>{t('Hi! My name is')}</Typography>
                 <Typography component='h5' variant='h5'>
@@ -210,7 +210,7 @@ const Onboarding = ({
               </Grid>
             ) : null}
             <Grid item>
-              <Collapse in={!!(robot.avatarLoaded && robot.nickname)}>
+              <Collapse in={!!(robot.avatarLoaded && Boolean(robot.nickname))}>
                 <Button
                   onClick={() => {
                     setStep('3');
@@ -229,7 +229,7 @@ const Onboarding = ({
 
       <Accordion expanded={step === '3'} disableGutters={true}>
         <AccordionSummary>
-          <Typography variant='h5' color={step == '3' ? 'text.primary' : 'text.disabled'}>
+          <Typography variant='h5' color={step === '3' ? 'text.primary' : 'text.disabled'}>
             {t('3. Browse or create an order')}
           </Typography>
         </AccordionSummary>

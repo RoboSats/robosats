@@ -31,7 +31,7 @@ import { UserNinjaIcon } from '../Icons';
 import { getWebln } from '../../utils';
 import { apiClient } from '../../services/api';
 import { signCleartextMessage } from '../../pgp';
-import { AppContext, UseAppStoreType, origin } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType, origin } from '../../contexts/AppContext';
 
 interface Props {
   robot: Robot;

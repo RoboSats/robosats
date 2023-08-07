@@ -273,7 +273,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       />
       <Grid item>
         <ChatHeader
-          connected={connected && (peerPubKey ? true : false)}
+          connected={connected && !!peerPubKey}
           peerConnected={peerConnected}
           turtleMode={turtleMode}
           setTurtleMode={setTurtleMode}
