@@ -31,7 +31,6 @@ const MainDialogs = (): JSX.Element => {
     limits,
     robot,
     setRobot,
-    setCurrentOrder,
     settings,
     federation,
     clientVersion,

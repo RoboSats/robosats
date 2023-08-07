@@ -33,7 +33,7 @@ const App = (): JSX.Element => {
   );
 };
 
-const loadApp = () => {
+const loadApp = (): void => {
   // waits until the environment is ready for the Android WebView app
   if (systemClient.loading) {
     setTimeout(loadApp, 200);

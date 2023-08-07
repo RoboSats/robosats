@@ -47,14 +47,14 @@ const MakerPage = (): JSX.Element => {
     maker.paymentMethods,
   ]);
 
-  const onViewOrder = function () {
+  const onViewOrder = function (): void {
     setOrder(undefined);
     setDelay(10000);
   };
 
-  const onOrderClicked = function (id: number) {
+  const onOrderClicked = function (id: number): void {
     if (robot.avatarLoaded) {
-      navigate('/order/' + id);
+      navigate(`/order/${id}`);
       onViewOrder();
     } else {
       setOpenNoRobot(true);
@@ -105,7 +105,7 @@ const MakerPage = (): JSX.Element => {
         >
           <MakerForm
             onOrderCreated={(id) => {
-              navigate('/order/' + id);
+              navigate(`/order/${id}`);
             }}
             disableRequest={matches.length > 0 && !showMatches}
             collapseAll={showMatches}

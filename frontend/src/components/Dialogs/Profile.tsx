@@ -16,7 +16,7 @@ import {
 import BoltIcon from '@mui/icons-material/Bolt';
 import RobotAvatar from '../RobotAvatar';
 import { type Robot } from '../../models';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import RobotInfo from '../RobotInfo';
 
 interface Props {

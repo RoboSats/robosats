@@ -260,7 +260,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
 
       <Grid item>
         <ChatHeader
-          connected={peerPubKey ? true : false}
+          connected={!!peerPubKey}
           peerConnected={peerConnected}
           turtleMode={turtleMode}
           setTurtleMode={setTurtleMode}
