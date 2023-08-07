@@ -691,7 +691,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
                           flexWrap: 'wrap',
                         }}
                       >
-                        {pn(coordinator?.info?.last_day_volume)}
+                        {pn(parseFloat(coordinator?.info?.last_day_volume).toFixed(8))}
                         <BitcoinSignIcon sx={{ width: 14, height: 14 }} color={'text.secondary'} />
                       </div>
                     </ListItemText>
@@ -712,7 +712,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
                           flexWrap: 'wrap',
                         }}
                       >
-                        {pn(coordinator?.info?.lifetime_volume)}
+                        {pn(parseFloat(coordinator?.info?.lifetime_volume).toFixed(8))}
                         <BitcoinSignIcon sx={{ width: 14, height: 14 }} color={'text.secondary'} />
                       </div>
                     </ListItemText>
