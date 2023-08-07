@@ -23,7 +23,7 @@ import { AppContext, hostUrl, type UseAppStoreType } from '../../contexts/AppCon
 import { validateTokenEntropy } from '../../utils';
 
 const RobotPage = (): JSX.Element => {
-  const { robot, setRobot, fetchRobot, torStatus, windowSize, settings } =
+  const { robot, setRobot, fetchFederationRobot, torStatus, windowSize, settings } =
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const params = useParams();
@@ -64,7 +64,7 @@ const RobotPage = (): JSX.Element => {
   const getGenerateRobot = (token: string, slot?: number) => {
     setInputToken(token);
     genKey(token).then(function (key) {
-      fetchRobot({
+      fetchFederationRobot({
         newKeys: {
           pubKey: key.publicKeyArmored,
           encPrivKey: key.encryptedPrivateKeyArmored,

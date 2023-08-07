@@ -69,7 +69,7 @@ const FederationTable = ({
             container
             direction='row'
             sx={{ cursor: 'pointer', position: 'relative', left: '-0.3em', width: '50em' }}
-            wrap={false}
+            wrap='nowrap'
             onClick={() => {
               onClickCoordinator(params.row.shortAlias);
             }}
