@@ -130,8 +130,14 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
     <Accordion>
       <AccordionSummary expandIcon={<ExpandMore />}>
         {`${coordinator.longAlias}:`}
-        {robot.earnedRewards > 0 && <Typography color='success'>&nbsp;{t('Claim Sats!')} </Typography>}
-        {robot.activeOrderId && <Typography color='success'>&nbsp;<b>{t('Active order!')}</b></Typography>}
+        {robot.earnedRewards > 0 && (
+          <Typography color='success'>&nbsp;{t('Claim Sats!')} </Typography>
+        )}
+        {robot.activeOrderId && (
+          <Typography color='success'>
+            &nbsp;<b>{t('Active order!')}</b>
+          </Typography>
+        )}
         {robot.lastOrderId && !robot.activeOrderId && (
           <Typography color='warning'>&nbsp;{t('finished order')}</Typography>
         )}

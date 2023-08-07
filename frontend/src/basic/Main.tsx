@@ -3,17 +3,11 @@ import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box, Slide, Typography, styled } from '@mui/material';
 import { type UseAppStoreType, AppContext, closeAll, hostUrl } from '../contexts/AppContext';
 
-import RobotPage from './RobotPage';
-import MakerPage from './MakerPage';
-import BookPage from './BookPage';
-import OrderPage from './OrderPage';
-import SettingsPage from './SettingsPage';
-import NavBar from './NavBar';
-import MainDialogs from './MainDialogs';
-
+import { RobotPage, MakerPage, BookPage, OrderPage, SettingsPage, NavBar, MainDialogs } from './';
 import RobotAvatar from '../components/RobotAvatar';
-import { useTranslation } from 'react-i18next';
 import Notifications from '../components/Notifications';
+
+import { useTranslation } from 'react-i18next';
 
 const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
 
