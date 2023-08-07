@@ -91,6 +91,7 @@ export interface SlideDirection {
 }
 
 export interface fetchRobotProps {
+  coordinator?: Coordinator;
   newKeys?: { encPrivKey: string; pubKey: string };
   newToken?: string;
   slot?: number;
@@ -108,7 +109,14 @@ const initialFederation: Federation = Object.entries(defaultFederation).reduce(
 );
 
 interface ActionFederation {
-  type: 'reset' | 'enable' | 'disable' | 'updateBook' | 'updateLimits' | 'updateInfo';
+  type:
+    | 'reset'
+    | 'enable'
+    | 'disable'
+    | 'updateBook'
+    | 'updateLimits'
+    | 'updateInfo'
+    | 'updateRobot';
   action: any; // TODO
 }
 
@@ -158,6 +166,15 @@ const reduceFederation = (federation: Federation, action: ActionFederation) => {
           ...federation[action.payload.shortAlias],
           info: action.payload.info,
           loadingInfo: action.payload.loadingInfo,
+        },
+      };
+    case 'updateRobot':
+      return {
+        ...federation,
+        [action.payload.shortAlias]: {
+          ...federation[action.payload.shortAlias],
+          robot: action.payload.robot,
+          loadingRobot: action.payload.loadingRobot,
         },
       };
     default:
@@ -534,12 +551,14 @@ export const useAppStore = () => {
     setBadOrder(undefined);
   };
 
-  const fetchRobot = function ({
+  const fetchCoordinatorRobot = function ({
+    coordinator,
     newToken,
     newKeys,
     slot,
     isRefresh = false,
-  }: fetchRobotProps): void {
+  }: fetchRobotProps): Promis {
+    const url = coordinator[settings.network][origin];
     const token = newToken ?? robot.token ?? '';
 
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
@@ -563,17 +582,21 @@ export const useAppStore = () => {
     };
 
     if (!isRefresh) {
-      setRobot((robot) => {
-        return {
-          ...robot,
-          loading: true,
-          avatarLoaded: false,
-        };
+      const newRobot = {
+        ...coordinator.robot,
+        loading: true,
+        avatarLoaded: false,
+      };
+
+      dispatchFederation({
+        type: 'updateRobot',
+        payload: { shortAlias: coordinator.shortAlias, robot: newRobot, loadingRobot: false },
       });
+      setRobot(newRobot);
     }
 
     apiClient
-      .get(hostUrl, '/api/robot/', auth)
+      .get(url, '/api/robot/', auth)
       .then((data: any) => {
         const newRobot = {
           avatarLoaded: isRefresh ? robot.avatarLoaded : false,
@@ -608,6 +631,10 @@ export const useAppStore = () => {
         setRobot(newRobot);
         garage.updateRobot(newRobot, targetSlot);
         setCurrentSlot(targetSlot);
+        dispatchFederation({
+          type: 'updateRobot',
+          payload: { shortAlias: coordinator.shortAlias, robot: newRobot, loadingRobot: false },
+        });
       })
       .finally(() => {
         systemClient.deleteCookie('public_key');
@@ -615,12 +642,24 @@ export const useAppStore = () => {
       });
   };
 
+  const fetchFederationRobot = function (props: fetchRobotProps): void {
+    Object.entries(federation).map(([shortAlias, coordinator]) => {
+      if (coordinator.enabled === true) {
+        dispatchFederation({
+          type: 'updateRobot',
+          payload: { shortAlias, robot: coordinator.robot, loadingRobot: true },
+        });
+        fetchCoordinatorRobot({ ...props, coordinator });
+      }
+    });
+  };
+
   useEffect(() => {
-    if (hostUrl != '' && page != 'robot') {
+    if (page != 'robot') {
       if (open.profile && robot.avatarLoaded) {
-        fetchRobot({ isRefresh: true }); // refresh/update existing robot
+        fetchFederationRobot({ isRefresh: true }); // refresh/update existing robot
       } else if (!robot.avatarLoaded && robot.token && robot.encPrivKey && robot.pubKey) {
-        fetchRobot({}); // create new robot with existing token and keys (on network and coordinator change)
+        fetchFederationRobot({}); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
   }, [open.profile, hostUrl]);
@@ -647,7 +686,7 @@ export const useAppStore = () => {
     clearOrder,
     robot,
     setRobot,
-    fetchRobot,
+    fetchFederationRobot,
     exchange,
     setExchange,
     focusedCoordinator,

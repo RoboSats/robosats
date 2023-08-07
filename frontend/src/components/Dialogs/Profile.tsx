@@ -1,126 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
 
 import {
-  Badge,
-  Button,
-  CircularProgress,
   Dialog,
   DialogContent,
   Divider,
-  FormControlLabel,
-  Grid,
   List,
   ListItemAvatar,
-  ListItemButton,
   ListItemText,
   ListItem,
-  ListItemIcon,
-  Switch,
-  TextField,
-  Tooltip,
   Typography,
   LinearProgress,
 } from '@mui/material';
 
-import { EnableTelegramDialog } from '.';
 import BoltIcon from '@mui/icons-material/Bolt';
-import SendIcon from '@mui/icons-material/Send';
-import NumbersIcon from '@mui/icons-material/Numbers';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import { UserNinjaIcon } from '../Icons';
-
-import { getWebln } from '../../utils';
 import RobotAvatar from '../RobotAvatar';
-import { apiClient } from '../../services/api';
 import { type Robot } from '../../models';
-import { signCleartextMessage } from '../../pgp';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import RobotInfo from '../RobotInfo';
 
 interface Props {
   open: boolean;
   onClose: () => void;
   robot: Robot;
-  setRobot: (state: Robot) => void;
   baseUrl: string;
 }
 
-const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Props): JSX.Element => {
+const ProfileDialog = ({ open = false, baseUrl, onClose, robot }: Props): JSX.Element => {
+  const { federation } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const theme = useTheme();
-
-  const [rewardInvoice, setRewardInvoice] = useState<string>('');
-  const [showRewardsSpinner, setShowRewardsSpinner] = useState<boolean>(false);
-  const [withdrawn, setWithdrawn] = useState<boolean>(false);
-  const [badInvoice, setBadInvoice] = useState<string>('');
-  const [openClaimRewards, setOpenClaimRewards] = useState<boolean>(false);
-  const [weblnEnabled, setWeblnEnabled] = useState<boolean>(false);
-  const [openEnableTelegram, setOpenEnableTelegram] = useState<boolean>(false);
-
-  const handleWebln = async () => {
-    const webln = await getWebln()
-      .then(() => {
-        setWeblnEnabled(true);
-      })
-      .catch(() => {
-        setWeblnEnabled(false);
-        console.log('WebLN not available');
-      });
-    return webln;
-  };
-
-  useEffect(() => {
-    handleWebln();
-  }, []);
-
-  const handleWeblnInvoiceClicked = async (e: any) => {
-    e.preventDefault();
-    if (robot.earnedRewards) {
-      const webln = await getWebln();
-      const invoice = webln.makeInvoice(robot.earnedRewards).then(() => {
-        if (invoice) {
-          handleSubmitInvoiceClicked(e, invoice.paymentRequest);
-        }
-      });
-    }
-  };
-
-  const handleSubmitInvoiceClicked = (e: any, rewardInvoice: string) => {
-    setBadInvoice('');
-    setShowRewardsSpinner(true);
-    signCleartextMessage(rewardInvoice, robot.encPrivKey, robot.token).then((signedInvoice) => {
-      apiClient
-        .post(
-          baseUrl,
-          '/api/reward/',
-          {
-            invoice: signedInvoice,
-          },
-          { tokenSHA256: robot.tokenSHA256 },
-        )
-        .then((data: any) => {
-          setBadInvoice(data.bad_invoice ?? '');
-          setShowRewardsSpinner(false);
-          setWithdrawn(data.successful_withdrawal);
-          setOpenClaimRewards(!data.successful_withdrawal);
-          setRobot({
-            ...robot,
-            earnedRewards: data.successful_withdrawal ? 0 : robot.earnedRewards,
-          });
-        });
-    });
-    e.preventDefault();
-  };
-
-  const setStealthInvoice = (wantsStealth: boolean) => {
-    apiClient
-      .post(baseUrl, '/api/stealth/', { wantsStealth }, { tokenSHA256: robot.tokenSHA256 })
-      .then((data) => {
-        setRobot({ ...robot, stealthInvoices: data?.wantsStealth });
-      });
-  };
 
   return (
     <Dialog
@@ -176,212 +84,25 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot, setRobot }: Prop
           </ListItem>
 
           <Divider />
-
-          {robot.activeOrderId ? (
-            <ListItemButton
-              onClick={() => {
-                navigate(`/order/${robot.activeOrderId}`);
-                onClose();
-              }}
-            >
-              <ListItemIcon>
-                <Badge badgeContent='' color='primary'>
-                  <NumbersIcon color='primary' />
-                </Badge>
-              </ListItemIcon>
-              <ListItemText
-                primary={t('One active order #{{orderID}}', { orderID: robot.activeOrderId })}
-                secondary={t('Your current order')}
-              />
-            </ListItemButton>
-          ) : robot.lastOrderId ? (
-            <ListItemButton
-              onClick={() => {
-                navigate(`/order/${robot.lastOrderId}`);
-                onClose();
-              }}
-            >
-              <ListItemIcon>
-                <NumbersIcon color='primary' />
-              </ListItemIcon>
-              <ListItemText
-                primary={t('Your last order #{{orderID}}', { orderID: robot.lastOrderId })}
-                secondary={t('Inactive order')}
-              />
-            </ListItemButton>
-          ) : (
-            <ListItem>
-              <ListItemIcon>
-                <NumbersIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary={t('No active orders')}
-                secondary={t('You do not have previous orders')}
-              />
-            </ListItem>
-          )}
-
-          <Divider />
-
-          <EnableTelegramDialog
-            open={openEnableTelegram}
-            onClose={() => {
-              setOpenEnableTelegram(false);
-            }}
-            tgBotName={robot.tgBotName}
-            tgToken={robot.tgToken}
-          />
-
-          <ListItem>
-            <ListItemIcon>
-              <SendIcon />
-            </ListItemIcon>
-
-            <ListItemText>
-              {robot.tgEnabled ? (
-                <Typography color={theme.palette.success.main}>
-                  <b>{t('Telegram enabled')}</b>
-                </Typography>
-              ) : (
-                <Button
-                  color='primary'
-                  onClick={() => {
-                    setOpenEnableTelegram(true);
-                  }}
-                >
-                  {t('Enable Telegram Notifications')}
-                </Button>
-              )}
-            </ListItemText>
-          </ListItem>
-
-          <ListItem>
-            <ListItemIcon>
-              <UserNinjaIcon />
-            </ListItemIcon>
-
-            <ListItemText>
-              <Tooltip
-                placement='bottom'
-                enterTouchDelay={0}
-                title={t(
-                  "Stealth lightning invoices do not contain details about the trade except an order reference. Enable this setting if you don't want to disclose details to a custodial lightning wallet.",
-                )}
-              >
-                <Grid item>
-                  <FormControlLabel
-                    labelPlacement='end'
-                    label={t('Use stealth invoices')}
-                    control={
-                      <Switch
-                        checked={robot.stealthInvoices}
-                        onChange={() => {
-                          setStealthInvoice(!robot.stealthInvoices);
-                        }}
-                      />
-                    }
-                  />
-                </Grid>
-              </Tooltip>
-            </ListItemText>
-          </ListItem>
-
-          <ListItem>
-            <ListItemIcon>
-              <EmojiEventsIcon />
-            </ListItemIcon>
-
-            {!openClaimRewards ? (
-              <ListItemText secondary={t('Your earned rewards')}>
-                <Grid container>
-                  <Grid item xs={9}>
-                    <Typography>{`${robot.earnedRewards} Sats`}</Typography>
-                  </Grid>
-
-                  <Grid item xs={3}>
-                    <Button
-                      disabled={robot.earnedRewards === 0}
-                      onClick={() => {
-                        setOpenClaimRewards(true);
-                      }}
-                      variant='contained'
-                      size='small'
-                    >
-                      {t('Claim')}
-                    </Button>
-                  </Grid>
-                </Grid>
-              </ListItemText>
-            ) : (
-              <form noValidate style={{ maxWidth: 270 }}>
-                <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
-                  <Grid item style={{ display: 'flex', maxWidth: 160 }}>
-                    <TextField
-                      error={!!badInvoice}
-                      helperText={badInvoice || ''}
-                      label={t('Invoice for {{amountSats}} Sats', {
-                        amountSats: robot.earnedRewards,
-                      })}
-                      size='small'
-                      value={rewardInvoice}
-                      onChange={(e) => {
-                        setRewardInvoice(e.target.value);
-                      }}
-                    />
-                  </Grid>
-                  <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 80 }}>
-                    <Button
-                      sx={{ maxHeight: 38 }}
-                      onClick={(e) => {
-                        handleSubmitInvoiceClicked(e, rewardInvoice);
-                      }}
-                      variant='contained'
-                      color='primary'
-                      size='small'
-                      type='submit'
-                    >
-                      {t('Submit')}
-                    </Button>
-                  </Grid>
-                </Grid>
-                {weblnEnabled ? (
-                  <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
-                    <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 240 }}>
-                      <Button
-                        sx={{ maxHeight: 38, minWidth: 230 }}
-                        onClick={async (e) => {
-                          await handleWeblnInvoiceClicked(e);
-                        }}
-                        variant='contained'
-                        color='primary'
-                        size='small'
-                        type='submit'
-                      >
-                        {t('Generate with Webln')}
-                      </Button>
-                    </Grid>
-                  </Grid>
-                ) : (
-                  <></>
-                )}
-              </form>
-            )}
-          </ListItem>
-
-          {showRewardsSpinner && (
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <CircularProgress />
-            </div>
-          )}
-
-          {withdrawn && (
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Typography color='primary' variant='body2'>
-                <b>{t('There it goes, thank you!🥇')}</b>
-              </Typography>
-            </div>
-          )}
         </List>
+
+        <Typography>
+          <b>{t('Coordinators that know your robot')}</b>
+        </Typography>
+
+        {Object.entries(federation).map(([shortAlias, coordinator]) => {
+          console.log(coordinator.shortAlias, coordinator.robot);
+          if (!coordinator.robot?.loading) {
+            return (
+              <RobotInfo
+                key={shortAlias}
+                coordinator={coordinator}
+                robot={coordinator.robot}
+                onClose={onClose}
+              />
+            );
+          }
+        })}
       </DialogContent>
     </Dialog>
   );

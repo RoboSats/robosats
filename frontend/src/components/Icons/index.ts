@@ -1,6 +1,7 @@
 export { default as AmbossIcon } from './Amboss';
 export { default as BitcoinIcon } from './Bitcoin';
 export { default as BitcoinSignIcon } from './BitcoinSign';
+export { default as NostrIcon } from './Nostr';
 export { default as BuySatsIcon } from './BuySats';
 export { default as BuySatsCheckedIcon } from './BuySatsChecked';
 export { default as EarthIcon } from './Earth';
@@ -16,7 +17,6 @@ export { default as ExportIcon } from './Export';
 export { default as UserNinjaIcon } from './UserNinja';
 export { default as TorIcon } from './Tor';
 export { default as SimplexIcon } from './Simplex';
-export { default as NostrIcon } from './Nostr';
 
 // Badges
 export { default as BadgeFounder } from './BadgeFounder';

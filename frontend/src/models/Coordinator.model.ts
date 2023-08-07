@@ -1,4 +1,4 @@
-import { type LimitList, type PublicOrder } from '.';
+import { Robot, type LimitList, type PublicOrder } from '.';
 
 export interface Contact {
   nostr?: string | undefined;
@@ -73,6 +73,7 @@ export class Coordinator {
     this.testnetNodesPubkeys = value.testnetNodesPubkeys;
   }
 
+  // These properties are loaded from federation.json
   public longAlias: string;
   public shortAlias: string;
   public enabled?: boolean = true;
@@ -87,12 +88,15 @@ export class Coordinator {
   public mainnetNodesPubkeys: string[] | undefined;
   public testnetNodesPubkeys: string[] | undefined;
 
+  // These properties are fetched from coordinator API
   public orders: PublicOrder[] = [];
   public loadingBook: boolean = true;
   public info?: Info | undefined = undefined;
   public loadingInfo: boolean = true;
   public limits?: LimitList | never[] = [];
   public loadingLimits: boolean = true;
+  public robot?: Robot | undefined = undefined;
+  public loadingRobot: boolean = true;
 }
 
 export default Coordinator;
