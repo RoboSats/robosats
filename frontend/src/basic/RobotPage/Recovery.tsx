@@ -26,7 +26,7 @@ const Recovery = ({
 }: RecoveryProps): JSX.Element => {
   const { t } = useTranslation();
 
-  const onClickRecover = () => {
+  const onClickRecover = (): void => {
     getGenerateRobot(inputToken);
     setView('profile');
   };
@@ -56,7 +56,12 @@ const Recovery = ({
         />
       </Grid>
       <Grid item>
-        <Button variant='contained' size='large' disabled={!!badToken} onClick={onClickRecover}>
+        <Button
+          variant='contained'
+          size='large'
+          disabled={Boolean(badToken)}
+          onClick={onClickRecover}
+        >
           <Key /> <div style={{ width: '0.5em' }} />
           {t('Recover')}
         </Button>

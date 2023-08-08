@@ -41,7 +41,7 @@ const MainDialogs = (): JSX.Element => {
   const [maxAmount, setMaxAmount] = useState<string>('...loading...');
 
   useEffect(() => {
-    if (limits.list[1000]) {
+    if (limits.list[1000] !== undefined) {
       setMaxAmount(pn(limits.list[1000].max_amount * 100000000));
     }
   }, [limits.list]);

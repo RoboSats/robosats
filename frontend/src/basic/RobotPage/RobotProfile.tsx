@@ -134,7 +134,7 @@ const RobotProfile = ({
             tooltipPosition='top'
             baseUrl={hostUrl}
           />
-          {robot.found && !Boolean(robot.lastOrderId) ? (
+          {robot.found && Number(robot.lastOrderId) > 0 ? (
             <Typography align='center' variant='h6'>
               {t('Welcome back!')}
             </Typography>

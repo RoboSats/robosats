@@ -46,12 +46,12 @@ const TokenInput = ({
   } else {
     return (
       <TextField
-        error={inputToken.length > 20 ? !!badToken : false}
+        error={inputToken.length > 20 ? Boolean(badToken) : false}
         disabled={!editable}
         required={true}
-        label={label || undefined}
+        label={label ?? ''}
         value={inputToken}
-        autoFocus={autoFocusTarget == 'textfield'}
+        autoFocus={autoFocusTarget === 'textfield'}
         fullWidth={fullWidth}
         sx={{ borderColor: 'primary' }}
         variant={editable ? 'outlined' : 'filled'}
@@ -69,7 +69,7 @@ const TokenInput = ({
           endAdornment: showCopy ? (
             <Tooltip open={showCopied} title={t('Copied!')}>
               <IconButton
-                autoFocus={autoFocusTarget == 'copyButton'}
+                autoFocus={autoFocusTarget === 'copyButton'}
                 color={robot.copiedToken ? 'inherit' : 'primary'}
                 onClick={() => {
                   systemClient.copyToClipboard(inputToken);

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Typography,
@@ -26,7 +26,7 @@ interface BookControlProps {
   fav: Favorites;
   setFav: (state: Favorites) => void;
   paymentMethod: string[];
-  setPaymentMethods: () => void;
+  setPaymentMethods: (state: string[]) => void;
 }
 
 const BookControl = ({
@@ -43,22 +43,22 @@ const BookControl = ({
     const typeZeroText = fav.mode === 'fiat' ? t('Buy') : t('Swap In');
     const typeOneText = fav.mode === 'fiat' ? t('Sell') : t('Swap Out');
     const small =
-      (typeZeroText.length + typeOneText.length) * 0.7 + (fav.mode == 'fiat' ? 16 : 7.5);
+      (typeZeroText.length + typeOneText.length) * 0.7 + (fav.mode === 'fiat' ? 16 : 7.5);
     const medium = small + 13;
     const large = medium + (t('and use').length + t('pay with').length) * 0.6 + 5;
     return [typeZeroText, typeOneText, small, medium, large];
   }, [i18n.language, fav.mode]);
 
-  const handleCurrencyChange = function (e) {
-    const currency = e.target.value;
+  const handleCurrencyChange = function (e: React.ChangeEvent<HTMLInputElement>): void {
+    const currency = Number(e.target.value);
     setFav({ ...fav, currency, mode: currency === 1000 ? 'swap' : 'fiat' });
   };
 
-  const handleTypeChange = function (mouseEvent, val) {
+  const handleTypeChange = function (mouseEvent: React.MouseEvent, val: number): void {
     setFav({ ...fav, type: val });
   };
 
-  const handleModeChange = function (mouseEvent, val) {
+  const handleModeChange = function (mouseEvent: React.MouseEvent, val: number): void {
     const mode = fav.mode === 'fiat' ? 'swap' : 'fiat';
     const currency = fav.mode === 'fiat' ? 1000 : 0;
     setFav({ ...fav, mode, currency });
@@ -197,7 +197,7 @@ const BookControl = ({
         {width > large ? (
           <Grid item sx={{ position: 'relative', top: '0.5em' }}>
             <Typography variant='caption' color='text.secondary'>
-              {fav.currency == 1000 ? t(fav.type === 0 ? 'to' : 'from') : t('pay with')}
+              {fav.currency === 1000 ? t(fav.type === 0 ? 'to' : 'from') : t('pay with')}
             </Typography>
           </Grid>
         ) : null}
@@ -218,10 +218,10 @@ const BookControl = ({
               listBoxProps={{ sx: { width: '13em' } }}
               onAutocompleteChange={setPaymentMethods}
               value={paymentMethod}
-              optionsType={fav.currency == 1000 ? 'swap' : 'fiat'}
+              optionsType={fav.currency === 1000 ? 'swap' : 'fiat'}
               error={false}
               helperText={''}
-              label={fav.currency == 1000 ? t('DESTINATION') : t('METHOD')}
+              label={fav.currency === 1000 ? t('DESTINATION') : t('METHOD')}
               tooltipTitle=''
               listHeaderText=''
               addNewButtonText=''
@@ -247,7 +247,7 @@ const BookControl = ({
               label={t('Select Payment Method')}
               required={true}
               renderValue={(value) =>
-                value == 'ANY' ? (
+                value === 'ANY' ? (
                   <CheckBoxOutlineBlankIcon style={{ position: 'relative', top: '0.1em' }} />
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -258,9 +258,9 @@ const BookControl = ({
               inputProps={{
                 style: { textAlign: 'center' },
               }}
-              value={paymentMethod[0] ? paymentMethod[0] : 'ANY'}
+              value={paymentMethod[0] ?? 'ANY'}
               onChange={(e) => {
-                setPaymentMethods(e.target.value == 'ANY' ? [] : [e.target.value]);
+                setPaymentMethods(e.target.value === 'ANY' ? [] : [e.target.value]);
               }}
             >
               <MenuItem value={'ANY'}>
