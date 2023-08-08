@@ -22,6 +22,8 @@ import {
   type GridColumnVisibilityModel,
   GridPagination,
   type GridPaginationModel,
+  type GridColDef,
+  type GridValidRowModel,
 } from '@mui/x-data-grid';
 import currencyDict from '../../../static/assets/currencies.json';
 import { type PublicOrder } from '../../models';
@@ -62,15 +64,15 @@ const ClickThroughDataGrid = styled(DataGrid)({
   },
 });
 
-const premiumColor = function (baseColor: string, accentColor: string, point: number) {
+const premiumColor = function (baseColor: string, accentColor: string, point: number): string {
   const baseRGB = hexToRgb(baseColor);
   const accentRGB = hexToRgb(accentColor);
   const redDiff = accentRGB[0] - baseRGB[0];
-  const red = baseRGB[0] + redDiff * point;
+  const red = Number(baseRGB[0]) + redDiff * point;
   const greenDiff = accentRGB[1] - baseRGB[1];
-  const green = baseRGB[1] + greenDiff * point;
+  const green = Number(baseRGB[1]) + greenDiff * point;
   const blueDiff = accentRGB[2] - baseRGB[2];
-  const blue = baseRGB[2] + blueDiff * point;
+  const blue = Number(baseRGB[2]) + blueDiff * point;
   return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${0.7 + point * 0.3})`;
 };
 
@@ -146,7 +148,7 @@ const BookTable = ({
 
   useEffect(() => {
     setPaginationModel({
-      pageSize: book.loading && orders.length == 0 ? 0 : defaultPageSize,
+      pageSize: book.loading && orders.length === 0 ? 0 : defaultPageSize,
       page: paginationModel.page,
     });
   }, [book.loading, orders, defaultPageSize]);
@@ -265,7 +267,7 @@ const BookTable = ({
     };
   }, []);
 
-  const onClickCoordinator = function (shortAlias: string) {
+  const onClickCoordinator = function (shortAlias: string): void {
     setFocusedCoordinator(shortAlias);
     setOpen((open) => {
       return { ...open, coordinator: true };
@@ -315,7 +317,7 @@ const BookTable = ({
               onOrderClicked(params.row.id, params.row.coordinatorShortAlias);
             }}
           >
-            {params.row.type
+            {params.row.type === 1
               ? t(fav.mode === 'fiat' ? 'Seller' : 'Swapping Out')
               : t(fav.mode === 'fiat' ? 'Buyer' : 'Swapping In')}
           </div>
@@ -357,7 +359,7 @@ const BookTable = ({
       headerName: t('Currency'),
       width: width * fontSize,
       renderCell: (params: any) => {
-        const currencyCode = currencyDict[params.row.currency.toString()];
+        const currencyCode = String(currencyDict[params.row.currency.toString()]);
         return (
           <div
             style={{
@@ -439,7 +441,7 @@ const BookTable = ({
       type: 'number',
       width: width * fontSize,
       renderCell: (params: any) => {
-        const currencyCode = currencyDict[params.row.currency.toString()];
+        const currencyCode = String(currencyDict[params.row.currency.toString()]);
         return (
           <div
             style={{ cursor: 'pointer' }}
@@ -467,10 +469,11 @@ const BookTable = ({
         type: 'number',
         width: width * fontSize,
         renderCell: (params: any) => {
-          const currencyCode = currencyDict[params.row.currency.toString()];
+          const currencyCode = String(currencyDict[params.row.currency.toString()]);
           let fontColor = `rgb(0,0,0)`;
+          let premiumPoint = 0;
           if (params.row.type === 0) {
-            var premiumPoint = params.row.premium / buyOutstandingPremium;
+            premiumPoint = params.row.premium / buyOutstandingPremium;
             premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
             fontColor = premiumColor(
               theme.palette.text.primary,
@@ -478,7 +481,7 @@ const BookTable = ({
               premiumPoint,
             );
           } else {
-            var premiumPoint = (sellStandardPremium - params.row.premium) / sellStandardPremium;
+            premiumPoint = (sellStandardPremium - params.row.premium) / sellStandardPremium;
             premiumPoint = premiumPoint < 0 ? 0 : premiumPoint > 1 ? 1 : premiumPoint;
             fontColor = premiumColor(
               theme.palette.text.primary,
@@ -491,7 +494,7 @@ const BookTable = ({
             <Tooltip
               placement='left'
               enterTouchDelay={0}
-              title={pn(params.row.price) + ' ' + currencyCode + '/BTC'}
+              title={`${pn(params.row.price)} ${currencyCode}/BTC`}
             >
               <div
                 style={{ cursor: 'pointer' }}
@@ -500,7 +503,7 @@ const BookTable = ({
                 }}
               >
                 <Typography variant='inherit' color={fontColor} sx={{ fontWeight }}>
-                  {parseFloat(parseFloat(params.row.premium).toFixed(4)) + '%'}
+                  {`${parseFloat(parseFloat(params.row.premium).toFixed(4))}%`}
                 </Typography>
               </div>
             </Tooltip>
@@ -619,7 +622,7 @@ const BookTable = ({
             }}
           >
             <Typography variant='caption' color='text.secondary'>
-              {`#${params.row.id}`}
+              {`#${String(params.row.id)}`}
             </Typography>
           </div>
         );
@@ -763,7 +766,10 @@ const BookTable = ({
     };
   }, [fav.mode]);
 
-  const filteredColumns = function (maxWidth: number) {
+  const filteredColumns = function (maxWidth: number): {
+    columns: Array<GridColDef<GridValidRowModel>>;
+    width: number;
+  } {
     const useSmall = maxWidth < 70;
     const selectedColumns: object[] = [];
     const columnVisibilityModel: GridColumnVisibilityModel = {};
@@ -775,8 +781,10 @@ const BookTable = ({
         continue;
       }
 
-      const colWidth = useSmall && value.small ? value.small.width : value.normal.width;
-      const colObject = useSmall && value.small ? value.small.object : value.normal.object;
+      const colWidth = Number(
+        useSmall && Boolean(value.small) ? value.small.width : value.normal.width,
+      );
+      const colObject = useSmall && Boolean(value.small) ? value.small.object : value.normal.object;
 
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
@@ -793,19 +801,19 @@ const BookTable = ({
       return first[1] - second[1];
     });
 
-    const columns = selectedColumns.map(function (item) {
+    const columns: Array<GridColDef<GridValidRowModel>> = selectedColumns.map(function (item) {
       return item[0];
     });
 
     setColumnVisibilityModel(columnVisibilityModel);
-    return [columns, width * 0.875 + 0.15];
+    return { columns, width: width * 0.875 + 0.15 };
   };
 
-  const [columns, width] = useMemo(() => {
+  const { columns, width } = useMemo(() => {
     return filteredColumns(fullscreen ? fullWidth : maxWidth);
   }, [maxWidth, fullscreen, fullWidth, fav.mode]);
 
-  const Footer = function () {
+  const Footer = function (): JSX.Element {
     return (
       <Grid container alignItems='center' direction='row' justifyContent='space-between'>
         <Grid item>
@@ -842,7 +850,7 @@ const BookTable = ({
     Toolbar?: (props: any) => JSX.Element;
   }
 
-  const NoResultsOverlay = function () {
+  const NoResultsOverlay = function (): JSX.Element {
     return (
       <Grid
         container
@@ -853,14 +861,14 @@ const BookTable = ({
       >
         <Grid item>
           <Typography align='center' component='h5' variant='h5'>
-            {fav.type == 0
+            {fav.type === 0
               ? t('No orders found to sell BTC for {{currencyCode}}', {
                   currencyCode:
-                    fav.currency == 0 ? t('ANY') : currencyDict[fav.currency.toString()],
+                    fav.currency === 0 ? t('ANY') : currencyDict[fav.currency.toString()],
                 })
               : t('No orders found to buy BTC for {{currencyCode}}', {
                   currencyCode:
-                    fav.currency == 0 ? t('ANY') : currencyDict[fav.currency.toString()],
+                    fav.currency === 0 ? t('ANY') : currencyDict[fav.currency.toString()],
                 })}
           </Typography>
         </Grid>
@@ -916,7 +924,7 @@ const BookTable = ({
           rowHeight={3.714 * theme.typography.fontSize}
           headerHeight={3.25 * theme.typography.fontSize}
           rows={filteredOrders}
-          getRowId={(params: PublicOrder) => `${params.coordinatorShortAlias}/${params.id}`}
+          getRowId={(params: PublicOrder) => `${String(params.coordinatorShortAlias)}/${params.id}`}
           loading={book.loading}
           columns={columns}
           columnVisibilityModel={columnVisibilityModel}

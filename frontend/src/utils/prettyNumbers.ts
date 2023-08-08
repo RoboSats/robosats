@@ -1,6 +1,6 @@
-export const pn = (value?: number | null): string | undefined => {
+export const pn = (value?: number | null): string => {
   if (value === null || value === undefined) {
-    return;
+    return String();
   }
 
   const parts = value.toString().split('.');

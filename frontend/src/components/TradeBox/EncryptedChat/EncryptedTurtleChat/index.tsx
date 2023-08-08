@@ -249,9 +249,9 @@ const EncryptedTurtleChat: React.FC<Props> = ({
         }}
         orderId={Number(orderId)}
         messages={messages}
-        own_pub_key={robot.pubKey || ''}
-        own_enc_priv_key={robot.encPrivKey || ''}
-        peer_pub_key={peerPubKey || 'Not received yet'}
+        ownPubKey={robot.pubKey || ''}
+        ownEncPrivKey={robot.encPrivKey || ''}
+        peerPubKey={peerPubKey || 'Not received yet'}
         passphrase={robot.token || ''}
         onClickBack={() => {
           setAudit(false);

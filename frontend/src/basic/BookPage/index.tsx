@@ -28,7 +28,7 @@ const BookPage = (): JSX.Element => {
 
   useEffect(() => {
     fetchFederationBook();
-  });
+  }, []);
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
     if (robot.avatarLoaded) {

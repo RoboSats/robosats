@@ -156,7 +156,7 @@ const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
             </ListItemIcon>
 
             <ListItemText secondary={t('We are abandoning Telegram! Our old TG groups')}>
-              <Tooltip title={t('Join RoboSats Spanish speaking community!') || ''}>
+              <Tooltip title={t('Join RoboSats Spanish speaking community!')}>
                 <IconButton
                   component='a'
                   target='_blank'
@@ -167,7 +167,7 @@ const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title={t('Join RoboSats English speaking community!') || ''}>
+              <Tooltip title={t('Join RoboSats English speaking community!')}>
                 <IconButton
                   component='a'
                   target='_blank'

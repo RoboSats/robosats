@@ -263,7 +263,10 @@ export const useAppStore = () => {
   });
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [exchange, setExchange] = useState<Exchange>(initialExchange);
-  const [federation, dispatchFederation] = useReducer(reduceFederation, initialFederation);
+  const [federation, dispatchFederation] = useReducer<Federation>(
+    reduceFederation,
+    initialFederation,
+  );
 
   const [focusedCoordinator, setFocusedCoordinator] = useState<string>('');
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0, mode: 'fiat' });

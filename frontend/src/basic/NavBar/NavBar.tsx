@@ -171,7 +171,7 @@ const NavBar = (): JSX.Element => {
           label={smallBar ? undefined : t('More')}
           value='none'
           onClick={(e) => {
-            open.more ? setOpen({ ...open, more: false }) : setOpen({ ...open, more: true });
+            open.more ? null : setOpen({ ...open, more: true });
           }}
           icon={
             <MoreTooltip>
