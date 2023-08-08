@@ -23,7 +23,7 @@ export interface Badges {
   donatesToDevFund?: number | undefined;
   hasGoodOpSec?: boolean | undefined;
   robotsLove?: boolean | undefined;
-  hasLargeLimits?: string | undefined;
+  hasLargeLimits?: boolean | undefined;
 }
 
 export interface Info {

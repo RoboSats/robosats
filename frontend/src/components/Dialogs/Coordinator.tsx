@@ -85,7 +85,7 @@ const ContactButtons = ({
 
   return (
     <Grid container direction='row' alignItems='center' justifyContent='center'>
-      {nostr ? (
+      {nostr !== undefined && (
         <Grid item>
           <Tooltip
             title={
@@ -114,11 +114,9 @@ const ContactButtons = ({
             </IconButton>
           </Tooltip>
         </Grid>
-      ) : (
-        <></>
       )}
 
-      {pgp ? (
+      {pgp !== undefined && (
         <Grid item>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('See PGP Key')}>
             <IconButton component='a' target='_blank' href={`https://${pgp}`} rel='noreferrer'>
@@ -126,11 +124,9 @@ const ContactButtons = ({
             </IconButton>
           </Tooltip>
         </Grid>
-      ) : (
-        <></>
       )}
 
-      {email ? (
+      {email !== undefined && (
         <Grid item>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Send Email')}>
             <IconButton component='a' href={`mailto: ${email}`}>
@@ -138,11 +134,9 @@ const ContactButtons = ({
             </IconButton>
           </Tooltip>
         </Grid>
-      ) : (
-        <></>
       )}
 
-      {telegram ? (
+      {telegram !== undefined && (
         <Grid item>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Telegram')}>
             <IconButton
@@ -155,11 +149,9 @@ const ContactButtons = ({
             </IconButton>
           </Tooltip>
         </Grid>
-      ) : (
-        <></>
       )}
 
-      {twitter ? (
+      {twitter !== undefined && (
         <Grid item>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Twitter')}>
             <IconButton
@@ -172,11 +164,9 @@ const ContactButtons = ({
             </IconButton>
           </Tooltip>
         </Grid>
-      ) : (
-        <></>
       )}
 
-      {reddit ? (
+      {reddit !== undefined && (
         <Grid item>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Reddit')}>
             <IconButton
@@ -189,11 +179,9 @@ const ContactButtons = ({
             </IconButton>
           </Tooltip>
         </Grid>
-      ) : (
-        <></>
       )}
 
-      {website ? (
+      {website !== undefined && (
         <Grid item>
           <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Website')}>
             <IconButton component='a' target='_blank' href={website} rel='noreferrer'>
@@ -201,11 +189,9 @@ const ContactButtons = ({
             </IconButton>
           </Tooltip>
         </Grid>
-      ) : (
-        <></>
       )}
 
-      {matrix ? (
+      {matrix !== undefined && (
         <Grid item>
           <Tooltip
             title={
@@ -228,8 +214,6 @@ const ContactButtons = ({
             </IconButton>
           </Tooltip>
         </Grid>
-      ) : (
-        <></>
       )}
     </Grid>
   );
@@ -249,7 +233,7 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
   const tooltipProps = { enterTouchDelay: 0, enterNextDelay: 2000 };
   return (
     <Grid container direction='row' alignItems='center' justifyContent='center' spacing={1}>
-      {badges?.isFounder ? (
+      {badges?.isFounder !== undefined && (
         <Tooltip
           {...tooltipProps}
           title={
@@ -262,9 +246,9 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
             <BadgeFounder sx={sxProps} />
           </Grid>
         </Tooltip>
-      ) : null}
+      )}
 
-      {badges?.donatesToDevFund > 20 ? (
+      {Number(badges?.donatesToDevFund) > 20 && (
         <Tooltip
           {...tooltipProps}
           title={
@@ -279,9 +263,9 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
             <BadgeDevFund sx={sxProps} />
           </Grid>
         </Tooltip>
-      ) : null}
+      )}
 
-      {badges?.hasGoodOpSec ? (
+      {badges?.hasGoodOpSec !== undefined && (
         <Tooltip
           {...tooltipProps}
           title={
@@ -296,9 +280,9 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
             <BadgePrivacy sx={sxProps} />
           </Grid>
         </Tooltip>
-      ) : null}
+      )}
 
-      {badges?.robotsLove ? (
+      {badges?.robotsLove !== undefined && (
         <Tooltip
           {...tooltipProps}
           title={
@@ -311,9 +295,9 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
             <BadgeLoved sx={sxProps} />
           </Grid>
         </Tooltip>
-      ) : null}
+      )}
 
-      {badges?.hasLargeLimits ? (
+      {badges?.hasLargeLimits !== undefined && (
         <Tooltip
           {...tooltipProps}
           title={
@@ -326,7 +310,7 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
             <BadgeLimits sx={sxProps} />
           </Grid>
         </Tooltip>
-      ) : null}
+      )}
     </Grid>
   );
 };
@@ -346,7 +330,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
     <Dialog open={open} onClose={onClose}>
       <DialogContent>
         <Typography align='center' component='h5' variant='h5'>
-          {`${coordinator?.longAlias}`}
+          {String(coordinator?.longAlias)}
         </Typography>
         <List dense>
           <ListItem sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -363,7 +347,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
               </Grid>
               <Grid item>
                 <Typography align='center' variant='body2'>
-                  <i>{`${coordinator?.motto}`}</i>
+                  <i>{String(coordinator?.motto)}</i>
                 </Typography>
               </Grid>
               <Grid item>
@@ -388,7 +372,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
             />
           </ListItem>
 
-          {coordinator?.mainnetNodesPubkeys[0] && network == 'mainnet' ? (
+          {coordinator?.mainnetNodesPubkeys[0] !== undefined && network === 'mainnet' ? (
             <ListItem>
               <ListItemIcon>
                 <AmbossIcon />
@@ -407,7 +391,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
             <></>
           )}
 
-          {coordinator?.testnetNodesPubkeys[0] && network == 'testnet' ? (
+          {coordinator?.testnetNodesPubkeys[0] !== undefined && network === 'testnet' ? (
             <ListItem>
               <ListItemIcon>
                 <Dns />
@@ -427,13 +411,13 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
           )}
         </List>
 
-        {coordinator?.loadingInfo ? (
+        {coordinator?.loadingInfo === true ? (
           <Box style={{ display: 'flex', justifyContent: 'center' }}>
             <CircularProgress />
           </Box>
-        ) : coordinator?.info != null ? (
+        ) : coordinator?.info !== undefined ? (
           <Box>
-            {coordinator?.policies ? (
+            {coordinator?.policies !== undefined && (
               <Accordion
                 expanded={expanded === 'policies'}
                 onChange={() => {
@@ -454,7 +438,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
                   </List>
                 </AccordionDetails>
               </Accordion>
-            ) : null}
+            )}
             <Accordion
               expanded={expanded === 'summary'}
               onChange={() => {
@@ -592,16 +576,16 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
                       />
                     </ListItemIcon>
                     <ListItemText
-                      primary={`${t('Coordinator')} ${coordinatorVersion} - ${t('Client')} ${
-                        clientVersion.short
-                      }`}
+                      primary={`${t('Coordinator')} ${coordinatorVersion} - ${t('Client')} ${String(
+                        clientVersion.short,
+                      )}`}
                       secondary={t('RoboSats version')}
                     />
                   </ListItem>
 
                   <Divider />
 
-                  {coordinator?.info?.lnd_version && (
+                  {coordinator?.info?.lnd_version !== undefined && (
                     <ListItem {...listItemProps}>
                       <ListItemIcon>
                         <Bolt />
@@ -613,7 +597,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
                     </ListItem>
                   )}
 
-                  {coordinator?.info?.cln_version && (
+                  {Boolean(coordinator?.info?.cln_version) && (
                     <ListItem {...listItemProps}>
                       <ListItemIcon>
                         <Bolt />

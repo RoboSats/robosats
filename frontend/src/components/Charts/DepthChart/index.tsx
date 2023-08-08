@@ -26,7 +26,7 @@ import { amountToString, matchMedian, statusBadgeColor } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
 import { PaymentStringAsIcons } from '../../PaymentMethods';
 import getNivoScheme from '../NivoScheme';
-import { type UseAppStoreType, AppContext, hostUrl, origin } from '../../../contexts/AppContext';
+import { type UseAppStoreType, AppContext, origin } from '../../../contexts/AppContext';
 
 interface DepthChartProps {
   maxWidth: number;
@@ -84,10 +84,10 @@ const DepthChart: React.FC<DepthChartProps> = ({
 
   useEffect(() => {
     if (xType === 'base_amount') {
-      const prices: number[] = enrichedOrders.map((order) => order?.base_amount || 0);
+      const prices: number[] = enrichedOrders.map((order) => order?.base_amount ?? 0);
 
       const medianValue = ~~matchMedian(prices);
-      const maxValue = prices.sort((a, b) => b - a).slice(0, 1)[0] || 1500;
+      const maxValue = prices.sort((a, b) => b - a).slice(0, 1)[0] ?? 1500;
       const maxRange = maxValue - medianValue;
       const rangeSteps = maxRange / 10;
 
@@ -96,7 +96,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setRangeSteps(rangeSteps);
     } else {
       if (exchange.info?.last_day_nonkyc_btc_premium === undefined) {
-        const premiums: number[] = enrichedOrders.map((order) => order?.premium || 0);
+        const premiums: number[] = enrichedOrders.map((order) => order?.premium ?? 0);
         setCenter(~~matchMedian(premiums));
       } else {
         setCenter(exchange.info?.last_day_nonkyc_btc_premium);
@@ -110,20 +110,20 @@ const DepthChart: React.FC<DepthChartProps> = ({
     const sortedOrders: PublicOrder[] =
       xType === 'base_amount'
         ? enrichedOrders.sort(
-            (order1, order2) => (order1?.base_amount || 0) - (order2?.base_amount || 0),
+            (order1, order2) => (order1?.base_amount ?? 0) - (order2?.base_amount ?? 0),
           )
         : enrichedOrders.sort((order1, order2) => order1.premium - order2.premium);
 
     const sortedBuyOrders: PublicOrder[] = sortedOrders
-      .filter((order) => order.type == 0)
+      .filter((order) => order.type === 0)
       .reverse();
-    const sortedSellOrders: PublicOrder[] = sortedOrders.filter((order) => order.type == 1);
+    const sortedSellOrders: PublicOrder[] = sortedOrders.filter((order) => order.type === 1);
 
     const buySerie: Datum[] = generateSerie(sortedBuyOrders);
     const sellSerie: Datum[] = generateSerie(sortedSellOrders);
 
-    const maxX: number = (center || 0) + xRange;
-    const minX: number = (center || 0) - xRange;
+    const maxX: number = (center ?? 0) + xRange;
+    const minX: number = (center ?? 0) - xRange;
 
     setSeries([
       {

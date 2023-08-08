@@ -23,7 +23,7 @@ import ContentCopy from '@mui/icons-material/ContentCopy';
 import ForumIcon from '@mui/icons-material/Forum';
 import { ExportIcon, NewTabIcon } from '../Icons';
 
-function CredentialTextfield(props) {
+function CredentialTextfield(props): JSX.Element {
   return (
     <Grid item align='center' xs={12}>
       <Tooltip placement='top' enterTouchDelay={200} enterDelay={200} title={props.tooltipTitle}>
@@ -58,9 +58,9 @@ interface Props {
   onClose: () => void;
   orderId: number;
   messages: array;
-  own_pub_key: string;
-  own_enc_priv_key: string;
-  peer_pub_key: string;
+  ownPubKey: string;
+  ownEncPrivKey: string;
+  peerPubKey: string;
   passphrase: string;
   onClickBack: () => void;
 }
@@ -70,9 +70,9 @@ const AuditPGPDialog = ({
   onClose,
   orderId,
   messages,
-  own_pub_key,
-  own_enc_priv_key,
-  peer_pub_key,
+  ownPubKey,
+  ownEncPrivKey,
+  peerPubKey,
   passphrase,
   onClickBack,
 }: Props): JSX.Element => {
@@ -104,7 +104,7 @@ const AuditPGPDialog = ({
               'Your PGP public key. Your peer uses it to encrypt messages only you can read.',
             )}
             label={t('Your public key')}
-            value={own_pub_key}
+            value={ownPubKey}
             copiedTitle={t('Copied!')}
           />
 
@@ -113,7 +113,7 @@ const AuditPGPDialog = ({
               'Your peer PGP public key. You use it to encrypt messages only he can read and to verify your peer signed the incoming messages.',
             )}
             label={t('Peer public key')}
-            value={peer_pub_key}
+            value={peerPubKey}
             copiedTitle={t('Copied!')}
           />
 
@@ -122,7 +122,7 @@ const AuditPGPDialog = ({
               'Your encrypted private key. You use it to decrypt the messages that your peer encrypted for you. You also use it to sign the messages you send.',
             )}
             label={t('Your encrypted private key')}
-            value={own_enc_priv_key}
+            value={ownEncPrivKey}
             copiedTitle={t('Copied!')}
           />
 
@@ -149,10 +149,10 @@ const AuditPGPDialog = ({
                 color='primary'
                 variant='contained'
                 onClick={() => {
-                  saveAsJson('keys_' + orderId + '.json', {
-                    own_public_key: own_pub_key,
-                    peer_public_key: peer_pub_key,
-                    encrypted_private_key: own_enc_priv_key,
+                  saveAsJson(`keys_${orderId}.json`, {
+                    own_public_key: ownPubKey,
+                    peer_public_key: peerPubKey,
+                    encrypted_private_key: ownEncPrivKey,
                     passphrase,
                   });
                 }}
@@ -181,7 +181,7 @@ const AuditPGPDialog = ({
                 color='primary'
                 variant='contained'
                 onClick={() => {
-                  saveAsJson('messages_' + orderId + '.json', messages);
+                  saveAsJson(`messages_${orderId}.json`, messages);
                 }}
               >
                 <div style={{ width: 28, height: 20 }}>

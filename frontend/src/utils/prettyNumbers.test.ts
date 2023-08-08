@@ -3,8 +3,8 @@ import { pn, amountToString } from './prettyNumbers';
 describe('prettyNumbers', () => {
   test('pn()', () => {
     [
-      { input: null, output: undefined },
-      { input: undefined, output: undefined },
+      { input: null, output: '' },
+      { input: undefined, output: '' },
       { input: 0, output: '0' },
       { input: 1, output: '1' },
       { input: 2, output: '2' },
