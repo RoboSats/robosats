@@ -61,7 +61,7 @@ const UpdateDialog = ({ coordinatorVersion, clientVersion }: Props): JSX.Element
           <ListItemButton
             component='a'
             target='_blank'
-            href={`https://github.com/RoboSats/robosats/releases/tag/${coordinatorVersion}-alpha`}
+            href={`https://github.com/RoboSats/robosats/releases/tag/${coordinatorString}-alpha`}
             rel='noreferrer'
           >
             <ListItemIcon>

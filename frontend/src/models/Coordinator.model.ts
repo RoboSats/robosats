@@ -13,9 +13,9 @@ export interface Contact {
 }
 
 export interface Version {
-  major: number | null;
-  minor: number | null;
-  patch: number | null;
+  major: number;
+  minor: number;
+  patch: number;
 }
 
 export interface Badges {

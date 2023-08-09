@@ -108,7 +108,7 @@ const initialFederation: Federation = Object.entries(defaultFederation).reduce(
   {},
 );
 
-interface ActionFederation {
+export interface ActionFederation {
   type:
     | 'reset'
     | 'enable'
@@ -117,7 +117,7 @@ interface ActionFederation {
     | 'updateLimits'
     | 'updateInfo'
     | 'updateRobot';
-  action: any; // TODO
+  payload: any; // TODO
 }
 
 const reduceFederation = (federation: Federation, action: ActionFederation) => {
@@ -139,6 +139,8 @@ const reduceFederation = (federation: Federation, action: ActionFederation) => {
           ...federation[action.payload.shortAlias],
           enabled: false,
           info: undefined,
+          orders: [],
+          limits: undefined,
         },
       };
     case 'updateBook':
@@ -403,6 +405,12 @@ export const useAppStore = () => {
 
   // fetch Info
   const fetchCoordinatorInfo = async (coordinator: Coordinator) => {
+    // Set loading true
+    dispatchFederation({
+      type: 'updateInfo',
+      payload: { shortAlias: coordinator.shortAlias, info: coordinator.info, loadingInfo: true },
+    });
+    // fetch and dispatch
     const url = coordinator[settings.network][origin];
     const info = await apiClient
       .get(url, '/api/info/')
@@ -437,7 +445,7 @@ export const useAppStore = () => {
     let orders: PublicOrder[] = book.orders;
     let loadedCoordinators: number = 0;
     let totalCoordinators: number = 0;
-    Object.values(federation).map((coordinator) => {
+    Object.values(federation).map((coordinator: Coordinator) => {
       if (coordinator.enabled) {
         totalCoordinators = totalCoordinators + 1;
         if (!coordinator.loadingBook) {
@@ -680,6 +688,7 @@ export const useAppStore = () => {
     setGarage,
     currentSlot,
     setCurrentSlot,
+    fetchCoordinatorInfo,
     fetchFederationBook,
     limits,
     setLimits,

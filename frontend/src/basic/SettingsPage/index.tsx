@@ -9,6 +9,7 @@ const SettingsPage = (): JSX.Element => {
     windowSize,
     navbarHeight,
     federation,
+    fetchCoordinatorInfo,
     dispatchFederation,
     setFocusedCoordinator,
     settings,
@@ -40,6 +41,7 @@ const SettingsPage = (): JSX.Element => {
             openCoordinator={() => {
               setOpen({ ...open, coordinator: true });
             }}
+            fetchCoordinatorInfo={fetchCoordinatorInfo}
             baseUrl={hostUrl}
             maxHeight={14}
             network={settings.network}

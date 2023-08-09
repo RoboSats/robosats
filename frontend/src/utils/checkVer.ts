@@ -31,7 +31,7 @@ export const getHigherVer = (ver0: Version, ver1: Version): Version => {
   }
 };
 
-export const checkVer: (coordinatorVersion: Version | null) => boolean = (coordinatorVersion) => {
+export const checkVer: (coordinatorVersion: Version) => boolean = (coordinatorVersion) => {
   let updateAvailable: boolean = false;
   if (coordinatorVersion != null) {
     const { major, minor, patch } = coordinatorVersion;
