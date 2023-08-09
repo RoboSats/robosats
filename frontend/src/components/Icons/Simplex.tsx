@@ -1,7 +1,7 @@
 import React from 'react';
-import { SvgIcon } from '@mui/material';
+import { SvgIcon, type SvgIconProps } from '@mui/material';
 
-export default function SimplexIcon(props) {
+const Simplex: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon sx={props.sx} color={props.color} x='0px' y='0px' viewBox='0 0 1080 1080'>
       <g transform='matrix(4.68 0 0 4.68 668.81 540.67)'>
@@ -18,4 +18,6 @@ export default function SimplexIcon(props) {
       </g>
     </SvgIcon>
   );
-}
+};
+
+export default Simplex;

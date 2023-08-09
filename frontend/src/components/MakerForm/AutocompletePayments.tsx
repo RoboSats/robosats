@@ -2,7 +2,16 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useAutocomplete from '@mui/base/useAutocomplete';
 import { styled } from '@mui/material/styles';
-import { Button, Fade, Tooltip, Typography, Grow, useTheme } from '@mui/material';
+import {
+  Button,
+  Fade,
+  Tooltip,
+  Typography,
+  Grow,
+  useTheme,
+  type SxProps,
+  type Theme,
+} from '@mui/material';
 import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
 
 // Icons
@@ -20,12 +29,18 @@ const Root = styled('div')(
 const Label = styled('label')(
   ({ theme, error, sx }) => `
   color: ${
-    theme.palette.mode === 'dark' ? (error ? '#f44336' : '#cfcfcf') : error ? '#dd0000' : '#717171'
+    theme.palette.mode === 'dark'
+      ? error
+        ? '#f44336'
+        : '#cfcfcf'
+      : Boolean(error)
+      ? '#dd0000'
+      : '#717171'
   };
   pointer-events: none;
   position: relative;
   left: 1em;
-  top: ${sx.top};
+  top: ${sx.top ?? '0.72em'};
   maxHeight: 0em;
   height: 0em;
   white-space: no-wrap;
@@ -206,7 +221,23 @@ const Listbox = styled('ul')(
 `,
 );
 
-export default function AutocompletePayments(props) {
+interface AutocompletePaymentsProps {
+  value: string;
+  optionsType: 'fiat' | 'swap';
+  onAutocompleteChange: (value: string) => void;
+  tooltipTitle: string;
+  labelProps: any;
+  tagProps: any;
+  listBoxProps: any;
+  error: string;
+  label: string;
+  sx: SxProps<Theme>;
+  addNewButtonText: string;
+  isFilter: boolean;
+  listHeaderText: string;
+}
+
+const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
   const { t } = useTranslation();
   const {
     getRootProps,
@@ -255,8 +286,8 @@ export default function AutocompletePayments(props) {
     <Root>
       <Tooltip
         placement='top'
-        enterTouchDelay={props.tooltipTitle == '' ? 99999 : 300}
-        enterDelay={props.tooltipTitle == '' ? 99999 : 700}
+        enterTouchDelay={props.tooltipTitle === '' ? 99999 : 300}
+        enterDelay={props.tooltipTitle === '' ? 99999 : 700}
         enterNextDelay={2000}
         title={props.tooltipTitle}
       >
@@ -357,4 +388,6 @@ export default function AutocompletePayments(props) {
       </Grow>
     </Root>
   );
-}
+};
+
+export default AutocompletePayments;

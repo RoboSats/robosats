@@ -1,7 +1,7 @@
 import React from 'react';
-import { SvgIcon } from '@mui/material';
+import { SvgIcon, type SvgIconProps } from '@mui/material';
 
-export default function BadgeFounder(props) {
+const BadgeFounder: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props} viewBox='0 0 100 100'>
       <g>
@@ -74,4 +74,6 @@ export default function BadgeFounder(props) {
       </g>
     </SvgIcon>
   );
-}
+};
+
+export default BadgeFounder;

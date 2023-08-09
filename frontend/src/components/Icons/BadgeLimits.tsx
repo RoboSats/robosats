@@ -1,7 +1,7 @@
 import React from 'react';
-import { SvgIcon } from '@mui/material';
+import { SvgIcon, type SvgIconProps } from '@mui/material';
 
-export default function BadgeLimits(props) {
+const BadgeLimits: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props} viewBox='0 0 100 100'>
       <g>
@@ -181,4 +181,6 @@ export default function BadgeLimits(props) {
       <circle fill='#FFE47B' cx='23.483' cy='60.609' r='1.819' />
     </SvgIcon>
   );
-}
+};
+
+export default BadgeLimits;

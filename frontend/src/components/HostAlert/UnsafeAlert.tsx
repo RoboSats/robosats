@@ -103,6 +103,8 @@ const UnsafeAlert = (): JSX.Element => {
         )}
       </Paper>
     );
+  } else {
+    return <></>;
   }
 };
 
