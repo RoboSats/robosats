@@ -31,6 +31,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[Blink](#blink-mobile-former-bitcoin-beach-wallet)|[2.2.73](https://www.blink.sv/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Blixt](#blixt-androidios-lnd-light-backend-on-device)|[v0.4.1](https://github.com/hsjoberg/blixt-wallet)|{{page.phone}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Blue](#bluewallet-mobile)|[1.4.4](https://bluewallet.io/)|{{page.phone}}|{{page.good}}|{{page.unclear}}|{{page.unclear}}|{{page.good}}|{{page.unclear}}|
+|[Cash App](#cash-app-mobile)|[4.7](https://cash.app/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Core Lightning](#core-lightning--cln-cli-interface)|[v0.11.1](https://github.com/ElementsProject/lightning)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Electrum](#electrum-desktop)|[4.1.4](https://github.com/spesmilo/electrum)|{{page.laptop}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}||
 |[LND](#lnd-cli-interface)|[v0.14.2](https://github.com/LightningNetwork/lnd)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
@@ -62,6 +63,9 @@ Most development testing for RoboSats has been done using Blixt. This is one of 
 
 ### Bluewallet (Mobile)
 It works well. But they are having issues in the custodial mode. Escrows that RoboSats returns are charged to users (so Bluewallet is keeping that balance?). Bonds that are slashed... are charged twice by Blue! More info once they reply to us. EDIT: Blue has confirmed they are working to soon solve these accounting bugs!
+
+### Cash App (Mobile)
+Works well with RoboSats. Hodl invoices (Bonds) show as "Pending" in the transaction history. Payouts to the Cash App wallet function as intended. Custodial wallet by Block, Inc., formerly known as Square, Inc., which is led by Jack Dorsey.
 
 ### Core Lightning / CLN (CLI Interface)
 Works as expected. The `lightning-cli pay <invoice>` command does not conclude while the payment is pending, but can use `lightning-cli paystatus <invoice>` to monitor the state.
