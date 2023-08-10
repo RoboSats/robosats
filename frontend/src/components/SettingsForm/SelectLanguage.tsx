@@ -1,10 +1,17 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Select, MenuItem, useTheme, Grid, Typography } from '@mui/material';
-import type Language from '../../models/Language.model';
+import {
+  Select,
+  MenuItem,
+  useTheme,
+  Grid,
+  Typography,
+  type SelectChangeEvent,
+} from '@mui/material';
 
 import Flags from 'country-flag-icons/react/3x2';
 import { CataloniaFlag, BasqueCountryFlag } from '../Icons';
+import type { Language } from '../../models';
 
 const menuLanuguages = [
   { name: 'English', i18nCode: 'en', flag: Flags.US },
@@ -30,18 +37,18 @@ interface SelectLanguageProps {
   setLanguage: (lang: Language) => void;
 }
 
-const SelectLanguage = ({ language, setLanguage }: SelectLanguageProps): JSX.Element => {
+const SelectLanguage: React.FC<SelectLanguageProps> = ({ language, setLanguage }) => {
   const theme = useTheme();
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   const flagProps = {
     width: 1.5 * theme.typography.fontSize,
     height: 1.5 * theme.typography.fontSize,
   };
 
-  const handleChangeLang = function (e: any) {
+  const handleChangeLang = function (e: SelectChangeEvent): void {
     setLanguage(e.target.value);
-    i18n.changeLanguage(e.target.value);
+    void i18n.changeLanguage(e.target.value);
   };
 
   return (

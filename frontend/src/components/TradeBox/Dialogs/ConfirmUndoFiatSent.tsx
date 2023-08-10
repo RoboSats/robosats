@@ -36,7 +36,7 @@ export const ConfirmUndoFiatSentDialog = ({
     }
   }, [time, open]);
 
-  const onClick = () => {
+  const onClick = (): void => {
     onConfirmClick();
     setTime(300);
   };

@@ -39,7 +39,7 @@ export const OnchainPayoutForm = ({
   const invalidFee = onchain.miningFee < minMiningFee || onchain.miningFee > maxMiningFee;
   const costPerVByte = 280;
 
-  const handleMiningFeeChange = (e) => {
+  const handleMiningFeeChange = (e: React.ChangeEventHandler<HTMLInputElement>): void => {
     const miningFee = Number(e.target.value);
     setOnchain({ ...onchain, miningFee });
   };
@@ -67,12 +67,9 @@ export const OnchainPayoutForm = ({
 
         <ListItem>
           <ListItemText
-            primary={
-              pn(Math.floor((order.invoice_amount * order.swap_fee_rate) / 100)) +
-              ' Sats (' +
-              order.swap_fee_rate +
-              '%)'
-            }
+            primary={`${pn(Math.floor((order.invoice_amount * order.swap_fee_rate) / 100))} Sats (${
+              order.swap_fee_rate
+            }%)`}
             secondary={t('Swap fee')}
           />
         </ListItem>

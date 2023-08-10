@@ -175,8 +175,8 @@ const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
             </ListItemIcon>
             <Slider
               value={settings.fontSize}
-              min={settings.frontend == 'basic' ? 12 : 10}
-              max={settings.frontend == 'basic' ? 16 : 14}
+              min={settings.frontend === 'basic' ? 12 : 10}
+              max={settings.frontend === 'basic' ? 16 : 14}
               step={1}
               onChange={(e) => {
                 const fontSize = e.target.value;
