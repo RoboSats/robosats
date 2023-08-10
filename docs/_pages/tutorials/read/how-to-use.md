@@ -20,6 +20,10 @@ Athena Alpha's full guide walks you through the full buying process step-by-step
 ### <a href="https://bitcoiner.guide/robosats/" target="_blank">Learn How To Use RoboSats P2P Exchange</a>
 QnA's guide explains the importance of noKYC Bitcoin, breaks down some RoboSats jargon, gives a full feature explanation and a step by step guide to completing your first trade with RoboSats.
 
+![image2](https://i0.wp.com/satoshisjournal.com/wp-content/uploads/2023/03/robosats.jpg)
+### <a href="https://satoshisjournal.com/welcome-to-my-robo-garage/" target="_blank">Welcome to my Robo Garage</a>
+Will Schoellkopf's guide published in Satoshi's Journal is a real-world RoboSats example that isn’t edited to exclude missteps or bumps in the road on his quest to privately buy bitcoin. If you make it to the end, you will bear witness to the game theory of truly trading Bitcoin peer-to-peer. Join him on his journey down the RoboSats rabbit hole as he welcomes you to his new Robo Garage! 
+
 ## How to Use (v0.1.0)
 Full tutorial in tweets by @simplestBTCbook
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Enjoy this detailed new <a href="https://twitter.com/RoboSats">@RoboSats</a> Tutorial! <a href="https://t.co/CiizGINQ4f">pic.twitter.com/CiizGINQ4f</a></p>&mdash; SimplestBitcoinBook -Get ur 🔑&#39;s into Cold Storage (@SimplestBTCBook) <a href="https://twitter.com/SimplestBTCBook/status/1584103026733633537">October 23, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
