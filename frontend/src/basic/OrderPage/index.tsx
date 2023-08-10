@@ -35,14 +35,14 @@ const OrderPage = (): JSX.Element => {
 
   useEffect(() => {
     const newOrder = { shortAlias: params.shortAlias, id: Number(params.orderId) };
-    if (currentOrder != newOrder) {
+    if (currentOrder !== newOrder) {
       clearOrder();
       setCurrentOrder(newOrder);
     }
   }, [params.orderId]);
 
-  const renewOrder = function () {
-    if (order != undefined) {
+  const renewOrder = function (): void {
+    if (order !== undefined) {
       const body = {
         type: order.type,
         currency: order.currency,
@@ -61,28 +61,31 @@ const OrderPage = (): JSX.Element => {
       apiClient
         .post(hostUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
         .then((data: any) => {
-          if (data.bad_request) {
+          if (data.bad_request !== undefined) {
             setBadOrder(data.bad_request);
-          } else if (data.id) {
-            navigate('/order/' + data.id);
+          } else if (data.id !== undefined) {
+            navigate(`/order/${String(data.id)}`);
           }
+        })
+        .catch(() => {
+          setBadOrder('Request error');
         });
     }
   };
 
-  const startAgain = () => {
+  const startAgain = (): void => {
     navigate('/robot');
   };
 
   return (
     <Box>
-      {order == undefined && badOrder == undefined ? <CircularProgress /> : null}
-      {badOrder != undefined ? (
+      {order === undefined && badOrder === undefined && <CircularProgress />}
+      {badOrder !== undefined ? (
         <Typography align='center' variant='subtitle2' color='secondary'>
           {t(badOrder)}
         </Typography>
       ) : null}
-      {order != undefined && badOrder == undefined ? (
+      {order !== undefined && badOrder === undefined ? (
         order.is_participant ? (
           windowSize.width > doublePageWidth ? (
             // DOUBLE PAPER VIEW
@@ -160,7 +163,7 @@ const OrderPage = (): JSX.Element => {
                   overflow: 'auto',
                 }}
               >
-                <div style={{ display: tab == 'order' ? '' : 'none' }}>
+                <div style={{ display: tab === 'order' ? '' : 'none' }}>
                   <OrderDetails
                     order={order}
                     setOrder={setOrder}
@@ -172,7 +175,7 @@ const OrderPage = (): JSX.Element => {
                     }}
                   />
                 </div>
-                <div style={{ display: tab == 'contract' ? '' : 'none' }}>
+                <div style={{ display: tab === 'contract' ? '' : 'none' }}>
                   <TradeBox
                     order={order}
                     robot={robot}

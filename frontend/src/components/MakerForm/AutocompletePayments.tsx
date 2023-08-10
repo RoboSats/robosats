@@ -30,12 +30,12 @@ const Label = styled('label')(
   ({ theme, error, sx }) => `
   color: ${
     theme.palette.mode === 'dark'
-      ? (error === true
+      ? error === true
         ? '#f44336'
-        : '#cfcfcf')
-      : (error === true
+        : '#cfcfcf'
+      : error === true
       ? '#dd0000'
-      : '#717171')
+      : '#717171'
   };
   pointer-events: none;
   position: relative;
@@ -53,7 +53,13 @@ const InputWrapper = styled('div')(
   min-height: ${String(sx.minHeight)};
   max-height: ${String(sx.maxHeight)};
   border: 1px solid ${
-    theme.palette.mode === 'dark' ? (error === '' ? '#f44336' : '#434343') : error === '' ? '#dd0000' : '#c4c4c4'
+    theme.palette.mode === 'dark'
+      ? error === ''
+        ? '#f44336'
+        : '#434343'
+      : error === ''
+      ? '#dd0000'
+      : '#c4c4c4'
   };
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
   border-radius: 4px;
@@ -127,7 +133,7 @@ const Tag: React.FC<TagProps> = ({ label, icon, onDelete, ...other }) => {
 };
 
 const StyledTag = styled(Tag)(
-  ({ theme, sx}) => `
+  ({ theme, sx }) => `
   display: flex;
   align-items: center;
   height: ${String(sx?.height ?? '2.1em')};
@@ -261,7 +267,9 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
     onInputChange: (e) => {
       setVal(e.target.value ?? '');
     },
-    onChange: (event, value) => { props.onAutocompleteChange(value) },
+    onChange: (event, value) => {
+      props.onAutocompleteChange(value);
+    },
     onClose: () => {
       setVal(() => '');
     },
@@ -369,7 +377,13 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
           ))}
           {val != null || !props.isFilter ? (
             val.length > 2 ? (
-              <Button size='small' fullWidth={true} onClick={() => {handleAddNew(getInputProps())} }>
+              <Button
+                size='small'
+                fullWidth={true}
+                onClick={() => {
+                  handleAddNew(getInputProps());
+                }}
+              >
                 <DashboardCustomizeIcon sx={{ width: '1em', height: '1em' }} />
                 {props.addNewButtonText}
               </Button>
@@ -381,7 +395,12 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
       {/* Here goes what happens if there is no fewerOptions */}
       <Grow in={getInputProps().value.length > 0 && !props.isFilter && fewerOptions.length === 0}>
         <Listbox {...getListboxProps()}>
-          <Button fullWidth={true} onClick={() => {handleAddNew(getInputProps())} }>
+          <Button
+            fullWidth={true}
+            onClick={() => {
+              handleAddNew(getInputProps());
+            }}
+          >
             <DashboardCustomizeIcon sx={{ width: '1.28em', height: '1.28em' }} />
             {props.addNewButtonText}
           </Button>

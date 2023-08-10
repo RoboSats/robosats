@@ -100,7 +100,11 @@ const MakerForm = ({
     }
   }, []);
 
-  const updateAmountLimits = function (limitList: LimitList, currency: number, premium: number): void {
+  const updateAmountLimits = function (
+    limitList: LimitList,
+    currency: number,
+    premium: number,
+  ): void {
     const index = currency === 0 ? 1 : currency;
     let minAmountLimit: number = limitList[index].min_amount * (1 + premium / 100);
     let maxAmountLimit: number = limitList[index].max_amount * (1 + premium / 100);
@@ -117,7 +121,11 @@ const MakerForm = ({
     setSatoshisLimits([minAmount, maxAmount]);
   };
 
-  const updateCurrentPrice = function (limitsList: LimitList, currency: number, premium: number): void {
+  const updateCurrentPrice = function (
+    limitsList: LimitList,
+    currency: number,
+    premium: number,
+  ): void {
     const index = currency === 0 ? 1 : currency;
     let price = '...';
     if (maker.isExplicit && maker.amount > 0 && maker.satoshis > 0) {
@@ -161,7 +169,9 @@ const MakerForm = ({
     return maker.advancedOptions && amountRangeEnabled;
   }, [maker.advancedOptions, amountRangeEnabled]);
 
-  const handlePaymentMethodChange = function (paymentArray: Array<{name: string, icon: string}>): void {
+  const handlePaymentMethodChange = function (
+    paymentArray: Array<{ name: string; icon: string }>,
+  ): void {
     let str = '';
     const arrayLength = paymentArray.length;
     for (let i = 0; i < arrayLength; i++) {
@@ -277,7 +287,9 @@ const MakerForm = ({
           }
           setSubmittingRequest(false);
         })
-        .catch(()=>{ setBadRequest("Request error")} );
+        .catch(() => {
+          setBadRequest('Request error');
+        });
     }
     setOpenDialogs(false);
   };
@@ -339,12 +351,14 @@ const MakerForm = ({
 
   const resetRange = function (advancedOptions: boolean): void {
     const index = fav.currency === 0 ? 1 : fav.currency;
-    const minAmount = maker.amount !== ''
-      ? parseFloat((maker.amount / 2).toPrecision(2))
-      : parseFloat(Number(limits.list[index].max_amount * 0.25).toPrecision(2));
-    const maxAmount = maker.amount !== ''
-      ? parseFloat(maker.amount)
-      : parseFloat(Number(limits.list[index].max_amount * 0.75).toPrecision(2));
+    const minAmount =
+      maker.amount !== ''
+        ? parseFloat((maker.amount / 2).toPrecision(2))
+        : parseFloat(Number(limits.list[index].max_amount * 0.25).toPrecision(2));
+    const maxAmount =
+      maker.amount !== ''
+        ? parseFloat(maker.amount)
+        : parseFloat(Number(limits.list[index].max_amount * 0.75).toPrecision(2));
 
     setMaker({
       ...maker,
@@ -442,7 +456,7 @@ const MakerForm = ({
     );
   }, [maker, amountLimits, limits, fav.type, makerHasAmountRange]);
 
-  const clearMaker = function ():void {
+  const clearMaker = function (): void {
     setFav({ ...fav, type: null });
     setMaker(defaultMaker);
   };

@@ -170,8 +170,10 @@ const NavBar = (): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('More')}
           value='none'
-          onClick={(e) => {
-            open.more ? null : setOpen({ ...open, more: true });
+          onClick={() => {
+            setOpen((open) => {
+              return { ...open, more: !open.more };
+            });
           }}
           icon={
             <MoreTooltip>

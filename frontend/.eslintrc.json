@@ -19,6 +19,7 @@
     "sourceType": "module",
     "project": "./tsconfig.json"
   },
+  "ignorePatterns": ["**/PaymentMethods/Icons/code/code.js"],
   "plugins": ["react", "react-hooks", "@typescript-eslint", "prettier"],
   "rules": {
     "react-hooks/rules-of-hooks": "error",

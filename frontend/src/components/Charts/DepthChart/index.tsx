@@ -138,7 +138,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   };
 
   const generateSerie = (orders: PublicOrder[]): Datum[] => {
-    if (center == undefined) {
+    if (center === undefined) {
       return [];
     }
 
@@ -146,7 +146,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
     let serie: Datum[] = [];
     orders.forEach((order) => {
       const lastSumOrders = sumOrders;
-      sumOrders += (order.satoshis_now || 0) / 100000000;
+      sumOrders += (order.satoshis_now ?? 0) / 100000000;
       const datum: Datum[] = [
         {
           // Vertical Line
@@ -171,7 +171,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   };
 
   const closeSerie = (serie: Datum[], limitBottom: number, limitTop: number): Datum[] => {
-    if (serie.length == 0) {
+    if (serie.length === 0) {
       return [];
     }
 
@@ -199,11 +199,11 @@ const DepthChart: React.FC<DepthChartProps> = ({
       d={props.lineGenerator([
         {
           y: 0,
-          x: props.xScale(center || 0),
+          x: props.xScale(center ?? 0),
         },
         {
           y: props.innerHeight,
-          x: props.xScale(center || 0),
+          x: props.xScale(center ?? 0),
         },
       ])}
       fill='none'
@@ -215,8 +215,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const generateTooltip: React.FunctionComponent<PointTooltipProps> = (
     pointTooltip: PointTooltipProps,
   ) => {
-    const order: PublicOrder = pointTooltip.point.data.order;
-    return order ? (
+    const order: PublicOrder | undefined = pointTooltip.point.data.order;
+    return order !== undefined ? (
       <Paper elevation={12} style={{ padding: 10, width: 250 }}>
         <Grid container justifyContent='space-between'>
           <Grid item xs={3}>
@@ -291,7 +291,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
       }
     >
       <Paper variant='outlined' style={{ width: '100%', height: '100%' }}>
-        {center == undefined || enrichedOrders.length < 1 ? (
+        {center === undefined || enrichedOrders.length < 1 ? (
           <div
             style={{
               display: 'flex',
@@ -351,7 +351,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
                 <Grid item>
                   <Box justifyContent='center'>
                     {xType === 'base_amount'
-                      ? `${center} ${currencyDict[currencyCode]}`
+                      ? `${center} ${String(currencyDict[currencyCode])}`
                       : `${center}%`}
                   </Box>
                 </Grid>
