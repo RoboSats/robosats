@@ -13,7 +13,7 @@ class NativeRobosats {
 
   public cookies: Record<string, string> = {};
 
-  public loadCookie = (cookie: { key: string; value: string }) => {
+  public loadCookie = (cookie: { key: string; value: string }): void => {
     this.cookies[cookie.key] = cookie.value;
   };
 
@@ -21,7 +21,7 @@ class NativeRobosats {
     messageId,
     response = {},
   ) => {
-    if (this.pendingMessages[messageId]) {
+    if (this.pendingMessages[messageId] != null) {
       this.pendingMessages[messageId].resolve(response);
       delete this.pendingMessages[messageId];
     }
@@ -31,7 +31,7 @@ class NativeRobosats {
     messageId,
     response = {},
   ) => {
-    if (this.pendingMessages[messageId]) {
+    if (this.pendingMessages[messageId] != null) {
       this.pendingMessages[messageId].reject(response);
       delete this.pendingMessages[messageId];
     }
@@ -39,7 +39,7 @@ class NativeRobosats {
 
   public onMessage: (message: NativeWebViewMessageSystem) => void = (message) => {
     if (message.type === 'torStatus') {
-      this.torDaemonStatus = message.detail || 'ERROR';
+      this.torDaemonStatus = message.detail ?? 'ERROR';
       window.dispatchEvent(new CustomEvent('torStatus', { detail: this.torDaemonStatus }));
     } else if (message.type === 'setCookie') {
       if (message.key !== undefined) {
@@ -57,7 +57,7 @@ class NativeRobosats {
     window.ReactNativeWebView?.postMessage(json);
 
     return await new Promise<object>(async (resolve, reject) => {
-      if (message.id) {
+      if (message.id !== undefined) {
         this.pendingMessages[message.id] = {
           resolve,
           reject,

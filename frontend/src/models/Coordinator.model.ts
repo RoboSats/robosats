@@ -80,7 +80,7 @@ export class Coordinator {
   public description: string;
   public motto: string;
   public color: string;
-  public policies: Object;
+  public policies: Record<string, string> = {};
   public contact: Contact | undefined;
   public badges?: Badges | undefined;
   public mainnet: Origins;

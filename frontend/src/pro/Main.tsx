@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import GridLayout, { type Layout } from 'react-grid-layout';
 import { Grid, styled, useTheme } from '@mui/material';
 
@@ -24,9 +24,9 @@ import { AppContext, type UseAppStoreType } from '../contexts/AppContext';
 
 const StyledRGL = styled(GridLayout)(
   ({ theme, gridCellSize, height, width, freeze }) => `
-  height: ${height}em;
-  width: ${width}px;
-  max-height: ${height}em;
+  height: ${Number(height)}em;
+  width: ${Number(width)}px;
+  max-height: ${Number(height)}em;
   `,
 );
 
