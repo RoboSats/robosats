@@ -222,7 +222,7 @@ const TradeBox = ({
 
   const updateInvoice = function (invoice: string): void {
     setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
-    signCleartextMessage(invoice, robot.encPrivKey, robot.token).then((signedInvoice) => {
+    void signCleartextMessage(invoice, robot.encPrivKey, robot.token).then((signedInvoice) => {
       submitAction({
         action: 'update_invoice',
         invoice: signedInvoice,
@@ -231,23 +231,25 @@ const TradeBox = ({
     });
   };
 
-  const updateAddress = function () {
+  const updateAddress = function (): void {
     setLoadingButtons({ ...noLoadingButtons, submitAddress: true });
-    signCleartextMessage(onchain.address, robot.encPrivKey, robot.token).then((signedAddress) => {
-      submitAction({
-        action: 'update_address',
-        address: signedAddress,
-        mining_fee_rate: onchain.miningFee,
-      });
-    });
+    void signCleartextMessage(onchain.address, robot.encPrivKey, robot.token).then(
+      (signedAddress) => {
+        submitAction({
+          action: 'update_address',
+          address: signedAddress,
+          mining_fee_rate: onchain.miningFee,
+        });
+      },
+    );
   };
 
-  const pauseOrder = function () {
+  const pauseOrder = function (): void {
     setLoadingButtons({ ...noLoadingButtons, pauseOrder: true });
     submitAction({ action: 'pause' });
   };
 
-  const submitStatement = function () {
+  const submitStatement = function (): void {
     let statement = dispute.statement;
     if (dispute.attachLogs) {
       const payload = { statement, messages, token: robot.token };
@@ -256,11 +258,11 @@ const TradeBox = ({
     setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
     submitAction({ action: 'submit_statement', statement });
   };
-  const ratePlatform = function (rating: number) {
+  const ratePlatform = function (rating: number): void {
     submitAction({ action: 'rate_platform', rating });
   };
 
-  const handleWebln = async (order: Order) => {
+  const handleWebln = async (order: Order): void => {
     const webln = await getWebln().catch(() => {
       console.log('WebLN not available');
     });
@@ -304,7 +306,7 @@ const TradeBox = ({
   useEffect(() => {
     if (order.status !== lastOrderStatus) {
       setLastOrderStatus(order.status);
-      void handleWebln(order);
+      handleWebln(order);
     }
   }, [order.status]);
 

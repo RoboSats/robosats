@@ -281,7 +281,7 @@ export const useAppStore = () => {
   const [badOrder, setBadOrder] = useState<string | undefined>(undefined);
 
   const [page, setPage] = useState<Page>(
-    entryPage === '' || entryPage == 'index.html' ? 'robot' : entryPage,
+    entryPage === '' || entryPage === 'index.html' ? 'robot' : entryPage,
   );
   const [slideDirection, setSlideDirection] = useState<SlideDirection>({
     in: undefined,
@@ -361,7 +361,7 @@ export const useAppStore = () => {
   };
 
   const fetchFederationLimits = function (): void {
-    Object.entries(federation).map(([shortAlias, coordinator]): void => {
+    Object.entries(federation).map(([shortAlias, coordinator]) => {
       if (coordinator.enabled === true) {
         // set limitLoading=true
         dispatchFederation({
@@ -371,6 +371,7 @@ export const useAppStore = () => {
         // fetch new limits
         fetchCoordinatorLimits(coordinator);
       }
+      return null; // Object.entries() expect a return
     });
   };
 
@@ -379,8 +380,8 @@ export const useAppStore = () => {
     const url = coordinator[settings.network][origin];
     const book = await apiClient
       .get(url, '/api/book/')
-      .then((data) => {
-        return data.not_found ? [] : data;
+      .then((data: PublicOrder[]) => {
+        return data.not_found !== undefined ? [] : data;
       })
       .catch(() => {
         return [];
@@ -392,7 +393,7 @@ export const useAppStore = () => {
   };
 
   const fetchFederationBook = function (): void {
-    Object.entries(federation).map(([shortAlias, coordinator]): void => {
+    Object.entries(federation).map(([shortAlias, coordinator]) => {
       if (coordinator.enabled === true) {
         dispatchFederation({
           type: 'updateBook',
@@ -400,6 +401,7 @@ export const useAppStore = () => {
         });
         fetchCoordinatorBook(coordinator);
       }
+      return null; // Object.entries() expect a return
     });
   };
 
@@ -427,7 +429,7 @@ export const useAppStore = () => {
   };
 
   const fetchFederationInfo = function (): void {
-    Object.entries(federation).map(([shortAlias, coordinator]): void => {
+    Object.entries(federation).map(([shortAlias, coordinator]) => {
       if (coordinator.enabled === true) {
         dispatchFederation({
           type: 'updateInfo',
@@ -435,6 +437,7 @@ export const useAppStore = () => {
         });
         fetchCoordinatorInfo(coordinator);
       }
+      return null; // Object.entries() expect a return
     });
   };
 
@@ -445,8 +448,8 @@ export const useAppStore = () => {
     let orders: PublicOrder[] = book.orders;
     let loadedCoordinators: number = 0;
     let totalCoordinators: number = 0;
-    Object.values(federation).map((coordinator: Coordinator): void => {
-      if (coordinator.enabled) {
+    Object.values(federation).map((coordinator: Coordinator) => {
+      if (coordinator?.enabled === true) {
         totalCoordinators = totalCoordinators + 1;
         if (!coordinator.loadingBook) {
           const existingOrders = orders.filter(
@@ -462,36 +465,41 @@ export const useAppStore = () => {
           loadedCoordinators = loadedCoordinators + 1;
         }
       }
-      const loading = loadedCoordinators != totalCoordinators;
+      const loading = loadedCoordinators !== totalCoordinators;
       setBook({ orders, loading, loadedCoordinators, totalCoordinators });
+      return null; // Object.values() expects a return
     });
   };
 
-  const updateLimits = (): void => {
-    const newLimits: LimitList | never[] = [];
-    Object.entries(federation).map(([shortAlias, coordinator]): void => {
-      if (coordinator.limits !== undefined) {
-        for (const currency in coordinator.limits) {
-          newLimits[currency] = compareUpdateLimit(
-            newLimits[currency],
-            coordinator.limits[currency],
-          );
-        }
-      }
-    });
-    setLimits(newLimits);
-  };
+  // const updateLimits = (): void => {
+  //   const newLimits: LimitList | never[] = [];
+  //   Object.entries(federation).map(([shortAlias, coordinator]) => {
+  //     if (coordinator.limits !== undefined) {
+  //       for (const currency in coordinator.limits) {
+  //         newLimits[currency] = compareUpdateLimit(
+  //           newLimits[currency],
+  //           coordinator.limits[currency],
+  //         );
+  //       }
+  //     }
+  //     return null // Object.entries expects a return
+  //   });
+  //   setLimits(newLimits);
+  // };
 
   const updateExchange = (): void => {
     const onlineCoordinators = Object.keys(federation).reduce((count, shortAlias): void => {
-      if (!federation[shortAlias].loadingInfo && federation[shortAlias].info) {
+      if (
+        federation[shortAlias]?.loadingInfo === false &&
+        federation[shortAlias]?.info !== undefined
+      ) {
         return count + 1;
       } else {
         return count;
       }
     }, 0);
     const totalCoordinators = Object.keys(federation).reduce((count, shortAlias) => {
-      return federation[shortAlias].enabled ? count + 1 : count;
+      return federation[shortAlias]?.enabled === true ? count + 1 : count;
     }, 0);
     setExchange({ info: updateExchangeInfo(federation), onlineCoordinators, totalCoordinators });
   };
@@ -528,14 +536,14 @@ export const useAppStore = () => {
   }, [delay, currentOrder, page, badOrder]);
 
   const orderReceived = function (data: any): void {
-    if (data.bad_request) {
+    if (data.bad_request !== undefined) {
       setBadOrder(data.bad_request);
       setDelay(99999999);
       setOrder(undefined);
     } else {
       setDelay(
         data.status >= 0 && data.status <= 18
-          ? page == 'order'
+          ? page === 'order'
             ? statusToDelay[data.status]
             : statusToDelay[data.status] * 5
           : 99999999,
@@ -546,7 +554,7 @@ export const useAppStore = () => {
   };
 
   const fetchOrder = function (): void {
-    if (currentOrder.shortAlias != null) {
+    if (currentOrder.shortAlias != null && currentOrder.id != null) {
       void apiClient
         .get(
           federation[currentOrder.shortAlias][settings.network][origin],
@@ -654,7 +662,7 @@ export const useAppStore = () => {
   };
 
   const fetchFederationRobot = function (props: fetchRobotProps): void {
-    Object.entries(federation).map(([shortAlias, coordinator]): void => {
+    Object.entries(federation).map(([shortAlias, coordinator]) => {
       if (coordinator.enabled === true) {
         dispatchFederation({
           type: 'updateRobot',
@@ -662,6 +670,7 @@ export const useAppStore = () => {
         });
         fetchCoordinatorRobot({ ...props, coordinator });
       }
+      return null; // Object.entries expects a return
     });
   };
 

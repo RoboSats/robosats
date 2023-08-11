@@ -63,11 +63,11 @@ const OrderDetails = ({
 
   const amountString = useMemo(() => {
     // precision to 8 decimal if currency is BTC otherwise 4 decimals
-    if (order.currency == 1000) {
+    if (order.currency === 1000) {
       return (
         amountToString(
           order.amount * 100000000,
-          order.amount ? false : order.has_range,
+          order.amount > 0 ? false : order.has_range,
           order.min_amount * 100000000,
           order.max_amount * 100000000,
         ) + ' Sats'
@@ -76,7 +76,7 @@ const OrderDetails = ({
       return (
         amountToString(
           order.amount,
-          order.amount ? false : order.has_range,
+          order.amount > 0 ? false : order.has_range,
           order.min_amount,
           order.max_amount,
         ) + ` ${currencyCode}`
@@ -91,7 +91,7 @@ const OrderDetails = ({
     minutes,
     seconds,
     completed,
-  }: CountdownRenderProps) {
+  }: CountdownRenderProps): JSX.Element {
     if (completed) {
       // Render a completed state
       return <span> {t('The order has expired')}</span>;
@@ -117,18 +117,26 @@ const OrderDetails = ({
     }
   };
 
-  const timerRenderer = function (seconds: number) {
+  const timerRenderer = function (seconds: number): JSX.Element {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds - hours * 3600) / 60);
     return (
       <span>
-        {hours > 0 ? hours + 'h' : ''} {minutes > 0 ? zeroPad(minutes) + 'm' : ''}{' '}
+        {hours > 0 ? `${hours}h` : ''} {minutes > 0 ? `${zeroPad(minutes)}m` : ''}{' '}
       </span>
     );
   };
 
   // Countdown Renderer callback with condition
-  const countdownPenaltyRenderer = function ({ minutes, seconds, completed }) {
+  const countdownPenaltyRenderer = ({
+    minutes,
+    seconds,
+    completed,
+  }: {
+    minutes: number;
+    seconds: number;
+    completed: boolean;
+  }): JSX.Element => {
     if (completed) {
       // Render a completed state
       return <span> {t('Penalty lifted, good to go!')}</span>;
@@ -150,14 +158,14 @@ const OrderDetails = ({
     let receive: string = '';
     let sats: string = '';
 
-    const isBuyer = (order.type == 0 && order.is_maker) || (order.type == 1 && !order.is_maker);
+    const isBuyer = (order.type === 0 && order.is_maker) || (order.type === 1 && !order.is_maker);
     const tradeFee = order.is_maker ? info?.maker_fee ?? 0 : info?.taker_fee ?? 0;
     const defaultRoutingBudget = 0.001;
     const btc_now = order.satoshis_now / 100000000;
-    const rate = order.amount ? order.amount / btc_now : order.max_amount / btc_now;
+    const rate = order.amount > 0 ? order.amount / btc_now : Number(order.max_amount) / btc_now;
 
     if (isBuyer) {
-      if (order.amount) {
+      if (order.amount > 0) {
         sats = computeSats({
           amount: order.amount,
           fee: -tradeFee,
@@ -177,7 +185,7 @@ const OrderDetails = ({
           routingBudget: defaultRoutingBudget,
           rate,
         });
-        sats = `${min}-${max}`;
+        sats = `${String(min)}-${String(max)}`;
       }
       send = t('You send via {{method}} {{amount}}', {
         amount: amountString,
@@ -188,7 +196,7 @@ const OrderDetails = ({
         amount: sats,
       });
     } else {
-      if (order.amount) {
+      if (order.amount > 0) {
         sats = computeSats({
           amount: order.amount,
           fee: tradeFee,
@@ -205,7 +213,7 @@ const OrderDetails = ({
           fee: tradeFee,
           rate,
         });
-        sats = `${min}-${max}`;
+        sats = `${String(min)}-${String(max)}`;
       }
       send = t('You send via Lightning {{amount}} Sats (Approx)', { amount: sats });
       receive = t('You receive via {{method}} {{amount}}', {
@@ -233,9 +241,9 @@ const OrderDetails = ({
             </ListItemAvatar>
             <ListItemText
               primary={`${order.maker_nick} (${
-                order.type
-                  ? t(order.currency == 1000 ? 'Swapping Out' : 'Seller')
-                  : t(order.currency == 1000 ? 'Swapping In' : 'Buyer')
+                order.type === 1
+                  ? t(order.currency === 1000 ? 'Swapping Out' : 'Seller')
+                  : t(order.currency === 1000 ? 'Swapping In' : 'Buyer')
               })`}
               secondary={t('Order maker')}
             />
@@ -246,9 +254,9 @@ const OrderDetails = ({
             <ListItem>
               <ListItemText
                 primary={`${order.taker_nick} (${
-                  order.type
-                    ? t(order.currency == 1000 ? 'Swapping In' : 'Buyer')
-                    : t(order.currency == 1000 ? 'Swapping Out' : 'Seller')
+                  order.type === 1
+                    ? t(order.currency === 1000 ? 'Swapping In' : 'Buyer')
+                    : t(order.currency === 1000 ? 'Swapping Out' : 'Seller')
                 })`}
                 secondary={t('Order taker')}
               />
@@ -256,7 +264,7 @@ const OrderDetails = ({
                 <RobotAvatar
                   avatarClass='smallAvatar'
                   statusColor={statusBadgeColor(order.taker_status)}
-                  nickname={order.taker_nick == 'None' ? undefined : order.taker_nick}
+                  nickname={order.taker_nick === 'None' ? undefined : order.taker_nick}
                   tooltip={t(order.taker_status)}
                   orderType={order.type === 0 ? 1 : 0}
                   baseUrl={baseUrl}
@@ -296,7 +304,7 @@ const OrderDetails = ({
             </ListItemIcon>
             <ListItemText
               primary={amountString}
-              secondary={order.amount ? 'Amount' : 'Amount Range'}
+              secondary={order.amount > 0 ? 'Amount' : 'Amount Range'}
             />
             <ListItemIcon>
               <IconButton
@@ -349,7 +357,7 @@ const OrderDetails = ({
                 />
               }
               secondary={
-                order.currency == 1000 ? t('Swap destination') : t('Accepted payment methods')
+                order.currency === 1000 ? t('Swap destination') : t('Accepted payment methods')
               }
             />
           </ListItem>
@@ -372,13 +380,13 @@ const OrderDetails = ({
               />
             ) : null}
 
-            {!order.price_now && order.is_explicit ? (
+            {order.price_now === undefined && order.is_explicit ? (
               <ListItemText primary={pn(order.satoshis)} secondary={t('Amount of Satoshis')} />
             ) : null}
 
-            {!order.price_now && !order.is_explicit ? (
+            {order.price_now === undefined && !order.is_explicit ? (
               <ListItemText
-                primary={parseFloat(Number(order.premium).toFixed(2)) + '%'}
+                primary={`${parseFloat(Number(order.premium).toFixed(2))}%`}
                 secondary={t('Premium over market price')}
               />
             ) : null}

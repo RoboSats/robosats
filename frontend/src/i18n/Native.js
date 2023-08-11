@@ -35,7 +35,6 @@ const config = {
     eu: { translations: translationEU },
     cs: { translations: translationCS },
     th: { translations: translationTH },
-    pl: { translations: translationPL },
     sv: { translations: translationSV },
     'zh-SI': { translations: translationZHsi },
     'zh-TR': { translations: translationZHtr },
@@ -55,6 +54,6 @@ const config = {
   },
 };
 
-i18n.use(HttpApi).use(LanguageDetector).use(initReactI18next).init(config);
+await i18n.use(HttpApi).use(LanguageDetector).use(initReactI18next).init(config);
 
 export default i18n;
