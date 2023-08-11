@@ -1,4 +1,11 @@
-import { createContext, useEffect, useReducer, useState } from 'react';
+import {
+  createContext,
+  type Dispatch,
+  useEffect,
+  useReducer,
+  useState,
+  type SetStateAction,
+} from 'react';
 import { type Page } from '../basic/NavBar';
 import { type OpenDialogs } from '../basic/MainDialogs';
 
@@ -17,6 +24,7 @@ import {
   type Limits,
   defaultExchange,
   type Federation,
+  type Version,
 } from '../models';
 
 import { apiClient } from '../services/api';
@@ -120,23 +128,23 @@ export interface ActionFederation {
   payload: any; // TODO
 }
 
-const reduceFederation = (federation: Federation, action: ActionFederation): Federation => {
+const reduceFederation = (state: Federation, action: ActionFederation): Federation => {
   switch (action.type) {
     case 'reset':
       return initialFederation;
     case 'enable':
       return {
-        ...federation,
+        ...state,
         [action.payload.shortAlias]: {
-          ...federation[action.payload.shortAlias],
+          ...state[action.payload.shortAlias],
           enabled: true,
         },
       };
     case 'disable':
       return {
-        ...federation,
+        ...state,
         [action.payload.shortAlias]: {
-          ...federation[action.payload.shortAlias],
+          ...state[action.payload.shortAlias],
           enabled: false,
           info: undefined,
           orders: [],
@@ -145,36 +153,36 @@ const reduceFederation = (federation: Federation, action: ActionFederation): Fed
       };
     case 'updateBook':
       return {
-        ...federation,
+        ...state,
         [action.payload.shortAlias]: {
-          ...federation[action.payload.shortAlias],
+          ...state[action.payload.shortAlias],
           book: action.payload.book,
           loadingBook: action.payload.loadingBook,
         },
       };
     case 'updateLimits':
       return {
-        ...federation,
+        ...state,
         [action.payload.shortAlias]: {
-          ...federation[action.payload.shortAlias],
+          ...state[action.payload.shortAlias],
           limits: action.payload.limits,
           loadingLimits: action.payload.loadingLimits,
         },
       };
     case 'updateInfo':
       return {
-        ...federation,
+        ...state,
         [action.payload.shortAlias]: {
-          ...federation[action.payload.shortAlias],
+          ...state[action.payload.shortAlias],
           info: action.payload.info,
           loadingInfo: action.payload.loadingInfo,
         },
       };
     case 'updateRobot':
       return {
-        ...federation,
+        ...state,
         [action.payload.shortAlias]: {
-          ...federation[action.payload.shortAlias],
+          ...state[action.payload.shortAlias],
           robot: action.payload.robot,
           loadingRobot: action.payload.loadingRobot,
         },
@@ -231,7 +239,69 @@ const makeTheme = function (settings: Settings): Theme {
   return theme;
 };
 
-export const useAppStore = () => {
+export interface CurrentOrder {
+  shortAlias: string | null;
+  id: number | null;
+}
+
+export interface WindowSize {
+  width: number;
+  height: number;
+}
+
+export interface UseAppStoreType {
+  theme: Theme;
+  torStatus: TorStatus;
+  settings: Settings;
+  setSettings: Dispatch<SetStateAction<Settings>>;
+  book: Book;
+  setBook: Dispatch<SetStateAction<Book>>;
+  federation: Federation;
+  dispatchFederation: Dispatch<ActionFederation>;
+  garage: Garage;
+  setGarage: Dispatch<SetStateAction<Garage>>;
+  currentSlot: number;
+  setCurrentSlot: Dispatch<SetStateAction<number>>;
+  fetchCoordinatorInfo: (coordinator: Coordinator) => void;
+  fetchFederationBook: () => void;
+  limits: Limits;
+  setLimits: Dispatch<SetStateAction<Limits>>;
+  fetchFederationLimits: () => void;
+  maker: Maker;
+  setMaker: Dispatch<SetStateAction<Maker>>;
+  clearOrder: () => void;
+  robot: Robot;
+  setRobot: Dispatch<SetStateAction<Robot>>;
+  fetchFederationRobot: (props: fetchRobotProps) => void;
+  exchange: Exchange;
+  setExchange: Dispatch<SetStateAction<Exchange>>;
+  focusedCoordinator: string;
+  setFocusedCoordinator: Dispatch<SetStateAction<string>>;
+  fav: Favorites;
+  setFav: Dispatch<SetStateAction<Favorites>>;
+  order: Order | undefined;
+  setOrder: Dispatch<SetStateAction<Order | undefined>>;
+  badOrder: string | undefined;
+  setBadOrder: Dispatch<SetStateAction<string | undefined>>;
+  setDelay: Dispatch<SetStateAction<number>>;
+  page: Page;
+  setPage: Dispatch<SetStateAction<Page>>;
+  slideDirection: SlideDirection;
+  setSlideDirection: Dispatch<SetStateAction<SlideDirection>>;
+  currentOrder: CurrentOrder;
+  setCurrentOrder: Dispatch<SetStateAction<CurrentOrder>>;
+  navbarHeight: number;
+  open: OpenDialogs;
+  setOpen: Dispatch<SetStateAction<OpenDialogs>>;
+  windowSize: WindowSize;
+  clientVersion: {
+    semver: Version;
+    short: string;
+    long: string;
+  };
+}
+
+export const useAppStore = (): UseAppStoreType => {
   // State provided right at the top level of the app. A chaotic bucket of everything.
   // Contains app-wide state and functions. Triggers re-renders on the full tree often.
 
@@ -265,10 +335,7 @@ export const useAppStore = () => {
   });
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [exchange, setExchange] = useState<Exchange>(initialExchange);
-  const [federation, dispatchFederation] = useReducer<Federation>(
-    reduceFederation,
-    initialFederation,
-  );
+  const [federation, dispatchFederation] = useReducer(reduceFederation, initialFederation);
 
   const [focusedCoordinator, setFocusedCoordinator] = useState<string>('');
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0, mode: 'fiat' });
@@ -287,17 +354,14 @@ export const useAppStore = () => {
     in: undefined,
     out: undefined,
   });
-  const [currentOrder, setCurrentOrder] = useState<{
-    shortAlias: string | null;
-    id: number | null;
-  }>({ shortAlias: null, id: null });
+  const [currentOrder, setCurrentOrder] = useState<CurrentOrder>({ shortAlias: null, id: null });
 
   const navbarHeight = 2.5;
   const clientVersion = getClientVersion();
 
   const [open, setOpen] = useState<OpenDialogs>(closeAll);
 
-  const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(() =>
+  const [windowSize, setWindowSize] = useState<WindowSize>(() =>
     getWindowSize(theme.typography.fontSize),
   );
 
@@ -738,6 +802,4 @@ export const useAppStore = () => {
   };
 };
 
-export type UseAppStoreType = ReturnType<typeof useAppStore>;
-
-export const AppContext = createContext<UseAppStoreType | null>(null);
+export const AppContext = createContext<UseAppStoreType | undefined>(undefined);
