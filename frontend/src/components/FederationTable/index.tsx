@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, useTheme, Checkbox, CircularProgress, Typography, Grid } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, type GridColDef, type GridValidRowModel } from '@mui/x-data-grid';
 import { type Coordinator } from '../../models';
 
 import RobotAvatar from '../RobotAvatar';
 import { Link, LinkOff } from '@mui/icons-material';
-import { hostUrl } from '../../contexts/AppContext';
+import { type ActionFederation, hostUrl } from '../../contexts/AppContext';
 
 interface FederationTableProps {
   federation: Record<string, Coordinator>;
-  dispatchFederation: () => void;
+  dispatchFederation: (action: ActionFederation) => void;
+  fetchCoordinatorInfo: (coordinator: Coordinator) => Promise<void>;
   setFocusedCoordinator: (state: number) => void;
   openCoordinator: () => void;
   maxWidth?: number;
@@ -21,6 +22,7 @@ interface FederationTableProps {
 const FederationTable = ({
   federation,
   dispatchFederation,
+  fetchCoordinatorInfo,
   setFocusedCoordinator,
   openCoordinator,
   maxWidth = 90,
@@ -53,12 +55,12 @@ const FederationTable = ({
     noResultsOverlayLabel: t('No coordinators found.'),
   };
 
-  const onClickCoordinator = function (shortAlias: string) {
+  const onClickCoordinator = function (shortAlias: string): void {
     setFocusedCoordinator(shortAlias);
     openCoordinator();
   };
 
-  const aliasObj = function (width: number) {
+  const aliasObj = useCallback((width: number) => {
     return {
       field: 'longAlias',
       headerName: t('Coordinator'),
@@ -94,27 +96,30 @@ const FederationTable = ({
         );
       },
     };
-  };
+  }, []);
 
-  const enabledObj = function (width: number) {
-    return {
-      field: 'enabled',
-      headerName: t('Enabled'),
-      width: width * fontSize,
-      renderCell: (params: any) => {
-        return (
-          <Checkbox
-            checked={params.row.enabled}
-            onClick={() => {
-              onEnableChange(params.row.shortAlias);
-            }}
-          />
-        );
-      },
-    };
-  };
+  const enabledObj = useCallback(
+    (width: number) => {
+      return {
+        field: 'enabled',
+        headerName: t('Enabled'),
+        width: width * fontSize,
+        renderCell: (params: any) => {
+          return (
+            <Checkbox
+              checked={params.row.enabled}
+              onClick={() => {
+                onEnableChange(params.row.shortAlias);
+              }}
+            />
+          );
+        },
+      };
+    },
+    [federation],
+  );
 
-  const upObj = function (width: number) {
+  const upObj = useCallback((width: number) => {
     return {
       field: 'up',
       headerName: t('Up'),
@@ -127,9 +132,9 @@ const FederationTable = ({
               onClickCoordinator(params.row.shortAlias);
             }}
           >
-            {params.row.loadingInfo && params.row.enabled ? (
+            {Boolean(params.row.loadingInfo) && Boolean(params.row.enabled) ? (
               <CircularProgress thickness={0.35 * fontSize} size={1.5 * fontSize} />
-            ) : params.row.info ? (
+            ) : params.row.info !== undefined ? (
               <Link color='success' />
             ) : (
               <LinkOff color='error' />
@@ -138,7 +143,7 @@ const FederationTable = ({
         );
       },
     };
-  };
+  }, []);
 
   const columnSpecs = {
     alias: {
@@ -167,14 +172,19 @@ const FederationTable = ({
     },
   };
 
-  const filteredColumns = function () {
+  const filteredColumns = function (): {
+    columns: Array<GridColDef<GridValidRowModel>>;
+    width: number;
+  } {
     const useSmall = maxWidth < 30;
     const selectedColumns: object[] = [];
     let width: number = 0;
 
-    for (const [key, value] of Object.entries(columnSpecs)) {
-      const colWidth = useSmall && value.small ? value.small?.width : value.normal.width;
-      const colObject = useSmall && value.small ? value.small?.object : value.normal.object;
+    for (const value of Object.values(columnSpecs)) {
+      const colWidth = Number(
+        useSmall && Boolean(value.small) ? value.small.width : value.normal.width,
+      );
+      const colObject = useSmall && Boolean(value.small) ? value.small.object : value.normal.object;
 
       if (width + colWidth < maxWidth || selectedColumns.length < 2) {
         width = width + colWidth;
@@ -189,20 +199,21 @@ const FederationTable = ({
       return first[1] - second[1];
     });
 
-    const columns = selectedColumns.map(function (item) {
+    const columns: Array<GridColDef<GridValidRowModel>> = selectedColumns.map(function (item) {
       return item[0];
     });
 
-    return [columns, width * 0.9];
+    return { columns, width: width * 0.9 };
   };
 
-  const [columns, width] = filteredColumns();
+  const { columns, width } = filteredColumns();
 
-  const onEnableChange = function (shortAlias: string) {
-    if (federation[shortAlias].enabled) {
+  const onEnableChange = function (shortAlias: string): void {
+    if (federation[shortAlias].enabled === true) {
       dispatchFederation({ type: 'disable', payload: { shortAlias } });
     } else {
       dispatchFederation({ type: 'enable', payload: { shortAlias } });
+      void fetchCoordinatorInfo(federation[shortAlias]);
     }
   };
 

@@ -84,7 +84,7 @@ const MakerForm = ({
   const amountSafeThresholds = [1.03, 0.98];
 
   useEffect(() => {
-    setCurrencyCode(currencyDict[fav.currency == 0 ? 1 : fav.currency]);
+    setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
     if (Object.keys(limits.list).length === 0) {
       // fetchFederationLimits().then((data) => {
       //   updateAmountLimits(data, fav.currency, maker.premium);
@@ -100,8 +100,12 @@ const MakerForm = ({
     }
   }, []);
 
-  const updateAmountLimits = function (limitList: LimitList, currency: number, premium: number) {
-    const index = currency == 0 ? 1 : currency;
+  const updateAmountLimits = function (
+    limitList: LimitList,
+    currency: number,
+    premium: number,
+  ): void {
+    const index = currency === 0 ? 1 : currency;
     let minAmountLimit: number = limitList[index].min_amount * (1 + premium / 100);
     let maxAmountLimit: number = limitList[index].max_amount * (1 + premium / 100);
 
@@ -111,24 +115,28 @@ const MakerForm = ({
     setAmountLimits([minAmountLimit, maxAmountLimit]);
   };
 
-  const updateSatoshisLimits = function (limitList: LimitList) {
+  const updateSatoshisLimits = function (limitList: LimitList): void {
     const minAmount: number = limitList[1000].min_amount * 100000000;
     const maxAmount: number = limitList[1000].max_amount * 100000000;
     setSatoshisLimits([minAmount, maxAmount]);
   };
 
-  const updateCurrentPrice = function (limitsList: LimitList, currency: number, premium: number) {
-    const index = currency == 0 ? 1 : currency;
+  const updateCurrentPrice = function (
+    limitsList: LimitList,
+    currency: number,
+    premium: number,
+  ): void {
+    const index = currency === 0 ? 1 : currency;
     let price = '...';
     if (maker.isExplicit && maker.amount > 0 && maker.satoshis > 0) {
       price = maker.amount / (maker.satoshis / 100000000);
-    } else if (!maker.is_explicit) {
+    } else if (!maker.isExplicit) {
       price = limitsList[index].price * (1 + premium / 100);
     }
     setCurrentPrice(parseFloat(Number(price).toPrecision(5)));
   };
 
-  const handleCurrencyChange = function (newCurrency: number) {
+  const handleCurrencyChange = function (newCurrency: number): void {
     const currencyCode: string = currencyDict[newCurrency];
     setCurrencyCode(currencyCode);
     setFav({
@@ -161,7 +169,9 @@ const MakerForm = ({
     return maker.advancedOptions && amountRangeEnabled;
   }, [maker.advancedOptions, amountRangeEnabled]);
 
-  const handlePaymentMethodChange = function (paymentArray: string[]) {
+  const handlePaymentMethodChange = function (
+    paymentArray: Array<{ name: string; icon: string }>,
+  ): void {
     let str = '';
     const arrayLength = paymentArray.length;
     for (let i = 0; i < arrayLength; i++) {
@@ -176,14 +186,14 @@ const MakerForm = ({
     });
   };
 
-  const handleMinAmountChange = function (e) {
+  const handleMinAmountChange = function (e): void {
     setMaker({
       ...maker,
       minAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
     });
   };
 
-  const handleMaxAmountChange = function (e) {
+  const handleMaxAmountChange = function (e): void {
     setMaker({
       ...maker,
       maxAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
@@ -191,7 +201,7 @@ const MakerForm = ({
   };
 
   const handlePremiumChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> =
-    function ({ target: { value } }) {
+    function ({ target: { value } }): void {
       const max = fav.mode === 'fiat' ? 999 : 99;
       const min = -100;
       const newPremium = Math.floor(Number(value) * Math.pow(10, 2)) / Math.pow(10, 2);
@@ -213,7 +223,7 @@ const MakerForm = ({
       });
     };
 
-  const handleSatoshisChange = function (e: object) {
+  const handleSatoshisChange = function (e: object): void {
     const newSatoshis = e.target.value;
     let badSatoshisText: string = '';
     let satoshis: string = newSatoshis;
@@ -233,14 +243,14 @@ const MakerForm = ({
     });
   };
 
-  const handleClickRelative = function () {
+  const handleClickRelative = function (): void {
     setMaker({
       ...maker,
       isExplicit: false,
     });
   };
 
-  const handleClickExplicit = function () {
+  const handleClickExplicit = function (): void {
     if (!maker.advancedOptions) {
       setMaker({
         ...maker,
@@ -249,12 +259,12 @@ const MakerForm = ({
     }
   };
 
-  const handleCreateOrder = function () {
+  const handleCreateOrder = function (): void {
     if (!disableRequest) {
       setSubmittingRequest(true);
       const body = {
-        type: fav.type == 0 ? 1 : 0,
-        currency: fav.currency == 0 ? 1 : fav.currency,
+        type: fav.type === 0 ? 1 : 0,
+        currency: fav.currency === 0 ? 1 : fav.currency,
         amount: makerHasAmountRange ? null : maker.amount,
         has_range: makerHasAmountRange,
         min_amount: makerHasAmountRange ? maker.minAmount : null,
@@ -262,7 +272,7 @@ const MakerForm = ({
         payment_method:
           maker.paymentMethodsText === '' ? 'not specified' : maker.paymentMethodsText,
         is_explicit: maker.isExplicit,
-        premium: maker.isExplicit ? null : maker.premium == '' ? 0 : maker.premium,
+        premium: maker.isExplicit ? null : maker.premium === '' ? 0 : maker.premium,
         satoshis: maker.isExplicit ? maker.satoshis : null,
         public_duration: maker.publicDuration,
         escrow_duration: maker.escrowDuration,
@@ -270,46 +280,49 @@ const MakerForm = ({
       };
       apiClient
         .post(hostUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
-        .then((data: object) => {
+        .then((data: any) => {
           setBadRequest(data.bad_request);
-          if (data.id) {
+          if (data.id !== undefined) {
             onOrderCreated(data.id);
           }
           setSubmittingRequest(false);
+        })
+        .catch(() => {
+          setBadRequest('Request error');
         });
     }
     setOpenDialogs(false);
   };
 
-  const handleChangePublicDuration = function (date: Date) {
+  const handleChangePublicDuration = function (date: Date): void {
     const d = new Date(date);
     const hours: number = d.getHours();
     const minutes: number = d.getMinutes();
 
-    const total_secs: number = hours * 60 * 60 + minutes * 60;
+    const totalSecs: number = hours * 60 * 60 + minutes * 60;
 
     setMaker({
       ...maker,
       publicExpiryTime: date,
-      publicDuration: total_secs,
+      publicDuration: totalSecs,
     });
   };
 
-  const handleChangeEscrowDuration = function (date: Date) {
+  const handleChangeEscrowDuration = function (date: Date): void {
     const d = new Date(date);
     const hours: number = d.getHours();
     const minutes: number = d.getMinutes();
 
-    const total_secs: number = hours * 60 * 60 + minutes * 60;
+    const totalSecs: number = hours * 60 * 60 + minutes * 60;
 
     setMaker({
       ...maker,
       escrowExpiryTime: date,
-      escrowDuration: total_secs,
+      escrowDuration: totalSecs,
     });
   };
 
-  const handleClickAdvanced = function () {
+  const handleClickAdvanced = function (): void {
     if (maker.advancedOptions) {
       handleClickRelative();
       setMaker({ ...maker, advancedOptions: false });
@@ -336,14 +349,16 @@ const MakerForm = ({
     );
   }, [maker.minAmount, maker.maxAmount, amountLimits]);
 
-  const resetRange = function (advancedOptions: boolean) {
+  const resetRange = function (advancedOptions: boolean): void {
     const index = fav.currency === 0 ? 1 : fav.currency;
-    const minAmount = maker.amount
-      ? parseFloat((maker.amount / 2).toPrecision(2))
-      : parseFloat(Number(limits.list[index].max_amount * 0.25).toPrecision(2));
-    const maxAmount = maker.amount
-      ? parseFloat(maker.amount)
-      : parseFloat(Number(limits.list[index].max_amount * 0.75).toPrecision(2));
+    const minAmount =
+      maker.amount !== ''
+        ? parseFloat((maker.amount / 2).toPrecision(2))
+        : parseFloat(Number(limits.list[index].max_amount * 0.25).toPrecision(2));
+    const maxAmount =
+      maker.amount !== ''
+        ? parseFloat(maker.amount)
+        : parseFloat(Number(limits.list[index].max_amount * 0.75).toPrecision(2));
 
     setMaker({
       ...maker,
@@ -353,7 +368,7 @@ const MakerForm = ({
     });
   };
 
-  const handleRangeAmountChange = function (e: any, newValue, activeThumb: number) {
+  const handleRangeAmountChange = function (e: any, newValue, activeThumb: number): void {
     let minAmount = e.target.value[0];
     let maxAmount = e.target.value[1];
 
@@ -390,7 +405,7 @@ const MakerForm = ({
   const handleClickAmountRangeEnabled = function (
     _e: React.ChangeEvent<HTMLInputElement>,
     checked: boolean,
-  ) {
+  ): void {
     setAmountRangeEnabled(checked);
   };
 
@@ -430,23 +445,23 @@ const MakerForm = ({
     return (
       fav.type == null ||
       (!makerHasAmountRange &&
-        maker.amount != '' &&
+        maker.amount !== '' &&
         (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
       maker.badPaymentMethod ||
       (maker.amount == null && (!makerHasAmountRange || limits.loading)) ||
       (makerHasAmountRange && (minAmountError || maxAmountError)) ||
       (!makerHasAmountRange && maker.amount <= 0) ||
-      (maker.isExplicit && (maker.badSatoshisText != '' || maker.satoshis == '')) ||
-      (!maker.isExplicit && maker.badPremiumText != '')
+      (maker.isExplicit && (maker.badSatoshisText !== '' || maker.satoshis === '')) ||
+      (!maker.isExplicit && maker.badPremiumText !== '')
     );
   }, [maker, amountLimits, limits, fav.type, makerHasAmountRange]);
 
-  const clearMaker = function () {
+  const clearMaker = function (): void {
     setFav({ ...fav, type: null });
     setMaker(defaultMaker);
   };
 
-  const SummaryText = function () {
+  const SummaryText = (): JSX.Element => {
     return (
       <Typography
         component='h2'
@@ -458,7 +473,7 @@ const MakerForm = ({
           ? fav.mode === 'fiat'
             ? t('Order for ')
             : t('Swap of ')
-          : fav.type == 1
+          : fav.type === 1
           ? fav.mode === 'fiat'
             ? t('Buy BTC for ')
             : t('Swap into LN ')
@@ -476,7 +491,7 @@ const MakerForm = ({
         {' ' + (fav.mode === 'fiat' ? currencyCode : 'Sats')}
         {maker.isExplicit
           ? t(' of {{satoshis}} Satoshis', { satoshis: pn(maker.satoshis) })
-          : maker.premium == 0
+          : maker.premium === 0
           ? fav.mode === 'fiat'
             ? t(' at market price')
             : ''
@@ -498,12 +513,12 @@ const MakerForm = ({
         hasRobot={robot.avatarLoaded}
         onClickGenerateRobot={onClickGenerateRobot}
       />
-      <Collapse in={limits.list.length == 0}>
-        <div style={{ display: limits.list.length == 0 ? '' : 'none' }}>
+      <Collapse in={limits.list.length === 0}>
+        <div style={{ display: limits.list.length === 0 ? '' : 'none' }}>
           <LinearProgress />
         </div>
       </Collapse>
-      <Collapse in={!(limits.list.length == 0 || collapseAll)}>
+      <Collapse in={!(limits.list.length === 0 || collapseAll)}>
         <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
           <Grid item>
             <IconButton
@@ -539,7 +554,7 @@ const MakerForm = ({
               >
                 <Switch
                   size='small'
-                  disabled={limits.list.length == 0}
+                  disabled={limits.list.length === 0}
                   checked={maker.advancedOptions}
                   onChange={handleClickAdvanced}
                 />
@@ -560,9 +575,9 @@ const MakerForm = ({
                     <FormHelperText sx={{ textAlign: 'center' }}>{t('Swap?')}</FormHelperText>
                     <Checkbox
                       sx={{ position: 'relative', bottom: '0.3em' }}
-                      checked={fav.mode == 'swap'}
+                      checked={fav.mode === 'swap'}
                       onClick={() => {
-                        handleCurrencyChange(fav.mode == 'swap' ? 1 : 1000);
+                        handleCurrencyChange(fav.mode === 'swap' ? 1 : 1000);
                       }}
                     />
                   </FormControl>
@@ -585,10 +600,10 @@ const MakerForm = ({
                             type: 1,
                           });
                         }}
-                        disableElevation={fav.type == 1}
+                        disableElevation={fav.type === 1}
                         sx={{
-                          backgroundColor: fav.type == 1 ? 'primary.main' : 'background.paper',
-                          color: fav.type == 1 ? 'background.paper' : 'text.secondary',
+                          backgroundColor: fav.type === 1 ? 'primary.main' : 'background.paper',
+                          color: fav.type === 1 ? 'background.paper' : 'text.secondary',
                           ':hover': {
                             color: 'background.paper',
                           },
@@ -605,11 +620,11 @@ const MakerForm = ({
                             type: 0,
                           });
                         }}
-                        disableElevation={fav.type == 0}
+                        disableElevation={fav.type === 0}
                         color='secondary'
                         sx={{
-                          backgroundColor: fav.type == 0 ? 'secondary.main' : 'background.paper',
-                          color: fav.type == 0 ? 'background.secondary' : 'text.secondary',
+                          backgroundColor: fav.type === 0 ? 'secondary.main' : 'background.paper',
+                          color: fav.type === 0 ? 'background.secondary' : 'text.secondary',
                           ':hover': {
                             color: 'background.paper',
                           },
@@ -679,15 +694,15 @@ const MakerForm = ({
                         disabled={makerHasAmountRange}
                         variant={makerHasAmountRange ? 'filled' : 'outlined'}
                         error={
-                          maker.amount != '' &&
+                          maker.amount !== '' &&
                           (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])
                         }
                         helperText={
-                          maker.amount < amountLimits[0] && maker.amount != ''
+                          maker.amount < amountLimits[0] && maker.amount !== ''
                             ? t('Must be more than {{minAmount}}', {
                                 minAmount: pn(parseFloat(amountLimits[0].toPrecision(2))),
                               })
-                            : maker.amount > amountLimits[1] && maker.amount != ''
+                            : maker.amount > amountLimits[1] && maker.amount !== ''
                             ? t('Must be less than {{maxAmount}}', {
                                 maxAmount: pn(parseFloat(amountLimits[1].toPrecision(2))),
                               })
@@ -710,7 +725,7 @@ const MakerForm = ({
                         }}
                       />
                     </Tooltip>
-                    {fav.mode === 'swap' && maker.amount != '' ? (
+                    {fav.mode === 'swap' && maker.amount !== '' ? (
                       <FormHelperText sx={{ textAlign: 'center' }}>
                         {amountLabel.helper}
                       </FormHelperText>
@@ -729,7 +744,7 @@ const MakerForm = ({
                         inputProps={{
                           style: { textAlign: 'center' },
                         }}
-                        value={fav.currency == 0 ? 1 : fav.currency}
+                        value={fav.currency === 0 ? 1 : fav.currency}
                         onChange={(e) => {
                           handleCurrencyChange(e.target.value);
                         }}
@@ -758,9 +773,9 @@ const MakerForm = ({
               optionsType={fav.mode}
               error={maker.badPaymentMethod}
               helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
-              label={fav.mode == 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')}
+              label={fav.mode === 'swap' ? t('Swap Destination(s)') : t('Fiat Payment Method(s)')}
               tooltipTitle={t(
-                fav.mode == 'swap'
+                fav.mode === 'swap'
                   ? t('Enter the destination of the Lightning swap')
                   : 'Enter your preferred fiat payment methods. Fast methods are highly recommended.',
               )}
@@ -837,7 +852,7 @@ const MakerForm = ({
               <TextField
                 fullWidth
                 label={t('Satoshis')}
-                error={maker.badSatoshisText != ''}
+                error={maker.badSatoshisText !== ''}
                 helperText={maker.badSatoshisText === '' ? null : maker.badSatoshisText}
                 type='number'
                 required={true}
@@ -857,7 +872,7 @@ const MakerForm = ({
             <div style={{ display: maker.isExplicit ? 'none' : '' }}>
               <TextField
                 fullWidth
-                error={maker.badPremiumText != ''}
+                error={maker.badPremiumText !== ''}
                 helperText={maker.badPremiumText === '' ? null : maker.badPremiumText}
                 label={t('Premium over Market (%)')}
                 type='number'
@@ -1076,7 +1091,7 @@ const MakerForm = ({
           </Typography>
         </Grid>
 
-        <Collapse in={!(limits.list.length == 0)}>
+        <Collapse in={!(limits.list.length === 0)}>
           <Tooltip
             placement='top'
             enterTouchDelay={0}

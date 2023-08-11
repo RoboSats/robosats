@@ -52,7 +52,11 @@ export const RoutingFailedPrompt = ({
 }: RoutingFailedPromptProps): JSX.Element => {
   const { t } = useTranslation();
 
-  const countdownRenderer = function ({ minutes, seconds, completed }: CountdownRenderProps) {
+  const countdownRenderer = function ({
+    minutes,
+    seconds,
+    completed,
+  }: CountdownRenderProps): JSX.Element {
     if (completed) {
       return (
         <Grid container direction='column' alignItems='center' justifyContent='center' spacing={1}>
@@ -87,7 +91,7 @@ export const RoutingFailedPrompt = ({
           </Typography>
         </Grid>
 
-        {order.failure_reason ? (
+        {order.failure_reason != null ? (
           <Grid item>
             <FailureReason failureReason={order.failure_reason} />
           </Grid>

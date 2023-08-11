@@ -1,7 +1,7 @@
 import React from 'react';
-import { SvgIcon } from '@mui/material';
+import { SvgIcon, type SvgIconProps } from '@mui/material';
 
-export default function RoboSatsIcon(props) {
+const RoboSats: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props} x='0px' y='0px' width='1000px' height='1000px' viewBox='0 0 1000 900'>
       <g>
@@ -102,4 +102,6 @@ export default function RoboSatsIcon(props) {
       </g>
     </SvgIcon>
   );
-}
+};
+
+export default RoboSats;

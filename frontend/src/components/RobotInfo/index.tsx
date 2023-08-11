@@ -31,7 +31,7 @@ import { UserNinjaIcon } from '../Icons';
 import { getWebln } from '../../utils';
 import { apiClient } from '../../services/api';
 import { signCleartextMessage } from '../../pgp';
-import { AppContext, UseAppStoreType, origin } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType, origin } from '../../contexts/AppContext';
 
 interface Props {
   robot: Robot;
@@ -55,8 +55,8 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
   const [weblnEnabled, setWeblnEnabled] = useState<boolean>(false);
   const [openEnableTelegram, setOpenEnableTelegram] = useState<boolean>(false);
 
-  const handleWebln = async () => {
-    const webln = await getWebln()
+  const handleWebln = async (): void => {
+    void getWebln()
       .then(() => {
         setWeblnEnabled(true);
       })
@@ -64,58 +64,59 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
         setWeblnEnabled(false);
         console.log('WebLN not available');
       });
-    return webln;
   };
 
   useEffect(() => {
     handleWebln();
   }, []);
 
-  const handleWeblnInvoiceClicked = async (e: any) => {
+  const handleWeblnInvoiceClicked = async (e: MouseEvent<HTMLButtonElement, MouseEvent>): void => {
     e.preventDefault();
-    if (robot.earnedRewards) {
+    if (robot.earnedRewards > 0) {
       const webln = await getWebln();
       const invoice = webln.makeInvoice(robot.earnedRewards).then(() => {
-        if (invoice) {
+        if (invoice != null) {
           handleSubmitInvoiceClicked(e, invoice.paymentRequest);
         }
       });
     }
   };
 
-  const handleSubmitInvoiceClicked = (e: any, rewardInvoice: string) => {
+  const handleSubmitInvoiceClicked = (e: any, rewardInvoice: string): void => {
     setBadInvoice('');
     setShowRewardsSpinner(true);
-    signCleartextMessage(rewardInvoice, robot.encPrivKey, robot.token).then((signedInvoice) => {
-      apiClient
-        .post(
-          url,
-          '/api/reward/',
-          {
-            invoice: signedInvoice,
-          },
-          { tokenSHA256: robot.tokenSHA256 },
-        )
-        .then((data: any) => {
-          setBadInvoice(data.bad_invoice ?? '');
-          setShowRewardsSpinner(false);
-          setWithdrawn(data.successful_withdrawal);
-          setOpenClaimRewards(!data.successful_withdrawal);
-          const newRobot = {
-            ...robot,
-            earnedRewards: data.successful_withdrawal ? 0 : robot.earnedRewards,
-          };
-          dispatchFederation({
-            type: 'updateRobot',
-            payload: { shortAlias: coordinator.shortAlias, robot: newRobot },
+    void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot.token).then(
+      (signedInvoice) => {
+        void apiClient
+          .post(
+            url,
+            '/api/reward/',
+            {
+              invoice: signedInvoice,
+            },
+            { tokenSHA256: robot.tokenSHA256 },
+          )
+          .then((data: any) => {
+            setBadInvoice(data.bad_invoice ?? '');
+            setShowRewardsSpinner(false);
+            setWithdrawn(data.successful_withdrawal);
+            setOpenClaimRewards(!(data.successful_withdrawal !== undefined));
+            const newRobot = {
+              ...robot,
+              earnedRewards: data.successful_withdrawal !== undefined ? 0 : robot.earnedRewards,
+            };
+            dispatchFederation({
+              type: 'updateRobot',
+              payload: { shortAlias: coordinator.shortAlias, robot: newRobot },
+            });
           });
-        });
-    });
+      },
+    );
     e.preventDefault();
   };
 
-  const setStealthInvoice = (wantsStealth: boolean) => {
-    apiClient
+  const setStealthInvoice = (wantsStealth: boolean): void => {
+    void apiClient
       .post(url, '/api/stealth/', { wantsStealth }, { tokenSHA256: robot.tokenSHA256 })
       .then((data) => {
         const newRobot = { ...robot, stealthInvoices: data?.wantsStealth };
@@ -133,21 +134,21 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
         {robot.earnedRewards > 0 && (
           <Typography color='success'>&nbsp;{t('Claim Sats!')} </Typography>
         )}
-        {robot.activeOrderId && (
+        {robot.activeOrderId > 0 && (
           <Typography color='success'>
             &nbsp;<b>{t('Active order!')}</b>
           </Typography>
         )}
-        {robot.lastOrderId && !robot.activeOrderId && (
+        {robot.lastOrderId > 0 && robot.activeOrderId === undefined && (
           <Typography color='warning'>&nbsp;{t('finished order')}</Typography>
         )}
       </AccordionSummary>
       <AccordionDetails>
         <List dense disablePadding={true}>
-          {robot.activeOrderId ? (
+          {robot.activeOrderId > 0 ? (
             <ListItemButton
               onClick={() => {
-                navigate(`/order/${robot.activeOrderId}`);
+                navigate(`/order/${String(robot.activeOrderId)}`);
                 onClose();
               }}
             >
@@ -161,10 +162,10 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
                 secondary={t('Your current order')}
               />
             </ListItemButton>
-          ) : robot.lastOrderId ? (
+          ) : robot.lastOrderId > 0 ? (
             <ListItemButton
               onClick={() => {
-                navigate(`/order/${robot.lastOrderId}`);
+                navigate(`/order/${String(robot.lastOrderId)}`);
                 onClose();
               }}
             >
@@ -284,8 +285,8 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
                 <Grid container style={{ display: 'flex', alignItems: 'stretch' }}>
                   <Grid item style={{ display: 'flex', maxWidth: 160 }}>
                     <TextField
-                      error={!!badInvoice}
-                      helperText={badInvoice || ''}
+                      error={Boolean(badInvoice)}
+                      helperText={badInvoice ?? ''}
                       label={t('Invoice for {{amountSats}} Sats', {
                         amountSats: robot.earnedRewards,
                       })}
@@ -316,8 +317,8 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
                     <Grid item alignItems='stretch' style={{ display: 'flex', maxWidth: 240 }}>
                       <Button
                         sx={{ maxHeight: 38, minWidth: 230 }}
-                        onClick={async (e) => {
-                          await handleWeblnInvoiceClicked(e);
+                        onClick={(e) => {
+                          handleWeblnInvoiceClicked(e);
                         }}
                         variant='contained'
                         color='primary'

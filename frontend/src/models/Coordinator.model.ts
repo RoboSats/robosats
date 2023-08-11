@@ -1,4 +1,4 @@
-import { Robot, type LimitList, type PublicOrder } from '.';
+import { type Robot, type LimitList, type PublicOrder } from '.';
 
 export interface Contact {
   nostr?: string | undefined;
@@ -13,9 +13,9 @@ export interface Contact {
 }
 
 export interface Version {
-  major: number | null;
-  minor: number | null;
-  patch: number | null;
+  major: number;
+  minor: number;
+  patch: number;
 }
 
 export interface Badges {
@@ -23,7 +23,7 @@ export interface Badges {
   donatesToDevFund?: number | undefined;
   hasGoodOpSec?: boolean | undefined;
   robotsLove?: boolean | undefined;
-  hasLargeLimits?: string | undefined;
+  hasLargeLimits?: boolean | undefined;
 }
 
 export interface Info {
@@ -82,7 +82,7 @@ export class Coordinator {
   public description: string;
   public motto: string;
   public color: string;
-  public policies: Object;
+  public policies: Record<string, string> = {};
   public contact: Contact | undefined;
   public badges?: Badges | undefined;
   public mainnet: Origins;

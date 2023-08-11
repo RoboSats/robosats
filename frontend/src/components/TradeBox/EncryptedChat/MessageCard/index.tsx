@@ -19,7 +19,7 @@ interface Props {
 }
 
 const MessageCard: React.FC<Props> = ({ message, isTaker, userConnected, baseUrl }) => {
-  const [showPGP, setShowPGP] = useState<boolean>();
+  const [showPGP, setShowPGP] = useState<boolean>(false);
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -122,7 +122,7 @@ const MessageCard: React.FC<Props> = ({ message, isTaker, userConnected, baseUrl
           showPGP ? (
             <a>
               {' '}
-              {message.time} <br /> {'Valid signature: ' + message.validSignature} <br />{' '}
+              {message.time} <br /> {`Valid signature:  ${String(message.validSignature)}`} <br />{' '}
               {message.encryptedMessage}{' '}
             </a>
           ) : (

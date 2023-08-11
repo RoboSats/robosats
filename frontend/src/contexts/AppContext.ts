@@ -1,4 +1,11 @@
-import React, { createContext, useEffect, useReducer, useState } from 'react';
+import {
+  createContext,
+  type Dispatch,
+  useEffect,
+  useReducer,
+  useState,
+  type SetStateAction,
+} from 'react';
 import { type Page } from '../basic/NavBar';
 import { type OpenDialogs } from '../basic/MainDialogs';
 
@@ -17,6 +24,7 @@ import {
   type Limits,
   defaultExchange,
   type Federation,
+  type Version,
 } from '../models';
 
 import { apiClient } from '../services/api';
@@ -29,7 +37,7 @@ import { updateExchangeInfo } from '../models/Exchange.model';
 import { createTheme, type Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
 
-const getWindowSize = function (fontSize: number) {
+const getWindowSize = function (fontSize: number): { width: number; height: number } {
   // returns window size in EM units
   return {
     width: window.innerWidth / fontSize,
@@ -37,7 +45,7 @@ const getWindowSize = function (fontSize: number) {
   };
 };
 
-const getHostUrl = (network = 'mainnet') => {
+const getHostUrl = (network = 'mainnet'): { hostUrl: string; origin: string } => {
   let host = '';
   let protocol = '';
   let origin = '';
@@ -49,7 +57,7 @@ const getHostUrl = (network = 'mainnet') => {
     protocol = 'http:';
   }
   const hostUrl = `${protocol}//${host}`;
-  if (window.NativeRobosats != undefined || host.includes('.onion')) {
+  if (window.NativeRobosats !== undefined || host.includes('.onion')) {
     origin = 'onion';
   } else if (host.includes('i2p')) {
     origin = 'i2p';
@@ -57,10 +65,10 @@ const getHostUrl = (network = 'mainnet') => {
     origin = 'clearnet';
   }
 
-  return [hostUrl, origin];
+  return { hostUrl, origin };
 };
 
-export const [hostUrl, origin] = getHostUrl();
+export const { hostUrl, origin } = getHostUrl();
 
 // Refresh delays (ms) according to Order status
 const statusToDelay = [
@@ -108,7 +116,7 @@ const initialFederation: Federation = Object.entries(defaultFederation).reduce(
   {},
 );
 
-interface ActionFederation {
+export interface ActionFederation {
   type:
     | 'reset'
     | 'enable'
@@ -117,68 +125,70 @@ interface ActionFederation {
     | 'updateLimits'
     | 'updateInfo'
     | 'updateRobot';
-  action: any; // TODO
+  payload: any; // TODO
 }
 
-const reduceFederation = (federation: Federation, action: ActionFederation) => {
+const reduceFederation = (state: Federation, action: ActionFederation): Federation => {
   switch (action.type) {
     case 'reset':
       return initialFederation;
     case 'enable':
       return {
-        ...federation,
+        ...state,
         [action.payload.shortAlias]: {
-          ...federation[action.payload.shortAlias],
+          ...state[action.payload.shortAlias],
           enabled: true,
         },
       };
     case 'disable':
       return {
-        ...federation,
+        ...state,
         [action.payload.shortAlias]: {
-          ...federation[action.payload.shortAlias],
+          ...state[action.payload.shortAlias],
           enabled: false,
           info: undefined,
+          orders: [],
+          limits: undefined,
         },
       };
     case 'updateBook':
       return {
-        ...federation,
+        ...state,
         [action.payload.shortAlias]: {
-          ...federation[action.payload.shortAlias],
+          ...state[action.payload.shortAlias],
           book: action.payload.book,
           loadingBook: action.payload.loadingBook,
         },
       };
     case 'updateLimits':
       return {
-        ...federation,
+        ...state,
         [action.payload.shortAlias]: {
-          ...federation[action.payload.shortAlias],
+          ...state[action.payload.shortAlias],
           limits: action.payload.limits,
           loadingLimits: action.payload.loadingLimits,
         },
       };
     case 'updateInfo':
       return {
-        ...federation,
+        ...state,
         [action.payload.shortAlias]: {
-          ...federation[action.payload.shortAlias],
+          ...state[action.payload.shortAlias],
           info: action.payload.info,
           loadingInfo: action.payload.loadingInfo,
         },
       };
     case 'updateRobot':
       return {
-        ...federation,
+        ...state,
         [action.payload.shortAlias]: {
-          ...federation[action.payload.shortAlias],
+          ...state[action.payload.shortAlias],
           robot: action.payload.robot,
           loadingRobot: action.payload.loadingRobot,
         },
       };
     default:
-      throw new Error(`Unhandled action type: ${action.type}`);
+      throw new Error(`Unhandled action type: ${String(action.type)}`);
   }
 };
 
@@ -216,7 +226,7 @@ export const closeAll = {
   notice: false,
 };
 
-const makeTheme = function (settings: Settings) {
+const makeTheme = function (settings: Settings): Theme {
   const theme: Theme = createTheme({
     palette: {
       mode: settings.mode,
@@ -230,7 +240,69 @@ const makeTheme = function (settings: Settings) {
   return theme;
 };
 
-export const useAppStore = () => {
+export interface CurrentOrder {
+  shortAlias: string | null;
+  id: number | null;
+}
+
+export interface WindowSize {
+  width: number;
+  height: number;
+}
+
+export interface UseAppStoreType {
+  theme: Theme;
+  torStatus: TorStatus;
+  settings: Settings;
+  setSettings: Dispatch<SetStateAction<Settings>>;
+  book: Book;
+  setBook: Dispatch<SetStateAction<Book>>;
+  federation: Federation;
+  dispatchFederation: Dispatch<ActionFederation>;
+  garage: Garage;
+  setGarage: Dispatch<SetStateAction<Garage>>;
+  currentSlot: number;
+  setCurrentSlot: Dispatch<SetStateAction<number>>;
+  fetchCoordinatorInfo: (coordinator: Coordinator) => void;
+  fetchFederationBook: () => void;
+  limits: Limits;
+  setLimits: Dispatch<SetStateAction<Limits>>;
+  fetchFederationLimits: () => void;
+  maker: Maker;
+  setMaker: Dispatch<SetStateAction<Maker>>;
+  clearOrder: () => void;
+  robot: Robot;
+  setRobot: Dispatch<SetStateAction<Robot>>;
+  fetchFederationRobot: (props: fetchRobotProps) => void;
+  exchange: Exchange;
+  setExchange: Dispatch<SetStateAction<Exchange>>;
+  focusedCoordinator: string;
+  setFocusedCoordinator: Dispatch<SetStateAction<string>>;
+  fav: Favorites;
+  setFav: Dispatch<SetStateAction<Favorites>>;
+  order: Order | undefined;
+  setOrder: Dispatch<SetStateAction<Order | undefined>>;
+  badOrder: string | undefined;
+  setBadOrder: Dispatch<SetStateAction<string | undefined>>;
+  setDelay: Dispatch<SetStateAction<number>>;
+  page: Page;
+  setPage: Dispatch<SetStateAction<Page>>;
+  slideDirection: SlideDirection;
+  setSlideDirection: Dispatch<SetStateAction<SlideDirection>>;
+  currentOrder: CurrentOrder;
+  setCurrentOrder: Dispatch<SetStateAction<CurrentOrder>>;
+  navbarHeight: number;
+  open: OpenDialogs;
+  setOpen: Dispatch<SetStateAction<OpenDialogs>>;
+  windowSize: WindowSize;
+  clientVersion: {
+    semver: Version;
+    short: string;
+    long: string;
+  };
+}
+
+export const useAppStore = (): UseAppStoreType => {
   // State provided right at the top level of the app. A chaotic bucket of everything.
   // Contains app-wide state and functions. Triggers re-renders on the full tree often.
 
@@ -246,7 +318,7 @@ export const useAppStore = () => {
   }, [settings.fontSize, settings.mode, settings.lightQRs]);
 
   useEffect(() => {
-    i18n.changeLanguage(settings.language);
+    void i18n.changeLanguage(settings.language);
   }, []);
 
   // All app data structured
@@ -277,23 +349,20 @@ export const useAppStore = () => {
   const [badOrder, setBadOrder] = useState<string | undefined>(undefined);
 
   const [page, setPage] = useState<Page>(
-    entryPage == '' || entryPage == 'index.html' ? 'robot' : entryPage,
+    entryPage === '' || entryPage === 'index.html' ? 'robot' : entryPage,
   );
   const [slideDirection, setSlideDirection] = useState<SlideDirection>({
     in: undefined,
     out: undefined,
   });
-  const [currentOrder, setCurrentOrder] = useState<{
-    shortAlias: string | null;
-    id: number | null;
-  }>({ shortAlias: null, id: null });
+  const [currentOrder, setCurrentOrder] = useState<CurrentOrder>({ shortAlias: null, id: null });
 
   const navbarHeight = 2.5;
   const clientVersion = getClientVersion();
 
   const [open, setOpen] = useState<OpenDialogs>(closeAll);
 
-  const [windowSize, setWindowSize] = useState<{ width: number; height: number }>(() =>
+  const [windowSize, setWindowSize] = useState<WindowSize>(() =>
     getWindowSize(theme.typography.fontSize),
   );
 
@@ -310,12 +379,12 @@ export const useAppStore = () => {
   }, []);
 
   useEffect(() => {
-    if (typeof window !== undefined) {
+    if (window !== undefined) {
       window.addEventListener('resize', onResize);
     }
 
     return () => {
-      if (typeof window !== undefined) {
+      if (window !== undefined) {
         window.removeEventListener('resize', onResize);
       }
     };
@@ -335,12 +404,12 @@ export const useAppStore = () => {
     setWindowSize(getWindowSize(theme.typography.fontSize));
   }, [theme.typography.fontSize]);
 
-  const onResize = function () {
+  const onResize = function (): void {
     setWindowSize(getWindowSize(theme.typography.fontSize));
   };
 
   // fetch Limits
-  const fetchCoordinatorLimits = async (coordinator: Coordinator) => {
+  const fetchCoordinatorLimits = async (coordinator: Coordinator): void => {
     const url = coordinator[settings.network][origin];
     const limits = await apiClient
       .get(url, '/api/limits/')
@@ -356,7 +425,7 @@ export const useAppStore = () => {
     });
   };
 
-  const fetchFederationLimits = function () {
+  const fetchFederationLimits = function (): void {
     Object.entries(federation).map(([shortAlias, coordinator]) => {
       if (coordinator.enabled === true) {
         // set limitLoading=true
@@ -367,16 +436,17 @@ export const useAppStore = () => {
         // fetch new limits
         fetchCoordinatorLimits(coordinator);
       }
+      return null; // Object.entries() expect a return
     });
   };
 
   // fetch Books
-  const fetchCoordinatorBook = async (coordinator: Coordinator) => {
+  const fetchCoordinatorBook = async (coordinator: Coordinator): void => {
     const url = coordinator[settings.network][origin];
     const book = await apiClient
       .get(url, '/api/book/')
-      .then((data) => {
-        return data.not_found ? [] : data;
+      .then((data: PublicOrder[]) => {
+        return data.not_found !== undefined ? [] : data;
       })
       .catch(() => {
         return [];
@@ -387,7 +457,7 @@ export const useAppStore = () => {
     });
   };
 
-  const fetchFederationBook = function () {
+  const fetchFederationBook = function (): void {
     Object.entries(federation).map(([shortAlias, coordinator]) => {
       if (coordinator.enabled === true) {
         dispatchFederation({
@@ -396,11 +466,18 @@ export const useAppStore = () => {
         });
         fetchCoordinatorBook(coordinator);
       }
+      return null; // Object.entries() expect a return
     });
   };
 
   // fetch Info
-  const fetchCoordinatorInfo = async (coordinator: Coordinator) => {
+  const fetchCoordinatorInfo = async (coordinator: Coordinator): void => {
+    // Set loading true
+    dispatchFederation({
+      type: 'updateInfo',
+      payload: { shortAlias: coordinator.shortAlias, info: coordinator.info, loadingInfo: true },
+    });
+    // fetch and dispatch
     const url = coordinator[settings.network][origin];
     const info = await apiClient
       .get(url, '/api/info/')
@@ -416,7 +493,7 @@ export const useAppStore = () => {
     });
   };
 
-  const fetchFederationInfo = function () {
+  const fetchFederationInfo = function (): void {
     Object.entries(federation).map(([shortAlias, coordinator]) => {
       if (coordinator.enabled === true) {
         dispatchFederation({
@@ -425,18 +502,19 @@ export const useAppStore = () => {
         });
         fetchCoordinatorInfo(coordinator);
       }
+      return null; // Object.entries() expect a return
     });
   };
 
-  const updateBook = () => {
+  const updateBook = (): void => {
     setBook((book) => {
       return { ...book, loading: true, loadedCoordinators: 0 };
     });
     let orders: PublicOrder[] = book.orders;
     let loadedCoordinators: number = 0;
     let totalCoordinators: number = 0;
-    Object.values(federation).map((coordinator) => {
-      if (coordinator.enabled) {
+    Object.values(federation).map((coordinator: Coordinator) => {
+      if (coordinator?.enabled === true) {
         totalCoordinators = totalCoordinators + 1;
         if (!coordinator.loadingBook) {
           const existingOrders = orders.filter(
@@ -452,36 +530,41 @@ export const useAppStore = () => {
           loadedCoordinators = loadedCoordinators + 1;
         }
       }
-      const loading = loadedCoordinators != totalCoordinators;
+      const loading = loadedCoordinators !== totalCoordinators;
       setBook({ orders, loading, loadedCoordinators, totalCoordinators });
+      return null; // Object.values() expects a return
     });
   };
 
-  const updateLimits = () => {
-    const newLimits: LimitList | never[] = [];
-    Object.entries(federation).map(([shortAlias, coordinator]) => {
-      if (coordinator.limits) {
-        for (const currency in coordinator.limits) {
-          newLimits[currency] = compareUpdateLimit(
-            newLimits[currency],
-            coordinator.limits[currency],
-          );
-        }
-      }
-    });
-    setLimits(newLimits);
-  };
+  // const updateLimits = (): void => {
+  //   const newLimits: LimitList | never[] = [];
+  //   Object.entries(federation).map(([shortAlias, coordinator]) => {
+  //     if (coordinator.limits !== undefined) {
+  //       for (const currency in coordinator.limits) {
+  //         newLimits[currency] = compareUpdateLimit(
+  //           newLimits[currency],
+  //           coordinator.limits[currency],
+  //         );
+  //       }
+  //     }
+  //     return null // Object.entries expects a return
+  //   });
+  //   setLimits(newLimits);
+  // };
 
-  const updateExchange = () => {
-    const onlineCoordinators = Object.keys(federation).reduce((count, shortAlias) => {
-      if (!federation[shortAlias].loadingInfo && federation[shortAlias].info) {
+  const updateExchange = (): void => {
+    const onlineCoordinators = Object.keys(federation).reduce((count, shortAlias): void => {
+      if (
+        federation[shortAlias]?.loadingInfo === false &&
+        federation[shortAlias]?.info !== undefined
+      ) {
         return count + 1;
       } else {
         return count;
       }
     }, 0);
     const totalCoordinators = Object.keys(federation).reduce((count, shortAlias) => {
-      return federation[shortAlias].enabled ? count + 1 : count;
+      return federation[shortAlias]?.enabled === true ? count + 1 : count;
     }, 0);
     setExchange({ info: updateExchangeInfo(federation), onlineCoordinators, totalCoordinators });
   };
@@ -504,7 +587,7 @@ export const useAppStore = () => {
 
   // Fetch current order at load and in a loop
   useEffect(() => {
-    if (currentOrder.id != null && (page == 'order' || (order == badOrder) == undefined)) {
+    if (currentOrder.id != null && (page === 'order' || (order === badOrder) === undefined)) {
       fetchOrder();
     }
   }, [currentOrder, page]);
@@ -517,15 +600,15 @@ export const useAppStore = () => {
     };
   }, [delay, currentOrder, page, badOrder]);
 
-  const orderReceived = function (data: any) {
-    if (data.bad_request) {
+  const orderReceived = function (data: any): void {
+    if (data.bad_request !== undefined) {
       setBadOrder(data.bad_request);
       setDelay(99999999);
       setOrder(undefined);
     } else {
       setDelay(
         data.status >= 0 && data.status <= 18
-          ? page == 'order'
+          ? page === 'order'
             ? statusToDelay[data.status]
             : statusToDelay[data.status] * 5
           : 99999999,
@@ -535,19 +618,19 @@ export const useAppStore = () => {
     }
   };
 
-  const fetchOrder = function () {
-    if (currentOrder.shortAlias != null) {
-      apiClient
+  const fetchOrder = function (): void {
+    if (currentOrder.shortAlias != null && currentOrder.id != null) {
+      void apiClient
         .get(
           federation[currentOrder.shortAlias][settings.network][origin],
-          '/api/order/?order_id=' + currentOrder.id,
+          `/api/order/?order_id=${currentOrder.id}`,
           { tokenSHA256: robot.tokenSHA256 },
         )
         .then(orderReceived);
     }
   };
 
-  const clearOrder = function () {
+  const clearOrder = function (): void {
     setOrder(undefined);
     setBadOrder(undefined);
   };
@@ -618,13 +701,13 @@ export const useAppStore = () => {
           shannonEntropy,
           pubKey: data.public_key,
           encPrivKey: data.encrypted_private_key,
-          copiedToken: !!data.found,
+          copiedToken: Boolean(data.found),
         };
         if (currentOrder === undefined) {
           setCurrentOrder(
-            data.active_order_id
+            data.active_order_id !== undefined
               ? data.active_order_id
-              : data.last_order_id
+              : data.last_order_id !== undefined
               ? data.last_order_id
               : null,
           );
@@ -652,14 +735,20 @@ export const useAppStore = () => {
         });
         fetchCoordinatorRobot({ ...props, coordinator });
       }
+      return null; // Object.entries expects a return
     });
   };
 
   useEffect(() => {
-    if (page != 'robot') {
+    if (page !== 'robot') {
       if (open.profile && robot.avatarLoaded) {
         fetchFederationRobot({ isRefresh: true }); // refresh/update existing robot
-      } else if (!robot.avatarLoaded && robot.token && robot.encPrivKey && robot.pubKey) {
+      } else if (
+        !robot.avatarLoaded &&
+        robot.token !== undefined &&
+        robot.encPrivKey !== undefined &&
+        robot.pubKey !== undefined
+      ) {
         fetchFederationRobot({}); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
@@ -678,6 +767,7 @@ export const useAppStore = () => {
     setGarage,
     currentSlot,
     setCurrentSlot,
+    fetchCoordinatorInfo,
     fetchFederationBook,
     limits,
     setLimits,
@@ -713,6 +803,4 @@ export const useAppStore = () => {
   };
 };
 
-export type UseAppStoreType = ReturnType<typeof useAppStore>;
-
-export const AppContext = createContext<UseAppStoreType | null>(null);
+export const AppContext = createContext<UseAppStoreType | undefined>(undefined);

@@ -15,8 +15,8 @@ import {
 
 import BoltIcon from '@mui/icons-material/Bolt';
 import RobotAvatar from '../RobotAvatar';
-import { type Robot } from '../../models';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import type { Robot } from '../../models';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import RobotInfo from '../RobotInfo';
 
 interface Props {
@@ -51,7 +51,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot }: Props): JSX.El
           <ListItem className='profileNickname'>
             <ListItemText secondary={t('Your robot')}>
               <Typography component='h6' variant='h6'>
-                {robot.nickname ? (
+                {robot.nickname !== undefined && (
                   <div style={{ position: 'relative', left: '-7px' }}>
                     <div
                       style={{
@@ -69,7 +69,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot }: Props): JSX.El
                       <BoltIcon sx={{ color: '#fcba03', height: '28px', width: '24px' }} />
                     </div>
                   </div>
-                ) : null}
+                )}
               </Typography>
             </ListItemText>
 
@@ -90,9 +90,9 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot }: Props): JSX.El
           <b>{t('Coordinators that know your robot')}</b>
         </Typography>
 
-        {Object.entries(federation).map(([shortAlias, coordinator]) => {
+        {Object.entries(federation).map(([shortAlias, coordinator]: [string, any]): JSX.Element => {
           console.log(coordinator.shortAlias, coordinator.robot);
-          if (!coordinator.robot?.loading) {
+          if (coordinator.robot?.loading === false) {
             return (
               <RobotInfo
                 key={shortAlias}
@@ -101,6 +101,8 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot }: Props): JSX.El
                 onClose={onClose}
               />
             );
+          } else {
+            return <></>;
           }
         })}
       </DialogContent>

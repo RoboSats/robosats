@@ -30,7 +30,7 @@ const BookPage = (): JSX.Element => {
     fetchFederationBook();
   }, []);
 
-  const onOrderClicked = function (id: number, shortAlias: string) {
+  const onOrderClicked = function (id: number, shortAlias: string): void {
     if (robot.avatarLoaded) {
       clearOrder();
       setDelay(10000);
@@ -40,7 +40,7 @@ const BookPage = (): JSX.Element => {
     }
   };
 
-  const NavButtons = function () {
+  const NavButtons = function (): JSX.Element {
     return (
       <ButtonGroup variant='contained' color='inherit'>
         <Button
@@ -59,7 +59,7 @@ const BookPage = (): JSX.Element => {
               setView(view === 'depth' ? 'list' : 'depth');
             }}
           >
-            {view == 'depth' ? (
+            {view === 'depth' ? (
               <>
                 <FormatListBulleted /> {t('List')}
               </>
@@ -95,7 +95,7 @@ const BookPage = (): JSX.Element => {
           <Box sx={{ maxWidth: '18em', padding: '0.5em' }}>
             <MakerForm
               onOrderCreated={(id) => {
-                navigate('/order/' + id);
+                navigate(`/order/${id}`);
               }}
               onClickGenerateRobot={() => {
                 navigate('/robot');

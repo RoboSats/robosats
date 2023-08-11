@@ -23,7 +23,7 @@ const defaultExchangeInfo: ExchangeInfo = {
   version: { major: 0, minor: 0, patch: 0 },
 };
 
-export const updateExchangeInfo = (federation: Federation) => {
+export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
   const info: ExchangeInfo = {};
 
   const toSum = [
@@ -38,22 +38,25 @@ export const updateExchangeInfo = (federation: Federation) => {
   toSum.map((key) => {
     let value = 0;
     Object.entries(federation).map(([shortAlias, coordinator]) => {
-      if (coordinator.info) {
-        value = value + coordinator.info[key];
+      if (coordinator.info !== undefined) {
+        value = value + Number(coordinator.info[key]);
       }
+      return null;
     });
     info[key] = value;
+    return null;
   });
 
   const premiums: number[] = [];
   const volumes: number[] = [];
   let highestVersion: Version = { major: 0, minor: 0, patch: 0 };
   Object.entries(federation).map(([shortAlias, coordinator], index) => {
-    if (coordinator.info && coordinator.enabled) {
+    if (coordinator.info !== undefined && coordinator.enabled === true) {
       premiums[index] = coordinator.info.last_day_nonkyc_btc_premium;
       volumes[index] = coordinator.info.last_day_volume;
       highestVersion = getHigherVer(highestVersion, coordinator.info.version);
     }
+    return null;
   });
   info.last_day_nonkyc_btc_premium = weightedMean(premiums, volumes);
   info.version = highestVersion;

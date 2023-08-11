@@ -1,7 +1,7 @@
 import React from 'react';
-import { SvgIcon } from '@mui/material';
+import { SvgIcon, type SvgIconProps } from '@mui/material';
 
-export default function BadgePrivacy(props) {
+const BadgePrivacy: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props} viewBox='0 0 100 100'>
       <g>
@@ -273,4 +273,6 @@ export default function BadgePrivacy(props) {
       />
     </SvgIcon>
   );
-}
+};
+
+export default BadgePrivacy;

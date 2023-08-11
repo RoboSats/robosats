@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Grid, useTheme, Tooltip, Button } from '@mui/material';
+import React from 'react';
+import { Grid, Tooltip, Button } from '@mui/material';
 import { ExportIcon } from '../../../Icons';
 import KeyIcon from '@mui/icons-material/Key';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +15,6 @@ interface Props {
 
 const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile }) => {
   const { t } = useTranslation();
-  const theme = useTheme();
 
   return (
     <Grid
@@ -62,7 +61,7 @@ const ChatBottom: React.FC<Props> = ({ orderId, setAudit, audit, createJsonFile 
               color='primary'
               variant='outlined'
               onClick={() => {
-                saveAsJson('complete_log_chat_' + orderId + '.json', createJsonFile());
+                saveAsJson(`complete_log_chat_${orderId}.json`, createJsonFile());
               }}
             >
               <div style={{ width: '1.4em', height: '1.4em' }}>

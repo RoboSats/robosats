@@ -51,19 +51,19 @@ const RobotProfile = ({
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (robot.nickname && robot.avatarLoaded) {
+    if (Boolean(robot.nickname) && robot.avatarLoaded) {
       setLoading(false);
     }
   }, [robot]);
 
-  const handleAddRobot = () => {
+  const handleAddRobot = (): void => {
     getGenerateRobot(genBase62Token(36), garage.slots.length);
     setLoading(true);
   };
 
-  const handleChangeSlot = (e) => {
-    const slot = e.target.value;
-    getGenerateRobot(garage.slots[slot].robot.token, slot);
+  const handleChangeSlot = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const slot = Number(e.target.value);
+    getGenerateRobot(garage.slots[slot].robot.token ?? '', slot);
     setLoading(true);
   };
 
@@ -78,7 +78,7 @@ const RobotProfile = ({
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {robot.avatarLoaded && robot.nickname ? (
+          {robot.avatarLoaded && robot.nickname !== undefined ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
                 style={{
@@ -134,7 +134,7 @@ const RobotProfile = ({
             tooltipPosition='top'
             baseUrl={hostUrl}
           />
-          {robot.found && !robot.lastOrderId ? (
+          {robot.found && Number(robot.lastOrderId) > 0 ? (
             <Typography align='center' variant='h6'>
               {t('Welcome back!')}
             </Typography>
@@ -143,11 +143,11 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {robot.activeOrderId && robot.avatarLoaded && robot.nickname ? (
+        {Boolean(robot.activeOrderId) && robot.avatarLoaded && Boolean(robot.nickname) ? (
           <Grid item>
             <Button
               onClick={() => {
-                navigate(`/order/${robot.activeOrderId}`);
+                navigate(`/order/${String(robot.activeOrderId)}`);
               }}
             >
               {t('Active order #{{orderID}}', { orderID: robot.activeOrderId })}
@@ -155,12 +155,12 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        {robot.lastOrderId && robot.avatarLoaded && robot.nickname ? (
+        {Boolean(robot.lastOrderId) && robot.avatarLoaded && Boolean(robot.nickname) ? (
           <Grid item container direction='column' alignItems='center'>
             <Grid item>
               <Button
                 onClick={() => {
-                  navigate(`/order/${robot.lastOrderId}`);
+                  navigate(`/order/${String(robot.lastOrderId)}`);
                 }}
               >
                 {t('Last order #{{orderID}}', { orderID: robot.lastOrderId })}

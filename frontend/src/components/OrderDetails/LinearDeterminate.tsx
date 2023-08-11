@@ -7,9 +7,9 @@ interface Props {
   totalSecsExp: number;
 }
 
-const LinearDeterminate = ({ expiresAt, totalSecsExp }: Props): JSX.Element => {
-  const timePercentLeft = function () {
-    if (expiresAt && totalSecsExp) {
+const LinearDeterminate: React.FC<Props> = ({ expiresAt, totalSecsExp }) => {
+  const timePercentLeft = function (): number {
+    if (Boolean(expiresAt) && Boolean(totalSecsExp)) {
       const lapseTime = calcTimeDelta(new Date(expiresAt)).total / 1000;
       return (lapseTime / totalSecsExp) * 100;
     } else {

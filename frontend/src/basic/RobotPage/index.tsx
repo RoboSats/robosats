@@ -27,7 +27,7 @@ const RobotPage = (): JSX.Element => {
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const params = useParams();
-  const url_token = settings.selfhostedClient ? params.token : null;
+  const urlToken = settings.selfhostedClient ? params.token : null;
   const width = Math.min(windowSize.width * 0.8, 28);
   const maxHeight = windowSize.height * 0.85 - 3;
   const theme = useTheme();
@@ -35,16 +35,16 @@ const RobotPage = (): JSX.Element => {
   const [badToken, setBadToken] = useState<string>('');
   const [inputToken, setInputToken] = useState<string>('');
   const [view, setView] = useState<'welcome' | 'onboarding' | 'recovery' | 'profile'>(
-    robot.token ? 'profile' : 'welcome',
+    robot.token !== undefined ? 'profile' : 'welcome',
   );
 
   useEffect(() => {
-    if (robot.token) {
+    if (robot.token !== undefined) {
       setInputToken(robot.token);
     }
-    const token = url_token ?? robot.token;
-    if (robot.nickname == null && token) {
-      if (window.NativeRobosats === undefined || torStatus == '"Done"') {
+    const token = urlToken ?? robot.token;
+    if (!(robot.nickname !== undefined) && token !== undefined) {
+      if (window.NativeRobosats === undefined || torStatus === '"Done"') {
         getGenerateRobot(token);
         setView('profile');
       }
@@ -61,26 +61,30 @@ const RobotPage = (): JSX.Element => {
     }
   }, [inputToken]);
 
-  const getGenerateRobot = (token: string, slot?: number) => {
+  const getGenerateRobot = (token: string, slot?: number): void => {
     setInputToken(token);
-    genKey(token).then(function (key) {
-      fetchFederationRobot({
-        newKeys: {
-          pubKey: key.publicKeyArmored,
-          encPrivKey: key.encryptedPrivateKeyArmored,
-        },
-        newToken: token,
-        slot,
+    genKey(token)
+      .then(function (key) {
+        fetchFederationRobot({
+          newKeys: {
+            pubKey: key.publicKeyArmored,
+            encPrivKey: key.encryptedPrivateKeyArmored,
+          },
+          newToken: token,
+          slot,
+        });
+      })
+      .catch(function (error) {
+        console.error('Error:', error);
       });
-    });
   };
 
-  const logoutRobot = () => {
+  const logoutRobot = (): void => {
     setInputToken('');
     setRobot(new Robot());
   };
 
-  if (!(window.NativeRobosats === undefined) && !(torStatus == 'DONE' || torStatus == '"Done"')) {
+  if (!(window.NativeRobosats === undefined) && !(torStatus === 'DONE' || torStatus === '"Done"')) {
     return (
       <Paper
         elevation={12}

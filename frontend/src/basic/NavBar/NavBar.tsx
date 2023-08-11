@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Tabs, Tab, Paper, useTheme } from '@mui/material';
 import MoreTooltip from './MoreTooltip';
 
-import { type Page } from '.';
+import { type Page, isPage } from '.';
 
 import {
   SettingsApplications,
@@ -52,17 +52,17 @@ const NavBar = (): JSX.Element => {
 
   useEffect(() => {
     // change tab (page) into the current route
-    const pathPage: Page = location.pathname.split('/')[1];
-    if (pathPage == 'index.html') {
+    const pathPage: Page | string = location.pathname.split('/')[1];
+    if (pathPage === 'index.html') {
       navigate('/robot');
       setPage('robot');
     }
-    if (pathPage) {
+    if (isPage(pathPage)) {
       setPage(pathPage);
     }
-  }, [location]);
+  }, [location, navigate, setPage]);
 
-  const handleSlideDirection = function (oldPage: Page, newPage: Page) {
+  const handleSlideDirection = function (oldPage: Page, newPage: Page): void {
     const oldPos: number = pagesPosition[oldPage];
     const newPos: number = pagesPosition[newPage];
     setSlideDirection(
@@ -70,14 +70,14 @@ const NavBar = (): JSX.Element => {
     );
   };
 
-  const changePage = function (mouseEvent: any, newPage: Page) {
+  const changePage = function (mouseEvent: any, newPage: Page): void {
     if (newPage === 'none') {
       return null;
     } else {
       handleSlideDirection(page, newPage);
       setPage(newPage);
       const param =
-        newPage === 'order' ? `${currentOrder.shortAlias}/${currentOrder.id}` ?? '' : '';
+        newPage === 'order' ? `${String(currentOrder.shortAlias)}/${String(currentOrder.id)}` : '';
       setTimeout(() => {
         navigate(`/${newPage}/${param}`);
       }, theme.transitions.duration.leavingScreen * 3);
@@ -86,7 +86,7 @@ const NavBar = (): JSX.Element => {
 
   useEffect(() => {
     setOpen(closeAll);
-  }, [page]);
+  }, [page, setOpen]);
 
   return (
     <Paper
@@ -115,7 +115,7 @@ const NavBar = (): JSX.Element => {
             setOpen({ ...closeAll, profile: !open.profile });
           }}
           icon={
-            robot.nickname && robot.avatarLoaded ? (
+            robot.nickname !== undefined && robot.avatarLoaded ? (
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
@@ -170,8 +170,10 @@ const NavBar = (): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('More')}
           value='none'
-          onClick={(e) => {
-            open.more ? null : setOpen({ ...open, more: true });
+          onClick={() => {
+            setOpen((open) => {
+              return { ...open, more: !open.more };
+            });
           }}
           icon={
             <MoreTooltip>

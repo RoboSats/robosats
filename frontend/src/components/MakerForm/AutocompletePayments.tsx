@@ -2,7 +2,16 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useAutocomplete from '@mui/base/useAutocomplete';
 import { styled } from '@mui/material/styles';
-import { Button, Fade, Tooltip, Typography, Grow, useTheme } from '@mui/material';
+import {
+  Button,
+  Fade,
+  Tooltip,
+  Typography,
+  Grow,
+  useTheme,
+  type SxProps,
+  type Theme,
+} from '@mui/material';
 import { fiatMethods, swapMethods, PaymentIcon } from '../PaymentMethods';
 
 // Icons
@@ -20,12 +29,18 @@ const Root = styled('div')(
 const Label = styled('label')(
   ({ theme, error, sx }) => `
   color: ${
-    theme.palette.mode === 'dark' ? (error ? '#f44336' : '#cfcfcf') : error ? '#dd0000' : '#717171'
+    theme.palette.mode === 'dark'
+      ? error === true
+        ? '#f44336'
+        : '#cfcfcf'
+      : error === true
+      ? '#dd0000'
+      : '#717171'
   };
   pointer-events: none;
   position: relative;
   left: 1em;
-  top: ${sx.top};
+  top: ${String(sx.top) ?? '0.72em'};
   maxHeight: 0em;
   height: 0em;
   white-space: no-wrap;
@@ -35,14 +50,20 @@ const Label = styled('label')(
 
 const InputWrapper = styled('div')(
   ({ theme, error, sx }) => `
-  min-height: ${sx.minHeight};
-  max-height: ${sx.maxHeight};
+  min-height: ${String(sx.minHeight)};
+  max-height: ${String(sx.maxHeight)};
   border: 1px solid ${
-    theme.palette.mode === 'dark' ? (error ? '#f44336' : '#434343') : error ? '#dd0000' : '#c4c4c4'
+    theme.palette.mode === 'dark'
+      ? error === ''
+        ? '#f44336'
+        : '#434343'
+      : error === ''
+      ? '#dd0000'
+      : '#c4c4c4'
   };
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
   border-radius: 4px;
-  border-color: ${sx.borderColor ? `border-color ${sx.borderColor}` : ''}
+  border-color: ${sx.borderColor !== undefined ? `border-color ${String(sx.borderColor)}` : ''}
   padding: 1px;
   display: flex;
   flex-wrap: wrap;
@@ -52,10 +73,10 @@ const InputWrapper = styled('div')(
   &:hover {
     border-color: ${
       theme.palette.mode === 'dark'
-        ? error
+        ? error === true
           ? '#f44336'
-          : sx.hoverBorderColor
-        : error
+          : String(sx.hoverBorderColor)
+        : error === true
         ? '#dd0000'
         : '#2f2f2f'
     };
@@ -64,10 +85,10 @@ const InputWrapper = styled('div')(
   &.focused {
     border: 2px solid ${
       theme.palette.mode === 'dark'
-        ? error
+        ? error === true
           ? '#f44336'
           : '#90caf9'
-        : error
+        : error === true
         ? '#dd0000'
         : '#1976d2'
     };
@@ -96,7 +117,8 @@ interface TagProps {
   icon: string;
   onDelete: () => void;
 }
-const Tag = ({ label, icon, onDelete, ...other }: TagProps) => {
+
+const Tag: React.FC<TagProps> = ({ label, icon, onDelete, ...other }) => {
   const theme = useTheme();
   const iconSize = 1.5 * theme.typography.fontSize;
   return (
@@ -114,7 +136,7 @@ const StyledTag = styled(Tag)(
   ({ theme, sx }) => `
   display: flex;
   align-items: center;
-  height: ${sx.height};
+  height: ${String(sx?.height ?? '2.1em')};
   margin: 2px;
   line-height: 1.5em;
   background-color: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#fafafa'};
@@ -160,7 +182,7 @@ const ListHeader = styled('span')(
 
 const Listbox = styled('ul')(
   ({ theme, sx }) => `
-  width: ${sx != null ? sx.width : '15.6em'};
+  width: ${String(sx?.width ?? '15.6em')};
   margin: 2px 0 0;
   padding: 0;
   position: absolute;
@@ -206,7 +228,23 @@ const Listbox = styled('ul')(
 `,
 );
 
-export default function AutocompletePayments(props) {
+interface AutocompletePaymentsProps {
+  value: string;
+  optionsType: 'fiat' | 'swap';
+  onAutocompleteChange: (value: string) => void;
+  tooltipTitle: string;
+  labelProps: any;
+  tagProps: any;
+  listBoxProps: any;
+  error: string;
+  label: string;
+  sx: SxProps<Theme>;
+  addNewButtonText: string;
+  isFilter: boolean;
+  listHeaderText: string;
+}
+
+const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
   const { t } = useTranslation();
   const {
     getRootProps,
@@ -217,19 +255,21 @@ export default function AutocompletePayments(props) {
     getOptionProps,
     groupedOptions,
     value,
-    focused = 'true',
+    focused = true,
     setAnchorEl,
   } = useAutocomplete({
     fullWidth: true,
     id: 'payment-methods',
     multiple: true,
     value: props.value,
-    options: props.optionsType == 'fiat' ? fiatMethods : swapMethods,
+    options: props.optionsType === 'fiat' ? fiatMethods : swapMethods,
     getOptionLabel: (option) => option.name,
     onInputChange: (e) => {
-      setVal(e ? (e.target.value ? e.target.value : '') : '');
+      setVal(e.target.value ?? '');
     },
-    onChange: (event, value) => props.onAutocompleteChange(value),
+    onChange: (event, value) => {
+      props.onAutocompleteChange(value);
+    },
     onClose: () => {
       setVal(() => '');
     },
@@ -240,36 +280,35 @@ export default function AutocompletePayments(props) {
   const theme = useTheme();
   const iconSize = 1.5 * theme.typography.fontSize;
 
-  function handleAddNew(inputProps) {
+  function handleAddNew(inputProps: any): void {
     fiatMethods.push({ name: inputProps.value, icon: 'custom' });
     const a = value.push({ name: inputProps.value, icon: 'custom' });
     setVal(() => '');
 
-    if (a || a == null) {
+    if (a !== undefined) {
       props.onAutocompleteChange(value);
     }
-    return false;
   }
 
   return (
     <Root>
       <Tooltip
         placement='top'
-        enterTouchDelay={props.tooltipTitle == '' ? 99999 : 300}
-        enterDelay={props.tooltipTitle == '' ? 99999 : 700}
+        enterTouchDelay={props.tooltipTitle === '' ? 99999 : 300}
+        enterDelay={props.tooltipTitle === '' ? 99999 : 700}
         enterNextDelay={2000}
         title={props.tooltipTitle}
       >
         <div {...getRootProps()}>
           <Fade
             appear={false}
-            in={fewerOptions.length == 0 && value.length == 0 && val.length == 0}
+            in={fewerOptions.length === 0 && value.length === 0 && val.length === 0}
           >
             <div style={{ height: 0, display: 'flex', alignItems: 'flex-start' }}>
               <Label
                 {...getInputLabelProps()}
-                sx={{ top: '0.72em', ...(props.labelProps ? props.labelProps.sx : {}) }}
-                error={props.error ? 'error' : null}
+                sx={{ top: '0.72em', ...(props.labelProps?.sx ?? {}) }}
+                error={Boolean(props.error)}
               >
                 {props.label}
               </Label>
@@ -277,7 +316,7 @@ export default function AutocompletePayments(props) {
           </Fade>
           <InputWrapper
             ref={setAnchorEl}
-            error={props.error ? 'error' : null}
+            error={Boolean(props.error)}
             className={focused ? 'focused' : ''}
             sx={{
               minHeight: '2.9em',
@@ -288,9 +327,10 @@ export default function AutocompletePayments(props) {
           >
             {value.map((option, index) => (
               <StyledTag
+                key={index}
                 label={t(option.name)}
                 icon={option.icon}
-                sx={{ height: '2.1em', ...(props.tagProps ? props.tagProps.sx : {}) }}
+                sx={{ height: '2.1em', ...(props.tagProps ?? {}) }}
                 {...getTagProps({ index })}
               />
             ))}
@@ -299,7 +339,7 @@ export default function AutocompletePayments(props) {
         </div>
       </Tooltip>
       <Grow in={fewerOptions.length > 0}>
-        <Listbox sx={props.listBoxProps ? props.listBoxProps.sx : undefined} {...getListboxProps()}>
+        <Listbox sx={props.listBoxProps?.sx ?? undefined} {...getListboxProps()}>
           {!props.isFilter ? (
             <div
               style={{
@@ -337,7 +377,13 @@ export default function AutocompletePayments(props) {
           ))}
           {val != null || !props.isFilter ? (
             val.length > 2 ? (
-              <Button size='small' fullWidth={true} onClick={() => handleAddNew(getInputProps())}>
+              <Button
+                size='small'
+                fullWidth={true}
+                onClick={() => {
+                  handleAddNew(getInputProps());
+                }}
+              >
                 <DashboardCustomizeIcon sx={{ width: '1em', height: '1em' }} />
                 {props.addNewButtonText}
               </Button>
@@ -349,7 +395,12 @@ export default function AutocompletePayments(props) {
       {/* Here goes what happens if there is no fewerOptions */}
       <Grow in={getInputProps().value.length > 0 && !props.isFilter && fewerOptions.length === 0}>
         <Listbox {...getListboxProps()}>
-          <Button fullWidth={true} onClick={() => handleAddNew(getInputProps())}>
+          <Button
+            fullWidth={true}
+            onClick={() => {
+              handleAddNew(getInputProps());
+            }}
+          >
             <DashboardCustomizeIcon sx={{ width: '1.28em', height: '1.28em' }} />
             {props.addNewButtonText}
           </Button>
@@ -357,4 +408,6 @@ export default function AutocompletePayments(props) {
       </Grow>
     </Root>
   );
-}
+};
+
+export default AutocompletePayments;

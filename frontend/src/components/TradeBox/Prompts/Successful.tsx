@@ -71,7 +71,7 @@ export const SuccessfulPrompt = ({
           }}
         />
       </Grid>
-      {rating == 5 ? (
+      {rating === 5 ? (
         <Grid item xs={12}>
           <div
             style={{
@@ -92,7 +92,7 @@ export const SuccessfulPrompt = ({
             )}
           </Typography>
         </Grid>
-      ) : rating != undefined ? (
+      ) : rating !== undefined ? (
         <Grid>
           <Typography variant='body2' align='center'>
             <b>{t('Thank you for using Robosats!')}</b>
@@ -116,7 +116,7 @@ export const SuccessfulPrompt = ({
       )}
 
       {/* SHOW TXID IF USER RECEIVES ONCHAIN */}
-      <Collapse in={order.txid != undefined}>
+      <Collapse in={order.txid !== undefined}>
         <Alert severity='success'>
           <AlertTitle>
             {t('Your TXID')}
@@ -140,7 +140,7 @@ export const SuccessfulPrompt = ({
               target='_blank'
               href={
                 'http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/' +
-                (order.network == 'testnet' ? 'testnet/' : '') +
+                (order.network === 'testnet' ? 'testnet/' : '') +
                 'tx/' +
                 order.txid
               }
@@ -151,7 +151,7 @@ export const SuccessfulPrompt = ({
         </Alert>
       </Collapse>
 
-      <Collapse in={order.tx_queued && order.address != undefined && !order.txid}>
+      <Collapse in={order.tx_queued && order.address !== undefined && order.txid == null}>
         <Alert severity='info'>
           <AlertTitle>
             <CircularProgress sx={{ maxWidth: '0.8em', maxHeight: '0.8em' }} />
@@ -175,12 +175,9 @@ export const SuccessfulPrompt = ({
           >
             <Link
               target='_blank'
-              href={
-                'http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/' +
-                (order.network == 'testnet' ? 'testnet/' : '') +
-                'address/' +
-                order.address
-              }
+              href={`http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/${
+                order.network === 'testnet' ? 'testnet/' : ''
+              }address/${order.address}`}
             >
               {order.address}
             </Link>
@@ -211,7 +208,7 @@ export const SuccessfulPrompt = ({
         ) : null}
       </Grid>
 
-      {order.platform_summary ? (
+      {order.platform_summary != null ? (
         <Grid item>
           <TradeSummary
             isMaker={order.is_maker}

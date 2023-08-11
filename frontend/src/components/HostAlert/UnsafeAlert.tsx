@@ -12,7 +12,7 @@ const UnsafeAlert = (): JSX.Element => {
   const [unsafeClient, setUnsafeClient] = useState<boolean>(false);
 
   // To do. Read from Coordinators Obj.
-  const safe_urls = [
+  const safeUrls = [
     'robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion',
     'robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion',
     'robodevs7ixniseezbv7uryxhamtz3hvcelzfwpx3rvoipttjomrmpqd.onion',
@@ -20,11 +20,8 @@ const UnsafeAlert = (): JSX.Element => {
     'r7r4sckft6ptmk4r2jajiuqbowqyxiwsle4iyg4fijtoordc6z7a.b32.i2p',
   ];
 
-  const checkClient = () => {
-    const http = new XMLHttpRequest();
-    const h = getHost();
-    const unsafe = !safe_urls.includes(h);
-
+  const checkClient = (): void => {
+    const unsafe = !safeUrls.includes(getHost());
     setUnsafeClient(unsafe);
   };
 
@@ -106,6 +103,8 @@ const UnsafeAlert = (): JSX.Element => {
         )}
       </Paper>
     );
+  } else {
+    return <></>;
   }
 };
 

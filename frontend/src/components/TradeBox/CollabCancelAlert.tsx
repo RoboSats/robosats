@@ -18,7 +18,7 @@ const CollabCancelAlert = ({ order }: CollabCancelAlertProps): JSX.Element => {
     text = t('You asked for a collaborative cancellation');
   }
 
-  return text != '' ? (
+  return text !== '' ? (
     <Alert severity='warning' style={{ width: '100%' }}>
       {text}
     </Alert>

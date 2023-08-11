@@ -1,4 +1,4 @@
-export const weightedMean = (arrValues: number[], arrWeights: number[]) => {
+export const weightedMean = (arrValues: number[], arrWeights: number[]): number => {
   if (arrValues.length === 0) {
     return 0;
   }

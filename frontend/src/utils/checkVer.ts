@@ -3,9 +3,9 @@ import { type Version } from '../models';
 // Gets SemVer from backend /api/info and compares to local imported frontend version "localVer". Uses major,minor,patch.
 // If minor of backend > minor of frontend, updateAvailable = true.
 
-export const getClientVersion = function () {
+export const getClientVersion = function (): { semver: Version; short: string; long: string } {
   const ver = packageJson.version.split('.');
-  const semver = { major: ver[0], minor: ver[1], patch: ver[2] };
+  const semver = { major: Number(ver[0]), minor: Number(ver[1]), patch: Number(ver[2]) };
   const short = `v${ver[0]}.${ver[1]}.${ver[2]}`;
   const long = `v${packageJson.version}-alpha`;
   return { semver, short, long };
@@ -31,7 +31,7 @@ export const getHigherVer = (ver0: Version, ver1: Version): Version => {
   }
 };
 
-export const checkVer: (coordinatorVersion: Version | null) => boolean = (coordinatorVersion) => {
+export const checkVer: (coordinatorVersion: Version) => boolean = (coordinatorVersion) => {
   let updateAvailable: boolean = false;
   if (coordinatorVersion != null) {
     const { major, minor, patch } = coordinatorVersion;

@@ -95,23 +95,23 @@ export const LightningPayoutForm = ({
   const [loadingLnproxy, setLoadingLnproxy] = useState<boolean>(false);
   const [noMatchingLnProxies, setNoMatchingLnProxies] = useState<string>('');
 
-  const computeInvoiceAmount = function () {
+  const computeInvoiceAmount = (): number => {
     const tradeAmount = order.trade_satoshis;
     return Math.floor(tradeAmount - tradeAmount * (lightning.routingBudgetPPM / 1000000));
   };
 
-  const validateInvoice = function (invoice: string, targetAmount: number) {
+  const validateInvoice = (invoice: string, targetAmount: number): string => {
     try {
       const decoded = decode(invoice);
       const invoiceAmount = Math.floor(decoded.sections[2].value / 1000);
-      if (targetAmount != invoiceAmount) {
+      if (targetAmount !== invoiceAmount) {
         return 'Invalid invoice amount';
       } else {
         return '';
       }
     } catch (err) {
       const error = err.toString();
-      return `${error.substring(0, 100)}${error.length > 100 ? '...' : ''}`;
+      return `${String(error).substring(0, 100)}${error.length > 100 ? '...' : ''}`;
     }
   };
 
@@ -122,14 +122,14 @@ export const LightningPayoutForm = ({
       amount,
       lnproxyAmount: amount - lightning.lnproxyBudgetSats,
       routingBudgetSats:
-        lightning.routingBudgetSats == undefined
+        lightning.routingBudgetSats === undefined
           ? Math.ceil((amount / 1000000) * lightning.routingBudgetPPM)
           : lightning.routingBudgetSats,
     });
   }, [lightning.routingBudgetPPM]);
 
   useEffect(() => {
-    if (lightning.invoice != '') {
+    if (lightning.invoice !== '') {
       setLightning({
         ...lightning,
         badInvoice: validateInvoice(lightning.invoice, lightning.amount),
@@ -138,7 +138,7 @@ export const LightningPayoutForm = ({
   }, [lightning.invoice, lightning.amount]);
 
   useEffect(() => {
-    if (lightning.lnproxyInvoice != '') {
+    if (lightning.lnproxyInvoice !== '') {
       setLightning({
         ...lightning,
         badLnproxy: validateInvoice(lightning.lnproxyInvoice, lightning.lnproxyAmount),
@@ -151,15 +151,15 @@ export const LightningPayoutForm = ({
   let internetNetwork: 'Clearnet' | 'I2P' | 'TOR' = 'Clearnet';
   useEffect(() => {
     bitcoinNetwork = settings?.network ?? 'mainnet';
-    if (settings.host?.includes('.i2p')) {
+    if (settings.host?.includes('.i2p') === true) {
       internetNetwork = 'I2P';
-    } else if (settings.host?.includes('.onion') || window.NativeRobosats != undefined) {
+    } else if (settings.host?.includes('.onion') === true || window.NativeRobosats !== undefined) {
       internetNetwork = 'TOR';
     }
 
     filteredProxies = lnproxies
-      .filter((node) => node.relayType == internetNetwork)
-      .filter((node) => node.network == bitcoinNetwork);
+      .filter((node) => node.relayType === internetNetwork)
+      .filter((node) => node.network === bitcoinNetwork);
   }, [settings]);
 
   // if "use lnproxy" checkbox is enabled, but there are no matching proxies, enter error state
@@ -175,7 +175,7 @@ export const LightningPayoutForm = ({
     }
   }, [lightning.useLnproxy]);
 
-  const fetchLnproxy = function () {
+  const fetchLnproxy = function (): void {
     setLoadingLnproxy(true);
     const body: { invoice: string; description: string; routing_msat?: string } = {
       invoice: lightning.lnproxyInvoice,
@@ -187,9 +187,9 @@ export const LightningPayoutForm = ({
     apiClient
       .post(filteredProxies[lightning.lnproxyServer].url, '', body)
       .then((data) => {
-        if (data.reason) {
+        if (data.reason !== undefined) {
           setLightning({ ...lightning, badLnproxy: data.reason });
-        } else if (data.proxy_invoice) {
+        } else if (data.proxy_invoice !== undefined) {
           setLightning({ ...lightning, invoice: data.proxy_invoice, badLnproxy: '' });
         } else {
           setLightning({ ...lightning, badLnproxy: 'Unknown lnproxy response' });
@@ -203,7 +203,7 @@ export const LightningPayoutForm = ({
       });
   };
 
-  const handleAdvancedOptions = function (checked: boolean) {
+  const handleAdvancedOptions = function (checked: boolean): void {
     if (checked) {
       setLightning({
         ...lightning,
@@ -218,7 +218,7 @@ export const LightningPayoutForm = ({
     }
   };
 
-  const onProxyBudgetChange = function (e) {
+  const onProxyBudgetChange = function (e: React.ChangeEventHandler<HTMLInputElement>): void {
     if (isFinite(e.target.value) && e.target.value >= 0) {
       let lnproxyBudgetSats;
       let lnproxyBudgetPPM;
@@ -238,7 +238,7 @@ export const LightningPayoutForm = ({
     }
   };
 
-  const onRoutingBudgetChange = function (e) {
+  const onRoutingBudgetChange = function (e: React.ChangeEventHandler<HTMLInputElement>): void {
     const tradeAmount = order.trade_satoshis;
     if (isFinite(e.target.value) && e.target.value >= 0) {
       let routingBudgetSats;
@@ -261,7 +261,7 @@ export const LightningPayoutForm = ({
     }
   };
 
-  const lnProxyBudgetHelper = function () {
+  const lnProxyBudgetHelper = function (): string {
     let text = '';
     if (lightning.lnproxyBudgetSats < 0) {
       text = 'Must be positive';
@@ -271,7 +271,7 @@ export const LightningPayoutForm = ({
     return text;
   };
 
-  const routingBudgetHelper = function () {
+  const routingBudgetHelper = function (): string {
     let text = '';
     if (lightning.routingBudgetSats < 0) {
       text = 'Must be positive';
@@ -334,12 +334,12 @@ export const LightningPayoutForm = ({
                   <TextField
                     sx={{ width: '14em' }}
                     disabled={!lightning.advancedOptions}
-                    error={routingBudgetHelper() != ''}
+                    error={routingBudgetHelper() !== ''}
                     helperText={routingBudgetHelper()}
                     label={t('Routing Budget')}
                     required={true}
                     value={
-                      lightning.routingBudgetUnit == 'PPM'
+                      lightning.routingBudgetUnit === 'PPM'
                         ? lightning.routingBudgetPPM
                         : lightning.routingBudgetSats
                     }
@@ -353,7 +353,7 @@ export const LightningPayoutForm = ({
                               setLightning({
                                 ...lightning,
                                 routingBudgetUnit:
-                                  lightning.routingBudgetUnit == 'PPM' ? 'Sats' : 'PPM',
+                                  lightning.routingBudgetUnit === 'PPM' ? 'Sats' : 'PPM',
                               });
                             }}
                           >
@@ -382,11 +382,11 @@ export const LightningPayoutForm = ({
                   >
                     <div>
                       <FormControlLabel
-                        onChange={(e) => {
+                        onChange={(e, checked) => {
                           setLightning({
                             ...lightning,
-                            useLnproxy: e.target.checked,
-                            invoice: e.target.checked ? '' : lightning.invoice,
+                            useLnproxy: checked,
+                            invoice: checked ? '' : lightning.invoice,
                           });
                         }}
                         checked={lightning.useLnproxy}
@@ -419,7 +419,7 @@ export const LightningPayoutForm = ({
                       spacing={1}
                     >
                       <Grid item>
-                        <FormControl error={noMatchingLnProxies != ''}>
+                        <FormControl error={noMatchingLnProxies !== ''}>
                           <InputLabel id='select-label'>{t('Server')}</InputLabel>
                           <Select
                             sx={{ width: '14em' }}
@@ -436,7 +436,7 @@ export const LightningPayoutForm = ({
                               </MenuItem>
                             ))}
                           </Select>
-                          {noMatchingLnProxies != '' ? (
+                          {noMatchingLnProxies !== '' ? (
                             <FormHelperText>{t(noMatchingLnProxies)}</FormHelperText>
                           ) : (
                             <></>
@@ -448,11 +448,11 @@ export const LightningPayoutForm = ({
                         <TextField
                           sx={{ width: '14em' }}
                           disabled={!lightning.useLnproxy}
-                          error={lnProxyBudgetHelper() != ''}
+                          error={lnProxyBudgetHelper() !== ''}
                           helperText={lnProxyBudgetHelper()}
                           label={t('Proxy Budget')}
                           value={
-                            lightning.lnproxyBudgetUnit == 'PPM'
+                            lightning.lnproxyBudgetUnit === 'PPM'
                               ? lightning.lnproxyBudgetPPM
                               : lightning.lnproxyBudgetSats
                           }
@@ -466,7 +466,7 @@ export const LightningPayoutForm = ({
                                     setLightning({
                                       ...lightning,
                                       lnproxyBudgetUnit:
-                                        lightning.lnproxyBudgetUnit == 'PPM' ? 'Sats' : 'PPM',
+                                        lightning.lnproxyBudgetUnit === 'PPM' ? 'Sats' : 'PPM',
                                     });
                                   }}
                                 >
@@ -520,9 +520,9 @@ export const LightningPayoutForm = ({
                 <TextField
                   fullWidth={true}
                   disabled={!lightning.useLnproxy}
-                  error={lightning.badLnproxy != ''}
+                  error={lightning.badLnproxy !== ''}
                   FormHelperTextProps={{ style: { wordBreak: 'break-all' } }}
-                  helperText={lightning.badLnproxy ? t(lightning.badLnproxy) : ''}
+                  helperText={lightning.badLnproxy !== '' ? t(lightning.badLnproxy) : ''}
                   label={t('Invoice to wrap')}
                   required
                   value={lightning.lnproxyInvoice}
@@ -541,8 +541,8 @@ export const LightningPayoutForm = ({
                 fullWidth={true}
                 sx={lightning.useLnproxy ? { borderRadius: 0 } : {}}
                 disabled={lightning.useLnproxy}
-                error={lightning.badInvoice != ''}
-                helperText={lightning.badInvoice ? t(lightning.badInvoice) : ''}
+                error={lightning.badInvoice !== ''}
+                helperText={lightning.badInvoice !== '' ? t(lightning.badInvoice) : ''}
                 FormHelperTextProps={{ style: { wordBreak: 'break-all' } }}
                 label={lightning.useLnproxy ? t('Wrapped invoice') : t('Payout Lightning Invoice')}
                 required
@@ -566,8 +566,8 @@ export const LightningPayoutForm = ({
                   loading={loadingLnproxy}
                   disabled={
                     lightning.lnproxyInvoice.length < 20 ||
-                    noMatchingLnProxies != '' ||
-                    lightning.badLnproxy != ''
+                    noMatchingLnProxies !== '' ||
+                    lightning.badLnproxy !== ''
                   }
                   onClick={fetchLnproxy}
                   variant='outlined'
@@ -580,7 +580,7 @@ export const LightningPayoutForm = ({
               )}
               <LoadingButton
                 loading={loading}
-                disabled={lightning.invoice.length < 20 || lightning.badInvoice != ''}
+                disabled={lightning.invoice.length < 20 || lightning.badInvoice !== ''}
                 onClick={() => {
                   onClickSubmit(lightning.invoice);
                 }}

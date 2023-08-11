@@ -19,12 +19,21 @@
     "sourceType": "module",
     "project": "./tsconfig.json"
   },
+  "ignorePatterns": ["index.js", "**/PaymentMethods/Icons/code/code.js"],
   "plugins": ["react", "react-hooks", "@typescript-eslint", "prettier"],
   "rules": {
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
     "react/prop-types": "off",
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "variableLike",
+        "format": ["camelCase", "snake_case", "PascalCase", "UPPER_CASE"],
+        "leadingUnderscore": "allow"
+      }
+    ]
   },
   "settings": {
     "import/resolver": {

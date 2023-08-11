@@ -7,7 +7,7 @@ import stepXofY from '../stepXofY';
 interface TakerFoundPrompProps {
   order: Order;
   text: string;
-  variables?: Object;
+  variables?: any;
   color?: string;
   icon?: () => JSX.Element;
 }
@@ -25,9 +25,9 @@ export const Title = ({
   const theme = useTheme();
 
   let textColor = color;
-  if (color == 'warning') {
+  if (color === 'warning') {
     textColor = theme.palette.warning.main;
-  } else if (color == 'success') {
+  } else if (color === 'success') {
     textColor = theme.palette.success.main;
   }
 
