@@ -151,12 +151,9 @@ export const LightningPayoutForm = ({
   let internetNetwork: 'Clearnet' | 'I2P' | 'TOR' = 'Clearnet';
   useEffect(() => {
     bitcoinNetwork = settings?.network ?? 'mainnet';
-    if (settings.host && settings.host.includes('.i2p')) {
+    if (settings.host?.includes('.i2p') === true) {
       internetNetwork = 'I2P';
-    } else if (
-      (settings.host && settings.host?.includes('.onion')) ||
-      window.NativeRobosats != undefined
-    ) {
+    } else if (settings.host?.includes('.onion') === true || window.NativeRobosats !== undefined) {
       internetNetwork = 'TOR';
     }
 
@@ -192,7 +189,7 @@ export const LightningPayoutForm = ({
       .then((data) => {
         if (data.reason !== undefined) {
           setLightning({ ...lightning, badLnproxy: data.reason });
-        } else if (data.proxy_invoice != undefined) {
+        } else if (data.proxy_invoice !== undefined) {
           setLightning({ ...lightning, invoice: data.proxy_invoice, badLnproxy: '' });
         } else {
           setLightning({ ...lightning, badLnproxy: 'Unknown lnproxy response' });
@@ -385,11 +382,11 @@ export const LightningPayoutForm = ({
                   >
                     <div>
                       <FormControlLabel
-                        onChange={(e) => {
+                        onChange={(e, checked) => {
                           setLightning({
                             ...lightning,
-                            useLnproxy: e.target.checked,
-                            invoice: e.target.checked ? '' : lightning.invoice,
+                            useLnproxy: checked,
+                            invoice: checked ? '' : lightning.invoice,
                           });
                         }}
                         checked={lightning.useLnproxy}
@@ -422,7 +419,7 @@ export const LightningPayoutForm = ({
                       spacing={1}
                     >
                       <Grid item>
-                        <FormControl error={noMatchingLnProxies != ''}>
+                        <FormControl error={noMatchingLnProxies !== ''}>
                           <InputLabel id='select-label'>{t('Server')}</InputLabel>
                           <Select
                             sx={{ width: '14em' }}
@@ -525,7 +522,7 @@ export const LightningPayoutForm = ({
                   disabled={!lightning.useLnproxy}
                   error={lightning.badLnproxy !== ''}
                   FormHelperTextProps={{ style: { wordBreak: 'break-all' } }}
-                  helperText={lightning.badLnproxy ? t(lightning.badLnproxy) : ''}
+                  helperText={lightning.badLnproxy !== '' ? t(lightning.badLnproxy) : ''}
                   label={t('Invoice to wrap')}
                   required
                   value={lightning.lnproxyInvoice}
@@ -545,7 +542,7 @@ export const LightningPayoutForm = ({
                 sx={lightning.useLnproxy ? { borderRadius: 0 } : {}}
                 disabled={lightning.useLnproxy}
                 error={lightning.badInvoice !== ''}
-                helperText={lightning.badInvoice ? t(lightning.badInvoice) : ''}
+                helperText={lightning.badInvoice !== '' ? t(lightning.badInvoice) : ''}
                 FormHelperTextProps={{ style: { wordBreak: 'break-all' } }}
                 label={lightning.useLnproxy ? t('Wrapped invoice') : t('Payout Lightning Invoice')}
                 required

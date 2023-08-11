@@ -31,7 +31,10 @@ export const PublicWaitPrompt = ({
   const { t } = useTranslation();
   const currencyCode = currencies[order.currency.toString()];
 
-  const depositHoursMinutes = function () {
+  const depositHoursMinutes = function (): {
+    deposit_timer_hours: number;
+    deposit_timer_minutes: number;
+  } {
     const hours = Math.floor(order.escrow_duration / 3600);
     const minutes = Math.floor((order.escrow_duration - hours * 3600) / 60);
     const dict = { deposit_timer_hours: hours, deposit_timer_minutes: minutes };
