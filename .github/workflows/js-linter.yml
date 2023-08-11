@@ -8,10 +8,9 @@ on:
       - main
     paths:
       - frontend
-  pull_request:
+  pull_request_target:
     branches:
       - main
-      - the-federation-layer-v0.5.0
     paths:
       - frontend
 
