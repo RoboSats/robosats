@@ -9,7 +9,7 @@ class NativeRobosats {
 
   private messageCounter: number = 0;
 
-  private pendingMessages: Record<number, NativeRobosatsPromise> = {};
+  private readonly pendingMessages = new Map<number, NativeRobosatsPromise>();
 
   public cookies: Record<string, string> = {};
 
@@ -21,9 +21,9 @@ class NativeRobosats {
     messageId,
     response = {},
   ) => {
-    if (this.pendingMessages[messageId] != null) {
-      this.pendingMessages[messageId].resolve(response);
-      delete this.pendingMessages[messageId];
+    if (this.pendingMessages.has(messageId)) {
+      this.pendingMessages.get(messageId)?.resolve(response);
+      this.pendingMessages.delete(messageId);
     }
   };
 
@@ -31,9 +31,9 @@ class NativeRobosats {
     messageId,
     response = {},
   ) => {
-    if (this.pendingMessages[messageId] != null) {
-      this.pendingMessages[messageId].reject(response);
-      delete this.pendingMessages[messageId];
+    if (this.pendingMessages.has(messageId)) {
+      this.pendingMessages.get(messageId)?.reject(response);
+      this.pendingMessages.delete(messageId);
     }
   };
 
@@ -43,7 +43,7 @@ class NativeRobosats {
       window.dispatchEvent(new CustomEvent('torStatus', { detail: this.torDaemonStatus }));
     } else if (message.type === 'setCookie') {
       if (message.key !== undefined) {
-        this.cookies[message.key] = message.detail;
+        this.cookies[message.key] = String(message.detail);
       }
     }
   };
@@ -54,14 +54,14 @@ class NativeRobosats {
     this.messageCounter += 1;
     message.id = this.messageCounter;
     const json = JSON.stringify(message);
-    window.ReactNativeWebView?.postMessage(json);
+    void window.ReactNativeWebView?.postMessage(json);
 
-    return await new Promise<object>(async (resolve, reject) => {
+    return await new Promise<object>((resolve, reject) => {
       if (message.id !== undefined) {
-        this.pendingMessages[message.id] = {
+        this.pendingMessages.set(message.id, {
           resolve,
           reject,
-        };
+        });
       }
     });
   };

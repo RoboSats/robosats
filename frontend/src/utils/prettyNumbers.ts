@@ -24,7 +24,7 @@ export const amountToString: (
       pn(parseFloat(Number(max_amount).toPrecision(precision)))
     );
   }
-  return pn(parseFloat(Number(amount).toPrecision(precision))) || '';
+  return pn(parseFloat(Number(amount).toPrecision(precision))) ?? '';
 };
 
 export default pn;

@@ -3,7 +3,7 @@ import { systemClient } from '../../System';
 
 class ApiNativeClient implements ApiClient {
   private assetsCache: Record<string, string> = {};
-  private assetsPromises: Record<string, Promise<string | undefined>> = {};
+  private readonly assetsPromises = new Map<string, Promise<string | undefined>>();
 
   private readonly getHeaders: (auth?: Auth) => HeadersInit = (auth) => {
     let headers = {
@@ -32,7 +32,7 @@ class ApiNativeClient implements ApiClient {
   };
 
   private readonly parseResponse = (response: Record<string, any>): object => {
-    if (response.headers['set-cookie']) {
+    if (response.headers['set-cookie'] != null) {
       response.headers['set-cookie'].forEach((cookie: string) => {
         const keySplit: string[] = cookie.split('=');
         systemClient.setCookie(keySplit[0], keySplit[1].split(';')[0]);
@@ -46,8 +46,8 @@ class ApiNativeClient implements ApiClient {
     path,
     body,
   ) => {
-    return await new Promise((res, _rej) => {
-      res({});
+    return await new Promise<object>((resolve, _reject) => {
+      resolve({});
     });
   };
 
@@ -96,31 +96,35 @@ class ApiNativeClient implements ApiClient {
     baseUrl,
     path,
   ) => {
-    if (!path) {
-      return '';
+    if (path === '') {
+      return await Promise.resolve('');
     }
 
-    if (this.assetsCache[path]) {
-      return this.assetsCache[path];
-    } else if (path in this.assetsPromises) {
-      return await this.assetsPromises[path];
+    if (this.assetsCache[path] != null) {
+      return await Promise.resolve(this.assetsCache[path]);
+    } else if (this.assetsPromises.has(path)) {
+      return await this.assetsPromises.get(path);
     }
 
-    this.assetsPromises[path] = new Promise<string>(async (resolve, reject) => {
-      const fileB64 = await window.NativeRobosats?.postMessage({
-        category: 'http',
-        type: 'xhr',
-        baseUrl,
-        path,
-      }).catch(reject);
+    this.assetsPromises.set(
+      path,
+      new Promise<string>((resolve, reject) => {
+        window.NativeRobosats?.postMessage({
+          category: 'http',
+          type: 'xhr',
+          baseUrl,
+          path,
+        })
+          .then((fileB64: { b64Data: string }) => {
+            this.assetsCache[path] = `data:image/png;base64,${fileB64.b64Data}`;
+            this.assetsPromises.delete(path);
+            resolve(this.assetsCache[path]);
+          })
+          .catch(reject);
+      }),
+    );
 
-      this.assetsCache[path] = `data:image/png;base64,${fileB64?.b64Data}`;
-      delete this.assetsPromises[path];
-
-      resolve(this.assetsCache[path]);
-    });
-
-    return await this.assetsPromises[path];
+    return await this.assetsPromises.get(path);
   };
 }
 

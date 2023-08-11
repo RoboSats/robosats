@@ -7,9 +7,9 @@ class SystemWebClient implements SystemClient {
     // navigator clipboard api needs a secure context (https)
     // this function attempts to copy also on http contexts
     // useful on the http i2p site and on torified browsers
-    if (navigator.clipboard && window.isSecureContext) {
+    if (navigator.clipboard !== undefined && window.isSecureContext) {
       // navigator clipboard api method'
-      navigator.clipboard.writeText(value);
+      void navigator.clipboard.writeText(value);
     } else {
       // text area method
       const textArea = document.createElement('textarea');
@@ -30,7 +30,7 @@ class SystemWebClient implements SystemClient {
   // Cookies
   public getCookie: (key: string) => string = (key) => {
     let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
+    if (document?.cookie !== '') {
       const cookies = document.cookie.split(';');
       for (let i = 0; i < cookies.length; i++) {
         const cookie = cookies[i].trim();
@@ -42,7 +42,7 @@ class SystemWebClient implements SystemClient {
       }
     }
 
-    return cookieValue || '';
+    return cookieValue ?? '';
   };
 
   public setCookie: (key: string, value: string) => void = (key, value) => {
@@ -56,7 +56,7 @@ class SystemWebClient implements SystemClient {
   // Local storage
   public getItem: (key: string) => string = (key) => {
     const value = window.localStorage.getItem(key);
-    return value || '';
+    return value ?? '';
   };
 
   public setItem: (key: string, value: string) => void = (key, value) => {

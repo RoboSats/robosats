@@ -26,7 +26,7 @@ type toAdd =
   | 'last_day_volume'
   | 'lifetime_volume';
 
-export const weightedMean = (arrValues: number[], arrWeights: number[]) => {
+export const weightedMean = (arrValues: number[], arrWeights: number[]): number => {
   if (arrValues.length === 0) {
     return 0;
   }
@@ -41,7 +41,7 @@ export const weightedMean = (arrValues: number[], arrWeights: number[]) => {
   return result[0] / result[1];
 };
 
-const getHigherVer = (ver0: Version, ver1: Version) => {
+const getHigherVer = (ver0: Version, ver1: Version): Version => {
   if (ver1.major == null || ver0.minor == null || ver0.patch == null) {
     return ver0;
   } else if (ver0.major > ver1.major) {
@@ -90,8 +90,10 @@ export const aggregateInfo = (federation: Coordinator[]): AggregatedInfo => {
       if (coordinator.info != null) {
         value = value + coordinator.info[key];
       }
+      return null;
     });
     info[key] = value;
+    return null;
   });
 
   const premiums: number[] = [];
@@ -104,6 +106,7 @@ export const aggregateInfo = (federation: Coordinator[]): AggregatedInfo => {
       volumes[index] = coordinator.info.last_day_volume;
       highestVersion = getHigherVer(highestVersion, coordinator.info.version);
     }
+    return null;
   });
 
   info.last_day_nonkyc_btc_premium = weightedMean(premiums, volumes);
