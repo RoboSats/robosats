@@ -1,26 +1,18 @@
-import hashlib
 from datetime import datetime, timedelta
-from math import log2
 from pathlib import Path
 
 from decouple import config
 from django.conf import settings
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db.models import Q, Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
-from rest_framework.authentication import (
-    SessionAuthentication,  # DEPRECATE session authentication
-)
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from robohash import Robohash
-from scipy.stats import entropy
 
 from api.logics import Logics
 from api.models import Currency, LNPayment, MarketTick, OnchainPayment, Order
@@ -37,7 +29,6 @@ from api.oas_schemas import (
     RobotViewSchema,
     StealthViewSchema,
     TickViewSchema,
-    UserViewSchema,
 )
 from api.serializers import (
     ClaimRewardSerializer,
@@ -49,7 +40,6 @@ from api.serializers import (
     StealthSerializer,
     TickSerializer,
     UpdateOrderSerializer,
-    UserGenSerializer,
 )
 from api.utils import (
     compute_avg_premium,
@@ -57,13 +47,10 @@ from api.utils import (
     get_cln_version,
     get_lnd_version,
     get_robosats_commit,
-    validate_pgp_keys,
     verify_signed_message,
 )
 from chat.models import Message
 from control.models import AccountingDay, BalanceLog
-
-from .nick_generator.nick_generator import NickGenerator
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
@@ -79,7 +66,7 @@ avatar_path.mkdir(parents=True, exist_ok=True)
 
 class MakerView(CreateAPIView):
     serializer_class = MakeOrderSerializer
-    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(**MakerViewSchema.post)
@@ -190,7 +177,7 @@ class MakerView(CreateAPIView):
 
 
 class OrderView(viewsets.ViewSet):
-    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = UpdateOrderSerializer
     lookup_url_kwarg = "order_id"
@@ -652,7 +639,7 @@ class OrderView(viewsets.ViewSet):
 
 
 class RobotView(APIView):
-    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(**RobotViewSchema.get)
@@ -690,208 +677,6 @@ class RobotView(APIView):
             context["found"] = True
 
         return Response(context, status=status.HTTP_200_OK)
-
-
-class UserView(APIView):
-    """
-    Deprecated. UserView will be completely replaced by the smaller RobotView in
-    combination with the RobotTokenSHA256 middleware (on-the-fly robot generation)
-    """
-
-    NickGen = NickGenerator(
-        lang="English", use_adv=False, use_adj=True, use_noun=True, max_num=999
-    )
-
-    serializer_class = UserGenSerializer
-
-    @extend_schema(**UserViewSchema.post)
-    def post(self, request, format=None):
-        """
-        Get a new user derived from a high entropy token
-
-        - Request has a hash of a high-entropy token
-        - Request includes pubKey and encrypted privKey
-        - Generates new nickname and avatar.
-        - Creates login credentials (new User object)
-
-        Response with Avatar, Nickname, pubKey, privKey.
-        """
-        context = {}
-        serializer = self.serializer_class(data=request.data)
-
-        # Return bad request if serializer is not valid
-        if not serializer.is_valid():
-            context = {"bad_request": "Invalid serializer"}
-            return Response(context, status=status.HTTP_400_BAD_REQUEST)
-
-        # The new way. The token is never sent. Only its SHA256
-        token_sha256 = serializer.data.get("token_sha256")
-        public_key = serializer.data.get("public_key")
-        encrypted_private_key = serializer.data.get("encrypted_private_key")
-
-        # Now the server only receives a hash of the token. So server trusts the client
-        # with computing length, counts and unique_values to confirm the high entropy of the token
-        # In any case, it is up to the client if they want to create a bad high entropy token.
-
-        # Submitting the three params needed to compute token entropy is not mandatory
-        # If not submitted, avatars can be created with garbage entropy token. Frontend will always submit them.
-        try:
-            unique_values = serializer.data.get("unique_values")
-            counts = serializer.data.get("counts")
-            length = serializer.data.get("length")
-
-            shannon_entropy = entropy(counts, base=62)
-            bits_entropy = log2(unique_values**length)
-
-            # Payload
-            context = {
-                "token_shannon_entropy": shannon_entropy,
-                "token_bits_entropy": bits_entropy,
-            }
-
-            # Deny user gen if entropy below 128 bits or 0.7 shannon heterogeneity
-            if bits_entropy < 128 or shannon_entropy < 0.7:
-                context["bad_request"] = "The token does not have enough entropy"
-                return Response(context, status=status.HTTP_400_BAD_REQUEST)
-        except Exception:
-            pass
-
-        # Hash the token_sha256, only 1 iteration. (this is the second SHA256 of the user token, aka RoboSats ID)
-        hash = hashlib.sha256(token_sha256.encode("utf-8")).hexdigest()
-
-        # Generate nickname deterministically
-        nickname = self.NickGen.short_from_SHA256(hash, max_length=18)[0]
-        context["nickname"] = nickname
-
-        # Generate avatar
-        rh = Robohash(hash)
-        rh.assemble(roboset="set1", bgset="any")  # for backgrounds ON
-
-        # Does not replace image if existing (avoid re-avatar in case of nick collusion)
-        # Deprecate "png" and keep "webp" only after v0.4.4
-        image_path = avatar_path.joinpath(nickname + ".webp")
-        if not image_path.exists():
-            with open(image_path, "wb") as f:
-                rh.img.save(f, format="WEBP", quality=80)
-
-            image_small_path = avatar_path.joinpath(nickname + ".small.webp")
-            with open(image_small_path, "wb") as f:
-                resized_img = rh.img.resize((80, 80))
-                resized_img.save(f, format="WEBP", quality=80)
-
-            png_path = avatar_path.joinpath(nickname + ".png")
-            with open(png_path, "wb") as f:
-                rh.img.save(f, format="png", optimize=True)
-
-        # Create new credentials and login if nickname is new
-        if len(User.objects.filter(username=nickname)) == 0:
-            if not public_key or not encrypted_private_key:
-                context[
-                    "bad_request"
-                ] = "Must provide valid 'pub' and 'enc_priv' PGP keys"
-                return Response(context, status.HTTP_400_BAD_REQUEST)
-            (
-                valid,
-                bad_keys_context,
-                public_key,
-                encrypted_private_key,
-            ) = validate_pgp_keys(public_key, encrypted_private_key)
-            if not valid:
-                return Response(bad_keys_context, status.HTTP_400_BAD_REQUEST)
-
-            User.objects.create_user(
-                username=nickname, password=token_sha256, is_staff=False
-            )
-            user = authenticate(request, username=nickname, password=token_sha256)
-            login(request, user)
-
-            user.robot.avatar = "static/assets/avatars/" + nickname + ".webp"
-
-            # Noticed some PGP keys replaced at re-login. Should not happen.
-            # Let's implement this sanity check "If robot has not keys..."
-            if not user.robot.public_key:
-                user.robot.public_key = public_key
-            if not user.robot.encrypted_private_key:
-                user.robot.encrypted_private_key = encrypted_private_key
-
-            user.robot.save()
-
-            context = {**context, **Telegram.get_context(user)}
-            context["public_key"] = user.robot.public_key
-            context["encrypted_private_key"] = user.robot.encrypted_private_key
-            context["wants_stealth"] = user.robot.wants_stealth
-            return Response(context, status=status.HTTP_201_CREATED)
-
-        # log in user and return pub/priv keys if existing
-        else:
-            user = authenticate(request, username=nickname, password=token_sha256)
-            if user is not None:
-                login(request, user)
-                context["public_key"] = user.robot.public_key
-                context["encrypted_private_key"] = user.robot.encrypted_private_key
-                context["earned_rewards"] = user.robot.earned_rewards
-                context["wants_stealth"] = user.robot.wants_stealth
-
-                # Adds/generate telegram token and whether it is enabled
-                context = {**context, **Telegram.get_context(user)}
-
-                # return active order or last made order if any
-                has_no_active_order, _, order = Logics.validate_already_maker_or_taker(
-                    request.user
-                )
-                if not has_no_active_order:
-                    context["active_order_id"] = order.id
-                else:
-                    last_order = Order.objects.filter(
-                        Q(maker=request.user) | Q(taker=request.user)
-                    ).last()
-                    if last_order:
-                        context["last_order_id"] = last_order.id
-
-                # Sends the welcome back message.
-                context["found"] = "We found your Robot avatar. Welcome back!"
-                return Response(context, status=status.HTTP_202_ACCEPTED)
-            else:
-                # It is unlikely, but maybe the nickname is taken (1 in 20 Billion chance)
-                context["found"] = "Bad luck, this nickname is taken"
-                context["bad_request"] = "Enter a different token"
-                return Response(context, status.HTTP_403_FORBIDDEN)
-
-    @extend_schema(**UserViewSchema.delete)
-    def delete(self, request):
-        """Pressing "give me another" deletes the logged in user"""
-        user = request.user
-        if not user.is_authenticated:
-            return Response(status.HTTP_403_FORBIDDEN)
-
-        # Only delete if user life is shorter than 30 minutes. Helps to avoid deleting users by mistake
-        if user.date_joined < (timezone.now() - timedelta(minutes=30)):
-            return Response(status.HTTP_400_BAD_REQUEST)
-
-        # Check if it is not a maker or taker!
-        not_participant, _, _ = Logics.validate_already_maker_or_taker(user)
-        if not not_participant:
-            return Response(
-                {
-                    "bad_request": "Maybe a mistake? User cannot be deleted while he is part of an order"
-                },
-                status.HTTP_400_BAD_REQUEST,
-            )
-        # Check if has already a robot with
-        if user.robot.total_contracts > 0:
-            return Response(
-                {
-                    "bad_request": "Maybe a mistake? User cannot be deleted as it has completed trades"
-                },
-                status.HTTP_400_BAD_REQUEST,
-            )
-
-        logout(request)
-        user.delete()
-        return Response(
-            {"user_deleted": "User deleted permanently"},
-            status.HTTP_301_MOVED_PERMANENTLY,
-        )
 
 
 class BookView(ListAPIView):
@@ -1016,7 +801,7 @@ class InfoView(ListAPIView):
 
 
 class RewardView(CreateAPIView):
-    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     serializer_class = ClaimRewardSerializer
@@ -1156,7 +941,7 @@ class HistoricalView(ListAPIView):
 
 
 class StealthView(APIView):
-    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     serializer_class = StealthSerializer
