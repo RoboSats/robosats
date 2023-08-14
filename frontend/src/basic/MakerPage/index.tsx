@@ -104,8 +104,8 @@ const MakerPage = (): JSX.Element => {
           }}
         >
           <MakerForm
-            onOrderCreated={(id) => {
-              navigate(`/order/${id}`);
+            onOrderCreated={(shortAlias, id) => {
+              navigate(`/order/${shortAlias}/${id}`);
             }}
             disableRequest={matches.length > 0 && !showMatches}
             collapseAll={showMatches}

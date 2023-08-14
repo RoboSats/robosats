@@ -77,7 +77,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setC
                 <RobotAvatar
                   nickname={coordinator}
                   coordinator={true}
-                  style={{ width: '3.215em', height: '3.215em' }}
+                  style={{ width: '3em', height: '3em' }}
                   smooth={true}
                   flipHorizontally={true}
                   baseUrl={hostUrl}
@@ -100,7 +100,7 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setC
               >
                 {Object.entries(federation).map(
                   ([shortAlias, coord]: [string, Coordinator]): JSX.Element | null => {
-                    let row = null;
+                    let row: JSX.Element | null = null;
                     if (
                       shortAlias === coordinator ||
                       (coord.enabled === true && coord.info !== undefined)

@@ -34,8 +34,12 @@ interface AmountRangeProps {
   type: number;
   currency: number;
   handleRangeAmountChange: (e: any, activeThumb: any) => void;
-  handleMaxAmountChange: () => void;
-  handleMinAmountChange: () => void;
+  handleMaxAmountChange: (
+    e: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
+  handleMinAmountChange: (
+    e: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
   handleCurrencyChange: (newCurrency: number) => void;
   maxAmountError: boolean;
   minAmountError: boolean;

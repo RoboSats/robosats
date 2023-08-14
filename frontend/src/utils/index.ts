@@ -12,3 +12,4 @@ export { default as statusBadgeColor } from './statusBadgeColor';
 export { genBase62Token, validateTokenEntropy } from './token';
 export { default as getWebln } from './webln';
 export { default as computeSats } from './computeSats';
+export { default as federationLottery } from './federationLottery';

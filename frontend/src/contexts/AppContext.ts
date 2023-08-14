@@ -5,6 +5,7 @@ import {
   useReducer,
   useState,
   type SetStateAction,
+  useMemo,
 } from 'react';
 import { type Page } from '../basic/NavBar';
 import { type OpenDialogs } from '../basic/MainDialogs';
@@ -29,7 +30,13 @@ import {
 
 import { apiClient } from '../services/api';
 import { systemClient } from '../services/System';
-import { getClientVersion, getHost, hexToBase91, validateTokenEntropy } from '../utils';
+import {
+  federationLottery,
+  getClientVersion,
+  getHost,
+  hexToBase91,
+  validateTokenEntropy,
+} from '../utils';
 import { sha256 } from 'js-sha256';
 
 import defaultFederation from '../../static/federation.json';
@@ -259,6 +266,7 @@ export interface UseAppStoreType {
   setBook: Dispatch<SetStateAction<Book>>;
   federation: Federation;
   dispatchFederation: Dispatch<ActionFederation>;
+  sortedCoordinators: string[];
   garage: Garage;
   setGarage: Dispatch<SetStateAction<Garage>>;
   currentSlot: number;
@@ -337,6 +345,9 @@ export const useAppStore = (): UseAppStoreType => {
   const [maker, setMaker] = useState<Maker>(defaultMaker);
   const [exchange, setExchange] = useState<Exchange>(initialExchange);
   const [federation, dispatchFederation] = useReducer(reduceFederation, initialFederation);
+  const sortedCoordinators = useMemo(() => {
+    return federationLottery(federation);
+  }, []);
 
   const [focusedCoordinator, setFocusedCoordinator] = useState<string>('');
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0, mode: 'fiat' });
@@ -554,10 +565,7 @@ export const useAppStore = (): UseAppStoreType => {
 
   const updateExchange = (): void => {
     const onlineCoordinators = Object.keys(federation).reduce((count, shortAlias): void => {
-      if (
-        federation[shortAlias]?.loadingInfo === false &&
-        federation[shortAlias]?.info !== undefined
-      ) {
+      if (federation[shortAlias]?.loadingInfo && federation[shortAlias]?.info !== undefined) {
         return count + 1;
       } else {
         return count;
@@ -763,6 +771,7 @@ export const useAppStore = (): UseAppStoreType => {
     setBook,
     federation,
     dispatchFederation,
+    sortedCoordinators,
     garage,
     setGarage,
     currentSlot,

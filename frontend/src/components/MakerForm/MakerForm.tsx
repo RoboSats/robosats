@@ -40,7 +40,7 @@ import { amountToString, computeSats, pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-import { AppContext, hostUrl, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, origin, type UseAppStoreType } from '../../contexts/AppContext';
 import SelectCoordinator from './SelectCoordinator';
 
 interface MakerFormProps {
@@ -50,7 +50,7 @@ interface MakerFormProps {
   onSubmit?: () => void;
   onReset?: () => void;
   submitButtonLabel?: string;
-  onOrderCreated?: (id: number) => void;
+  onOrderCreated?: (shortAlias: string, id: number) => void;
   onClickGenerateRobot?: () => void;
 }
 
@@ -64,8 +64,18 @@ const MakerForm = ({
   onOrderCreated = () => null,
   onClickGenerateRobot = () => null,
 }: MakerFormProps): JSX.Element => {
-  const { fav, setFav, limits, fetchFederationLimits, info, maker, setMaker, robot } =
-    useContext<UseAppStoreType>(AppContext);
+  const {
+    fav,
+    setFav,
+    limits,
+    fetchFederationLimits,
+    info,
+    maker,
+    setMaker,
+    robot,
+    federation,
+    settings,
+  } = useContext<UseAppStoreType>(AppContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -187,14 +197,18 @@ const MakerForm = ({
     });
   };
 
-  const handleMinAmountChange = function (e): void {
+  const handleMinAmountChange = function (
+    e: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>,
+  ): void {
     setMaker({
       ...maker,
       minAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
     });
   };
 
-  const handleMaxAmountChange = function (e): void {
+  const handleMaxAmountChange = function (
+    e: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>,
+  ): void {
     setMaker({
       ...maker,
       maxAmount: parseFloat(Number(e.target.value).toPrecision(e.target.value < 100 ? 2 : 3)),
@@ -261,6 +275,7 @@ const MakerForm = ({
   };
 
   const handleCreateOrder = function (): void {
+    const url = federation[maker.coordinator][settings.network][origin];
     if (!disableRequest) {
       setSubmittingRequest(true);
       const body = {
@@ -280,11 +295,11 @@ const MakerForm = ({
         bond_size: maker.bondSize,
       };
       apiClient
-        .post(hostUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
+        .post(url, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
         .then((data: any) => {
           setBadRequest(data.bad_request);
           if (data.id !== undefined) {
-            onOrderCreated(data.id);
+            onOrderCreated(maker.coordinator, data.id);
           }
           setSubmittingRequest(false);
         })
