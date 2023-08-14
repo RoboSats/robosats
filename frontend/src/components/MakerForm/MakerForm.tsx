@@ -41,6 +41,7 @@ import { amountToString, computeSats, pn } from '../../utils';
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { AppContext, hostUrl, type UseAppStoreType } from '../../contexts/AppContext';
+import SelectCoordinator from './SelectCoordinator';
 
 interface MakerFormProps {
   disableRequest?: boolean;
@@ -1034,6 +1035,15 @@ const MakerForm = ({
           </Grid>
         </Grid>
       </Collapse>
+
+      <SelectCoordinator
+        coordinator={maker.coordinator}
+        setCoordinator={(coordinator) => {
+          setMaker((maker) => {
+            return { ...maker, coordinator };
+          });
+        }}
+      />
 
       <Grid container direction='column' alignItems='center'>
         <Grid item>

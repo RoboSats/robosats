@@ -12,6 +12,7 @@ import {
   Box,
   useTheme,
   Tooltip,
+  type SelectChangeEvent,
 } from '@mui/material';
 import { Bolt, Add, DeleteSweep, Logout, Download } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
@@ -61,7 +62,7 @@ const RobotProfile = ({
     setLoading(true);
   };
 
-  const handleChangeSlot = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleChangeSlot = (e: SelectChangeEvent<number | 'loading'>): void => {
     const slot = Number(e.target.value);
     getGenerateRobot(garage.slots[slot].robot.token ?? '', slot);
     setLoading(true);
