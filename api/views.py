@@ -534,14 +534,9 @@ class OrderView(viewsets.ViewSet):
         # 2) If action is 'update invoice'
         elif action == "update_invoice":
             # DEPRECATE post v0.5.1.
-            if "---" not in pgp_invoice:
-                valid_signature = True
-                invoice = pgp_invoice
-            else:
-                # END DEPRECATE.
-                valid_signature, invoice = verify_signed_message(
-                    request.user.robot.public_key, pgp_invoice
-                )
+            valid_signature, invoice = verify_signed_message(
+                request.user.robot.public_key, pgp_invoice
+            )
 
             if not valid_signature:
                 return Response(
@@ -557,15 +552,9 @@ class OrderView(viewsets.ViewSet):
 
         # 2.b) If action is 'update address'
         elif action == "update_address":
-            # DEPRECATE post v0.5.1.
-            if "---" not in pgp_address:
-                valid_signature = True
-                address = pgp_address
-            else:
-                # END DEPRECATE.
-                valid_signature, address = verify_signed_message(
-                    request.user.robot.public_key, pgp_address
-                )
+            valid_signature, address = verify_signed_message(
+                request.user.robot.public_key, pgp_address
+            )
 
             if not valid_signature:
                 return Response(
@@ -815,15 +804,9 @@ class RewardView(CreateAPIView):
 
         pgp_invoice = serializer.data.get("invoice")
 
-        # DEPRECATE post v0.5.1.
-        if "---" not in pgp_invoice:
-            valid_signature = True
-            invoice = pgp_invoice
-        else:
-            # END DEPRECATE.
-            valid_signature, invoice = verify_signed_message(
-                request.user.robot.public_key, pgp_invoice
-            )
+        valid_signature, invoice = verify_signed_message(
+            request.user.robot.public_key, pgp_invoice
+        )
 
         if not valid_signature:
             return Response(
