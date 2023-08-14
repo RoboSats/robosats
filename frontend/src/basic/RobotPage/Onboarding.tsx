@@ -277,7 +277,6 @@ const Onboarding = ({
             </Grid>
             <Grid item>
               <Button
-                sx={{ color: 'black' }}
                 component={Link}
                 href='https://learn.robosats.com'
                 target='_blank'

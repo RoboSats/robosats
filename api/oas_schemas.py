@@ -632,6 +632,31 @@ class TickViewSchema:
         "description": "Get all market ticks. Returns a list of all the market ticks since inception.\n"
         "CEX price is also recorded for useful insight on the historical premium of Non-KYC BTC. "
         "Price is set when taker bond is locked.",
+        "parameters": [
+            OpenApiParameter(
+                name="start",
+                location=OpenApiParameter.QUERY,
+                description="Start date formatted as DD-MM-YYYY",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="end",
+                location=OpenApiParameter.QUERY,
+                description="End date formatted as DD-MM-YYYY",
+                required=False,
+                type=str,
+            ),
+        ],
+        "examples": [
+            OpenApiExample(
+                "Too many ticks",
+                value={
+                    "bad_request": "More than 5000 market ticks have been found. Try narrowing the date range."
+                },
+                status_codes=[400],
+            )
+        ],
     }
 
 

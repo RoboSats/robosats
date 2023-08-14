@@ -19,23 +19,23 @@ from . import primitives_pb2 as primitives__pb2
 #######
 
 # Load the client's certificate and key
-with open(os.path.join(config("CLN_DIR"), "client.pem"), "rb") as f:
+CLN_DIR = config("CLN_DIR", cast=str, default="/cln/testnet/")
+with open(os.path.join(CLN_DIR, "client.pem"), "rb") as f:
     client_cert = f.read()
-with open(os.path.join(config("CLN_DIR"), "client-key.pem"), "rb") as f:
+with open(os.path.join(CLN_DIR, "client-key.pem"), "rb") as f:
     client_key = f.read()
 
 # Load the server's certificate
-with open(os.path.join(config("CLN_DIR"), "server.pem"), "rb") as f:
+with open(os.path.join(CLN_DIR, "server.pem"), "rb") as f:
     server_cert = f.read()
 
 
-CLN_GRPC_HOST = config("CLN_GRPC_HOST")
+CLN_GRPC_HOST = config("CLN_GRPC_HOST", cast=str, default="localhost:9999")
 DISABLE_ONCHAIN = config("DISABLE_ONCHAIN", cast=bool, default=True)
 MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
 
 
 class CLNNode:
-
     os.environ["GRPC_SSL_CIPHER_SUITES"] = "HIGH+ECDSA"
 
     # Create the SSL credentials object
@@ -562,8 +562,7 @@ class CLNNode:
                 lnpayment.in_flight = True
                 lnpayment.save(update_fields=["in_flight", "status"])
 
-                order.status = Order.Status.PAY
-                order.save(update_fields=["status"])
+                order.update_status(Order.Status.PAY)
 
                 response = cls.stub.Pay(request)
 
@@ -593,14 +592,19 @@ class CLNNode:
                         ]
                     )
 
-                    order.status = Order.Status.FAI
+                    order.update_status(Order.Status.FAI)
                     order.expires_at = timezone.now() + timedelta(
                         seconds=order.t_to_expire(Order.Status.FAI)
                     )
-                    order.save(update_fields=["status", "expires_at"])
+                    order.save(update_fields=["expires_at"])
+
                     print(
                         f"Order: {order.id} FAILED. Hash: {hash} Reason: {cls.payment_failure_context[-1]}"
                     )
+                    order.log(
+                        f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) failed. Failure reason: {cls.payment_failure_context[-1]})"
+                    )
+
                     return {
                         "succeded": False,
                         "context": f"payment failure reason: {cls.payment_failure_context[-1]}",
@@ -617,11 +621,15 @@ class CLNNode:
                     )
                     lnpayment.preimage = response.payment_preimage.hex()
                     lnpayment.save(update_fields=["status", "fee", "preimage"])
-                    order.status = Order.Status.SUC
+                    order.update_status(Order.Status.SUC)
                     order.expires_at = timezone.now() + timedelta(
                         seconds=order.t_to_expire(Order.Status.SUC)
                     )
-                    order.save(update_fields=["status", "expires_at"])
+                    order.save(update_fields=["expires_at"])
+
+                    order.log(
+                        f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>succeeded</b>"
+                    )
 
                     results = {"succeded": True}
                     return results
@@ -664,14 +672,19 @@ class CLNNode:
                             ]
                         )
 
-                        order.status = Order.Status.FAI
+                        order.update_status(Order.Status.FAI)
                         order.expires_at = timezone.now() + timedelta(
                             seconds=order.t_to_expire(Order.Status.FAI)
                         )
-                        order.save(update_fields=["status", "expires_at"])
+                        order.save(update_fields=["expires_at"])
+
                         print(
                             f"Order: {order.id} FAILED. Hash: {hash} Reason: {cls.payment_failure_context[status_code]}"
                         )
+                        order.log(
+                            f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>failed</b>. Failure reason: {cls.payment_failure_context[status_code]}"
+                        )
+
                         return {
                             "succeded": False,
                             "context": f"payment failure reason: {cls.payment_failure_context[status_code]}",
@@ -699,11 +712,16 @@ class CLNNode:
                                     "in_flight",
                                 ]
                             )
-                            order.status = Order.Status.FAI
+                            order.update_status(Order.Status.FAI)
                             order.expires_at = timezone.now() + timedelta(
                                 seconds=order.t_to_expire(Order.Status.FAI)
                             )
-                            order.save(update_fields=["status", "expires_at"])
+                            order.save(update_fields=["expires_at"])
+
+                            order.log(
+                                f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>had expired</b>"
+                            )
+
                             results = {
                                 "succeded": False,
                                 "context": "The payout invoice has expired",

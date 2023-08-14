@@ -28,6 +28,11 @@ interface Props {
   setTurtleMode: (state: boolean) => void;
 }
 
+const audioPath =
+  window.NativeRobosats === undefined
+    ? '/static/assets/sounds'
+    : 'file:///android_asset/Web.bundle/assets/sounds';
+
 const EncryptedTurtleChat: React.FC<Props> = ({
   orderId,
   robot,
@@ -43,7 +48,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const [audio] = useState(() => new Audio(`/static/assets/sounds/chat-open.mp3`));
+  const [audio] = useState(() => new Audio(`${audioPath}/chat-open.mp3`));
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
   const [peerPubKey, setPeerPubKey] = useState<string>();
   const [value, setValue] = useState<string>('');
@@ -255,7 +260,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
 
       <Grid item>
         <ChatHeader
-          connected={true}
+          connected={peerPubKey ? true : false}
           peerConnected={peerConnected}
           turtleMode={turtleMode}
           setTurtleMode={setTurtleMode}

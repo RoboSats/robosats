@@ -107,7 +107,7 @@ const RobotAvatar: React.FC<Props> = ({
                 ...imageStyle,
                 onLoad: setTimeout(() => {
                   setActiveBackground(false);
-                }, 1000),
+                }, 5000),
               }}
             />
           </div>

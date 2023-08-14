@@ -46,7 +46,6 @@ MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500_000)
 
 
 class LNDNode:
-
     os.environ["GRPC_SSL_CIPHER_SUITES"] = "HIGH+ECDSA"
 
     def metadata_callback(context, callback):
@@ -170,10 +169,17 @@ class LNDNode:
                 onchainpayment.txid = response.txid
                 onchainpayment.broadcasted = True
             onchainpayment.save(update_fields=["txid", "broadcasted"])
+            onchainpayment.order_paid_TX.log(
+                f"TX OnchainPayment({onchainpayment.id},{response.txid}) in <b>mempool</b>"
+            )
             return True
 
         elif onchainpayment.status == on_mempool_code:
             # Bug, double payment attempted
+            onchainpayment.order_paid_TX.log(
+                f"Attempted to re-broadcast OnchainPayment({onchainpayment.id},{onchainpayment}) already in mempool",
+                level="ERROR",
+            )
             return True
 
     @classmethod
@@ -193,7 +199,16 @@ class LNDNode:
         return str(response) == ""  # True if no response, false otherwise.
 
     @classmethod
-    def gen_hold_invoice(cls, num_satoshis, description, invoice_expiry, cltv_expiry_blocks, order_id, lnpayment_concept, time):
+    def gen_hold_invoice(
+        cls,
+        num_satoshis,
+        description,
+        invoice_expiry,
+        cltv_expiry_blocks,
+        order_id,
+        lnpayment_concept,
+        time,
+    ):
         """Generates hold invoice"""
 
         hold_payment = {}
@@ -422,7 +437,6 @@ class LNDNode:
         )
 
         for response in cls.routerstub.SendPaymentV2(request):
-
             if (
                 response.status == lnrpc.Payment.PaymentStatus.UNKNOWN
             ):  # Status 0 'UNKNOWN'
@@ -487,7 +501,7 @@ class LNDNode:
             lnpayment.status = LNPayment.Status.FLIGHT
             lnpayment.in_flight = True
             lnpayment.save(update_fields=["in_flight", "status"])
-            order.status = Order.Status.PAY
+            order.update_status(Order.Status.PAY)
             order.save(update_fields=["status"])
 
             if (
@@ -532,14 +546,23 @@ class LNDNode:
                     ]
                 )
 
-                order.status = Order.Status.FAI
+                order.update_status(Order.Status.FAI)
+
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.FAI)
                 )
-                order.save(update_fields=["status", "expires_at"])
+                order.save(update_fields=["expires_at"])
+
+                str_failure_reason = cls.payment_failure_context[
+                    response.failure_reason
+                ]
                 print(
-                    f"Order: {order.id} FAILED. Hash: {hash} Reason: {cls.payment_failure_context[response.failure_reason]}"
+                    f"Order: {order.id} FAILED. Hash: {hash} Reason: {str_failure_reason}"
                 )
+                order.log(
+                    f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>failed</b>. Failure reason: {str_failure_reason})"
+                )
+
                 return {
                     "succeded": False,
                     "context": f"payment failure reason: {cls.payment_failure_context[response.failure_reason]}",
@@ -554,22 +577,24 @@ class LNDNode:
                 lnpayment.preimage = response.payment_preimage
                 lnpayment.save(update_fields=["status", "fee", "preimage"])
 
-                order.status = Order.Status.SUC
+                order.update_status(Order.Status.SUC)
                 order.expires_at = timezone.now() + timedelta(
                     seconds=order.t_to_expire(Order.Status.SUC)
                 )
-                order.save(update_fields=["status", "expires_at"])
+                order.save(update_fields=["expires_at"])
+
+                order.log(
+                    f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>succeeded</b>"
+                )
 
                 results = {"succeded": True}
                 return results
 
         try:
             for response in cls.routerstub.SendPaymentV2(request):
-
                 handle_response(response)
 
         except Exception as e:
-
             if "invoice expired" in str(e):
                 print(f"Order: {order.id}. INVOICE EXPIRED. Hash: {hash}")
                 # An expired invoice can already be in-flight. Check.
@@ -594,11 +619,15 @@ class LNDNode:
                             update_fields=["status", "last_routing_time", "in_flight"]
                         )
 
-                        order.status = Order.Status.FAI
+                        order.update_status(Order.Status.FAI)
                         order.expires_at = timezone.now() + timedelta(
                             seconds=order.t_to_expire(Order.Status.FAI)
                         )
-                        order.save(update_fields=["status", "expires_at"])
+                        order.save(update_fields=["expires_at"])
+
+                        order.log(
+                            f"Payment LNPayment({lnpayment.payment_hash},{str(lnpayment)}) <b>had expired</b>"
+                        )
 
                         results = {
                             "succeded": False,

@@ -140,11 +140,20 @@ const MakerForm = ({
     updateCurrentPrice(limits.list, newCurrency, maker.premium);
 
     if (makerHasAmountRange) {
-      setMaker({
-        ...maker,
-        minAmount: parseFloat(Number(limits.list[newCurrency].max_amount * 0.25).toPrecision(2)),
-        maxAmount: parseFloat(Number(limits.list[newCurrency].max_amount * 0.75).toPrecision(2)),
-      });
+      const minAmount = parseFloat(Number(limits.list[newCurrency].min_amount).toPrecision(2));
+      const maxAmount = parseFloat(Number(limits.list[newCurrency].max_amount).toPrecision(2));
+      if (
+        parseFloat(maker.minAmount) < minAmount ||
+        parseFloat(maker.minAmount) > maxAmount ||
+        parseFloat(maker.maxAmount) > maxAmount ||
+        parseFloat(maker.maxAmount) < minAmount
+      ) {
+        setMaker({
+          ...maker,
+          minAmount: (maxAmount * 0.25).toPrecision(2),
+          maxAmount: (maxAmount * 0.75).toPrecision(2),
+        });
+      }
     }
   };
 
@@ -181,27 +190,28 @@ const MakerForm = ({
     });
   };
 
-  const handlePremiumChange = function (e: object) {
-    const max = fav.mode === 'fiat' ? 999 : 99;
-    const min = -100;
-    const newPremium = Math.floor(e.target.value * Math.pow(10, 2)) / Math.pow(10, 2);
-    let premium: number = newPremium;
-    let badPremiumText: string = '';
-    if (newPremium > 999) {
-      badPremiumText = t('Must be less than {{max}}%', { max });
-      premium = 999;
-    } else if (newPremium <= -100) {
-      badPremiumText = t('Must be more than {{min}}%', { min });
-      premium = -99.99;
-    }
-    updateCurrentPrice(limits.list, fav.currency, premium);
-    updateAmountLimits(limits.list, fav.currency, premium);
-    setMaker({
-      ...maker,
-      premium,
-      badPremiumText,
-    });
-  };
+  const handlePremiumChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> =
+    function ({ target: { value } }) {
+      const max = fav.mode === 'fiat' ? 999 : 99;
+      const min = -100;
+      const newPremium = Math.floor(Number(value) * Math.pow(10, 2)) / Math.pow(10, 2);
+      let premium: number = isNaN(newPremium) ? 0 : newPremium;
+      let badPremiumText: string = '';
+      if (newPremium > 999) {
+        badPremiumText = t('Must be less than {{max}}%', { max });
+        premium = 999;
+      } else if (newPremium <= -100) {
+        badPremiumText = t('Must be more than {{min}}%', { min });
+        premium = -99.99;
+      }
+      updateCurrentPrice(limits.list, fav.currency, premium);
+      updateAmountLimits(limits.list, fav.currency, premium);
+      setMaker({
+        ...maker,
+        premium: isNaN(newPremium) || value === '' ? '' : premium,
+        badPremiumText,
+      });
+    };
 
   const handleSatoshisChange = function (e: object) {
     const newSatoshis = e.target.value;
@@ -422,6 +432,7 @@ const MakerForm = ({
       (!makerHasAmountRange &&
         maker.amount != '' &&
         (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
+      maker.badPaymentMethod ||
       (maker.amount == null && (!makerHasAmountRange || limits.loading)) ||
       (makerHasAmountRange && (minAmountError || maxAmountError)) ||
       (!makerHasAmountRange && maker.amount <= 0) ||
@@ -744,7 +755,6 @@ const MakerForm = ({
           <Grid item xs={12}>
             <AutocompletePayments
               onAutocompleteChange={handlePaymentMethodChange}
-              // listBoxProps={{ sx: { width: '15.3em', maxHeight: '20em' } }}
               optionsType={fav.mode}
               error={maker.badPaymentMethod}
               helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
@@ -759,6 +769,12 @@ const MakerForm = ({
               asFilter={false}
               value={maker.paymentMethods}
             />
+
+            {maker.badPaymentMethod && (
+              <FormHelperText error={true}>
+                {t('Must be shorter than 65 characters')}
+              </FormHelperText>
+            )}
           </Grid>
 
           {!maker.advancedOptions && pricingMethods ? (

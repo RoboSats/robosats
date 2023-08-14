@@ -176,7 +176,7 @@ const App = () => {
         allowingReadAccessToURL={uri}
         allowFileAccess={true}
         allowsBackForwardNavigationGestures={true}
-        mediaPlaybackRequiresUserAction={false}
+        mediaPlaybackRequiresUserAction={false} // Allow autoplay
         allowsLinkPreview={false}
         renderLoading={() => <Text></Text>}
         onError={(syntheticEvent) => <Text>{syntheticEvent.type}</Text>}

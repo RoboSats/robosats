@@ -50,6 +50,7 @@ export const fiatMethods: PaymentMethod[] = [
   { name: 'Steam', icon: 'steam' },
   { name: 'Nequi', icon: 'nequi' },
   { name: 'ShakePay', icon: 'shakepay' },
+  { name: 'Sinpe', icon: 'sinpe' },
   { name: 'DaviPlata', icon: 'daviplata' },
   { name: 'CoDi', icon: 'codi' },
   { name: 'TaiwanPay', icon: 'taiwanpay' },

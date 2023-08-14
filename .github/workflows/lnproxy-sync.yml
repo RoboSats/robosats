@@ -11,23 +11,30 @@ jobs:
 
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Fetch and process JSON
+      - name: Fetch and process lnproxy relay JSON file
         run: |
           curl https://raw.githubusercontent.com/lnproxy/lnproxy-webui2/main/assets/relays.json -o lnproxy_tmplist.json
-          node .github/workflows/scripts/lnproxy-sync.js
-
-      - name: Commit and push if it's not up to date
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          node ./scripts/lnproxy-sync.js
           git add ./frontend/static/lnproxies.json
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update LNProxy relay list"
-          git push
 
       - name: Remove tmp lnproxy json file
         run: rm lnproxy_tmplist.json
+
+      - name: Get the date for use in subsequent steps
+        id: getdate
+        run: echo "current_date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Submit pull request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "Update LNProxy relay list on ${{ env.current_date }}"
+          committer: GitHub Action <action@github.com>
+          branch: "lnproxy-${{ env.current_date }}"
+          delete-branch: true
+          title: "[GitHub Action] Update LNProxy relay list ${{ env.current_date }}"

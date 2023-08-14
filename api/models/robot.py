@@ -12,6 +12,15 @@ from django.utils.html import mark_safe
 class Robot(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
+    # Hash id (second sha256 of robot token)
+    hash_id = models.CharField(
+        max_length=64,
+        unique=True,
+        default=None,
+        blank=True,
+        null=True,
+    )
+
     # PGP keys, used for E2E chat encryption. Priv key is encrypted with user's passphrase (highEntropyToken)
     public_key = models.TextField(
         # Actually only 400-500 characters for ECC, but other types might be longer

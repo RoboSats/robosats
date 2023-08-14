@@ -40,7 +40,7 @@ export const ConfirmFiatReceivedDialog = ({
       <DialogContent>
         <DialogContentText id='alert-dialog-description'>
           {t(
-            'Confirming that you received {{amount}} {{currencyCode}} will finalize the trade. The satoshis in the escrow will be released to the buyer. Only confirm after {{amount}} {{currencyCode}} have arrived to your account. Note that if you if you have received the payment and do not click confirm, you risk losing your bond.',
+            'Confirming that you received {{amount}} {{currencyCode}} will finalize the trade. The satoshis in the escrow will be released to the buyer. Only confirm after {{amount}} {{currencyCode}} have arrived to your account. Note that if you have received the payment and do not click confirm, you risk losing your bond.',
             { currencyCode, amount },
           )}
         </DialogContentText>

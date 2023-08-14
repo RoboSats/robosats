@@ -1,4 +1,4 @@
-FROM lightninglabs/lnd:v0.16.1-beta
+FROM lightninglabs/lnd:v0.16.3-beta
 
 ARG LOCAL_USER_ID=9999
 ARG LOCAL_GROUP_ID=9999

@@ -4,11 +4,12 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 buildscript {
     ext {
-        buildToolsVersion = "31.0.0"
+        buildToolsVersion = "33.0.0"
         minSdkVersion = 26
-        compileSdkVersion = 31
-        targetSdkVersion = 31
-        kotlin_version = "1.7.10"
+        compileSdkVersion = 33
+        targetSdkVersion = 33
+        kotlin_version = "1.8.21"
+        kotlinVersion = "1.8.21" //for react-native-tor
 
         if (System.properties['os.arch'] == "aarch64") {
             // For M1 Users we need to use the NDK 24 which added support for aarch64
@@ -19,12 +20,20 @@ buildscript {
         }
     }
     repositories {
+        maven {
+            // Replace AAR from original RN with AAR from react-native-v8
+            url("$rootDir/../node_modules/react-native-v8/dist")
+        }
+        maven {
+            // prebuilt libv8android.so
+            url("$rootDir/../node_modules/v8-android/dist")
+         }
         google()
         mavenCentral()
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10"
-        classpath("com.android.tools.build:gradle:7.1.1")
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath('com.android.tools.build:gradle:7.3.1')
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("de.undercouch:gradle-download-task:5.0.1")
         // NOTE: Do not place your application dependencies here; they belong
@@ -35,21 +44,20 @@ buildscript {
 allprojects {
     repositories {
         maven {
-            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-            url("$rootDir/../node_modules/react-native/android")
-        }
-        maven {
             // Android JSC is installed from npm
             url("$rootDir/../node_modules/jsc-android/dist")
         }
-        mavenCentral {
-            // We don't want to fetch react-native from Maven Central as there are
-            // older versions over there.
-            content {
-                excludeGroup "com.facebook.react"
-            }
-        }
+        mavenCentral()
         google()
         maven { url 'https://www.jitpack.io' }
+    }
+
+    configurations.all {
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'org.jetbrains.kotlin' &&
+                    details.requested.name.startsWith("kotlin-stdlib")) {
+                details.useVersion "1.8.21"
+            }
+        }
     }
 }

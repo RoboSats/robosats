@@ -235,6 +235,14 @@ class Order(models.Model):
     maker_platform_rated = models.BooleanField(default=False, null=False)
     taker_platform_rated = models.BooleanField(default=False, null=False)
 
+    logs = models.TextField(
+        max_length=80_000,
+        null=True,
+        default="<thead><tr><b><th>Timestamp</th><th>Level</th><th>Event</th></b></tr></thead>",
+        blank=True,
+        editable=False,
+    )
+
     def __str__(self):
         if self.has_range and self.amount is None:
             amt = str(float(self.min_amount)) + "-" + str(float(self.max_amount))
@@ -243,7 +251,6 @@ class Order(models.Model):
         return f"Order {self.id}: {self.Types(self.type).label} BTC for {amt} {self.currency}"
 
     def t_to_expire(self, status):
-
         t_to_expire = {
             0: config(
                 "EXP_MAKER_BOND_INVOICE", cast=int, default=300
@@ -273,6 +280,32 @@ class Order(models.Model):
         }
 
         return t_to_expire[status]
+
+    def log(self, event="empty event", level="INFO"):
+        """
+        log() adds a new line to the Order.log field. We wrap it all in a
+        try/catch block since this function is called inside the main request->response
+        pipe and any error here would lead to a 500 response.
+        """
+        try:
+            timestamp = timezone.now().replace(microsecond=0).isoformat()
+            level_in_tag = "" if level == "INFO" else "<b>"
+            level_out_tag = "" if level == "INFO" else "</b>"
+            self.logs = (
+                self.logs
+                + f"<tr><td>{timestamp}</td><td>{level_in_tag}{level}{level_out_tag}</td><td>{event}</td></tr>"
+            )
+            self.save(update_fields=["logs"])
+        except Exception:
+            pass
+
+    def update_status(self, new_status):
+        old_status = self.status
+        self.status = new_status
+        self.save(update_fields=["status"])
+        self.log(
+            f"Order state went from {old_status}: <i>{Order.Status(old_status).label}</i> to {new_status}: <i>{Order.Status(new_status).label}</i>"
+        )
 
 
 @receiver(pre_delete, sender=Order)

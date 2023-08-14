@@ -23,11 +23,11 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { validateTokenEntropy } from '../../utils';
 
 const RobotPage = (): JSX.Element => {
-  const { robot, setRobot, fetchRobot, torStatus, windowSize, baseUrl } =
+  const { robot, setRobot, fetchRobot, torStatus, windowSize, baseUrl, settings } =
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const params = useParams();
-  const url_token = params.token;
+  const url_token = settings.selfhostedClient ? params.token : null;
   const width = Math.min(windowSize.width * 0.8, 28);
   const maxHeight = windowSize.height * 0.85 - 3;
   const theme = useTheme();

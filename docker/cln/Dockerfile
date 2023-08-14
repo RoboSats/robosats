@@ -39,7 +39,7 @@ RUN mkdir /opt/bitcoin && cd /opt/bitcoin \
 FROM debian:bullseye-slim as builder
 ARG DEBIAN_FRONTEND=noninteractive
 
-ARG LIGHTNINGD_VERSION=v23.05
+ARG LIGHTNINGD_VERSION=v23.05.2
 
 RUN apt-get update -qq && \
     apt-get install -qq -y --no-install-recommends \

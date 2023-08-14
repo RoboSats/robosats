@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 
 import gnupg
 import numpy as np
@@ -14,6 +15,7 @@ logger = logging.getLogger("api.utils")
 
 TOR_PROXY = config("TOR_PROXY", default="127.0.0.1:9050")
 USE_TOR = config("USE_TOR", cast=bool, default=True)
+LNVENDOR = config("LNVENDOR", cast=str, default="LND")
 
 
 def get_session():
@@ -126,6 +128,32 @@ def get_exchange_rates(currencies):
                         bitpay_rates.append(np.nan)
                 api_rates.append(bitpay_rates)
 
+            # Tor proxied requests to criptoya.com will fail. Skip if USE_TOR is enabled.
+            elif "criptoya.com" in api_url and not USE_TOR:
+                criptoya_supported_currencies = [
+                    "ARS",
+                    "COP",
+                    "MXN",
+                    "BRL",
+                    "PEN",
+                    "CLP",
+                    "USD",
+                    "VES",
+                ]
+                criptoya_rates = []
+                for currency in currencies:
+                    if currency in criptoya_supported_currencies:
+                        criptoya_exchanges = session.get(f"{api_url}/{currency}").json()
+                        exchange_medians = [
+                            np.median([exchange["ask"], exchange["ask"]])
+                            for exchange in criptoya_exchanges.values()
+                            if exchange["ask"] > 0 and exchange["bid"] > 0
+                        ]
+                        criptoya_rates.append(round(np.median(exchange_medians), 2))
+                    else:
+                        criptoya_rates.append(np.nan)
+                api_rates.append(criptoya_rates)
+
         except Exception as e:
             print(f"Could not fetch BTC prices from {api_url}: {str(e)}")
             pass
@@ -144,10 +172,12 @@ lnd_version_cache = {}
 
 @ring.dict(lnd_version_cache, expire=3600)
 def get_lnd_version():
+    try:
+        from api.lightning.lnd import LNDNode
 
-    from api.lightning.lnd import LNDNode
-
-    return LNDNode.get_version()
+        return LNDNode.get_version()
+    except Exception:
+        return None
 
 
 cln_version_cache = {}
@@ -155,10 +185,12 @@ cln_version_cache = {}
 
 @ring.dict(cln_version_cache, expire=3600)
 def get_cln_version():
+    try:
+        from api.lightning.cln import CLNNode
 
-    from api.lightning.cln import CLNNode
-
-    return CLNNode.get_version()
+        return CLNNode.get_version()
+    except Exception:
+        return None
 
 
 robosats_commit_cache = {}
@@ -166,7 +198,6 @@ robosats_commit_cache = {}
 
 @ring.dict(robosats_commit_cache, expire=99999)
 def get_robosats_commit():
-
     # .git folder is included in .dockerignore. The build workflow will drop the commit_sha file in root
     with open("commit_sha") as f:
         commit_hash = f.read()
@@ -179,7 +210,6 @@ premium_percentile = {}
 
 @ring.dict(premium_percentile, expire=300)
 def compute_premium_percentile(order):
-
     queryset = Order.objects.filter(
         currency=order.currency, status=Order.Status.PUB, type=order.type
     ).exclude(id=order.id)
@@ -348,3 +378,22 @@ def is_valid_token(token: str) -> bool:
 
     charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&()*+,./:;<=>?@[]^_`{|}~"'
     return all(c in charset for c in token)
+
+
+def objects_to_hyperlinks(logs: str) -> str:
+    """
+    Parses strings that have Object(ID,NAME) that match API models.
+    For example Robot(ID,NAME) will be parsed into
+    <b><a href="/coordinator/api/robot/ID/change}">NAME</a></b>
+
+    Used to format pretty logs for the Order admin panel.
+    """
+    objects = ["LNPayment", "Robot", "Order", "OnchainPayment", "MarketTick"]
+    for obj in objects:
+        logs = re.sub(
+            rf"{obj}\(([0-9a-fA-F\-A-F]+),\s*([^)]+)\)",
+            lambda m: f'<b><a href="/coordinator/api/{obj.lower()}/{m.group(1)}">{m.group(2)}</a></b>',
+            logs,
+            flags=re.DOTALL,
+        )
+    return logs

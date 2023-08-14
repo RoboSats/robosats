@@ -46,6 +46,7 @@ jobs:
         npm test
     - name:  'Build'
       run: |
+        export NODE_OPTIONS="--max-old-space-size=4096"
         cd frontend
         npm run build
     - name: 'Archive Web Basic Build Results'
@@ -53,11 +54,21 @@ jobs:
       with:
         name: web-main-js
         path: frontend/static/frontend/main.js
+    - name: 'Archive Web Basic SelfhostedBuild Results'
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: web-basic-selfhosted-js
+        path: frontend/static/frontend/basic.selfhosted.js
     - name: 'Archive Web PRO Build Results'
       uses: actions/upload-artifact@v3.1.2
       with:
         name: web-pro-js
         path: frontend/static/frontend/pro.js
+    - name: 'Archive Web PRO SelhostedBuild Results'
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: web-pro-selfhosted-js
+        path: frontend/static/frontend/pro.selfhosted.js
     - name: 'Archive Mobile Build Results'
       uses: actions/upload-artifact@v3.1.2
       with:

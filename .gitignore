@@ -636,6 +636,7 @@ docker/i2p
 frontend/static/assets/avatars*
 api/lightning/*_grpc.py
 api/lightning/*_pb2.py
+api/lightning/pymp*
 frontend/static/locales/collected_phrases.json
 frontend/static/admin*
 frontend/static/rest_framework*
@@ -648,5 +649,7 @@ docs/.jekyll-cache*
 docs/_site*
 node
 
-# mobile frontend js
+# mobile frontend statics
 mobile/html/Web.bundle/js*
+mobile/html/Web.bundle/css*
+mobile/html/Web.bundle/assets*

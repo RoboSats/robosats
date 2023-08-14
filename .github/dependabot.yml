@@ -5,11 +5,13 @@ updates:
     schedule:
       interval: "weekly"
       day: "saturday"
+    versioning-strategy: increase
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
       interval: "weekly"
       day: "friday"
+    versioning-strategy: increase
   - package-ecosystem: "gradle"
     directory: "/mobile/android"
     schedule:
