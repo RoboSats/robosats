@@ -346,7 +346,11 @@ export const useAppStore = (): UseAppStoreType => {
   const [exchange, setExchange] = useState<Exchange>(initialExchange);
   const [federation, dispatchFederation] = useReducer(reduceFederation, initialFederation);
   const sortedCoordinators = useMemo(() => {
-    return federationLottery(federation);
+    const sortedCoordinators = federationLottery(federation);
+    setMaker((maker) => {
+      return { ...maker, coordinator: sortedCoordinators[0] };
+    }); // default MakerForm coordinator is decided via sorted lottery
+    return sortedCoordinators;
   }, []);
 
   const [focusedCoordinator, setFocusedCoordinator] = useState<string>('');
@@ -524,17 +528,17 @@ export const useAppStore = (): UseAppStoreType => {
     let orders: PublicOrder[] = book.orders;
     let loadedCoordinators: number = 0;
     let totalCoordinators: number = 0;
-    Object.values(federation).map((coordinator: Coordinator) => {
-      if (coordinator?.enabled === true) {
+
+    sortedCoordinators.map((shortAlias: string) => {
+      if (federation[shortAlias]?.enabled === true) {
         totalCoordinators = totalCoordinators + 1;
-        if (!coordinator.loadingBook) {
+        if (!federation[shortAlias].loadingBook) {
           const existingOrders = orders.filter(
-            (order) => order.coordinatorShortAlias !== coordinator.shortAlias,
+            (order) => order.coordinatorShortAlias !== shortAlias,
           );
-          console.log('Existing Orders', existingOrders);
-          const newOrders: PublicOrder[] = coordinator.book.map((order) => ({
+          const newOrders: PublicOrder[] = federation[shortAlias].book.map((order) => ({
             ...order,
-            coordinatorShortAlias: coordinator.shortAlias,
+            coordinatorShortAlias: shortAlias,
           }));
           orders = [...existingOrders, ...newOrders];
           // orders.push.apply(existingOrders, newOrders);

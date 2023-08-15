@@ -91,7 +91,6 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot }: Props): JSX.El
         </Typography>
 
         {Object.entries(federation).map(([shortAlias, coordinator]: [string, any]): JSX.Element => {
-          console.log(coordinator.shortAlias, coordinator.robot);
           if (coordinator.robot?.loading === false) {
             return (
               <RobotInfo

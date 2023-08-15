@@ -91,7 +91,7 @@ export class Coordinator {
   public testnetNodesPubkeys: string[] | undefined;
 
   // These properties are fetched from coordinator API
-  public orders: PublicOrder[] = [];
+  public book: PublicOrder[] = [];
   public loadingBook: boolean = true;
   public info?: Info | undefined = undefined;
   public loadingInfo: boolean = true;

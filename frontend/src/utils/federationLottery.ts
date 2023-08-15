@@ -19,7 +19,9 @@ export default function federationLottery(federation: Federation): string[] {
 
   // Convert the `federation` object into an array of {shortAlias, chance}
   for (const [shortAlias, coordinator] of Object.entries(federation)) {
-    coordinatorChance.push({ shortAlias, chance: coordinator.badges.donatesToDevFund });
+    const chance =
+      coordinator.badges.donatesToDevFund > 50 ? 50 : coordinator.badges?.donatesToDevFund;
+    coordinatorChance.push({ shortAlias, chance });
   }
 
   // Sort randomly the coordinatorChance array using weighted shuffling algorithm
@@ -34,6 +36,7 @@ export default function federationLottery(federation: Federation): string[] {
 }
 
 // // Verification
+
 // function generateSampleFederation(numCoordinators: number): Record<string, { badges:{ donatesToDevFund: number }}> {
 // const federation: Record<string, {badges:{ donatesToDevFund: number }}> = {};
 

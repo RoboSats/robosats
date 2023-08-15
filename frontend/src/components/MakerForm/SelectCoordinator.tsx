@@ -13,7 +13,6 @@ import RobotAvatar from '../RobotAvatar';
 import { AppContext, type UseAppStoreType, hostUrl } from '../../contexts/AppContext';
 import { useTheme } from '@emotion/react';
 import { useTranslation } from 'react-i18next';
-import type { Coordinator } from '../../models';
 
 interface SelectCoordinatorProps {
   coordinator: string;
@@ -21,7 +20,8 @@ interface SelectCoordinatorProps {
 }
 
 const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setCoordinator }) => {
-  const { federation, setFocusedCoordinator, setOpen } = useContext<UseAppStoreType>(AppContext);
+  const { federation, setFocusedCoordinator, setOpen, sortedCoordinators } =
+    useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
 
@@ -98,22 +98,21 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setC
                 onChange={handleCoordinatorChange}
                 disableUnderline
               >
-                {Object.entries(federation).map(
-                  ([shortAlias, coord]: [string, Coordinator]): JSX.Element | null => {
-                    let row: JSX.Element | null = null;
-                    if (
-                      shortAlias === coordinator ||
-                      (coord.enabled === true && coord.info !== undefined)
-                    ) {
-                      row = (
-                        <MenuItem key={shortAlias} value={shortAlias}>
-                          <Typography>{coord.longAlias}</Typography>
-                        </MenuItem>
-                      );
-                    }
-                    return row;
-                  },
-                )}
+                {sortedCoordinators.map((shortAlias: string): JSX.Element | null => {
+                  let row: JSX.Element | null = null;
+                  if (
+                    shortAlias === coordinator ||
+                    (federation[shortAlias].enabled === true &&
+                      federation[shortAlias].info !== undefined)
+                  ) {
+                    row = (
+                      <MenuItem key={shortAlias} value={shortAlias}>
+                        <Typography>{federation[shortAlias].longAlias}</Typography>
+                      </MenuItem>
+                    );
+                  }
+                  return row;
+                })}
               </Select>
             </Grid>
           </Grid>

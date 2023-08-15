@@ -18,7 +18,7 @@
     },
     "badges": {
       "isFounder": true,
-      "donatesToDevFund": 25,
+      "donatesToDevFund": 20,
       "hasGoodOpSec": true,
       "robotsLove": true,
       "hasLargeLimits": true
@@ -57,7 +57,7 @@
     },
     "badges": {
       "isFounder": true,
-      "donatesToDevFund": 25,
+      "donatesToDevFund": 20,
       "hasGoodOpSec": true,
       "robotsLove": true,
       "hasLargeLimits": true
@@ -88,6 +88,9 @@
     "testnet": {
       "onion": "http://robodevs7ixniseezbv7uryxhamtz3hvcelzfwpx3rvoipttjomrmpqd.onion",
       "clearnet": "http://127.0.0.1:8000"
+    },
+    "badges": {
+      "donatesToDevFund": 20
     },
     "mainnet": {
       "onion": "",
