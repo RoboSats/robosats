@@ -317,7 +317,7 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
 
 const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const { clientVersion } = useContext<AppContextProps>(AppContext);
+  const { clientVersion, page } = useContext<AppContextProps>(AppContext);
 
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
 
@@ -356,6 +356,42 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
             </Grid>
           </ListItem>
 
+          { page === 'offers' || page === 'create' && coordinator?.info !== undefined &&
+           (
+            <>
+              <ListItem {...listItemProps}>
+              <ListItemIcon>
+                <Percent />
+              </ListItemIcon>
+
+              <Grid container>
+                <Grid item xs={6}>
+                  <ListItemText secondary={t('Maker fee')}>
+                    {(coordinator?.info?.maker_fee * 100).toFixed(3)}%
+                  </ListItemText>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <ListItemText secondary={t('Taker fee')}>
+                    {(coordinator?.info?.taker_fee * 100).toFixed(3)}%
+                  </ListItemText>
+                </Grid>
+              </Grid>
+            </ListItem>
+
+            <ListItem {...listItemProps}>
+              <ListItemIcon>
+                <LinkIcon />
+              </ListItemIcon>
+
+              <ListItemText
+                primary={`${coordinator?.info?.current_swap_fee_rate.toPrecision(3)}%`}
+                secondary={t('Current onchain payout fee')}
+              />
+            </ListItem>
+          </>
+          )
+          }
           <ListItem>
             <BadgesHall badges={coordinator?.badges} />
           </ListItem>
@@ -451,7 +487,41 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
               <AccordionDetails sx={{ padding: 0 }}>
                 <List dense>
                   <Divider />
+                  <ListItem {...listItemProps}>
+                    <ListItemIcon>
+                      <Percent />
+                    </ListItemIcon>
 
+                    <Grid container>
+                      <Grid item xs={6}>
+                        <ListItemText secondary={t('Maker fee')}>
+                          {(coordinator?.info?.maker_fee * 100).toFixed(3)}%
+                        </ListItemText>
+                      </Grid>
+
+                      <Grid item xs={6}>
+                        <ListItemText secondary={t('Taker fee')}>
+                          {(coordinator?.info?.taker_fee * 100).toFixed(3)}%
+                        </ListItemText>
+                      </Grid>
+                    </Grid>
+                  </ListItem>
+
+                  <Divider />
+
+                  <ListItem {...listItemProps}>
+                    <ListItemIcon>
+                      <LinkIcon />
+                    </ListItemIcon>
+
+                    <ListItemText
+                      primary={`${coordinator?.info?.current_swap_fee_rate.toPrecision(3)}%`}
+                      secondary={t('Current onchain payout fee')}
+                    />
+                  </ListItem>
+
+                  <Divider/>
+                  
                   <ListItem {...listItemProps}>
                     <ListItemIcon>
                       <Inventory />
@@ -512,41 +582,6 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
                     <ListItemText
                       primary={`${coordinator?.info?.last_day_nonkyc_btc_premium}%`}
                       secondary={t('24h non-KYC bitcoin premium')}
-                    />
-                  </ListItem>
-
-                  <Divider />
-
-                  <ListItem {...listItemProps}>
-                    <ListItemIcon>
-                      <Percent />
-                    </ListItemIcon>
-
-                    <Grid container>
-                      <Grid item xs={6}>
-                        <ListItemText secondary={t('Maker fee')}>
-                          {(coordinator?.info?.maker_fee * 100).toFixed(3)}%
-                        </ListItemText>
-                      </Grid>
-
-                      <Grid item xs={6}>
-                        <ListItemText secondary={t('Taker fee')}>
-                          {(coordinator?.info?.taker_fee * 100).toFixed(3)}%
-                        </ListItemText>
-                      </Grid>
-                    </Grid>
-                  </ListItem>
-
-                  <Divider />
-
-                  <ListItem {...listItemProps}>
-                    <ListItemIcon>
-                      <LinkIcon />
-                    </ListItemIcon>
-
-                    <ListItemText
-                      primary={`${coordinator?.info?.current_swap_fee_rate.toPrecision(3)}%`}
-                      secondary={t('Current onchain payout fee')}
                     />
                   </ListItem>
                 </List>

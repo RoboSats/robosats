@@ -36,8 +36,6 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setC
     setCoordinator(e.target.value);
   };
 
-  //   'Select order host';
-  //   'The host (coordinator) of your order will provide the lightning and communication infrastructure as well as will be in charge of providing support and solving disputes. Make sure to only select order hosts that you trust!';
   return (
     <Grid item>
       <Tooltip
