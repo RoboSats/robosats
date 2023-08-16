@@ -96,8 +96,9 @@ const MakerForm = ({
 
   useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
-    if (Object.keys(limits.list).length === 0) {
-      // fetchFederationLimits().then((data) => {
+    if (limits.list.length === 0) {
+      fetchFederationLimits();
+      // .then((data) => {
       //   updateAmountLimits(data, fav.currency, maker.premium);
       //   updateCurrentPrice(data, fav.currency, maker.premium);
       //   updateSatoshisLimits(data);
@@ -107,9 +108,9 @@ const MakerForm = ({
       updateCurrentPrice(limits.list, fav.currency, maker.premium);
       updateSatoshisLimits(limits.list);
 
-      fetchFederationLimits();
+      // fetchFederationLimits();
     }
-  }, []);
+  }, [limits]);
 
   const updateAmountLimits = function (
     limitList: LimitList,

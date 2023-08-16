@@ -93,15 +93,12 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot }: Props): JSX.El
         {Object.entries(federation).map(([shortAlias, coordinator]: [string, any]): JSX.Element => {
           if (coordinator.robot?.loading === false) {
             return (
-              <RobotInfo
-                key={shortAlias}
-                coordinator={coordinator}
-                robot={coordinator.robot}
-                onClose={onClose}
-              />
+              <div key={shortAlias}>
+                <RobotInfo coordinator={coordinator} robot={coordinator.robot} onClose={onClose} />
+              </div>
             );
           } else {
-            return <></>;
+            return <div key={shortAlias} />;
           }
         })}
       </DialogContent>

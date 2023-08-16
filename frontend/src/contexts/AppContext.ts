@@ -12,12 +12,12 @@ import { type OpenDialogs } from '../basic/MainDialogs';
 
 import {
   type Book,
+  defaultMaker,
   type Maker,
   Robot,
   Garage,
   Settings,
   type Favorites,
-  defaultMaker,
   Coordinator,
   type Exchange,
   type Order,
@@ -26,6 +26,7 @@ import {
   defaultExchange,
   type Federation,
   type Version,
+  type LimitList,
 } from '../models';
 
 import { apiClient } from '../services/api';
@@ -43,6 +44,7 @@ import defaultFederation from '../../static/federation.json';
 import { updateExchangeInfo } from '../models/Exchange.model';
 import { createTheme, type Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
+import { compareUpdateLimit } from '../models/Limit.model';
 
 const getWindowSize = function (fontSize: number): { width: number; height: number } {
   // returns window size in EM units
@@ -551,24 +553,37 @@ export const useAppStore = (): UseAppStoreType => {
     });
   };
 
-  // const updateLimits = (): void => {
-  //   const newLimits: LimitList | never[] = [];
-  //   Object.entries(federation).map(([shortAlias, coordinator]) => {
-  //     if (coordinator.limits !== undefined) {
-  //       for (const currency in coordinator.limits) {
-  //         newLimits[currency] = compareUpdateLimit(
-  //           newLimits[currency],
-  //           coordinator.limits[currency],
-  //         );
-  //       }
-  //     }
-  //     return null // Object.entries expects a return
-  //   });
-  //   setLimits(newLimits);
-  // };
+  const updateLimits = (): void => {
+    const newLimits: LimitList | never[] = [];
+    setLimits((limits) => {
+      return { ...limits, loadedCoordinators: 0 };
+    });
+    Object.entries(federation).map(([shortAlias, coordinator]) => {
+      if (coordinator.limits !== undefined) {
+        for (const currency in coordinator.limits) {
+          newLimits[currency] = compareUpdateLimit(
+            newLimits[currency],
+            coordinator.limits[currency],
+          );
+        }
+        setLimits((limits) => {
+          return {
+            ...limits,
+            list: newLimits,
+            loading: true,
+            loadedCoordinators: limits.loadedCoordinators + 1,
+          };
+        });
+      }
+      return null; // Object.entries expects a return
+    });
+    setLimits((limits) => {
+      return { ...limits, loading: false };
+    });
+  };
 
   const updateExchange = (): void => {
-    const onlineCoordinators = Object.keys(federation).reduce((count, shortAlias): void => {
+    const onlineCoordinators = Object.keys(federation).reduce((count, shortAlias): number => {
       if (federation[shortAlias]?.loadingInfo && federation[shortAlias]?.info !== undefined) {
         return count + 1;
       } else {
@@ -583,7 +598,7 @@ export const useAppStore = (): UseAppStoreType => {
 
   useEffect(() => {
     updateBook();
-    // updateLimits();
+    updateLimits();
     updateExchange();
   }, [federation]);
 
@@ -632,13 +647,11 @@ export const useAppStore = (): UseAppStoreType => {
 
   const fetchOrder = function (): void {
     if (currentOrder.shortAlias != null && currentOrder.id != null) {
+      const url = federation[currentOrder.shortAlias][settings.network][origin];
       void apiClient
-        .get(
-          federation[currentOrder.shortAlias][settings.network][origin],
-          `/api/order/?order_id=${currentOrder.id}`,
-          { tokenSHA256: robot.tokenSHA256 },
-        )
-        .then(orderReceived);
+        .get(url, `/api/order/?order_id=${currentOrder.id}`, { tokenSHA256: robot.tokenSHA256 })
+        .then(orderReceived)
+        .catch(orderReceived);
     }
   };
 
@@ -653,7 +666,7 @@ export const useAppStore = (): UseAppStoreType => {
     newKeys,
     slot,
     isRefresh = false,
-  }: fetchRobotProps): Promis {
+  }: fetchRobotProps): void {
     const url = coordinator[settings.network][origin];
     const token = newToken ?? robot.token ?? '';
 

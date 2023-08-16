@@ -356,42 +356,41 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
             </Grid>
           </ListItem>
 
-          { page === 'offers' || page === 'create' && coordinator?.info !== undefined &&
-           (
-            <>
-              <ListItem {...listItemProps}>
-              <ListItemIcon>
-                <Percent />
-              </ListItemIcon>
+          {page === 'offers' ||
+            (page === 'create' && coordinator?.info !== undefined && (
+              <>
+                <ListItem {...listItemProps}>
+                  <ListItemIcon>
+                    <Percent />
+                  </ListItemIcon>
 
-              <Grid container>
-                <Grid item xs={6}>
-                  <ListItemText secondary={t('Maker fee')}>
-                    {(coordinator?.info?.maker_fee * 100).toFixed(3)}%
-                  </ListItemText>
-                </Grid>
+                  <Grid container>
+                    <Grid item xs={6}>
+                      <ListItemText secondary={t('Maker fee')}>
+                        {(coordinator?.info?.maker_fee * 100).toFixed(3)}%
+                      </ListItemText>
+                    </Grid>
 
-                <Grid item xs={6}>
-                  <ListItemText secondary={t('Taker fee')}>
-                    {(coordinator?.info?.taker_fee * 100).toFixed(3)}%
-                  </ListItemText>
-                </Grid>
-              </Grid>
-            </ListItem>
+                    <Grid item xs={6}>
+                      <ListItemText secondary={t('Taker fee')}>
+                        {(coordinator?.info?.taker_fee * 100).toFixed(3)}%
+                      </ListItemText>
+                    </Grid>
+                  </Grid>
+                </ListItem>
 
-            <ListItem {...listItemProps}>
-              <ListItemIcon>
-                <LinkIcon />
-              </ListItemIcon>
+                <ListItem {...listItemProps}>
+                  <ListItemIcon>
+                    <LinkIcon />
+                  </ListItemIcon>
 
-              <ListItemText
-                primary={`${coordinator?.info?.current_swap_fee_rate.toPrecision(3)}%`}
-                secondary={t('Current onchain payout fee')}
-              />
-            </ListItem>
-          </>
-          )
-          }
+                  <ListItemText
+                    primary={`${coordinator?.info?.current_swap_fee_rate.toPrecision(3)}%`}
+                    secondary={t('Current onchain payout fee')}
+                  />
+                </ListItem>
+              </>
+            ))}
           <ListItem>
             <BadgesHall badges={coordinator?.badges} />
           </ListItem>
@@ -520,8 +519,8 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
                     />
                   </ListItem>
 
-                  <Divider/>
-                  
+                  <Divider />
+
                   <ListItem {...listItemProps}>
                     <ListItemIcon>
                       <Inventory />
