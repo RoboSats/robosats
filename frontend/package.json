@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack --watch --progress --mode development",
+    "dev": "node --max-old-space-size=4096 ./node_modules/.bin/webpack --watch --progress --mode development",
     "test": "jest",
     "build": "webpack --mode production",
     "lint": "eslint src/**/*.{js,ts,tsx}",
