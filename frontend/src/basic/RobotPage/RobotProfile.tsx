@@ -43,7 +43,7 @@ const RobotProfile = ({
   setView,
   width,
 }: RobotProfileProps): JSX.Element => {
-  const { currentSlot, garage, setCurrentSlot, windowSize } =
+  const { currentSlot, garage, setCurrentSlot, windowSize, currentOrder } =
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
@@ -148,7 +148,7 @@ const RobotProfile = ({
           <Grid item>
             <Button
               onClick={() => {
-                navigate(`/order/${String(robot.activeOrderId)}`);
+                navigate(`/order/${String(currentOrder.shortAlias)}/${String(currentOrder.id)}`);
               }}
             >
               {t('Active order #{{orderID}}', { orderID: robot.activeOrderId })}
@@ -161,7 +161,7 @@ const RobotProfile = ({
             <Grid item>
               <Button
                 onClick={() => {
-                  navigate(`/order/${String(robot.lastOrderId)}`);
+                  navigate(`/order/${String(currentOrder.shortAlias)}/${String(currentOrder.id)}`);
                 }}
               >
                 {t('Last order #{{orderID}}', { orderID: robot.lastOrderId })}

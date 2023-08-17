@@ -14,6 +14,7 @@ import {
   useTheme,
   Typography,
   IconButton,
+  ListItemButton,
 } from '@mui/material';
 
 import Countdown, { type CountdownRenderProps, zeroPad } from 'react-countdown';
@@ -34,14 +35,16 @@ import { PaymentStringAsIcons } from '../../components/PaymentMethods';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
 
-import { type Order, type Info } from '../../models';
+import type { Order, Coordinator } from '../../models';
 import { statusBadgeColor, pn, amountToString, computeSats } from '../../utils';
 import TakeButton from './TakeButton';
+import { hostUrl } from '../../contexts/AppContext';
 
 interface OrderDetailsProps {
   order: Order;
+  coordinator: Coordinator;
+  onClickCoordinator?: () => void;
   setOrder: (state: Order) => void;
-  info: Info;
   baseUrl: string;
   hasRobot: boolean;
   onClickGenerateRobot?: () => void;
@@ -49,7 +52,8 @@ interface OrderDetailsProps {
 
 const OrderDetails = ({
   order,
-  info,
+  coordinator,
+  onClickCoordinator = () => null,
   setOrder,
   baseUrl,
   hasRobot,
@@ -159,7 +163,9 @@ const OrderDetails = ({
     let sats: string = '';
 
     const isBuyer = (order.type === 0 && order.is_maker) || (order.type === 1 && !order.is_maker);
-    const tradeFee = order.is_maker ? info?.maker_fee ?? 0 : info?.taker_fee ?? 0;
+    const tradeFee = order.is_maker
+      ? coordinator.info?.maker_fee ?? 0
+      : coordinator.info?.taker_fee ?? 0;
     const defaultRoutingBudget = 0.001;
     const btc_now = order.satoshis_now / 100000000;
     const rate = order.amount > 0 ? order.amount / btc_now : Number(order.max_amount) / btc_now;
@@ -228,6 +234,29 @@ const OrderDetails = ({
     <Grid container spacing={0}>
       <Grid item xs={12}>
         <List dense={true}>
+          <ListItemButton
+            onClick={() => {
+              onClickCoordinator();
+            }}
+          >
+            {' '}
+            <Grid container direction='row' justifyContent='center' alignItems='center'>
+              <Grid item xs={2}>
+                <RobotAvatar
+                  nickname={coordinator.shortAlias}
+                  coordinator={true}
+                  baseUrl={hostUrl}
+                  small={true}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <ListItemText primary={coordinator.longAlias} secondary={t('Order host')} />
+              </Grid>
+            </Grid>
+          </ListItemButton>
+
+          <Divider />
+
           <ListItem>
             <ListItemAvatar sx={{ width: '4em', height: '4em' }}>
               <RobotAvatar
@@ -453,7 +482,7 @@ const OrderDetails = ({
               setOrder={setOrder}
               baseUrl={baseUrl}
               hasRobot={hasRobot}
-              info={info}
+              info={coordinator.info}
               onClickGenerateRobot={onClickGenerateRobot}
             />
           </Grid>

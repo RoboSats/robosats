@@ -7,12 +7,14 @@ import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
 
 import { apiClient } from '../../services/api';
-import { AppContext, hostUrl, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, hostUrl, origin, type UseAppStoreType } from '../../contexts/AppContext';
 
 const OrderPage = (): JSX.Element => {
   const {
     windowSize,
-    info,
+    setFocusedCoordinator,
+    setOpen,
+    federation,
     order,
     robot,
     settings,
@@ -32,14 +34,23 @@ const OrderPage = (): JSX.Element => {
   const maxHeight: number = (windowSize.height - navbarHeight) * 0.85 - 3;
 
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
+  const [baseUrl, setBaseUrl] = useState<string>(hostUrl);
 
   useEffect(() => {
     const newOrder = { shortAlias: params.shortAlias, id: Number(params.orderId) };
+    setBaseUrl(federation[newOrder.shortAlias][settings.network][origin]);
     if (currentOrder !== newOrder) {
       clearOrder();
       setCurrentOrder(newOrder);
     }
   }, [params.orderId]);
+
+  const onClickCoordinator = function (): void {
+    setFocusedCoordinator(currentOrder.shortAlias);
+    setOpen((open) => {
+      return { ...open, coordinator: true };
+    });
+  };
 
   const renewOrder = function (): void {
     if (order !== undefined) {
@@ -59,12 +70,12 @@ const OrderPage = (): JSX.Element => {
         bond_size: order.bond_size,
       };
       apiClient
-        .post(hostUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
+        .post(baseUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
         .then((data: any) => {
           if (data.bad_request !== undefined) {
             setBadOrder(data.bad_request);
           } else if (data.id !== undefined) {
-            navigate(`/order/${String(data.id)}`);
+            navigate(`/order/${String(currentOrder.shortAlias)}/${String(data.id)}`);
           }
         })
         .catch(() => {
@@ -108,9 +119,10 @@ const OrderPage = (): JSX.Element => {
                 >
                   <OrderDetails
                     order={order}
+                    coordinator={federation[String(currentOrder.shortAlias)]}
+                    onClickCoordinator={onClickCoordinator}
                     setOrder={setOrder}
-                    baseUrl={hostUrl}
-                    info={info}
+                    baseUrl={baseUrl}
                     hasRobot={robot.avatarLoaded}
                     onClickGenerateRobot={() => {
                       navigate('/robot');
@@ -133,7 +145,7 @@ const OrderPage = (): JSX.Element => {
                     settings={settings}
                     setOrder={setOrder}
                     setBadOrder={setBadOrder}
-                    baseUrl={hostUrl}
+                    baseUrl={baseUrl}
                     onRenewOrder={renewOrder}
                     onStartAgain={startAgain}
                   />
@@ -166,9 +178,10 @@ const OrderPage = (): JSX.Element => {
                 <div style={{ display: tab === 'order' ? '' : 'none' }}>
                   <OrderDetails
                     order={order}
+                    coordinator={federation[String(currentOrder.shortAlias)]}
+                    onClickCoordinator={onClickCoordinator}
                     setOrder={setOrder}
-                    baseUrl={hostUrl}
-                    info={info}
+                    baseUrl={baseUrl}
                     hasRobot={robot.avatarLoaded}
                     onClickGenerateRobot={() => {
                       navigate('/robot');
@@ -182,7 +195,7 @@ const OrderPage = (): JSX.Element => {
                     settings={settings}
                     setOrder={setOrder}
                     setBadOrder={setBadOrder}
-                    baseUrl={hostUrl}
+                    baseUrl={baseUrl}
                     onRenewOrder={renewOrder}
                     onStartAgain={startAgain}
                   />
@@ -201,9 +214,10 @@ const OrderPage = (): JSX.Element => {
           >
             <OrderDetails
               order={order}
+              coordinator={federation[String(currentOrder.shortAlias)]}
+              onClickCoordinator={onClickCoordinator}
               setOrder={setOrder}
               baseUrl={hostUrl}
-              info={info}
               hasRobot={robot.avatarLoaded}
               onClickGenerateRobot={() => {
                 navigate('/robot');

@@ -237,70 +237,83 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
         {...tooltipProps}
         title={
           <Typography align='center' variant='body2'>
-            {badges?.isFounder ? t('Founder: coordinating trades since the testnet federation.') : t('Not a federation founder')}
+            {badges?.isFounder === true
+              ? t('Founder: coordinating trades since the testnet federation.')
+              : t('Not a federation founder')}
           </Typography>
         }
       >
-        <Grid item sx={{filter: badges?.isFounder !== true  ? "grayscale(100%)" : undefined }}>
+        <Grid item sx={{ filter: badges?.isFounder !== true ? 'grayscale(100%)' : undefined }}>
           <BadgeFounder sx={sxProps} />
         </Grid>
       </Tooltip>
 
       <Tooltip
-          {...tooltipProps}
-          title={
-            <Typography align='center' variant='body2'>
-              {t('Development fund supporter: donates {{percent}}% to make RoboSats better.', {
-                percent: badges?.donatesToDevFund,
-              })}
-            </Typography>
-          }
+        {...tooltipProps}
+        title={
+          <Typography align='center' variant='body2'>
+            {t('Development fund supporter: donates {{percent}}% to make RoboSats better.', {
+              percent: badges?.donatesToDevFund,
+            })}
+          </Typography>
+        }
+      >
+        <Grid
+          item
+          sx={{ filter: Number(badges?.donatesToDevFund) >= 20 ? undefined : 'grayscale(100%)' }}
         >
-          <Grid item sx={{filter: Number(badges?.donatesToDevFund) >= 20 ? undefined : "grayscale(100%)"}}>
-            <BadgeDevFund sx={sxProps} />
-          </Grid>
-        </Tooltip>
-
-        <Tooltip
-          {...tooltipProps}
-          title={
-            <Typography align='center' variant='body2'>
-              {badges?.hasGoodOpSec === true ? t(
-                'Good OpSec: the coordinator follows best practices to protect his and your privacy.',
-              ): t('The privacy practices of this coordinator could improve')}
-            </Typography>
-          }
-        >
-          <Grid item sx={{filter: badges?.hasGoodOpSec === true ? undefined : "grayscale(100%)"}}>
-            <BadgePrivacy sx={sxProps} />
-          </Grid>
-        </Tooltip>
+          <BadgeDevFund sx={sxProps} />
+        </Grid>
+      </Tooltip>
 
       <Tooltip
         {...tooltipProps}
         title={
           <Typography align='center' variant='body2'>
-            {badges?.robotsLove === true ? t('Loved by robots: receives positive comments by robots over the internet.') : t('The coordinator does not seem to receive exceptional love from robots over the internet')}
+            {badges?.hasGoodOpSec === true
+              ? t(
+                  'Good OpSec: the coordinator follows best practices to protect his and your privacy.',
+                )
+              : t('The privacy practices of this coordinator could improve')}
           </Typography>
         }
       >
-        <Grid item sx={{filter: badges?.robotsLove === true ? undefined : "grayscale(100%)"}}>
+        <Grid item sx={{ filter: badges?.hasGoodOpSec === true ? undefined : 'grayscale(100%)' }}>
+          <BadgePrivacy sx={sxProps} />
+        </Grid>
+      </Tooltip>
+
+      <Tooltip
+        {...tooltipProps}
+        title={
+          <Typography align='center' variant='body2'>
+            {badges?.robotsLove === true
+              ? t('Loved by robots: receives positive comments by robots over the internet.')
+              : t(
+                  'The coordinator does not seem to receive exceptional love from robots over the internet',
+                )}
+          </Typography>
+        }
+      >
+        <Grid item sx={{ filter: badges?.robotsLove === true ? undefined : 'grayscale(100%)' }}>
           <BadgeLoved sx={sxProps} />
         </Grid>
       </Tooltip>
 
-        <Tooltip
-          {...tooltipProps}
-          title={
-            <Typography align='center' variant='body2'>
-              {badges?.hasLargeLimits === true ? t('Large limits: the coordinator has large trade limits.') : t('Does not have large trade limits.')}
-            </Typography>
-          }
-        >
-          <Grid item sx={{filter: badges?.hasLargeLimits === true ? undefined : "grayscale(100%)"}}>
-            <BadgeLimits sx={sxProps} />
-          </Grid>
-        </Tooltip>
+      <Tooltip
+        {...tooltipProps}
+        title={
+          <Typography align='center' variant='body2'>
+            {badges?.hasLargeLimits === true
+              ? t('Large limits: the coordinator has large trade limits.')
+              : t('Does not have large trade limits.')}
+          </Typography>
+        }
+      >
+        <Grid item sx={{ filter: badges?.hasLargeLimits === true ? undefined : 'grayscale(100%)' }}>
+          <BadgeLimits sx={sxProps} />
+        </Grid>
+      </Tooltip>
     </Grid>
   );
 };
@@ -346,40 +359,40 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
             </Grid>
           </ListItem>
 
-          {['offers','order','create'].includes(page) && (
-              <>
-                <ListItem {...listItemProps}>
-                  <ListItemIcon>
-                    <Percent />
-                  </ListItemIcon>
+          {['offers', 'order', 'create'].includes(page) && (
+            <>
+              <ListItem {...listItemProps}>
+                <ListItemIcon>
+                  <Percent />
+                </ListItemIcon>
 
-                  <Grid container>
-                    <Grid item xs={6}>
-                      <ListItemText secondary={t('Maker fee')}>
-                        {(coordinator?.info?.maker_fee * 100).toFixed(3)}%
-                      </ListItemText>
-                    </Grid>
-
-                    <Grid item xs={6}>
-                      <ListItemText secondary={t('Taker fee')}>
-                        {(coordinator?.info?.taker_fee * 100).toFixed(3)}%
-                      </ListItemText>
-                    </Grid>
+                <Grid container>
+                  <Grid item xs={6}>
+                    <ListItemText secondary={t('Maker fee')}>
+                      {(coordinator?.info?.maker_fee * 100).toFixed(3)}%
+                    </ListItemText>
                   </Grid>
-                </ListItem>
 
-                <ListItem {...listItemProps}>
-                  <ListItemIcon>
-                    <LinkIcon />
-                  </ListItemIcon>
+                  <Grid item xs={6}>
+                    <ListItemText secondary={t('Taker fee')}>
+                      {(coordinator?.info?.taker_fee * 100).toFixed(3)}%
+                    </ListItemText>
+                  </Grid>
+                </Grid>
+              </ListItem>
 
-                  <ListItemText
-                    primary={`${coordinator?.info?.current_swap_fee_rate.toPrecision(3)}%`}
-                    secondary={t('Current onchain payout fee')}
-                  />
-                </ListItem>
-              </>
-            )}
+              <ListItem {...listItemProps}>
+                <ListItemIcon>
+                  <LinkIcon />
+                </ListItemIcon>
+
+                <ListItemText
+                  primary={`${String(coordinator?.info?.current_swap_fee_rate.toPrecision(3))}%`}
+                  secondary={t('Current onchain payout fee')}
+                />
+              </ListItem>
+            </>
+          )}
           <ListItem>
             <BadgesHall badges={coordinator?.badges} />
           </ListItem>

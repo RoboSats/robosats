@@ -148,7 +148,7 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
           {robot.activeOrderId > 0 ? (
             <ListItemButton
               onClick={() => {
-                navigate(`/order/${String(robot.activeOrderId)}`);
+                navigate(`/order/${coordinator.shortAlias}/${String(robot.activeOrderId)}`);
                 onClose();
               }}
             >
@@ -165,7 +165,7 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
           ) : robot.lastOrderId > 0 ? (
             <ListItemButton
               onClick={() => {
-                navigate(`/order/${String(robot.lastOrderId)}`);
+                navigate(`/order/${coordinator.shortAlias}/${String(robot.lastOrderId)}`);
                 onClose();
               }}
             >

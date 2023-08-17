@@ -728,14 +728,16 @@ export const useAppStore = (): UseAppStoreType => {
           encPrivKey: data.encrypted_private_key,
           copiedToken: Boolean(data.found),
         };
-        if (currentOrder === undefined) {
-          setCurrentOrder(
-            data.active_order_id !== undefined
-              ? data.active_order_id
-              : data.last_order_id !== undefined
-              ? data.last_order_id
-              : null,
-          );
+        if (currentOrder.id == null) {
+          setCurrentOrder({
+            id:
+              data.active_order_id !== undefined
+                ? data.active_order_id
+                : data.last_order_id !== undefined
+                ? data.last_order_id
+                : null,
+            shortAlias: coordinator?.shortAlias,
+          });
         }
         setRobot(newRobot);
         garage.updateRobot(newRobot, targetSlot);
