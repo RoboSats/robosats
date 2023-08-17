@@ -14,6 +14,7 @@ RUN set -x \
 
 COPY . .
 COPY ./nginx.conf /etc/nginx/nginx.conf
+COPY ./coordinators/ /etc/nginx/conf.d/
 
 RUN apk -U --no-cache upgrade \
     && apk --no-cache add socat \
