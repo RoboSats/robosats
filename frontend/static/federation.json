@@ -90,7 +90,7 @@
       "clearnet": "http://127.0.0.1:8000"
     },
     "badges": {
-      "donatesToDevFund": 20
+      "donatesToDevFund": 0
     },
     "mainnet": {
       "onion": "",

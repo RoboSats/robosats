@@ -233,23 +233,20 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
   const tooltipProps = { enterTouchDelay: 0, enterNextDelay: 2000 };
   return (
     <Grid container direction='row' alignItems='center' justifyContent='center' spacing={1}>
-      {badges?.isFounder !== undefined && (
-        <Tooltip
-          {...tooltipProps}
-          title={
-            <Typography align='center' variant='body2'>
-              {t('Founder: coordinating trades since the testnet federation.')}
-            </Typography>
-          }
-        >
-          <Grid item>
-            <BadgeFounder sx={sxProps} />
-          </Grid>
-        </Tooltip>
-      )}
+      <Tooltip
+        {...tooltipProps}
+        title={
+          <Typography align='center' variant='body2'>
+            {badges?.isFounder ? t('Founder: coordinating trades since the testnet federation.') : t('Not a federation founder')}
+          </Typography>
+        }
+      >
+        <Grid item sx={{filter: badges?.isFounder !== true  ? "grayscale(100%)" : undefined }}>
+          <BadgeFounder sx={sxProps} />
+        </Grid>
+      </Tooltip>
 
-      {Number(badges?.donatesToDevFund) > 20 && (
-        <Tooltip
+      <Tooltip
           {...tooltipProps}
           title={
             <Typography align='center' variant='body2'>
@@ -259,58 +256,51 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
             </Typography>
           }
         >
-          <Grid item>
+          <Grid item sx={{filter: Number(badges?.donatesToDevFund) >= 20 ? undefined : "grayscale(100%)"}}>
             <BadgeDevFund sx={sxProps} />
           </Grid>
         </Tooltip>
-      )}
 
-      {badges?.hasGoodOpSec !== undefined && (
         <Tooltip
           {...tooltipProps}
           title={
             <Typography align='center' variant='body2'>
-              {t(
+              {badges?.hasGoodOpSec === true ? t(
                 'Good OpSec: the coordinator follows best practices to protect his and your privacy.',
-              )}
+              ): t('The privacy practices of this coordinator could improve')}
             </Typography>
           }
         >
-          <Grid item>
+          <Grid item sx={{filter: badges?.hasGoodOpSec === true ? undefined : "grayscale(100%)"}}>
             <BadgePrivacy sx={sxProps} />
           </Grid>
         </Tooltip>
-      )}
 
-      {badges?.robotsLove !== undefined && (
+      <Tooltip
+        {...tooltipProps}
+        title={
+          <Typography align='center' variant='body2'>
+            {badges?.robotsLove === true ? t('Loved by robots: receives positive comments by robots over the internet.') : t('The coordinator does not seem to receive exceptional love from robots over the internet')}
+          </Typography>
+        }
+      >
+        <Grid item sx={{filter: badges?.robotsLove === true ? undefined : "grayscale(100%)"}}>
+          <BadgeLoved sx={sxProps} />
+        </Grid>
+      </Tooltip>
+
         <Tooltip
           {...tooltipProps}
           title={
             <Typography align='center' variant='body2'>
-              {t('Loved by robots: receives positive comments by robots over the internet.')}
+              {badges?.hasLargeLimits === true ? t('Large limits: the coordinator has large trade limits.') : t('Does not have large trade limits.')}
             </Typography>
           }
         >
-          <Grid item>
-            <BadgeLoved sx={sxProps} />
-          </Grid>
-        </Tooltip>
-      )}
-
-      {badges?.hasLargeLimits !== undefined && (
-        <Tooltip
-          {...tooltipProps}
-          title={
-            <Typography align='center' variant='body2'>
-              {t('Large limits: the coordinator has large trade limits.')}
-            </Typography>
-          }
-        >
-          <Grid item>
+          <Grid item sx={{filter: badges?.hasLargeLimits === true ? undefined : "grayscale(100%)"}}>
             <BadgeLimits sx={sxProps} />
           </Grid>
         </Tooltip>
-      )}
     </Grid>
   );
 };
@@ -356,8 +346,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
             </Grid>
           </ListItem>
 
-          {page === 'offers' ||
-            (page === 'create' && coordinator?.info !== undefined && (
+          {['offers','order','create'].includes(page) && (
               <>
                 <ListItem {...listItemProps}>
                   <ListItemIcon>
@@ -390,7 +379,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
                   />
                 </ListItem>
               </>
-            ))}
+            )}
           <ListItem>
             <BadgesHall badges={coordinator?.badges} />
           </ListItem>
