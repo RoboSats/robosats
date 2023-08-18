@@ -12,7 +12,7 @@ export type { Book, PublicOrder } from './Book.model';
 export type { Slot } from './Garage.model';
 export type { Language } from './Settings.model';
 export type { Favorites } from './Favorites.model';
-export type { Federation, Contact, Info, Version } from './Coordinator.model';
+export type { Federation, Contact, Info, Version, Origin } from './Coordinator.model';
 
 export { defaultMaker } from './Maker.model';
 export { defaultExchange } from './Exchange.model';

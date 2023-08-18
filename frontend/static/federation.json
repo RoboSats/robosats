@@ -70,11 +70,11 @@
     },
     "mainnet": {
       "onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
-      "clearnet": "http://127.0.0.1:12596"
+      "clearnet": "http://127.0.0.1:12596/mainnet/exp"
     },
     "testnet": {
       "onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
-      "clearnet": "https://unsafe.testnet.robosats.com"
+      "clearnet": "http://127.0.0.1:12596/testnet/exp"
     },
     "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
     "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
@@ -94,7 +94,7 @@
     },
     "mainnet": {
       "onion": "",
-      "clearnet": ""
+      "clearnet": "http://127.0.0.1:8000"
     },
     "policies": {
       "Development Policy": "Don't look around, just buidl"

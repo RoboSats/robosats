@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 
 import {
   Tooltip,
@@ -31,7 +31,8 @@ import { UserNinjaIcon } from '../Icons';
 import { getWebln } from '../../utils';
 import { apiClient } from '../../services/api';
 import { signCleartextMessage } from '../../pgp';
-import { AppContext, type UseAppStoreType, origin } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType, origin, hostUrl } from '../../contexts/AppContext';
+import { getEndpoint } from '../../models/Coordinator.model';
 
 interface Props {
   robot: Robot;
@@ -46,7 +47,16 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
 
   const theme = useTheme();
 
-  const url = coordinator[settings.network][origin];
+  const { url, basePath } = useMemo(() => {
+    return getEndpoint({
+      network: settings.network,
+      coordinator,
+      origin,
+      selfHosted: settings.selfhostedClient,
+      hostUrl,
+    });
+  }, []);
+
   const [rewardInvoice, setRewardInvoice] = useState<string>('');
   const [showRewardsSpinner, setShowRewardsSpinner] = useState<boolean>(false);
   const [withdrawn, setWithdrawn] = useState<boolean>(false);
@@ -90,7 +100,7 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
         void apiClient
           .post(
             url,
-            '/api/reward/',
+            `${basePath}/api/reward/`,
             {
               invoice: signedInvoice,
             },
@@ -117,7 +127,7 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
 
   const setStealthInvoice = (wantsStealth: boolean): void => {
     void apiClient
-      .post(url, '/api/stealth/', { wantsStealth }, { tokenSHA256: robot.tokenSHA256 })
+      .post(url, `${basePath}/api/stealth/`, { wantsStealth }, { tokenSHA256: robot.tokenSHA256 })
       .then((data) => {
         const newRobot = { ...robot, stealthInvoices: data?.wantsStealth };
         dispatchFederation({

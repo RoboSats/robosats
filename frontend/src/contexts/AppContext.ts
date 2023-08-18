@@ -27,6 +27,7 @@ import {
   type Federation,
   type Version,
   type LimitList,
+  type Origin,
 } from '../models';
 
 import { apiClient } from '../services/api';
@@ -45,6 +46,7 @@ import { updateExchangeInfo } from '../models/Exchange.model';
 import { createTheme, type Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
 import { compareUpdateLimit } from '../models/Limit.model';
+import { getEndpoint } from '../models/Coordinator.model';
 
 const getWindowSize = function (fontSize: number): { width: number; height: number } {
   // returns window size in EM units
@@ -54,10 +56,10 @@ const getWindowSize = function (fontSize: number): { width: number; height: numb
   };
 };
 
-const getHostUrl = (network = 'mainnet'): { hostUrl: string; origin: string } => {
+const getHostUrl = (network = 'mainnet'): { hostUrl: string; origin: Origin } => {
   let host = '';
   let protocol = '';
-  let origin = '';
+  let origin: Origin = 'onion';
   if (window.NativeRobosats === undefined) {
     host = getHost();
     protocol = location.protocol;
@@ -273,7 +275,7 @@ export interface UseAppStoreType {
   setGarage: Dispatch<SetStateAction<Garage>>;
   currentSlot: number;
   setCurrentSlot: Dispatch<SetStateAction<number>>;
-  fetchCoordinatorInfo: (coordinator: Coordinator) => void;
+  fetchCoordinatorInfo: (coordinator: Coordinator) => Promise<void>;
   fetchFederationBook: () => void;
   limits: Limits;
   setLimits: Dispatch<SetStateAction<Limits>>;
@@ -426,10 +428,17 @@ export const useAppStore = (): UseAppStoreType => {
   };
 
   // fetch Limits
-  const fetchCoordinatorLimits = async (coordinator: Coordinator): void => {
-    const url = coordinator[settings.network][origin];
+  const fetchCoordinatorLimits = async (coordinator: Coordinator): Promise<void> => {
+    const { url, basePath } = getEndpoint({
+      network: settings.network,
+      coordinator,
+      origin,
+      selfHosted: settings.selfhostedClient,
+      hostUrl,
+    });
+
     const limits = await apiClient
-      .get(url, '/api/limits/')
+      .get(url, `${basePath}/api/limits/`)
       .then((data) => {
         return data;
       })
@@ -451,17 +460,24 @@ export const useAppStore = (): UseAppStoreType => {
           payload: { shortAlias, limits: coordinator.limits, loadingLimits: true },
         });
         // fetch new limits
-        fetchCoordinatorLimits(coordinator);
+        void fetchCoordinatorLimits(coordinator);
       }
       return null; // Object.entries() expect a return
     });
   };
 
   // fetch Books
-  const fetchCoordinatorBook = async (coordinator: Coordinator): void => {
-    const url = coordinator[settings.network][origin];
+  const fetchCoordinatorBook = async (coordinator: Coordinator): Promise<void> => {
+    const { url, basePath } = getEndpoint({
+      network: settings.network,
+      coordinator,
+      origin,
+      selfHosted: settings.selfhostedClient,
+      hostUrl,
+    });
+
     const book = await apiClient
-      .get(url, '/api/book/')
+      .get(url, `${basePath}/api/book/`)
       .then((data: PublicOrder[]) => {
         return data.not_found !== undefined ? [] : data;
       })
@@ -481,23 +497,30 @@ export const useAppStore = (): UseAppStoreType => {
           type: 'updateBook',
           payload: { shortAlias, book: coordinator.book, loadingBook: true },
         });
-        fetchCoordinatorBook(coordinator);
+        void fetchCoordinatorBook(coordinator);
       }
       return null; // Object.entries() expect a return
     });
   };
 
   // fetch Info
-  const fetchCoordinatorInfo = async (coordinator: Coordinator): void => {
+  const fetchCoordinatorInfo = async (coordinator: Coordinator): Promise<void> => {
     // Set loading true
     dispatchFederation({
       type: 'updateInfo',
       payload: { shortAlias: coordinator.shortAlias, info: coordinator.info, loadingInfo: true },
     });
     // fetch and dispatch
-    const url = coordinator[settings.network][origin];
+    const { url, basePath } = getEndpoint({
+      network: settings.network,
+      coordinator,
+      origin,
+      selfHosted: settings.selfhostedClient,
+      hostUrl,
+    });
+
     const info = await apiClient
-      .get(url, '/api/info/')
+      .get(url, `${basePath}/api/info/`)
       .then((data) => {
         return data;
       })
@@ -517,7 +540,7 @@ export const useAppStore = (): UseAppStoreType => {
           type: 'updateInfo',
           payload: { shortAlias, info: coordinator.info, loadingInfo: true },
         });
-        fetchCoordinatorInfo(coordinator);
+        void fetchCoordinatorInfo(coordinator);
       }
       return null; // Object.entries() expect a return
     });
@@ -647,9 +670,18 @@ export const useAppStore = (): UseAppStoreType => {
 
   const fetchOrder = function (): void {
     if (currentOrder.shortAlias != null && currentOrder.id != null) {
-      const url = federation[currentOrder.shortAlias][settings.network][origin];
+      const { url, basePath } = getEndpoint({
+        network: settings.network,
+        coordinator,
+        origin,
+        selfHosted: settings.selfhostedClient,
+        hostUrl,
+      });
+
       void apiClient
-        .get(url, `/api/order/?order_id=${currentOrder.id}`, { tokenSHA256: robot.tokenSHA256 })
+        .get(url, `${basePath}/api/order/?order_id=${currentOrder.id}`, {
+          tokenSHA256: robot.tokenSHA256,
+        })
         .then(orderReceived)
         .catch(orderReceived);
     }
@@ -667,7 +699,14 @@ export const useAppStore = (): UseAppStoreType => {
     slot,
     isRefresh = false,
   }: fetchRobotProps): void {
-    const url = coordinator[settings.network][origin];
+    const { url, basePath } = getEndpoint({
+      network: settings.network,
+      coordinator,
+      origin,
+      selfHosted: settings.selfhostedClient,
+      hostUrl,
+    });
+
     const token = newToken ?? robot.token ?? '';
 
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
@@ -705,7 +744,7 @@ export const useAppStore = (): UseAppStoreType => {
     }
 
     apiClient
-      .get(url, '/api/robot/', auth)
+      .get(url, `${basePath}/api/robot/`, auth)
       .then((data: any) => {
         const newRobot = {
           avatarLoaded: isRefresh ? robot.avatarLoaded : false,

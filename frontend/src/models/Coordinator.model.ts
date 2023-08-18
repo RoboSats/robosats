@@ -53,10 +53,12 @@ export interface Info {
   loading: boolean;
 }
 
+export type Origin = 'onion' | 'i2p' | 'clearnet';
+
 export interface Origins {
-  clearnet: string | undefined;
-  onion: string | undefined;
-  i2p: string | undefined;
+  clearnet: Origin | undefined;
+  onion: Origin | undefined;
+  i2p: Origin | undefined;
 }
 
 export class Coordinator {
@@ -100,6 +102,27 @@ export class Coordinator {
   public robot?: Robot | undefined = undefined;
   public loadingRobot: boolean = true;
 }
+
+export interface getEndpointProps {
+  coordinator: Coordinator;
+  network: 'mainnet' | 'testnet';
+  origin: Origin;
+  selfHosted: boolean;
+  hostUrl: string;
+}
+export const getEndpoint = ({
+  coordinator,
+  network,
+  origin,
+  selfHosted,
+  hostUrl,
+}: getEndpointProps): { url: string; basePath: string } => {
+  if (selfHosted && coordinator.shortAlias !== 'local') {
+    return { url: hostUrl, basePath: `/${network}/${coordinator.shortAlias}` };
+  } else {
+    return { url: String(coordinator[network][origin]), basePath: '' };
+  }
+};
 
 export type Federation = Record<string, Coordinator>;
 

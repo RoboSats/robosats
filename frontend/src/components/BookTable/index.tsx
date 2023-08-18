@@ -37,6 +37,7 @@ import RobotAvatar from '../RobotAvatar';
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 import { AppContext, hostUrl, origin, type UseAppStoreType } from '../../contexts/AppContext';
+import { getEndpoint } from '../../models/Coordinator.model';
 
 const ClickThroughDataGrid = styled(DataGrid)({
   '& .MuiDataGrid-overlayWrapperInner': {
@@ -211,6 +212,14 @@ const BookTable = ({
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
+        const { url, basePath } = getEndpoint({
+          network: settings.network,
+          coordinator: federation[params.row.coordinatorShortAlias],
+          origin,
+          selfHosted: settings.selfhostedClient,
+          hostUrl,
+        });
+
         return (
           <ListItemButton
             style={{ cursor: 'pointer', position: 'relative', left: '-1.3em' }}
@@ -227,7 +236,7 @@ const BookTable = ({
                 orderType={params.row.type}
                 statusColor={statusBadgeColor(params.row.maker_status)}
                 tooltip={t(params.row.maker_status)}
-                baseUrl={federation[params.row.coordinatorShortAlias][settings.network][origin]}
+                baseUrl={url + basePath}
                 small={true}
               />
             </ListItemAvatar>
@@ -244,6 +253,14 @@ const BookTable = ({
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
+        const { url, basePath } = getEndpoint({
+          network: settings.network,
+          coordinator: federation[params.row.coordinatorShortAlias],
+          origin,
+          selfHosted: settings.selfhostedClient,
+          hostUrl,
+        });
+
         return (
           <div
             style={{ position: 'relative', left: '-0.34em', cursor: 'pointer' }}
@@ -259,7 +276,7 @@ const BookTable = ({
               orderType={params.row.type}
               statusColor={statusBadgeColor(params.row.maker_status)}
               tooltip={t(params.row.maker_status)}
-              baseUrl={federation[params.row.coordinatorShortAlias][settings.network][origin]}
+              baseUrl={url + basePath}
             />
           </div>
         );

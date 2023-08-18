@@ -40,8 +40,9 @@ import { amountToString, computeSats, pn } from '../../utils';
 
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-import { AppContext, origin, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, hostUrl, origin, type UseAppStoreType } from '../../contexts/AppContext';
 import SelectCoordinator from './SelectCoordinator';
+import { getEndpoint } from '../../models/Coordinator.model';
 
 interface MakerFormProps {
   disableRequest?: boolean;
@@ -276,7 +277,14 @@ const MakerForm = ({
   };
 
   const handleCreateOrder = function (): void {
-    const url = federation[maker.coordinator][settings.network][origin];
+    const { url, basePath } = getEndpoint({
+      network: settings.network,
+      coordinator: federation[maker.coordinator],
+      origin,
+      selfHosted: settings.selfhostedClient,
+      hostUrl,
+    });
+
     if (!disableRequest) {
       setSubmittingRequest(true);
       const body = {
@@ -296,7 +304,7 @@ const MakerForm = ({
         bond_size: maker.bondSize,
       };
       apiClient
-        .post(url, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
+        .post(url, `${basePath}/api/make/`, body, { tokenSHA256: robot.tokenSHA256 })
         .then((data: any) => {
           setBadRequest(data.bad_request);
           if (data.id !== undefined) {

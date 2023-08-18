@@ -8,6 +8,7 @@ import OrderDetails from '../../components/OrderDetails';
 
 import { apiClient } from '../../services/api';
 import { AppContext, hostUrl, origin, type UseAppStoreType } from '../../contexts/AppContext';
+import { getEndpoint } from '../../models/Coordinator.model';
 
 const OrderPage = (): JSX.Element => {
   const {
@@ -38,7 +39,14 @@ const OrderPage = (): JSX.Element => {
 
   useEffect(() => {
     const newOrder = { shortAlias: params.shortAlias, id: Number(params.orderId) };
-    setBaseUrl(federation[newOrder.shortAlias][settings.network][origin]);
+    const { url, basePath } = getEndpoint({
+      network: settings.network,
+      coordinator: federation[newOrder.shortAlias],
+      origin,
+      selfHosted: settings.selfhostedClient,
+      hostUrl,
+    });
+    setBaseUrl(`${url}${basePath}`);
     if (currentOrder !== newOrder) {
       clearOrder();
       setCurrentOrder(newOrder);
