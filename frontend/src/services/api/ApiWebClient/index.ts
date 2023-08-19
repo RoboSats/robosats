@@ -5,7 +5,6 @@ class ApiWebClient implements ApiClient {
   private readonly getHeaders: (auth?: Auth) => HeadersInit = (auth) => {
     let headers = {
       'Content-Type': 'application/json',
-      // 'mode':'no-cors'
     };
 
     if (auth != null) {

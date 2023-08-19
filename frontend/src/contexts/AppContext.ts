@@ -672,7 +672,7 @@ export const useAppStore = (): UseAppStoreType => {
     if (currentOrder.shortAlias != null && currentOrder.id != null) {
       const { url, basePath } = getEndpoint({
         network: settings.network,
-        coordinator,
+        coordinator: federation[currentOrder.shortAlias],
         origin,
         selfHosted: settings.selfhostedClient,
         hostUrl,
