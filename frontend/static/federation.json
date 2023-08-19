@@ -2,8 +2,8 @@
   "exp": {
     "longAlias": "Experimental",
     "shortAlias": "exp",
-    "description": "RoboSats node for development and experimentation.",
-    "motto": "P2P FTW!",
+    "description": "RoboSats node for development and experimentation. This is the original RoboSats coordinator operated by the RoboSats devs since 2022.",
+    "motto": "Original Robohost. P2P FTW!",
     "color": "#1976d2",
     "contact": {
       "email": "robosats@protonmail.com",
@@ -25,7 +25,6 @@
     },
     "policies": {
       "Policy Name 1": "Experimental coordinator used for development. Use at your own risk.",
-      "Policy Name 2": "Experimental coordinator used for development. Use at your own risk.",
       "Privacy Policy": "...",
       "Data Policy": "..."
     },
@@ -45,7 +44,7 @@
   "temp": {
     "longAlias": "Template",
     "shortAlias": "temp",
-    "description": "This is the description for an example coordinator",
+    "description": "This coordinator is a mirror of 'Experimental', serves the purpose of testing a client with multiple coordinators",
     "motto": "Don't trust, verify",
     "color": "#000000",
     "contact": {
@@ -82,7 +81,7 @@
   "local": {
     "longAlias": "Local Dev",
     "shortAlias": "local",
-    "description": "Local development backend",
+    "description": "Local development backend. This coordinator will only be available if you run a RoboSats backend on your own machine '127.0.0.1:8000'",
     "motto": "Buidl",
     "color": "#000000",
     "testnet": {
@@ -93,7 +92,7 @@
       "donatesToDevFund": 0
     },
     "mainnet": {
-      "onion": "",
+      "onion": "none.onion",
       "clearnet": "http://127.0.0.1:8000"
     },
     "policies": {
