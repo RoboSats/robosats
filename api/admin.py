@@ -129,6 +129,8 @@ class OrderAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
     readonly_fields = ("reference", "_logs")
 
     def _logs(self, obj):
+        if not obj.logs:
+            return format_html("<b>No logs were recorded</b>")
         with_hyperlinks = objects_to_hyperlinks(obj.logs)
         return format_html(f'<table style="width: 100%">{with_hyperlinks}</table>')
 
