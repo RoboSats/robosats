@@ -57,9 +57,12 @@ ALLOWED_HOSTS = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 # Allows Session Cookie to be read by Javascript on Client side.
 SESSION_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SAMESITE = None
+CSRF_COOKIE_SAMESITE = None
 
 # Logging settings
 if os.environ.get("LOG_TO_CONSOLE"):

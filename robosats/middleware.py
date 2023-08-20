@@ -39,7 +39,7 @@ class SplitAuthorizationHeaderMiddleware(MiddlewareMixin):
     two new META headers for both PGP keys.
     Given that API calls to a RoboSats API might be made from other host origin,
     there is a high chance browsers will not attach cookies and other sensitive information.
-    Therefore, we are using the `HTTP_AUTHORIZATION` header to also embded the needed robot
+    Therefore, we are using the `HTTP_AUTHORIZATION` header to also embed the needed robot
     pubKey and encPrivKey to create a new robot in the coordinator on the first request.
     """
 
@@ -99,7 +99,6 @@ class RobotTokenSHA256AuthenticationMiddleWare:
 
             # The first ever request to a coordinator must public key (and encrypted priv key as of now). Either on the
             # Authorization header or in the Cookies.
-
             public_key = ""
             encrypted_private_key = ""
 

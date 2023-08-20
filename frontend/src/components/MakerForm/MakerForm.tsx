@@ -285,6 +285,14 @@ const MakerForm = ({
       hostUrl,
     });
 
+    const auth = {
+      tokenSHA256: robot.tokenSHA256,
+      keys: {
+        pubKey: robot.pubKey.split('\n').join('\\'),
+        encPrivKey: robot.encPrivKey.split('\n').join('\\'),
+      },
+    };
+
     if (!disableRequest) {
       setSubmittingRequest(true);
       const body = {
@@ -304,7 +312,7 @@ const MakerForm = ({
         bond_size: maker.bondSize,
       };
       apiClient
-        .post(url, `${basePath}/api/make/`, body, { tokenSHA256: robot.tokenSHA256 })
+        .post(url, `${basePath}/api/make/`, body, auth )
         .then((data: any) => {
           setBadRequest(data.bad_request);
           if (data.id !== undefined) {

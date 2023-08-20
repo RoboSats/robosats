@@ -677,11 +677,16 @@ export const useAppStore = (): UseAppStoreType => {
         selfHosted: settings.selfhostedClient,
         hostUrl,
       });
+      const auth = {
+        tokenSHA256: robot.tokenSHA256,
+        keys: {
+          pubKey: robot.pubKey.split('\n').join('\\'),
+          encPrivKey: robot.encPrivKey.split('\n').join('\\'),
+        },
+      };
 
       void apiClient
-        .get(url, `${basePath}/api/order/?order_id=${currentOrder.id}`, {
-          tokenSHA256: robot.tokenSHA256,
-        })
+        .get(url, `${basePath}/api/order/?order_id=${currentOrder.id}`, auth)
         .then(orderReceived)
         .catch(orderReceived);
     }
