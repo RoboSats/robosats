@@ -92,7 +92,7 @@
       "donatesToDevFund": 0
     },
     "mainnet": {
-      "onion": "none.onion",
+      "onion": "http://none.onion",
       "clearnet": "http://127.0.0.1:8000"
     },
     "policies": {

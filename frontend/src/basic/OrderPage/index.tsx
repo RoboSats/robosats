@@ -51,7 +51,7 @@ const OrderPage = (): JSX.Element => {
       clearOrder();
       setCurrentOrder(newOrder);
     }
-  }, [params.orderId]);
+  }, [params]);
 
   const onClickCoordinator = function (): void {
     setFocusedCoordinator(currentOrder.shortAlias);

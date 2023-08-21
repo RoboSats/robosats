@@ -607,10 +607,7 @@ export const useAppStore = (): UseAppStoreType => {
 
   const updateExchange = (): void => {
     const onlineCoordinators = Object.keys(federation).reduce((count, shortAlias): number => {
-      if (
-        !(federation[shortAlias]?.loadingInfo) &&
-        federation[shortAlias]?.info !== undefined
-      ) {
+      if (!federation[shortAlias]?.loadingInfo && federation[shortAlias]?.info !== undefined) {
         return count + 1;
       } else {
         return count;
