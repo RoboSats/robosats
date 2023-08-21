@@ -7,19 +7,20 @@ class ApiWebClient implements ApiClient {
       'Content-Type': 'application/json',
     };
 
-    if (auth != null) {
+    if (auth != null && auth.keys === undefined) {
       headers = {
         ...headers,
         ...{
           Authorization: `Token ${auth.tokenSHA256}`,
         },
       };
-    }
-
-    // set cookies before sending the request
-    if (auth?.keys != null) {
-      systemClient.setCookie('public_key', auth.keys.pubKey);
-      systemClient.setCookie('encrypted_private_key', auth.keys.encPrivKey);
+    } else if (auth?.keys != null) {
+      headers = {
+        ...headers,
+        ...{
+          Authorization: `Token ${auth.tokenSHA256} | Public ${auth.keys.pubKey} | Private ${auth.keys.encPrivKey}`,
+        },
+      };
     }
 
     return headers;

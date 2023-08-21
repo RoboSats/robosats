@@ -116,7 +116,6 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                 raise AuthenticationFailed(
                     "On the first request to a RoboSats coordinator, you must provide as well a valid public and encrypted private PGP keys"
                 )
-
             (
                 valid,
                 bad_keys_context,
@@ -195,3 +194,22 @@ class TokenAuthMiddleware(BaseMiddleware):
             scope["user"] if token_key is None else await get_user(token_key)
         )
         return await super().__call__(scope, receive, send)
+
+
+# This is a practical replacement to SplitAuthorizationHeaderMiddleware
+# class HeadersRefactorMiddleware:
+#     def __init__(self, get_response):
+#         self.get_response = get_response
+
+#     def __call__(self, request):
+#         auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+#         auth_parts = auth_header.split(" | ")
+#         if len(auth_parts) == 3:
+#             request.META["HTTP_AUTHORIZATION"] = auth_parts[0]
+#             request.META["Public_key"] = auth_parts[1]
+#             request.META["Encrypted_private_key"] = auth_parts[2]
+
+#             print("HEADERS HAVE BEEN REFACTORED!")
+
+#         response = self.get_response(request)
+#         return response

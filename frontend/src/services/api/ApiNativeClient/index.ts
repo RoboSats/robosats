@@ -10,20 +10,18 @@ class ApiNativeClient implements ApiClient {
       'Content-Type': 'application/json',
     };
 
-    if (auth != null) {
+    if (auth != null && auth.keys === undefined) {
       headers = {
         ...headers,
         ...{
           Authorization: `Token ${auth.tokenSHA256}`,
         },
       };
-    }
-
-    if (auth?.keys != null) {
+    } else if (auth?.keys != null) {
       headers = {
         ...headers,
         ...{
-          Cookie: `public_key=${auth.keys.pubKey};encrypted_private_key=${auth.keys.encPrivKey}`,
+          Authorization: `Token ${auth.tokenSHA256} | Public ${auth.keys.pubKey} | Private ${auth.keys.encPrivKey}`,
         },
       };
     }
