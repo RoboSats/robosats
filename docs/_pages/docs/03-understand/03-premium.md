@@ -22,7 +22,7 @@ Choose a competitive premium and incentivize fellow robots to provide liquidity 
 
 Create an order, then input the "Premium over Market (%)" which can be a positive, negative, or zero percentage value. By default, the order premium is priced relative to the bitcoin-fiat market rate.
 
-Or, instead of the default setting, makers can select the explicit pricing method** by choosing an exact amount of Sats to exchange for the fiat amount given.
+Or, instead of the default setting, makers can select the explicit pricing method (*see footnote*) by choosing an exact amount of Sats to exchange for the fiat amount given.
 
 When selecting a premium, consider the payment method(s) and amount you have chosen; these, along with your desired premium, will compete with other live orders to incentivize and entice robot takers. Experiment with different premiums to find what works best for your specific orders.
 
@@ -48,7 +48,7 @@ For example, you (buyer) find that the highest premium across existing orders as
 
 But your competing order makers might notice their existing order no longer has the highest premium on the order book and thus cancel their order to create a new one for some premium higher than yours... Watch out for a premium war!
 
-***The explicit pricing method has been removed as an option for technical reasons, but could potentially come back in future updates. Currently, order pricing is only relative to the market rate.*
+*Footnote: the explicit pricing method has been removed as an option for technical reasons, but could potentially come back in future updates. Currently, order pricing is only relative to the market rate.*
 
 ## **Why Have Premiums?**
 
