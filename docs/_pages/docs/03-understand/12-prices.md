@@ -14,11 +14,13 @@ The price is the fiat rate at which bitcoin was last traded on an exchange. In o
 
 When making an order, there are two different pricing methods available:
 * **Relative** pricing method: let the order price move with the market over time (dynamic).
-* **Explicit** pricing method: set the order price using a fixed amount of satoshis (static).
+* **Explicit**** pricing method: set the order price using a fixed amount of satoshis (static).
 
-When browsing the order book, the bitcoin-fiat price of live orders you see are automatically adjusted to include the order’s corresponding premium. Refer to [Understand > Premium](https://learn.robosats.com/docs/premium/) for additional information on premiums.
+When browsing the order book, the bitcoin-fiat price of live orders you see are automatically adjusted to include the order’s corresponding premium. Refer to [Understand > Premium](/docs/premium/) for additional information on premiums.
 
 If a fiat currency isn't available on RoboSats, then one can easily add a new currency by opening a pull request on [GitHub](https://github.com/RoboSats/robosats)!
+
+***The explicit pricing method has been removed as an option for technical reasons, but could potentially come back in future updates. Currently, order pricing is only relative to the market rate.*
 
 ## **Prices in Practice**
 

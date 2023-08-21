@@ -24,7 +24,7 @@ Prioritizing absolute privacy for the end-user provides the highest degree of pr
 
 Platforms collecting personal information present a real risk to the end-user. Data breaches in just the past decade have altogether leaked billions of users' sensitive information through a combination of hackings and poor platform security.
 
-Privacy is extremely important for RoboSats; however, your transactions on RoboSats are only as private as you make them. Users should take care to use privacy-preserving methods when interacting with RoboSats and your robot peers. Refer to [Quick Start > Access](https://learn.robosats.com/docs/access/) for additional information.
+Privacy is extremely important for RoboSats; however, your transactions on RoboSats are only as private as you make them. Users should take care to use privacy-preserving methods when interacting with RoboSats and your robot peers. Refer to [Quick Start > Access](/docs/access/) for additional information.
 
 ## **Robot Re-Use: Not Recommended**
 
@@ -42,7 +42,7 @@ As stated, robot re-use is ill-advised and can ultimately become a detriment to 
 
 RoboSats references the source code for RoboHash.org as a quick way to generate fresh avatars for a website. Your robot is "built" from a unique token, a random string of characters (ZD3I7XH...), where only those characters in their exact order can generate that exact robot avatar.
 
-A token is automatically generated for you each time the RoboSats webpage is accessed. Users may re-generate as many randomized tokens as they'd like, which is strongly encouraged after each trade. As a note, you can enter a token of sufficient entropy created by yourself instead of relying on RoboSats. Because only you know the token, it is wise to safely back up your token.
+A token is automatically generated for you each time the RoboSats webpage is accessed. Users may re-generate as many randomized tokens as they'd like, which is strongly encouraged after each trade. As a note, you can enter a token of sufficient entropy created by yourself instead of relying on RoboSats; but because only you know the token, it is wise to safely back up your token.
 
 Under the hood, token creation in the RoboSats homepage is the process of generating and encrypting your PGP private key with your token on the client side of the app. The end-user requests from the RoboSats node an avatar and nickname generated from your encrypted token and returns to you the corresponding robot identity. See the graphic below:
 
@@ -52,6 +52,6 @@ Under the hood, token creation in the RoboSats homepage is the process of genera
 
 Your identity may be concealed by a robot identity, yet that is no excuse for being a difficult peer during trades. Other robots have robo-feelings too! Be succinct and respectful when chatting with peers; this will make for an easier and smoother experience on RoboSats. Never share more information than is absolutely necessary to complete the order.
 
-All communications in RoboSats are PGP encrypted. The encrypted peer-to-peer chat messages are signed by each robot peer which proves no one intercepted the chat and is useful for resolving disputes. Refer to [Best Practices > PGP Encryption](https://learn.robosats.com/docs/pgp-encryption/) for additional information.
+All communications in RoboSats are PGP encrypted. The encrypted peer-to-peer chat messages are signed by each robot peer which proves no one intercepted the chat and is useful for resolving disputes. Refer to [Best Practices > PGP Encryption](/docs/pgp-encryption/) for additional information.
 
 {% include improve %}

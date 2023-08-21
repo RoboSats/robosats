@@ -6,7 +6,6 @@ from channels.middleware import BaseMiddleware
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User, update_last_login
 from django.utils.deprecation import MiddlewareMixin
-
 from django.db import IntegrityError
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed
@@ -129,15 +128,7 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             # Generate nickname deterministically
             nickname = NickGen.short_from_SHA256(hash, max_length=18)[0]
 
-            # DEPRECATE. Using Try and Except only as a temporary measure.
-            # This will allow existing robots to be added upgraded with a token.key
-            # After v0.5.0, only the following should remain
-            # `user = User.objects.create_user(username=nickname, password=None)`
-            try:
-                user = User.objects.create_user(username=nickname, password=None)
-            except IntegrityError:
-                # UNIQUE constrain failed, user exist. Get it.
-                user = User.objects.get(username=nickname)
+            user = User.objects.create_user(username=nickname, password=None)
 
             # Django rest_framework authtokens are limited to 40 characters.
             # We use base91 so we can store the full entropy in the field.

@@ -58,8 +58,7 @@ class Command(BaseCommand):
 
                     if "unable to locate invoice" in str(e):
                         self.stdout.write(str(e))
-                        order.status = Order.Status.EXP
-                        order.save(update_fields=["status"])
+                        order.update_status(Order.Status.EXP)
                         debug["expired_orders"].append({idx: context})
 
             if debug["num_expired_orders"] > 0:

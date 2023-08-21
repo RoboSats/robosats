@@ -22,7 +22,7 @@ Choose a competitive premium and incentivize fellow robots to provide liquidity 
 
 Create an order, then input the "Premium over Market (%)" which can be a positive, negative, or zero percentage value. By default, the order premium is priced relative to the bitcoin-fiat market rate.
 
-Or, instead of the default setting, makers can select the explicit pricing method by choosing an exact amount of satoshis to exchange for the fiat amount given.
+Or, instead of the default setting, makers can select the explicit pricing method (*see footnote*) by choosing an exact amount of Sats to exchange for the fiat amount given.
 
 When selecting a premium, consider the payment method(s) and amount you have chosen; these, along with your desired premium, will compete with other live orders to incentivize and entice robot takers. Experiment with different premiums to find what works best for your specific orders.
 
@@ -33,14 +33,22 @@ In short:
 * **Negative** premium: trade BTC at a discount with respect to the average price in centralized exchanges.
 * **Zero** premium: trade BTC at no price difference with respect to the average price in centralized exchanges.
 * **Relative** pricing method: let the price premium move with the bitcoin-fiat market rate.
-* **Explicit** pricing method: set a price premium using a fixed amount of satoshis.
+* **Explicit** pricing method: set a price premium using a fixed amount of Sats.
 * **Premium Rank**: indicates how your order premium ranks among all public orders with the same currency, ranging from 0% (smallest premium) to 100% (largest premium).
 
-When making the order, you will see a text summary describing your order below the "Create Order" button. For example, buying bitcoin for $100 at a +5.00% premium relative to the market rate would read: "Create a BTC buy order for 100 USD at a 5% premium."
+When making the order, you will see a text summary describing your order below the "Create Order" button. For example, buying bitcoin for $100 at a +5.00% premium relative to the market rate would read: "Buy BTC for 100 USD at a 5% premium"
 
 If a mistake is made when selecting a premium, or the order is not taken within your time preference, then the order can be easily cancelled to make a new one.
 
 Note that the percent value is limited to within two decimal places. Furthermore, format the decimal values using "." (point) and not "," (comma) as the decimal separator.
+
+So... what *should* you choose for a premium? Generally speaking, most robots want their order taken fast. A simple approach when deciding a competitive premium is to first take a peek at the existing order book. Review the existing offers and notice the premiums that are associated with your desired currency and payment method. Make your order more desirable than others by choosing a premium that is slightly higher (buyer) or lower (seller) than any existing order premium associated with your desired currency and payment method.
+
+For example, you (buyer) find that the highest premium across existing orders associated with your desired currency and payment method is at 5% premium. Create an order with the exact same conditions but a slightly higher premium than your competitor. Now, sellers browsing the order book will compare orders and notice that your order gives them more fiat for their precious Sats and will be more tempted to take your order!
+
+But your competing order makers might notice their existing order no longer has the highest premium on the order book and thus cancel their order to create a new one for some premium higher than yours... Watch out for a premium war!
+
+*Footnote: the explicit pricing method has been removed as an option for technical reasons, but could potentially come back in future updates. Currently, order pricing is only relative to the market rate.*
 
 ## **Why Have Premiums?**
 

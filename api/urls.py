@@ -15,7 +15,6 @@ from .views import (
     RobotView,
     StealthView,
     TickView,
-    UserView,
 )
 
 urlpatterns = [
@@ -26,7 +25,6 @@ urlpatterns = [
         "order/",
         OrderView.as_view({"get": "get", "post": "take_update_confirm_dispute_cancel"}),
     ),
-    path("user/", UserView.as_view()),
     path("robot/", RobotView.as_view()),
     path("book/", BookView.as_view()),
     path("info/", InfoView.as_view()),

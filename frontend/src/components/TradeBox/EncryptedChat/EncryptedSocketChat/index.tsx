@@ -16,6 +16,11 @@ import { type EncryptedChatMessage, type ServerMessage } from '..';
 import ChatBottom from '../ChatBottom';
 import { sha256 } from 'js-sha256';
 
+const audioPath =
+  window.NativeRobosats === undefined
+    ? '/static/assets/sounds'
+    : 'file:///android_asset/Web.bundle/assets/sounds';
+
 interface Props {
   orderId: number;
   status: number;
@@ -44,7 +49,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const [audio] = useState(() => new Audio(`/static/assets/sounds/chat-open.mp3`));
+  const [audio] = useState(() => new Audio(`${audioPath}/chat-open.mp3`));
   const [connected, setConnected] = useState<boolean>(false);
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
   const [peerPubKey, setPeerPubKey] = useState<string>();
@@ -268,7 +273,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
       />
       <Grid item>
         <ChatHeader
-          connected={connected}
+          connected={connected && (peerPubKey ? true : false)}
           peerConnected={peerConnected}
           turtleMode={turtleMode}
           setTurtleMode={setTurtleMode}
