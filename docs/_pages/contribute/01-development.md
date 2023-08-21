@@ -24,6 +24,8 @@ This contributing guide is based on the [Bisq contributing guide](https://github
 
 - **Matrix:** [RoboSats Development Group](https://matrix.to/#/#robosats:matrix.org). Main developer communication group chat where open and technical discussions about development takes place. Discussion about code changes happens in GitHub issues and pull requests (PRs).
 
+- **Twitter:** [RoboSats](https://twitter.com/RoboSats). Announces project updates, shares tips and tricks of using RoboSats, and discusses other privacy-related topics. Feel free to ask questions and to share your experience using RoboSats! The psuedonymous "Robotoshi" character, a privacy-loving and sometimes sassy robot, runs the RoboSats Twitter and tries his best to answer questions! Keep in mind that the aforementioned public Simplex group chat may be more effective in seeking technical help and users seeking dispute help will be directed to the SimpleX chat.
+
 ## Contributor Workflow
 
 All RoboSats contributors submit changes via pull requests. The workflow is as follows:
