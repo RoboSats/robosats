@@ -12,6 +12,6 @@ RoboSats is an easy way to privately exchange bitcoin for national currencies. I
 {: .notice--primary}
 
 1. Get a Lightning [Wallet](/docs/wallets/)
-2. Get [TOR browser](https://www.torproject.org/download/), or a supported [alternative](/docs/acces/)
-3. Access [RoboSats](/docs/acces/)
+2. Get [TOR browser](https://www.torproject.org/download/), or a supported [alternative](/docs/access/)
+3. Access [RoboSats](/docs/access/)
 4. Check the [tutorials](/watch/en/) as needed!
