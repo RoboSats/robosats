@@ -7,12 +7,7 @@ This contributing guide is based on the [Bisq contributing guide](https://github
 
 ## Communication Channels
 
-Most communication about RoboSats happens on the main Telegram group. However public community driven support is available in other languages.
-* EN [t.me/robosats](https://t.me/robosats) (main)
-* ES [t.me/robosats_es](https://t.me/robosats_es)
-* RU [t.me/robosats_ru](https://t.me/robosats_ru)
-* PT [t.me/robosats_pt](https://t.me/robosats_pt)
-* CN [t.me/robosats_cn](https://t.me/robosats_cn)
+Most communication about development takes place on our [Matrix Development group](https://matrix.to/#/#robosats:matrix.org).
 
 Discussion about code changes happens in GitHub issues and pull requests.
 
