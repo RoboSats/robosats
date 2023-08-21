@@ -12,12 +12,13 @@ import {
   Box,
   useTheme,
   Tooltip,
+  type SelectChangeEvent,
 } from '@mui/material';
 import { Bolt, Add, DeleteSweep, Logout, Download } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { type Slot, type Robot } from '../../models';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, hostUrl, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 
@@ -29,8 +30,8 @@ interface RobotProfileProps {
   inputToken: string;
   logoutRobot: () => void;
   setInputToken: (state: string) => void;
-  baseUrl: string;
   width: number;
+  baseUrl: string;
 }
 
 const RobotProfile = ({
@@ -41,10 +42,10 @@ const RobotProfile = ({
   setInputToken,
   logoutRobot,
   setView,
-  baseUrl,
   width,
+  baseUrl,
 }: RobotProfileProps): JSX.Element => {
-  const { currentSlot, garage, setCurrentSlot, windowSize } =
+  const { currentSlot, garage, setCurrentSlot, windowSize, currentOrder } =
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
@@ -53,19 +54,19 @@ const RobotProfile = ({
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (robot.nickname && robot.avatarLoaded) {
+    if (Boolean(robot.nickname) && robot.avatarLoaded) {
       setLoading(false);
     }
   }, [robot]);
 
-  const handleAddRobot = () => {
+  const handleAddRobot = (): void => {
     getGenerateRobot(genBase62Token(36), garage.slots.length);
     setLoading(true);
   };
 
-  const handleChangeSlot = (e) => {
-    const slot = e.target.value;
-    getGenerateRobot(garage.slots[slot].robot.token, slot);
+  const handleChangeSlot = (e: SelectChangeEvent<number | 'loading'>): void => {
+    const slot = Number(e.target.value);
+    getGenerateRobot(garage.slots[slot].robot.token ?? '', slot);
     setLoading(true);
   };
 
@@ -80,7 +81,7 @@ const RobotProfile = ({
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {robot.avatarLoaded && robot.nickname ? (
+          {robot.avatarLoaded && robot.nickname !== undefined ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
                 style={{
@@ -134,9 +135,9 @@ const RobotProfile = ({
             }}
             tooltip={t('This is your trading avatar')}
             tooltipPosition='top'
-            baseUrl={baseUrl}
+            baseUrl={hostUrl}
           />
-          {robot.found && !robot.lastOrderId ? (
+          {robot.found && Number(robot.lastOrderId) > 0 ? (
             <Typography align='center' variant='h6'>
               {t('Welcome back!')}
             </Typography>
@@ -145,11 +146,11 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {robot.activeOrderId && robot.avatarLoaded && robot.nickname ? (
+        {Boolean(robot.activeOrderId) && robot.avatarLoaded && Boolean(robot.nickname) ? (
           <Grid item>
             <Button
               onClick={() => {
-                navigate(`/order/${robot.activeOrderId}`);
+                navigate(`/order/${String(currentOrder.shortAlias)}/${String(currentOrder.id)}`);
               }}
             >
               {t('Active order #{{orderID}}', { orderID: robot.activeOrderId })}
@@ -157,12 +158,12 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        {robot.lastOrderId && robot.avatarLoaded && robot.nickname ? (
+        {Boolean(robot.lastOrderId) && robot.avatarLoaded && Boolean(robot.nickname) ? (
           <Grid item container direction='column' alignItems='center'>
             <Grid item>
               <Button
                 onClick={() => {
-                  navigate(`/order/${robot.lastOrderId}`);
+                  navigate(`/order/${String(currentOrder.shortAlias)}/${String(currentOrder.id)}`);
                 }}
               >
                 {t('Last order #{{orderID}}', { orderID: robot.lastOrderId })}
@@ -271,7 +272,7 @@ const RobotProfile = ({
                               smooth={true}
                               style={{ width: '2.6em', height: '2.6em' }}
                               placeholderType='loading'
-                              baseUrl={baseUrl}
+                              baseUrl={hostUrl}
                               small={true}
                             />
                           </Grid>

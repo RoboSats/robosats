@@ -7,12 +7,15 @@ import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
 
 import { apiClient } from '../../services/api';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, hostUrl, origin, type UseAppStoreType } from '../../contexts/AppContext';
+import { getEndpoint } from '../../models/Coordinator.model';
 
 const OrderPage = (): JSX.Element => {
   const {
     windowSize,
-    info,
+    setFocusedCoordinator,
+    setOpen,
+    federation,
     order,
     robot,
     settings,
@@ -22,7 +25,6 @@ const OrderPage = (): JSX.Element => {
     setCurrentOrder,
     badOrder,
     setBadOrder,
-    baseUrl,
     navbarHeight,
   } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
@@ -33,16 +35,33 @@ const OrderPage = (): JSX.Element => {
   const maxHeight: number = (windowSize.height - navbarHeight) * 0.85 - 3;
 
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
+  const [baseUrl, setBaseUrl] = useState<string>(hostUrl);
 
   useEffect(() => {
-    if (currentOrder != params.orderId) {
+    const newOrder = { shortAlias: params.shortAlias, id: Number(params.orderId) };
+    const { url, basePath } = getEndpoint({
+      network: settings.network,
+      coordinator: federation[newOrder.shortAlias],
+      origin,
+      selfHosted: settings.selfhostedClient,
+      hostUrl,
+    });
+    setBaseUrl(`${url}${basePath}`);
+    if (currentOrder !== newOrder) {
       clearOrder();
-      setCurrentOrder(Number(params.orderId));
+      setCurrentOrder(newOrder);
     }
-  }, [params.orderId]);
+  }, [params]);
 
-  const renewOrder = function () {
-    if (order != undefined) {
+  const onClickCoordinator = function (): void {
+    setFocusedCoordinator(currentOrder.shortAlias);
+    setOpen((open) => {
+      return { ...open, coordinator: true };
+    });
+  };
+
+  const renewOrder = function (): void {
+    if (order !== undefined) {
       const body = {
         type: order.type,
         currency: order.currency,
@@ -63,28 +82,31 @@ const OrderPage = (): JSX.Element => {
       apiClient
         .post(baseUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
         .then((data: any) => {
-          if (data.bad_request) {
+          if (data.bad_request !== undefined) {
             setBadOrder(data.bad_request);
-          } else if (data.id) {
-            navigate('/order/' + data.id);
+          } else if (data.id !== undefined) {
+            navigate(`/order/${String(currentOrder.shortAlias)}/${String(data.id)}`);
           }
+        })
+        .catch(() => {
+          setBadOrder('Request error');
         });
     }
   };
 
-  const startAgain = () => {
+  const startAgain = (): void => {
     navigate('/robot');
   };
 
   return (
     <Box>
-      {order == undefined && badOrder == undefined ? <CircularProgress /> : null}
-      {badOrder != undefined ? (
+      {order === undefined && badOrder === undefined && <CircularProgress />}
+      {badOrder !== undefined ? (
         <Typography align='center' variant='subtitle2' color='secondary'>
           {t(badOrder)}
         </Typography>
       ) : null}
-      {order != undefined && badOrder == undefined ? (
+      {order !== undefined && badOrder === undefined ? (
         order.is_participant ? (
           windowSize.width > doublePageWidth ? (
             // DOUBLE PAPER VIEW
@@ -107,11 +129,14 @@ const OrderPage = (): JSX.Element => {
                 >
                   <OrderDetails
                     order={order}
+                    coordinator={federation[String(currentOrder.shortAlias)]}
+                    onClickCoordinator={onClickCoordinator}
                     setOrder={setOrder}
                     baseUrl={baseUrl}
-                    info={info}
                     hasRobot={robot.avatarLoaded}
-                    onClickGenerateRobot={() => navigate('/robot')}
+                    onClickGenerateRobot={() => {
+                      navigate('/robot');
+                    }}
                   />
                 </Paper>
               </Grid>
@@ -160,17 +185,20 @@ const OrderPage = (): JSX.Element => {
                   overflow: 'auto',
                 }}
               >
-                <div style={{ display: tab == 'order' ? '' : 'none' }}>
+                <div style={{ display: tab === 'order' ? '' : 'none' }}>
                   <OrderDetails
                     order={order}
+                    coordinator={federation[String(currentOrder.shortAlias)]}
+                    onClickCoordinator={onClickCoordinator}
                     setOrder={setOrder}
                     baseUrl={baseUrl}
-                    info={info}
                     hasRobot={robot.avatarLoaded}
-                    onClickGenerateRobot={() => navigate('/robot')}
+                    onClickGenerateRobot={() => {
+                      navigate('/robot');
+                    }}
                   />
                 </div>
-                <div style={{ display: tab == 'contract' ? '' : 'none' }}>
+                <div style={{ display: tab === 'contract' ? '' : 'none' }}>
                   <TradeBox
                     order={order}
                     robot={robot}
@@ -196,11 +224,14 @@ const OrderPage = (): JSX.Element => {
           >
             <OrderDetails
               order={order}
+              coordinator={federation[String(currentOrder.shortAlias)]}
+              onClickCoordinator={onClickCoordinator}
               setOrder={setOrder}
-              baseUrl={baseUrl}
-              info={info}
+              baseUrl={hostUrl}
               hasRobot={robot.avatarLoaded}
-              onClickGenerateRobot={() => navigate('/robot')}
+              onClickGenerateRobot={() => {
+                navigate('/robot');
+              }}
             />
           </Paper>
         )

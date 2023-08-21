@@ -1,7 +1,7 @@
 import React from 'react';
-import { SvgIcon } from '@mui/material';
+import { SvgIcon, type SvgIconProps } from '@mui/material';
 
-export default function EarthIcon(props) {
+const Earth: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props} x='0px' y='0px' viewBox='0 0 440.45 440.45'>
       <g id='XMLID_34_'>
@@ -61,11 +61,13 @@ export default function EarthIcon(props) {
         </g>
       </g>
       <path
-        style={{ opacity: '0.3', fill: '#808080', enableBackground: 'new' }}
+        style={{ opacity: '0.3', fill: '#808080' }}
         d='M190.23,0.005c5.8,0,11.54,0.26,17.2,0.77
           C110.48,9.515,34.5,90.995,34.5,190.225c0,99.25,76.01,180.74,172.99,189.45c-5.68,0.51-11.44,0.77-17.26,0.77
           C85.17,380.445,0,295.285,0,190.225S85.17,0.005,190.23,0.005z'
       />
     </SvgIcon>
   );
-}
+};
+
+export default Earth;

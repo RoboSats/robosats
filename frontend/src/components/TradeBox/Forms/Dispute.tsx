@@ -1,9 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid, TextField, Checkbox, Tooltip, FormControlLabel } from '@mui/material';
-import { Order } from '../../../models';
 import { LoadingButton } from '@mui/lab';
-import { EncryptedChatMessage } from '../EncryptedChat';
 
 export interface DisputeForm {
   statement: string;
@@ -43,7 +41,7 @@ export const DisputeStatementForm = ({
     >
       <Grid item>
         <TextField
-          error={dispute.badStatement != ''}
+          error={dispute.badStatement !== ''}
           helperText={dispute.badStatement}
           label={t('Submit dispute statement')}
           required

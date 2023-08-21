@@ -1,7 +1,6 @@
 import i18n from '../i18n/Web';
 import { systemClient } from '../services/System';
 import { getHost } from '../utils';
-import type Coordinator from './Coordinator.model';
 
 export type Language =
   | 'en'
@@ -28,7 +27,7 @@ class BaseSettings {
     this.mode =
       modeCookie !== ''
         ? modeCookie
-        : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        : window?.matchMedia('(prefers-color-scheme: dark)')?.matches
         ? 'dark'
         : 'light';
 
@@ -54,7 +53,6 @@ class BaseSettings {
   public language?: Language;
   public freezeViewports: boolean = false;
   public network: 'mainnet' | 'testnet' = 'mainnet';
-  public coordinator: Coordinator | undefined = undefined;
   public host?: string;
   public unsafeClient: boolean = false;
   public selfhostedClient: boolean = false;

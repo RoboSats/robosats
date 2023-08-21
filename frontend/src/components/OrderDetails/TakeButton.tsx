@@ -58,11 +58,11 @@ const TakeButton = ({
   const [open, setOpen] = useState<OpenDialogsProps>(closeAll);
   const [satoshis, setSatoshis] = useState<string>('');
 
-  const satoshisNow = () => {
+  const satoshisNow = (): string | undefined => {
     const tradeFee = info?.taker_fee ?? 0;
     const defaultRoutingBudget = 0.001;
-    const btc_now = order.satoshis_now / 100000000;
-    const rate = order.amount ? order.amount / btc_now : order.max_amount / btc_now;
+    const btcNow = order.satoshis_now / 100000000;
+    const rate = order.amount != null ? order.amount / btcNow : order.max_amount / btcNow;
     const amount = order.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
     const satoshis = computeSats({
       amount,
@@ -77,9 +77,9 @@ const TakeButton = ({
     setSatoshis(satoshisNow());
   }, [order.satoshis_now, takeAmount, info]);
 
-  const currencyCode: string = order.currency == 1000 ? 'Sats' : currencies[`${order.currency}`];
+  const currencyCode: string = order.currency === 1000 ? 'Sats' : currencies[`${order.currency}`];
 
-  const InactiveMakerDialog = function () {
+  const InactiveMakerDialog = function (): JSX.Element {
     return (
       <Dialog
         open={open.inactiveMaker}
@@ -116,7 +116,15 @@ const TakeButton = ({
     );
   };
 
-  const countdownTakeOrderRenderer = function ({ seconds, completed }) {
+  interface countdownTakeOrderRendererProps {
+    seconds: number;
+    completed: boolean;
+  }
+
+  const countdownTakeOrderRenderer = function ({
+    seconds,
+    completed,
+  }: countdownTakeOrderRendererProps): JSX.Element {
     if (isNaN(seconds) || completed) {
       return takeOrderButton();
     } else {
@@ -132,8 +140,8 @@ const TakeButton = ({
     }
   };
 
-  const handleTakeAmountChange = function (e) {
-    if (e.target.value != '' && e.target.value != null) {
+  const handleTakeAmountChange = function (e: React.ChangeEvent<HTMLInputElement>): void {
+    if (e.target.value !== '' && e.target.value != null) {
       setTakeAmount(`${parseFloat(e.target.value)}`);
     } else {
       setTakeAmount(e.target.value);
@@ -141,18 +149,18 @@ const TakeButton = ({
   };
 
   const amountHelperText = useMemo(() => {
-    const amount = order.currency == 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
-    if (amount < Number(order.min_amount) && takeAmount != '') {
+    const amount = order.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
+    if (amount < Number(order.min_amount) && takeAmount !== '') {
       return t('Too low');
-    } else if (amount > Number(order.max_amount) && takeAmount != '') {
+    } else if (amount > Number(order.max_amount) && takeAmount !== '') {
       return t('Too high');
     } else {
       return null;
     }
   }, [order, takeAmount]);
 
-  const onTakeOrderClicked = function () {
-    if (order.maker_status == 'Inactive') {
+  const onTakeOrderClicked = function (): void {
+    if (order.maker_status === 'Inactive') {
       setOpen({ inactiveMaker: true, confirmation: false });
     } else {
       setOpen({ inactiveMaker: false, confirmation: true });
@@ -160,16 +168,16 @@ const TakeButton = ({
   };
 
   const invalidTakeAmount = useMemo(() => {
-    const amount = order.currency == 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
+    const amount = order.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
     return (
       amount < Number(order.min_amount) ||
       amount > Number(order.max_amount) ||
-      takeAmount == '' ||
+      takeAmount === '' ||
       takeAmount == null
     );
   }, [takeAmount, order]);
 
-  const takeOrderButton = function () {
+  const takeOrderButton = function (): JSX.Element {
     if (order.has_range) {
       return (
         <Box
@@ -260,7 +268,7 @@ const TakeButton = ({
                 </div>
               </Grid>
             </Grid>
-            {satoshis != '0' && satoshis != '' && !invalidTakeAmount ? (
+            {satoshis !== '0' && satoshis !== '' && !invalidTakeAmount ? (
               <Grid item>
                 <FormHelperText sx={{ position: 'relative', top: '0.15em' }}>
                   {order.type === 1
@@ -296,33 +304,36 @@ const TakeButton = ({
     }
   };
 
-  const takeOrder = function () {
+  const takeOrder = function (): void {
     setLoadingTake(true);
     apiClient
       .post(
         baseUrl,
-        '/api/order/?order_id=' + order.id,
+        `/api/order/?order_id=${String(order.id)}`,
         {
           action: 'take',
-          amount: order.currency == 1000 ? takeAmount / 100000000 : takeAmount,
+          amount: order.currency === 1000 ? takeAmount / 100000000 : takeAmount,
         },
         { tokenSHA256: robot.tokenSHA256 },
       )
       .then((data) => {
         setLoadingTake(false);
-        if (data.bad_request) {
+        if (data?.bad_request !== undefined) {
           setBadRequest(data.bad_request);
         } else {
           setOrder(data);
           setBadRequest('');
         }
+      })
+      .catch(() => {
+        setBadRequest('Request error');
       });
   };
 
   return (
     <Box>
       <Countdown date={new Date(order.penalty)} renderer={countdownTakeOrderRenderer} />
-      {badRequest != '' ? (
+      {badRequest !== '' ? (
         <Box style={{ padding: '0.5em' }}>
           <Typography align='center' color='secondary'>
             {t(badRequest)}

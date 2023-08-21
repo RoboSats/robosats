@@ -58,6 +58,7 @@ services:
     volumes:
       - ./nodeapp/:/usr/src/robosats/
       - ./nodeapp/nginx.conf:/etc/nginx/nginx.conf
+      - ./nodeapp/coordinators/:/etc/nginx/conf.d/
       - ./frontend/static:/usr/src/robosats/static
 
   clean-orders:

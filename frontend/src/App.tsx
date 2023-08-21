@@ -33,13 +33,17 @@ const App = (): JSX.Element => {
   );
 };
 
-const loadApp = () => {
+const loadApp = (): void => {
   // waits until the environment is ready for the Android WebView app
   if (systemClient.loading) {
     setTimeout(loadApp, 200);
   } else {
     const root = ReactDOM.createRoot(document.getElementById('app') ?? new HTMLElement());
-    root.render(<App />);
+    root.render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    );
   }
 };
 

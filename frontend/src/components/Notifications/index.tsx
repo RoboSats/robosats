@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import {
   Tooltip,
   Alert,
-  useTheme,
   IconButton,
   type TooltipProps,
   styled,
@@ -86,8 +85,8 @@ const Notifications = ({
   const position = windowWidth > 60 ? { top: '4em', right: '0em' } : { top: '0.5em', left: '50%' };
   const basePageTitle = t('RoboSats - Simple and Private Bitcoin Exchange');
 
-  const moveToOrderPage = function () {
-    navigate(`/order/${order?.id}`);
+  const moveToOrderPage = function (): void {
+    navigate(`/order/${String(order?.id)}`);
     setShow(false);
   };
 
@@ -108,7 +107,7 @@ const Notifications = ({
 
   const Messages: MessagesProps = {
     bondLocked: {
-      title: t(`${order?.is_maker ? 'Maker' : 'Taker'} bond locked`),
+      title: t(`${order?.is_maker === true ? 'Maker' : 'Taker'} bond locked`),
       severity: 'info',
       onClick: moveToOrderPage,
       sound: audio.ding,
@@ -208,28 +207,31 @@ const Notifications = ({
     },
   };
 
-  const notify = function (message: NotificationMessage) {
-    if (message.title != '') {
+  const notify = function (message: NotificationMessage): void {
+    if (message.title !== '') {
       setMessage(message);
       setShow(true);
       setTimeout(() => {
         setShow(false);
       }, message.timeout);
       if (message.sound != null) {
-        message.sound.play();
+        void message.sound.play();
       }
       if (!inFocus) {
         setTitleAnimation(
           setInterval(function () {
             const title = document.title;
-            document.title = title == basePageTitle ? message.pageTitle : basePageTitle;
+            document.title = title === basePageTitle ? message.pageTitle : basePageTitle;
           }, 1000),
         );
       }
     }
   };
 
-  const handleStatusChange = function (oldStatus: number | undefined, status: number) {
+  const handleStatusChange = function (oldStatus: number | undefined, status: number): void {
+    if (order === undefined) {
+      return;
+    }
     let message = emptyNotificationMessage;
 
     // Order status descriptions:
@@ -252,37 +254,35 @@ const Notifications = ({
     // 17: 'Maker lost dispute'
     // 18: 'Taker lost dispute'
 
-    if (status == 5 && oldStatus != 5) {
+    if (status === 5 && oldStatus !== 5) {
       message = Messages.expired;
-    } else if (oldStatus == undefined) {
+    } else if (oldStatus === undefined) {
       message = emptyNotificationMessage;
-    } else if (order?.is_maker && status > 0 && oldStatus == 0) {
+    } else if (order.is_maker && status > 0 && oldStatus === 0) {
       message = Messages.bondLocked;
-    } else if (order?.is_taker && status > 5 && oldStatus <= 5) {
+    } else if (order.is_taker && status > 5 && oldStatus <= 5) {
       message = Messages.bondLocked;
-    } else if (order?.is_maker && status > 5 && oldStatus <= 5) {
+    } else if (order.is_maker && status > 5 && oldStatus <= 5) {
       message = Messages.taken;
-    } else if (order?.is_seller && status > 7 && oldStatus < 7) {
+    } else if (order.is_seller && status > 7 && oldStatus < 7) {
       message = Messages.escrowLocked;
     } else if ([9, 10].includes(status) && oldStatus < 9) {
       message = Messages.chat;
-    } else if (order?.is_seller && [13, 14, 15].includes(status) && oldStatus < 13) {
+    } else if (order.is_seller && [13, 14, 15].includes(status) && oldStatus < 13) {
       message = Messages.successful;
-    } else if (order?.is_buyer && status == 14 && oldStatus != 14) {
+    } else if (order.is_buyer && status === 14 && oldStatus !== 14) {
       message = Messages.successful;
-    } else if (order?.is_buyer && status == 15 && oldStatus < 14) {
+    } else if (order.is_buyer && status === 15 && oldStatus < 14) {
       message = Messages.routingFailed;
-    } else if (status == 11 && oldStatus < 11) {
-      message = Messages.dispute;
-    } else if (status == 11 && oldStatus < 11) {
+    } else if (status === 11 && oldStatus < 11) {
       message = Messages.dispute;
     } else if (
-      ((order?.is_maker && status == 18) || (order?.is_taker && status == 17)) &&
+      ((order.is_maker && status === 18) || (order.is_taker && status === 17)) &&
       oldStatus < 17
     ) {
       message = Messages.disputeWinner;
     } else if (
-      ((order?.is_maker && status == 17) || (order?.is_taker && status == 18)) &&
+      ((order.is_maker && status === 17) || (order.is_taker && status === 18)) &&
       oldStatus < 17
     ) {
       message = Messages.disputeLoser;
@@ -293,11 +293,11 @@ const Notifications = ({
 
   // Notify on order status change
   useEffect(() => {
-    if (order != undefined && order.status != oldOrderStatus) {
+    if (order !== undefined && order.status !== oldOrderStatus) {
       handleStatusChange(oldOrderStatus, order.status);
       setOldOrderStatus(order.status);
-    } else if (order != undefined && order.chat_last_index > oldChatIndex) {
-      if (page != 'order') {
+    } else if (order !== undefined && order.chat_last_index > oldChatIndex) {
+      if (page !== 'order') {
         notify(Messages.chatMessage);
       }
       setOldChatIndex(order.chat_last_index);
@@ -306,7 +306,7 @@ const Notifications = ({
 
   // Notify on rewards change
   useEffect(() => {
-    if (rewards != undefined) {
+    if (rewards !== undefined) {
       if (rewards > oldRewards) {
         notify(Messages.rewards);
       }
@@ -316,7 +316,7 @@ const Notifications = ({
 
   // Set blinking page title and clear on visibility change > infocus
   useEffect(() => {
-    if (titleAnimation != undefined && inFocus) {
+    if (titleAnimation !== undefined && inFocus) {
       clearInterval(titleAnimation);
     }
   }, [inFocus]);

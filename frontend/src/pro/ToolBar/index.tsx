@@ -1,17 +1,17 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { AppContext, type AppContextProps } from '../../contexts/AppContext';
 import { Paper, Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import { Lock, LockOpen } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { type Settings } from '../../models';
+import type { Settings } from '../../models';
 
 interface ToolBarProps {
-  settings: Settings;
   height?: string;
-  setSettings: (state: Settings) => void;
 }
 
-const ToolBar = ({ height = '3em', settings, setSettings }: ToolBarProps): JSX.Element => {
+const ToolBar = ({ height = '3em' }: ToolBarProps): JSX.Element => {
   const { t } = useTranslation();
+  const { settings, setSettings } = useContext<AppContextProps>(AppContext);
 
   return (
     <Paper
@@ -32,7 +32,9 @@ const ToolBar = ({ height = '3em', settings, setSettings }: ToolBarProps): JSX.E
         </Grid>
         <Grid item>
           <Tooltip
-            title={settings.freezeViewports ? t('Customize viewports') : t('Freeze viewports')}
+            title={
+              settings.freezeViewports === true ? t('Customize viewports') : t('Freeze viewports')
+            }
             placement='bottom'
             enterTouchDelay={500}
             enterDelay={700}
@@ -40,11 +42,17 @@ const ToolBar = ({ height = '3em', settings, setSettings }: ToolBarProps): JSX.E
           >
             <IconButton
               onClick={() => {
-                setSettings({ ...settings, freezeViewports: !settings.freezeViewports });
+                setSettings((settings: Settings) => {
+                  return { ...settings, freezeViewports: !settings.freezeViewports };
+                });
               }}
               sx={{ position: 'fixed', right: '1em', top: '0em', color: 'text.secondary' }}
             >
-              {settings.freezeViewports ? <Lock color='primary' /> : <LockOpen color='secondary' />}
+              {settings.freezeViewports === true ? (
+                <Lock color='primary' />
+              ) : (
+                <LockOpen color='secondary' />
+              )}
             </IconButton>
           </Tooltip>
         </Grid>

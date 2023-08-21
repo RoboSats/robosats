@@ -1,7 +1,7 @@
 import React from 'react';
-import { SvgIcon } from '@mui/material';
+import { SvgIcon, type SvgIconProps } from '@mui/material';
 
-export default function GoldIcon(props) {
+const Gold: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props} x='0px' y='0px' viewBox='0 0 511.882 511.882'>
       <polygon
@@ -45,4 +45,6 @@ export default function GoldIcon(props) {
       />
     </SvgIcon>
   );
-}
+};
+
+export default Gold;

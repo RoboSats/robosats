@@ -32,10 +32,9 @@ import SwapCalls from '@mui/icons-material/SwapCalls';
 
 interface SettingsFormProps {
   dense?: boolean;
-  showNetwork?: boolean;
 }
 
-const SettingsForm = ({ dense = false, showNetwork = false }: SettingsFormProps): JSX.Element => {
+const SettingsForm = ({ dense = false }: SettingsFormProps): JSX.Element => {
   const { fav, setFav, settings, setSettings } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const { t } = useTranslation();
@@ -176,8 +175,8 @@ const SettingsForm = ({ dense = false, showNetwork = false }: SettingsFormProps)
             </ListItemIcon>
             <Slider
               value={settings.fontSize}
-              min={settings.frontend == 'basic' ? 12 : 10}
-              max={settings.frontend == 'basic' ? 16 : 14}
+              min={settings.frontend === 'basic' ? 12 : 10}
+              max={settings.frontend === 'basic' ? 16 : 14}
               step={1}
               onChange={(e) => {
                 const fontSize = e.target.value;
@@ -215,30 +214,26 @@ const SettingsForm = ({ dense = false, showNetwork = false }: SettingsFormProps)
             </ToggleButtonGroup>
           </ListItem>
 
-          {showNetwork ? (
-            <ListItem>
-              <ListItemIcon>
-                <Link />
-              </ListItemIcon>
-              <ToggleButtonGroup
-                exclusive={true}
-                value={settings.network}
-                onChange={(e, network) => {
-                  setSettings({ ...settings, network });
-                  systemClient.setItem('settings_network', network);
-                }}
-              >
-                <ToggleButton value='mainnet' color='primary'>
-                  {t('Mainnet')}
-                </ToggleButton>
-                <ToggleButton value='testnet' color='secondary'>
-                  {t('Testnet')}
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </ListItem>
-          ) : (
-            <></>
-          )}
+          <ListItem>
+            <ListItemIcon>
+              <Link />
+            </ListItemIcon>
+            <ToggleButtonGroup
+              exclusive={true}
+              value={settings.network}
+              onChange={(e, network) => {
+                setSettings({ ...settings, network });
+                systemClient.setItem('settings_network', network);
+              }}
+            >
+              <ToggleButton value='mainnet' color='primary'>
+                {t('Mainnet')}
+              </ToggleButton>
+              <ToggleButton value='testnet' color='secondary'>
+                {t('Testnet')}
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </ListItem>
         </List>
       </Grid>
     </Grid>

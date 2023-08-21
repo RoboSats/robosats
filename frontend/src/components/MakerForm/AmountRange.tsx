@@ -16,7 +16,7 @@ import RangeSlider from './RangeSlider';
 import currencyDict from '../../../static/assets/currencies.json';
 import { pn } from '../../utils';
 
-const RangeThumbComponent = function (props: object) {
+const RangeThumbComponent: React.FC<React.PropsWithChildren> = (props) => {
   const { children, ...other } = props;
   return (
     <SliderThumb {...other}>
@@ -34,16 +34,20 @@ interface AmountRangeProps {
   type: number;
   currency: number;
   handleRangeAmountChange: (e: any, activeThumb: any) => void;
-  handleMaxAmountChange: () => void;
-  handleMinAmountChange: () => void;
-  handleCurrencyChange: () => void;
+  handleMaxAmountChange: (
+    e: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
+  handleMinAmountChange: (
+    e: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
+  handleCurrencyChange: (newCurrency: number) => void;
   maxAmountError: boolean;
   minAmountError: boolean;
   currencyCode: string;
   amountLimits: number[];
 }
 
-function AmountRange({
+const AmountRange: React.FC<AmountRangeProps> = ({
   minAmount,
   handleRangeAmountChange,
   currency,
@@ -55,7 +59,7 @@ function AmountRange({
   maxAmountError,
   handleMinAmountChange,
   handleMaxAmountChange,
-}: AmountRangeProps) {
+}) => {
   const theme = useTheme();
   const { t } = useTranslation();
 
@@ -130,10 +134,10 @@ function AmountRange({
               inputProps={{
                 style: { textAlign: 'center' },
               }}
-              value={currency == 0 ? 1 : currency}
+              value={currency === 0 ? 1 : currency}
               renderValue={() => currencyCode}
               onChange={(e) => {
-                handleCurrencyChange(e.target.value);
+                handleCurrencyChange(Number(e.target.value));
               }}
             >
               {Object.entries(currencyDict).map(([key, value]) => (
@@ -188,6 +192,6 @@ function AmountRange({
       </Box>
     </Grid>
   );
-}
+};
 
 export default AmountRange;

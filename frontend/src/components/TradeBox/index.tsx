@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Box, Divider, Grid } from '@mui/material';
 
 import { apiClient } from '../../services/api';
@@ -117,8 +116,6 @@ const TradeBox = ({
   onRenewOrder,
   onStartAgain,
 }: TradeBoxProps): JSX.Element => {
-  const { t } = useTranslation();
-
   // Buttons and Dialogs
   const [loadingButtons, setLoadingButtons] = useState<loadingButtonsProps>(noLoadingButtons);
   const [open, setOpen] = useState<OpenDialogProps>(closeAll);
@@ -160,11 +157,11 @@ const TradeBox = ({
     mining_fee_rate,
     statement,
     rating,
-  }: SubmitActionProps) {
-    apiClient
+  }: SubmitActionProps): void {
+    void apiClient
       .post(
         baseUrl,
-        '/api/order/?order_id=' + order.id,
+        `/api/order/?order_id=${order.id}`,
         {
           action,
           invoice,
@@ -176,56 +173,56 @@ const TradeBox = ({
         },
         { tokenSHA256: robot.tokenSHA256 },
       )
-      .catch(() => {
-        setOpen(closeAll);
-        setLoadingButtons({ ...noLoadingButtons });
-      })
       .then((data: Order) => {
         setOpen(closeAll);
         setLoadingButtons({ ...noLoadingButtons });
-        if (data.bad_request) {
+        if (data.bad_request !== undefined) {
           setBadOrder(data.bad_request);
-        } else if (data.bad_address) {
+        } else if (data.bad_address !== undefined) {
           setOnchain({ ...onchain, badAddress: data.bad_address });
-        } else if (data.bad_invoice) {
+        } else if (data.bad_invoice !== undefined) {
           setLightning({ ...lightning, badInvoice: data.bad_invoice });
-        } else if (data.bad_statement) {
+        } else if (data.bad_statement !== undefined) {
           setDispute({ ...dispute, badStatement: data.bad_statement });
         } else {
           setOrder({ ...order, ...data });
           setBadOrder(undefined);
         }
+      })
+      .catch(() => {
+        setOpen(closeAll);
+        setLoadingButtons({ ...noLoadingButtons });
       });
   };
 
-  const cancel = function () {
+  const cancel = function (): void {
     setLoadingButtons({ ...noLoadingButtons, cancel: true });
     submitAction({ action: 'cancel' });
   };
 
-  const openDispute = function () {
+  const openDispute = function (): void {
     setLoadingButtons({ ...noLoadingButtons, openDispute: true });
     submitAction({ action: 'dispute' });
   };
 
-  const confirmFiatReceived = function () {
+  const confirmFiatReceived = function (): void {
     setLoadingButtons({ ...noLoadingButtons, fiatReceived: true });
     submitAction({ action: 'confirm' });
   };
 
-  const confirmFiatSent = function () {
+  const confirmFiatSent = function (): void {
     setLoadingButtons({ ...noLoadingButtons, fiatSent: true });
     submitAction({ action: 'confirm' });
   };
 
-  const confirmUndoFiatSent = function () {
+  const confirmUndoFiatSent = function (): void {
     setLoadingButtons({ ...noLoadingButtons, undoFiatSent: true });
     submitAction({ action: 'undo_confirm' });
   };
 
-  const updateInvoice = function (invoice: string) {
+  const updateInvoice = function (invoice: string): void {
     setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
-    signCleartextMessage(invoice, robot.encPrivKey, robot.token).then((signedInvoice) => {
+    void signCleartextMessage(invoice, robot.encPrivKey, robot.token).then((signedInvoice) => {
       submitAction({
         action: 'update_invoice',
         invoice: signedInvoice,
@@ -234,23 +231,25 @@ const TradeBox = ({
     });
   };
 
-  const updateAddress = function () {
+  const updateAddress = function (): void {
     setLoadingButtons({ ...noLoadingButtons, submitAddress: true });
-    signCleartextMessage(onchain.address, robot.encPrivKey, robot.token).then((signedAddress) => {
-      submitAction({
-        action: 'update_address',
-        address: signedAddress,
-        mining_fee_rate: onchain.miningFee,
-      });
-    });
+    void signCleartextMessage(onchain.address, robot.encPrivKey, robot.token).then(
+      (signedAddress) => {
+        submitAction({
+          action: 'update_address',
+          address: signedAddress,
+          mining_fee_rate: onchain.miningFee,
+        });
+      },
+    );
   };
 
-  const pauseOrder = function () {
+  const pauseOrder = function (): void {
     setLoadingButtons({ ...noLoadingButtons, pauseOrder: true });
     submitAction({ action: 'pause' });
   };
 
-  const submitStatement = function () {
+  const submitStatement = function (): void {
     let statement = dispute.statement;
     if (dispute.attachLogs) {
       const payload = { statement, messages, token: robot.token };
@@ -259,36 +258,36 @@ const TradeBox = ({
     setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
     submitAction({ action: 'submit_statement', statement });
   };
-  const ratePlatform = function (rating: number) {
+  const ratePlatform = function (rating: number): void {
     submitAction({ action: 'rate_platform', rating });
   };
 
-  const handleWebln = async (order: Order) => {
+  const handleWebln = async (order: Order): void => {
     const webln = await getWebln().catch(() => {
       console.log('WebLN not available');
     });
     // If Webln implements locked payments compatibility, this logic might be simplier
-    if (webln == undefined) {
+    if (webln === undefined) {
       return null;
-    } else if (order.is_maker && order.status == 0) {
+    } else if (order.is_maker && order.status === 0) {
       webln.sendPayment(order.bond_invoice);
       setWaitingWebln(true);
       setOpen({ ...open, webln: true });
-    } else if (order.is_taker && order.status == 3) {
+    } else if (order.is_taker && order.status === 3) {
       webln.sendPayment(order.bond_invoice);
       setWaitingWebln(true);
       setOpen({ ...open, webln: true });
-    } else if (order.is_seller && (order.status == 6 || order.status == 7)) {
+    } else if (order.is_seller && (order.status === 6 || order.status === 7)) {
       webln.sendPayment(order.escrow_invoice);
       setWaitingWebln(true);
       setOpen({ ...open, webln: true });
-    } else if (order.is_buyer && (order.status == 6 || order.status == 8)) {
+    } else if (order.is_buyer && (order.status === 6 || order.status === 8)) {
       setWaitingWebln(true);
       setOpen({ ...open, webln: true });
       webln
         .makeInvoice(() => lightning.amount)
         .then((invoice: any) => {
-          if (invoice) {
+          if (invoice !== undefined) {
             updateInvoice(invoice.paymentRequest);
             setWaitingWebln(false);
             setOpen(closeAll);
@@ -305,13 +304,13 @@ const TradeBox = ({
 
   // Effect on Order Status change (used for WebLN)
   useEffect(() => {
-    if (order.status != lastOrderStatus) {
+    if (order.status !== lastOrderStatus) {
       setLastOrderStatus(order.status);
       handleWebln(order);
     }
   }, [order.status]);
 
-  const statusToContract = function (order: Order) {
+  const statusToContract = function (order: Order): JSX.Element {
     const status = order.status;
     const isBuyer = order.is_buyer;
     const isMaker = order.is_maker;
@@ -322,7 +321,7 @@ const TradeBox = ({
     let titleIcon: () => JSX.Element = function () {
       return <></>;
     };
-    let prompt = () => <span>Wops!</span>;
+    let prompt = (): JSX.Element => <span>Wops!</span>;
     let bondStatus: 'hide' | 'locked' | 'unlocked' | 'settled' = 'hide';
 
     switch (status) {
@@ -761,7 +760,7 @@ const TradeBox = ({
 
         <Grid item>{contract.prompt()}</Grid>
 
-        {contract.bondStatus != 'hide' ? (
+        {contract.bondStatus !== 'hide' ? (
           <Grid item sx={{ width: '100%' }}>
             <Divider />
             <BondStatus status={contract.bondStatus} isMaker={order.is_maker} />

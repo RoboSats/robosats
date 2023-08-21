@@ -1,7 +1,7 @@
 import React from 'react';
-import { SvgIcon } from '@mui/material';
+import { SvgIcon, type SvgIconProps } from '@mui/material';
 
-export default function BuySatsCheckedIcon(props) {
+const BuySatsChecked: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon sx={props.sx} color={props.color} x='0px' y='0px' viewBox='0 0 300 300'>
       <g>
@@ -76,4 +76,6 @@ export default function BuySatsCheckedIcon(props) {
       </g>
     </SvgIcon>
   );
-}
+};
+
+export default BuySatsChecked;

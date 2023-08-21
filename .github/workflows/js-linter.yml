@@ -8,7 +8,7 @@ on:
       - main
     paths:
       - frontend
-  pull_request:
+  pull_request_target:
     branches:
       - main
     paths:
@@ -41,7 +41,5 @@ jobs:
         with:
           prettier: true
           prettier_dir: frontend
-
-          ## Disabled due to error
-          # eslint: true
-          # eslint_dir: frontend
+          eslint: true
+          eslint_dir: frontend

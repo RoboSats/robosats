@@ -1,4 +1,5 @@
 export interface TradeRobotSummary {
+  is_buyer: boolean;
   sent_fiat: number;
   received_sats: number;
   is_swap: boolean;

@@ -1,20 +1,20 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box, Slide, Typography, styled } from '@mui/material';
+import {
+  type UseAppStoreType,
+  AppContext,
+  closeAll,
+  hostUrl,
+  origin,
+} from '../contexts/AppContext';
 
-import RobotPage from './RobotPage';
-import MakerPage from './MakerPage';
-import BookPage from './BookPage';
-import OrderPage from './OrderPage';
-import SettingsPage from './SettingsPage';
-import NavBar from './NavBar';
-import MainDialogs from './MainDialogs';
-
+import { RobotPage, MakerPage, BookPage, OrderPage, SettingsPage, NavBar, MainDialogs } from './';
 import RobotAvatar from '../components/RobotAvatar';
+import Notifications from '../components/Notifications';
 
 import { useTranslation } from 'react-i18next';
-import Notifications from '../components/Notifications';
-import { type UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
+import { getEndpoint } from '../models/Coordinator.model';
 
 const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
 
@@ -39,21 +39,36 @@ const Main: React.FC = () => {
     settings,
     robot,
     setRobot,
-    baseUrl,
     order,
     page,
     slideDirection,
+    federation,
+    sortedCoordinators,
     setOpen,
     windowSize,
     navbarHeight,
   } = useContext<UseAppStoreType>(AppContext);
+
+  const [avatarBaseUrl, setAvatarBaseUrl] = useState<string>(hostUrl);
+
+  useEffect(() => {
+    const { url, basePath } = getEndpoint({
+      network: settings.network,
+      coordinator: federation[sortedCoordinators[0]],
+      origin,
+      selfHosted: settings.selfhostedClient,
+      hostUrl,
+    });
+    setAvatarBaseUrl(url + basePath);
+    console.log(url + basePath);
+  }, [settings.network, settings.selfhostedClient, federation, sortedCoordinators]);
 
   return (
     <Router>
       <RobotAvatar
         style={{ display: 'none' }}
         nickname={robot.nickname}
-        baseUrl={baseUrl}
+        baseUrl={avatarBaseUrl}
         onLoad={() => {
           setRobot((robot) => {
             return { ...robot, avatarLoaded: true };
@@ -87,10 +102,10 @@ const Main: React.FC = () => {
                   <Slide
                     direction={page === 'robot' ? slideDirection.in : slideDirection.out}
                     in={page === 'robot'}
-                    appear={slideDirection.in != undefined}
+                    appear={slideDirection.in !== undefined}
                   >
                     <div>
-                      <RobotPage />
+                      <RobotPage avatarBaseUrl={avatarBaseUrl} />
                     </div>
                   </Slide>
                 }
@@ -105,7 +120,7 @@ const Main: React.FC = () => {
               <Slide
                 direction={page === 'offers' ? slideDirection.in : slideDirection.out}
                 in={page === 'offers'}
-                appear={slideDirection.in != undefined}
+                appear={slideDirection.in !== undefined}
               >
                 <div>
                   <BookPage />
@@ -120,7 +135,7 @@ const Main: React.FC = () => {
               <Slide
                 direction={page === 'create' ? slideDirection.in : slideDirection.out}
                 in={page === 'create'}
-                appear={slideDirection.in != undefined}
+                appear={slideDirection.in !== undefined}
               >
                 <div>
                   <MakerPage />
@@ -130,12 +145,12 @@ const Main: React.FC = () => {
           />
 
           <Route
-            path='/order/:orderId'
+            path='/order/:shortAlias/:orderId'
             element={
               <Slide
                 direction={page === 'order' ? slideDirection.in : slideDirection.out}
                 in={page === 'order'}
-                appear={slideDirection.in != undefined}
+                appear={slideDirection.in !== undefined}
               >
                 <div>
                   <OrderPage />
@@ -150,7 +165,7 @@ const Main: React.FC = () => {
               <Slide
                 direction={page === 'settings' ? slideDirection.in : slideDirection.out}
                 in={page === 'settings'}
-                appear={slideDirection.in != undefined}
+                appear={slideDirection.in !== undefined}
               >
                 <div>
                   <SettingsPage />
@@ -160,7 +175,7 @@ const Main: React.FC = () => {
           />
         </Routes>
       </MainBox>
-      <NavBar width={windowSize.width} height={navbarHeight} />
+      <NavBar />
       <MainDialogs />
     </Router>
   );

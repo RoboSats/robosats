@@ -11,7 +11,7 @@ const emptySlot: Slot = { robot: new Robot(), order: null };
 class Garage {
   constructor(initialState?: Garage) {
     const slotsDump: string = systemClient.getItem('garage');
-    if (initialState?.slots === undefined && slotsDump != '') {
+    if (initialState?.slots === undefined && slotsDump !== '') {
       this.slots = JSON.parse(slotsDump);
       console.log('Robot Garage was loaded from local storage');
     } else {
@@ -21,11 +21,11 @@ class Garage {
 
   slots: Slot[] = [emptySlot];
 
-  save = () => {
+  save = (): void => {
     systemClient.setItem('garage', JSON.stringify(this.slots));
   };
 
-  delete = () => {
+  delete = (): void => {
     this.slots = [emptySlot];
     systemClient.deleteItem('garage');
   };
@@ -35,7 +35,7 @@ class Garage {
     this.save();
   };
 
-  download = () => {
+  download = (): void => {
     saveAsJson(`robotGarage_${new Date().toISOString()}.json`, this.slots);
   };
 

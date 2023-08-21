@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SmoothImage from 'react-smooth-image';
-import { Avatar, Badge, Tooltip, useTheme } from '@mui/material';
+import { Avatar, Badge, Tooltip } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import { apiClient } from '../../services/api';
 import placeholder from './placeholder.json';
@@ -8,6 +8,7 @@ import placeholder from './placeholder.json';
 interface Props {
   nickname: string | undefined;
   smooth?: boolean;
+  coordinator?: boolean;
   small?: boolean;
   flipHorizontally?: boolean;
   style?: object;
@@ -41,33 +42,36 @@ const RobotAvatar: React.FC<Props> = ({
   avatarClass = 'flippedSmallAvatar',
   imageStyle = {},
   onLoad = () => {},
+  coordinator = false,
   baseUrl,
 }) => {
   const [avatarSrc, setAvatarSrc] = useState<string>();
   const [nicknameReady, setNicknameReady] = useState<boolean>(false);
   const [activeBackground, setActiveBackground] = useState<boolean>(true);
 
+  const path = coordinator ? '/static/federation/' : '/static/assets/avatars/';
   const [backgroundData] = useState<BackgroundData>(
-    placeholderType == 'generating' ? placeholder.generating : placeholder.loading,
+    placeholderType === 'generating' ? placeholder.generating : placeholder.loading,
   );
   const backgroundImage = `url(data:${backgroundData.mime};base64,${backgroundData.data})`;
-  const className = placeholderType == 'loading' ? 'loadingAvatar' : 'generatingAvatar';
+  const className = placeholderType === 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
   useEffect(() => {
-    if (nickname != undefined) {
+    if (nickname !== undefined) {
       if (window.NativeRobosats === undefined) {
-        setAvatarSrc(`${baseUrl}/static/assets/avatars/${nickname}${small ? '.small' : ''}.webp`);
+        setAvatarSrc(`${baseUrl}${path}${nickname}${small ? '.small' : ''}.webp`);
         setNicknameReady(true);
       } else {
         setNicknameReady(true);
-        apiClient
-          .fileImageUrl(baseUrl, `/static/assets/avatars/${nickname}${small ? '.small' : ''}.webp`)
+        void apiClient
+          .fileImageUrl(baseUrl, `${path}${nickname}${small ? '.small' : ''}.webp`)
           .then(setAvatarSrc);
       }
     } else {
       setNicknameReady(false);
       setActiveBackground(true);
     }
+    console.log(avatarSrc);
   }, [nickname]);
 
   const statusBadge = (
@@ -133,7 +137,7 @@ const RobotAvatar: React.FC<Props> = ({
   const getAvatarWithBadges = useCallback(() => {
     let component = avatar;
 
-    if (statusColor) {
+    if (statusColor !== undefined) {
       component = (
         <Badge variant='dot' overlap='circular' badgeContent='' color={statusColor}>
           {component}
@@ -153,7 +157,7 @@ const RobotAvatar: React.FC<Props> = ({
       );
     }
 
-    if (tooltip) {
+    if (tooltip !== undefined) {
       component = (
         <Tooltip placement={tooltipPosition} enterTouchDelay={0} title={tooltip}>
           {component}

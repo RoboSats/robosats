@@ -9,8 +9,8 @@ class WebsocketWebClient implements WebsocketClient {
         connection.rws.addEventListener('open', () => {
           resolve(connection);
         });
-      } catch {
-        reject();
+      } catch (error) {
+        reject(new Error('Failed to establish a websocket connection.'));
       }
     });
   };

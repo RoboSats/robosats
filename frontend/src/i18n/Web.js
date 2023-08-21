@@ -28,6 +28,6 @@ const config = {
   },
 };
 
-i18n.use(HttpApi).use(LanguageDetector).use(initReactI18next).init(config);
+await i18n.use(HttpApi).use(LanguageDetector).use(initReactI18next).init(config);
 
 export default i18n;
