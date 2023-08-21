@@ -312,7 +312,7 @@ const MakerForm = ({
         bond_size: maker.bondSize,
       };
       apiClient
-        .post(url, `${basePath}/api/make/`, body, auth )
+        .post(url, `${basePath}/api/make/`, body, auth)
         .then((data: any) => {
           setBadRequest(data.bad_request);
           if (data.id !== undefined) {

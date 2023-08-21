@@ -44,7 +44,7 @@
   "temp": {
     "longAlias": "Template",
     "shortAlias": "temp",
-    "description": "This coordinator is a mirror of 'Experimental', serves the purpose of testing a client with multiple coordinators",
+    "description": "Mirror of 'Experimental'. Just to start testing the client with multiple coordinators",
     "motto": "Don't trust, verify",
     "color": "#000000",
     "contact": {
@@ -81,11 +81,11 @@
   "local": {
     "longAlias": "Local Dev",
     "shortAlias": "local",
-    "description": "Local development backend. This coordinator will only be available if you run a RoboSats backend on your own machine '127.0.0.1:8000'",
+    "description": "This coordinator will only be available if you run a RoboSats coordinator on your own machine.",
     "motto": "Buidl",
     "color": "#000000",
     "testnet": {
-      "onion": "http://robodevs7ixniseezbv7uryxhamtz3hvcelzfwpx3rvoipttjomrmpqd.onion",
+      "onion": "http://none.onion",
       "clearnet": "http://127.0.0.1:8000"
     },
     "badges": {

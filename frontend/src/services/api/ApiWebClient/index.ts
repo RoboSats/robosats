@@ -1,5 +1,4 @@
 import { type ApiClient, type Auth } from '..';
-import { systemClient } from '../../System';
 
 class ApiWebClient implements ApiClient {
   private readonly getHeaders: (auth?: Auth) => HeadersInit = (auth) => {

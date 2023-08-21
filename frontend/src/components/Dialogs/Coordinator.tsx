@@ -324,7 +324,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
 
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
 
-  const listItemProps = { sx: { maxHeight: '3em' } };
+  const listItemProps = { sx: { maxHeight: '3em', width: '100%' } };
   const coordinatorVersion = `v${coordinator?.info?.version?.major ?? '?'}.${
     coordinator?.info?.version?.minor ?? '?'
   }.${coordinator?.info?.version?.patch ?? '?'}`;
@@ -359,7 +359,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
             </Grid>
           </ListItem>
 
-          {['offers', 'order', 'create'].includes(page) && (
+          {['create'].includes(page) && (
             <>
               <ListItem {...listItemProps}>
                 <ListItemIcon>
