@@ -100,6 +100,4 @@ We also envision more badges in the future, for example milestones by number of 
 
 In a sense the RoboSats federation is already online. New coordinators can gradually join. Eventually, the RoboSats "Experimental" coordinator that is run by the development team will be phased out. The RoboSats Federated client app can be used already in `robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion`. You can also run a pre-release of the v0.6.0 selfhosted client.
 
-Any coordinator that registers and gets his backend up and running integrated on the RoboSats client app **during 2023 will get the badge reward 
-
-verall the [Mash](https://mash.com/consumer-experience/) wallet works end2end with Robosats on both selling & receiging with all details in the notes for the invoices showin. The details of the flows in the app are shown. When the transactions are complete, they open in the mobile app on both sender/receiver sides to highlight that the transactions are completed.The one UX hick-up is that the pending invoices list doesn't explicitly show HOLD invoices (they are filtered), but will open a bug to fix this issue shortly (this note is from Aug 21st 2023). 
+Any coordinator that registers and gets his backend up and running integrated on the RoboSats client app **during 2023 will receive the Founder badge**.
