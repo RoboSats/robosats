@@ -44,7 +44,7 @@ const RobotPage = (): JSX.Element => {
     }
     const token = url_token ?? robot.token;
     if (robot.nickname == null && token) {
-      if (window.NativeRobosats === undefined || torStatus == '"Done"') {
+      if (window.NativeRobosats === undefined || torStatus == 'ON') {
         getGenerateRobot(token);
         setView('profile');
       }
@@ -80,7 +80,7 @@ const RobotPage = (): JSX.Element => {
     setRobot(new Robot());
   };
 
-  if (!(window.NativeRobosats === undefined) && !(torStatus == 'DONE' || torStatus == '"Done"')) {
+  if (!(window.NativeRobosats === undefined) && !(torStatus === 'ON')) {
     return (
       <Paper
         elevation={12}

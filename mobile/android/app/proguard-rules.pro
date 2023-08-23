@@ -9,7 +9,45 @@
 
 # Add any project specific keep options here:
 
-# Keep some of the react-native-tor classes
--keep class com.sifir.tor.TorServiceParam { *; }
--keep class com.sifir.tor.TcpSocksStream { *; }
--keep class com.sifir.tor.OwnedTorService { *; }
+-keep class org.torproject.jni.** { *; }
+
+# -------------------------------------------------------------------------------#
+#                                                                                #
+#     NOTE: Everything below this line is experimental. The Tor changes broke    #
+#           proguard and these are (failed) attempts to fix it.                  #
+#                                                                                #
+# -------------------------------------------------------------------------------#
+
+-keepclassmembers class * {
+    @com.facebook.react.bridge.ReactMethod <methods>;
+}
+
+-keepclasseswithmembers class * {
+    native <methods>;
+}
+
+-keep class com.facebook.** { *; }
+-keep class com.reactnative.** { *; }
+
+-dontwarn okhttp3.**
+-keep class okhttp3.** { *; }
+-keep class androidx.core.app.** { *; }
+
+-keep class com.facebook.crypto.** {
+   *;
+}
+
+-keep class android.util.** { *; }
+
+-keep class org.json.** { *; }
+
+-keep class android.app.** { *; }
+-keep class android.content.** { *; }
+-keep class android.database.** { *; }
+-keep class android.os.** { *; }
+-keep class android.util.Log { *; }
+-keep class android.widget.Toast { *; }
+
+-keep class com.facebook.react.turbomodule.** { *; }
+
+-keep class com.robosats.* { *; }

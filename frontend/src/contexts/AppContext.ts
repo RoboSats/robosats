@@ -69,7 +69,7 @@ export interface fetchRobotProps {
   isRefresh?: boolean;
 }
 
-export type TorStatus = 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
+export type TorStatus = 'OFF' | 'STARTING' | 'ON' | 'STOPPING' | 'ERROR';
 
 let entryPage: Page | '' | 'index.html' =
   window.NativeRobosats === undefined ? window.location.pathname.split('/')[1] : '';
@@ -120,7 +120,7 @@ export const useAppStore = () => {
   }, []);
 
   // All app data structured
-  const [torStatus, setTorStatus] = useState<TorStatus>('NOTINIT');
+  const [torStatus, setTorStatus] = useState<TorStatus>('OFF');
   const [book, setBook] = useState<Book>({ orders: [], loading: true });
   const [limits, setLimits] = useState<{ list: LimitList; loading: boolean }>({
     list: [],
@@ -169,7 +169,7 @@ export const useAppStore = () => {
         () => {
           setTorStatus(event?.detail);
         },
-        event?.detail === '"Done"' ? 5000 : 0,
+        event?.detail === 'ON' ? 5000 : 0,
       );
     });
   }, []);
@@ -254,7 +254,7 @@ export const useAppStore = () => {
 
   useEffect(() => {
     if (open.stats || open.coordinator || info.coordinatorVersion == 'v?.?.?') {
-      if (window.NativeRobosats === undefined || torStatus == '"Done"') {
+      if (window.NativeRobosats === undefined || torStatus == 'ON') {
         fetchInfo();
       }
     }

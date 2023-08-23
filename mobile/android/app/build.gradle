@@ -247,7 +247,7 @@ android {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.debug
-            minifyEnabled enableProguardInReleaseBuilds
+            minifyEnabled false //TODO: fix
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
@@ -282,7 +282,16 @@ dependencies {
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 
-    implementation files("../../node_modules/react-native-tor/android/libs/sifir_android.aar")
+    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
+    debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
+    debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
+        exclude group:'com.squareup.okhttp3', module:'okhttp'
+    }
+
+    //official tor deps
+    implementation 'info.guardianproject:tor-android:0.4.7.11'
+    implementation 'info.guardianproject:jtorctl:0.4.5.7'
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
 
     if (enableHermes) {
         //noinspection GradleDynamicVersion

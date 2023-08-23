@@ -5,7 +5,7 @@ import {
 } from './index.d';
 
 class NativeRobosats {
-  public torDaemonStatus = 'NOTINIT';
+  public torDaemonStatus = 'OFF';
 
   private messageCounter: number = 0;
 

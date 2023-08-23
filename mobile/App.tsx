@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import { SafeAreaView, Text, Platform, Appearance } from 'react-native';
+import { SafeAreaView, Text, Platform, Appearance, NativeModules } from 'react-native';
 import TorClient from './services/Tor';
 import Clipboard from '@react-native-clipboard/clipboard';
 import NetInfo from '@react-native-community/netinfo';
@@ -138,8 +138,10 @@ const App = () => {
       let daemonStatus = 'ERROR';
       if (state.isInternetReachable) {
         try {
-          daemonStatus = await torClient.daemon.getDaemonStatus();
-        } catch {}
+          daemonStatus = await NativeModules.RoboTor.getTorStatus();
+        } catch (e) {
+          throw e;
+        }
       }
 
       injectMessage({
@@ -149,6 +151,18 @@ const App = () => {
       });
     });
   };
+
+  useEffect(() => {
+    const bootstrapAsyncTor = async () => {
+      try {
+        await torClient.attemptStartTor();
+      } catch (e) {
+        console.error('Error starting Tor: ', e);
+        throw e;
+      }
+    };
+    bootstrapAsyncTor(); //hack to execute async method on app boot
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: backgroundColors[colorScheme] }}>
