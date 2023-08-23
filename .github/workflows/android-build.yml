@@ -42,7 +42,7 @@ jobs:
           cd mobile
           npm install
 
-      - name: 'Patch modules' # react-native-tor and react-native-encrypted-storage rely on deprecated jcenter repositories. We patch the modules temporarily
+      - name: 'Patch modules' # react-native-encrypted-storage relies on deprecated jcenter repositories. We patch the module temporarily
         run: |
           cd mobile
           cp -r patch_modules/* node_modules/
@@ -50,7 +50,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 11
-
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
