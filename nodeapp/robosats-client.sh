@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Runs two simple services on a single container.
-# 1) socat: exposes remote RoboSats backend from TOR socks to http//localhost:81.
+# 1) socat: exposes remote RoboSats backend from Tor socks to http//localhost:81.
 #    Every robosat coordinators needs a tor bridge
 # 2) nginx: does the magic of redirecting every request to either local (the app, static,
 #    languages) or remote (for each coordinator, either API or WS, and static avatar)

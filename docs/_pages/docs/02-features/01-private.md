@@ -10,7 +10,7 @@ sidebar:
 src: "_pages/docs/02-features/01-private.md"
 ---
 
-<!-- TODO: explain TOR, high entropy avatar, no registration, no identity reuse, lightning onion routing, no logs policy, etc. -->
+<!-- TODO: explain Tor, high entropy avatar, no registration, no identity reuse, lightning onion routing, no logs policy, etc. -->
 RoboSats is absolutely private by default. The main four ingredients are:
 
 1. **No registration at all.** With a single click you will generate a robot avatar: that's all you need. Since no email, phone, username or any input from the user is needed, there is no possible way to make a mistake and doxx yourself. Your Robot avatars cannot be linked to you.

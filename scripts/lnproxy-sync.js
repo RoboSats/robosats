@@ -18,7 +18,7 @@ for (let url of newIncomingRelays) {
   const LNPROXY_API_PATH = '/spec'
   const fqdn = url.replace(LNPROXY_API_PATH, '');
   if (fqdn.endsWith('.onion')) {
-    relayType = "TOR";
+    relayType = "Tor";
     torCount++;
   }
   else if (fqdn.endsWith('i2p')) {
@@ -30,7 +30,7 @@ for (let url of newIncomingRelays) {
     clearnetCount++;
   }
 
-  let relayName = `${relayType}${relayType === "TOR" ? torCount : ''}${relayType === "I2P" ? i2pCount : ''}${relayType === "Clearnet" ? clearnetCount : ''} ${url.split('/')[2].substring(0,6)}`
+  let relayName = `${relayType}${relayType === "Tor" ? torCount : ''}${relayType === "I2P" ? i2pCount : ''}${relayType === "Clearnet" ? clearnetCount : ''} ${url.split('/')[2].substring(0,6)}`
 
   newRelays.push({
     name: relayName,

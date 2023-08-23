@@ -16,7 +16,7 @@ docs:
     children:
       - title: '<span class="side-bar-item">&nbsp;&nbsp;<img id="side-icon-small" src="/assets/vector/bolt.svg"/>Lightning Network</span>'
         url: /docs/lightning/
-      - title: '<span class="side-bar-item">&nbsp;&nbsp;<img id="side-icon-small" src="/assets/vector/tor.svg"/>TOR Network</span>'
+      - title: '<span class="side-bar-item">&nbsp;&nbsp;<img id="side-icon-small" src="/assets/vector/tor.svg"/>Tor Network</span>'
         url: /docs/tor/
       - title: '<span class="side-bar-item">&nbsp;&nbsp;<img id="side-icon-small" src="/assets/vector/arrow-up-right-from-square.svg"/>Access</span>'
         url: /docs/access/

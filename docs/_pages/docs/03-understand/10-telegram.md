@@ -67,9 +67,9 @@ Nothing wrong, but there can be disappointments, it is possible that the conditi
 
 **LOSS OF PRIVACY**
 
-Robosats is an exchange focused on user privacy, that is why KYC is not used and its optimal use is oriented to be used with the TOR browser.
+Robosats is an exchange focused on user privacy, that is why KYC is not used and its optimal use is oriented to be used with the Tor browser.
 
-Once you leave TOR to a third party application (Telegram in this case) you are losing privacy.
+Once you leave Tor to a third party application (Telegram in this case) you are losing privacy.
 
 This bot, like any other, will store your Telegram user ID, as it is necessary to contact the user. It will also store the data of your alert.
 
