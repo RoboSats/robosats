@@ -12,6 +12,8 @@ from django.utils import timezone
 
 from . import node_pb2 as noderpc
 from . import node_pb2_grpc as nodestub
+from . import hold_pb2 as holdrpc
+from . import hold_pb2_grpc as holdstub
 from . import primitives_pb2 as primitives__pb2
 
 #######
@@ -31,6 +33,7 @@ with open(os.path.join(CLN_DIR, "server.pem"), "rb") as f:
 
 
 CLN_GRPC_HOST = config("CLN_GRPC_HOST", cast=str, default="localhost:9999")
+CLN_GRPC_HOLD_HOST = config("CLN_GRPC_HOLD_HOST", cast=str, default="localhost:9998")
 DISABLE_ONCHAIN = config("DISABLE_ONCHAIN", cast=bool, default=True)
 MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500000)
 
@@ -45,11 +48,14 @@ class CLNNode:
         certificate_chain=client_cert,
     )
     # Create the gRPC channel using the SSL credentials
-    channel = grpc.secure_channel(CLN_GRPC_HOST, creds)
+    hold_channel = grpc.secure_channel(CLN_GRPC_HOLD_HOST, creds)
+    node_channel = grpc.secure_channel(CLN_GRPC_HOST, creds)
 
     # Create the gRPC stub
-    stub = nodestub.NodeStub(channel)
+    hstub = holdstub.HoldStub(hold_channel)
+    nstub = nodestub.NodeStub(node_channel)
 
+    holdrpc = holdrpc
     noderpc = noderpc
 
     payment_failure_context = {
@@ -67,7 +73,7 @@ class CLNNode:
         try:
             request = noderpc.GetinfoRequest()
             print(request)
-            response = cls.stub.Getinfo(request)
+            response = cls.nstub.Getinfo(request)
             print(response)
             return response.version
         except Exception as e:
@@ -77,9 +83,9 @@ class CLNNode:
     @classmethod
     def decode_payreq(cls, invoice):
         """Decodes a lightning payment request (invoice)"""
-        request = noderpc.DecodeBolt11Request(bolt11=invoice)
+        request = holdrpc.DecodeBolt11Request(bolt11=invoice)
 
-        response = cls.stub.DecodeBolt11(request)
+        response = cls.hstub.DecodeBolt11(request)
         return response
 
     @classmethod
@@ -88,7 +94,7 @@ class CLNNode:
         # feerate estimaes work a bit differently in cln see https://lightning.readthedocs.io/lightning-feerates.7.html
         request = noderpc.FeeratesRequest(style="PERKB")
 
-        response = cls.stub.Feerates(request)
+        response = cls.nstub.Feerates(request)
 
         # "opening" -> ~12 block target
         return {
@@ -104,7 +110,7 @@ class CLNNode:
         """Returns onchain balance"""
         request = noderpc.ListfundsRequest()
 
-        response = cls.stub.ListFunds(request)
+        response = cls.nstub.ListFunds(request)
 
         unconfirmed_balance = 0
         confirmed_balance = 0
@@ -138,7 +144,7 @@ class CLNNode:
         """Returns channels balance"""
         request = noderpc.ListpeerchannelsRequest()
 
-        response = cls.stub.ListPeerChannels(request)
+        response = cls.nstub.ListPeerChannels(request)
 
         local_balance_sat = 0
         remote_balance_sat = 0
@@ -200,7 +206,7 @@ class CLNNode:
             # Changing the state to "MEMPO" should be atomic with SendCoins.
             onchainpayment.status = on_mempool_code
             onchainpayment.save(update_fields=["status"])
-            response = cls.stub.Withdraw(request)
+            response = cls.nstub.Withdraw(request)
 
             if response.txid:
                 onchainpayment.txid = response.txid.hex()
@@ -215,22 +221,22 @@ class CLNNode:
     @classmethod
     def cancel_return_hold_invoice(cls, payment_hash):
         """Cancels or returns a hold invoice"""
-        request = noderpc.HodlInvoiceCancelRequest(
+        request = holdrpc.HoldInvoiceCancelRequest(
             payment_hash=bytes.fromhex(payment_hash)
         )
-        response = cls.stub.HodlInvoiceCancel(request)
+        response = cls.hstub.HoldInvoiceCancel(request)
 
-        return response.state == noderpc.HodlInvoiceCancelResponse.Hodlstate.CANCELED
+        return response.state == holdrpc.HoldInvoiceCancelResponse.Holdstate.CANCELED
 
     @classmethod
     def settle_hold_invoice(cls, preimage):
         """settles a hold invoice"""
-        request = noderpc.HodlInvoiceSettleRequest(
+        request = holdrpc.HoldInvoiceSettleRequest(
             payment_hash=hashlib.sha256(bytes.fromhex(preimage)).digest()
         )
-        response = cls.stub.HodlInvoiceSettle(request)
+        response = cls.hstub.HoldInvoiceSettle(request)
 
-        return response.state == noderpc.HodlInvoiceSettleResponse.Hodlstate.SETTLED
+        return response.state == holdrpc.HoldInvoiceSettleResponse.Holdstate.SETTLED
 
     @classmethod
     def gen_hold_invoice(
@@ -253,17 +259,15 @@ class CLNNode:
         # The preimage is a random hash of 256 bits entropy
         preimage = hashlib.sha256(secrets.token_bytes(nbytes=32)).digest()
 
-        request = noderpc.InvoiceRequest(
+        request = holdrpc.HoldInvoiceRequest(
             description=description,
-            amount_msat=primitives__pb2.AmountOrAny(
-                amount=primitives__pb2.Amount(msat=num_satoshis * 1_000)
-            ),
+            amount_msat=primitives__pb2.Amount(msat=num_satoshis * 1_000),
             label=f"Order:{order_id}-{lnpayment_concept}-{time}",
             expiry=invoice_expiry,
             cltv=cltv_expiry_blocks,
             preimage=preimage,  # preimage is actually optional in cln, as cln would generate one by default
         )
-        response = cls.stub.HodlInvoice(request)
+        response = cls.hstub.HoldInvoice(request)
 
         hold_payment["invoice"] = response.bolt11
         payreq_decoded = cls.decode_payreq(hold_payment["invoice"])
@@ -284,21 +288,21 @@ class CLNNode:
         """Checks if hold invoice is locked"""
         from api.models import LNPayment
 
-        request = noderpc.HodlInvoiceLookupRequest(
+        request = holdrpc.HoldInvoiceLookupRequest(
             payment_hash=bytes.fromhex(lnpayment.payment_hash)
         )
-        response = cls.stub.HodlInvoiceLookup(request)
+        response = cls.hstub.HoldInvoiceLookup(request)
 
         # Will fail if 'unable to locate invoice'. Happens if invoice expiry
         # time has passed (but these are 15% padded at the moment). Should catch it
         # and report back that the invoice has expired (better robustness)
-        if response.state == noderpc.HodlInvoiceLookupResponse.Hodlstate.OPEN:
+        if response.state == holdrpc.HoldInvoiceLookupResponse.Holdstate.OPEN:
             pass
-        if response.state == noderpc.HodlInvoiceLookupResponse.Hodlstate.SETTLED:
+        if response.state == holdrpc.HoldInvoiceLookupResponse.Holdstate.SETTLED:
             pass
-        if response.state == noderpc.HodlInvoiceLookupResponse.Hodlstate.CANCELED:
+        if response.state == holdrpc.HoldInvoiceLookupResponse.Holdstate.CANCELED:
             pass
-        if response.state == noderpc.HodlInvoiceLookupResponse.Hodlstate.ACCEPTED:
+        if response.state == holdrpc.HoldInvoiceLookupResponse.Holdstate.ACCEPTED:
             lnpayment.expiry_height = response.htlc_expiry
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save(update_fields=["expiry_height", "status"])
@@ -324,10 +328,10 @@ class CLNNode:
 
         try:
             # this is similar to LNNnode.validate_hold_invoice_locked
-            request = noderpc.HodlInvoiceLookupRequest(
+            request = holdrpc.HoldInvoiceLookupRequest(
                 payment_hash=bytes.fromhex(lnpayment.payment_hash)
             )
-            response = cls.stub.HodlInvoiceLookup(request)
+            response = cls.hstub.HoldInvoiceLookup(request)
 
             status = cln_response_state_to_lnpayment_status[response.state]
 
@@ -348,7 +352,7 @@ class CLNNode:
                     payment_hash=bytes.fromhex(lnpayment.payment_hash)
                 )
                 try:
-                    response2 = cls.stub.ListInvoices(request2).invoices
+                    response2 = cls.nstub.ListInvoices(request2).invoices
                 except Exception as e:
                     print(str(e))
 
@@ -485,7 +489,7 @@ class CLNNode:
         )
 
         try:
-            response = cls.stub.Pay(request)
+            response = cls.nstub.Pay(request)
 
             if response.status == noderpc.PayResponse.PayStatus.COMPLETE:
                 lnpayment.status = LNPayment.Status.SUCCED
@@ -541,7 +545,7 @@ class CLNNode:
             request_listpays = noderpc.ListpaysRequest(payment_hash=bytes.fromhex(hash))
             while True:
                 try:
-                    response_listpays = cls.stub.ListPays(request_listpays)
+                    response_listpays = cls.nstub.ListPays(request_listpays)
                 except Exception as e:
                     print(str(e))
                     time.sleep(2)
@@ -564,7 +568,7 @@ class CLNNode:
 
                 order.update_status(Order.Status.PAY)
 
-                response = cls.stub.Pay(request)
+                response = cls.nstub.Pay(request)
 
                 if response.status == noderpc.PayResponse.PayStatus.PENDING:
                     print(f"Order: {order.id} IN_FLIGHT. Hash {hash}")
@@ -759,9 +763,9 @@ class CLNNode:
                     )
                 )
                 if sign:
-                    self_pubkey = cls.stub.GetInfo(noderpc.GetinfoRequest()).id
+                    self_pubkey = cls.nstub.GetInfo(noderpc.GetinfoRequest()).id
                     timestamp = struct.pack(">i", int(time.time()))
-                    signature = cls.stub.SignMessage(
+                    signature = cls.nstub.SignMessage(
                         noderpc.SignmessageRequest(
                             message=(
                                 bytes.fromhex(self_pubkey)
@@ -792,7 +796,7 @@ class CLNNode:
                 retry_for=timeout,
                 amount_msat=primitives__pb2.Amount(msat=num_satoshis * 1000),
             )
-            response = cls.stub.KeySend(request)
+            response = cls.nstub.KeySend(request)
 
             keysend_payment["preimage"] = response.payment_preimage.hex()
             keysend_payment["payment_hash"] = response.payment_hash.hex()
@@ -801,7 +805,7 @@ class CLNNode:
                 payment_hash=response.payment_hash, timeout=timeout
             )
             try:
-                waitresp = cls.stub.WaitSendPay(waitreq)
+                waitresp = cls.nstub.WaitSendPay(waitreq)
                 keysend_payment["fee"] = (
                     float(waitresp.amount_sent_msat.msat - waitresp.amount_msat.msat)
                     / 1000
@@ -830,15 +834,15 @@ class CLNNode:
     @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):
         """Just as it sounds. Better safe than sorry!"""
-        request = noderpc.HodlInvoiceLookupRequest(
+        request = holdrpc.HoldInvoiceLookupRequest(
             payment_hash=bytes.fromhex(payment_hash)
         )
         try:
-            response = cls.stub.HodlInvoiceLookup(request)
+            response = cls.hstub.HoldInvoiceLookup(request)
         except Exception as e:
             if "Timed out" in str(e):
                 return False
             else:
                 raise e
 
-        return response.state == noderpc.HodlInvoiceLookupResponse.Hodlstate.SETTLED
+        return response.state == holdrpc.HoldInvoiceLookupResponse.Holdstate.SETTLED
