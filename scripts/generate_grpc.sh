@@ -25,7 +25,7 @@ curl -o verrpc.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/m
 python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. verrpc.proto
 
 # generate CLN grpc definitions
-curl -o node.proto -s https://raw.githubusercontent.com/daywalker90/lightning/cln-grpc-hold/proto/hold.proto
+curl -o hold.proto -s https://raw.githubusercontent.com/daywalker90/lightning/cln-grpc-hold/proto/hold.proto
 curl -o primitives.proto -s https://raw.githubusercontent.com/daywalker90/lightning/cln-grpc-hold/proto/primitives.proto
 python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. hold.proto primitives.proto
 
