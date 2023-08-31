@@ -26,8 +26,9 @@ python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_pyt
 
 # generate CLN grpc definitions
 curl -o hold.proto -s https://raw.githubusercontent.com/daywalker90/lightning/cln-grpc-hold/proto/hold.proto
-curl -o primitives.proto -s https://raw.githubusercontent.com/daywalker90/lightning/cln-grpc-hold/proto/primitives.proto
-python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. hold.proto primitives.proto
+curl -o primitives.proto -s https://raw.githubusercontent.com/ElementsProject/lightning/v23.08/cln-grpc/proto/primitives.proto
+curl -o node.proto -s https://raw.githubusercontent.com/ElementsProject/lightning/v23.08/cln-grpc/proto/node.proto
+python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. node.proto hold.proto primitives.proto
 
 # delete googleapis
 rm -r googleapis
@@ -47,8 +48,8 @@ sed -i 's/^import .*_pb2 as/from . \0/' verrpc_pb2_grpc.py
 # CLN
 sed -i 's/^import .*_pb2 as/from . \0/' hold_pb2.py
 sed -i 's/^import .*_pb2 as/from . \0/' hold_pb2_grpc.py
-sed -i 's/^from pyln.grpc/from ./; s/ as / as /' node_pb2.py
-sed -i 's/^from pyln.grpc/from ./; s/ as / as /' node_pb2_grpc.py
+sed -i 's/^import .*_pb2 as/from . \0/' node_pb2.py
+sed -i 's/^import .*_pb2 as/from . \0/' node_pb2_grpc.py
 
 # On development environments the local volume will be mounted over these files. We copy pb2 and grpc files to /tmp/.
 # This way, we can find if these files are missing with our entrypoint.sh and copy them into the volume.
