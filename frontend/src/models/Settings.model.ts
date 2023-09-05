@@ -18,6 +18,7 @@ export type Language =
   | 'th'
   | 'pl'
   | 'sv'
+  | 'sw'
   | 'zh-SI'
   | 'zh-TR';
 

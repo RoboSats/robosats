@@ -16,6 +16,7 @@ import translationPT from '../../static/locales/pt.json';
 import translationTH from '../../static/locales/th.json';
 import translationCS from '../../static/locales/cs.json';
 import translationEU from '../../static/locales/eu.json';
+import translationSW from '../../static/locales/sw.json';
 import translationSV from '../../static/locales/sv.json';
 import translationZHsi from '../../static/locales/zh-SI.json';
 import translationZHtr from '../../static/locales/zh-TR.json';
@@ -33,6 +34,7 @@ const config = {
     it: { translations: translationIT },
     pt: { translations: translationPT },
     eu: { translations: translationEU },
+    sw: { translations: translationSW },
     cs: { translations: translationCS },
     th: { translations: translationTH },
     pl: { translations: translationPL },
