@@ -1,6 +1,6 @@
 # Forked of https://github.com/ElementsProject/lightning/blob/2c9b043be97ee4aeca1334d29c2f0ad99da69d34/Dockerfile
 # Changes over base core-lightning Dockerfile:
-# Adds hodlvoice grpc plugin
+# Adds cln-grpc-hold plugin
 # ARG DEVELOPER=0
 
 # This dockerfile is meant to compile a core-lightning x64 image
@@ -105,8 +105,8 @@ RUN git clone --recursive --branch $LIGHTNINGD_VERSION https://github.com/Elemen
 RUN git clone --recursive /tmp/lightning . && \
     git checkout $(git --work-tree=/tmp/lightning --git-dir=/tmp/lightning/.git rev-parse HEAD)
 
-RUN git clone --recursive --branch hodlvoice https://github.com/daywalker90/lightning.git /tmp/hodlvoice
-RUN cd /tmp/hodlvoice/plugins/grpc-plugin \
+RUN git clone --recursive --branch cln-grpc-hold https://github.com/daywalker90/lightning.git /tmp/cln-grpc-hold
+RUN cd /tmp/cln-grpc-hold \
     && cargo build --release
 
 ENV PYTHON_VERSION=3
@@ -141,7 +141,7 @@ RUN mkdir $LIGHTNINGD_DATA && \
     touch $LIGHTNINGD_DATA/config
 VOLUME [ "/root/.lightning" ]
 COPY --from=builder /tmp/lightning_install/ /usr/local/
-COPY --from=builder /tmp/hodlvoice/target/release/cln-grpc-hodl /tmp/cln-grpc-hodl
+COPY --from=builder /tmp/cln-grpc-hold/target/release/cln-grpc-hold /tmp/cln-grpc-hold
 COPY --from=downloader /opt/bitcoin/bin /usr/bin
 COPY config /tmp/config
 COPY entrypoint.sh entrypoint.sh

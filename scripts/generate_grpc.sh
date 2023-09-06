@@ -25,9 +25,10 @@ curl -o verrpc.proto -s https://raw.githubusercontent.com/lightningnetwork/lnd/m
 python3 -m grpc_tools.protoc --proto_path=googleapis:. --python_out=. --grpc_python_out=. verrpc.proto
 
 # generate CLN grpc definitions
-curl -o node.proto -s https://raw.githubusercontent.com/daywalker90/lightning/hodlvoice/cln-grpc/proto/node.proto
-curl -o primitives.proto -s https://raw.githubusercontent.com/daywalker90/lightning/hodlvoice/cln-grpc/proto/primitives.proto
-python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. node.proto primitives.proto
+curl -o hold.proto -s https://raw.githubusercontent.com/daywalker90/lightning/cln-grpc-hold/proto/hold.proto
+curl -o primitives.proto -s https://raw.githubusercontent.com/ElementsProject/lightning/v23.08/cln-grpc/proto/primitives.proto
+curl -o node.proto -s https://raw.githubusercontent.com/ElementsProject/lightning/v23.08/cln-grpc/proto/node.proto
+python3 -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. node.proto hold.proto primitives.proto
 
 # delete googleapis
 rm -r googleapis
@@ -45,6 +46,8 @@ sed -i 's/^import .*_pb2 as/from . \0/' invoices_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' verrpc_pb2_grpc.py
 
 # CLN
+sed -i 's/^import .*_pb2 as/from . \0/' hold_pb2.py
+sed -i 's/^import .*_pb2 as/from . \0/' hold_pb2_grpc.py
 sed -i 's/^import .*_pb2 as/from . \0/' node_pb2.py
 sed -i 's/^import .*_pb2 as/from . \0/' node_pb2_grpc.py
 
