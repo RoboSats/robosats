@@ -4,7 +4,6 @@ django-celery-beat==2.5.0
 django-celery-results==2.5.1
 django-model-utils==4.3.1
 django-redis==5.3.0
-django-timezone-field==6.0
 djangorestframework==3.14.0
 channels==4.0.0
 channels-redis==4.1.0
