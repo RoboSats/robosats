@@ -357,7 +357,7 @@ export const useAppStore = (): UseAppStoreType => {
     return sortedCoordinators;
   }, []);
 
-  const [focusedCoordinator, setFocusedCoordinator] = useState<string>('');
+  const [focusedCoordinator, setFocusedCoordinator] = useState<string>(sortedCoordinators[0]);
   const [fav, setFav] = useState<Favorites>({ type: null, currency: 0, mode: 'fiat' });
 
   const [delay, setDelay] = useState<number>(60000);

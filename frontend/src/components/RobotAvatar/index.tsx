@@ -71,6 +71,7 @@ const RobotAvatar: React.FC<Props> = ({
       setNicknameReady(false);
       setActiveBackground(true);
     }
+    console.log(avatarSrc);
   }, [nickname]);
 
   const statusBadge = (

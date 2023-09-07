@@ -31,6 +31,7 @@ interface RobotProfileProps {
   logoutRobot: () => void;
   setInputToken: (state: string) => void;
   width: number;
+  baseUrl: string;
 }
 
 const RobotProfile = ({
@@ -42,6 +43,7 @@ const RobotProfile = ({
   logoutRobot,
   setView,
   width,
+  baseUrl,
 }: RobotProfileProps): JSX.Element => {
   const { currentSlot, garage, setCurrentSlot, windowSize, currentOrder } =
     useContext<UseAppStoreType>(AppContext);

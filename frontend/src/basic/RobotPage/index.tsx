@@ -19,10 +19,14 @@ import RobotProfile from './RobotProfile';
 import Recovery from './Recovery';
 import { TorIcon } from '../../components/Icons';
 import { genKey } from '../../pgp';
-import { AppContext, hostUrl, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { validateTokenEntropy } from '../../utils';
 
-const RobotPage = (): JSX.Element => {
+interface RobotPageProps {
+  avatarBaseUrl: string;
+}
+
+const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
   const { robot, setRobot, fetchFederationRobot, torStatus, windowSize, settings } =
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
@@ -156,7 +160,7 @@ const RobotPage = (): JSX.Element => {
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
-            baseUrl={hostUrl}
+            avatarBaseUrl={avatarBaseUrl}
           />
         ) : null}
 
@@ -170,7 +174,7 @@ const RobotPage = (): JSX.Element => {
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
-            baseUrl={hostUrl}
+            avatarBaseUrl={avatarBaseUrl}
           />
         ) : null}
 
@@ -183,7 +187,6 @@ const RobotPage = (): JSX.Element => {
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
-            baseUrl={hostUrl}
           />
         ) : null}
       </Paper>

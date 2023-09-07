@@ -1,13 +1,20 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box, Slide, Typography, styled } from '@mui/material';
-import { type UseAppStoreType, AppContext, closeAll, hostUrl } from '../contexts/AppContext';
+import {
+  type UseAppStoreType,
+  AppContext,
+  closeAll,
+  hostUrl,
+  origin,
+} from '../contexts/AppContext';
 
 import { RobotPage, MakerPage, BookPage, OrderPage, SettingsPage, NavBar, MainDialogs } from './';
 import RobotAvatar from '../components/RobotAvatar';
 import Notifications from '../components/Notifications';
 
 import { useTranslation } from 'react-i18next';
+import { getEndpoint } from '../models/Coordinator.model';
 
 const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
 
@@ -35,17 +42,33 @@ const Main: React.FC = () => {
     order,
     page,
     slideDirection,
+    federation,
+    sortedCoordinators,
     setOpen,
     windowSize,
     navbarHeight,
   } = useContext<UseAppStoreType>(AppContext);
+
+  const [avatarBaseUrl, setAvatarBaseUrl] = useState<string>(hostUrl);
+
+  useEffect(() => {
+    const { url, basePath } = getEndpoint({
+      network: settings.network,
+      coordinator: federation[sortedCoordinators[0]],
+      origin,
+      selfHosted: settings.selfhostedClient,
+      hostUrl,
+    });
+    setAvatarBaseUrl(url + basePath);
+    console.log(url + basePath);
+  }, [settings.network, settings.selfhostedClient, federation, sortedCoordinators]);
 
   return (
     <Router>
       <RobotAvatar
         style={{ display: 'none' }}
         nickname={robot.nickname}
-        baseUrl={hostUrl}
+        baseUrl={avatarBaseUrl}
         onLoad={() => {
           setRobot((robot) => {
             return { ...robot, avatarLoaded: true };
@@ -82,7 +105,7 @@ const Main: React.FC = () => {
                     appear={slideDirection.in !== undefined}
                   >
                     <div>
-                      <RobotPage />
+                      <RobotPage avatarBaseUrl={avatarBaseUrl} />
                     </div>
                   </Slide>
                 }
