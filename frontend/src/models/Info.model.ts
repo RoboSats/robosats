@@ -24,6 +24,8 @@ export interface Info {
   coordinatorVersion: string;
   clientVersion: string;
   openUpdateClient: boolean;
+  notice_severity: 'none' | 'warning' | 'error' | 'success' | 'info';
+  notice_message: string;
   loading: boolean;
 }
 const semver = packageJson.version.split('.');

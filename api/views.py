@@ -88,7 +88,7 @@ class MakerView(CreateAPIView):
         ):
             return Response(
                 {
-                    "bad_request": "Woah! RoboSats' book is at full capacity! Try again later"
+                    "bad_request": f"The RoboSats {config('COORDINATOR_ALIAS', cast=str, default='NoAlias')} coordinator book is at full capacity! Current limit is {config('MAX_PUBLIC_ORDERS', cast=str)} orders"
                 },
                 status.HTTP_400_BAD_REQUEST,
             )
@@ -778,6 +778,8 @@ class InfoView(ListAPIView):
             1 - float(config("MAKER_FEE_SPLIT"))
         )
         context["bond_size"] = float(config("DEFAULT_BOND_SIZE"))
+        context["notice_severity"] = config("NOTICE_SEVERITY", cast=str, default="none")
+        context["notice_message"] = config("NOTICE_MESSAGE", cast=str, default="")
 
         try:
             context["current_swap_fee_rate"] = Logics.compute_swap_fee_rate(

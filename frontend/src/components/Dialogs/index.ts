@@ -10,3 +10,4 @@ export { default as ProfileDialog } from './Profile';
 export { default as StatsDialog } from './Stats';
 export { default as EnableTelegramDialog } from './EnableTelegram';
 export { default as UpdateClientDialog } from './UpdateClient';
+export { default as NoticeDialog } from './Notice';

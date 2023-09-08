@@ -7,9 +7,10 @@ import {
   ProfileDialog,
   StatsDialog,
   UpdateClientDialog,
+  NoticeDialog,
 } from '../../components/Dialogs';
 import { pn } from '../../utils';
-import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 export interface OpenDialogs {
   more: boolean;
@@ -20,6 +21,7 @@ export interface OpenDialogs {
   stats: boolean;
   update: boolean;
   profile: boolean;
+  notice: boolean;
 }
 
 const MainDialogs = (): JSX.Element => {
@@ -36,7 +38,17 @@ const MainDialogs = (): JSX.Element => {
 
   useEffect(() => {
     if (info.openUpdateClient) {
-      setOpen({ ...closeAll, update: true });
+      setOpen((open) => {
+        return { ...open, update: true };
+      });
+    }
+  }, [info]);
+
+  useEffect(() => {
+    if (!info.loading && info.notice_severity !== 'none' && info.notice_message !== '') {
+      setOpen((open) => {
+        return { ...open, notice: true };
+      });
     }
   }, [info]);
 
@@ -48,6 +60,14 @@ const MainDialogs = (): JSX.Element => {
         clientVersion={info.clientVersion}
         onClose={() => {
           setOpen({ ...open, update: false });
+        }}
+      />
+      <NoticeDialog
+        open={open.notice}
+        severity={info.notice_severity}
+        message={info.notice_message}
+        onClose={() => {
+          setOpen({ ...open, notice: false });
         }}
       />
       <InfoDialog
