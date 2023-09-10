@@ -1342,7 +1342,7 @@ class Logics:
             pass
         send_notification.delay(order_id=order.id, message="order_taken_confirmed")
         order.log(
-            f"<b>Contract formalized.</b> Maker: Robot({order.maker.robot},{order.maker.username}). Taker: Robot({order.taker.robot},{order.taker.username}). API median price {order.currency.exchange_rate} {Currency.currency_choices(order.currency.currency).label}/BTC. Premium is {order.premium}. Contract size {order.last_satoshis} Sats"
+            f"<b>Contract formalized.</b> Maker: Robot({order.maker.robot.id},{order.maker}). Taker: Robot({order.taker.robot.id},{order.taker}). API median price {order.currency.exchange_rate} {Currency.currency_choices[order.currency.currency-1][1]}/BTC. Premium is {order.premium}%. Contract size {order.last_satoshis} Sats"
         )
         return True
 
