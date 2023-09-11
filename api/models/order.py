@@ -287,6 +287,8 @@ class Order(models.Model):
         try/catch block since this function is called inside the main request->response
         pipe and any error here would lead to a 500 response.
         """
+        if config("DISABLE_ORDER_LOGS", cast=bool, default=True):
+            return
         try:
             timestamp = timezone.now().replace(microsecond=0).isoformat()
             level_in_tag = "" if level == "INFO" else "<b>"
