@@ -1,10 +1,12 @@
 import hashlib
+from datetime import timedelta
 from pathlib import Path
 
 from channels.db import database_sync_to_async
 from channels.middleware import BaseMiddleware
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User, update_last_login
+from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed
@@ -84,7 +86,9 @@ class RobotTokenSHA256AuthenticationMiddleWare:
         # Check if it is an existing robot.
         try:
             token = Token.objects.get(key=token_sha256_b91)
-            update_last_login(None, token.user)
+            # Update last login every 2 minutes (avoid too many DB writes)
+            if token.user.last_login < timezone.now() - timedelta(minutes=2):
+                update_last_login(None, token.user)
 
         except Token.DoesNotExist:
             # If we get here the user does not have a robot on this coordinator
