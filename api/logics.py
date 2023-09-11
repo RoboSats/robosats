@@ -1310,21 +1310,23 @@ class Logics:
         # (This is the last update to "last_satoshis", it becomes the escrow amount next)
         order.last_satoshis = cls.satoshis_now(order)
         order.last_satoshis_time = timezone.now()
-        order.taker_bond.status = LNPayment.Status.LOCKED
-        order.taker_bond.save(update_fields=["status"])
 
         # With the bond confirmation the order is extended 'public_order_duration' hours
         order.expires_at = timezone.now() + timedelta(
             seconds=order.t_to_expire(Order.Status.WF2)
         )
-        order.update_status(Order.Status.WF2)
+        order.status = Order.Status.WF2
         order.save(
             update_fields=[
+                "status",
                 "last_satoshis",
                 "last_satoshis_time",
                 "expires_at",
             ]
         )
+
+        order.taker_bond.status = LNPayment.Status.LOCKED
+        order.taker_bond.save(update_fields=["status"])
 
         # Both users robots are added one more contract // Unsafe can add more than once.
         order.maker.robot.total_contracts += 1

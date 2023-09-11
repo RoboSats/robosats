@@ -307,7 +307,17 @@ class OrderView(viewsets.ViewSet):
             data["escrow_locked"] = False
 
         # If both bonds are locked, participants can see the final trade amount in sats.
-        if order.taker_bond:
+        if order.status in [
+            Order.Status.WF2,
+            Order.Status.WFI,
+            Order.Status.WFE,
+            Order.Status.CCA,
+            Order.Status.FSE,
+            Order.Status.DIS,
+            Order.Status.PAY,
+            Order.Status.SUC,
+            Order.Status.FAI,
+        ]:
             if (
                 order.maker_bond.status
                 == order.taker_bond.status
