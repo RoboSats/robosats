@@ -19,7 +19,7 @@ jobs:
     name: 'Push Docker image to Docker Hub'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: 'Copy Static' # Needed since Github actions does not support symlinks
       run: cp -r frontend/static nodeapp/static
