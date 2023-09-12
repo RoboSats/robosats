@@ -87,7 +87,10 @@ class RobotTokenSHA256AuthenticationMiddleWare:
         try:
             token = Token.objects.get(key=token_sha256_b91)
             # Update last login every 2 minutes (avoid too many DB writes)
-            if token.user.last_login < timezone.now() - timedelta(minutes=2):
+            try:
+                if token.user.last_login < timezone.now() - timedelta(minutes=2):
+                    update_last_login(None, token.user)
+            except Exception:
                 update_last_login(None, token.user)
 
         except Token.DoesNotExist:
