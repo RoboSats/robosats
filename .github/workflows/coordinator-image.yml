@@ -67,7 +67,7 @@ jobs:
 
     - name: 'Get Commit Hash'
       id: commit
-      uses: pr-mpt/actions-commit-hash@v2
+      uses: pr-mpt/actions-commit-hash@v3
 
     - name: 'Save Commit Long Hash to TXT File'
       run: |
