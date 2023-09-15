@@ -457,8 +457,8 @@ class Logics:
             cls.return_escrow(order)
             cls.settle_bond(order.maker_bond)
             cls.return_bond(order.taker_bond)
-            cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
             order.update_status(Order.Status.MLD)
+            cls.add_slashed_rewards(order, order.maker_bond, order.taker_bond)
 
             order.log("Maker bond was <b>settled</b>")
             order.log("Taker bond was <b>unlocked</b>")
@@ -470,8 +470,8 @@ class Logics:
             cls.return_escrow(order)
             cls.settle_bond(order.taker_bond)
             cls.return_bond(order.maker_bond)
-            cls.add_slashed_rewards(order, order.taker_bond, order.maker_bond)
             order.update_status(Order.Status.TLD)
+            cls.add_slashed_rewards(order, order.taker_bond, order.maker_bond)
 
             order.log("Maker bond was <b>unlocked</b>")
             order.log("Taker bond was <b>settled</b>")
@@ -1783,17 +1783,19 @@ class Logics:
         rewarded_robot.earned_rewards += reward
         rewarded_robot.save(update_fields=["earned_rewards"])
 
+        slashed_robot_log = ""
         if slashed_return > 100:
             slashed_robot = slashed_bond.sender.robot
             slashed_robot.earned_rewards += slashed_return
             slashed_robot.save(update_fields=["earned_rewards"])
+            slashed_robot_log = "Robot({slashed_robot.id},{slashed_robot.user.username}) was returned {slashed_return} Sats)"
 
         new_proceeds = int(slashed_satoshis * (1 - reward_fraction))
         order.proceeds += new_proceeds
         order.save(update_fields=["proceeds"])
         send_devfund_donation.delay(order.id, new_proceeds, "slashed bond")
         order.log(
-            f"Robot({rewarded_robot.id},{rewarded_robot.user.username}) was rewarded {reward} Sats. Robot({slashed_robot.id},{slashed_robot.user.username}) was returned {slashed_return} Sats)"
+            f"Robot({rewarded_robot.id},{rewarded_robot.user.username}) was rewarded {reward} Sats. {slashed_robot_log}"
         )
         return
 
