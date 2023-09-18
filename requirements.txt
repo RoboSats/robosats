@@ -20,7 +20,7 @@ git+https://github.com/RoboSats/Robohash.git
 gunicorn==21.2.0
 psycopg2==2.9.7
 SQLAlchemy==2.0.16
-django-import-export==3.2.0
+django-import-export==3.3.1
 requests[socks]
 python-gnupg==0.5.1
 daphne==4.0.0
