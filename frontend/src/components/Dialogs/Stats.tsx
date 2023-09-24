@@ -36,6 +36,12 @@ interface Props {
 const StatsDialog = ({ open = false, onClose, info }: Props): JSX.Element => {
   const { t } = useTranslation();
 
+  const isOnionAccess = window.location.hostname.endsWith('.onion');
+
+  const ambossURL = isOnionAccess
+    ? `http://amboss5jfdzzblty5dr5zaig5twvkgsla6y5xuy6s5c5ogpjfcqgltid.onion/node/${info.node_id}`
+    : `https://amboss.space/node/${info.node_id}`;
+
   return (
     <Dialog open={open} onClose={onClose}>
       <div style={info.loading ? {} : { display: 'none' }}>
@@ -107,11 +113,7 @@ const StatsDialog = ({ open = false, onClose, info }: Props): JSX.Element => {
                 <AmbossIcon />
               </ListItemIcon>
               <ListItemText secondary={info.node_alias}>
-                <Link
-                  target='_blank'
-                  href={`https://amboss.space/node/${info.node_id}`}
-                  rel='noreferrer'
-                >
+                <Link target='_blank' href={ambossURL} rel='noreferrer'>
                   {`${info.node_id.slice(0, 12)}... (AMBOSS)`}
                 </Link>
               </ListItemText>
