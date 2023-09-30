@@ -110,6 +110,8 @@ class MakerView(CreateAPIView):
         public_duration = serializer.data.get("public_duration")
         escrow_duration = serializer.data.get("escrow_duration")
         bond_size = serializer.data.get("bond_size")
+        latitude = serializer.data.get("latitude")
+        longitude = serializer.data.get("longitude")
 
         # Optional params
         if public_duration is None:
@@ -283,6 +285,8 @@ class OrderView(viewsets.ViewSet):
         data["taker_nick"] = str(order.taker)
         data["status_message"] = Order.Status(order.status).label
         data["is_fiat_sent"] = order.is_fiat_sent
+        data["latitude"] = order.latitude
+        data["longitude"] = order.longitude
         data["is_disputed"] = order.is_disputed
         data["ur_nick"] = request.user.username
         data["satoshis_now"] = order.last_satoshis

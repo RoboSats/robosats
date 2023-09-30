@@ -50,6 +50,8 @@ export interface Order {
   taker_status: 'Active' | 'Seen recently' | 'Inactive';
   price_now: number | undefined;
   satoshis_now: number;
+  latitude: number;
+  longitude: number;
   premium_now: number | undefined;
   premium_percentile: number;
   num_similar_orders: number;

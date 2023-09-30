@@ -61,6 +61,8 @@ class ListOrderSerializer(serializers.ModelSerializer):
             "taker",
             "escrow_duration",
             "bond_size",
+            "latitude",
+            "longitude"
         )
 
 
@@ -253,6 +255,14 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         required=False,
         help_text="in percentage, the swap fee rate the platform charges",
     )
+    latitude = serializers.FloatField(
+        required=False,
+        help_text="Latitude of the order for F2F payments",
+    )
+    longitude = serializers.FloatField(
+        required=False,
+        help_text="Longitude of the order for F2F payments",
+    )
     pending_cancel = serializers.BooleanField(
         required=False,
         help_text="Your counterparty requested for a collaborative cancel when `status` is either `8`, `9` or `10`",
@@ -391,6 +401,8 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "sent_satoshis",
             "txid",
             "network",
+            "latitude",
+            "longitude",
         )
 
 
@@ -430,6 +442,8 @@ class OrderPublicSerializer(serializers.ModelSerializer):
             "escrow_duration",
             "satoshis_now",
             "bond_size",
+            "latitude",
+            "longitude"
         )
 
 
@@ -469,6 +483,8 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "public_duration",
             "escrow_duration",
             "bond_size",
+            "latitude",
+            "longitude"
         )
 
 
