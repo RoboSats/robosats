@@ -14,6 +14,8 @@ export interface PublicOrder {
   premium: number;
   satoshis: number;
   satoshis_now: number;
+  latitude: number;
+  longitude: number;
   bond_size: number;
   maker: number;
   escrow_duration: number;

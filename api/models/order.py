@@ -128,6 +128,28 @@ class Order(models.Model):
         blank=False,
     )
 
+    # optionally makers can choose a coordinate for F2F
+    latitude = models.DecimalField(
+        max_digits=8,
+        decimal_places=6,
+        null=True,
+        validators=[
+            MinValueValidator(config(-90, cast=float)),
+            MaxValueValidator(config(90, cast=float)),
+        ],
+        blank=False,
+    )
+    longitude = models.DecimalField(
+        max_digits=9, 
+        decimal_places=6,
+        null=True,
+        validators=[
+            MinValueValidator(config(-180, cast=float)),
+            MaxValueValidator(config(180, cast=float)),
+        ],
+        blank=False,
+    )
+
     # how many sats at creation and at last check (relevant for marked to market)
     t0_satoshis = models.PositiveBigIntegerField(
         null=True,
