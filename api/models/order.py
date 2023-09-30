@@ -140,7 +140,7 @@ class Order(models.Model):
         blank=False,
     )
     longitude = models.DecimalField(
-        max_digits=9, 
+        max_digits=9,
         decimal_places=6,
         null=True,
         validators=[
