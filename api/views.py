@@ -163,6 +163,8 @@ class MakerView(CreateAPIView):
             public_duration=public_duration,
             escrow_duration=escrow_duration,
             bond_size=bond_size,
+            latitude=latitude,
+            longitude=longitude,
         )
 
         order.last_satoshis = order.t0_satoshis = Logics.satoshis_now(order)
