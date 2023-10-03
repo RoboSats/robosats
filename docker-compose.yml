@@ -22,7 +22,6 @@ services:
 
   backend:
     build: .
-    image: backend
     container_name: django-dev
     restart: always
     depends_on:
@@ -61,7 +60,7 @@ services:
       - ./frontend/static:/usr/src/robosats/static
 
   clean-orders:
-    image: backend
+    build: .
     restart: always
     container_name: clord-dev
     environment:
@@ -74,7 +73,7 @@ services:
     network_mode: service:tor
 
   follow-invoices:
-    image: backend
+    build: .
     container_name: invo-dev
     restart: always
     depends_on:
@@ -90,7 +89,7 @@ services:
     network_mode: service:tor
 
   telegram-watcher:
-    image: backend
+    build: .
     container_name: tg-dev
     restart: always
     environment:
@@ -103,7 +102,7 @@ services:
     network_mode: service:tor
 
   celery-worker:
-    image: backend
+    build: .
     container_name: cele-worker-dev
     restart: always
     environment:
@@ -119,7 +118,7 @@ services:
     network_mode: service:tor
 
   celery-beat:
-    image: backend
+    build: .
     container_name: cele-beat-dev
     restart: always
     environment:
