@@ -134,8 +134,8 @@ class Order(models.Model):
         decimal_places=6,
         null=True,
         validators=[
-            MinValueValidator(config(-90, cast=float)),
-            MaxValueValidator(config(90, cast=float)),
+            MinValueValidator(-90),
+            MaxValueValidator(90),
         ],
         blank=False,
     )
@@ -144,8 +144,8 @@ class Order(models.Model):
         decimal_places=6,
         null=True,
         validators=[
-            MinValueValidator(config(-180, cast=float)),
-            MaxValueValidator(config(180, cast=float)),
+            MinValueValidator(-180),
+            MaxValueValidator(180),
         ],
         blank=False,
     )
