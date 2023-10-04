@@ -36,17 +36,4 @@ class Migration(migrations.Migration):
                 ],
             ),
         ),
-        migrations.AlterField(
-            model_name="order",
-            name="bond_size",
-            field=models.DecimalField(
-                decimal_places=2,
-                default=3.0,
-                max_digits=4,
-                validators=[
-                    django.core.validators.MinValueValidator(1.0),
-                    django.core.validators.MaxValueValidator(15.0),
-                ],
-            ),
-        ),
     ]
