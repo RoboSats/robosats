@@ -1,16 +1,13 @@
 import uuid
 
 from decouple import config
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
-
-MIN_TRADE = config("MIN_TRADE", cast=int, default=20_000)
-MAX_TRADE = config("MAX_TRADE", cast=int, default=1_000_000)
-FIAT_EXCHANGE_DURATION = config("FIAT_EXCHANGE_DURATION", cast=int, default=24)
 
 
 class Order(models.Model):
@@ -85,20 +82,22 @@ class Order(models.Model):
     # explicit
     satoshis = models.PositiveBigIntegerField(
         null=True,
-        validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)],
+        validators=[
+            MinValueValidator(settings.MIN_TRADE),
+            MaxValueValidator(settings.MAX_TRADE),
+        ],
         blank=True,
     )
     # optionally makers can choose the public order duration length (seconds)
     public_duration = models.PositiveBigIntegerField(
-        default=60 * 60 * config("DEFAULT_PUBLIC_ORDER_DURATION", cast=int, default=24)
-        - 1,
+        default=60 * 60 * settings.DEFAULT_PUBLIC_ORDER_DURATION - 1,
         null=False,
         validators=[
             MinValueValidator(
-                60 * 60 * config("MIN_PUBLIC_ORDER_DURATION", cast=float, default=0.166)
+                60 * 60 * settings.MIN_PUBLIC_ORDER_DURATION
             ),  # Min is 10 minutes
             MaxValueValidator(
-                60 * 60 * config("MAX_PUBLIC_ORDER_DURATION", cast=float, default=24)
+                60 * 60 * settings.MAX_PUBLIC_ORDER_DURATION
             ),  # Max is 24 Hours
         ],
         blank=False,
@@ -106,7 +105,7 @@ class Order(models.Model):
 
     # optionally makers can choose the escrow lock / invoice submission step length (seconds)
     escrow_duration = models.PositiveBigIntegerField(
-        default=60 * int(config("INVOICE_AND_ESCROW_DURATION")) - 1,
+        default=60 * settings.INVOICE_AND_ESCROW_DURATION - 1,
         null=False,
         validators=[
             MinValueValidator(60 * 30),  # Min is 30 minutes
@@ -119,11 +118,11 @@ class Order(models.Model):
     bond_size = models.DecimalField(
         max_digits=4,
         decimal_places=2,
-        default=config("DEFAULT_BOND_SIZE", cast=float, default=3),
+        default=settings.DEFAULT_BOND_SIZE,
         null=False,
         validators=[
-            MinValueValidator(config("MIN_BOND_SIZE", cast=float, default=1)),  # 1  %
-            MaxValueValidator(config("MAX_BOND_SIZE", cast=float, default=1)),  # 15 %
+            MinValueValidator(settings.MIN_BOND_SIZE),  # 2  %
+            MaxValueValidator(settings.MAX_BOND_SIZE),  # 15 %
         ],
         blank=False,
     )
@@ -131,12 +130,15 @@ class Order(models.Model):
     # how many sats at creation and at last check (relevant for marked to market)
     t0_satoshis = models.PositiveBigIntegerField(
         null=True,
-        validators=[MinValueValidator(MIN_TRADE), MaxValueValidator(MAX_TRADE)],
+        validators=[
+            MinValueValidator(settings.MIN_TRADE),
+            MaxValueValidator(settings.MAX_TRADE),
+        ],
         blank=True,
     )  # sats at creation
     last_satoshis = models.PositiveBigIntegerField(
         null=True,
-        validators=[MinValueValidator(0), MaxValueValidator(MAX_TRADE * 2)],
+        validators=[MinValueValidator(0), MaxValueValidator(settings.MAX_TRADE * 2)],
         blank=True,
     )  # sats last time checked. Weird if 2* trade max...
     # timestamp of last_satoshis
@@ -267,8 +269,10 @@ class Order(models.Model):
             ),  # 'Waiting for trade collateral and buyer invoice'
             7: int(self.escrow_duration),  # 'Waiting only for seller trade collateral'
             8: int(self.escrow_duration),  # 'Waiting only for buyer invoice'
-            9: 60 * 60 * FIAT_EXCHANGE_DURATION,  # 'Sending fiat - In chatroom'
-            10: 60 * 60 * FIAT_EXCHANGE_DURATION,  # 'Fiat sent - In chatroom'
+            9: 60
+            * 60
+            * settings.FIAT_EXCHANGE_DURATION,  # 'Sending fiat - In chatroom'
+            10: 60 * 60 * settings.FIAT_EXCHANGE_DURATION,  # 'Fiat sent - In chatroom'
             11: 1 * 24 * 60 * 60,  # 'In dispute'
             12: 0,  # 'Collaboratively cancelled'
             13: 100 * 24 * 60 * 60,  # 'Sending satoshis to buyer'

@@ -4,8 +4,6 @@ from rest_framework import serializers
 from .models import MarketTick, Order
 
 RETRY_TIME = int(config("RETRY_TIME"))
-MIN_PUBLIC_ORDER_DURATION_SECS = 60 * 60 * float(config("MIN_PUBLIC_ORDER_DURATION"))
-MAX_PUBLIC_ORDER_DURATION_SECS = 60 * 60 * float(config("MAX_PUBLIC_ORDER_DURATION"))
 
 
 class InfoSerializer(serializers.Serializer):

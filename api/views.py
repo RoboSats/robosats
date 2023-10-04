@@ -54,14 +54,9 @@ from control.models import AccountingDay, BalanceLog
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
-PUBLIC_DURATION = 60 * 60 * int(config("DEFAULT_PUBLIC_ORDER_DURATION")) - 1
-ESCROW_DURATION = 60 * int(config("INVOICE_AND_ESCROW_DURATION"))
-BOND_SIZE = int(config("DEFAULT_BOND_SIZE"))
 
 avatar_path = Path(settings.AVATAR_ROOT)
 avatar_path.mkdir(parents=True, exist_ok=True)
-
-# Create your views here.
 
 
 class MakerView(CreateAPIView):
@@ -113,11 +108,11 @@ class MakerView(CreateAPIView):
 
         # Optional params
         if public_duration is None:
-            public_duration = PUBLIC_DURATION
+            public_duration = 60 * 60 * settings.DEFAULT_PUBLIC_ORDER_DURATION
         if escrow_duration is None:
-            escrow_duration = ESCROW_DURATION
+            escrow_duration = 60 * settings.INVOICE_AND_ESCROW_DURATION
         if bond_size is None:
-            bond_size = BOND_SIZE
+            bond_size = settings.DEFAULT_BOND_SIZE
         if has_range is None:
             has_range = False
 
@@ -787,7 +782,7 @@ class InfoView(ListAPIView):
         context["taker_fee"] = float(config("FEE")) * (
             1 - float(config("MAKER_FEE_SPLIT"))
         )
-        context["bond_size"] = float(config("DEFAULT_BOND_SIZE"))
+        context["bond_size"] = settings.DEFAULT_BOND_SIZE
         context["notice_severity"] = config("NOTICE_SEVERITY", cast=str, default="none")
         context["notice_message"] = config("NOTICE_MESSAGE", cast=str, default="")
 
@@ -901,8 +896,8 @@ class LimitView(ListAPIView):
     @extend_schema(**LimitViewSchema.get)
     def get(self, request):
         # Trade limits as BTC
-        min_trade = float(config("MIN_TRADE")) / 100_000_000
-        max_trade = float(config("MAX_TRADE")) / 100_000_000
+        min_trade = config("MIN_ORDER_SIZE", cast=int, default=20_000) / 100_000_000
+        max_trade = config("MAX_ORDER_SIZE", cast=int, default=5_000_000) / 100_000_000
 
         payload = {}
         queryset = Currency.objects.all().order_by("currency")
