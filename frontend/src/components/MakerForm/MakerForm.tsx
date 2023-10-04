@@ -29,7 +29,7 @@ import { type LimitList, defaultMaker } from '../../models';
 
 import { LocalizationProvider, MobileTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ConfirmationDialog } from '../Dialogs';
+import { ConfirmationDialog, WorldmapDialog } from '../Dialogs';
 import { apiClient } from '../../services/api';
 
 import { FlagWithProps } from '../Icons';
@@ -76,6 +76,7 @@ const MakerForm = ({
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
 
   const [openDialogs, setOpenDialogs] = useState<boolean>(false);
+  const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
   const [submittingRequest, setSubmittingRequest] = useState<boolean>(false);
   const [amountRangeEnabled, setAmountRangeEnabled] = useState<boolean>(true);
 
@@ -161,7 +162,10 @@ const MakerForm = ({
     return maker.advancedOptions && amountRangeEnabled;
   }, [maker.advancedOptions, amountRangeEnabled]);
 
-  const handlePaymentMethodChange = function (paymentArray: string[]) {
+  const handlePaymentMethodChange = function (paymentArray: { name: string; icon: string }[]) {
+    if (paymentArray.some((element) => element.icon === 'cash')) {
+      setOpenWorldmap(true);
+    }
     let str = '';
     const arrayLength = paymentArray.length;
     for (let i = 0; i < arrayLength; i++) {
@@ -497,6 +501,12 @@ const MakerForm = ({
         onClickDone={handleCreateOrder}
         hasRobot={robot.avatarLoaded}
         onClickGenerateRobot={onClickGenerateRobot}
+      />
+      <WorldmapDialog
+        open={openWorldmap}
+        onClose={() => {
+          setOpenWorldmap(false);
+        }}
       />
       <Collapse in={limits.list.length == 0}>
         <div style={{ display: limits.list.length == 0 ? '' : 'none' }}>
