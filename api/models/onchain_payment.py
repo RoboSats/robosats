@@ -1,4 +1,4 @@
-from decouple import config
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -6,9 +6,6 @@ from django.template.defaultfilters import truncatechars
 from django.utils import timezone
 
 from control.models import BalanceLog
-
-MAX_TRADE = config("MAX_TRADE", cast=int, default=1_000_000)
-MIN_SWAP_AMOUNT = config("MIN_SWAP_AMOUNT", cast=int, default=1_000_000)
 
 
 class OnchainPayment(models.Model):
@@ -48,17 +45,11 @@ class OnchainPayment(models.Model):
 
     num_satoshis = models.PositiveBigIntegerField(
         null=True,
-        validators=[
-            MinValueValidator(0.5 * MIN_SWAP_AMOUNT),
-            MaxValueValidator(1.5 * MAX_TRADE),
-        ],
+        validators=[MinValueValidator(0), MaxValueValidator(1.5 * settings.MAX_TRADE)],
     )
     sent_satoshis = models.PositiveBigIntegerField(
         null=True,
-        validators=[
-            MinValueValidator(0.5 * MIN_SWAP_AMOUNT),
-            MaxValueValidator(1.5 * MAX_TRADE),
-        ],
+        validators=[MinValueValidator(0), MaxValueValidator(1.5 * settings.MAX_TRADE)],
     )
     # fee in sats/vbyte with mSats decimals fee_msat
     suggested_mining_fee_rate = models.DecimalField(
@@ -91,7 +82,7 @@ class OnchainPayment(models.Model):
     swap_fee_rate = models.DecimalField(
         max_digits=4,
         decimal_places=2,
-        default=config("MIN_SWAP_FEE", cast=float, default=0.01) * 100,
+        default=1,
         null=False,
         blank=False,
     )
