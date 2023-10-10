@@ -18,7 +18,7 @@ requests==2.31.0
 ring==0.10.1
 git+https://github.com/RoboSats/Robohash.git
 gunicorn==21.2.0
-psycopg2==2.9.8
+psycopg2==2.9.9
 SQLAlchemy==2.0.16
 django-import-export==3.3.1
 requests[socks]
