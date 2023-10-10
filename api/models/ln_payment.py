@@ -1,4 +1,4 @@
-from decouple import config
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -78,7 +78,7 @@ class LNPayment(models.Model):
     num_satoshis = models.PositiveBigIntegerField(
         validators=[
             MinValueValidator(100),
-            MaxValueValidator(1.5 * config("MAX_TRADE", cast=int, default=1_000_000)),
+            MaxValueValidator(1.5 * settings.MAX_TRADE),
         ]
     )
     # Routing budget in PPM

@@ -254,3 +254,32 @@ CACHES = {
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+#####################################################################
+# RoboSats API settings. These should remain the same across
+# all coordinators. Altering will require a DB migration.
+# Do not change unless you know what you are doing.
+# If there is a value here you would like to tweak or play with,
+# there is possibly a better way to do it! E.g. the .env file
+
+# Trade limits in satoshis to be applied as DB validator/constrain
+MIN_TRADE = 20_000
+MAX_TRADE = 5_000_000
+
+# Time a order is public in the book HOURS
+DEFAULT_PUBLIC_ORDER_DURATION = 24
+# Max value API will accept for public duration (cannot be higher than 24h, hardcoded as DB validator)
+MAX_PUBLIC_ORDER_DURATION = 24
+# Max value API will accept for public duration (cannot be higher than 24h, hardcoded as DB validator)
+MIN_PUBLIC_ORDER_DURATION = 0.166
+
+# Bond size as percentage (%)
+DEFAULT_BOND_SIZE = 3
+MIN_BOND_SIZE = 2
+MAX_BOND_SIZE = 15
+
+# Default time to provide a valid invoice and the trade escrow MINUTES
+INVOICE_AND_ESCROW_DURATION = 180
+# Time to confirm chat and confirm fiat (time to Fiat Sent confirmation) HOURS
+FIAT_EXCHANGE_DURATION = 24

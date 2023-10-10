@@ -1,6 +1,7 @@
 import textwrap
 
 from decouple import config
+from django.conf import settings
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter
 
 from api.serializers import (
@@ -11,9 +12,6 @@ from api.serializers import (
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 RETRY_TIME = int(config("RETRY_TIME"))
-PUBLIC_DURATION = 60 * 60 * int(config("DEFAULT_PUBLIC_ORDER_DURATION")) - 1
-ESCROW_DURATION = 60 * int(config("INVOICE_AND_ESCROW_DURATION"))
-BOND_SIZE = int(config("DEFAULT_BOND_SIZE"))
 
 
 class MakerViewSchema:
@@ -25,9 +23,9 @@ class MakerViewSchema:
 
 
             Default values for the following fields if not specified:
-            - `public_duration` - **{PUBLIC_DURATION}**
-            - `escrow_duration` - **{ESCROW_DURATION}**
-            - `bond_size` -  **{BOND_SIZE}**
+            - `public_duration` - **{settings.DEFAULT_PUBLIC_ORDER_DURATION}**
+            - `escrow_duration` - **{settings.INVOICE_AND_ESCROW_DURATION}**
+            - `bond_size` -  **{settings.DEFAULT_BOND_SIZE}**
             - `has_range` - **false**
             - `premium` - **0**
             """

@@ -18,8 +18,8 @@ MAKER_FEE_SPLIT = float(config("MAKER_FEE_SPLIT"))
 ESCROW_USERNAME = config("ESCROW_USERNAME")
 PENALTY_TIMEOUT = int(config("PENALTY_TIMEOUT"))
 
-MIN_TRADE = int(config("MIN_TRADE"))
-MAX_TRADE = int(config("MAX_TRADE"))
+MIN_ORDER_SIZE = config("MIN_ORDER_SIZE", cast=int, default=20_000)
+MAX_ORDER_SIZE = config("MAX_ORDER_SIZE", cast=int, default=5_000_000)
 
 EXP_MAKER_BOND_INVOICE = int(config("EXP_MAKER_BOND_INVOICE"))
 EXP_TAKER_BOND_INVOICE = int(config("EXP_TAKER_BOND_INVOICE"))
@@ -28,9 +28,6 @@ BLOCK_TIME = float(config("BLOCK_TIME"))
 MAX_MINING_NETWORK_SPEEDUP_EXPECTED = float(
     config("MAX_MINING_NETWORK_SPEEDUP_EXPECTED")
 )
-
-INVOICE_AND_ESCROW_DURATION = int(config("INVOICE_AND_ESCROW_DURATION"))
-FIAT_EXCHANGE_DURATION = int(config("FIAT_EXCHANGE_DURATION"))
 
 
 class Logics:
@@ -90,20 +87,20 @@ class Logics:
     def validate_order_size(cls, order):
         """Validates if order size in Sats is within limits at t0"""
         if not order.has_range:
-            if order.t0_satoshis > MAX_TRADE:
+            if order.t0_satoshis > MAX_ORDER_SIZE:
                 return False, {
                     "bad_request": "Your order is too big. It is worth "
                     + "{:,}".format(order.t0_satoshis)
                     + " Sats now, but the limit is "
-                    + "{:,}".format(MAX_TRADE)
+                    + "{:,}".format(MAX_ORDER_SIZE)
                     + " Sats"
                 }
-            if order.t0_satoshis < MIN_TRADE:
+            if order.t0_satoshis < MIN_ORDER_SIZE:
                 return False, {
                     "bad_request": "Your order is too small. It is worth "
                     + "{:,}".format(order.t0_satoshis)
                     + " Sats now, but the limit is "
-                    + "{:,}".format(MIN_TRADE)
+                    + "{:,}".format(MIN_ORDER_SIZE)
                     + " Sats"
                 }
         elif order.has_range:
@@ -117,20 +114,20 @@ class Logics:
                 return False, {
                     "bad_request": "Maximum range amount must be at least 50 percent higher than the minimum amount"
                 }
-            elif max_sats > MAX_TRADE:
+            elif max_sats > MAX_ORDER_SIZE:
                 return False, {
                     "bad_request": "Your order maximum amount is too big. It is worth "
                     + "{:,}".format(int(max_sats))
                     + " Sats now, but the limit is "
-                    + "{:,}".format(MAX_TRADE)
+                    + "{:,}".format(MAX_ORDER_SIZE)
                     + " Sats"
                 }
-            elif min_sats < MIN_TRADE:
+            elif min_sats < MIN_ORDER_SIZE:
                 return False, {
                     "bad_request": "Your order minimum amount is too small. It is worth "
                     + "{:,}".format(int(min_sats))
                     + " Sats now, but the limit is "
-                    + "{:,}".format(MIN_TRADE)
+                    + "{:,}".format(MIN_ORDER_SIZE)
                     + " Sats"
                 }
             elif min_sats < max_sats / 15:
@@ -590,7 +587,7 @@ class Logics:
         shape = str(config("SWAP_FEE_SHAPE"))
 
         if shape == "linear":
-            MIN_SWAP_FEE = float(config("MIN_SWAP_FEE"))
+            MIN_SWAP_FEE = config("MIN_SWAP_FEE", cast=float, default=0.01)
             MIN_POINT = float(config("MIN_POINT"))
             MAX_SWAP_FEE = float(config("MAX_SWAP_FEE"))
             MAX_POINT = float(config("MAX_POINT"))
@@ -603,7 +600,7 @@ class Logics:
                 )
 
         elif shape == "exponential":
-            MIN_SWAP_FEE = float(config("MIN_SWAP_FEE"))
+            MIN_SWAP_FEE = config("MIN_SWAP_FEE", cast=float, default=0.01)
             MAX_SWAP_FEE = float(config("MAX_SWAP_FEE"))
             SWAP_LAMBDA = float(config("SWAP_LAMBDA"))
             swap_fee_rate = MIN_SWAP_FEE + (MAX_SWAP_FEE - MIN_SWAP_FEE) * math.exp(

@@ -51,7 +51,7 @@ class MarketTick(models.Model):
     fee = models.DecimalField(
         max_digits=4,
         decimal_places=4,
-        default=config("FEE", cast=float, default=0),
+        default=0,
         validators=[MinValueValidator(0), MaxValueValidator(1)],
     )
 
@@ -71,7 +71,11 @@ class MarketTick(models.Model):
             premium = 100 * (price / market_exchange_rate - 1)
 
             market_tick = MarketTick.objects.create(
-                price=price, volume=volume, premium=premium, currency=order.currency
+                price=price,
+                volume=volume,
+                premium=premium,
+                currency=order.currency,
+                fee=config("FEE", cast=float, default=0),
             )
 
             return market_tick
