@@ -105,7 +105,7 @@ def send_devfund_donation(order_id, proceeds, reason):
         )
     else:
         target_pubkey = (
-            "0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"
+            "02187352cc4b1856b9604e0a79e1bc9b301be7e0c14acbbb8c29f7051d507127d7"
         )
 
     order = Order.objects.get(id=order_id)
