@@ -95,16 +95,19 @@ interface TagProps {
   label: string;
   icon: string;
   onDelete: () => void;
+  onClick: () => void;
 }
-const Tag = ({ label, icon, onDelete, ...other }: TagProps) => {
+const Tag = ({ label, icon, onDelete, onClick, ...other }: TagProps) => {
   const theme = useTheme();
   const iconSize = 1.5 * theme.typography.fontSize;
   return (
     <div {...other}>
-      <div style={{ position: 'relative', left: '-5px', top: '0.28em' }}>
+      <div style={{ position: 'relative', left: '-5px', top: '0.28em' }} onClick={onClick}>
         <PaymentIcon width={iconSize} height={iconSize} icon={icon} />
       </div>
-      <span style={{ position: 'relative', left: '2px' }}>{label}</span>
+      <span style={{ position: 'relative', left: '2px' }} onClick={onClick}>
+        {label}
+      </span>
       <CloseIcon onClick={onDelete} />
     </div>
   );
@@ -291,6 +294,7 @@ export default function AutocompletePayments(props) {
                 label={t(option.name)}
                 icon={option.icon}
                 sx={{ height: '2.1em', ...(props.tagProps ? props.tagProps.sx : {}) }}
+                onClick={props.onClick}
                 {...getTagProps({ index })}
               />
             ))}
