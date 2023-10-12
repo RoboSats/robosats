@@ -9,15 +9,16 @@ import MakerForm from '../../components/MakerForm';
 import BookTable from '../../components/BookTable';
 
 // Icons
-import { BarChart, FormatListBulleted } from '@mui/icons-material';
+import { BarChart, FormatListBulleted, Map } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import MapChart from '../../components/Charts/MapChart';
 
 const BookPage = (): JSX.Element => {
   const { robot, fetchBook, windowSize, setDelay, setOrder } =
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [view, setView] = useState<'list' | 'depth'>('list');
+  const [view, setView] = useState<'list' | 'depth' | 'map'>('list');
   const [openMaker, setOpenMaker] = useState<boolean>(false);
   const [openNoRobot, setOpenNoRobot] = useState<boolean>(false);
 
@@ -58,21 +59,17 @@ const BookPage = (): JSX.Element => {
         {doubleView ? (
           <></>
         ) : (
-          <Button
-            onClick={() => {
-              setView(view === 'depth' ? 'list' : 'depth');
-            }}
-          >
-            {view == 'depth' ? (
-              <>
-                <FormatListBulleted /> {t('List')}
-              </>
-            ) : (
-              <>
-                <BarChart /> {t('Chart')}
-              </>
-            )}
-          </Button>
+          <>
+            <Button onClick={() => setView('list')}>
+              <FormatListBulleted /> {t('List')}
+            </Button>
+            <Button onClick={() => setView('depth')}>
+              <BarChart /> {t('Chart')}
+            </Button>
+            <Button onClick={() => setView('map')}>
+              <Map /> {t('Map')}
+            </Button>
+          </>
         )}
       </ButtonGroup>
     );
@@ -135,6 +132,12 @@ const BookPage = (): JSX.Element => {
           </Grid>
         ) : view === 'depth' ? (
           <DepthChart
+            maxWidth={windowSize.width * 0.8} // EM units
+            maxHeight={windowSize.height * 0.825 - 5} // EM units
+            onOrderClicked={onOrderClicked}
+          />
+        ) : view === 'map' ? (
+          <MapChart
             maxWidth={windowSize.width * 0.8} // EM units
             maxHeight={windowSize.height * 0.825 - 5} // EM units
             onOrderClicked={onOrderClicked}

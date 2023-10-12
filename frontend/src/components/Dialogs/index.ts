@@ -11,4 +11,4 @@ export { default as StatsDialog } from './Stats';
 export { default as EnableTelegramDialog } from './EnableTelegram';
 export { default as UpdateClientDialog } from './UpdateClient';
 export { default as NoticeDialog } from './Notice';
-export { default as WorldmapDialog } from './Worldmap';
+export { default as F2fMapDialog } from './F2fMap';

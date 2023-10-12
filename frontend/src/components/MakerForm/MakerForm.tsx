@@ -29,7 +29,7 @@ import { type LimitList, defaultMaker } from '../../models';
 
 import { LocalizationProvider, MobileTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ConfirmationDialog, WorldmapDialog } from '../Dialogs';
+import { ConfirmationDialog, F2fMapDialog } from '../Dialogs';
 import { apiClient } from '../../services/api';
 
 import { FlagWithProps } from '../Icons';
@@ -506,9 +506,9 @@ const MakerForm = ({
         hasRobot={robot.avatarLoaded}
         onClickGenerateRobot={onClickGenerateRobot}
       />
-      <WorldmapDialog
+      <F2fMapDialog
         open={openWorldmap}
-        orderType={fav.type}
+        orderType={fav.type || 0}
         onClose={(pos: LatLng) => {
           setOpenWorldmap(false);
           setPosition(pos);
