@@ -41,6 +41,7 @@ import { amountToString, computeSats, pn } from '../../utils';
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { LatLng } from 'leaflet';
 
 interface MakerFormProps {
   disableRequest?: boolean;
@@ -74,6 +75,7 @@ const MakerForm = ({
   const [satoshisLimits, setSatoshisLimits] = useState<number[]>([20000, 4000000]);
   const [currentPrice, setCurrentPrice] = useState<number | string>('...');
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
+  const [position, setPosition] = useState<LatLng>();
 
   const [openDialogs, setOpenDialogs] = useState<boolean>(false);
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
@@ -163,7 +165,7 @@ const MakerForm = ({
   }, [maker.advancedOptions, amountRangeEnabled]);
 
   const handlePaymentMethodChange = function (paymentArray: { name: string; icon: string }[]) {
-    if (paymentArray.some((element) => element.icon === 'cash')) {
+    if (paymentArray.at(-1)?.icon === 'cash') {
       setOpenWorldmap(true);
     }
     let str = '';
@@ -271,6 +273,8 @@ const MakerForm = ({
         public_duration: maker.publicDuration,
         escrow_duration: maker.escrowDuration,
         bond_size: maker.bondSize,
+        latitude: position?.lat,
+        longitude: position?.lng,
       };
       apiClient
         .post(baseUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
@@ -504,8 +508,10 @@ const MakerForm = ({
       />
       <WorldmapDialog
         open={openWorldmap}
-        onClose={() => {
+        orderType={fav.type}
+        onClose={(pos: LatLng) => {
           setOpenWorldmap(false);
+          setPosition(pos);
         }}
       />
       <Collapse in={limits.list.length == 0}>
@@ -765,6 +771,7 @@ const MakerForm = ({
           <Grid item xs={12}>
             <AutocompletePayments
               onAutocompleteChange={handlePaymentMethodChange}
+              onClick={() => setOpenWorldmap(true)}
               optionsType={fav.mode}
               error={maker.badPaymentMethod}
               helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
