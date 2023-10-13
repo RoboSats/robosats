@@ -56,7 +56,7 @@
     "@mui/material": "^5.14.0",
     "@mui/system": "^5.14.0",
     "@mui/x-data-grid": "^6.16.1",
-    "@mui/x-date-pickers": "^6.16.0",
+    "@mui/x-date-pickers": "^6.16.2",
     "@nivo/core": "^0.83.0",
     "@nivo/line": "^0.83.0",
     "base-ex": "^0.8.1",
