@@ -122,12 +122,21 @@ const BookPage = (): JSX.Element => {
                 onOrderClicked={onOrderClicked}
               />
             </Grid>
-            <Grid item>
-              <DepthChart
-                maxWidth={chartWidthEm} // EM units
-                maxHeight={windowSize.height * 0.825 - 5} // EM units
-                onOrderClicked={onOrderClicked}
-              />
+            <Grid item justifyContent='space-between'>
+              <Grid item>
+                <DepthChart
+                  maxWidth={chartWidthEm} // EM units
+                  maxHeight={(windowSize.height * 0.825 - 5) / 2} // EM units
+                  onOrderClicked={onOrderClicked}
+                />
+              </Grid>
+              <Grid item>
+                <MapChart
+                  maxWidth={windowSize.width * 0.8} // EM units
+                  maxHeight={(windowSize.height * 0.825 - 5) / 2} // EM units
+                  onOrderClicked={onOrderClicked}
+                />
+              </Grid>
             </Grid>
           </Grid>
         ) : view === 'depth' ? (
