@@ -5,8 +5,7 @@ import { useTheme, LinearProgress } from '@mui/material';
 import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { GeoJsonObject } from 'geojson';
 import { LatLng, LeafletMouseEvent } from 'leaflet';
-import { Order, PublicOrder } from '../../models';
-import { randomNumberBetween } from '@mui/x-data-grid/utils/utils';
+import { PublicOrder } from '../../models';
 import OrderTooltip from '../Charts/helpers/OrderTooltip';
 
 interface Props {
@@ -16,15 +15,19 @@ interface Props {
   setPosition?: (position: LatLng) => void;
   orders?: PublicOrder[];
   onOrderClicked?: (id: number) => void;
+  zoom?: number;
+  center: [number, number];
 }
 
 const Map = ({
   orderType,
   position,
+  zoom,
   orders = [],
   setPosition = () => {},
   lowQuality = true,
   onOrderClicked = () => null,
+  center,
 }: Props): JSX.Element => {
   const theme = useTheme();
   const { baseUrl } = useContext<UseAppStoreType>(AppContext);
@@ -61,6 +64,7 @@ const Map = ({
       const color = order.type == 1 ? theme.palette.primary.main : theme.palette.secondary.main;
       return (
         <Circle
+          key={order.id}
           center={[order.latitude, order.longitude]}
           pathOptions={{ fillColor: color, color }}
           radius={10000}
@@ -77,7 +81,11 @@ const Map = ({
   };
 
   return (
-    <MapContainer center={[0, 0]} zoom={2} style={{ height: '100%', width: '100%' }}>
+    <MapContainer
+      center={center ?? [0, 0]}
+      zoom={zoom ? zoom : 2}
+      style={{ height: '100%', width: '100%' }}
+    >
       {lowQuality && !worldmap && <LinearProgress />}
       <>{}</>
       {lowQuality && worldmap && (
