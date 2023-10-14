@@ -472,10 +472,8 @@ const MakerForm = ({
           longitude: parseFloat(pos.lng.toPrecision(6)),
         };
       });
-      if (!maker.paymentMethods.find((method) => method === 'cash')) {
-        const newMethods = maker.paymentMethods.map((method) => {
-          return { name: method, icon: method };
-        });
+      if (!maker.paymentMethods.find((method) => method.icon === 'cash')) {
+        const newMethods = maker.paymentMethods;
         const cash = fiatMethods.find((method) => method.icon === 'cash');
         if (cash) {
           newMethods.unshift(cash);
@@ -538,7 +536,9 @@ const MakerForm = ({
         onClickGenerateRobot={onClickGenerateRobot}
       />
       <F2fMapDialog
-        maker={maker}
+        save
+        latitude={maker.latitude}
+        longitude={maker.longitude}
         open={openWorldmap}
         orderType={fav.type || 0}
         onClose={(pos?: LatLng) => {

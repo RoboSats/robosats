@@ -13,16 +13,26 @@ import {
 import { WifiTetheringError } from '@mui/icons-material';
 import Map from '../Map';
 import { LatLng } from 'leaflet';
-import { Maker } from '../../models';
 
 interface Props {
   open: boolean;
   orderType: number;
-  onClose: (position?: LatLng) => void;
-  maker: Maker;
+  latitude?: number;
+  longitude?: number;
+  onClose?: (position?: LatLng) => void;
+  save?: boolean;
+  zoom?: number;
 }
 
-const F2fMapDialog = ({ open = false, orderType, onClose, maker }: Props): JSX.Element => {
+const F2fMapDialog = ({
+  open = false,
+  orderType,
+  onClose = () => {},
+  latitude,
+  longitude,
+  save,
+  zoom,
+}: Props): JSX.Element => {
   const { t } = useTranslation();
   const [position, setPosition] = useState<LatLng>();
   const [lowQuality, setLowQuality] = useState<boolean>(true);
@@ -32,9 +42,8 @@ const F2fMapDialog = ({ open = false, orderType, onClose, maker }: Props): JSX.E
   };
 
   useEffect(() => {
-    if (open) {
-      if (maker.latitude && maker.longitude)
-        setPosition(new LatLng(maker.latitude, maker.longitude));
+    if (open && latitude && longitude) {
+      setPosition(new LatLng(latitude, longitude));
     } else {
       setPosition(undefined);
     }
@@ -50,7 +59,7 @@ const F2fMapDialog = ({ open = false, orderType, onClose, maker }: Props): JSX.E
     >
       <DialogTitle>
         <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
-          <Grid item>{t('Choose a location')}</Grid>
+          <Grid item>{t(save ? 'Choose a location' : 'Map')}</Grid>
           <Grid item>
             <Tooltip
               enterTouchDelay={0}
@@ -81,11 +90,13 @@ const F2fMapDialog = ({ open = false, orderType, onClose, maker }: Props): JSX.E
           lowQuality={lowQuality}
           position={position}
           setPosition={setPosition}
+          zoom={zoom}
+          center={[latitude ?? 0, longitude ?? 0]}
         />
       </DialogContent>
       <DialogActions>
         <Button color='primary' variant='contained' onClick={onSave} disabled={!position}>
-          {t('Save')}
+          {save ? t('Save') : t('Close')}
         </Button>
       </DialogActions>
     </Dialog>
