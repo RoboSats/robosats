@@ -20,13 +20,12 @@ import {
 } from '@mui/material';
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { type PublicOrder, LimitList, type Order } from '../../../models';
-import RobotAvatar from '../../RobotAvatar';
-import { amountToString, matchMedian, statusBadgeColor } from '../../../utils';
+import { type PublicOrder, type Order } from '../../../models';
+import { matchMedian } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
-import { PaymentStringAsIcons } from '../../PaymentMethods';
 import getNivoScheme from '../NivoScheme';
 import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
+import OrderTooltip from '../helpers/OrderTooltip';
 
 interface DepthChartProps {
   maxWidth: number;
@@ -215,57 +214,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
     pointTooltip: PointTooltipProps,
   ) => {
     const order: PublicOrder = pointTooltip.point.data.order;
-    return order ? (
-      <Paper elevation={12} style={{ padding: 10, width: 250 }}>
-        <Grid container justifyContent='space-between'>
-          <Grid item xs={3}>
-            <Grid container justifyContent='center' alignItems='center'>
-              <RobotAvatar
-                nickname={order.maker_nick}
-                orderType={order.type}
-                statusColor={statusBadgeColor(order.maker_status)}
-                tooltip={t(order.maker_status)}
-                baseUrl={baseUrl}
-                small={true}
-              />
-            </Grid>
-          </Grid>
-          <Grid item xs={8}>
-            <Grid container direction='column' justifyContent='center' alignItems='flex-start'>
-              <Box>{order.maker_nick}</Box>
-              <Box>
-                <Grid
-                  container
-                  direction='column'
-                  justifyContent='flex-start'
-                  alignItems='flex-start'
-                >
-                  <Grid item xs={12}>
-                    {amountToString(
-                      order.amount,
-                      order.has_range,
-                      order.min_amount,
-                      order.max_amount,
-                    )}{' '}
-                    {currencyDict[order.currency]}
-                  </Grid>
-                  <Grid item xs={12}>
-                    <PaymentStringAsIcons
-                      othersText={t('Others')}
-                      verbose={true}
-                      size={20}
-                      text={order.payment_method}
-                    />
-                  </Grid>
-                </Grid>
-              </Box>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Paper>
-    ) : (
-      <></>
-    );
+    return <OrderTooltip order={order} />;
   };
 
   const formatAxisX = (value: number): string => {

@@ -352,6 +352,9 @@ const OrderDetails = ({
                 order.currency == 1000 ? t('Swap destination') : t('Accepted payment methods')
               }
             />
+            <ListItemIcon>
+              <Payments />
+            </ListItemIcon>
           </ListItem>
           <Divider />
 

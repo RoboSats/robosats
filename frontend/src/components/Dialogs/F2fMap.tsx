@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Button,
@@ -13,26 +13,37 @@ import {
 import { WifiTetheringError } from '@mui/icons-material';
 import Map from '../Map';
 import { LatLng } from 'leaflet';
+import { Maker } from '../../models';
 
 interface Props {
   open: boolean;
   orderType: number;
-  onClose: (position: LatLng) => void;
+  onClose: (position?: LatLng) => void;
+  maker: Maker;
 }
 
-const F2fMapDialog = ({ open = false, orderType, onClose }: Props): JSX.Element => {
+const F2fMapDialog = ({ open = false, orderType, onClose, maker }: Props): JSX.Element => {
   const { t } = useTranslation();
   const [position, setPosition] = useState<LatLng>();
   const [lowQuality, setLowQuality] = useState<boolean>(true);
 
   const onSave = () => {
-    if (position) onClose(position);
+    onClose(position);
   };
+
+  useEffect(() => {
+    if (open) {
+      if (maker.latitude && maker.longitude)
+        setPosition(new LatLng(maker.latitude, maker.longitude));
+    } else {
+      setPosition(undefined);
+    }
+  }, [open]);
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={() => onClose()}
       aria-labelledby='worldmap-dialog-title'
       aria-describedby='worldmap-description'
       maxWidth={false}

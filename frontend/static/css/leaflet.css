@@ -592,11 +592,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
 /* Base styles for the element that has a tooltip */
 .leaflet-tooltip {
   position: absolute;
-  padding: 6px;
+  padding: 0px;
   background-color: #fff;
-  border: 1px solid #fff;
-  border-radius: 3px;
-  color: #222;
+  border: 0px solid #fff;
   white-space: nowrap;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -615,7 +613,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .leaflet-tooltip-right:before {
   position: absolute;
   pointer-events: none;
-  border: 6px solid transparent;
+  border: 0px solid transparent;
   background: transparent;
   content: '';
 }
