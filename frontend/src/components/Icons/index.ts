@@ -17,6 +17,8 @@ export { default as UserNinjaIcon } from './UserNinja';
 export { default as TorIcon } from './Tor';
 export { default as SimplexIcon } from './Simplex';
 export { default as NostrIcon } from './Nostr';
+export { default as LocationPin } from './LocationPin';
+export { default as LocationRobot } from './LocationRobot';
 
 // Flags with props
 export { default as FlagWithProps } from './WorldFlags';
