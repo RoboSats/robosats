@@ -95,17 +95,28 @@ const F2fMapDialog = ({
         />
       </DialogContent>
       <DialogActions>
-        <Tooltip
-          enterTouchDelay={0}
-          placement='top'
-          title={t(
-            'To protect your privacy, your selection will be slightly randomized without losing accuracy',
-          )}
-        >
-          <Button color='primary' variant='contained' onClick={onSave} disabled={!position}>
-            {interactive ? t('Save') : t('Close')}
+        {interactive ? (
+          <Tooltip
+            enterTouchDelay={0}
+            placement='top'
+            title={t(
+              'To protect your privacy, your selection will be slightly randomized without losing accuracy',
+            )}
+          >
+            <Button color='primary' variant='contained' onClick={onSave} disabled={!position}>
+              {t('Save')}
+            </Button>
+          </Tooltip>
+        ) : (
+          <Button
+            color='primary'
+            variant='contained'
+            onClick={() => onClose()}
+            disabled={!position}
+          >
+            {t('Close')}
           </Button>
-        </Tooltip>
+        )}
       </DialogActions>
     </Dialog>
   );
