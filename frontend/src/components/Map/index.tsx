@@ -10,7 +10,7 @@ import OrderTooltip from '../Charts/helpers/OrderTooltip';
 
 interface Props {
   orderType?: number;
-  lowQuality: boolean;
+  useTiles: boolean;
   position?: LatLng | undefined;
   setPosition?: (position: LatLng) => void;
   orders?: PublicOrder[];
@@ -25,7 +25,7 @@ const Map = ({
   zoom,
   orders = [],
   setPosition = () => {},
-  lowQuality = true,
+  useTiles = false,
   onOrderClicked = () => null,
   center,
 }: Props): JSX.Element => {
@@ -86,9 +86,8 @@ const Map = ({
       zoom={zoom ? zoom : 2}
       style={{ height: '100%', width: '100%' }}
     >
-      {lowQuality && !worldmap && <LinearProgress />}
-      <>{}</>
-      {lowQuality && worldmap && (
+      {!useTiles && !worldmap && <LinearProgress />}
+      {!useTiles && worldmap && (
         <>
           <GeoJSON
             data={worldmap}
@@ -101,7 +100,7 @@ const Map = ({
           {getOrderMarkers()}
         </>
       )}
-      {!lowQuality && (
+      {useTiles && (
         <>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
