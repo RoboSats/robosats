@@ -10,7 +10,7 @@ import {
   Tooltip,
   Grid,
 } from '@mui/material';
-import { WifiTetheringError } from '@mui/icons-material';
+import { PhotoSizeSelectActual } from '@mui/icons-material';
 import Map from '../Map';
 import { LatLng } from 'leaflet';
 
@@ -35,7 +35,7 @@ const F2fMapDialog = ({
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const [position, setPosition] = useState<LatLng>();
-  const [lowQuality, setLowQuality] = useState<boolean>(true);
+  const [useTiles, setUseTiles] = useState<boolean>(false);
 
   const onSave = () => {
     onClose(position);
@@ -75,10 +75,10 @@ const F2fMapDialog = ({
               >
                 <Switch
                   size='small'
-                  checked={lowQuality}
-                  onChange={() => setLowQuality((value) => !value)}
+                  checked={useTiles}
+                  onChange={() => setUseTiles((value) => !value)}
                 />
-                <WifiTetheringError sx={{ color: 'text.secondary' }} />
+                <PhotoSizeSelectActual sx={{ color: 'text.secondary' }} />
               </div>
             </Tooltip>
           </Grid>
@@ -87,7 +87,7 @@ const F2fMapDialog = ({
       <DialogContent style={{ height: '100vh', width: '80vw' }}>
         <Map
           orderType={orderType}
-          lowQuality={lowQuality}
+          useTiles={useTiles}
           position={position}
           setPosition={setPosition}
           zoom={zoom}
