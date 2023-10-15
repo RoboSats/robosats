@@ -97,7 +97,7 @@ const Map = ({
   const getOrderMarkers = () => {
     return orders.map((order) => {
       if (!order.latitude || !order.longitude) return <></>;
-      return RobotMarker('marker', [order.latitude, order.longitude], orderType || 0, order);
+      return RobotMarker(order.id, [order.latitude, order.longitude], order.type || 0, order);
     });
   };
 
