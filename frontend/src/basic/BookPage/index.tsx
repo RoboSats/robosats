@@ -132,7 +132,7 @@ const BookPage = (): JSX.Element => {
               </Grid>
               <Grid item>
                 <MapChart
-                  maxWidth={windowSize.width * 0.8} // EM units
+                  maxWidth={chartWidthEm} // EM units
                   maxHeight={(windowSize.height * 0.825 - 5) / 2} // EM units
                   onOrderClicked={onOrderClicked}
                 />

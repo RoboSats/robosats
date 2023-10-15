@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Button,
@@ -12,15 +12,15 @@ import {
 } from '@mui/material';
 import { PhotoSizeSelectActual } from '@mui/icons-material';
 import Map from '../Map';
-import { LatLng } from 'leaflet';
+import { randomNumberBetween } from '@mui/x-data-grid/utils/utils';
 
 interface Props {
   open: boolean;
   orderType: number;
   latitude?: number;
   longitude?: number;
-  onClose?: (position?: LatLng) => void;
-  save?: boolean;
+  onClose?: (position?: [number, number]) => void;
+  interactive?: boolean;
   zoom?: number;
 }
 
@@ -30,20 +30,23 @@ const F2fMapDialog = ({
   onClose = () => {},
   latitude,
   longitude,
-  save,
+  interactive,
   zoom,
 }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const [position, setPosition] = useState<LatLng>();
+  const [position, setPosition] = useState<[number, number]>();
   const [useTiles, setUseTiles] = useState<boolean>(false);
 
   const onSave = () => {
-    onClose(position);
+    if (position && position[0] && position[1]) {
+      const randomAggregator = randomNumberBetween(Math.random(), -0.005, 0.005);
+      onClose([position[0] + randomAggregator(), position[1] + randomAggregator()]);
+    }
   };
 
   useEffect(() => {
     if (open && latitude && longitude) {
-      setPosition(new LatLng(latitude, longitude));
+      setPosition([latitude, longitude]);
     } else {
       setPosition(undefined);
     }
@@ -59,13 +62,9 @@ const F2fMapDialog = ({
     >
       <DialogTitle>
         <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
-          <Grid item>{t(save ? 'Choose a location' : 'Map')}</Grid>
+          <Grid item>{t(interactive ? 'Choose a location' : 'Map')}</Grid>
           <Grid item>
-            <Tooltip
-              enterTouchDelay={0}
-              placement='top'
-              title={t('Activate slow mode (use it when the connection is slow)')}
-            >
+            <Tooltip enterTouchDelay={0} placement='top' title={t('Show tiles')}>
               <div
                 style={{
                   display: 'flex',
@@ -86,6 +85,7 @@ const F2fMapDialog = ({
       </DialogTitle>
       <DialogContent style={{ height: '100vh', width: '80vw' }}>
         <Map
+          interactive={interactive}
           orderType={orderType}
           useTiles={useTiles}
           position={position}
@@ -95,9 +95,17 @@ const F2fMapDialog = ({
         />
       </DialogContent>
       <DialogActions>
-        <Button color='primary' variant='contained' onClick={onSave} disabled={!position}>
-          {save ? t('Save') : t('Close')}
-        </Button>
+        <Tooltip
+          enterTouchDelay={0}
+          placement='top'
+          title={t(
+            'To protect your privacy, your selection will be slightly randomized without losing accuracy',
+          )}
+        >
+          <Button color='primary' variant='contained' onClick={onSave} disabled={!position}>
+            {interactive ? t('Save') : t('Close')}
+          </Button>
+        </Tooltip>
       </DialogActions>
     </Dialog>
   );
