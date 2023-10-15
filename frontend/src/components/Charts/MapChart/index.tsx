@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { CircularProgress, Grid, Paper, Switch, Tooltip } from '@mui/material';
 import Map from '../../Map';
 import { AppContext, UseAppStoreType } from '../../../contexts/AppContext';
-import { WifiTetheringError } from '@mui/icons-material';
+import { PhotoSizeSelectActual } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 
 interface MapChartProps {
@@ -22,7 +22,7 @@ const MapChart: React.FC<MapChartProps> = ({
 }) => {
   const { t } = useTranslation();
   const { book } = useContext<UseAppStoreType>(AppContext);
-  const [lowQuality, setLowQuality] = useState<boolean>(true);
+  const [useTiles, setUseTiles] = useState<boolean>(false);
 
   const height = maxHeight < 20 ? 20 : maxHeight;
   const width = maxWidth < 20 ? 20 : maxWidth > 72.8 ? 72.8 : maxWidth;
@@ -54,11 +54,7 @@ const MapChart: React.FC<MapChartProps> = ({
               item
               style={{ height: 50, justifyContent: 'center', display: 'flex', paddingTop: 10 }}
             >
-              <Tooltip
-                enterTouchDelay={0}
-                placement='top'
-                title={t('Activate slow mode (use it when the connection is slow)')}
-              >
+              <Tooltip enterTouchDelay={0} placement='top' title={t('Show tiles')}>
                 <div
                   style={{
                     display: 'flex',
@@ -68,15 +64,15 @@ const MapChart: React.FC<MapChartProps> = ({
                 >
                   <Switch
                     size='small'
-                    checked={lowQuality}
-                    onChange={() => setLowQuality((value) => !value)}
+                    checked={useTiles}
+                    onChange={() => setUseTiles((value) => !value)}
                   />
-                  <WifiTetheringError sx={{ color: 'text.secondary' }} />
+                  <PhotoSizeSelectActual sx={{ color: 'text.secondary' }} />
                 </div>
               </Tooltip>
             </Grid>
             <div style={{ height: `${height - 3.1}em` }}>
-              <Map lowQuality={lowQuality} orders={book.orders} onOrderClicked={onOrderClicked} />
+              <Map useTiles={useTiles} orders={book.orders} onOrderClicked={onOrderClicked} />
             </div>
           </>
         )}

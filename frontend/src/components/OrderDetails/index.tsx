@@ -40,7 +40,6 @@ import { type Order, type Info } from '../../models';
 import { statusBadgeColor, pn, amountToString, computeSats } from '../../utils';
 import TakeButton from './TakeButton';
 import { F2fMapDialog } from '../Dialogs';
-import { LatLng } from 'leaflet';
 
 interface OrderDetailsProps {
   order: Order;
@@ -369,13 +368,9 @@ const OrderDetails = ({
               <ListItemIcon>
                 <Tooltip enterTouchDelay={0} title={t('F2F location')}>
                   <div>
-                    <Button
-                      color='primary'
-                      variant='contained'
-                      onClick={() => setOpenWorldmap(true)}
-                    >
+                    <IconButton onClick={() => setOpenWorldmap(true)}>
                       <Map />
-                    </Button>
+                    </IconButton>
                   </div>
                 </Tooltip>
               </ListItemIcon>

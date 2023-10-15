@@ -4,19 +4,20 @@ import { MapContainer, GeoJSON, useMapEvents, Circle, TileLayer, Tooltip } from 
 import { useTheme, LinearProgress } from '@mui/material';
 import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { GeoJsonObject } from 'geojson';
-import { LatLng, LeafletMouseEvent } from 'leaflet';
+import { LeafletMouseEvent } from 'leaflet';
 import { PublicOrder } from '../../models';
 import OrderTooltip from '../Charts/helpers/OrderTooltip';
 
 interface Props {
   orderType?: number;
   useTiles: boolean;
-  position?: LatLng | undefined;
-  setPosition?: (position: LatLng) => void;
+  position?: [number, number] | undefined;
+  setPosition?: (position: [number, number]) => void;
   orders?: PublicOrder[];
   onOrderClicked?: (id: number) => void;
   zoom?: number;
-  center: [number, number];
+  center?: [number, number];
+  interactive?: boolean;
 }
 
 const Map = ({
@@ -27,7 +28,8 @@ const Map = ({
   setPosition = () => {},
   useTiles = false,
   onOrderClicked = () => null,
-  center,
+  center = [0, 0],
+  interactive = false,
 }: Props): JSX.Element => {
   const theme = useTheme();
   const { baseUrl } = useContext<UseAppStoreType>(AppContext);
@@ -44,7 +46,9 @@ const Map = ({
   const LocationMarker = () => {
     useMapEvents({
       click(event: LeafletMouseEvent) {
-        setPosition(event.latlng);
+        if (interactive) {
+          setPosition([event.latlng.lat, event.latlng.lng]);
+        }
       },
     });
 

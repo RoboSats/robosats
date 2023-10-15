@@ -41,7 +41,6 @@ import { amountToString, computeSats, pn } from '../../utils';
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit, Map } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import { LatLng } from 'leaflet';
 import { fiatMethods } from '../PaymentMethods';
 
 interface MakerFormProps {
@@ -463,13 +462,13 @@ const MakerForm = ({
     setMaker(defaultMaker);
   };
 
-  const handleAddLocation = (pos: LatLng) => {
-    if (pos.lat && pos.lng) {
+  const handleAddLocation = (pos: [number, number]) => {
+    if (pos && pos.length === 2) {
       setMaker((maker) => {
         return {
           ...maker,
-          latitude: parseFloat(pos.lat.toPrecision(6)),
-          longitude: parseFloat(pos.lng.toPrecision(6)),
+          latitude: parseFloat(pos[0].toPrecision(6)),
+          longitude: parseFloat(pos[1].toPrecision(6)),
         };
       });
       if (!maker.paymentMethods.find((method) => method.icon === 'cash')) {
@@ -536,12 +535,12 @@ const MakerForm = ({
         onClickGenerateRobot={onClickGenerateRobot}
       />
       <F2fMapDialog
-        save
+        interactive
         latitude={maker.latitude}
         longitude={maker.longitude}
         open={openWorldmap}
         orderType={fav.type || 0}
-        onClose={(pos?: LatLng) => {
+        onClose={(pos?: [number, number]) => {
           if (pos) handleAddLocation(pos);
           setOpenWorldmap(false);
         }}
@@ -826,21 +825,12 @@ const MakerForm = ({
           </Grid>
 
           <Grid item>
-            <Grid container direction='row' justifyItems='center' alignItems='center' spacing={1}>
-              <Grid item>
-                <Tooltip enterTouchDelay={0} title={t('Add F2F location')}>
-                  <div>
-                    <Button
-                      color='primary'
-                      variant='contained'
-                      onClick={() => setOpenWorldmap(true)}
-                    >
-                      <Map />
-                    </Button>
-                  </div>
-                </Tooltip>
-              </Grid>
-            </Grid>
+            <Tooltip enterTouchDelay={0} title={t('Add F2F location')}>
+              <Button variant='outlined' onClick={() => setOpenWorldmap(true)}>
+                {t('Face-to-face')}
+                <Map style={{ paddingLeft: 5 }} />
+              </Button>
+            </Tooltip>
           </Grid>
 
           {!maker.advancedOptions && pricingMethods ? (
