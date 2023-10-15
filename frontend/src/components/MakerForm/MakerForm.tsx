@@ -544,6 +544,7 @@ const MakerForm = ({
           if (pos) handleAddLocation(pos);
           setOpenWorldmap(false);
         }}
+        zoom={maker.latitude && maker.longitude ? 6 : undefined}
       />
       <Collapse in={limits.list.length == 0}>
         <div style={{ display: limits.list.length == 0 ? '' : 'none' }}>

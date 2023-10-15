@@ -1,10 +1,18 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { apiClient } from '../../services/api';
-import { MapContainer, GeoJSON, useMapEvents, Circle, TileLayer, Tooltip } from 'react-leaflet';
+import {
+  MapContainer,
+  GeoJSON,
+  useMapEvents,
+  Circle,
+  TileLayer,
+  Tooltip,
+  Marker,
+} from 'react-leaflet';
 import { useTheme, LinearProgress } from '@mui/material';
 import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { GeoJsonObject } from 'geojson';
-import { LeafletMouseEvent } from 'leaflet';
+import { Icon, LeafletMouseEvent, Point } from 'leaflet';
 import { PublicOrder } from '../../models';
 import OrderTooltip from '../Charts/helpers/OrderTooltip';
 
@@ -43,6 +51,37 @@ const Map = ({
     }
   }, []);
 
+  const RobotMarker = (
+    key: string | number,
+    position: [number, number],
+    orderType: number,
+    order?: PublicOrder,
+  ) => {
+    const color = orderType == 1 ? 'Blue' : 'Lilac';
+    return (
+      <Marker
+        key={key}
+        position={position}
+        icon={
+          new Icon({
+            iconUrl: `../../../static/assets/vector/Location_robot_${color}.svg`,
+            iconAnchor: [18, 32],
+            iconSize: [32, 32],
+          })
+        }
+        eventHandlers={{
+          click: (_event: LeafletMouseEvent) => order?.id && onOrderClicked(order.id),
+        }}
+      >
+        {order && (
+          <Tooltip direction='top'>
+            <OrderTooltip order={order} />
+          </Tooltip>
+        )}
+      </Marker>
+    );
+  };
+
   const LocationMarker = () => {
     useMapEvents({
       click(event: LeafletMouseEvent) {
@@ -52,35 +91,13 @@ const Map = ({
       },
     });
 
-    const color = orderType == 1 ? theme.palette.primary.main : theme.palette.secondary.main;
-
-    return position ? (
-      <Circle center={position} pathOptions={{ fillColor: color, color }} radius={10000}></Circle>
-    ) : (
-      <></>
-    );
+    return position ? RobotMarker('marker', position, orderType || 0) : <></>;
   };
 
   const getOrderMarkers = () => {
     return orders.map((order) => {
       if (!order.latitude || !order.longitude) return <></>;
-
-      const color = order.type == 1 ? theme.palette.primary.main : theme.palette.secondary.main;
-      return (
-        <Circle
-          key={order.id}
-          center={[order.latitude, order.longitude]}
-          pathOptions={{ fillColor: color, color }}
-          radius={10000}
-          eventHandlers={{
-            click: (_event: LeafletMouseEvent) => onOrderClicked(order.id),
-          }}
-        >
-          <Tooltip direction='top'>
-            <OrderTooltip order={order} />
-          </Tooltip>
-        </Circle>
-      );
+      return RobotMarker('marker', [order.latitude, order.longitude], orderType || 0, order);
     });
   };
 
