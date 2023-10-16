@@ -1,20 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { apiClient } from '../../services/api';
-import {
-  MapContainer,
-  GeoJSON,
-  useMapEvents,
-  Circle,
-  TileLayer,
-  Tooltip,
-  Marker,
-} from 'react-leaflet';
+import { MapContainer, GeoJSON, useMapEvents, TileLayer, Tooltip, Marker } from 'react-leaflet';
 import { useTheme, LinearProgress } from '@mui/material';
 import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { GeoJsonObject } from 'geojson';
 import { Icon, LeafletMouseEvent, Point } from 'leaflet';
 import { PublicOrder } from '../../models';
 import OrderTooltip from '../Charts/helpers/OrderTooltip';
+import getWorldmapGeojson from '../../geo/Web';
 
 interface Props {
   orderType?: number;
@@ -45,9 +38,7 @@ const Map = ({
 
   useEffect(() => {
     if (!worldmap) {
-      apiClient
-        .get(baseUrl, '/static/assets/geo/countries-coastline-10km.geo.json')
-        .then(setWorldmap);
+      getWorldmapGeojson(apiClient, baseUrl).then(setWorldmap);
     }
   }, []);
 
@@ -58,13 +49,18 @@ const Map = ({
     order?: PublicOrder,
   ) => {
     const color = orderType == 1 ? 'Blue' : 'Lilac';
+    const path =
+      window.NativeRobosats === undefined
+        ? '/static/assets'
+        : 'file:///android_asset/Web.bundle/assets';
+
     return (
       <Marker
         key={key}
         position={position}
         icon={
           new Icon({
-            iconUrl: `../../../static/assets/vector/Location_robot_${color}.svg`,
+            iconUrl: `${path}/vector/Location_robot_${color}.svg`,
             iconAnchor: [18, 32],
             iconSize: [32, 32],
           })
@@ -126,6 +122,7 @@ const Map = ({
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+            referrerPolicy='no-referrer'
           />
           {getOrderMarkers()}
         </>
