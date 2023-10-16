@@ -134,6 +134,15 @@ const configMobile: Configuration = {
         },
       },
       {
+        test: path.resolve(__dirname, 'src/geo/Web.js'),
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'if-replacement-exists',
+          replacement: path.resolve(__dirname, 'src/geo/Native.js'),
+          async: true,
+        },
+      },
+      {
         test: path.resolve(__dirname, 'src/components/RobotAvatar/placeholder.json'),
         loader: 'file-replace-loader',
         options: {
@@ -157,6 +166,10 @@ const configMobile: Configuration = {
         {
           from: path.resolve(__dirname, 'static/assets/sounds'),
           to: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/sounds'),
+        },
+        {
+          from: path.resolve(__dirname, 'static/assets/vector'),
+          to: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/vector'),
         },
       ],
     }),
