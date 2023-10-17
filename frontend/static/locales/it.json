@@ -157,7 +157,7 @@
   "#16": "Phrases in components/Charts/DepthChart/index.tsx",
   "#17": "Phrases in components/Charts/MapChart/index.tsx",
   "Accept": "Accept",
-  "By doing so, you will be fetching map tiles from a third-party provider. However, depending on your setup, private information might be leaked to servers outside the RoboSats federation.": "By doing so, you will be fetching map tiles from a third-party provider. However, depending on your setup, private information might be leaked to servers outside the RoboSats federation.",
+  "By doing so, you will be fetching map tiles from a third-party provider. Depending on your setup, private information might be leaked to servers outside the RoboSats federation.": "By doing so, you will be fetching map tiles from a third-party provider. Depending on your setup, private information might be leaked to servers outside the RoboSats federation.",
   "Close": "Chiudi",
   "Download high resolution map?": "Download high resolution map?",
   "Show tiles": "Show tiles",

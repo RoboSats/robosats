@@ -75,7 +75,7 @@ const F2fMapDialog = ({
         <DialogTitle>{t('Download high resolution map?')}</DialogTitle>
         <DialogContent>
           {t(
-            'By doing so, you will be fetching map tiles from a third-party provider. However, depending on your setup, private information might be leaked to servers outside the RoboSats federation.',
+            'By doing so, you will be fetching map tiles from a third-party provider. Depending on your setup, private information might be leaked to servers outside the RoboSats federation.',
           )}
         </DialogContent>
         <DialogActions>
