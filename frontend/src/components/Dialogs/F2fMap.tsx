@@ -43,10 +43,7 @@ const F2fMapDialog = ({
 
   const onSave = () => {
     if (position && position[0] && position[1]) {
-      onClose([
-        position[0] + Math.random() * 0.02 - 0.01,
-        position[1] + Math.random() * 0.02 - 0.01,
-      ]);
+      onClose([position[0] + Math.random() * 0.1 - 0.05, position[1] + Math.random() * 0.1 - 0.05]);
     }
   };
 
@@ -61,6 +58,7 @@ const F2fMapDialog = ({
   return (
     <Dialog
       open={open}
+      fullWidth
       onClose={() => onClose()}
       aria-labelledby='worldmap-dialog-title'
       aria-describedby='worldmap-description'
@@ -127,7 +125,16 @@ const F2fMapDialog = ({
           </Grid>
         </Grid>
       </DialogTitle>
-      <DialogContent style={{ height: '100vh', width: '80vw', padding: 0, paddingBottom: '0.5em' }}>
+      <DialogContent
+        style={{
+          height: '100vh',
+          width: '100%',
+          padding: 0,
+          paddingBottom: '0.5em',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
         <Map
           interactive={interactive}
           orderType={orderType}
