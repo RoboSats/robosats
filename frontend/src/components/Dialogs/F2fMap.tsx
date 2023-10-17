@@ -43,7 +43,10 @@ const F2fMapDialog = ({
 
   const onSave = () => {
     if (position && position[0] && position[1]) {
-      onClose([position[0] + Math.random() * 0.1 - 0.05, position[1] + Math.random() * 0.1 - 0.05]);
+      onClose([
+        position[0] + Math.random() * 0.15 - 0.05,
+        position[1] + Math.random() * 0.15 - 0.05,
+      ]);
     }
   };
 

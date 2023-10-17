@@ -4,10 +4,11 @@ import { MapContainer, GeoJSON, useMapEvents, TileLayer, Tooltip, Marker } from 
 import { useTheme, LinearProgress } from '@mui/material';
 import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { GeoJsonObject } from 'geojson';
-import { Icon, LeafletMouseEvent, Point } from 'leaflet';
+import { Icon, LeafletMouseEvent } from 'leaflet';
 import { PublicOrder } from '../../models';
 import OrderTooltip from '../Charts/helpers/OrderTooltip';
 import getWorldmapGeojson from '../../geo/Web';
+import MarkerClusterGroup from '@christopherpickering/react-leaflet-markercluster';
 
 interface Props {
   orderType?: number;
@@ -91,14 +92,20 @@ const Map = ({
   };
 
   const getOrderMarkers = () => {
-    return orders.map((order) => {
-      if (!order.latitude || !order.longitude) return <></>;
-      return RobotMarker(order.id, [order.latitude, order.longitude], order.type || 0, order);
-    });
+    if (orders.length < 1) return <></>;
+    return (
+      <MarkerClusterGroup showCoverageOnHover={false} disableClusteringAtZoom={14}>
+        {orders.map((order) => {
+          if (!order.latitude || !order.longitude) return <></>;
+          return RobotMarker(order.id, [order.latitude, order.longitude], order.type || 0, order);
+        })}
+      </MarkerClusterGroup>
+    );
   };
 
   return (
     <MapContainer
+      maxZoom={15}
       center={center ?? [0, 0]}
       zoom={zoom ? zoom : 2}
       attributionControl={false}
