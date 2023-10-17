@@ -228,6 +228,9 @@ const OrderDetails = ({
         open={openWorldmap}
         orderType={order.type || 0}
         zoom={6}
+        message={t(
+          'The pinned location is approximate. The exact location for the meeting place must be exchanged in the encrypted chat.',
+        )}
         onClose={() => setOpenWorldmap(false)}
       />
       <Grid item xs={12}>

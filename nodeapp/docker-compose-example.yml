@@ -3,6 +3,7 @@ version: '3.9'
 # 'latest' tag from docker-hub
 services:
   robosats:
+    build: .
     image: recksato/robosats-client:latest
     container_name: robosats
     restart: always

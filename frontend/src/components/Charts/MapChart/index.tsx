@@ -1,5 +1,16 @@
 import React, { useContext, useState } from 'react';
-import { CircularProgress, Grid, Paper, Switch, Tooltip } from '@mui/material';
+import {
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  Paper,
+  Switch,
+  Tooltip,
+} from '@mui/material';
 import Map from '../../Map';
 import { AppContext, UseAppStoreType } from '../../../contexts/AppContext';
 import { PhotoSizeSelectActual } from '@mui/icons-material';
@@ -23,6 +34,8 @@ const MapChart: React.FC<MapChartProps> = ({
   const { t } = useTranslation();
   const { book } = useContext<UseAppStoreType>(AppContext);
   const [useTiles, setUseTiles] = useState<boolean>(false);
+  const [acceptedTilesWarning, setAcceptedTilesWarning] = useState<boolean>(false);
+  const [openWarningDialog, setOpenWarningDialog] = useState<boolean>(false);
 
   const height = maxHeight < 20 ? 20 : maxHeight;
   const width = maxWidth < 20 ? 20 : maxWidth > 72.8 ? 72.8 : maxWidth;
@@ -36,6 +49,37 @@ const MapChart: React.FC<MapChartProps> = ({
           : { width: `${width}em`, maxHeight: `${height}em` }
       }
     >
+      <Dialog
+        open={openWarningDialog}
+        onClose={() => {
+          setOpenWarningDialog(false);
+        }}
+      >
+        <DialogTitle>{t('Download high resolution map?')}</DialogTitle>
+        <DialogContent>
+          {t(
+            'By doing so, you will be fetching map tiles from a third-party provider. However, depending on your setup, private information might be leaked to servers outside the RoboSats federation.',
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setOpenWarningDialog(false);
+            }}
+          >
+            {t('Close')}
+          </Button>
+          <Button
+            onClick={() => {
+              setOpenWarningDialog(false);
+              setAcceptedTilesWarning(true);
+              setUseTiles(true);
+            }}
+          >
+            {t('Accept')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Paper variant='outlined' style={{ width: '100%', height: '100%', justifyContent: 'center' }}>
         {false ? (
           <div
@@ -52,20 +96,31 @@ const MapChart: React.FC<MapChartProps> = ({
           <>
             <Grid
               item
-              style={{ height: 50, justifyContent: 'center', display: 'flex', paddingTop: 10 }}
+              style={{
+                height: '3.1em',
+                justifyContent: 'flex-end',
+                display: 'flex',
+                paddingTop: '0.8em',
+              }}
             >
               <Tooltip enterTouchDelay={0} placement='top' title={t('Show tiles')}>
                 <div
                   style={{
                     display: 'flex',
-                    width: '4em',
+                    width: '5em',
                     height: '1.1em',
                   }}
                 >
                   <Switch
                     size='small'
                     checked={useTiles}
-                    onChange={() => setUseTiles((value) => !value)}
+                    onChange={() => {
+                      if (acceptedTilesWarning) {
+                        setUseTiles((value) => !value);
+                      } else {
+                        setOpenWarningDialog(true);
+                      }
+                    }}
                   />
                   <PhotoSizeSelectActual sx={{ color: 'text.secondary' }} />
                 </div>

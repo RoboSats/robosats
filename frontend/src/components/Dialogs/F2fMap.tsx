@@ -9,6 +9,7 @@ import {
   Switch,
   Tooltip,
   Grid,
+  Typography,
 } from '@mui/material';
 import { PhotoSizeSelectActual } from '@mui/icons-material';
 import Map from '../Map';
@@ -22,6 +23,7 @@ interface Props {
   onClose?: (position?: [number, number]) => void;
   interactive?: boolean;
   zoom?: number;
+  message?: string;
 }
 
 const F2fMapDialog = ({
@@ -32,10 +34,13 @@ const F2fMapDialog = ({
   longitude,
   interactive,
   zoom,
+  message = '',
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const [position, setPosition] = useState<[number, number]>();
   const [useTiles, setUseTiles] = useState<boolean>(false);
+  const [acceptedTilesWarning, setAcceptedTilesWarning] = useState<boolean>(false);
+  const [openWarningDialog, setOpenWarningDialog] = useState<boolean>(false);
 
   const onSave = () => {
     if (position && position[0] && position[1]) {
@@ -60,9 +65,41 @@ const F2fMapDialog = ({
       aria-describedby='worldmap-description'
       maxWidth={false}
     >
+      <Dialog
+        open={openWarningDialog}
+        onClose={() => {
+          setOpenWarningDialog(false);
+        }}
+      >
+        <DialogTitle>{t('Download high resolution map?')}</DialogTitle>
+        <DialogContent>
+          {t(
+            'By doing so, you will be fetching map tiles from a third-party provider. However, depending on your setup, private information might be leaked to servers outside the RoboSats federation.',
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setOpenWarningDialog(false);
+            }}
+          >
+            {t('Close')}
+          </Button>
+          <Button
+            onClick={() => {
+              setOpenWarningDialog(false);
+              setAcceptedTilesWarning(true);
+              setUseTiles(true);
+            }}
+          >
+            {t('Accept')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <DialogTitle>
         <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
-          <Grid item>{t(interactive ? 'Choose a location' : 'Map')}</Grid>
+          <Grid item>{interactive ? t('Choose a location') : t('Map')}</Grid>
           <Grid item>
             <Tooltip enterTouchDelay={0} placement='top' title={t('Show tiles')}>
               <div
@@ -75,7 +112,13 @@ const F2fMapDialog = ({
                 <Switch
                   size='small'
                   checked={useTiles}
-                  onChange={() => setUseTiles((value) => !value)}
+                  onChange={() => {
+                    if (acceptedTilesWarning) {
+                      setUseTiles((value) => !value);
+                    } else {
+                      setOpenWarningDialog(true);
+                    }
+                  }}
                 />
                 <PhotoSizeSelectActual sx={{ color: 'text.secondary' }} />
               </div>
@@ -83,7 +126,7 @@ const F2fMapDialog = ({
           </Grid>
         </Grid>
       </DialogTitle>
-      <DialogContent style={{ height: '100vh', width: '80vw' }}>
+      <DialogContent style={{ height: '100vh', width: '80vw', padding: 0, paddingBottom: '0.5em' }}>
         <Map
           interactive={interactive}
           orderType={orderType}
@@ -94,29 +137,30 @@ const F2fMapDialog = ({
           center={[latitude ?? 0, longitude ?? 0]}
         />
       </DialogContent>
-      <DialogActions>
-        {interactive ? (
-          <Tooltip
-            enterTouchDelay={0}
-            placement='top'
-            title={t(
-              'To protect your privacy, your selection will be slightly randomized without losing accuracy',
+      <DialogActions sx={{ paddingTop: 0 }}>
+        <Grid container direction='row' spacing={1} justifyContent='flex-end'>
+          <Grid item>
+            <Typography variant='caption' color='text.secondary'>
+              {message}
+            </Typography>
+          </Grid>
+          <Grid item>
+            {interactive ? (
+              <Button color='primary' variant='contained' onClick={onSave} disabled={!position}>
+                {t('Save')}
+              </Button>
+            ) : (
+              <Button
+                color='primary'
+                variant='contained'
+                onClick={() => onClose()}
+                disabled={!position}
+              >
+                {t('Close')}
+              </Button>
             )}
-          >
-            <Button color='primary' variant='contained' onClick={onSave} disabled={!position}>
-              {t('Save')}
-            </Button>
-          </Tooltip>
-        ) : (
-          <Button
-            color='primary'
-            variant='contained'
-            onClick={() => onClose()}
-            disabled={!position}
-          >
-            {t('Close')}
-          </Button>
-        )}
+          </Grid>
+        </Grid>
       </DialogActions>
     </Dialog>
   );

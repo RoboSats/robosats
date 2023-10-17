@@ -101,32 +101,28 @@ const Map = ({
     <MapContainer
       center={center ?? [0, 0]}
       zoom={zoom ? zoom : 2}
-      style={{ height: '100%', width: '100%' }}
+      attributionControl={false}
+      style={{ height: '100%', width: '100%', backgroundColor: theme.palette.background.paper }}
     >
       {!useTiles && !worldmap && <LinearProgress />}
       {!useTiles && worldmap && (
-        <>
-          <GeoJSON
-            data={worldmap}
-            style={{
-              weight: 1,
-              fillColor: theme.palette.primary.main,
-              color: theme.palette.primary.main,
-            }}
-          />
-          {getOrderMarkers()}
-        </>
+        <GeoJSON
+          data={worldmap}
+          style={{
+            weight: 1,
+            fillColor: theme.palette.text.disabled,
+            color: theme.palette.text.secondary,
+          }}
+        />
       )}
       {useTiles && (
-        <>
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-            referrerPolicy='no-referrer'
-          />
-          {getOrderMarkers()}
-        </>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+          referrerPolicy='no-referrer'
+        />
       )}
+      {getOrderMarkers()}
       <LocationMarker />
     </MapContainer>
   );
