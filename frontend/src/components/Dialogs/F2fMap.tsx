@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import { PhotoSizeSelectActual } from '@mui/icons-material';
 import Map from '../Map';
-import { randomNumberBetween } from '@mui/x-data-grid/utils/utils';
 
 interface Props {
   open: boolean;
@@ -44,8 +43,10 @@ const F2fMapDialog = ({
 
   const onSave = () => {
     if (position && position[0] && position[1]) {
-      const randomAggregator = randomNumberBetween(Math.random(), -0.005, 0.005);
-      onClose([position[0] + randomAggregator(), position[1] + randomAggregator()]);
+      onClose([
+        position[0] + Math.random() * 0.02 - 0.01,
+        position[1] + Math.random() * 0.02 - 0.01,
+      ]);
     }
   };
 
