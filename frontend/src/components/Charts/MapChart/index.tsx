@@ -37,8 +37,8 @@ const MapChart: React.FC<MapChartProps> = ({
   const [acceptedTilesWarning, setAcceptedTilesWarning] = useState<boolean>(false);
   const [openWarningDialog, setOpenWarningDialog] = useState<boolean>(false);
 
-  const height = maxHeight < 20 ? 20 : maxHeight;
-  const width = maxWidth < 20 ? 20 : maxWidth > 72.8 ? 72.8 : maxWidth;
+  const height = maxHeight < 5 ? 5 : maxHeight;
+  const width = maxWidth < 10 ? 10 : maxWidth > 72.8 ? 72.8 : maxWidth;
 
   return (
     <Paper

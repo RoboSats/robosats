@@ -53,8 +53,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
   const [currencyCode, setCurrencyCode] = useState<number>(1);
   const [center, setCenter] = useState<number>();
 
-  const height = maxHeight < 20 ? 20 : maxHeight;
-  const width = maxWidth < 20 ? 20 : maxWidth > 72.8 ? 72.8 : maxWidth;
+  const height = maxHeight < 10 ? 10 : maxHeight;
+  const width = maxWidth < 10 ? 10 : maxWidth > 72.8 ? 72.8 : maxWidth;
 
   useEffect(() => {
     setCurrencyCode(fav.currency === 0 ? 1 : fav.currency);
