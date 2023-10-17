@@ -29,7 +29,7 @@ import { type LimitList, defaultMaker } from '../../models';
 
 import { LocalizationProvider, MobileTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ConfirmationDialog } from '../Dialogs';
+import { ConfirmationDialog, F2fMapDialog } from '../Dialogs';
 import { apiClient } from '../../services/api';
 
 import { FlagWithProps } from '../Icons';
@@ -38,11 +38,12 @@ import AmountRange from './AmountRange';
 import currencyDict from '../../../static/assets/currencies.json';
 import { amountToString, computeSats, pn } from '../../utils';
 
-import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit } from '@mui/icons-material';
+import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit, Map } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { AppContext, hostUrl, origin, type UseAppStoreType } from '../../contexts/AppContext';
 import SelectCoordinator from './SelectCoordinator';
 import { getEndpoint } from '../../models/Coordinator.model';
+import { fiatMethods } from '../PaymentMethods';
 
 interface MakerFormProps {
   disableRequest?: boolean;
@@ -88,6 +89,7 @@ const MakerForm = ({
   const [currencyCode, setCurrencyCode] = useState<string>('USD');
 
   const [openDialogs, setOpenDialogs] = useState<boolean>(false);
+  const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
   const [submittingRequest, setSubmittingRequest] = useState<boolean>(false);
   const [amountRangeEnabled, setAmountRangeEnabled] = useState<boolean>(true);
 
@@ -185,17 +187,29 @@ const MakerForm = ({
   const handlePaymentMethodChange = function (
     paymentArray: Array<{ name: string; icon: string }>,
   ): void {
+    let includeCoordinates = false;
     let str = '';
     const arrayLength = paymentArray.length;
+
     for (let i = 0; i < arrayLength; i++) {
       str += paymentArray[i].name + ' ';
+      if (paymentArray[i].icon === 'cash') {
+        includeCoordinates = true;
+        if (i === arrayLength - 1) {
+          setOpenWorldmap(true);
+        }
+      }
     }
     const paymentMethodText = str.slice(0, -1);
-    setMaker({
-      ...maker,
-      paymentMethods: paymentArray,
-      paymentMethodsText: paymentMethodText,
-      badPaymentMethod: paymentMethodText.length > 50,
+    setMaker((maker) => {
+      return {
+        ...maker,
+        paymentMethods: paymentArray,
+        paymentMethodsText: paymentMethodText,
+        badPaymentMethod: paymentMethodText.length > 50,
+        latitude: includeCoordinates ? maker.latitude : null,
+        longitude: includeCoordinates ? maker.longitude : null,
+      };
     });
   };
 
@@ -310,6 +324,8 @@ const MakerForm = ({
         public_duration: maker.publicDuration,
         escrow_duration: maker.escrowDuration,
         bond_size: maker.bondSize,
+        latitude: maker.latitude,
+        longitude: maker.longitude,
       };
       apiClient
         .post(url, `${basePath}/api/make/`, body, auth)
@@ -494,6 +510,26 @@ const MakerForm = ({
     setMaker(defaultMaker);
   };
 
+  const handleAddLocation = (pos: [number, number]) => {
+    if (pos && pos.length === 2) {
+      setMaker((maker) => {
+        return {
+          ...maker,
+          latitude: parseFloat(pos[0].toPrecision(6)),
+          longitude: parseFloat(pos[1].toPrecision(6)),
+        };
+      });
+      if (!maker.paymentMethods.find((method) => method.icon === 'cash')) {
+        const newMethods = maker.paymentMethods;
+        const cash = fiatMethods.find((method) => method.icon === 'cash');
+        if (cash) {
+          newMethods.unshift(cash);
+          handlePaymentMethodChange(newMethods);
+        }
+      }
+    }
+  };
+
   const SummaryText = (): JSX.Element => {
     return (
       <Typography
@@ -545,6 +581,18 @@ const MakerForm = ({
         onClickDone={handleCreateOrder}
         hasRobot={robot.avatarLoaded}
         onClickGenerateRobot={onClickGenerateRobot}
+      />
+      <F2fMapDialog
+        interactive
+        latitude={maker.latitude}
+        longitude={maker.longitude}
+        open={openWorldmap}
+        orderType={fav.type || 0}
+        onClose={(pos?: [number, number]) => {
+          if (pos) handleAddLocation(pos);
+          setOpenWorldmap(false);
+        }}
+        zoom={maker.latitude && maker.longitude ? 6 : undefined}
       />
       <Collapse in={limits.list.length === 0}>
         <div style={{ display: limits.list.length === 0 ? '' : 'none' }}>
@@ -803,6 +851,7 @@ const MakerForm = ({
           <Grid item xs={12}>
             <AutocompletePayments
               onAutocompleteChange={handlePaymentMethodChange}
+              onClick={() => setOpenWorldmap(true)}
               optionsType={fav.mode}
               error={maker.badPaymentMethod}
               helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
@@ -817,12 +866,20 @@ const MakerForm = ({
               asFilter={false}
               value={maker.paymentMethods}
             />
-
             {maker.badPaymentMethod && (
               <FormHelperText error={true}>
                 {t('Must be shorter than 65 characters')}
               </FormHelperText>
             )}
+          </Grid>
+
+          <Grid item>
+            <Tooltip enterTouchDelay={0} title={t('Add F2F location')}>
+              <Button variant='outlined' onClick={() => setOpenWorldmap(true)}>
+                {t('Face-to-face')}
+                <Map style={{ paddingLeft: 5 }} />
+              </Button>
+            </Tooltip>
           </Grid>
 
           {!maker.advancedOptions && pricingMethods ? (

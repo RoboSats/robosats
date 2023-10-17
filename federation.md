@@ -8,7 +8,7 @@ RoboSats is a Free and Open Source project, anyone can spin up a new RoboSats ba
 3. **Trust issues** - Users may not know whether a coordinator can be trusted. Shady coordinators could potentially scam users.
 4. **Lost DevFund revenue** - With decentralized instances, revenue is detached from code development. This results in lost capacity to improve the platform and maintain the codebase.
 
-The **RoboSats Federation aims to solve these 4 key issues!** The Federation is a set of rules that allow multiple RoboSats instances to work together under a unified client app. The federated client app joins the order book of every coordinator, users can seamlessly interact with any coordinator, track the coordinator reputation, verify transparently devFund donations, and more. 
+The **RoboSats Federation aims to solve these 4 key issues!** The Federation is a set of rules that allow multiple RoboSats instances to work together under a unified client app. The federated client app joins the order book of every coordinator, users can seamlessly interact with any coordinator, track the coordinator reputation, verify transparently devFund donations, and more.
 
 The goal is to release the federated app in version **v0.6.0** as the new standard RoboSats client.
 
@@ -37,10 +37,10 @@ Becoming a RoboSats coordinator is not just "easy passive income" and does requi
 A RoboSats coordinator is not too capital intensive. In fact, incoming payments are matched with outgoing payments, so only a small balance is needed to cover channel reserves and some extra. However, if you plan to enable "onchain payouts," more liquidity will be required, and you'll need to become familiar with balancing lightning/onchain.
 
 ### What is a coordinator expected to do?
-Short list of what a coordinator is expected to do: 
+Short list of what a coordinator is expected to do:
 
-- Run RoboSats Coordinator in a production environment. 
-- Build reputation and gain users trust. 
+- Run RoboSats Coordinator in a production environment.
+- Build reputation and gain users trust.
 - Keep a well maintained LN node (Note: Sats at risk, Lightning and the RoboSats backend are not hack proof).
 - Provide user support for any order hosted by the coordinator backend.
 - Solve user disputes fairly and timely.
@@ -61,7 +61,7 @@ The easiest way to run a RoboSats coordinator is by using our Docker image relea
 We are working to release three flavors of pre-configured orchestrations with decent defaults: 1) a well-tested docker-compose orchestration and 2) a [StartOS](https://github.com/Start9Labs/start-os) RoboSats Coordinator App, and lastly 3) an elegant, but little tested, Kubernetes orchestration. The infrastructure-as-code will be open source as well.
 
 ### Can a RoboSats coordinator be profitable?
-There are many nuances, but the short answer is: Yes. 
+There are many nuances, but the short answer is: Yes.
 
 Bitcoin exchanges are the single biggest revenue makers in the space. In addition, coordinating robosats has low running cost (hardware / energy) and development cost (open source, donation based). There is no reason why coordinating RoboSats would not be profitable even if at a very small scale. A RoboSats coordinator should be able to outcompete in fees any other P2P or centralized exchange and still be profitable.
 
@@ -74,7 +74,7 @@ As discussed above, a lightning node capable of coordinating hundreds of RoboSat
 
 Donations to the Development Fund (DevFund) are voluntary with no minimum amount. The default donation rate in the Coordinator backend is 20%, however, you can freely set this value to 0%. Regardless of the amount a coordinator donates for development, all coordinators will be included in the client app.
 
-The coordinators that chose to stick with the default donation rate or higher will get to display a cool badge on their profiles. The RoboSats client app randomly sorts coordinators weighted by their DevFund donation value ([implementation here](https://github.com/RoboSats/robosats/blob/2262dc2af7110e86bb529f5075a19a50e16ade45/frontend/src/utils/federationLottery.ts#L27-L30)). Thus, the orders of the coordinators that contribute to the development have a higher chance to appear first in the Order book. Coordinators who contribute to the DevFund are also more likely to receive support if needed (note that unless the devs are under time constraints support is unlikely to be denied). These patron perks are the way developers say "thank you for your contribution!". 
+The coordinators that chose to stick with the default donation rate or higher will get to display a cool badge on their profiles. The RoboSats client app randomly sorts coordinators weighted by their DevFund donation value ([implementation here](https://github.com/RoboSats/robosats/blob/2262dc2af7110e86bb529f5075a19a50e16ade45/frontend/src/utils/federationLottery.ts#L27-L30)). Thus, the orders of the coordinators that contribute to the development have a higher chance to appear first in the Order book. Coordinators who contribute to the DevFund are also more likely to receive support if needed (note that unless the devs are under time constraints support is unlikely to be denied). These patron perks are the way developers say "thank you for your contribution!".
 
 The RoboSats development team has an exciting roadmap ahead. However, once RoboSats is fully decentralized, the only source of funding for further development and maintaining the codebase will be donations (we do not accept venture-capital investments). Some of the exciting roadmap ahead:
 - [RoboSats PRO app](https://github.com/RoboSats/robosats/issues/177) (Intended for professional market makers. This client can manage many orders/robots in many coordinators at once.)
@@ -92,15 +92,9 @@ Each RoboSats coordinator has a profile in the RoboSats app. The profile contain
 - Large Limits -  Can host orders with large limits.
 - DevFund donator - Donates to the DevFund the default amount or more.
 
-<<<<<<< HEAD
 Some of these badges can be objectively measured and awarded. Other badges rely on the subjectivity of the development team. These will be generously awarded and only taken away after a warning.
 
 We also envision more badges in the future, for example milestones by number of trades coordinated (200, 1K, 5K, 25K, 100K, etc).
-=======
-Some of these badges can be objectively measured and therefore awarded. Others badges rely on the subjectivity by the development team. These will be generously awarded and only taken away after a warning.
-
-We also envision more badges in the future. For example milestones of number of trades coordinated (200, 1K, 5K, 25K, 100K, etc).
->>>>>>> 2254fa60 (Add federation basis and new coordinator form (#793))
 
 ## Timeline
 

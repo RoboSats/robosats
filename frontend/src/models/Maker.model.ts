@@ -17,6 +17,8 @@ export interface Maker {
   maxAmount: string;
   badSatoshisText: string;
   badPremiumText: string;
+  latitude: number;
+  longitude: number;
 }
 
 export const defaultMaker: Maker = {

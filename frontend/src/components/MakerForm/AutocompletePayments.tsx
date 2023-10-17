@@ -116,17 +116,20 @@ interface TagProps {
   label: string;
   icon: string;
   onDelete: () => void;
+  onClick: () => void;
 }
 
-const Tag: React.FC<TagProps> = ({ label, icon, onDelete, ...other }) => {
+const Tag: React.FC<TagProps> = ({ label, icon, onDelete, onClick, ...other }) => {
   const theme = useTheme();
   const iconSize = 1.5 * theme.typography.fontSize;
   return (
     <div {...other}>
-      <div style={{ position: 'relative', left: '-5px', top: '0.28em' }}>
+      <div style={{ position: 'relative', left: '-5px', top: '0.28em' }} onClick={onClick}>
         <PaymentIcon width={iconSize} height={iconSize} icon={icon} />
       </div>
-      <span style={{ position: 'relative', left: '2px' }}>{label}</span>
+      <span style={{ position: 'relative', left: '2px' }} onClick={onClick}>
+        {label}
+      </span>
       <CloseIcon onClick={onDelete} />
     </div>
   );
@@ -232,6 +235,7 @@ interface AutocompletePaymentsProps {
   value: string;
   optionsType: 'fiat' | 'swap';
   onAutocompleteChange: (value: string) => void;
+  onClick: () => void;
   tooltipTitle: string;
   labelProps: any;
   tagProps: any;
@@ -331,6 +335,7 @@ const AutocompletePayments: React.FC<AutocompletePaymentsProps> = (props) => {
                 label={t(option.name)}
                 icon={option.icon}
                 sx={{ height: '2.1em', ...(props.tagProps ?? {}) }}
+                onClick={props.onClick}
                 {...getTagProps({ index })}
               />
             ))}
