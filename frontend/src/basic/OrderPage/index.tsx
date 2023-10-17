@@ -57,6 +57,8 @@ const OrderPage = (): JSX.Element => {
         public_duration: order.public_duration,
         escrow_duration: order.escrow_duration,
         bond_size: order.bond_size,
+        latitude: order.latitude,
+        longitude: order.longitude,
       };
       apiClient
         .post(baseUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })

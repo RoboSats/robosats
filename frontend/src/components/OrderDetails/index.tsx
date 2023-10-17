@@ -14,11 +14,12 @@ import {
   useTheme,
   Typography,
   IconButton,
+  Tooltip,
+  Button,
 } from '@mui/material';
 
 import Countdown, { type CountdownRenderProps, zeroPad } from 'react-countdown';
 import RobotAvatar from '../../components/RobotAvatar';
-
 import currencies from '../../../static/assets/currencies.json';
 import {
   AccessTime,
@@ -29,6 +30,7 @@ import {
   HourglassTop,
   ExpandLess,
   ExpandMore,
+  Map,
 } from '@mui/icons-material';
 import { PaymentStringAsIcons } from '../../components/PaymentMethods';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
@@ -37,6 +39,7 @@ import LinearDeterminate from './LinearDeterminate';
 import { type Order, type Info } from '../../models';
 import { statusBadgeColor, pn, amountToString, computeSats } from '../../utils';
 import TakeButton from './TakeButton';
+import { F2fMapDialog } from '../Dialogs';
 
 interface OrderDetailsProps {
   order: Order;
@@ -60,6 +63,7 @@ const OrderDetails = ({
 
   const currencyCode: string = currencies[`${order.currency}`];
   const [showSatsDetails, setShowSatsDetails] = useState<boolean>(false);
+  const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
 
   const amountString = useMemo(() => {
     // precision to 8 decimal if currency is BTC otherwise 4 decimals
@@ -218,6 +222,14 @@ const OrderDetails = ({
 
   return (
     <Grid container spacing={0}>
+      <F2fMapDialog
+        latitude={order.latitude}
+        longitude={order.longitude}
+        open={openWorldmap}
+        orderType={order.type || 0}
+        zoom={6}
+        onClose={() => setOpenWorldmap(false)}
+      />
       <Grid item xs={12}>
         <List dense={true}>
           <ListItem>
@@ -352,6 +364,17 @@ const OrderDetails = ({
                 order.currency == 1000 ? t('Swap destination') : t('Accepted payment methods')
               }
             />
+            {order.payment_method.includes('Cash F2F') && (
+              <ListItemIcon>
+                <Tooltip enterTouchDelay={0} title={t('F2F location')}>
+                  <div>
+                    <IconButton onClick={() => setOpenWorldmap(true)}>
+                      <Map />
+                    </IconButton>
+                  </div>
+                </Tooltip>
+              </ListItemIcon>
+            )}
           </ListItem>
           <Divider />
 
