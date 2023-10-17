@@ -1,6 +1,7 @@
 README.md
 assets
 static/assets/vector
+!static/assets/vector/Location_robot_*.svg
 static/assets/images/Ba*
 static/assets/images/bot*
 static/assets/images/robo*

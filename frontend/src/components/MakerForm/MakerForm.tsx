@@ -539,6 +539,9 @@ const MakerForm = ({
         latitude={maker.latitude}
         longitude={maker.longitude}
         open={openWorldmap}
+        message={t(
+          'To protect your privacy, the exact location you pin will be slightly randomized.',
+        )}
         orderType={fav.type || 0}
         onClose={(pos?: [number, number]) => {
           if (pos) handleAddLocation(pos);
@@ -825,10 +828,24 @@ const MakerForm = ({
             )}
           </Grid>
 
-          <Grid item>
-            <Tooltip enterTouchDelay={0} title={t('Add F2F location')}>
-              <Button variant='outlined' onClick={() => setOpenWorldmap(true)}>
-                {t('Face-to-face')}
+          <Grid item sx={{ width: '100%' }}>
+            <Tooltip enterTouchDelay={0} title={t('Add geolocation for a face to face trade')}>
+              <Button
+                size='large'
+                fullWidth={true}
+                color='inherit'
+                variant='outlined'
+                sx={{
+                  justifyContent: 'flex-start',
+                  fontWeight: 'normal',
+                  textTransform: 'none',
+                  backgroundColor: theme.palette.background.paper,
+                  color: theme.palette.text.secondary,
+                  borderColor: theme.palette.text.disabled,
+                }}
+                onClick={() => setOpenWorldmap(true)}
+              >
+                {t('Face to Face Location')}
                 <Map style={{ paddingLeft: 5 }} />
               </Button>
             </Tooltip>
