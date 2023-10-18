@@ -828,28 +828,30 @@ const MakerForm = ({
             )}
           </Grid>
 
-          <Grid item sx={{ width: '100%' }}>
-            <Tooltip enterTouchDelay={0} title={t('Add geolocation for a face to face trade')}>
-              <Button
-                size='large'
-                fullWidth={true}
-                color='inherit'
-                variant='outlined'
-                sx={{
-                  justifyContent: 'flex-start',
-                  fontWeight: 'normal',
-                  textTransform: 'none',
-                  backgroundColor: theme.palette.background.paper,
-                  color: theme.palette.text.secondary,
-                  borderColor: theme.palette.text.disabled,
-                }}
-                onClick={() => setOpenWorldmap(true)}
-              >
-                {t('Face to Face Location')}
-                <Map style={{ paddingLeft: 5 }} />
-              </Button>
-            </Tooltip>
-          </Grid>
+          {fav.mode === 'fiat' && (
+            <Grid item sx={{ width: '100%' }}>
+              <Tooltip enterTouchDelay={0} title={t('Add geolocation for a face to face trade')}>
+                <Button
+                  size='large'
+                  fullWidth={true}
+                  color='inherit'
+                  variant='outlined'
+                  sx={{
+                    justifyContent: 'flex-start',
+                    fontWeight: 'normal',
+                    textTransform: 'none',
+                    backgroundColor: theme.palette.background.paper,
+                    color: theme.palette.text.secondary,
+                    borderColor: theme.palette.text.disabled,
+                  }}
+                  onClick={() => setOpenWorldmap(true)}
+                >
+                  {t('Face to Face Location')}
+                  <Map style={{ paddingLeft: 5 }} />
+                </Button>
+              </Tooltip>
+            </Grid>
+          )}
 
           {!maker.advancedOptions && pricingMethods ? (
             <Grid item xs={12}>
