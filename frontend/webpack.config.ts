@@ -167,10 +167,6 @@ const configMobile: Configuration = {
           from: path.resolve(__dirname, 'static/assets/sounds'),
           to: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/sounds'),
         },
-        {
-          from: path.resolve(__dirname, 'static/assets/vector'),
-          to: path.resolve(__dirname, '../mobile/html/Web.bundle/assets/vector'),
-        },
       ],
     }),
   ],
