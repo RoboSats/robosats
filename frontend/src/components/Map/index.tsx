@@ -4,11 +4,12 @@ import { MapContainer, GeoJSON, useMapEvents, TileLayer, Tooltip, Marker } from 
 import { useTheme, LinearProgress } from '@mui/material';
 import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { GeoJsonObject } from 'geojson';
-import { Icon, LeafletMouseEvent } from 'leaflet';
+import { DivIcon, LeafletMouseEvent } from 'leaflet';
 import { PublicOrder } from '../../models';
 import OrderTooltip from '../Charts/helpers/OrderTooltip';
 import getWorldmapGeojson from '../../geo/Web';
 import MarkerClusterGroup from '@christopherpickering/react-leaflet-markercluster';
+import { MapPin } from '../Icons';
 
 interface Props {
   orderType?: number;
@@ -50,20 +51,17 @@ const Map = ({
     order?: PublicOrder,
   ) => {
     const color = orderType == 1 ? 'Blue' : 'Lilac';
-    const path =
-      window.NativeRobosats === undefined
-        ? '/static/assets'
-        : 'file:///android_asset/Web.bundle/assets';
 
     return (
       <Marker
         key={key}
         position={position}
         icon={
-          new Icon({
-            iconUrl: `${path}/vector/Location_robot_${color}.svg`,
-            iconAnchor: [18, 32],
-            iconSize: [32, 32],
+          new DivIcon({
+            html: MapPin(color),
+            iconAnchor: [14, 38],
+            iconSize: [24, 24],
+            className: '',
           })
         }
         eventHandlers={{
