@@ -56,7 +56,7 @@ Alice wants to buy satoshis privately:
 Check out our [Contribution Guide](https://learn.robosats.com/contribute/) to find how you can make RoboSats great.
 
 ### ⚡Developer Rewards ⚡
-Check out the [Developer Rewards Panel](https://github.com/users/RoboSats/projects/2/views/5) for tasks paid in Sats.
+Check out the [Developer Rewards Panel](https://github.com/users/Reckless-Satoshi/projects/2/views/5) for tasks paid in Sats.
 
 ## Sponsors
 <div align="center">
