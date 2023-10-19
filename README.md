@@ -49,7 +49,7 @@ Alice wants to buy satoshis privately:
 7. On a private chat, Bob tells Alice how to send him fiat.
 8. Alice pays Bob, then they confirm the fiat has been sent and received.
 9. Bob's trade hold invoice is charged and the satoshis are sent to Alice.
-10. Bob and Alice's bonds return automatically, since they complied by the rules.
+10. Bob and Alice's bonds return automatically, since they complied with the rules.
 11. The bonds would be charged (lost) in case of unilateral cancellation or cheating (lost dispute).
 
 ## Contribute to the Robotic Satoshis Open Source Project
