@@ -42,8 +42,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
   elevation = 6,
   onOrderClicked = () => null,
 }) => {
-  const { book, federation, fav, exchange, limits, settings } =
-    useContext<UseAppStoreType>(AppContext);
+  const { book, fav, exchange, limits } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
   const [enrichedOrders, setEnrichedOrders] = useState<Order[]>([]);

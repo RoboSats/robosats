@@ -12,7 +12,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import Map from '../../Map';
-import { AppContext, UseAppStoreType } from '../../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
 import { PhotoSizeSelectActual } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 
@@ -81,7 +81,7 @@ const MapChart: React.FC<MapChartProps> = ({
         </DialogActions>
       </Dialog>
       <Paper variant='outlined' style={{ width: '100%', height: '100%', justifyContent: 'center' }}>
-        {false ? (
+        {book.orders.length < 1 ? (
           <div
             style={{
               display: 'flex',

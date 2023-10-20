@@ -189,6 +189,7 @@ const MakerForm = ({
   ): void {
     let str = '';
     const arrayLength = paymentArray.length;
+    let includeCoordinates = false;
 
     for (let i = 0; i < arrayLength; i++) {
       str += paymentArray[i].name + ' ';
@@ -509,8 +510,8 @@ const MakerForm = ({
     setMaker(defaultMaker);
   };
 
-  const handleAddLocation = (pos: [number, number]) => {
-    if (pos && pos.length === 2) {
+  const handleAddLocation = (pos: [number, number]): void => {
+    if (pos?.length === 2) {
       setMaker((maker) => {
         return {
           ...maker,
@@ -518,10 +519,11 @@ const MakerForm = ({
           longitude: parseFloat(pos[1].toPrecision(6)),
         };
       });
-      if (!maker.paymentMethods.find((method) => method.icon === 'cash')) {
+      const cashMethod = maker.paymentMethods.find((method) => method.icon === 'cash');
+      if (cashMethod !== null) {
         const newMethods = maker.paymentMethods;
         const cash = fiatMethods.find((method) => method.icon === 'cash');
-        if (cash) {
+        if (cash !== null) {
           newMethods.unshift(cash);
           handlePaymentMethodChange(newMethods);
         }
@@ -589,12 +591,12 @@ const MakerForm = ({
         message={t(
           'To protect your privacy, the exact location you pin will be slightly randomized.',
         )}
-        orderType={fav.type || 0}
+        orderType={fav?.type ?? 0}
         onClose={(pos?: [number, number]) => {
-          if (pos) handleAddLocation(pos);
+          if (pos !== undefined && pos.length < 2) handleAddLocation(pos);
           setOpenWorldmap(false);
         }}
-        zoom={maker.latitude && maker.longitude ? 6 : undefined}
+        zoom={maker.latitude !== null && maker.longitude !== null ? 6 : undefined}
       />
       <Collapse in={limits.list.length === 0}>
         <div style={{ display: limits.list.length === 0 ? '' : 'none' }}>
@@ -853,7 +855,9 @@ const MakerForm = ({
           <Grid item xs={12}>
             <AutocompletePayments
               onAutocompleteChange={handlePaymentMethodChange}
-              onClick={() => setOpenWorldmap(true)}
+              onClick={() => {
+                setOpenWorldmap(true);
+              }}
               optionsType={fav.mode}
               error={maker.badPaymentMethod}
               helperText={maker.badPaymentMethod ? t('Must be shorter than 65 characters') : ''}
@@ -891,7 +895,9 @@ const MakerForm = ({
                     color: theme.palette.text.secondary,
                     borderColor: theme.palette.text.disabled,
                   }}
-                  onClick={() => setOpenWorldmap(true)}
+                  onClick={() => {
+                    setOpenWorldmap(true);
+                  }}
                 >
                   {t('Face to Face Location')}
                   <Map style={{ paddingLeft: 5 }} />

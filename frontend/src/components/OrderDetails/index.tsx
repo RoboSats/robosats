@@ -239,12 +239,14 @@ const OrderDetails = ({
         latitude={order.latitude}
         longitude={order.longitude}
         open={openWorldmap}
-        orderType={order.type || 0}
+        orderType={order.type ?? 0}
         zoom={6}
         message={t(
           'The pinned location is approximate. The exact location for the meeting place must be exchanged in the encrypted chat.',
         )}
-        onClose={() => setOpenWorldmap(false)}
+        onClose={() => {
+          setOpenWorldmap(false);
+        }}
       />
       <Grid item xs={12}>
         <List dense={true}>
@@ -407,7 +409,11 @@ const OrderDetails = ({
               <ListItemIcon>
                 <Tooltip enterTouchDelay={0} title={t('F2F location')}>
                   <div>
-                    <IconButton onClick={() => setOpenWorldmap(true)}>
+                    <IconButton
+                      onClick={() => {
+                        setOpenWorldmap(true);
+                      }}
+                    >
                       <Map />
                     </IconButton>
                   </div>

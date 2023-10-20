@@ -56,13 +56,25 @@ const BookPage = (): JSX.Element => {
           <></>
         ) : (
           <>
-            <Button onClick={() => setView('list')}>
+            <Button
+              onClick={() => {
+                setView('list');
+              }}
+            >
               <FormatListBulleted /> {t('List')}
             </Button>
-            <Button onClick={() => setView('depth')}>
+            <Button
+              onClick={() => {
+                setView('depth');
+              }}
+            >
               <BarChart /> {t('Chart')}
             </Button>
-            <Button onClick={() => setView('map')}>
+            <Button
+              onClick={() => {
+                setView('map');
+              }}
+            >
               <Map /> {t('Map')}
             </Button>
           </>
