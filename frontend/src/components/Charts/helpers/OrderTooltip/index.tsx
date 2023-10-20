@@ -16,12 +16,11 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
   const { federation, settings } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
 
-  const coordinatorAlias = order.coordinatorShortAlias;
+  const coordinatorAlias = order?.coordinatorShortAlias;
   const network = settings.network;
-  const baseUrl =
-    coordinatorAlias !== undefined ? federation[coordinatorAlias][network][origin] : '';
+  const baseUrl = coordinatorAlias ? federation[coordinatorAlias][network][origin] : '';
 
-  return order.id !== undefined && baseUrl !== '' ? (
+  return order?.id && baseUrl !== '' ? (
     <Paper elevation={12} style={{ padding: 10, width: 250 }}>
       <Grid container justifyContent='space-between'>
         <Grid item xs={3}>

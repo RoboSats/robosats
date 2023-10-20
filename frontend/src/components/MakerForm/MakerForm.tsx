@@ -593,10 +593,10 @@ const MakerForm = ({
         )}
         orderType={fav?.type ?? 0}
         onClose={(pos?: [number, number]) => {
-          if (pos !== undefined && pos.length < 2) handleAddLocation(pos);
+          if (pos != null) handleAddLocation(pos);
           setOpenWorldmap(false);
         }}
-        zoom={maker.latitude !== null && maker.longitude !== null ? 6 : undefined}
+        zoom={maker.latitude && maker.longitude ? 6 : undefined}
       />
       <Collapse in={limits.list.length === 0}>
         <div style={{ display: limits.list.length === 0 ? '' : 'none' }}>
