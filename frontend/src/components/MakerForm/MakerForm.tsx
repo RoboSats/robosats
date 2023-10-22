@@ -70,8 +70,9 @@ const MakerForm = ({
     fav,
     setFav,
     limits,
+    exchange,
     fetchFederationLimits,
-    info,
+    avatarLoaded,
     maker,
     setMaker,
     robot,
@@ -468,7 +469,7 @@ const MakerForm = ({
         swapSats = computeSats({
           amount: Number(maker.amount),
           premium: Number(maker.premium),
-          fee: -info.maker_fee,
+          fee: -exchange.info.maker_fee,
           routingBudget: defaultRoutingBudget,
         });
         label = t('Onchain amount to send (BTC)');
@@ -479,7 +480,7 @@ const MakerForm = ({
         swapSats = computeSats({
           amount: Number(maker.amount),
           premium: Number(maker.premium),
-          fee: info.maker_fee,
+          fee: exchange.info.maker_fee,
         });
         label = t('Onchain amount to receive (BTC)');
         helper = t('You send approx {{swapSats}} LN Sats (fees might vary)', {
@@ -488,7 +489,7 @@ const MakerForm = ({
       }
     }
     return { label, helper, swapSats };
-  }, [fav, maker.amount, maker.premium, info]);
+  }, [fav, maker.amount, maker.premium, exchange.info]);
 
   const disableSubmit = useMemo(() => {
     return (
@@ -580,7 +581,7 @@ const MakerForm = ({
           setOpenDialogs(false);
         }}
         onClickDone={handleCreateOrder}
-        hasRobot={robot.avatarLoaded}
+        hasRobot={avatarLoaded}
         onClickGenerateRobot={onClickGenerateRobot}
       />
       <F2fMapDialog

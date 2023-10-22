@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -21,7 +21,7 @@ import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { genBase62Token } from '../../utils';
 import { NewTabIcon } from '../../components/Icons';
-import { hostUrl } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType, hostUrl } from '../../contexts/AppContext';
 
 interface OnboardingProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
@@ -45,6 +45,8 @@ const Onboarding = ({
 }: OnboardingProps): JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const { avatarLoaded } = useContext<UseAppStoreType>(AppContext);
 
   const [step, setStep] = useState<'1' | '2' | '3'>('1');
   const [generatedToken, setGeneratedToken] = useState<boolean>(false);
@@ -149,7 +151,7 @@ const Onboarding = ({
           <Grid container direction='column' alignItems='center' spacing={1}>
             <Grid item>
               <Typography>
-                {robot.avatarLoaded && Boolean(robot.nickname) ? (
+                {avatarLoaded && Boolean(robot.nickname) ? (
                   t('This is your trading avatar')
                 ) : (
                   <>
@@ -178,7 +180,7 @@ const Onboarding = ({
               />
             </Grid>
 
-            {robot.avatarLoaded && Boolean(robot.nickname) ? (
+            {avatarLoaded && Boolean(robot.nickname) ? (
               <Grid item>
                 <Typography align='center'>{t('Hi! My name is')}</Typography>
                 <Typography component='h5' variant='h5'>
@@ -210,7 +212,7 @@ const Onboarding = ({
               </Grid>
             ) : null}
             <Grid item>
-              <Collapse in={!!(robot.avatarLoaded && Boolean(robot.nickname))}>
+              <Collapse in={!!(avatarLoaded && Boolean(robot.nickname))}>
                 <Button
                   onClick={() => {
                     setStep('3');

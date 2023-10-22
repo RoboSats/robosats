@@ -353,7 +353,7 @@ const TakeButton = ({
           setLoadingTake(true);
           setOpen(closeAll);
         }}
-        hasRobot={robot.avatarLoaded}
+        hasRobot={avatarLoaded}
         onClickGenerateRobot={onClickGenerateRobot}
       />
       <InactiveMakerDialog />

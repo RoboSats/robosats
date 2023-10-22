@@ -47,6 +47,7 @@ const Main: React.FC = () => {
     setOpen,
     windowSize,
     navbarHeight,
+    setAvatarLoaded,
   } = useContext<UseAppStoreType>(AppContext);
 
   const [avatarBaseUrl, setAvatarBaseUrl] = useState<string>(hostUrl);
@@ -60,7 +61,6 @@ const Main: React.FC = () => {
       hostUrl,
     });
     setAvatarBaseUrl(url + basePath);
-    console.log(url + basePath);
   }, [settings.network, settings.selfhostedClient, federation, sortedCoordinators]);
 
   return (
@@ -69,11 +69,7 @@ const Main: React.FC = () => {
         style={{ display: 'none' }}
         nickname={robot.nickname}
         baseUrl={avatarBaseUrl}
-        onLoad={() => {
-          setRobot((robot) => {
-            return { ...robot, avatarLoaded: true };
-          });
-        }}
+        onLoad={() => setAvatarLoaded(true)}
       />
       <Notifications
         order={order}

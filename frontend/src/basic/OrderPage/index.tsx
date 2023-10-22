@@ -18,6 +18,7 @@ const OrderPage = (): JSX.Element => {
     federation,
     order,
     robot,
+    avatarLoaded,
     settings,
     setOrder,
     clearOrder,
@@ -133,7 +134,7 @@ const OrderPage = (): JSX.Element => {
                     onClickCoordinator={onClickCoordinator}
                     setOrder={setOrder}
                     baseUrl={baseUrl}
-                    hasRobot={robot.avatarLoaded}
+                    hasRobot={avatarLoaded}
                     onClickGenerateRobot={() => {
                       navigate('/robot');
                     }}
@@ -192,7 +193,7 @@ const OrderPage = (): JSX.Element => {
                     onClickCoordinator={onClickCoordinator}
                     setOrder={setOrder}
                     baseUrl={baseUrl}
-                    hasRobot={robot.avatarLoaded}
+                    hasRobot={avatarLoaded}
                     onClickGenerateRobot={() => {
                       navigate('/robot');
                     }}
@@ -228,7 +229,7 @@ const OrderPage = (): JSX.Element => {
               onClickCoordinator={onClickCoordinator}
               setOrder={setOrder}
               baseUrl={hostUrl}
-              hasRobot={robot.avatarLoaded}
+              hasRobot={avatarLoaded}
               onClickGenerateRobot={() => {
                 navigate('/robot');
               }}

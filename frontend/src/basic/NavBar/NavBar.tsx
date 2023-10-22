@@ -31,6 +31,7 @@ const NavBar = (): JSX.Element => {
     windowSize,
     currentOrder,
     navbarHeight,
+    avatarLoaded,
   } = useContext<UseAppStoreType>(AppContext);
 
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ const NavBar = (): JSX.Element => {
   const color = settings.network === 'mainnet' ? 'primary' : 'secondary';
 
   const tabSx = smallBar
-    ? { position: 'relative', bottom: robot.avatarLoaded ? '0.9em' : '0.13em', minWidth: '1em' }
+    ? { position: 'relative', bottom: avatarLoaded ? '0.9em' : '0.13em', minWidth: '1em' }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
 
   const pagesPosition = {
@@ -115,7 +116,7 @@ const NavBar = (): JSX.Element => {
             setOpen({ ...closeAll, profile: !open.profile });
           }}
           icon={
-            robot.nickname !== undefined && robot.avatarLoaded ? (
+            robot.nickname && avatarLoaded ? (
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
@@ -154,7 +155,7 @@ const NavBar = (): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!robot.avatarLoaded || currentOrder.id == null}
+          disabled={!avatarLoaded || currentOrder.id == null}
           icon={<Assignment />}
           iconPosition='start'
         />

@@ -64,7 +64,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    if (!connected && robot.avatarLoaded) {
+    if (!connected && avatarLoaded) {
       connectWebsocket();
     }
   }, [connected, robot]);

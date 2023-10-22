@@ -25,7 +25,6 @@ class Robot {
   public loading: boolean = false;
   public found: boolean = false;
   public last_login: string = '';
-  public avatarLoaded: boolean = false;
   public copiedToken: boolean = false;
 }
 

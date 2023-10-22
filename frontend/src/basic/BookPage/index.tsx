@@ -14,7 +14,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import MapChart from '../../components/Charts/MapChart';
 
 const BookPage = (): JSX.Element => {
-  const { robot, fetchFederationBook, windowSize, setDelay, clearOrder } =
+  const { robot, avatarLoaded, fetchFederationBook, windowSize, setDelay, clearOrder } =
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ const BookPage = (): JSX.Element => {
   }, []);
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
-    if (robot.avatarLoaded) {
+    if (avatarLoaded) {
       clearOrder();
       setDelay(10000);
       navigate(`/order/${shortAlias}/${id}`);

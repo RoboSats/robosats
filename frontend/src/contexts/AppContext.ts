@@ -47,6 +47,7 @@ import { createTheme, type Theme } from '@mui/material/styles';
 import i18n from '../i18n/Web';
 import { compareUpdateLimit } from '../models/Limit.model';
 import { getEndpoint } from '../models/Coordinator.model';
+import { gridFilterActiveItemsLookupSelector } from '@mui/x-data-grid';
 
 const getWindowSize = function (fontSize: number): { width: number; height: number } {
   // returns window size in EM units
@@ -298,6 +299,8 @@ export interface UseAppStoreType {
   setBadOrder: Dispatch<SetStateAction<string | undefined>>;
   setDelay: Dispatch<SetStateAction<number>>;
   page: Page;
+  setAvatarLoaded: Dispatch<SetStateAction<boolean>>;
+  avatarLoaded: boolean;
   setPage: Dispatch<SetStateAction<Page>>;
   slideDirection: SlideDirection;
   setSlideDirection: Dispatch<SetStateAction<SlideDirection>>;
@@ -347,6 +350,7 @@ export const useAppStore = (): UseAppStoreType => {
     return new Robot(garage.slots[currentSlot].robot);
   });
   const [maker, setMaker] = useState<Maker>(defaultMaker);
+  const [avatarLoaded, setAvatarLoaded] = useState<boolean>(false);
   const [exchange, setExchange] = useState<Exchange>(initialExchange);
   const [federation, dispatchFederation] = useReducer(reduceFederation, initialFederation);
   const sortedCoordinators = useMemo(() => {
@@ -734,11 +738,10 @@ export const useAppStore = (): UseAppStoreType => {
       },
     };
 
-    if (!isRefresh) {
+    if (!isRefresh && coordinator) {
       const newRobot = {
         ...coordinator.robot,
         loading: true,
-        avatarLoaded: false,
       };
 
       dispatchFederation({
@@ -752,7 +755,6 @@ export const useAppStore = (): UseAppStoreType => {
       .get(url, `${basePath}/api/robot/`, auth)
       .then((data: any) => {
         const newRobot = {
-          avatarLoaded: isRefresh ? robot.avatarLoaded : false,
           nickname: data.nickname,
           token,
           tokenSHA256,
@@ -783,9 +785,11 @@ export const useAppStore = (): UseAppStoreType => {
             shortAlias: coordinator?.shortAlias,
           });
         }
+
         setRobot(newRobot);
         garage.updateRobot(newRobot, targetSlot);
         setCurrentSlot(targetSlot);
+
         dispatchFederation({
           type: 'updateRobot',
           payload: { shortAlias: coordinator.shortAlias, robot: newRobot, loadingRobot: false },
@@ -798,6 +802,8 @@ export const useAppStore = (): UseAppStoreType => {
   };
 
   const fetchFederationRobot = function (props: fetchRobotProps): void {
+    if (!props?.isRefresh) setAvatarLoaded(false);
+
     Object.entries(federation).map(([shortAlias, coordinator]) => {
       if (coordinator.enabled === true) {
         dispatchFederation({
@@ -812,10 +818,10 @@ export const useAppStore = (): UseAppStoreType => {
 
   useEffect(() => {
     if (page !== 'robot') {
-      if (open.profile && robot.avatarLoaded) {
+      if (open.profile && avatarLoaded) {
         fetchFederationRobot({ isRefresh: true }); // refresh/update existing robot
       } else if (
-        !robot.avatarLoaded &&
+        !avatarLoaded &&
         robot.token !== undefined &&
         robot.encPrivKey !== undefined &&
         robot.pubKey !== undefined
@@ -872,6 +878,8 @@ export const useAppStore = (): UseAppStoreType => {
     setOpen,
     windowSize,
     clientVersion,
+    setAvatarLoaded,
+    avatarLoaded,
   };
 };
 

@@ -11,7 +11,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { NoRobotDialog } from '../../components/Dialogs';
 
 const MakerPage = (): JSX.Element => {
-  const { robot, book, fav, maker, windowSize, navbarHeight, setOrder, setDelay } =
+  const { avatarLoaded, book, fav, maker, windowSize, navbarHeight, setOrder, setDelay } =
     useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -53,7 +53,7 @@ const MakerPage = (): JSX.Element => {
   };
 
   const onOrderClicked = function (id: number): void {
-    if (robot.avatarLoaded) {
+    if (avatarLoaded) {
       navigate(`/order/${id}`);
       onViewOrder();
     } else {

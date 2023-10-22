@@ -45,8 +45,15 @@ const RobotProfile = ({
   width,
   baseUrl,
 }: RobotProfileProps): JSX.Element => {
-  const { currentSlot, garage, setCurrentSlot, windowSize, currentOrder } =
-    useContext<UseAppStoreType>(AppContext);
+  const {
+    currentSlot,
+    garage,
+    setCurrentSlot,
+    windowSize,
+    currentOrder,
+    avatarLoaded,
+    setAvatarLoaded,
+  } = useContext<UseAppStoreType>(AppContext);
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -54,10 +61,14 @@ const RobotProfile = ({
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (Boolean(robot.nickname) && robot.avatarLoaded) {
+    if (Boolean(robot.nickname) && avatarLoaded) {
       setLoading(false);
     }
-  }, [robot]);
+  }, [robot.nickname, avatarLoaded]);
+
+  useEffect(() => {
+    if (loading) setAvatarLoaded(false);
+  }, [loading]);
 
   const handleAddRobot = (): void => {
     getGenerateRobot(genBase62Token(36), garage.slots.length);
@@ -81,7 +92,7 @@ const RobotProfile = ({
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {robot.avatarLoaded && robot.nickname !== undefined ? (
+          {avatarLoaded && robot.nickname ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
                 style={{
@@ -146,7 +157,7 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {Boolean(robot.activeOrderId) && robot.avatarLoaded && Boolean(robot.nickname) ? (
+        {Boolean(robot.activeOrderId) && avatarLoaded && Boolean(robot.nickname) ? (
           <Grid item>
             <Button
               onClick={() => {
@@ -158,7 +169,7 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        {Boolean(robot.lastOrderId) && robot.avatarLoaded && Boolean(robot.nickname) ? (
+        {Boolean(robot.lastOrderId) && avatarLoaded && Boolean(robot.nickname) ? (
           <Grid item container direction='column' alignItems='center'>
             <Grid item>
               <Button
