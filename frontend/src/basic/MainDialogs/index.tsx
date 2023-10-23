@@ -10,7 +10,9 @@ import {
   UpdateDialog,
 } from '../../components/Dialogs';
 import { pn } from '../../utils';
-import { AppContext, type UseAppStoreType, closeAll, hostUrl } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 export interface OpenDialogs {
   more: boolean;
@@ -26,18 +28,11 @@ export interface OpenDialogs {
 }
 
 const MainDialogs = (): JSX.Element => {
-  const {
-    open,
-    setOpen,
-    limits,
-    robot,
-    setRobot,
-    settings,
-    federation,
-    clientVersion,
-    focusedCoordinator,
-    exchange,
-  } = useContext<UseAppStoreType>(AppContext);
+  const { open, setOpen, settings, clientVersion, hostUrl } =
+    useContext<UseAppStoreType>(AppContext);
+  const { limits, federation, focusedCoordinator, exchange } =
+    useContext<UseFederationStoreType>(FederationContext);
+  const { robot, setRobot } = useContext<UseGarageStoreType>(GarageContext);
 
   const [maxAmount, setMaxAmount] = useState<string>('...loading...');
 

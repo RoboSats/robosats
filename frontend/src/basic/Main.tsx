@@ -1,13 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box, Slide, Typography, styled } from '@mui/material';
-import {
-  type UseAppStoreType,
-  AppContext,
-  closeAll,
-  hostUrl,
-  origin,
-} from '../contexts/AppContext';
+import { type UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
 
 import { RobotPage, MakerPage, BookPage, OrderPage, SettingsPage, NavBar, MainDialogs } from './';
 import RobotAvatar from '../components/RobotAvatar';
@@ -15,6 +9,8 @@ import Notifications from '../components/Notifications';
 
 import { useTranslation } from 'react-i18next';
 import { getEndpoint } from '../models/Coordinator.model';
+import { FederationContext, UseFederationStoreType } from '../contexts/FederationContext';
+import { GarageContext, UseGarageStoreType } from '../contexts/GarageContext';
 
 const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
 
@@ -35,21 +31,11 @@ const MainBox = styled(Box)<MainBoxProps>((props) => ({
 
 const Main: React.FC = () => {
   const { t } = useTranslation();
-  const {
-    settings,
-    robot,
-    setRobot,
-    order,
-    page,
-    slideDirection,
-    federation,
-    sortedCoordinators,
-    setOpen,
-    windowSize,
-    navbarHeight,
-    setAvatarLoaded,
-  } = useContext<UseAppStoreType>(AppContext);
-
+  const { settings, page, slideDirection, setOpen, windowSize, navbarHeight, hostUrl, origin } =
+    useContext<UseAppStoreType>(AppContext);
+  const { federation, sortedCoordinators, order } =
+    useContext<UseFederationStoreType>(FederationContext);
+  const { robot, setAvatarLoaded } = useContext<UseGarageStoreType>(GarageContext);
   const [avatarBaseUrl, setAvatarBaseUrl] = useState<string>(hostUrl);
 
   useEffect(() => {

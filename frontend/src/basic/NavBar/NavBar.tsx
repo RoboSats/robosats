@@ -15,7 +15,9 @@ import {
   MoreHoriz,
 } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
-import { AppContext, type UseAppStoreType, closeAll, hostUrl } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 const NavBar = (): JSX.Element => {
   const theme = useTheme();
@@ -23,16 +25,16 @@ const NavBar = (): JSX.Element => {
   const {
     page,
     setPage,
-    robot,
     settings,
     setSlideDirection,
     open,
     setOpen,
     windowSize,
-    currentOrder,
     navbarHeight,
-    avatarLoaded,
+    hostUrl,
   } = useContext<UseAppStoreType>(AppContext);
+  const { currentOrder } = useContext<UseFederationStoreType>(FederationContext);
+  const { robot, avatarLoaded } = useContext<UseGarageStoreType>(GarageContext);
 
   const navigate = useNavigate();
   const location = useLocation();

@@ -1,21 +1,15 @@
 import React, { useContext } from 'react';
 import { Grid, Paper } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
-import { AppContext, hostUrl, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import FederationTable from '../../components/FederationTable';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 const SettingsPage = (): JSX.Element => {
-  const {
-    windowSize,
-    navbarHeight,
-    federation,
-    fetchCoordinatorInfo,
-    dispatchFederation,
-    setFocusedCoordinator,
-    settings,
-    setOpen,
-    open,
-  } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize, navbarHeight, settings, setOpen, open, hostUrl } =
+    useContext<UseAppStoreType>(AppContext);
+  const { federation, fetchCoordinatorInfo, dispatchFederation, setFocusedCoordinator } =
+    useContext<UseFederationStoreType>(FederationContext);
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
 
   return (

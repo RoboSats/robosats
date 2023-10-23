@@ -26,6 +26,7 @@ import { ConfirmationDialog } from '../Dialogs';
 import { LoadingButton } from '@mui/lab';
 import { computeSats } from '../../utils';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 interface TakeButtonProps {
   order: Order;
@@ -50,7 +51,7 @@ const TakeButton = ({
 }: TakeButtonProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { robot } = useContext<UseAppStoreType>(AppContext);
+  const { robot } = useContext<UseGarageStoreType>(GarageContext);
 
   const [takeAmount, setTakeAmount] = useState<string>('');
   const [badRequest, setBadRequest] = useState<string>('');

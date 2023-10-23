@@ -26,6 +26,7 @@ import currencyDict from '../../../../static/assets/currencies.json';
 import getNivoScheme from '../NivoScheme';
 import OrderTooltip from '../helpers/OrderTooltip';
 import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
+import { FederationContext, UseFederationStoreType } from '../../../contexts/FederationContext';
 
 interface DepthChartProps {
   maxWidth: number;
@@ -42,7 +43,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
   elevation = 6,
   onOrderClicked = () => null,
 }) => {
-  const { book, fav, exchange, limits } = useContext<UseAppStoreType>(AppContext);
+  const { fav } = useContext<UseAppStoreType>(AppContext);
+  const { book, exchange, limits } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
   const theme = useTheme();
   const [enrichedOrders, setEnrichedOrders] = useState<Order[]>([]);

@@ -9,10 +9,13 @@ import BookTable from '../../components/BookTable';
 
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { NoRobotDialog } from '../../components/Dialogs';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 const MakerPage = (): JSX.Element => {
-  const { avatarLoaded, book, fav, maker, windowSize, navbarHeight, setOrder, setDelay } =
-    useContext<UseAppStoreType>(AppContext);
+  const { fav, windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
+  const { book, setOrder, setDelay } = useContext<UseFederationStoreType>(FederationContext);
+  const { avatarLoaded, maker } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
 

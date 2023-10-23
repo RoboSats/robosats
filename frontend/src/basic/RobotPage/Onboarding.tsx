@@ -21,7 +21,8 @@ import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { genBase62Token } from '../../utils';
 import { NewTabIcon } from '../../components/Icons';
-import { AppContext, UseAppStoreType, hostUrl } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 interface OnboardingProps {
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
@@ -46,7 +47,8 @@ const Onboarding = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { avatarLoaded } = useContext<UseAppStoreType>(AppContext);
+  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const { avatarLoaded } = useContext<UseGarageStoreType>(GarageContext);
 
   const [step, setStep] = useState<'1' | '2' | '3'>('1');
   const [generatedToken, setGeneratedToken] = useState<boolean>(false);

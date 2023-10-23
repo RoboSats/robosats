@@ -18,6 +18,7 @@ import RobotAvatar from '../RobotAvatar';
 import type { Robot } from '../../models';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import RobotInfo from '../RobotInfo';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface Props {
   open: boolean;
@@ -27,7 +28,7 @@ interface Props {
 }
 
 const ProfileDialog = ({ open = false, baseUrl, onClose, robot }: Props): JSX.Element => {
-  const { federation } = useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
 
   return (

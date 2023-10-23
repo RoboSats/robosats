@@ -58,7 +58,7 @@ import {
   BadgeLimits,
   NostrIcon,
 } from '../Icons';
-import { AppContext, type AppContextProps, hostUrl } from '../../contexts/AppContext';
+import { AppContext } from '../../contexts/AppContext';
 import { systemClient } from '../../services/System';
 import { type Badges } from '../../models/Coordinator.model';
 
@@ -320,7 +320,7 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
 
 const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const { clientVersion, page } = useContext<AppContextProps>(AppContext);
+  const { clientVersion, page, hostUrl } = useContext(AppContext);
 
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
 

@@ -31,8 +31,9 @@ import { UserNinjaIcon } from '../Icons';
 import { getWebln } from '../../utils';
 import { apiClient } from '../../services/api';
 import { signCleartextMessage } from '../../pgp';
-import { AppContext, type UseAppStoreType, origin, hostUrl } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { getEndpoint } from '../../models/Coordinator.model';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface Props {
   robot: Robot;
@@ -41,7 +42,8 @@ interface Props {
 }
 
 const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
-  const { dispatchFederation, settings } = useContext<UseAppStoreType>(AppContext);
+  const { settings, origin, hostUrl } = useContext<UseAppStoreType>(AppContext?.Provider);
+  const { dispatchFederation } = useContext<UseFederationStoreType>(FederationContext?.Provider);
   const navigate = useNavigate();
   const { t } = useTranslation();
 

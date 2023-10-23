@@ -41,9 +41,11 @@ import { amountToString, computeSats, pn } from '../../utils';
 import { SelfImprovement, Lock, HourglassTop, DeleteSweep, Edit, Map } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { fiatMethods } from '../PaymentMethods';
-import { AppContext, hostUrl, origin, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import SelectCoordinator from './SelectCoordinator';
 import { getEndpoint } from '../../models/Coordinator.model';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 interface MakerFormProps {
   disableRequest?: boolean;
@@ -66,19 +68,10 @@ const MakerForm = ({
   onOrderCreated = () => null,
   onClickGenerateRobot = () => null,
 }: MakerFormProps): JSX.Element => {
-  const {
-    fav,
-    setFav,
-    limits,
-    exchange,
-    fetchFederationLimits,
-    avatarLoaded,
-    maker,
-    setMaker,
-    robot,
-    federation,
-    settings,
-  } = useContext<UseAppStoreType>(AppContext);
+  const { fav, setFav, settings, hostUrl, origin } = useContext<UseAppStoreType>(AppContext);
+  const { limits, exchange, fetchFederationLimits, federation } =
+    useContext<UseFederationStoreType>(FederationContext);
+  const { avatarLoaded, maker, setMaker, robot } = useContext<UseGarageStoreType>(GarageContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -100,14 +93,7 @@ const MakerForm = ({
 
   useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
-    if (limits.list.length === 0) {
-      fetchFederationLimits();
-      // .then((data) => {
-      //   updateAmountLimits(data, fav.currency, maker.premium);
-      //   updateCurrentPrice(data, fav.currency, maker.premium);
-      //   updateSatoshisLimits(data);
-      // });
-    } else {
+    if (Object.keys(limits.list).length !== 0) {
       updateAmountLimits(limits.list, fav.currency, maker.premium);
       updateCurrentPrice(limits.list, fav.currency, maker.premium);
       updateSatoshisLimits(limits.list);

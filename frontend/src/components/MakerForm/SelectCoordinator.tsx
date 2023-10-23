@@ -10,9 +10,10 @@ import {
 } from '@mui/material';
 
 import RobotAvatar from '../RobotAvatar';
-import { AppContext, type UseAppStoreType, hostUrl } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { useTheme } from '@emotion/react';
 import { useTranslation } from 'react-i18next';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface SelectCoordinatorProps {
   coordinator: string;
@@ -20,8 +21,9 @@ interface SelectCoordinatorProps {
 }
 
 const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setCoordinator }) => {
-  const { federation, setFocusedCoordinator, setOpen, sortedCoordinators } =
-    useContext<UseAppStoreType>(AppContext);
+  const { setOpen, hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const { federation, setFocusedCoordinator, sortedCoordinators } =
+    useContext<UseFederationStoreType>(FederationContext);
   const theme = useTheme();
   const { t } = useTranslation();
 

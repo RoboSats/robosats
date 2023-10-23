@@ -12,10 +12,13 @@ import BookTable from '../../components/BookTable';
 import { BarChart, FormatListBulleted, Map } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import MapChart from '../../components/Charts/MapChart';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 const BookPage = (): JSX.Element => {
-  const { robot, avatarLoaded, fetchFederationBook, windowSize, setDelay, clearOrder } =
-    useContext<UseAppStoreType>(AppContext);
+  const { windowSize } = useContext<UseAppStoreType>(AppContext);
+  const { setDelay, clearOrder } = useContext<UseFederationStoreType>(FederationContext);
+  const { avatarLoaded } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'depth' | 'map'>('list');
@@ -26,10 +29,6 @@ const BookPage = (): JSX.Element => {
   const width = windowSize.width * 0.9;
   const maxBookTableWidth = 85;
   const chartWidthEm = width - maxBookTableWidth;
-
-  useEffect(() => {
-    fetchFederationBook();
-  }, []);
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
     if (avatarLoaded) {

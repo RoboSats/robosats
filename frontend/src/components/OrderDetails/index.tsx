@@ -40,7 +40,7 @@ import type { Order, Coordinator } from '../../models';
 import { statusBadgeColor, pn, amountToString, computeSats } from '../../utils';
 import TakeButton from './TakeButton';
 import { F2fMapDialog } from '../Dialogs';
-import { hostUrl } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 interface OrderDetailsProps {
   order: Order;
@@ -62,6 +62,7 @@ const OrderDetails = ({
   onClickGenerateRobot = () => null,
 }: OrderDetailsProps): JSX.Element => {
   const { t } = useTranslation();
+  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
 
   const currencyCode: string = currencies[`${order.currency}`];

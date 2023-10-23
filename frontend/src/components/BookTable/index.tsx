@@ -36,8 +36,9 @@ import RobotAvatar from '../RobotAvatar';
 
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
-import { AppContext, hostUrl, origin, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { getEndpoint } from '../../models/Coordinator.model';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 const ClickThroughDataGrid = styled(DataGrid)({
   '& .MuiDataGrid-overlayWrapperInner': {
@@ -106,16 +107,10 @@ const BookTable = ({
   showNoResults = true,
   onOrderClicked = () => null,
 }: BookTableProps): JSX.Element => {
-  const {
-    book,
-    federation,
-    fetchFederationBook,
-    fav,
-    setFav,
-    setFocusedCoordinator,
-    settings,
-    setOpen,
-  } = useContext<UseAppStoreType>(AppContext);
+  const { fav, setFav, settings, setOpen, hostUrl, origin } =
+    useContext<UseAppStoreType>(AppContext);
+  const { book, federation, fetchFederationBook, setFocusedCoordinator } =
+    useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
   const theme = useTheme();

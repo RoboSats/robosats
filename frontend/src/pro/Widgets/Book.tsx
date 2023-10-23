@@ -3,6 +3,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { Paper } from '@mui/material';
 import BookTable from '../../components/BookTable';
 import { type GridItem } from 'react-grid-layout';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface BookWidgetProps {
   layout: GridItem;
@@ -26,7 +27,9 @@ const BookWidget = React.forwardRef(function Component(
   }: BookWidgetProps,
   ref,
 ) {
-  const { book, windowSize, fav } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize, fav } = useContext<UseAppStoreType>(AppContext);
+  const { book } = useContext<UseFederationStoreType>(FederationContext);
+
   return React.useMemo(() => {
     return (
       <Paper elevation={3} style={{ width: '100%', height: '100%' }}>

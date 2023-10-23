@@ -25,7 +25,7 @@ import {
 
 import { pn } from '../../utils';
 import { BitcoinSignIcon } from '../Icons';
-import { AppContext, type AppContextProps } from '../../contexts/AppContext';
+import { FederationContext } from '../../contexts/FederationContext';
 
 interface Props {
   open: boolean;
@@ -34,7 +34,7 @@ interface Props {
 
 const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const { exchange } = useContext<AppContextProps>(AppContext);
+  const { exchange } = useContext(FederationContext);
 
   const loadingProgress = useMemo(() => {
     return (exchange.onlineCoordinators / exchange.totalCoordinators) * 100;

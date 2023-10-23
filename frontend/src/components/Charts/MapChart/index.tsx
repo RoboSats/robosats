@@ -15,6 +15,7 @@ import Map from '../../Map';
 import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
 import { PhotoSizeSelectActual } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+import { FederationContext, UseFederationStoreType } from '../../../contexts/FederationContext';
 
 interface MapChartProps {
   maxWidth: number;
@@ -32,7 +33,7 @@ const MapChart: React.FC<MapChartProps> = ({
   onOrderClicked = () => {},
 }) => {
   const { t } = useTranslation();
-  const { book } = useContext<UseAppStoreType>(AppContext);
+  const { book } = useContext<UseFederationStoreType>(FederationContext);
   const [useTiles, setUseTiles] = useState<boolean>(false);
   const [acceptedTilesWarning, setAcceptedTilesWarning] = useState<boolean>(false);
   const [openWarningDialog, setOpenWarningDialog] = useState<boolean>(false);

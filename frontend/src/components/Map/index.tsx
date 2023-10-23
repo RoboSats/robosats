@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { apiClient } from '../../services/api';
 import { MapContainer, GeoJSON, useMapEvents, TileLayer, Tooltip, Marker } from 'react-leaflet';
 import { useTheme, LinearProgress } from '@mui/material';
@@ -7,8 +7,8 @@ import { DivIcon, type LeafletMouseEvent } from 'leaflet';
 import { type PublicOrder } from '../../models';
 import OrderTooltip from '../Charts/helpers/OrderTooltip';
 import getWorldmapGeojson from '../../geo/Web';
-import { hostUrl } from '../../contexts/AppContext';
 import MarkerClusterGroup from '@christopherpickering/react-leaflet-markercluster';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 interface MapPinProps {
   fillColor: string;
@@ -44,6 +44,7 @@ const Map = ({
   interactive = false,
 }: Props): JSX.Element => {
   const theme = useTheme();
+  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const [worldmap, setWorldmap] = useState<GeoJsonObject | undefined>();
 
   useEffect(() => {

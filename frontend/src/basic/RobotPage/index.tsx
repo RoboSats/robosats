@@ -21,14 +21,17 @@ import { TorIcon } from '../../components/Icons';
 import { genKey } from '../../pgp';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { validateTokenEntropy } from '../../utils';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 interface RobotPageProps {
   avatarBaseUrl: string;
 }
 
 const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
-  const { robot, setRobot, fetchFederationRobot, torStatus, windowSize, settings } =
-    useContext<UseAppStoreType>(AppContext);
+  const { torStatus, windowSize, settings } = useContext<UseAppStoreType>(AppContext);
+  const { fetchFederationRobot } = useContext<UseFederationStoreType>(FederationContext);
+  const { robot, setRobot } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const params = useParams();
   const urlToken = settings.selfhostedClient ? params.token : null;

@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { Paper } from '@mui/material';
 import DepthChart from '../../components/Charts/DepthChart';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface DepthChartWidgetProps {
   layout: any;
@@ -25,7 +26,9 @@ const DepthChartWidget = React.forwardRef(function Component(
   }: DepthChartWidgetProps,
   ref,
 ) {
-  const { fav, book, limits, exchange } = useContext<UseAppStoreType>(AppContext);
+  const { fav } = useContext<UseAppStoreType>(AppContext);
+  const { book, limits, exchange } = useContext<UseFederationStoreType>(FederationContext);
+
   return React.useMemo(() => {
     return (
       <Paper elevation={3} style={{ width: '100%', height: '100%' }}>

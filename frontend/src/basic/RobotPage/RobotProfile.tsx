@@ -18,9 +18,11 @@ import { Bolt, Add, DeleteSweep, Logout, Download } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import TokenInput from './TokenInput';
 import { type Slot, type Robot } from '../../models';
-import { AppContext, hostUrl, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface RobotProfileProps {
   robot: Robot;
@@ -45,15 +47,11 @@ const RobotProfile = ({
   width,
   baseUrl,
 }: RobotProfileProps): JSX.Element => {
-  const {
-    currentSlot,
-    garage,
-    setCurrentSlot,
-    windowSize,
-    currentOrder,
-    avatarLoaded,
-    setAvatarLoaded,
-  } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize, hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const { currentOrder } = useContext<UseFederationStoreType>(FederationContext);
+  const { currentSlot, garage, setCurrentSlot, avatarLoaded, setAvatarLoaded } =
+    useContext<UseGarageStoreType>(GarageContext);
+
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -65,10 +63,6 @@ const RobotProfile = ({
       setLoading(false);
     }
   }, [robot.nickname, avatarLoaded]);
-
-  useEffect(() => {
-    if (loading) setAvatarLoaded(false);
-  }, [loading]);
 
   const handleAddRobot = (): void => {
     getGenerateRobot(genBase62Token(36), garage.slots.length);

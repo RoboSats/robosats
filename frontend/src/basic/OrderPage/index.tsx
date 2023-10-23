@@ -7,27 +7,26 @@ import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
 
 import { apiClient } from '../../services/api';
-import { AppContext, hostUrl, origin, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { getEndpoint } from '../../models/Coordinator.model';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 const OrderPage = (): JSX.Element => {
+  const { windowSize, setOpen, settings, navbarHeight, hostUrl, origin } =
+    useContext<UseAppStoreType>(AppContext);
   const {
-    windowSize,
     setFocusedCoordinator,
-    setOpen,
     federation,
     order,
-    robot,
-    avatarLoaded,
-    settings,
     setOrder,
     clearOrder,
     currentOrder,
     setCurrentOrder,
     badOrder,
     setBadOrder,
-    navbarHeight,
-  } = useContext<UseAppStoreType>(AppContext);
+  } = useContext<UseFederationStoreType>(FederationContext);
+  const { robot, avatarLoaded } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams();

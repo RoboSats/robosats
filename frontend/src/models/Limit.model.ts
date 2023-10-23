@@ -9,7 +9,7 @@ export interface Limit {
 export type LimitList = Record<string, Limit>;
 
 export interface Limits {
-  list: LimitList | never[];
+  list: LimitList;
   loading: boolean;
   loadedCoordinators: number;
   totalCoordinators: number;

@@ -1,12 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, useTheme, Checkbox, CircularProgress, Typography, Grid } from '@mui/material';
 import { DataGrid, type GridColDef, type GridValidRowModel } from '@mui/x-data-grid';
 import { type Coordinator } from '../../models';
-
 import RobotAvatar from '../RobotAvatar';
 import { Link, LinkOff } from '@mui/icons-material';
-import { type ActionFederation, hostUrl } from '../../contexts/AppContext';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 interface FederationTableProps {
   federation: Record<string, Coordinator>;
@@ -30,6 +29,7 @@ const FederationTable = ({
   fillContainer = false,
 }: FederationTableProps): JSX.Element => {
   const { t } = useTranslation();
+  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const [pageSize, setPageSize] = useState<number>(0);
 

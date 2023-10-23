@@ -6,14 +6,16 @@ import { amountToString, statusBadgeColor } from '../../../../utils';
 import currencyDict from '../../../../../static/assets/currencies.json';
 import { PaymentStringAsIcons } from '../../../PaymentMethods';
 import { useTranslation } from 'react-i18next';
-import { AppContext, type UseAppStoreType, origin } from '../../../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../../../contexts/AppContext';
+import { FederationContext, UseFederationStoreType } from '../../../../contexts/FederationContext';
 
 interface OrderTooltipProps {
   order: PublicOrder;
 }
 
 const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
-  const { federation, settings } = useContext<UseAppStoreType>(AppContext);
+  const { settings, origin } = useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
 
   const coordinatorAlias = order?.coordinatorShortAlias;
