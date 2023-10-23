@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import numpy as np
+from decouple import config
 from django.test import TestCase
 
 from api.models import Order
@@ -94,17 +95,23 @@ class TestUtils(TestCase):
         mock_response_blockchain.json.assert_called_once()
         mock_response_yadio.json.assert_called_once()
 
-    @patch("api.lightning.lnd.LNDNode.get_version")
-    def test_get_lnd_version(self, mock_get_version):
-        mock_get_version.return_value = "v0.17.0-beta"
-        version = get_lnd_version()
-        self.assertEqual(version, "v0.17.0-beta")
+    LNVENDOR = config("LNVENDOR", cast=str, default="LND")
 
-    @patch("api.lightning.cln.CLNNode.get_version")
-    def test_get_cln_version(self, mock_get_version):
-        mock_get_version.return_value = "v23.08.1"
-        version = get_cln_version()
-        self.assertEqual(version, "v23.08.1")
+    if LNVENDOR == "LND":
+
+        @patch("api.lightning.lnd.LNDNode.get_version")
+        def test_get_lnd_version(self, mock_get_version):
+            mock_get_version.return_value = "v0.17.0-beta"
+            version = get_lnd_version()
+            self.assertEqual(version, "v0.17.0-beta")
+
+    elif LNVENDOR == "CLN":
+
+        @patch("api.lightning.cln.CLNNode.get_version")
+        def test_get_cln_version(self, mock_get_version):
+            mock_get_version.return_value = "v23.08.1"
+            version = get_cln_version()
+            self.assertEqual(version, "v23.08.1")
 
     @patch("builtins.open", new_callable=mock_open, read_data="test_commit_hash")
     def test_get_robosats_commit(self, mock_file):

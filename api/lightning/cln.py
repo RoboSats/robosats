@@ -10,10 +10,10 @@ import ring
 from decouple import config
 from django.utils import timezone
 
-from . import node_pb2 as noderpc
-from . import node_pb2_grpc as nodestub
 from . import hold_pb2 as holdrpc
 from . import hold_pb2_grpc as holdstub
+from . import node_pb2 as noderpc
+from . import node_pb2_grpc as nodestub
 from . import primitives_pb2 as primitives__pb2
 
 #######
