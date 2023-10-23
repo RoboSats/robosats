@@ -229,16 +229,7 @@ export const FederationContext = createContext<UseFederationStoreType>(initialAp
 export const useFederationStore = (): UseFederationStoreType => {
   const { settings, page, origin, hostUrl, open, torStatus } =
     useContext<UseAppStoreType>(AppContext);
-  const {
-    setMaker,
-    setRobot,
-    robot,
-    garage,
-    setCurrentSlot,
-    currentSlot,
-    avatarLoaded,
-    setAvatarLoaded,
-  } = useContext<UseGarageStoreType>(GarageContext);
+  const { setMaker, garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   // All federation data structured
   const [book, setBook] = useState<Book>(initialAppContext.book);
@@ -483,10 +474,6 @@ export const useFederationStore = (): UseFederationStoreType => {
     }
   }, [open.exchange, torStatus]);
 
-  useEffect(() => {
-    fetchFederationInfo();
-  }, []);
-
   // Fetch current order at load and in a loop
   useEffect(() => {
     if (currentOrder.id != null && (page === 'order' || (order === badOrder) === undefined)) {
@@ -530,10 +517,10 @@ export const useFederationStore = (): UseFederationStoreType => {
         hostUrl,
       });
       const auth = {
-        tokenSHA256: robot.tokenSHA256,
+        tokenSHA256: garage.getRobot().tokenSHA256,
         keys: {
-          pubKey: robot.pubKey?.split('\n').join('\\'),
-          encPrivKey: robot.encPrivKey?.split('\n').join('\\'),
+          pubKey: garage.getRobot().pubKey?.split('\n').join('\\'),
+          encPrivKey: garage.getRobot().encPrivKey?.split('\n').join('\\'),
         },
       };
 
@@ -564,7 +551,7 @@ export const useFederationStore = (): UseFederationStoreType => {
       hostUrl,
     });
 
-    const token = newToken ?? robot.token ?? '';
+    const token = newToken ?? garage.getRobot().token ?? '';
 
     const { hasEnoughEntropy, bitsEntropy, shannonEntropy } = validateTokenEntropy(token);
 
@@ -573,9 +560,9 @@ export const useFederationStore = (): UseFederationStoreType => {
     }
 
     const tokenSHA256 = hexToBase91(sha256(token));
-    const targetSlot = slot ?? currentSlot;
-    const encPrivKey = newKeys?.encPrivKey ?? robot.encPrivKey ?? '';
-    const pubKey = newKeys?.pubKey ?? robot.pubKey ?? '';
+    const targetSlot = slot ?? garage.currentSlot;
+    const encPrivKey = newKeys?.encPrivKey ?? garage.getRobot().encPrivKey ?? '';
+    const pubKey = newKeys?.pubKey ?? garage.getRobot().pubKey ?? '';
 
     // On first authenticated requests, pubkey and privkey are needed in header cookies
     const auth = {
@@ -587,16 +574,13 @@ export const useFederationStore = (): UseFederationStoreType => {
     };
 
     if (!isRefresh && coordinator) {
-      const newRobot = {
-        ...coordinator.robot,
-        loading: true,
-      };
+      const newRobot = coordinator.robot;
 
       dispatchFederation({
         type: 'updateRobot',
         payload: { shortAlias: coordinator.shortAlias, robot: newRobot, loadingRobot: false },
       });
-      setRobot(newRobot);
+      if (newRobot) garage.updateRobot(newRobot);
     }
 
     apiClient
@@ -633,10 +617,9 @@ export const useFederationStore = (): UseFederationStoreType => {
             shortAlias: coordinator?.shortAlias,
           });
         }
-        console.log(newRobot);
-        setRobot(newRobot);
+
         garage.updateRobot(newRobot, targetSlot);
-        setCurrentSlot(targetSlot);
+        garage.currentSlot = targetSlot;
 
         dispatchFederation({
           type: 'updateRobot',
@@ -650,7 +633,7 @@ export const useFederationStore = (): UseFederationStoreType => {
   };
 
   const fetchFederationRobot = function (props: fetchRobotProps): void {
-    if (!props?.isRefresh) setAvatarLoaded(false);
+    if (!props?.isRefresh) garage.updateRobot({ avatarLoaded: false });
 
     Object.entries(federation).map(([shortAlias, coordinator]) => {
       if (coordinator.enabled === true) {
@@ -665,19 +648,17 @@ export const useFederationStore = (): UseFederationStoreType => {
   };
 
   useEffect(() => {
-    if (page !== 'robot') {
-      if (open.profile && avatarLoaded) {
-        fetchFederationRobot({ isRefresh: true }); // refresh/update existing robot
-      } else if (
-        !avatarLoaded &&
-        robot?.token !== undefined &&
-        robot?.encPrivKey !== undefined &&
-        robot?.pubKey !== undefined
-      ) {
-        fetchFederationRobot({}); // create new robot with existing token and keys (on network and coordinator change)
-      }
+    if (open.profile && garage.getRobot().avatarLoaded) {
+      fetchFederationRobot({ isRefresh: true }); // refresh/update existing robot
+    } else if (
+      !garage.getRobot().avatarLoaded &&
+      garage.getRobot().token !== undefined &&
+      garage.getRobot().encPrivKey !== undefined &&
+      garage.getRobot().pubKey !== undefined
+    ) {
+      fetchFederationRobot({}); // create new robot with existing token and keys (on network and coordinator change)
     }
-  }, [open.profile, hostUrl]);
+  }, [open.profile, hostUrl, robotUpdatedAt]);
 
   return {
     book,

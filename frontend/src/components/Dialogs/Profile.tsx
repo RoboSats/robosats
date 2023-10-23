@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -15,21 +15,25 @@ import {
 
 import BoltIcon from '@mui/icons-material/Bolt';
 import RobotAvatar from '../RobotAvatar';
-import type { Robot } from '../../models';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import RobotInfo from '../RobotInfo';
 import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  robot: Robot;
   baseUrl: string;
 }
 
-const ProfileDialog = ({ open = false, baseUrl, onClose, robot }: Props): JSX.Element => {
+const ProfileDialog = ({ open = false, baseUrl, onClose }: Props): JSX.Element => {
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    setLoading(garage.getRobot().loading);
+  }, [robotUpdatedAt]);
 
   return (
     <Dialog
@@ -38,7 +42,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot }: Props): JSX.El
       aria-labelledby='profile-title'
       aria-describedby='profile-description'
     >
-      <div style={robot.loading ? {} : { display: 'none' }}>
+      <div style={loading ? {} : { display: 'none' }}>
         <LinearProgress />
       </div>
       <DialogContent>
@@ -52,7 +56,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot }: Props): JSX.El
           <ListItem className='profileNickname'>
             <ListItemText secondary={t('Your robot')}>
               <Typography component='h6' variant='h6'>
-                {robot.nickname !== undefined && (
+                {garage.getRobot().nickname !== undefined && (
                   <div style={{ position: 'relative', left: '-7px' }}>
                     <div
                       style={{
@@ -65,7 +69,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot }: Props): JSX.El
                     >
                       <BoltIcon sx={{ color: '#fcba03', height: '28px', width: '24px' }} />
 
-                      <a>{robot.nickname}</a>
+                      <a>{garage.getRobot().nickname}</a>
 
                       <BoltIcon sx={{ color: '#fcba03', height: '28px', width: '24px' }} />
                     </div>
@@ -78,7 +82,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose, robot }: Props): JSX.El
               <RobotAvatar
                 avatarClass='profileAvatar'
                 style={{ width: 65, height: 65 }}
-                nickname={robot.nickname}
+                nickname={garage.getRobot().nickname}
                 baseUrl={baseUrl}
               />
             </ListItemAvatar>

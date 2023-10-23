@@ -71,7 +71,7 @@ const MakerForm = ({
   const { fav, setFav, settings, hostUrl, origin } = useContext<UseAppStoreType>(AppContext);
   const { limits, exchange, fetchFederationLimits, federation } =
     useContext<UseFederationStoreType>(FederationContext);
-  const { avatarLoaded, maker, setMaker, robot } = useContext<UseGarageStoreType>(GarageContext);
+  const { maker, setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -287,10 +287,10 @@ const MakerForm = ({
     });
 
     const auth = {
-      tokenSHA256: robot.tokenSHA256,
+      tokenSHA256: garage.getRobot().tokenSHA256,
       keys: {
-        pubKey: robot.pubKey.split('\n').join('\\'),
-        encPrivKey: robot.encPrivKey.split('\n').join('\\'),
+        pubKey: garage.getRobot().pubKey?.split('\n').join('\\'),
+        encPrivKey: garage.getRobot().encPrivKey?.split('\n').join('\\'),
       },
     };
 
@@ -567,7 +567,7 @@ const MakerForm = ({
           setOpenDialogs(false);
         }}
         onClickDone={handleCreateOrder}
-        hasRobot={avatarLoaded}
+        hasRobot={garage.getRobot().avatarLoaded}
         onClickGenerateRobot={onClickGenerateRobot}
       />
       <F2fMapDialog

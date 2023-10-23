@@ -1,57 +1,41 @@
-import { createContext, type Dispatch, useState, type SetStateAction } from 'react';
+import { createContext, type Dispatch, useState, type SetStateAction, useEffect } from 'react';
 
-import { defaultMaker, type Maker, Robot, Garage } from '../models';
+import { defaultMaker, type Maker, Garage } from '../models';
 
 export interface UseGarageStoreType {
   garage: Garage;
-  setGarage: Dispatch<SetStateAction<Garage>>;
-  currentSlot: number;
-  setCurrentSlot: Dispatch<SetStateAction<number>>;
   maker: Maker;
   setMaker: Dispatch<SetStateAction<Maker>>;
-  robot: Robot;
-  setRobot: Dispatch<SetStateAction<Robot>>;
-  avatarLoaded: boolean;
-  setAvatarLoaded: Dispatch<SetStateAction<boolean>>;
+  robotUpdatedAt: string;
 }
 
 export const initialGarageContext: UseGarageStoreType = {
   garage: new Garage(),
-  setGarage: () => {},
-  currentSlot: 0,
-  setCurrentSlot: () => {},
   maker: defaultMaker,
   setMaker: () => {},
-  robot: new Robot(),
-  setRobot: () => {},
-  avatarLoaded: false,
-  setAvatarLoaded: () => {},
+  robotUpdatedAt: '',
 };
 
 export const GarageContext = createContext<UseGarageStoreType>(initialGarageContext);
 
 export const useGarageStore = (): UseGarageStoreType => {
   // All garage data structured
-  const [garage, setGarage] = useState<Garage>(initialGarageContext.garage);
-  const [currentSlot, setCurrentSlot] = useState<number>(() => {
-    return garage.slots.length - 1;
-  });
-  const [robot, setRobot] = useState<Robot>(() => {
-    return new Robot(garage.slots[currentSlot].robot);
-  });
+  const [garage] = useState<Garage>(initialGarageContext.garage);
   const [maker, setMaker] = useState<Maker>(initialGarageContext.maker);
-  const [avatarLoaded, setAvatarLoaded] = useState<boolean>(initialGarageContext.avatarLoaded);
+  const [robotUpdatedAt, setRobotUpdatedAt] = useState<string>(new Date().toISOString());
+
+  const onRobotUpdated = (): void => {
+    setRobotUpdatedAt(new Date().toISOString());
+  };
+
+  useEffect(() => {
+    garage.registerHook('onRobotUpdate', onRobotUpdated);
+  }, []);
 
   return {
     garage,
-    setGarage,
-    currentSlot,
-    setCurrentSlot,
     maker,
     setMaker,
-    robot,
-    setRobot,
-    setAvatarLoaded,
-    avatarLoaded,
+    robotUpdatedAt,
   };
 };

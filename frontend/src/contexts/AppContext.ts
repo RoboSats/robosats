@@ -26,7 +26,9 @@ export interface SlideDirection {
 export type TorStatus = 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
 
 const entryPage: Page =
-  window.NativeRobosats === undefined ? (window.location.pathname.split('/')[1] as Page) : 'none';
+  window.NativeRobosats === undefined
+    ? ((window.location.pathname.split('/')[1] ?? 'robot') as Page)
+    : 'robot';
 
 export const closeAll = {
   more: false,

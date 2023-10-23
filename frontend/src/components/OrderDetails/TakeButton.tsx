@@ -25,7 +25,6 @@ import { type Order, type Info } from '../../models';
 import { ConfirmationDialog } from '../Dialogs';
 import { LoadingButton } from '@mui/lab';
 import { computeSats } from '../../utils';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 interface TakeButtonProps {
@@ -51,7 +50,7 @@ const TakeButton = ({
 }: TakeButtonProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { robot } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const [takeAmount, setTakeAmount] = useState<string>('');
   const [badRequest, setBadRequest] = useState<string>('');
@@ -315,7 +314,7 @@ const TakeButton = ({
           action: 'take',
           amount: order.currency === 1000 ? takeAmount / 100000000 : takeAmount,
         },
-        { tokenSHA256: robot.tokenSHA256 },
+        { tokenSHA256: garage.getRobot().tokenSHA256 },
       )
       .then((data) => {
         setLoadingTake(false);
@@ -354,7 +353,7 @@ const TakeButton = ({
           setLoadingTake(true);
           setOpen(closeAll);
         }}
-        hasRobot={avatarLoaded}
+        hasRobot={garage.getRobot().avatarLoaded}
         onClickGenerateRobot={onClickGenerateRobot}
       />
       <InactiveMakerDialog />

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   List,
@@ -48,7 +48,6 @@ interface OrderDetailsProps {
   onClickCoordinator?: () => void;
   setOrder: (state: Order) => void;
   baseUrl: string;
-  hasRobot: boolean;
   onClickGenerateRobot?: () => void;
 }
 
@@ -58,7 +57,6 @@ const OrderDetails = ({
   onClickCoordinator = () => null,
   setOrder,
   baseUrl,
-  hasRobot,
   onClickGenerateRobot = () => null,
 }: OrderDetailsProps): JSX.Element => {
   const { t } = useTranslation();
@@ -513,7 +511,6 @@ const OrderDetails = ({
               order={order}
               setOrder={setOrder}
               baseUrl={baseUrl}
-              hasRobot={hasRobot}
               info={coordinator.info}
               onClickGenerateRobot={onClickGenerateRobot}
             />

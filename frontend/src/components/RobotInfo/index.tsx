@@ -42,8 +42,8 @@ interface Props {
 }
 
 const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
-  const { settings, origin, hostUrl } = useContext<UseAppStoreType>(AppContext?.Provider);
-  const { dispatchFederation } = useContext<UseFederationStoreType>(FederationContext?.Provider);
+  const { settings, origin, hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const { dispatchFederation } = useContext<UseFederationStoreType>(FederationContext);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -67,7 +67,7 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
   const [weblnEnabled, setWeblnEnabled] = useState<boolean>(false);
   const [openEnableTelegram, setOpenEnableTelegram] = useState<boolean>(false);
 
-  const handleWebln = async (): void => {
+  const handleWebln = async (): Promise<void> => {
     void getWebln()
       .then(() => {
         setWeblnEnabled(true);

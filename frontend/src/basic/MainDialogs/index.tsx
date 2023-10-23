@@ -32,7 +32,6 @@ const MainDialogs = (): JSX.Element => {
     useContext<UseAppStoreType>(AppContext);
   const { limits, federation, focusedCoordinator, exchange } =
     useContext<UseFederationStoreType>(FederationContext);
-  const { robot, setRobot } = useContext<UseGarageStoreType>(GarageContext);
 
   const [maxAmount, setMaxAmount] = useState<string>('...loading...');
 
@@ -100,8 +99,6 @@ const MainDialogs = (): JSX.Element => {
         onClose={() => {
           setOpen({ ...open, profile: false });
         }}
-        robot={robot}
-        setRobot={setRobot}
       />
       <CoordinatorDialog
         open={open.coordinator}

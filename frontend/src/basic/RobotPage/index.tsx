@@ -31,7 +31,7 @@ interface RobotPageProps {
 const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
   const { torStatus, windowSize, settings } = useContext<UseAppStoreType>(AppContext);
   const { fetchFederationRobot } = useContext<UseFederationStoreType>(FederationContext);
-  const { robot, setRobot } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const params = useParams();
   const urlToken = settings.selfhostedClient ? params.token : null;
@@ -42,15 +42,15 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
   const [badToken, setBadToken] = useState<string>('');
   const [inputToken, setInputToken] = useState<string>('');
   const [view, setView] = useState<'welcome' | 'onboarding' | 'recovery' | 'profile'>(
-    robot.token !== undefined ? 'profile' : 'welcome',
+    garage.getRobot().token !== undefined ? 'profile' : 'welcome',
   );
 
   useEffect(() => {
-    if (robot.token !== undefined) {
-      setInputToken(robot.token);
+    const token = urlToken ?? garage.getRobot().token;
+    if (token !== undefined) {
+      setInputToken(token);
     }
-    const token = urlToken ?? robot.token;
-    if (!(robot.nickname !== undefined) && token !== undefined) {
+    if (garage.getRobot().nickname !== undefined && token !== undefined) {
       if (window.NativeRobosats === undefined || torStatus === '"Done"') {
         getGenerateRobot(token);
         setView('profile');
@@ -88,7 +88,7 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
 
   const logoutRobot = (): void => {
     setInputToken('');
-    setRobot(new Robot());
+    garage.deleteSlot(garage.currentSlot);
   };
 
   if (!(window.NativeRobosats === undefined) && !(torStatus === 'DONE' || torStatus === '"Done"')) {
@@ -157,8 +157,6 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
         {view === 'onboarding' ? (
           <Onboarding
             setView={setView}
-            robot={robot}
-            setRobot={setRobot}
             badToken={badToken}
             inputToken={inputToken}
             setInputToken={setInputToken}
@@ -170,8 +168,6 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
         {view === 'profile' ? (
           <RobotProfile
             setView={setView}
-            robot={robot}
-            setRobot={setRobot}
             logoutRobot={logoutRobot}
             width={width}
             inputToken={inputToken}
@@ -184,8 +180,6 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
         {view === 'recovery' ? (
           <Recovery
             setView={setView}
-            robot={robot}
-            setRobot={setRobot}
             badToken={badToken}
             inputToken={inputToken}
             setInputToken={setInputToken}

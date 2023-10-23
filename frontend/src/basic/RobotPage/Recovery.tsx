@@ -6,8 +6,6 @@ import TokenInput from './TokenInput';
 import Key from '@mui/icons-material/Key';
 
 interface RecoveryProps {
-  robot: Robot;
-  setRobot: (state: Robot) => void;
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   inputToken: string;
   badToken: string;
@@ -16,8 +14,6 @@ interface RecoveryProps {
 }
 
 const Recovery = ({
-  robot,
-  setRobot,
   inputToken,
   badToken,
   setView,
@@ -48,9 +44,7 @@ const Recovery = ({
           showCopy={false}
           inputToken={inputToken}
           setInputToken={setInputToken}
-          setRobot={setRobot}
           label={t('Paste token here')}
-          robot={robot}
           onPressEnter={onClickRecover}
           badToken={badToken}
         />

@@ -22,10 +22,11 @@ class Robot {
   public tgEnabled: boolean = false;
   public tgBotName: string = 'unknown';
   public tgToken: string = 'unknown';
-  public loading: boolean = false;
+  public loading: boolean = true;
   public found: boolean = false;
   public last_login: string = '';
   public copiedToken: boolean = false;
+  public avatarLoaded: boolean = false;
 }
 
 export default Robot;

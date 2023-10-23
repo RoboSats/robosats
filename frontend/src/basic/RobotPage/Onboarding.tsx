@@ -37,10 +37,8 @@ interface OnboardingProps {
 
 const Onboarding = ({
   setView,
-  robot,
   inputToken,
   setInputToken,
-  setRobot,
   badToken,
   getGenerateRobot,
 }: OnboardingProps): JSX.Element => {
@@ -48,7 +46,7 @@ const Onboarding = ({
   const navigate = useNavigate();
 
   const { hostUrl } = useContext<UseAppStoreType>(AppContext);
-  const { avatarLoaded } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const [step, setStep] = useState<'1' | '2' | '3'>('1');
   const [generatedToken, setGeneratedToken] = useState<boolean>(false);
@@ -105,9 +103,7 @@ const Onboarding = ({
                         autoFocusTarget='copyButton'
                         inputToken={inputToken}
                         setInputToken={setInputToken}
-                        setRobot={setRobot}
                         badToken={badToken}
-                        robot={robot}
                         onPressEnter={() => null}
                       />
                     </Grid>
@@ -126,7 +122,7 @@ const Onboarding = ({
                         onClick={() => {
                           setStep('2');
                           getGenerateRobot(inputToken);
-                          setRobot({ ...robot, nickname: undefined });
+                          garage.updateRobot({ nickname: undefined });
                         }}
                         variant='contained'
                         size='large'
@@ -153,7 +149,7 @@ const Onboarding = ({
           <Grid container direction='column' alignItems='center' spacing={1}>
             <Grid item>
               <Typography>
-                {avatarLoaded && Boolean(robot.nickname) ? (
+                {garage.getRobot().avatarLoaded && Boolean(garage.getRobot().nickname) ? (
                   t('This is your trading avatar')
                 ) : (
                   <>
@@ -166,7 +162,7 @@ const Onboarding = ({
 
             <Grid item sx={{ width: '13.5em' }}>
               <RobotAvatar
-                nickname={robot.nickname}
+                nickname={garage.getRobot().nickname}
                 smooth={true}
                 style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
                 placeholderType='generating'
@@ -182,7 +178,7 @@ const Onboarding = ({
               />
             </Grid>
 
-            {avatarLoaded && Boolean(robot.nickname) ? (
+            {garage.getRobot().avatarLoaded && Boolean(garage.getRobot().nickname) ? (
               <Grid item>
                 <Typography align='center'>{t('Hi! My name is')}</Typography>
                 <Typography component='h5' variant='h5'>
@@ -201,7 +197,7 @@ const Onboarding = ({
                         width: '1.5em',
                       }}
                     />
-                    <b>{robot.nickname}</b>
+                    <b>{garage.getRobot().nickname}</b>
                     <Bolt
                       sx={{
                         color: '#fcba03',
@@ -214,7 +210,9 @@ const Onboarding = ({
               </Grid>
             ) : null}
             <Grid item>
-              <Collapse in={!!(avatarLoaded && Boolean(robot.nickname))}>
+              <Collapse
+                in={!!(garage.getRobot().avatarLoaded && Boolean(garage.getRobot().nickname))}
+              >
                 <Button
                   onClick={() => {
                     setStep('3');

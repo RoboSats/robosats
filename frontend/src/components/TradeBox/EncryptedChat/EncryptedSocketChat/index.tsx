@@ -48,6 +48,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const [audio] = useState(() => new Audio(`${audioPath}/chat-open.mp3`));
   const [connected, setConnected] = useState<boolean>(false);
@@ -64,7 +65,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    if (!connected && avatarLoaded) {
+    if (!connected && garage.getRobot().avatarLoaded) {
       connectWebsocket();
     }
   }, [connected, robot]);

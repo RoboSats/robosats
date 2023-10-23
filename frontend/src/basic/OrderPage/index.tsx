@@ -26,13 +26,13 @@ const OrderPage = (): JSX.Element => {
     badOrder,
     setBadOrder,
   } = useContext<UseFederationStoreType>(FederationContext);
-  const { robot, avatarLoaded } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams();
 
   const doublePageWidth: number = 50;
-  const maxHeight: number = (windowSize.height - navbarHeight) * 0.85 - 3;
+  const maxHeight: number = (windowSize?.height - navbarHeight) * 0.85 - 3;
 
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
   const [baseUrl, setBaseUrl] = useState<string>(hostUrl);
@@ -80,7 +80,7 @@ const OrderPage = (): JSX.Element => {
         longitude: order.longitude,
       };
       apiClient
-        .post(baseUrl, '/api/make/', body, { tokenSHA256: robot.tokenSHA256 })
+        .post(baseUrl, '/api/make/', body, { tokenSHA256: garage.getRobot().tokenSHA256 })
         .then((data: any) => {
           if (data.bad_request !== undefined) {
             setBadOrder(data.bad_request);
@@ -133,7 +133,6 @@ const OrderPage = (): JSX.Element => {
                     onClickCoordinator={onClickCoordinator}
                     setOrder={setOrder}
                     baseUrl={baseUrl}
-                    hasRobot={avatarLoaded}
                     onClickGenerateRobot={() => {
                       navigate('/robot');
                     }}
@@ -151,7 +150,7 @@ const OrderPage = (): JSX.Element => {
                 >
                   <TradeBox
                     order={order}
-                    robot={robot}
+                    robot={garage.getRobot()}
                     settings={settings}
                     setOrder={setOrder}
                     setBadOrder={setBadOrder}
@@ -192,7 +191,6 @@ const OrderPage = (): JSX.Element => {
                     onClickCoordinator={onClickCoordinator}
                     setOrder={setOrder}
                     baseUrl={baseUrl}
-                    hasRobot={avatarLoaded}
                     onClickGenerateRobot={() => {
                       navigate('/robot');
                     }}
@@ -201,7 +199,7 @@ const OrderPage = (): JSX.Element => {
                 <div style={{ display: tab === 'contract' ? '' : 'none' }}>
                   <TradeBox
                     order={order}
-                    robot={robot}
+                    robot={garage.getRobot()}
                     settings={settings}
                     setOrder={setOrder}
                     setBadOrder={setBadOrder}
@@ -228,7 +226,6 @@ const OrderPage = (): JSX.Element => {
               onClickCoordinator={onClickCoordinator}
               setOrder={setOrder}
               baseUrl={hostUrl}
-              hasRobot={avatarLoaded}
               onClickGenerateRobot={() => {
                 navigate('/robot');
               }}

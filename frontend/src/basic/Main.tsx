@@ -35,7 +35,7 @@ const Main: React.FC = () => {
     useContext<UseAppStoreType>(AppContext);
   const { federation, sortedCoordinators, order } =
     useContext<UseFederationStoreType>(FederationContext);
-  const { robot, setAvatarLoaded } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const [avatarBaseUrl, setAvatarBaseUrl] = useState<string>(hostUrl);
 
   useEffect(() => {
@@ -53,9 +53,9 @@ const Main: React.FC = () => {
     <Router>
       <RobotAvatar
         style={{ display: 'none' }}
-        nickname={robot.nickname}
+        nickname={garage.getRobot().nickname}
         baseUrl={avatarBaseUrl}
-        onLoad={() => setAvatarLoaded(true)}
+        onLoad={() => garage.updateRobot({ avatarLoaded: true })}
       />
       <Notifications
         order={order}
@@ -63,8 +63,8 @@ const Main: React.FC = () => {
         openProfile={() => {
           setOpen({ ...closeAll, profile: true });
         }}
-        rewards={robot.earnedRewards}
-        windowWidth={windowSize.width}
+        rewards={garage.getRobot().earnedRewards}
+        windowWidth={windowSize?.width}
       />
       {settings.network === 'testnet' ? (
         <TestnetTypography color='secondary' align='center'>

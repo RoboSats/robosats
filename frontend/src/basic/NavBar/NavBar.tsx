@@ -34,15 +34,19 @@ const NavBar = (): JSX.Element => {
     hostUrl,
   } = useContext<UseAppStoreType>(AppContext);
   const { currentOrder } = useContext<UseFederationStoreType>(FederationContext);
-  const { robot, avatarLoaded } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const navigate = useNavigate();
   const location = useLocation();
-  const smallBar = windowSize.width < 50;
+  const smallBar = windowSize?.width < 50;
   const color = settings.network === 'mainnet' ? 'primary' : 'secondary';
 
   const tabSx = smallBar
-    ? { position: 'relative', bottom: avatarLoaded ? '0.9em' : '0.13em', minWidth: '1em' }
+    ? {
+        position: 'relative',
+        bottom: garage.getRobot().avatarLoaded ? '0.9em' : '0.13em',
+        minWidth: '1em',
+      }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
 
   const pagesPosition = {
@@ -113,16 +117,16 @@ const NavBar = (): JSX.Element => {
         <Tab
           sx={{ ...tabSx, minWidth: '2.5em', width: '2.5em', maxWidth: '4em' }}
           value='none'
-          disabled={robot.nickname === null}
+          disabled={garage.getRobot().nickname === null}
           onClick={() => {
             setOpen({ ...closeAll, profile: !open.profile });
           }}
           icon={
-            robot.nickname && avatarLoaded ? (
+            garage.getRobot().nickname && garage.getRobot().avatarLoaded ? (
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
-                nickname={robot.nickname}
+                nickname={garage.getRobot().nickname}
                 baseUrl={hostUrl}
               />
             ) : (
@@ -157,7 +161,7 @@ const NavBar = (): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!avatarLoaded || currentOrder.id == null}
+          disabled={!garage.getRobot().avatarLoaded || currentOrder.id == null}
           icon={<Assignment />}
           iconPosition='start'
         />

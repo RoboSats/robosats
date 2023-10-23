@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { systemClient } from '../../services/System';
 import ContentCopy from '@mui/icons-material/ContentCopy';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 interface Props {
   open: boolean;
@@ -24,7 +24,7 @@ interface Props {
 }
 
 const StoreTokenDialog = ({ open, onClose, onClickBack, onClickDone }: Props): JSX.Element => {
-  const { robot } = useContext<UseAppStoreType>(AppContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
 
   return (
@@ -43,7 +43,7 @@ const StoreTokenDialog = ({ open, onClose, onClickBack, onClickDone }: Props): J
             sx={{ width: '100%', maxWidth: '550px' }}
             disabled
             label={t('Back it up!')}
-            value={robot.token}
+            value={garage.getRobot().token}
             variant='filled'
             size='small'
             InputProps={{
@@ -51,7 +51,7 @@ const StoreTokenDialog = ({ open, onClose, onClickBack, onClickDone }: Props): J
                 <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
                   <IconButton
                     onClick={() => {
-                      systemClient.copyToClipboard(robot.token);
+                      systemClient.copyToClipboard(garage.getRobot().token);
                     }}
                   >
                     <ContentCopy color='primary' />
