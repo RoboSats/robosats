@@ -136,7 +136,7 @@ class Order(models.Model):
             MinValueValidator(-90),
             MaxValueValidator(90),
         ],
-        blank=False,
+        blank=True,
     )
     longitude = models.DecimalField(
         max_digits=9,
@@ -146,7 +146,7 @@ class Order(models.Model):
             MinValueValidator(-180),
             MaxValueValidator(180),
         ],
-        blank=False,
+        blank=True,
     )
 
     # how many sats at creation and at last check (relevant for marked to market)
