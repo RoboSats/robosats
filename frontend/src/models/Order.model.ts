@@ -33,8 +33,8 @@ export interface Order {
   currency: number;
   amount: number;
   has_range: boolean;
-  min_amount: string;
-  max_amount: string;
+  min_amount: number;
+  max_amount: number;
   payment_method: string;
   is_explicit: boolean;
   premium: number;

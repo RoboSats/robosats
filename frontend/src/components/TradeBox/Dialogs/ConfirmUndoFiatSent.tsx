@@ -14,7 +14,6 @@ import { LoadingButton } from '@mui/lab';
 interface ConfirmUndoFiatSentDialogProps {
   open: boolean;
   loadingButton: boolean;
-  order: Order;
   onClose: () => void;
   onConfirmClick: () => void;
 }

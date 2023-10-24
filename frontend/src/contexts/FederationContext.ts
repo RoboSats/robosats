@@ -170,6 +170,7 @@ const initialExchange: Exchange = { ...defaultExchange, totalCoordinators };
 export interface CurrentOrder {
   shortAlias: string | null;
   id: number | null;
+  order: Order | null;
 }
 
 export interface UseFederationStoreType {
@@ -186,13 +187,8 @@ export interface UseFederationStoreType {
   fetchFederationRobot: (props: fetchRobotProps) => void;
   exchange: Exchange;
   setExchange: Dispatch<SetStateAction<Exchange>>;
-  focusedCoordinator: string;
+  focusedCoordinator: string | null;
   setFocusedCoordinator: Dispatch<SetStateAction<string>>;
-  order?: Order;
-  setOrder: Dispatch<SetStateAction<Order>>;
-  clearOrder: () => void;
-  badOrder?: string;
-  setBadOrder: Dispatch<SetStateAction<string>>;
   currentOrder: CurrentOrder;
   setCurrentOrder: Dispatch<SetStateAction<CurrentOrder>>;
   setDelay: Dispatch<SetStateAction<number>>;
@@ -214,12 +210,7 @@ export const initialAppContext: UseFederationStoreType = {
   setExchange: () => {},
   focusedCoordinator: '',
   setFocusedCoordinator: () => {},
-  order: undefined,
-  setOrder: () => {},
-  clearOrder: () => {},
-  badOrder: undefined,
-  setBadOrder: () => {},
-  currentOrder: { shortAlias: null, id: null },
+  currentOrder: { shortAlias: null, id: null, order: null },
   setCurrentOrder: () => {},
   setDelay: () => {},
 };
@@ -229,7 +220,8 @@ export const FederationContext = createContext<UseFederationStoreType>(initialAp
 export const useFederationStore = (): UseFederationStoreType => {
   const { settings, page, origin, hostUrl, open, torStatus } =
     useContext<UseAppStoreType>(AppContext);
-  const { setMaker, garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { setMaker, garage, robotUpdatedAt, badOrder, setBadOrder } =
+    useContext<UseGarageStoreType>(GarageContext);
 
   // All federation data structured
   const [book, setBook] = useState<Book>(initialAppContext.book);
@@ -253,8 +245,6 @@ export const useFederationStore = (): UseFederationStoreType => {
   const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
     setInterval(() => null, delay),
   );
-  const [order, setOrder] = useState<Order>();
-  const [badOrder, setBadOrder] = useState<string>();
   const [currentOrder, setCurrentOrder] = useState<CurrentOrder>(initialAppContext.currentOrder);
 
   useEffect(() => {
@@ -493,7 +483,12 @@ export const useFederationStore = (): UseFederationStoreType => {
     if (data.bad_request !== undefined) {
       setBadOrder(data.bad_request);
       setDelay(99999999);
-      setOrder(undefined);
+      setCurrentOrder((prev) => {
+        return {
+          ...prev,
+          order: undefined,
+        };
+      });
     } else {
       setDelay(
         data.status >= 0 && data.status <= 18
@@ -502,7 +497,12 @@ export const useFederationStore = (): UseFederationStoreType => {
             : statusToDelay[data.status] * 5
           : 99999999,
       );
-      setOrder(data);
+      setCurrentOrder((prev) => {
+        return {
+          ...prev,
+          order: data,
+        };
+      });
       setBadOrder(undefined);
     }
   };
@@ -529,11 +529,6 @@ export const useFederationStore = (): UseFederationStoreType => {
         .then(orderReceived)
         .catch(orderReceived);
     }
-  };
-
-  const clearOrder = function (): void {
-    setOrder(undefined);
-    setBadOrder(undefined);
   };
 
   const fetchCoordinatorRobot = function ({
@@ -614,7 +609,8 @@ export const useFederationStore = (): UseFederationStoreType => {
                 : data.last_order_id !== undefined
                 ? data.last_order_id
                 : null,
-            shortAlias: coordinator?.shortAlias,
+            shortAlias: coordinator?.shortAlias ?? '',
+            order: null,
           });
         }
 
@@ -671,16 +667,11 @@ export const useFederationStore = (): UseFederationStoreType => {
     limits,
     setLimits,
     fetchFederationLimits,
-    clearOrder,
     fetchFederationRobot,
     exchange,
     setExchange,
     focusedCoordinator,
     setFocusedCoordinator,
-    order,
-    setOrder,
-    badOrder,
-    setBadOrder,
     setDelay,
     currentOrder,
     setCurrentOrder,

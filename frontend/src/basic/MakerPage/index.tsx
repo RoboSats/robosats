@@ -14,7 +14,7 @@ import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext'
 
 const MakerPage = (): JSX.Element => {
   const { fav, windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
-  const { book, setOrder, setDelay } = useContext<UseFederationStoreType>(FederationContext);
+  const { book, setDelay } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, maker } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -51,7 +51,7 @@ const MakerPage = (): JSX.Element => {
   ]);
 
   const onViewOrder = function (): void {
-    setOrder(undefined);
+    garage.updateOrder(null);
     setDelay(10000);
   };
 

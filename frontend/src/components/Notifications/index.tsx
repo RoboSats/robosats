@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Tooltip,
@@ -9,12 +9,11 @@ import {
   tooltipClasses,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { type Order } from '../../models';
 import Close from '@mui/icons-material/Close';
 import { type Page } from '../../basic/NavBar';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 interface NotificationsProps {
-  order: Order | undefined;
   rewards: number | undefined;
   page: Page;
   openProfile: () => void;
@@ -63,7 +62,6 @@ const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
 }));
 
 const Notifications = ({
-  order,
   rewards,
   page,
   windowWidth,
@@ -71,6 +69,7 @@ const Notifications = ({
 }: NotificationsProps): JSX.Element => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const [message, setMessage] = useState<NotificationMessage>(emptyNotificationMessage);
   const [inFocus, setInFocus] = useState<boolean>(true);
@@ -86,7 +85,7 @@ const Notifications = ({
   const basePageTitle = t('RoboSats - Simple and Private Bitcoin Exchange');
 
   const moveToOrderPage = function (): void {
-    navigate(`/order/${String(order?.id)}`);
+    navigate(`/order/${String(garage.getOrder()?.id)}`);
     setShow(false);
   };
 
@@ -107,7 +106,7 @@ const Notifications = ({
 
   const Messages: MessagesProps = {
     bondLocked: {
-      title: t(`${order?.is_maker === true ? 'Maker' : 'Taker'} bond locked`),
+      title: t(`${garage.getOrder()?.is_maker === true ? 'Maker' : 'Taker'} bond locked`),
       severity: 'info',
       onClick: moveToOrderPage,
       sound: audio.ding,
@@ -229,9 +228,10 @@ const Notifications = ({
   };
 
   const handleStatusChange = function (oldStatus: number | undefined, status: number): void {
-    if (order === undefined) {
-      return;
-    }
+    const order = garage.getOrder();
+
+    if (order === null) return;
+
     let message = emptyNotificationMessage;
 
     // Order status descriptions:
@@ -293,16 +293,19 @@ const Notifications = ({
 
   // Notify on order status change
   useEffect(() => {
-    if (order !== undefined && order.status !== oldOrderStatus) {
-      handleStatusChange(oldOrderStatus, order.status);
-      setOldOrderStatus(order.status);
-    } else if (order !== undefined && order.chat_last_index > oldChatIndex) {
-      if (page !== 'order') {
-        notify(Messages.chatMessage);
+    const order = garage.getOrder();
+    if (order !== null) {
+      if (order.status !== oldOrderStatus) {
+        handleStatusChange(oldOrderStatus, order.status);
+        setOldOrderStatus(order.status);
+      } else if (order.chat_last_index > oldChatIndex) {
+        if (page !== 'order') {
+          notify(Messages.chatMessage);
+        }
+        setOldChatIndex(order.chat_last_index);
       }
-      setOldChatIndex(order.chat_last_index);
     }
-  }, [order]);
+  }, [orderUpdatedAt]);
 
   // Notify on rewards change
   useEffect(() => {

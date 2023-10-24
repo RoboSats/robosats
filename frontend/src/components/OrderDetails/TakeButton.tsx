@@ -28,10 +28,8 @@ import { computeSats } from '../../utils';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 interface TakeButtonProps {
-  order: Order;
-  setOrder: (state: Order) => void;
   baseUrl: string;
-  info: Info;
+  info?: Info;
   onClickGenerateRobot?: () => void;
 }
 
@@ -42,15 +40,13 @@ interface OpenDialogsProps {
 const closeAll = { inactiveMaker: false, confirmation: false };
 
 const TakeButton = ({
-  order,
-  setOrder,
   baseUrl,
   info,
   onClickGenerateRobot = () => null,
 }: TakeButtonProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const [takeAmount, setTakeAmount] = useState<string>('');
   const [badRequest, setBadRequest] = useState<string>('');
@@ -59,6 +55,10 @@ const TakeButton = ({
   const [satoshis, setSatoshis] = useState<string>('');
 
   const satoshisNow = (): string | undefined => {
+    const order = garage.getOrder();
+
+    if (order === null) return;
+
     const tradeFee = info?.taker_fee ?? 0;
     const defaultRoutingBudget = 0.001;
     const btcNow = order.satoshis_now / 100000000;
@@ -74,10 +74,11 @@ const TakeButton = ({
   };
 
   useEffect(() => {
-    setSatoshis(satoshisNow());
-  }, [order.satoshis_now, takeAmount, info]);
+    setSatoshis(satoshisNow() ?? '');
+  }, [orderUpdatedAt, takeAmount, info]);
 
-  const currencyCode: string = order.currency === 1000 ? 'Sats' : currencies[`${order.currency}`];
+  const currencyCode: string =
+    garage.getOrder()?.currency === 1000 ? 'Sats' : currencies[`${garage.getOrder()?.currency}`];
 
   const InactiveMakerDialog = function (): JSX.Element {
     return (
@@ -149,6 +150,10 @@ const TakeButton = ({
   };
 
   const amountHelperText = useMemo(() => {
+    const order = garage.getOrder();
+
+    if (order === null) return;
+
     const amount = order.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
     if (amount < Number(order.min_amount) && takeAmount !== '') {
       return t('Too low');
@@ -157,10 +162,10 @@ const TakeButton = ({
     } else {
       return null;
     }
-  }, [order, takeAmount]);
+  }, [orderUpdatedAt, takeAmount]);
 
   const onTakeOrderClicked = function (): void {
-    if (order.maker_status === 'Inactive') {
+    if (garage.getOrder()?.maker_status === 'Inactive') {
       setOpen({ inactiveMaker: true, confirmation: false });
     } else {
       setOpen({ inactiveMaker: false, confirmation: true });
@@ -168,17 +173,18 @@ const TakeButton = ({
   };
 
   const invalidTakeAmount = useMemo(() => {
-    const amount = order.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
+    const order = garage.getOrder();
+    const amount = order?.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
     return (
-      amount < Number(order.min_amount) ||
-      amount > Number(order.max_amount) ||
+      amount < Number(order?.min_amount) ||
+      amount > Number(order?.max_amount) ||
       takeAmount === '' ||
       takeAmount == null
     );
-  }, [takeAmount, order]);
+  }, [takeAmount, orderUpdatedAt]);
 
   const takeOrderButton = function (): JSX.Element {
-    if (order.has_range) {
+    if (garage.getOrder()?.has_range) {
       return (
         <Box
           sx={{
@@ -217,8 +223,8 @@ const TakeButton = ({
                     required={true}
                     value={takeAmount}
                     inputProps={{
-                      min: order.min_amount,
-                      max: order.max_amount,
+                      min: garage.getOrder()?.min_amount,
+                      max: garage.getOrder()?.max_amount,
                       style: { textAlign: 'center' },
                     }}
                     onChange={handleTakeAmountChange}
@@ -271,7 +277,7 @@ const TakeButton = ({
             {satoshis !== '0' && satoshis !== '' && !invalidTakeAmount ? (
               <Grid item>
                 <FormHelperText sx={{ position: 'relative', top: '0.15em' }}>
-                  {order.type === 1
+                  {garage.getOrder()?.type === 1
                     ? t('You will receive {{satoshis}} Sats (Approx)', { satoshis })
                     : t('You will send {{satoshis}} Sats (Approx)', { satoshis })}
                 </FormHelperText>
@@ -309,10 +315,10 @@ const TakeButton = ({
     apiClient
       .post(
         baseUrl,
-        `/api/order/?order_id=${String(order.id)}`,
+        `/api/order/?order_id=${String(garage.getOrder()?.id)}`,
         {
           action: 'take',
-          amount: order.currency === 1000 ? takeAmount / 100000000 : takeAmount,
+          amount: garage.getOrder()?.currency === 1000 ? takeAmount / 100000000 : takeAmount,
         },
         { tokenSHA256: garage.getRobot().tokenSHA256 },
       )
@@ -321,7 +327,7 @@ const TakeButton = ({
         if (data?.bad_request !== undefined) {
           setBadRequest(data.bad_request);
         } else {
-          setOrder(data);
+          garage.updateOrder(data as Order);
           setBadRequest('');
         }
       })
@@ -332,7 +338,10 @@ const TakeButton = ({
 
   return (
     <Box>
-      <Countdown date={new Date(order.penalty)} renderer={countdownTakeOrderRenderer} />
+      <Countdown
+        date={new Date(garage.getOrder()?.penalty ?? '')}
+        renderer={countdownTakeOrderRenderer}
+      />
       {badRequest !== '' ? (
         <Box style={{ padding: '0.5em' }}>
           <Typography align='center' color='secondary'>

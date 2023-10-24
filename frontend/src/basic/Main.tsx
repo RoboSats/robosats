@@ -33,9 +33,8 @@ const Main: React.FC = () => {
   const { t } = useTranslation();
   const { settings, page, slideDirection, setOpen, windowSize, navbarHeight, hostUrl, origin } =
     useContext<UseAppStoreType>(AppContext);
-  const { federation, sortedCoordinators, order } =
-    useContext<UseFederationStoreType>(FederationContext);
-  const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const [avatarBaseUrl, setAvatarBaseUrl] = useState<string>(hostUrl);
 
   useEffect(() => {
@@ -58,7 +57,6 @@ const Main: React.FC = () => {
         onLoad={() => garage.updateRobot({ avatarLoaded: true })}
       />
       <Notifications
-        order={order}
         page={page}
         openProfile={() => {
           setOpen({ ...closeAll, profile: true });

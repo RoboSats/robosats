@@ -17,8 +17,8 @@ import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext'
 
 const BookPage = (): JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
-  const { setDelay, clearOrder } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { setDelay } = useContext<UseFederationStoreType>(FederationContext);
+  const { garage, clearOrder } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'depth' | 'map'>('list');

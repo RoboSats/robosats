@@ -8,7 +8,7 @@ export interface Slot {
 
 const emptySlot: Slot = { robot: new Robot(), order: null };
 
-type GarageHooks = 'onRobotUpdate';
+type GarageHooks = 'onRobotUpdate' | 'onOrderUpdate';
 
 class Garage {
   constructor() {
@@ -25,6 +25,7 @@ class Garage {
     this.currentSlot = this.slots.length - 1;
     this.hooks = {
       onRobotUpdate: [],
+      onOrderUpdate: [],
     };
   }
 
@@ -33,6 +34,7 @@ class Garage {
 
   hooks: Record<GarageHooks, (() => void)[]>;
 
+  // Hooks
   registerHook = (hookName: GarageHooks, fn: () => void): void => {
     this.hooks[hookName].push(fn);
   };
@@ -41,6 +43,7 @@ class Garage {
     this.hooks[hookName]?.forEach((fn) => fn());
   };
 
+  // Storage
   download = (): void => {
     saveAsJson(`robotGarage_${new Date().toISOString()}.json`, this.slots);
   };
@@ -49,27 +52,12 @@ class Garage {
     systemClient.setItem('garage', JSON.stringify(this.slots));
   };
 
+  // Slots
   delete = (): void => {
     this.slots = [emptySlot];
     systemClient.deleteItem('garage');
     this.triggerHook('onRobotUpdate');
-  };
-
-  updateRobot: (attributes: Record<any, any>, index?: number) => void = (
-    attributes,
-    index = this.currentSlot,
-  ) => {
-    if (this.slots[index] === undefined) this.slots[index] = emptySlot;
-
-    this.slots[index] = {
-      ...this.slots[index],
-      robot: {
-        ...this.slots[index].robot,
-        ...attributes,
-      },
-    };
-    this.triggerHook('onRobotUpdate');
-    this.save();
+    this.triggerHook('onOrderUpdate');
   };
 
   deleteSlot: (index?: number) => void = (index) => {
@@ -77,15 +65,55 @@ class Garage {
     this.slots.splice(targetSlot, 1);
     this.currentSlot = this.slots.length - 1;
     this.triggerHook('onRobotUpdate');
+    this.triggerHook('onOrderUpdate');
+    this.save();
+  };
+
+  getSlot: (index: number) => Slot = (index) => {
+    if (this.slots[index] === undefined) {
+      this.slots[index] = emptySlot;
+    }
+
+    return this.slots[index];
+  };
+
+  // Robots
+  updateRobot: (attributes: Record<any, any>, index?: number) => void = (
+    attributes,
+    index = this.currentSlot,
+  ) => {
+    const slot = this.getSlot(index);
+    this.slots[index] = {
+      order: slot.order,
+      robot: {
+        ...slot.robot,
+        ...attributes,
+      },
+    };
+    this.triggerHook('onRobotUpdate');
     this.save();
   };
 
   getRobot = (): Robot => {
-    if (this.slots[this.currentSlot] === undefined) {
-      this.slots[this.currentSlot] = emptySlot;
-    }
+    return this.getSlot(this.currentSlot).robot;
+  };
 
-    return this.slots[this.currentSlot].robot;
+  // Orders
+  updateOrder: (order: Order | null, index?: number) => void = (
+    order,
+    index = this.currentSlot,
+  ) => {
+    const slot = this.getSlot(index);
+    this.slots[index] = {
+      robot: slot.robot,
+      order,
+    };
+    this.triggerHook('onOrderUpdate');
+    this.save();
+  };
+
+  getOrder = (): Order | null => {
+    return this.getSlot(this.currentSlot).order;
   };
 }
 

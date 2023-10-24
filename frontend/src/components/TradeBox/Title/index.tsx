@@ -5,7 +5,7 @@ import { type Order } from '../../../models';
 import stepXofY from '../stepXofY';
 
 interface TakerFoundPrompProps {
-  order: Order;
+  order: Order | null;
   text: string;
   variables?: any;
   color?: string;
@@ -40,7 +40,7 @@ export const Title = ({
     >
       {icon()}
       <span>
-        <b>{t(text, variables)}</b> {stepXofY(order)}
+        <b>{t(text, variables)}</b> {order !== null && stepXofY(order)}
       </span>
       {icon()}
     </Typography>

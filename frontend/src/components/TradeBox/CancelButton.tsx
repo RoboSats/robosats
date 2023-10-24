@@ -5,7 +5,7 @@ import { type Order } from '../../models';
 import { LoadingButton } from '@mui/lab';
 
 interface CancelButtonProps {
-  order: Order;
+  order: Order | null;
   onClickCancel: () => void;
   openCancelDialog: () => void;
   openCollabCancelDialog: () => void;
@@ -22,10 +22,12 @@ const CancelButton = ({
   const { t } = useTranslation();
 
   const showCancelButton =
-    (order.is_maker && [0, 1, 2].includes(order.status)) || [3, 6, 7].includes(order.status);
-  const showCollabCancelButton = [8, 9].includes(order.status) && !order.asked_for_cancel;
+    (order?.is_maker && [0, 1, 2].includes(order?.status)) ||
+    [3, 6, 7].includes(order?.status ?? -1);
+  const showCollabCancelButton = [8, 9].includes(order?.status ?? -1) && !order?.asked_for_cancel;
   const noConfirmation =
-    (order.is_maker && [0, 1, 2].includes(order.status)) || (order.is_taker && order.status === 3);
+    (order?.is_maker && [0, 1, 2].includes(order?.status ?? -1)) ||
+    (order?.is_taker && order?.status === 3);
 
   return (
     <Box>

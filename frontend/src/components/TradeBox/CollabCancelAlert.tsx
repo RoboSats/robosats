@@ -4,17 +4,17 @@ import { Alert } from '@mui/material';
 import { type Order } from '../../models';
 
 interface CollabCancelAlertProps {
-  order: Order;
+  order: Order | null;
 }
 
 const CollabCancelAlert = ({ order }: CollabCancelAlertProps): JSX.Element => {
   const { t } = useTranslation();
   let text = '';
-  if (order.pending_cancel) {
+  if (order?.pending_cancel) {
     text = t('{{nickname}} is asking for a collaborative cancel', {
-      nickname: order.is_maker ? order.taker_nick : order.maker_nick,
+      nickname: order?.is_maker ? order?.taker_nick : order?.maker_nick,
     });
-  } else if (order.asked_for_cancel) {
+  } else if (order?.asked_for_cancel) {
     text = t('You asked for a collaborative cancellation');
   }
 

@@ -15,18 +15,9 @@ import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext'
 const OrderPage = (): JSX.Element => {
   const { windowSize, setOpen, settings, navbarHeight, hostUrl, origin } =
     useContext<UseAppStoreType>(AppContext);
-  const {
-    setFocusedCoordinator,
-    federation,
-    order,
-    setOrder,
-    clearOrder,
-    currentOrder,
-    setCurrentOrder,
-    badOrder,
-    setBadOrder,
-  } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { setFocusedCoordinator, federation, currentOrder, setCurrentOrder } =
+    useContext<UseFederationStoreType>(FederationContext);
+  const { garage, badOrder, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams();
@@ -38,7 +29,12 @@ const OrderPage = (): JSX.Element => {
   const [baseUrl, setBaseUrl] = useState<string>(hostUrl);
 
   useEffect(() => {
-    const newOrder = { shortAlias: params.shortAlias, id: Number(params.orderId) };
+    const newOrder = {
+      shortAlias: params.shortAlias ?? '',
+      id: Number(params.orderId) ?? null,
+      order: null,
+    };
+
     const { url, basePath } = getEndpoint({
       network: settings.network,
       coordinator: federation[newOrder.shortAlias],
@@ -47,8 +43,8 @@ const OrderPage = (): JSX.Element => {
       hostUrl,
     });
     setBaseUrl(`${url}${basePath}`);
-    if (currentOrder !== newOrder) {
-      clearOrder();
+
+    if (currentOrder.id !== newOrder.id || currentOrder.shortAlias !== newOrder.shortAlias) {
       setCurrentOrder(newOrder);
     }
   }, [params]);
@@ -61,7 +57,8 @@ const OrderPage = (): JSX.Element => {
   };
 
   const renewOrder = function (): void {
-    if (order !== undefined) {
+    const order = currentOrder.order;
+    if (order !== null) {
       const body = {
         type: order.type,
         currency: order.currency,
@@ -100,14 +97,14 @@ const OrderPage = (): JSX.Element => {
 
   return (
     <Box>
-      {order === undefined && badOrder === undefined && <CircularProgress />}
+      {currentOrder.order === null && badOrder === undefined && <CircularProgress />}
       {badOrder !== undefined ? (
         <Typography align='center' variant='subtitle2' color='secondary'>
           {t(badOrder)}
         </Typography>
       ) : null}
-      {order !== undefined && badOrder === undefined ? (
-        order.is_participant ? (
+      {currentOrder.order !== null && badOrder === undefined ? (
+        currentOrder.order.is_participant ? (
           windowSize.width > doublePageWidth ? (
             // DOUBLE PAPER VIEW
             <Grid
@@ -128,10 +125,8 @@ const OrderPage = (): JSX.Element => {
                   }}
                 >
                   <OrderDetails
-                    order={order}
                     coordinator={federation[String(currentOrder.shortAlias)]}
                     onClickCoordinator={onClickCoordinator}
-                    setOrder={setOrder}
                     baseUrl={baseUrl}
                     onClickGenerateRobot={() => {
                       navigate('/robot');
@@ -149,10 +144,8 @@ const OrderPage = (): JSX.Element => {
                   }}
                 >
                   <TradeBox
-                    order={order}
                     robot={garage.getRobot()}
                     settings={settings}
-                    setOrder={setOrder}
                     setBadOrder={setBadOrder}
                     baseUrl={baseUrl}
                     onRenewOrder={renewOrder}
@@ -186,10 +179,8 @@ const OrderPage = (): JSX.Element => {
               >
                 <div style={{ display: tab === 'order' ? '' : 'none' }}>
                   <OrderDetails
-                    order={order}
                     coordinator={federation[String(currentOrder.shortAlias)]}
                     onClickCoordinator={onClickCoordinator}
-                    setOrder={setOrder}
                     baseUrl={baseUrl}
                     onClickGenerateRobot={() => {
                       navigate('/robot');
@@ -198,10 +189,8 @@ const OrderPage = (): JSX.Element => {
                 </div>
                 <div style={{ display: tab === 'contract' ? '' : 'none' }}>
                   <TradeBox
-                    order={order}
                     robot={garage.getRobot()}
                     settings={settings}
-                    setOrder={setOrder}
                     setBadOrder={setBadOrder}
                     baseUrl={baseUrl}
                     onRenewOrder={renewOrder}
@@ -221,10 +210,8 @@ const OrderPage = (): JSX.Element => {
             }}
           >
             <OrderDetails
-              order={order}
               coordinator={federation[String(currentOrder.shortAlias)]}
               onClickCoordinator={onClickCoordinator}
-              setOrder={setOrder}
               baseUrl={hostUrl}
               onClickGenerateRobot={() => {
                 navigate('/robot');

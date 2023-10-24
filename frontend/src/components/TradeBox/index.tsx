@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Box, Divider, Grid } from '@mui/material';
 
 import { apiClient } from '../../services/api';
@@ -50,6 +50,8 @@ import { type EncryptedChatMessage } from './EncryptedChat';
 import CollabCancelAlert from './CollabCancelAlert';
 import { Bolt } from '@mui/icons-material';
 import { signCleartextMessage } from '../../pgp';
+import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 
 interface loadingButtonsProps {
   cancel: boolean;
@@ -96,8 +98,6 @@ const closeAll: OpenDialogProps = {
 };
 
 interface TradeBoxProps {
-  order: Order;
-  setOrder: (state: Order) => void;
   robot: Robot;
   setBadOrder: (state: string | undefined) => void;
   onRenewOrder: () => void;
@@ -107,8 +107,6 @@ interface TradeBoxProps {
 }
 
 const TradeBox = ({
-  order,
-  setOrder,
   robot,
   settings,
   baseUrl,
@@ -116,6 +114,8 @@ const TradeBox = ({
   onRenewOrder,
   onStartAgain,
 }: TradeBoxProps): JSX.Element => {
+  const { currentOrder, setCurrentOrder } = useContext<UseFederationStoreType>(FederationContext);
+  const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   // Buttons and Dialogs
   const [loadingButtons, setLoadingButtons] = useState<loadingButtonsProps>(noLoadingButtons);
   const [open, setOpen] = useState<OpenDialogProps>(closeAll);
@@ -161,7 +161,7 @@ const TradeBox = ({
     void apiClient
       .post(
         baseUrl,
-        `/api/order/?order_id=${order.id}`,
+        `/api/order/?order_id=${currentOrder.id}`,
         {
           action,
           invoice,
@@ -185,7 +185,12 @@ const TradeBox = ({
         } else if (data.bad_statement !== undefined) {
           setDispute({ ...dispute, badStatement: data.bad_statement });
         } else {
-          setOrder({ ...order, ...data });
+          setCurrentOrder((prev) => {
+            return {
+              ...prev,
+              order: { ...prev.order, ...data },
+            };
+          });
           setBadOrder(undefined);
         }
       })
@@ -221,27 +226,35 @@ const TradeBox = ({
   };
 
   const updateInvoice = function (invoice: string): void {
-    setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
-    void signCleartextMessage(invoice, robot.encPrivKey, robot.token).then((signedInvoice) => {
-      submitAction({
-        action: 'update_invoice',
-        invoice: signedInvoice,
-        routing_budget_ppm: lightning.routingBudgetPPM,
+    const robot = garage.getRobot();
+
+    if (robot !== null && robot.encPrivKey && robot.token) {
+      setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
+      void signCleartextMessage(invoice, robot.encPrivKey, robot.token).then((signedInvoice) => {
+        submitAction({
+          action: 'update_invoice',
+          invoice: signedInvoice,
+          routing_budget_ppm: lightning.routingBudgetPPM,
+        });
       });
-    });
+    }
   };
 
   const updateAddress = function (): void {
-    setLoadingButtons({ ...noLoadingButtons, submitAddress: true });
-    void signCleartextMessage(onchain.address, robot.encPrivKey, robot.token).then(
-      (signedAddress) => {
-        submitAction({
-          action: 'update_address',
-          address: signedAddress,
-          mining_fee_rate: onchain.miningFee,
-        });
-      },
-    );
+    const robot = garage.getRobot();
+
+    if (robot !== null && robot.encPrivKey && robot.token) {
+      setLoadingButtons({ ...noLoadingButtons, submitAddress: true });
+      void signCleartextMessage(onchain.address, robot.encPrivKey, robot.token).then(
+        (signedAddress) => {
+          submitAction({
+            action: 'update_address',
+            address: signedAddress,
+            mining_fee_rate: onchain.miningFee,
+          });
+        },
+      );
+    }
   };
 
   const pauseOrder = function (): void {
@@ -262,13 +275,13 @@ const TradeBox = ({
     submitAction({ action: 'rate_platform', rating });
   };
 
-  const handleWebln = async (order: Order): void => {
+  const handleWebln = async (order: Order): Promise<void> => {
     const webln = await getWebln().catch(() => {
       console.log('WebLN not available');
     });
     // If Webln implements locked payments compatibility, this logic might be simplier
     if (webln === undefined) {
-      return null;
+      return;
     } else if (order.is_maker && order.status === 0) {
       webln.sendPayment(order.bond_invoice);
       setWaitingWebln(true);
@@ -304,11 +317,12 @@ const TradeBox = ({
 
   // Effect on Order Status change (used for WebLN)
   useEffect(() => {
-    if (order.status !== lastOrderStatus) {
-      setLastOrderStatus(order.status);
-      handleWebln(order);
+    if (currentOrder.order !== null && currentOrder.order.status !== lastOrderStatus) {
+      setLastOrderStatus(currentOrder.order.status);
+      handleWebln(currentOrder.order);
     }
-  }, [order.status]);
+    // FIXME this should trigger with current order, not garage order
+  }, [orderUpdatedAt]);
 
   const statusToContract = function (order: Order): JSX.Element {
     const status = order.status;
@@ -676,7 +690,7 @@ const TradeBox = ({
     return { title, titleVariables, titleColor, prompt, bondStatus, titleIcon };
   };
 
-  const contract = statusToContract(order);
+  const contract = currentOrder.order ? statusToContract(currentOrder.order) : null;
 
   return (
     <Box>
@@ -686,7 +700,7 @@ const TradeBox = ({
           setOpen(closeAll);
         }}
         waitingWebln={waitingWebln}
-        isBuyer={order.is_buyer}
+        isBuyer={currentOrder.order?.is_buyer ?? false}
       />
       <ConfirmDisputeDialog
         open={open.confirmDispute}
@@ -709,11 +723,11 @@ const TradeBox = ({
         }}
         onCollabCancelClick={cancel}
         loading={loadingButtons.cancel}
-        peerAskedCancel={order.pending_cancel}
+        peerAskedCancel={currentOrder.order?.pending_cancel ?? false}
       />
       <ConfirmFiatSentDialog
         open={open.confirmFiatSent}
-        order={order}
+        order={currentOrder.order}
         loadingButton={loadingButtons.fiatSent}
         onClose={() => {
           setOpen(closeAll);
@@ -722,7 +736,6 @@ const TradeBox = ({
       />
       <ConfirmUndoFiatSentDialog
         open={open.confirmUndoFiatSent}
-        order={order}
         loadingButton={loadingButtons.undoFiatSent}
         onClose={() => {
           setOpen(closeAll);
@@ -731,14 +744,14 @@ const TradeBox = ({
       />
       <ConfirmFiatReceivedDialog
         open={open.confirmFiatReceived}
-        order={order}
+        order={currentOrder.order}
         loadingButton={loadingButtons.fiatReceived}
         onClose={() => {
           setOpen(closeAll);
         }}
         onConfirmClick={confirmFiatReceived}
       />
-      <CollabCancelAlert order={order} />
+      <CollabCancelAlert order={currentOrder.order} />
       <Grid
         container
         padding={1}
@@ -749,21 +762,24 @@ const TradeBox = ({
       >
         <Grid item>
           <Title
-            order={order}
-            text={contract.title}
-            color={contract.titleColor}
-            icon={contract.titleIcon}
-            variables={contract.titleVariables}
+            order={currentOrder.order}
+            text={contract?.title}
+            color={contract?.titleColor}
+            icon={contract?.titleIcon}
+            variables={contract?.titleVariables}
           />
         </Grid>
         <Divider />
 
-        <Grid item>{contract.prompt()}</Grid>
+        <Grid item>{contract?.prompt()}</Grid>
 
-        {contract.bondStatus !== 'hide' ? (
+        {contract?.bondStatus !== 'hide' ? (
           <Grid item sx={{ width: '100%' }}>
             <Divider />
-            <BondStatus status={contract.bondStatus} isMaker={order.is_maker} />
+            <BondStatus
+              status={contract?.bondStatus}
+              isMaker={currentOrder.order?.is_maker ?? false}
+            />
           </Grid>
         ) : (
           <></>
@@ -771,7 +787,7 @@ const TradeBox = ({
 
         <Grid item>
           <CancelButton
-            order={order}
+            order={currentOrder.order}
             onClickCancel={cancel}
             openCancelDialog={() => {
               setOpen({ ...closeAll, confirmCancel: true });
