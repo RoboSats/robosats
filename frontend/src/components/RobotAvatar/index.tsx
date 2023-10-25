@@ -1,9 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import SmoothImage from 'react-smooth-image';
 import { Avatar, Badge, Tooltip } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import { apiClient } from '../../services/api';
 import placeholder from './placeholder.json';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface Props {
   nickname: string | undefined;
@@ -45,6 +47,9 @@ const RobotAvatar: React.FC<Props> = ({
   coordinator = false,
   baseUrl,
 }) => {
+  const { settings, origin, hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const { federation, focusedCoordinator } = useContext<UseFederationStoreType>(FederationContext);
+
   const [avatarSrc, setAvatarSrc] = useState<string>();
   const [nicknameReady, setNicknameReady] = useState<boolean>(false);
   const [activeBackground, setActiveBackground] = useState<boolean>(true);
@@ -61,10 +66,13 @@ const RobotAvatar: React.FC<Props> = ({
       if (window.NativeRobosats === undefined) {
         setAvatarSrc(`${baseUrl}${path}${nickname}${small ? '.small' : ''}.webp`);
         setNicknameReady(true);
-      } else {
+      } else if (focusedCoordinator) {
         setNicknameReady(true);
+        const { url } = federation
+          .getCoordinator(focusedCoordinator)
+          .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
         void apiClient
-          .fileImageUrl(baseUrl, `${path}${nickname}${small ? '.small' : ''}.webp`)
+          .fileImageUrl(url, `${path}${nickname}${small ? '.small' : ''}.webp`)
           .then(setAvatarSrc);
       }
     } else {

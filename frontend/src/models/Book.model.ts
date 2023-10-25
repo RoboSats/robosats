@@ -28,8 +28,6 @@ export interface PublicOrder {
 export interface Book {
   orders: PublicOrder[];
   loading: boolean;
-  loadedCoordinators: number;
-  totalCoordinators: number;
 }
 
 export default PublicOrder;

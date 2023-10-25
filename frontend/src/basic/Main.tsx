@@ -8,7 +8,6 @@ import RobotAvatar from '../components/RobotAvatar';
 import Notifications from '../components/Notifications';
 
 import { useTranslation } from 'react-i18next';
-import { getEndpoint } from '../models/Coordinator.model';
 import { FederationContext, UseFederationStoreType } from '../contexts/FederationContext';
 import { GarageContext, UseGarageStoreType } from '../contexts/GarageContext';
 
@@ -38,14 +37,7 @@ const Main: React.FC = () => {
   const [avatarBaseUrl, setAvatarBaseUrl] = useState<string>(hostUrl);
 
   useEffect(() => {
-    const { url, basePath } = getEndpoint({
-      network: settings.network,
-      coordinator: federation[sortedCoordinators[0]],
-      origin,
-      selfHosted: settings.selfhostedClient,
-      hostUrl,
-    });
-    setAvatarBaseUrl(url + basePath);
+    setAvatarBaseUrl(federation.getCoordinator(sortedCoordinators[0]).getBaseUrl());
   }, [settings.network, settings.selfhostedClient, federation, sortedCoordinators]);
 
   return (
@@ -53,7 +45,7 @@ const Main: React.FC = () => {
       <RobotAvatar
         style={{ display: 'none' }}
         nickname={garage.getRobot().nickname}
-        baseUrl={avatarBaseUrl}
+        baseUrl={federation.getCoordinator(sortedCoordinators[0]).getBaseUrl()}
         onLoad={() => garage.updateRobot({ avatarLoaded: true })}
       />
       <Notifications

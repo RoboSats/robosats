@@ -18,6 +18,7 @@ import RobotAvatar from '../RobotAvatar';
 import RobotInfo from '../RobotInfo';
 import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
+import { Coordinator } from '../../models';
 
 interface Props {
   open: boolean;
@@ -92,18 +93,23 @@ const ProfileDialog = ({ open = false, baseUrl, onClose }: Props): JSX.Element =
         </List>
 
         <Typography>
-          <b>{t('Coordinators that know your robot')}</b>
+          <b>{t('Coordinators that know your robots')}</b>
         </Typography>
 
-        {Object.entries(federation).map(([shortAlias, coordinator]: [string, any]): JSX.Element => {
-          if (coordinator.robot?.loading === false) {
+        {Object.values(federation.coordinators).map((coordinator: Coordinator): JSX.Element => {
+          if (garage.getRobot()?.loading === false) {
             return (
-              <div key={shortAlias}>
-                <RobotInfo coordinator={coordinator} robot={coordinator.robot} onClose={onClose} />
+              <div key={coordinator.shortAlias}>
+                <RobotInfo
+                  coordinator={coordinator}
+                  robot={garage.getRobot()}
+                  slotIndex={garage.currentSlot}
+                  onClose={onClose}
+                />
               </div>
             );
           } else {
-            return <div key={shortAlias} />;
+            return <div key={coordinator.shortAlias} />;
           }
         })}
       </DialogContent>

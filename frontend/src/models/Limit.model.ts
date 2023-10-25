@@ -8,13 +8,6 @@ export interface Limit {
 
 export type LimitList = Record<string, Limit>;
 
-export interface Limits {
-  list: LimitList;
-  loading: boolean;
-  loadedCoordinators: number;
-  totalCoordinators: number;
-}
-
 export const compareUpdateLimit = (baseL: Limit, newL: Limit): Limit => {
   if (baseL == null) {
     return newL;

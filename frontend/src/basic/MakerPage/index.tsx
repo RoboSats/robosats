@@ -14,7 +14,7 @@ import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext'
 
 const MakerPage = (): JSX.Element => {
   const { fav, windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
-  const { book, setDelay } = useContext<UseFederationStoreType>(FederationContext);
+  const { setDelay, federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, maker } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const MakerPage = (): JSX.Element => {
 
   const matches = useMemo(() => {
     return filterOrders({
-      orders: book.orders,
+      orders: federation.book,
       baseFilter: {
         currency: fav.currency === 0 ? 1 : fav.currency,
         type: fav.type,
@@ -41,7 +41,7 @@ const MakerPage = (): JSX.Element => {
       },
     });
   }, [
-    book.orders,
+    federation.book,
     fav,
     maker.premium,
     maker.amount,

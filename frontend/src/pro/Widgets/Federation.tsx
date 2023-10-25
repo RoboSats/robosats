@@ -26,13 +26,9 @@ const FederationWidget = React.forwardRef(function Component(
   }: FederationWidgetProps,
   ref,
 ) {
-  const {
-    federation,
-    // setFederation,
-    setFocusedCoordinator,
-    open,
-    setOpen,
-  } = useContext<AppContextProps>(AppContext);
+  const { open, setOpen } = useContext<AppContextProps>(AppContext);
+  const { federation, setFocusedCoordinator } = useContext(FederationContext);
+
   return React.useMemo(() => {
     return (
       <Paper elevation={3} style={{ width: '100%', height: '100%' }}>

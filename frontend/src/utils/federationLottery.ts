@@ -11,18 +11,17 @@
 // donate to the development fund. This is the only way envisioned to incentivize
 // donations to the development fund.
 
-import type { Federation } from '../models/Coordinator.model';
+import { Federation } from '../models';
 
 export default function federationLottery(federation: Federation): string[] {
   // Create an array to store the coordinator short aliases and their corresponding weights (chance)
   const coordinatorChance: Array<{ shortAlias: string; chance: number }> = [];
 
   // Convert the `federation` object into an array of {shortAlias, chance}
-  for (const [shortAlias, coordinator] of Object.entries(federation)) {
-    const chance =
-      coordinator.badges.donatesToDevFund > 50 ? 50 : coordinator.badges?.donatesToDevFund;
-    coordinatorChance.push({ shortAlias, chance });
-  }
+  Object.values(federation.coordinators).forEach((coor) => {
+    const chance = coor.badges.donatesToDevFund > 50 ? 50 : coor.badges?.donatesToDevFund;
+    coordinatorChance.push({ shortAlias: coor.shortAlias, chance });
+  });
 
   // Sort randomly the coordinatorChance array using weighted shuffling algorithm
   const shuffledCoordinators = coordinatorChance.sort((a, b) => {

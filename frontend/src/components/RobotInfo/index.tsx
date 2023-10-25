@@ -29,35 +29,22 @@ import { EnableTelegramDialog } from '../Dialogs';
 import { UserNinjaIcon } from '../Icons';
 
 import { getWebln } from '../../utils';
-import { apiClient } from '../../services/api';
 import { signCleartextMessage } from '../../pgp';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import { getEndpoint } from '../../models/Coordinator.model';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 interface Props {
   robot: Robot;
+  slotIndex: number;
   coordinator: Coordinator;
   onClose: () => void;
 }
 
-const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
-  const { settings, origin, hostUrl } = useContext<UseAppStoreType>(AppContext);
-  const { dispatchFederation } = useContext<UseFederationStoreType>(FederationContext);
+const RobotInfo: React.FC<Props> = ({ robot, slotIndex, coordinator, onClose }: Props) => {
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const theme = useTheme();
-
-  const { url, basePath } = useMemo(() => {
-    return getEndpoint({
-      network: settings.network,
-      coordinator,
-      origin,
-      selfHosted: settings.selfhostedClient,
-      hostUrl,
-    });
-  }, []);
 
   const [rewardInvoice, setRewardInvoice] = useState<string>('');
   const [showRewardsSpinner, setShowRewardsSpinner] = useState<boolean>(false);
@@ -97,67 +84,47 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
   const handleSubmitInvoiceClicked = (e: any, rewardInvoice: string): void => {
     setBadInvoice('');
     setShowRewardsSpinner(true);
-    void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot.token).then(
-      (signedInvoice) => {
-        void apiClient
-          .post(
-            url,
-            `${basePath}/api/reward/`,
-            {
-              invoice: signedInvoice,
-            },
-            { tokenSHA256: robot.tokenSHA256 },
-          )
-          .then((data: any) => {
+
+    const robot = garage.getRobot(slotIndex);
+
+    if (robot.encPrivKey && robot.token) {
+      void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot.token).then(
+        (signedInvoice) => {
+          coordinator.fetchReward(signedInvoice, garage, slotIndex).then((data) => {
             setBadInvoice(data.bad_invoice ?? '');
             setShowRewardsSpinner(false);
             setWithdrawn(data.successful_withdrawal);
             setOpenClaimRewards(!(data.successful_withdrawal !== undefined));
-            const newRobot = {
-              ...robot,
-              earnedRewards: data.successful_withdrawal !== undefined ? 0 : robot.earnedRewards,
-            };
-            dispatchFederation({
-              type: 'updateRobot',
-              payload: { shortAlias: coordinator.shortAlias, robot: newRobot },
-            });
           });
-      },
-    );
+        },
+      );
+    }
     e.preventDefault();
   };
 
   const setStealthInvoice = (wantsStealth: boolean): void => {
-    void apiClient
-      .post(url, `${basePath}/api/stealth/`, { wantsStealth }, { tokenSHA256: robot.tokenSHA256 })
-      .then((data) => {
-        const newRobot = { ...robot, stealthInvoices: data?.wantsStealth };
-        dispatchFederation({
-          type: 'updateRobot',
-          payload: { shortAlias: coordinator.shortAlias, robot: newRobot },
-        });
-      });
+    coordinator.fetchStealth(wantsStealth, garage, slotIndex);
   };
 
   return (
     <Accordion>
       <AccordionSummary expandIcon={<ExpandMore />}>
         {`${coordinator.longAlias}:`}
-        {robot.earnedRewards > 0 && (
+        {garage.getRobot(slotIndex).earnedRewards > 0 && (
           <Typography color='success'>&nbsp;{t('Claim Sats!')} </Typography>
         )}
-        {robot.activeOrderId > 0 && (
+        {(garage.getRobot(slotIndex).activeOrderId ?? 0) > 0 && (
           <Typography color='success'>
             &nbsp;<b>{t('Active order!')}</b>
           </Typography>
         )}
-        {robot.lastOrderId > 0 && robot.activeOrderId === undefined && (
+        {(garage.getRobot(slotIndex).lastOrderId ?? 0) > 0 && robot.activeOrderId === undefined && (
           <Typography color='warning'>&nbsp;{t('finished order')}</Typography>
         )}
       </AccordionSummary>
       <AccordionDetails>
         <List dense disablePadding={true}>
-          {robot.activeOrderId > 0 ? (
+          {(garage.getRobot(slotIndex).activeOrderId ?? 0) > 0 ? (
             <ListItemButton
               onClick={() => {
                 navigate(`/order/${coordinator.shortAlias}/${String(robot.activeOrderId)}`);
@@ -174,7 +141,7 @@ const RobotInfo: React.FC<Props> = ({ robot, coordinator, onClose }: Props) => {
                 secondary={t('Your current order')}
               />
             </ListItemButton>
-          ) : robot.lastOrderId > 0 ? (
+          ) : (garage.getRobot(slotIndex).lastOrderId ?? 0) > 0 ? (
             <ListItemButton
               onClick={() => {
                 navigate(`/order/${coordinator.shortAlias}/${String(robot.lastOrderId)}`);

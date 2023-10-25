@@ -102,12 +102,12 @@ const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setC
                   let row: JSX.Element | null = null;
                   if (
                     shortAlias === coordinator ||
-                    (federation[shortAlias].enabled === true &&
-                      federation[shortAlias].info !== undefined)
+                    (federation.getCoordinator(shortAlias).enabled === true &&
+                      federation.getCoordinator(shortAlias).info !== undefined)
                   ) {
                     row = (
                       <MenuItem key={shortAlias} value={shortAlias}>
-                        <Typography>{federation[shortAlias].longAlias}</Typography>
+                        <Typography>{federation.getCoordinator(shortAlias).longAlias}</Typography>
                       </MenuItem>
                     );
                   }

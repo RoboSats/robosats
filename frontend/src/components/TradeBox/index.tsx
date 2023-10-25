@@ -52,6 +52,7 @@ import { Bolt } from '@mui/icons-material';
 import { signCleartextMessage } from '../../pgp';
 import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface loadingButtonsProps {
   cancel: boolean;
@@ -114,8 +115,10 @@ const TradeBox = ({
   onRenewOrder,
   onStartAgain,
 }: TradeBoxProps): JSX.Element => {
-  const { currentOrder, setCurrentOrder } = useContext<UseFederationStoreType>(FederationContext);
+  const { currentOrder, setCurrentOrder, federation, focusedCoordinator } =
+    useContext<UseFederationStoreType>(FederationContext);
   const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { origin, hostUrl } = useContext<UseAppStoreType>(AppContext);
   // Buttons and Dialogs
   const [loadingButtons, setLoadingButtons] = useState<loadingButtonsProps>(noLoadingButtons);
   const [open, setOpen] = useState<OpenDialogProps>(closeAll);
@@ -158,9 +161,12 @@ const TradeBox = ({
     statement,
     rating,
   }: SubmitActionProps): void {
+    const { url } = federation
+      .getCoordinator(focusedCoordinator)
+      .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
     void apiClient
       .post(
-        baseUrl,
+        url,
         `/api/order/?order_id=${currentOrder.id}`,
         {
           action,

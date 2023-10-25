@@ -37,15 +37,12 @@ interface RobotProfileProps {
 }
 
 const RobotProfile = ({
-  robot,
-  setRobot,
   inputToken,
   getGenerateRobot,
   setInputToken,
   logoutRobot,
   setView,
   width,
-  baseUrl,
 }: RobotProfileProps): JSX.Element => {
   const { windowSize, hostUrl } = useContext<UseAppStoreType>(AppContext);
   const { currentOrder } = useContext<UseFederationStoreType>(FederationContext);
@@ -64,13 +61,12 @@ const RobotProfile = ({
   }, [robotUpdatedAt]);
 
   const handleAddRobot = (): void => {
-    getGenerateRobot(genBase62Token(36), garage.slots.length);
+    getGenerateRobot(genBase62Token(36));
     setLoading(true);
   };
 
   const handleChangeSlot = (e: SelectChangeEvent<number | 'loading'>): void => {
-    const slot = Number(e.target.value);
-    getGenerateRobot(garage.slots[slot].robot.token ?? '', slot);
+    garage.currentSlot = Number(e.target.value);
     setLoading(true);
   };
 

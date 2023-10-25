@@ -47,6 +47,8 @@ const EncryptedTurtleChat: React.FC<Props> = ({
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { origin, hostUrl, settings } = useContext<UseAppStoreType>(AppContext);
+  const { federation, focusedCoordinator } = useContext<UseFederationStoreType>(FederationContext);
 
   const [audio] = useState(() => new Audio(`${audioPath}/chat-open.mp3`));
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
@@ -80,8 +82,11 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   }, [chatOffset]);
 
   const loadMessages: () => void = () => {
+    const { url } = federation
+      .getCoordinator(focusedCoordinator)
+      .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
     apiClient
-      .get(baseUrl, `/api/chat/?order_id=${orderId}&offset=${lastIndex}`, {
+      .get(url, `/api/chat/?order_id=${orderId}&offset=${lastIndex}`, {
         tokenSHA256: robot.tokenSHA256,
       })
       .then((results: any) => {
@@ -172,9 +177,12 @@ const EncryptedTurtleChat: React.FC<Props> = ({
     }
     // If input string contains '#' send unencrypted and unlogged message
     else if (value.substring(0, 1) === '#') {
+      const { url } = federation
+        .getCoordinator(focusedCoordinator)
+        .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
       apiClient
         .post(
-          baseUrl,
+          url,
           `/api/chat/`,
           {
             PGP_message: value,
@@ -202,9 +210,12 @@ const EncryptedTurtleChat: React.FC<Props> = ({
       setLastSent(value);
       encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, robot.token)
         .then((encryptedMessage) => {
+          const { url } = federation
+            .getCoordinator(focusedCoordinator)
+            .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
           apiClient
             .post(
-              baseUrl,
+              url,
               `/api/chat/`,
               {
                 PGP_message: String(encryptedMessage).split('\n').join('\\'),

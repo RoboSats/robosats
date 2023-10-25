@@ -12,7 +12,6 @@ import {
 import { pn } from '../../utils';
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
 import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
-import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 export interface OpenDialogs {
   more: boolean;
@@ -30,21 +29,24 @@ export interface OpenDialogs {
 const MainDialogs = (): JSX.Element => {
   const { open, setOpen, settings, clientVersion, hostUrl } =
     useContext<UseAppStoreType>(AppContext);
-  const { limits, federation, focusedCoordinator, exchange } =
+  const { federation, focusedCoordinator, coordinatorUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
 
   const [maxAmount, setMaxAmount] = useState<string>('...loading...');
 
   useEffect(() => {
-    if (limits.list[1000] !== undefined) {
-      setMaxAmount(pn(limits.list[1000].max_amount * 100000000));
+    if (focusedCoordinator) {
+      const limits = federation.getCoordinator(focusedCoordinator).limits;
+      if (limits[1000] !== undefined) {
+        setMaxAmount(pn(limits[1000].max_amount * 100000000));
+      }
     }
-  }, [limits.list]);
+  }, [coordinatorUpdatedAt]);
 
   return (
     <>
       <UpdateDialog
-        coordinatorVersion={exchange.info.version}
+        coordinatorVersion={federation.exchange.info.version}
         clientVersion={clientVersion.semver}
         onClose={() => {
           setOpen((open) => {
@@ -106,7 +108,7 @@ const MainDialogs = (): JSX.Element => {
         onClose={() => {
           setOpen(closeAll);
         }}
-        coordinator={federation[focusedCoordinator]}
+        coordinator={focusedCoordinator ? federation.getCoordinator(focusedCoordinator) : null}
       />
     </>
   );

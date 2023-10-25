@@ -8,8 +8,6 @@ import { FederationContext, UseFederationStoreType } from '../../contexts/Federa
 const SettingsPage = (): JSX.Element => {
   const { windowSize, navbarHeight, settings, setOpen, open, hostUrl } =
     useContext<UseAppStoreType>(AppContext);
-  const { federation, fetchCoordinatorInfo, dispatchFederation, setFocusedCoordinator } =
-    useContext<UseFederationStoreType>(FederationContext);
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
 
   return (
@@ -29,13 +27,9 @@ const SettingsPage = (): JSX.Element => {
         </Grid>
         <Grid item>
           <FederationTable
-            federation={federation}
-            dispatchFederation={dispatchFederation}
-            setFocusedCoordinator={setFocusedCoordinator}
             openCoordinator={() => {
               setOpen({ ...open, coordinator: true });
             }}
-            fetchCoordinatorInfo={fetchCoordinatorInfo}
             baseUrl={hostUrl}
             maxHeight={14}
             network={settings.network}

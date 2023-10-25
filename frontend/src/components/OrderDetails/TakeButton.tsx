@@ -26,6 +26,8 @@ import { ConfirmationDialog } from '../Dialogs';
 import { LoadingButton } from '@mui/lab';
 import { computeSats } from '../../utils';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
+import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface TakeButtonProps {
   baseUrl: string;
@@ -46,7 +48,9 @@ const TakeButton = ({
 }: TakeButtonProps): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { settings, origin, hostUrl } = useContext<UseAppStoreType>(AppContext);
   const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation, focusedCoordinator } = useContext<UseFederationStoreType>(FederationContext);
 
   const [takeAmount, setTakeAmount] = useState<string>('');
   const [badRequest, setBadRequest] = useState<string>('');
@@ -311,10 +315,15 @@ const TakeButton = ({
   };
 
   const takeOrder = function (): void {
+    if (!focusedCoordinator) return;
+
     setLoadingTake(true);
+    const { url } = federation
+      .getCoordinator(focusedCoordinator)
+      .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
     apiClient
       .post(
-        baseUrl,
+        url,
         `/api/order/?order_id=${String(garage.getOrder()?.id)}`,
         {
           action: 'take',

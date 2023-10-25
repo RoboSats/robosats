@@ -65,7 +65,7 @@ import { type Badges } from '../../models/Coordinator.model';
 interface Props {
   open: boolean;
   onClose: () => void;
-  coordinator: Coordinator | undefined;
+  coordinator: Coordinator | null;
   network: 'mainnet' | 'testnet' | undefined;
 }
 
@@ -369,13 +369,13 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
                 <Grid container>
                   <Grid item xs={6}>
                     <ListItemText secondary={t('Maker fee')}>
-                      {(coordinator?.info?.maker_fee * 100).toFixed(3)}%
+                      {(coordinator?.info?.maker_fee ?? 0 * 100).toFixed(3)}%
                     </ListItemText>
                   </Grid>
 
                   <Grid item xs={6}>
                     <ListItemText secondary={t('Taker fee')}>
-                      {(coordinator?.info?.taker_fee * 100).toFixed(3)}%
+                      {(coordinator?.info?.taker_fee ?? 0 * 100).toFixed(3)}%
                     </ListItemText>
                   </Grid>
                 </Grid>
@@ -409,7 +409,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
             />
           </ListItem>
 
-          {coordinator?.mainnetNodesPubkeys[0] !== undefined && network === 'mainnet' ? (
+          {coordinator?.mainnetNodesPubkeys?.[0] !== undefined && network === 'mainnet' ? (
             <ListItem>
               <ListItemIcon>
                 <AmbossIcon />
@@ -420,7 +420,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
                   href={`https://amboss.space/node/${coordinator?.mainnetNodesPubkeys[0]}`}
                   rel='noreferrer'
                 >
-                  {`${coordinator?.mainnetNodesPubkeys[0].slice(0, 12)}... (AMBOSS)`}
+                  {`${coordinator?.mainnetNodesPubkeys?.[0].slice(0, 12)}... (AMBOSS)`}
                 </Link>
               </ListItemText>
             </ListItem>
@@ -428,7 +428,7 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
             <></>
           )}
 
-          {coordinator?.testnetNodesPubkeys[0] !== undefined && network === 'testnet' ? (
+          {coordinator?.testnetNodesPubkeys?.[0] !== undefined && network === 'testnet' ? (
             <ListItem>
               <ListItemIcon>
                 <Dns />

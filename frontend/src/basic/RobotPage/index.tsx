@@ -29,9 +29,9 @@ interface RobotPageProps {
 }
 
 const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
-  const { torStatus, windowSize, settings } = useContext<UseAppStoreType>(AppContext);
-  const { fetchFederationRobot } = useContext<UseFederationStoreType>(FederationContext);
+  const { torStatus, windowSize, settings, page } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
   const params = useParams();
   const urlToken = settings.selfhostedClient ? params.token : null;
@@ -56,7 +56,7 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
         setView('profile');
       }
     }
-  }, [torStatus]);
+  }, [torStatus, page]);
 
   useEffect(() => {
     if (inputToken.length < 20) {
@@ -68,20 +68,18 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
     }
   }, [inputToken]);
 
-  const getGenerateRobot = (token: string, slot?: number): void => {
+  const getGenerateRobot = (token: string): void => {
     setInputToken(token);
     genKey(token)
-      .then(function (key) {
-        fetchFederationRobot({
-          newKeys: {
-            pubKey: key.publicKeyArmored,
-            encPrivKey: key.encryptedPrivateKeyArmored,
-          },
-          newToken: token,
-          slot,
+      .then((key) => {
+        const slot = garage.createRobot({
+          token,
+          pubKey: key.publicKeyArmored,
+          encPrivKey: key.encryptedPrivateKeyArmored,
         });
+        federation.fetchRobot(garage, slot);
       })
-      .catch(function (error) {
+      .catch((error) => {
         console.error('Error:', error);
       });
   };

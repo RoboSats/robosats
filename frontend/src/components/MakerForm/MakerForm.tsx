@@ -43,7 +43,6 @@ import { LoadingButton } from '@mui/lab';
 import { fiatMethods } from '../PaymentMethods';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import SelectCoordinator from './SelectCoordinator';
-import { getEndpoint } from '../../models/Coordinator.model';
 import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
@@ -69,7 +68,7 @@ const MakerForm = ({
   onClickGenerateRobot = () => null,
 }: MakerFormProps): JSX.Element => {
   const { fav, setFav, settings, hostUrl, origin } = useContext<UseAppStoreType>(AppContext);
-  const { limits, exchange, fetchFederationLimits, federation } =
+  const { federation, focusedCoordinator, coordinatorUpdatedAt, federationUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
   const { maker, setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
 
@@ -86,6 +85,7 @@ const MakerForm = ({
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
   const [submittingRequest, setSubmittingRequest] = useState<boolean>(false);
   const [amountRangeEnabled, setAmountRangeEnabled] = useState<boolean>(true);
+  const [limits, setLimits] = useState<LimitList>({});
 
   const maxRangeAmountMultiple = 14.8;
   const minRangeAmountMultiple = 1.6;
@@ -93,14 +93,16 @@ const MakerForm = ({
 
   useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
-    if (Object.keys(limits.list).length !== 0) {
-      updateAmountLimits(limits.list, fav.currency, maker.premium);
-      updateCurrentPrice(limits.list, fav.currency, maker.premium);
-      updateSatoshisLimits(limits.list);
-
-      // fetchFederationLimits();
+    if (focusedCoordinator) {
+      const newLimits = federation.getCoordinator(focusedCoordinator).limits;
+      if (Object.keys(newLimits).length !== 0) {
+        updateAmountLimits(newLimits, fav.currency, maker.premium);
+        updateCurrentPrice(newLimits, fav.currency, maker.premium);
+        updateSatoshisLimits(newLimits);
+        setLimits(newLimits);
+      }
     }
-  }, [limits]);
+  }, [coordinatorUpdatedAt]);
 
   const updateAmountLimits = function (
     limitList: LimitList,
@@ -146,12 +148,12 @@ const MakerForm = ({
       currency: newCurrency,
       mode: newCurrency === 1000 ? 'swap' : 'fiat',
     });
-    updateAmountLimits(limits.list, newCurrency, maker.premium);
-    updateCurrentPrice(limits.list, newCurrency, maker.premium);
+    updateAmountLimits(limits, newCurrency, maker.premium);
+    updateCurrentPrice(limits, newCurrency, maker.premium);
 
     if (makerHasAmountRange) {
-      const minAmount = parseFloat(Number(limits.list[newCurrency].min_amount).toPrecision(2));
-      const maxAmount = parseFloat(Number(limits.list[newCurrency].max_amount).toPrecision(2));
+      const minAmount = parseFloat(Number(limits[newCurrency].min_amount).toPrecision(2));
+      const maxAmount = parseFloat(Number(limits[newCurrency].max_amount).toPrecision(2));
       if (
         parseFloat(maker.minAmount) < minAmount ||
         parseFloat(maker.minAmount) > maxAmount ||
@@ -232,8 +234,8 @@ const MakerForm = ({
         badPremiumText = t('Must be more than {{min}}%', { min });
         premium = -99.99;
       }
-      updateCurrentPrice(limits.list, fav.currency, premium);
-      updateAmountLimits(limits.list, fav.currency, premium);
+      updateCurrentPrice(limits, fav.currency, premium);
+      updateAmountLimits(limits, fav.currency, premium);
       setMaker({
         ...maker,
         premium: isNaN(newPremium) || value === '' ? '' : premium,
@@ -278,13 +280,9 @@ const MakerForm = ({
   };
 
   const handleCreateOrder = function (): void {
-    const { url, basePath } = getEndpoint({
-      network: settings.network,
-      coordinator: federation[maker.coordinator],
-      origin,
-      selfHosted: settings.selfhostedClient,
-      hostUrl,
-    });
+    const { url, basePath } = federation
+      .getCoordinator(maker.coordinator)
+      ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
 
     const auth = {
       tokenSHA256: garage.getRobot().tokenSHA256,
@@ -294,7 +292,7 @@ const MakerForm = ({
       },
     };
 
-    if (!disableRequest) {
+    if (!disableRequest && focusedCoordinator) {
       setSubmittingRequest(true);
       const body = {
         type: fav.type === 0 ? 1 : 0,
@@ -314,6 +312,9 @@ const MakerForm = ({
         latitude: maker.latitude,
         longitude: maker.longitude,
       };
+      const { url } = federation
+        .getCoordinator(focusedCoordinator)
+        .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
       apiClient
         .post(url, `${basePath}/api/make/`, body, auth)
         .then((data: any) => {
@@ -390,11 +391,11 @@ const MakerForm = ({
     const minAmount =
       maker.amount !== ''
         ? parseFloat((maker.amount / 2).toPrecision(2))
-        : parseFloat(Number(limits.list[index].max_amount * 0.25).toPrecision(2));
+        : parseFloat(Number(limits[index].max_amount * 0.25).toPrecision(2));
     const maxAmount =
       maker.amount !== ''
         ? parseFloat(maker.amount)
-        : parseFloat(Number(limits.list[index].max_amount * 0.75).toPrecision(2));
+        : parseFloat(Number(limits[index].max_amount * 0.75).toPrecision(2));
 
     setMaker({
       ...maker,
@@ -446,6 +447,9 @@ const MakerForm = ({
   };
 
   const amountLabel = useMemo(() => {
+    if (!focusedCoordinator) return;
+
+    const info = federation.getCoordinator(focusedCoordinator)?.info;
     const defaultRoutingBudget = 0.001;
     let label = t('Amount');
     let helper = '';
@@ -455,7 +459,7 @@ const MakerForm = ({
         swapSats = computeSats({
           amount: Number(maker.amount),
           premium: Number(maker.premium),
-          fee: -exchange.info.maker_fee,
+          fee: -(info?.maker_fee ?? 0),
           routingBudget: defaultRoutingBudget,
         });
         label = t('Onchain amount to send (BTC)');
@@ -466,7 +470,7 @@ const MakerForm = ({
         swapSats = computeSats({
           amount: Number(maker.amount),
           premium: Number(maker.premium),
-          fee: exchange.info.maker_fee,
+          fee: info?.maker_fee ?? 0,
         });
         label = t('Onchain amount to receive (BTC)');
         helper = t('You send approx {{swapSats}} LN Sats (fees might vary)', {
@@ -475,7 +479,7 @@ const MakerForm = ({
       }
     }
     return { label, helper, swapSats };
-  }, [fav, maker.amount, maker.premium, exchange.info]);
+  }, [fav, maker.amount, maker.premium, federationUpdatedAt]);
 
   const disableSubmit = useMemo(() => {
     return (
@@ -484,13 +488,13 @@ const MakerForm = ({
         maker.amount !== '' &&
         (maker.amount < amountLimits[0] || maker.amount > amountLimits[1])) ||
       maker.badPaymentMethod ||
-      (maker.amount == null && (!makerHasAmountRange || limits.loading)) ||
+      (maker.amount == null && (!makerHasAmountRange || Object.keys(limits).lenght < 1)) ||
       (makerHasAmountRange && (minAmountError || maxAmountError)) ||
       (!makerHasAmountRange && maker.amount <= 0) ||
       (maker.isExplicit && (maker.badSatoshisText !== '' || maker.satoshis === '')) ||
       (!maker.isExplicit && maker.badPremiumText !== '')
     );
-  }, [maker, amountLimits, limits, fav.type, makerHasAmountRange]);
+  }, [maker, amountLimits, coordinatorUpdatedAt, fav.type, makerHasAmountRange]);
 
   const clearMaker = function (): void {
     setFav({ ...fav, type: null });
@@ -585,12 +589,12 @@ const MakerForm = ({
         }}
         zoom={maker.latitude && maker.longitude ? 6 : undefined}
       />
-      <Collapse in={limits.list.length === 0}>
-        <div style={{ display: limits.list.length === 0 ? '' : 'none' }}>
+      <Collapse in={Object.keys(limits).lenght === 0}>
+        <div style={{ display: Object.keys(limits) === 0 ? '' : 'none' }}>
           <LinearProgress />
         </div>
       </Collapse>
-      <Collapse in={!(limits.list.length === 0 || collapseAll)}>
+      <Collapse in={!(Object.keys(limits).lenght === 0 || collapseAll)}>
         <Grid container justifyContent='space-between' spacing={0} sx={{ maxHeight: '1em' }}>
           <Grid item>
             <IconButton
@@ -626,7 +630,7 @@ const MakerForm = ({
               >
                 <Switch
                   size='small'
-                  disabled={limits.list.length === 0}
+                  disabled={Object.keys(limits).length === 0}
                   checked={maker.advancedOptions}
                   onChange={handleClickAdvanced}
                 />
@@ -1201,7 +1205,7 @@ const MakerForm = ({
           </Typography>
         </Grid>
 
-        <Collapse in={!(limits.list.length === 0)}>
+        <Collapse in={!(Object.keys(limits).length === 0)}>
           <Tooltip
             placement='top'
             enterTouchDelay={0}

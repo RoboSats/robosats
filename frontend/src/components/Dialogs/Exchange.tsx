@@ -34,11 +34,11 @@ interface Props {
 
 const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
   const { t } = useTranslation();
-  const { exchange } = useContext(FederationContext);
+  const { federation } = useContext(FederationContext);
 
   const loadingProgress = useMemo(() => {
-    return (exchange.onlineCoordinators / exchange.totalCoordinators) * 100;
-  }, [exchange.onlineCoordinators, exchange.totalCoordinators]);
+    return (federation.exchange.onlineCoordinators / federation.exchange.totalCoordinators) * 100;
+  }, [federation.exchange.onlineCoordinators, federation.exchange.totalCoordinators]);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -57,7 +57,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
             </ListItemIcon>
 
             <ListItemText
-              primary={exchange.onlineCoordinators}
+              primary={federation.exchange.onlineCoordinators}
               secondary={t('Online RoboSats coordinators')}
             />
           </ListItem>
@@ -69,7 +69,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
             </ListItemIcon>
 
             <ListItemText
-              primary={exchange.totalCoordinators}
+              primary={federation.exchange.totalCoordinators}
               secondary={t('Enabled RoboSats coordinators')}
             />
           </ListItem>
@@ -81,7 +81,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
             </ListItemIcon>
 
             <ListItemText
-              primary={exchange.info.num_public_buy_orders}
+              primary={federation.exchange.info.num_public_buy_orders}
               secondary={t('Public buy orders')}
             />
           </ListItem>
@@ -94,7 +94,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
             </ListItemIcon>
 
             <ListItemText
-              primary={exchange.info.num_public_sell_orders}
+              primary={federation.exchange.info.num_public_sell_orders}
               secondary={t('Public sell orders')}
             />
           </ListItem>
@@ -107,7 +107,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
             </ListItemIcon>
 
             <ListItemText
-              primary={`${pn(exchange.info.book_liquidity)} Sats`}
+              primary={`${pn(federation.exchange.info.book_liquidity)} Sats`}
               secondary={t('Book liquidity')}
             />
           </ListItem>
@@ -120,7 +120,7 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
             </ListItemIcon>
 
             <ListItemText
-              primary={exchange.info.active_robots_today}
+              primary={federation.exchange.info.active_robots_today}
               secondary={t('Today active robots')}
             />
           </ListItem>
@@ -133,7 +133,9 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
             </ListItemIcon>
 
             <ListItemText
-              primary={`${String(exchange.info.last_day_nonkyc_btc_premium.toPrecision(3))}%`}
+              primary={`${String(
+                federation.exchange.info.last_day_nonkyc_btc_premium.toPrecision(3),
+              )}%`}
               secondary={t('24h non-KYC bitcoin premium')}
             />
           </ListItem>
@@ -153,8 +155,8 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
                   flexWrap: 'wrap',
                 }}
               >
-                {pn(exchange.info.last_day_volume)}
-                <BitcoinSignIcon sx={{ width: 14, height: 14 }} color={'text.secondary'} />
+                {pn(federation.exchange.info.last_day_volume)}
+                <BitcoinSignIcon sx={{ width: 14, height: 14 }} color='text.secondary' />
               </div>
             </ListItemText>
           </ListItem>
@@ -174,8 +176,8 @@ const ExchangeDialog = ({ open = false, onClose }: Props): JSX.Element => {
                   flexWrap: 'wrap',
                 }}
               >
-                {pn(exchange.info.lifetime_volume)}
-                <BitcoinSignIcon sx={{ width: 14, height: 14 }} color={'text.secondary'} />
+                {pn(federation.exchange.info.lifetime_volume)}
+                <BitcoinSignIcon sx={{ width: 14, height: 14 }} color='text.secondary' />
               </div>
             </ListItemText>
           </ListItem>

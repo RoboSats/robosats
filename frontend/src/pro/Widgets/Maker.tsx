@@ -19,7 +19,7 @@ const MakerWidget = React.forwardRef(function Component(
   ref,
 ) {
   const { fav } = useContext<UseAppStoreType>(AppContext);
-  const { limits } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { maker } = useContext<UseGarageStoreType>(GarageContext);
   return React.useMemo(() => {
     return (

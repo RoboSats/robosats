@@ -44,10 +44,11 @@ const DepthChart: React.FC<DepthChartProps> = ({
   onOrderClicked = () => null,
 }) => {
   const { fav } = useContext<UseAppStoreType>(AppContext);
-  const { book, exchange, limits } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation, coordinatorUpdatedAt, federationUpdatedAt } =
+    useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
   const theme = useTheme();
-  const [enrichedOrders, setEnrichedOrders] = useState<Order[]>([]);
+  const [enrichedOrders, setEnrichedOrders] = useState<PublicOrder[]>([]);
   const [series, setSeries] = useState<Serie[]>([]);
   const [rangeSteps, setRangeSteps] = useState<number>(8);
   const [xRange, setXRange] = useState<number>(8);
@@ -63,18 +64,21 @@ const DepthChart: React.FC<DepthChartProps> = ({
   }, [fav.currency]);
 
   useEffect(() => {
-    if (Object.keys(limits.list).length > 0) {
-      const enriched = book.orders.map((order) => {
+    if (federation.book.length > 0) {
+      const enriched = federation.book.map((order) => {
         // We need to transform all currencies to the same base (ex. USD), we don't have the exchange rate
         // for EUR -> USD, but we know the rate of both to BTC, so we get advantage of it and apply a
         // simple rule of three
-        order.base_amount =
-          (order.price * limits.list[currencyCode].price) / limits.list[order.currency].price;
+        if (order.coordinatorShortAlias) {
+          const limits = federation.getCoordinator(order.coordinatorShortAlias).limits;
+          order.base_amount =
+            (order.price * limits[currencyCode].price) / limits[order.currency].price;
+        }
         return order;
       });
       setEnrichedOrders(enriched);
     }
-  }, [limits.list, book.orders, currencyCode]);
+  }, [coordinatorUpdatedAt, currencyCode]);
 
   useEffect(() => {
     if (enrichedOrders.length > 0) {
@@ -95,16 +99,16 @@ const DepthChart: React.FC<DepthChartProps> = ({
       setXRange(maxRange);
       setRangeSteps(rangeSteps);
     } else {
-      if (exchange.info?.last_day_nonkyc_btc_premium === undefined) {
+      if (federation.exchange.info?.last_day_nonkyc_btc_premium === undefined) {
         const premiums: number[] = enrichedOrders.map((order) => order?.premium ?? 0);
         setCenter(~~matchMedian(premiums));
       } else {
-        setCenter(exchange.info?.last_day_nonkyc_btc_premium);
+        setCenter(federation.exchange.info?.last_day_nonkyc_btc_premium);
       }
       setXRange(8);
       setRangeSteps(0.5);
     }
-  }, [enrichedOrders, xType, exchange.info, currencyCode]);
+  }, [enrichedOrders, xType, federationUpdatedAt, currencyCode]);
 
   const generateSeries: () => void = () => {
     const sortedOrders: PublicOrder[] =

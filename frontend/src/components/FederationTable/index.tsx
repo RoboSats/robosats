@@ -6,6 +6,11 @@ import { type Coordinator } from '../../models';
 import RobotAvatar from '../RobotAvatar';
 import { Link, LinkOff } from '@mui/icons-material';
 import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import {
+  ActionFederation,
+  UseFederationStoreType,
+  FederationContext,
+} from '../../contexts/FederationContext';
 
 interface FederationTableProps {
   federation: Record<string, Coordinator>;
@@ -19,16 +24,14 @@ interface FederationTableProps {
 }
 
 const FederationTable = ({
-  federation,
-  dispatchFederation,
-  fetchCoordinatorInfo,
-  setFocusedCoordinator,
   openCoordinator,
   maxWidth = 90,
   maxHeight = 50,
   fillContainer = false,
 }: FederationTableProps): JSX.Element => {
   const { t } = useTranslation();
+  const { federation, setFocusedCoordinator } =
+    useContext<UseFederationStoreType>(FederationContext);
   const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const [pageSize, setPageSize] = useState<number>(0);
@@ -209,11 +212,10 @@ const FederationTable = ({
   const { columns, width } = filteredColumns();
 
   const onEnableChange = function (shortAlias: string): void {
-    if (federation[shortAlias].enabled === true) {
-      dispatchFederation({ type: 'disable', payload: { shortAlias } });
+    if (federation.getCoordinator(shortAlias).enabled) {
+      federation.disbaleCoordinator(shortAlias);
     } else {
-      dispatchFederation({ type: 'enable', payload: { shortAlias } });
-      void fetchCoordinatorInfo(federation[shortAlias]);
+      federation.enaleCoordinator(shortAlias);
     }
   };
 
@@ -229,7 +231,7 @@ const FederationTable = ({
         localeText={localeText}
         rowHeight={3.714 * theme.typography.fontSize}
         headerHeight={3.25 * theme.typography.fontSize}
-        rows={Object.values(federation)}
+        rows={Object.values(federation.coordinators)}
         getRowId={(params: Coordinator) => params.shortAlias}
         columns={columns}
         checkboxSelection={false}

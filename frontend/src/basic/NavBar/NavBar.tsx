@@ -79,7 +79,7 @@ const NavBar = (): JSX.Element => {
 
   const changePage = function (mouseEvent: any, newPage: Page): void {
     if (newPage === 'none') {
-      return null;
+      return;
     } else {
       handleSlideDirection(page, newPage);
       setPage(newPage);

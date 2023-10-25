@@ -20,7 +20,8 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
 
   const coordinatorAlias = order?.coordinatorShortAlias;
   const network = settings.network;
-  const baseUrl = coordinatorAlias ? federation[coordinatorAlias][network][origin] : '';
+  const coordinator = federation.getCoordinator(coordinatorAlias);
+  const baseUrl = coordinator?.[network]?.[origin] ?? '';
 
   return order?.id && baseUrl !== '' ? (
     <Paper elevation={12} style={{ padding: 10, width: 250 }}>

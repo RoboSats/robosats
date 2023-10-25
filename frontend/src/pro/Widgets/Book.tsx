@@ -28,7 +28,7 @@ const BookWidget = React.forwardRef(function Component(
   ref,
 ) {
   const { windowSize, fav } = useContext<UseAppStoreType>(AppContext);
-  const { book } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   return React.useMemo(() => {
     return (

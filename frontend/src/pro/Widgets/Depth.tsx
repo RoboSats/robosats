@@ -27,7 +27,7 @@ const DepthChartWidget = React.forwardRef(function Component(
   ref,
 ) {
   const { fav } = useContext<UseAppStoreType>(AppContext);
-  const { book, limits, exchange } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   return React.useMemo(() => {
     return (

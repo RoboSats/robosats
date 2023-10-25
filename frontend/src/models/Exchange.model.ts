@@ -24,9 +24,12 @@ const defaultExchangeInfo: ExchangeInfo = {
 };
 
 export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
-  const info: ExchangeInfo = {};
+  const info: ExchangeInfo = defaultExchangeInfo;
+  const premiums: number[] = [];
+  const volumes: number[] = [];
+  let highestVersion: Version = { major: 0, minor: 0, patch: 0 };
 
-  const toSum = [
+  const aggregations = [
     'num_public_buy_orders',
     'num_public_sell_orders',
     'book_liquidity',
@@ -35,31 +38,22 @@ export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
     'lifetime_volume',
   ];
 
-  toSum.map((key) => {
-    let value = 0;
-    Object.entries(federation).map(([shortAlias, coordinator]) => {
-      if (coordinator.info !== undefined) {
-        value = value + Number(coordinator.info[key]);
-      }
-      return null;
-    });
-    info[key] = value;
-    return null;
-  });
-
-  const premiums: number[] = [];
-  const volumes: number[] = [];
-  let highestVersion: Version = { major: 0, minor: 0, patch: 0 };
-  Object.entries(federation).map(([shortAlias, coordinator], index) => {
+  Object.values(federation.coordinators).forEach((coordinator, index) => {
     if (coordinator.info !== undefined && coordinator.enabled === true) {
       premiums[index] = coordinator.info.last_day_nonkyc_btc_premium;
       volumes[index] = coordinator.info.last_day_volume;
       highestVersion = getHigherVer(highestVersion, coordinator.info.version);
+
+      aggregations.forEach((key: any) => {
+        info[key] = info[key] + Number(coordinator.info[key]);
+      });
     }
     return null;
   });
+
   info.last_day_nonkyc_btc_premium = weightedMean(premiums, volumes);
   info.version = highestVersion;
+
   return info;
 };
 

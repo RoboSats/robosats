@@ -37,7 +37,6 @@ import RobotAvatar from '../RobotAvatar';
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import { getEndpoint } from '../../models/Coordinator.model';
 import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 const ClickThroughDataGrid = styled(DataGrid)({
@@ -109,15 +108,15 @@ const BookTable = ({
 }: BookTableProps): JSX.Element => {
   const { fav, setFav, settings, setOpen, hostUrl, origin } =
     useContext<UseAppStoreType>(AppContext);
-  const { book, federation, fetchFederationBook, setFocusedCoordinator } =
+  const { federation, setFocusedCoordinator, coordinatorUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
-  const orders = orderList ?? book.orders;
+  const orders = orderList ?? federation.book;
   const loadingProgress = useMemo(() => {
-    return (book.loadedCoordinators / book.totalCoordinators) * 100;
-  }, [book.loadedCoordinators, book.totalCoordinators]);
+    return (federation.exchange.onlineCoordinators / federation.exchange.totalCoordinators) * 100;
+  }, [coordinatorUpdatedAt]);
 
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     pageSize: 0,
@@ -144,10 +143,10 @@ const BookTable = ({
 
   useEffect(() => {
     setPaginationModel({
-      pageSize: book.loading && orders.length === 0 ? 0 : defaultPageSize,
+      pageSize: federation.loading && orders.length === 0 ? 0 : defaultPageSize,
       page: paginationModel.page,
     });
-  }, [book.loading, orders, defaultPageSize]);
+  }, [coordinatorUpdatedAt, orders, defaultPageSize]);
 
   const localeText = useMemo(() => {
     return {
@@ -207,13 +206,9 @@ const BookTable = ({
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
-        const { url, basePath } = getEndpoint({
-          network: settings.network,
-          coordinator: federation[params.row.coordinatorShortAlias],
-          origin,
-          selfHosted: settings.selfhostedClient,
-          hostUrl,
-        });
+        const { url, basePath } = federation
+          .getCoordinator(params.row.coordinatorShortAlias)
+          ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
 
         return (
           <ListItemButton
@@ -248,13 +243,9 @@ const BookTable = ({
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
-        const { url, basePath } = getEndpoint({
-          network: settings.network,
-          coordinator: federation[params.row.coordinatorShortAlias],
-          origin,
-          selfHosted: settings.selfhostedClient,
-          hostUrl,
-        });
+        const { url, basePath } = federation
+          .getCoordinator(params.row.coordinatorShortAlias)
+          ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
 
         return (
           <div
@@ -840,7 +831,7 @@ const BookTable = ({
               </IconButton>
             </Grid>
             <Grid item xs={6}>
-              <IconButton onClick={fetchFederationBook}>
+              <IconButton onClick={() => federation.update()}>
                 <Refresh />
               </IconButton>
             </Grid>
@@ -937,7 +928,7 @@ const BookTable = ({
           headerHeight={3.25 * theme.typography.fontSize}
           rows={filteredOrders}
           getRowId={(params: PublicOrder) => `${String(params.coordinatorShortAlias)}/${params.id}`}
-          loading={book.loading}
+          loading={federation.loading}
           columns={columns}
           columnVisibilityModel={columnVisibilityModel}
           onColumnVisibilityModelChange={(newColumnVisibilityModel) => {
@@ -975,7 +966,7 @@ const BookTable = ({
             rowHeight={3.714 * theme.typography.fontSize}
             headerHeight={3.25 * theme.typography.fontSize}
             rows={filteredOrders}
-            loading={book.loading}
+            loading={federation.loading}
             columns={columns}
             hideFooter={!showFooter}
             components={gridComponents}

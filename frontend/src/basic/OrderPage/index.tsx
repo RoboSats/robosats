@@ -8,14 +8,13 @@ import OrderDetails from '../../components/OrderDetails';
 
 import { apiClient } from '../../services/api';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import { getEndpoint } from '../../models/Coordinator.model';
 import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 const OrderPage = (): JSX.Element => {
   const { windowSize, setOpen, settings, navbarHeight, hostUrl, origin } =
     useContext<UseAppStoreType>(AppContext);
-  const { setFocusedCoordinator, federation, currentOrder, setCurrentOrder } =
+  const { setFocusedCoordinator, federation, currentOrder, setCurrentOrder, focusedCoordinator } =
     useContext<UseFederationStoreType>(FederationContext);
   const { garage, badOrder, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
@@ -35,13 +34,9 @@ const OrderPage = (): JSX.Element => {
       order: null,
     };
 
-    const { url, basePath } = getEndpoint({
-      network: settings.network,
-      coordinator: federation[newOrder.shortAlias],
-      origin,
-      selfHosted: settings.selfhostedClient,
-      hostUrl,
-    });
+    const { url, basePath } = federation
+      .getCoordinator(newOrder.shortAlias)
+      .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
     setBaseUrl(`${url}${basePath}`);
 
     if (currentOrder.id !== newOrder.id || currentOrder.shortAlias !== newOrder.shortAlias) {
@@ -50,7 +45,9 @@ const OrderPage = (): JSX.Element => {
   }, [params]);
 
   const onClickCoordinator = function (): void {
-    setFocusedCoordinator(currentOrder.shortAlias);
+    if (currentOrder.shortAlias) {
+      setFocusedCoordinator(currentOrder.shortAlias);
+    }
     setOpen((open) => {
       return { ...open, coordinator: true };
     });
@@ -58,7 +55,7 @@ const OrderPage = (): JSX.Element => {
 
   const renewOrder = function (): void {
     const order = currentOrder.order;
-    if (order !== null) {
+    if (order !== null && focusedCoordinator) {
       const body = {
         type: order.type,
         currency: order.currency,
@@ -76,8 +73,11 @@ const OrderPage = (): JSX.Element => {
         latitude: order.latitude,
         longitude: order.longitude,
       };
+      const { url } = federation
+        .getCoordinator(focusedCoordinator)
+        .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
       apiClient
-        .post(baseUrl, '/api/make/', body, { tokenSHA256: garage.getRobot().tokenSHA256 })
+        .post(url, '/api/make/', body, { tokenSHA256: garage.getRobot().tokenSHA256 })
         .then((data: any) => {
           if (data.bad_request !== undefined) {
             setBadOrder(data.bad_request);
@@ -125,7 +125,7 @@ const OrderPage = (): JSX.Element => {
                   }}
                 >
                   <OrderDetails
-                    coordinator={federation[String(currentOrder.shortAlias)]}
+                    coordinator={federation.getCoordinator(String(currentOrder.shortAlias))}
                     onClickCoordinator={onClickCoordinator}
                     baseUrl={baseUrl}
                     onClickGenerateRobot={() => {
@@ -179,7 +179,7 @@ const OrderPage = (): JSX.Element => {
               >
                 <div style={{ display: tab === 'order' ? '' : 'none' }}>
                   <OrderDetails
-                    coordinator={federation[String(currentOrder.shortAlias)]}
+                    coordinator={federation.getCoordinator(String(currentOrder.shortAlias))}
                     onClickCoordinator={onClickCoordinator}
                     baseUrl={baseUrl}
                     onClickGenerateRobot={() => {
@@ -210,7 +210,7 @@ const OrderPage = (): JSX.Element => {
             }}
           >
             <OrderDetails
-              coordinator={federation[String(currentOrder.shortAlias)]}
+              coordinator={federation.getCoordinator(String(currentOrder.shortAlias))}
               onClickCoordinator={onClickCoordinator}
               baseUrl={hostUrl}
               onClickGenerateRobot={() => {
