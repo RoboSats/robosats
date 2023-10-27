@@ -213,9 +213,9 @@ const FederationTable = ({
 
   const onEnableChange = function (shortAlias: string): void {
     if (federation.getCoordinator(shortAlias).enabled) {
-      federation.disbaleCoordinator(shortAlias);
+      federation.disableCoordinator(shortAlias);
     } else {
-      federation.enaleCoordinator(shortAlias);
+      federation.enableCoordinator(shortAlias);
     }
   };
 
