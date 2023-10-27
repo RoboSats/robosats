@@ -86,10 +86,14 @@ Similar to Blixt or LND, Muun plays nicely with hold invoices. You can be a sell
 
 ### OBW (Mobile)
 One of the simplest and one of the best. The hodl invoice shows as "on fly", it is not custodial and can create your own channels. Buy one from a liquidity provider or use Hosted Channels. It is maintained by the great Fiatjaf and it is a fork of the abandoned SBW.
+*Update 26-10-23: At this moment it has no development or support
 
 ### Phoenix (Mobile)
 *Update 21-10-23. Phoenix used to work as described here, but many things changed to worse with the last update of the wallet.
 Phoenix works very well as an order taker. Phoenix will also work well as an order maker as long as the order settings `public duration` + `deposit duration` are lower than 10 hours. Otherwise, you might have problems locking the maker bond. If the total duraton of bonds/escrow invoices exceeds 450 blocks, then Phoenix will not allow users to lock the bond (`Cannot add htlc (...) reason=expiry too big`).
+
+### SBW (Mobile)
+From 2.5 it doesn't support lightning anymore.
 
 ### Zeus (Mobile, LND, CLN, Eclair remote backend)
 It is an interface to LND, CLN and Eclair. It works as expected. It is extremely misleading with a full red screen "TIME OUT" a few seconds after sending the HTLC. Yet, if the user checks on the website, then the invoice is correctly locked.
