@@ -12,8 +12,8 @@ import BookTable from '../../components/BookTable';
 import { BarChart, FormatListBulleted, Map } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import MapChart from '../../components/Charts/MapChart';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
-import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 const BookPage = (): JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);

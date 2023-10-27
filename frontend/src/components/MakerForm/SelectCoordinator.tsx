@@ -13,7 +13,7 @@ import RobotAvatar from '../RobotAvatar';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { useTheme } from '@emotion/react';
 import { useTranslation } from 'react-i18next';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface SelectCoordinatorProps {
   coordinator: string;

@@ -50,9 +50,9 @@ import { type EncryptedChatMessage } from './EncryptedChat';
 import CollabCancelAlert from './CollabCancelAlert';
 import { Bolt } from '@mui/icons-material';
 import { signCleartextMessage } from '../../pgp';
-import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
-import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
-import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
+import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 interface loadingButtonsProps {
   cancel: boolean;
@@ -287,7 +287,6 @@ const TradeBox = ({
     });
     // If Webln implements locked payments compatibility, this logic might be simplier
     if (webln === undefined) {
-      return;
     } else if (order.is_maker && order.status === 0) {
       webln.sendPayment(order.bond_invoice);
       setWaitingWebln(true);
@@ -696,7 +695,7 @@ const TradeBox = ({
     return { title, titleVariables, titleColor, prompt, bondStatus, titleIcon };
   };
 
-  const contract = currentOrder.order ? statusToContract(currentOrder.order) : null;
+  const contract = currentOrder.order != null ? statusToContract(currentOrder.order) : null;
 
   return (
     <Box>

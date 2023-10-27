@@ -8,7 +8,7 @@ import { type PublicOrder } from '../../models';
 import OrderTooltip from '../Charts/helpers/OrderTooltip';
 import getWorldmapGeojson from '../../geo/Web';
 import MarkerClusterGroup from '@christopherpickering/react-leaflet-markercluster';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 
 interface MapPinProps {
   fillColor: string;

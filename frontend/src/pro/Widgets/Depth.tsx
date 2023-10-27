@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { Paper } from '@mui/material';
 import DepthChart from '../../components/Charts/DepthChart';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface DepthChartWidgetProps {
   layout: any;

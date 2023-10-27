@@ -16,9 +16,9 @@ import {
 import BoltIcon from '@mui/icons-material/Bolt';
 import RobotAvatar from '../RobotAvatar';
 import RobotInfo from '../RobotInfo';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
-import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
-import { Coordinator } from '../../models';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { type Coordinator } from '../../models';
 
 interface Props {
   open: boolean;
@@ -97,7 +97,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose }: Props): JSX.Element =
         </Typography>
 
         {Object.values(federation.coordinators).map((coordinator: Coordinator): JSX.Element => {
-          if (garage.getRobot()?.loading === false) {
+          if (!garage.getRobot()?.loading) {
             return (
               <div key={coordinator.shortAlias}>
                 <RobotInfo

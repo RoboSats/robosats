@@ -8,12 +8,12 @@ import {
   useContext,
 } from 'react';
 
-import { Coordinator, type Order, Federation } from '../models';
+import { type Coordinator, type Order, Federation } from '../models';
 
 import { federationLottery } from '../utils';
 
-import { AppContext, UseAppStoreType } from './AppContext';
-import { GarageContext, UseGarageStoreType } from './GarageContext';
+import { AppContext, type UseAppStoreType } from './AppContext';
+import { GarageContext, type UseGarageStoreType } from './GarageContext';
 
 // Refresh delays (ms) according to Order status
 const statusToDelay = [

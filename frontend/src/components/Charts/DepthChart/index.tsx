@@ -26,7 +26,10 @@ import currencyDict from '../../../../static/assets/currencies.json';
 import getNivoScheme from '../NivoScheme';
 import OrderTooltip from '../helpers/OrderTooltip';
 import { type UseAppStoreType, AppContext } from '../../../contexts/AppContext';
-import { FederationContext, UseFederationStoreType } from '../../../contexts/FederationContext';
+import {
+  FederationContext,
+  type UseFederationStoreType,
+} from '../../../contexts/FederationContext';
 
 interface DepthChartProps {
   maxWidth: number;

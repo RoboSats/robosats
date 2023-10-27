@@ -4,8 +4,8 @@ import { Avatar, Badge, Tooltip } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import { apiClient } from '../../services/api';
 import placeholder from './placeholder.json';
-import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
-import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface Props {
   nickname: string | undefined;

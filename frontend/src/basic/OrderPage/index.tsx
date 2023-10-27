@@ -8,8 +8,8 @@ import OrderDetails from '../../components/OrderDetails';
 
 import { apiClient } from '../../services/api';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
-import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 const OrderPage = (): JSX.Element => {
   const { windowSize, setOpen, settings, navbarHeight, hostUrl, origin } =

@@ -3,7 +3,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { Paper } from '@mui/material';
 import BookTable from '../../components/BookTable';
 import { type GridItem } from 'react-grid-layout';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface BookWidgetProps {
   layout: GridItem;

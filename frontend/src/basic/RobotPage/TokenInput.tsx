@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { IconButton, LinearProgress, TextField, Tooltip } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
-import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
+import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 
 interface TokenInputProps {
   editable?: boolean;

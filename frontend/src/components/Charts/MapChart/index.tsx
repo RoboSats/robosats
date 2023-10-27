@@ -15,7 +15,10 @@ import Map from '../../Map';
 import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
 import { PhotoSizeSelectActual } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { FederationContext, UseFederationStoreType } from '../../../contexts/FederationContext';
+import {
+  FederationContext,
+  type UseFederationStoreType,
+} from '../../../contexts/FederationContext';
 
 interface MapChartProps {
   maxWidth: number;

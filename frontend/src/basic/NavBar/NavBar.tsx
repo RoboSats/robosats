@@ -16,8 +16,8 @@ import {
 } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
-import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 const NavBar = (): JSX.Element => {
   const theme = useTheme();
@@ -79,7 +79,6 @@ const NavBar = (): JSX.Element => {
 
   const changePage = function (mouseEvent: any, newPage: Page): void {
     if (newPage === 'none') {
-      return;
     } else {
       handleSlideDirection(page, newPage);
       setPage(newPage);

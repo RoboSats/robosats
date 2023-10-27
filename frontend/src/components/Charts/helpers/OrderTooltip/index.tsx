@@ -7,7 +7,10 @@ import currencyDict from '../../../../../static/assets/currencies.json';
 import { PaymentStringAsIcons } from '../../../PaymentMethods';
 import { useTranslation } from 'react-i18next';
 import { AppContext, type UseAppStoreType } from '../../../../contexts/AppContext';
-import { FederationContext, UseFederationStoreType } from '../../../../contexts/FederationContext';
+import {
+  FederationContext,
+  type UseFederationStoreType,
+} from '../../../../contexts/FederationContext';
 
 interface OrderTooltipProps {
   order: PublicOrder;

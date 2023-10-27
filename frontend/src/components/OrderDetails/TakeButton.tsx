@@ -25,9 +25,9 @@ import { type Order, type Info } from '../../models';
 import { ConfirmationDialog } from '../Dialogs';
 import { LoadingButton } from '@mui/lab';
 import { computeSats } from '../../utils';
-import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
-import { UseAppStoreType, AppContext } from '../../contexts/AppContext';
-import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface TakeButtonProps {
   baseUrl: string;
