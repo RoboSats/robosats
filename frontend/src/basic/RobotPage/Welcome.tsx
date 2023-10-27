@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Grid, Typography, useTheme } from '@mui/material';
 import { RoboSatsTextIcon } from '../../components/Icons';

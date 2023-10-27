@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Paper, Alert, AlertTitle, Button, Link } from '@mui/material';
+import { Paper, Alert, AlertTitle, Button } from '@mui/material';
 
 const SelfhostedAlert = (): JSX.Element => {
   const { t } = useTranslation();

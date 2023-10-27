@@ -92,9 +92,15 @@ Each RoboSats coordinator has a profile in the RoboSats app. The profile contain
 - Large Limits -  Can host orders with large limits.
 - DevFund donator - Donates to the DevFund the default amount or more.
 
+<<<<<<< HEAD
 Some of these badges can be objectively measured and awarded. Other badges rely on the subjectivity of the development team. These will be generously awarded and only taken away after a warning.
 
 We also envision more badges in the future, for example milestones by number of trades coordinated (200, 1K, 5K, 25K, 100K, etc).
+=======
+Some of these badges can be objectively measured and therefore awarded. Others badges rely on the subjectivity by the development team. These will be generously awarded and only taken away after a warning.
+
+We also envision more badges in the future. For example milestones of number of trades coordinated (200, 1K, 5K, 25K, 100K, etc).
+>>>>>>> 2254fa60 (Add federation basis and new coordinator form (#793))
 
 ## Timeline
 

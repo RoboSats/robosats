@@ -8,7 +8,7 @@ urlpatterns = [
     path("robot/", basic),
     path("robot/<token>", basic),
     path("offers/", basic),
-    path("order/<int:orderId>", basic),
+    path("order/<shortAlias>/<int:orderId>/", basic),
     path("settings/", basic),
     path("", basic),
     path("pro/", pro),

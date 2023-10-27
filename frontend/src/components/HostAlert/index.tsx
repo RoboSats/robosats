@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import SelfhostedAlert from './SelfhostedAlert';
 import UnsafeAlert from './UnsafeAlert';

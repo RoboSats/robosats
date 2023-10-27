@@ -6,8 +6,6 @@ import TokenInput from './TokenInput';
 import Key from '@mui/icons-material/Key';
 
 interface RecoveryProps {
-  robot: Robot;
-  setRobot: (state: Robot) => void;
   setView: (state: 'welcome' | 'onboarding' | 'recovery' | 'profile') => void;
   inputToken: string;
   badToken: string;
@@ -16,8 +14,6 @@ interface RecoveryProps {
 }
 
 const Recovery = ({
-  robot,
-  setRobot,
   inputToken,
   badToken,
   setView,
@@ -26,7 +22,7 @@ const Recovery = ({
 }: RecoveryProps): JSX.Element => {
   const { t } = useTranslation();
 
-  const onClickRecover = () => {
+  const onClickRecover = (): void => {
     getGenerateRobot(inputToken);
     setView('profile');
   };
@@ -48,15 +44,18 @@ const Recovery = ({
           showCopy={false}
           inputToken={inputToken}
           setInputToken={setInputToken}
-          setRobot={setRobot}
           label={t('Paste token here')}
-          robot={robot}
           onPressEnter={onClickRecover}
           badToken={badToken}
         />
       </Grid>
       <Grid item>
-        <Button variant='contained' size='large' disabled={!!badToken} onClick={onClickRecover}>
+        <Button
+          variant='contained'
+          size='large'
+          disabled={Boolean(badToken)}
+          onClick={onClickRecover}
+        >
           <Key /> <div style={{ width: '0.5em' }} />
           {t('Recover')}
         </Button>

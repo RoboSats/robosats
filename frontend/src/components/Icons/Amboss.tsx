@@ -1,7 +1,7 @@
 import React from 'react';
-import { SvgIcon } from '@mui/material';
+import { SvgIcon, type SvgIconProps } from '@mui/material';
 
-export default function AmbossIcon(props) {
+const AmbossIcon: React.FC<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props} x='0px' y='0px' viewBox='0 0 95.7 84.9'>
       <g id='Layer_2_00000052094167160547307180000012226084410257483709_'>
@@ -25,4 +25,6 @@ export default function AmbossIcon(props) {
       </g>
     </SvgIcon>
   );
-}
+};
+
+export default AmbossIcon;

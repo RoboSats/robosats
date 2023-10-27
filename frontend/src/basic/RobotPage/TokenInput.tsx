@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconButton, LinearProgress, TextField, Tooltip } from '@mui/material';
-import { type Robot } from '../../models';
 import { ContentCopy } from '@mui/icons-material';
 import { systemClient } from '../../services/System';
+import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 
 interface TokenInputProps {
-  robot: Robot;
   editable?: boolean;
   fullWidth?: boolean;
   loading?: boolean;
-  setRobot: (state: Robot) => void;
   inputToken: string;
   autoFocusTarget?: 'textfield' | 'copyButton' | 'none';
   onPressEnter: () => void;
@@ -21,11 +19,9 @@ interface TokenInputProps {
 }
 
 const TokenInput = ({
-  robot,
   editable = true,
   showCopy = true,
   label,
-  setRobot,
   fullWidth = true,
   onPressEnter,
   autoFocusTarget = 'textfield',
@@ -35,6 +31,7 @@ const TokenInput = ({
   setInputToken,
 }: TokenInputProps): JSX.Element => {
   const { t } = useTranslation();
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const [showCopied, setShowCopied] = useState<boolean>(false);
 
   useEffect(() => {
@@ -46,12 +43,12 @@ const TokenInput = ({
   } else {
     return (
       <TextField
-        error={inputToken.length > 20 ? !!badToken : false}
+        error={inputToken.length > 20 ? Boolean(badToken) : false}
         disabled={!editable}
         required={true}
-        label={label || undefined}
+        label={label ?? ''}
         value={inputToken}
-        autoFocus={autoFocusTarget == 'textfield'}
+        autoFocus={autoFocusTarget === 'textfield'}
         fullWidth={fullWidth}
         sx={{ borderColor: 'primary' }}
         variant={editable ? 'outlined' : 'filled'}
@@ -69,17 +66,15 @@ const TokenInput = ({
           endAdornment: showCopy ? (
             <Tooltip open={showCopied} title={t('Copied!')}>
               <IconButton
-                autoFocus={autoFocusTarget == 'copyButton'}
-                color={robot.copiedToken ? 'inherit' : 'primary'}
+                autoFocus={autoFocusTarget === 'copyButton'}
+                color={garage.getRobot().copiedToken ? 'inherit' : 'primary'}
                 onClick={() => {
                   systemClient.copyToClipboard(inputToken);
                   setShowCopied(true);
                   setTimeout(() => {
                     setShowCopied(false);
                   }, 1000);
-                  setRobot((robot) => {
-                    return { ...robot, copiedToken: true };
-                  });
+                  garage.updateRobot({ copiedToken: true });
                 }}
               >
                 <ContentCopy sx={{ width: '1em', height: '1em' }} />

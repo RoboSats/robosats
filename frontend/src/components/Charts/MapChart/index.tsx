@@ -12,9 +12,10 @@ import {
   Tooltip,
 } from '@mui/material';
 import Map from '../../Map';
-import { AppContext, UseAppStoreType } from '../../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
 import { PhotoSizeSelectActual } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+import { FederationContext, UseFederationStoreType } from '../../../contexts/FederationContext';
 
 interface MapChartProps {
   maxWidth: number;
@@ -32,7 +33,7 @@ const MapChart: React.FC<MapChartProps> = ({
   onOrderClicked = () => {},
 }) => {
   const { t } = useTranslation();
-  const { book } = useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const [useTiles, setUseTiles] = useState<boolean>(false);
   const [acceptedTilesWarning, setAcceptedTilesWarning] = useState<boolean>(false);
   const [openWarningDialog, setOpenWarningDialog] = useState<boolean>(false);
@@ -81,7 +82,7 @@ const MapChart: React.FC<MapChartProps> = ({
         </DialogActions>
       </Dialog>
       <Paper variant='outlined' style={{ width: '100%', height: '100%', justifyContent: 'center' }}>
-        {false ? (
+        {federation.book.length < 1 ? (
           <div
             style={{
               display: 'flex',
@@ -127,7 +128,7 @@ const MapChart: React.FC<MapChartProps> = ({
               </Tooltip>
             </Grid>
             <div style={{ height: `${height - 3.1}em` }}>
-              <Map useTiles={useTiles} orders={book.orders} onOrderClicked={onOrderClicked} />
+              <Map useTiles={useTiles} orders={federation.book} onOrderClicked={onOrderClicked} />
             </div>
           </>
         )}
