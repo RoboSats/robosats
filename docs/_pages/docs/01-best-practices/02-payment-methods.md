@@ -46,7 +46,7 @@ Amazon eGift Cards are one of the more private payment methods on RoboSats. They
 
 It is important to not share a giftcard code directly on the chat, as this might lead to difficult to solve disputes in case of fraud. As a seller, **do not accept a giftcard code on the chat**. Instead, the seller should provide an email in chat. The buyer should buy a new giftcard explicitly for the trade and have it sent to the email address of the seller. This way the seller knows he is the only one to have access to the redemeable code. This apprach also generates verifiable evidence that the giftcard was bought for the RoboSats trade in case of dispute.
 
-In case the buyer has an existing Amazon giftcard code, the buyer will first have to apply the code to his own account. Then buy a new Amazon giftcard for the seller email using the account balance.
+In case the buyer has an existing Amazon giftcard code, the buyer will first have to apply the code to his own account. Then buy the seller's items on their wishlist using the account balance. Amazon no longer accepts gift card as payment to buy gift cards.
 
 Find more details on [Amazon eGift card Bisq guidelines](https://bisq.wiki/Amazon_eGift_card)
 
