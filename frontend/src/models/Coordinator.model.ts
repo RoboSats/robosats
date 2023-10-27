@@ -1,5 +1,12 @@
 import { sha256 } from 'js-sha256';
-import { type Robot, type LimitList, type PublicOrder, Settings, Order, Garage } from '.';
+import {
+  type Robot,
+  type LimitList,
+  type PublicOrder,
+  type Settings,
+  type Order,
+  type Garage,
+} from '.';
 import { apiClient } from '../services/api';
 import { hexToBase91, validateTokenEntropy } from '../utils';
 import { compareUpdateLimit } from './Limit.model';
@@ -182,7 +189,7 @@ export class Coordinator {
     apiClient
       .get(this.url, `${this.basePath}/api/limits/`)
       .then((data) => {
-        if (data) {
+        if (data != null) {
           const newLimits = data as LimitList;
 
           for (const currency in this.limits) {
@@ -232,7 +239,7 @@ export class Coordinator {
   };
 
   isUpdated = () => {
-    return ((this.loadingBook === this.loadingInfo) === this.loadingLimits) === false;
+    return !((this.loadingBook === this.loadingInfo) === this.loadingLimits);
   };
 
   getBaseUrl = () => {

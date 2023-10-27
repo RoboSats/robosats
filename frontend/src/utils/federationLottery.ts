@@ -11,7 +11,7 @@
 // donate to the development fund. This is the only way envisioned to incentivize
 // donations to the development fund.
 
-import { Federation } from '../models';
+import { type Federation } from '../models';
 
 export default function federationLottery(federation: Federation): string[] {
   // Create an array to store the coordinator short aliases and their corresponding weights (chance)

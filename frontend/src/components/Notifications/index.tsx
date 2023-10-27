@@ -11,7 +11,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import Close from '@mui/icons-material/Close';
 import { type Page } from '../../basic/NavBar';
-import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 interface NotificationsProps {
   rewards: number | undefined;

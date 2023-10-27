@@ -9,8 +9,8 @@ import BookTable from '../../components/BookTable';
 
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { NoRobotDialog } from '../../components/Dialogs';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
-import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 const MakerPage = (): JSX.Element => {
   const { fav, windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);

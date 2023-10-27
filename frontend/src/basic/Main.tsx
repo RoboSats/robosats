@@ -8,8 +8,8 @@ import RobotAvatar from '../components/RobotAvatar';
 import Notifications from '../components/Notifications';
 
 import { useTranslation } from 'react-i18next';
-import { FederationContext, UseFederationStoreType } from '../contexts/FederationContext';
-import { GarageContext, UseGarageStoreType } from '../contexts/GarageContext';
+import { FederationContext, type UseFederationStoreType } from '../contexts/FederationContext';
+import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
 
 const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
 
@@ -46,7 +46,9 @@ const Main: React.FC = () => {
         style={{ display: 'none' }}
         nickname={garage.getRobot().nickname}
         baseUrl={federation.getCoordinator(sortedCoordinators[0]).getBaseUrl()}
-        onLoad={() => garage.updateRobot({ avatarLoaded: true })}
+        onLoad={() => {
+          garage.updateRobot({ avatarLoaded: true });
+        }}
       />
       <Notifications
         page={page}

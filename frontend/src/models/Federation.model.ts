@@ -1,15 +1,15 @@
 import {
   Coordinator,
-  Exchange,
-  Garage,
-  Origin,
-  PublicOrder,
-  Robot,
-  Settings,
+  type Exchange,
+  type Garage,
+  type Origin,
+  type PublicOrder,
+  type Robot,
+  type Settings,
   defaultExchange,
 } from '.';
 import defaultFederation from '../../static/federation.json';
-import { CurrentOrder } from '../contexts/FederationContext';
+import { type CurrentOrder } from '../contexts/FederationContext';
 import { updateExchangeInfo } from './Exchange.model';
 
 type FederationHooks = 'onCoordinatorUpdate' | 'onFederationReady';
@@ -40,7 +40,7 @@ export class Federation {
   public book: PublicOrder[];
   public loading: boolean;
 
-  public hooks: Record<FederationHooks, (() => void)[]>;
+  public hooks: Record<FederationHooks, Array<() => void>>;
 
   // Hooks
   registerHook = (hookName: FederationHooks, fn: () => void): void => {
@@ -48,7 +48,9 @@ export class Federation {
   };
 
   triggerHook = (hookName: FederationHooks): void => {
-    this.hooks[hookName]?.forEach((fn) => fn());
+    this.hooks[hookName]?.forEach((fn) => {
+      fn();
+    });
   };
 
   onCoordinatorSaved = (shortAlias: string) => {
@@ -68,18 +70,18 @@ export class Federation {
       this.onCoordinatorSaved(shortAlias);
     };
     this.loading = true;
-    Object.values(this.coordinators).forEach((coor) =>
-      coor.start(origin, settings, hostUrl, onCoordinatorStarted),
-    );
+    Object.values(this.coordinators).forEach(async (coor) => {
+      await coor.start(origin, settings, hostUrl, onCoordinatorStarted);
+    });
   };
 
   update = (): void => {
     this.loading = false;
-    Object.values(this.coordinators).forEach((coor) =>
-      coor.update(() => {
+    Object.values(this.coordinators).forEach(async (coor) => {
+      await coor.update(() => {
         this.onCoordinatorSaved(coor.shortAlias);
-      }),
-    );
+      });
+    });
   };
 
   updateExchange = () => {
@@ -108,7 +110,7 @@ export class Federation {
     return currentOrder;
   };
 
-  //Coordinators
+  // Coordinators
   getCoordinator = (shortAlias: string): Coordinator => {
     return this.coordinators[shortAlias];
   };

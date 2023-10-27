@@ -5,10 +5,10 @@ import { DataGrid, type GridColDef, type GridValidRowModel } from '@mui/x-data-g
 import { type Coordinator } from '../../models';
 import RobotAvatar from '../RobotAvatar';
 import { Link, LinkOff } from '@mui/icons-material';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import {
-  ActionFederation,
-  UseFederationStoreType,
+  type ActionFederation,
+  type UseFederationStoreType,
   FederationContext,
 } from '../../contexts/FederationContext';
 

@@ -39,7 +39,7 @@ class Garage {
   slots: Slot[];
   currentSlot: number;
 
-  hooks: Record<GarageHooks, (() => void)[]>;
+  hooks: Record<GarageHooks, Array<() => void>>;
 
   // Hooks
   registerHook = (hookName: GarageHooks, fn: () => void): void => {
@@ -47,7 +47,9 @@ class Garage {
   };
 
   triggerHook = (hookName: GarageHooks): void => {
-    this.hooks[hookName]?.forEach((fn) => fn());
+    this.hooks[hookName]?.forEach((fn) => {
+      fn();
+    });
   };
 
   // Storage

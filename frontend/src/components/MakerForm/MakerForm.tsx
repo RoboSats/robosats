@@ -43,8 +43,8 @@ import { LoadingButton } from '@mui/lab';
 import { fiatMethods } from '../PaymentMethods';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import SelectCoordinator from './SelectCoordinator';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
-import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 interface MakerFormProps {
   disableRequest?: boolean;

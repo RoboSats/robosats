@@ -2,7 +2,7 @@ import { createContext, type Dispatch, useEffect, useState, type SetStateAction 
 import { type Page } from '../basic/NavBar';
 import { type OpenDialogs } from '../basic/MainDialogs';
 
-import { Settings, type Version, type Origin, Favorites } from '../models';
+import { Settings, type Version, type Origin, type Favorites } from '../models';
 
 import { getClientVersion, getHost } from '../utils';
 
@@ -25,10 +25,13 @@ export interface SlideDirection {
 
 export type TorStatus = 'NOTINIT' | 'STARTING' | '"Done"' | 'DONE';
 
-const entryPage: Page =
-  window.NativeRobosats === undefined
-    ? ((window.location.pathname.split('/')[1] ?? 'robot') as Page)
-    : 'robot';
+export const isNativeRoboSats = !(window.NativeRobosats === undefined);
+
+const pageFromPath = window.location.pathname.split('/')[1];
+const isPagePathEmpty = pageFromPath === '';
+const entryPage: Page = !isNativeRoboSats
+  ? ((isPagePathEmpty ? 'robot' : pageFromPath) as Page)
+  : 'robot';
 
 export const closeAll = {
   more: false,
@@ -73,7 +76,7 @@ const getHostUrl = (network = 'mainnet'): string => {
 };
 
 const getOrigin = (network = 'mainnet'): Origin => {
-  let host = getHostUrl(network);
+  const host = getHostUrl(network);
   let origin: Origin = 'onion';
 
   if (window.NativeRobosats !== undefined || host.includes('.onion')) {

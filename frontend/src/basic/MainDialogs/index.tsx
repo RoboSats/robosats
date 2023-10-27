@@ -11,7 +11,7 @@ import {
 } from '../../components/Dialogs';
 import { pn } from '../../utils';
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 export interface OpenDialogs {
   more: boolean;

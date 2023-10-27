@@ -37,7 +37,7 @@ import RobotAvatar from '../RobotAvatar';
 // Icons
 import { Fullscreen, FullscreenExit, Refresh } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 const ClickThroughDataGrid = styled(DataGrid)({
   '& .MuiDataGrid-overlayWrapperInner': {
@@ -831,7 +831,11 @@ const BookTable = ({
               </IconButton>
             </Grid>
             <Grid item xs={6}>
-              <IconButton onClick={() => federation.update()}>
+              <IconButton
+                onClick={() => {
+                  federation.update();
+                }}
+              >
                 <Refresh />
               </IconButton>
             </Grid>

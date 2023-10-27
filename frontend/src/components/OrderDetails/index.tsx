@@ -40,9 +40,9 @@ import type { Order, Coordinator } from '../../models';
 import { statusBadgeColor, pn, amountToString, computeSats } from '../../utils';
 import TakeButton from './TakeButton';
 import { F2fMapDialog } from '../Dialogs';
-import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
-import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
-import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface OrderDetailsProps {
   coordinator: Coordinator;
