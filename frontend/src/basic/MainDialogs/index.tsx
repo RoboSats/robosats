@@ -1,16 +1,17 @@
 import React, { useState, useContext, useEffect } from 'react';
 import {
   CommunityDialog,
-  CoordinatorSummaryDialog,
-  InfoDialog,
+  ExchangeDialog,
+  CoordinatorDialog,
+  AboutDialog,
   LearnDialog,
   ProfileDialog,
-  StatsDialog,
-  UpdateClientDialog,
-  NoticeDialog,
+  ClientDialog,
+  UpdateDialog,
 } from '../../components/Dialogs';
 import { pn } from '../../utils';
-import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
+import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 export interface OpenDialogs {
   more: boolean;
@@ -18,100 +19,96 @@ export interface OpenDialogs {
   community: boolean;
   info: boolean;
   coordinator: boolean;
-  stats: boolean;
+  exchange: boolean;
+  client: boolean;
   update: boolean;
   profile: boolean;
   notice: boolean;
 }
 
 const MainDialogs = (): JSX.Element => {
-  const { open, setOpen, info, limits, robot, setRobot, setCurrentOrder, baseUrl } =
+  const { open, setOpen, settings, clientVersion, hostUrl } =
     useContext<UseAppStoreType>(AppContext);
+  const { federation, focusedCoordinator, coordinatorUpdatedAt } =
+    useContext<UseFederationStoreType>(FederationContext);
 
   const [maxAmount, setMaxAmount] = useState<string>('...loading...');
 
   useEffect(() => {
-    if (limits.list[1000]) {
-      setMaxAmount(pn(limits.list[1000].max_amount * 100000000));
+    if (focusedCoordinator) {
+      const limits = federation.getCoordinator(focusedCoordinator).limits;
+      if (limits[1000] !== undefined) {
+        setMaxAmount(pn(limits[1000].max_amount * 100000000));
+      }
     }
-  }, [limits.list]);
-
-  useEffect(() => {
-    if (info.openUpdateClient) {
-      setOpen((open) => {
-        return { ...open, update: true };
-      });
-    }
-  }, [info]);
-
-  useEffect(() => {
-    if (!info.loading && info.notice_severity !== 'none' && info.notice_message !== '') {
-      setOpen((open) => {
-        return { ...open, notice: true };
-      });
-    }
-  }, [info]);
+  }, [coordinatorUpdatedAt]);
 
   return (
     <>
-      <UpdateClientDialog
-        open={open.update}
-        coordinatorVersion={info.coordinatorVersion}
-        clientVersion={info.clientVersion}
+      <UpdateDialog
+        coordinatorVersion={federation.exchange.info.version}
+        clientVersion={clientVersion.semver}
         onClose={() => {
-          setOpen({ ...open, update: false });
+          setOpen((open) => {
+            return { ...open, update: false };
+          });
         }}
       />
-      <NoticeDialog
-        open={open.notice}
-        severity={info.notice_severity}
-        message={info.notice_message}
-        onClose={() => {
-          setOpen({ ...open, notice: false });
-        }}
-      />
-      <InfoDialog
+      <AboutDialog
         open={open.info}
         maxAmount={maxAmount}
         onClose={() => {
-          setOpen({ ...open, info: false });
+          setOpen((open) => {
+            return { ...open, info: false };
+          });
         }}
       />
       <LearnDialog
         open={open.learn}
         onClose={() => {
-          setOpen({ ...open, learn: false });
+          setOpen((open) => {
+            return { ...open, learn: false };
+          });
         }}
       />
       <CommunityDialog
         open={open.community}
         onClose={() => {
-          setOpen({ ...open, community: false });
+          setOpen((open) => {
+            return { ...open, community: false };
+          });
         }}
       />
-      <CoordinatorSummaryDialog
-        open={open.coordinator}
+      <ExchangeDialog
+        open={open.exchange}
         onClose={() => {
-          setOpen({ ...open, coordinator: false });
+          setOpen((open) => {
+            return { ...open, exchange: false };
+          });
         }}
-        info={info}
       />
-      <StatsDialog
-        open={open.stats}
+      <ClientDialog
+        open={open.client}
         onClose={() => {
-          setOpen({ ...open, stats: false });
+          setOpen((open) => {
+            return { ...open, client: false };
+          });
         }}
-        info={info}
       />
       <ProfileDialog
         open={open.profile}
-        baseUrl={baseUrl}
+        baseUrl={hostUrl}
         onClose={() => {
           setOpen({ ...open, profile: false });
         }}
-        robot={robot}
-        setRobot={setRobot}
-        setCurrentOrder={setCurrentOrder}
+      />
+      <CoordinatorDialog
+        open={open.coordinator}
+        network={settings.network}
+        onClose={() => {
+          setOpen(closeAll);
+        }}
+        coordinator={focusedCoordinator ? federation.getCoordinator(focusedCoordinator) : null}
       />
     </>
   );

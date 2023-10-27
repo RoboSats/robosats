@@ -6,17 +6,24 @@ import { amountToString, statusBadgeColor } from '../../../../utils';
 import currencyDict from '../../../../../static/assets/currencies.json';
 import { PaymentStringAsIcons } from '../../../PaymentMethods';
 import { useTranslation } from 'react-i18next';
-import { AppContext, UseAppStoreType } from '../../../../contexts/AppContext';
+import { AppContext, type UseAppStoreType } from '../../../../contexts/AppContext';
+import { FederationContext, UseFederationStoreType } from '../../../../contexts/FederationContext';
 
 interface OrderTooltipProps {
   order: PublicOrder;
 }
 
 const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
-  const { baseUrl } = useContext<UseAppStoreType>(AppContext);
+  const { settings, origin } = useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
 
-  return order ? (
+  const coordinatorAlias = order?.coordinatorShortAlias;
+  const network = settings.network;
+  const coordinator = federation.getCoordinator(coordinatorAlias);
+  const baseUrl = coordinator?.[network]?.[origin] ?? '';
+
+  return order?.id && baseUrl !== '' ? (
     <Paper elevation={12} style={{ padding: 10, width: 250 }}>
       <Grid container justifyContent='space-between'>
         <Grid item xs={3}>

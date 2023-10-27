@@ -15,7 +15,7 @@ interface FilterOrders {
   paymentMethods?: string[];
 }
 
-const filterByPayment = function (order: PublicOrder, paymentMethods: any[]) {
+const filterByPayment = function (order: PublicOrder, paymentMethods: any[]): boolean {
   if (paymentMethods.length === 0) {
     return true;
   } else {
@@ -27,11 +27,11 @@ const filterByPayment = function (order: PublicOrder, paymentMethods: any[]) {
   }
 };
 
-const filterByAmount = function (order: PublicOrder, filter: AmountFilter) {
+const filterByAmount = function (order: PublicOrder, filter: AmountFilter): boolean {
   const filterMaxAmount =
-    Number(filter.amount != '' ? filter.amount : filter.maxAmount) * (1 + filter.threshold);
+    Number(filter.amount !== '' ? filter.amount : filter.maxAmount) * (1 + filter.threshold);
   const filterMinAmount =
-    Number(filter.amount != '' ? filter.amount : filter.minAmount) * (1 - filter.threshold);
+    Number(filter.amount !== '' ? filter.amount : filter.minAmount) * (1 - filter.threshold);
 
   const orderMinAmount = Number(
     order.amount === '' || order.amount === null ? order.min_amount : order.amount,
@@ -43,8 +43,8 @@ const filterByAmount = function (order: PublicOrder, filter: AmountFilter) {
   return Math.max(filterMinAmount, orderMinAmount) <= Math.min(filterMaxAmount, orderMaxAmount);
 };
 
-const filterByPremium = function (order: PublicOrder, premium: number) {
-  if (order.type == 0) {
+const filterByPremium = function (order: PublicOrder, premium: number): boolean {
+  if (order.type === 0) {
     return order.premium >= premium;
   } else {
     return order.premium <= premium;
@@ -57,12 +57,12 @@ const filterOrders = function ({
   premium = null,
   paymentMethods = [],
   amountFilter = null,
-}: FilterOrders) {
+}: FilterOrders): PublicOrder[] {
   const filteredOrders = orders.filter((order) => {
-    const typeChecks = order.type == baseFilter.type || baseFilter.type == null;
+    const typeChecks = order.type === baseFilter.type || baseFilter.type == null;
     const modeChecks = baseFilter.mode === 'fiat' ? !(order.currency === 1000) : true;
     const premiumChecks = premium != null ? filterByPremium(order, premium) : true;
-    const currencyChecks = order.currency == baseFilter.currency || baseFilter.currency == 0;
+    const currencyChecks = order.currency === baseFilter.currency || baseFilter.currency === 0;
     const paymentMethodChecks =
       paymentMethods.length > 0 ? filterByPayment(order, paymentMethods) : true;
     const amountChecks = amountFilter != null ? filterByAmount(order, amountFilter) : true;

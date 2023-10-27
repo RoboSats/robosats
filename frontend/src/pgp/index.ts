@@ -13,7 +13,12 @@ import {
 import { sha256 } from 'js-sha256';
 
 // Generate KeyPair. Private Key is encrypted with the highEntropyToken
-export async function genKey(highEntropyToken) {
+export interface generatedKeyPair {
+  publicKeyArmored: string;
+  encryptedPrivateKeyArmored: string;
+}
+
+export async function genKey(highEntropyToken: string): Promise<generatedKeyPair> {
   const d = new Date();
   const keyPair = await generateKey({
     type: 'ecc', // Type of the key, defaults to ECC
@@ -24,17 +29,20 @@ export async function genKey(highEntropyToken) {
     date: d.setDate(d.getDate() - 1), // One day of offset. Helps reducing errors due to client's system time being in the future.
   });
 
-  return { publicKeyArmored: keyPair.publicKey, encryptedPrivateKeyArmored: keyPair.privateKey };
+  return {
+    publicKeyArmored: String(keyPair.publicKey),
+    encryptedPrivateKeyArmored: String(keyPair.privateKey),
+  };
 }
 
 // Encrypt and sign a message
 export async function encryptMessage(
-  plaintextMessage,
-  ownPublicKeyArmored,
-  peerPublicKeyArmored,
-  privateKeyArmored,
-  passphrase,
-) {
+  plaintextMessage: string,
+  ownPublicKeyArmored: string,
+  peerPublicKeyArmored: string,
+  privateKeyArmored: string,
+  passphrase: string,
+): Promise<string> {
   const ownPublicKey = await readKey({ armoredKey: ownPublicKeyArmored });
   const peerPublicKey = await readKey({ armoredKey: peerPublicKeyArmored });
   const privateKey = await decryptKey({
@@ -50,16 +58,21 @@ export async function encryptMessage(
     date: d.setDate(d.getDate() - 1), // One day of offset, avoids verification issue due to clock mismatch
   });
 
-  return encryptedMessage; // '-----BEGIN PGP MESSAGE ... END PGP MESSAGE-----'
+  return String(encryptedMessage); // '-----BEGIN PGP MESSAGE ... END PGP MESSAGE-----'
 }
 
 // Decrypt and check signature of a message
+export interface decryptedValidatedMessage {
+  decryptedMessage: string;
+  validSignature: boolean;
+}
+
 export async function decryptMessage(
-  encryptedMessage,
-  publicKeyArmored,
-  privateKeyArmored,
-  passphrase,
-) {
+  encryptedMessage: string,
+  publicKeyArmored: string,
+  privateKeyArmored: string,
+  passphrase: string,
+): Promise<decryptedValidatedMessage> {
   const publicKey = await readKey({ armoredKey: publicKeyArmored });
   const privateKey = await decryptKey({
     privateKey: await readPrivateKey({ armoredKey: privateKeyArmored }),
@@ -79,14 +92,18 @@ export async function decryptMessage(
   try {
     await signatures[0].verified; // throws on invalid signature
     console.log('Signature is valid');
-    return { decryptedMessage: decrypted, validSignature: true };
+    return { decryptedMessage: String(decrypted), validSignature: true };
   } catch (e) {
-    return { decryptedMessage: decrypted, validSignature: false };
+    return { decryptedMessage: String(decrypted), validSignature: false };
   }
 }
 
 // Sign a cleartext message
-export async function signCleartextMessage(message, privateKeyArmored, passphrase) {
+export async function signCleartextMessage(
+  message: string,
+  privateKeyArmored: string,
+  passphrase: string,
+): Promise<string> {
   const privateKey = await decryptKey({
     privateKey: await readPrivateKey({ armoredKey: privateKeyArmored }),
     passphrase,

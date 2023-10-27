@@ -12,10 +12,13 @@ import BookTable from '../../components/BookTable';
 import { BarChart, FormatListBulleted, Map } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import MapChart from '../../components/Charts/MapChart';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
 const BookPage = (): JSX.Element => {
-  const { robot, fetchBook, windowSize, setDelay, setOrder } =
-    useContext<UseAppStoreType>(AppContext);
+  const { windowSize } = useContext<UseAppStoreType>(AppContext);
+  const { setDelay } = useContext<UseFederationStoreType>(FederationContext);
+  const { garage, clearOrder } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'depth' | 'map'>('list');
@@ -27,25 +30,17 @@ const BookPage = (): JSX.Element => {
   const maxBookTableWidth = 85;
   const chartWidthEm = width - maxBookTableWidth;
 
-  useEffect(() => {
-    fetchBook();
-  }, []);
-
-  const onViewOrder = function () {
-    setOrder(undefined);
-    setDelay(10000);
-  };
-
-  const onOrderClicked = function (id: number) {
-    if (robot.avatarLoaded) {
-      navigate('/order/' + id);
-      onViewOrder();
+  const onOrderClicked = function (id: number, shortAlias: string): void {
+    if (garage.getRobot().avatarLoaded) {
+      clearOrder();
+      setDelay(10000);
+      navigate(`/order/${shortAlias}/${id}`);
     } else {
       setOpenNoRobot(true);
     }
   };
 
-  const NavButtons = function () {
+  const NavButtons = function (): JSX.Element {
     return (
       <ButtonGroup variant='contained' color='inherit'>
         <Button
@@ -60,13 +55,25 @@ const BookPage = (): JSX.Element => {
           <></>
         ) : (
           <>
-            <Button onClick={() => setView('list')}>
+            <Button
+              onClick={() => {
+                setView('list');
+              }}
+            >
               <FormatListBulleted /> {t('List')}
             </Button>
-            <Button onClick={() => setView('depth')}>
+            <Button
+              onClick={() => {
+                setView('depth');
+              }}
+            >
               <BarChart /> {t('Chart')}
             </Button>
-            <Button onClick={() => setView('map')}>
+            <Button
+              onClick={() => {
+                setView('map');
+              }}
+            >
               <Map /> {t('Map')}
             </Button>
           </>
@@ -82,7 +89,9 @@ const BookPage = (): JSX.Element => {
         onClose={() => {
           setOpenNoRobot(false);
         }}
-        onClickGenerateRobot={() => navigate('/robot')}
+        onClickGenerateRobot={() => {
+          navigate('/robot');
+        }}
       />
       {openMaker ? (
         <Dialog
@@ -94,9 +103,11 @@ const BookPage = (): JSX.Element => {
           <Box sx={{ maxWidth: '18em', padding: '0.5em' }}>
             <MakerForm
               onOrderCreated={(id) => {
-                navigate('/order/' + id);
+                navigate(`/order/${id}`);
               }}
-              onClickGenerateRobot={() => navigate('/robot')}
+              onClickGenerateRobot={() => {
+                navigate('/robot');
+              }}
             />
           </Box>
         </Dialog>

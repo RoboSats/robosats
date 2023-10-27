@@ -14,7 +14,6 @@ import { LoadingButton } from '@mui/lab';
 interface ConfirmUndoFiatSentDialogProps {
   open: boolean;
   loadingButton: boolean;
-  order: Order;
   onClose: () => void;
   onConfirmClick: () => void;
 }
@@ -36,7 +35,7 @@ export const ConfirmUndoFiatSentDialog = ({
     }
   }, [time, open]);
 
-  const onClick = () => {
+  const onClick = (): void => {
     onConfirmClick();
     setTime(300);
   };

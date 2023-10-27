@@ -24,7 +24,7 @@ export function validateTokenEntropy(token: string): TokenEntropy {
   // Count number of occurrences of each character
   for (let i = 0; i < len; i++) {
     const char = token.charAt(i);
-    if (charCounts[char]) {
+    if (charCounts[char] != null) {
       charCounts[char]++;
     } else {
       charCounts[char] = 1;

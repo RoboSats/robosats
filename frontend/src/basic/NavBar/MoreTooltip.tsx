@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme, styled, Grid, IconButton } from '@mui/material';
 import Tooltip, { type TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
-import { closeAll } from '../../contexts/AppContext';
-import { type OpenDialogs } from '../MainDialogs';
+import { closeAll, type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 
 import { BubbleChart, Info, People, PriceChange, School } from '@mui/icons-material';
 
@@ -20,13 +19,13 @@ const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
 }));
 
 interface MoreTooltipProps {
-  open: OpenDialogs;
-  setOpen: (state: OpenDialogs) => void;
   children: JSX.Element;
 }
 
-const MoreTooltip = ({ open, setOpen, children }: MoreTooltipProps): JSX.Element => {
+const MoreTooltip = ({ children }: MoreTooltipProps): JSX.Element => {
   const { t } = useTranslation();
+  const { open, setOpen } = useContext<UseAppStoreType>(AppContext);
+
   const theme = useTheme();
   return (
     <StyledTooltip
@@ -89,15 +88,13 @@ const MoreTooltip = ({ open, setOpen, children }: MoreTooltipProps): JSX.Element
           </Grid>
 
           <Grid item sx={{ position: 'relative', right: '0.4em' }}>
-            <Tooltip enterTouchDelay={250} placement='left' title={t('Coordinator summary')}>
+            <Tooltip enterTouchDelay={250} placement='left' title={t('Exchange summary')}>
               <IconButton
                 sx={{
-                  color: open.coordinator
-                    ? theme.palette.primary.main
-                    : theme.palette.text.secondary,
+                  color: open.exchange ? theme.palette.primary.main : theme.palette.text.secondary,
                 }}
                 onClick={() => {
-                  setOpen({ ...closeAll, coordinator: !open.coordinator });
+                  setOpen({ ...closeAll, exchange: !open.exchange });
                 }}
               >
                 <PriceChange />
@@ -106,13 +103,13 @@ const MoreTooltip = ({ open, setOpen, children }: MoreTooltipProps): JSX.Element
           </Grid>
 
           <Grid item sx={{ position: 'relative', right: '0.4em' }}>
-            <Tooltip enterTouchDelay={250} placement='left' title={t('Stats for nerds')}>
+            <Tooltip enterTouchDelay={250} placement='left' title={t('client for nerds')}>
               <IconButton
                 sx={{
-                  color: open.stats ? theme.palette.primary.main : theme.palette.text.secondary,
+                  color: open.client ? theme.palette.primary.main : theme.palette.text.secondary,
                 }}
                 onClick={() => {
-                  setOpen({ ...closeAll, stats: !open.stats });
+                  setOpen({ ...closeAll, client: !open.client });
                 }}
               >
                 <BubbleChart />

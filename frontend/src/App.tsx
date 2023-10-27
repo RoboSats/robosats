@@ -1,4 +1,4 @@
-import React, { StrictMode, Suspense } from 'react';
+import React, { StrictMode, Suspense, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import Main from './basic/Main';
 import { CssBaseline, ThemeProvider } from '@mui/material';
@@ -11,20 +11,29 @@ import i18n from './i18n/Web';
 
 import { systemClient } from './services/System';
 import ErrorBoundary from './components/ErrorBoundary';
+import { GarageContext, useGarageStore } from './contexts/GarageContext';
+import { FederationContext, useFederationStore } from './contexts/FederationContext';
 
 const App = (): JSX.Element => {
-  const store = useAppStore();
+  const appStore = useAppStore();
+  const garageStore = useGarageStore();
+  const federationStore = useFederationStore();
+
   return (
     <StrictMode>
       <ErrorBoundary>
         <Suspense fallback='loading'>
           <I18nextProvider i18n={i18n}>
-            <AppContext.Provider value={store}>
-              <ThemeProvider theme={store.theme}>
-                <CssBaseline />
-                {window.NativeRobosats === undefined ? <HostAlert /> : <TorConnectionBadge />}
-                <Main />
-              </ThemeProvider>
+            <AppContext.Provider value={appStore}>
+              <GarageContext.Provider value={garageStore}>
+                <FederationContext.Provider value={federationStore}>
+                  <ThemeProvider theme={appStore.theme}>
+                    <CssBaseline />
+                    {window.NativeRobosats === undefined ? <HostAlert /> : <TorConnectionBadge />}
+                    <Main />
+                  </ThemeProvider>
+                </FederationContext.Provider>
+              </GarageContext.Provider>
             </AppContext.Provider>
           </I18nextProvider>
         </Suspense>
@@ -33,7 +42,7 @@ const App = (): JSX.Element => {
   );
 };
 
-const loadApp = () => {
+const loadApp = (): void => {
   // waits until the environment is ready for the Android WebView app
   if (systemClient.loading) {
     setTimeout(loadApp, 200);

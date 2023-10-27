@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Tabs, Tab, Paper, useTheme } from '@mui/material';
 import MoreTooltip from './MoreTooltip';
 
-import { type Page } from '.';
+import { type Page, isPage } from '.';
 
 import {
   SettingsApplications,
@@ -16,33 +16,37 @@ import {
 } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { GarageContext, UseGarageStoreType } from '../../contexts/GarageContext';
 
-interface NavBarProps {
-  width: number;
-  height: number;
-}
-
-const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
+const NavBar = (): JSX.Element => {
+  const theme = useTheme();
+  const { t } = useTranslation();
   const {
-    robot,
     page,
-    settings,
     setPage,
+    settings,
     setSlideDirection,
     open,
     setOpen,
-    currentOrder,
-    baseUrl,
+    windowSize,
+    navbarHeight,
+    hostUrl,
   } = useContext<UseAppStoreType>(AppContext);
+  const { currentOrder } = useContext<UseFederationStoreType>(FederationContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
-  const theme = useTheme();
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const smallBar = width < 50;
+  const smallBar = windowSize?.width < 50;
+  const color = settings.network === 'mainnet' ? 'primary' : 'secondary';
 
   const tabSx = smallBar
-    ? { position: 'relative', bottom: robot.avatarLoaded ? '0.9em' : '0.13em', minWidth: '1em' }
+    ? {
+        position: 'relative',
+        bottom: garage.getRobot().avatarLoaded ? '0.9em' : '0.13em',
+        minWidth: '1em',
+      }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
 
   const pagesPosition = {
@@ -55,17 +59,17 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
 
   useEffect(() => {
     // change tab (page) into the current route
-    const pathPage: Page = location.pathname.split('/')[1];
-    if (pathPage == 'index.html') {
+    const pathPage: Page | string = location.pathname.split('/')[1];
+    if (pathPage === 'index.html') {
       navigate('/robot');
       setPage('robot');
     }
-    if (pathPage) {
+    if (isPage(pathPage)) {
       setPage(pathPage);
     }
-  }, [location]);
+  }, [location, navigate, setPage]);
 
-  const handleSlideDirection = function (oldPage: Page, newPage: Page) {
+  const handleSlideDirection = function (oldPage: Page, newPage: Page): void {
     const oldPos: number = pagesPosition[oldPage];
     const newPos: number = pagesPosition[newPage];
     setSlideDirection(
@@ -73,13 +77,14 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
     );
   };
 
-  const changePage = function (mouseEvent: any, newPage: Page) {
+  const changePage = function (mouseEvent: any, newPage: Page): void {
     if (newPage === 'none') {
-      return null;
+      return;
     } else {
       handleSlideDirection(page, newPage);
       setPage(newPage);
-      const param = newPage === 'order' ? currentOrder ?? '' : '';
+      const param =
+        newPage === 'order' ? `${String(currentOrder.shortAlias)}/${String(currentOrder.id)}` : '';
       setTimeout(() => {
         navigate(`/${newPage}/${param}`);
       }, theme.transitions.duration.leavingScreen * 3);
@@ -88,35 +93,41 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
 
   useEffect(() => {
     setOpen(closeAll);
-  }, [page]);
+  }, [page, setOpen]);
 
   return (
     <Paper
       elevation={6}
-      sx={{ height: `${height}em`, width: `100%`, position: 'fixed', bottom: 0, borderRadius: 0 }}
+      sx={{
+        height: `${navbarHeight}em`,
+        width: `100%`,
+        position: 'fixed',
+        bottom: 0,
+        borderRadius: 0,
+      }}
     >
       <Tabs
         TabIndicatorProps={{ sx: { height: '0.3em', position: 'absolute', top: 0 } }}
         variant='fullWidth'
         value={page}
-        indicatorColor={settings.network === 'mainnet' ? 'primary' : 'secondary'}
-        textColor={settings.network === 'mainnet' ? 'primary' : 'secondary'}
+        indicatorColor={color}
+        textColor={color}
         onChange={changePage}
       >
         <Tab
           sx={{ ...tabSx, minWidth: '2.5em', width: '2.5em', maxWidth: '4em' }}
           value='none'
-          disabled={robot.nickname === null}
+          disabled={garage.getRobot().nickname === null}
           onClick={() => {
             setOpen({ ...closeAll, profile: !open.profile });
           }}
           icon={
-            robot.nickname && robot.avatarLoaded ? (
+            garage.getRobot().nickname && garage.getRobot().avatarLoaded ? (
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
-                nickname={robot.nickname}
-                baseUrl={baseUrl}
+                nickname={garage.getRobot().nickname}
+                baseUrl={hostUrl}
               />
             ) : (
               <></>
@@ -150,7 +161,7 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!robot.avatarLoaded || currentOrder == undefined}
+          disabled={!garage.getRobot().avatarLoaded || currentOrder.id == null}
           icon={<Assignment />}
           iconPosition='start'
         />
@@ -166,11 +177,13 @@ const NavBar = ({ width, height }: NavBarProps): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('More')}
           value='none'
-          onClick={(e) => {
-            open.more ? null : setOpen({ ...open, more: true });
+          onClick={() => {
+            setOpen((open) => {
+              return { ...open, more: !open.more };
+            });
           }}
           icon={
-            <MoreTooltip open={open} setOpen={setOpen} closeAll={closeAll}>
+            <MoreTooltip>
               <MoreHoriz />
             </MoreTooltip>
           }
