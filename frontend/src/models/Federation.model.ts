@@ -113,11 +113,11 @@ export class Federation {
     return this.coordinators[shortAlias];
   };
 
-  disbaleCoordinator = (shortAlias: string) => {
+  disableCoordinator = (shortAlias: string) => {
     this.coordinators[shortAlias].disable();
   };
 
-  enaleCoordinator = (shortAlias: string) => {
+  enableCoordinator = (shortAlias: string) => {
     this.coordinators[shortAlias].enable();
   };
 }
