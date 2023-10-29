@@ -92,12 +92,16 @@ def get_exchange_rates(currencies):
                 blockchain_prices = session.get(api_url).json()
                 blockchain_rates = []
                 for currency in currencies:
-                    try:  # If a currency is missing place a None
-                        blockchain_rates.append(
-                            float(blockchain_prices[currency]["last"])
-                        )
-                    except Exception:
+                    # Do not include ARS from Blockchain.info . This pricing is estimated wrongly.
+                    if currency == "ARS":
                         blockchain_rates.append(np.nan)
+                    else:
+                        try:  # If a currency is missing place a None
+                            blockchain_rates.append(
+                                float(blockchain_prices[currency]["last"])
+                            )
+                        except Exception:
+                            blockchain_rates.append(np.nan)
                 api_rates.append(blockchain_rates)
 
             elif "yadio.io" in api_url:
