@@ -3,7 +3,6 @@ import { Grid, Paper } from '@mui/material';
 import SettingsForm from '../../components/SettingsForm';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import FederationTable from '../../components/FederationTable';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
 
 const SettingsPage = (): JSX.Element => {
   const { windowSize, navbarHeight, settings, setOpen, open, hostUrl } =
