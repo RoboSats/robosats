@@ -12,7 +12,6 @@ import {
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 
-import { Robot } from '../../models';
 import Onboarding from './Onboarding';
 import Welcome from './Welcome';
 import RobotProfile from './RobotProfile';
@@ -77,7 +76,7 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
           pubKey: key.publicKeyArmored,
           encPrivKey: key.encryptedPrivateKeyArmored,
         });
-        federation.fetchRobot(garage, slot);
+        void federation.fetchRobot(garage, slot);
       })
       .catch((error) => {
         console.error('Error:', error);

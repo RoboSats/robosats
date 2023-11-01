@@ -55,7 +55,7 @@ const RobotProfile = ({
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (garage.getRobot().nickname && garage.getRobot().avatarLoaded) {
+    if (garage.getRobot().nickname != null && garage.getRobot().avatarLoaded) {
       setLoading(false);
     }
   }, [robotUpdatedAt]);
@@ -81,7 +81,7 @@ const RobotProfile = ({
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {garage.getRobot().avatarLoaded && garage.getRobot().nickname ? (
+          {garage.getRobot().avatarLoaded && garage.getRobot().nickname != null ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
                 style={{

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Grid, Typography } from '@mui/material';
-import { type Robot } from '../../models';
 import TokenInput from './TokenInput';
 import Key from '@mui/icons-material/Key';
 

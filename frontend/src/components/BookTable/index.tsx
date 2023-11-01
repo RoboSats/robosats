@@ -206,9 +206,10 @@ const BookTable = ({
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
-        const { url, basePath } = federation
-          .getCoordinator(params.row.coordinatorShortAlias)
-          ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
+        const { url, basePath } =
+          federation
+            .getCoordinator(params.row.coordinatorShortAlias)
+            ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl) ?? {};
 
         return (
           <ListItemButton
@@ -243,9 +244,10 @@ const BookTable = ({
       headerName: t('Robot'),
       width: width * fontSize,
       renderCell: (params: any) => {
-        const { url, basePath } = federation
-          .getCoordinator(params.row.coordinatorShortAlias)
-          ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
+        const { url, basePath } =
+          federation
+            .getCoordinator(params.row.coordinatorShortAlias)
+            ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl) ?? {};
 
         return (
           <div

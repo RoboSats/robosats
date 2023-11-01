@@ -42,13 +42,13 @@ const F2fMapDialog = ({
   const [openWarningDialog, setOpenWarningDialog] = useState<boolean>(false);
 
   const onSave: () => void = () => {
-    if (position?.[0] && position?.[1]) {
+    if (position?.[0] != null && position?.[1] != null) {
       onClose([position[0] + Math.random() * 0.1 - 0.05, position[1] + Math.random() * 0.1 - 0.05]);
     }
   };
 
   useEffect(() => {
-    if (open && latitude && longitude) {
+    if (open && latitude != null && longitude != null) {
       setPosition([latitude, longitude]);
     } else {
       setPosition(undefined);

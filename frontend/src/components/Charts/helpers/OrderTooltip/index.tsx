@@ -26,7 +26,7 @@ const OrderTooltip: React.FC<OrderTooltipProps> = ({ order }) => {
   const coordinator = federation.getCoordinator(coordinatorAlias);
   const baseUrl = coordinator?.[network]?.[origin] ?? '';
 
-  return order?.id && baseUrl !== '' ? (
+  return order?.id != null && baseUrl !== '' ? (
     <Paper elevation={12} style={{ padding: 10, width: 250 }}>
       <Grid container justifyContent='space-between'>
         <Grid item xs={3}>

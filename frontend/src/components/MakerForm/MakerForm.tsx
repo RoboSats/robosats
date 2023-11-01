@@ -93,7 +93,7 @@ const MakerForm = ({
 
   useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
-    if (focusedCoordinator) {
+    if (focusedCoordinator != null) {
       const newLimits = federation.getCoordinator(focusedCoordinator).limits;
       if (Object.keys(newLimits).length !== 0) {
         updateAmountLimits(newLimits, fav.currency, maker.premium);
@@ -280,9 +280,10 @@ const MakerForm = ({
   };
 
   const handleCreateOrder = function (): void {
-    const { url, basePath } = federation
-      .getCoordinator(maker.coordinator)
-      ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
+    const { url, basePath } =
+      federation
+        .getCoordinator(maker.coordinator)
+        ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl) ?? {};
 
     const auth = {
       tokenSHA256: garage.getRobot().tokenSHA256,
@@ -292,7 +293,7 @@ const MakerForm = ({
       },
     };
 
-    if (!disableRequest && focusedCoordinator) {
+    if (!disableRequest && focusedCoordinator != null) {
       setSubmittingRequest(true);
       const body = {
         type: fav.type === 0 ? 1 : 0,
@@ -312,9 +313,7 @@ const MakerForm = ({
         latitude: maker.latitude,
         longitude: maker.longitude,
       };
-      const { url } = federation
-        .getCoordinator(focusedCoordinator)
-        .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
+
       apiClient
         .post(url, `${basePath}/api/make/`, body, auth)
         .then((data: any) => {
@@ -447,7 +446,7 @@ const MakerForm = ({
   };
 
   const amountLabel = useMemo(() => {
-    if (!focusedCoordinator) return;
+    if (!(focusedCoordinator != null)) return;
 
     const info = federation.getCoordinator(focusedCoordinator)?.info;
     const defaultRoutingBudget = 0.001;
@@ -587,7 +586,7 @@ const MakerForm = ({
           if (pos != null) handleAddLocation(pos);
           setOpenWorldmap(false);
         }}
-        zoom={maker.latitude && maker.longitude ? 6 : undefined}
+        zoom={maker.latitude != null && maker.longitude != null ? 6 : undefined}
       />
       <Collapse in={Object.keys(limits).lenght === 0}>
         <div style={{ display: Object.keys(limits) === 0 ? '' : 'none' }}>
