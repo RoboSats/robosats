@@ -227,8 +227,11 @@ export class Coordinator {
       });
   };
 
-  enable = () => {
+  enable = (onEnabled: () => void = () => {}) => {
     this.enabled = true;
+    this.update(() => {
+      onEnabled();
+    });
   };
 
   disable = () => {

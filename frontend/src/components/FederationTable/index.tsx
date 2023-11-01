@@ -30,7 +30,7 @@ const FederationTable = ({
   fillContainer = false,
 }: FederationTableProps): JSX.Element => {
   const { t } = useTranslation();
-  const { federation, setFocusedCoordinator } =
+  const { federation, setFocusedCoordinator, coordinatorUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
   const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
@@ -47,11 +47,12 @@ const FederationTable = ({
   const height = defaultPageSize * verticalHeightRow + verticalHeightFrame;
 
   const [useDefaultPageSize, setUseDefaultPageSize] = useState(true);
+
   useEffect(() => {
     if (useDefaultPageSize) {
       setPageSize(defaultPageSize);
     }
-  });
+  }, [coordinatorUpdatedAt]);
 
   const localeText = {
     MuiTablePagination: { labelRowsPerPage: t('Coordinators per page:') },
