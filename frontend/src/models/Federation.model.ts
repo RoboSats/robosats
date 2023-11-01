@@ -117,10 +117,13 @@ export class Federation {
 
   disableCoordinator = (shortAlias: string) => {
     this.coordinators[shortAlias].disable();
+    this.triggerHook('onCoordinatorUpdate');
   };
 
   enableCoordinator = (shortAlias: string) => {
-    this.coordinators[shortAlias].enable();
+    this.coordinators[shortAlias].enable(() => {
+      this.triggerHook('onCoordinatorUpdate');
+    });
   };
 }
 

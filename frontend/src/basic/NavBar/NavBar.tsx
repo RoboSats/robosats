@@ -60,7 +60,7 @@ const NavBar = (): JSX.Element => {
   useEffect(() => {
     // change tab (page) into the current route
     const pathPage: Page | string = location.pathname.split('/')[1];
-    if (pathPage === 'index.html') {
+    if (pathPage === 'index.html' || !pathPage) {
       navigate('/robot');
       setPage('robot');
     }
