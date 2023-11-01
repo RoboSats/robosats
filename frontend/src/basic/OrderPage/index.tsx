@@ -45,7 +45,7 @@ const OrderPage = (): JSX.Element => {
   }, [params]);
 
   const onClickCoordinator = function (): void {
-    if (currentOrder.shortAlias) {
+    if (currentOrder.shortAlias != null) {
       setFocusedCoordinator(currentOrder.shortAlias);
     }
     setOpen((open) => {
@@ -55,7 +55,7 @@ const OrderPage = (): JSX.Element => {
 
   const renewOrder = function (): void {
     const order = currentOrder.order;
-    if (order !== null && focusedCoordinator) {
+    if (order !== null && focusedCoordinator != null) {
       const body = {
         type: order.type,
         currency: order.currency,

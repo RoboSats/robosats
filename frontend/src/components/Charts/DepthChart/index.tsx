@@ -20,7 +20,7 @@ import {
 } from '@mui/material';
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { type PublicOrder, type Order } from '../../../models';
+import type PublicOrder from '../../../models';
 import { matchMedian } from '../../../utils';
 import currencyDict from '../../../../static/assets/currencies.json';
 import getNivoScheme from '../NivoScheme';
@@ -72,7 +72,7 @@ const DepthChart: React.FC<DepthChartProps> = ({
         // We need to transform all currencies to the same base (ex. USD), we don't have the exchange rate
         // for EUR -> USD, but we know the rate of both to BTC, so we get advantage of it and apply a
         // simple rule of three
-        if (order.coordinatorShortAlias) {
+        if (order.coordinatorShortAlias != null) {
           const limits = federation.getCoordinator(order.coordinatorShortAlias).limits;
           order.base_amount =
             (order.price * limits[currencyCode].price) / limits[order.currency].price;

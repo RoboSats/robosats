@@ -30,7 +30,7 @@ const MainBox = styled(Box)<MainBoxProps>((props) => ({
 
 const Main: React.FC = () => {
   const { t } = useTranslation();
-  const { settings, page, slideDirection, setOpen, windowSize, navbarHeight, hostUrl, origin } =
+  const { settings, page, slideDirection, setOpen, windowSize, navbarHeight, hostUrl } =
     useContext<UseAppStoreType>(AppContext);
   const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);

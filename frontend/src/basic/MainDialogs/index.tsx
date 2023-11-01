@@ -35,7 +35,7 @@ const MainDialogs = (): JSX.Element => {
   const [maxAmount, setMaxAmount] = useState<string>('...loading...');
 
   useEffect(() => {
-    if (focusedCoordinator) {
+    if (focusedCoordinator !== null && focusedCoordinator !== '') {
       const limits = federation.getCoordinator(focusedCoordinator).limits;
       if (limits[1000] !== undefined) {
         setMaxAmount(pn(limits[1000].max_amount * 100000000));
@@ -108,7 +108,11 @@ const MainDialogs = (): JSX.Element => {
         onClose={() => {
           setOpen(closeAll);
         }}
-        coordinator={focusedCoordinator ? federation.getCoordinator(focusedCoordinator) : null}
+        coordinator={
+          focusedCoordinator !== null && focusedCoordinator !== ''
+            ? federation.getCoordinator(focusedCoordinator)
+            : null
+        }
       />
     </>
   );

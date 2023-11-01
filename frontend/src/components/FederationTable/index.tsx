@@ -213,7 +213,7 @@ const FederationTable = ({
   const { columns, width } = filteredColumns();
 
   const onEnableChange = function (shortAlias: string): void {
-    if (federation.getCoordinator(shortAlias).enabled) {
+    if (federation.getCoordinator(shortAlias).enabled === true) {
       federation.disableCoordinator(shortAlias);
     } else {
       federation.enableCoordinator(shortAlias);

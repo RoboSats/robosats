@@ -1,4 +1,4 @@
-import React, { StrictMode, Suspense, useState } from 'react';
+import React, { StrictMode, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import Main from './basic/Main';
 import { CssBaseline, ThemeProvider } from '@mui/material';

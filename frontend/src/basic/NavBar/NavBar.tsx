@@ -60,7 +60,7 @@ const NavBar = (): JSX.Element => {
   useEffect(() => {
     // change tab (page) into the current route
     const pathPage: Page | string = location.pathname.split('/')[1];
-    if (pathPage === 'index.html' || !pathPage) {
+    if (pathPage === 'index.html') {
       navigate('/robot');
       setPage('robot');
     }
@@ -78,8 +78,7 @@ const NavBar = (): JSX.Element => {
   };
 
   const changePage = function (mouseEvent: any, newPage: Page): void {
-    if (newPage === 'none') {
-    } else {
+    if (newPage !== 'none') {
       handleSlideDirection(page, newPage);
       setPage(newPage);
       const param =
@@ -121,7 +120,7 @@ const NavBar = (): JSX.Element => {
             setOpen({ ...closeAll, profile: !open.profile });
           }}
           icon={
-            garage.getRobot().nickname && garage.getRobot().avatarLoaded ? (
+            garage.getRobot().nickname != null && garage.getRobot().avatarLoaded ? (
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}

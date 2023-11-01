@@ -12,7 +12,6 @@ import {
   Tooltip,
 } from '@mui/material';
 import Map from '../../Map';
-import { AppContext, type UseAppStoreType } from '../../../contexts/AppContext';
 import { PhotoSizeSelectActual } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import {
