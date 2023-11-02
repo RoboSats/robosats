@@ -8,7 +8,6 @@ import {
   DialogContentText,
   Button,
 } from '@mui/material';
-import { type Order } from '../../../models';
 import { LoadingButton } from '@mui/lab';
 
 interface ConfirmUndoFiatSentDialogProps {

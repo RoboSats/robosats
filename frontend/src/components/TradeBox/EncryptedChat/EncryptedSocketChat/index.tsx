@@ -1,10 +1,11 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { AuditPGPDialog } from '../../../Dialogs';
 import { websocketClient, type WebsocketConnection } from '../../../../services/Websocket';
 import { type Robot } from '../../../../models';
+import { GarageContext, type UseGarageStoreType } from '../../../../contexts/GarageContext';
 
 // Icons
 import CircularProgress from '@mui/material/CircularProgress';

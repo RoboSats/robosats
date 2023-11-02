@@ -22,12 +22,13 @@ const CancelButton = ({
   const { t } = useTranslation();
 
   const showCancelButton =
-    (order?.is_maker && [0, 1, 2].includes(order?.status)) ||
+    (order?.is_maker === true && [0, 1, 2].includes(order?.status)) ??
     [3, 6, 7].includes(order?.status ?? -1);
-  const showCollabCancelButton = [8, 9].includes(order?.status ?? -1) && !order?.asked_for_cancel;
+  const showCollabCancelButton =
+    [8, 9].includes(order?.status ?? -1) && !(order?.asked_for_cancel === true);
   const noConfirmation =
-    (order?.is_maker && [0, 1, 2].includes(order?.status ?? -1)) ||
-    (order?.is_taker && order?.status === 3);
+    (order?.is_maker === true && [0, 1, 2].includes(order?.status ?? -1)) ??
+    (order?.is_taker === true && order?.status === 3);
 
   return (
     <Box>

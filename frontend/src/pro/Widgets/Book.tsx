@@ -44,7 +44,7 @@ const BookWidget = React.forwardRef(function Component(
         />
       </Paper>
     );
-  }, [book, layout, windowSize, fav]);
+  }, [layout, windowSize, fav, federation.book]);
 });
 
 export default BookWidget;

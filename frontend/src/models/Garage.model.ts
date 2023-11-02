@@ -93,7 +93,7 @@ class Garage {
     index = this.currentSlot,
   ) => {
     const robot = this.getSlot(index).robot;
-    if (robot) {
+    if (robot != null) {
       robot.update(attributes);
       this.triggerHook('onRobotUpdate');
       this.save();
