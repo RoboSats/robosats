@@ -1,4 +1,3 @@
-import { sha256 } from 'js-sha256';
 import {
   type Robot,
   type LimitList,
@@ -8,9 +7,8 @@ import {
   type Garage,
 } from '.';
 import { apiClient } from '../services/api';
-import { hexToBase91, validateTokenEntropy } from '../utils';
+import { validateTokenEntropy } from '../utils';
 import { compareUpdateLimit } from './Limit.model';
-import { signCleartextMessage } from '../pgp';
 
 export interface Contact {
   nostr?: string | undefined;
@@ -132,7 +130,7 @@ export class Coordinator {
     hostUrl: string,
     onStarted: (shortAlias: string) => void = () => {},
   ): Promise<void> => {
-    if (!this.enabled) return;
+    if (this.enabled !== true) return;
 
     if (settings.selfhostedClient && this.shortAlias !== 'local') {
       this.url = hostUrl;
@@ -142,13 +140,13 @@ export class Coordinator {
       this.basePath = '';
     }
 
-    this.update(() => {
+    void this.update(() => {
       onStarted(this.shortAlias);
     });
   };
 
   update = async (onUpdate: (shortAlias: string) => void = () => {}): Promise<void> => {
-    const onDataLoad = () => {
+    const onDataLoad = (): void => {
       if (this.isUpdated()) onUpdate(this.shortAlias);
     };
 
@@ -157,7 +155,7 @@ export class Coordinator {
     this.loadInfo(onDataLoad);
   };
 
-  loadBook = (onDataLoad: () => void = () => {}) => {
+  loadBook = (onDataLoad: () => void = () => {}): void => {
     if (this.loadingBook) return;
 
     this.loadingBook = true;
@@ -181,7 +179,7 @@ export class Coordinator {
       });
   };
 
-  loadLimits = (onDataLoad: () => void = () => {}) => {
+  loadLimits = (onDataLoad: () => void = () => {}): void => {
     if (this.loadingLimits) return;
 
     this.loadingLimits = true;
@@ -208,7 +206,7 @@ export class Coordinator {
       });
   };
 
-  loadInfo = (onDataLoad: () => void = () => {}) => {
+  loadInfo = (onDataLoad: () => void = () => {}): void => {
     if (this.loadingInfo) return;
 
     this.loadingInfo = true;
@@ -227,25 +225,25 @@ export class Coordinator {
       });
   };
 
-  enable = (onEnabled: () => void = () => {}) => {
+  enable = (onEnabled: () => void = () => {}): void => {
     this.enabled = true;
-    this.update(() => {
+    void this.update(() => {
       onEnabled();
     });
   };
 
-  disable = () => {
+  disable = (): void => {
     this.enabled = false;
     this.info = undefined;
     this.limits = {};
     this.book = [];
   };
 
-  isUpdated = () => {
+  isUpdated = (): boolean => {
     return !((this.loadingBook === this.loadingInfo) === this.loadingLimits);
   };
 
-  getBaseUrl = () => {
+  getBaseUrl = (): string => {
     return this.url + this.basePath;
   };
 
@@ -265,7 +263,7 @@ export class Coordinator {
   fecthRobot = async (garage: Garage, index: number): Promise<Robot | null> => {
     const robot = garage?.getRobot(index);
 
-    if (!robot?.token) return null;
+    if (robot?.token == null) return null;
 
     const authHeaders = robot.getAuthHeaders();
 
@@ -313,7 +311,7 @@ export class Coordinator {
   };
 
   fetchOrder = async (orderId: number, robot: Robot): Promise<Order | null> => {
-    if (!robot.token) return null;
+    if (!(robot.token != null)) return null;
 
     const authHeaders = robot.getAuthHeaders();
 
@@ -340,7 +338,7 @@ export class Coordinator {
   }> => {
     const robot = garage.getRobot(index);
 
-    if (!robot?.token || !robot.encPrivKey) return null;
+    if (!(robot?.token != null) || !(robot.encPrivKey != null)) return null;
 
     const data = await apiClient.post(
       this.url,
@@ -352,7 +350,7 @@ export class Coordinator {
     );
     const newRobot = {
       ...robot,
-      earnedRewards: data?.successful_withdrawal ? 0 : robot.earnedRewards,
+      earnedRewards: data?.successful_withdrawal === true ? 0 : robot.earnedRewards,
     };
     garage.updateRobot(newRobot, index);
 
@@ -362,7 +360,7 @@ export class Coordinator {
   fetchStealth = async (wantsStealth: boolean, garage: Garage, index: number): Promise<null> => {
     const robot = garage?.getRobot(index);
 
-    if (!robot?.token || !robot.encPrivKey) return null;
+    if (!(robot?.token != null) || !(robot.encPrivKey != null)) return null;
 
     await apiClient.post(
       this.url,

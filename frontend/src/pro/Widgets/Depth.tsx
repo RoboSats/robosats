@@ -40,7 +40,7 @@ const DepthChartWidget = React.forwardRef(function Component(
         />
       </Paper>
     );
-  }, [fav.currency, book, limits, exchange, layout]);
+  }, [fav.currency, layout, federation.exchange]);
 });
 
 export default DepthChartWidget;

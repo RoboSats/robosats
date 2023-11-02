@@ -45,7 +45,7 @@ export const updateExchangeInfo = (federation: Federation): ExchangeInfo => {
       highestVersion = getHigherVer(highestVersion, coordinator.info.version);
 
       aggregations.forEach((key: any) => {
-        info[key] = info[key] + Number(coordinator.info[key]);
+        info[key] = Number(info[key]) + Number(coordinator.info[key]);
       });
     }
     return null;

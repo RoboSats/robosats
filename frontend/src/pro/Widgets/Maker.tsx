@@ -27,7 +27,7 @@ const MakerWidget = React.forwardRef(function Component(
         <MakerForm />
       </Paper>
     );
-  }, [maker, limits, fav]);
+  }, [maker, fav, federation]);
 });
 
 export default MakerWidget;

@@ -58,6 +58,7 @@ interface loadingButtonsProps {
   cancel: boolean;
   fiatSent: boolean;
   fiatReceived: boolean;
+  undoFiatSent: boolean;
   submitInvoice: boolean;
   submitAddress: boolean;
   submitStatement: boolean;
@@ -70,6 +71,7 @@ const noLoadingButtons: loadingButtonsProps = {
   cancel: false,
   fiatSent: false,
   fiatReceived: false,
+  undoFiatSent: false,
   submitInvoice: false,
   submitAddress: false,
   submitStatement: false,
@@ -167,7 +169,7 @@ const TradeBox = ({
     void apiClient
       .post(
         url,
-        `/api/order/?order_id=${currentOrder.id}`,
+        `/api/order/?order_id=${Number(currentOrder.id)}`,
         {
           action,
           invoice,
@@ -234,7 +236,7 @@ const TradeBox = ({
   const updateInvoice = function (invoice: string): void {
     const robot = garage.getRobot();
 
-    if (robot !== null && robot.encPrivKey && robot.token) {
+    if (robot?.encPrivKey != null && robot?.token != null) {
       setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
       void signCleartextMessage(invoice, robot.encPrivKey, robot.token).then((signedInvoice) => {
         submitAction({
@@ -249,7 +251,7 @@ const TradeBox = ({
   const updateAddress = function (): void {
     const robot = garage.getRobot();
 
-    if (robot !== null && robot.encPrivKey && robot.token) {
+    if (robot?.encPrivKey != null && robot?.token != null) {
       setLoadingButtons({ ...noLoadingButtons, submitAddress: true });
       void signCleartextMessage(onchain.address, robot.encPrivKey, robot.token).then(
         (signedAddress) => {
@@ -287,6 +289,7 @@ const TradeBox = ({
     });
     // If Webln implements locked payments compatibility, this logic might be simplier
     if (webln === undefined) {
+      console.log('WebLN dialog will not be shown');
     } else if (order.is_maker && order.status === 0) {
       webln.sendPayment(order.bond_invoice);
       setWaitingWebln(true);
@@ -324,7 +327,7 @@ const TradeBox = ({
   useEffect(() => {
     if (currentOrder.order !== null && currentOrder.order.status !== lastOrderStatus) {
       setLastOrderStatus(currentOrder.order.status);
-      handleWebln(currentOrder.order);
+      void handleWebln(currentOrder.order);
     }
     // FIXME this should trigger with current order, not garage order
   }, [orderUpdatedAt]);

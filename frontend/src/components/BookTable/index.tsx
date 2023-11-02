@@ -835,7 +835,7 @@ const BookTable = ({
             <Grid item xs={6}>
               <IconButton
                 onClick={() => {
-                  federation.update();
+                  void federation.update();
                 }}
               >
                 <Refresh />

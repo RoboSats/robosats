@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import {
   Tooltip,
@@ -66,7 +66,7 @@ const RobotInfo: React.FC<Props> = ({ robot, slotIndex, coordinator, onClose }: 
   };
 
   useEffect(() => {
-    handleWebln();
+    void handleWebln();
   }, []);
 
   const handleWeblnInvoiceClicked = async (e: MouseEvent<HTMLButtonElement, MouseEvent>): void => {
@@ -87,10 +87,10 @@ const RobotInfo: React.FC<Props> = ({ robot, slotIndex, coordinator, onClose }: 
 
     const robot = garage.getRobot(slotIndex);
 
-    if (robot.encPrivKey && robot.token) {
+    if (robot.encPrivKey != null && robot.token != null) {
       void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot.token).then(
         (signedInvoice) => {
-          coordinator.fetchReward(signedInvoice, garage, slotIndex).then((data) => {
+          void coordinator.fetchReward(signedInvoice, garage, slotIndex).then((data) => {
             setBadInvoice(data.bad_invoice ?? '');
             setShowRewardsSpinner(false);
             setWithdrawn(data.successful_withdrawal);
@@ -103,7 +103,7 @@ const RobotInfo: React.FC<Props> = ({ robot, slotIndex, coordinator, onClose }: 
   };
 
   const setStealthInvoice = (wantsStealth: boolean): void => {
-    coordinator.fetchStealth(wantsStealth, garage, slotIndex);
+    void coordinator.fetchStealth(wantsStealth, garage, slotIndex);
   };
 
   return (

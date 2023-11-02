@@ -1,5 +1,5 @@
 import { sha256 } from 'js-sha256';
-import { hexToBase91, validateTokenEntropy } from '../utils';
+import { hexToBase91 } from '../utils';
 
 interface AuthHeaders {
   tokenSHA256: string;
@@ -14,7 +14,7 @@ class Robot {
     if (garageRobot != null) {
       this.token = garageRobot?.token ?? undefined;
       this.tokenSHA256 =
-        garageRobot?.tokenSHA256 ?? (this.token ? hexToBase91(sha256(this.token)) : '');
+        garageRobot?.tokenSHA256 ?? (this.token != null ? hexToBase91(sha256(this.token)) : '');
       this.pubKey = garageRobot?.pubKey ?? undefined;
       this.encPrivKey = garageRobot?.encPrivKey ?? undefined;
     }
@@ -40,7 +40,7 @@ class Robot {
   public copiedToken: boolean = false;
   public avatarLoaded: boolean = false;
 
-  update = (attributes: Record<string, any>) => {
+  update = (attributes: Record<string, any>): void => {
     Object.assign(this, attributes);
   };
 

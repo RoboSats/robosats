@@ -66,7 +66,7 @@ const RobotAvatar: React.FC<Props> = ({
       if (window.NativeRobosats === undefined) {
         setAvatarSrc(`${baseUrl}${path}${nickname}${small ? '.small' : ''}.webp`);
         setNicknameReady(true);
-      } else if (focusedCoordinator) {
+      } else if (focusedCoordinator != null) {
         setNicknameReady(true);
         const { url } = federation
           .getCoordinator(focusedCoordinator)

@@ -53,7 +53,7 @@ export class Federation {
     });
   };
 
-  onCoordinatorSaved = (shortAlias: string) => {
+  onCoordinatorSaved = (shortAlias: string): void => {
     this.book = [...this.book, ...this.getCoordinator(shortAlias).book];
     this.loading = false;
     this.triggerHook('onCoordinatorUpdate');
@@ -64,46 +64,48 @@ export class Federation {
   };
 
   // Setup
-  start = (origin: Origin, settings: Settings, hostUrl: string): void => {
-    const onCoordinatorStarted = (shortAlias: string) => {
+  start = async (origin: Origin, settings: Settings, hostUrl: string): Promise<void> => {
+    const onCoordinatorStarted = (shortAlias: string): void => {
       this.exchange.onlineCoordinators = this.exchange.onlineCoordinators + 1;
       this.onCoordinatorSaved(shortAlias);
     };
     this.loading = true;
-    Object.values(this.coordinators).forEach(async (coor) => {
+    // Object.values(this.coordinators).forEach(async (coor) => {
+    for (const coor of Object.values(this.coordinators)) {
       await coor.start(origin, settings, hostUrl, onCoordinatorStarted);
-    });
+    }
   };
 
-  update = (): void => {
+  update = async (): Promise<void> => {
     this.loading = false;
-    Object.values(this.coordinators).forEach(async (coor) => {
+    // Object.values(this.coordinators).forEach(async (coor) => {
+    for (const coor of Object.values(this.coordinators)) {
       await coor.update(() => {
         this.onCoordinatorSaved(coor.shortAlias);
       });
-    });
+    }
   };
 
-  updateExchange = () => {
+  updateExchange = (): void => {
     this.exchange.info = updateExchangeInfo(this);
   };
 
   // Fetchs
   fetchRobot = async (garage: Garage, slot: number): Promise<void> => {
     Object.values(this.coordinators).forEach((coor) => {
-      coor.fecthRobot(garage, slot);
+      void coor.fecthRobot(garage, slot);
     });
   };
 
   fetchOrder = async (currentOrder: CurrentOrder, robot: Robot): Promise<CurrentOrder | null> => {
     if (currentOrder.shortAlias !== null) {
       const coordinator = this.coordinators[currentOrder.shortAlias];
-      if (coordinator && currentOrder.id !== null) {
-        const newOrber = await coordinator.fetchOrder(currentOrder.id, robot);
+      if (coordinator != null && currentOrder.id !== null) {
+        const newOrder = await coordinator.fetchOrder(currentOrder.id, robot);
 
         return {
           ...currentOrder,
-          order: newOrber,
+          order: newOrder,
         };
       }
     }
@@ -115,12 +117,12 @@ export class Federation {
     return this.coordinators[shortAlias];
   };
 
-  disableCoordinator = (shortAlias: string) => {
+  disableCoordinator = (shortAlias: string): void => {
     this.coordinators[shortAlias].disable();
     this.triggerHook('onCoordinatorUpdate');
   };
 
-  enableCoordinator = (shortAlias: string) => {
+  enableCoordinator = (shortAlias: string): void => {
     this.coordinators[shortAlias].enable(() => {
       this.triggerHook('onCoordinatorUpdate');
     });

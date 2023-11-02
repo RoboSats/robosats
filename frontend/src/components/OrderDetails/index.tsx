@@ -36,7 +36,7 @@ import { PaymentStringAsIcons } from '../../components/PaymentMethods';
 import { FlagWithProps, SendReceiveIcon } from '../Icons';
 import LinearDeterminate from './LinearDeterminate';
 
-import type { Order, Coordinator } from '../../models';
+import type Coordinator from '../../models';
 import { statusBadgeColor, pn, amountToString, computeSats } from '../../utils';
 import TakeButton from './TakeButton';
 import { F2fMapDialog } from '../Dialogs';
@@ -291,7 +291,7 @@ const OrderDetails = ({
               />
             </ListItemAvatar>
             <ListItemText
-              primary={`${currentOrder.order?.maker_nick} (${
+              primary={`${String(currentOrder.order?.maker_nick)} (${
                 currentOrder.order?.type === 1
                   ? t(currentOrder.order?.currency === 1000 ? 'Swapping Out' : 'Seller')
                   : t(currentOrder.order?.currency === 1000 ? 'Swapping In' : 'Buyer')
@@ -301,12 +301,15 @@ const OrderDetails = ({
           </ListItem>
 
           <Collapse
-            in={currentOrder.order?.is_participant && currentOrder.order?.taker_nick !== 'None'}
+            in={
+              currentOrder.order?.is_participant === true &&
+              currentOrder.order?.taker_nick !== 'None'
+            }
           >
             <Divider />
             <ListItem>
               <ListItemText
-                primary={`${currentOrder.order?.taker_nick} (${
+                primary={`${String(currentOrder.order?.taker_nick)} (${
                   currentOrder.order?.type === 1
                     ? t(currentOrder.order?.currency === 1000 ? 'Swapping In' : 'Buyer')
                     : t(currentOrder.order?.currency === 1000 ? 'Swapping Out' : 'Seller')
@@ -422,7 +425,7 @@ const OrderDetails = ({
                   : t('Accepted payment methods')
               }
             />
-            {currentOrder.order?.payment_method.includes('Cash F2F') && (
+            {currentOrder.order?.payment_method.includes('Cash F2F') === true && (
               <ListItemIcon>
                 <Tooltip enterTouchDelay={0} title={t('F2F location')}>
                   <div>
@@ -457,14 +460,16 @@ const OrderDetails = ({
               />
             ) : null}
 
-            {currentOrder.order?.price_now === undefined && currentOrder.order?.is_explicit ? (
+            {currentOrder.order?.price_now === undefined &&
+            currentOrder.order?.is_explicit === true ? (
               <ListItemText
                 primary={pn(currentOrder.order?.satoshis)}
                 secondary={t('Amount of Satoshis')}
               />
             ) : null}
 
-            {currentOrder.order?.price_now === undefined && !currentOrder.order?.is_explicit ? (
+            {currentOrder.order?.price_now === undefined &&
+            !(currentOrder.order?.is_explicit === true) ? (
               <ListItemText
                 primary={`${parseFloat(Number(currentOrder.order?.premium).toFixed(2))}%`}
                 secondary={t('Premium over market price')}
@@ -537,7 +542,7 @@ const OrderDetails = ({
           <></>
         )}
 
-        {!currentOrder.order?.is_participant ? (
+        {!(currentOrder.order?.is_participant === true) ? (
           <Grid item xs={12}>
             <TakeButton
               baseUrl={baseUrl}

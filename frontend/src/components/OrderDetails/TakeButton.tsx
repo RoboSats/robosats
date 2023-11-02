@@ -82,7 +82,9 @@ const TakeButton = ({
   }, [orderUpdatedAt, takeAmount, info]);
 
   const currencyCode: string =
-    garage.getOrder()?.currency === 1000 ? 'Sats' : currencies[`${garage.getOrder()?.currency}`];
+    garage.getOrder()?.currency === 1000
+      ? 'Sats'
+      : currencies[`${Number(garage.getOrder()?.currency)}`];
 
   const InactiveMakerDialog = function (): JSX.Element {
     return (
@@ -188,7 +190,7 @@ const TakeButton = ({
   }, [takeAmount, orderUpdatedAt]);
 
   const takeOrderButton = function (): JSX.Element {
-    if (garage.getOrder()?.has_range) {
+    if (garage.getOrder()?.has_range === true) {
       return (
         <Box
           sx={{
@@ -315,7 +317,7 @@ const TakeButton = ({
   };
 
   const takeOrder = function (): void {
-    if (!focusedCoordinator) return;
+    if (!(focusedCoordinator != null)) return;
 
     setLoadingTake(true);
     const { url } = federation

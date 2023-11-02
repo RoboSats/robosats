@@ -81,7 +81,7 @@ const Map = ({
         }
         eventHandlers={{
           click: (_event: LeafletMouseEvent) => {
-            order?.id && onOrderClicked(order.id);
+            order?.id != null && onOrderClicked(order.id);
           },
         }}
       >
@@ -111,7 +111,7 @@ const Map = ({
     return (
       <MarkerClusterGroup showCoverageOnHover={true} disableClusteringAtZoom={14}>
         {orders.map((order) => {
-          if (!order?.latitude || !order?.longitude) return <></>;
+          if (!(order?.latitude != null) || !(order?.longitude != null)) return <></>;
           return RobotMarker(order.id, [order.latitude, order.longitude], order.type ?? 0, order);
         })}
       </MarkerClusterGroup>
