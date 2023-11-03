@@ -15,10 +15,9 @@ import {
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import TwitterIcon from '@mui/icons-material/Twitter';
 import RedditIcon from '@mui/icons-material/Reddit';
 import Flags from 'country-flag-icons/react/3x2';
-import { NostrIcon, SimplexIcon } from '../Icons';
+import { NostrIcon, SimplexIcon, XIcon } from '../Icons';
 
 interface Props {
   open: boolean;
@@ -117,17 +116,14 @@ const CommunityDialog = ({ open = false, onClose }: Props): JSX.Element => {
           <ListItemButton
             component='a'
             target='_blank'
-            href='https://twitter.com/robosats'
+            href='https://x.com/robosats'
             rel='noreferrer'
           >
             <ListItemIcon>
-              <TwitterIcon color='primary' sx={{ height: 32, width: 32 }} />
+              <XIcon color='primary' sx={{ height: 32, width: 32 }} />
             </ListItemIcon>
 
-            <ListItemText
-              primary={t('Follow RoboSats in Twitter')}
-              secondary={t('Twitter Official Account')}
-            />
+            <ListItemText primary={t('Follow RoboSats in X')} secondary={t('X Official Account')} />
           </ListItemButton>
 
           <Divider />

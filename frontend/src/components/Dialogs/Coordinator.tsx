@@ -40,7 +40,6 @@ import {
   Language,
   Send,
   Tag,
-  Twitter,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
 
@@ -58,6 +57,7 @@ import {
   BadgeLimits,
   NostrIcon,
   SimplexIcon,
+  XIcon,
 } from '../Icons';
 import { AppContext } from '../../contexts/AppContext';
 import { systemClient } from '../../services/System';
@@ -155,14 +155,14 @@ const ContactButtons = ({
 
       {twitter !== undefined && (
         <Grid item>
-          <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Twitter')}>
+          <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('X')}>
             <IconButton
               component='a'
               target='_blank'
-              href={`https://twitter.com/${twitter}`}
+              href={`https://x.com/${twitter}`}
               rel='noreferrer'
             >
-              <Twitter />
+              <XIcon sx={{ width: '0.8em', height: '0.8em' }} />
             </IconButton>
           </Tooltip>
         </Grid>

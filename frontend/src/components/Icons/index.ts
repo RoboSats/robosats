@@ -17,6 +17,7 @@ export { default as ExportIcon } from './Export';
 export { default as UserNinjaIcon } from './UserNinja';
 export { default as TorIcon } from './Tor';
 export { default as SimplexIcon } from './Simplex';
+export { default as XIcon } from './X';
 
 // Badges
 export { default as BadgeFounder } from './BadgeFounder';
