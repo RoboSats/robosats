@@ -19,7 +19,7 @@ const MakerWidget = React.forwardRef(function Component(
   ref,
 ) {
   const { fav } = useContext<UseAppStoreType>(AppContext);
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { coordinatorUpdatedAt } = useContext<UseFederationStoreType>(FederationContext);
   const { maker } = useContext<UseGarageStoreType>(GarageContext);
   return React.useMemo(() => {
     return (
@@ -27,7 +27,7 @@ const MakerWidget = React.forwardRef(function Component(
         <MakerForm />
       </Paper>
     );
-  }, [maker, fav, federation]);
+  }, [maker, fav, coordinatorUpdatedAt]);
 });
 
 export default MakerWidget;

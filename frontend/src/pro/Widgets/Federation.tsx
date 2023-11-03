@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { AppContext, type AppContextProps } from '../../contexts/AppContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { Paper } from '@mui/material';
 import { type GridItem } from 'react-grid-layout';
 import FederationTable from '../../components/FederationTable';
@@ -27,13 +28,14 @@ const FederationWidget = React.forwardRef(function Component(
   ref,
 ) {
   const { open, setOpen } = useContext<AppContextProps>(AppContext);
-  const { federation, setFocusedCoordinator } = useContext(FederationContext);
+  const { federation, setFocusedCoordinator, coordinatorUpdatedAt } =
+    useContext<UseFederationStoreType>(FederationContext);
 
   return React.useMemo(() => {
     return (
       <Paper elevation={3} style={{ width: '100%', height: '100%' }}>
         <FederationTable
-          federation={federation}
+          federation={federation.coordinators}
           // setFederation={setFederation}
           setFocusedCoordinator={setFocusedCoordinator}
           openCoordinator={() => setOpen({ ...open, coordinator: true })}
@@ -42,7 +44,7 @@ const FederationWidget = React.forwardRef(function Component(
         />
       </Paper>
     );
-  }, [federation]);
+  }, [federation, coordinatorUpdatedAt]);
 });
 
 export default FederationWidget;
