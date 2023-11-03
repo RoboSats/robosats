@@ -82,43 +82,6 @@
     "mainnetNodesPubkeys": ["030a425f5c69a29db30f6740d4e7df8f5612ef9955078ef4497490015464733dc8"],
     "testnetNodesPubkeys": ["028e7a019180a664b84edf77ba656e96f2eb84f67f56d93020341caf4109e0dbc7"]
   },
-  "temp": {
-    "longAlias": "Template",
-    "shortAlias": "temp",
-    "description": "Mirror of 'Experimental'. Just to start testing the client with multiple coordinators",
-    "motto": "Don't trust, verify",
-    "color": "#000000",
-    "contact": {
-      "email": "contact@contact.com",
-      "telegram": "examplecoordinator",
-      "twitter": "examplecoordinator",
-      "matrix": "#example:matrix.org",
-      "website": "https://example.coordinator.com"
-    },
-    "badges": {
-      "isFounder": true,
-      "donatesToDevFund": 20,
-      "hasGoodOpSec": true,
-      "robotsLove": true,
-      "hasLargeLimits": true
-    },
-    "policies": {
-      "Rule #1": "You do not talk about RoboSats Club",
-      "Rule #2": "You DO NOT talk about RoboSats Club",
-      "Privacy Policy": "...",
-      "Data Policy": "..."
-    },
-    "mainnet": {
-      "onion": "http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion",
-      "clearnet": "http://127.0.0.1:12596/mainnet/exp"
-    },
-    "testnet": {
-      "onion": "http://robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion",
-      "clearnet": "http://127.0.0.1:12596/testnet/exp"
-    },
-    "mainnetNodesPubkeys": ["0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e"],
-    "testnetNodesPubkeys": ["03ecb271b3e2e36f2b91c92c65bab665e5165f8cdfdada1b5f46cfdd3248c87fd6"]
-  },
   "local": {
     "longAlias": "Local Dev",
     "shortAlias": "local",

@@ -8,6 +8,7 @@
 
 # Every robosat coordinators needs a tor socat bridge.
 
+###############################
 # Experimental Coordinator
 # Mainnet
 mainnet_exp_onion=robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion
@@ -15,7 +16,11 @@ mainnet_exp_port=101
 # Testnet
 testnet_exp_onion=robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion
 testnet_exp_port=1001
+# socat cmd
+mainnet_exp_socat="socat tcp4-LISTEN:${mainnet_exp_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_exp_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
+testnet_exp_socat="socat tcp4-LISTEN:${testnet_exp_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_exp_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
+################################
 # Temple of Sats Coordinator
 # Mainnet
 mainnet_temple_onion=zixoneehmz7z2ctsnpuubcni4kxw5gp6fkyzjd2spo5atie5awiuwmyd.onion
@@ -23,24 +28,10 @@ mainnet_temple_port=102
 # Testnet
 testnet_temple_onion=ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion
 testnet_temple_port=1002
-
-# Template Coordinator
-# Mainnet
-mainnet_temp_onion=robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion
-mainnet_temp_port=100
-# Testnet
-testnet_temp_onion=robotestagw3dcxmd66r4rgksb4nmmr43fh77bzn2ia2eucduyeafnyd.onion
-testnet_temp_port=1000
-
-# ... add more
-
-mainnet_exp_socat="socat tcp4-LISTEN:${mainnet_exp_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_exp_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_exp_socat="socat tcp4-LISTEN:${testnet_exp_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_exp_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-
+# socat cmd
 mainnet_temple_socat="socat tcp4-LISTEN:${mainnet_temple_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_temple_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 testnet_temple_socat="socat tcp4-LISTEN:${testnet_temple_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_temple_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
-mainnet_temp_socat="socat tcp4-LISTEN:${mainnet_temp_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_temp_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
-testnet_temp_socat="socat tcp4-LISTEN:${testnet_temp_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${testnet_temp_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
 
-$mainnet_exp_socat & $testnet_exp_socat & $mainnet_temple_socat & $testnet_temple_socat &$mainnet_temp_socat & $testnet_temp_socat & nginx
+# RUN!
+$mainnet_exp_socat & $testnet_exp_socat & $mainnet_temple_socat & $testnet_temple_socat & nginx
