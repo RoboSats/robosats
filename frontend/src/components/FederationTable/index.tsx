@@ -13,10 +13,6 @@ import {
 } from '../../contexts/FederationContext';
 
 interface FederationTableProps {
-  federation: Record<string, Coordinator>;
-  dispatchFederation: (action: ActionFederation) => void;
-  fetchCoordinatorInfo: (coordinator: Coordinator) => Promise<void>;
-  setFocusedCoordinator: (state: number) => void;
   openCoordinator: () => void;
   maxWidth?: number;
   maxHeight?: number;
@@ -30,7 +26,7 @@ const FederationTable = ({
   fillContainer = false,
 }: FederationTableProps): JSX.Element => {
   const { t } = useTranslation();
-  const { federation, setFocusedCoordinator, coordinatorUpdatedAt } =
+  const { federation, sortedCoordinators, setFocusedCoordinator, coordinatorUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
   const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
@@ -120,34 +116,37 @@ const FederationTable = ({
         },
       };
     },
-    [federation],
+    [coordinatorUpdatedAt],
   );
 
-  const upObj = useCallback((width: number) => {
-    return {
-      field: 'up',
-      headerName: t('Up'),
-      width: width * fontSize,
-      renderCell: (params: any) => {
-        return (
-          <div
-            style={{ cursor: 'pointer' }}
-            onClick={() => {
-              onClickCoordinator(params.row.shortAlias);
-            }}
-          >
-            {Boolean(params.row.loadingInfo) && Boolean(params.row.enabled) ? (
-              <CircularProgress thickness={0.35 * fontSize} size={1.5 * fontSize} />
-            ) : params.row.info !== undefined ? (
-              <Link color='success' />
-            ) : (
-              <LinkOff color='error' />
-            )}
-          </div>
-        );
-      },
-    };
-  }, []);
+  const upObj = useCallback(
+    (width: number) => {
+      return {
+        field: 'up',
+        headerName: t('Up'),
+        width: width * fontSize,
+        renderCell: (params: any) => {
+          return (
+            <div
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                onClickCoordinator(params.row.shortAlias);
+              }}
+            >
+              {Boolean(params.row.loadingInfo) && Boolean(params.row.enabled) ? (
+                <CircularProgress thickness={0.35 * fontSize} size={1.5 * fontSize} />
+              ) : params.row.info !== undefined ? (
+                <Link color='success' />
+              ) : (
+                <LinkOff color='error' />
+              )}
+            </div>
+          );
+        },
+      };
+    },
+    [coordinatorUpdatedAt],
+  );
 
   const columnSpecs = {
     alias: {
@@ -220,6 +219,11 @@ const FederationTable = ({
     }
   };
 
+  const reorderedCoordinators = sortedCoordinators.reduce((coordinators, key) => {
+    coordinators[key] = federation.coordinators[key];
+    return coordinators;
+  }, {});
+
   return (
     <Box
       sx={
@@ -232,7 +236,7 @@ const FederationTable = ({
         localeText={localeText}
         rowHeight={3.714 * theme.typography.fontSize}
         headerHeight={3.25 * theme.typography.fontSize}
-        rows={Object.values(federation.coordinators)}
+        rows={Object.values(reorderedCoordinators)}
         getRowId={(params: Coordinator) => params.shortAlias}
         columns={columns}
         checkboxSelection={false}

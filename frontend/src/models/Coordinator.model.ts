@@ -18,6 +18,7 @@ export interface Contact {
   telegram?: string | undefined;
   reddit?: string | undefined;
   matrix?: string | undefined;
+  simplex?: string | undefined;
   twitter?: string | undefined;
   website?: string | undefined;
 }

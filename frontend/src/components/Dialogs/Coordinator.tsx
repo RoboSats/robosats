@@ -57,6 +57,7 @@ import {
   BadgeLoved,
   BadgeLimits,
   NostrIcon,
+  SimplexIcon,
 } from '../Icons';
 import { AppContext } from '../../contexts/AppContext';
 import { systemClient } from '../../services/System';
@@ -76,6 +77,7 @@ const ContactButtons = ({
   telegram,
   twitter,
   matrix,
+  simplex,
   website,
   reddit,
 }: Contact): JSX.Element => {
@@ -211,6 +213,16 @@ const ContactButtons = ({
               }}
             >
               <Tag />
+            </IconButton>
+          </Tooltip>
+        </Grid>
+      )}
+
+      {simplex !== undefined && (
+        <Grid item>
+          <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('Simplex')}>
+            <IconButton component='a' target='_blank' href={`${simplex}`} rel='noreferrer'>
+              <SimplexIcon sx={{ width: '0.7em', height: '0.7em' }} />
             </IconButton>
           </Tooltip>
         </Grid>
@@ -712,7 +724,10 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
                         }}
                       >
                         {pn(parseFloat(coordinator?.info?.last_day_volume).toFixed(8))}
-                        <BitcoinSignIcon sx={{ width: 14, height: 14 }} color={'text.secondary'} />
+                        <BitcoinSignIcon
+                          sx={{ width: '1em', height: '1em' }}
+                          color={'text.secondary'}
+                        />
                       </div>
                     </ListItemText>
                   </ListItem>
@@ -733,7 +748,10 @@ const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Prop
                         }}
                       >
                         {pn(parseFloat(coordinator?.info?.lifetime_volume).toFixed(8))}
-                        <BitcoinSignIcon sx={{ width: 14, height: 14 }} color={'text.secondary'} />
+                        <BitcoinSignIcon
+                          sx={{ width: '1em', height: '1em' }}
+                          color={'text.secondary'}
+                        />
                       </div>
                     </ListItemText>
                   </ListItem>
