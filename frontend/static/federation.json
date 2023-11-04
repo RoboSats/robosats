@@ -93,10 +93,10 @@
       "telegram": "@satstralia",
       "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2FZKe4uxF4Z_aLJJOEsC-Y6hSkXgQS5-oc442JQGkyP8M%3D%40smp17.simplex.im%2Fq0pIyShcBl0EP8le0D0xy2OfSrP1mQWg%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAcwmsC9GQwQEt40UNpYp4vKPhU_UnWXsXcVl-OJ57lC4%253D%26srv%3Dogtwfxyi3h2h5weftjjpjmxclhb5ugufa5rcyrmg7j4xlch7qsr5nuqd.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22vNcyZH9C3eE6MHzRNpR3xA%3D%3D%22%7D",
       "matrix": "#satstralia:matrix.org",
-      "pgp": "TODO",
+      "pgp": "keys.openpgp.org/vks/v1/by-fingerprint/D1894C9862A9D02D47D96C84AE30B6904210DA14",
       "nostr": "npub1z94lxjf7m5snda0qc6s3kmpy6r4nfw74h78da9j6j4y8ym08zrrs459wpr",
       "website": "https://satstralia.com",
-      "fingerprint": "TODO"
+      "fingerprint": "D1894C9862A9D02D47D96C84AE30B6904210DA14"
     },
     "badges": {
       "isFounder": true,
