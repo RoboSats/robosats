@@ -73,6 +73,7 @@ interface Props {
 const ContactButtons = ({
   nostr,
   pgp,
+  fingerprint,
   email,
   telegram,
   twitter,
@@ -120,8 +121,12 @@ const ContactButtons = ({
 
       {pgp !== undefined && (
         <Grid item>
-          <Tooltip enterTouchDelay={0} enterNextDelay={2000} title={t('See PGP Key')}>
-            <IconButton component='a' target='_blank' href={`https://${pgp}`} rel='noreferrer'>
+          <Tooltip
+            enterTouchDelay={0}
+            enterNextDelay={2000}
+            title={t('Download PGP Pubkey. Fingerprint: ') + fingerprint.match(/.{1,4}/g).join(' ')}
+          >
+            <IconButton component='a' target='_blank' href={pgp} rel='noreferrer'>
               <Key />
             </IconButton>
           </Tooltip>

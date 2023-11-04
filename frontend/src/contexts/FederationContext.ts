@@ -48,18 +48,6 @@ export interface fetchRobotProps {
   isRefresh?: boolean;
 }
 
-export interface ActionFederation {
-  type:
-    | 'reset'
-    | 'enable'
-    | 'disable'
-    | 'updateBook'
-    | 'updateLimits'
-    | 'updateInfo'
-    | 'updateRobot';
-  payload: any; // TODO
-}
-
 export interface CurrentOrder {
   shortAlias: string | null;
   id: number | null;

@@ -6,11 +6,7 @@ import { type Coordinator } from '../../models';
 import RobotAvatar from '../RobotAvatar';
 import { Link, LinkOff } from '@mui/icons-material';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
-import {
-  type ActionFederation,
-  type UseFederationStoreType,
-  FederationContext,
-} from '../../contexts/FederationContext';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface FederationTableProps {
   openCoordinator: () => void;

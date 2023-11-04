@@ -28,7 +28,7 @@ const FederationWidget = React.forwardRef(function Component(
   ref,
 ) {
   const { open, setOpen } = useContext<AppContextProps>(AppContext);
-  const { federation, setFocusedCoordinator, coordinatorUpdatedAt } =
+  const { federation, coordinatorUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
 
   return React.useMemo(() => {

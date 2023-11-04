@@ -54,7 +54,7 @@ const RobotAvatar: React.FC<Props> = ({
   const [nicknameReady, setNicknameReady] = useState<boolean>(false);
   const [activeBackground, setActiveBackground] = useState<boolean>(true);
 
-  const path = coordinator ? '/static/federation/' : '/static/assets/avatars/';
+  const path = coordinator ? '/static/federation/avatars/' : '/static/assets/avatars/';
   const [backgroundData] = useState<BackgroundData>(
     placeholderType === 'generating' ? placeholder.generating : placeholder.loading,
   );
