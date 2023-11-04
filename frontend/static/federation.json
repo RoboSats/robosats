@@ -13,7 +13,7 @@
       "matrix": "#robosats:matrix.org",
       "website": "https://learn.robosats.com",
       "nostr": "npub1p2psats79rypr8lpnl9t5qdekfp700x660qsgw284xvq4s09lqrqqk3m82",
-      "pgp": "keys.openpgp.org/vks/v1/by-fingerprint/B4AB5F19113D4125DDF217739C4585B561315571",
+      "pgp": "/static/federation/pgp/B4AB5F19113D4125DDF217739C4585B561315571.asc",
       "fingerprint": "B4AB5F19113D4125DDF217739C4585B561315571"
     },
     "badges": {
@@ -51,7 +51,7 @@
       "email": "cosmos178ftmm4edlahqzj376gwgqzd9re5x0x9h0tfsc@keplr.xyz",
       "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FTBkVW6au17zMxuwDvlhIpkMojh7PpZgN%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEA2iXIDN6Su6zYqKWcgsdd8BA7HhIHYIEWHE-MUyJhSw4%253D%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
       "matrix": "@venividivici13:matrix.org",
-      "pgp": "keys.openpgp.org/vks/v1/by-fingerprint/25791752E9661C1DE118A8C6F78CD3D6471B6789",
+      "pgp": "/static/federation/pgp/25791752E9661C1DE118A8C6F78CD3D6471B6789.asc",
       "fingerprint": "25791752E9661C1DE118A8C6F78CD3D6471B6789"
     },
     "badges": {
@@ -93,7 +93,7 @@
       "telegram": "@satstralia",
       "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2FZKe4uxF4Z_aLJJOEsC-Y6hSkXgQS5-oc442JQGkyP8M%3D%40smp17.simplex.im%2Fq0pIyShcBl0EP8le0D0xy2OfSrP1mQWg%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEAcwmsC9GQwQEt40UNpYp4vKPhU_UnWXsXcVl-OJ57lC4%253D%26srv%3Dogtwfxyi3h2h5weftjjpjmxclhb5ugufa5rcyrmg7j4xlch7qsr5nuqd.onion&data=%7B%22type%22%3A%22group%22%2C%22groupLinkId%22%3A%22vNcyZH9C3eE6MHzRNpR3xA%3D%3D%22%7D",
       "matrix": "#satstralia:matrix.org",
-      "pgp": "keys.openpgp.org/vks/v1/by-fingerprint/D1894C9862A9D02D47D96C84AE30B6904210DA14",
+      "pgp": "/static/federation/pgp/D1894C9862A9D02D47D96C84AE30B6904210DA14.asc",
       "nostr": "npub1z94lxjf7m5snda0qc6s3kmpy6r4nfw74h78da9j6j4y8ym08zrrs459wpr",
       "website": "https://satstralia.com",
       "fingerprint": "D1894C9862A9D02D47D96C84AE30B6904210DA14"
