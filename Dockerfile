@@ -1,4 +1,4 @@
-FROM python:3.11.6-slim-bullseye
+FROM python:3.11.6-slim-bookworm
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN mkdir -p /usr/src/robosats
