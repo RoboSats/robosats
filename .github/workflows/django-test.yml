@@ -22,7 +22,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ["3.11.6"] # , "3.12"]
+        python-version: ["3.11.6", "3.12"]
 
     services:
       db:
@@ -63,6 +63,7 @@ jobs:
     - name: 'Create .env File'
       run: |
         mv .env-sample .env
+        sed -i "s/USE_TOR='True'/USE_TOR='False'/" .env
 
     - name: 'Wait for PostgreSQL to become ready'
       run: |
