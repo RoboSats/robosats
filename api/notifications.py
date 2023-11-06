@@ -21,7 +21,7 @@ class Telegram:
             context["tg_enabled"] = False
 
         if user.robot.telegram_token is None:
-            user.robot.telegram_token = token_urlsafe(15)
+            user.robot.telegram_token = token_urlsafe()[:15]
             user.robot.save(update_fields=["telegram_token"])
 
         context["tg_token"] = user.robot.telegram_token

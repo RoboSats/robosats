@@ -176,10 +176,10 @@ class TestUtils(TestCase):
         client_enc_priv_key = r"-----BEGIN PGP PRIVATE KEY BLOCK-----\\xYYEZTWJ1xYJKwYBBAHaRw8BAQdAsfdKb90BurKniu+pBPBDHCkzg08S51W0\mUR0SKqLmdj+CQMICrS3TNCA/LHgxckC+iTUMxkqQJ9GpXWCDacx1rBQCztu\PDgUHNvWdcvW1wWVxU/aJaQLqBTtRVYkJTz332jrKvsSl/LnrfwmUfKgN4nG\Oc1MUm9ib1NhdHMgSUQgNTUyZGQxYTY2MWE3YWNhNGE0MWY4ODkxMGZmMzRh\YzNiMWFjODBiYjc3OTRlZDlmZDU1ZDhiNzZiOTdhYWQ5N8KMBBAWCgA+BYJl\NYnXBAsJBwgJkDc3tq7iCL/OAxUICgQWAAIBAhkBApsDAh4BFiEE7mIEuePQ\n8Tqye0QNze2ruIIv84AAORXAQD+0G30U+qvEsc48W3JTKmmmvT+3q+uXdGs\vMIuqoTWdQD/R+aGKvYXzwpyzGYInAAOj8WCXBcYWSOtXiw/oWNgEQHHiwRl\NYnXEgorBgEEAZdVAQUBAQdALJQh7exBNphr8gU0oY2ZfP/6Gse6Ryi3hM6+\LZsP2nwDAQgH/gkDCPPoYWyzm4mT4N/TDBF11GVq0xSEEcubFqjArFKyibRy\TDnB8+o8BlkRuGClcfRyKkR5/Rp1v5B0n1BuMsc8nY4Yg4BJv4KhsPfXRp4m\31zCeAQYFggAKgWCZTWJ1wmQNze2ruIIv84CmwwWIQTuYgS549CfxOrJ7RA3\N7au4gi/zgAAmhQA+wRtxO05FKFirSXuTj808F/mzF8u4Wz0kMNMzPUXvCj9\AQCHkxvHdvNHUyut4f7HkACnjI9M3+wGF69ArHL0u39/Aw==\=1hCT\-----END PGP PRIVATE KEY BLOCK-----"
 
         # Example valid formatted GPG keys
-        with open("api/tests/test_pub_key", "r") as file:
+        with open("tests/robots/1/pub_key", "r") as file:
             # Read the contents of the file
             pub_key = file.read()
-        with open("api/tests/test_enc_priv_key", "r") as file:
+        with open("tests/robots/1/enc_priv_key", "r") as file:
             # Read the contents of the file
             enc_priv_key = file.read()
 
@@ -203,10 +203,10 @@ class TestUtils(TestCase):
 
     def test_verify_signed_message(self):
         # Call the verify_signed_message function with a mock public key and a mock signed message
-        with open("api/tests/test_pub_key", "r") as file:
+        with open("tests/robots/1/pub_key", "r") as file:
             # Read the contents of the file
             pub_key = file.read()
-        with open("api/tests/test_signed_message", "r") as file:
+        with open("tests/robots/1/signed_message", "r") as file:
             # Read the contents of the file
             signed_message = file.read()
 
