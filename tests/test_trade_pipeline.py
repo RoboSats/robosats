@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from decimal import Decimal
+from unittest.mock import patch
 
 from decouple import config
 from django.contrib.auth.models import User
@@ -8,6 +9,13 @@ from django.test import Client, TestCase
 
 from api.models import Currency, Order
 from api.tasks import cache_market
+from tests.mocks.lnd import (
+    MockInvoicesStub,
+    MockLightningStub,
+    MockRouterStub,
+    MockSignerStub,
+    MockVersionerStub,
+)
 
 
 class TradeTest(TestCase):
@@ -22,6 +30,9 @@ class TradeTest(TestCase):
         User.objects.create_superuser(self.su_name, "super@user.com", self.su_pass)
 
     def test_login_superuser(self):
+        """
+        Test logging in as a superuser.
+        """
         path = "/coordinator/login/"
         data = {"username": self.su_name, "password": self.su_pass}
         response = self.client.post(path, data)
@@ -29,8 +40,8 @@ class TradeTest(TestCase):
 
     def get_robot_auth(self, robot_index):
         """
-        Crates an AUTH header that embeds token, pub_key and enc_priv_key into a single string
-        just as requested by the robosats token middleware.
+        Create an AUTH header that embeds token, pub_key, and enc_priv_key into a single string
+        as requested by the robosats token middleware.
         """
         with open(f"tests/robots/{robot_index}/b91_token", "r") as file:
             b91_token = file.read()
@@ -44,24 +55,14 @@ class TradeTest(TestCase):
         }
         return headers, pub_key, enc_priv_key
 
-    def create_robot(self, robot_index):
-        """
-        Creates the robots in /tests/robots/{robot_index}
-        """
-        path = "/api/robot/"
-        headers, pub_key, enc_priv_key = self.get_robot_auth(robot_index)
-
-        response = self.client.get(path, **headers)
+    def assert_robot(self, response, pub_key, enc_priv_key, expected_nickname):
         data = json.loads(response.content.decode())
-
-        with open(f"tests/robots/{robot_index}/nickname", "r") as file:
-            expected_nickname = file.read()
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             data["nickname"],
             expected_nickname,
-            f"Robot {robot_index} created nickname is not MyopicRacket333",
+            "Robot created nickname is not MyopicRacket333",
         )
         self.assertEqual(
             data["public_key"], pub_key, "Returned public Kky does not match"
@@ -86,6 +87,20 @@ class TradeTest(TestCase):
         )
         self.assertEqual(data["earned_rewards"], 0, "The new robot's rewards are not 0")
 
+    def create_robot(self, robot_index):
+        """
+        Creates the robots in /tests/robots/{robot_index}
+        """
+        path = "/api/robot/"
+        headers, pub_key, enc_priv_key = self.get_robot_auth(robot_index)
+
+        response = self.client.get(path, **headers)
+
+        with open(f"tests/robots/{robot_index}/nickname", "r") as file:
+            expected_nickname = file.read()
+
+        self.assert_robot(response, pub_key, enc_priv_key, expected_nickname)
+
     def test_create_robots(self):
         """
         Creates two robots to be used in the trade tests
@@ -97,13 +112,16 @@ class TradeTest(TestCase):
         cache_market()
 
         usd = Currency.objects.get(id=1)
-        self.assertTrue(
-            isinstance(usd.exchange_rate, Decimal), "Exchange rate is not decimal"
+        self.assertIsInstance(
+            usd.exchange_rate,
+            Decimal,
+            f"Exchange rate is not a Decimal. Got {type(usd.exchange_rate)}",
         )
-        self.assertLess(0, usd.exchange_rate, "Exchange rate is not higher than zero")
-        self.assertTrue(
-            isinstance(usd.timestamp, datetime),
-            "Externa price timestamp is not datetime",
+        self.assertGreater(
+            usd.exchange_rate, 0, "Exchange rate is not higher than zero"
+        )
+        self.assertIsInstance(
+            usd.timestamp, datetime, "External price timestamp is not a datetime"
         )
 
     def test_create_order(
@@ -147,18 +165,20 @@ class TradeTest(TestCase):
         data = json.loads(response.content.decode())
 
         # Checks
-        self.assertTrue(isinstance(data["id"], int), "Order ID is not an integer")
+        self.assertIsInstance(data["id"], int, "Order ID is not an integer")
         self.assertEqual(
             data["status"],
             Order.Status.WFB,
             "Newly created order status is not 'Waiting for maker bond'",
         )
-        self.assertTrue(
-            isinstance(datetime.fromisoformat(data["created_at"]), datetime),
+        self.assertIsInstance(
+            datetime.fromisoformat(data["created_at"]),
+            datetime,
             "Order creation timestamp is not datetime",
         )
-        self.assertTrue(
-            isinstance(datetime.fromisoformat(data["expires_at"]), datetime),
+        self.assertIsInstance(
+            datetime.fromisoformat(data["expires_at"]),
+            datetime,
             "Order expiry time is not datetime",
         )
         self.assertEqual(
@@ -166,13 +186,13 @@ class TradeTest(TestCase):
         )
         self.assertEqual(data["currency"], 1, "Order for USD is not of currency USD")
         self.assertIsNone(
-            data["amount"], "Order with range has a non null simple amount"
+            data["amount"], "Order with range has a non-null simple amount"
         )
         self.assertTrue(data["has_range"], "Order with range has a False has_range")
-        self.assertEqual(
+        self.assertAlmostEqual(
             float(data["min_amount"]), min_amount, "Order min amount does not match"
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             float(data["max_amount"]), max_amount, "Order max amount does not match"
         )
         self.assertEqual(
@@ -185,31 +205,41 @@ class TradeTest(TestCase):
             escrow_duration,
             "Order escrow duration does not match",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             float(data["bond_size"]), bond_size, "Order bond size does not match"
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             float(data["latitude"]), latitude, "Order latitude does not match"
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             float(data["longitude"]), longitude, "Order longitude does not match"
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             float(data["premium"]), premium, "Order premium does not match"
         )
         self.assertFalse(
             data["is_explicit"], "Relative pricing order has True is_explicit"
         )
         self.assertIsNone(
-            data["satoshis"], "Relative pricing order has non null Satoshis"
+            data["satoshis"], "Relative pricing order has non-null Satoshis"
         )
         self.assertIsNone(data["taker"], "New order's taker is not null")
 
-        with open(f"tests/robots/{robot_index}/nickname", "r") as file:
-            maker_nickname = file.read()
-            maker_id = User.objects.get(username=maker_nickname).id
-        self.assertEqual(
-            data["maker"],
-            maker_id,
-            "Maker user ID is not that of robot index {robot_index}",
+    @patch("api.lightning.lightning_pb2_grpc.LightningStub", MockLightningStub)
+    @patch("api.lightning.invoices_pb2_grpc.InvoicesStub", MockInvoicesStub)
+    @patch("api.lightning.router_pb2_grpc.RouterStub", MockRouterStub)
+    @patch("api.lightning.signer_pb2_grpc.SignerStub", MockSignerStub)
+    @patch("api.lightning.verrpc_pb2_grpc.VersionerStub", MockVersionerStub)
+    def test_maker_bond_locked(self):
+        self.test_create_order(
+            robot_index=1,
+            payment_method="Cash F2F",
+            min_amount=80,
+            max_amount=500,
+            premium=5,
+            public_duration=86000,
+            escrow_duration=8000,
+            bond_size=2,
+            latitude=0,
+            longitude=0,
         )

@@ -71,8 +71,6 @@ class LNDNode:
         5: "Insufficient local balance.",
     }
 
-    is_testnet = lightningstub.GetInfo(lnrpc.GetInfoRequest()).testnet
-
     @classmethod
     def get_version(cls):
         try:
@@ -93,8 +91,8 @@ class LNDNode:
     @classmethod
     def estimate_fee(cls, amount_sats, target_conf=2, min_confs=1):
         """Returns estimated fee for onchain payouts"""
-
-        if cls.is_testnet:
+        is_testnet = lightningstub.GetInfo(lnrpc.GetInfoRequest()).testnet
+        if is_testnet:
             dummy_address = "tb1qehyqhruxwl2p5pt52k6nxj4v8wwc3f3pg7377x"
         else:
             dummy_address = "bc1qgxwaqe4m9mypd7ltww53yv3lyxhcfnhzzvy5j3"
