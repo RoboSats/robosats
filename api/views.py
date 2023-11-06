@@ -118,8 +118,6 @@ class MakerView(CreateAPIView):
         if has_range is None:
             has_range = False
 
-        # TODO add a check - if `is_explicit` is true then `satoshis` need to be specified
-
         # An order can either have an amount or a range (min_amount and max_amount)
         if has_range:
             amount = None
