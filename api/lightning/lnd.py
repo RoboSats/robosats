@@ -45,6 +45,17 @@ DISABLE_ONCHAIN = config("DISABLE_ONCHAIN", cast=bool, default=True)
 MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500_000)
 
 
+# Logger function used to build tests/mocks/lnd.py
+def log(name, request, response):
+    if not config("LOG_LND", cast=bool, default=True):
+        return
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_message = f"######################################\nEvent: {name}\nTime: {current_time}\nRequest:\n{request}\nResponse:\n{response}\nType: {type(response)}\n"
+
+    with open("lnd_log.txt", "a") as file:
+        file.write(log_message)
+
+
 class LNDNode:
     os.environ["GRPC_SSL_CIPHER_SUITES"] = "HIGH+ECDSA"
 
@@ -76,6 +87,7 @@ class LNDNode:
         try:
             request = verrpc.VersionRequest()
             response = cls.verstub.GetVersion(request)
+            log("verstub.GetVersion", request, response)
             return "v" + response.version
         except Exception as e:
             print(e)
@@ -86,17 +98,21 @@ class LNDNode:
         """Decodes a lightning payment request (invoice)"""
         request = lnrpc.PayReqString(pay_req=invoice)
         response = cls.lightningstub.DecodePayReq(request)
+        log("lightningstub.DecodePayReq", request, response)
         return response
 
     @classmethod
     def estimate_fee(cls, amount_sats, target_conf=2, min_confs=1):
         """Returns estimated fee for onchain payouts"""
-        is_testnet = lightningstub.GetInfo(lnrpc.GetInfoRequest()).testnet
-        if is_testnet:
+
+        request = lnrpc.GetInfoRequest()
+        response = lightningstub.GetInfo(request)
+        log("lightningstub.GetInfo", request, response)
+
+        if response.testnet:
             dummy_address = "tb1qehyqhruxwl2p5pt52k6nxj4v8wwc3f3pg7377x"
         else:
             dummy_address = "bc1qgxwaqe4m9mypd7ltww53yv3lyxhcfnhzzvy5j3"
-
         # We assume segwit. Use hardcoded address as shortcut so there is no need of user inputs yet.
         request = lnrpc.EstimateFeeRequest(
             AddrToAmount={dummy_address: amount_sats},
@@ -106,6 +122,7 @@ class LNDNode:
         )
 
         response = cls.lightningstub.EstimateFee(request)
+        log("lightningstub.EstimateFee", request, response)
 
         return {
             "mining_fee_sats": response.fee_sat,
@@ -120,6 +137,7 @@ class LNDNode:
         """Returns onchain balance"""
         request = lnrpc.WalletBalanceRequest()
         response = cls.lightningstub.WalletBalance(request)
+        log("lightningstub.WalletBalance", request, response)
 
         return {
             "total_balance": response.total_balance,
@@ -135,6 +153,7 @@ class LNDNode:
         """Returns channels balance"""
         request = lnrpc.ChannelBalanceRequest()
         response = cls.lightningstub.ChannelBalance(request)
+        log("lightningstub.ChannelBalance", request, response)
 
         return {
             "local_balance": response.local_balance.sat,
@@ -169,6 +188,7 @@ class LNDNode:
             onchainpayment.status = on_mempool_code
             onchainpayment.save(update_fields=["status"])
             response = cls.lightningstub.SendCoins(request)
+            log("lightningstub.SendCoins", request, response)
 
             if response.txid:
                 onchainpayment.txid = response.txid
@@ -192,6 +212,7 @@ class LNDNode:
         """Cancels or returns a hold invoice"""
         request = invoicesrpc.CancelInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
         response = cls.invoicesstub.CancelInvoice(request)
+        log("invoicesstub.CancelInvoice", request, response)
         # Fix this: tricky because canceling sucessfully an invoice has no response. TODO
         return str(response) == ""  # True if no response, false otherwise.
 
@@ -200,6 +221,7 @@ class LNDNode:
         """settles a hold invoice"""
         request = invoicesrpc.SettleInvoiceMsg(preimage=bytes.fromhex(preimage))
         response = cls.invoicesstub.SettleInvoice(request)
+        log("invoicesstub.SettleInvoice", request, response)
         # Fix this: tricky because settling sucessfully an invoice has None response. TODO
         return str(response) == ""  # True if no response, false otherwise.
 
@@ -215,7 +237,6 @@ class LNDNode:
         time,
     ):
         """Generates hold invoice"""
-
         hold_payment = {}
         # The preimage is a random hash of 256 bits entropy
         preimage = hashlib.sha256(secrets.token_bytes(nbytes=32)).digest()
@@ -233,6 +254,7 @@ class LNDNode:
             cltv_expiry=cltv_expiry_blocks,
         )
         response = cls.invoicesstub.AddHoldInvoice(request)
+        log("invoicesstub.AddHoldInvoice", request, response)
 
         hold_payment["invoice"] = response.payment_request
         payreq_decoded = cls.decode_payreq(hold_payment["invoice"])
@@ -257,6 +279,7 @@ class LNDNode:
             payment_hash=bytes.fromhex(lnpayment.payment_hash)
         )
         response = cls.invoicesstub.LookupInvoiceV2(request)
+        log("invoicesstub.LookupInvoiceV2", request, response)
 
         # Will fail if 'unable to locate invoice'. Happens if invoice expiry
         # time has passed (but these are 15% padded at the moment). Should catch it
@@ -297,6 +320,7 @@ class LNDNode:
                 payment_hash=bytes.fromhex(lnpayment.payment_hash)
             )
             response = cls.invoicesstub.LookupInvoiceV2(request)
+            log("invoicesstub.LookupInvoiceV2", request, response)
 
             status = lnd_response_state_to_lnpayment_status[response.state]
 
@@ -442,6 +466,7 @@ class LNDNode:
         )
 
         for response in cls.routerstub.SendPaymentV2(request):
+            log("routerstub.SendPaymentV2", request, response)
             if (
                 response.status == lnrpc.Payment.PaymentStatus.UNKNOWN
             ):  # Status 0 'UNKNOWN'
@@ -597,6 +622,7 @@ class LNDNode:
 
         try:
             for response in cls.routerstub.SendPaymentV2(request):
+                log("routerstub.SendPaymentV2", request, response)
                 handle_response(response)
 
         except Exception as e:
@@ -609,6 +635,7 @@ class LNDNode:
                     )
 
                     for response in cls.routerstub.TrackPaymentV2(request):
+                        log("routerstub.TrackPaymentV2", request, response)
                         handle_response(response, was_in_transit=True)
 
                 except Exception as e:
@@ -648,6 +675,7 @@ class LNDNode:
                 )
 
                 for response in cls.routerstub.TrackPaymentV2(request):
+                    log("routerstub.TrackPaymentV2", request, response)
                     handle_response(response, was_in_transit=True)
 
             elif "invoice is already paid" in str(e):
@@ -658,6 +686,7 @@ class LNDNode:
                 )
 
                 for response in cls.routerstub.TrackPaymentV2(request):
+                    log("routerstub.TrackPaymentV2", request, response)
                     handle_response(response)
 
             else:
@@ -721,6 +750,7 @@ class LNDNode:
                 allow_self_payment=ALLOW_SELF_KEYSEND,
             )
             for response in cls.routerstub.SendPaymentV2(request):
+                log("routerstub.SendPaymentV2", request, response)
                 if response.status == lnrpc.Payment.PaymentStatus.IN_FLIGHT:
                     keysend_payment["status"] = LNPayment.Status.FLIGHT
                 if response.status == lnrpc.Payment.PaymentStatus.SUCCEEDED:
@@ -744,6 +774,7 @@ class LNDNode:
         """Just as it sounds. Better safe than sorry!"""
         request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
         response = cls.invoicesstub.LookupInvoiceV2(request)
+        log("invoicesstub.LookupInvoiceV2", request, response)
 
         return (
             response.state == lnrpc.Invoice.InvoiceState.SETTLED
