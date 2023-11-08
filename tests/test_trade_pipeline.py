@@ -9,6 +9,7 @@ from django.test import Client, TestCase
 
 from api.models import Currency, Order
 from api.tasks import cache_market
+from tests.mocks.cln import MockHoldStub, MockNodeStub
 from tests.mocks.lnd import (
     MockInvoicesStub,
     MockLightningStub,
@@ -225,11 +226,13 @@ class TradeTest(TestCase):
         )
         self.assertIsNone(data["taker"], "New order's taker is not null")
 
-    @patch("api.lightning.lightning_pb2_grpc.LightningStub", MockLightningStub)
-    @patch("api.lightning.invoices_pb2_grpc.InvoicesStub", MockInvoicesStub)
-    @patch("api.lightning.router_pb2_grpc.RouterStub", MockRouterStub)
-    @patch("api.lightning.signer_pb2_grpc.SignerStub", MockSignerStub)
-    @patch("api.lightning.verrpc_pb2_grpc.VersionerStub", MockVersionerStub)
+    @patch("api.lightning.cln.node_pb2_grpc.NodeStub", MockNodeStub)
+    @patch("api.lightning.cln.hold_pb2_grpc.HoldStub", MockHoldStub)
+    @patch("api.lightning.lnd.verrpc_pb2_grpc.VersionerStub", MockVersionerStub)
+    @patch("api.lightning.lnd.lightning_pb2_grpc.LightningStub", MockLightningStub)
+    @patch("api.lightning.lnd.invoices_pb2_grpc.InvoicesStub", MockInvoicesStub)
+    @patch("api.lightning.lnd.router_pb2_grpc.RouterStub", MockRouterStub)
+    @patch("api.lightning.lnd.signer_pb2_grpc.SignerStub", MockSignerStub)
     def test_maker_bond_locked(self):
         self.test_create_order(
             robot_index=1,
