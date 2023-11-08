@@ -1,2 +1,11 @@
 [tool.isort]
 profile = "black"
+
+[tool.coverage.run]
+omit = [
+    # omit grpc proto from coverage reports
+    "api/lightning/*pb2*",
+    # omit test and mocks from coverage reports
+    "tests/*",
+    "*mocks*",
+    ]
