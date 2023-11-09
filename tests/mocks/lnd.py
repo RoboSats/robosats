@@ -4,6 +4,9 @@ from unittest.mock import MagicMock
 
 
 class MockLightningStub:
+    def __init__(self, channel):
+        pass
+
     def GetInfo(self, request):
         response = MagicMock()
         response.testnet = True
@@ -34,6 +37,8 @@ class MockLightningStub:
             response.cltv_expiry = 650
             response.payment_addr = '\275\205\224\016\363\325\262\201\306"8\022e\343\215\355\277\304\021\r\037l\202\023\314\353\334\265\002\036h\322'
             response.num_msat = 1731000
+
+            return response
 
     def CancelInvoice(self, request):
         response = MagicMock()
@@ -76,12 +81,16 @@ class MockLightningStub:
 
 
 class MockInvoicesStub:
+    def __init__(self, channel):
+        pass
+
     def AddHoldInvoice(self, request):
         response = MagicMock()
-        if request.value == 1731:
-            response.payment_request = "lntb17310n1pj552mdpp50p2utzh7mpsf3uq7u7cws4a96tj3kyq54hchdkpw8zecamx9klrqd2j2pshjmt9de6zqun9vejhyetwvdjn5gphxs6nsvfe893z6wphvfsj6dryvymj6wp5xvuz6wp5xcukvdec8yukgcf49cs9g6rfwvs8qcted4jkuapq2ay5cnpqgefy2326g5syjn3qt984253q2aq5cnz92skzqcmgv43kkgr0dcs9ymmzdafkzarnyp5kvgr5dpjjqmr0vd4jqampwvs8xatrvdjhxumxw4kzugzfwss8w6tvdssxyefqw4hxcmmrddjkggpgveskjmpfyp6kumr9wdejq7t0w5sxx6r9v96zqmmjyp3kzmnrv4kzqatwd9kxzar9wfskcmre9ccqz52xqzwzsp5hkzegrhn6kegr33z8qfxtcudaklugygdrakgyy7va0wt2qs7drfq9qyyssqc6rztchzl4m7mlulrhlcajszcl9fan8908k9n5x7gmz8g8d6ht5pj4l8r0dushq6j5s8x7yv9a5klz0kfxwy8v6ze6adyrrp4wu0q0sq3t604x"
-            response.add_index = 1
-            response.payment_addr = b'\275\205\224\016\363\325\262\201\306"8\022e\343\215\355\277\304\021\r\037l\202\023\314\353\334\265\002\036h\322'
+        # if request.value == 1731:
+        response.payment_request = "lntb17310n1pj552mdpp50p2utzh7mpsf3uq7u7cws4a96tj3kyq54hchdkpw8zecamx9klrqd2j2pshjmt9de6zqun9vejhyetwvdjn5gphxs6nsvfe893z6wphvfsj6dryvymj6wp5xvuz6wp5xcukvdec8yukgcf49cs9g6rfwvs8qcted4jkuapq2ay5cnpqgefy2326g5syjn3qt984253q2aq5cnz92skzqcmgv43kkgr0dcs9ymmzdafkzarnyp5kvgr5dpjjqmr0vd4jqampwvs8xatrvdjhxumxw4kzugzfwss8w6tvdssxyefqw4hxcmmrddjkggpgveskjmpfyp6kumr9wdejq7t0w5sxx6r9v96zqmmjyp3kzmnrv4kzqatwd9kxzar9wfskcmre9ccqz52xqzwzsp5hkzegrhn6kegr33z8qfxtcudaklugygdrakgyy7va0wt2qs7drfq9qyyssqc6rztchzl4m7mlulrhlcajszcl9fan8908k9n5x7gmz8g8d6ht5pj4l8r0dushq6j5s8x7yv9a5klz0kfxwy8v6ze6adyrrp4wu0q0sq3t604x"
+        response.add_index = 1
+        response.payment_addr = b'\275\205\224\016\363\325\262\201\306"8\022e\343\215\355\277\304\021\r\037l\202\023\314\353\334\265\002\036h\322'
+        return response
 
     def CancelInvoice(self, request):
         response = MagicMock()
@@ -93,7 +102,12 @@ class MockInvoicesStub:
 
     def LookupInvoiceV2(self, request):
         response = MagicMock()
-        return response
+        if request.payment_hash == bytes.fromhex(
+            "7855c58afed86098f01ee7b0e857a5d2e51b1014adf176d82e38b38eecc5b7c6"
+        ):
+            response.memo = "Payment reference: ..."
+            response.state = 3  # "ACCEPTED"
+            return response
 
 
 class MockRouterStub:
@@ -117,7 +131,7 @@ class MockSignerStub:
 
 
 class MockVersionerStub:
-    def __init__(channel, other):
+    def __init__(self, channel):
         pass
 
     def GetVersion(self, request):
