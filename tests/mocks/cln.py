@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 
 class MockNodeStub:
-    def __init__(channel, other):
+    def __init__(self, channel):
         pass
 
     def Getinfo(self, request):
@@ -34,7 +34,7 @@ class MockNodeStub:
 
 
 class MockHoldStub:
-    def __init__(channel, other):
+    def __init__(self, channel):
         pass
 
     def HoldInvoiceLookup(self, request):
