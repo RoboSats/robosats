@@ -25,7 +25,7 @@
     "@types/leaflet": "^1.9.7",
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
-    "@types/webpack": "^5.28.4",
+    "@types/webpack": "^5.28.5",
     "@typescript-eslint/eslint-plugin": "^5.35.1",
     "@typescript-eslint/parser": "^5.35.1",
     "babel-loader": "^9.1.3",
