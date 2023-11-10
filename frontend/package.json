@@ -22,7 +22,7 @@
     "@babel/preset-typescript": "^7.22.5",
     "@babel/runtime": "^7.22.6",
     "@types/jest": "^29.5.3",
-    "@types/leaflet": "^1.9.7",
+    "@types/leaflet": "^1.9.8",
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
     "@types/webpack": "^5.28.4",
