@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from decouple import config
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.urls import reverse
 
 from api.management.commands.follow_invoices import Command as FollowInvoices
 from api.models import Currency, Order
@@ -15,39 +15,84 @@ from tests.mocks.lnd import (  # MockRouterStub,; MockSignerStub,; MockVersioner
     MockInvoicesStub,
     MockLightningStub,
 )
+from tests.test_api import BaseAPITestCase
 
 
-class TradeTest(TestCase):
+def read_file(file_path):
+    """
+    Read a file and return its content.
+    """
+    with open(file_path, "r") as file:
+        return file.read()
+
+
+class TradeTest(BaseAPITestCase):
     su_pass = "12345678"
     su_name = config("ESCROW_USERNAME", cast=str, default="admin")
 
-    def setUp(self):
+    maker_form_with_range = {
+        "type": Order.Types.BUY,
+        "currency": 1,
+        "has_range": True,
+        "min_amount": 21,
+        "max_amount": 101.7,
+        "payment_method": "Advcash Cash F2F",
+        "is_explicit": False,
+        "premium": 3.34,
+        "public_duration": 69360,
+        "escrow_duration": 8700,
+        "bond_size": 3.5,
+        "latitude": 34.7455,
+        "longitude": 135.503,
+    }
+
+    @classmethod
+    def setUpTestData(cls):
         """
-        Create a superuser. The superuser is the escrow party.
+        Set up initial data for the test case.
         """
-        self.client = Client()
-        User.objects.create_superuser(self.su_name, "super@user.com", self.su_pass)
+        # Create super user
+        User.objects.create_superuser(cls.su_name, "super@user.com", cls.su_pass)
+
+        # Fetch currency prices from external APIs
+        cache_market()
 
     def test_login_superuser(self):
         """
-        Test logging in as a superuser.
+        Test the login functionality for the superuser.
         """
-        path = "/coordinator/login/"
+        path = reverse("admin:login")
         data = {"username": self.su_name, "password": self.su_pass}
         response = self.client.post(path, data)
         self.assertEqual(response.status_code, 302)
+        self.assertResponse(response)
+
+    def test_cache_market(self):
+        """
+        Test if the cache_market() call during test setup worked
+        """
+        usd = Currency.objects.get(id=1)
+        self.assertIsInstance(
+            usd.exchange_rate,
+            Decimal,
+            f"Exchange rate is not a Decimal. Got {type(usd.exchange_rate)}",
+        )
+        self.assertGreater(
+            usd.exchange_rate, 0, "Exchange rate is not higher than zero"
+        )
+        self.assertIsInstance(
+            usd.timestamp, datetime, "External price timestamp is not a datetime"
+        )
 
     def get_robot_auth(self, robot_index, first_encounter=False):
         """
         Create an AUTH header that embeds token, pub_key, and enc_priv_key into a single string
         as requested by the robosats token middleware.
         """
-        with open(f"tests/robots/{robot_index}/b91_token", "r") as file:
-            b91_token = file.read()
-        with open(f"tests/robots/{robot_index}/pub_key", "r") as file:
-            pub_key = file.read()
-        with open(f"tests/robots/{robot_index}/enc_priv_key", "r") as file:
-            enc_priv_key = file.read()
+
+        b91_token = read_file(f"tests/robots/{robot_index}/b91_token")
+        pub_key = read_file(f"tests/robots/{robot_index}/pub_key")
+        enc_priv_key = read_file(f"tests/robots/{robot_index}/enc_priv_key")
 
         # First time a robot authenticated, it is registered by the backend, so pub_key and enc_priv_key is needed
         if first_encounter:
@@ -59,14 +104,21 @@ class TradeTest(TestCase):
 
         return headers, pub_key, enc_priv_key
 
-    def assert_robot(self, response, pub_key, enc_priv_key, expected_nickname):
+    def assert_robot(self, response, pub_key, enc_priv_key, robot_index):
+        """
+        Assert that the robot is created correctly.
+        """
+        nickname = read_file(f"tests/robots/{robot_index}/nickname")
+
         data = json.loads(response.content.decode())
 
         self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
         self.assertEqual(
             data["nickname"],
-            expected_nickname,
-            "Robot created nickname is not MyopicRacket333",
+            nickname,
+            f"Robot created nickname is not {nickname}",
         )
         self.assertEqual(
             data["public_key"], pub_key, "Returned public Kky does not match"
@@ -95,67 +147,37 @@ class TradeTest(TestCase):
         """
         Creates the robots in /tests/robots/{robot_index}
         """
-        path = "/api/robot/"
+        path = reverse("robot")
         headers, pub_key, enc_priv_key = self.get_robot_auth(robot_index, True)
 
         response = self.client.get(path, **headers)
 
-        with open(f"tests/robots/{robot_index}/nickname", "r") as file:
-            expected_nickname = file.read()
-
-        self.assert_robot(response, pub_key, enc_priv_key, expected_nickname)
+        self.assert_robot(response, pub_key, enc_priv_key, robot_index)
 
     def test_create_robots(self):
         """
-        Creates two robots to be used in the trade tests
+        Test the creation of two robots to be used in the trade tests
         """
         self.create_robot(robot_index=1)
         self.create_robot(robot_index=2)
 
-    def test_cache_market(self):
-        cache_market()
-
-        usd = Currency.objects.get(id=1)
-        self.assertIsInstance(
-            usd.exchange_rate,
-            Decimal,
-            f"Exchange rate is not a Decimal. Got {type(usd.exchange_rate)}",
-        )
-        self.assertGreater(
-            usd.exchange_rate, 0, "Exchange rate is not higher than zero"
-        )
-        self.assertIsInstance(
-            usd.timestamp, datetime, "External price timestamp is not a datetime"
-        )
-
-    def create_order(self, maker_form, robot_index=1):
-        # Requisites
-        # Cache market prices
-        self.test_cache_market()
-        path = "/api/make/"
+    def make_order(self, maker_form, robot_index=1):
+        """
+        Create an order for the test.
+        """
+        path = reverse("make")
         # Get valid robot auth headers
         headers, _, _ = self.get_robot_auth(robot_index, True)
 
         response = self.client.post(path, maker_form, **headers)
         return response
 
-    def test_create_order(self):
-        maker_form = {
-            "type": Order.Types.BUY,
-            "currency": 1,
-            "has_range": True,
-            "min_amount": 21,
-            "max_amount": 101.7,
-            "payment_method": "Advcash Cash F2F",
-            "is_explicit": False,
-            "premium": 3.34,
-            "public_duration": 69360,
-            "escrow_duration": 8700,
-            "bond_size": 3.5,
-            "latitude": 34.7455,
-            "longitude": 135.503,
-        }
-        response = self.create_order(maker_form, robot_index=1)
+    def test_make_order(self):
+        """
+        Test the creation of an order.
+        """
+        maker_form = self.maker_form_with_range
+        response = self.make_order(maker_form, robot_index=1)
         data = json.loads(response.content.decode())
 
         # Checks
@@ -237,7 +259,7 @@ class TradeTest(TestCase):
     @patch("api.lightning.lnd.lightning_pb2_grpc.LightningStub", MockLightningStub)
     @patch("api.lightning.lnd.invoices_pb2_grpc.InvoicesStub", MockInvoicesStub)
     def get_order(self, order_id, robot_index=1, first_encounter=False):
-        path = "/api/order/"
+        path = reverse("order")
         params = f"?order_id={order_id}"
         headers, _, _ = self.get_robot_auth(robot_index, first_encounter)
         response = self.client.get(path + params, **headers)
@@ -246,22 +268,10 @@ class TradeTest(TestCase):
 
     def test_get_order_created(self):
         # Make an order
-        maker_form = {
-            "type": Order.Types.BUY,
-            "currency": 1,
-            "has_range": True,
-            "min_amount": 21,
-            "max_amount": 101.7,
-            "payment_method": "Advcash Cash F2F",
-            "is_explicit": False,
-            "premium": 3.34,
-            "public_duration": 69360,
-            "escrow_duration": 8700,
-            "bond_size": 3.5,
-            "latitude": 34.7455,
-            "longitude": 135.503,
-        }
-        order_made_response = self.create_order(maker_form, robot_index=1)
+        maker_form = self.maker_form_with_range
+        robot_index = 1
+
+        order_made_response = self.make_order(maker_form, robot_index)
         order_made_data = json.loads(order_made_response.content.decode())
 
         # Maker's first order fetch. Should trigger maker bond hold invoice generation.
@@ -284,7 +294,9 @@ class TradeTest(TestCase):
         self.assertEqual(data["status_message"], Order.Status(Order.Status.WFB).label)
         self.assertFalse(data["is_fiat_sent"])
         self.assertFalse(data["is_disputed"])
-        self.assertEqual(data["ur_nick"], "MyopicRacket333")
+        self.assertEqual(
+            data["ur_nick"], read_file(f"tests/robots/{robot_index}/nickname")
+        )
         self.assertTrue(isinstance(data["satoshis_now"], int))
         self.assertFalse(data["maker_locked"])
         self.assertFalse(data["taker_locked"])
@@ -302,9 +314,9 @@ class TradeTest(TestCase):
         follow_invoices = FollowInvoices()
         follow_invoices.follow_hold_invoices()
 
-    def create_and_publish_order(self, maker_form, robot_index=1):
+    def make_and_publish_order(self, maker_form, robot_index=1):
         # Make an order
-        order_made_response = self.create_order(maker_form, robot_index=1)
+        order_made_response = self.make_order(maker_form, robot_index)
         order_made_data = json.loads(order_made_response.content.decode())
 
         # Maker's first order fetch. Should trigger maker bond hold invoice generation.
@@ -318,23 +330,9 @@ class TradeTest(TestCase):
         return response
 
     def test_publish_order(self):
-        maker_form = {
-            "type": Order.Types.BUY,
-            "currency": 1,
-            "has_range": True,
-            "min_amount": 21,
-            "max_amount": 101.7,
-            "payment_method": "Advcash Cash F2F",
-            "is_explicit": False,
-            "premium": 3.34,
-            "public_duration": 69360,
-            "escrow_duration": 8700,
-            "bond_size": 3.5,
-            "latitude": 34.7455,
-            "longitude": 135.503,
-        }
+        maker_form = self.maker_form_with_range
         # Get order
-        response = self.create_and_publish_order(maker_form)
+        response = self.make_and_publish_order(maker_form)
         data = json.loads(response.content.decode())
 
         self.assertEqual(response.status_code, 200)
@@ -353,3 +351,66 @@ class TradeTest(TestCase):
         self.assertFalse(public_data["is_participant"])
         self.assertTrue(isinstance(public_data["price_now"], float))
         self.assertTrue(isinstance(data["satoshis_now"], int))
+
+    @patch("api.lightning.cln.hold_pb2_grpc.HoldStub", MockHoldStub)
+    @patch("api.lightning.lnd.lightning_pb2_grpc.LightningStub", MockLightningStub)
+    @patch("api.lightning.lnd.invoices_pb2_grpc.InvoicesStub", MockInvoicesStub)
+    def take_order(self, order_id, amount, robot_index=2):
+        path = reverse("order")
+        params = f"?order_id={order_id}"
+        headers, _, _ = self.get_robot_auth(robot_index, first_encounter=True)
+        body = {"action": "take", "amount": amount}
+        response = self.client.post(path + params, body, **headers)
+
+        return response
+
+    def make_and_take_order(
+        self, maker_form, take_amount=80, maker_index=1, taker_index=2
+    ):
+        response_published = self.make_and_publish_order(maker_form, maker_index)
+        data_publised = json.loads(response_published.content.decode())
+        response = self.take_order(data_publised["id"], take_amount, taker_index)
+        return response
+
+    # def test_make_and_take_order(self):
+    #     maker_index = 1
+    #     taker_index = 2
+    #     maker_form = self.maker_form_with_range
+    #     self.create_robot(taker_index) #### WEEEE SHOULD NOT BE NEEDED >??? WHY ROBOT HAS NO LOGIN TIME??
+    #     response = self.make_and_take_order(maker_form, 80, maker_index, taker_index)
+    #     data = json.loads(response.content.decode())
+
+    #     print(data)
+
+    #     self.assertEqual(
+    #         data["ur_nick"], read_file(f"tests/robots/{taker_index}/nickname")
+    #     )
+    #     self.assertEqual(
+    #         data["taker_nick"], read_file(f"tests/robots/{taker_index}/nickname")
+    #     )
+    #     self.assertEqual(
+    #         data["maker_nick"], read_file(f"tests/robots/{maker_index}/nickname")
+    #     )
+    #     self.assertFalse(data["is_maker"])
+    #     self.assertTrue(data["is_taker"])
+    #     self.assertTrue(data["is_participant"])
+
+    #     a = {
+    #         "maker_status": "Active",
+    #         "taker_status": "Active",
+    #         "price_now": 38205.0,
+    #         "premium_now": 3.34,
+    #         "satoshis_now": 266196,
+    #         "is_buyer": False,
+    #         "is_seller": True,
+    #         "taker_nick": "EquivalentWool707",
+    #         "status_message": "Waiting for taker bond",
+    #         "is_fiat_sent": False,
+    #         "is_disputed": False,
+    #         "ur_nick": "EquivalentWool707",
+    #         "maker_locked": True,
+    #         "taker_locked": False,
+    #         "escrow_locked": False,
+    #         "bond_invoice": "lntb73280n1pj5uypwpp5vklcx3s3c66ltz5v7kglppke5n3u6sa6h8m6whe278lza7rwfc7qd2j2pshjmt9de6zqun9vejhyetwvdjn5gp3vgcxgvfkv43z6e3cvyez6dpkxejj6cnxvsmj6c3exsuxxden89skzv3j9cs9g6rfwvs8qcted4jkuapq2ay5cnpqgefy2326g5syjn3qt984253q2aq5cnz92skzqcmgv43kkgr0dcs9ymmzdafkzarnyp5kvgr5dpjjqmr0vd4jqampwvs8xatrvdjhxumxw4kzugzfwss8w6tvdssxyefqw4hxcmmrddjkggpgveskjmpfyp6kumr9wdejq7t0w5sxx6r9v96zqmmjyp3kzmnrv4kzqatwd9kxzar9wfskcmre9ccqz2sxqzfvsp5hkz0dnvja244hc8jwmpeveaxtjd4ddzuqlpqc5zxa6tckr8py50s9qyyssqdcl6w2rhma7k3v904q4tuz68z82d6x47dgflk6m8jdtgt9dg3n9304axv8qvd66dq39sx7yu20sv5pyguv9dnjw3385y8utadxxsqtsqpf7p3w",
+    #         "bond_satoshis": 7328,
+    #     }

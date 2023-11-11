@@ -724,7 +724,7 @@ class BookView(ListAPIView):
         return Response(book_data, status=status.HTTP_200_OK)
 
 
-class InfoView(ListAPIView):
+class InfoView(viewsets.ViewSet):
     serializer_class = InfoSerializer
 
     @extend_schema(**InfoViewSchema.get)

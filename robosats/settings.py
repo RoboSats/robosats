@@ -275,9 +275,9 @@ MAX_PUBLIC_ORDER_DURATION = 24
 MIN_PUBLIC_ORDER_DURATION = 0.166
 
 # Bond size as percentage (%)
-DEFAULT_BOND_SIZE = 3
-MIN_BOND_SIZE = 2
-MAX_BOND_SIZE = 15
+DEFAULT_BOND_SIZE = float(3)
+MIN_BOND_SIZE = float(2)
+MAX_BOND_SIZE = float(15)
 
 # Default time to provide a valid invoice and the trade escrow MINUTES
 INVOICE_AND_ESCROW_DURATION = 180

@@ -6,13 +6,19 @@ from .models import MarketTick, Order
 RETRY_TIME = int(config("RETRY_TIME"))
 
 
+class VersionSerializer(serializers.Serializer):
+    major = serializers.IntegerField()
+    minor = serializers.IntegerField()
+    patch = serializers.IntegerField()
+
+
 class InfoSerializer(serializers.Serializer):
     num_public_buy_orders = serializers.IntegerField()
     num_public_sell_orders = serializers.IntegerField()
     book_liquidity = serializers.IntegerField(
         help_text="Total amount of BTC in the order book"
     )
-    active_robots_today = serializers.CharField()
+    active_robots_today = serializers.IntegerField()
     last_day_nonkyc_btc_premium = serializers.FloatField(
         help_text="Average premium (weighted by volume) of the orders in the last 24h"
     )
@@ -23,6 +29,7 @@ class InfoSerializer(serializers.Serializer):
         help_text="Total volume in BTC since exchange's inception"
     )
     lnd_version = serializers.CharField()
+    cln_version = serializers.CharField()
     robosats_running_commit_hash = serializers.CharField()
     alternative_site = serializers.CharField()
     alternative_name = serializers.CharField()
@@ -35,6 +42,17 @@ class InfoSerializer(serializers.Serializer):
     current_swap_fee_rate = serializers.FloatField(
         help_text="Swap fees to perform on-chain transaction (percent)"
     )
+    version = VersionSerializer()
+    notice_severity = serializers.ChoiceField(
+        choices=[
+            ("none", "none"),
+            ("warning", "warning"),
+            ("success", "success"),
+            ("error", "error"),
+            ("info", "info"),
+        ]
+    )
+    notice_message = serializers.CharField()
 
 
 class ListOrderSerializer(serializers.ModelSerializer):
@@ -60,7 +78,7 @@ class ListOrderSerializer(serializers.ModelSerializer):
             "escrow_duration",
             "bond_size",
             "latitude",
-            "longitude"
+            "longitude",
         )
 
 
@@ -160,10 +178,13 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         required=False,
         help_text="Price of the order in the order's currency at the time of request (upto 5 significant digits)",
     )
-    premium = serializers.IntegerField(
+    premium = serializers.CharField(
+        required=False, help_text="Premium over the CEX price set by the maker"
+    )
+    premium_now = serializers.FloatField(
         required=False, help_text="Premium over the CEX price at the current time"
     )
-    premium_percentile = serializers.IntegerField(
+    premium_percentile = serializers.FloatField(
         required=False,
         help_text="(Only if `is_maker`) Premium percentile of your order compared to other public orders in the same currency currently in the order book",
     )
@@ -253,11 +274,11 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         required=False,
         help_text="in percentage, the swap fee rate the platform charges",
     )
-    latitude = serializers.FloatField(
+    latitude = serializers.CharField(
         required=False,
         help_text="Latitude of the order for F2F payments",
     )
-    longitude = serializers.FloatField(
+    longitude = serializers.CharField(
         required=False,
         help_text="Longitude of the order for F2F payments",
     )
@@ -300,7 +321,11 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     )
     maker_summary = SummarySerializer(required=False)
     taker_summary = SummarySerializer(required=False)
-    platform_summary = PlatformSummarySerializer(required=True)
+    satoshis_now = serializers.IntegerField(
+        required=False,
+        help_text="Maximum size of the order right now in Satoshis",
+    )
+    platform_summary = PlatformSummarySerializer(required=False)
     expiry_message = serializers.CharField(
         required=False,
         help_text="The reason the order expired (message associated with the `expiry_reason`)",
@@ -338,7 +363,9 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "payment_method",
             "is_explicit",
             "premium",
+            "premium_now",
             "satoshis",
+            "satoshis_now",
             "maker",
             "taker",
             "escrow_duration",
@@ -350,7 +377,6 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "maker_status",
             "taker_status",
             "price_now",
-            "premium",
             "premium_percentile",
             "num_similar_orders",
             "tg_enabled",
@@ -441,7 +467,7 @@ class OrderPublicSerializer(serializers.ModelSerializer):
             "satoshis_now",
             "bond_size",
             "latitude",
-            "longitude"
+            "longitude",
         )
 
 
@@ -482,7 +508,7 @@ class MakeOrderSerializer(serializers.ModelSerializer):
             "escrow_duration",
             "bond_size",
             "latitude",
-            "longitude"
+            "longitude",
         )
 
 
