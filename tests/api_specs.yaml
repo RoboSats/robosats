@@ -229,7 +229,7 @@ paths:
         Default values for the following fields if not specified:
         - `public_duration` - **24**
         - `escrow_duration` - **180**
-        - `bond_size` -  **3**
+        - `bond_size` -  **3.0**
         - `has_range` - **false**
         - `premium` - **0**
       summary: Create a maker order
@@ -788,6 +788,14 @@ paths:
                   last_order_id:
                     type: integer
                     description: Last order id if present
+                  earned_rewards:
+                    type: integer
+                    description: Satoshis available to be claimed
+                  last_login:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: Last time the coordinator saw this robot
               examples:
                 SuccessfullyRetrievedRobot:
                   value:
@@ -1424,13 +1432,20 @@ components:
         is_explicit:
           type: boolean
         premium:
-          type: integer
+          type: string
+          description: Premium over the CEX price set by the maker
+        premium_now:
+          type: number
+          format: double
           description: Premium over the CEX price at the current time
         satoshis:
           type: integer
           maximum: 5000000
           minimum: 20000
           nullable: true
+        satoshis_now:
+          type: integer
+          description: Maximum size of the order right now in Satoshis
         maker:
           type: integer
           nullable: true
@@ -1478,7 +1493,8 @@ components:
           description: Price of the order in the order's currency at the time of request
             (upto 5 significant digits)
         premium_percentile:
-          type: integer
+          type: number
+          format: double
           description: (Only if `is_maker`) Premium percentile of your order compared
             to other public orders in the same currency currently in the order book
         num_similar_orders:
@@ -1641,17 +1657,14 @@ components:
           description: The network eg. 'testnet', 'mainnet'. Only if status = `14`
             (Successful Trade) and is_buyer = `true`
         latitude:
-          type: number
-          format: double
+          type: string
           description: Latitude of the order for F2F payments
         longitude:
-          type: number
-          format: double
+          type: string
           description: Longitude of the order for F2F payments
       required:
       - expires_at
       - id
-      - platform_summary
       - type
     OrderPublic:
       type: object

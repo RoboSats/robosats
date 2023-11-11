@@ -4,10 +4,12 @@ from unittest.mock import patch
 from decouple import config
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.test import Client
+from django.urls import reverse
 
 from tests.mocks.cln import MockNodeStub
 from tests.mocks.lnd import MockVersionerStub
+from tests.test_api import BaseAPITestCase
 
 FEE = config("FEE", cast=float, default=0.2)
 NODE_ID = config("NODE_ID", cast=str, default="033b58d7......")
@@ -18,7 +20,7 @@ NOTICE_SEVERITY = config("NOTICE_SEVERITY", cast=str, default="none")
 NOTICE_MESSAGE = config("NOTICE_MESSAGE", cast=str, default="")
 
 
-class CoordinatorInfoTest(TestCase):
+class CoordinatorInfoTest(BaseAPITestCase):
     su_pass = "12345678"
     su_name = config("ESCROW_USERNAME", cast=str, default="admin")
 
@@ -32,12 +34,14 @@ class CoordinatorInfoTest(TestCase):
     @patch("api.lightning.cln.node_pb2_grpc.NodeStub", MockNodeStub)
     @patch("api.lightning.lnd.verrpc_pb2_grpc.VersionerStub", MockVersionerStub)
     def test_info(self):
-        path = "/api/info/"
+        path = reverse("info")
 
         response = self.client.get(path)
         data = json.loads(response.content.decode())
 
         self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
         self.assertEqual(data["num_public_buy_orders"], 0)
         self.assertEqual(data["num_public_sell_orders"], 0)
         self.assertEqual(data["book_liquidity"], 0)

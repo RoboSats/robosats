@@ -5,6 +5,7 @@ from django.conf import settings
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter
 
 from api.serializers import (
+    InfoSerializer,
     ListOrderSerializer,
     OrderDetailSerializer,
     StealthSerializer,
@@ -322,17 +323,7 @@ class OrderViewSchema:
             ),
         ],
         "responses": {
-            200: {
-                "type": "object",
-                "additionalProperties": {
-                    "oneOf": [
-                        {"type": "str"},
-                        {"type": "number"},
-                        {"type": "object"},
-                        {"type": "boolean"},
-                    ],
-                },
-            },
+            200: OrderDetailSerializer,
             400: {
                 "type": "object",
                 "properties": {
@@ -474,6 +465,16 @@ class RobotViewSchema:
                         "type": "integer",
                         "description": "Last order id if present",
                     },
+                    "earned_rewards": {
+                        "type": "integer",
+                        "description": "Satoshis available to be claimed",
+                    },
+                    "last_login": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": True,
+                        "description": "Last time the coordinator saw this robot",
+                    },
                 },
             },
         },
@@ -517,6 +518,9 @@ class InfoViewSchema:
               - on-chain swap fees
             """
         ),
+        "responses": {
+            200: InfoSerializer,
+        },
     }
 
 
