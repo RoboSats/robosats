@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 # Mock up of CLN gRPC responses
+# Unfinished, during integration tests we SHOULD spin up a regtest CLN instance
 
 
 class MockNodeStub:
@@ -30,29 +31,4 @@ class MockNodeStub:
         response.binding.item_type = "IPV6"
         response.binding.address = "127.0.0.1"
         response.binding.port = 9736
-        return response
-
-
-class MockHoldStub:
-    def __init__(self, channel):
-        pass
-
-    def HoldInvoiceLookup(self, request):
-        response = MagicMock()
-        return response
-
-    def HoldInvoice(self, request):
-        response = MagicMock()
-        return response
-
-    def HoldInvoiceSettle(self, request):
-        response = MagicMock()
-        return response
-
-    def HoldInvoiceCancel(self, request):
-        response = MagicMock()
-        return response
-
-    def DecodeBolt11(self, request):
-        response = MagicMock()
         return response

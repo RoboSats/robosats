@@ -1,5 +1,4 @@
 import json
-from unittest.mock import patch
 
 from decouple import config
 from django.conf import settings
@@ -7,8 +6,6 @@ from django.contrib.auth.models import User
 from django.test import Client
 from django.urls import reverse
 
-from tests.mocks.cln import MockNodeStub
-from tests.mocks.lnd import MockVersionerStub
 from tests.test_api import BaseAPITestCase
 
 FEE = config("FEE", cast=float, default=0.2)
@@ -31,8 +28,6 @@ class CoordinatorInfoTest(BaseAPITestCase):
         self.client = Client()
         User.objects.create_superuser(self.su_name, "super@user.com", self.su_pass)
 
-    @patch("api.lightning.cln.node_pb2_grpc.NodeStub", MockNodeStub)
-    @patch("api.lightning.lnd.verrpc_pb2_grpc.VersionerStub", MockVersionerStub)
     def test_info(self):
         path = reverse("info")
 
@@ -56,7 +51,9 @@ class CoordinatorInfoTest(BaseAPITestCase):
         )
         self.assertEqual(data["version"], settings.VERSION)
         self.assertEqual(data["node_id"], NODE_ID)
-        self.assertEqual(data["network"], "testnet")
+        self.assertEqual(
+            data["network"], "testnet"
+        )  # tests take place in regtest, but this attribute is read from .env
         self.assertAlmostEqual(data["maker_fee"], MAKER_FEE)
         self.assertAlmostEqual(data["taker_fee"], TAKER_FEE)
         self.assertAlmostEqual(data["bond_size"], BOND_SIZE)

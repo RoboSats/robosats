@@ -1161,12 +1161,10 @@ components:
       - alternative_site
       - bond_size
       - book_liquidity
-      - cln_version
       - current_swap_fee_rate
       - last_day_nonkyc_btc_premium
       - last_day_volume
       - lifetime_volume
-      - lnd_version
       - maker_fee
       - network
       - node_alias
@@ -1486,10 +1484,17 @@ components:
 
             Note: When you make a request to this route, your own status get's updated and can be seen by your counterparty
         taker_status:
-          type: boolean
-          description: True if you are either a taker or maker, False otherwise
+          type: string
+          description: |-
+            Status of the maker:
+            - **'Active'** (seen within last 2 min)
+            - **'Seen Recently'** (seen within last 10 min)
+            - **'Inactive'** (seen more than 10 min ago)
+
+            Note: When you make a request to this route, your own status get's updated and can be seen by your counterparty
         price_now:
-          type: integer
+          type: number
+          format: double
           description: Price of the order in the order's currency at the time of request
             (upto 5 significant digits)
         premium_percentile:
@@ -1657,10 +1662,12 @@ components:
           description: The network eg. 'testnet', 'mainnet'. Only if status = `14`
             (Successful Trade) and is_buyer = `true`
         latitude:
-          type: string
+          type: number
+          format: double
           description: Latitude of the order for F2F payments
         longitude:
-          type: string
+          type: number
+          format: double
           description: Longitude of the order for F2F payments
       required:
       - expires_at

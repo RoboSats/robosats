@@ -10,7 +10,7 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
 
-if config("COORDINATOR_TESTING", cast=bool, default=False):
+if config("TESTING", cast=bool, default=False):
     import random
     import string
 
