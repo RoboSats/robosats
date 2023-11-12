@@ -17,61 +17,66 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      DEVELOPMENT: 1
     strategy:
       max-parallel: 4
       matrix:
         python-version: ["3.11.6", "3.12"]
-
-    services:
-      db:
-        image: postgres:14.2
-        env:
-          POSTGRES_DB: postgres
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: example
-        ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        lnd-version: ["v0.17.0-beta","v0.17.1-beta.rc1"]
 
     steps:
     - name: 'Checkout'
       uses: actions/checkout@v4
 
-    - name: 'Set up Python ${{ matrix.python-version }}'
-      uses: actions/setup-python@v4
+    - name: 'Compose Eegtest Orchestration'
+      uses: isbang/compose-action@v1.5.1
       with:
-        python-version: ${{ matrix.python-version }}
+        compose-file: "docker-test.yml"
+        env: "tests/compose.env"
 
-    - name: 'Cache pip dependencies'
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+    # - name: 'Set up Python ${{ matrix.python-version }}'
+    #   uses: actions/setup-python@v4
+    #   with:
+    #     python-version: ${{ matrix.python-version }}
 
-    - name: 'Install Python Dependencies'
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+    # - name: 'Cache pip dependencies'
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ~/.cache/pip
+    #     key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-pip-
 
-    - name: 'Install LND/CLN gRPC Dependencies'
-      run: bash ./scripts/generate_grpc.sh
+    # - name: 'Install Python Dependencies'
+    #   run: |
+    #     python -m pip install --upgrade pip
+    #     pip install -r requirements.txt
+    #     pip install -r requirements_dev.txt
 
-    - name: 'Create .env File'
-      run: |
-        mv .env-sample .env
-        sed -i "s/USE_TOR='True'/USE_TOR='False'/" .env
+    # - name: 'Install LND/CLN gRPC Dependencies'
+    #   run: bash ./scripts/generate_grpc.sh
 
-    - name: 'Wait for PostgreSQL to become ready'
-      run: |
-        sudo apt-get install -y postgresql-client
-        until pg_isready -h localhost -p 5432 -U postgres; do sleep 2; done
+    # - name: 'Create .env File'
+    #   run: |
+    #     mv .env-sample .env
+    #     sed -i "s/USE_TOR=True/USE_TOR=False/" .env
+
+    # - name: 'Wait for PostgreSQL to become ready'
+    #   run: |
+    #     sudo apt-get install -y postgresql-client
+    #     until pg_isready -h localhost -p 5432 -U postgres; do sleep 2; done
 
     - name: 'Run tests with coverage'
       run: |
-        pip install coverage
-        coverage run manage.py test
-        coverage report
+        docker exec coordinator coverage run manage.py test
+        docker exec coordinator coverage report
+
+
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Run Docker Compose
+#         run: |
+#           docker-compose up -d
+#           docker-compose run web python manage.py test

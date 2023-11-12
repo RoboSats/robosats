@@ -28,8 +28,8 @@ class InfoSerializer(serializers.Serializer):
     lifetime_volume = serializers.FloatField(
         help_text="Total volume in BTC since exchange's inception"
     )
-    lnd_version = serializers.CharField()
-    cln_version = serializers.CharField()
+    lnd_version = serializers.CharField(required=False)
+    cln_version = serializers.CharField(required=False)
     robosats_running_commit_hash = serializers.CharField()
     alternative_site = serializers.CharField()
     alternative_name = serializers.CharField()
@@ -170,11 +170,15 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         "- **'Inactive'** (seen more than 10 min ago)\n\n"
         "Note: When you make a request to this route, your own status get's updated and can be seen by your counterparty",
     )
-    taker_status = serializers.BooleanField(
+    taker_status = serializers.CharField(
         required=False,
-        help_text="True if you are either a taker or maker, False otherwise",
+        help_text="Status of the maker:\n"
+        "- **'Active'** (seen within last 2 min)\n"
+        "- **'Seen Recently'** (seen within last 10 min)\n"
+        "- **'Inactive'** (seen more than 10 min ago)\n\n"
+        "Note: When you make a request to this route, your own status get's updated and can be seen by your counterparty",
     )
-    price_now = serializers.IntegerField(
+    price_now = serializers.FloatField(
         required=False,
         help_text="Price of the order in the order's currency at the time of request (upto 5 significant digits)",
     )
@@ -274,11 +278,11 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         required=False,
         help_text="in percentage, the swap fee rate the platform charges",
     )
-    latitude = serializers.CharField(
+    latitude = serializers.FloatField(
         required=False,
         help_text="Latitude of the order for F2F payments",
     )
-    longitude = serializers.CharField(
+    longitude = serializers.FloatField(
         required=False,
         help_text="Longitude of the order for F2F payments",
     )

@@ -37,7 +37,7 @@ except Exception:
 
 # Read macaroon from file or .env variable string encoded as base64
 try:
-    with open(os.path.join(config("LND_DIR"), config("MACAROON_path")), "rb") as f:
+    with open(os.path.join(config("LND_DIR"), config("MACAROON_PATH")), "rb") as f:
         MACAROON = f.read()
 except Exception:
     MACAROON = b64decode(config("LND_MACAROON_BASE64"))
@@ -49,7 +49,7 @@ MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500_000)
 
 # Logger function used to build tests/mocks/lnd.py
 def log(name, request, response):
-    if not config("LOG_LND", cast=bool, default=True):
+    if not config("LOG_LND", cast=bool, default=False):
         return
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_message = f"######################################\nEvent: {name}\nTime: {current_time}\nRequest:\n{request}\nResponse:\n{response}\nType: {type(response)}\n"

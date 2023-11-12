@@ -1,7 +1,7 @@
 import json
+import time
 from datetime import datetime
 from decimal import Decimal
-from unittest.mock import patch
 
 from decouple import config
 from django.contrib.auth.models import User
@@ -10,10 +10,13 @@ from django.urls import reverse
 from api.management.commands.follow_invoices import Command as FollowInvoices
 from api.models import Currency, Order
 from api.tasks import cache_market
-from tests.mocks.cln import MockHoldStub  # , MockNodeStub
-from tests.mocks.lnd import (  # MockRouterStub,; MockSignerStub,; MockVersionerStub,
-    MockInvoicesStub,
-    MockLightningStub,
+from tests.node_utils import (
+    connect_to_node,
+    create_address,
+    generate_blocks,
+    get_node_id,
+    open_channel,
+    pay_invoice,
 )
 from tests.test_api import BaseAPITestCase
 
@@ -57,6 +60,21 @@ class TradeTest(BaseAPITestCase):
         # Fetch currency prices from external APIs
         cache_market()
 
+        # Fund two LN nodes in regtest and open channels
+        coordinator_node_id = get_node_id("coordinator")
+        connect_to_node("robot", coordinator_node_id, "localhost:9735")
+
+        funding_address = create_address("robot")
+        generate_blocks(funding_address, 101)
+
+        time.sleep(
+            2
+        )  # channels cannot be created until the node is fully sync. We just created 101 blocks.
+        open_channel("robot", coordinator_node_id, 100_000_000, 50_000_000)
+
+        # Generate 6 blocks so the channel becomes active
+        generate_blocks(funding_address, 6)
+
     def test_login_superuser(self):
         """
         Test the login functionality for the superuser.
@@ -65,7 +83,9 @@ class TradeTest(BaseAPITestCase):
         data = {"username": self.su_name, "password": self.su_pass}
         response = self.client.post(path, data)
         self.assertEqual(response.status_code, 302)
-        self.assertResponse(response)
+        self.assertResponse(
+            response
+        )  # should skip given that /coordinator/login is not documented
 
     def test_cache_market(self):
         """
@@ -102,13 +122,15 @@ class TradeTest(BaseAPITestCase):
         else:
             headers = {"HTTP_AUTHORIZATION": f"Token {b91_token}"}
 
-        return headers, pub_key, enc_priv_key
+        return headers
 
-    def assert_robot(self, response, pub_key, enc_priv_key, robot_index):
+    def assert_robot(self, response, robot_index):
         """
         Assert that the robot is created correctly.
         """
         nickname = read_file(f"tests/robots/{robot_index}/nickname")
+        pub_key = read_file(f"tests/robots/{robot_index}/pub_key")
+        enc_priv_key = read_file(f"tests/robots/{robot_index}/enc_priv_key")
 
         data = json.loads(response.content.decode())
 
@@ -148,18 +170,17 @@ class TradeTest(BaseAPITestCase):
         Creates the robots in /tests/robots/{robot_index}
         """
         path = reverse("robot")
-        headers, pub_key, enc_priv_key = self.get_robot_auth(robot_index, True)
+        headers = self.get_robot_auth(robot_index, True)
 
-        response = self.client.get(path, **headers)
-
-        self.assert_robot(response, pub_key, enc_priv_key, robot_index)
+        return self.client.get(path, **headers)
 
     def test_create_robots(self):
         """
         Test the creation of two robots to be used in the trade tests
         """
-        self.create_robot(robot_index=1)
-        self.create_robot(robot_index=2)
+        for robot_index in [1, 2]:
+            response = self.create_robot(robot_index)
+            self.assert_robot(response, robot_index)
 
     def make_order(self, maker_form, robot_index=1):
         """
@@ -167,7 +188,7 @@ class TradeTest(BaseAPITestCase):
         """
         path = reverse("make")
         # Get valid robot auth headers
-        headers, _, _ = self.get_robot_auth(robot_index, True)
+        headers = self.get_robot_auth(robot_index, True)
 
         response = self.client.post(path, maker_form, **headers)
         return response
@@ -181,6 +202,8 @@ class TradeTest(BaseAPITestCase):
         data = json.loads(response.content.decode())
 
         # Checks
+        self.assertResponse(response)
+
         self.assertIsInstance(data["id"], int, "Order ID is not an integer")
         self.assertEqual(
             data["status"],
@@ -255,13 +278,10 @@ class TradeTest(BaseAPITestCase):
 
         return data
 
-    @patch("api.lightning.cln.hold_pb2_grpc.HoldStub", MockHoldStub)
-    @patch("api.lightning.lnd.lightning_pb2_grpc.LightningStub", MockLightningStub)
-    @patch("api.lightning.lnd.invoices_pb2_grpc.InvoicesStub", MockInvoicesStub)
     def get_order(self, order_id, robot_index=1, first_encounter=False):
         path = reverse("order")
         params = f"?order_id={order_id}"
-        headers, _, _ = self.get_robot_auth(robot_index, first_encounter)
+        headers = self.get_robot_auth(robot_index, first_encounter)
         response = self.client.get(path + params, **headers)
 
         return response
@@ -279,6 +299,8 @@ class TradeTest(BaseAPITestCase):
         data = json.loads(response.content.decode())
 
         self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
         self.assertEqual(data["id"], order_made_data["id"])
         self.assertTrue(
             isinstance(datetime.fromisoformat(data["created_at"]), datetime)
@@ -301,13 +323,8 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["maker_locked"])
         self.assertFalse(data["taker_locked"])
         self.assertFalse(data["escrow_locked"])
-        self.assertEqual(
-            data["bond_invoice"],
-            "lntb17310n1pj552mdpp50p2utzh7mpsf3uq7u7cws4a96tj3kyq54hchdkpw8zecamx9klrqd2j2pshjmt9de6zqun9vejhyetwvdjn5gphxs6nsvfe893z6wphvfsj6dryvymj6wp5xvuz6wp5xcukvdec8yukgcf49cs9g6rfwvs8qcted4jkuapq2ay5cnpqgefy2326g5syjn3qt984253q2aq5cnz92skzqcmgv43kkgr0dcs9ymmzdafkzarnyp5kvgr5dpjjqmr0vd4jqampwvs8xatrvdjhxumxw4kzugzfwss8w6tvdssxyefqw4hxcmmrddjkggpgveskjmpfyp6kumr9wdejq7t0w5sxx6r9v96zqmmjyp3kzmnrv4kzqatwd9kxzar9wfskcmre9ccqz52xqzwzsp5hkzegrhn6kegr33z8qfxtcudaklugygdrakgyy7va0wt2qs7drfq9qyyssqc6rztchzl4m7mlulrhlcajszcl9fan8908k9n5x7gmz8g8d6ht5pj4l8r0dushq6j5s8x7yv9a5klz0kfxwy8v6ze6adyrrp4wu0q0sq3t604x",
-        )
         self.assertTrue(isinstance(data["bond_satoshis"], int))
 
-    @patch("api.lightning.lnd.invoices_pb2_grpc.InvoicesStub", MockInvoicesStub)
     def check_for_locked_bonds(self):
         # A background thread checks every 5 second the status of invoices. We invoke directly during test.
         # It will ask LND via gRPC. In our test, the request/response from LND is mocked, and it will return fake invoice status "ACCEPTED"
@@ -320,7 +337,11 @@ class TradeTest(BaseAPITestCase):
         order_made_data = json.loads(order_made_response.content.decode())
 
         # Maker's first order fetch. Should trigger maker bond hold invoice generation.
-        self.get_order(order_made_data["id"])
+        response = self.get_order(order_made_data["id"])
+        invoice = response.json()["bond_invoice"]
+
+        # Lock the invoice from the robot's node
+        pay_invoice("robot", invoice)
 
         # Check for invoice locked (the mocked LND will return ACCEPTED)
         self.check_for_locked_bonds()
@@ -336,6 +357,8 @@ class TradeTest(BaseAPITestCase):
         data = json.loads(response.content.decode())
 
         self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
         self.assertEqual(data["id"], data["id"])
         self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
         self.assertTrue(data["maker_locked"])
@@ -352,13 +375,13 @@ class TradeTest(BaseAPITestCase):
         self.assertTrue(isinstance(public_data["price_now"], float))
         self.assertTrue(isinstance(data["satoshis_now"], int))
 
-    @patch("api.lightning.cln.hold_pb2_grpc.HoldStub", MockHoldStub)
-    @patch("api.lightning.lnd.lightning_pb2_grpc.LightningStub", MockLightningStub)
-    @patch("api.lightning.lnd.invoices_pb2_grpc.InvoicesStub", MockInvoicesStub)
+    # @patch("api.lightning.cln.hold_pb2_grpc.HoldStub", MockHoldStub)
+    # @patch("api.lightning.lnd.lightning_pb2_grpc.LightningStub", MockLightningStub)
+    # @patch("api.lightning.lnd.invoices_pb2_grpc.InvoicesStub", MockInvoicesStub)
     def take_order(self, order_id, amount, robot_index=2):
         path = reverse("order")
         params = f"?order_id={order_id}"
-        headers, _, _ = self.get_robot_auth(robot_index, first_encounter=True)
+        headers = self.get_robot_auth(robot_index, first_encounter=True)
         body = {"action": "take", "amount": amount}
         response = self.client.post(path + params, body, **headers)
 
@@ -372,28 +395,29 @@ class TradeTest(BaseAPITestCase):
         response = self.take_order(data_publised["id"], take_amount, taker_index)
         return response
 
-    # def test_make_and_take_order(self):
-    #     maker_index = 1
-    #     taker_index = 2
-    #     maker_form = self.maker_form_with_range
-    #     self.create_robot(taker_index) #### WEEEE SHOULD NOT BE NEEDED >??? WHY ROBOT HAS NO LOGIN TIME??
-    #     response = self.make_and_take_order(maker_form, 80, maker_index, taker_index)
-    #     data = json.loads(response.content.decode())
+    def test_make_and_take_order(self):
+        maker_index = 1
+        taker_index = 2
+        maker_form = self.maker_form_with_range
 
-    #     print(data)
+        response = self.make_and_take_order(maker_form, 80, maker_index, taker_index)
+        data = json.loads(response.content.decode())
 
-    #     self.assertEqual(
-    #         data["ur_nick"], read_file(f"tests/robots/{taker_index}/nickname")
-    #     )
-    #     self.assertEqual(
-    #         data["taker_nick"], read_file(f"tests/robots/{taker_index}/nickname")
-    #     )
-    #     self.assertEqual(
-    #         data["maker_nick"], read_file(f"tests/robots/{maker_index}/nickname")
-    #     )
-    #     self.assertFalse(data["is_maker"])
-    #     self.assertTrue(data["is_taker"])
-    #     self.assertTrue(data["is_participant"])
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
+        self.assertEqual(
+            data["ur_nick"], read_file(f"tests/robots/{taker_index}/nickname")
+        )
+        self.assertEqual(
+            data["taker_nick"], read_file(f"tests/robots/{taker_index}/nickname")
+        )
+        self.assertEqual(
+            data["maker_nick"], read_file(f"tests/robots/{maker_index}/nickname")
+        )
+        self.assertFalse(data["is_maker"])
+        self.assertTrue(data["is_taker"])
+        self.assertTrue(data["is_participant"])
 
     #     a = {
     #         "maker_status": "Active",

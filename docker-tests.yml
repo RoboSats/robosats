@@ -1,0 +1,206 @@
+# Spin up a regtest lightning network to run integration tests
+# docker-compose -f docker-tests.yml --env-file tests/compose.env up -d
+
+# Some useful handy commands that hopefully are never needed
+# docker exec -it btc bitcoin-cli -chain=regtest -rpcpassword=test -rpcuser=test createwallet default
+# docker exec -it btc bitcoin-cli -chain=regtest -rpcpassword=test -rpcuser=test -generate 101
+
+# docker exec -it coordinator-lnd lncli --network=regtest getinfo
+# docker exec -it robot-lnd lncli --network=regtest --rpcserver localhost:10010 getinfo
+
+version: '3.9'
+services:
+  bitcoind:
+    image: ruimarinho/bitcoin-core:${BITCOIND_TAG}
+    container_name: btc
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - bitcoin:/bitcoin/.bitcoin/
+    command:
+      --txindex=1
+      --printtoconsole
+      --regtest=1
+      --server=1
+      --rest=1
+      --rpcuser=test
+      --rpcpassword=test
+      --logips=1
+      --debug=1
+      --rpcport=18443
+      --rpcallowip=172.0.0.0/8
+      --rpcallowip=192.168.0.0/16
+      --zmqpubrawblock=tcp://0.0.0.0:28332
+      --zmqpubrawtx=tcp://0.0.0.0:28333
+      --listenonion=0
+
+  coordinator-lnd:
+    image: lightninglabs/lnd:${LND_TAG}
+    container_name: coordinator-lnd
+    restart: always
+    volumes:
+      - bitcoin:/root/.bitcoin/
+      - lnd:/home/lnd/.lnd
+      - lnd:/root/.lnd
+    command:
+      --noseedbackup
+      --nobootstrap
+      --restlisten=localhost:8081
+      --no-rest-tls
+      --debuglevel=debug
+      --maxpendingchannels=10
+      --rpclisten=0.0.0.0:10009
+      --listen=0.0.0.0:9735
+      --color=#4126a7
+      --alias=RoboSats
+      --bitcoin.active
+      --bitcoin.regtest
+      --bitcoin.node=bitcoind
+      --bitcoind.rpchost=127.0.0.1
+      --bitcoind.rpcuser=test
+      --bitcoind.rpcpass=test
+      --bitcoind.zmqpubrawblock=tcp://127.0.0.1:28332
+      --bitcoind.zmqpubrawtx=tcp://127.0.0.1:28333
+      --protocol.wumbo-channels
+    depends_on:
+      - bitcoind
+    network_mode: service:bitcoind
+
+  robot-lnd:
+    image: lightninglabs/lnd:${LND_TAG}
+    container_name: robot-lnd
+    restart: always
+    volumes:
+      - bitcoin:/root/.bitcoin/
+      - lndrobot:/home/lnd/.lnd
+      - lndrobot:/root/.lnd
+    command:
+      --noseedbackup
+      --nobootstrap
+      --no-rest-tls
+      --debuglevel=debug
+      --maxpendingchannels=10
+      --rpclisten=0.0.0.0:10010
+      --listen=0.0.0.0:9736
+      --color=#4126a7
+      --alias=Robot
+      --bitcoin.active
+      --bitcoin.regtest
+      --bitcoin.node=bitcoind
+      --bitcoind.rpchost=127.0.0.1
+      --bitcoind.rpcuser=test
+      --bitcoind.rpcpass=test
+      --bitcoind.zmqpubrawblock=tcp://127.0.0.1:28332
+      --bitcoind.zmqpubrawtx=tcp://127.0.0.1:28333
+      --protocol.wumbo-channels
+    depends_on:
+      - bitcoind
+    network_mode: service:bitcoind
+
+  redis:
+    image: redis:${REDIS_TAG}
+    container_name: redis
+    restart: always
+    volumes:
+      - redisdata:/data
+    network_mode: service:bitcoind
+
+  coordinator:
+    build: .
+    image: robosats-image
+    container_name: coordinator
+    restart: always
+    environment:
+      DEVELOPMENT: True
+      TESTING: True
+      USE_TOR: False
+      MACAROON_PATH: 'data/chain/bitcoin/regtest/admin.macaroon'
+    env_file:
+      - ${ROBOSATS_ENVS_FILE}
+    depends_on:
+      - redis
+      - coordinator-lnd
+      - postgres
+    network_mode: service:bitcoind
+    volumes:
+      - .:/usr/src/robosats
+      - lnd:/lnd
+      - lndrobot:/lndrobot
+      - cln:/cln
+
+  postgres:
+    image: postgres:${POSTGRES_TAG:-14.2-alpine}
+    container_name: sql
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+    network_mode: service:bitcoind
+
+  # clean-orders:
+  #   image: robosats-image
+  #   restart: always
+  #   container_name: clord
+  #   command: python3 manage.py clean_orders
+  #   environment:
+  #     SKIP_COLLECT_STATIC: "true"
+  #     POSTGRES_HOST: 'postgres'
+  #   env_file:
+  #     - ${ROBOSATS_ENVS_FILE}
+
+  # follow-invoices:
+  #   image: robosats-image
+  #   container_name: invo
+  #   restart: always
+  #   env_file:
+  #     - ${ROBOSATS_ENVS_FILE}
+  #   environment:
+  #     SKIP_COLLECT_STATIC: "true"
+  #     POSTGRES_HOST: 'postgres'
+  #   command: python3 manage.py follow_invoices
+
+  # telegram-watcher:
+  #   image: robosats-image
+  #   container_name: tg
+  #   restart: always
+  #   environment:
+  #     SKIP_COLLECT_STATIC: "true"
+  #     POSTGRES_HOST: 'postgres'
+  #   env_file:
+  #     - ${ROBOSATS_ENVS_FILE}
+  #   command: python3 manage.py telegram_watcher
+
+  # celery:
+  #   image: robosats-image
+  #   container_name: cele
+  #   restart: always
+  #   env_file:
+  #     - ${ROBOSATS_ENVS_FILE}
+  #   environment:
+  #     SKIP_COLLECT_STATIC: "true"
+  #     POSTGRES_HOST: 'postgres'
+  #   command: celery -A robosats worker --loglevel=WARNING
+  #   depends_on:
+  #     - redis
+
+  # celery-beat:
+  #   image: robosats-image
+  #   container_name: beat
+  #   restart: always
+  #   env_file:
+  #     - ${ROBOSATS_ENVS_FILE}
+  #   environment:
+  #     SKIP_COLLECT_STATIC: "true"
+  #     POSTGRES_HOST: 'postgres'
+  #   command: celery -A robosats beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+  #   depends_on:
+  #     - redis
+
+volumes:
+  redisdata:
+  bitcoin:
+  lnd:
+  cln:
+  lndrobot:

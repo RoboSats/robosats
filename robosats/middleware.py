@@ -161,6 +161,8 @@ class RobotTokenSHA256AuthenticationMiddleWare:
                     resized_img.save(f, format="WEBP", quality=80)
 
             user.robot.avatar = "static/assets/avatars/" + nickname + ".webp"
+
+            update_last_login(None, user)
             user.save()
 
         response = self.get_response(request)

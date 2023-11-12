@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 # Mock up of LND gRPC responses
+# Unfinished, during integration tests we spin up a regtest LND instance
 
 
 class MockLightningStub:
@@ -22,7 +23,7 @@ class MockLightningStub:
         response = MagicMock()
         if (
             request.pay_req
-            == "lntb17310n1pj552mdpp50p2utzh7mpsf3uq7u7cws4a96tj3kyq54hchdkpw8zecamx9klrqd2j2pshjmt9de6zqun9vejhyetwvdjn5gphxs6nsvfe893z6wphvfsj6dryvymj6wp5xvuz6wp5xcukvdec8yukgcf49cs9g6rfwvs8qcted4jkuapq2ay5cnpqgefy2326g5syjn3qt984253q2aq5cnz92skzqcmgv43kkgr0dcs9ymmzdafkzarnyp5kvgr5dpjjqmr0vd4jqampwvs8xatrvdjhxumxw4kzugzfwss8w6tvdssxyefqw4hxcmmrddjkggpgveskjmpfyp6kumr9wdejq7t0w5sxx6r9v96zqmmjyp3kzmnrv4kzqatwd9kxzar9wfskcmre9ccqz52xqzwzsp5hkzegrhn6kegr33z8qfxtcudaklugygdrakgyy7va0wt2qs7drfq9qyyssqc6rztchzl4m7mlulrhlcajszcl9fan8908k9n5x7gmz8g8d6ht5pj4l8r0dushq6j5s8x7yv9a5klz0kfxwy8v6ze6adyrrp4wu0q0sq3t604x"
+            == "lntb17310n1pj552mdpp50p2utgzfwss8w6tvdssxyefqw4hxcmmrddjkggpgveskjmpfyp6kumr9wdejq7t0w5sxx6r9v96zqmmjyp3kzmnrv4kzqatwd9kxzar9wfskcmre9ccqz52xqzwzsp5hkzegrhn6kegr33z8qfxtcudaklugygdrakgyy7va0wt2qs7drfq9qyyssqc6rztchzl4m7mlulrhlcajszcl9fan8908k9n5x7gmz8g8d6ht5pj4l8r0dushq6j5s8x7yv9a5klz0kfxwy8v6ze6adyrrp4wu0q0sq3t604x"
         ):
             response.destination = (
                 "033b58d7681fe5dd2fb21fd741996cda5449616f77317dd1156b80128d6a71b807"
@@ -35,7 +36,9 @@ class MockLightningStub:
             response.expiry = 450
             response.description = "Payment reference: 7458199b-87ba-4da7-8438-8469f7899da5. This payment WILL FREEZE IN YOUR WALLET, check on RoboSats if the lock was successful. It will be unlocked (fail) unless you cheat or cancel unilaterally."
             response.cltv_expiry = 650
-            response.payment_addr = '\275\205\224\016\363\325\262\201\306"8\022e\343\215\355\277\304\021\r\037l\202\023\314\353\334\265\002\036h\322'
+            response.payment_addr = (
+                "\275\205\224\016\363\325\262\201\353\334\265\002\036h\322"
+            )
             response.num_msat = 1731000
 
             return response
@@ -86,7 +89,7 @@ class MockInvoicesStub:
 
     def AddHoldInvoice(self, request):
         response = MagicMock()
-        # if request.value == 1731:
+        print(request)
         response.payment_request = "lntb17310n1pj552mdpp50p2utzh7mpsf3uq7u7cws4a96tj3kyq54hchdkpw8zecamx9klrqd2j2pshjmt9de6zqun9vejhyetwvdjn5gphxs6nsvfe893z6wphvfsj6dryvymj6wp5xvuz6wp5xcukvdec8yukgcf49cs9g6rfwvs8qcted4jkuapq2ay5cnpqgefy2326g5syjn3qt984253q2aq5cnz92skzqcmgv43kkgr0dcs9ymmzdafkzarnyp5kvgr5dpjjqmr0vd4jqampwvs8xatrvdjhxumxw4kzugzfwss8w6tvdssxyefqw4hxcmmrddjkggpgveskjmpfyp6kumr9wdejq7t0w5sxx6r9v96zqmmjyp3kzmnrv4kzqatwd9kxzar9wfskcmre9ccqz52xqzwzsp5hkzegrhn6kegr33z8qfxtcudaklugygdrakgyy7va0wt2qs7drfq9qyyssqc6rztchzl4m7mlulrhlcajszcl9fan8908k9n5x7gmz8g8d6ht5pj4l8r0dushq6j5s8x7yv9a5klz0kfxwy8v6ze6adyrrp4wu0q0sq3t604x"
         response.add_index = 1
         response.payment_addr = b'\275\205\224\016\363\325\262\201\306"8\022e\343\215\355\277\304\021\r\037l\202\023\314\353\334\265\002\036h\322'
