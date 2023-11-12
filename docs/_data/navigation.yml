@@ -61,7 +61,7 @@ docs:
       - title: '<span class="side-bar-item">&nbsp;&nbsp;<img id="side-icon-small" src="/assets/vector/telegram.svg"/>Telegram</span>'
         url: /docs/telegram/
       - title: '<span class="side-bar-item">&nbsp;&nbsp;<img id="side-icon-small" src="/assets/vector/cloud.svg"/>API</span>'
-        url: /docs/api-v0.1/
+        url: /docs/api/
 
   - title: '<span class="side-bar-item"><img id="side-icon-big" src="/assets/vector/hand-peace.svg"/>Best Practices</span>'
     url: /docs/best-practices/
