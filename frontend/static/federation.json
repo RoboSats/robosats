@@ -134,14 +134,14 @@
     "color": "#000000",
     "testnet": {
       "onion": "http://none.onion",
-      "clearnet": "http://127.0.0.1:12596"
+      "clearnet": "http://localhost:12596"
     },
     "badges": {
       "donatesToDevFund": 0
     },
     "mainnet": {
       "onion": "http://none.onion",
-      "clearnet": "http://127.0.0.1:12596"
+      "clearnet": "http://localhost:12596"
     },
     "policies": {
       "Development Policy": "Don't look around, just buidl"
