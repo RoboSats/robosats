@@ -28,8 +28,8 @@ class InfoSerializer(serializers.Serializer):
     lifetime_volume = serializers.FloatField(
         help_text="Total volume in BTC since exchange's inception"
     )
-    lnd_version = serializers.CharField(required=False)
-    cln_version = serializers.CharField(required=False)
+    lnd_version = serializers.CharField()
+    cln_version = serializers.CharField()
     robosats_running_commit_hash = serializers.CharField()
     alternative_site = serializers.CharField()
     alternative_name = serializers.CharField()

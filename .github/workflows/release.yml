@@ -38,8 +38,8 @@ jobs:
         fi
 
 
-  django-test:
-    uses: RoboSats/robosats/.github/workflows/django-test.yml@main
+  integration-tests:
+    uses: RoboSats/robosats/.github/workflows/integration-tests.yml@main
     needs: check-versions
 
   frontend-build:

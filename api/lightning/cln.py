@@ -70,6 +70,16 @@ class CLNNode:
             return None
 
     @classmethod
+    def get_info(cls):
+        try:
+            nodestub = node_pb2_grpc.NodeStub(cls.node_channel)
+            request = node_pb2.GetinfoRequest()
+            response = nodestub.Getinfo(request)
+            return response
+        except Exception as e:
+            print(f"Cannot get CLN node id: {e}")
+
+    @classmethod
     def decode_payreq(cls, invoice):
         """Decodes a lightning payment request (invoice)"""
         request = hold_pb2.DecodeBolt11Request(bolt11=invoice)
