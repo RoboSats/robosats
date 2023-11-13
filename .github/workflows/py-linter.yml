@@ -26,7 +26,7 @@ jobs:
         with:
           python-version: '3.11.6'
           cache: pip
-      - run: pip install black==22.8.0 flake8==5.0.4 isort==5.10.1
+      - run: pip install requirements_dev.txt
       - name: Run linters
         uses: wearerequired/lint-action@v2
         with:

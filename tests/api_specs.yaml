@@ -1161,10 +1161,12 @@ components:
       - alternative_site
       - bond_size
       - book_liquidity
+      - cln_version
       - current_swap_fee_rate
       - last_day_nonkyc_btc_premium
       - last_day_volume
       - lifetime_volume
+      - lnd_version
       - maker_fee
       - network
       - node_alias

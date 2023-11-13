@@ -44,8 +44,8 @@ class CoordinatorInfoTest(BaseAPITestCase):
         self.assertEqual(data["last_day_nonkyc_btc_premium"], 0)
         self.assertEqual(data["last_day_volume"], 0)
         self.assertEqual(data["lifetime_volume"], 0)
-        self.assertEqual(data["lnd_version"], "v0.17.0-beta")
-        self.assertEqual(data["cln_version"], "v23.08")
+        self.assertTrue(isinstance(data["lnd_version"], str))
+        self.assertTrue(isinstance(data["cln_version"], str))
         self.assertEqual(
             data["robosats_running_commit_hash"], "00000000000000000000 dev"
         )

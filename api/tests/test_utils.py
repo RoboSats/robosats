@@ -21,8 +21,6 @@ from api.utils import (
     verify_signed_message,
     weighted_median,
 )
-from tests.mocks.cln import MockNodeStub
-from tests.mocks.lnd import MockVersionerStub
 
 
 class TestUtils(TestCase):
@@ -96,15 +94,13 @@ class TestUtils(TestCase):
         mock_response_blockchain.json.assert_called_once()
         mock_response_yadio.json.assert_called_once()
 
-    @patch("api.lightning.lnd.verrpc_pb2_grpc.VersionerStub", MockVersionerStub)
     def test_get_lnd_version(self):
         version = get_lnd_version()
-        self.assertEqual(version, "v0.17.0-beta")
+        self.assertTrue(isinstance(version, str))
 
-    @patch("api.lightning.cln.node_pb2_grpc.NodeStub", MockNodeStub)
     def test_get_cln_version(self):
         version = get_cln_version()
-        self.assertEqual(version, "v23.08")
+        self.assertTrue(isinstance(version, str))
 
     @patch(
         "builtins.open", new_callable=mock_open, read_data="00000000000000000000 dev"

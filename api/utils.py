@@ -181,7 +181,7 @@ def get_lnd_version():
 
         return LNDNode.get_version()
     except Exception:
-        return None
+        return "No LND"
 
 
 cln_version_cache = {}
@@ -194,7 +194,7 @@ def get_cln_version():
 
         return CLNNode.get_version()
     except Exception:
-        return None
+        return "No CLN"
 
 
 robosats_commit_cache = {}

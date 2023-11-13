@@ -8,4 +8,5 @@ omit = [
     # omit test and mocks from coverage reports
     "tests/*",
     "*mocks*",
+    "manage.py",
     ]

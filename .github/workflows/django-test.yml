@@ -15,68 +15,64 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 4
+      max-parallel: 2
       matrix:
-        python-version: ["3.11.6", "3.12"]
-        lnd-version: ["v0.17.0-beta","v0.17.1-beta.rc1"]
+        python-tag: ['3.11.6-slim-bookworm', '3.12-slim-bookworm']
+        lnd-version: ["v0.17.0-beta"] # , "v0.17.0-beta.rc1"]
+        cln-version: ["v23.08.1"]
+        ln-vendor: ["LND", "CLN"]
 
     steps:
     - name: 'Checkout'
       uses: actions/checkout@v4
 
-    - name: 'Compose Eegtest Orchestration'
+    - name: Update Python version in Dockerfile
+      run: |
+        sed -i "1s/FROM python:.*/FROM python:${{ matrix.python-tag }}/" Dockerfile
+        sed -i '/RUN pip install --no-cache-dir -r requirements.txt/a COPY requirements_dev.txt .\nRUN pip install --no-cache-dir -r requirements_dev.txt' Dockerfile
+
+    - uses: satackey/action-docker-layer-caching@v0.0.11
+      continue-on-error: true
+      with:
+        key: coordinator-docker-cache-${{ hashFiles('./Dockerfile') }}
+        restore-keys: |
+          coordinator-docker-cache-
+
+    - name: 'Compose Regtest Orchestration'
       uses: isbang/compose-action@v1.5.1
       with:
-        compose-file: "docker-test.yml"
-        env: "tests/compose.env"
+        compose-file: "./docker-tests.yml"
+        down-flags: "--volumes"
+        # Ideally we run only coordinator-${{ matrix.ln-vendor }} , at the moment some tests fail if LND is not around.
+        services: |
+          bitcoind
+          postgres
+          redis
+          coordinator-CLN
+          coordinator-LND
+          robot-LND
+          coordinator
+      env:
+        LND_VERSION: ${{ matrix.lnd-version }}
+        CLN_VERSION: ${{ matrix.cln-version }}
+        BITCOIND_VERSION: ${{ matrix.bitcoind-version }}
+        ROBOSATS_ENVS_FILE: ".env-sample"
 
-    # - name: 'Set up Python ${{ matrix.python-version }}'
-    #   uses: actions/setup-python@v4
-    #   with:
-    #     python-version: ${{ matrix.python-version }}
-
-    # - name: 'Cache pip dependencies'
-    #   uses: actions/cache@v3
-    #   with:
-    #     path: ~/.cache/pip
-    #     key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-    #     restore-keys: |
-    #       ${{ runner.os }}-pip-
-
-    # - name: 'Install Python Dependencies'
-    #   run: |
-    #     python -m pip install --upgrade pip
-    #     pip install -r requirements.txt
-    #     pip install -r requirements_dev.txt
-
-    # - name: 'Install LND/CLN gRPC Dependencies'
-    #   run: bash ./scripts/generate_grpc.sh
-
-    # - name: 'Create .env File'
-    #   run: |
-    #     mv .env-sample .env
-    #     sed -i "s/USE_TOR=True/USE_TOR=False/" .env
-
-    # - name: 'Wait for PostgreSQL to become ready'
-    #   run: |
-    #     sudo apt-get install -y postgresql-client
-    #     until pg_isready -h localhost -p 5432 -U postgres; do sleep 2; done
+    - name: Wait for coordinator (django server)
+      run: |
+        while [ "$(docker inspect --format "{{.State.Health.Status}}" coordinator)" != "healthy" ]; do
+          echo "Waiting for coordinator to be healthy..."
+          sleep 5
+        done
 
     - name: 'Run tests with coverage'
       run: |
         docker exec coordinator coverage run manage.py test
         docker exec coordinator coverage report
-
-
-# jobs:
-#   test:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Run Docker Compose
-#         run: |
-#           docker-compose up -d
-#           docker-compose run web python manage.py test
+      env:
+        LNVENDOR: ${{ matrix.ln-vendor }}
+        DEVELOPMENT: True
+        USE_TOR: False

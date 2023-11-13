@@ -14,11 +14,18 @@ from tests.node_utils import (
     connect_to_node,
     create_address,
     generate_blocks,
-    get_node_id,
+    get_cln_node_id,
+    get_lnd_node_id,
     open_channel,
     pay_invoice,
+    wait_for_cln_active_channels,
+    wait_for_cln_node_sync,
+    wait_for_lnd_active_channels,
+    wait_for_lnd_node_sync,
 )
 from tests.test_api import BaseAPITestCase
+
+LNVENDOR = config("LNVENDOR", cast=str, default="LND")
 
 
 def read_file(file_path):
@@ -49,6 +56,20 @@ class TradeTest(BaseAPITestCase):
         "longitude": 135.503,
     }
 
+    def wait_nodes_sync():
+        wait_for_lnd_node_sync("robot")
+        if LNVENDOR == "LND":
+            wait_for_lnd_node_sync("coordinator")
+        elif LNVENDOR == "CLN":
+            wait_for_cln_node_sync()
+
+    def wait_active_channels():
+        wait_for_lnd_active_channels("robot")
+        if LNVENDOR == "LND":
+            wait_for_lnd_active_channels("coordinator")
+        elif LNVENDOR == "CLN":
+            wait_for_cln_active_channels()
+
     @classmethod
     def setUpTestData(cls):
         """
@@ -61,19 +82,32 @@ class TradeTest(BaseAPITestCase):
         cache_market()
 
         # Fund two LN nodes in regtest and open channels
-        coordinator_node_id = get_node_id("coordinator")
-        connect_to_node("robot", coordinator_node_id, "localhost:9735")
+        # Coordinator is either LND or CLN. Robot user is always LND.
+        if LNVENDOR == "LND":
+            coordinator_node_id = get_lnd_node_id("coordinator")
+            coordinator_port = 9735
+        elif LNVENDOR == "CLN":
+            coordinator_node_id = get_cln_node_id()
+            coordinator_port = 9737
+
+        print("Coordinator Node ID: ", coordinator_node_id)
 
         funding_address = create_address("robot")
         generate_blocks(funding_address, 101)
+        cls.wait_nodes_sync()
 
-        time.sleep(
-            2
-        )  # channels cannot be created until the node is fully sync. We just created 101 blocks.
+        # Open channel between Robot user and coordinator
+        print(f"\nOpening channel from Robot user node to coordinator {LNVENDOR} node")
+        connect_to_node("robot", coordinator_node_id, f"localhost:{coordinator_port}")
         open_channel("robot", coordinator_node_id, 100_000_000, 50_000_000)
 
-        # Generate 6 blocks so the channel becomes active
-        generate_blocks(funding_address, 6)
+        # Generate 10 blocks so the channel becomes active and wait for sync
+        generate_blocks(funding_address, 10)
+
+        # Wait a tiny bit so payments can be done in the new channel
+        cls.wait_nodes_sync()
+        cls.wait_active_channels()
+        time.sleep(1)
 
     def test_login_superuser(self):
         """
