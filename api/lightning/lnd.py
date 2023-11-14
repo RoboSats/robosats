@@ -87,8 +87,8 @@ class LNDNode:
             log("verstub.GetVersion", request, response)
             return "v" + response.version
         except Exception as e:
-            print(e)
-            return None
+            print(f"Cannot get CLN version: {e}")
+            return "Not installed"
 
     @classmethod
     def decode_payreq(cls, invoice):

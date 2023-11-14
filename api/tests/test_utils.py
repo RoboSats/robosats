@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import numpy as np
+from decouple import config
 from django.test import TestCase
 
 from api.models import Order
@@ -94,13 +95,17 @@ class TestUtils(TestCase):
         mock_response_blockchain.json.assert_called_once()
         mock_response_yadio.json.assert_called_once()
 
-    def test_get_lnd_version(self):
-        version = get_lnd_version()
-        self.assertTrue(isinstance(version, str))
+    if config("LNVENDOR", cast=str) == "LND":
 
-    def test_get_cln_version(self):
-        version = get_cln_version()
-        self.assertTrue(isinstance(version, str))
+        def test_get_lnd_version(self):
+            version = get_lnd_version()
+            self.assertTrue(isinstance(version, str))
+
+    elif config("LNVENDOR", cast=str) == "CLN":
+
+        def test_get_cln_version(self):
+            version = get_cln_version()
+            self.assertTrue(isinstance(version, str))
 
     @patch(
         "builtins.open", new_callable=mock_open, read_data="00000000000000000000 dev"
