@@ -1671,6 +1671,9 @@ components:
           type: number
           format: double
           description: Longitude of the order for F2F payments
+        chat_last_index:
+          type: integer
+          description: The index of the last message sent in the trade chatroom
       required:
       - expires_at
       - id
