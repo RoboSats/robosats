@@ -176,12 +176,15 @@ lnd_version_cache = {}
 
 @ring.dict(lnd_version_cache, expire=3600)
 def get_lnd_version():
-    try:
-        from api.lightning.lnd import LNDNode
+    if LNVENDOR == "LND":
+        try:
+            from api.lightning.lnd import LNDNode
 
-        return LNDNode.get_version()
-    except Exception:
-        return "No LND"
+            return LNDNode.get_version()
+        except Exception:
+            return "Not installed"
+    else:
+        return "Not installed"
 
 
 cln_version_cache = {}
@@ -189,12 +192,15 @@ cln_version_cache = {}
 
 @ring.dict(cln_version_cache, expire=3600)
 def get_cln_version():
-    try:
-        from api.lightning.cln import CLNNode
+    if LNVENDOR == "CLN":
+        try:
+            from api.lightning.cln import CLNNode
 
-        return CLNNode.get_version()
-    except Exception:
-        return "No CLN"
+            return CLNNode.get_version()
+        except Exception:
+            return "Not installed"
+    else:
+        return "Not installed"
 
 
 robosats_commit_cache = {}

@@ -67,7 +67,7 @@ class CLNNode:
             return response.version
         except Exception as e:
             print(f"Cannot get CLN version: {e}")
-            return None
+            return "Not installed"
 
     @classmethod
     def get_info(cls):
