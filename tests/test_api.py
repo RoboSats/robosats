@@ -7,13 +7,13 @@ from rest_framework.test import APITestCase
 # Update api specs to the newest from a running django server (if any)
 try:
     urllib.request.urlretrieve(
-        "http://127.0.0.1:8000/api/schema", "tests/api_specs.yaml"
+        "http://127.0.0.1:8000/api/schema", "docs/assets/schemas/api-latest.yaml"
     )
 except Exception as e:
-    print(f"Could not fetch current API specs: {e}")
-    print("Using previously existing api_specs.yaml definitions")
+    print(f"Could not fetch latests API specs: {e}")
+    print("Using previously existing api-latest.yaml definitions from docs")
 
-schema_tester = SchemaTester(schema_file_path="tests/api_specs.yaml")
+schema_tester = SchemaTester(schema_file_path="docs/assets/schemas/api-latest.yaml")
 
 
 class BaseAPITestCase(APITestCase):
