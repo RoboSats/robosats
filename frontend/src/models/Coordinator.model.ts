@@ -297,16 +297,21 @@ export class Coordinator {
         console.log(e);
       });
 
-    garage.updateRobot(
-      {
-        ...newAttributes,
-        tokenSHA256: authHeaders.tokenSHA256,
-        loading: false,
-        bitsEntropy,
-        shannonEntropy,
-      },
-      index,
-    );
+    if (
+      newAttributes?.activeOrderId !== null ||
+      (garage.getRobot(index).activeOrderId === null && newAttributes?.lastOrderId !== null)
+    ) {
+      garage.updateRobot(
+        {
+          ...newAttributes,
+          tokenSHA256: authHeaders.tokenSHA256,
+          loading: false,
+          bitsEntropy,
+          shannonEntropy,
+        },
+        index,
+      );
+    }
 
     return garage.getRobot(index);
   };

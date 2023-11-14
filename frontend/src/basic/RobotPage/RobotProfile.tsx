@@ -58,7 +58,7 @@ const RobotProfile = ({
     if (garage.getRobot().nickname != null && garage.getRobot().avatarLoaded) {
       setLoading(false);
     }
-  }, [robotUpdatedAt]);
+  }, [robotUpdatedAt, loading]);
 
   const handleAddRobot = (): void => {
     getGenerateRobot(genBase62Token(36));

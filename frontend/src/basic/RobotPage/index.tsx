@@ -48,10 +48,8 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
     const token = urlToken ?? garage.getRobot().token;
     if (token !== undefined) {
       setInputToken(token);
-    }
-    if (garage.getRobot().nickname !== undefined && token !== undefined) {
       if (window.NativeRobosats === undefined || torStatus === '"Done"') {
-        getGenerateRobot(token);
+        getRecoverRobot(token);
         setView('profile');
       }
     }
@@ -67,16 +65,32 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
     }
   }, [inputToken]);
 
-  const getGenerateRobot = (token: string): void => {
+  const getRecoverRobot = (token: string): void => {
     setInputToken(token);
     genKey(token)
       .then((key) => {
-        const slot = garage.createRobot({
+        garage.updateRobot({
           token,
           pubKey: key.publicKeyArmored,
           encPrivKey: key.encryptedPrivateKeyArmored,
         });
-        void federation.fetchRobot(garage, slot);
+        void federation.fetchRobot(garage, garage.currentSlot);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  };
+
+  const getGenerateRobot = (token: string): void => {
+    setInputToken(token);
+    genKey(token)
+      .then((key) => {
+        garage.createRobot({
+          token,
+          pubKey: key.publicKeyArmored,
+          encPrivKey: key.encryptedPrivateKeyArmored,
+        });
+        void federation.fetchRobot(garage, garage.currentSlot);
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -180,7 +194,7 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
             badToken={badToken}
             inputToken={inputToken}
             setInputToken={setInputToken}
-            getGenerateRobot={getGenerateRobot}
+            getRecoverRobot={getRecoverRobot}
           />
         ) : null}
       </Paper>
