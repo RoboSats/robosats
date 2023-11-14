@@ -1,4 +1,4 @@
-# Spin up a regtest lightning network to run integration tests
+# Spin up a regtest lightning network to run integration tests:
 # docker-compose -f docker-tests.yml --env-file tests/compose.env up -d
 
 # Some useful handy commands that hopefully are never needed
