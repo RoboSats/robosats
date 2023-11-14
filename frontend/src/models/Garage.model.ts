@@ -17,10 +17,9 @@ class Garage {
       this.slots = rawSlots
         .filter((raw: any) => raw !== null)
         .map((raw: any) => {
-          const newSlot: Slot = { robot: new Robot(), order: null };
-          newSlot.order = raw.order as Order;
-          newSlot.robot.update(raw.robot);
-          return newSlot;
+          const robot = new Robot(raw.robot);
+          robot.update(raw.robot);
+          return { robot, order: raw.order as Order };
         });
       console.log('Robot Garage was loaded from local storage');
     }
@@ -29,7 +28,8 @@ class Garage {
       this.slots = [{ robot: new Robot(), order: null }];
     }
 
-    this.currentSlot = this.slots.length - 1;
+    this.currentSlot = 0;
+
     this.hooks = {
       onRobotUpdate: [],
       onOrderUpdate: [],
@@ -73,7 +73,7 @@ class Garage {
   deleteSlot: (index?: number) => void = (index) => {
     const targetSlot = index ?? this.slots.length - 1;
     this.slots.splice(targetSlot, 1);
-    this.currentSlot = this.slots.length - 1;
+    this.currentSlot = 0;
     this.triggerHook('onRobotUpdate');
     this.triggerHook('onOrderUpdate');
     this.save();
@@ -104,12 +104,12 @@ class Garage {
     return this.getSlot(slot).robot;
   };
 
-  createRobot = (attributes: Record<any, any>): number => {
+  createRobot = (attributes: Record<any, any>): void => {
     const newSlot = { robot: new Robot(), order: null };
     newSlot.robot.update(attributes);
     this.slots.push(newSlot);
-
-    return this.slots.length - 1;
+    this.currentSlot = this.slots.length - 1;
+    this.save();
   };
 
   // Orders

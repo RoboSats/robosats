@@ -119,7 +119,7 @@
       "i2p": ""
     },
     "testnet": {
-      "onion": "https://qu6xztmzhlve6nxbb77jldek53pvhkaltz6seni7wq6g6yyj233qp4yd.onion",
+      "onion": "https://testraliar7xkhos2gipv2k65obykofb4jqzl5l4danfryacifi4t7qd.onion",
       "clearnet": "https://test.unsafe.satstralia.com",
       "i2p": ""
     },
@@ -134,14 +134,14 @@
     "color": "#000000",
     "testnet": {
       "onion": "http://none.onion",
-      "clearnet": "http://127.0.0.1:12596"
+      "clearnet": "http://localhost:12596"
     },
     "badges": {
       "donatesToDevFund": 0
     },
     "mainnet": {
       "onion": "http://none.onion",
-      "clearnet": "http://127.0.0.1:12596"
+      "clearnet": "http://localhost:12596"
     },
     "policies": {
       "Development Policy": "Don't look around, just buidl"

@@ -39,7 +39,7 @@ testnet_temple_socat="socat tcp4-LISTEN:${testnet_temple_port},reuseaddr,fork,ke
 mainnet_satstralia_onion=satstraoq35jffvkgpfoqld32nzw2siuvowanruindbfojowpwsjdgad.onion
 mainnet_satstralia_port=103
 # Testnet
-testnet_satstralia_onion=qu6xztmzhlve6nxbb77jldek53pvhkaltz6seni7wq6g6yyj233qp4yd.onion
+testnet_satstralia_onion=testraliar7xkhos2gipv2k65obykofb4jqzl5l4danfryacifi4t7qd.onion
 testnet_satstralia_port=1003
 # socat cmd
 mainnet_satstralia_socat="socat tcp4-LISTEN:${mainnet_satstralia_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_satstralia_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"

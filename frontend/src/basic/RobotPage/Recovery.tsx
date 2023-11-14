@@ -9,7 +9,7 @@ interface RecoveryProps {
   inputToken: string;
   badToken: string;
   setInputToken: (state: string) => void;
-  getGenerateRobot: (token: string) => void;
+  getRecoverRobot: (token: string) => void;
 }
 
 const Recovery = ({
@@ -17,12 +17,12 @@ const Recovery = ({
   badToken,
   setView,
   setInputToken,
-  getGenerateRobot,
+  getRecoverRobot,
 }: RecoveryProps): JSX.Element => {
   const { t } = useTranslation();
 
   const onClickRecover = (): void => {
-    getGenerateRobot(inputToken);
+    getRecoverRobot(inputToken);
     setView('profile');
   };
 

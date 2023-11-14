@@ -102,11 +102,12 @@ export class Federation {
       const coordinator = this.coordinators[currentOrder.shortAlias];
       if (coordinator != null && currentOrder.id !== null) {
         const newOrder = await coordinator.fetchOrder(currentOrder.id, robot);
-
-        return {
-          ...currentOrder,
-          order: newOrder,
-        };
+        if (newOrder) {
+          return {
+            ...currentOrder,
+            order: newOrder,
+          };
+        }
       }
     }
     return currentOrder;
