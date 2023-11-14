@@ -350,6 +350,10 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         required=False,
         help_text="The network eg. 'testnet', 'mainnet'. Only if status = `14` (Successful Trade) and is_buyer = `true`",
     )
+    chat_last_index = serializers.IntegerField(
+        required=False,
+        help_text="The index of the last message sent in the trade chatroom",
+    )
 
     class Meta:
         model = Order
@@ -431,6 +435,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "network",
             "latitude",
             "longitude",
+            "chat_last_index",
         )
 
 

@@ -63,22 +63,42 @@ def wait_for_lnd_node_sync(node_name):
             time.sleep(wait_step)
 
 
-def wait_for_lnd_active_channels(node_name):
+def LND_has_active_channels(node_name):
     node = get_node(node_name)
+    response = requests.get(
+        f'http://localhost:{node["port"]}/v1/getinfo', headers=node["headers"]
+    )
+    return True if response.json()["num_active_channels"] > 0 else False
+
+
+def CLN_has_active_channels():
+    from api.lightning.cln import CLNNode
+
+    response = CLNNode.get_info()
+    return True if response.num_active_channels > 0 else False
+
+
+def wait_for_active_channels(lnvendor, node_name="coordinator"):
     waited = 0
     while True:
-        response = requests.get(
-            f'http://localhost:{node["port"]}/v1/getinfo', headers=node["headers"]
-        )
-        if response.json()["num_active_channels"] > 0:
-            return
-        else:
-            sys.stdout.write(
-                f"\rWaiting for {node_name} node channels to be active {round(waited,1)}s"
-            )
-            sys.stdout.flush()
-            waited += wait_step
-            time.sleep(wait_step)
+        if lnvendor == "LND":
+            if LND_has_active_channels(node_name):
+                return
+            else:
+                sys.stdout.write(
+                    f"\rWaiting for {node_name} LND node channel to be active {round(waited,1)}s"
+                )
+        elif lnvendor == "CLN":
+            if CLN_has_active_channels():
+                return
+            else:
+                sys.stdout.write(
+                    f"\rWaiting for {node_name} CLN node channel to be active {round(waited,1)}s"
+                )
+
+        sys.stdout.flush()
+        waited += wait_step
+        time.sleep(wait_step)
 
 
 def wait_for_cln_node_sync():
