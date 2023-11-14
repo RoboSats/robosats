@@ -7,7 +7,7 @@ django-redis==5.4.0
 djangorestframework==3.14.0
 channels==4.0.0
 channels-redis==4.1.0
-celery==5.3.4
+celery==5.3.5
 grpcio==1.59.2
 googleapis-common-protos==1.61.0
 grpcio-tools==1.59.2
@@ -20,7 +20,7 @@ git+https://github.com/RoboSats/Robohash.git
 gunicorn==21.2.0
 psycopg2==2.9.9
 SQLAlchemy==2.0.16
-django-import-export==3.3.1
+django-import-export==3.3.3
 requests[socks]
 python-gnupg==0.5.1
 daphne==4.0.0
