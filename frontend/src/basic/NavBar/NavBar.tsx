@@ -16,7 +16,6 @@ import {
 } from '@mui/icons-material';
 import RobotAvatar from '../../components/RobotAvatar';
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
-import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
 const NavBar = (): JSX.Element => {
@@ -33,8 +32,7 @@ const NavBar = (): JSX.Element => {
     navbarHeight,
     hostUrl,
   } = useContext<UseAppStoreType>(AppContext);
-  const { currentOrder } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -67,7 +65,7 @@ const NavBar = (): JSX.Element => {
     if (isPage(pathPage)) {
       setPage(pathPage);
     }
-  }, [location, navigate, setPage]);
+  }, [location, navigate, setPage, orderUpdatedAt]);
 
   const handleSlideDirection = function (oldPage: Page, newPage: Page): void {
     const oldPos: number = pagesPosition[oldPage];
@@ -79,10 +77,15 @@ const NavBar = (): JSX.Element => {
 
   const changePage = function (mouseEvent: any, newPage: Page): void {
     if (newPage !== 'none') {
+      const slot = garage.getSlot();
       handleSlideDirection(page, newPage);
       setPage(newPage);
       const param =
-        newPage === 'order' ? `${String(currentOrder.shortAlias)}/${String(currentOrder.id)}` : '';
+        newPage === 'order'
+          ? `${String(slot.activeOrderShortAlias)}/${String(
+              slot.activeOrderId ?? slot.lastOrderId,
+            )}`
+          : '';
       setTimeout(() => {
         navigate(`/${newPage}/${param}`);
       }, theme.transitions.duration.leavingScreen * 3);
@@ -159,7 +162,7 @@ const NavBar = (): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!garage.getRobot().avatarLoaded || currentOrder.id == null}
+          disabled={!garage.getRobot().avatarLoaded || !garage.getSlot().activeOrderId}
           icon={<Assignment />}
           iconPosition='start'
         />

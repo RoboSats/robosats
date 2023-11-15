@@ -3,8 +3,21 @@ import { systemClient } from '../services/System';
 import { saveAsJson } from '../utils';
 export interface Slot {
   robot: Robot;
+  lastOrderId: number | null;
+  lastOrderShortAlias: string | null;
+  activeOrderId: number | null;
+  activeOrderShortAlias: string | null;
   order: Order | null;
 }
+
+const defaultSlot = {
+  robot: new Robot(),
+  lastOrderId: null,
+  lastOrderShortAlias: null,
+  activeOrderId: null,
+  activeOrderShortAlias: null,
+  order: null,
+};
 
 type GarageHooks = 'onRobotUpdate' | 'onOrderUpdate';
 
@@ -19,13 +32,17 @@ class Garage {
         .map((raw: any) => {
           const robot = new Robot(raw.robot);
           robot.update(raw.robot);
-          return { robot, order: raw.order as Order };
+          return {
+            ...defaultSlot,
+            ...raw,
+            robot,
+          };
         });
       console.log('Robot Garage was loaded from local storage');
     }
 
     if (this.slots.length < 1) {
-      this.slots = [{ robot: new Robot(), order: null }];
+      this.slots = [defaultSlot];
     }
 
     this.currentSlot = 0;
@@ -64,7 +81,7 @@ class Garage {
 
   // Slots
   delete = (): void => {
-    this.slots = [{ robot: new Robot(), order: null }];
+    this.slots = [defaultSlot];
     systemClient.deleteItem('garage');
     this.triggerHook('onRobotUpdate');
     this.triggerHook('onOrderUpdate');
@@ -79,9 +96,9 @@ class Garage {
     this.save();
   };
 
-  getSlot: (index: number) => Slot = (index) => {
+  getSlot: (index?: number) => Slot = (index = this.currentSlot) => {
     if (this.slots[index] === undefined) {
-      this.slots[index] = { robot: new Robot(), order: null };
+      this.slots[index] = defaultSlot;
     }
 
     return this.slots[index];
@@ -95,6 +112,14 @@ class Garage {
     const robot = this.getSlot(index).robot;
     if (robot != null) {
       robot.update(attributes);
+      if (attributes.activeOrderId != null) {
+        this.slots[index].activeOrderId = attributes.activeOrderId;
+        this.slots[index].activeOrderShortAlias = attributes.shortAlias;
+      }
+      if (attributes.lastOrderId != null) {
+        this.slots[index].lastOrderId = attributes.lastOrderId;
+        this.slots[index].lastOrderShortAlias = attributes.shortAlias;
+      }
       this.triggerHook('onRobotUpdate');
       this.save();
     }
@@ -105,29 +130,32 @@ class Garage {
   };
 
   createRobot = (attributes: Record<any, any>): void => {
-    const newSlot = { robot: new Robot(), order: null };
+    const newSlot = defaultSlot;
     newSlot.robot.update(attributes);
     this.slots.push(newSlot);
     this.currentSlot = this.slots.length - 1;
     this.save();
   };
 
+  getActiveOrderId: (index?: number) => number | null = (index = this.currentSlot) => {
+    return this.getSlot(index)?.robot?.activeOrderId ?? null;
+  };
+
   // Orders
-  updateOrder: (order: Order | null, index?: number) => void = (
-    order,
-    index = this.currentSlot,
-  ) => {
-    const slot = this.getSlot(index);
-    this.slots[index] = {
-      ...slot,
-      order,
-    };
+  updateOrder: (order: Order, index?: number) => void = (order, index = this.currentSlot) => {
+    this.slots[index].order = order;
     this.triggerHook('onOrderUpdate');
     this.save();
   };
 
-  getOrder = (): Order | null => {
-    return this.getSlot(this.currentSlot).order;
+  deleteOrder: (index?: number) => void = (index = this.currentSlot) => {
+    this.slots[index].order = null;
+    this.triggerHook('onOrderUpdate');
+    this.save();
+  };
+
+  getOrder: (index?: number) => Order | null = (index = this.currentSlot) => {
+    return this.getSlot(index)?.order;
   };
 }
 

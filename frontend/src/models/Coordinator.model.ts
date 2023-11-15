@@ -9,6 +9,7 @@ import {
 import { apiClient } from '../services/api';
 import { validateTokenEntropy } from '../utils';
 import { compareUpdateLimit } from './Limit.model';
+import { defaultOrder } from './Order.model';
 
 export interface Contact {
   nostr?: string | undefined;
@@ -122,7 +123,6 @@ export class Coordinator {
   public loadingInfo: boolean = false;
   public limits: LimitList = {};
   public loadingLimits: boolean = false;
-  public robot?: Robot | undefined = undefined;
   public loadingRobot: boolean = true;
 
   start = async (
@@ -297,21 +297,17 @@ export class Coordinator {
         console.log(e);
       });
 
-    if (
-      newAttributes?.activeOrderId !== null ||
-      (garage.getRobot(index).activeOrderId === null && newAttributes?.lastOrderId !== null)
-    ) {
-      garage.updateRobot(
-        {
-          ...newAttributes,
-          tokenSHA256: authHeaders.tokenSHA256,
-          loading: false,
-          bitsEntropy,
-          shannonEntropy,
-        },
-        index,
-      );
-    }
+    garage.updateRobot(
+      {
+        ...newAttributes,
+        tokenSHA256: authHeaders.tokenSHA256,
+        loading: false,
+        bitsEntropy,
+        shannonEntropy,
+        shortAlias: this.shortAlias,
+      },
+      index,
+    );
 
     return garage.getRobot(index);
   };
@@ -326,7 +322,12 @@ export class Coordinator {
     return await apiClient
       .get(this.url, `${this.basePath}/api/order/?order_id=${orderId}`, authHeaders)
       .then((data) => {
-        return data as Order;
+        const order: Order = {
+          ...defaultOrder,
+          ...data,
+          shortAlias: this.shortAlias,
+        };
+        return order;
       })
       .catch((e) => {
         console.log(e);
