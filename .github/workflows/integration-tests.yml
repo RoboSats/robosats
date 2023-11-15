@@ -32,7 +32,6 @@ jobs:
     - name: Patch Dockerfile and .env-sample
       run: |
         sed -i "1s/FROM python:.*/FROM python:${{ matrix.python-tag }}/" Dockerfile
-        sed -i '/RUN pip install --no-cache-dir -r requirements.txt/a COPY requirements_dev.txt .\nRUN pip install --no-cache-dir -r requirements_dev.txt' Dockerfile
         sed -i "s/^LNVENDOR=.*/LNVENDOR='${{ matrix.ln-vendor }}'/" .env-sample
 
     - uses: satackey/action-docker-layer-caching@v0.0.11

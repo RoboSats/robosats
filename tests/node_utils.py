@@ -3,10 +3,12 @@ import sys
 import time
 
 import requests
+from decouple import config
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import ReadTimeout
 
-wait_step = 0.2
+LNVENDOR = config("LNVENDOR", cast=str, default="LND")
+WAIT_STEP = 0.2
 
 
 def get_node(name="robot"):
@@ -59,8 +61,8 @@ def wait_for_lnd_node_sync(node_name):
                 f"\rWaiting for {node_name} node chain sync {round(waited,1)}s"
             )
             sys.stdout.flush()
-            waited += wait_step
-            time.sleep(wait_step)
+            waited += WAIT_STEP
+            time.sleep(WAIT_STEP)
 
 
 def LND_has_active_channels(node_name):
@@ -97,8 +99,8 @@ def wait_for_active_channels(lnvendor, node_name="coordinator"):
                 )
 
         sys.stdout.flush()
-        waited += wait_step
-        time.sleep(wait_step)
+        waited += WAIT_STEP
+        time.sleep(WAIT_STEP)
 
 
 def wait_for_cln_node_sync():
@@ -112,8 +114,8 @@ def wait_for_cln_node_sync():
                 f"\rWaiting for coordinator CLN node sync {round(waited,1)}s"
             )
             sys.stdout.flush()
-            waited += wait_step
-            time.sleep(wait_step)
+            waited += WAIT_STEP
+            time.sleep(WAIT_STEP)
         else:
             return
 
@@ -131,8 +133,66 @@ def wait_for_cln_active_channels():
                 f"\rWaiting for coordinator CLN node channels to be active {round(waited,1)}s"
             )
             sys.stdout.flush()
-            waited += wait_step
-            time.sleep(wait_step)
+            waited += WAIT_STEP
+            time.sleep(WAIT_STEP)
+
+
+def wait_nodes_sync():
+    wait_for_lnd_node_sync("robot")
+    if LNVENDOR == "LND":
+        wait_for_lnd_node_sync("coordinator")
+    elif LNVENDOR == "CLN":
+        wait_for_cln_node_sync()
+
+
+def wait_channels():
+    wait_for_active_channels(LNVENDOR, "coordinator")
+    wait_for_active_channels("LND", "robot")
+
+
+def set_up_regtest_network():
+    if channel_is_active():
+        print("Regtest network was already ready. Skipping initalization.")
+        return
+    # Fund two LN nodes in regtest and open channels
+    # Coordinator is either LND or CLN. Robot user is always LND.
+    if LNVENDOR == "LND":
+        coordinator_node_id = get_lnd_node_id("coordinator")
+        coordinator_port = 9735
+    elif LNVENDOR == "CLN":
+        coordinator_node_id = get_cln_node_id()
+        coordinator_port = 9737
+
+    print("Coordinator Node ID: ", coordinator_node_id)
+
+    # Fund both robot and coordinator nodes
+    robot_funding_address = create_address("robot")
+    coordinator_funding_address = create_address("coordinator")
+    generate_blocks(coordinator_funding_address, 1)
+    generate_blocks(robot_funding_address, 101)
+    wait_nodes_sync()
+
+    # Open channel between Robot user and coordinator
+    print(f"\nOpening channel from Robot user node to coordinator {LNVENDOR} node")
+    connect_to_node("robot", coordinator_node_id, f"localhost:{coordinator_port}")
+    open_channel("robot", coordinator_node_id, 100_000_000, 50_000_000)
+
+    # Generate 10 blocks so the channel becomes active and wait for sync
+    generate_blocks(robot_funding_address, 10)
+
+    # Wait a tiny bit so payments can be done in the new channel
+    wait_nodes_sync()
+    wait_channels()
+    time.sleep(1)
+
+
+def channel_is_active():
+    robot_channel_active = LND_has_active_channels("robot")
+    if LNVENDOR == "LND":
+        coordinator_channel_active = LND_has_active_channels("coordinator")
+    elif LNVENDOR == "CLN":
+        coordinator_channel_active = CLN_has_active_channels()
+    return robot_channel_active and coordinator_channel_active
 
 
 def connect_to_node(node_name, node_id, ip_port):
@@ -151,7 +211,7 @@ def connect_to_node(node_name, node_id, ip_port):
             if "already connected to peer" in response.json()["message"]:
                 return response.json()
             print(f"Could not peer coordinator node: {response.json()}")
-            time.sleep(wait_step)
+            time.sleep(WAIT_STEP)
 
 
 def open_channel(node_name, node_id, local_funding_amount, push_sat):
@@ -169,12 +229,25 @@ def open_channel(node_name, node_id, local_funding_amount, push_sat):
     return response.json()
 
 
-def create_address(node_name):
+def create_address_LND(node_name):
     node = get_node(node_name)
     response = requests.get(
         f'http://localhost:{node["port"]}/v1/newaddress', headers=node["headers"]
     )
     return response.json()["address"]
+
+
+def create_address_CLN():
+    from api.lightning.cln import CLNNode
+
+    return CLNNode.newaddress()
+
+
+def create_address(node_name):
+    if node_name == "coordinator" and LNVENDOR == "CLN":
+        return create_address_CLN()
+    else:
+        return create_address_LND(node_name)
 
 
 def generate_blocks(address, num_blocks):
@@ -199,7 +272,7 @@ def pay_invoice(node_name, invoice):
             f'http://localhost:{node["port"]}/v1/channels/transactions',
             json=data,
             headers=node["headers"],
-            timeout=1,
+            timeout=0.3,  # 0.15s is enough for LND to LND hodl ACCEPT.
         )
     except ReadTimeout:
         # Request to pay hodl invoice has timed out: that's good!

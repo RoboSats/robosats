@@ -80,6 +80,14 @@ class CLNNode:
             print(f"Cannot get CLN node id: {e}")
 
     @classmethod
+    def newaddress(cls):
+        """Only used on tests to fund the regtest node"""
+        nodestub = node_pb2_grpc.NodeStub(cls.node_channel)
+        request = node_pb2.NewaddrRequest()
+        response = nodestub.NewAddr(request)
+        return response.bech32
+
+    @classmethod
     def decode_payreq(cls, invoice):
         """Decodes a lightning payment request (invoice)"""
         request = hold_pb2.DecodeBolt11Request(bolt11=invoice)

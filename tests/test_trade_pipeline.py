@@ -1,5 +1,4 @@
 import json
-import time
 from datetime import datetime
 from decimal import Decimal
 
@@ -10,24 +9,16 @@ from django.urls import reverse
 from api.management.commands.follow_invoices import Command as FollowInvoices
 from api.models import Currency, Order
 from api.tasks import cache_market
+from control.models import BalanceLog
 from control.tasks import compute_node_balance
 from tests.node_utils import (
-    CLN_has_active_channels,
-    LND_has_active_channels,
-    connect_to_node,
+    add_invoice,
     create_address,
-    generate_blocks,
-    get_cln_node_id,
-    get_lnd_node_id,
-    open_channel,
     pay_invoice,
-    wait_for_active_channels,
-    wait_for_cln_node_sync,
-    wait_for_lnd_node_sync,
+    set_up_regtest_network,
 )
+from tests.pgp_utils import sign_message
 from tests.test_api import BaseAPITestCase
-
-LNVENDOR = config("LNVENDOR", cast=str, default="LND")
 
 
 def read_file(file_path):
@@ -58,25 +49,6 @@ class TradeTest(BaseAPITestCase):
         "longitude": 135.503,
     }
 
-    def wait_nodes_sync():
-        wait_for_lnd_node_sync("robot")
-        if LNVENDOR == "LND":
-            wait_for_lnd_node_sync("coordinator")
-        elif LNVENDOR == "CLN":
-            wait_for_cln_node_sync()
-
-    def wait_channels():
-        wait_for_active_channels("LND", "robot")
-        wait_for_active_channels(LNVENDOR, "coordinator")
-
-    def channel_is_active():
-        robot_channel_active = LND_has_active_channels("robot")
-        if LNVENDOR == "LND":
-            coordinator_channel_active = LND_has_active_channels("coordinator")
-        elif LNVENDOR == "CLN":
-            coordinator_channel_active = CLN_has_active_channels()
-        return robot_channel_active and coordinator_channel_active
-
     @classmethod
     def setUpTestData(cls):
         """
@@ -88,40 +60,8 @@ class TradeTest(BaseAPITestCase):
         # Fetch currency prices from external APIs
         cache_market()
 
-        # Skip node setup and channel creation if both nodes have an active channel already
-        if cls.channel_is_active():
-            print("Regtest network was already ready. Skipping initalization.")
-            # Take the first node balances snapshot
-            compute_node_balance()
-            return
-
-        # Fund two LN nodes in regtest and open channels
-        # Coordinator is either LND or CLN. Robot user is always LND.
-        if LNVENDOR == "LND":
-            coordinator_node_id = get_lnd_node_id("coordinator")
-            coordinator_port = 9735
-        elif LNVENDOR == "CLN":
-            coordinator_node_id = get_cln_node_id()
-            coordinator_port = 9737
-
-        print("Coordinator Node ID: ", coordinator_node_id)
-
-        funding_address = create_address("robot")
-        generate_blocks(funding_address, 101)
-        cls.wait_nodes_sync()
-
-        # Open channel between Robot user and coordinator
-        print(f"\nOpening channel from Robot user node to coordinator {LNVENDOR} node")
-        connect_to_node("robot", coordinator_node_id, f"localhost:{coordinator_port}")
-        open_channel("robot", coordinator_node_id, 100_000_000, 50_000_000)
-
-        # Generate 10 blocks so the channel becomes active and wait for sync
-        generate_blocks(funding_address, 10)
-
-        # Wait a tiny bit so payments can be done in the new channel
-        cls.wait_nodes_sync()
-        cls.wait_channels()
-        time.sleep(1)
+        # Initialize bitcoin core, mine some blocks, connect nodes, open channel
+        set_up_regtest_network()
 
         # Take the first node balances snapshot
         compute_node_balance()
@@ -154,6 +94,25 @@ class TradeTest(BaseAPITestCase):
         self.assertIsInstance(
             usd.timestamp, datetime, "External price timestamp is not a datetime"
         )
+
+    def test_initial_balance_log(self):
+        """
+        Test if the initial node BalanceLog is correct.
+        One channel should exist with 0.5BTC in local.
+        No onchain balance should exist.
+        """
+        balance_log = BalanceLog.objects.latest()
+
+        self.assertIsInstance(balance_log.time, datetime)
+        self.assertTrue(balance_log.total > 0)
+        self.assertTrue(balance_log.ln_local > 0)
+        self.assertEqual(balance_log.ln_local_unsettled, 0)
+        self.assertTrue(balance_log.ln_remote > 0)
+        self.assertEqual(balance_log.ln_remote_unsettled, 0)
+        self.assertTrue(balance_log.onchain_total > 0)
+        self.assertTrue(balance_log.onchain_confirmed > 0)
+        self.assertEqual(balance_log.onchain_unconfirmed, 0)
+        self.assertTrue(balance_log.onchain_fraction > 0)
 
     def get_robot_auth(self, robot_index, first_encounter=False):
         """
@@ -365,12 +324,8 @@ class TradeTest(BaseAPITestCase):
         self.assertResponse(response)
 
         self.assertEqual(data["id"], order_made_data["id"])
-        self.assertTrue(
-            isinstance(datetime.fromisoformat(data["created_at"]), datetime)
-        )
-        self.assertTrue(
-            isinstance(datetime.fromisoformat(data["expires_at"]), datetime)
-        )
+        self.assertIsInstance(datetime.fromisoformat(data["created_at"]), datetime)
+        self.assertIsInstance(datetime.fromisoformat(data["expires_at"]), datetime)
         self.assertTrue(data["is_maker"])
         self.assertTrue(data["is_participant"])
         self.assertTrue(data["is_buyer"])
@@ -382,11 +337,11 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             data["ur_nick"], read_file(f"tests/robots/{robot_index}/nickname")
         )
-        self.assertTrue(isinstance(data["satoshis_now"], int))
+        self.assertIsInstance(data["satoshis_now"], int)
         self.assertFalse(data["maker_locked"])
         self.assertFalse(data["taker_locked"])
         self.assertFalse(data["escrow_locked"])
-        self.assertTrue(isinstance(data["bond_satoshis"], int))
+        self.assertIsInstance(data["bond_satoshis"], int)
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         self.cancel_order(data["id"])
@@ -441,8 +396,8 @@ class TradeTest(BaseAPITestCase):
         public_data = json.loads(public_response.content.decode())
 
         self.assertFalse(public_data["is_participant"])
-        self.assertTrue(isinstance(public_data["price_now"], float))
-        self.assertTrue(isinstance(data["satoshis_now"], int))
+        self.assertIsInstance(public_data["price_now"], float)
+        self.assertIsInstance(data["satoshis_now"], int)
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         self.cancel_order(data["id"])
@@ -533,6 +488,7 @@ class TradeTest(BaseAPITestCase):
         taker_index = 2
         maker_form = self.maker_form_buy_with_range
 
+        # Taker GET
         response = self.make_and_lock_contract(maker_form, 80, maker_index, taker_index)
         data = json.loads(response.content.decode())
 
@@ -540,6 +496,26 @@ class TradeTest(BaseAPITestCase):
         self.assertResponse(response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.WF2).label)
+        self.assertEqual(data["maker_status"], "Active")
+        self.assertEqual(data["taker_status"], "Active")
+        self.assertTrue(data["is_participant"])
+        self.assertTrue(data["maker_locked"])
+        self.assertTrue(data["taker_locked"])
+        self.assertFalse(data["escrow_locked"])
+
+        # Maker GET
+        response = self.get_order(data["id"], maker_index)
+        data = json.loads(response.content.decode())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.WF2).label)
+        self.assertTrue(data["swap_allowed"])
+        self.assertIsInstance(data["suggested_mining_fee_rate"], int)
+        self.assertIsInstance(data["swap_fee_rate"], float)
+        self.assertTrue(data["suggested_mining_fee_rate"] > 0)
+        self.assertTrue(data["swap_fee_rate"] > 0)
         self.assertEqual(data["maker_status"], "Active")
         self.assertEqual(data["taker_status"], "Active")
         self.assertTrue(data["is_participant"])
@@ -561,8 +537,6 @@ class TradeTest(BaseAPITestCase):
 
         # Maker's first order fetch. Should trigger maker bond hold invoice generation.
         response = self.get_order(locked_taker_response_data["id"], taker_index)
-        print("HEREEEEEEEEEEEEEEEEEEEEEEREEEEEEEEEEEEEEEE")
-        print(response.json())
         invoice = response.json()["escrow_invoice"]
 
         # Lock the invoice from the robot's node
@@ -597,3 +571,111 @@ class TradeTest(BaseAPITestCase):
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         self.cancel_order(data["id"], 2)
+
+    def submit_payout_address(self, order_id, robot_index=1):
+        path = reverse("order")
+        params = f"?order_id={order_id}"
+        headers = self.get_robot_auth(robot_index)
+
+        payout_address = create_address("robot")
+        signed_payout_address = sign_message(
+            payout_address,
+            passphrase_path=f"tests/robots/{robot_index}/token",
+            private_key_path=f"tests/robots/{robot_index}/enc_priv_key",
+        )
+        body = {"action": "update_address", "address": signed_payout_address}
+
+        response = self.client.post(path + params, body, **headers)
+
+        return response
+
+    def trade_to_submitted_address(
+        self, maker_form, take_amount=80, maker_index=1, taker_index=2
+    ):
+        response_escrow_locked = self.trade_to_locked_escrow(
+            maker_form, take_amount, maker_index, taker_index
+        )
+        response = self.submit_payout_address(
+            response_escrow_locked.json()["id"], maker_index
+        )
+        return response
+
+    def test_trade_to_submitted_address(self):
+        """
+        Tests a trade from order creation until escrow locked, before
+        invoice/address is submitted by buyer.
+        """
+        maker_index = 1
+        taker_index = 2
+        maker_form = self.maker_form_buy_with_range
+
+        response = self.trade_to_submitted_address(
+            maker_form, 80, maker_index, taker_index
+        )
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.CHA).label)
+
+        self.assertFalse(data["is_fiat_sent"])
+
+        # Cancel order to avoid leaving pending HTLCs after a successful test
+        self.cancel_order(data["id"])
+
+    def submit_payout_invoice(self, order_id, num_satoshis, robot_index=1):
+        path = reverse("order")
+        params = f"?order_id={order_id}"
+        headers = self.get_robot_auth(robot_index)
+
+        payout_invoice = add_invoice("robot", num_satoshis)
+        signed_payout_invoice = sign_message(
+            payout_invoice,
+            passphrase_path=f"tests/robots/{robot_index}/token",
+            private_key_path=f"tests/robots/{robot_index}/enc_priv_key",
+        )
+        body = {"action": "update_invoice", "invoice": signed_payout_invoice}
+
+        response = self.client.post(path + params, body, **headers)
+
+        return response
+
+    def trade_to_submitted_invoice(
+        self, maker_form, take_amount=80, maker_index=1, taker_index=2
+    ):
+        response_escrow_locked = self.trade_to_locked_escrow(
+            maker_form, take_amount, maker_index, taker_index
+        )
+
+        response_get = self.get_order(response_escrow_locked.json()["id"], maker_index)
+
+        response = self.submit_payout_invoice(
+            response_escrow_locked.json()["id"],
+            response_get.json()["trade_satoshis"],
+            maker_index,
+        )
+        return response
+
+    def test_trade_to_submitted_invoice(self):
+        """
+        Tests a trade from order creation until escrow locked, before
+        invoice/address is submitted by buyer.
+        """
+        maker_index = 1
+        taker_index = 2
+        maker_form = self.maker_form_buy_with_range
+
+        response = self.trade_to_submitted_invoice(
+            maker_form, 80, maker_index, taker_index
+        )
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.CHA).label)
+        self.assertFalse(data["is_fiat_sent"])
+
+        # Cancel order to avoid leaving pending HTLCs after a successful test
+        self.cancel_order(data["id"])

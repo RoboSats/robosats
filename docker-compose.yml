@@ -21,7 +21,10 @@ services:
     network_mode: service:tor
 
   backend:
-    build: .
+    build:
+      context: .
+      args:
+        DEVELOPMENT: True
     image: backend-image
     container_name: django-dev
     restart: always
@@ -30,7 +33,7 @@ services:
       - lnd
       - redis
     environment:
-      DEVELOPMENT: 1
+      DEVELOPMENT: True
     volumes:
       - .:/usr/src/robosats
       - ./node/lnd:/lnd
