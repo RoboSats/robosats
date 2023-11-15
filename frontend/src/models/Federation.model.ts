@@ -4,12 +4,11 @@ import {
   type Garage,
   type Origin,
   type PublicOrder,
-  type Robot,
   type Settings,
   defaultExchange,
+  type Order,
 } from '.';
 import defaultFederation from '../../static/federation.json';
-import { type CurrentOrder } from '../contexts/FederationContext';
 import { updateExchangeInfo } from './Exchange.model';
 
 type FederationHooks = 'onCoordinatorUpdate' | 'onFederationReady';
@@ -97,20 +96,18 @@ export class Federation {
     });
   };
 
-  fetchOrder = async (currentOrder: CurrentOrder, robot: Robot): Promise<CurrentOrder | null> => {
-    if (currentOrder.shortAlias !== null) {
-      const coordinator = this.coordinators[currentOrder.shortAlias];
-      if (coordinator != null && currentOrder.id !== null) {
-        const newOrder = await coordinator.fetchOrder(currentOrder.id, robot);
-        if (newOrder) {
-          return {
-            ...currentOrder,
-            order: newOrder,
-          };
+  fetchOrder = async (order: Order, garage: Garage): Promise<Order | null> => {
+    if (order.shortAlias !== null) {
+      const coordinator = this.coordinators[order.shortAlias];
+      if (coordinator != null && order.id !== null) {
+        const newOrder = await coordinator.fetchOrder(order.id, garage.getRobot());
+        if (newOrder != null) {
+          garage.updateOrder(newOrder);
+          return newOrder;
         }
       }
     }
-    return currentOrder;
+    return order;
   };
 
   // Coordinators

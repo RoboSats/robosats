@@ -48,19 +48,13 @@ export interface fetchRobotProps {
   isRefresh?: boolean;
 }
 
-export interface CurrentOrder {
-  shortAlias: string | null;
-  id: number | null;
-  order: Order | null;
-}
-
 export interface UseFederationStoreType {
   federation: Federation;
   sortedCoordinators: string[];
   focusedCoordinator: string | null;
   setFocusedCoordinator: Dispatch<SetStateAction<string>>;
-  currentOrder: CurrentOrder;
-  setCurrentOrder: Dispatch<SetStateAction<CurrentOrder>>;
+  currentOrder: Order | null;
+  setCurrentOrder: Dispatch<SetStateAction<Order | null>>;
   setDelay: Dispatch<SetStateAction<number>>;
   coordinatorUpdatedAt: string;
   federationUpdatedAt: string;
@@ -70,8 +64,8 @@ export const initialFederationContext: UseFederationStoreType = {
   federation: new Federation(),
   sortedCoordinators: [],
   focusedCoordinator: '',
+  currentOrder: null,
   setFocusedCoordinator: () => {},
-  currentOrder: { shortAlias: null, id: null, order: null },
   setCurrentOrder: () => {},
   setDelay: () => {},
   coordinatorUpdatedAt: '',
@@ -83,7 +77,7 @@ export const FederationContext = createContext<UseFederationStoreType>(initialFe
 export const useFederationStore = (): UseFederationStoreType => {
   const { settings, page, origin, hostUrl, open, torStatus } =
     useContext<UseAppStoreType>(AppContext);
-  const { setMaker, garage, robotUpdatedAt, badOrder } =
+  const { setMaker, garage, orderUpdatedAt, robotUpdatedAt, badOrder } =
     useContext<UseGarageStoreType>(GarageContext);
   const [federation, setFederation] = useState(initialFederationContext.federation);
   const sortedCoordinators = useMemo(() => {
@@ -104,9 +98,7 @@ export const useFederationStore = (): UseFederationStoreType => {
   const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
     setInterval(() => null, delay),
   );
-  const [currentOrder, setCurrentOrder] = useState<CurrentOrder>(
-    initialFederationContext.currentOrder,
-  );
+  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     // On bitcoin network change we reset book, limits and federation info and fetch everything again
@@ -124,8 +116,8 @@ export const useFederationStore = (): UseFederationStoreType => {
   }, [settings.network, torStatus]);
 
   const fetchCurrentOrder = (): void => {
-    if (currentOrder.id != null && (page === 'order' || badOrder === undefined)) {
-      void federation.fetchOrder(currentOrder, garage.getRobot());
+    if (currentOrder?.id != null && (page === 'order' || badOrder === undefined)) {
+      void federation.fetchOrder(currentOrder, garage);
     }
   };
 
@@ -133,6 +125,10 @@ export const useFederationStore = (): UseFederationStoreType => {
   useEffect(() => {
     fetchCurrentOrder();
   }, [currentOrder, page]);
+
+  useEffect(() => {
+    setCurrentOrder(garage.getOrder());
+  }, [orderUpdatedAt]);
 
   useEffect(() => {
     clearInterval(timer);

@@ -14,7 +14,7 @@ import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageCon
 
 const MakerPage = (): JSX.Element => {
   const { fav, windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
-  const { setDelay, federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, maker } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -50,15 +50,9 @@ const MakerPage = (): JSX.Element => {
     maker.paymentMethods,
   ]);
 
-  const onViewOrder = function (): void {
-    garage.updateOrder(null);
-    setDelay(10000);
-  };
-
   const onOrderClicked = function (id: number): void {
     if (garage.getRobot().avatarLoaded) {
       navigate(`/order/${id}`);
-      onViewOrder();
     } else {
       setOpenNoRobot(true);
     }

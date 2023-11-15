@@ -30,7 +30,7 @@ import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface TakeButtonProps {
-  baseUrl: string;
+  currentOrder: Order;
   info?: Info;
   onClickGenerateRobot?: () => void;
 }
@@ -42,7 +42,7 @@ interface OpenDialogsProps {
 const closeAll = { inactiveMaker: false, confirmation: false };
 
 const TakeButton = ({
-  baseUrl,
+  currentOrder,
   info,
   onClickGenerateRobot = () => null,
 }: TakeButtonProps): JSX.Element => {
@@ -50,7 +50,7 @@ const TakeButton = ({
   const theme = useTheme();
   const { settings, origin, hostUrl } = useContext<UseAppStoreType>(AppContext);
   const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { federation, focusedCoordinator } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
 
   const [takeAmount, setTakeAmount] = useState<string>('');
   const [badRequest, setBadRequest] = useState<string>('');
@@ -59,18 +59,18 @@ const TakeButton = ({
   const [satoshis, setSatoshis] = useState<string>('');
 
   const satoshisNow = (): string | undefined => {
-    const order = garage.getOrder();
-
-    if (order === null) return;
+    if (currentOrder === null) return;
 
     const tradeFee = info?.taker_fee ?? 0;
     const defaultRoutingBudget = 0.001;
-    const btcNow = order.satoshis_now / 100000000;
-    const rate = order.amount != null ? order.amount / btcNow : order.max_amount / btcNow;
-    const amount = order.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
+    const btcNow = currentOrder.satoshis_now / 100000000;
+    const rate =
+      currentOrder.amount != null ? currentOrder.amount / btcNow : currentOrder.max_amount / btcNow;
+    const amount =
+      currentOrder.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
     const satoshis = computeSats({
       amount,
-      routingBudget: order.is_buyer ? defaultRoutingBudget : 0,
+      routingBudget: currentOrder.is_buyer ? defaultRoutingBudget : 0,
       fee: tradeFee,
       rate,
     });
@@ -82,9 +82,7 @@ const TakeButton = ({
   }, [orderUpdatedAt, takeAmount, info]);
 
   const currencyCode: string =
-    garage.getOrder()?.currency === 1000
-      ? 'Sats'
-      : currencies[`${Number(garage.getOrder()?.currency)}`];
+    currentOrder?.currency === 1000 ? 'Sats' : currencies[`${Number(currentOrder?.currency)}`];
 
   const InactiveMakerDialog = function (): JSX.Element {
     return (
@@ -156,14 +154,13 @@ const TakeButton = ({
   };
 
   const amountHelperText = useMemo(() => {
-    const order = garage.getOrder();
+    if (currentOrder === null) return;
 
-    if (order === null) return;
-
-    const amount = order.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
-    if (amount < Number(order.min_amount) && takeAmount !== '') {
+    const amount =
+      currentOrder.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
+    if (amount < Number(currentOrder.min_amount) && takeAmount !== '') {
       return t('Too low');
-    } else if (amount > Number(order.max_amount) && takeAmount !== '') {
+    } else if (amount > Number(currentOrder.max_amount) && takeAmount !== '') {
       return t('Too high');
     } else {
       return null;
@@ -171,7 +168,7 @@ const TakeButton = ({
   }, [orderUpdatedAt, takeAmount]);
 
   const onTakeOrderClicked = function (): void {
-    if (garage.getOrder()?.maker_status === 'Inactive') {
+    if (currentOrder?.maker_status === 'Inactive') {
       setOpen({ inactiveMaker: true, confirmation: false });
     } else {
       setOpen({ inactiveMaker: false, confirmation: true });
@@ -179,18 +176,18 @@ const TakeButton = ({
   };
 
   const invalidTakeAmount = useMemo(() => {
-    const order = garage.getOrder();
-    const amount = order?.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
+    const amount =
+      currentOrder?.currency === 1000 ? Number(takeAmount) / 100000000 : Number(takeAmount);
     return (
-      amount < Number(order?.min_amount) ||
-      amount > Number(order?.max_amount) ||
+      amount < Number(currentOrder?.min_amount) ||
+      amount > Number(currentOrder?.max_amount) ||
       takeAmount === '' ||
       takeAmount == null
     );
   }, [takeAmount, orderUpdatedAt]);
 
   const takeOrderButton = function (): JSX.Element {
-    if (garage.getOrder()?.has_range === true) {
+    if (currentOrder?.has_range === true) {
       return (
         <Box
           sx={{
@@ -229,8 +226,8 @@ const TakeButton = ({
                     required={true}
                     value={takeAmount}
                     inputProps={{
-                      min: garage.getOrder()?.min_amount,
-                      max: garage.getOrder()?.max_amount,
+                      min: currentOrder?.min_amount,
+                      max: currentOrder?.max_amount,
                       style: { textAlign: 'center' },
                     }}
                     onChange={handleTakeAmountChange}
@@ -283,7 +280,7 @@ const TakeButton = ({
             {satoshis !== '0' && satoshis !== '' && !invalidTakeAmount ? (
               <Grid item>
                 <FormHelperText sx={{ position: 'relative', top: '0.15em' }}>
-                  {garage.getOrder()?.type === 1
+                  {currentOrder?.type === 1
                     ? t('You will receive {{satoshis}} Sats (Approx)', { satoshis })
                     : t('You will send {{satoshis}} Sats (Approx)', { satoshis })}
                 </FormHelperText>
@@ -317,19 +314,19 @@ const TakeButton = ({
   };
 
   const takeOrder = function (): void {
-    if (!(focusedCoordinator != null)) return;
+    if (currentOrder === null) return;
 
     setLoadingTake(true);
-    const { url } = federation
-      .getCoordinator(focusedCoordinator)
+    const { url, basePath } = federation
+      .getCoordinator(currentOrder.shortAlias)
       .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
     apiClient
       .post(
-        url,
-        `/api/order/?order_id=${String(garage.getOrder()?.id)}`,
+        url + basePath,
+        `/api/order/?order_id=${String(currentOrder?.id)}`,
         {
           action: 'take',
-          amount: garage.getOrder()?.currency === 1000 ? takeAmount / 100000000 : takeAmount,
+          amount: currentOrder?.currency === 1000 ? takeAmount / 100000000 : takeAmount,
         },
         { tokenSHA256: garage.getRobot().tokenSHA256 },
       )
@@ -350,7 +347,7 @@ const TakeButton = ({
   return (
     <Box>
       <Countdown
-        date={new Date(garage.getOrder()?.penalty ?? '')}
+        date={new Date(currentOrder?.penalty ?? '')}
         renderer={countdownTakeOrderRenderer}
       />
       {badRequest !== '' ? (
