@@ -68,11 +68,11 @@ const RobotAvatar: React.FC<Props> = ({
         setNicknameReady(true);
       } else if (focusedCoordinator != null) {
         setNicknameReady(true);
-        const { url } = federation
+        const { url, basePath } = federation
           .getCoordinator(focusedCoordinator)
           .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
         void apiClient
-          .fileImageUrl(url, `${path}${nickname}${small ? '.small' : ''}.webp`)
+          .fileImageUrl(url + basePath, `${path}${nickname}${small ? '.small' : ''}.webp`)
           .then(setAvatarSrc);
       }
     } else {

@@ -105,6 +105,7 @@ export interface Order {
   address: string;
   network: 'mainnet' | 'testnet';
   shortAlias: string;
+  bad_request?: string;
 }
 
 export const defaultOrder: Order = {

@@ -82,11 +82,11 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   }, [chatOffset]);
 
   const loadMessages: () => void = () => {
-    const { url } = federation
+    const { url, basePath } = federation
       .getCoordinator(focusedCoordinator)
       .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
     apiClient
-      .get(url, `/api/chat/?order_id=${orderId}&offset=${lastIndex}`, {
+      .get(url + basePath, `/api/chat/?order_id=${orderId}&offset=${lastIndex}`, {
         tokenSHA256: robot.tokenSHA256,
       })
       .then((results: any) => {
@@ -177,12 +177,12 @@ const EncryptedTurtleChat: React.FC<Props> = ({
     }
     // If input string contains '#' send unencrypted and unlogged message
     else if (value.substring(0, 1) === '#') {
-      const { url } = federation
+      const { url, basePath } = federation
         .getCoordinator(focusedCoordinator)
         .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
       apiClient
         .post(
-          url,
+          url + basePath,
           `/api/chat/`,
           {
             PGP_message: value,
@@ -210,12 +210,12 @@ const EncryptedTurtleChat: React.FC<Props> = ({
       setLastSent(value);
       encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, robot.token)
         .then((encryptedMessage) => {
-          const { url } = federation
+          const { url, basePath } = federation
             .getCoordinator(focusedCoordinator)
             .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
           apiClient
             .post(
-              url,
+              url + basePath,
               `/api/chat/`,
               {
                 PGP_message: String(encryptedMessage).split('\n').join('\\'),
