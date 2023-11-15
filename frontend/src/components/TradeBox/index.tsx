@@ -165,12 +165,12 @@ const TradeBox = ({
     statement,
     rating,
   }: SubmitActionProps): void {
-    const { url } = federation
+    const { url, basePath } = federation
       .getCoordinator(currentOrder.shortAlias)
       .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
     void apiClient
       .post(
-        url,
+        url + basePath,
         `/api/order/?order_id=${Number(currentOrder.id)}`,
         {
           action,

@@ -112,13 +112,17 @@ class Garage {
     const robot = this.getSlot(index).robot;
     if (robot != null) {
       robot.update(attributes);
-      if (attributes.activeOrderId != null) {
-        this.slots[index].activeOrderId = attributes.activeOrderId;
-        this.slots[index].activeOrderShortAlias = attributes.shortAlias;
-      }
-      if (attributes.lastOrderId != null) {
+      if (attributes.lastOrderId && attributes.lastOrderId != null) {
         this.slots[index].lastOrderId = attributes.lastOrderId;
         this.slots[index].lastOrderShortAlias = attributes.shortAlias;
+        if (attributes.lastOrderId === this.slots[index].activeOrderId) {
+          this.slots[index].activeOrderId = null;
+          this.slots[index].activeOrderShortAlias = null;
+        }
+      }
+      if (attributes.activeOrderId && attributes.activeOrderId != null) {
+        this.slots[index].activeOrderId = attributes.activeOrderId;
+        this.slots[index].activeOrderShortAlias = attributes.shortAlias;
       }
       this.triggerHook('onRobotUpdate');
       this.save();

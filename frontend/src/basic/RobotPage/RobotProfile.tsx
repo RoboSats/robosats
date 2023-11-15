@@ -170,13 +170,13 @@ const RobotProfile = ({
               <Button
                 onClick={() => {
                   navigate(
-                    `/order/${String(garage.getRobot()?.shortAlias)}/${String(
-                      garage.getRobot()?.lastOrderId,
+                    `/order/${String(garage.getSlot().lastOrderShortAlias)}/${String(
+                      garage.getSlot().lastOrderId,
                     )}`,
                   );
                 }}
               >
-                {t('Last order #{{orderID}}', { orderID: garage.getRobot().lastOrderId })}
+                {t('Last order #{{orderID}}', { orderID: garage.getSlot().lastOrderId })}
               </Button>
             </Grid>
             <Grid item>

@@ -39,7 +39,6 @@ class Robot {
   public last_login: string = '';
   public copiedToken: boolean = false;
   public avatarLoaded: boolean = false;
-  public shortAlias: string = '';
 
   update = (attributes: Record<string, any>): void => {
     Object.assign(this, attributes);

@@ -46,9 +46,13 @@ const OrderPage = (): JSX.Element => {
       } else {
         coordinator
           .fetchOrder(Number(params.orderId) ?? null, garage.getRobot())
-          .then((response) => {
-            setCurrentOrder(response);
-            garage.updateOrder(response as Order);
+          .then((order) => {
+            if (order?.bad_request !== undefined) {
+              setBadOrder(order.bad_request);
+            } else {
+              setCurrentOrder(order);
+              garage.updateOrder(order as Order);
+            }
           })
           .catch((e) => {
             console.log(e);
@@ -57,8 +61,12 @@ const OrderPage = (): JSX.Element => {
     } else {
       coordinator
         .fetchOrder(Number(params.orderId) ?? null, garage.getRobot())
-        .then((response) => {
-          setCurrentOrder(response);
+        .then((order) => {
+          if (order?.bad_request !== undefined) {
+            setBadOrder(order.bad_request);
+          } else {
+            setCurrentOrder(order);
+          }
         })
         .catch((e) => {
           console.log(e);
