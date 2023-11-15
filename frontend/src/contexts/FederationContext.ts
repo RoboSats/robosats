@@ -53,8 +53,6 @@ export interface UseFederationStoreType {
   sortedCoordinators: string[];
   focusedCoordinator: string | null;
   setFocusedCoordinator: Dispatch<SetStateAction<string>>;
-  currentOrder: Order | null;
-  setCurrentOrder: Dispatch<SetStateAction<Order | null>>;
   setDelay: Dispatch<SetStateAction<number>>;
   coordinatorUpdatedAt: string;
   federationUpdatedAt: string;
@@ -64,9 +62,7 @@ export const initialFederationContext: UseFederationStoreType = {
   federation: new Federation(),
   sortedCoordinators: [],
   focusedCoordinator: '',
-  currentOrder: null,
   setFocusedCoordinator: () => {},
-  setCurrentOrder: () => {},
   setDelay: () => {},
   coordinatorUpdatedAt: '',
   federationUpdatedAt: '',
@@ -161,8 +157,6 @@ export const useFederationStore = (): UseFederationStoreType => {
     focusedCoordinator,
     setFocusedCoordinator,
     setDelay,
-    currentOrder,
-    setCurrentOrder,
     coordinatorUpdatedAt,
     federationUpdatedAt,
   };
