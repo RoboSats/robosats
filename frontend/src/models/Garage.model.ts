@@ -36,6 +36,7 @@ class Garage {
             ...defaultSlot,
             ...raw,
             robot,
+            order: null,
           };
         });
       console.log('Robot Garage was loaded from local storage');
@@ -123,6 +124,8 @@ class Garage {
       if (attributes.activeOrderId && attributes.activeOrderId != null) {
         this.slots[index].activeOrderId = attributes.activeOrderId;
         this.slots[index].activeOrderShortAlias = attributes.shortAlias;
+        this.slots[index].lastOrderId = null;
+        this.slots[index].lastOrderShortAlias = null;
       }
       this.triggerHook('onRobotUpdate');
       this.save();
