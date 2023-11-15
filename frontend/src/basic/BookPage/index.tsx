@@ -18,7 +18,7 @@ import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageCon
 const BookPage = (): JSX.Element => {
   const { windowSize } = useContext<UseAppStoreType>(AppContext);
   const { setDelay } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage, clearOrder } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'depth' | 'map'>('list');
@@ -32,7 +32,6 @@ const BookPage = (): JSX.Element => {
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
     if (garage.getRobot().avatarLoaded) {
-      clearOrder();
       setDelay(10000);
       navigate(`/order/${shortAlias}/${id}`);
     } else {

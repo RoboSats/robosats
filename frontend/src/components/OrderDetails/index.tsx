@@ -43,52 +43,52 @@ import { F2fMapDialog } from '../Dialogs';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { type Order } from '../../models';
 
 interface OrderDetailsProps {
-  coordinator: Coordinator;
+  shortAlias: string;
+  currentOrder: Order;
   onClickCoordinator?: () => void;
   baseUrl: string;
   onClickGenerateRobot?: () => void;
 }
 
 const OrderDetails = ({
-  coordinator,
+  shortAlias,
+  currentOrder,
   onClickCoordinator = () => null,
   baseUrl,
   onClickGenerateRobot = () => null,
 }: OrderDetailsProps): JSX.Element => {
   const { t } = useTranslation();
-  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
+  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { currentOrder } = useContext<UseFederationStoreType>(FederationContext);
-
-  const currencyCode: string = currencies[(currentOrder.order?.currency ?? 1).toString()];
+  const [coordinator] = useState<Coordinator | null>(federation.getCoordinator(shortAlias));
+  const currencyCode: string = currencies[(currentOrder?.currency ?? 1).toString()];
   const [showSatsDetails, setShowSatsDetails] = useState<boolean>(false);
   const [openWorldmap, setOpenWorldmap] = useState<boolean>(false);
 
   const amountString = useMemo(() => {
-    // precision to 8 decimal if currency is BTC otherwise 4 decimals
-    const order = currentOrder.order;
+    if (currentOrder === null || currentOrder.amount === null) return;
 
-    if (order === null) return;
-
-    if (order.currency === 1000) {
+    if (currentOrder.currency === 1000) {
       return (
         amountToString(
-          (order.amount * 100000000).toString(),
-          order.amount > 0 ? false : order.has_range,
-          order.min_amount * 100000000,
-          order.max_amount * 100000000,
+          (currentOrder.amount * 100000000).toString(),
+          currentOrder.amount > 0 ? false : currentOrder.has_range,
+          currentOrder.min_amount * 100000000,
+          currentOrder.max_amount * 100000000,
         ) + ' Sats'
       );
     } else {
       return (
         amountToString(
-          order.amount.toString(),
-          order.amount > 0 ? false : order.has_range,
-          order.min_amount,
-          order.max_amount,
+          currentOrder.amount.toString(),
+          currentOrder.amount > 0 ? false : currentOrder.has_range,
+          currentOrder.min_amount,
+          currentOrder.max_amount,
         ) + ` ${currencyCode}`
       );
     }
@@ -107,7 +107,7 @@ const OrderDetails = ({
       return <span> {t('The order has expired')}</span>;
     } else {
       let color = 'inherit';
-      const fraction_left = total / 1000 / (currentOrder.order?.total_secs_exp ?? 1);
+      const fraction_left = total / 1000 / (currentOrder?.total_secs_exp ?? 1);
       // Make orange at 25% of time left
       if (fraction_left < 0.25) {
         color = theme.palette.warning.main;
@@ -167,7 +167,7 @@ const OrderDetails = ({
     let send: string = '';
     let receive: string = '';
     let sats: string = '';
-    const order = currentOrder.order;
+    const order = currentOrder;
 
     if (order === null) return {};
 
@@ -242,10 +242,10 @@ const OrderDetails = ({
   return (
     <Grid container spacing={0}>
       <F2fMapDialog
-        latitude={currentOrder.order?.latitude}
-        longitude={currentOrder.order?.longitude}
+        latitude={currentOrder?.latitude}
+        longitude={currentOrder?.longitude}
         open={openWorldmap}
-        orderType={currentOrder.order?.type ?? 0}
+        orderType={currentOrder?.type ?? 0}
         zoom={6}
         message={t(
           'The pinned location is approximate. The exact location for the meeting place must be exchanged in the encrypted chat.',
@@ -282,51 +282,44 @@ const OrderDetails = ({
           <ListItem>
             <ListItemAvatar sx={{ width: '4em', height: '4em' }}>
               <RobotAvatar
-                statusColor={statusBadgeColor(currentOrder.order?.maker_status ?? '')}
-                nickname={currentOrder.order?.maker_nick}
-                tooltip={t(currentOrder.order?.maker_status ?? '')}
-                orderType={currentOrder.order?.type}
+                statusColor={statusBadgeColor(currentOrder?.maker_status ?? '')}
+                nickname={currentOrder?.maker_nick}
+                tooltip={t(currentOrder?.maker_status ?? '')}
+                orderType={currentOrder?.type}
                 baseUrl={baseUrl}
                 small={true}
               />
             </ListItemAvatar>
             <ListItemText
-              primary={`${String(currentOrder.order?.maker_nick)} (${
-                currentOrder.order?.type === 1
-                  ? t(currentOrder.order?.currency === 1000 ? 'Swapping Out' : 'Seller')
-                  : t(currentOrder.order?.currency === 1000 ? 'Swapping In' : 'Buyer')
+              primary={`${String(currentOrder?.maker_nick)} (${
+                currentOrder?.type === 1
+                  ? t(currentOrder?.currency === 1000 ? 'Swapping Out' : 'Seller')
+                  : t(currentOrder?.currency === 1000 ? 'Swapping In' : 'Buyer')
               })`}
               secondary={t('Order maker')}
             />
           </ListItem>
 
-          <Collapse
-            in={
-              currentOrder.order?.is_participant === true &&
-              currentOrder.order?.taker_nick !== 'None'
-            }
-          >
+          <Collapse in={currentOrder?.is_participant && currentOrder?.taker_nick !== 'None'}>
             <Divider />
             <ListItem>
               <ListItemText
-                primary={`${String(currentOrder.order?.taker_nick)} (${
-                  currentOrder.order?.type === 1
-                    ? t(currentOrder.order?.currency === 1000 ? 'Swapping In' : 'Buyer')
-                    : t(currentOrder.order?.currency === 1000 ? 'Swapping Out' : 'Seller')
+                primary={`${String(currentOrder?.taker_nick)} (${
+                  currentOrder?.type === 1
+                    ? t(currentOrder?.currency === 1000 ? 'Swapping In' : 'Buyer')
+                    : t(currentOrder?.currency === 1000 ? 'Swapping Out' : 'Seller')
                 })`}
                 secondary={t('Order taker')}
               />
               <ListItemAvatar>
                 <RobotAvatar
                   avatarClass='smallAvatar'
-                  statusColor={statusBadgeColor(currentOrder.order?.taker_status ?? '')}
+                  statusColor={statusBadgeColor(currentOrder?.taker_status ?? '')}
                   nickname={
-                    currentOrder.order?.taker_nick === 'None'
-                      ? undefined
-                      : currentOrder.order?.taker_nick
+                    currentOrder?.taker_nick === 'None' ? undefined : currentOrder?.taker_nick
                   }
-                  tooltip={t(currentOrder.order?.taker_status ?? '')}
-                  orderType={currentOrder.order?.type === 0 ? 1 : 0}
+                  tooltip={t(currentOrder?.taker_status ?? '')}
+                  orderType={currentOrder?.type === 0 ? 1 : 0}
                   baseUrl={baseUrl}
                   small={true}
                 />
@@ -337,13 +330,13 @@ const OrderDetails = ({
             <Chip label={t('Order Details')} />
           </Divider>
 
-          <Collapse in={currentOrder.order?.is_participant}>
+          <Collapse in={currentOrder?.is_participant}>
             <ListItem>
               <ListItemIcon>
                 <Article />
               </ListItemIcon>
               <ListItemText
-                primary={t(currentOrder.order?.status_message ?? '')}
+                primary={t(currentOrder?.status_message ?? '')}
                 secondary={t('Order status')}
               />
             </ListItem>
@@ -367,7 +360,7 @@ const OrderDetails = ({
             </ListItemIcon>
             <ListItemText
               primary={amountString}
-              secondary={(currentOrder.order?.amount ?? 0) > 0 ? 'Amount' : 'Amount Range'}
+              secondary={(currentOrder?.amount ?? 0) > 0 ? 'Amount' : 'Amount Range'}
             />
             <ListItemIcon>
               <IconButton
@@ -416,16 +409,16 @@ const OrderDetails = ({
                   size={1.42 * theme.typography.fontSize}
                   othersText={t('Others')}
                   verbose={true}
-                  text={currentOrder.order?.payment_method}
+                  text={currentOrder?.payment_method}
                 />
               }
               secondary={
-                currentOrder.order?.currency === 1000
+                currentOrder?.currency === 1000
                   ? t('Swap destination')
                   : t('Accepted payment methods')
               }
             />
-            {currentOrder.order?.payment_method.includes('Cash F2F') === true && (
+            {currentOrder?.payment_method.includes('Cash F2F') && (
               <ListItemIcon>
                 <Tooltip enterTouchDelay={0} title={t('F2F location')}>
                   <div>
@@ -449,29 +442,27 @@ const OrderDetails = ({
               <PriceChange />
             </ListItemIcon>
 
-            {currentOrder.order?.price_now !== undefined ? (
+            {currentOrder?.price_now !== undefined ? (
               <ListItemText
                 primary={t('{{price}} {{currencyCode}}/BTC - Premium: {{premium}}%', {
-                  price: pn(currentOrder.order?.price_now),
+                  price: pn(currentOrder?.price_now),
                   currencyCode,
-                  premium: currentOrder.order?.premium_now,
+                  premium: currentOrder?.premium_now,
                 })}
                 secondary={t('Price and Premium')}
               />
             ) : null}
 
-            {currentOrder.order?.price_now === undefined &&
-            currentOrder.order?.is_explicit === true ? (
+            {currentOrder?.price_now === undefined && currentOrder?.is_explicit ? (
               <ListItemText
-                primary={pn(currentOrder.order?.satoshis)}
+                primary={pn(currentOrder?.satoshis)}
                 secondary={t('Amount of Satoshis')}
               />
             ) : null}
 
-            {currentOrder.order?.price_now === undefined &&
-            !(currentOrder.order?.is_explicit === true) ? (
+            {currentOrder?.price_now === undefined && !currentOrder?.is_explicit ? (
               <ListItemText
-                primary={`${parseFloat(Number(currentOrder.order?.premium).toFixed(2))}%`}
+                primary={`${parseFloat(Number(currentOrder?.premium).toFixed(2))}%`}
                 secondary={t('Premium over market price')}
               />
             ) : null}
@@ -485,7 +476,7 @@ const OrderDetails = ({
             </ListItemIcon>
             <Grid container>
               <Grid item xs={4.5}>
-                <ListItemText primary={currentOrder.order?.id} secondary={t('Order ID')} />
+                <ListItemText primary={currentOrder?.id} secondary={t('Order ID')} />
               </Grid>
               <Grid item xs={7.5}>
                 <Grid container>
@@ -496,7 +487,7 @@ const OrderDetails = ({
                   </Grid>
                   <Grid item xs={10}>
                     <ListItemText
-                      primary={timerRenderer(currentOrder.order?.escrow_duration)}
+                      primary={timerRenderer(currentOrder?.escrow_duration)}
                       secondary={t('Deposit timer')}
                     ></ListItemText>
                   </Grid>
@@ -506,9 +497,7 @@ const OrderDetails = ({
           </ListItem>
 
           {/* if order is in a status that does not expire, do not show countdown */}
-          <Collapse
-            in={![4, 5, 12, 13, 14, 15, 16, 17, 18].includes(currentOrder.order?.status ?? 0)}
-          >
+          <Collapse in={![4, 5, 12, 13, 14, 15, 16, 17, 18].includes(currentOrder?.status ?? 0)}>
             <Divider />
             <ListItem>
               <ListItemIcon>
@@ -516,24 +505,24 @@ const OrderDetails = ({
               </ListItemIcon>
               <ListItemText secondary={t('Expires in')}>
                 <Countdown
-                  date={new Date(currentOrder.order?.expires_at ?? '')}
+                  date={new Date(currentOrder?.expires_at ?? '')}
                   renderer={countdownRenderer}
                 />
               </ListItemText>
             </ListItem>
             <LinearDeterminate
-              totalSecsExp={currentOrder.order?.total_secs_exp ?? 0}
-              expiresAt={currentOrder.order?.expires_at ?? ''}
+              totalSecsExp={currentOrder?.total_secs_exp ?? 0}
+              expiresAt={currentOrder?.expires_at ?? ''}
             />
           </Collapse>
         </List>
 
         {/* If the user has a penalty/limit */}
-        {currentOrder.order?.penalty !== undefined ? (
+        {currentOrder?.penalty !== undefined ? (
           <Grid item xs={12}>
             <Alert severity='warning' sx={{ borderRadius: '0' }}>
               <Countdown
-                date={new Date(currentOrder.order?.penalty ?? '')}
+                date={new Date(currentOrder?.penalty ?? '')}
                 renderer={countdownPenaltyRenderer}
               />
             </Alert>
@@ -542,10 +531,10 @@ const OrderDetails = ({
           <></>
         )}
 
-        {!(currentOrder.order?.is_participant === true) ? (
+        {!currentOrder?.is_participant ? (
           <Grid item xs={12}>
             <TakeButton
-              baseUrl={baseUrl}
+              currentOrder={currentOrder}
               info={coordinator.info}
               onClickGenerateRobot={onClickGenerateRobot}
             />

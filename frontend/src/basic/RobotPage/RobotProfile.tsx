@@ -22,7 +22,6 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 
 interface RobotProfileProps {
   robot: Robot;
@@ -45,7 +44,6 @@ const RobotProfile = ({
   width,
 }: RobotProfileProps): JSX.Element => {
   const { windowSize, hostUrl } = useContext<UseAppStoreType>(AppContext);
-  const { currentOrder } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const { t } = useTranslation();
@@ -146,31 +144,39 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {Boolean(garage.getRobot().activeOrderId) &&
+        {Boolean(garage.getSlot().activeOrderId) &&
         garage.getRobot().avatarLoaded &&
         Boolean(garage.getRobot().nickname) ? (
           <Grid item>
             <Button
               onClick={() => {
-                navigate(`/order/${String(currentOrder.shortAlias)}/${String(currentOrder.id)}`);
+                navigate(
+                  `/order/${String(garage.getSlot().activeOrderShortAlias)}/${String(
+                    garage.getSlot().activeOrderId,
+                  )}`,
+                );
               }}
             >
-              {t('Active order #{{orderID}}', { orderID: garage.getRobot().activeOrderId })}
+              {t('Active order #{{orderID}}', { orderID: garage.getSlot().activeOrderId })}
             </Button>
           </Grid>
         ) : null}
 
-        {Boolean(garage.getRobot().lastOrderId) &&
+        {Boolean(garage.getSlot().lastOrderId) &&
         garage.getRobot().avatarLoaded &&
         Boolean(garage.getRobot().nickname) ? (
           <Grid item container direction='column' alignItems='center'>
             <Grid item>
               <Button
                 onClick={() => {
-                  navigate(`/order/${String(currentOrder.shortAlias)}/${String(currentOrder.id)}`);
+                  navigate(
+                    `/order/${String(garage.getSlot().lastOrderShortAlias)}/${String(
+                      garage.getSlot().lastOrderId,
+                    )}`,
+                  );
                 }}
               >
-                {t('Last order #{{orderID}}', { orderID: garage.getRobot().lastOrderId })}
+                {t('Last order #{{orderID}}', { orderID: garage.getSlot().lastOrderId })}
               </Button>
             </Grid>
             <Grid item>

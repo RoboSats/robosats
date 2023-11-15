@@ -10,7 +10,6 @@ export interface UseGarageStoreType {
   setBadOrder: Dispatch<SetStateAction<string | undefined>>;
   robotUpdatedAt: string;
   orderUpdatedAt: string;
-  clearOrder: () => void;
 }
 
 export const initialGarageContext: UseGarageStoreType = {
@@ -21,7 +20,6 @@ export const initialGarageContext: UseGarageStoreType = {
   setBadOrder: () => {},
   robotUpdatedAt: '',
   orderUpdatedAt: '',
-  clearOrder: () => {},
 };
 
 export const GarageContext = createContext<UseGarageStoreType>(initialGarageContext);
@@ -47,11 +45,6 @@ export const useGarageStore = (): UseGarageStoreType => {
     garage.registerHook('onOrderUpdate', onOrderUpdate);
   }, []);
 
-  const clearOrder = function (): void {
-    garage.updateOrder(null);
-    setBadOrder(undefined);
-  };
-
   return {
     garage,
     maker,
@@ -60,6 +53,5 @@ export const useGarageStore = (): UseGarageStoreType => {
     setBadOrder,
     robotUpdatedAt,
     orderUpdatedAt,
-    clearOrder,
   };
 };

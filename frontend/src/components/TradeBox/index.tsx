@@ -102,6 +102,7 @@ const closeAll: OpenDialogProps = {
 
 interface TradeBoxProps {
   robot: Robot;
+  currentOrder: Order;
   setBadOrder: (state: string | undefined) => void;
   onRenewOrder: () => void;
   onStartAgain: () => void;
@@ -111,16 +112,17 @@ interface TradeBoxProps {
 
 const TradeBox = ({
   robot,
+  currentOrder,
   settings,
   baseUrl,
   setBadOrder,
   onRenewOrder,
   onStartAgain,
 }: TradeBoxProps): JSX.Element => {
-  const { currentOrder, setCurrentOrder, federation, focusedCoordinator } =
-    useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { origin, hostUrl } = useContext<UseAppStoreType>(AppContext);
+
   // Buttons and Dialogs
   const [loadingButtons, setLoadingButtons] = useState<loadingButtonsProps>(noLoadingButtons);
   const [open, setOpen] = useState<OpenDialogProps>(closeAll);
@@ -163,12 +165,12 @@ const TradeBox = ({
     statement,
     rating,
   }: SubmitActionProps): void {
-    const { url } = federation
-      .getCoordinator(focusedCoordinator)
+    const { url, basePath } = federation
+      .getCoordinator(currentOrder.shortAlias)
       .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
     void apiClient
       .post(
-        url,
+        url + basePath,
         `/api/order/?order_id=${Number(currentOrder.id)}`,
         {
           action,
@@ -193,12 +195,7 @@ const TradeBox = ({
         } else if (data.bad_statement !== undefined) {
           setDispute({ ...dispute, badStatement: data.bad_statement });
         } else {
-          setCurrentOrder((prev) => {
-            return {
-              ...prev,
-              order: { ...prev.order, ...data },
-            };
-          });
+          garage.updateOrder(data);
           setBadOrder(undefined);
         }
       })
@@ -325,9 +322,9 @@ const TradeBox = ({
 
   // Effect on Order Status change (used for WebLN)
   useEffect(() => {
-    if (currentOrder.order !== null && currentOrder.order.status !== lastOrderStatus) {
-      setLastOrderStatus(currentOrder.order.status);
-      void handleWebln(currentOrder.order);
+    if (currentOrder !== null && currentOrder.status !== lastOrderStatus) {
+      setLastOrderStatus(currentOrder.status);
+      void handleWebln(currentOrder);
     }
     // FIXME this should trigger with current order, not garage order
   }, [orderUpdatedAt]);
@@ -698,7 +695,7 @@ const TradeBox = ({
     return { title, titleVariables, titleColor, prompt, bondStatus, titleIcon };
   };
 
-  const contract = currentOrder.order != null ? statusToContract(currentOrder.order) : null;
+  const contract = currentOrder != null ? statusToContract(currentOrder) : null;
 
   return (
     <Box>
@@ -708,7 +705,7 @@ const TradeBox = ({
           setOpen(closeAll);
         }}
         waitingWebln={waitingWebln}
-        isBuyer={currentOrder.order?.is_buyer ?? false}
+        isBuyer={currentOrder?.is_buyer ?? false}
       />
       <ConfirmDisputeDialog
         open={open.confirmDispute}
@@ -731,11 +728,11 @@ const TradeBox = ({
         }}
         onCollabCancelClick={cancel}
         loading={loadingButtons.cancel}
-        peerAskedCancel={currentOrder.order?.pending_cancel ?? false}
+        peerAskedCancel={currentOrder?.pending_cancel ?? false}
       />
       <ConfirmFiatSentDialog
         open={open.confirmFiatSent}
-        order={currentOrder.order}
+        order={currentOrder}
         loadingButton={loadingButtons.fiatSent}
         onClose={() => {
           setOpen(closeAll);
@@ -752,14 +749,14 @@ const TradeBox = ({
       />
       <ConfirmFiatReceivedDialog
         open={open.confirmFiatReceived}
-        order={currentOrder.order}
+        order={currentOrder}
         loadingButton={loadingButtons.fiatReceived}
         onClose={() => {
           setOpen(closeAll);
         }}
         onConfirmClick={confirmFiatReceived}
       />
-      <CollabCancelAlert order={currentOrder.order} />
+      <CollabCancelAlert order={currentOrder} />
       <Grid
         container
         padding={1}
@@ -770,7 +767,7 @@ const TradeBox = ({
       >
         <Grid item>
           <Title
-            order={currentOrder.order}
+            order={currentOrder}
             text={contract?.title}
             color={contract?.titleColor}
             icon={contract?.titleIcon}
@@ -784,10 +781,7 @@ const TradeBox = ({
         {contract?.bondStatus !== 'hide' ? (
           <Grid item sx={{ width: '100%' }}>
             <Divider />
-            <BondStatus
-              status={contract?.bondStatus}
-              isMaker={currentOrder.order?.is_maker ?? false}
-            />
+            <BondStatus status={contract?.bondStatus} isMaker={currentOrder?.is_maker ?? false} />
           </Grid>
         ) : (
           <></>
@@ -795,7 +789,7 @@ const TradeBox = ({
 
         <Grid item>
           <CancelButton
-            order={currentOrder.order}
+            order={currentOrder}
             onClickCancel={cancel}
             openCancelDialog={() => {
               setOpen({ ...closeAll, confirmCancel: true });
