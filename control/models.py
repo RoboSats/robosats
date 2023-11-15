@@ -126,6 +126,9 @@ class BalanceLog(models.Model):
     def __str__(self):
         return f"Balance at {self.time.strftime('%d/%m/%Y %H:%M:%S')}"
 
+    class Meta:
+        get_latest_by = "time"
+
 
 class Dispute(models.Model):
     pass

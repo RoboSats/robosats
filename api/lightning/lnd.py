@@ -105,10 +105,11 @@ class LNDNode:
         lightningstub = lightning_pb2_grpc.LightningStub(cls.channel)
         request = lightning_pb2.GetInfoRequest()
         response = lightningstub.GetInfo(request)
-        log("lightning_pb2_grpc.GetInfo", request, response)
 
         if response.testnet:
             dummy_address = "tb1qehyqhruxwl2p5pt52k6nxj4v8wwc3f3pg7377x"
+        elif response.chains[0].network == "regtest":
+            dummy_address = "bcrt1q3w8xja7knmycsglnxg2xzjq8uv9u7jdwau25nl"
         else:
             dummy_address = "bc1qgxwaqe4m9mypd7ltww53yv3lyxhcfnhzzvy5j3"
         # We assume segwit. Use hardcoded address as shortcut so there is no need of user inputs yet.
