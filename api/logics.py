@@ -1915,7 +1915,9 @@ class Logics:
                 else:
                     summary["received_sats"] = order.payout.num_satoshis
                     summary["payment_hash"] = order.payout.payment_hash
-                    summary["preimage"] = order.payout.preimage
+                    summary["preimage"] = (
+                        order.payout.preimage if order.payout.preimage else "processing"
+                    )
                 summary["trade_fee_sats"] = round(
                     order.last_satoshis
                     - summary["received_sats"]
@@ -1959,7 +1961,7 @@ class Logics:
                 order.save(update_fields=["contract_finalization_time"])
             platform_summary["contract_total_time"] = (
                 order.contract_finalization_time - order.last_satoshis_time
-            )
+            ).total_seconds()
         if not order.is_swap:
             platform_summary["routing_budget_sats"] = order.payout.routing_budget_sats
             platform_summary["trade_revenue_sats"] = int(

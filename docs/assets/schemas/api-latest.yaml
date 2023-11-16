@@ -1788,6 +1788,15 @@ components:
         trade_revenue_sats:
           type: integer
           description: The sats the exchange earned from the trade
+        routing_budget_sats:
+          type: number
+          format: double
+          description: The budget allocated for routing costs in Satoshis
+        contract_exchange_rate:
+          type: number
+          format: double
+          description: The exchange rate applied to this contract. Taken from externals
+            APIs exactly when the taker bond was locked.
     PostMessage:
       type: object
       properties:
@@ -1873,14 +1882,25 @@ components:
       type: object
       properties:
         sent_fiat:
-          type: integer
+          type: number
+          format: double
           description: same as `amount` (only for buyer)
+        received_fiat:
+          type: number
+          format: double
+          description: same as `amount` (only for seller)
+        sent_sats:
+          type: integer
+          description: The total sats you sent (only for seller)
         received_sats:
           type: integer
           description: same as `trade_satoshis` (only for buyer)
         is_swap:
           type: boolean
           description: True if the payout was on-chain (only for buyer)
+        is_buyer:
+          type: boolean
+          description: True if the robot is the order buyer
         received_onchain_sats:
           type: integer
           description: The on-chain sats received (only for buyer and if `is_swap`
@@ -1898,16 +1918,28 @@ components:
           format: double
           description: same as `swap_fee_rate` (only for buyer and if `is_swap` is
             `true`
-        sent_sats:
+        bond_size_sats:
           type: integer
-          description: The total sats you sent (only for seller)
-        received_fiat:
-          type: integer
-          description: same as `amount` (only for seller)
+          description: The amount of Satoshis at stake
+        bond_size_percent:
+          type: number
+          format: double
+          description: The relative size of Satoshis at stake
         trade_fee_sats:
           type: integer
-          description: Exchange fees in sats (Does not include swap fee and miner
+          description: Exchange fees in sats (does not include swap fee and miner
             fee)
+        trade_fee_percent:
+          type: number
+          format: double
+          description: Exchange fees in percent (does not include swap fee and miner
+            fee)
+        payment_hash:
+          type: string
+          description: The payment_hash of the payout invoice
+        preimage:
+          type: string
+          description: The preimage of the payout invoice (proof of payment)
     Tick:
       type: object
       properties:

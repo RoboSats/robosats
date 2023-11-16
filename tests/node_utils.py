@@ -58,7 +58,7 @@ def wait_for_lnd_node_sync(node_name):
             return
         else:
             sys.stdout.write(
-                f"\rWaiting for {node_name} node chain sync {round(waited,1)}s"
+                f"\rWaiting for {node_name} node chain sync {round(waited, 1)}s"
             )
             sys.stdout.flush()
             waited += WAIT_STEP
@@ -88,14 +88,14 @@ def wait_for_active_channels(lnvendor, node_name="coordinator"):
                 return
             else:
                 sys.stdout.write(
-                    f"\rWaiting for {node_name} LND node channel to be active {round(waited,1)}s"
+                    f"\rWaiting for {node_name} LND node channel to be active {round(waited, 1)}s"
                 )
         elif lnvendor == "CLN":
             if CLN_has_active_channels():
                 return
             else:
                 sys.stdout.write(
-                    f"\rWaiting for {node_name} CLN node channel to be active {round(waited,1)}s"
+                    f"\rWaiting for {node_name} CLN node channel to be active {round(waited, 1)}s"
                 )
 
         sys.stdout.flush()
@@ -111,7 +111,7 @@ def wait_for_cln_node_sync():
         response = CLNNode.get_info()
         if response.warning_bitcoind_sync or response.warning_lightningd_sync:
             sys.stdout.write(
-                f"\rWaiting for coordinator CLN node sync {round(waited,1)}s"
+                f"\rWaiting for coordinator CLN node sync {round(waited, 1)}s"
             )
             sys.stdout.flush()
             waited += WAIT_STEP
@@ -130,7 +130,7 @@ def wait_for_cln_active_channels():
             return
         else:
             sys.stdout.write(
-                f"\rWaiting for coordinator CLN node channels to be active {round(waited,1)}s"
+                f"\rWaiting for coordinator CLN node channels to be active {round(waited, 1)}s"
             )
             sys.stdout.flush()
             waited += WAIT_STEP

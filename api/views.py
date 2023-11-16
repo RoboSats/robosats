@@ -449,7 +449,7 @@ class OrderView(viewsets.ViewSet):
             Order.Status.FAI,
         ]:
             data["public_duration"] = order.public_duration
-            data["bond_size"] = order.bond_size
+            data["bond_size"] = str(order.bond_size)
 
             # Adds trade summary
             if order.status in [Order.Status.SUC, Order.Status.PAY, Order.Status.FAI]:
