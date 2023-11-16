@@ -1,4 +1,5 @@
 import json
+import random
 from datetime import datetime
 from decimal import Decimal
 
@@ -583,8 +584,11 @@ class TradeTest(BaseAPITestCase):
             passphrase_path=f"tests/robots/{robot_index}/token",
             private_key_path=f"tests/robots/{robot_index}/enc_priv_key",
         )
-        body = {"action": "update_address", "address": signed_payout_address}
-
+        body = {
+            "action": "update_address",
+            "address": signed_payout_address,
+            "mining_fee_rate": 50,
+        }
         response = self.client.post(path + params, body, **headers)
 
         return response
@@ -602,15 +606,18 @@ class TradeTest(BaseAPITestCase):
 
     def test_trade_to_submitted_address(self):
         """
-        Tests a trade from order creation until escrow locked, before
-        invoice/address is submitted by buyer.
+        Tests a trade from order creation until escrow locked and
+        address is submitted by buyer.
         """
         maker_index = 1
         taker_index = 2
         maker_form = self.maker_form_buy_with_range
+        take_amount = round(
+            random.uniform(maker_form["min_amount"], maker_form["max_amount"]), 2
+        )
 
         response = self.trade_to_submitted_address(
-            maker_form, 80, maker_index, taker_index
+            maker_form, take_amount, maker_index, taker_index
         )
         data = response.json()
 
@@ -624,7 +631,9 @@ class TradeTest(BaseAPITestCase):
         # Cancel order to avoid leaving pending HTLCs after a successful test
         self.cancel_order(data["id"])
 
-    def submit_payout_invoice(self, order_id, num_satoshis, robot_index=1):
+    def submit_payout_invoice(
+        self, order_id, num_satoshis, routing_budget, robot_index=1
+    ):
         path = reverse("order")
         params = f"?order_id={order_id}"
         headers = self.get_robot_auth(robot_index)
@@ -635,7 +644,11 @@ class TradeTest(BaseAPITestCase):
             passphrase_path=f"tests/robots/{robot_index}/token",
             private_key_path=f"tests/robots/{robot_index}/enc_priv_key",
         )
-        body = {"action": "update_invoice", "invoice": signed_payout_invoice}
+        body = {
+            "action": "update_invoice",
+            "invoice": signed_payout_invoice,
+            "routing_budget_ppm": routing_budget,
+        }
 
         response = self.client.post(path + params, body, **headers)
 
@@ -653,21 +666,25 @@ class TradeTest(BaseAPITestCase):
         response = self.submit_payout_invoice(
             response_escrow_locked.json()["id"],
             response_get.json()["trade_satoshis"],
+            0,
             maker_index,
         )
         return response
 
     def test_trade_to_submitted_invoice(self):
         """
-        Tests a trade from order creation until escrow locked, before
-        invoice/address is submitted by buyer.
+        Tests a trade from order creation until escrow locked and
+        invoice is submitted by buyer.
         """
         maker_index = 1
         taker_index = 2
         maker_form = self.maker_form_buy_with_range
+        take_amount = round(
+            random.uniform(maker_form["min_amount"], maker_form["max_amount"]), 2
+        )
 
         response = self.trade_to_submitted_invoice(
-            maker_form, 80, maker_index, taker_index
+            maker_form, take_amount, maker_index, taker_index
         )
         data = response.json()
 
@@ -679,3 +696,87 @@ class TradeTest(BaseAPITestCase):
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         self.cancel_order(data["id"])
+
+    def confirm_fiat(self, order_id, robot_index=1):
+        path = reverse("order")
+        params = f"?order_id={order_id}"
+        headers = self.get_robot_auth(robot_index)
+
+        body = {"action": "confirm"}
+
+        response = self.client.post(path + params, body, **headers)
+        return response
+
+    def trade_to_confirm_fiat_sent_LN(
+        self, maker_form, take_amount=80, maker_index=1, taker_index=2
+    ):
+        response_submitted_invoice = self.trade_to_submitted_invoice(
+            maker_form, take_amount, maker_index, taker_index
+        )
+        response = self.confirm_fiat(
+            response_submitted_invoice.json()["id"], maker_index
+        )
+        return response
+
+    def test_trade_to_confirm_fiat_sent_LN(self):
+        """
+        Tests a trade from order creation until fiat sent confirmed
+        """
+        maker_index = 1
+        taker_index = 2
+        maker_form = self.maker_form_buy_with_range
+        take_amount = round(
+            random.uniform(maker_form["min_amount"], maker_form["max_amount"]), 2
+        )
+
+        response = self.trade_to_confirm_fiat_sent_LN(
+            maker_form, take_amount, maker_index, taker_index
+        )
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.FSE).label)
+        self.assertTrue(data["is_fiat_sent"])
+
+        # Cancel order to avoid leaving pending HTLCs after a successful test
+        self.cancel_order(data["id"], maker_index)
+        self.cancel_order(data["id"], taker_index)
+
+    def trade_to_confirm_fiat_received_LN(
+        self, maker_form, take_amount=80, maker_index=1, taker_index=2
+    ):
+        response_submitted_invoice = self.trade_to_confirm_fiat_sent_LN(
+            maker_form, take_amount, maker_index, taker_index
+        )
+        response = self.confirm_fiat(
+            response_submitted_invoice.json()["id"], taker_index
+        )
+        return response
+
+    def test_trade_to_confirm_fiat_received_LN(self):
+        """
+        Tests a trade from order creation until fiat received is confirmed by seller/taker
+        """
+        maker_index = 1
+        taker_index = 2
+        maker_form = self.maker_form_buy_with_range
+        take_amount = round(
+            random.uniform(maker_form["min_amount"], maker_form["max_amount"]), 2
+        )
+
+        response = self.trade_to_confirm_fiat_received_LN(
+            maker_form, take_amount, maker_index, taker_index
+        )
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.PAY).label)
+        self.assertTrue(data["is_fiat_sent"])
+        self.assertFalse(data["is_disputed"])
+        self.assertFalse(data["maker_locked"])
+        self.assertFalse(data["taker_locked"])
+        self.assertFalse(data["escrow_locked"])

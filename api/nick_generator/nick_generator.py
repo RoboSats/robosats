@@ -160,7 +160,6 @@ class NickGenerator:
 
         attempts = []
         for i in range(num_runs):
-
             string = str(random.uniform(0, 1_000_000))
             hash = hashlib.sha256(str.encode(string)).hexdigest()
 
@@ -179,7 +178,6 @@ class NickGenerator:
 
 
 if __name__ == "__main__":
-
     # Just for code timming
     t0 = time.time()
 

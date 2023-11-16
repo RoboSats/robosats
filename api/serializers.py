@@ -84,14 +84,23 @@ class ListOrderSerializer(serializers.ModelSerializer):
 
 # Only used in oas_schemas
 class SummarySerializer(serializers.Serializer):
-    sent_fiat = serializers.IntegerField(
+    sent_fiat = serializers.FloatField(
         required=False, help_text="same as `amount` (only for buyer)"
+    )
+    received_fiat = serializers.FloatField(
+        required=False, help_text="same as `amount` (only for seller)"
+    )
+    sent_sats = serializers.IntegerField(
+        required=False, help_text="The total sats you sent (only for seller)"
     )
     received_sats = serializers.IntegerField(
         required=False, help_text="same as `trade_satoshis` (only for buyer)"
     )
     is_swap = serializers.BooleanField(
         required=False, help_text="True if the payout was on-chain (only for buyer)"
+    )
+    is_buyer = serializers.BooleanField(
+        required=False, help_text="True if the robot is the order buyer"
     )
     received_onchain_sats = serializers.IntegerField(
         required=False,
@@ -109,15 +118,26 @@ class SummarySerializer(serializers.Serializer):
         required=False,
         help_text="same as `swap_fee_rate` (only for buyer and if `is_swap` is `true`",
     )
-    sent_sats = serializers.IntegerField(
-        required=False, help_text="The total sats you sent (only for seller)"
+    bond_size_sats = serializers.IntegerField(
+        required=False, help_text="The amount of Satoshis at stake"
     )
-    received_fiat = serializers.IntegerField(
-        required=False, help_text="same as `amount` (only for seller)"
+    bond_size_percent = serializers.FloatField(
+        required=False, help_text="The relative size of Satoshis at stake"
     )
     trade_fee_sats = serializers.IntegerField(
         required=False,
-        help_text="Exchange fees in sats (Does not include swap fee and miner fee)",
+        help_text="Exchange fees in sats (does not include swap fee and miner fee)",
+    )
+    trade_fee_percent = serializers.FloatField(
+        required=False,
+        help_text="Exchange fees in percent (does not include swap fee and miner fee)",
+    )
+    payment_hash = serializers.CharField(
+        required=False, help_text="The payment_hash of the payout invoice"
+    )
+    preimage = serializers.CharField(
+        required=False,
+        help_text="The preimage of the payout invoice (proof of payment)",
     )
 
 
@@ -137,6 +157,13 @@ class PlatformSummarySerializer(serializers.Serializer):
     )
     trade_revenue_sats = serializers.IntegerField(
         required=False, help_text="The sats the exchange earned from the trade"
+    )
+    routing_budget_sats = serializers.FloatField(
+        required=False, help_text="The budget allocated for routing costs in Satoshis"
+    )
+    contract_exchange_rate = serializers.FloatField(
+        required=False,
+        help_text="The exchange rate applied to this contract. Taken from externals APIs exactly when the taker bond was locked.",
     )
 
 
