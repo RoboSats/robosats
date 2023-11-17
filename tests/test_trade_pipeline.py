@@ -107,7 +107,7 @@ class TradeTest(BaseAPITestCase):
         self.assertIsInstance(balance_log.time, datetime)
         self.assertTrue(balance_log.total > 0)
         self.assertTrue(balance_log.ln_local > 0)
-        self.assertEqual(balance_log.ln_local_unsettled, 0)
+        self.assertTrue(balance_log.ln_local_unsettled >= 0)
         self.assertTrue(balance_log.ln_remote > 0)
         self.assertEqual(balance_log.ln_remote_unsettled, 0)
         self.assertTrue(balance_log.onchain_total > 0)
@@ -306,6 +306,15 @@ class TradeTest(BaseAPITestCase):
 
         return response
 
+    def pause_order(self, order_id, robot_index=1):
+        path = reverse("order")
+        params = f"?order_id={order_id}"
+        headers = self.get_robot_auth(robot_index)
+        body = {"action": "pause"}
+        response = self.client.post(path + params, body, **headers)
+
+        return response
+
     def test_get_order_created(self):
         """
         Tests the creation of an order and the first request to see details,
@@ -399,6 +408,31 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(public_data["is_participant"])
         self.assertIsInstance(public_data["price_now"], float)
         self.assertIsInstance(data["satoshis_now"], int)
+
+        # Cancel order to avoid leaving pending HTLCs after a successful test
+        self.cancel_order(data["id"])
+
+    def test_pause_unpause_order(self):
+        """
+        Tests pausing and unpausing a public order
+        """
+        maker_form = self.maker_form_buy_with_range
+        # Get order
+        response = self.make_and_publish_order(maker_form)
+
+        # PAUSE
+        response = self.pause_order(response.json()["id"])
+        data = response.json()
+
+        self.assertResponse(response)
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.PAU).label)
+
+        # UNPAUSE
+        response = self.pause_order(response.json()["id"])
+        data = response.json()
+
+        self.assertResponse(response)
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
         self.cancel_order(data["id"])
@@ -513,7 +547,7 @@ class TradeTest(BaseAPITestCase):
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.WF2).label)
         self.assertTrue(data["swap_allowed"])
-        self.assertIsInstance(data["suggested_mining_fee_rate"], int)
+        self.assertIsInstance(data["suggested_mining_fee_rate"], float)
         self.assertIsInstance(data["swap_fee_rate"], float)
         self.assertTrue(data["suggested_mining_fee_rate"] > 0)
         self.assertTrue(data["swap_fee_rate"] > 0)

@@ -1581,7 +1581,8 @@ components:
           type: string
           description: Reason for why on-chain swap is not available
         suggested_mining_fee_rate:
-          type: integer
+          type: number
+          format: double
           description: fee in sats/vbyte for the on-chain swap
         swap_fee_rate:
           type: number

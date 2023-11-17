@@ -272,7 +272,9 @@ def pay_invoice(node_name, invoice):
             f'http://localhost:{node["port"]}/v1/channels/transactions',
             json=data,
             headers=node["headers"],
-            timeout=0.3,  # 0.15s is enough for LND to LND hodl ACCEPT.
+            # 0.15s is enough for LND to LND hodl ACCEPT
+            # 0.4s is enough for LND to CLN hodl ACCEPT
+            timeout=0.2 if LNVENDOR == "LND" else 0.8,
         )
     except ReadTimeout:
         # Request to pay hodl invoice has timed out: that's good!
