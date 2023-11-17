@@ -66,7 +66,7 @@
     "date-fns": "^2.30.0",
     "file-replace-loader": "^1.4.0",
     "i18next": "^23.2.11",
-    "i18next-browser-languagedetector": "^7.1.0",
+    "i18next-browser-languagedetector": "^7.2.0",
     "i18next-http-backend": "^2.4.1",
     "install": "^0.13.0",
     "js-sha256": "^0.10.1",
