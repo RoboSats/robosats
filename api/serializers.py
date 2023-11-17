@@ -298,7 +298,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     swap_failure_reason = serializers.CharField(
         required=False, help_text="Reason for why on-chain swap is not available"
     )
-    suggested_mining_fee_rate = serializers.IntegerField(
+    suggested_mining_fee_rate = serializers.FloatField(
         required=False, help_text="fee in sats/vbyte for the on-chain swap"
     )
     swap_fee_rate = serializers.FloatField(

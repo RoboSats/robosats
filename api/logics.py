@@ -739,7 +739,9 @@ class Logics:
                 return True, context
 
         context["swap_allowed"] = True
-        context["suggested_mining_fee_rate"] = order.payout_tx.suggested_mining_fee_rate
+        context["suggested_mining_fee_rate"] = float(
+            order.payout_tx.suggested_mining_fee_rate
+        )
         context["swap_fee_rate"] = order.payout_tx.swap_fee_rate
 
         return True, context
