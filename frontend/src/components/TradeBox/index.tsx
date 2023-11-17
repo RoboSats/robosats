@@ -231,7 +231,7 @@ const TradeBox = ({
   };
 
   const updateInvoice = function (invoice: string): void {
-    const robot = garage.getRobot();
+    const robot = garage.getSlot().robot;
 
     if (robot?.encPrivKey != null && robot?.token != null) {
       setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
@@ -246,7 +246,7 @@ const TradeBox = ({
   };
 
   const updateAddress = function (): void {
-    const robot = garage.getRobot();
+    const robot = garage.getSlot().robot;
 
     if (robot?.encPrivKey != null && robot?.token != null) {
       setLoadingButtons({ ...noLoadingButtons, submitAddress: true });

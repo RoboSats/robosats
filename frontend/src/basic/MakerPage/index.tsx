@@ -51,7 +51,7 @@ const MakerPage = (): JSX.Element => {
   ]);
 
   const onOrderClicked = function (id: number): void {
-    if (garage.getRobot().avatarLoaded) {
+    if (garage.getSlot().robot.avatarLoaded) {
       navigate(`/order/${id}`);
     } else {
       setOpenNoRobot(true);

@@ -44,7 +44,7 @@ const Main: React.FC = () => {
     <Router>
       <RobotAvatar
         style={{ display: 'none' }}
-        nickname={garage.getRobot().nickname}
+        nickname={garage.getSlot().robot.nickname}
         baseUrl={federation.getCoordinator(sortedCoordinators[0]).getBaseUrl()}
         onLoad={() => {
           garage.updateRobot({ avatarLoaded: true });
@@ -55,7 +55,7 @@ const Main: React.FC = () => {
         openProfile={() => {
           setOpen({ ...closeAll, profile: true });
         }}
-        rewards={garage.getRobot().earnedRewards}
+        rewards={garage.getSlot().robot.earnedRewards}
         windowWidth={windowSize?.width}
       />
       {settings.network === 'testnet' ? (

@@ -135,7 +135,7 @@ export const useFederationStore = (): UseFederationStoreType => {
   }, [delay, currentOrder, page, badOrder]);
 
   useEffect(() => {
-    const robot = garage.getRobot();
+    const robot = garage.getSlot().robot;
 
     if (robot !== null) {
       if (open.profile && robot?.avatarLoaded) {

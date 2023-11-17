@@ -31,7 +31,7 @@ const BookPage = (): JSX.Element => {
   const chartWidthEm = width - maxBookTableWidth;
 
   const onOrderClicked = function (id: number, shortAlias: string): void {
-    if (garage.getRobot().avatarLoaded) {
+    if (garage.getSlot().robot.avatarLoaded) {
       setDelay(10000);
       navigate(`/order/${shortAlias}/${id}`);
     } else {

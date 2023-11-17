@@ -113,7 +113,7 @@ class Garage {
     const robot = this.getSlot(index).robot;
     if (robot != null) {
       robot.update(attributes);
-      if (attributes.lastOrderId && attributes.lastOrderId != null) {
+      if (attributes.lastOrderId !== undefined && attributes.lastOrderId != null) {
         this.slots[index].lastOrderId = attributes.lastOrderId;
         this.slots[index].lastOrderShortAlias = attributes.shortAlias;
         if (attributes.lastOrderId === this.slots[index].activeOrderId) {
@@ -121,7 +121,7 @@ class Garage {
           this.slots[index].activeOrderShortAlias = null;
         }
       }
-      if (attributes.activeOrderId && attributes.activeOrderId != null) {
+      if (attributes.activeOrderId !== undefined && attributes.activeOrderId != null) {
         this.slots[index].activeOrderId = attributes.activeOrderId;
         this.slots[index].activeOrderShortAlias = attributes.shortAlias;
         this.slots[index].lastOrderId = null;
@@ -130,10 +130,6 @@ class Garage {
       this.triggerHook('onRobotUpdate');
       this.save();
     }
-  };
-
-  getRobot = (slot: number = this.currentSlot): Robot => {
-    return this.getSlot(slot).robot;
   };
 
   createRobot = (attributes: Record<any, any>): void => {
