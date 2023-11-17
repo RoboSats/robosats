@@ -175,6 +175,32 @@ services:
       POSTGRES_DB: 'postgres'
     network_mode: service:bitcoind
 
+  # celery-worker:
+  #   image: robosats-image
+  #   pull_policy: never
+  #   container_name: celery-worker
+  #   restart: always
+  #   environment:
+  #     DEVELOPMENT: True
+  #     TESTING: True
+  #     USE_TOR: False
+  #     MACAROON_PATH: 'data/chain/bitcoin/regtest/admin.macaroon'
+  #     CLN_DIR: '/cln/regtest/'
+  #     BITCOIND_RPCURL: 'http://127.0.0.1:18443'
+  #     BITCOIND_RPCUSER: 'test'
+  #     BITCOIND_RPCPASSWORD: 'test'
+  #     SKIP_COLLECT_STATIC: "true"
+  #   env_file:
+  #     - ${ROBOSATS_ENVS_FILE}
+  #   volumes:
+  #     - .:/usr/src/robosats
+  #     - lnd:/lnd
+  #     - cln:/cln
+  #   command: celery -A robosats worker --loglevel=INFO --concurrency 2 --max-tasks-per-child=4 --max-memory-per-child=200000
+  #   depends_on:
+  #     - redis
+  #   network_mode: service:bitcoind
+
 volumes:
   redisdata:
   bitcoin:

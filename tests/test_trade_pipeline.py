@@ -2,6 +2,7 @@ import json
 import random
 from datetime import datetime
 from decimal import Decimal
+from unittest.mock import patch
 
 from decouple import config
 from django.contrib.auth.models import User
@@ -9,7 +10,7 @@ from django.urls import reverse
 
 from api.management.commands.follow_invoices import Command as FollowInvoices
 from api.models import Currency, Order
-from api.tasks import cache_market
+from api.tasks import cache_market, follow_send_payment
 from control.models import BalanceLog
 from control.tasks import compute_node_balance
 from tests.node_utils import (
@@ -356,11 +357,15 @@ class TradeTest(BaseAPITestCase):
         # Cancel order to avoid leaving pending HTLCs after a successful test
         self.cancel_order(data["id"])
 
-    def check_for_locked_bonds(self):
+    def follow_hold_invoices(self):
         # A background thread checks every 5 second the status of invoices. We invoke directly during test.
-        # It will ask LND via gRPC. In our test, the request/response from LND is mocked, and it will return fake invoice status "ACCEPTED"
         follow_invoices = FollowInvoices()
         follow_invoices.follow_hold_invoices()
+
+    def send_payments(self):
+        # A background thread checks every 5 second whether there are outgoing payments. We invoke directly during test.
+        follow_invoices = FollowInvoices()
+        follow_invoices.send_payments()
 
     def make_and_publish_order(self, maker_form, robot_index=1):
         # Make an order
@@ -375,7 +380,7 @@ class TradeTest(BaseAPITestCase):
         pay_invoice("robot", invoice)
 
         # Check for invoice locked (the mocked LND will return ACCEPTED)
-        self.check_for_locked_bonds()
+        self.follow_hold_invoices()
 
         # Get order
         response = self.get_order(order_made_data["id"])
@@ -509,7 +514,7 @@ class TradeTest(BaseAPITestCase):
         pay_invoice("robot", invoice)
 
         # Check for invoice locked (the mocked LND will return ACCEPTED)
-        self.check_for_locked_bonds()
+        self.follow_hold_invoices()
 
         # Get order
         response = self.get_order(order_taken_data["id"], taker_index)
@@ -578,7 +583,7 @@ class TradeTest(BaseAPITestCase):
         pay_invoice("robot", invoice)
 
         # Check for invoice locked (the mocked LND will return ACCEPTED)
-        self.check_for_locked_bonds()
+        self.follow_hold_invoices()
 
         # Get order
         response = self.get_order(locked_taker_response_data["id"], taker_index)
@@ -814,3 +819,34 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["maker_locked"])
         self.assertFalse(data["taker_locked"])
         self.assertFalse(data["escrow_locked"])
+
+    @patch("api.tasks.follow_send_payment.delay", follow_send_payment)
+    def test_successful_LN(self):
+        """
+        Tests a trade from order creation until Sats sent to buyer
+        """
+        maker_index = 1
+        taker_index = 2
+        maker_form = self.maker_form_buy_with_range
+        take_amount = round(
+            random.uniform(maker_form["min_amount"], maker_form["max_amount"]), 2
+        )
+
+        response = self.trade_to_confirm_fiat_received_LN(
+            maker_form, take_amount, maker_index, taker_index
+        )
+
+        # Invoke the background thread that will call the celery-worker to follow_send_payment()
+        self.send_payments()
+
+        response = self.get_order(response.json()["id"], maker_index)
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.SUC).label)
+        self.assertTrue(data["is_fiat_sent"])
+        self.assertFalse(data["is_disputed"])
+        self.assertIsHash(data["maker_summary"]["preimage"])
+        self.assertIsHash(data["maker_summary"]["payment_hash"])
