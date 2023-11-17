@@ -26,3 +26,10 @@ class BaseAPITestCase(APITestCase):
 
         if response.request["PATH_INFO"] not in skip_paths:
             schema_tester.validate_response(response=response, **kwargs)
+
+    def assertIsHash(self, s):
+        hex_chars = set("0123456789abcdefABCDEF")
+        self.assertTrue(
+            len(s) == 64 and all(c in hex_chars for c in s),
+            "The hash is not 64 hex characters",
+        )

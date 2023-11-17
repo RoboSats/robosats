@@ -87,7 +87,7 @@ class LNDNode:
             log("verstub.GetVersion", request, response)
             return "v" + response.version
         except Exception as e:
-            print(f"Cannot get CLN version: {e}")
+            print(f"Cannot get LND version: {e}")
             return "Not installed"
 
     @classmethod
