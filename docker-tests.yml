@@ -1,0 +1,183 @@
+# Spin up a regtest lightning network to run integration tests:
+# docker-compose -f docker-tests.yml --env-file tests/compose.env up -d
+
+# Some useful handy commands that hopefully are never needed
+
+# docker exec -it btc bitcoin-cli -chain=regtest -rpcpassword=test -rpcuser=test createwallet default
+# docker exec -it btc bitcoin-cli -chain=regtest -rpcpassword=test -rpcuser=test -generate 101
+
+# docker exec -it coordinator-LND lncli --network=regtest getinfo
+# docker exec -it robot-LND lncli --network=regtest --rpcserver localhost:10010 getinfo
+
+version: '3.9'
+services:
+  bitcoind:
+    image: ruimarinho/bitcoin-core:${BITCOIND_VERSION:-24.0.1}-alpine
+    container_name: btc
+    restart: always
+    ports:
+      - "8000:8000"
+      - "8080:8080"
+      - "8081:8081"
+      - "10009:10009"
+      - "10010:10010"
+      - "9999:9999"
+      - "9998:9998"
+      - "5432:5432"
+      - "6379:6379"
+    volumes:
+      - bitcoin:/bitcoin/.bitcoin/
+    command:
+      --txindex=1
+      --printtoconsole
+      --regtest=1
+      --server=1
+      --rest=1
+      --rpcuser=test
+      --rpcpassword=test
+      --logips=1
+      --debug=1
+      --rpcport=18443
+      --rpcallowip=172.0.0.0/8
+      --rpcallowip=192.168.0.0/16
+      --zmqpubrawblock=tcp://0.0.0.0:28332
+      --zmqpubrawtx=tcp://0.0.0.0:28333
+      --listenonion=0
+
+  coordinator-LND:
+    image: lightninglabs/lnd:${LND_VERSION:-v0.17.0-beta}
+    container_name: coordinator-LND
+    restart: always
+    volumes:
+      - bitcoin:/root/.bitcoin/
+      - lnd:/home/lnd/.lnd
+      - lnd:/root/.lnd
+    command:
+      --noseedbackup
+      --nobootstrap
+      --restlisten=localhost:8081
+      --debuglevel=debug
+      --maxpendingchannels=10
+      --rpclisten=0.0.0.0:10009
+      --listen=0.0.0.0:9735
+      --no-rest-tls
+      --color=#4126a7
+      --alias=RoboSats
+      --bitcoin.active
+      --bitcoin.regtest
+      --bitcoin.node=bitcoind
+      --bitcoind.rpchost=127.0.0.1
+      --bitcoind.rpcuser=test
+      --bitcoind.rpcpass=test
+      --bitcoind.zmqpubrawblock=tcp://127.0.0.1:28332
+      --bitcoind.zmqpubrawtx=tcp://127.0.0.1:28333
+      --protocol.wumbo-channels
+    depends_on:
+      - bitcoind
+    network_mode: service:bitcoind
+
+  coordinator-CLN:
+    image: elementsproject/lightningd:${CLN_VERSION:-v23.08.1}
+    restart: always
+    container_name: coordinator-CLN
+    environment:
+      LIGHTNINGD_NETWORK: 'regtest'
+    volumes:
+      - cln:/root/.lightning
+      - ./docker/cln/plugins/cln-grpc-hold:/root/.lightning/plugins/cln-grpc-hold
+      - bitcoin:/root/.bitcoin
+    command: --regtest --wumbo --bitcoin-rpcuser=test --bitcoin-rpcpassword=test --rest-host=0.0.0.0 --rest-port=3010 --bind-addr=127.0.0.1:9737 --max-concurrent-htlcs=483 --grpc-port=9999 --grpc-hold-port=9998 --important-plugin=/root/.lightning/plugins/cln-grpc-hold --database-upgrade=true
+    depends_on:
+      - bitcoind
+    network_mode: service:bitcoind
+
+  robot-LND:
+    image: lightninglabs/lnd:${LND_VERSION:-v0.17.0-beta}
+    container_name: robot-LND
+    restart: always
+    volumes:
+      - bitcoin:/root/.bitcoin/
+      - lndrobot:/home/lnd/.lnd
+      - lndrobot:/root/.lnd
+    command:
+      --noseedbackup
+      --nobootstrap
+      --restlisten=localhost:8080
+      --no-rest-tls
+      --debuglevel=debug
+      --maxpendingchannels=10
+      --rpclisten=0.0.0.0:10010
+      --listen=0.0.0.0:9736
+      --color=#4126a7
+      --alias=Robot
+      --bitcoin.active
+      --bitcoin.regtest
+      --bitcoin.node=bitcoind
+      --bitcoind.rpchost=127.0.0.1
+      --bitcoind.rpcuser=test
+      --bitcoind.rpcpass=test
+      --bitcoind.zmqpubrawblock=tcp://127.0.0.1:28332
+      --bitcoind.zmqpubrawtx=tcp://127.0.0.1:28333
+      --protocol.wumbo-channels
+    depends_on:
+      - bitcoind
+    network_mode: service:bitcoind
+
+  redis:
+    image: redis:${REDIS_VERSION:-7.2.1}-alpine
+    container_name: redis
+    restart: always
+    volumes:
+      - redisdata:/data
+    network_mode: service:bitcoind
+
+  coordinator:
+    build:
+      context: .
+      args:
+        DEVELOPMENT: True
+    image: robosats-image
+    container_name: coordinator
+    restart: always
+    environment:
+      DEVELOPMENT: True
+      TESTING: True
+      USE_TOR: False
+      MACAROON_PATH: 'data/chain/bitcoin/regtest/admin.macaroon'
+      CLN_DIR: '/cln/regtest/'
+      BITCOIND_RPCURL: 'http://127.0.0.1:18443'
+      BITCOIND_RPCUSER: 'test'
+      BITCOIND_RPCPASSWORD: 'test'
+    env_file:
+      - ${ROBOSATS_ENVS_FILE}
+    depends_on:
+      - redis
+      - postgres
+    network_mode: service:bitcoind
+    volumes:
+      - .:/usr/src/robosats
+      - lnd:/lnd
+      - lndrobot:/lndrobot
+      - cln:/cln
+    healthcheck:
+      test: ["CMD", "curl", "localhost:8000"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-14.2}-alpine
+    container_name: sql
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: 'example'
+      POSTGRES_USER: 'postgres'
+      POSTGRES_DB: 'postgres'
+    network_mode: service:bitcoind
+
+volumes:
+  redisdata:
+  bitcoin:
+  lnd:
+  cln:
+  lndrobot:

@@ -118,8 +118,6 @@ class MakerView(CreateAPIView):
         if has_range is None:
             has_range = False
 
-        # TODO add a check - if `is_explicit` is true then `satoshis` need to be specified
-
         # An order can either have an amount or a range (min_amount and max_amount)
         if has_range:
             amount = None
@@ -451,7 +449,7 @@ class OrderView(viewsets.ViewSet):
             Order.Status.FAI,
         ]:
             data["public_duration"] = order.public_duration
-            data["bond_size"] = order.bond_size
+            data["bond_size"] = str(order.bond_size)
 
             # Adds trade summary
             if order.status in [Order.Status.SUC, Order.Status.PAY, Order.Status.FAI]:
@@ -726,7 +724,7 @@ class BookView(ListAPIView):
         return Response(book_data, status=status.HTTP_200_OK)
 
 
-class InfoView(ListAPIView):
+class InfoView(viewsets.ViewSet):
     serializer_class = InfoSerializer
 
     @extend_schema(**InfoViewSchema.get)

@@ -1,5 +1,6 @@
-FROM python:3.11.6-slim-bullseye
+FROM python:3.11.6-slim-bookworm
 ARG DEBIAN_FRONTEND=noninteractive
+ARG DEVELOPMENT=False
 
 RUN mkdir -p /usr/src/robosats
 WORKDIR /usr/src/robosats
@@ -16,6 +17,11 @@ RUN python -m pip install --upgrade pip
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
+
+COPY requirements_dev.txt ./
+RUN if [ "$DEVELOPMENT" = "true" ]; then \
+       pip install --no-cache-dir -r requirements_dev.txt; \
+    fi
 
 # copy current dir's content to container's WORKDIR root i.e. all the contents of the robosats app
 COPY . .

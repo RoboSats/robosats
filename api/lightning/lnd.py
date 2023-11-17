@@ -11,16 +11,18 @@ import ring
 from decouple import config
 from django.utils import timezone
 
-from . import invoices_pb2 as invoicesrpc
-from . import invoices_pb2_grpc as invoicesstub
-from . import lightning_pb2 as lnrpc
-from . import lightning_pb2_grpc as lightningstub
-from . import router_pb2 as routerrpc
-from . import router_pb2_grpc as routerstub
-from . import signer_pb2 as signerrpc
-from . import signer_pb2_grpc as signerstub
-from . import verrpc_pb2 as verrpc
-from . import verrpc_pb2_grpc as verstub
+from . import (
+    invoices_pb2,
+    invoices_pb2_grpc,
+    lightning_pb2,
+    lightning_pb2_grpc,
+    router_pb2,
+    router_pb2_grpc,
+    signer_pb2,
+    signer_pb2_grpc,
+    verrpc_pb2,
+    verrpc_pb2_grpc,
+)
 
 #######
 # Works with LND (c-lightning in the future for multi-vendor resilience)
@@ -35,7 +37,7 @@ except Exception:
 
 # Read macaroon from file or .env variable string encoded as base64
 try:
-    with open(os.path.join(config("LND_DIR"), config("MACAROON_path")), "rb") as f:
+    with open(os.path.join(config("LND_DIR"), config("MACAROON_PATH")), "rb") as f:
         MACAROON = f.read()
 except Exception:
     MACAROON = b64decode(config("LND_MACAROON_BASE64"))
@@ -43,6 +45,17 @@ except Exception:
 LND_GRPC_HOST = config("LND_GRPC_HOST")
 DISABLE_ONCHAIN = config("DISABLE_ONCHAIN", cast=bool, default=True)
 MAX_SWAP_AMOUNT = config("MAX_SWAP_AMOUNT", cast=int, default=500_000)
+
+
+# Logger function used to build tests/mocks/lnd.py
+def log(name, request, response):
+    if not config("LOG_LND", cast=bool, default=False):
+        return
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_message = f"######################################\nEvent: {name}\nTime: {current_time}\nRequest:\n{request}\nResponse:\n{response}\nType: {type(response)}\n"
+
+    with open("lnd_log.txt", "a") as file:
+        file.write(log_message)
 
 
 class LNDNode:
@@ -56,12 +69,6 @@ class LNDNode:
     combined_creds = grpc.composite_channel_credentials(ssl_creds, auth_creds)
     channel = grpc.secure_channel(LND_GRPC_HOST, combined_creds)
 
-    lightningstub = lightningstub.LightningStub(channel)
-    invoicesstub = invoicesstub.InvoicesStub(channel)
-    routerstub = routerstub.RouterStub(channel)
-    signerstub = signerstub.SignerStub(channel)
-    verstub = verstub.VersionerStub(channel)
-
     payment_failure_context = {
         0: "Payment isn't failed (yet)",
         1: "There are more routes to try, but the payment timeout was exceeded.",
@@ -71,43 +78,51 @@ class LNDNode:
         5: "Insufficient local balance.",
     }
 
-    is_testnet = lightningstub.GetInfo(lnrpc.GetInfoRequest()).testnet
-
     @classmethod
     def get_version(cls):
         try:
-            request = verrpc.VersionRequest()
-            response = cls.verstub.GetVersion(request)
+            request = verrpc_pb2.VersionRequest()
+            verstub = verrpc_pb2_grpc.VersionerStub(cls.channel)
+            response = verstub.GetVersion(request)
+            log("verstub.GetVersion", request, response)
             return "v" + response.version
         except Exception as e:
-            print(e)
-            return None
+            print(f"Cannot get CLN version: {e}")
+            return "Not installed"
 
     @classmethod
     def decode_payreq(cls, invoice):
         """Decodes a lightning payment request (invoice)"""
-        request = lnrpc.PayReqString(pay_req=invoice)
-        response = cls.lightningstub.DecodePayReq(request)
+        lightningstub = lightning_pb2_grpc.LightningStub(cls.channel)
+        request = lightning_pb2.PayReqString(pay_req=invoice)
+        response = lightningstub.DecodePayReq(request)
+        log("lightning_pb2_grpc.DecodePayReq", request, response)
         return response
 
     @classmethod
     def estimate_fee(cls, amount_sats, target_conf=2, min_confs=1):
         """Returns estimated fee for onchain payouts"""
+        lightningstub = lightning_pb2_grpc.LightningStub(cls.channel)
+        request = lightning_pb2.GetInfoRequest()
+        response = lightningstub.GetInfo(request)
 
-        if cls.is_testnet:
+        if response.testnet:
             dummy_address = "tb1qehyqhruxwl2p5pt52k6nxj4v8wwc3f3pg7377x"
+        elif response.chains[0].network == "regtest":
+            dummy_address = "bcrt1q3w8xja7knmycsglnxg2xzjq8uv9u7jdwau25nl"
         else:
             dummy_address = "bc1qgxwaqe4m9mypd7ltww53yv3lyxhcfnhzzvy5j3"
-
         # We assume segwit. Use hardcoded address as shortcut so there is no need of user inputs yet.
-        request = lnrpc.EstimateFeeRequest(
+        request = lightning_pb2.EstimateFeeRequest(
             AddrToAmount={dummy_address: amount_sats},
             target_conf=target_conf,
             min_confs=min_confs,
             spend_unconfirmed=False,
         )
 
-        response = cls.lightningstub.EstimateFee(request)
+        lightningstub = lightning_pb2_grpc.LightningStub(cls.channel)
+        response = lightningstub.EstimateFee(request)
+        log("lightning_pb2_grpc.EstimateFee", request, response)
 
         return {
             "mining_fee_sats": response.fee_sat,
@@ -120,8 +135,10 @@ class LNDNode:
     @classmethod
     def wallet_balance(cls):
         """Returns onchain balance"""
-        request = lnrpc.WalletBalanceRequest()
-        response = cls.lightningstub.WalletBalance(request)
+        lightningstub = lightning_pb2_grpc.LightningStub(cls.channel)
+        request = lightning_pb2.WalletBalanceRequest()
+        response = lightningstub.WalletBalance(request)
+        log("lightning_pb2_grpc.WalletBalance", request, response)
 
         return {
             "total_balance": response.total_balance,
@@ -135,8 +152,10 @@ class LNDNode:
     @classmethod
     def channel_balance(cls):
         """Returns channels balance"""
-        request = lnrpc.ChannelBalanceRequest()
-        response = cls.lightningstub.ChannelBalance(request)
+        lightningstub = lightning_pb2_grpc.LightningStub(cls.channel)
+        request = lightning_pb2.ChannelBalanceRequest()
+        response = lightningstub.ChannelBalance(request)
+        log("lightning_pb2_grpc.ChannelBalance", request, response)
 
         return {
             "local_balance": response.local_balance.sat,
@@ -152,7 +171,7 @@ class LNDNode:
         if DISABLE_ONCHAIN or onchainpayment.sent_satoshis > MAX_SWAP_AMOUNT:
             return False
 
-        request = lnrpc.SendCoinsRequest(
+        request = lightning_pb2.SendCoinsRequest(
             addr=onchainpayment.address,
             amount=int(onchainpayment.sent_satoshis),
             sat_per_vbyte=int(onchainpayment.mining_fee_rate),
@@ -170,7 +189,9 @@ class LNDNode:
             # Changing the state to "MEMPO" should be atomic with SendCoins.
             onchainpayment.status = on_mempool_code
             onchainpayment.save(update_fields=["status"])
-            response = cls.lightningstub.SendCoins(request)
+            lightningstub = lightning_pb2_grpc.LightningStub(cls.channel)
+            response = lightningstub.SendCoins(request)
+            log("lightning_pb2_grpc.SendCoins", request, response)
 
             if response.txid:
                 onchainpayment.txid = response.txid
@@ -192,16 +213,22 @@ class LNDNode:
     @classmethod
     def cancel_return_hold_invoice(cls, payment_hash):
         """Cancels or returns a hold invoice"""
-        request = invoicesrpc.CancelInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
-        response = cls.invoicesstub.CancelInvoice(request)
+        request = invoices_pb2.CancelInvoiceMsg(
+            payment_hash=bytes.fromhex(payment_hash)
+        )
+        invoicesstub = invoices_pb2_grpc.InvoicesStub(cls.channel)
+        response = invoicesstub.CancelInvoice(request)
+        log("invoices_pb2_grpc.CancelInvoice", request, response)
         # Fix this: tricky because canceling sucessfully an invoice has no response. TODO
         return str(response) == ""  # True if no response, false otherwise.
 
     @classmethod
     def settle_hold_invoice(cls, preimage):
         """settles a hold invoice"""
-        request = invoicesrpc.SettleInvoiceMsg(preimage=bytes.fromhex(preimage))
-        response = cls.invoicesstub.SettleInvoice(request)
+        request = invoices_pb2.SettleInvoiceMsg(preimage=bytes.fromhex(preimage))
+        invoicesstub = invoices_pb2_grpc.InvoicesStub(cls.channel)
+        response = invoicesstub.SettleInvoice(request)
+        log("invoices_pb2_grpc.SettleInvoice", request, response)
         # Fix this: tricky because settling sucessfully an invoice has None response. TODO
         return str(response) == ""  # True if no response, false otherwise.
 
@@ -217,7 +244,6 @@ class LNDNode:
         time,
     ):
         """Generates hold invoice"""
-
         hold_payment = {}
         # The preimage is a random hash of 256 bits entropy
         preimage = hashlib.sha256(secrets.token_bytes(nbytes=32)).digest()
@@ -225,7 +251,7 @@ class LNDNode:
         # Its hash is used to generate the hold invoice
         r_hash = hashlib.sha256(preimage).digest()
 
-        request = invoicesrpc.AddHoldInvoiceRequest(
+        request = invoices_pb2.AddHoldInvoiceRequest(
             memo=description,
             value=num_satoshis,
             hash=r_hash,
@@ -234,7 +260,9 @@ class LNDNode:
             ),  # actual expiry is padded by 50%, if tight, wrong client system clock will say invoice is expired.
             cltv_expiry=cltv_expiry_blocks,
         )
-        response = cls.invoicesstub.AddHoldInvoice(request)
+        invoicesstub = invoices_pb2_grpc.InvoicesStub(cls.channel)
+        response = invoicesstub.AddHoldInvoice(request)
+        log("invoices_pb2_grpc.AddHoldInvoice", request, response)
 
         hold_payment["invoice"] = response.payment_request
         payreq_decoded = cls.decode_payreq(hold_payment["invoice"])
@@ -255,21 +283,25 @@ class LNDNode:
         """Checks if hold invoice is locked"""
         from api.models import LNPayment
 
-        request = invoicesrpc.LookupInvoiceMsg(
+        request = invoices_pb2.LookupInvoiceMsg(
             payment_hash=bytes.fromhex(lnpayment.payment_hash)
         )
-        response = cls.invoicesstub.LookupInvoiceV2(request)
+        invoicesstub = invoices_pb2_grpc.InvoicesStub(cls.channel)
+        response = invoicesstub.LookupInvoiceV2(request)
+        log("invoices_pb2_grpc.LookupInvoiceV2", request, response)
 
         # Will fail if 'unable to locate invoice'. Happens if invoice expiry
         # time has passed (but these are 15% padded at the moment). Should catch it
         # and report back that the invoice has expired (better robustness)
-        if response.state == lnrpc.Invoice.InvoiceState.OPEN:  # OPEN
+        if response.state == lightning_pb2.Invoice.InvoiceState.OPEN:  # OPEN
             pass
-        if response.state == lnrpc.Invoice.InvoiceState.SETTLED:  # SETTLED
+        if response.state == lightning_pb2.Invoice.InvoiceState.SETTLED:  # SETTLED
             pass
-        if response.state == lnrpc.Invoice.InvoiceState.CANCELED:  # CANCELED
+        if response.state == lightning_pb2.Invoice.InvoiceState.CANCELED:  # CANCELED
             pass
-        if response.state == lnrpc.Invoice.InvoiceState.ACCEPTED:  # ACCEPTED (LOCKED)
+        if (
+            response.state == lightning_pb2.Invoice.InvoiceState.ACCEPTED
+        ):  # ACCEPTED (LOCKED)
             lnpayment.expiry_height = response.htlcs[0].expiry_height
             lnpayment.status = LNPayment.Status.LOCKED
             lnpayment.save(update_fields=["expiry_height", "status"])
@@ -295,10 +327,12 @@ class LNDNode:
 
         try:
             # this is similar to LNNnode.validate_hold_invoice_locked
-            request = invoicesrpc.LookupInvoiceMsg(
+            request = invoices_pb2.LookupInvoiceMsg(
                 payment_hash=bytes.fromhex(lnpayment.payment_hash)
             )
-            response = cls.invoicesstub.LookupInvoiceV2(request)
+            invoicesstub = invoices_pb2_grpc.InvoicesStub(cls.channel)
+            response = invoicesstub.LookupInvoiceV2(request)
+            log("invoices_pb2_grpc.LookupInvoiceV2", request, response)
 
             status = lnd_response_state_to_lnpayment_status[response.state]
 
@@ -329,8 +363,9 @@ class LNDNode:
 
     @classmethod
     def resetmc(cls):
-        request = routerrpc.ResetMissionControlRequest()
-        _ = cls.routerstub.ResetMissionControl(request)
+        routerstub = router_pb2_grpc.RouterStub(cls.channel)
+        request = router_pb2.ResetMissionControlRequest()
+        _ = routerstub.ResetMissionControl(request)
         return True
 
     @classmethod
@@ -437,26 +472,28 @@ class LNDNode:
             )
         )  # 200 ppm or 10 sats
         timeout_seconds = int(config("REWARDS_TIMEOUT_SECONDS"))
-        request = routerrpc.SendPaymentRequest(
+        request = router_pb2.SendPaymentRequest(
             payment_request=lnpayment.invoice,
             fee_limit_sat=fee_limit_sat,
             timeout_seconds=timeout_seconds,
         )
 
-        for response in cls.routerstub.SendPaymentV2(request):
+        routerstub = router_pb2_grpc.RouterStub(cls.channel)
+        for response in routerstub.SendPaymentV2(request):
+            log("router_pb2_grpc.SendPaymentV2", request, response)
             if (
-                response.status == lnrpc.Payment.PaymentStatus.UNKNOWN
+                response.status == lightning_pb2.Payment.PaymentStatus.UNKNOWN
             ):  # Status 0 'UNKNOWN'
                 # Not sure when this status happens
                 pass
 
             if (
-                response.status == lnrpc.Payment.PaymentStatus.IN_FLIGHT
+                response.status == lightning_pb2.Payment.PaymentStatus.IN_FLIGHT
             ):  # Status 1 'IN_FLIGHT'
                 pass
 
             if (
-                response.status == lnrpc.Payment.PaymentStatus.FAILED
+                response.status == lightning_pb2.Payment.PaymentStatus.FAILED
             ):  # Status 3 'FAILED'
                 """0	Payment isn't failed (yet).
                 1	There are more routes to try, but the payment timeout was exceeded.
@@ -472,7 +509,7 @@ class LNDNode:
                 return False, failure_reason
 
             if (
-                response.status == lnrpc.Payment.PaymentStatus.SUCCEEDED
+                response.status == lightning_pb2.Payment.PaymentStatus.SUCCEEDED
             ):  # STATUS 'SUCCEEDED'
                 lnpayment.status = LNPayment.Status.SUCCED
                 lnpayment.fee = float(response.fee_msat) / 1000
@@ -492,7 +529,7 @@ class LNDNode:
 
         hash = lnpayment.payment_hash
 
-        request = routerrpc.SendPaymentRequest(
+        request = router_pb2.SendPaymentRequest(
             payment_request=lnpayment.invoice,
             fee_limit_sat=fee_limit_sat,
             timeout_seconds=timeout_seconds,
@@ -512,7 +549,7 @@ class LNDNode:
             order.save(update_fields=["status"])
 
             if (
-                response.status == lnrpc.Payment.PaymentStatus.UNKNOWN
+                response.status == lightning_pb2.Payment.PaymentStatus.UNKNOWN
             ):  # Status 0 'UNKNOWN'
                 # Not sure when this status happens
                 print(f"Order: {order.id} UNKNOWN. Hash {hash}")
@@ -520,7 +557,7 @@ class LNDNode:
                 lnpayment.save(update_fields=["in_flight"])
 
             if (
-                response.status == lnrpc.Payment.PaymentStatus.IN_FLIGHT
+                response.status == lightning_pb2.Payment.PaymentStatus.IN_FLIGHT
             ):  # Status 1 'IN_FLIGHT'
                 print(f"Order: {order.id} IN_FLIGHT. Hash {hash}")
 
@@ -533,7 +570,7 @@ class LNDNode:
                     lnpayment.save(update_fields=["last_routing_time"])
 
             if (
-                response.status == lnrpc.Payment.PaymentStatus.FAILED
+                response.status == lightning_pb2.Payment.PaymentStatus.FAILED
             ):  # Status 3 'FAILED'
                 lnpayment.status = LNPayment.Status.FAILRO
                 lnpayment.last_routing_time = timezone.now()
@@ -576,7 +613,7 @@ class LNDNode:
                 }
 
             if (
-                response.status == lnrpc.Payment.PaymentStatus.SUCCEEDED
+                response.status == lightning_pb2.Payment.PaymentStatus.SUCCEEDED
             ):  # Status 2 'SUCCEEDED'
                 print(f"Order: {order.id} SUCCEEDED. Hash: {hash}")
                 lnpayment.status = LNPayment.Status.SUCCED
@@ -598,7 +635,9 @@ class LNDNode:
                 return results
 
         try:
-            for response in cls.routerstub.SendPaymentV2(request):
+            routerstub = router_pb2_grpc.RouterStub(cls.channel)
+            for response in routerstub.SendPaymentV2(request):
+                log("router_pb2_grpc.SendPaymentV2", request, response)
                 handle_response(response)
 
         except Exception as e:
@@ -606,11 +645,13 @@ class LNDNode:
                 print(f"Order: {order.id}. INVOICE EXPIRED. Hash: {hash}")
                 # An expired invoice can already be in-flight. Check.
                 try:
-                    request = routerrpc.TrackPaymentRequest(
+                    request = router_pb2.TrackPaymentRequest(
                         payment_hash=bytes.fromhex(hash)
                     )
 
-                    for response in cls.routerstub.TrackPaymentV2(request):
+                    routerstub = router_pb2_grpc.RouterStub(cls.channel)
+                    for response in routerstub.TrackPaymentV2(request):
+                        log("router_pb2_grpc.TrackPaymentV2", request, response)
                         handle_response(response, was_in_transit=True)
 
                 except Exception as e:
@@ -645,21 +686,25 @@ class LNDNode:
             elif "payment is in transition" in str(e):
                 print(f"Order: {order.id} ALREADY IN TRANSITION. Hash: {hash}.")
 
-                request = routerrpc.TrackPaymentRequest(
+                request = router_pb2.TrackPaymentRequest(
                     payment_hash=bytes.fromhex(hash)
                 )
 
-                for response in cls.routerstub.TrackPaymentV2(request):
+                routerstub = router_pb2_grpc.RouterStub(cls.channel)
+                for response in routerstub.TrackPaymentV2(request):
+                    log("router_pb2_grpc.TrackPaymentV2", request, response)
                     handle_response(response, was_in_transit=True)
 
             elif "invoice is already paid" in str(e):
                 print(f"Order: {order.id} ALREADY PAID. Hash: {hash}.")
 
-                request = routerrpc.TrackPaymentRequest(
+                request = router_pb2.TrackPaymentRequest(
                     payment_hash=bytes.fromhex(hash)
                 )
 
-                for response in cls.routerstub.TrackPaymentV2(request):
+                routerstub = router_pb2_grpc.RouterStub(cls.channel)
+                for response in routerstub.TrackPaymentV2(request):
+                    log("router_pb2_grpc.TrackPaymentV2", request, response)
                     handle_response(response)
 
             else:
@@ -694,26 +739,28 @@ class LNDNode:
                     (34349334, bytes.fromhex(msg.encode("utf-8").hex()))
                 )
                 if sign:
-                    self_pubkey = cls.lightningstub.GetInfo(
-                        lnrpc.GetInfoRequest()
+                    lightningstub = lightning_pb2_grpc.LightningStub(cls.channel)
+                    self_pubkey = lightningstub.GetInfo(
+                        lightning_pb2.GetInfoRequest()
                     ).identity_pubkey
                     timestamp = struct.pack(">i", int(time.time()))
-                    signature = cls.signerstub.SignMessage(
-                        signerrpc.SignMessageReq(
+                    signerstub = signer_pb2_grpc.SignerStub(cls.channel)
+                    signature = signerstub.SignMessage(
+                        signer_pb2.SignMessageReq(
                             msg=(
                                 bytes.fromhex(self_pubkey)
                                 + bytes.fromhex(target_pubkey)
                                 + timestamp
                                 + bytes.fromhex(msg.encode("utf-8").hex())
                             ),
-                            key_loc=signerrpc.KeyLocator(key_family=6, key_index=0),
+                            key_loc=signer_pb2.KeyLocator(key_family=6, key_index=0),
                         )
                     ).signature
                     custom_records.append((34349337, signature))
                     custom_records.append((34349339, bytes.fromhex(self_pubkey)))
                     custom_records.append((34349343, timestamp))
 
-            request = routerrpc.SendPaymentRequest(
+            request = router_pb2.SendPaymentRequest(
                 dest=bytes.fromhex(target_pubkey),
                 dest_custom_records=custom_records,
                 fee_limit_sat=routing_budget_sats,
@@ -722,16 +769,18 @@ class LNDNode:
                 payment_hash=bytes.fromhex(hashed_secret),
                 allow_self_payment=ALLOW_SELF_KEYSEND,
             )
-            for response in cls.routerstub.SendPaymentV2(request):
-                if response.status == lnrpc.Payment.PaymentStatus.IN_FLIGHT:
+            routerstub = router_pb2_grpc.RouterStub(cls.channel)
+            for response in routerstub.SendPaymentV2(request):
+                log("router_pb2_grpc.SendPaymentV2", request, response)
+                if response.status == lightning_pb2.Payment.PaymentStatus.IN_FLIGHT:
                     keysend_payment["status"] = LNPayment.Status.FLIGHT
-                if response.status == lnrpc.Payment.PaymentStatus.SUCCEEDED:
+                if response.status == lightning_pb2.Payment.PaymentStatus.SUCCEEDED:
                     keysend_payment["fee"] = float(response.fee_msat) / 1000
                     keysend_payment["status"] = LNPayment.Status.SUCCED
-                if response.status == lnrpc.Payment.PaymentStatus.FAILED:
+                if response.status == lightning_pb2.Payment.PaymentStatus.FAILED:
                     keysend_payment["status"] = LNPayment.Status.FAILRO
                     keysend_payment["failure_reason"] = response.failure_reason
-                if response.status == lnrpc.Payment.PaymentStatus.UNKNOWN:
+                if response.status == lightning_pb2.Payment.PaymentStatus.UNKNOWN:
                     print("Unknown Error")
         except Exception as e:
             if "self-payments not allowed" in str(e):
@@ -744,9 +793,13 @@ class LNDNode:
     @classmethod
     def double_check_htlc_is_settled(cls, payment_hash):
         """Just as it sounds. Better safe than sorry!"""
-        request = invoicesrpc.LookupInvoiceMsg(payment_hash=bytes.fromhex(payment_hash))
-        response = cls.invoicesstub.LookupInvoiceV2(request)
+        request = invoices_pb2.LookupInvoiceMsg(
+            payment_hash=bytes.fromhex(payment_hash)
+        )
+        invoicesstub = invoices_pb2_grpc.InvoicesStub(cls.channel)
+        response = invoicesstub.LookupInvoiceV2(request)
+        log("invoices_pb2_grpc.LookupInvoiceV2", request, response)
 
         return (
-            response.state == lnrpc.Invoice.InvoiceState.SETTLED
+            response.state == lightning_pb2.Invoice.InvoiceState.SETTLED
         )  # LND states: 0 OPEN, 1 SETTLED, 3 ACCEPTED, GRPC_ERROR status 5 when CANCELED/returned

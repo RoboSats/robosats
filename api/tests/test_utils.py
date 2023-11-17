@@ -95,25 +95,21 @@ class TestUtils(TestCase):
         mock_response_blockchain.json.assert_called_once()
         mock_response_yadio.json.assert_called_once()
 
-    LNVENDOR = config("LNVENDOR", cast=str, default="LND")
+    if config("LNVENDOR", cast=str) == "LND":
 
-    if LNVENDOR == "LND":
-
-        @patch("api.lightning.lnd.LNDNode.get_version")
-        def test_get_lnd_version(self, mock_get_version):
-            mock_get_version.return_value = "v0.17.0-beta"
+        def test_get_lnd_version(self):
             version = get_lnd_version()
-            self.assertEqual(version, "v0.17.0-beta")
+            self.assertTrue(isinstance(version, str))
 
-    elif LNVENDOR == "CLN":
+    elif config("LNVENDOR", cast=str) == "CLN":
 
-        @patch("api.lightning.cln.CLNNode.get_version")
-        def test_get_cln_version(self, mock_get_version):
-            mock_get_version.return_value = "v23.08.1"
+        def test_get_cln_version(self):
             version = get_cln_version()
-            self.assertEqual(version, "v23.08.1")
+            self.assertTrue(isinstance(version, str))
 
-    @patch("builtins.open", new_callable=mock_open, read_data="test_commit_hash")
+    @patch(
+        "builtins.open", new_callable=mock_open, read_data="00000000000000000000 dev"
+    )
     def test_get_robosats_commit(self, mock_file):
         # Call the get_robosats_commit function
         commit_hash = get_robosats_commit()
@@ -172,14 +168,14 @@ class TestUtils(TestCase):
 
     def test_validate_pgp_keys(self):
         # Example test client generated GPG keys
-        client_pub_key = r"-----BEGIN PGP PUBLIC KEY BLOCK-----\\xjMEZTWJ1xYJKwYBBAHaRw8BAQdAsfdKb90BurKniu+pBPBDHCkzg08S51W0\mUR0SKqLmdjNTFJvYm9TYXRzIElEIDU1MmRkMWE2NjFhN2FjYTRhNDFmODg5\MTBmZjM0YWMzYjFhYzgwYmI3Nzk0ZWQ5ZmQ1NWQ4Yjc2Yjk3YWFkOTfCjAQQ\FgoAPgWCZTWJ1wQLCQcICZA3N7au4gi/zgMVCAoEFgACAQIZAQKbAwIeARYh\BO5iBLnj0J/E6sntEDc3tq7iCL/OAADkVwEA/tBt9FPqrxLHOPFtyUypppr0\/t6vrl3RrLzCLqqE1nUA/0fmhir2F88KcsxmCJwADo/FglwXGFkjrV4sP6Fj\YBEBzjgEZTWJ1xIKKwYBBAGXVQEFAQEHQCyUIe3sQTaYa/IFNKGNmXz/+hrH\ukcot4TOvi2bD9p8AwEIB8J4BBgWCAAqBYJlNYnXCZA3N7au4gi/zgKbDBYh\BO5iBLnj0J/E6sntEDc3tq7iCL/OAACaFAD7BG3E7TkUoWKtJe5OPzTwX+bM\Xy7hbPSQw0zM9Re8KP0BAIeTG8d280dTK63h/seQAKeMj0zf7AYXr0CscvS7\f38D\=h03E\-----END PGP PUBLIC KEY BLOCK-----"
-        client_enc_priv_key = r"-----BEGIN PGP PRIVATE KEY BLOCK-----\\xYYEZTWJ1xYJKwYBBAHaRw8BAQdAsfdKb90BurKniu+pBPBDHCkzg08S51W0\mUR0SKqLmdj+CQMICrS3TNCA/LHgxckC+iTUMxkqQJ9GpXWCDacx1rBQCztu\PDgUHNvWdcvW1wWVxU/aJaQLqBTtRVYkJTz332jrKvsSl/LnrfwmUfKgN4nG\Oc1MUm9ib1NhdHMgSUQgNTUyZGQxYTY2MWE3YWNhNGE0MWY4ODkxMGZmMzRh\YzNiMWFjODBiYjc3OTRlZDlmZDU1ZDhiNzZiOTdhYWQ5N8KMBBAWCgA+BYJl\NYnXBAsJBwgJkDc3tq7iCL/OAxUICgQWAAIBAhkBApsDAh4BFiEE7mIEuePQ\n8Tqye0QNze2ruIIv84AAORXAQD+0G30U+qvEsc48W3JTKmmmvT+3q+uXdGs\vMIuqoTWdQD/R+aGKvYXzwpyzGYInAAOj8WCXBcYWSOtXiw/oWNgEQHHiwRl\NYnXEgorBgEEAZdVAQUBAQdALJQh7exBNphr8gU0oY2ZfP/6Gse6Ryi3hM6+\LZsP2nwDAQgH/gkDCPPoYWyzm4mT4N/TDBF11GVq0xSEEcubFqjArFKyibRy\TDnB8+o8BlkRuGClcfRyKkR5/Rp1v5B0n1BuMsc8nY4Yg4BJv4KhsPfXRp4m\31zCeAQYFggAKgWCZTWJ1wmQNze2ruIIv84CmwwWIQTuYgS549CfxOrJ7RA3\N7au4gi/zgAAmhQA+wRtxO05FKFirSXuTj808F/mzF8u4Wz0kMNMzPUXvCj9\AQCHkxvHdvNHUyut4f7HkACnjI9M3+wGF69ArHL0u39/Aw==\=1hCT\-----END PGP PRIVATE KEY BLOCK-----"
+        client_pub_key = r"-----BEGIN PGP PUBLIC KEY BLOCK-----\\mDMEZVO9bxYJKwYBBAHaRw8BAQdAVyePBQK63FB2r5ZpIqO998WaqZjmro+LFNH+\sw2raQC0TFJvYm9TYXRzIElEIGVkN2QzYjJiMmU1ODlhYjI2NzIwNjA1ZTc0MTRh\YjRmYmNhMjFjYjRiMzFlNWI0ZTYyYTZmYTUxYzI0YTllYWKIjAQQFgoAPgWCZVO9\bwQLCQcICZAuNFtLSY2XJAMVCAoEFgACAQIZAQKbAwIeARYhBDIhViOFpzWovPuw\vC40W0tJjZckAACTeAEA+AdXmA8p6I+FFqXaFVRh5JRa5ZoO4xhGb+QY00kgZisB\AJee8XdW6FHBj2J3b4M9AYqufdpvuj+lLmaVAshN9U4MuDgEZVO9bxIKKwYBBAGX\VQEFAQEHQORkbvSesg9oJeCRKigTNdQ5tkgmVGXfdz/+vwBIl3E3AwEIB4h4BBgW\CAAqBYJlU71vCZAuNFtLSY2XJAKbDBYhBDIhViOFpzWovPuwvC40W0tJjZckAABZ\1AD/RIJM/WNb28pYqtq4XmeOaqLCrbQs2ua8mXpGBZSl8E0BALWSlbHICYTNy9L6\KV0a5pXbxcXpzejcjpJmVwzuWz8P\=32+r\-----END PGP PUBLIC KEY BLOCK-----"
+        client_enc_priv_key = r"-----BEGIN PGP PRIVATE KEY BLOCK-----\\xYYEZVO9bxYJKwYBBAHaRw8BAQdAVyePBQK63FB2r5ZpIqO998WaqZjmro+L\FNH+sw2raQD+CQMIHkZZZnDa6d/gHioGTKf6JevirkCBWwz8tFLGFs5DFwjD\tI4ew9CJd09AUxfMq2WvTilhMNrdw2nmqtmAoaIyIo43azVT1VQoxSDnWxFv\Tc1MUm9ib1NhdHMgSUQgZWQ3ZDNiMmIyZTU4OWFiMjY3MjA2MDVlNzQxNGFi\NGZiY2EyMWNiNGIzMWU1YjRlNjJhNmZhNTFjMjRhOWVhYsKMBBAWCgA+BYJl\U71vBAsJBwgJkC40W0tJjZckAxUICgQWAAIBAhkBApsDAh4BFiEEMiFWI4Wn\Nai8+7C8LjRbS0mNlyQAAJN4AQD4B1eYDynoj4UWpdoVVGHklFrlmg7jGEZv\5BjTSSBmKwEAl57xd1boUcGPYndvgz0Biq592m+6P6UuZpUCyE31TgzHiwRl\U71vEgorBgEEAZdVAQUBAQdA5GRu9J6yD2gl4JEqKBM11Dm2SCZUZd93P/6/\AEiXcTcDAQgH/gkDCGSRul0JyboW4JZSQVlHNVlx2mrfE1gRTh2R5hJWU9Kg\aw2gET8OwWDYU4F8wKTo/s7BGn+HN4jrZeLw1k/etKUKLzuPC06KUXhj3rMF\Ti3CeAQYFggAKgWCZVO9bwmQLjRbS0mNlyQCmwwWIQQyIVYjhac1qLz7sLwu\NFtLSY2XJAAAWdQA/0SCTP1jW9vKWKrauF5njmqiwq20LNrmvJl6RgWUpfBN\AQC1kpWxyAmEzcvS+ildGuaV28XF6c3o3I6SZlcM7ls/Dw==\=YAfZ\-----END PGP PRIVATE KEY BLOCK-----"
 
         # Example valid formatted GPG keys
-        with open("api/tests/test_pub_key", "r") as file:
+        with open("tests/robots/1/pub_key", "r") as file:
             # Read the contents of the file
             pub_key = file.read()
-        with open("api/tests/test_enc_priv_key", "r") as file:
+        with open("tests/robots/1/enc_priv_key", "r") as file:
             # Read the contents of the file
             enc_priv_key = file.read()
 
@@ -203,10 +199,10 @@ class TestUtils(TestCase):
 
     def test_verify_signed_message(self):
         # Call the verify_signed_message function with a mock public key and a mock signed message
-        with open("api/tests/test_pub_key", "r") as file:
+        with open("tests/robots/1/pub_key", "r") as file:
             # Read the contents of the file
             pub_key = file.read()
-        with open("api/tests/test_signed_message", "r") as file:
+        with open("tests/robots/1/signed_message", "r") as file:
             # Read the contents of the file
             signed_message = file.read()
 

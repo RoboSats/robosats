@@ -1,3 +1,4 @@
+# We use custom seeded UUID generation during testing
 import uuid
 
 from decouple import config
@@ -8,6 +9,19 @@ from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
+
+if config("TESTING", cast=bool, default=False):
+    import random
+    import string
+
+    random.seed(1)
+    chars = string.ascii_lowercase + string.digits
+
+    def custom_uuid():
+        return uuid.uuid5(uuid.NAMESPACE_DNS, "".join(random.choices(chars, k=20)))
+
+else:
+    custom_uuid = uuid.uuid4
 
 
 class Order(models.Model):
@@ -44,7 +58,7 @@ class Order(models.Model):
         NESINV = 4, "Neither escrow locked or invoice submitted"
 
     # order info
-    reference = models.UUIDField(default=uuid.uuid4, editable=False)
+    reference = models.UUIDField(default=custom_uuid, editable=False)
     status = models.PositiveSmallIntegerField(
         choices=Status.choices, null=False, default=Status.WFB
     )

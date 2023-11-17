@@ -1,0 +1,76 @@
+name: "Test: Coordinator"
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches: [ "main" ]
+    paths: ["api", "chat", "control", "robosats"]
+  pull_request_target:
+    branches: [ "main" ]
+    paths: ["api", "chat", "control", "robosats"]
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-tag: ['3.11.6-slim-bookworm', '3.12-slim-bookworm']
+        lnd-version: ['v0.17.0-beta'] # , 'v0.17.0-beta.rc1']
+        cln-version: ['v23.08.1']
+        ln-vendor: ['LND', 'CLN']
+
+    steps:
+    - name: 'Checkout'
+      uses: actions/checkout@v4
+
+    - name: Patch Dockerfile and .env-sample
+      run: |
+        sed -i "1s/FROM python:.*/FROM python:${{ matrix.python-tag }}/" Dockerfile
+        sed -i "s/^LNVENDOR=.*/LNVENDOR='${{ matrix.ln-vendor }}'/" .env-sample
+
+    - uses: satackey/action-docker-layer-caching@v0.0.11
+      continue-on-error: true
+      with:
+        key: coordinator-docker-cache-${{ hashFiles('Dockerfile', 'requirements.txt', 'requirements_dev.txt') }}
+        restore-keys: |
+          coordinator-docker-cache-
+
+    - name: 'Compose Regtest Orchestration'
+      uses: isbang/compose-action@v1.5.1
+      with:
+        compose-file: "./docker-tests.yml"
+        down-flags: "--volumes"
+        services: |
+          bitcoind
+          postgres
+          redis
+          coordinator-${{ matrix.ln-vendor }}
+          robot-LND
+          coordinator
+      env:
+        LND_VERSION: ${{ matrix.lnd-version }}
+        CLN_VERSION: ${{ matrix.cln-version }}
+        BITCOIND_VERSION: ${{ matrix.bitcoind-version }}
+        ROBOSATS_ENVS_FILE: ".env-sample"
+
+    - name: Wait for coordinator (django server)
+      run: |
+        while [ "$(docker inspect --format "{{.State.Health.Status}}" coordinator)" != "healthy" ]; do
+          echo "Waiting for coordinator to be healthy..."
+          sleep 5
+        done
+
+    - name: 'Run tests with coverage'
+      run: |
+        docker exec coordinator coverage run manage.py test
+        docker exec coordinator coverage report
+      env:
+        LNVENDOR: ${{ matrix.ln-vendor }}
+        DEVELOPMENT: True
+        USE_TOR: False

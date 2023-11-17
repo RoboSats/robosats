@@ -10,6 +10,12 @@ else
     python manage.py collectstatic --noinput
 fi
 
+# Collect static files
+if [ $DEVELOPMENT ]; then
+    echo "Installing python development dependencies"
+    pip install -r requirements_dev.txt
+fi
+
 # Print first start up message when pb2/grpc files if they do exist
 if [ ! -f "/usr/src/robosats/api/lightning/lightning_pb2.py" ]; then
     echo "Looks like the first run of this container. pb2 and gRPC files were not detected on the attached volume, copying them into the attached volume /robosats/api/lightning ."
