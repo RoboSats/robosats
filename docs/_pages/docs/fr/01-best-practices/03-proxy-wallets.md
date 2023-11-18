@@ -1,11 +1,11 @@
 ---
 layout: single
 title: "Portefeuilles Proxy"
-permalink: /docs/proxy-wallets/
+permalink: /docs/fr/proxy-wallets/
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/route.svg"/>Portefeuilles Proxy'
   nav: docs
-src: "_pages/docs/01-best-practices/03-proxy-wallets.md"
+src: "_pages/docs/fr/01-best-practices/03-proxy-wallets.md"
 ---
 
 La réception sur le réseau Lightning peut révéler des informations personnelles.

@@ -2,13 +2,13 @@
 layout: single
 classes: wide
 title: "Procédure des Commandes"
-permalink: /docs/trade-pipeline/
+permalink: /docs/fr/trade-pipeline/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/timeline.svg"/>Procédure des Commandes'
   nav: docs
-src: "_pages/docs/03-understand/01-trade-pipeline.md"
+src: "_pages/docs/fr/03-understand/01-trade-pipeline.md"
 ---
 
 La procédure des commandes de RoboSats est simple et structurée. Le flux général des commandes est présenté ci-dessous sous forme d'étapes numériques et d'organigramme.

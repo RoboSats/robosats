@@ -1,18 +1,18 @@
 ---
 layout: single
 title: "Accéder à RoboSats"
-permalink: /docs/access/
+permalink: /docs/fr/access/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/arrow-up-right-from-square.svg"/>Access'
   nav: docs
-src: "_pages/docs/00-quick-start/03-access.md"
+src: "_pages/docs/fr/00-quick-start/03-access.md"
 ---
 
 ## <img style='width:32px;height:32px' src='/assets/vector/tor.svg'/> En privé avec TOR
 
-Un moyen sûr et très privé d'accéder à RoboSats est de passer par l'adresse Onion. Vous avez besoin d'un [navigateur TOR](/docs/tor/) et d'un accès via le lien :
+Un moyen sûr et très privé d'accéder à RoboSats est de passer par l'adresse Onion. Vous avez besoin d'un [navigateur TOR](/docs/fr/tor/) et d'un accès via le lien :
 
 > [<b>robosats</b>6tkf3eva7x2voqso3a5wcorsnw34j<br/>veyxfqi2fu7oyheasid.onion](http://robosats6tkf3eva7x2voqso3a5wcorsnw34jveyxfqi2fu7oyheasid.onion/)
 

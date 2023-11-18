@@ -1,13 +1,13 @@
 ---
 layout: single
 title: Limites d'échange
-permalink: /docs/limits/
+permalink: /docs/fr/limits/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/gauge-high.svg"/>Limites'
   nav: docs
-src: "_pages/docs/03-understand/08-limits.md"
+src: "_pages/docs/fr/03-understand/08-limits.md"
 ---
 
 RoboSats est construit sur le Réseau Lightning, un réseau de micropaiement. Par conséquent, les montants envoyés et reçus sur le Réseau Lightning doivent être suffisamment petits pour trouver un itinéraire approprié.

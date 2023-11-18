@@ -1,13 +1,13 @@
 ---
 layout: single
 title: Bonnes pratiques Fiat
-permalink: /docs/payment-methods/
+permalink: /docs/fr/payment-methods/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/hand-peace.svg"/>Bonnes pratiques Fiat'
   nav: docs
-src: "_pages/docs/01-best-practices/02-payment-methods_fr.md"
+src: "_pages/docs/fr/01-best-practices/02-payment-methods_fr.md"
 ---
 
 Actuellement, il n'y a pas de restrictions sur la méthode de paiement en monnaie fiduciaire. Vous pouvez payer avec n'importe quelle méthode sur laquelle vous et votre correspondant vous êtes mis d'accord. Cela inclut les méthodes plus risquées telles que PayPal, Venmo et les applications de paiement en espèces. Vous pouvez obtenir plus de détails sur les caractéristiques et les différences de chaque méthode de paiement en monnaie fiduciaire à l'adresse suivante <a href =  "https://bisq.wiki/Payment_methods#Payment_method_guides">wiki Bisq</a>. Les directives Bisq s'appliquent par défaut aux RoboSats.
@@ -20,7 +20,7 @@ Remarque : ces indications sont modifiées à partir des <a href="https://bisq.w
 
 ### Pour l'acheteur et le vendeur de bitcoins
 
-  1. Assurez-vous de consulter la section <a href="https://github.com/RoboSats/robosats/blob/main/docs/how-to-use.md">comment utiliser </a> avant de commencer à négocier.<br>
+  1. Assurez-vous de consulter la section <a href="https://github.com/RoboSats/robosats/blob/main/docs/fr/how-to-use.md">comment utiliser </a> avant de commencer à négocier.<br>
   2. Énoncer clairement l'accord afin d'éviter tout malentendu.<br>
   3. La méthode de paiement fiat devrait pouvoir être envoyée et reçue instantanément car la facture hodl a un délai d'expiration de 24 heures.<br>
 Si le délai d'expiration est dépassé, cela peut déclencher un litige et entraîner la perte de la caution.<br>

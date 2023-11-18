@@ -1,13 +1,13 @@
 ---
 layout: single
 title: Platform Fees
-permalink: /docs/fees/
+permalink: /docs/fr/fees/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/hand-holding-hand.svg"/>Frais'
   nav: docs
-src: "_pages/docs/03-understand/13-fees.md"
+src: "_pages/docs/fr/03-understand/13-fees.md"
 ---
 
 RoboSats facture des frais de {{site.robosats.total_fee}}% du montant total de la transaction ; ces frais sont répartis entre le donneur et le preneur d'ordre qui paient respectivement {{site.robosats.maker_fee}}% et {{site.robosats.taker_fee}}%.
@@ -27,7 +27,7 @@ Le montant total des frais ({{site.robosats.total_fee}}%) est réparti entre le 
 
 En pratique, les frais sont appliqués lorsque l'utilisateur est invité à soumettre le dépôt de garantie (vendeur) ou la facture de paiement (acheteur) après que l'obligation du preneur a été verrouillée.
 
-Si le prix de l'ordre est *relatif*, alors le montant de Sats échangé par rapport au taux de change fiat (que nous appellerons `trade_sats`) fluctue jusqu'à ce que l'obligation du preneur soit verrouillée. Dans le cas d'une tarification *explicite*, la quantité de Sats échangée est fixe. Reportez-vous à [Comprendre > Prix](/docs/prices/) pour plus d'informations sur les méthodes de tarification relative et explicite.
+Si le prix de l'ordre est *relatif*, alors le montant de Sats échangé par rapport au taux de change fiat (que nous appellerons `trade_sats`) fluctue jusqu'à ce que l'obligation du preneur soit verrouillée. Dans le cas d'une tarification *explicite*, la quantité de Sats échangée est fixe. Reportez-vous à [Comprendre > Prix](/docs/fr/prices/) pour plus d'informations sur les méthodes de tarification relative et explicite.
 
 Tant que l'obligation du preneur n'est pas bloquée, le prix de l'ordre continue d'évoluer avec le marché au fil du temps. Une fois que l'obligation du preneur est bloquée pour un ordre à prix relatif, la quantité de Sats échangée est calculée comme suit :
 
@@ -84,12 +84,12 @@ Lorsque vous choisissez de recevoir des bitcoins on-chain, un aperçu des frais 
 payout_amount = trade_sats - fee_sats - fee_mining - fee_swap
 ````
 
-Les frais de swap sont des frais supplémentaires que RoboSats facture pour effectuer le paiement on-chain et les frais de minage sont le taux de frais on-chain en sats/vbyte qui peut être personnalisé pour répondre à vos besoins. Reportez-vous à [Comprendre > Paiements sur la chaîne](/docs/on-chain-payouts/) pour plus d'informations sur les paiements on-chain.
+Les frais de swap sont des frais supplémentaires que RoboSats facture pour effectuer le paiement on-chain et les frais de minage sont le taux de frais on-chain en sats/vbyte qui peut être personnalisé pour répondre à vos besoins. Reportez-vous à [Comprendre > Paiements sur la chaîne](/docs/fr/on-chain-payouts/) pour plus d'informations sur les paiements on-chain.
 
 RoboSats utilise la vitesse et la sécurité du Lightning Network, par conséquent les paiements envoyés via le Lightning Network peuvent encourir des frais en fonction du "chemin" nécessaire que le paiement doit emprunter.
 
-Les utilisateurs peuvent recevoir des paiements en privé via [lnproxy](https://lnproxy.org/), un simple outil de confidentialité du Lightning Network, mais votre budget de routage peut augmenter pour couvrir les frais supplémentaires encourus par le serveur lnproxy. Reportez-vous à [Best Practices > Proxy Wallets](/docs/proxy-wallets/) pour en savoir plus sur la réception privée.
+Les utilisateurs peuvent recevoir des paiements en privé via [lnproxy](https://lnproxy.org/), un simple outil de confidentialité du Lightning Network, mais votre budget de routage peut augmenter pour couvrir les frais supplémentaires encourus par le serveur lnproxy. Reportez-vous à [Best Practices > Proxy Wallets](/docs/fr/proxy-wallets/) pour en savoir plus sur la réception privée.
 
-L'utilisateur a la possibilité de spécifier le budget de routage du Lightning Network, ce qui peut aider à réduire les échecs de routage. Voir [Quick Start > Lightning Network](/docs/lightning/) pour plus d'informations sur les échecs de routage.
+L'utilisateur a la possibilité de spécifier le budget de routage du Lightning Network, ce qui peut aider à réduire les échecs de routage. Voir [Quick Start > Lightning Network](/docs/fr/lightning/) pour plus d'informations sur les échecs de routage.
 
 {% include improve %}

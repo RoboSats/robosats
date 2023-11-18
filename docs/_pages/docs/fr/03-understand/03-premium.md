@@ -1,13 +1,13 @@
 ---
 layout: single
 title: Premium over the Market
-permalink: /docs/premium/
+permalink: /docs/fr/premium/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/percent.svg"/>Premium'
   nav: docs
-src: "_pages/docs/03-understand/03-premium.md"
+src: "_pages/docs/fr/03-understand/03-premium.md"
 ---
 
 La prime associée à votre ordre pair-à-pair est la différence de prix qui existe par rapport au taux de change courant du bitcoin-fiat sur les bourses centralisées typiques.

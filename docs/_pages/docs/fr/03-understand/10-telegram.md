@@ -1,13 +1,13 @@
 ---
 layout: single
 title: Notifications Telegram, alertes et groupes
-permalink: /docs/telegram/
+permalink: /docs/fr/telegram/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/telegram.svg"/>Telegram'
   nav: docs
-src: "_pages/docs/03-understand/10-telegram.md"
+src: "_pages/docs/fr/03-understand/10-telegram.md"
 ---
 
 <!-- Cover: telegram notification bot: how to enable (on phone and desktop). What are the privacy trade offs. Alert bot (Jacky). Telegram public support group, different language group. Warning: never reply to privates. Never share your robot token -->

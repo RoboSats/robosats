@@ -1,22 +1,22 @@
 ---
 layout: single
 title: Dépôt de garantie
-permalink: /docs/escrow/
+permalink: /docs/fr/escrow/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/money-bill-transfer.svg"/>Dépôt de garantie'
   nav: docs
-src: "_pages/docs/03-understand/05-trade-escrow.md"
+src: "_pages/docs/fr/03-understand/05-trade-escrow.md"
 ---
 
 Lors de la vente de bitcoins, un dépôt de garantie est utilisé comme garantie de sécurité. RoboSats utilise Lightning [facture retenue] (https://github.com/lightningnetwork/lnd/pull/2022) dans le système de dépôt pour protéger l'acheteur contre la fraude ou le non-paiement de son partenaire.
 
 Le temps alloué pour payer (verrouiller) un dépôt de garantie est déterminé par le donneur d'ordre. Le délai d'expiration du dépôt de garantie est par défaut de {{site.robosats.hours_submit_escrow}} heures ; cependant, il peut être personnalisé pour varier de 1 à 8 heures.
 
-Si le vendeur ne verrouille pas son dépôt dans le délai imparti, il perd sa caution. Reportez-vous à [Comprendre > Obligations] (/docs/obligations/) pour plus d'informations sur les cautions. En outre, si un litige est ouvert, les Satoshis en dépôt de garantie sont libérés au profit du gagnant du litige.
+Si le vendeur ne verrouille pas son dépôt dans le délai imparti, il perd sa caution. Reportez-vous à [Comprendre > Obligations] (/docs/fr/obligations/) pour plus d'informations sur les cautions. En outre, si un litige est ouvert, les Satoshis en dépôt de garantie sont libérés au profit du gagnant du litige.
 
-Assurez-vous d'utiliser un portefeuille Lightning qui fonctionne bien avec RoboSats, référez-vous à [Comprendre > Portefeuilles](/docs/wallets/) pour plus d'informations.
+Assurez-vous d'utiliser un portefeuille Lightning qui fonctionne bien avec RoboSats, référez-vous à [Comprendre > Portefeuilles](/docs/fr/wallets/) pour plus d'informations.
 
 *Note : Le terme "vendeur" se réfère à la vente de bitcoins tandis que le terme "acheteur" se réfère à l'achat de bitcoins.*
 
@@ -32,7 +32,7 @@ Cette méthode est, à l'heure actuelle, l'approche la plus sûre pour s'assurer
 
 ## **Comment soumettre un dépôt de garantie**
 
-Tout d'abord, reportez-vous à [Comprendre > Portefeuilles](/docs/wallets/) pour connaître les portefeuilles Lightning compatibles qui vous aideront à utiliser RoboSats plus facilement. Selon le portefeuille, les fonds bloqués peuvent apparaître comme un paiement en transit, gelé ou même semblant échouer. Vérifiez la liste de compatibilité des portefeuilles !
+Tout d'abord, reportez-vous à [Comprendre > Portefeuilles](/docs/fr/wallets/) pour connaître les portefeuilles Lightning compatibles qui vous aideront à utiliser RoboSats plus facilement. Selon le portefeuille, les fonds bloqués peuvent apparaître comme un paiement en transit, gelé ou même semblant échouer. Vérifiez la liste de compatibilité des portefeuilles !
 
 Lisez le guide approprié selon que vous donnez ou recevez un ordre de vente de bitcoins :
 * **Créateur** : Créez un ordre et modifiez les conditions de l'ordre à votre convenance. L'ordre peut être personnalisé pour exiger un "Dépôt de garantie/Facture minutée" (délai d'expiration) différent du délai par défaut de {{site.robosats.hours_submit_escrow}} heures, allant de 1 à 8 heures. Lorsque votre commande publiée est prise et que le preneur a soumis sa caution, utilisez le code QR affiché avec votre portefeuille Lightning pour bloquer le montant indiqué de sats en tant que garantie (dépôt). *Note : Les fonds bloqués sont libérés à l'acheteur une fois que vous avez sélectionné "Confirmer la réception du fiat", ce qui règle la commande. Ne confirmez qu'une fois que le fiat est arrivé sur votre compte.*
@@ -64,7 +64,7 @@ Le robot tricheur risque de perdre ce litige et par conséquent de perdre sa cau
 
 N'oubliez pas votre commande ! Si votre partenaire a envoyé le fiat et que le délai de commande expire avant que vous ne confirmiez la réception du fiat, vous risquez de perdre le litige suivant, ce qui entraînera la perte de votre caution. Veillez à vous souvenir de votre ordre et à sauvegarder le jeton unique de votre robot !
 
-En raison des délais impliqués dans le processus de commande, il est recommandé d'utiliser des méthodes de paiement fiat instantanées pour éviter de dépasser le délai d'expiration. Attention aux méthodes de paiement en monnaie fiat qui permettent à l'acheteur de contacter sa banque et de restituer la transaction. Il est recommandé d'utiliser des modes de paiement irréversibles. Pour plus d'informations, voir [Bonnes pratiques > Méthodes de paiement](/docs/payment-methods/).
+En raison des délais impliqués dans le processus de commande, il est recommandé d'utiliser des méthodes de paiement fiat instantanées pour éviter de dépasser le délai d'expiration. Attention aux méthodes de paiement en monnaie fiat qui permettent à l'acheteur de contacter sa banque et de restituer la transaction. Il est recommandé d'utiliser des modes de paiement irréversibles. Pour plus d'informations, voir [Bonnes pratiques > Méthodes de paiement](/docs/fr/payment-methods/).
 
 Bien qu'il s'agisse d'une très petite fenêtre de temps (environ une seconde), le dépôt de garantie de l'échange pourrait être définitivement perdu si RoboSats était arrêté ou disparait soudainement entre le moment où le vendeur confirme qu'il a reçu des fiats et le moment où le portefeuille Lightning de l'acheteur enregistre les fonds du dépôt de garantie libérés. Utilisez un portefeuille Lightning bien connecté avec suffisamment de liquidités entrantes pour éviter les échecs d'acheminement et minimiser par la suite toute fenêtre d'opportunité de ce type.
 

@@ -1,13 +1,13 @@
 ---
 layout: single
 title: Wallets Compatibility with RoboSats
-permalink: /docs/wallets/
+permalink: /docs/fr/wallets/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/wallet.svg"/>Wallets'
   nav: docs
-src: "_pages/docs/03-understand/07-wallets.md"
+src: "_pages/docs/fr/03-understand/07-wallets.md"
 
 # Icons
 good: "<i style='color:#1976d2' class='fa-solid fa-square-check fa-2xl'></i>"
@@ -81,7 +81,7 @@ Brut ; il montre exactement ce qui se passe et ce qu'il sait "ON_FLY". Il n'est 
 Dans l'ensemble, le portefeuille [Mash](https://mash.com/consumer-experience/) fonctionne de bout en bout avec Robosats pour la vente et l'achat via Lightning. La plupart des détails pertinents de la facture dans le portefeuille Mash sont affichés et clairs pour les utilisateurs tout au long du processus. Lorsque les transactions sont terminées, elles s'ouvrent dans l'application mobile du côté de l'expéditeur et du destinataire pour souligner que les transactions sont terminées. Le seul problème d'interface utilisateur est que la liste des factures en attente ne montre pas explicitement les factures HOLD et qu'il y a un écran "tournant" lors du premier paiement d'une facture HOLD. L'équipe a ouvert un bug pour résoudre ce problème prochainement (cette note date du 21 août 2023).
 
 ### Muun (Mobile)
-Comme Blixt ou LND, Muun fonctionne bien avec les factures en attente. Vous pouvez être vendeur sur RoboSats en utilisant Muun et l'expérience utilisateur sera excellente. Cependant, pour être acheteur lorsque vous utilisez Muun, vous devez soumettre une adresse sur la chaîne pour le paiement, car une facture Lightning ne fonctionnera pas. Muun est une _attaque de siphonnage de frais_ pour tout expéditeur vers le portefeuille Muun. Il y a un saut obligatoire à travers un canal privé avec des frais de +1500ppm. RoboSats n'acheminera pas les paiements d'un acheteur en cas de perte nette. Étant donné que les frais d'échange de RoboSats sont de {{site.robosats.total_fee}}% et qu'il doit couvrir les frais d'acheminement, **RoboSats ne trouvera jamais d'itinéraire convenable pour un utilisateur du portefeuille Muun**. Pour l'instant, RoboSats analyse votre facture à la recherche d'indices de routage qui peuvent potentiellement encoder une _attaque de siphonnage de frais_. Si cette astuce est trouvée, la facture sera rejetée : soumettez plutôt une adresse sur la chaîne pour un échange à la volée. Reportez-vous à [Comprendre > Paiements sur la chaîne](/docs/on-chain-payouts/) pour plus d'informations sur les échanges à la volée. Il est important de noter que Muun rencontre des problèmes pendant les périodes où les frais de la chaîne sont élevés. Quoi qu'il en soit, la solution pour recevoir Muun est la suivante : soumettre une adresse sur la chaîne ou choisir un budget de routage plus élevé après avoir activé le commutateur "Options avancées".
+Comme Blixt ou LND, Muun fonctionne bien avec les factures en attente. Vous pouvez être vendeur sur RoboSats en utilisant Muun et l'expérience utilisateur sera excellente. Cependant, pour être acheteur lorsque vous utilisez Muun, vous devez soumettre une adresse sur la chaîne pour le paiement, car une facture Lightning ne fonctionnera pas. Muun est une _attaque de siphonnage de frais_ pour tout expéditeur vers le portefeuille Muun. Il y a un saut obligatoire à travers un canal privé avec des frais de +1500ppm. RoboSats n'acheminera pas les paiements d'un acheteur en cas de perte nette. Étant donné que les frais d'échange de RoboSats sont de {{site.robosats.total_fee}}% et qu'il doit couvrir les frais d'acheminement, **RoboSats ne trouvera jamais d'itinéraire convenable pour un utilisateur du portefeuille Muun**. Pour l'instant, RoboSats analyse votre facture à la recherche d'indices de routage qui peuvent potentiellement encoder une _attaque de siphonnage de frais_. Si cette astuce est trouvée, la facture sera rejetée : soumettez plutôt une adresse sur la chaîne pour un échange à la volée. Reportez-vous à [Comprendre > Paiements sur la chaîne](/docs/fr/on-chain-payouts/) pour plus d'informations sur les échanges à la volée. Il est important de noter que Muun rencontre des problèmes pendant les périodes où les frais de la chaîne sont élevés. Quoi qu'il en soit, la solution pour recevoir Muun est la suivante : soumettre une adresse sur la chaîne ou choisir un budget de routage plus élevé après avoir activé le commutateur "Options avancées".
 
 ### OBW (Mobile)
 L'un des plus simples et l'un des meilleurs. La facture hodl s'affiche comme "on fly", elle n'est pas dépositaire et vous pouvez créer vos propres canaux. Achetez-en un auprès d'un fournisseur de liquidités ou utilisez les canaux hébergés. Il est maintenu par le grand Fiatjaf et c'est un fork de l'abandonné SBW.
@@ -93,11 +93,11 @@ Phoenix fonctionne très bien en tant que preneur d'ordres. Phoenix fonctionne �
 Il s'agit d'une interface pour LND, CLN et Eclair. Il fonctionne comme prévu. Il est extrêmement trompeur avec un écran rouge complet "TIME OUT" quelques secondes après l'envoi du HTLC. Pourtant, si l'utilisateur vérifie sur le site web, la facture est correctement verrouillée.
 
 ## <i class="fa-solid fa-code-pull-request"></i> Aidez à maintenir cette page à jour
-Il existe de nombreux portefeuilles et tous s'améliorent à la vitesse de l'éclair. Vous pouvez contribuer au projet RoboSats Open Source en testant des portefeuilles, en éditant [le contenu de cette page](https://github.com/RoboSats/robosats/tree/main/docs/{{page.src}}) et en ouvrant une [Pull Request](https://github.com/RoboSats/robosats/pulls).
+Il existe de nombreux portefeuilles et tous s'améliorent à la vitesse de l'éclair. Vous pouvez contribuer au projet RoboSats Open Source en testant des portefeuilles, en éditant [le contenu de cette page](https://github.com/RoboSats/robosats/tree/main/docs/fr/{{page.src}}) et en ouvrant une [Pull Request](https://github.com/RoboSats/robosats/pulls).
 
 ## Informations complémentaires
 
-La réception de Sats via Lightning n'est pas totalement privée. Reportez-vous à [Best Practices > Proxy Wallets](/docs/proxy-wallets/) pour plus d'informations sur la réception de Sats en privé.
+La réception de Sats via Lightning n'est pas totalement privée. Reportez-vous à [Best Practices > Proxy Wallets](/docs/fr/proxy-wallets/) pour plus d'informations sur la réception de Sats en privé.
 
 Si vous rencontrez des problèmes pour recevoir des fonds sur votre portefeuille (en raison de problèmes de gestion des canaux, de problèmes de routage, de problèmes côté portefeuille, etc.), une solution rapide pour recevoir un paiement serait d'avoir un deuxième portefeuille à portée de main, bien connecté et avec une capacité de canal suffisante. Vous pourriez recevoir des Sats sur votre deuxième portefeuille et, une fois les problèmes résolus, les envoyer sur votre portefeuille principal.
 

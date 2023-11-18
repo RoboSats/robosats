@@ -1,13 +1,13 @@
 ---
 layout: single
 title: Prix des commandes
-permalink: /docs/prices/
+permalink: /docs/fr/prices/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/bitcoin.svg"/>Prix'
   nav: docs
-src: "_pages/docs/03-understand/12-prices.md"
+src: "_pages/docs/fr/03-understand/12-prices.md"
 ---
 
 Le prix est le taux fiat auquel le bitcoin a été échangé pour la dernière fois sur un marché boursier. En d'autres termes, il indique le prix d'échange qu'un acheteur et un vendeur seraient tous deux prêts à accepter pour une transaction ultérieure entre le bitcoin et le fiat.
@@ -16,7 +16,7 @@ Lors de la passation d'un ordre, il existe deux méthodes de tarification diffé
 * Méthode de tarification **Relative** : laisser le prix de l'ordre évoluer avec le marché au fil du temps (dynamique).
 * Méthode de tarification **Explicite**** : fixer le prix de l'ordre à l'aide d'un montant fixe de satoshis (statique).
 
-Lorsque vous parcourez la liste des ordres, le prix du bitcoin-fiat des ordres en direct que vous voyez est automatiquement ajusté pour inclure la prime correspondante de l'ordre. Reportez-vous à [Comprendre > Prime](/docs/premium/) pour plus d'informations sur les primes.
+Lorsque vous parcourez la liste des ordres, le prix du bitcoin-fiat des ordres en direct que vous voyez est automatiquement ajusté pour inclure la prime correspondante de l'ordre. Reportez-vous à [Comprendre > Prime](/docs/fr/premium/) pour plus d'informations sur les primes.
 
 Si une monnaie fiat n'est pas disponible sur RoboSats, vous pouvez facilement ajouter une nouvelle monnaie en ouvrant une pull request sur [GitHub](https://github.com/RoboSats/robosats) !
 
@@ -49,7 +49,7 @@ Les frais de plateforme (`fee_sats`) associés à votre ordre sont calculés en 
   fee_sats = trade_sats * fee_fraction
   ````
 
-où `fee_fraction` se combine pour un total partagé de frais de plateforme de {{site.robosats.total_fee}}% ; cela se décompose en {{site.robosats.maker_fee}}% et {{site.robosats.taker_fee}}% pour le maker et le taker, respectivement. Référez-vous à [Comprendre > Frais] (https://learn.robosats.com/docs/fees/) pour plus d'informations sur les frais.
+où `fee_fraction` se combine pour un total partagé de frais de plateforme de {{site.robosats.total_fee}}% ; cela se décompose en {{site.robosats.maker_fee}}% et {{site.robosats.taker_fee}}% pour le maker et le taker, respectivement. Référez-vous à [Comprendre > Frais] (https://learn.robosats.com/docs/fr/fees/) pour plus d'informations sur les frais.
 
 RoboSats collecte ensuite les frais dans le processus de dépôt de garantie (`escrow_amount`) et la facture de paiement (`payout_amount`) en calculant ce qui suit :
 * Pour le vendeur:

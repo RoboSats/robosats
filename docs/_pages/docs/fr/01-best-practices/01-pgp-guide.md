@@ -1,13 +1,13 @@
 ---
 layout: single
 title: Chiffrement PGP simplifié
-permalink: /docs/pgp-encryption/
+permalink: /docs/fr/pgp-encryption/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/fingerprint.svg"/>Chiffrement PGP'
   nav: docs
-src: "_pages/docs/01-best-practices/01-pgp-guide_fr.md"
+src: "_pages/docs/fr/01-best-practices/01-pgp-guide_fr.md"
 ---
 
 Toutes les communications de RoboSats sont chiffrées par PGP. L'application client est entièrement transparente et offre un moyen facile de copier et d'exporter les clés PGP.
@@ -46,7 +46,7 @@ Si votre jeton est le bon, vous devriez avoir importé la clé privée pour la c
 <div align="center">
     <img src="/assets/images/sensitive-data-PGP-guide/gpg-3.png" width="650"/>
 </div>
-Nous pouvons voir comment l'application frontend a nommé cette clé `"RoboSats ID<hash>"`. Il s'agit de l'identifiant du robot, le deuxième hachage SHA256 de notre jeton secret, et il a été utilisé à l'origine pour générer de manière déterministe le surnom et l'image de l'avatar du robot ([en savoir plus](/docs/private/#robot-avatar-generation-pipeline)).
+Nous pouvons voir comment l'application frontend a nommé cette clé `"RoboSats ID<hash>"`. Il s'agit de l'identifiant du robot, le deuxième hachage SHA256 de notre jeton secret, et il a été utilisé à l'origine pour générer de manière déterministe le surnom et l'image de l'avatar du robot ([en savoir plus](/docs/fr/private/#robot-avatar-generation-pipeline)).
 
 #### Import your peer's public key
 Il suffit de répéter les étapes ci-dessus pour importer la clé publique de notre correspondant.

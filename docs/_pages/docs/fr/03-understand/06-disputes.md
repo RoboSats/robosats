@@ -1,13 +1,13 @@
 ---
 layout: single
 title: Disputes
-permalink: /docs/disputes/
+permalink: /docs/fr/disputes/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/life-ring.svg"/>Disputes'
   nav: docs
-src: "_pages/docs/03-understand/06-disputes.md"
+src: "_pages/docs/fr/03-understand/06-disputes.md"
 ---
 
 Le plus souvent, les litiges résultent d'une mauvaise communication entre pairs. Il est très rare qu'il y ait des tentatives de fraude. Quoi qu'il en soit, il est réconfortant de savoir qu'il existe une procédure pour résoudre les litiges et protéger les robots honnêtes !

@@ -1,13 +1,13 @@
 ---
 layout: single
 title: Avatars robot
-permalink: /docs/robots/
+permalink: /docs/fr/robots/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/robot.svg"/>Robots'
   nav: docs
-src: "_pages/docs/03-understand/02-robots.md"
+src: "_pages/docs/fr/03-understand/02-robots.md"
 ---
 
 Endossez l'identité d'un robot avec un jeton privé associé. Utilisez cette identité anonyme pour commencer à passer et à recevoir des commandes avec RoboSats ! Il n'est pas recommandé d'utiliser deux fois le même robot, car cela dégrade la vie privée de l'utilisateur.
@@ -24,7 +24,7 @@ La priorité donnée à la protection absolue de la vie privée de l'utilisateur
 
 Les plateformes qui collectent des informations personnelles présentent un risque réel pour l'utilisateur. Au cours de la dernière décennie, des milliards d'informations sensibles d'utilisateurs ont été divulguées à cause d'une combinaison de piratages et d'une mauvaise sécurité des plateformes.
 
-La confidentialité est extrêmement importante pour RoboSats ; cependant, vos transactions sur RoboSats ne sont privées que dans la mesure où vous les rendez privées. Les utilisateurs doivent veiller à utiliser des méthodes de préservation de la vie privée lorsqu'ils interagissent avec RoboSats et leurs pairs robots. Reportez-vous à [Guide de démarrage rapide > Access](/docs/access/) pour plus d'informations.
+La confidentialité est extrêmement importante pour RoboSats ; cependant, vos transactions sur RoboSats ne sont privées que dans la mesure où vous les rendez privées. Les utilisateurs doivent veiller à utiliser des méthodes de préservation de la vie privée lorsqu'ils interagissent avec RoboSats et leurs pairs robots. Reportez-vous à [Guide de démarrage rapide > Access](/docs/fr/access/) pour plus d'informations.
 
 ## **Réutilisation du robot : non recommandée**
 
@@ -52,6 +52,6 @@ Sous le capot, la création d'un jeton dans la page d'accueil de RoboSats est le
 
 Votre identité peut être cachée par celle d'un robot, mais ce n'est pas une excuse pour être un partenaire difficile pendant les transactions. Les autres robots ont aussi des sentiments de robots ! Soyez succinct et respectueux lorsque vous discutez avec vos partenaires ; cela rendra votre expérience sur RoboSats plus facile et plus fluide. Ne partagez jamais plus d'informations que ce qui est absolument nécessaire pour compléter l'ordre.
 
-Toutes les communications sur RoboSats sont chiffrés par PGP. Les messages de discussion chiffrés de pair-à-pair sont signés par chaque robot partenaire, ce qui prouve que personne n'a intercepté la discussion et est utile pour résoudre les litiges. Reportez-vous à [Bonnes pratiques > Chiffrement PGP simplifié](/docs/pgp-encryption/) pour plus d'informations.
+Toutes les communications sur RoboSats sont chiffrés par PGP. Les messages de discussion chiffrés de pair-à-pair sont signés par chaque robot partenaire, ce qui prouve que personne n'a intercepté la discussion et est utile pour résoudre les litiges. Reportez-vous à [Bonnes pratiques > Chiffrement PGP simplifié](/docs/fr/pgp-encryption/) pour plus d'informations.
 
 {% include improve %}

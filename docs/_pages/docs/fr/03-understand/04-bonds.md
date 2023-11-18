@@ -1,13 +1,13 @@
 ---
 layout: single
 title: Maker and Taker Bonds
-permalink: /docs/bonds/
+permalink: /docs/fr/bonds/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/ticket-simple.svg"/>Bonds'
   nav: docs
-src: "_pages/docs/03-understand/04-bonds.md"
+src: "_pages/docs/fr/03-understand/04-bonds.md"
 ---
 
 La caution de fidélité est un petit dépôt que l'utilisateur "bloque" et qui sera débloqué une fois la transaction effectuée ; toutefois, les utilisateurs peuvent perdre leur caution s'ils ne respectent pas les obligations du contrat.
@@ -16,13 +16,13 @@ Le processus commercial de RoboSats utilise des cautions pour inciter à la fois
 
 Par défaut, la caution est {{site.robosats.default_bond_size}}% du montant total de la transaction. Les donneurs d'ordre peuvent également personnaliser ce montant pour qu'il soit compris entre {{site.robosats.min_bond_size}}% et {{site.robosats.max_bond_size}}%. Des cautions plus importantes signifient plus d'argent qui est nécessaire pour négocier.
 
-La caution ne quitte pas votre portefeuille Lightning, mais sachez que certains portefeuilles sont plus compatibles avec les RoboSats que d'autres en raison de la nature du mécanisme de facturation de la retenue Lightning. Référez-vous à [Comprendre > Portefeuilles](/docs/wallets/) pour plus d'informations.
+La caution ne quitte pas votre portefeuille Lightning, mais sachez que certains portefeuilles sont plus compatibles avec les RoboSats que d'autres en raison de la nature du mécanisme de facturation de la retenue Lightning. Référez-vous à [Comprendre > Portefeuilles](/docs/fr/wallets/) pour plus d'informations.
 
 *Remarque : l'option permettant les "Preneurs sans caution" n'est pas disponible.*
 
 ## **Comment verrouiller une caution**
 
-Tout d'abord, reportez-vous à [Comprendre > Portefeuilles](/docs/wallets/) pour connaître les portefeuilles Lightning compatibles qui vous aideront à utiliser RoboSats plus facilement. Selon le portefeuille, la facture peut apparaître comme un paiement en transit, gelé ou même semblant échouer. Vérifiez la liste de compatibilité des portefeuilles !
+Tout d'abord, reportez-vous à [Comprendre > Portefeuilles](/docs/fr/wallets/) pour connaître les portefeuilles Lightning compatibles qui vous aideront à utiliser RoboSats plus facilement. Selon le portefeuille, la facture peut apparaître comme un paiement en transit, gelé ou même semblant échouer. Vérifiez la liste de compatibilité des portefeuilles !
 
 Les cautions ne sont pas liées aux commandes. Vous pouvez utiliser n'importe quel Sats pour financer la facture de la caution. Il n'y a aucun lien entre la caution et votre commande, ni entre la caution et votre facture de paiement.
 
@@ -52,7 +52,7 @@ Par conséquent, n'oubliez pas votre commande car une fois qu'un robot l'a prise
 
 Si vous avez reçu du fiat mais que vous oubliez de cliquer sur "Confirmer le fiat reçu" de votre côté, vous risquez de perdre votre caution car un litige est automatiquement ouvert et l'équipe de RoboSats constatera que vous n'avez pas respecté les règles du contrat.
 
-En raison des délais impliqués dans le processus de commande, il est recommandé d'utiliser des méthodes de paiement fiat instantanées qui aident à réduire les chances de perdre votre caution. Reportez-vous à [Best Practices > Payment Methods](/docs/payment-methods/) pour plus d'informations.
+En raison des délais impliqués dans le processus de commande, il est recommandé d'utiliser des méthodes de paiement fiat instantanées qui aident à réduire les chances de perdre votre caution. Reportez-vous à [Best Practices > Payment Methods](/docs/fr/payment-methods/) pour plus d'informations.
 
 Ouvrir un litige juste pour annuler un ordre n'est pas recommandé car l'un des deux traders perdra sa caution, sauf cas exceptionnel laissé à l'appréciation du personnel de RoboSats.
 

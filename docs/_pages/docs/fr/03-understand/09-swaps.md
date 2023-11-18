@@ -1,13 +1,13 @@
 ---
 layout: single
 title: P2P Swaps
-permalink: /docs/swaps/
+permalink: /docs/fr/swaps/
 toc: true
 toc_sticky: true
 sidebar:
   title: '<img id="side-icon-verybig" src="/assets/vector/arrow-right-arrow-left.svg"/>Swaps'
   nav: docs
-src: "_pages/docs/03-understand/09-swaps.md"
+src: "_pages/docs/fr/03-understand/09-swaps.md"
 ---
 
 Outre les différentes méthodes de paiement en monnaie fiat disponibles, il existe également ce que l'on appelle les *destinations d'échange*. Il s'agit de méthodes de paiement, mais pour les BTC, sur un réseau autre que le Lightning Network.
