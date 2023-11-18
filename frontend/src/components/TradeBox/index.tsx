@@ -555,7 +555,6 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
           return (
             <ChatPrompt
               order={order}
-              robot={garage.getSlot().robot}
               onClickConfirmSent={() => {
                 setOpen({ ...open, confirmFiatSent: true });
               }}

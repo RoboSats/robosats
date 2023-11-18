@@ -14,8 +14,7 @@ import { type Order } from '../../models';
 const OrderPage = (): JSX.Element => {
   const { windowSize, setOpen, settings, navbarHeight, hostUrl, origin } =
     useContext<UseAppStoreType>(AppContext);
-  const { setFocusedCoordinator, federation } =
-    useContext<UseFederationStoreType>(FederationContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
   const { garage, badOrder, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -61,11 +60,10 @@ const OrderPage = (): JSX.Element => {
 
   const onClickCoordinator = function (): void {
     if (currentOrder?.shortAlias != null) {
-      setFocusedCoordinator(currentOrder.shortAlias);
+      setOpen((open) => {
+        return { ...open, coordinator: shortAlias };
+      });
     }
-    setOpen((open) => {
-      return { ...open, coordinator: true };
-    });
   };
 
   const startAgain = (): void => {

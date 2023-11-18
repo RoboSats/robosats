@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import {
   CommunityDialog,
   ExchangeDialog,
@@ -9,16 +9,16 @@ import {
   ClientDialog,
   UpdateDialog,
 } from '../../components/Dialogs';
-import { pn } from '../../utils';
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
+import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 
 export interface OpenDialogs {
   more: boolean;
   learn: boolean;
   community: boolean;
   info: boolean;
-  coordinator: boolean;
+  coordinator: string;
   exchange: boolean;
   client: boolean;
   update: boolean;
@@ -29,19 +29,8 @@ export interface OpenDialogs {
 const MainDialogs = (): JSX.Element => {
   const { open, setOpen, settings, clientVersion, hostUrl } =
     useContext<UseAppStoreType>(AppContext);
-  const { federation, focusedCoordinator, coordinatorUpdatedAt } =
-    useContext<UseFederationStoreType>(FederationContext);
-
-  const [maxAmount, setMaxAmount] = useState<string>('...loading...');
-
-  useEffect(() => {
-    if (focusedCoordinator !== null && focusedCoordinator !== '') {
-      const limits = federation.getCoordinator(focusedCoordinator).limits;
-      if (limits[1000] !== undefined) {
-        setMaxAmount(pn(limits[1000].max_amount * 100000000));
-      }
-    }
-  }, [coordinatorUpdatedAt]);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   return (
     <>
@@ -56,7 +45,7 @@ const MainDialogs = (): JSX.Element => {
       />
       <AboutDialog
         open={open.info}
-        maxAmount={maxAmount}
+        maxAmount={'100000'} //FIXME About dialog shoul allow to change coordinator
         onClose={() => {
           setOpen((open) => {
             return { ...open, info: false };
@@ -103,16 +92,12 @@ const MainDialogs = (): JSX.Element => {
         }}
       />
       <CoordinatorDialog
-        open={open.coordinator}
+        open={Boolean(open.coordinator)}
         network={settings.network}
         onClose={() => {
           setOpen(closeAll);
         }}
-        coordinator={
-          focusedCoordinator !== null && focusedCoordinator !== ''
-            ? federation.getCoordinator(focusedCoordinator)
-            : null
-        }
+        shortAlias={open.coordinator}
       />
     </>
   );

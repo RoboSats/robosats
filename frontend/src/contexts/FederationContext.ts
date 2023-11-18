@@ -51,8 +51,6 @@ export interface fetchRobotProps {
 export interface UseFederationStoreType {
   federation: Federation;
   sortedCoordinators: string[];
-  focusedCoordinator: string | null;
-  setFocusedCoordinator: Dispatch<SetStateAction<string>>;
   setDelay: Dispatch<SetStateAction<number>>;
   coordinatorUpdatedAt: string;
   federationUpdatedAt: string;
@@ -61,8 +59,6 @@ export interface UseFederationStoreType {
 export const initialFederationContext: UseFederationStoreType = {
   federation: new Federation(),
   sortedCoordinators: [],
-  focusedCoordinator: '',
-  setFocusedCoordinator: () => {},
   setDelay: () => {},
   coordinatorUpdatedAt: '',
   federationUpdatedAt: '',
@@ -88,8 +84,6 @@ export const useFederationStore = (): UseFederationStoreType => {
   );
   const [federationUpdatedAt, setFederationUpdatedAt] = useState<string>(new Date().toISOString());
 
-  const [focusedCoordinator, setFocusedCoordinator] = useState<string>(sortedCoordinators[0]);
-
   const [delay, setDelay] = useState<number>(5000);
   const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
     setInterval(() => null, delay),
@@ -114,24 +108,31 @@ export const useFederationStore = (): UseFederationStoreType => {
     const activeSlot = garage.getSlot();
     if (activeSlot.activeOrderShortAlias !== null && activeSlot.activeOrderId !== null) {
       const coordinator = federation.getCoordinator(activeSlot.activeOrderShortAlias);
-      coordinator.fetchOrder(activeSlot.activeOrderId, activeSlot.robot).then((order) => {
-        if (order?.bad_request !== undefined) {
-          setBadOrder(order.bad_request);
-        }
-        if (order?.id !== null) {
-          garage.updateOrder(order as Order);
-        }
-      });
+      coordinator
+        .fetchOrder(activeSlot.activeOrderId, activeSlot.robot)
+        .then((order) => {
+          if (order?.bad_request !== undefined) {
+            setBadOrder(order.bad_request);
+          }
+          if (order?.id !== null) {
+            garage.updateOrder(order as Order);
+          }
+        })
+        .finally(() => {
+          setTimer(setTimeout(fetchCurrentOrder, delay));
+        });
+    } else {
+      setTimer(setTimeout(fetchCurrentOrder, delay));
     }
   };
 
   useEffect(() => {
     clearInterval(timer);
-    setTimer(setInterval(fetchCurrentOrder, delay));
+    fetchCurrentOrder();
     return () => {
       clearInterval(timer);
     };
-  }, [delay, orderUpdatedAt, page, badOrder]);
+  }, []);
 
   useEffect(() => {
     const robot = garage.getSlot().robot;
@@ -153,8 +154,6 @@ export const useFederationStore = (): UseFederationStoreType => {
   return {
     federation,
     sortedCoordinators,
-    focusedCoordinator,
-    setFocusedCoordinator,
     setDelay,
     coordinatorUpdatedAt,
     federationUpdatedAt,

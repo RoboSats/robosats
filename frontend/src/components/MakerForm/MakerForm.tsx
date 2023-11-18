@@ -68,7 +68,7 @@ const MakerForm = ({
   onClickGenerateRobot = () => null,
 }: MakerFormProps): JSX.Element => {
   const { fav, setFav, settings, hostUrl, origin } = useContext<UseAppStoreType>(AppContext);
-  const { federation, focusedCoordinator, coordinatorUpdatedAt, federationUpdatedAt } =
+  const { federation, coordinatorUpdatedAt, federationUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
   const { maker, setMaker, garage } = useContext<UseGarageStoreType>(GarageContext);
 
@@ -93,8 +93,8 @@ const MakerForm = ({
 
   useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
-    if (focusedCoordinator != null) {
-      const newLimits = federation.getCoordinator(focusedCoordinator).limits;
+    if (maker.coordinator != null) {
+      const newLimits = federation.getCoordinator(maker.coordinator).limits;
       if (Object.keys(newLimits).length !== 0) {
         updateAmountLimits(newLimits, fav.currency, maker.premium);
         updateCurrentPrice(newLimits, fav.currency, maker.premium);
@@ -287,7 +287,7 @@ const MakerForm = ({
 
     const auth = garage.getSlot().robot.getAuthHeaders();
 
-    if (!disableRequest && focusedCoordinator != null && auth !== null) {
+    if (!disableRequest && maker.coordinator != null && auth !== null) {
       setSubmittingRequest(true);
       const body = {
         type: fav.type === 0 ? 1 : 0,
@@ -441,9 +441,9 @@ const MakerForm = ({
   };
 
   const amountLabel = useMemo(() => {
-    if (!(focusedCoordinator != null)) return;
+    if (!(maker.coordinator != null)) return;
 
-    const info = federation.getCoordinator(focusedCoordinator)?.info;
+    const info = federation.getCoordinator(maker.coordinator)?.info;
     const defaultRoutingBudget = 0.001;
     let label = t('Amount');
     let helper = '';

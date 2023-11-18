@@ -9,22 +9,20 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface FederationTableProps {
-  openCoordinator: () => void;
   maxWidth?: number;
   maxHeight?: number;
   fillContainer?: boolean;
 }
 
 const FederationTable = ({
-  openCoordinator,
   maxWidth = 90,
   maxHeight = 50,
   fillContainer = false,
 }: FederationTableProps): JSX.Element => {
   const { t } = useTranslation();
-  const { federation, sortedCoordinators, setFocusedCoordinator, coordinatorUpdatedAt } =
+  const { federation, sortedCoordinators, coordinatorUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
-  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const { hostUrl, setOpen } = useContext<UseAppStoreType>(AppContext);
   const theme = useTheme();
   const [pageSize, setPageSize] = useState<number>(0);
 
@@ -52,8 +50,9 @@ const FederationTable = ({
   };
 
   const onClickCoordinator = function (shortAlias: string): void {
-    setFocusedCoordinator(shortAlias);
-    openCoordinator();
+    setOpen((open) => {
+      return { ...open, coordinator: shortAlias };
+    });
   };
 
   const aliasObj = useCallback((width: number) => {

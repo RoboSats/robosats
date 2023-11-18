@@ -22,15 +22,13 @@ interface SelectCoordinatorProps {
 
 const SelectCoordinator: React.FC<SelectCoordinatorProps> = ({ coordinator, setCoordinator }) => {
   const { setOpen, hostUrl } = useContext<UseAppStoreType>(AppContext);
-  const { federation, setFocusedCoordinator, sortedCoordinators } =
-    useContext<UseFederationStoreType>(FederationContext);
+  const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
   const theme = useTheme();
   const { t } = useTranslation();
 
   const onClickCurrentCoordinator = function (shortAlias: string): void {
-    setFocusedCoordinator(shortAlias);
     setOpen((open) => {
-      return { ...open, coordinator: true };
+      return { ...open, coordinator: shortAlias };
     });
   };
 

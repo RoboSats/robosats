@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid, Typography, Tooltip, Collapse } from '@mui/material';
 import currencies from '../../../../static/assets/currencies.json';
@@ -8,10 +8,10 @@ import { pn } from '../../../utils';
 import EncryptedChat, { type EncryptedChatMessage } from '../EncryptedChat';
 import Countdown, { zeroPad } from 'react-countdown';
 import { LoadingButton } from '@mui/lab';
+import { UseGarageStoreType, GarageContext } from '../../../contexts/GarageContext';
 
 interface ChatPromptProps {
   order: Order;
-  robot: Robot;
   onClickConfirmSent: () => void;
   onClickUndoConfirmSent: () => void;
   loadingSent: boolean;
@@ -27,7 +27,6 @@ interface ChatPromptProps {
 
 export const ChatPrompt = ({
   order,
-  robot,
   onClickConfirmSent,
   onClickUndoConfirmSent,
   onClickConfirmReceived,
@@ -41,6 +40,7 @@ export const ChatPrompt = ({
   setMessages,
 }: ChatPromptProps): JSX.Element => {
   const { t } = useTranslation();
+  const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const [sentButton, setSentButton] = useState<boolean>(false);
   const [receivedButton, setReceivedButton] = useState<boolean>(false);
@@ -49,9 +49,9 @@ export const ChatPrompt = ({
   const [enableDisputeTime, setEnableDisputeTime] = useState<Date>(new Date(order.expires_at));
   const [text, setText] = useState<string>('');
 
-  const currencyCode: string = currencies[`${order.currency}`];
+  const currencyCode: string = currencies[`${garage.getSlot().order.currency}`];
   const amount: string = pn(
-    parseFloat(parseFloat(order.amount).toFixed(order.currency === 1000 ? 8 : 4)),
+    parseFloat(parseFloat(garage.getSlot().order.amount).toFixed(order.currency === 1000 ? 8 : 4)),
   );
 
   const disputeCountdownRenderer = function ({
@@ -133,7 +133,6 @@ export const ChatPrompt = ({
       <Grid item>
         <EncryptedChat
           status={order.status}
-          robot={robot}
           chatOffset={order.chat_last_index}
           orderId={order.id}
           takerNick={order.taker_nick}

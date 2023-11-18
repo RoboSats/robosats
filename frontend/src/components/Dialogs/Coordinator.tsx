@@ -62,11 +62,12 @@ import {
 import { AppContext } from '../../contexts/AppContext';
 import { systemClient } from '../../services/System';
 import { type Badges } from '../../models/Coordinator.model';
+import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  coordinator: Coordinator | null;
+  shortAlias: string | null;
   network: 'mainnet' | 'testnet' | undefined;
 }
 
@@ -335,9 +336,11 @@ const BadgesHall = ({ badges }: BadgesProps): JSX.Element => {
   );
 };
 
-const CoordinatorDialog = ({ open = false, onClose, coordinator, network }: Props): JSX.Element => {
+const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props): JSX.Element => {
   const { t } = useTranslation();
   const { clientVersion, page, hostUrl } = useContext(AppContext);
+  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const coordinator = federation.getCoordinator(shortAlias);
 
   const [expanded, setExpanded] = useState<'summary' | 'stats' | 'policies' | undefined>(undefined);
 
