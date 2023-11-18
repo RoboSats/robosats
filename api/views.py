@@ -872,11 +872,17 @@ class TickView(ListAPIView):
         # Perform the query with date range filtering
         try:
             if start_date_str:
-                start_date = datetime.strptime(start_date_str, "%d-%m-%Y").date()
-                self.queryset = self.queryset.filter(timestamp__gte=start_date)
+                naive_start_date = datetime.strptime(start_date_str, "%d-%m-%Y")
+                aware_start_date = timezone.make_aware(
+                    naive_start_date, timezone=timezone.get_current_timezone()
+                )
+                self.queryset = self.queryset.filter(timestamp__gte=aware_start_date)
             if end_date_str:
-                end_date = datetime.strptime(end_date_str, "%d-%m-%Y").date()
-                self.queryset = self.queryset.filter(timestamp__lte=end_date)
+                naive_end_date = datetime.strptime(end_date_str, "%d-%m-%Y")
+                aware_end_date = timezone.make_aware(
+                    naive_end_date, timezone=timezone.get_current_timezone()
+                )
+                self.queryset = self.queryset.filter(timestamp__lte=aware_end_date)
         except ValueError:
             return Response(
                 {"bad_request": "Invalid date format"},

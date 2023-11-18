@@ -7,7 +7,7 @@ from api.tasks import cache_market
 from tests.test_api import BaseAPITestCase
 
 
-class CoordinatorInfoTest(BaseAPITestCase):
+class APILimitsTest(BaseAPITestCase):
     su_pass = "12345678"
     su_name = config("ESCROW_USERNAME", cast=str, default="admin")
 

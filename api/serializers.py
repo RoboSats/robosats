@@ -628,7 +628,7 @@ class TickSerializer(serializers.ModelSerializer):
             "premium",
             "fee",
         )
-        depth = 1
+        depth = 0
 
 
 class StealthSerializer(serializers.Serializer):

@@ -920,164 +920,6 @@ components:
           nullable: true
           description: A valid LN invoice with the reward amount to withdraw
           maxLength: 2000
-    CurrencyEnum:
-      enum:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
-      - 9
-      - 10
-      - 11
-      - 12
-      - 13
-      - 14
-      - 15
-      - 16
-      - 17
-      - 18
-      - 19
-      - 20
-      - 21
-      - 22
-      - 23
-      - 24
-      - 25
-      - 26
-      - 27
-      - 28
-      - 29
-      - 30
-      - 31
-      - 32
-      - 33
-      - 34
-      - 35
-      - 36
-      - 37
-      - 38
-      - 39
-      - 40
-      - 41
-      - 42
-      - 43
-      - 44
-      - 45
-      - 46
-      - 47
-      - 48
-      - 49
-      - 50
-      - 51
-      - 52
-      - 53
-      - 54
-      - 55
-      - 56
-      - 57
-      - 58
-      - 59
-      - 60
-      - 61
-      - 62
-      - 63
-      - 64
-      - 65
-      - 66
-      - 67
-      - 68
-      - 69
-      - 70
-      - 71
-      - 72
-      - 73
-      - 74
-      - 75
-      - 300
-      - 1000
-      type: integer
-      description: |-
-        * `1` - USD
-        * `2` - EUR
-        * `3` - JPY
-        * `4` - GBP
-        * `5` - AUD
-        * `6` - CAD
-        * `7` - CHF
-        * `8` - CNY
-        * `9` - HKD
-        * `10` - NZD
-        * `11` - SEK
-        * `12` - KRW
-        * `13` - SGD
-        * `14` - NOK
-        * `15` - MXN
-        * `16` - BYN
-        * `17` - RUB
-        * `18` - ZAR
-        * `19` - TRY
-        * `20` - BRL
-        * `21` - CLP
-        * `22` - CZK
-        * `23` - DKK
-        * `24` - HRK
-        * `25` - HUF
-        * `26` - INR
-        * `27` - ISK
-        * `28` - PLN
-        * `29` - RON
-        * `30` - ARS
-        * `31` - VES
-        * `32` - COP
-        * `33` - PEN
-        * `34` - UYU
-        * `35` - PYG
-        * `36` - BOB
-        * `37` - IDR
-        * `38` - ANG
-        * `39` - CRC
-        * `40` - CUP
-        * `41` - DOP
-        * `42` - GHS
-        * `43` - GTQ
-        * `44` - ILS
-        * `45` - JMD
-        * `46` - KES
-        * `47` - KZT
-        * `48` - MYR
-        * `49` - NAD
-        * `50` - NGN
-        * `51` - AZN
-        * `52` - PAB
-        * `53` - PHP
-        * `54` - PKR
-        * `55` - QAR
-        * `56` - SAR
-        * `57` - THB
-        * `58` - TTD
-        * `59` - VND
-        * `60` - XOF
-        * `61` - TWD
-        * `62` - TZS
-        * `63` - XAF
-        * `64` - UAH
-        * `65` - EGP
-        * `66` - LKR
-        * `67` - MAD
-        * `68` - AED
-        * `69` - TND
-        * `70` - ETB
-        * `71` - GEL
-        * `72` - UGX
-        * `73` - RSD
-        * `74` - IRT
-        * `75` - BDT
-        * `300` - XAU
-        * `1000` - BTC
     ExpiryReasonEnum:
       enum:
       - 0
@@ -1345,28 +1187,6 @@ components:
       required:
       - currency
       - type
-    Nested:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        currency:
-          allOf:
-          - $ref: '#/components/schemas/CurrencyEnum'
-          minimum: 0
-          maximum: 32767
-        exchange_rate:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,14}(?:\.\d{0,4})?$
-          nullable: true
-        timestamp:
-          type: string
-          format: date-time
-      required:
-      - currency
-      - id
     NoticeSeverityEnum:
       enum:
       - none
@@ -1948,9 +1768,8 @@ components:
           type: string
           format: date-time
         currency:
-          allOf:
-          - $ref: '#/components/schemas/Nested'
-          readOnly: true
+          type: integer
+          nullable: true
         volume:
           type: string
           format: decimal
@@ -1968,8 +1787,6 @@ components:
         fee:
           type: string
           format: decimal
-      required:
-      - currency
     TypeEnum:
       enum:
       - 0
