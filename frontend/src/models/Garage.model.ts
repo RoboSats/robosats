@@ -146,7 +146,17 @@ class Garage {
 
   // Orders
   updateOrder: (order: Order, index?: number) => void = (order, index = this.currentSlot) => {
-    this.slots[index].order = order;
+    const updatedOrder = this.slots[index].order;
+    if (updatedOrder !== null && updatedOrder.id === order.id) {
+      Object.assign(updatedOrder, order);
+      this.slots[index].order = updatedOrder;
+    } else {
+      this.slots[index].order = order;
+    }
+    if (this.slots[index].order?.is_participant) {
+      this.slots[index].activeOrderId = this.slots[index].order?.id ?? null;
+      this.slots[index].activeOrderShortAlias = this.slots[index].order?.shortAlias ?? null;
+    }
     this.triggerHook('onOrderUpdate');
     this.save();
   };

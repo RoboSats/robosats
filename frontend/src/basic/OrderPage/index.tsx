@@ -6,7 +6,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import TradeBox from '../../components/TradeBox';
 import OrderDetails from '../../components/OrderDetails';
 
-import { apiClient } from '../../services/api';
 import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
@@ -15,7 +14,7 @@ import { type Order } from '../../models';
 const OrderPage = (): JSX.Element => {
   const { windowSize, setOpen, settings, navbarHeight, hostUrl, origin } =
     useContext<UseAppStoreType>(AppContext);
-  const { setFocusedCoordinator, federation, focusedCoordinator } =
+  const { setFocusedCoordinator, federation } =
     useContext<UseFederationStoreType>(FederationContext);
   const { garage, badOrder, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
   const { t } = useTranslation();
@@ -40,32 +39,18 @@ const OrderPage = (): JSX.Element => {
 
     setBaseUrl(`${url}${basePath}`);
 
-    if (garage.getSlot().activeOrderId === Number(params.orderId)) {
-      if (garage.getSlot().order != null) {
-        setCurrentOrder(garage.getSlot().order);
-      } else {
-        coordinator
-          .fetchOrder(Number(params.orderId) ?? null, garage.getSlot().robot)
-          .then((order) => {
-            if (order?.bad_request !== undefined) {
-              setBadOrder(order.bad_request);
-            } else {
-              setCurrentOrder(order);
-              garage.updateOrder(order as Order);
-            }
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      }
-    } else {
+    if (currentOrder?.id !== Number(params.orderId)) {
+      const coordinator = federation.getCoordinator(params.shortAlias ?? '');
       coordinator
         .fetchOrder(Number(params.orderId) ?? null, garage.getSlot().robot)
         .then((order) => {
           if (order?.bad_request !== undefined) {
             setBadOrder(order.bad_request);
-          } else {
+          } else if (order !== null && order?.id !== null) {
             setCurrentOrder(order);
+            if (order.is_participant) {
+              garage.updateOrder(order as Order);
+            }
           }
         })
         .catch((e) => {
@@ -83,49 +68,29 @@ const OrderPage = (): JSX.Element => {
     });
   };
 
-  const renewOrder = function (): void {
-    const order = currentOrder;
-    if (order !== null && focusedCoordinator != null) {
-      const body = {
-        type: order.type,
-        currency: order.currency,
-        amount: order.has_range ? null : order.amount,
-        has_range: order.has_range,
-        min_amount: order.min_amount,
-        max_amount: order.max_amount,
-        payment_method: order.payment_method,
-        is_explicit: order.is_explicit,
-        premium: order.is_explicit ? null : order.premium,
-        satoshis: order.is_explicit ? order.satoshis : null,
-        public_duration: order.public_duration,
-        escrow_duration: order.escrow_duration,
-        bond_size: order.bond_size,
-        latitude: order.latitude,
-        longitude: order.longitude,
-      };
-      const { url, basePath } = federation
-        .getCoordinator(order.shortAlias)
-        .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
-      apiClient
-        .post(url + basePath, '/api/make/', body, {
-          tokenSHA256: garage.getSlot().robot.tokenSHA256,
-        })
-        .then((data: any) => {
-          if (data.bad_request !== undefined) {
-            setBadOrder(data.bad_request);
-          } else if (data.id !== undefined) {
-            navigate(`/order/${String(currentOrder?.shortAlias)}/${String(data.id)}`);
-          }
-        })
-        .catch(() => {
-          setBadOrder('Request error');
-        });
-    }
-  };
-
   const startAgain = (): void => {
     navigate('/robot');
   };
+
+  const orderDetailsSpace = currentOrder ? (
+    <OrderDetails
+      shortAlias={String(currentOrder.shortAlias)}
+      currentOrder={currentOrder}
+      onClickCoordinator={onClickCoordinator}
+      baseUrl={baseUrl}
+      onClickGenerateRobot={() => {
+        navigate('/robot');
+      }}
+    />
+  ) : (
+    <></>
+  );
+
+  const tradeBoxSpace = currentOrder ? (
+    <TradeBox baseUrl={baseUrl} onStartAgain={startAgain} />
+  ) : (
+    <></>
+  );
 
   return (
     <Box>
@@ -156,15 +121,7 @@ const OrderPage = (): JSX.Element => {
                     overflow: 'auto',
                   }}
                 >
-                  <OrderDetails
-                    shortAlias={String(currentOrder.shortAlias)}
-                    currentOrder={currentOrder}
-                    onClickCoordinator={onClickCoordinator}
-                    baseUrl={baseUrl}
-                    onClickGenerateRobot={() => {
-                      navigate('/robot');
-                    }}
-                  />
+                  {orderDetailsSpace}
                 </Paper>
               </Grid>
               <Grid item xs={6} style={{ width: '21em' }}>
@@ -176,15 +133,7 @@ const OrderPage = (): JSX.Element => {
                     overflow: 'auto',
                   }}
                 >
-                  <TradeBox
-                    robot={garage.getSlot().robot}
-                    currentOrder={currentOrder}
-                    settings={settings}
-                    setBadOrder={setBadOrder}
-                    baseUrl={baseUrl}
-                    onRenewOrder={renewOrder}
-                    onStartAgain={startAgain}
-                  />
+                  {tradeBoxSpace}
                 </Paper>
               </Grid>
             </Grid>
@@ -194,7 +143,7 @@ const OrderPage = (): JSX.Element => {
               <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '21em' }}>
                 <Tabs
                   value={tab}
-                  onChange={(mouseEvent, value) => {
+                  onChange={(_mouseEvent, value) => {
                     setTab(value);
                   }}
                   variant='fullWidth'
@@ -211,28 +160,8 @@ const OrderPage = (): JSX.Element => {
                   overflow: 'auto',
                 }}
               >
-                <div style={{ display: tab === 'order' ? '' : 'none' }}>
-                  <OrderDetails
-                    shortAlias={String(currentOrder.shortAlias)}
-                    currentOrder={currentOrder}
-                    onClickCoordinator={onClickCoordinator}
-                    baseUrl={baseUrl}
-                    onClickGenerateRobot={() => {
-                      navigate('/robot');
-                    }}
-                  />
-                </div>
-                <div style={{ display: tab === 'contract' ? '' : 'none' }}>
-                  <TradeBox
-                    robot={garage.getSlot().robot}
-                    currentOrder={currentOrder}
-                    settings={settings}
-                    setBadOrder={setBadOrder}
-                    baseUrl={baseUrl}
-                    onRenewOrder={renewOrder}
-                    onStartAgain={startAgain}
-                  />
-                </div>
+                <div style={{ display: tab === 'order' ? '' : 'none' }}>{orderDetailsSpace}</div>
+                <div style={{ display: tab === 'contract' ? '' : 'none' }}>{tradeBoxSpace}</div>
               </Paper>
             </Box>
           )
@@ -245,15 +174,7 @@ const OrderPage = (): JSX.Element => {
               overflow: 'auto',
             }}
           >
-            <OrderDetails
-              shortAlias={String(currentOrder.shortAlias)}
-              currentOrder={currentOrder}
-              onClickCoordinator={onClickCoordinator}
-              baseUrl={hostUrl}
-              onClickGenerateRobot={() => {
-                navigate('/robot');
-              }}
-            />
+            {orderDetailsSpace}
           </Paper>
         )
       ) : (

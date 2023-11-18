@@ -285,15 +285,9 @@ const MakerForm = ({
         .getCoordinator(maker.coordinator)
         ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl) ?? {};
 
-    const auth = {
-      tokenSHA256: garage.getSlot().robot.tokenSHA256,
-      keys: {
-        pubKey: garage.getSlot().robot.pubKey?.split('\n').join('\\'),
-        encPrivKey: garage.getSlot().robot.encPrivKey?.split('\n').join('\\'),
-      },
-    };
+    const auth = garage.getSlot().robot.getAuthHeaders();
 
-    if (!disableRequest && focusedCoordinator != null) {
+    if (!disableRequest && focusedCoordinator != null && auth !== null) {
       setSubmittingRequest(true);
       const body = {
         type: fav.type === 0 ? 1 : 0,
@@ -320,6 +314,7 @@ const MakerForm = ({
           setBadRequest(data.bad_request);
           if (data.id !== undefined) {
             onOrderCreated(maker.coordinator, data.id);
+            garage.updateOrder(data);
           }
           setSubmittingRequest(false);
         })

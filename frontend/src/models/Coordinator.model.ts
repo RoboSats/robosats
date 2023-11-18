@@ -188,7 +188,7 @@ export class Coordinator {
     apiClient
       .get(this.url, `${this.basePath}/api/limits/`)
       .then((data) => {
-        if (data != null) {
+        if (data !== null) {
           const newLimits = data as LimitList;
 
           for (const currency in this.limits) {
@@ -215,8 +215,10 @@ export class Coordinator {
     apiClient
       .get(this.url, `${this.basePath}/api/info/`)
       .then((data) => {
-        this.info = data as Info;
-        onDataLoad();
+        if (data !== null) {
+          this.info = data as Info;
+          onDataLoad();
+        }
       })
       .catch((e) => {
         console.log(e);

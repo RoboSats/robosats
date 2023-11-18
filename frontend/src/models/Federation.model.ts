@@ -96,20 +96,6 @@ export class Federation {
     });
   };
 
-  fetchOrder = async (order: Order, garage: Garage): Promise<Order | null> => {
-    if (order.shortAlias !== null) {
-      const coordinator = this.coordinators[order.shortAlias];
-      if (coordinator != null && order.id !== null) {
-        const newOrder = await coordinator.fetchOrder(order.id, garage.getSlot().robot);
-        if (newOrder != null) {
-          garage.updateOrder(newOrder);
-          return newOrder;
-        }
-      }
-    }
-    return order;
-  };
-
   // Coordinators
   getCoordinator = (shortAlias: string): Coordinator => {
     return this.coordinators[shortAlias];
