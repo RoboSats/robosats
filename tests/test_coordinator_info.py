@@ -1,5 +1,3 @@
-import json
-
 from decouple import config
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -32,7 +30,7 @@ class CoordinatorInfoTest(BaseAPITestCase):
         path = reverse("info")
 
         response = self.client.get(path)
-        data = json.loads(response.content.decode())
+        data = response.json()
 
         self.assertEqual(response.status_code, 200)
         self.assertResponse(response)

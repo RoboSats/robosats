@@ -265,20 +265,30 @@ def generate_blocks(address, num_blocks):
 
 
 def pay_invoice(node_name, invoice):
+    reset_mission_control(node_name)
     node = get_node(node_name)
     data = {"payment_request": invoice}
     try:
-        requests.post(
+        response = requests.post(
             f'http://localhost:{node["port"]}/v1/channels/transactions',
             json=data,
             headers=node["headers"],
             # 0.15s is enough for LND to LND hodl ACCEPT
             # 0.4s is enough for LND to CLN hodl ACCEPT
-            timeout=0.2 if LNVENDOR == "LND" else 0.8,
+            timeout=0.2 if LNVENDOR == "LND" else 1,
         )
+        print(response.json())
     except ReadTimeout:
         # Request to pay hodl invoice has timed out: that's good!
         return
+
+
+def reset_mission_control(node_name):
+    node = get_node(node_name)
+    requests.post(
+        f'http://localhost:{node["port"]}//v2/router/resetmissioncontrol',
+        headers=node["headers"],
+    )
 
 
 def add_invoice(node_name, amount):
