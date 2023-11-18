@@ -851,6 +851,9 @@ class TradeTest(BaseAPITestCase):
         self.assertIsHash(data["maker_summary"]["payment_hash"])
 
     def test_cancel_public_order(self):
+        """
+        Tests the cancellation of a public order
+        """
         maker_index = 1
         maker_form = self.maker_form_buy_with_range
 
@@ -866,6 +869,9 @@ class TradeTest(BaseAPITestCase):
         )
 
     def test_collaborative_cancel_order_in_chat(self):
+        """
+        Tests the collaborative cancellation of an order in the chat state
+        """
         maker_index = 1
         taker_index = 2
         maker_form = self.maker_form_buy_with_range
@@ -894,9 +900,28 @@ class TradeTest(BaseAPITestCase):
         # Taker accepts (ask) the cancellation
         response = self.cancel_order(response.json()["id"], taker_index)
         data = response.json()
-        print(data)
         self.assertEqual(response.status_code, 400)
         self.assertResponse(response)
         self.assertEqual(
             data["bad_request"], "This order has been cancelled collaborativelly"
         )
+
+    def test_ticks(self):
+        """
+        Tests the historical ticks serving endpoint after creating a contract
+        """
+        path = reverse("ticks")
+        params = "?start=01-01-1970&end=01-01-2070"
+        self.make_and_lock_contract(self.maker_form_buy_with_range)
+
+        response = self.client.get(path + params)
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
+        self.assertIsInstance(datetime.fromisoformat(data[0]["timestamp"]), datetime)
+        self.assertIsInstance(data[0]["volume"], str)
+        self.assertIsInstance(data[0]["price"], str)
+        self.assertIsInstance(data[0]["premium"], str)
+        self.assertIsInstance(data[0]["fee"], str)
