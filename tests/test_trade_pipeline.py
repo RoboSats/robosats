@@ -1,4 +1,3 @@
-import json
 import random
 from datetime import datetime
 from decimal import Decimal
@@ -144,7 +143,7 @@ class TradeTest(BaseAPITestCase):
         pub_key = read_file(f"tests/robots/{robot_index}/pub_key")
         enc_priv_key = read_file(f"tests/robots/{robot_index}/enc_priv_key")
 
-        data = json.loads(response.content.decode())
+        data = response.json()
 
         self.assertEqual(response.status_code, 200)
         self.assertResponse(response)
@@ -211,7 +210,7 @@ class TradeTest(BaseAPITestCase):
         """
         maker_form = self.maker_form_buy_with_range
         response = self.make_order(maker_form, robot_index=1)
-        data = json.loads(response.content.decode())
+        data = response.json()
 
         # Checks
         self.assertResponse(response)
@@ -325,11 +324,11 @@ class TradeTest(BaseAPITestCase):
         robot_index = 1
 
         order_made_response = self.make_order(maker_form, robot_index)
-        order_made_data = json.loads(order_made_response.content.decode())
+        order_made_data = order_made_response.json()
 
         # Maker's first order fetch. Should trigger maker bond hold invoice generation.
         response = self.get_order(order_made_data["id"])
-        data = json.loads(response.content.decode())
+        data = response.json()
 
         self.assertEqual(response.status_code, 200)
         self.assertResponse(response)
@@ -370,7 +369,7 @@ class TradeTest(BaseAPITestCase):
     def make_and_publish_order(self, maker_form, robot_index=1):
         # Make an order
         order_made_response = self.make_order(maker_form, robot_index)
-        order_made_data = json.loads(order_made_response.content.decode())
+        order_made_data = order_made_response.json()
 
         # Maker's first order fetch. Should trigger maker bond hold invoice generation.
         response = self.get_order(order_made_data["id"])
@@ -393,7 +392,7 @@ class TradeTest(BaseAPITestCase):
         maker_form = self.maker_form_buy_with_range
         # Get order
         response = self.make_and_publish_order(maker_form)
-        data = json.loads(response.content.decode())
+        data = response.json()
 
         self.assertEqual(response.status_code, 200)
         self.assertResponse(response)
@@ -408,7 +407,7 @@ class TradeTest(BaseAPITestCase):
         public_response = self.get_order(
             data["id"], robot_index=2, first_encounter=True
         )
-        public_data = json.loads(public_response.content.decode())
+        public_data = public_response.json()
 
         self.assertFalse(public_data["is_participant"])
         self.assertIsInstance(public_data["price_now"], float)
@@ -455,7 +454,7 @@ class TradeTest(BaseAPITestCase):
         self, maker_form, take_amount=80, maker_index=1, taker_index=2
     ):
         response_published = self.make_and_publish_order(maker_form, maker_index)
-        data_publised = json.loads(response_published.content.decode())
+        data_publised = response_published.json()
         response = self.take_order(data_publised["id"], take_amount, taker_index)
         return response
 
@@ -468,7 +467,7 @@ class TradeTest(BaseAPITestCase):
         maker_form = self.maker_form_buy_with_range
 
         response = self.make_and_take_order(maker_form, 80, maker_index, taker_index)
-        data = json.loads(response.content.decode())
+        data = response.json()
 
         self.assertEqual(response.status_code, 200)
         self.assertResponse(response)
@@ -504,7 +503,7 @@ class TradeTest(BaseAPITestCase):
         order_taken_response = self.make_and_take_order(
             maker_form, take_amount, maker_index, taker_index
         )
-        order_taken_data = json.loads(order_taken_response.content.decode())
+        order_taken_data = order_taken_response.json()
 
         # Maker's first order fetch. Should trigger maker bond hold invoice generation.
         response = self.get_order(order_taken_data["id"], taker_index)
@@ -530,7 +529,7 @@ class TradeTest(BaseAPITestCase):
 
         # Taker GET
         response = self.make_and_lock_contract(maker_form, 80, maker_index, taker_index)
-        data = json.loads(response.content.decode())
+        data = response.json()
 
         self.assertEqual(response.status_code, 200)
         self.assertResponse(response)
@@ -545,7 +544,7 @@ class TradeTest(BaseAPITestCase):
 
         # Maker GET
         response = self.get_order(data["id"], maker_index)
-        data = json.loads(response.content.decode())
+        data = response.json()
 
         self.assertEqual(response.status_code, 200)
         self.assertResponse(response)
@@ -573,7 +572,7 @@ class TradeTest(BaseAPITestCase):
         locked_taker_response = self.make_and_lock_contract(
             maker_form, take_amount, maker_index, taker_index
         )
-        locked_taker_response_data = json.loads(locked_taker_response.content.decode())
+        locked_taker_response_data = locked_taker_response.json()
 
         # Maker's first order fetch. Should trigger maker bond hold invoice generation.
         response = self.get_order(locked_taker_response_data["id"], taker_index)
@@ -599,7 +598,7 @@ class TradeTest(BaseAPITestCase):
         maker_form = self.maker_form_buy_with_range
 
         response = self.trade_to_locked_escrow(maker_form, 80, maker_index, taker_index)
-        data = json.loads(response.content.decode())
+        data = response.json()
 
         self.assertEqual(response.status_code, 200)
         self.assertResponse(response)
@@ -850,3 +849,54 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["is_disputed"])
         self.assertIsHash(data["maker_summary"]["preimage"])
         self.assertIsHash(data["maker_summary"]["payment_hash"])
+
+    def test_cancel_public_order(self):
+        maker_index = 1
+        maker_form = self.maker_form_buy_with_range
+
+        response = self.make_and_publish_order(maker_form, maker_index)
+        response = self.cancel_order(response.json()["id"])
+        data = response.json()
+
+        self.assertEqual(response.status_code, 400)
+        self.assertResponse(response)
+
+        self.assertEqual(
+            data["bad_request"], "This order has been cancelled by the maker"
+        )
+
+    def test_collaborative_cancel_order_in_chat(self):
+        maker_index = 1
+        taker_index = 2
+        maker_form = self.maker_form_buy_with_range
+        take_amount = round(
+            random.uniform(maker_form["min_amount"], maker_form["max_amount"]), 2
+        )
+
+        response = self.trade_to_submitted_invoice(
+            maker_form, take_amount, maker_index, taker_index
+        )
+
+        # Maker asks for cancel
+        response = self.cancel_order(response.json()["id"], maker_index)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+        self.assertTrue(data["asked_for_cancel"])
+
+        # Taker checks order
+        response = self.get_order(response.json()["id"], taker_index)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+        self.assertTrue(data["pending_cancel"])
+
+        # Taker accepts (ask) the cancellation
+        response = self.cancel_order(response.json()["id"], taker_index)
+        data = response.json()
+        print(data)
+        self.assertEqual(response.status_code, 400)
+        self.assertResponse(response)
+        self.assertEqual(
+            data["bad_request"], "This order has been cancelled collaborativelly"
+        )
