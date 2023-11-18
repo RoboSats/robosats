@@ -711,7 +711,8 @@ class BookView(ListAPIView):
 
             data["satoshis_now"] = Logics.satoshis_now(order)
             # Compute current premium for those orders that are explicitly priced.
-            data["price"], data["premium"] = Logics.price_and_premium_now(order)
+            price, premium = Logics.price_and_premium_now(order)
+            data["price"], data["premium"] = price, str(premium)
             data["maker_status"] = Logics.user_activity_status(order.maker.last_login)
             for key in (
                 "status",
