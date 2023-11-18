@@ -912,7 +912,8 @@ class TradeTest(BaseAPITestCase):
         """
         path = reverse("ticks")
         params = "?start=01-01-1970&end=01-01-2070"
-        self.make_and_lock_contract(self.maker_form_buy_with_range)
+        response = self.make_and_lock_contract(self.maker_form_buy_with_range)
+        self.cancel_order(response.json()["id"])
 
         response = self.client.get(path + params)
         data = response.json()
@@ -925,3 +926,30 @@ class TradeTest(BaseAPITestCase):
         self.assertIsInstance(data[0]["price"], str)
         self.assertIsInstance(data[0]["premium"], str)
         self.assertIsInstance(data[0]["fee"], str)
+
+    def test_book(self):
+        """
+        Tests public book view
+        """
+        maker_form = self.maker_form_buy_with_range
+        path = reverse("book")
+        self.make_and_publish_order(maker_form)
+
+        response = self.client.get(path)
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
+        self.assertIsInstance(datetime.fromisoformat(data[0]["created_at"]), datetime)
+        self.assertIsInstance(datetime.fromisoformat(data[0]["expires_at"]), datetime)
+        self.assertIsNone(data[0]["amount"])
+        self.assertAlmostEqual(float(data[0]["min_amount"]), maker_form["min_amount"])
+        self.assertAlmostEqual(float(data[0]["max_amount"]), maker_form["max_amount"])
+        self.assertAlmostEqual(float(data[0]["latitude"]), maker_form["latitude"])
+        self.assertAlmostEqual(float(data[0]["longitude"]), maker_form["longitude"])
+        self.assertEqual(data[0]["escrow_duration"], maker_form["escrow_duration"])
+        self.assertFalse(data[0]["is_explicit"])
+
+        # Cancel order to avoid leaving pending HTLCs after a successful test
+        self.cancel_order(data[0]["id"])
