@@ -67,7 +67,7 @@ const TokenInput = ({
             <Tooltip open={showCopied} title={t('Copied!')}>
               <IconButton
                 autoFocus={autoFocusTarget === 'copyButton'}
-                color={garage.getRobot().copiedToken ? 'inherit' : 'primary'}
+                color={garage.getSlot().robot.copiedToken ? 'inherit' : 'primary'}
                 onClick={() => {
                   systemClient.copyToClipboard(inputToken);
                   setShowCopied(true);

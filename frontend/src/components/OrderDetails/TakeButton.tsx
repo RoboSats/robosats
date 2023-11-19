@@ -328,7 +328,7 @@ const TakeButton = ({
           action: 'take',
           amount: currentOrder?.currency === 1000 ? takeAmount / 100000000 : takeAmount,
         },
-        { tokenSHA256: garage.getRobot().tokenSHA256 },
+        { tokenSHA256: garage.getSlot().robot.tokenSHA256 },
       )
       .then((data) => {
         setLoadingTake(false);
@@ -370,7 +370,7 @@ const TakeButton = ({
           setLoadingTake(true);
           setOpen(closeAll);
         }}
-        hasRobot={garage.getRobot().avatarLoaded}
+        hasRobot={garage.getSlot().robot.avatarLoaded}
         onClickGenerateRobot={onClickGenerateRobot}
       />
       <InactiveMakerDialog />

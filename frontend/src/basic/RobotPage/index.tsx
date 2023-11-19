@@ -41,11 +41,11 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
   const [badToken, setBadToken] = useState<string>('');
   const [inputToken, setInputToken] = useState<string>('');
   const [view, setView] = useState<'welcome' | 'onboarding' | 'recovery' | 'profile'>(
-    garage.getRobot().token !== undefined ? 'profile' : 'welcome',
+    garage.getSlot().robot.token !== undefined ? 'profile' : 'welcome',
   );
 
   useEffect(() => {
-    const token = urlToken ?? garage.getRobot().token;
+    const token = urlToken ?? garage.getSlot().robot.token;
     if (token !== undefined) {
       setInputToken(token);
       if (window.NativeRobosats === undefined || torStatus === '"Done"') {

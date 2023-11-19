@@ -149,7 +149,7 @@ const Onboarding = ({
           <Grid container direction='column' alignItems='center' spacing={1}>
             <Grid item>
               <Typography>
-                {garage.getRobot().avatarLoaded && Boolean(garage.getRobot().nickname) ? (
+                {garage.getSlot().robot.avatarLoaded && Boolean(garage.getSlot().robot.nickname) ? (
                   t('This is your trading avatar')
                 ) : (
                   <>
@@ -162,7 +162,7 @@ const Onboarding = ({
 
             <Grid item sx={{ width: '13.5em' }}>
               <RobotAvatar
-                nickname={garage.getRobot().nickname}
+                nickname={garage.getSlot().robot.nickname}
                 smooth={true}
                 style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
                 placeholderType='generating'
@@ -178,7 +178,7 @@ const Onboarding = ({
               />
             </Grid>
 
-            {garage.getRobot().avatarLoaded && Boolean(garage.getRobot().nickname) ? (
+            {garage.getSlot().robot.avatarLoaded && Boolean(garage.getSlot().robot.nickname) ? (
               <Grid item>
                 <Typography align='center'>{t('Hi! My name is')}</Typography>
                 <Typography component='h5' variant='h5'>
@@ -197,7 +197,7 @@ const Onboarding = ({
                         width: '1.5em',
                       }}
                     />
-                    <b>{garage.getRobot().nickname}</b>
+                    <b>{garage.getSlot().robot.nickname}</b>
                     <Bolt
                       sx={{
                         color: '#fcba03',
@@ -211,7 +211,11 @@ const Onboarding = ({
             ) : null}
             <Grid item>
               <Collapse
-                in={!!(garage.getRobot().avatarLoaded && Boolean(garage.getRobot().nickname))}
+                in={
+                  !!(
+                    garage.getSlot().robot.avatarLoaded && Boolean(garage.getSlot().robot.nickname)
+                  )
+                }
               >
                 <Button
                   onClick={() => {

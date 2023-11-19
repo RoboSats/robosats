@@ -286,10 +286,10 @@ const MakerForm = ({
         ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl) ?? {};
 
     const auth = {
-      tokenSHA256: garage.getRobot().tokenSHA256,
+      tokenSHA256: garage.getSlot().robot.tokenSHA256,
       keys: {
-        pubKey: garage.getRobot().pubKey?.split('\n').join('\\'),
-        encPrivKey: garage.getRobot().encPrivKey?.split('\n').join('\\'),
+        pubKey: garage.getSlot().robot.pubKey?.split('\n').join('\\'),
+        encPrivKey: garage.getSlot().robot.encPrivKey?.split('\n').join('\\'),
       },
     };
 
@@ -570,7 +570,7 @@ const MakerForm = ({
           setOpenDialogs(false);
         }}
         onClickDone={handleCreateOrder}
-        hasRobot={garage.getRobot().avatarLoaded}
+        hasRobot={garage.getSlot().robot.avatarLoaded}
         onClickGenerateRobot={onClickGenerateRobot}
       />
       <F2fMapDialog

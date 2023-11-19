@@ -262,7 +262,7 @@ export class Coordinator {
   };
 
   fecthRobot = async (garage: Garage, index: number): Promise<Robot | null> => {
-    const robot = garage?.getRobot(index);
+    const robot = garage?.getSlot(index).robot;
 
     if (robot?.token == null) return null;
 
@@ -309,7 +309,7 @@ export class Coordinator {
       index,
     );
 
-    return garage.getRobot(index);
+    return garage.getSlot(index).robot;
   };
 
   fetchOrder = async (orderId: number, robot: Robot): Promise<Order | null> => {
@@ -343,7 +343,7 @@ export class Coordinator {
     bad_invoice?: string;
     successful_withdrawal?: boolean;
   }> => {
-    const robot = garage.getRobot(index);
+    const robot = garage.getSlot(index).robot;
 
     if (!(robot?.token != null) || !(robot.encPrivKey != null)) return null;
 
@@ -365,7 +365,7 @@ export class Coordinator {
   };
 
   fetchStealth = async (wantsStealth: boolean, garage: Garage, index: number): Promise<null> => {
-    const robot = garage?.getRobot(index);
+    const robot = garage?.getSlot(index).robot;
 
     if (!(robot?.token != null) || !(robot.encPrivKey != null)) return null;
 

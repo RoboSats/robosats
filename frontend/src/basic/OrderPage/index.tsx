@@ -45,7 +45,7 @@ const OrderPage = (): JSX.Element => {
         setCurrentOrder(garage.getSlot().order);
       } else {
         coordinator
-          .fetchOrder(Number(params.orderId) ?? null, garage.getRobot())
+          .fetchOrder(Number(params.orderId) ?? null, garage.getSlot().robot)
           .then((order) => {
             if (order?.bad_request !== undefined) {
               setBadOrder(order.bad_request);
@@ -60,7 +60,7 @@ const OrderPage = (): JSX.Element => {
       }
     } else {
       coordinator
-        .fetchOrder(Number(params.orderId) ?? null, garage.getRobot())
+        .fetchOrder(Number(params.orderId) ?? null, garage.getSlot().robot)
         .then((order) => {
           if (order?.bad_request !== undefined) {
             setBadOrder(order.bad_request);
@@ -107,7 +107,9 @@ const OrderPage = (): JSX.Element => {
         .getCoordinator(order.shortAlias)
         .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
       apiClient
-        .post(url + basePath, '/api/make/', body, { tokenSHA256: garage.getRobot().tokenSHA256 })
+        .post(url + basePath, '/api/make/', body, {
+          tokenSHA256: garage.getSlot().robot.tokenSHA256,
+        })
         .then((data: any) => {
           if (data.bad_request !== undefined) {
             setBadOrder(data.bad_request);
@@ -175,7 +177,7 @@ const OrderPage = (): JSX.Element => {
                   }}
                 >
                   <TradeBox
-                    robot={garage.getRobot()}
+                    robot={garage.getSlot().robot}
                     currentOrder={currentOrder}
                     settings={settings}
                     setBadOrder={setBadOrder}
@@ -222,7 +224,7 @@ const OrderPage = (): JSX.Element => {
                 </div>
                 <div style={{ display: tab === 'contract' ? '' : 'none' }}>
                   <TradeBox
-                    robot={garage.getRobot()}
+                    robot={garage.getSlot().robot}
                     currentOrder={currentOrder}
                     settings={settings}
                     setBadOrder={setBadOrder}
