@@ -85,7 +85,7 @@ const RobotInfo: React.FC<Props> = ({ robot, slotIndex, coordinator, onClose }: 
     setBadInvoice('');
     setShowRewardsSpinner(true);
 
-    const robot = garage.getRobot(slotIndex);
+    const robot = garage.getSlot(slotIndex).robot;
 
     if (robot.encPrivKey != null && robot.token != null) {
       void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot.token).then(
@@ -110,21 +110,22 @@ const RobotInfo: React.FC<Props> = ({ robot, slotIndex, coordinator, onClose }: 
     <Accordion>
       <AccordionSummary expandIcon={<ExpandMore />}>
         {`${coordinator.longAlias}:`}
-        {garage.getRobot(slotIndex).earnedRewards > 0 && (
+        {garage.getSlot(slotIndex).robot.earnedRewards > 0 && (
           <Typography color='success'>&nbsp;{t('Claim Sats!')} </Typography>
         )}
-        {(garage.getRobot(slotIndex).activeOrderId ?? 0) > 0 && (
+        {(garage.getSlot(slotIndex).robot.activeOrderId ?? 0) > 0 && (
           <Typography color='success'>
             &nbsp;<b>{t('Active order!')}</b>
           </Typography>
         )}
-        {(garage.getRobot(slotIndex).lastOrderId ?? 0) > 0 && robot.activeOrderId === undefined && (
-          <Typography color='warning'>&nbsp;{t('finished order')}</Typography>
-        )}
+        {(garage.getSlot(slotIndex).robot.lastOrderId ?? 0) > 0 &&
+          robot.activeOrderId === undefined && (
+            <Typography color='warning'>&nbsp;{t('finished order')}</Typography>
+          )}
       </AccordionSummary>
       <AccordionDetails>
         <List dense disablePadding={true}>
-          {(garage.getRobot(slotIndex).activeOrderId ?? 0) > 0 ? (
+          {(garage.getSlot(slotIndex).robot.activeOrderId ?? 0) > 0 ? (
             <ListItemButton
               onClick={() => {
                 navigate(`/order/${coordinator.shortAlias}/${String(robot.activeOrderId)}`);
@@ -141,7 +142,7 @@ const RobotInfo: React.FC<Props> = ({ robot, slotIndex, coordinator, onClose }: 
                 secondary={t('Your current order')}
               />
             </ListItemButton>
-          ) : (garage.getRobot(slotIndex).lastOrderId ?? 0) > 0 ? (
+          ) : (garage.getSlot(slotIndex).robot.lastOrderId ?? 0) > 0 ? (
             <ListItemButton
               onClick={() => {
                 navigate(`/order/${coordinator.shortAlias}/${String(robot.lastOrderId)}`);

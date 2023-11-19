@@ -43,7 +43,7 @@ const StoreTokenDialog = ({ open, onClose, onClickBack, onClickDone }: Props): J
             sx={{ width: '100%', maxWidth: '550px' }}
             disabled
             label={t('Back it up!')}
-            value={garage.getRobot().token}
+            value={garage.getSlot().robot.token}
             variant='filled'
             size='small'
             InputProps={{
@@ -51,7 +51,7 @@ const StoreTokenDialog = ({ open, onClose, onClickBack, onClickDone }: Props): J
                 <Tooltip disableHoverListener enterTouchDelay={0} title={t('Copied!')}>
                   <IconButton
                     onClick={() => {
-                      systemClient.copyToClipboard(garage.getRobot().token);
+                      systemClient.copyToClipboard(garage.getSlot().robot.token);
                     }}
                   >
                     <ContentCopy color='primary' />

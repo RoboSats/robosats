@@ -53,7 +53,7 @@ const RobotProfile = ({
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (garage.getRobot().nickname != null && garage.getRobot().avatarLoaded) {
+    if (garage.getSlot().robot.nickname != null && garage.getSlot().robot.avatarLoaded) {
       setLoading(false);
     }
   }, [robotUpdatedAt, loading]);
@@ -79,7 +79,7 @@ const RobotProfile = ({
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {garage.getRobot().avatarLoaded && garage.getRobot().nickname != null ? (
+          {garage.getSlot().robot.avatarLoaded && garage.getSlot().robot.nickname != null ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
                 style={{
@@ -98,7 +98,7 @@ const RobotProfile = ({
                     }}
                   />
                 )}
-                <b>{garage.getRobot().nickname}</b>
+                <b>{garage.getSlot().robot.nickname}</b>
                 {width < 19 ? null : (
                   <Bolt
                     sx={{
@@ -120,7 +120,7 @@ const RobotProfile = ({
 
         <Grid item sx={{ width: `13.5em` }}>
           <RobotAvatar
-            nickname={garage.getRobot().nickname}
+            nickname={garage.getSlot().robot.nickname}
             smooth={true}
             style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
             placeholderType='generating'
@@ -135,7 +135,7 @@ const RobotProfile = ({
             tooltipPosition='top'
             baseUrl={hostUrl}
           />
-          {garage.getRobot().found && Number(garage.getRobot().lastOrderId) > 0 ? (
+          {garage.getSlot().robot.found && Number(garage.getSlot().lastOrderId) > 0 ? (
             <Typography align='center' variant='h6'>
               {t('Welcome back!')}
             </Typography>
@@ -145,8 +145,8 @@ const RobotProfile = ({
         </Grid>
 
         {Boolean(garage.getSlot().activeOrderId) &&
-        garage.getRobot().avatarLoaded &&
-        Boolean(garage.getRobot().nickname) ? (
+        garage.getSlot().robot.avatarLoaded &&
+        Boolean(garage.getSlot().robot.nickname) ? (
           <Grid item>
             <Button
               onClick={() => {
@@ -163,8 +163,8 @@ const RobotProfile = ({
         ) : null}
 
         {Boolean(garage.getSlot().lastOrderId) &&
-        garage.getRobot().avatarLoaded &&
-        Boolean(garage.getRobot().nickname) ? (
+        garage.getSlot().robot.avatarLoaded &&
+        Boolean(garage.getSlot().robot.nickname) ? (
           <Grid item container direction='column' alignItems='center'>
             <Grid item>
               <Button

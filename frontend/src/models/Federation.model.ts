@@ -100,7 +100,7 @@ export class Federation {
     if (order.shortAlias !== null) {
       const coordinator = this.coordinators[order.shortAlias];
       if (coordinator != null && order.id !== null) {
-        const newOrder = await coordinator.fetchOrder(order.id, garage.getRobot());
+        const newOrder = await coordinator.fetchOrder(order.id, garage.getSlot().robot);
         if (newOrder != null) {
           garage.updateOrder(newOrder);
           return newOrder;

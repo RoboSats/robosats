@@ -42,7 +42,7 @@ const NavBar = (): JSX.Element => {
   const tabSx = smallBar
     ? {
         position: 'relative',
-        bottom: garage.getRobot().avatarLoaded ? '0.9em' : '0.13em',
+        bottom: garage.getSlot().robot.avatarLoaded ? '0.9em' : '0.13em',
         minWidth: '1em',
       }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
@@ -118,16 +118,16 @@ const NavBar = (): JSX.Element => {
         <Tab
           sx={{ ...tabSx, minWidth: '2.5em', width: '2.5em', maxWidth: '4em' }}
           value='none'
-          disabled={garage.getRobot().nickname === null}
+          disabled={garage.getSlot().robot.nickname === null}
           onClick={() => {
             setOpen({ ...closeAll, profile: !open.profile });
           }}
           icon={
-            garage.getRobot().nickname != null && garage.getRobot().avatarLoaded ? (
+            garage.getSlot().robot.nickname != null && garage.getSlot().robot.avatarLoaded ? (
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
-                nickname={garage.getRobot().nickname}
+                nickname={garage.getSlot().robot.nickname}
                 baseUrl={hostUrl}
               />
             ) : (
@@ -162,7 +162,7 @@ const NavBar = (): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!garage.getRobot().avatarLoaded || !garage.getSlot().activeOrderId}
+          disabled={!garage.getSlot().robot.avatarLoaded || !garage.getSlot().activeOrderId}
           icon={<Assignment />}
           iconPosition='start'
         />

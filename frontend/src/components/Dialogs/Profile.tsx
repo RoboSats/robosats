@@ -33,7 +33,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose }: Props): JSX.Element =
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    setLoading(garage.getRobot().loading);
+    setLoading(garage.getSlot().robot.loading);
   }, [robotUpdatedAt]);
 
   return (
@@ -57,7 +57,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose }: Props): JSX.Element =
           <ListItem className='profileNickname'>
             <ListItemText secondary={t('Your robot')}>
               <Typography component='h6' variant='h6'>
-                {garage.getRobot().nickname !== undefined && (
+                {garage.getSlot().robot.nickname !== undefined && (
                   <div style={{ position: 'relative', left: '-7px' }}>
                     <div
                       style={{
@@ -70,7 +70,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose }: Props): JSX.Element =
                     >
                       <BoltIcon sx={{ color: '#fcba03', height: '28px', width: '24px' }} />
 
-                      <a>{garage.getRobot().nickname}</a>
+                      <a>{garage.getSlot().robot.nickname}</a>
 
                       <BoltIcon sx={{ color: '#fcba03', height: '28px', width: '24px' }} />
                     </div>
@@ -83,7 +83,7 @@ const ProfileDialog = ({ open = false, baseUrl, onClose }: Props): JSX.Element =
               <RobotAvatar
                 avatarClass='profileAvatar'
                 style={{ width: 65, height: 65 }}
-                nickname={garage.getRobot().nickname}
+                nickname={garage.getSlot().robot.nickname}
                 baseUrl={baseUrl}
               />
             </ListItemAvatar>
@@ -97,12 +97,12 @@ const ProfileDialog = ({ open = false, baseUrl, onClose }: Props): JSX.Element =
         </Typography>
 
         {Object.values(federation.coordinators).map((coordinator: Coordinator): JSX.Element => {
-          if (!garage.getRobot()?.loading) {
+          if (!garage.getSlot().robot?.loading) {
             return (
               <div key={coordinator.shortAlias}>
                 <RobotInfo
                   coordinator={coordinator}
-                  robot={garage.getRobot()}
+                  robot={garage.getSlot().robot}
                   slotIndex={garage.currentSlot}
                   onClose={onClose}
                 />
