@@ -718,11 +718,11 @@ class HistoricalViewSchema:
                     "type": "object",
                     "properties": {
                         "volume": {
-                            "type": "integer",
+                            "type": "number",
                             "description": "Total Volume traded on that particular date",
                         },
                         "num_contracts": {
-                            "type": "number",
+                            "type": "integer",
                             "description": "Number of successful trades on that particular date",
                         },
                     },
@@ -734,10 +734,8 @@ class HistoricalViewSchema:
                 "Truncated example",
                 value={
                     "<date>": {
-                        "code": "USD",
-                        "price": "42069.69",
-                        "min_amount": "4.2",
-                        "max_amount": "420.69",
+                        "volume": 0.69,
+                        "num_contracts": 69,
                     },
                 },
                 status_codes=[200],

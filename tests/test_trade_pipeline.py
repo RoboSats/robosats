@@ -11,7 +11,7 @@ from api.management.commands.follow_invoices import Command as FollowInvoices
 from api.models import Currency, Order
 from api.tasks import cache_market, follow_send_payment
 from control.models import BalanceLog
-from control.tasks import compute_node_balance
+from control.tasks import compute_node_balance, do_accounting
 from tests.node_utils import (
     add_invoice,
     create_address,
@@ -926,6 +926,31 @@ class TradeTest(BaseAPITestCase):
         self.assertIsInstance(data[0]["price"], str)
         self.assertIsInstance(data[0]["premium"], str)
         self.assertIsInstance(data[0]["fee"], str)
+
+    def test_daily_historical(self):
+        """
+        Tests the daily history serving endpoint after creating a contract
+        """
+        path = reverse("historical")
+        self.trade_to_confirm_fiat_received_LN(self.maker_form_buy_with_range)
+
+        # Invoke the background thread that will call the celery-worker to follow_send_payment()
+        self.send_payments()
+
+        # Do daily accounting to create the daily summary
+        do_accounting()
+
+        response = self.client.get(path)
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        # self.assertResponse(response) # Expects an array, but response is an object
+        first_date = list(data.keys())[0]
+        self.assertIsInstance(datetime.fromisoformat(first_date), datetime)
+        self.assertIsInstance(data[first_date]["volume"], float)
+        self.assertIsInstance(data[first_date]["num_contracts"], int)
+
+        print(data)
 
     def test_book(self):
         """
