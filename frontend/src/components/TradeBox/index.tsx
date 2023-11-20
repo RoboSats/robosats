@@ -45,14 +45,15 @@ import {
   defaultDispute,
 } from './Forms';
 
-import { type Order, type Robot, type Settings } from '../../models';
+import { type Order } from '../../models';
 import { type EncryptedChatMessage } from './EncryptedChat';
 import CollabCancelAlert from './CollabCancelAlert';
 import { Bolt } from '@mui/icons-material';
 import { signCleartextMessage } from '../../pgp';
-import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
+import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { useNavigate } from 'react-router-dom';
 
 interface loadingButtonsProps {
   cancel: boolean;
@@ -101,27 +102,24 @@ const closeAll: OpenDialogProps = {
 };
 
 interface TradeBoxProps {
-  robot: Robot;
-  currentOrder: Order;
-  setBadOrder: (state: string | undefined) => void;
-  onRenewOrder: () => void;
-  onStartAgain: () => void;
-  settings: Settings;
   baseUrl: string;
+  onStartAgain: () => void;
 }
 
-const TradeBox = ({
-  robot,
-  currentOrder,
-  settings,
-  baseUrl,
-  setBadOrder,
-  onRenewOrder,
-  onStartAgain,
-}: TradeBoxProps): JSX.Element => {
+interface Contract {
+  title: string;
+  titleVariables: object;
+  titleColor: string;
+  prompt: () => JSX.Element;
+  bondStatus: 'hide' | 'locked' | 'unlocked' | 'settled';
+  titleIcon: () => JSX.Element;
+}
+
+const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
+  const { garage, orderUpdatedAt, setBadOrder } = useContext<UseGarageStoreType>(GarageContext);
+  const { settings, hostUrl, origin } = useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
-  const { origin, hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const navigate = useNavigate();
 
   // Buttons and Dialogs
   const [loadingButtons, setLoadingButtons] = useState<loadingButtonsProps>(noLoadingButtons);
@@ -156,6 +154,46 @@ const TradeBox = ({
     rating?: number;
   }
 
+  const renewOrder = function (): void {
+    const currentOrder = garage.getSlot().order;
+    if (currentOrder !== null) {
+      const body = {
+        type: currentOrder.type,
+        currency: currentOrder.currency,
+        amount: currentOrder.has_range ? null : currentOrder.amount,
+        has_range: currentOrder.has_range,
+        min_amount: currentOrder.min_amount,
+        max_amount: currentOrder.max_amount,
+        payment_method: currentOrder.payment_method,
+        is_explicit: currentOrder.is_explicit,
+        premium: currentOrder.is_explicit ? null : currentOrder.premium,
+        satoshis: currentOrder.is_explicit ? currentOrder.satoshis : null,
+        public_duration: currentOrder.public_duration,
+        escrow_duration: currentOrder.escrow_duration,
+        bond_size: currentOrder.bond_size,
+        latitude: currentOrder.latitude,
+        longitude: currentOrder.longitude,
+      };
+      const { url, basePath } = federation
+        .getCoordinator(currentOrder.shortAlias)
+        .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
+      apiClient
+        .post(url + basePath, '/api/make/', body, {
+          tokenSHA256: garage.getSlot().robot.tokenSHA256,
+        })
+        .then((data: any) => {
+          if (data.bad_request !== undefined) {
+            setBadOrder(data.bad_request);
+          } else if (data.id !== undefined) {
+            navigate(`/order/${String(currentOrder?.shortAlias)}/${String(data.id)}`);
+          }
+        })
+        .catch(() => {
+          setBadOrder('Request error');
+        });
+    }
+  };
+
   const submitAction = function ({
     action,
     invoice,
@@ -165,13 +203,13 @@ const TradeBox = ({
     statement,
     rating,
   }: SubmitActionProps): void {
-    const { url, basePath } = federation
-      .getCoordinator(currentOrder.shortAlias)
-      .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
+    const robot = garage.getSlot().robot;
+    const currentOrder = garage.getSlot().order;
+
     void apiClient
       .post(
-        url + basePath,
-        `/api/order/?order_id=${Number(currentOrder.id)}`,
+        baseUrl,
+        `/api/order/?order_id=${Number(currentOrder?.id)}`,
         {
           action,
           invoice,
@@ -268,6 +306,7 @@ const TradeBox = ({
   };
 
   const submitStatement = function (): void {
+    const robot = garage.getSlot().robot;
     let statement = dispute.statement;
     if (dispute.attachLogs) {
       const payload = { statement, messages, token: robot.token };
@@ -322,44 +361,48 @@ const TradeBox = ({
 
   // Effect on Order Status change (used for WebLN)
   useEffect(() => {
+    const currentOrder = garage.getSlot().order;
     if (currentOrder !== null && currentOrder.status !== lastOrderStatus) {
       setLastOrderStatus(currentOrder.status);
       void handleWebln(currentOrder);
     }
-    // FIXME this should trigger with current order, not garage order
   }, [orderUpdatedAt]);
 
-  const statusToContract = function (order: Order): JSX.Element {
+  const statusToContract = function (): Contract {
+    const order = garage.getSlot().order;
+
+    const baseContract: Contract = {
+      title: 'Unknown Order Status',
+      titleVariables: {},
+      titleColor: 'primary',
+      prompt: () => <span>Wops!</span>,
+      bondStatus: 'hide',
+      titleIcon: () => <></>,
+    };
+
+    if (order === null) return baseContract;
+
     const status = order.status;
     const isBuyer = order.is_buyer;
     const isMaker = order.is_maker;
-
-    let title: string = 'Unknown Order Status';
-    let titleVariables: object = {};
-    let titleColor: string = 'primary';
-    let titleIcon: () => JSX.Element = function () {
-      return <></>;
-    };
-    let prompt = (): JSX.Element => <span>Wops!</span>;
-    let bondStatus: 'hide' | 'locked' | 'unlocked' | 'settled' = 'hide';
 
     switch (status) {
       // 0: 'Waiting for maker bond'
       case 0:
         if (isMaker) {
-          title = 'Lock {{amountSats}} Sats to PUBLISH order';
-          titleVariables = { amountSats: pn(order.bond_satoshis) };
-          prompt = () => {
+          baseContract.title = 'Lock {{amountSats}} Sats to PUBLISH order';
+          baseContract.titleVariables = { amountSats: pn(order.bond_satoshis) };
+          baseContract.prompt = () => {
             return <LockInvoicePrompt order={order} concept={'bond'} />;
           };
-          bondStatus = 'hide';
+          baseContract.bondStatus = 'hide';
         }
         break;
       // 1: 'Public'
       case 1:
         if (isMaker) {
-          title = 'Your order is public';
-          prompt = () => {
+          baseContract.title = 'Your order is public';
+          baseContract.prompt = () => {
             return (
               <PublicWaitPrompt
                 order={order}
@@ -368,14 +411,14 @@ const TradeBox = ({
               />
             );
           };
-          bondStatus = 'locked';
+          baseContract.bondStatus = 'locked';
         }
         break;
       // 2: 'Paused'
       case 2:
         if (isMaker) {
-          title = 'Your order is paused';
-          prompt = () => {
+          baseContract.title = 'Your order is paused';
+          baseContract.prompt = () => {
             return (
               <PausedPrompt
                 pauseLoading={loadingButtons.pauseOrder}
@@ -383,53 +426,53 @@ const TradeBox = ({
               />
             );
           };
-          bondStatus = 'locked';
+          baseContract.bondStatus = 'locked';
         }
         break;
 
       // 3: 'Waiting for taker bond'
       case 3:
         if (isMaker) {
-          title = 'A taker has been found!';
-          prompt = () => {
+          baseContract.title = 'A taker has been found!';
+          baseContract.prompt = () => {
             return <TakerFoundPrompt />;
           };
-          bondStatus = 'locked';
+          baseContract.bondStatus = 'locked';
         } else {
-          title = 'Lock {{amountSats}} Sats to TAKE order';
-          titleVariables = { amountSats: pn(order.bond_satoshis) };
-          prompt = () => {
+          baseContract.title = 'Lock {{amountSats}} Sats to TAKE order';
+          baseContract.titleVariables = { amountSats: pn(order.bond_satoshis) };
+          baseContract.prompt = () => {
             return <LockInvoicePrompt order={order} concept={'bond'} />;
           };
-          bondStatus = 'hide';
+          baseContract.bondStatus = 'hide';
         }
         break;
 
       // 5: 'Expired'
       case 5:
-        title = 'The order has expired';
-        prompt = () => {
+        baseContract.title = 'The order has expired';
+        baseContract.prompt = () => {
           return (
             <ExpiredPrompt
               loadingRenew={loadingButtons.renewOrder}
               order={order}
               onClickRenew={() => {
-                onRenewOrder();
+                renewOrder();
                 setLoadingButtons({ ...noLoadingButtons, renewOrder: true });
               }}
             />
           );
         };
-        bondStatus = 'hide'; // To do: show bond status according to expiry message.
+        baseContract.bondStatus = 'hide'; // To do: show bond status according to expiry message.
         break;
 
       // 6: 'Waiting for trade collateral and buyer invoice'
       case 6:
-        bondStatus = 'locked';
+        baseContract.bondStatus = 'locked';
         if (isBuyer) {
-          title = 'Submit payout info';
-          titleVariables = { amountSats: pn(order.invoice_amount) };
-          prompt = function () {
+          baseContract.title = 'Submit payout info';
+          baseContract.titleVariables = { amountSats: pn(order.invoice_amount) };
+          baseContract.prompt = function () {
             return (
               <PayoutPrompt
                 order={order}
@@ -446,10 +489,10 @@ const TradeBox = ({
             );
           };
         } else {
-          title = 'Lock {{amountSats}} Sats as collateral';
-          titleVariables = { amountSats: pn(order.escrow_satoshis) };
-          titleColor = 'warning';
-          prompt = () => {
+          baseContract.title = 'Lock {{amountSats}} Sats as collateral';
+          baseContract.titleVariables = { amountSats: pn(order.escrow_satoshis) };
+          baseContract.titleColor = 'warning';
+          baseContract.prompt = () => {
             return <LockInvoicePrompt order={order} concept={'escrow'} />;
           };
         }
@@ -457,17 +500,17 @@ const TradeBox = ({
 
       // 7: 'Waiting only for seller trade collateral'
       case 7:
-        bondStatus = 'locked';
+        baseContract.bondStatus = 'locked';
         if (isBuyer) {
-          title = 'Your info looks good!';
-          prompt = () => {
+          baseContract.title = 'Your info looks good!';
+          baseContract.prompt = () => {
             return <EscrowWaitPrompt />;
           };
         } else {
-          title = 'Lock {{amountSats}} Sats as collateral';
-          titleVariables = { amountSats: pn(order.escrow_satoshis) };
-          titleColor = 'warning';
-          prompt = () => {
+          baseContract.title = 'Lock {{amountSats}} Sats as collateral';
+          baseContract.titleVariables = { amountSats: pn(order.escrow_satoshis) };
+          baseContract.titleColor = 'warning';
+          baseContract.prompt = () => {
             return <LockInvoicePrompt order={order} concept={'escrow'} />;
           };
         }
@@ -475,11 +518,11 @@ const TradeBox = ({
 
       // 8: 'Waiting only for buyer invoice'
       case 8:
-        bondStatus = 'locked';
+        baseContract.bondStatus = 'locked';
         if (isBuyer) {
-          title = 'Submit payout info';
-          titleVariables = { amountSats: pn(order.invoice_amount) };
-          prompt = () => {
+          baseContract.title = 'Submit payout info';
+          baseContract.titleVariables = { amountSats: pn(order.invoice_amount) };
+          baseContract.prompt = () => {
             return (
               <PayoutPrompt
                 order={order}
@@ -496,8 +539,8 @@ const TradeBox = ({
             );
           };
         } else {
-          title = 'The trade collateral is locked!';
-          prompt = () => {
+          baseContract.title = 'The trade collateral is locked!';
+          baseContract.prompt = () => {
             return <PayoutWaitPrompt />;
           };
         }
@@ -507,12 +550,11 @@ const TradeBox = ({
       // 10: 'Fiat sent - In chatroom'
       case 9:
       case 10:
-        title = isBuyer ? 'Chat with the seller' : 'Chat with the buyer';
-        prompt = function () {
+        baseContract.title = isBuyer ? 'Chat with the seller' : 'Chat with the buyer';
+        baseContract.prompt = function () {
           return (
             <ChatPrompt
               order={order}
-              robot={robot}
               onClickConfirmSent={() => {
                 setOpen({ ...open, confirmFiatSent: true });
               }}
@@ -535,20 +577,20 @@ const TradeBox = ({
             />
           );
         };
-        bondStatus = 'locked';
+        baseContract.bondStatus = 'locked';
         break;
 
       // 11: 'In dispute'
       case 11:
-        bondStatus = 'settled';
+        baseContract.bondStatus = 'settled';
         if (order.statement_submitted) {
-          title = 'We have received your statement';
-          prompt = function () {
+          baseContract.title = 'We have received your statement';
+          baseContract.prompt = function () {
             return <DisputeWaitPeerPrompt />;
           };
         } else {
-          title = 'A dispute has been opened';
-          prompt = function () {
+          baseContract.title = 'A dispute has been opened';
+          baseContract.prompt = function () {
             return (
               <DisputePrompt
                 loading={loadingButtons.submitStatement}
@@ -567,18 +609,18 @@ const TradeBox = ({
       // 13: 'Sending satoshis to buyer'
       case 13:
         if (isBuyer) {
-          bondStatus = 'unlocked';
-          title = 'Attempting Lightning Payment';
-          prompt = function () {
+          baseContract.bondStatus = 'unlocked';
+          baseContract.title = 'Attempting Lightning Payment';
+          baseContract.prompt = function () {
             return <SendingSatsPrompt />;
           };
         } else {
-          title = 'Trade finished!';
-          titleColor = 'success';
-          titleIcon = function () {
+          baseContract.title = 'Trade finished!';
+          baseContract.titleColor = 'success';
+          baseContract.titleIcon = function () {
             return <Bolt xs={{ width: '1em', height: '1em' }} color='warning' />;
           };
-          prompt = function () {
+          baseContract.prompt = function () {
             return (
               <SuccessfulPrompt
                 baseUrl={baseUrl}
@@ -587,7 +629,7 @@ const TradeBox = ({
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {
-                  onRenewOrder();
+                  renewOrder();
                   setLoadingButtons({ ...noLoadingButtons, renewOrder: true });
                 }}
               />
@@ -598,12 +640,12 @@ const TradeBox = ({
 
       // 14: 'Sucessful trade'
       case 14:
-        title = 'Trade finished!';
-        titleColor = 'success';
-        titleIcon = function () {
+        baseContract.title = 'Trade finished!';
+        baseContract.titleColor = 'success';
+        baseContract.titleIcon = function () {
           return <Bolt xs={{ width: '1em', height: '1em' }} color='warning' />;
         };
-        prompt = function () {
+        baseContract.prompt = function () {
           return (
             <SuccessfulPrompt
               baseUrl={baseUrl}
@@ -612,7 +654,7 @@ const TradeBox = ({
               onClickStartAgain={onStartAgain}
               loadingRenew={loadingButtons.renewOrder}
               onClickRenew={() => {
-                onRenewOrder();
+                renewOrder();
                 setLoadingButtons({ ...noLoadingButtons, renewOrder: true });
               }}
             />
@@ -623,9 +665,9 @@ const TradeBox = ({
       // 15: 'Failed lightning network routing'
       case 15:
         if (isBuyer) {
-          bondStatus = 'unlocked';
-          title = 'Lightning Routing Failed';
-          prompt = function () {
+          baseContract.bondStatus = 'unlocked';
+          baseContract.title = 'Lightning Routing Failed';
+          baseContract.prompt = function () {
             return (
               <RoutingFailedPrompt
                 order={order}
@@ -638,12 +680,12 @@ const TradeBox = ({
             );
           };
         } else {
-          title = 'Trade finished!';
-          titleColor = 'success';
-          titleIcon = function () {
+          baseContract.title = 'Trade finished!';
+          baseContract.titleColor = 'success';
+          baseContract.titleIcon = function () {
             return <Bolt xs={{ width: '1em', height: '1em' }} color='warning' />;
           };
-          prompt = function () {
+          baseContract.prompt = function () {
             return (
               <SuccessfulPrompt
                 baseUrl={baseUrl}
@@ -652,7 +694,7 @@ const TradeBox = ({
                 onClickStartAgain={onStartAgain}
                 loadingRenew={loadingButtons.renewOrder}
                 onClickRenew={() => {
-                  onRenewOrder();
+                  renewOrder();
                   setLoadingButtons({ ...noLoadingButtons, renewOrder: true });
                 }}
               />
@@ -663,9 +705,9 @@ const TradeBox = ({
 
       // 16: 'Wait for dispute resolution'
       case 16:
-        bondStatus = 'settled';
-        title = 'We have the statements';
-        prompt = function () {
+        baseContract.bondStatus = 'settled';
+        baseContract.title = 'We have the statements';
+        baseContract.prompt = function () {
           return <DisputeWaitResolutionPrompt />;
         };
         break;
@@ -675,14 +717,14 @@ const TradeBox = ({
       case 17:
       case 18:
         if ((status === 17 && isMaker) || (status === 18 && !isMaker)) {
-          title = 'You have lost the dispute';
-          prompt = function () {
+          baseContract.title = 'You have lost the dispute';
+          baseContract.prompt = function () {
             return <DisputeLoserPrompt />;
           };
-          bondStatus = 'settled';
+          baseContract.bondStatus = 'settled';
         } else if ((status === 17 && !isMaker) || (status === 18 && isMaker)) {
-          title = 'You have won the dispute';
-          prompt = function () {
+          baseContract.title = 'You have won the dispute';
+          baseContract.prompt = function () {
             return <DisputeWinnerPrompt />;
           };
         }
@@ -692,10 +734,10 @@ const TradeBox = ({
         break;
     }
 
-    return { title, titleVariables, titleColor, prompt, bondStatus, titleIcon };
+    return baseContract;
   };
 
-  const contract = currentOrder != null ? statusToContract(currentOrder) : null;
+  const contract = statusToContract();
 
   return (
     <Box>
@@ -705,7 +747,7 @@ const TradeBox = ({
           setOpen(closeAll);
         }}
         waitingWebln={waitingWebln}
-        isBuyer={currentOrder?.is_buyer ?? false}
+        isBuyer={garage.getSlot().order?.is_buyer ?? false}
       />
       <ConfirmDisputeDialog
         open={open.confirmDispute}
@@ -728,11 +770,11 @@ const TradeBox = ({
         }}
         onCollabCancelClick={cancel}
         loading={loadingButtons.cancel}
-        peerAskedCancel={currentOrder?.pending_cancel ?? false}
+        peerAskedCancel={garage.getSlot().order?.pending_cancel ?? false}
       />
       <ConfirmFiatSentDialog
         open={open.confirmFiatSent}
-        order={currentOrder}
+        order={garage.getSlot().order}
         loadingButton={loadingButtons.fiatSent}
         onClose={() => {
           setOpen(closeAll);
@@ -749,14 +791,14 @@ const TradeBox = ({
       />
       <ConfirmFiatReceivedDialog
         open={open.confirmFiatReceived}
-        order={currentOrder}
+        order={garage.getSlot().order}
         loadingButton={loadingButtons.fiatReceived}
         onClose={() => {
           setOpen(closeAll);
         }}
         onConfirmClick={confirmFiatReceived}
       />
-      <CollabCancelAlert order={currentOrder} />
+      <CollabCancelAlert order={garage.getSlot().order} />
       <Grid
         container
         padding={1}
@@ -767,7 +809,7 @@ const TradeBox = ({
       >
         <Grid item>
           <Title
-            order={currentOrder}
+            order={garage.getSlot().order}
             text={contract?.title}
             color={contract?.titleColor}
             icon={contract?.titleIcon}
@@ -781,7 +823,10 @@ const TradeBox = ({
         {contract?.bondStatus !== 'hide' ? (
           <Grid item sx={{ width: '100%' }}>
             <Divider />
-            <BondStatus status={contract?.bondStatus} isMaker={currentOrder?.is_maker ?? false} />
+            <BondStatus
+              status={contract?.bondStatus}
+              isMaker={garage.getSlot().order?.is_maker ?? false}
+            />
           </Grid>
         ) : (
           <></>
@@ -789,7 +834,7 @@ const TradeBox = ({
 
         <Grid item>
           <CancelButton
-            order={currentOrder}
+            order={garage.getSlot().order}
             onClickCancel={cancel}
             openCancelDialog={() => {
               setOpen({ ...closeAll, confirmCancel: true });

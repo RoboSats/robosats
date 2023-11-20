@@ -35,7 +35,6 @@ const FederationWidget = React.forwardRef(function Component(
     return (
       <Paper elevation={3} style={{ width: '100%', height: '100%' }}>
         <FederationTable
-          openCoordinator={() => setOpen({ ...open, coordinator: true })}
           maxWidth={layout.w * gridCellSize} // EM units
           maxHeight={layout.h * gridCellSize} // EM units
         />

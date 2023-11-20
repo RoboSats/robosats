@@ -25,7 +25,6 @@ const audioPath =
 interface Props {
   orderId: number;
   status: number;
-  robot: Robot;
   userNick: string;
   takerNick: string;
   messages: EncryptedChatMessage[];
@@ -38,7 +37,6 @@ interface Props {
 const EncryptedSocketChat: React.FC<Props> = ({
   orderId,
   status,
-  robot,
   userNick,
   takerNick,
   messages,
@@ -110,7 +108,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
         setConnected(true);
 
         connection.send({
-          message: robot.pubKey,
+          message: garage.getSlot().robot.pubKey,
           nick: userNick,
         });
 
@@ -132,10 +130,10 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const createJsonFile: () => object = () => {
     return {
       credentials: {
-        own_public_key: robot.pubKey,
+        own_public_key: garage.getSlot().robot.pubKey,
         peer_public_key: peerPubKey,
-        encrypted_private_key: robot.encPrivKey,
-        passphrase: robot.token,
+        encrypted_private_key: garage.getSlot().robot.encPrivKey,
+        passphrase: garage.getSlot().robot.token,
       },
       messages,
     };
@@ -143,7 +141,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
 
   const onMessage: (message: any) => void = (message) => {
     const dataFromServer = JSON.parse(message.data);
-
+    const robot = garage.getSlot().robot;
     if (dataFromServer != null && !receivedIndexes.includes(dataFromServer.index)) {
       setReceivedIndexes((prev) => [...prev, dataFromServer.index]);
       setPeerConnected(dataFromServer.peer_connected);
@@ -213,6 +211,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   };
 
   const onButtonClicked = (e: React.FormEvent<HTMLFormElement>): void => {
+    const robot = garage.getSlot().robot;
     if (robot.token !== undefined && value.includes(robot.token)) {
       alert(
         `Aye! You just sent your own robot robot.token to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
@@ -264,10 +263,10 @@ const EncryptedSocketChat: React.FC<Props> = ({
         }}
         orderId={Number(orderId)}
         messages={messages}
-        ownPubKey={robot.pubKey ?? ''}
-        ownEncPrivKey={robot.encPrivKey ?? ''}
+        ownPubKey={garage.getSlot().robot.pubKey ?? ''}
+        ownEncPrivKey={garage.getSlot().robot.encPrivKey ?? ''}
         peerPubKey={peerPubKey ?? 'Not received yet'}
-        passphrase={robot.token ?? ''}
+        passphrase={garage.getSlot().robot.token ?? ''}
         onClickBack={() => {
           setAudit(false);
         }}

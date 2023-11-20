@@ -25,14 +25,7 @@ const SettingsPage = (): JSX.Element => {
           <SettingsForm showNetwork={!(window.NativeRobosats === undefined)} />
         </Grid>
         <Grid item>
-          <FederationTable
-            openCoordinator={() => {
-              setOpen({ ...open, coordinator: true });
-            }}
-            baseUrl={hostUrl}
-            maxHeight={14}
-            network={settings.network}
-          />
+          <FederationTable baseUrl={hostUrl} maxHeight={14} network={settings.network} />
         </Grid>
       </Grid>
     </Paper>
