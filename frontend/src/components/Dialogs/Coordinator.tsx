@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import {
   Dialog,
+  Alert,
   DialogContent,
   Divider,
   Grid,
@@ -19,6 +20,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  AlertTitle,
 } from '@mui/material';
 
 import {
@@ -413,6 +415,16 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
               </ListItem>
             </>
           )}
+
+          {coordinator?.info?.notice_severity != undefined &&
+            coordinator?.info?.notice_severity !== 'none' && (
+              <ListItem>
+                <Alert severity={coordinator.info.notice_severity} sx={{ width: '100%' }}>
+                  <AlertTitle>{t('Coordinator Notice')}</AlertTitle>
+                  <div dangerouslySetInnerHTML={{ __html: coordinator.info.notice_message }} />
+                </Alert>
+              </ListItem>
+            )}
           <ListItem>
             <BadgesHall badges={coordinator?.badges} />
           </ListItem>
