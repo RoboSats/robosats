@@ -711,7 +711,8 @@ class BookView(ListAPIView):
 
             data["satoshis_now"] = Logics.satoshis_now(order)
             # Compute current premium for those orders that are explicitly priced.
-            data["price"], data["premium"] = Logics.price_and_premium_now(order)
+            price, premium = Logics.price_and_premium_now(order)
+            data["price"], data["premium"] = price, str(premium)
             data["maker_status"] = Logics.user_activity_status(order.maker.last_login)
             for key in (
                 "status",
@@ -872,11 +873,17 @@ class TickView(ListAPIView):
         # Perform the query with date range filtering
         try:
             if start_date_str:
-                start_date = datetime.strptime(start_date_str, "%d-%m-%Y").date()
-                self.queryset = self.queryset.filter(timestamp__gte=start_date)
+                naive_start_date = datetime.strptime(start_date_str, "%d-%m-%Y")
+                aware_start_date = timezone.make_aware(
+                    naive_start_date, timezone=timezone.get_current_timezone()
+                )
+                self.queryset = self.queryset.filter(timestamp__gte=aware_start_date)
             if end_date_str:
-                end_date = datetime.strptime(end_date_str, "%d-%m-%Y").date()
-                self.queryset = self.queryset.filter(timestamp__lte=end_date)
+                naive_end_date = datetime.strptime(end_date_str, "%d-%m-%Y")
+                aware_end_date = timezone.make_aware(
+                    naive_end_date, timezone=timezone.get_current_timezone()
+                )
+                self.queryset = self.queryset.filter(timestamp__lte=aware_end_date)
         except ValueError:
             return Response(
                 {"bad_request": "Invalid date format"},

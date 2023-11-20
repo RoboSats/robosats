@@ -1,5 +1,3 @@
-import json
-
 from decouple import config
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -17,7 +15,7 @@ NOTICE_SEVERITY = config("NOTICE_SEVERITY", cast=str, default="none")
 NOTICE_MESSAGE = config("NOTICE_MESSAGE", cast=str, default="")
 
 
-class CoordinatorInfoTest(BaseAPITestCase):
+class APIInfoTest(BaseAPITestCase):
     su_pass = "12345678"
     su_name = config("ESCROW_USERNAME", cast=str, default="admin")
 
@@ -32,7 +30,7 @@ class CoordinatorInfoTest(BaseAPITestCase):
         path = reverse("info")
 
         response = self.client.get(path)
-        data = json.loads(response.content.decode())
+        data = response.json()
 
         self.assertEqual(response.status_code, 200)
         self.assertResponse(response)
