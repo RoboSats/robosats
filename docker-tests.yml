@@ -136,7 +136,7 @@ services:
       context: .
       args:
         DEVELOPMENT: True
-    image: robosats-image
+    image: backend-image
     container_name: coordinator
     restart: always
     environment:
@@ -176,7 +176,7 @@ services:
     network_mode: service:bitcoind
 
   # celery-worker:
-  #   image: robosats-image
+  #   image: backend-image
   #   pull_policy: never
   #   container_name: celery-worker
   #   restart: always
