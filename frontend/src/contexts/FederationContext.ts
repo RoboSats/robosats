@@ -51,8 +51,6 @@ export interface fetchRobotProps {
 export interface UseFederationStoreType {
   federation: Federation;
   sortedCoordinators: string[];
-  focusedCoordinator: string | null;
-  setFocusedCoordinator: Dispatch<SetStateAction<string>>;
   setDelay: Dispatch<SetStateAction<number>>;
   coordinatorUpdatedAt: string;
   federationUpdatedAt: string;
@@ -61,8 +59,6 @@ export interface UseFederationStoreType {
 export const initialFederationContext: UseFederationStoreType = {
   federation: new Federation(),
   sortedCoordinators: [],
-  focusedCoordinator: '',
-  setFocusedCoordinator: () => {},
   setDelay: () => {},
   coordinatorUpdatedAt: '',
   federationUpdatedAt: '',
@@ -73,7 +69,7 @@ export const FederationContext = createContext<UseFederationStoreType>(initialFe
 export const useFederationStore = (): UseFederationStoreType => {
   const { settings, page, origin, hostUrl, open, torStatus } =
     useContext<UseAppStoreType>(AppContext);
-  const { setMaker, garage, orderUpdatedAt, robotUpdatedAt, badOrder } =
+  const { setMaker, garage, setBadOrder, robotUpdatedAt, badOrder, orderUpdatedAt } =
     useContext<UseGarageStoreType>(GarageContext);
   const [federation, setFederation] = useState(initialFederationContext.federation);
   const sortedCoordinators = useMemo(() => {
@@ -88,13 +84,10 @@ export const useFederationStore = (): UseFederationStoreType => {
   );
   const [federationUpdatedAt, setFederationUpdatedAt] = useState<string>(new Date().toISOString());
 
-  const [focusedCoordinator, setFocusedCoordinator] = useState<string>(sortedCoordinators[0]);
-
-  const [delay, setDelay] = useState<number>(60000);
+  const [delay, setDelay] = useState<number>(5000);
   const [timer, setTimer] = useState<NodeJS.Timer | undefined>(() =>
     setInterval(() => null, delay),
   );
-  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     // On bitcoin network change we reset book, limits and federation info and fetch everything again
@@ -112,27 +105,34 @@ export const useFederationStore = (): UseFederationStoreType => {
   }, [settings.network, torStatus]);
 
   const fetchCurrentOrder = (): void => {
-    if (currentOrder?.id != null && (page === 'order' || badOrder === undefined)) {
-      void federation.fetchOrder(currentOrder, garage);
+    const activeSlot = garage.getSlot();
+    if (activeSlot.activeOrderShortAlias !== null && activeSlot.activeOrderId !== null) {
+      const coordinator = federation.getCoordinator(activeSlot.activeOrderShortAlias);
+      coordinator
+        .fetchOrder(activeSlot.activeOrderId, activeSlot.robot)
+        .then((order) => {
+          if (order?.bad_request !== undefined) {
+            setBadOrder(order.bad_request);
+          }
+          if (order?.id !== null) {
+            garage.updateOrder(order as Order);
+          }
+        })
+        .finally(() => {
+          setTimer(setTimeout(fetchCurrentOrder, delay));
+        });
+    } else {
+      setTimer(setTimeout(fetchCurrentOrder, delay));
     }
   };
 
-  // Fetch current order at load and in a loop
-  useEffect(() => {
-    fetchCurrentOrder();
-  }, [currentOrder, page]);
-
-  useEffect(() => {
-    setCurrentOrder(garage.getOrder());
-  }, [orderUpdatedAt]);
-
   useEffect(() => {
     clearInterval(timer);
-    setTimer(setInterval(fetchCurrentOrder, delay));
+    fetchCurrentOrder();
     return () => {
       clearInterval(timer);
     };
-  }, [delay, currentOrder, page, badOrder]);
+  }, []);
 
   useEffect(() => {
     const robot = garage.getSlot().robot;
@@ -154,8 +154,6 @@ export const useFederationStore = (): UseFederationStoreType => {
   return {
     federation,
     sortedCoordinators,
-    focusedCoordinator,
-    setFocusedCoordinator,
     setDelay,
     coordinatorUpdatedAt,
     federationUpdatedAt,

@@ -35,7 +35,6 @@ export interface ServerMessage {
 const EncryptedChat: React.FC<Props> = ({
   orderId,
   takerNick,
-  robot,
   userNick,
   chatOffset,
   baseUrl,
@@ -48,7 +47,6 @@ const EncryptedChat: React.FC<Props> = ({
   return turtleMode ? (
     <EncryptedTurtleChat
       messages={messages}
-      robot={robot}
       setMessages={setMessages}
       orderId={orderId}
       takerNick={takerNick}
@@ -62,7 +60,6 @@ const EncryptedChat: React.FC<Props> = ({
     <EncryptedSocketChat
       status={status}
       messages={messages}
-      robot={robot}
       setMessages={setMessages}
       orderId={orderId}
       takerNick={takerNick}

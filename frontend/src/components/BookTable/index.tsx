@@ -108,7 +108,7 @@ const BookTable = ({
 }: BookTableProps): JSX.Element => {
   const { fav, setFav, settings, setOpen, hostUrl, origin } =
     useContext<UseAppStoreType>(AppContext);
-  const { federation, setFocusedCoordinator, coordinatorUpdatedAt } =
+  const { federation, coordinatorUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
@@ -273,9 +273,8 @@ const BookTable = ({
   }, []);
 
   const onClickCoordinator = function (shortAlias: string): void {
-    setFocusedCoordinator(shortAlias);
     setOpen((open) => {
-      return { ...open, coordinator: true };
+      return { ...open, coordinator: shortAlias };
     });
   };
 

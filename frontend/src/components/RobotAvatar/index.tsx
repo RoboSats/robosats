@@ -47,9 +47,6 @@ const RobotAvatar: React.FC<Props> = ({
   coordinator = false,
   baseUrl,
 }) => {
-  const { settings, origin, hostUrl } = useContext<UseAppStoreType>(AppContext);
-  const { federation, focusedCoordinator } = useContext<UseFederationStoreType>(FederationContext);
-
   const [avatarSrc, setAvatarSrc] = useState<string>();
   const [nicknameReady, setNicknameReady] = useState<boolean>(false);
   const [activeBackground, setActiveBackground] = useState<boolean>(true);
@@ -66,13 +63,10 @@ const RobotAvatar: React.FC<Props> = ({
       if (window.NativeRobosats === undefined) {
         setAvatarSrc(`${baseUrl}${path}${nickname}${small ? '.small' : ''}.webp`);
         setNicknameReady(true);
-      } else if (focusedCoordinator != null) {
+      } else if (baseUrl != null && apiClient.fileImageUrl !== undefined) {
         setNicknameReady(true);
-        const { url, basePath } = federation
-          .getCoordinator(focusedCoordinator)
-          .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
         void apiClient
-          .fileImageUrl(url + basePath, `${path}${nickname}${small ? '.small' : ''}.webp`)
+          .fileImageUrl(baseUrl, `${path}${nickname}${small ? '.small' : ''}.webp`)
           .then(setAvatarSrc);
       }
     } else {
