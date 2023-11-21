@@ -92,6 +92,11 @@ const MakerForm = ({
   const amountSafeThresholds = [1.03, 0.98];
 
   useEffect(() => {
+    const slot = garage.getSlot();
+    if (slot?.token) federation.fetchRobot(garage, slot?.token);
+  }, [garage.currentSlot]);
+
+  useEffect(() => {
     setCurrencyCode(currencyDict[fav.currency === 0 ? 1 : fav.currency]);
     if (maker.coordinator != null) {
       const newLimits = federation.getCoordinator(maker.coordinator).limits;
@@ -280,12 +285,19 @@ const MakerForm = ({
   };
 
   const handleCreateOrder = function (): void {
+    const slot = garage.getSlot();
+
+    if (slot?.activeShortAlias) {
+      setBadRequest(t('You are already maker of an active order'));
+      return;
+    }
+
     const { url, basePath } =
       federation
         .getCoordinator(maker.coordinator)
         ?.getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl) ?? {};
 
-    const auth = garage.getSlot().robot.getAuthHeaders();
+    const auth = slot?.getRobot()?.getAuthHeaders();
 
     if (!disableRequest && maker.coordinator != null && auth !== null) {
       setSubmittingRequest(true);
@@ -565,7 +577,7 @@ const MakerForm = ({
           setOpenDialogs(false);
         }}
         onClickDone={handleCreateOrder}
-        hasRobot={garage.getSlot().robot.avatarLoaded}
+        hasRobot={garage.getSlot()?.avatarLoaded ?? false}
         onClickGenerateRobot={onClickGenerateRobot}
       />
       <F2fMapDialog

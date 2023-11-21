@@ -155,8 +155,8 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
   }
 
   const renewOrder = function (): void {
-    const currentOrder = garage.getSlot().order;
-    if (currentOrder !== null) {
+    const currentOrder = garage.getSlot()?.order;
+    if (currentOrder) {
       const body = {
         type: currentOrder.type,
         currency: currentOrder.currency,
@@ -179,7 +179,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
         .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
       apiClient
         .post(url + basePath, '/api/make/', body, {
-          tokenSHA256: garage.getSlot().robot.tokenSHA256,
+          tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256,
         })
         .then((data: any) => {
           if (data.bad_request !== undefined) {
@@ -203,8 +203,8 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
     statement,
     rating,
   }: SubmitActionProps): void {
-    const robot = garage.getSlot().robot;
-    const currentOrder = garage.getSlot().order;
+    const robot = garage.getSlot()?.getRobot();
+    const currentOrder = garage.getSlot()?.order;
 
     void apiClient
       .post(
@@ -219,7 +219,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
           statement,
           rating,
         },
-        { tokenSHA256: robot.tokenSHA256 },
+        { tokenSHA256: robot?.tokenSHA256 },
       )
       .then((data: Order) => {
         setOpen(closeAll);
@@ -269,7 +269,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
   };
 
   const updateInvoice = function (invoice: string): void {
-    const robot = garage.getSlot().robot;
+    const robot = garage.getSlot()?.getRobot();
 
     if (robot?.encPrivKey != null && robot?.token != null) {
       setLoadingButtons({ ...noLoadingButtons, submitInvoice: true });
@@ -284,7 +284,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
   };
 
   const updateAddress = function (): void {
-    const robot = garage.getSlot().robot;
+    const robot = garage.getSlot()?.getRobot();
 
     if (robot?.encPrivKey != null && robot?.token != null) {
       setLoadingButtons({ ...noLoadingButtons, submitAddress: true });
@@ -306,10 +306,10 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
   };
 
   const submitStatement = function (): void {
-    const robot = garage.getSlot().robot;
+    const robot = garage.getSlot()?.getRobot();
     let statement = dispute.statement;
     if (dispute.attachLogs) {
-      const payload = { statement, messages, token: robot.token };
+      const payload = { statement, messages, token: robot?.token };
       statement = JSON.stringify(payload, null, 2);
     }
     setLoadingButtons({ ...noLoadingButtons, submitStatement: true });
@@ -361,15 +361,15 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
 
   // Effect on Order Status change (used for WebLN)
   useEffect(() => {
-    const currentOrder = garage.getSlot().order;
-    if (currentOrder !== null && currentOrder.status !== lastOrderStatus) {
+    const currentOrder = garage.getSlot()?.order;
+    if (currentOrder && currentOrder?.status !== lastOrderStatus) {
       setLastOrderStatus(currentOrder.status);
       void handleWebln(currentOrder);
     }
   }, [orderUpdatedAt]);
 
   const statusToContract = function (): Contract {
-    const order = garage.getSlot().order;
+    const order = garage.getSlot()?.order;
 
     const baseContract: Contract = {
       title: 'Unknown Order Status',
@@ -380,7 +380,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
       titleIcon: () => <></>,
     };
 
-    if (order === null) return baseContract;
+    if (!order) return baseContract;
 
     const status = order.status;
     const isBuyer = order.is_buyer;
@@ -747,7 +747,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
           setOpen(closeAll);
         }}
         waitingWebln={waitingWebln}
-        isBuyer={garage.getSlot().order?.is_buyer ?? false}
+        isBuyer={garage.getSlot()?.order?.is_buyer ?? false}
       />
       <ConfirmDisputeDialog
         open={open.confirmDispute}
@@ -770,11 +770,11 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
         }}
         onCollabCancelClick={cancel}
         loading={loadingButtons.cancel}
-        peerAskedCancel={garage.getSlot().order?.pending_cancel ?? false}
+        peerAskedCancel={garage.getSlot()?.order?.pending_cancel ?? false}
       />
       <ConfirmFiatSentDialog
         open={open.confirmFiatSent}
-        order={garage.getSlot().order}
+        order={garage.getSlot()?.order ?? null}
         loadingButton={loadingButtons.fiatSent}
         onClose={() => {
           setOpen(closeAll);
@@ -791,14 +791,14 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
       />
       <ConfirmFiatReceivedDialog
         open={open.confirmFiatReceived}
-        order={garage.getSlot().order}
+        order={garage.getSlot()?.order ?? null}
         loadingButton={loadingButtons.fiatReceived}
         onClose={() => {
           setOpen(closeAll);
         }}
         onConfirmClick={confirmFiatReceived}
       />
-      <CollabCancelAlert order={garage.getSlot().order} />
+      <CollabCancelAlert order={garage.getSlot()?.order ?? null} />
       <Grid
         container
         padding={1}
@@ -809,7 +809,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
       >
         <Grid item>
           <Title
-            order={garage.getSlot().order}
+            order={garage.getSlot()?.order ?? null}
             text={contract?.title}
             color={contract?.titleColor}
             icon={contract?.titleIcon}
@@ -825,7 +825,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
             <Divider />
             <BondStatus
               status={contract?.bondStatus}
-              isMaker={garage.getSlot().order?.is_maker ?? false}
+              isMaker={garage.getSlot()?.order?.is_maker ?? false}
             />
           </Grid>
         ) : (
@@ -834,7 +834,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
 
         <Grid item>
           <CancelButton
-            order={garage.getSlot().order}
+            order={garage.getSlot()?.order ?? null}
             onClickCancel={cancel}
             openCancelDialog={() => {
               setOpen({ ...closeAll, confirmCancel: true });

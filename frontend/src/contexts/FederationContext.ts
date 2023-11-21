@@ -67,9 +67,8 @@ export const initialFederationContext: UseFederationStoreType = {
 export const FederationContext = createContext<UseFederationStoreType>(initialFederationContext);
 
 export const useFederationStore = (): UseFederationStoreType => {
-  const { settings, page, origin, hostUrl, open, torStatus } =
-    useContext<UseAppStoreType>(AppContext);
-  const { setMaker, garage, setBadOrder, robotUpdatedAt, badOrder, orderUpdatedAt } =
+  const { settings, origin, hostUrl, open, torStatus } = useContext<UseAppStoreType>(AppContext);
+  const { setMaker, garage, setBadOrder, robotUpdatedAt } =
     useContext<UseGarageStoreType>(GarageContext);
   const [federation, setFederation] = useState(initialFederationContext.federation);
   const sortedCoordinators = useMemo(() => {
@@ -106,10 +105,11 @@ export const useFederationStore = (): UseFederationStoreType => {
 
   const fetchCurrentOrder = (): void => {
     const activeSlot = garage.getSlot();
-    if (activeSlot.activeOrderShortAlias !== null && activeSlot.activeOrderId !== null) {
-      const coordinator = federation.getCoordinator(activeSlot.activeOrderShortAlias);
+    const robot = activeSlot?.getRobot(activeSlot?.activeShortAlias ?? '');
+    if (robot && robot?.activeOrderId && activeSlot?.activeShortAlias) {
+      const coordinator = federation.getCoordinator(activeSlot?.activeShortAlias);
       coordinator
-        .fetchOrder(activeSlot.activeOrderId, activeSlot.robot)
+        .fetchOrder(robot.activeOrderId, robot)
         .then((order) => {
           if (order?.bad_request !== undefined) {
             setBadOrder(order.bad_request);
@@ -135,18 +135,19 @@ export const useFederationStore = (): UseFederationStoreType => {
   }, []);
 
   useEffect(() => {
-    const robot = garage.getSlot().robot;
+    const slot = garage.getSlot();
+    const robot = slot?.getRobot();
 
-    if (robot !== null) {
-      if (open.profile && robot?.avatarLoaded) {
-        void federation.fetchRobot(garage, garage.currentSlot); // refresh/update existing robot
+    if (robot && garage.currentSlot) {
+      if (open.profile && slot?.avatarLoaded && slot.token) {
+        void federation.fetchRobot(garage, slot.token); // refresh/update existing robot
       } else if (
-        !robot.avatarLoaded &&
+        !Boolean(slot?.avatarLoaded) &&
         robot.token !== undefined &&
         robot.encPrivKey !== undefined &&
         robot.pubKey !== undefined
       ) {
-        void federation.fetchRobot(garage, garage.currentSlot); // create new robot with existing token and keys (on network and coordinator change)
+        void federation.fetchRobot(garage, robot.token); // create new robot with existing token and keys (on network and coordinator change)
       }
     }
   }, [open.profile, hostUrl, robotUpdatedAt]);

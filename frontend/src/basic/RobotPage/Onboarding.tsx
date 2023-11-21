@@ -61,6 +61,9 @@ const Onboarding = ({
     }, 1000);
   };
 
+  const slot = garage.getSlot();
+  const robot = slot?.getRobot();
+
   return (
     <Box>
       <Accordion expanded={step === '1'} disableGutters={true}>
@@ -122,7 +125,6 @@ const Onboarding = ({
                         onClick={() => {
                           setStep('2');
                           getGenerateRobot(inputToken);
-                          garage.updateRobot({ nickname: undefined });
                         }}
                         variant='contained'
                         size='large'
@@ -149,7 +151,7 @@ const Onboarding = ({
           <Grid container direction='column' alignItems='center' spacing={1}>
             <Grid item>
               <Typography>
-                {garage.getSlot().robot.avatarLoaded && Boolean(garage.getSlot().robot.nickname) ? (
+                {slot?.avatarLoaded && Boolean(robot?.nickname) ? (
                   t('This is your trading avatar')
                 ) : (
                   <>
@@ -162,7 +164,7 @@ const Onboarding = ({
 
             <Grid item sx={{ width: '13.5em' }}>
               <RobotAvatar
-                nickname={garage.getSlot().robot.nickname}
+                nickname={robot?.nickname}
                 smooth={true}
                 style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
                 placeholderType='generating'
@@ -178,7 +180,7 @@ const Onboarding = ({
               />
             </Grid>
 
-            {garage.getSlot().robot.avatarLoaded && Boolean(garage.getSlot().robot.nickname) ? (
+            {slot?.avatarLoaded && Boolean(robot?.nickname) ? (
               <Grid item>
                 <Typography align='center'>{t('Hi! My name is')}</Typography>
                 <Typography component='h5' variant='h5'>
@@ -197,7 +199,7 @@ const Onboarding = ({
                         width: '1.5em',
                       }}
                     />
-                    <b>{garage.getSlot().robot.nickname}</b>
+                    <b>{robot.nickname}</b>
                     <Bolt
                       sx={{
                         color: '#fcba03',
@@ -210,13 +212,7 @@ const Onboarding = ({
               </Grid>
             ) : null}
             <Grid item>
-              <Collapse
-                in={
-                  !!(
-                    garage.getSlot().robot.avatarLoaded && Boolean(garage.getSlot().robot.nickname)
-                  )
-                }
-              >
+              <Collapse in={!!(slot?.avatarLoaded && Boolean(robot?.nickname))}>
                 <Button
                   onClick={() => {
                     setStep('3');

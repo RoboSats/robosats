@@ -30,7 +30,7 @@ interface RobotPageProps {
 const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
   const { torStatus, windowSize, settings, page } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const { federation } = useContext<UseFederationStoreType>(FederationContext);
+  const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
   const { t } = useTranslation();
   const params = useParams();
   const urlToken = settings.selfhostedClient ? params.token : null;
@@ -41,15 +41,15 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
   const [badToken, setBadToken] = useState<string>('');
   const [inputToken, setInputToken] = useState<string>('');
   const [view, setView] = useState<'welcome' | 'onboarding' | 'recovery' | 'profile'>(
-    garage.getSlot().robot.token !== undefined ? 'profile' : 'welcome',
+    garage.currentSlot !== null ? 'profile' : 'welcome',
   );
 
   useEffect(() => {
-    const token = urlToken ?? garage.getSlot().robot.token;
-    if (token !== undefined) {
+    const token = urlToken ?? garage.currentSlot;
+    if (token !== undefined && token !== null) {
       setInputToken(token);
       if (window.NativeRobosats === undefined || torStatus === '"Done"') {
-        getRecoverRobot(token);
+        getGenerateRobot(token);
         setView('profile');
       }
     }
@@ -65,32 +65,18 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
     }
   }, [inputToken]);
 
-  const getRecoverRobot = (token: string): void => {
-    setInputToken(token);
-    genKey(token)
-      .then((key) => {
-        garage.updateRobot({
-          token,
-          pubKey: key.publicKeyArmored,
-          encPrivKey: key.encryptedPrivateKeyArmored,
-        });
-        void federation.fetchRobot(garage, garage.currentSlot);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-  };
-
   const getGenerateRobot = (token: string): void => {
     setInputToken(token);
     genKey(token)
       .then((key) => {
-        garage.createRobot({
+        garage.upsertRobot(token, sortedCoordinators[0], {
           token,
           pubKey: key.publicKeyArmored,
           encPrivKey: key.encryptedPrivateKeyArmored,
+          shortAlias: sortedCoordinators[0],
         });
-        void federation.fetchRobot(garage, garage.currentSlot);
+        void federation.fetchRobot(garage, token);
+        garage.currentSlot = token;
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -99,7 +85,7 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
 
   const logoutRobot = (): void => {
     setInputToken('');
-    garage.deleteSlot(garage.currentSlot);
+    garage.deleteSlot();
   };
 
   if (!(window.NativeRobosats === undefined) && !(torStatus === 'DONE' || torStatus === '"Done"')) {
@@ -194,7 +180,7 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
             badToken={badToken}
             inputToken={inputToken}
             setInputToken={setInputToken}
-            getRecoverRobot={getRecoverRobot}
+            getRecoverRobot={getGenerateRobot}
           />
         ) : null}
       </Paper>

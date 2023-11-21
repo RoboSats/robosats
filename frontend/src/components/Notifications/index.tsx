@@ -85,7 +85,7 @@ const Notifications = ({
   const basePageTitle = t('RoboSats - Simple and Private Bitcoin Exchange');
 
   const moveToOrderPage = function (): void {
-    navigate(`/order/${String(garage.getOrder()?.id)}`);
+    navigate(`/order/${String(garage.getSlot()?.order?.id)}`);
     setShow(false);
   };
 
@@ -106,7 +106,7 @@ const Notifications = ({
 
   const Messages: MessagesProps = {
     bondLocked: {
-      title: t(`${garage.getOrder()?.is_maker === true ? 'Maker' : 'Taker'} bond locked`),
+      title: t(`${garage.getSlot()?.order?.is_maker === true ? 'Maker' : 'Taker'} bond locked`),
       severity: 'info',
       onClick: moveToOrderPage,
       sound: audio.ding,
@@ -228,9 +228,9 @@ const Notifications = ({
   };
 
   const handleStatusChange = function (oldStatus: number | undefined, status: number): void {
-    const order = garage.getOrder();
+    const order = garage.getSlot()?.order;
 
-    if (order === null) return;
+    if (order === undefined || order === null) return;
 
     let message = emptyNotificationMessage;
 
@@ -293,8 +293,8 @@ const Notifications = ({
 
   // Notify on order status change
   useEffect(() => {
-    const order = garage.getOrder();
-    if (order !== null) {
+    const order = garage.getSlot()?.order;
+    if (order !== undefined && order !== null) {
       if (order.status !== oldOrderStatus) {
         handleStatusChange(oldOrderStatus, order.status);
         setOldOrderStatus(order.status);

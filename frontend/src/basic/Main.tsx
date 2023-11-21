@@ -40,22 +40,24 @@ const Main: React.FC = () => {
     setAvatarBaseUrl(federation.getCoordinator(sortedCoordinators[0]).getBaseUrl());
   }, [settings.network, settings.selfhostedClient, federation, sortedCoordinators]);
 
+  const onLoad = () => {
+    garage.updateSlot({ avatarLoaded: true });
+  };
+
   return (
     <Router>
       <RobotAvatar
         style={{ display: 'none' }}
-        nickname={garage.getSlot().robot.nickname}
+        nickname={garage.getSlot()?.getRobot()?.nickname}
         baseUrl={federation.getCoordinator(sortedCoordinators[0]).getBaseUrl()}
-        onLoad={() => {
-          garage.updateRobot({ avatarLoaded: true });
-        }}
+        onLoad={onLoad}
       />
       <Notifications
         page={page}
         openProfile={() => {
           setOpen({ ...closeAll, profile: true });
         }}
-        rewards={garage.getSlot().robot.earnedRewards}
+        rewards={garage.getSlot()?.getRobot()?.earnedRewards}
         windowWidth={windowSize?.width}
       />
       {settings.network === 'testnet' ? (

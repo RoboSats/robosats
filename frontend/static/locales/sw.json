@@ -387,6 +387,7 @@
   "Swap out of LN ": "Badilisha kutoka LN ",
   "Swap?": "Badilisha?",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "To protect your privacy, the exact location you pin will be slightly randomized.",
+  "You are already maker of an active order": "You are already maker of an active order",
   "You can add new methods": "Unaweza kuongeza njia mpya",
   "You must fill the form correctly": "Lazima ujaze fomu kwa usahihi",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "Unapokea takribani {{swapSats}} LN Sats (ada inaweza kutofautiana)",
