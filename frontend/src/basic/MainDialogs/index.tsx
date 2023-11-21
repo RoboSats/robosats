@@ -45,7 +45,6 @@ const MainDialogs = (): JSX.Element => {
       />
       <AboutDialog
         open={open.info}
-        maxAmount={'100000'} //FIXME About dialog shoul allow to change coordinator
         onClose={() => {
           setOpen((open) => {
             return { ...open, info: false };
