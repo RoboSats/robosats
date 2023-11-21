@@ -42,7 +42,7 @@ const NavBar = (): JSX.Element => {
   const tabSx = smallBar
     ? {
         position: 'relative',
-        bottom: garage.getSlot().robot.avatarLoaded ? '0.9em' : '0.13em',
+        bottom: garage.getSlot()?.avatarLoaded ? '0.9em' : '0.13em',
         minWidth: '1em',
       }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
@@ -82,8 +82,9 @@ const NavBar = (): JSX.Element => {
       setPage(newPage);
       const param =
         newPage === 'order'
-          ? `${String(slot.activeOrderShortAlias)}/${String(
-              slot.activeOrderId ?? slot.lastOrderId,
+          ? `${String(slot?.activeShortAlias)}/${String(
+              slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId ??
+                slot?.getRobot(slot?.lastShortAlias ?? '')?.lastOrderId,
             )}`
           : '';
       setTimeout(() => {
@@ -95,6 +96,8 @@ const NavBar = (): JSX.Element => {
   useEffect(() => {
     setOpen(closeAll);
   }, [page, setOpen]);
+
+  const slot = garage.getSlot();
 
   return (
     <Paper
@@ -118,16 +121,16 @@ const NavBar = (): JSX.Element => {
         <Tab
           sx={{ ...tabSx, minWidth: '2.5em', width: '2.5em', maxWidth: '4em' }}
           value='none'
-          disabled={garage.getSlot().robot.nickname === null}
+          disabled={slot?.getRobot()?.nickname === null}
           onClick={() => {
             setOpen({ ...closeAll, profile: !open.profile });
           }}
           icon={
-            garage.getSlot().robot.nickname != null && garage.getSlot().robot.avatarLoaded ? (
+            slot?.getRobot()?.nickname != null && slot?.avatarLoaded ? (
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
-                nickname={garage.getSlot().robot.nickname}
+                nickname={slot?.getRobot()?.nickname}
                 baseUrl={hostUrl}
               />
             ) : (
@@ -162,7 +165,9 @@ const NavBar = (): JSX.Element => {
           sx={tabSx}
           label={smallBar ? undefined : t('Order')}
           value='order'
-          disabled={!garage.getSlot().robot.avatarLoaded || !garage.getSlot().activeOrderId}
+          disabled={
+            !slot?.avatarLoaded || !slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId
+          }
           icon={<Assignment />}
           iconPosition='start'
         />

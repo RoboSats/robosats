@@ -22,6 +22,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
+import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface RobotProfileProps {
   robot: Robot;
@@ -45,6 +46,7 @@ const RobotProfile = ({
 }: RobotProfileProps): JSX.Element => {
   const { windowSize, hostUrl } = useContext<UseAppStoreType>(AppContext);
   const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -53,7 +55,9 @@ const RobotProfile = ({
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (garage.getSlot().robot.nickname != null && garage.getSlot().robot.avatarLoaded) {
+    const slot = garage.getSlot();
+    const robot = slot?.getRobot(sortedCoordinators[0]);
+    if (robot?.nickname != null && slot?.avatarLoaded) {
       setLoading(false);
     }
   }, [robotUpdatedAt, loading]);
@@ -64,9 +68,12 @@ const RobotProfile = ({
   };
 
   const handleChangeSlot = (e: SelectChangeEvent<number | 'loading'>): void => {
-    garage.currentSlot = Number(e.target.value);
+    garage.currentSlot = e.target.value;
     setLoading(true);
   };
+
+  const slot = garage.getSlot();
+  const robot = slot?.getRobot();
 
   return (
     <Grid container direction='column' alignItems='center' spacing={1} padding={1} paddingTop={2}>
@@ -79,7 +86,7 @@ const RobotProfile = ({
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {garage.getSlot().robot.avatarLoaded && garage.getSlot().robot.nickname != null ? (
+          {slot?.avatarLoaded && robot?.nickname != null ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
                 style={{
@@ -98,7 +105,7 @@ const RobotProfile = ({
                     }}
                   />
                 )}
-                <b>{garage.getSlot().robot.nickname}</b>
+                <b>{robot?.nickname}</b>
                 {width < 19 ? null : (
                   <Bolt
                     sx={{
@@ -120,7 +127,7 @@ const RobotProfile = ({
 
         <Grid item sx={{ width: `13.5em` }}>
           <RobotAvatar
-            nickname={garage.getSlot().robot.nickname}
+            nickname={robot?.nickname}
             smooth={true}
             style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
             placeholderType='generating'
@@ -135,7 +142,7 @@ const RobotProfile = ({
             tooltipPosition='top'
             baseUrl={hostUrl}
           />
-          {garage.getSlot().robot.found && Number(garage.getSlot().lastOrderId) > 0 ? (
+          {robot?.found && slot?.lastShortAlias ? (
             <Typography align='center' variant='h6'>
               {t('Welcome back!')}
             </Typography>
@@ -144,39 +151,31 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {Boolean(garage.getSlot().activeOrderId) &&
-        garage.getSlot().robot.avatarLoaded &&
-        Boolean(garage.getSlot().robot.nickname) ? (
+        {Boolean(robot?.activeOrderId) &&
+        Boolean(slot?.avatarLoaded) &&
+        Boolean(robot?.nickname) ? (
           <Grid item>
             <Button
               onClick={() => {
                 navigate(
-                  `/order/${String(garage.getSlot().activeOrderShortAlias)}/${String(
-                    garage.getSlot().activeOrderId,
-                  )}`,
+                  `/order/${String(slot?.activeShortAlias)}/${String(robot?.activeOrderId)}`,
                 );
               }}
             >
-              {t('Active order #{{orderID}}', { orderID: garage.getSlot().activeOrderId })}
+              {t('Active order #{{orderID}}', { orderID: robot?.activeOrderId })}
             </Button>
           </Grid>
         ) : null}
 
-        {Boolean(garage.getSlot().lastOrderId) &&
-        garage.getSlot().robot.avatarLoaded &&
-        Boolean(garage.getSlot().robot.nickname) ? (
+        {Boolean(robot?.lastOrderId) && Boolean(slot?.avatarLoaded) && Boolean(robot?.nickname) ? (
           <Grid item container direction='column' alignItems='center'>
             <Grid item>
               <Button
                 onClick={() => {
-                  navigate(
-                    `/order/${String(garage.getSlot().lastOrderShortAlias)}/${String(
-                      garage.getSlot().lastOrderId,
-                    )}`,
-                  );
+                  navigate(`/order/${String(slot?.lastShortAlias)}/${String(robot?.lastOrderId)}`);
                 }}
               >
-                {t('Last order #{{orderID}}', { orderID: garage.getSlot().lastOrderId })}
+                {t('Last order #{{orderID}}', { orderID: robot?.lastOrderId })}
               </Button>
             </Grid>
             <Grid item>
@@ -263,9 +262,9 @@ const RobotProfile = ({
                     <Typography>{t('Building...')}</Typography>
                   </MenuItem>
                 ) : (
-                  garage.slots.map((slot: Slot, index: number) => {
+                  Object.values(garage.slots).map((slot: Slot, index: number) => {
                     return (
-                      <MenuItem key={index} value={index}>
+                      <MenuItem key={index} value={slot.token}>
                         <Grid
                           container
                           direction='row'
@@ -276,7 +275,7 @@ const RobotProfile = ({
                         >
                           <Grid item>
                             <RobotAvatar
-                              nickname={slot.robot.nickname}
+                              nickname={slot?.getRobot()?.nickname}
                               smooth={true}
                               style={{ width: '2.6em', height: '2.6em' }}
                               placeholderType='loading'
@@ -286,7 +285,7 @@ const RobotProfile = ({
                           </Grid>
                           <Grid item>
                             <Typography variant={windowSize.width < 26 ? 'caption' : undefined}>
-                              {slot.robot.nickname}
+                              {slot?.getRobot()?.nickname}
                             </Typography>
                           </Grid>
                         </Grid>
@@ -323,7 +322,6 @@ const RobotProfile = ({
                   color='primary'
                   onClick={() => {
                     garage.delete();
-                    garage.currentSlot = 0;
                     logoutRobot();
                     setView('welcome');
                   }}

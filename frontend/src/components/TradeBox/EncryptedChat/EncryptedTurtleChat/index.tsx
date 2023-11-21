@@ -84,12 +84,16 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   }, [chatOffset]);
 
   const loadMessages: () => void = () => {
+    const shortAlias = garage.getSlot()?.activeShortAlias;
+
+    if (!shortAlias) return;
+
     const { url, basePath } = federation
-      .getCoordinator(garage.getSlot().activeOrderShortAlias)
+      .getCoordinator(shortAlias)
       .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
     apiClient
       .get(url + basePath, `/api/chat/?order_id=${orderId}&offset=${lastIndex}`, {
-        tokenSHA256: garage.getSlot().robot.tokenSHA256,
+        tokenSHA256: garage.getSlot()?.getRobot()?.tokenSHA256 ?? '',
       })
       .then((results: any) => {
         if (results != null) {
@@ -106,18 +110,18 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   const createJsonFile = (): object => {
     return {
       credentials: {
-        own_public_key: garage.getSlot().robot.pubKey,
+        own_public_key: garage.getSlot()?.getRobot()?.pubKey,
         peer_public_key: peerPubKey,
-        encrypted_private_key: garage.getSlot().robot.encPrivKey,
-        passphrase: garage.getSlot().robot.token,
+        encrypted_private_key: garage.getSlot()?.getRobot()?.encPrivKey,
+        passphrase: garage.getSlot()?.token,
       },
       messages,
     };
   };
 
   const onMessage = (dataFromServer: ServerMessage): void => {
-    const robot = garage.getSlot().robot;
-    if (dataFromServer != null) {
+    const robot = garage.getSlot();
+    if (robot && dataFromServer != null) {
       // If we receive an encrypted message
       if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
         void decryptMessage(
@@ -172,8 +176,8 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   };
 
   const onButtonClicked = (e: React.FormEvent<HTMLFormElement>): void => {
-    const robot = garage.getSlot().robot;
-    if (robot.token !== undefined && value.includes(robot.token)) {
+    const robot = garage.getSlot();
+    if (robot?.token !== undefined && value.includes(robot.token)) {
       alert(
         `Aye! You just sent your own robot robot.token  to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
       );
@@ -182,7 +186,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
     // If input string contains '#' send unencrypted and unlogged message
     else if (value.substring(0, 1) === '#') {
       const { url, basePath } = federation
-        .getCoordinator(garage.getSlot().activeOrderShortAlias ?? '')
+        .getCoordinator(garage.getSlot()?.activeShortAlias ?? '')
         .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
       apiClient
         .post(
@@ -193,7 +197,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
             order_id: orderId,
             offset: lastIndex,
           },
-          { tokenSHA256: robot.tokenSHA256 },
+          { tokenSHA256: robot?.tokenSHA256 },
         )
         .then((response) => {
           if (response != null) {
@@ -209,13 +213,13 @@ const EncryptedTurtleChat: React.FC<Props> = ({
         });
     }
     // Else if message is not empty send message
-    else if (value !== '') {
+    else if (value !== '' && robot?.pubKey) {
       setWaitingEcho(true);
       setLastSent(value);
-      encryptMessage(value, robot.pubKey, peerPubKey, robot.encPrivKey, robot.token)
+      encryptMessage(value, robot?.pubKey, peerPubKey ?? '', robot?.encPrivKey, robot?.token)
         .then((encryptedMessage) => {
           const { url, basePath } = federation
-            .getCoordinator(garage.getSlot().activeOrderShortAlias ?? '')
+            .getCoordinator(garage.getSlot()?.activeShortAlias ?? '')
             .getEndpoint(settings.network, origin, settings.selfhostedClient, hostUrl);
           apiClient
             .post(
@@ -226,7 +230,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
                 order_id: orderId,
                 offset: lastIndex,
               },
-              { tokenSHA256: robot.tokenSHA256 },
+              { tokenSHA256: robot?.tokenSHA256 },
             )
             .then((response) => {
               if (response != null) {
@@ -263,10 +267,10 @@ const EncryptedTurtleChat: React.FC<Props> = ({
         }}
         orderId={Number(orderId)}
         messages={messages}
-        ownPubKey={garage.getSlot().robot.pubKey ?? ''}
-        ownEncPrivKey={garage.getSlot().robot.encPrivKey ?? ''}
+        ownPubKey={garage.getSlot()?.getRobot()?.pubKey ?? ''}
+        ownEncPrivKey={garage.getSlot()?.getRobot()?.encPrivKey ?? ''}
         peerPubKey={peerPubKey ?? 'Not received yet'}
-        passphrase={garage.getSlot().robot.token ?? ''}
+        passphrase={garage.getSlot()?.token ?? ''}
         onClickBack={() => {
           setAudit(false);
         }}

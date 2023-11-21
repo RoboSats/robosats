@@ -387,6 +387,7 @@
   "Swap out of LN ": "Swap out of LN ",
   "Swap?": "スワップ？",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "To protect your privacy, the exact location you pin will be slightly randomized.",
+  "You are already maker of an active order": "You are already maker of an active order",
   "You can add new methods": "新しい支払い方法を追加できます。",
   "You must fill the form correctly": "フォームに正しく入力する必要があります。",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "約{{swapSats}} ライトニングSatsを受け取ります（手数料は異なる場合があります）",

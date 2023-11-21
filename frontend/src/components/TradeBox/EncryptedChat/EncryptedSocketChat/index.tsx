@@ -47,7 +47,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
 }: Props): JSX.Element => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const [audio] = useState(() => new Audio(`${audioPath}/chat-open.mp3`));
   const [connected, setConnected] = useState<boolean>(false);
@@ -64,10 +64,10 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    if (!connected && garage.getSlot().robot.avatarLoaded) {
+    if (!connected && garage.getSlot()?.avatarLoaded) {
       connectWebsocket();
     }
-  }, [connected, robot]);
+  }, [connected, robotUpdatedAt]);
 
   // Make sure to not keep reconnecting once status is not Chat
   useEffect(() => {
@@ -108,7 +108,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
         setConnected(true);
 
         connection.send({
-          message: garage.getSlot().robot.pubKey,
+          message: garage.getSlot()?.getRobot()?.pubKey,
           nick: userNick,
         });
 
@@ -130,10 +130,10 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const createJsonFile: () => object = () => {
     return {
       credentials: {
-        own_public_key: garage.getSlot().robot.pubKey,
+        own_public_key: garage.getSlot()?.getRobot()?.pubKey,
         peer_public_key: peerPubKey,
-        encrypted_private_key: garage.getSlot().robot.encPrivKey,
-        passphrase: garage.getSlot().robot.token,
+        encrypted_private_key: garage.getSlot()?.getRobot()?.encPrivKey,
+        passphrase: garage.getSlot()?.token,
       },
       messages,
     };
@@ -141,7 +141,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
 
   const onMessage: (message: any) => void = (message) => {
     const dataFromServer = JSON.parse(message.data);
-    const robot = garage.getSlot().robot;
+    const robot = garage.getSlot()?.getRobot();
     if (dataFromServer != null && !receivedIndexes.includes(dataFromServer.index)) {
       setReceivedIndexes((prev) => [...prev, dataFromServer.index]);
       setPeerConnected(dataFromServer.peer_connected);
@@ -211,8 +211,8 @@ const EncryptedSocketChat: React.FC<Props> = ({
   };
 
   const onButtonClicked = (e: React.FormEvent<HTMLFormElement>): void => {
-    const robot = garage.getSlot().robot;
-    if (robot.token !== undefined && value.includes(robot.token)) {
+    const robot = garage.getSlot()?.getRobot();
+    if (robot?.token !== undefined && value.includes(robot.token)) {
       alert(
         `Aye! You just sent your own robot robot.token to your peer in chat, that's a catastrophic idea! So bad your message was blocked.`,
       );
@@ -263,10 +263,10 @@ const EncryptedSocketChat: React.FC<Props> = ({
         }}
         orderId={Number(orderId)}
         messages={messages}
-        ownPubKey={garage.getSlot().robot.pubKey ?? ''}
-        ownEncPrivKey={garage.getSlot().robot.encPrivKey ?? ''}
+        ownPubKey={garage.getSlot()?.getRobot()?.pubKey ?? ''}
+        ownEncPrivKey={garage.getSlot()?.getRobot()?.encPrivKey ?? ''}
         peerPubKey={peerPubKey ?? 'Not received yet'}
-        passphrase={garage.getSlot().robot.token ?? ''}
+        passphrase={garage.getSlot()?.getRobot()?.token ?? ''}
         onClickBack={() => {
           setAudit(false);
         }}
