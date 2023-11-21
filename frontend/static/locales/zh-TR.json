@@ -387,6 +387,7 @@
   "Swap out of LN ": "Swap out of LN ",
   "Swap?": "交換？",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "To protect your privacy, the exact location you pin will be slightly randomized.",
+  "You are already maker of an active order": "You are already maker of an active order",
   "You can add new methods": "你可以添加新方式",
   "You must fill the form correctly": "你必須正確填寫表格",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "你將接收大約{{swapSats}}閃電聰（費用會造成有所差異）",

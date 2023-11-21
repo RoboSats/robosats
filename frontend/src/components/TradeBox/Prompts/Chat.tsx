@@ -40,7 +40,7 @@ export const ChatPrompt = ({
   setMessages,
 }: ChatPromptProps): JSX.Element => {
   const { t } = useTranslation();
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const [sentButton, setSentButton] = useState<boolean>(false);
   const [receivedButton, setReceivedButton] = useState<boolean>(false);
@@ -49,9 +49,9 @@ export const ChatPrompt = ({
   const [enableDisputeTime, setEnableDisputeTime] = useState<Date>(new Date(order.expires_at));
   const [text, setText] = useState<string>('');
 
-  const currencyCode: string = currencies[`${garage.getSlot().order.currency}`];
+  const currencyCode: string = currencies[`${garage.getSlot()?.order?.currency}`];
   const amount: string = pn(
-    parseFloat(parseFloat(garage.getSlot().order.amount).toFixed(order.currency === 1000 ? 8 : 4)),
+    parseFloat(garage.getSlot()?.order?.amount ?? 0).toFixed(order.currency === 1000 ? 8 : 4),
   );
 
   const disputeCountdownRenderer = function ({
@@ -113,7 +113,7 @@ export const ChatPrompt = ({
         setText(t("The buyer has sent the fiat. Click 'Confirm Received' once you receive it."));
       }
     }
-  }, [order]);
+  }, [orderUpdatedAt]);
 
   return (
     <Grid

@@ -387,6 +387,7 @@
   "Swap out of LN ": "Échanger hors de LN ",
   "Swap?": "Échange?",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "To protect your privacy, the exact location you pin will be slightly randomized.",
+  "You are already maker of an active order": "You are already maker of an active order",
   "You can add new methods": "Vous pouvez ajouter de nouvelles méthodes",
   "You must fill the form correctly": "Vous devez remplir le formulaire correctement",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "Vous recevez environ {{swapSats}} LN Sats (les frais peuvent varier).",

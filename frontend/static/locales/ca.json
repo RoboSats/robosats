@@ -387,6 +387,7 @@
   "Swap out of LN ": "Swap out of LN ",
   "Swap?": "Intercanviar?",
   "To protect your privacy, the exact location you pin will be slightly randomized.": "To protect your privacy, the exact location you pin will be slightly randomized.",
+  "You are already maker of an active order": "You are already maker of an active order",
   "You can add new methods": "Pots afegir nous mètodes",
   "You must fill the form correctly": "Has d'omplir el formulari correctament",
   "You receive approx {{swapSats}} LN Sats (fees might vary)": "Reps aprox. {{swapSats}} LN Sats (les taxes poden variar)",

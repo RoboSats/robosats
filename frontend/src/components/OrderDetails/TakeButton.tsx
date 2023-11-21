@@ -314,7 +314,9 @@ const TakeButton = ({
   };
 
   const takeOrder = function (): void {
-    if (currentOrder === null) return;
+    const robot = garage.getSlot()?.getRobot() ?? null;
+
+    if (currentOrder === null || robot === null) return;
 
     setLoadingTake(true);
     const { url, basePath } = federation
@@ -328,7 +330,7 @@ const TakeButton = ({
           action: 'take',
           amount: currentOrder?.currency === 1000 ? takeAmount / 100000000 : takeAmount,
         },
-        { tokenSHA256: garage.getSlot().robot.tokenSHA256 },
+        { tokenSHA256: robot?.tokenSHA256 },
       )
       .then((data) => {
         setLoadingTake(false);
@@ -370,7 +372,7 @@ const TakeButton = ({
           setLoadingTake(true);
           setOpen(closeAll);
         }}
-        hasRobot={garage.getSlot().robot.avatarLoaded}
+        hasRobot={garage.getSlot()?.avatarLoaded ?? false}
         onClickGenerateRobot={onClickGenerateRobot}
       />
       <InactiveMakerDialog />

@@ -38,6 +38,10 @@ const TokenInput = ({
     setShowCopied(false);
   }, [inputToken]);
 
+  useEffect(() => {
+    setShowCopied(false);
+  }, [showCopied]);
+
   if (loading) {
     return <LinearProgress sx={{ height: '0.8em' }} />;
   } else {
@@ -67,14 +71,14 @@ const TokenInput = ({
             <Tooltip open={showCopied} title={t('Copied!')}>
               <IconButton
                 autoFocus={autoFocusTarget === 'copyButton'}
-                color={garage.getSlot().robot.copiedToken ? 'inherit' : 'primary'}
+                color={garage.getSlot()?.copiedToken ? 'inherit' : 'primary'}
                 onClick={() => {
                   systemClient.copyToClipboard(inputToken);
                   setShowCopied(true);
                   setTimeout(() => {
                     setShowCopied(false);
                   }, 1000);
-                  garage.updateRobot({ copiedToken: true });
+                  garage.updateSlot({ copiedToken: true }, inputToken);
                 }}
               >
                 <ContentCopy sx={{ width: '1em', height: '1em' }} />

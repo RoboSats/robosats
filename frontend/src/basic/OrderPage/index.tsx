@@ -26,6 +26,7 @@ const OrderPage = (): JSX.Element => {
   const [tab, setTab] = useState<'order' | 'contract'>('contract');
   const [baseUrl, setBaseUrl] = useState<string>(hostUrl);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+  const [currentOrderId, setCurrentOrderId] = useState<number | null>(null);
 
   useEffect(() => {
     const coordinator = federation.getCoordinator(params.shortAlias ?? '');
@@ -38,30 +39,41 @@ const OrderPage = (): JSX.Element => {
 
     setBaseUrl(`${url}${basePath}`);
 
-    if (currentOrder?.id !== Number(params.orderId)) {
-      const coordinator = federation.getCoordinator(params.shortAlias ?? '');
-      coordinator
-        .fetchOrder(Number(params.orderId) ?? null, garage.getSlot().robot)
-        .then((order) => {
-          if (order?.bad_request !== undefined) {
-            setBadOrder(order.bad_request);
-          } else if (order !== null && order?.id !== null) {
-            setCurrentOrder(order);
-            if (order.is_participant) {
-              garage.updateOrder(order as Order);
-            }
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    }
+    const orderId = Number(params.orderId);
+    if (orderId && currentOrderId !== orderId) setCurrentOrderId(orderId);
   }, [params]);
+
+  useEffect(() => {
+    setCurrentOrder(null);
+    if (currentOrderId !== null) {
+      const coordinator = federation.getCoordinator(params.shortAlias ?? '');
+      const slot = garage.getSlot();
+      const robot = slot?.getRobot();
+      if (robot && slot?.token) {
+        federation.fetchRobot(garage, slot.token);
+        coordinator
+          .fetchOrder(currentOrderId, robot)
+          .then((order) => {
+            if (order?.bad_request !== undefined) {
+              setBadOrder(order.bad_request);
+            } else if (order !== null && order?.id !== null) {
+              setCurrentOrder(order);
+              if (order.is_participant) {
+                garage.updateOrder(order as Order);
+              }
+            }
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
+    }
+  }, [currentOrderId]);
 
   const onClickCoordinator = function (): void {
     if (currentOrder?.shortAlias != null) {
       setOpen((open) => {
-        return { ...open, coordinator: shortAlias };
+        return { ...open, coordinator: currentOrder?.shortAlias };
       });
     }
   };
