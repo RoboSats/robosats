@@ -7,19 +7,20 @@ from decouple import config
 from django.contrib.auth.models import User
 from django.urls import reverse
 
+from api.management.commands.clean_orders import Command as CleanOrders
 from api.management.commands.follow_invoices import Command as FollowInvoices
 from api.models import Currency, Order
 from api.tasks import cache_market, follow_send_payment
 from control.models import BalanceLog
 from control.tasks import compute_node_balance, do_accounting
-from tests.node_utils import (
+from tests.test_api import BaseAPITestCase
+from tests.utils.node import (
     add_invoice,
     create_address,
     pay_invoice,
     set_up_regtest_network,
 )
-from tests.pgp_utils import sign_message
-from tests.test_api import BaseAPITestCase
+from tests.utils.pgp import sign_message
 
 
 def read_file(file_path):
@@ -358,8 +359,13 @@ class TradeTest(BaseAPITestCase):
 
     def follow_hold_invoices(self):
         # A background thread checks every 5 second the status of invoices. We invoke directly during test.
-        follow_invoices = FollowInvoices()
-        follow_invoices.follow_hold_invoices()
+        follower = FollowInvoices()
+        follower.follow_hold_invoices()
+
+    def clean_orders(self):
+        # A background thread checks every 5 second order expirations. We invoke directly during test.
+        cleaner = CleanOrders()
+        cleaner.clean_orders()
 
     def send_payments(self):
         # A background thread checks every 5 second whether there are outgoing payments. We invoke directly during test.
@@ -905,6 +911,130 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             data["bad_request"], "This order has been cancelled collaborativelly"
         )
+
+    def test_created_order_expires(self):
+        """
+        Tests the expiration of a public order
+        """
+        maker_form = self.maker_form_buy_with_range
+        response = self.make_order(maker_form)
+
+        # Change order expiry to now
+        order = Order.objects.get(id=response.json()["id"])
+        order.expires_at = datetime.now()
+        order.save()
+
+        # Make orders expire
+        self.clean_orders()
+
+        response = self.get_order(response.json()["id"])
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
+        self.assertEqual(
+            data["status"],
+            Order.Status.EXP,
+        )
+        self.assertEqual(
+            data["expiry_message"],
+            Order.ExpiryReasons(Order.ExpiryReasons.NMBOND).label,
+        )
+        self.assertEqual(data["expiry_reason"], Order.ExpiryReasons.NMBOND)
+
+    def test_public_order_expires(self):
+        """
+        Tests the expiration of a public order
+        """
+        maker_form = self.maker_form_buy_with_range
+        response = self.make_and_publish_order(maker_form)
+
+        # Change order expiry to now
+        order = Order.objects.get(id=response.json()["id"])
+        order.expires_at = datetime.now()
+        order.save()
+
+        # Make orders expire
+        self.clean_orders()
+
+        response = self.get_order(response.json()["id"])
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
+        self.assertEqual(
+            data["status"],
+            Order.Status.EXP,
+        )
+        self.assertEqual(
+            data["expiry_message"],
+            Order.ExpiryReasons(Order.ExpiryReasons.NTAKEN).label,
+        )
+        self.assertEqual(data["expiry_reason"], Order.ExpiryReasons.NTAKEN)
+
+    def test_taken_order_expires(self):
+        """
+        Tests the expiration of a public order
+        """
+        maker_form = self.maker_form_buy_with_range
+        response = self.make_and_lock_contract(maker_form)
+
+        # Change order expiry to now
+        order = Order.objects.get(id=response.json()["id"])
+        order.expires_at = datetime.now()
+        order.save()
+
+        # Make orders expire
+        self.clean_orders()
+
+        response = self.get_order(response.json()["id"])
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
+        self.assertEqual(
+            data["status"],
+            Order.Status.EXP,
+        )
+        self.assertEqual(
+            data["expiry_message"],
+            Order.ExpiryReasons(Order.ExpiryReasons.NESINV).label,
+        )
+        self.assertEqual(data["expiry_reason"], Order.ExpiryReasons.NESINV)
+
+    def test_escrow_locked_expires(self):
+        """
+        Tests the expiration of a public order
+        """
+        maker_form = self.maker_form_buy_with_range
+        response = self.trade_to_locked_escrow(maker_form)
+
+        # Change order expiry to now
+        order = Order.objects.get(id=response.json()["id"])
+        order.expires_at = datetime.now()
+        order.save()
+
+        # Make orders expire
+        self.clean_orders()
+
+        response = self.get_order(response.json()["id"])
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertResponse(response)
+
+        self.assertEqual(
+            data["status"],
+            Order.Status.EXP,
+        )
+        self.assertEqual(
+            data["expiry_message"],
+            Order.ExpiryReasons(Order.ExpiryReasons.NINVOI).label,
+        )
+        self.assertEqual(data["expiry_reason"], Order.ExpiryReasons.NINVOI)
 
     def test_ticks(self):
         """
