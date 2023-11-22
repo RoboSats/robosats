@@ -12,7 +12,7 @@ src: "_pages/docs/00-quick-start/01-lightning.md"
 
 The Lightning Network, or simply referred to as LN, is an off chain (layer two) micropayment network featuring low fees and instant payments. RoboSats leverages the advantages of transacting off chain to provide users a quick and inexpensive experience! There are many great resources out there to learn more about how the Lightning Network works. Check out ["Mastering the Lightning Network"](https://github.com/lnbook/lnbook) for one such great resource.
 
-RoboSats is experimental, and as such is currently supported by an [experimental coordinator node](https://amboss.space/node/0282eb467bc073833a039940392592bf10cf338a830ba4e392c1667d7697654c7e). The upcoming [federation upgrade](https://github.com/RoboSats/robosats/pull/601) allows anyone to become a coordinator node and support the RoboSats federation, thereby creating a decentralized but unified order book consisting of federation members competing against each other to attract traders.
+RoboSats is experimental, and as such is currently supported by an [experimental coordinator node](https://amboss.space/node/02187352cc4b1856b9604e0a79e1bc9b301be7e0c14acbbb8c29f7051d507127d7). The upcoming [federation upgrade](https://github.com/RoboSats/robosats/pull/601) allows anyone to become a coordinator node and support the RoboSats federation, thereby creating a decentralized but unified order book consisting of federation members competing against each other to attract traders.
 
 ## **Using the Lightning Network**
 
