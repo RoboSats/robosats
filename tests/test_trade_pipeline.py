@@ -1,26 +1,17 @@
-import random
 from datetime import datetime
 from decimal import Decimal
-from unittest.mock import patch
 
 from decouple import config
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from api.management.commands.clean_orders import Command as CleanOrders
-from api.management.commands.follow_invoices import Command as FollowInvoices
 from api.models import Currency, Order
-from api.tasks import cache_market, follow_send_payment
+from api.tasks import cache_market
 from control.models import BalanceLog
 from control.tasks import compute_node_balance, do_accounting
 from tests.test_api import BaseAPITestCase
-from tests.utils.node import (
-    add_invoice,
-    create_address,
-    pay_invoice,
-    set_up_regtest_network,
-)
-from tests.utils.pgp import sign_message
+from tests.utils.node import set_up_regtest_network
+from tests.utils.trade import Trade
 
 
 def read_file(file_path):
@@ -34,22 +25,6 @@ def read_file(file_path):
 class TradeTest(BaseAPITestCase):
     su_pass = "12345678"
     su_name = config("ESCROW_USERNAME", cast=str, default="admin")
-
-    maker_form_buy_with_range = {
-        "type": Order.Types.BUY,
-        "currency": 1,
-        "has_range": True,
-        "min_amount": 21,
-        "max_amount": 101.7,
-        "payment_method": "Advcash Cash F2F",
-        "is_explicit": False,
-        "premium": 3.34,
-        "public_duration": 69360,
-        "escrow_duration": 8700,
-        "bond_size": 3.5,
-        "latitude": 34.7455,
-        "longitude": 135.503,
-    }
 
     @classmethod
     def setUpTestData(cls):
@@ -116,26 +91,6 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(balance_log.onchain_unconfirmed, 0)
         self.assertTrue(balance_log.onchain_fraction > 0)
 
-    def get_robot_auth(self, robot_index, first_encounter=False):
-        """
-        Create an AUTH header that embeds token, pub_key, and enc_priv_key into a single string
-        as requested by the robosats token middleware.
-        """
-
-        b91_token = read_file(f"tests/robots/{robot_index}/b91_token")
-        pub_key = read_file(f"tests/robots/{robot_index}/pub_key")
-        enc_priv_key = read_file(f"tests/robots/{robot_index}/enc_priv_key")
-
-        # First time a robot authenticated, it is registered by the backend, so pub_key and enc_priv_key is needed
-        if first_encounter:
-            headers = {
-                "HTTP_AUTHORIZATION": f"Token {b91_token} | Public {pub_key} | Private {enc_priv_key}"
-            }
-        else:
-            headers = {"HTTP_AUTHORIZATION": f"Token {b91_token}"}
-
-        return headers
-
     def assert_robot(self, response, robot_index):
         """
         Assert that the robot is created correctly.
@@ -177,44 +132,26 @@ class TradeTest(BaseAPITestCase):
         )
         self.assertEqual(data["earned_rewards"], 0, "The new robot's rewards are not 0")
 
-    def create_robot(self, robot_index):
-        """
-        Creates the robots in /tests/robots/{robot_index}
-        """
-        path = reverse("robot")
-        headers = self.get_robot_auth(robot_index, True)
-
-        return self.client.get(path, **headers)
-
     def test_create_robots(self):
         """
         Test the creation of two robots to be used in the trade tests
         """
+        trade = Trade(self.client)
         for robot_index in [1, 2]:
-            response = self.create_robot(robot_index)
+            response = trade.create_robot(robot_index)
             self.assert_robot(response, robot_index)
-
-    def make_order(self, maker_form, robot_index=1):
-        """
-        Create an order for the test.
-        """
-        path = reverse("make")
-        # Get valid robot auth headers
-        headers = self.get_robot_auth(robot_index, True)
-
-        response = self.client.post(path, maker_form, **headers)
-        return response
 
     def test_make_order(self):
         """
         Test the creation of an order.
         """
-        maker_form = self.maker_form_buy_with_range
-        response = self.make_order(maker_form, robot_index=1)
-        data = response.json()
+        trade = Trade(
+            self.client
+        )  # init of Trade calls make_order() with the default maker form.
+        data = trade.response.json()
 
         # Checks
-        self.assertResponse(response)
+        self.assertResponse(trade.response)
 
         self.assertIsInstance(data["id"], int, "Order ID is not an integer")
         self.assertEqual(
@@ -242,42 +179,42 @@ class TradeTest(BaseAPITestCase):
         self.assertTrue(data["has_range"], "Order with range has a False has_range")
         self.assertAlmostEqual(
             float(data["min_amount"]),
-            maker_form["min_amount"],
+            trade.maker_form["min_amount"],
             "Order min amount does not match",
         )
         self.assertAlmostEqual(
             float(data["max_amount"]),
-            maker_form["max_amount"],
+            trade.maker_form["max_amount"],
             "Order max amount does not match",
         )
         self.assertEqual(
             data["payment_method"],
-            maker_form["payment_method"],
+            trade.maker_form["payment_method"],
             "Order payment method does not match",
         )
         self.assertEqual(
             data["escrow_duration"],
-            maker_form["escrow_duration"],
+            trade.maker_form["escrow_duration"],
             "Order escrow duration does not match",
         )
         self.assertAlmostEqual(
             float(data["bond_size"]),
-            maker_form["bond_size"],
+            trade.maker_form["bond_size"],
             "Order bond size does not match",
         )
         self.assertAlmostEqual(
             float(data["latitude"]),
-            maker_form["latitude"],
+            trade.maker_form["latitude"],
             "Order latitude does not match",
         )
         self.assertAlmostEqual(
             float(data["longitude"]),
-            maker_form["longitude"],
+            trade.maker_form["longitude"],
             "Order longitude does not match",
         )
         self.assertAlmostEqual(
             float(data["premium"]),
-            maker_form["premium"],
+            trade.maker_form["premium"],
             "Order premium does not match",
         )
         self.assertFalse(
@@ -288,53 +225,24 @@ class TradeTest(BaseAPITestCase):
         )
         self.assertIsNone(data["taker"], "New order's taker is not null")
 
-        return data
-
-    def get_order(self, order_id, robot_index=1, first_encounter=False):
-        path = reverse("order")
-        params = f"?order_id={order_id}"
-        headers = self.get_robot_auth(robot_index, first_encounter)
-        response = self.client.get(path + params, **headers)
-
-        return response
-
-    def cancel_order(self, order_id, robot_index=1):
-        path = reverse("order")
-        params = f"?order_id={order_id}"
-        headers = self.get_robot_auth(robot_index)
-        body = {"action": "cancel"}
-        response = self.client.post(path + params, body, **headers)
-
-        return response
-
-    def pause_order(self, order_id, robot_index=1):
-        path = reverse("order")
-        params = f"?order_id={order_id}"
-        headers = self.get_robot_auth(robot_index)
-        body = {"action": "pause"}
-        response = self.client.post(path + params, body, **headers)
-
-        return response
-
     def test_get_order_created(self):
         """
         Tests the creation of an order and the first request to see details,
         including, the creation of the maker bond invoice.
         """
-        maker_form = self.maker_form_buy_with_range
         robot_index = 1
-
-        order_made_response = self.make_order(maker_form, robot_index)
-        order_made_data = order_made_response.json()
+        trade = Trade(
+            self.client, maker_index=robot_index
+        )  # init of Trade calls make_order() with the default maker form.
 
         # Maker's first order fetch. Should trigger maker bond hold invoice generation.
-        response = self.get_order(order_made_data["id"])
-        data = response.json()
+        trade.get_order()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
-        self.assertEqual(data["id"], order_made_data["id"])
+        self.assertEqual(data["id"], trade.order_id)
         self.assertIsInstance(datetime.fromisoformat(data["created_at"]), datetime)
         self.assertIsInstance(datetime.fromisoformat(data["expires_at"]), datetime)
         self.assertTrue(data["is_maker"])
@@ -355,53 +263,18 @@ class TradeTest(BaseAPITestCase):
         self.assertIsInstance(data["bond_satoshis"], int)
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
-        self.cancel_order(data["id"])
-
-    def follow_hold_invoices(self):
-        # A background thread checks every 5 second the status of invoices. We invoke directly during test.
-        follower = FollowInvoices()
-        follower.follow_hold_invoices()
-
-    def clean_orders(self):
-        # A background thread checks every 5 second order expirations. We invoke directly during test.
-        cleaner = CleanOrders()
-        cleaner.clean_orders()
-
-    def send_payments(self):
-        # A background thread checks every 5 second whether there are outgoing payments. We invoke directly during test.
-        follow_invoices = FollowInvoices()
-        follow_invoices.send_payments()
-
-    def make_and_publish_order(self, maker_form, robot_index=1):
-        # Make an order
-        order_made_response = self.make_order(maker_form, robot_index)
-        order_made_data = order_made_response.json()
-
-        # Maker's first order fetch. Should trigger maker bond hold invoice generation.
-        response = self.get_order(order_made_data["id"])
-        invoice = response.json()["bond_invoice"]
-
-        # Lock the invoice from the robot's node
-        pay_invoice("robot", invoice)
-
-        # Check for invoice locked (the mocked LND will return ACCEPTED)
-        self.follow_hold_invoices()
-
-        # Get order
-        response = self.get_order(order_made_data["id"])
-        return response
+        trade.cancel_order()
 
     def test_publish_order(self):
         """
         Tests a trade from order creation to published (maker bond locked).
         """
-        maker_form = self.maker_form_buy_with_range
-        # Get order
-        response = self.make_and_publish_order(maker_form)
-        data = response.json()
+        trade = Trade(self.client)
+        trade.publish_order()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(data["id"], data["id"])
         self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
@@ -410,83 +283,63 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["escrow_locked"])
 
         # Test what we can see with newly created robot 2 (only for public status)
-        public_response = self.get_order(
-            data["id"], robot_index=2, first_encounter=True
-        )
-        public_data = public_response.json()
+        trade.get_order(robot_index=2, first_encounter=True)
+        public_data = trade.response.json()
 
         self.assertFalse(public_data["is_participant"])
         self.assertIsInstance(public_data["price_now"], float)
         self.assertIsInstance(data["satoshis_now"], int)
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
-        self.cancel_order(data["id"])
+        trade.cancel_order()
 
     def test_pause_unpause_order(self):
         """
         Tests pausing and unpausing a public order
         """
-        maker_form = self.maker_form_buy_with_range
-        # Get order
-        response = self.make_and_publish_order(maker_form)
+        trade = Trade(self.client)
+        trade.publish_order()
+        data = trade.response.json()
 
         # PAUSE
-        response = self.pause_order(response.json()["id"])
-        data = response.json()
+        trade.pause_order()
+        data = trade.response.json()
 
-        self.assertResponse(response)
+        self.assertResponse(trade.response)
         self.assertEqual(data["status_message"], Order.Status(Order.Status.PAU).label)
 
         # UNPAUSE
-        response = self.pause_order(response.json()["id"])
-        data = response.json()
+        trade.pause_order()
+        data = trade.response.json()
 
-        self.assertResponse(response)
+        self.assertResponse(trade.response)
         self.assertEqual(data["status_message"], Order.Status(Order.Status.PUB).label)
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
-        self.cancel_order(data["id"])
-
-    def take_order(self, order_id, amount, robot_index=2):
-        path = reverse("order")
-        params = f"?order_id={order_id}"
-        headers = self.get_robot_auth(robot_index, first_encounter=True)
-        body = {"action": "take", "amount": amount}
-        response = self.client.post(path + params, body, **headers)
-
-        return response
-
-    def make_and_take_order(
-        self, maker_form, take_amount=80, maker_index=1, taker_index=2
-    ):
-        response_published = self.make_and_publish_order(maker_form, maker_index)
-        data_publised = response_published.json()
-        response = self.take_order(data_publised["id"], take_amount, taker_index)
-        return response
+        trade.cancel_order()
 
     def test_make_and_take_order(self):
         """
         Tests a trade from order creation to taken.
         """
-        maker_index = 1
-        taker_index = 2
-        maker_form = self.maker_form_buy_with_range
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
 
-        response = self.make_and_take_order(maker_form, 80, maker_index, taker_index)
-        data = response.json()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.TAK).label)
         self.assertEqual(
-            data["ur_nick"], read_file(f"tests/robots/{taker_index}/nickname")
+            data["ur_nick"], read_file(f"tests/robots/{trade.taker_index}/nickname")
         )
         self.assertEqual(
-            data["taker_nick"], read_file(f"tests/robots/{taker_index}/nickname")
+            data["taker_nick"], read_file(f"tests/robots/{trade.taker_index}/nickname")
         )
         self.assertEqual(
-            data["maker_nick"], read_file(f"tests/robots/{maker_index}/nickname")
+            data["maker_nick"], read_file(f"tests/robots/{trade.maker_index}/nickname")
         )
         self.assertEqual(data["maker_status"], "Active")
         self.assertEqual(data["taker_status"], "Active")
@@ -500,45 +353,21 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["escrow_locked"])
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
-        self.cancel_order(data["id"])
-
-    def make_and_lock_contract(
-        self, maker_form, take_amount=80, maker_index=1, taker_index=2
-    ):
-        # Make an order
-        order_taken_response = self.make_and_take_order(
-            maker_form, take_amount, maker_index, taker_index
-        )
-        order_taken_data = order_taken_response.json()
-
-        # Maker's first order fetch. Should trigger maker bond hold invoice generation.
-        response = self.get_order(order_taken_data["id"], taker_index)
-        invoice = response.json()["bond_invoice"]
-
-        # Lock the invoice from the robot's node
-        pay_invoice("robot", invoice)
-
-        # Check for invoice locked (the mocked LND will return ACCEPTED)
-        self.follow_hold_invoices()
-
-        # Get order
-        response = self.get_order(order_taken_data["id"], taker_index)
-        return response
+        trade.cancel_order()
 
     def test_make_and_lock_contract(self):
         """
         Tests a trade from order creation to taker bond locked.
         """
-        maker_index = 1
-        taker_index = 2
-        maker_form = self.maker_form_buy_with_range
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
 
-        # Taker GET
-        response = self.make_and_lock_contract(maker_form, 80, maker_index, taker_index)
-        data = response.json()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.WF2).label)
         self.assertEqual(data["maker_status"], "Active")
@@ -549,11 +378,11 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["escrow_locked"])
 
         # Maker GET
-        response = self.get_order(data["id"], maker_index)
-        data = response.json()
+        trade.get_order(trade.maker_index)
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.WF2).label)
         self.assertTrue(data["swap_allowed"])
@@ -568,46 +397,24 @@ class TradeTest(BaseAPITestCase):
         self.assertTrue(data["taker_locked"])
         self.assertFalse(data["escrow_locked"])
 
-        # Cancel order to avoid leaving pending HTLCs after a successful test
-        self.cancel_order(data["id"])
-
-    def trade_to_locked_escrow(
-        self, maker_form, take_amount=80, maker_index=1, taker_index=2
-    ):
-        # Make an order
-        locked_taker_response = self.make_and_lock_contract(
-            maker_form, take_amount, maker_index, taker_index
-        )
-        locked_taker_response_data = locked_taker_response.json()
-
-        # Maker's first order fetch. Should trigger maker bond hold invoice generation.
-        response = self.get_order(locked_taker_response_data["id"], taker_index)
-        invoice = response.json()["escrow_invoice"]
-
-        # Lock the invoice from the robot's node
-        pay_invoice("robot", invoice)
-
-        # Check for invoice locked (the mocked LND will return ACCEPTED)
-        self.follow_hold_invoices()
-
-        # Get order
-        response = self.get_order(locked_taker_response_data["id"], taker_index)
-        return response
+        # Maker cancels order to avoid leaving pending HTLCs after a successful test
+        trade.cancel_order()
 
     def test_trade_to_locked_escrow(self):
         """
         Tests a trade from order creation until escrow locked, before
         invoice/address is submitted by buyer.
         """
-        maker_index = 1
-        taker_index = 2
-        maker_form = self.maker_form_buy_with_range
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
 
-        response = self.trade_to_locked_escrow(maker_form, 80, maker_index, taker_index)
-        data = response.json()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.WFI).label)
         self.assertTrue(data["maker_locked"])
@@ -615,208 +422,103 @@ class TradeTest(BaseAPITestCase):
         self.assertTrue(data["escrow_locked"])
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
-        self.cancel_order(data["id"], 2)
-
-    def submit_payout_address(self, order_id, robot_index=1):
-        path = reverse("order")
-        params = f"?order_id={order_id}"
-        headers = self.get_robot_auth(robot_index)
-
-        payout_address = create_address("robot")
-        signed_payout_address = sign_message(
-            payout_address,
-            passphrase_path=f"tests/robots/{robot_index}/token",
-            private_key_path=f"tests/robots/{robot_index}/enc_priv_key",
-        )
-        body = {
-            "action": "update_address",
-            "address": signed_payout_address,
-            "mining_fee_rate": 50,
-        }
-        response = self.client.post(path + params, body, **headers)
-
-        return response
-
-    def trade_to_submitted_address(
-        self, maker_form, take_amount=80, maker_index=1, taker_index=2
-    ):
-        response_escrow_locked = self.trade_to_locked_escrow(
-            maker_form, take_amount, maker_index, taker_index
-        )
-        response = self.submit_payout_address(
-            response_escrow_locked.json()["id"], maker_index
-        )
-        return response
+        trade.cancel_order(trade.taker_index)
 
     def test_trade_to_submitted_address(self):
         """
-        Tests a trade from order creation until escrow locked and
-        address is submitted by buyer.
+        Tests a trade from order creation until escrow locked, before
+        invoice/address is submitted by buyer.
         """
-        maker_index = 1
-        taker_index = 2
-        maker_form = self.maker_form_buy_with_range
-        take_amount = round(
-            random.uniform(maker_form["min_amount"], maker_form["max_amount"]), 2
-        )
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_address(trade.maker_index)
 
-        response = self.trade_to_submitted_address(
-            maker_form, take_amount, maker_index, taker_index
-        )
-        data = response.json()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.CHA).label)
-
         self.assertFalse(data["is_fiat_sent"])
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
-        self.cancel_order(data["id"])
-
-    def submit_payout_invoice(
-        self, order_id, num_satoshis, routing_budget, robot_index=1
-    ):
-        path = reverse("order")
-        params = f"?order_id={order_id}"
-        headers = self.get_robot_auth(robot_index)
-
-        payout_invoice = add_invoice("robot", num_satoshis)
-        signed_payout_invoice = sign_message(
-            payout_invoice,
-            passphrase_path=f"tests/robots/{robot_index}/token",
-            private_key_path=f"tests/robots/{robot_index}/enc_priv_key",
-        )
-        body = {
-            "action": "update_invoice",
-            "invoice": signed_payout_invoice,
-            "routing_budget_ppm": routing_budget,
-        }
-
-        response = self.client.post(path + params, body, **headers)
-
-        return response
-
-    def trade_to_submitted_invoice(
-        self, maker_form, take_amount=80, maker_index=1, taker_index=2
-    ):
-        response_escrow_locked = self.trade_to_locked_escrow(
-            maker_form, take_amount, maker_index, taker_index
-        )
-
-        response_get = self.get_order(response_escrow_locked.json()["id"], maker_index)
-
-        response = self.submit_payout_invoice(
-            response_escrow_locked.json()["id"],
-            response_get.json()["trade_satoshis"],
-            0,
-            maker_index,
-        )
-        return response
+        trade.cancel_order(trade.maker_index)
+        trade.cancel_order(trade.taker_index)
 
     def test_trade_to_submitted_invoice(self):
         """
         Tests a trade from order creation until escrow locked and
         invoice is submitted by buyer.
         """
-        maker_index = 1
-        taker_index = 2
-        maker_form = self.maker_form_buy_with_range
-        take_amount = round(
-            random.uniform(maker_form["min_amount"], maker_form["max_amount"]), 2
-        )
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
 
-        response = self.trade_to_submitted_invoice(
-            maker_form, take_amount, maker_index, taker_index
-        )
-        data = response.json()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.CHA).label)
         self.assertFalse(data["is_fiat_sent"])
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
-        self.cancel_order(data["id"])
-
-    def confirm_fiat(self, order_id, robot_index=1):
-        path = reverse("order")
-        params = f"?order_id={order_id}"
-        headers = self.get_robot_auth(robot_index)
-
-        body = {"action": "confirm"}
-
-        response = self.client.post(path + params, body, **headers)
-        return response
-
-    def trade_to_confirm_fiat_sent_LN(
-        self, maker_form, take_amount=80, maker_index=1, taker_index=2
-    ):
-        response_submitted_invoice = self.trade_to_submitted_invoice(
-            maker_form, take_amount, maker_index, taker_index
-        )
-        response = self.confirm_fiat(
-            response_submitted_invoice.json()["id"], maker_index
-        )
-        return response
+        trade.cancel_order(trade.maker_index)
+        trade.cancel_order(trade.taker_index)
 
     def test_trade_to_confirm_fiat_sent_LN(self):
         """
         Tests a trade from order creation until fiat sent confirmed
         """
-        maker_index = 1
-        taker_index = 2
-        maker_form = self.maker_form_buy_with_range
-        take_amount = round(
-            random.uniform(maker_form["min_amount"], maker_form["max_amount"]), 2
-        )
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+        trade.confirm_fiat(trade.maker_index)
 
-        response = self.trade_to_confirm_fiat_sent_LN(
-            maker_form, take_amount, maker_index, taker_index
-        )
-        data = response.json()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.FSE).label)
         self.assertTrue(data["is_fiat_sent"])
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
-        self.cancel_order(data["id"], maker_index)
-        self.cancel_order(data["id"], taker_index)
+        trade.undo_confirm_sent(trade.maker_index)
+        data = trade.response.json()
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.CHA).label)
 
-    def trade_to_confirm_fiat_received_LN(
-        self, maker_form, take_amount=80, maker_index=1, taker_index=2
-    ):
-        response_submitted_invoice = self.trade_to_confirm_fiat_sent_LN(
-            maker_form, take_amount, maker_index, taker_index
-        )
-        response = self.confirm_fiat(
-            response_submitted_invoice.json()["id"], taker_index
-        )
-        return response
+        trade.cancel_order(trade.maker_index)
+        trade.cancel_order(trade.taker_index)
 
     def test_trade_to_confirm_fiat_received_LN(self):
         """
         Tests a trade from order creation until fiat received is confirmed by seller/taker
         """
-        maker_index = 1
-        taker_index = 2
-        maker_form = self.maker_form_buy_with_range
-        take_amount = round(
-            random.uniform(maker_form["min_amount"], maker_form["max_amount"]), 2
-        )
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+        trade.confirm_fiat(trade.maker_index)
+        trade.confirm_fiat(trade.taker_index)
 
-        response = self.trade_to_confirm_fiat_received_LN(
-            maker_form, take_amount, maker_index, taker_index
-        )
-        data = response.json()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.PAY).label)
         self.assertTrue(data["is_fiat_sent"])
@@ -825,30 +527,26 @@ class TradeTest(BaseAPITestCase):
         self.assertFalse(data["taker_locked"])
         self.assertFalse(data["escrow_locked"])
 
-    @patch("api.tasks.follow_send_payment.delay", follow_send_payment)
     def test_successful_LN(self):
         """
         Tests a trade from order creation until Sats sent to buyer
         """
-        maker_index = 1
-        taker_index = 2
-        maker_form = self.maker_form_buy_with_range
-        take_amount = round(
-            random.uniform(maker_form["min_amount"], maker_form["max_amount"]), 2
-        )
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+        trade.confirm_fiat(trade.maker_index)
+        trade.confirm_fiat(trade.taker_index)
 
-        response = self.trade_to_confirm_fiat_received_LN(
-            maker_form, take_amount, maker_index, taker_index
-        )
+        trade.process_payouts()
+        trade.get_order(trade.maker_index)
 
-        # Invoke the background thread that will call the celery-worker to follow_send_payment()
-        self.send_payments()
+        data = trade.response.json()
 
-        response = self.get_order(response.json()["id"], maker_index)
-        data = response.json()
-
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(data["status_message"], Order.Status(Order.Status.SUC).label)
         self.assertTrue(data["is_fiat_sent"])
@@ -856,19 +554,45 @@ class TradeTest(BaseAPITestCase):
         self.assertIsHash(data["maker_summary"]["preimage"])
         self.assertIsHash(data["maker_summary"]["payment_hash"])
 
+    def test_successful_onchain(self):
+        """
+        Tests a trade from order creation until Sats sent to buyer
+        """
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_address(trade.maker_index)
+        trade.confirm_fiat(trade.maker_index)
+        trade.confirm_fiat(trade.taker_index)
+
+        trade.process_payouts(mine_a_block=True)
+        trade.get_order(trade.maker_index)
+
+        data = trade.response.json()
+
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+
+        self.assertEqual(data["status_message"], Order.Status(Order.Status.SUC).label)
+        self.assertTrue(data["is_fiat_sent"])
+        self.assertFalse(data["is_disputed"])
+        self.assertIsInstance(data["maker_summary"]["address"], str)
+        self.assertIsHash(data["maker_summary"]["txid"])
+
     def test_cancel_public_order(self):
         """
         Tests the cancellation of a public order
         """
-        maker_index = 1
-        maker_form = self.maker_form_buy_with_range
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.cancel_order()
 
-        response = self.make_and_publish_order(maker_form, maker_index)
-        response = self.cancel_order(response.json()["id"])
-        data = response.json()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 400)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 400)
+        self.assertResponse(trade.response)
 
         self.assertEqual(
             data["bad_request"], "This order has been cancelled by the maker"
@@ -878,60 +602,53 @@ class TradeTest(BaseAPITestCase):
         """
         Tests the collaborative cancellation of an order in the chat state
         """
-        maker_index = 1
-        taker_index = 2
-        maker_form = self.maker_form_buy_with_range
-        take_amount = round(
-            random.uniform(maker_form["min_amount"], maker_form["max_amount"]), 2
-        )
-
-        response = self.trade_to_submitted_invoice(
-            maker_form, take_amount, maker_index, taker_index
-        )
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
 
         # Maker asks for cancel
-        response = self.cancel_order(response.json()["id"], maker_index)
-        data = response.json()
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
-        self.assertTrue(data["asked_for_cancel"])
+        trade.cancel_order(trade.maker_index)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+        self.assertTrue(trade.response.json()["asked_for_cancel"])
 
         # Taker checks order
-        response = self.get_order(response.json()["id"], taker_index)
-        data = response.json()
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
-        self.assertTrue(data["pending_cancel"])
+        trade.get_order(trade.taker_index)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
+        self.assertTrue(trade.response.json()["pending_cancel"])
 
         # Taker accepts (ask) the cancellation
-        response = self.cancel_order(response.json()["id"], taker_index)
-        data = response.json()
-        self.assertEqual(response.status_code, 400)
-        self.assertResponse(response)
+        trade.cancel_order(trade.taker_index)
+        self.assertEqual(trade.response.status_code, 400)
+        self.assertResponse(trade.response)
         self.assertEqual(
-            data["bad_request"], "This order has been cancelled collaborativelly"
+            trade.response.json()["bad_request"],
+            "This order has been cancelled collaborativelly",
         )
 
     def test_created_order_expires(self):
         """
         Tests the expiration of a public order
         """
-        maker_form = self.maker_form_buy_with_range
-        response = self.make_order(maker_form)
+        trade = Trade(self.client)
 
         # Change order expiry to now
-        order = Order.objects.get(id=response.json()["id"])
+        order = Order.objects.get(id=trade.response.json()["id"])
         order.expires_at = datetime.now()
         order.save()
 
         # Make orders expire
-        self.clean_orders()
+        trade.clean_orders()
 
-        response = self.get_order(response.json()["id"])
-        data = response.json()
+        trade.get_order()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(
             data["status"],
@@ -947,22 +664,22 @@ class TradeTest(BaseAPITestCase):
         """
         Tests the expiration of a public order
         """
-        maker_form = self.maker_form_buy_with_range
-        response = self.make_and_publish_order(maker_form)
+        trade = Trade(self.client)
+        trade.publish_order()
 
         # Change order expiry to now
-        order = Order.objects.get(id=response.json()["id"])
+        order = Order.objects.get(id=trade.response.json()["id"])
         order.expires_at = datetime.now()
         order.save()
 
         # Make orders expire
-        self.clean_orders()
+        trade.clean_orders()
 
-        response = self.get_order(response.json()["id"])
-        data = response.json()
+        trade.get_order()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(
             data["status"],
@@ -978,22 +695,24 @@ class TradeTest(BaseAPITestCase):
         """
         Tests the expiration of a public order
         """
-        maker_form = self.maker_form_buy_with_range
-        response = self.make_and_lock_contract(maker_form)
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
 
         # Change order expiry to now
-        order = Order.objects.get(id=response.json()["id"])
+        order = Order.objects.get(id=trade.response.json()["id"])
         order.expires_at = datetime.now()
         order.save()
 
         # Make orders expire
-        self.clean_orders()
+        trade.clean_orders()
 
-        response = self.get_order(response.json()["id"])
-        data = response.json()
+        trade.get_order()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(
             data["status"],
@@ -1009,22 +728,25 @@ class TradeTest(BaseAPITestCase):
         """
         Tests the expiration of a public order
         """
-        maker_form = self.maker_form_buy_with_range
-        response = self.trade_to_locked_escrow(maker_form)
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
 
         # Change order expiry to now
-        order = Order.objects.get(id=response.json()["id"])
+        order = Order.objects.get(id=trade.response.json()["id"])
         order.expires_at = datetime.now()
         order.save()
 
         # Make orders expire
-        self.clean_orders()
+        trade.clean_orders()
 
-        response = self.get_order(response.json()["id"])
-        data = response.json()
+        trade.get_order()
+        data = trade.response.json()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertResponse(response)
+        self.assertEqual(trade.response.status_code, 200)
+        self.assertResponse(trade.response)
 
         self.assertEqual(
             data["status"],
@@ -1042,8 +764,13 @@ class TradeTest(BaseAPITestCase):
         """
         path = reverse("ticks")
         params = "?start=01-01-1970&end=01-01-2070"
-        response = self.make_and_lock_contract(self.maker_form_buy_with_range)
-        self.cancel_order(response.json()["id"])
+
+        # Make a contract and cancel
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+        trade.cancel_order()
 
         response = self.client.get(path + params)
         data = response.json()
@@ -1062,10 +789,17 @@ class TradeTest(BaseAPITestCase):
         Tests the daily history serving endpoint after creating a contract
         """
         path = reverse("historical")
-        self.trade_to_confirm_fiat_received_LN(self.maker_form_buy_with_range)
 
-        # Invoke the background thread that will call the celery-worker to follow_send_payment()
-        self.send_payments()
+        # Run a successful trade
+        trade = Trade(self.client)
+        trade.publish_order()
+        trade.take_order()
+        trade.lock_taker_bond()
+        trade.lock_escrow(trade.taker_index)
+        trade.submit_payout_invoice(trade.maker_index)
+        trade.confirm_fiat(trade.maker_index)
+        trade.confirm_fiat(trade.taker_index)
+        trade.process_payouts()
 
         # Do daily accounting to create the daily summary
         do_accounting()
@@ -1080,15 +814,14 @@ class TradeTest(BaseAPITestCase):
         self.assertIsInstance(data[first_date]["volume"], float)
         self.assertIsInstance(data[first_date]["num_contracts"], int)
 
-        print(data)
-
     def test_book(self):
         """
         Tests public book view
         """
-        maker_form = self.maker_form_buy_with_range
         path = reverse("book")
-        self.make_and_publish_order(maker_form)
+
+        trade = Trade(self.client)
+        trade.publish_order()
 
         response = self.client.get(path)
         data = response.json()
@@ -1099,12 +832,20 @@ class TradeTest(BaseAPITestCase):
         self.assertIsInstance(datetime.fromisoformat(data[0]["created_at"]), datetime)
         self.assertIsInstance(datetime.fromisoformat(data[0]["expires_at"]), datetime)
         self.assertIsNone(data[0]["amount"])
-        self.assertAlmostEqual(float(data[0]["min_amount"]), maker_form["min_amount"])
-        self.assertAlmostEqual(float(data[0]["max_amount"]), maker_form["max_amount"])
-        self.assertAlmostEqual(float(data[0]["latitude"]), maker_form["latitude"])
-        self.assertAlmostEqual(float(data[0]["longitude"]), maker_form["longitude"])
-        self.assertEqual(data[0]["escrow_duration"], maker_form["escrow_duration"])
+        self.assertAlmostEqual(
+            float(data[0]["min_amount"]), trade.maker_form["min_amount"]
+        )
+        self.assertAlmostEqual(
+            float(data[0]["max_amount"]), trade.maker_form["max_amount"]
+        )
+        self.assertAlmostEqual(float(data[0]["latitude"]), trade.maker_form["latitude"])
+        self.assertAlmostEqual(
+            float(data[0]["longitude"]), trade.maker_form["longitude"]
+        )
+        self.assertEqual(
+            data[0]["escrow_duration"], trade.maker_form["escrow_duration"]
+        )
         self.assertFalse(data[0]["is_explicit"])
 
         # Cancel order to avoid leaving pending HTLCs after a successful test
-        self.cancel_order(data[0]["id"])
+        trade.cancel_order()

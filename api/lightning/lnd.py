@@ -183,7 +183,8 @@ class LNDNode:
         delay = (
             secrets.randbelow(2**256) / (2**256) * 10
         )  # Random uniform 0 to 5 secs with good entropy
-        time.sleep(3 + delay)
+        if not config("TESTING", cast=bool, default=False):
+            time.sleep(3 + delay)
 
         if onchainpayment.status == queue_code:
             # Changing the state to "MEMPO" should be atomic with SendCoins.

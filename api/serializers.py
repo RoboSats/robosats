@@ -139,6 +139,14 @@ class SummarySerializer(serializers.Serializer):
         required=False,
         help_text="The preimage of the payout invoice (proof of payment)",
     )
+    address = serializers.CharField(
+        required=False,
+        help_text="The address of the payout if on-the-fly swap was selected",
+    )
+    txid = serializers.CharField(
+        required=False,
+        help_text="The transaction hash of the payout if on-the-fly swap was selected",
+    )
 
 
 # Only used in oas_schemas

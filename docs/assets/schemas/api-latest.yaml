@@ -1759,6 +1759,12 @@ components:
         preimage:
           type: string
           description: The preimage of the payout invoice (proof of payment)
+        address:
+          type: string
+          description: The address of the payout if on-the-fly swap was selected
+        txid:
+          type: string
+          description: The transaction hash of the payout if on-the-fly swap was selected
     Tick:
       type: object
       properties:
