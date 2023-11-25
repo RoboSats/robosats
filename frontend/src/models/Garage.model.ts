@@ -15,21 +15,7 @@ class Garage {
       onOrderUpdate: [],
     };
 
-    const slotsDump: string = systemClient.getItem('garageSlots') ?? '';
-    if (slotsDump !== '') {
-      const rawSlots = JSON.parse(slotsDump);
-      Object.values(rawSlots).forEach((rawSlot: Record<any, any>) => {
-        if (rawSlot?.token) {
-          this.createSlot(rawSlot?.token);
-          Object.keys(rawSlot.robots).forEach((shortAlias) => {
-            const rawRobot = rawSlot.robots[shortAlias];
-            this.upsertRobot(rawRobot.token, shortAlias, rawRobot);
-          });
-          this.currentSlot = rawSlot?.token;
-        }
-      });
-      console.log('Robot Garage was loaded from local storage');
-    }
+    this.loadSlots();
   }
 
   slots: { [token: string]: Slot };
@@ -50,19 +36,41 @@ class Garage {
 
   // Storage
   download = (): void => {
-    saveAsJson(`garageSlots_${new Date().toISOString()}.json`, this.slots);
+    saveAsJson(`garage_slots_${new Date().toISOString()}.json`, this.slots);
   };
 
   save = (): void => {
-    systemClient.setItem('garageSlots', JSON.stringify(this.slots));
+    systemClient.setItem('garage_slots', JSON.stringify(this.slots));
   };
 
   delete = (): void => {
     this.slots = {};
     this.currentSlot = null;
-    systemClient.deleteItem('garageSlots');
+    systemClient.deleteItem('garage_slots');
     this.triggerHook('onRobotUpdate');
     this.triggerHook('onOrderUpdate');
+  };
+
+  loadSlots = (): void => {
+    this.slots = {};
+    const slotsDump: string = systemClient.getItem('garage_slots') ?? '';
+
+    if (slotsDump !== '') {
+      const rawSlots = JSON.parse(slotsDump);
+      Object.values(rawSlots).forEach((rawSlot: Record<any, any>) => {
+        if (rawSlot?.token) {
+          this.createSlot(rawSlot?.token);
+          Object.keys(rawSlot.robots).forEach((shortAlias) => {
+            const rawRobot = rawSlot.robots[shortAlias];
+            this.upsertRobot(rawRobot.token, shortAlias, rawRobot);
+          });
+          this.currentSlot = rawSlot?.token;
+        }
+      });
+      console.log('Robot Garage was loaded from local storage');
+      this.triggerHook('onRobotUpdate');
+      this.triggerHook('onOrderUpdate');
+    }
   };
 
   // Slots

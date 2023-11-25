@@ -119,7 +119,7 @@
       "i2p": ""
     },
     "testnet": {
-      "onion": "https://testraliar7xkhos2gipv2k65obykofb4jqzl5l4danfryacifi4t7qd.onion",
+      "onion": "http://testraliar7xkhos2gipv2k65obykofb4jqzl5l4danfryacifi4t7qd.onion",
       "clearnet": "https://test.unsafe.satstralia.com",
       "i2p": ""
     },

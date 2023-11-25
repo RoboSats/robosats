@@ -45,7 +45,7 @@ const RobotProfile = ({
   width,
 }: RobotProfileProps): JSX.Element => {
   const { windowSize, hostUrl } = useContext<UseAppStoreType>(AppContext);
-  const { garage, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, robotUpdatedAt, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
 
   const { t } = useTranslation();
@@ -60,7 +60,7 @@ const RobotProfile = ({
     if (robot?.nickname != null && slot?.avatarLoaded) {
       setLoading(false);
     }
-  }, [robotUpdatedAt, loading]);
+  }, [orderUpdatedAt, robotUpdatedAt, loading]);
 
   const handleAddRobot = (): void => {
     getGenerateRobot(genBase62Token(36));

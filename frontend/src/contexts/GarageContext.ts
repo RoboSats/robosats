@@ -1,6 +1,7 @@
 import { createContext, type Dispatch, useState, type SetStateAction, useEffect } from 'react';
 
 import { defaultMaker, type Maker, Garage } from '../models';
+import { systemClient } from '../services/System';
 
 export interface UseGarageStoreType {
   garage: Garage;
@@ -44,6 +45,12 @@ export const useGarageStore = (): UseGarageStoreType => {
     garage.registerHook('onRobotUpdate', onRobotUpdated);
     garage.registerHook('onOrderUpdate', onOrderUpdate);
   }, []);
+
+  useEffect(() => {
+    if (window.NativeRobosats !== undefined && !systemClient.loading) {
+      garage.loadSlots();
+    }
+  }, [systemClient.loading]);
 
   return {
     garage,
