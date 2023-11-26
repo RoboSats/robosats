@@ -44,13 +44,12 @@ const App = () => {
       });
     };
 
-    loadCookie('robot_token');
     loadCookie('settings_fontsize_basic');
     loadCookie('settings_language');
     loadCookie('settings_mode');
     loadCookie('settings_light_qr');
     loadCookie('settings_network');
-    loadCookie('garage').then(() => injectMessageResolve(responseId));
+    loadCookie('garage_slots').then(() => injectMessageResolve(responseId));
   };
 
   const onCatch = (dataId: string, event: any) => {
