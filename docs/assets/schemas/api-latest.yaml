@@ -1554,6 +1554,8 @@ components:
           nullable: true
         maker_nick:
           type: string
+        maker_hash_id:
+          type: string
         maker_status:
           type: string
           description: Status of the nick - "Active" or "Inactive"

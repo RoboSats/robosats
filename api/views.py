@@ -708,6 +708,7 @@ class BookView(ListAPIView):
         for order in queryset:
             data = ListOrderSerializer(order).data
             data["maker_nick"] = str(order.maker)
+            data["maker_hash_id"] = str(order.maker.robot.hash_id)
 
             data["satoshis_now"] = Logics.satoshis_now(order)
             # Compute current premium for those orders that are explicitly priced.

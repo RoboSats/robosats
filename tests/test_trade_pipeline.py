@@ -831,6 +831,7 @@ class TradeTest(BaseAPITestCase):
 
         self.assertIsInstance(datetime.fromisoformat(data[0]["created_at"]), datetime)
         self.assertIsInstance(datetime.fromisoformat(data[0]["expires_at"]), datetime)
+        self.assertIsHash(data[0]["maker_hash_id"])
         self.assertIsNone(data[0]["amount"])
         self.assertAlmostEqual(
             float(data[0]["min_amount"]), trade.maker_form["min_amount"]

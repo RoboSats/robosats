@@ -137,6 +137,9 @@ class RobotTokenSHA256AuthenticationMiddleWare:
 
             user = User.objects.create_user(username=nickname, password=None)
 
+            # Store hash_id
+            user.robot.hash_id = hash
+
             # Django rest_framework authtokens are limited to 40 characters.
             # We use base91 so we can store the full entropy in the field.
             Token.objects.create(key=token_sha256_b91, user=user)

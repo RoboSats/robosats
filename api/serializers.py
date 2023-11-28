@@ -476,6 +476,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
 class OrderPublicSerializer(serializers.ModelSerializer):
     maker_nick = serializers.CharField(required=False)
+    maker_hash_id = serializers.CharField(required=False)
     maker_status = serializers.CharField(
         help_text='Status of the nick - "Active" or "Inactive"', required=False
     )
@@ -505,6 +506,7 @@ class OrderPublicSerializer(serializers.ModelSerializer):
             "satoshis",
             "maker",
             "maker_nick",
+            "maker_hash_id",
             "maker_status",
             "price",
             "escrow_duration",
