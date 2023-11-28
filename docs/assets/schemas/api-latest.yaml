@@ -62,6 +62,15 @@ paths:
     get:
       operationId: chat_retrieve
       description: Returns chat messages for an order with an index higher than `offset`.
+      parameters:
+      - in: query
+        name: offset
+        schema:
+          type: integer
+      - in: query
+        name: order_id
+        schema:
+          type: integer
       tags:
       - chat
       security:
@@ -71,11 +80,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PostMessage'
+                $ref: '#/components/schemas/Chat'
           description: ''
     post:
       operationId: chat_create
-      description: Adds one new message to the chatroom.
+      description: Adds one new message to the chatroom. If `offset` is given, will
+        return every new message as well.
       tags:
       - chat
       requestBody:
@@ -97,7 +107,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PostMessage'
+                $ref: '#/components/schemas/Chat'
           description: ''
   /api/historical/:
     get:
@@ -910,6 +920,24 @@ components:
     BlankEnum:
       enum:
       - ''
+    Chat:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/OutMessages'
+        offset:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: Offset for message index to get as response
+        peer_connected:
+          type: boolean
+          description: Whether your peer has connected recently to the chatroom
+        peer_pubkey:
+          type: string
+          description: Your peer's public PGP key
     ClaimReward:
       type: object
       properties:
@@ -1589,6 +1617,24 @@ components:
       - expires_at
       - id
       - type
+    OutMessages:
+      type: object
+      properties:
+        index:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        time:
+          type: string
+          format: date-time
+        message:
+          type: string
+        nick:
+          type: string
+      required:
+      - message
+      - nick
+      - time
     PlatformSummary:
       type: object
       properties:
@@ -1623,18 +1669,18 @@ components:
       properties:
         PGP_message:
           type: string
-          nullable: true
-          maxLength: 5000
+          description: A new chat message
         order_id:
           type: integer
           minimum: 0
-          description: Order ID of chatroom
+          description: Your peer's public key
         offset:
           type: integer
           minimum: 0
           nullable: true
           description: Offset for message index to get as response
       required:
+      - PGP_message
       - order_id
     RatingEnum:
       enum:
