@@ -5,7 +5,7 @@ from django.urls import reverse
 from api.management.commands.clean_orders import Command as CleanOrders
 from api.management.commands.follow_invoices import Command as FollowInvoices
 from api.models import Order
-from api.tasks import follow_send_payment
+from api.tasks import follow_send_payment, send_notification
 from tests.utils.node import (
     add_invoice,
     create_address,
@@ -111,6 +111,7 @@ class Trade:
         headers = self.get_robot_auth(robot_index, first_encounter)
         self.response = self.client.get(path + params, **headers)
 
+    @patch("api.tasks.send_notification.delay", send_notification)
     def cancel_order(self, robot_index=1):
         path = reverse("order")
         params = f"?order_id={self.order_id}"
@@ -144,6 +145,7 @@ class Trade:
             generate_blocks(create_address("robot"), 1)
             wait_nodes_sync()
 
+    @patch("api.tasks.send_notification.delay", send_notification)
     def publish_order(self):
         # Maker's first order fetch. Should trigger maker bond hold invoice generation.
         self.get_order()
