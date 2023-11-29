@@ -70,7 +70,14 @@ jobs:
       run: |
         docker exec coordinator coverage run manage.py test
         docker exec coordinator coverage report
+        docker exec coordinator coverage html
       env:
         LNVENDOR: ${{ matrix.ln-vendor }}
         DEVELOPMENT: True
         USE_TOR: False
+
+    - name: 'Upload coverage report'
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: htmlcov/
