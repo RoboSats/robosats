@@ -66,7 +66,7 @@ Check out the [Developer Rewards Panel](https://github.com/users/Reckless-Satosh
 ## Reviews
 - **[Athena Alpha](https://www.athena-alpha.com/robosats-review/)**
 - **[Bitcoin Magazine](https://bitcoinmagazine.com/business/robosats-private-bitcoin-exchange)**
-- **[KYC? Not Me!](https://kycnot.me/exchange/robosats)**
+- **[KYC? Not Me!](https://kycnot.me/service/robosats)**
 - **[H17N Bitcoin](https://h17n.com/exchange/robosats/)**
 
 ## Inspiration
