@@ -46,7 +46,7 @@ jobs:
         run: |
           cd mobile
           cp -r patch_modules/* node_modules/
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 11
