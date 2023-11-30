@@ -89,6 +89,7 @@ const FlagWithProps = ({ code, width = '1.428em', height = '1.428em' }: Props): 
   if (code === 'RSD') flag = <Flags.RS {...defaultProps} />;
   if (code === 'IRT') flag = <Flags.IR {...defaultProps} />;
   if (code === 'BDT') flag = <Flags.BD {...defaultProps} />;
+  if (code === 'ALL') flag = <Flags.AL {...defaultProps} />;
   if (code === 'ANY') flag = <EarthIcon {...defaultProps} />;
   if (code === 'XAU') flag = <GoldIcon {...defaultProps} />;
   if (code === 'BTC') flag = <SwapCallsIcon color='primary' />;
