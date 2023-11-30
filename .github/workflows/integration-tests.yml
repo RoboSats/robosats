@@ -79,5 +79,5 @@ jobs:
     - name: 'Upload coverage report'
       uses: actions/upload-artifact@v3
       with:
-        name: coverage-report
+        name: coverage-report-${{ matrix.python-tag }}-${{ matrix.ln-vendor }}
         path: htmlcov/
