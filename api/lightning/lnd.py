@@ -362,12 +362,13 @@ class LNDNode:
 
         return status, expiry_height
 
-    @classmethod
-    def resetmc(cls):
-        routerstub = router_pb2_grpc.RouterStub(cls.channel)
-        request = router_pb2.ResetMissionControlRequest()
-        _ = routerstub.ResetMissionControl(request)
-        return True
+    # UNUSED
+    # @classmethod
+    # def resetmc(cls):
+    #     routerstub = router_pb2_grpc.RouterStub(cls.channel)
+    #     request = router_pb2.ResetMissionControlRequest()
+    #     _ = routerstub.ResetMissionControl(request)
+    #     return True
 
     @classmethod
     def validate_ln_invoice(cls, invoice, num_satoshis, routing_budget_ppm):

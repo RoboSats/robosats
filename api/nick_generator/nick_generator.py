@@ -34,21 +34,23 @@ class NickGenerator:
             from .dicts.en.adjectives import adjectives
             from .dicts.en.adverbs import adverbs
             from .dicts.en.nouns import nouns
-        elif lang == "Spanish":
-            from .dicts.es.adjectives import adjectives
-            from .dicts.es.adverbs import adverbs
-            from .dicts.es.nouns import nouns
-        else:
-            raise ValueError("Language not implemented.")
 
-        if verbose:
-            print(
-                f"{lang} SHA256 Nick Generator initialized with:"
-                + f"\nUp to {len(adverbs)} adverbs."
-                + f"\nUp to {len(adjectives)} adjectives."
-                + f"\nUp to {len(nouns)} nouns."
-                + f"\nUp to {max_num+1} numerics.\n"
-            )
+        # UNUSED
+        # elif lang == "Spanish":
+        #     from .dicts.es.adjectives import adjectives
+        #     from .dicts.es.adverbs import adverbs
+        #     from .dicts.es.nouns import nouns
+        # else:
+        #     raise ValueError("Language not implemented.")
+        # UNUSED
+        # if verbose:
+        #     print(
+        #         f"{lang} SHA256 Nick Generator initialized with:"
+        #         + f"\nUp to {len(adverbs)} adverbs."
+        #         + f"\nUp to {len(adjectives)} adjectives."
+        #         + f"\nUp to {len(nouns)} nouns."
+        #         + f"\nUp to {max_num+1} numerics.\n"
+        #     )
 
         self.use_adv = use_adv
         self.use_adj = use_adj
@@ -84,11 +86,13 @@ class NickGenerator:
 
         # Compute adverb id
         if self.use_adv:
-            adv_id = int(nick_id / (self.max_num * num_nouns * num_adj))
-            adv = self.adverbs[adv_id]
-            remainder = nick_id - adv_id * self.max_num * num_nouns * num_adj
-            if self.verbose:
-                print(f"Adverb: {adv}, id {adv_id}.")
+            pass
+            # UNUSED
+            # adv_id = int(nick_id / (self.max_num * num_nouns * num_adj))
+            # adv = self.adverbs[adv_id]
+            # remainder = nick_id - adv_id * self.max_num * num_nouns * num_adj
+            # if self.verbose:
+            #     print(f"Adverb: {adv}, id {adv_id}.")
         else:
             adv_id, adv, remainder = 0, "", nick_id
 
@@ -154,69 +158,71 @@ class NickGenerator:
         nick pool diversity due to max_lenght
         restrictions.
         """
+        return
+        # UNUSED
+        # import random
+        # import statistics
 
-        import random
-        import statistics
+        # attempts = []
+        # for i in range(num_runs):
+        #     string = str(random.uniform(0, 1_000_000))
+        #     hash = hashlib.sha256(str.encode(string)).hexdigest()
 
-        attempts = []
-        for i in range(num_runs):
-            string = str(random.uniform(0, 1_000_000))
-            hash = hashlib.sha256(str.encode(string)).hexdigest()
+        #     _, _, pool_size, tries = self.short_from_SHA256(hash, max_length)
+        #     attempts.append(tries)
 
-            _, _, pool_size, tries = self.short_from_SHA256(hash, max_length)
-            attempts.append(tries)
+        # median = statistics.median(attempts)
+        # mean = statistics.mean(attempts)
 
-        median = statistics.median(attempts)
-        mean = statistics.mean(attempts)
-
-        print(f"\nFor max_length of {max_length}:")
-        print(f"Median loss of entropy factor is {median}.")
-        print(f"Mean loss of entropy factor is {mean}.")
-        print(
-            f"Approximate real pool is {human_format( int(pool_size/(mean+1)))} nicks in size."
-        )
+        # print(f"\nFor max_length of {max_length}:")
+        # print(f"Median loss of entropy factor is {median}.")
+        # print(f"Mean loss of entropy factor is {mean}.")
+        # print(
+        #     f"Approximate real pool is {human_format( int(pool_size/(mean+1)))} nicks in size."
+        # )
 
 
-if __name__ == "__main__":
-    # Just for code timming
-    t0 = time.time()
+# UNUSED
+# if __name__ == "__main__":
+#     # Just for code timming
+#     t0 = time.time()
 
-    # Hardcoded example text and hashing
-    nick_lang = "English"  # Spanish
-    hash = hashlib.sha256(b"No one expected such cool nick!!").hexdigest()
-    max_length = 22
-    max_iter = 100_000_000
+#     # Hardcoded example text and hashing
+#     nick_lang = "English"  # Spanish
+#     hash = hashlib.sha256(b"No one expected such cool nick!!").hexdigest()
+#     max_length = 22
+#     max_iter = 100_000_000
 
-    # Initialized nick generator
-    GenNick = NickGenerator(lang=nick_lang)
+#     # Initialized nick generator
+#     GenNick = NickGenerator(lang=nick_lang)
 
-    # Generates a short nick with length limit from SHA256
-    nick, nick_id, pool_size, iterations = GenNick.short_from_SHA256(
-        hash, max_length, max_iter
-    )
+#     # Generates a short nick with length limit from SHA256
+#     nick, nick_id, pool_size, iterations = GenNick.short_from_SHA256(
+#         hash, max_length, max_iter
+#     )
 
-    # Output
-    print(
-        f"Nick number {nick_id} has been selected among"
-        + f" {human_format(pool_size)} possible nicks.\n"
-        + f"Needed {iterations} iterations to find one "
-        + f"this short.\nYour nick is {nick} !\n"
-    )
-    print(f"Nick lenght is {len(nick)} characters.")
-    print(f"Nick landed at height {nick_id/(pool_size+1)} on the pool.")
-    print(f"Took {time.time()-t0} secs.\n")
+#     # Output
+#     print(
+#         f"Nick number {nick_id} has been selected among"
+#         + f" {human_format(pool_size)} possible nicks.\n"
+#         + f"Needed {iterations} iterations to find one "
+#         + f"this short.\nYour nick is {nick} !\n"
+#     )
+#     print(f"Nick lenght is {len(nick)} characters.")
+#     print(f"Nick landed at height {nick_id/(pool_size+1)} on the pool.")
+#     print(f"Took {time.time()-t0} secs.\n")
 
-    # Print many nicks
-    import random
+#     # Print many nicks
+#     import random
 
-    random.seed(1)
+#     random.seed(1)
 
-    for i in range(100):
-        string = str(random.uniform(0, 1_000_000))
-        hash = hashlib.sha256(str.encode(string)).hexdigest()
-        print(
-            GenNick.short_from_SHA256(hash, max_length=max_length, max_iter=max_iter)[0]
-        )
+#     for i in range(100):
+#         string = str(random.uniform(0, 1_000_000))
+#         hash = hashlib.sha256(str.encode(string)).hexdigest()
+#         print(
+#             GenNick.short_from_SHA256(hash, max_length=max_length, max_iter=max_iter)[0]
+#         )
 
-    # Other analysis
-    GenNick.compute_pool_size_loss(max_length, max_iter, 200)
+#     # Other analysis
+#     GenNick.compute_pool_size_loss(max_length, max_iter, 200)

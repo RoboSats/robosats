@@ -18,12 +18,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 4
+      max-parallel: 2
       matrix:
         python-tag: ['3.11.6-slim-bookworm', '3.12-slim-bookworm']
-        lnd-version: ['v0.17.0-beta'] # , 'v0.17.0-beta.rc1']
+        lnd-version: ['v0.17.0-beta', 'v0.17.2-beta.rc1']
         cln-version: ['v23.08.1']
-        ln-vendor: ['LND', 'CLN']
+        ln-vendor: ['LND'] #, 'CLN']
 
     steps:
     - name: 'Checkout'
