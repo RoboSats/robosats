@@ -66,7 +66,7 @@ jobs:
       # Create artifacts (only for Release)
       # Create app-universal-release APK artifact asset for Release
       - name: 'Upload universal .apk Release Artifact (for Release)'
-        uses: actions/upload-artifact@v3.1.3
+        uses: actions/upload-artifact@v3
         if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-universal.apk
@@ -74,7 +74,7 @@ jobs:
 
       # Create app-arm64-v8a-release APK artifact asset for Release
       - name: 'Upload arm64-v8a .apk Release Artifact (for Release)'
-        uses: actions/upload-artifact@v3.1.3
+        uses: actions/upload-artifact@v3
         if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-arm64-v8a.apk
@@ -82,7 +82,7 @@ jobs:
 
       # Create app-armeabi-v7a-release APK artifact asset for Release
       - name: 'Upload armeabi-v7a .apk Release Artifact (for Release)'
-        uses: actions/upload-artifact@v3.1.3
+        uses: actions/upload-artifact@v3
         if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-armeabi-v7a.apk
@@ -90,7 +90,7 @@ jobs:
 
       # Create app-x86_64-release APK artifact asset for Release
       - name: 'Upload x86_64 .apk Release Artifact (for Release)'
-        uses: actions/upload-artifact@v3.1.3
+        uses: actions/upload-artifact@v3
         if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-x86_64.apk
@@ -98,7 +98,7 @@ jobs:
 
       # Create app-x86-release APK artifact asset for Release
       - name: 'Upload x86 .apk Release Artifact (for Release)'
-        uses: actions/upload-artifact@v3.1.3
+        uses: actions/upload-artifact@v3
         if: inputs.semver != ''  # If this workflow is called from release.yml
         with:
           name: robosats-${{ inputs.semver }}-x86.apk
