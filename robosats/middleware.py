@@ -90,6 +90,16 @@ class RobotTokenSHA256AuthenticationMiddleWare:
             try:
                 if token.user.last_login < timezone.now() - timedelta(minutes=2):
                     update_last_login(None, token.user)
+
+                    # START deprecate after v0.6.0
+                    # Add the hash_id to robots created before hash_ids were introduced
+                    if not token.user.robot.hash_id:
+                        token_sha256 = base91_to_hex(token_sha256_b91)
+                        hash = hashlib.sha256(token_sha256.encode("utf-8")).hexdigest()
+                        token.user.robot.hash_id = hash
+                        token.user.robot.save(update_fields=["hash_id"])
+                    # END deprecate after v0.6.0
+
             except Exception:
                 update_last_login(None, token.user)
 
