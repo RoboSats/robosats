@@ -770,6 +770,11 @@ paths:
                   nickname:
                     type: string
                     description: Username generated (Robot name)
+                  hash_id:
+                    type: string
+                    description: The hash identity of the robot, it is used to deterministically
+                      generate the avatar and the nicknames. It is the second sha256()
+                      of the token.
                   public_key:
                     type: string
                     description: Armored ASCII PGP public key block
@@ -1375,9 +1380,15 @@ components:
         maker_nick:
           type: string
           description: Nickname (Robot name) of the maker
+        maker_hash_id:
+          type: string
+          description: The maker's robot hash
         taker_nick:
           type: string
-          description: Nickname (Robot name) of the taker
+          description: The taker's robot hash
+        taker_hash_id:
+          type: string
+          description: The taker's robot hash
         status_message:
           type: string
           description: The current status of the order corresponding to the `status`
@@ -1389,7 +1400,7 @@ components:
           description: Whether or not the counterparty raised a dispute
         ur_nick:
           type: string
-          description: Your Nick
+          description: Your Nickname
         maker_locked:
           type: boolean
           description: True if maker bond is locked, False otherwise

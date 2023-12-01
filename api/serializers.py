@@ -254,8 +254,14 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     maker_nick = serializers.CharField(
         required=False, help_text="Nickname (Robot name) of the maker"
     )
+    maker_hash_id = serializers.CharField(
+        required=False, help_text="The maker's robot hash"
+    )
     taker_nick = serializers.CharField(
-        required=False, help_text="Nickname (Robot name) of the taker"
+        required=False, help_text="The taker's robot hash"
+    )
+    taker_hash_id = serializers.CharField(
+        required=False, help_text="The taker's robot hash"
     )
     status_message = serializers.CharField(
         required=False,
@@ -268,7 +274,6 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         required=False, help_text="Whether or not the counterparty raised a dispute"
     )
     ur_nick = serializers.CharField(required=False, help_text="Your Nickname")
-    ur_nick = serializers.CharField(required=False, help_text="Your Nick")
     maker_locked = serializers.BooleanField(
         required=False, help_text="True if maker bond is locked, False otherwise"
     )
@@ -428,7 +433,9 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "is_buyer",
             "is_seller",
             "maker_nick",
+            "maker_hash_id",
             "taker_nick",
+            "taker_hash_id",
             "status_message",
             "is_fiat_sent",
             "is_disputed",

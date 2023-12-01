@@ -244,6 +244,7 @@ class OrderView(viewsets.ViewSet):
             )
 
         data["maker_nick"] = str(order.maker)
+        data["maker_hash_id"] = str(order.maker.robot.hash_id)
 
         # Add activity status of participants based on last_seen
         data["maker_status"] = Logics.user_activity_status(order.maker.last_login)
@@ -278,6 +279,8 @@ class OrderView(viewsets.ViewSet):
         data["is_buyer"] = Logics.is_buyer(order, request.user)
         data["is_seller"] = Logics.is_seller(order, request.user)
         data["taker_nick"] = str(order.taker)
+        if order.taker:
+            data["taker_hash_id"] = str(order.taker.robot.hash_id)
         data["status_message"] = Order.Status(order.status).label
         data["is_fiat_sent"] = order.is_fiat_sent
         data["latitude"] = order.latitude
@@ -648,6 +651,7 @@ class RobotView(APIView):
         user = request.user
         context = {}
         context["nickname"] = user.username
+        context["hash_id"] = user.robot.hash_id
         context["public_key"] = user.robot.public_key
         context["encrypted_private_key"] = user.robot.encrypted_private_key
         context["earned_rewards"] = user.robot.earned_rewards

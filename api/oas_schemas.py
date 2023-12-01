@@ -432,6 +432,10 @@ class RobotViewSchema:
                         "type": "string",
                         "description": "Username generated (Robot name)",
                     },
+                    "hash_id": {
+                        "type": "string",
+                        "description": "The hash identity of the robot, it is used to deterministically generate the avatar and the nicknames. It is the second sha256() of the token.",
+                    },
                     "public_key": {
                         "type": "string",
                         "description": "Armored ASCII PGP public key block",

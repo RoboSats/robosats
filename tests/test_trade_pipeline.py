@@ -257,6 +257,10 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             data["ur_nick"], read_file(f"tests/robots/{robot_index}/nickname")
         )
+        self.assertEqual(
+            data["maker_nick"], read_file(f"tests/robots/{robot_index}/nickname")
+        )
+        self.assertIsHash(data["maker_hash_id"])
         self.assertIsInstance(data["satoshis_now"], int)
         self.assertFalse(data["maker_locked"])
         self.assertFalse(data["taker_locked"])
@@ -342,6 +346,8 @@ class TradeTest(BaseAPITestCase):
         self.assertEqual(
             data["maker_nick"], read_file(f"tests/robots/{trade.maker_index}/nickname")
         )
+        self.assertIsHash(data["maker_hash_id"])
+        self.assertIsHash(data["taker_hash_id"])
         self.assertEqual(data["maker_status"], "Active")
         self.assertEqual(data["taker_status"], "Active")
         self.assertFalse(data["is_maker"])
