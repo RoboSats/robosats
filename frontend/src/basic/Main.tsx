@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box, Slide, Typography, styled } from '@mui/material';
 import { type UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
@@ -8,7 +8,6 @@ import RobotAvatar from '../components/RobotAvatar';
 import Notifications from '../components/Notifications';
 
 import { useTranslation } from 'react-i18next';
-import { FederationContext, type UseFederationStoreType } from '../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../contexts/GarageContext';
 
 const Router = window.NativeRobosats === undefined ? BrowserRouter : MemoryRouter;
@@ -30,9 +29,8 @@ const MainBox = styled(Box)<MainBoxProps>((props) => ({
 
 const Main: React.FC = () => {
   const { t } = useTranslation();
-  const { settings, page, slideDirection, setOpen, windowSize, navbarHeight, hostUrl } =
+  const { settings, page, slideDirection, setOpen, windowSize, navbarHeight } =
     useContext<UseAppStoreType>(AppContext);
-  const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   const onLoad = (): void => {

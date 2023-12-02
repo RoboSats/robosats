@@ -262,6 +262,11 @@ const RobotProfile = ({
                   </MenuItem>
                 ) : (
                   Object.values(garage.slots).map((slot: Slot, index: number) => {
+                    console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+                    console.log(slot);
+                    console.log(slot.getRobot());
+                    console.log(slot?.getRobot()?.hashId);
+                    console.log('BBBBBBBBBBBBBBBBBBBBBBBBBBBB');
                     return (
                       <MenuItem key={index} value={slot.token}>
                         <Grid
