@@ -44,7 +44,7 @@ const RobotProfile = ({
   setView,
   width,
 }: RobotProfileProps): JSX.Element => {
-  const { windowSize, hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const { windowSize } = useContext<UseAppStoreType>(AppContext);
   const { garage, robotUpdatedAt, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
   const { sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
 
@@ -127,7 +127,7 @@ const RobotProfile = ({
 
         <Grid item sx={{ width: `13.5em` }}>
           <RobotAvatar
-            nickname={robot?.nickname}
+            hashId={robot?.hashId}
             smooth={true}
             style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
             placeholderType='generating'
@@ -140,7 +140,6 @@ const RobotProfile = ({
             }}
             tooltip={t('This is your trading avatar')}
             tooltipPosition='top'
-            baseUrl={hostUrl}
           />
           {robot?.found === true && slot?.lastShortAlias != null ? (
             <Typography align='center' variant='h6'>
@@ -275,11 +274,10 @@ const RobotProfile = ({
                         >
                           <Grid item>
                             <RobotAvatar
-                              nickname={slot?.getRobot()?.nickname}
+                              hashId={slot?.getRobot()?.hashId}
                               smooth={true}
                               style={{ width: '2.6em', height: '2.6em' }}
                               placeholderType='loading'
-                              baseUrl={hostUrl}
                               small={true}
                             />
                           </Grid>

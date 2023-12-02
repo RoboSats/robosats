@@ -164,7 +164,7 @@ const Onboarding = ({
 
             <Grid item sx={{ width: '13.5em' }}>
               <RobotAvatar
-                nickname={robot?.nickname}
+                hashId={robot?.hashId}
                 smooth={true}
                 style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
                 placeholderType='generating'
@@ -176,7 +176,6 @@ const Onboarding = ({
                   width: '12.4em',
                 }}
                 tooltipPosition='top'
-                baseUrl={hostUrl}
               />
             </Grid>
 

@@ -75,12 +75,10 @@ const FederationTable = ({
           >
             <Grid item>
               <RobotAvatar
-                nickname={params.row.shortAlias}
-                coordinator={true}
+                shortAlias={params.row.shortAlias}
                 style={{ width: '3.215em', height: '3.215em' }}
                 smooth={true}
                 flipHorizontally={true}
-                baseUrl={hostUrl}
                 small={true}
               />
             </Grid>

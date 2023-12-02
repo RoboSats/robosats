@@ -62,7 +62,9 @@ export interface Order {
   is_buyer: boolean;
   is_seller: boolean;
   maker_nick: string;
+  maker_hash_id: string;
   taker_nick: string;
+  taker_hash_id: string;
   status_message: string;
   is_fiat_sent: boolean;
   is_disputed: boolean;
@@ -150,7 +152,9 @@ export const defaultOrder: Order = {
   is_buyer: false,
   is_seller: false,
   maker_nick: '',
+  maker_hash_id: '',
   taker_nick: '',
+  taker_hash_id: '',
   status_message: '',
   is_fiat_sent: false,
   is_disputed: false,

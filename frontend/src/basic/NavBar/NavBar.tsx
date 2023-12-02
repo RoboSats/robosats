@@ -130,8 +130,7 @@ const NavBar = (): JSX.Element => {
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
-                nickname={slot?.getRobot()?.nickname}
-                baseUrl={hostUrl}
+                hashId={slot?.getRobot()?.hashId}
               />
             ) : (
               <></>

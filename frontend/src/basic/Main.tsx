@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { MemoryRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box, Slide, Typography, styled } from '@mui/material';
 import { type UseAppStoreType, AppContext, closeAll } from '../contexts/AppContext';
@@ -34,11 +34,6 @@ const Main: React.FC = () => {
     useContext<UseAppStoreType>(AppContext);
   const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
-  const [avatarBaseUrl, setAvatarBaseUrl] = useState<string>(hostUrl);
-
-  useEffect(() => {
-    setAvatarBaseUrl(federation.getCoordinator(sortedCoordinators[0]).getBaseUrl());
-  }, [settings.network, settings.selfhostedClient, federation, sortedCoordinators]);
 
   const onLoad = (): void => {
     garage.updateSlot({ avatarLoaded: true });
@@ -48,8 +43,7 @@ const Main: React.FC = () => {
     <Router>
       <RobotAvatar
         style={{ display: 'none' }}
-        nickname={garage.getSlot()?.getRobot()?.nickname}
-        baseUrl={federation.getCoordinator(sortedCoordinators[0]).getBaseUrl()}
+        hashId={garage.getSlot()?.getRobot()?.hashId}
         onLoad={onLoad}
       />
       <Notifications
@@ -81,7 +75,7 @@ const Main: React.FC = () => {
                     appear={slideDirection.in !== undefined}
                   >
                     <div>
-                      <RobotPage avatarBaseUrl={avatarBaseUrl} />
+                      <RobotPage />
                     </div>
                   </Slide>
                 }

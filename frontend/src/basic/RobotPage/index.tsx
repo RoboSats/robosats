@@ -23,11 +23,7 @@ import { validateTokenEntropy } from '../../utils';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
 
-interface RobotPageProps {
-  avatarBaseUrl: string;
-}
-
-const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
+const RobotPage = (): JSX.Element => {
   const { torStatus, windowSize, settings, page } = useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
   const { federation, sortedCoordinators } = useContext<UseFederationStoreType>(FederationContext);
@@ -158,7 +154,6 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
-            avatarBaseUrl={avatarBaseUrl}
           />
         ) : null}
 
@@ -170,7 +165,6 @@ const RobotPage = ({ avatarBaseUrl }: RobotPageProps): JSX.Element => {
             inputToken={inputToken}
             setInputToken={setInputToken}
             getGenerateRobot={getGenerateRobot}
-            avatarBaseUrl={avatarBaseUrl}
           />
         ) : null}
 

@@ -15,7 +15,7 @@ class Robot {
   constructor(garageRobot?: Robot) {
     if (garageRobot != null) {
       this.token = garageRobot?.token ?? undefined;
-      this.hash_id = garageRobot?.hash_id ?? undefined;
+      this.hashId = garageRobot?.hashId ?? undefined;
       this.tokenSHA256 =
         garageRobot?.tokenSHA256 ?? (this.token != null ? hexToBase91(sha256(this.token)) : '');
       this.pubKey = garageRobot?.pubKey ?? undefined;
@@ -25,7 +25,7 @@ class Robot {
 
   public nickname?: string;
   public token?: string;
-  public hash_id?: string;
+  public hashId?: string;
   public bitsEntropy?: number;
   public shannonEntropy?: number;
   public tokenSHA256: string = '';
@@ -45,13 +45,15 @@ class Robot {
 
   update = (attributes: Record<string, any>): void => {
     Object.assign(this, attributes);
+
+    // generate robo identity
     if (attributes.token != null) {
-      const hash_id = sha256(sha256(attributes.token));
-      this.hash_id = hash_id;
-      this.nickname = generate_roboname(hash_id);
+      const hashId = sha256(sha256(attributes.token));
+      this.hashId = hashId;
+      this.nickname = generate_roboname(hashId);
       // trigger RoboHash avatar generation in webworker and store in RoboHash class cache.
-      robohash.generate(hash_id, 'small');
-      robohash.generate(hash_id, 'large');
+      robohash.generate(hashId, 'small');
+      robohash.generate(hashId, 'large');
     }
   };
 
