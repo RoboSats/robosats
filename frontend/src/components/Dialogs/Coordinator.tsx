@@ -46,7 +46,7 @@ import {
 import LinkIcon from '@mui/icons-material/Link';
 
 import { pn } from '../../utils';
-import { type Contact, type Coordinator } from '../../models';
+import { type Contact } from '../../models';
 import RobotAvatar from '../RobotAvatar';
 import {
   AmbossIcon,
@@ -64,7 +64,7 @@ import {
 import { AppContext } from '../../contexts/AppContext';
 import { systemClient } from '../../services/System';
 import { type Badges } from '../../models/Coordinator.model';
-import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface Props {
   open: boolean;
@@ -416,7 +416,7 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
             </>
           )}
 
-          {coordinator?.info?.notice_severity != undefined &&
+          {coordinator?.info?.notice_severity != null &&
             coordinator?.info?.notice_severity !== 'none' && (
               <ListItem>
                 <Alert severity={coordinator.info.notice_severity} sx={{ width: '100%' }}>
@@ -480,7 +480,7 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
           )}
         </List>
 
-        {coordinator?.loadingInfo === true ? (
+        {coordinator?.loadingInfo ? (
           <Box style={{ display: 'flex', justifyContent: 'center' }}>
             <CircularProgress />
           </Box>

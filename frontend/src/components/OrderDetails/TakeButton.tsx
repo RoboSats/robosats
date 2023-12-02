@@ -187,7 +187,7 @@ const TakeButton = ({
   }, [takeAmount, orderUpdatedAt]);
 
   const takeOrderButton = function (): JSX.Element {
-    if (currentOrder?.has_range === true) {
+    if (currentOrder?.has_range) {
       return (
         <Box
           sx={{

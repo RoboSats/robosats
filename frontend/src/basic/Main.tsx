@@ -40,7 +40,7 @@ const Main: React.FC = () => {
     setAvatarBaseUrl(federation.getCoordinator(sortedCoordinators[0]).getBaseUrl());
   }, [settings.network, settings.selfhostedClient, federation, sortedCoordinators]);
 
-  const onLoad = () => {
+  const onLoad = (): void => {
     garage.updateSlot({ avatarLoaded: true });
   };
 

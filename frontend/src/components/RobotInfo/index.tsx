@@ -70,7 +70,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
   const handleWeblnInvoiceClicked = async (e: MouseEvent<HTMLButtonElement, MouseEvent>): void => {
     e.preventDefault();
     const robot = garage.getSlot()?.getRobot(coordinator.shortAlias);
-    if (robot && robot.earnedRewards > 0) {
+    if (robot != null && robot.earnedRewards > 0) {
       const webln = await getWebln();
       const invoice = webln.makeInvoice(robot.earnedRewards).then(() => {
         if (invoice != null) {
@@ -87,7 +87,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot(coordinator.shortAlias);
 
-    if (robot && slot?.token && robot.encPrivKey != null && robot.token != null) {
+    if (robot != null && slot?.token != null && robot.encPrivKey != null && robot.token != null) {
       void signCleartextMessage(rewardInvoice, robot.encPrivKey, robot.token).then(
         (signedInvoice) => {
           void coordinator.fetchReward(signedInvoice, garage, slot?.token).then((data) => {
@@ -104,7 +104,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
 
   const setStealthInvoice = (wantsStealth: boolean): void => {
     const slot = garage.getSlot();
-    if (slot?.token) {
+    if (slot?.token != null) {
       void coordinator.fetchStealth(wantsStealth, garage, slot?.token);
     }
   };
@@ -130,12 +130,11 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
       </AccordionSummary>
       <AccordionDetails>
         <List dense disablePadding={true}>
-          {}
-          {slot?.activeShortAlias && slot?.activeShortAlias === coordinator.shortAlias ? (
+          {slot?.activeShortAlias === coordinator.shortAlias ? (
             <ListItemButton
               onClick={() => {
                 navigate(
-                  `/order/${slot?.activeShortAlias}/${String(
+                  `/order/${String(slot?.activeShortAlias)}/${String(
                     slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId,
                   )}`,
                 );
@@ -158,7 +157,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
             <ListItemButton
               onClick={() => {
                 navigate(
-                  `/order/${slot?.lastShortAlias}/${String(
+                  `/order/${String(slot?.lastShortAlias)}/${String(
                     slot?.getRobot(slot?.lastShortAlias ?? '')?.lastOrderId,
                   )}`,
                 );
@@ -204,7 +203,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
             </ListItemIcon>
 
             <ListItemText>
-              {robot?.tgEnabled ? (
+              {robot?.tgEnabled === true ? (
                 <Typography color={theme.palette.success.main}>
                   <b>{t('Telegram enabled')}</b>
                 </Typography>
@@ -242,7 +241,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
                       <Switch
                         checked={robot?.stealthInvoices}
                         onChange={() => {
-                          setStealthInvoice(!robot?.stealthInvoices);
+                          setStealthInvoice(!(robot?.stealthInvoices === true));
                         }}
                       />
                     }
@@ -261,7 +260,7 @@ const RobotInfo: React.FC<Props> = ({ coordinator, onClose }: Props) => {
               <ListItemText secondary={t('Your compensations')}>
                 <Grid container>
                   <Grid item xs={9}>
-                    <Typography>{`${robot?.earnedRewards} Sats`}</Typography>
+                    <Typography>{`${String(robot?.earnedRewards)} Sats`}</Typography>
                   </Grid>
 
                   <Grid item xs={3}>

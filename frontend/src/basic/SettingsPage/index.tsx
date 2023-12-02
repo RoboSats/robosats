@@ -5,8 +5,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import FederationTable from '../../components/FederationTable';
 
 const SettingsPage = (): JSX.Element => {
-  const { windowSize, navbarHeight, settings, setOpen, open, hostUrl } =
-    useContext<UseAppStoreType>(AppContext);
+  const { windowSize, navbarHeight } = useContext<UseAppStoreType>(AppContext);
   const maxHeight = (windowSize.height - navbarHeight) * 0.85 - 3;
 
   return (
@@ -22,10 +21,10 @@ const SettingsPage = (): JSX.Element => {
     >
       <Grid container>
         <Grid item>
-          <SettingsForm showNetwork={!(window.NativeRobosats === undefined)} />
+          <SettingsForm />
         </Grid>
         <Grid item>
-          <FederationTable baseUrl={hostUrl} maxHeight={14} network={settings.network} />
+          <FederationTable maxHeight={14} />
         </Grid>
       </Grid>
     </Paper>

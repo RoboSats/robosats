@@ -16,29 +16,27 @@ import { AppContext, type UseAppStoreType } from './AppContext';
 import { GarageContext, type UseGarageStoreType } from './GarageContext';
 
 // Refresh delays (ms) according to Order status
-
-// FIXME statusToDelay is never used. On order received, we should setDelay according to new received status.
-// const statusToDelay = [
-//   3000, // 'Waiting for maker bond'
-//   35000, // 'Public'
-//   180000, // 'Paused'
-//   3000, // 'Waiting for taker bond'
-//   999999, // 'Cancelled'
-//   999999, // 'Expired'
-//   8000, // 'Waiting for trade collateral and buyer invoice'
-//   8000, // 'Waiting only for seller trade collateral'
-//   8000, // 'Waiting only for buyer invoice'
-//   10000, // 'Sending fiat - In chatroom'
-//   10000, // 'Fiat sent - In chatroom'
-//   100000, // 'In dispute'
-//   999999, // 'Collaboratively cancelled'
-//   10000, // 'Sending satoshis to buyer'
-//   60000, // 'Sucessful trade'
-//   30000, // 'Failed lightning network routing'
-//   300000, // 'Wait for dispute resolution'
-//   300000, // 'Maker lost dispute'
-//   300000, // 'Taker lost dispute'
-// ];
+const statusToDelay = [
+  3000, // 'Waiting for maker bond'
+  35000, // 'Public'
+  180000, // 'Paused'
+  3000, // 'Waiting for taker bond'
+  999999, // 'Cancelled'
+  999999, // 'Expired'
+  8000, // 'Waiting for trade collateral and buyer invoice'
+  8000, // 'Waiting only for seller trade collateral'
+  8000, // 'Waiting only for buyer invoice'
+  10000, // 'Sending fiat - In chatroom'
+  10000, // 'Fiat sent - In chatroom'
+  100000, // 'In dispute'
+  999999, // 'Collaboratively cancelled'
+  10000, // 'Sending satoshis to buyer'
+  60000, // 'Sucessful trade'
+  30000, // 'Failed lightning network routing'
+  300000, // 'Wait for dispute resolution'
+  300000, // 'Maker lost dispute'
+  300000, // 'Taker lost dispute'
+];
 
 export interface fetchRobotProps {
   coordinator?: Coordinator;
@@ -67,7 +65,8 @@ export const initialFederationContext: UseFederationStoreType = {
 export const FederationContext = createContext<UseFederationStoreType>(initialFederationContext);
 
 export const useFederationStore = (): UseFederationStoreType => {
-  const { settings, origin, hostUrl, open, torStatus } = useContext<UseAppStoreType>(AppContext);
+  const { settings, page, origin, hostUrl, open, torStatus } =
+    useContext<UseAppStoreType>(AppContext);
   const { setMaker, garage, setBadOrder, robotUpdatedAt } =
     useContext<UseGarageStoreType>(GarageContext);
   const [federation, setFederation] = useState(initialFederationContext.federation);
@@ -103,20 +102,34 @@ export const useFederationStore = (): UseFederationStoreType => {
     });
   }, [settings.network, torStatus]);
 
+  const onOrderReceived = (order: any): void => {
+    if (order?.bad_request !== undefined) {
+      setBadOrder(order.bad_request);
+      setDelay(99999999);
+      garage.updateOrder(undefined);
+    }
+    if (order?.id != null) {
+      setDelay(
+        order.status >= 0 && order.status <= 18
+          ? page === 'order'
+            ? statusToDelay[order.status]
+            : statusToDelay[order.status] * 5 // If user is not looking at "order" tab, refresh less often.
+          : 99999999,
+      );
+      garage.updateOrder(order as Order);
+      setBadOrder(undefined);
+    }
+  };
+
   const fetchCurrentOrder = (): void => {
     const activeSlot = garage.getSlot();
     const robot = activeSlot?.getRobot(activeSlot?.activeShortAlias ?? '');
-    if (robot && robot?.activeOrderId && activeSlot?.activeShortAlias) {
+    if (robot != null && activeSlot?.activeShortAlias != null) {
       const coordinator = federation.getCoordinator(activeSlot?.activeShortAlias);
       coordinator
         .fetchOrder(robot.activeOrderId, robot)
         .then((order) => {
-          if (order?.bad_request !== undefined) {
-            setBadOrder(order.bad_request);
-          }
-          if (order?.id !== null) {
-            garage.updateOrder(order as Order);
-          }
+          onOrderReceived(order);
         })
         .finally(() => {
           setTimer(setTimeout(fetchCurrentOrder, delay));
@@ -138,11 +151,11 @@ export const useFederationStore = (): UseFederationStoreType => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot();
 
-    if (robot && garage.currentSlot) {
-      if (open.profile && slot?.avatarLoaded && slot.token) {
+    if (robot != null && garage.currentSlot != null) {
+      if (open.profile && slot?.avatarLoaded === true && slot.token != null) {
         void federation.fetchRobot(garage, slot.token); // refresh/update existing robot
       } else if (
-        !Boolean(slot?.avatarLoaded) &&
+        !(slot?.avatarLoaded === true) &&
         robot.token !== undefined &&
         robot.encPrivKey !== undefined &&
         robot.pubKey !== undefined

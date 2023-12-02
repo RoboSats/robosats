@@ -22,7 +22,7 @@ import { AppContext, type UseAppStoreType } from '../../contexts/AppContext';
 import { genBase62Token } from '../../utils';
 import { LoadingButton } from '@mui/lab';
 import { GarageContext, type UseGarageStoreType } from '../../contexts/GarageContext';
-import { UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
 
 interface RobotProfileProps {
   robot: Robot;
@@ -57,7 +57,7 @@ const RobotProfile = ({
   useEffect(() => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot(sortedCoordinators[0]);
-    if (robot?.nickname != null && slot?.avatarLoaded) {
+    if (robot?.nickname != null && slot?.avatarLoaded === true) {
       setLoading(false);
     }
   }, [orderUpdatedAt, robotUpdatedAt, loading]);
@@ -86,7 +86,7 @@ const RobotProfile = ({
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {slot?.avatarLoaded && robot?.nickname != null ? (
+          {slot?.avatarLoaded === true && robot?.nickname != null ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
                 style={{
@@ -142,7 +142,7 @@ const RobotProfile = ({
             tooltipPosition='top'
             baseUrl={hostUrl}
           />
-          {robot?.found && slot?.lastShortAlias ? (
+          {robot?.found === true && slot?.lastShortAlias != null ? (
             <Typography align='center' variant='h6'>
               {t('Welcome back!')}
             </Typography>

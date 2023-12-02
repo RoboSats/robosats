@@ -40,7 +40,7 @@ const OrderPage = (): JSX.Element => {
     setBaseUrl(`${url}${basePath}`);
 
     const orderId = Number(params.orderId);
-    if (orderId && currentOrderId !== orderId) setCurrentOrderId(orderId);
+    if (Boolean(orderId) && currentOrderId !== orderId) setCurrentOrderId(orderId);
   }, [params]);
 
   useEffect(() => {
@@ -49,17 +49,17 @@ const OrderPage = (): JSX.Element => {
       const coordinator = federation.getCoordinator(params.shortAlias ?? '');
       const slot = garage.getSlot();
       const robot = slot?.getRobot();
-      if (robot && slot?.token) {
-        federation.fetchRobot(garage, slot.token);
+      if (robot != null && slot?.token != null) {
+        void federation.fetchRobot(garage, slot.token);
         coordinator
           .fetchOrder(currentOrderId, robot)
           .then((order) => {
             if (order?.bad_request !== undefined) {
               setBadOrder(order.bad_request);
-            } else if (order !== null && order?.id !== null) {
+            } else if (order?.id != null) {
               setCurrentOrder(order);
               if (order.is_participant) {
-                garage.updateOrder(order as Order);
+                garage.updateOrder(order);
               }
             }
           })
@@ -82,25 +82,23 @@ const OrderPage = (): JSX.Element => {
     navigate('/robot');
   };
 
-  const orderDetailsSpace = currentOrder ? (
-    <OrderDetails
-      shortAlias={String(currentOrder.shortAlias)}
-      currentOrder={currentOrder}
-      onClickCoordinator={onClickCoordinator}
-      baseUrl={baseUrl}
-      onClickGenerateRobot={() => {
-        navigate('/robot');
-      }}
-    />
-  ) : (
-    <></>
-  );
+  const orderDetailsSpace =
+    currentOrder != null ? (
+      <OrderDetails
+        shortAlias={String(currentOrder.shortAlias)}
+        currentOrder={currentOrder}
+        onClickCoordinator={onClickCoordinator}
+        baseUrl={baseUrl}
+        onClickGenerateRobot={() => {
+          navigate('/robot');
+        }}
+      />
+    ) : (
+      <></>
+    );
 
-  const tradeBoxSpace = currentOrder ? (
-    <TradeBox baseUrl={baseUrl} onStartAgain={startAgain} />
-  ) : (
-    <></>
-  );
+  const tradeBoxSpace =
+    currentOrder != null ? <TradeBox baseUrl={baseUrl} onStartAgain={startAgain} /> : <></>;
 
   return (
     <Box>

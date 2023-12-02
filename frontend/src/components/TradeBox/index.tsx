@@ -52,7 +52,7 @@ import { Bolt } from '@mui/icons-material';
 import { signCleartextMessage } from '../../pgp';
 import { type UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
-import { FederationContext, UseFederationStoreType } from '../../contexts/FederationContext';
+import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { useNavigate } from 'react-router-dom';
 
 interface loadingButtonsProps {
@@ -156,7 +156,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
 
   const renewOrder = function (): void {
     const currentOrder = garage.getSlot()?.order;
-    if (currentOrder) {
+    if (currentOrder != null) {
       const body = {
         type: currentOrder.type,
         currency: currentOrder.currency,
@@ -362,7 +362,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
   // Effect on Order Status change (used for WebLN)
   useEffect(() => {
     const currentOrder = garage.getSlot()?.order;
-    if (currentOrder && currentOrder?.status !== lastOrderStatus) {
+    if (currentOrder != null && currentOrder?.status !== lastOrderStatus) {
       setLastOrderStatus(currentOrder.status);
       void handleWebln(currentOrder);
     }
@@ -380,7 +380,7 @@ const TradeBox = ({ baseUrl, onStartAgain }: TradeBoxProps): JSX.Element => {
       titleIcon: () => <></>,
     };
 
-    if (!order) return baseContract;
+    if (order == null) return baseContract;
 
     const status = order.status;
     const isBuyer = order.is_buyer;

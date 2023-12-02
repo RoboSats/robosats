@@ -12,7 +12,7 @@ class Slot {
   }
 
   token: string | null;
-  robots: { [shortAlias: string]: Robot };
+  robots: Record<string, Robot>;
   order: Order | null;
   activeShortAlias: string | null;
   lastShortAlias: string | null;
@@ -28,11 +28,11 @@ class Slot {
   };
 
   getRobot = (shortAlias?: string): Robot | null => {
-    if (shortAlias) {
+    if (shortAlias != null) {
       return this.robots[shortAlias];
-    } else if (this.activeShortAlias !== null && this.robots[this.activeShortAlias]) {
+    } else if (this.activeShortAlias !== null && this.robots[this.activeShortAlias] != null) {
       return this.robots[this.activeShortAlias];
-    } else if (this.lastShortAlias !== null && this.robots[this.lastShortAlias]) {
+    } else if (this.lastShortAlias !== null && this.robots[this.lastShortAlias] != null) {
       return this.robots[this.lastShortAlias];
     } else if (Object.values(this.robots).length > 0) {
       return Object.values(this.robots)[0];

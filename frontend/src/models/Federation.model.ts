@@ -6,7 +6,6 @@ import {
   type PublicOrder,
   type Settings,
   defaultExchange,
-  type Order,
 } from '.';
 import defaultFederation from '../../static/federation.json';
 import { updateExchangeInfo } from './Exchange.model';

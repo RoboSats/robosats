@@ -151,7 +151,7 @@ const Onboarding = ({
           <Grid container direction='column' alignItems='center' spacing={1}>
             <Grid item>
               <Typography>
-                {slot?.avatarLoaded && Boolean(robot?.nickname) ? (
+                {slot?.avatarLoaded === true && Boolean(robot?.nickname) ? (
                   t('This is your trading avatar')
                 ) : (
                   <>
@@ -180,7 +180,7 @@ const Onboarding = ({
               />
             </Grid>
 
-            {slot?.avatarLoaded && Boolean(robot?.nickname) ? (
+            {slot?.avatarLoaded === true && Boolean(robot?.nickname) ? (
               <Grid item>
                 <Typography align='center'>{t('Hi! My name is')}</Typography>
                 <Typography component='h5' variant='h5'>
@@ -212,7 +212,7 @@ const Onboarding = ({
               </Grid>
             ) : null}
             <Grid item>
-              <Collapse in={!!(slot?.avatarLoaded && Boolean(robot?.nickname))}>
+              <Collapse in={!!(slot?.avatarLoaded === true && Boolean(robot?.nickname))}>
                 <Button
                   onClick={() => {
                     setStep('3');

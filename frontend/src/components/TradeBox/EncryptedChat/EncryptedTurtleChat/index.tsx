@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { AuditPGPDialog } from '../../../Dialogs';
-import { type Robot } from '../../../../models';
 
 // Icons
 import CircularProgress from '@mui/material/CircularProgress';
@@ -14,9 +13,12 @@ import ChatHeader from '../ChatHeader';
 import { type EncryptedChatMessage, type ServerMessage } from '..';
 import { apiClient } from '../../../../services/api';
 import ChatBottom from '../ChatBottom';
-import { UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
-import { UseFederationStoreType, FederationContext } from '../../../../contexts/FederationContext';
-import { UseGarageStoreType, GarageContext } from '../../../../contexts/GarageContext';
+import { type UseAppStoreType, AppContext } from '../../../../contexts/AppContext';
+import {
+  type UseFederationStoreType,
+  FederationContext,
+} from '../../../../contexts/FederationContext';
+import { type UseGarageStoreType, GarageContext } from '../../../../contexts/GarageContext';
 
 interface Props {
   orderId: number;
@@ -86,7 +88,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
   const loadMessages: () => void = () => {
     const shortAlias = garage.getSlot()?.activeShortAlias;
 
-    if (!shortAlias) return;
+    if (!(shortAlias == null)) return;
 
     const { url, basePath } = federation
       .getCoordinator(shortAlias)
@@ -121,7 +123,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
 
   const onMessage = (dataFromServer: ServerMessage): void => {
     const robot = garage.getSlot();
-    if (robot && dataFromServer != null) {
+    if (robot != null && dataFromServer != null) {
       // If we receive an encrypted message
       if (dataFromServer.message.substring(0, 27) === `-----BEGIN PGP MESSAGE-----`) {
         void decryptMessage(
@@ -213,7 +215,7 @@ const EncryptedTurtleChat: React.FC<Props> = ({
         });
     }
     // Else if message is not empty send message
-    else if (value !== '' && robot?.pubKey) {
+    else if (value !== '' && robot?.pubKey != null) {
       setWaitingEcho(true);
       setLastSent(value);
       encryptMessage(value, robot?.pubKey, peerPubKey ?? '', robot?.encPrivKey, robot?.token)

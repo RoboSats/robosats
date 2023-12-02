@@ -4,7 +4,6 @@ import { Button, TextField, Grid, Paper, Typography } from '@mui/material';
 import { encryptMessage, decryptMessage } from '../../../../pgp';
 import { AuditPGPDialog } from '../../../Dialogs';
 import { websocketClient, type WebsocketConnection } from '../../../../services/Websocket';
-import { type Robot } from '../../../../models';
 import { GarageContext, type UseGarageStoreType } from '../../../../contexts/GarageContext';
 
 // Icons
@@ -64,7 +63,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    if (!connected && garage.getSlot()?.avatarLoaded) {
+    if (!connected && garage.getSlot()?.avatarLoaded === true) {
       connectWebsocket();
     }
   }, [connected, robotUpdatedAt]);

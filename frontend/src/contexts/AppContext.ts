@@ -43,7 +43,6 @@ export const closeAll = {
   client: false,
   update: false,
   profile: false,
-  notice: false,
 };
 
 const makeTheme = function (settings: Settings): Theme {

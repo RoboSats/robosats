@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import { AppContext, type AppContextProps } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
 import { Paper } from '@mui/material';
 import { type GridItem } from 'react-grid-layout';
@@ -27,7 +26,6 @@ const FederationWidget = React.forwardRef(function Component(
   }: FederationWidgetProps,
   ref,
 ) {
-  const { open, setOpen } = useContext<AppContextProps>(AppContext);
   const { federation, coordinatorUpdatedAt } =
     useContext<UseFederationStoreType>(FederationContext);
 

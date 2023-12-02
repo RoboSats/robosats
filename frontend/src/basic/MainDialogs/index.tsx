@@ -11,7 +11,6 @@ import {
 } from '../../components/Dialogs';
 import { AppContext, type UseAppStoreType, closeAll } from '../../contexts/AppContext';
 import { FederationContext, type UseFederationStoreType } from '../../contexts/FederationContext';
-import { UseGarageStoreType, GarageContext } from '../../contexts/GarageContext';
 
 export interface OpenDialogs {
   more: boolean;
@@ -23,14 +22,12 @@ export interface OpenDialogs {
   client: boolean;
   update: boolean;
   profile: boolean;
-  notice: boolean;
 }
 
 const MainDialogs = (): JSX.Element => {
   const { open, setOpen, settings, clientVersion, hostUrl } =
     useContext<UseAppStoreType>(AppContext);
   const { federation } = useContext<UseFederationStoreType>(FederationContext);
-  const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
   return (
     <>

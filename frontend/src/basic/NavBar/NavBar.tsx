@@ -42,7 +42,7 @@ const NavBar = (): JSX.Element => {
   const tabSx = smallBar
     ? {
         position: 'relative',
-        bottom: garage.getSlot()?.avatarLoaded ? '0.9em' : '0.13em',
+        bottom: garage.getSlot()?.avatarLoaded === true ? '0.9em' : '0.13em',
         minWidth: '1em',
       }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
@@ -166,7 +166,8 @@ const NavBar = (): JSX.Element => {
           label={smallBar ? undefined : t('Order')}
           value='order'
           disabled={
-            !slot?.avatarLoaded || !slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId
+            slot?.avatarLoaded === false ||
+            !(slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId != null)
           }
           icon={<Assignment />}
           iconPosition='start'

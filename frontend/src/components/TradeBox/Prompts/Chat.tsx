@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { Grid, Typography, Tooltip, Collapse } from '@mui/material';
 import currencies from '../../../../static/assets/currencies.json';
 
-import { type Order, type Robot } from '../../../models';
+import { type Order } from '../../../models';
 import { pn } from '../../../utils';
 import EncryptedChat, { type EncryptedChatMessage } from '../EncryptedChat';
 import Countdown, { zeroPad } from 'react-countdown';
 import { LoadingButton } from '@mui/lab';
-import { UseGarageStoreType, GarageContext } from '../../../contexts/GarageContext';
+import { type UseGarageStoreType, GarageContext } from '../../../contexts/GarageContext';
 
 interface ChatPromptProps {
   order: Order;
@@ -40,7 +40,7 @@ export const ChatPrompt = ({
   setMessages,
 }: ChatPromptProps): JSX.Element => {
   const { t } = useTranslation();
-  const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const [sentButton, setSentButton] = useState<boolean>(false);
   const [receivedButton, setReceivedButton] = useState<boolean>(false);
@@ -49,10 +49,8 @@ export const ChatPrompt = ({
   const [enableDisputeTime, setEnableDisputeTime] = useState<Date>(new Date(order.expires_at));
   const [text, setText] = useState<string>('');
 
-  const currencyCode: string = currencies[`${garage.getSlot()?.order?.currency}`];
-  const amount: string = pn(
-    parseFloat(garage.getSlot()?.order?.amount ?? 0).toFixed(order.currency === 1000 ? 8 : 4),
-  );
+  const currencyCode: string = currencies[`${order.currency}`];
+  const amount: string = pn(parseFloat(order.amount ?? 0).toFixed(order.currency === 1000 ? 8 : 4));
 
   const disputeCountdownRenderer = function ({
     hours,
