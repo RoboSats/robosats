@@ -10,6 +10,7 @@ import { apiClient } from '../services/api';
 import { validateTokenEntropy } from '../utils';
 import { compareUpdateLimit } from './Limit.model';
 import { defaultOrder } from './Order.model';
+import { robohash } from '../components/RobotAvatar/RobohashGenerator';
 
 export interface Contact {
   nostr?: string | undefined;
@@ -156,6 +157,12 @@ export class Coordinator {
     this.loadInfo(onDataLoad);
   };
 
+  generateAllMakerAvatars = (data: [PublicOrder]) => {
+    for (const order of data) {
+      robohash.generate(order.maker_hash_id, 'small');
+    }
+  };
+
   loadBook = (onDataLoad: () => void = () => {}): void => {
     if (this.enabled === false) return;
     if (this.loadingBook) return;
@@ -170,6 +177,7 @@ export class Coordinator {
             order.coordinatorShortAlias = this.shortAlias;
             return order;
           });
+          this.generateAllMakerAvatars(data);
           onDataLoad();
         }
       })

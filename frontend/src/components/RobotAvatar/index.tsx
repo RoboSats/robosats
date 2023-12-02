@@ -1,11 +1,10 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SmoothImage from 'react-smooth-image';
 import { Avatar, Badge, Tooltip } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
 import { apiClient } from '../../services/api';
 import placeholder from './placeholder.json';
-import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
-import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { robohash } from './RobohashGenerator';
 
 interface Props {
   nickname: string | undefined;
@@ -59,21 +58,39 @@ const RobotAvatar: React.FC<Props> = ({
   const className = placeholderType === 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
   useEffect(() => {
-    if (nickname !== undefined) {
+    // TODO: HANDLE ANDROID AVATARS TOO (when window.NativeRobosats !== undefined)
+    if (nickname !== undefined && !coordinator) {
+      robohash
+        .generate(nickname, small ? 'small' : 'large') // TODO: should hash_id
+        .then((avatar) => {
+          setAvatarSrc(avatar);
+        })
+        .catch(() => {
+          setAvatarSrc('');
+        });
+      setNicknameReady(true);
+      setActiveBackground(false);
+    }
+
+    if (coordinator) {
       if (window.NativeRobosats === undefined) {
-        setAvatarSrc(`${baseUrl}${path}${nickname}${small ? '.small' : ''}.webp`);
-        setNicknameReady(true);
-      } else if (baseUrl != null && apiClient.fileImageUrl !== undefined) {
-        setNicknameReady(true);
-        void apiClient
-          .fileImageUrl(baseUrl, `${path}${nickname}${small ? '.small' : ''}.webp`)
-          .then(setAvatarSrc);
+        setAvatarSrc(
+          `${baseUrl}/static/federation/avatars/${nickname}${small ? '.small' : ''}.webp`,
+        );
+      } else {
+        setAvatarSrc(
+          `file:///android_asset/Web.bundle/assets/federation/avatars/${nickname}${
+            small ? ' .small' : ''
+          }.webp`,
+        );
       }
+      setNicknameReady(true);
+      setActiveBackground(false);
     } else {
       setNicknameReady(false);
       setActiveBackground(true);
     }
-  }, [nickname]);
+  }, [nickname]); // TODO: should hash_id
 
   const statusBadge = (
     <div style={{ position: 'relative', left: '0.428em', top: '0.07em' }}>
