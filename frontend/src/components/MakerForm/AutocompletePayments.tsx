@@ -34,8 +34,8 @@ const Label = styled('label')(
         ? '#f44336'
         : '#cfcfcf'
       : error === true
-      ? '#dd0000'
-      : '#717171'
+        ? '#dd0000'
+        : '#717171'
   };
   pointer-events: none;
   position: relative;
@@ -58,8 +58,8 @@ const InputWrapper = styled('div')(
         ? '#f44336'
         : '#434343'
       : error === ''
-      ? '#dd0000'
-      : '#c4c4c4'
+        ? '#dd0000'
+        : '#c4c4c4'
   };
   background-color: ${theme.palette.mode === 'dark' ? '#141414' : '#fff'};
   border-radius: 4px;
@@ -77,8 +77,8 @@ const InputWrapper = styled('div')(
           ? '#f44336'
           : String(sx.hoverBorderColor)
         : error === true
-        ? '#dd0000'
-        : '#2f2f2f'
+          ? '#dd0000'
+          : '#2f2f2f'
     };
   }
 
@@ -89,8 +89,8 @@ const InputWrapper = styled('div')(
           ? '#f44336'
           : '#90caf9'
         : error === true
-        ? '#dd0000'
-        : '#1976d2'
+          ? '#dd0000'
+          : '#1976d2'
     };
   }
 

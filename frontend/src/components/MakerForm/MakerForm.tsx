@@ -541,12 +541,12 @@ const MakerForm = ({
             ? t('Order for ')
             : t('Swap of ')
           : fav.type === 1
-          ? fav.mode === 'fiat'
-            ? t('Buy BTC for ')
-            : t('Swap into LN ')
-          : fav.mode === 'fiat'
-          ? t('Sell BTC for ')
-          : t('Swap out of LN ')}
+            ? fav.mode === 'fiat'
+              ? t('Buy BTC for ')
+              : t('Swap into LN ')
+            : fav.mode === 'fiat'
+              ? t('Sell BTC for ')
+              : t('Swap out of LN ')}
         {fav.mode === 'fiat'
           ? amountToString(maker.amount, makerHasAmountRange, maker.minAmount, maker.maxAmount)
           : amountToString(
@@ -559,12 +559,12 @@ const MakerForm = ({
         {maker.isExplicit
           ? t(' of {{satoshis}} Satoshis', { satoshis: pn(maker.satoshis) })
           : maker.premium === 0
-          ? fav.mode === 'fiat'
-            ? t(' at market price')
-            : ''
-          : maker.premium > 0
-          ? t(' at a {{premium}}% premium', { premium: maker.premium })
-          : t(' at a {{discount}}% discount', { discount: -maker.premium })}
+            ? fav.mode === 'fiat'
+              ? t(' at market price')
+              : ''
+            : maker.premium > 0
+              ? t(' at a {{premium}}% premium', { premium: maker.premium })
+              : t(' at a {{discount}}% discount', { discount: -maker.premium })}
       </Typography>
     );
   };
@@ -785,10 +785,10 @@ const MakerForm = ({
                                 minAmount: pn(parseFloat(amountLimits[0].toPrecision(2))),
                               })
                             : maker.amount > amountLimits[1] && maker.amount !== ''
-                            ? t('Must be less than {{maxAmount}}', {
-                                maxAmount: pn(parseFloat(amountLimits[1].toPrecision(2))),
-                              })
-                            : null
+                              ? t('Must be less than {{maxAmount}}', {
+                                  maxAmount: pn(parseFloat(amountLimits[1].toPrecision(2))),
+                                })
+                              : null
                         }
                         label={amountLabel.label}
                         required={true}

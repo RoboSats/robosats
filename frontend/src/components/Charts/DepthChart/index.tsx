@@ -352,8 +352,8 @@ const DepthChart: React.FC<DepthChartProps> = ({
                         ? 2.7 * em
                         : 1.78 * em
                       : width < 25
-                      ? 2.7 * em
-                      : 1.78 * em,
+                        ? 2.7 * em
+                        : 1.78 * em,
                   top: 0.714 * em,
                 }}
                 xFormat={(value) => Number(value).toFixed(0)}

@@ -49,8 +49,10 @@
     "color": "#000",
     "contact": {
       "email": "cosmos178ftmm4edlahqzj376gwgqzd9re5x0x9h0tfsc@keplr.xyz",
+      "telegram": "@venividivici_fr",
       "simplex": "https://simplex.chat/contact/#/?v=1-4&smp=smp%3A%2F%2Fh--vW7ZSkXPeOUpfxlFGgauQmXNFOzGoizak7Ult7cw%3D%40smp15.simplex.im%2FTBkVW6au17zMxuwDvlhIpkMojh7PpZgN%23%2F%3Fv%3D1-2%26dh%3DMCowBQYDK2VuAyEA2iXIDN6Su6zYqKWcgsdd8BA7HhIHYIEWHE-MUyJhSw4%253D%26srv%3Doauu4bgijybyhczbnxtlggo6hiubahmeutaqineuyy23aojpih3dajad.onion",
       "matrix": "@venividivici13:matrix.org",
+      "nostr": "npub1wsqpvgpfwq6a4fs5whqxn7gtd9gqsll2p5qnfdu4ltr43s6wwxgsgk4xtl",
       "pgp": "/static/federation/pgp/25791752E9661C1DE118A8C6F78CD3D6471B6789.asc",
       "fingerprint": "25791752E9661C1DE118A8C6F78CD3D6471B6789"
     },
@@ -70,12 +72,12 @@
       "Rule 2:": "Keep stacking Sats and Enjoy your journey in the Temple of Sats!"
     },
     "mainnet": {
-      "onion": "http://_TEMPORARY_SILENCED_MAINNET_zixoneehmz7z2ctsnpuubcni4kxw5gp6fkyzjd2spo5atie5awiuwmyd.onion",
+      "onion": "http://_TEMPORARY_SILENCED_MAINNET_ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion",
       "clearnet": "",
       "i2p": ""
     },
     "testnet": {
-      "onion": "http://ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion",
+      "onion": "http://jpp3w5tpxtyg6lifonisdszpriiapszzem4wod2zsdweyfenlsxeoxid.onion",
       "clearnet": "",
       "i2p": ""
     },

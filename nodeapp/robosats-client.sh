@@ -23,10 +23,10 @@ testnet_exp_socat="socat tcp4-LISTEN:${testnet_exp_port},reuseaddr,fork,keepaliv
 ################################
 # Temple of Sats
 # Mainnet
-mainnet_temple_onion=zixoneehmz7z2ctsnpuubcni4kxw5gp6fkyzjd2spo5atie5awiuwmyd.onion
+mainnet_temple_onion=ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion
 mainnet_temple_port=102
 # Testnet
-testnet_temple_onion=ngdk7ocdzmz5kzsysa3om6du7ycj2evxp2f2olfkyq37htx3gllwp2yd.onion
+testnet_temple_onion=jpp3w5tpxtyg6lifonisdszpriiapszzem4wod2zsdweyfenlsxeoxid.onion
 testnet_temple_port=1002
 # socat cmd
 mainnet_temple_socat="socat tcp4-LISTEN:${mainnet_temple_port},reuseaddr,fork,keepalive,bind=127.0.0.1 SOCKS4A:${TOR_PROXY_IP:-127.0.0.1}:${mainnet_temple_onion}:80,socksport=${TOR_PROXY_PORT:-9050}"
