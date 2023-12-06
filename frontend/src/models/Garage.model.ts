@@ -98,13 +98,12 @@ class Garage {
     }
   };
 
-  updateSlot: (
-    attributes: { avatarLoaded?: boolean; copiedToken?: boolean },
-    token?: string,
-  ) => Slot | null = (attributes, token) => {
+  updateSlot: (attributes: { copiedToken?: boolean }, token?: string) => Slot | null = (
+    attributes,
+    token,
+  ) => {
     const slot = this.getSlot(token);
     if (attributes != null) {
-      if (attributes.avatarLoaded !== undefined) slot?.setAvatarLoaded(attributes.avatarLoaded);
       if (attributes.copiedToken !== undefined) slot?.setCopiedToken(attributes.copiedToken);
       this.triggerHook('onRobotUpdate');
     }

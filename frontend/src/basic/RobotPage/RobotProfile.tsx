@@ -57,7 +57,7 @@ const RobotProfile = ({
   useEffect(() => {
     const slot = garage.getSlot();
     const robot = slot?.getRobot(sortedCoordinators[0]);
-    if (robot?.nickname != null && slot?.avatarLoaded === true) {
+    if (Boolean(slot?.hashId)) {
       setLoading(false);
     }
   }, [orderUpdatedAt, robotUpdatedAt, loading]);
@@ -86,7 +86,7 @@ const RobotProfile = ({
         sx={{ width: '100%' }}
       >
         <Grid item sx={{ height: '2.3em', position: 'relative' }}>
-          {slot?.avatarLoaded === true && robot?.nickname != null ? (
+          {Boolean(slot?.hashId) ? (
             <Typography align='center' component='h5' variant='h5'>
               <div
                 style={{
@@ -105,7 +105,7 @@ const RobotProfile = ({
                     }}
                   />
                 )}
-                <b>{robot?.nickname}</b>
+                <b>{slot?.nickname}</b>
                 {width < 19 ? null : (
                   <Bolt
                     sx={{
@@ -127,7 +127,7 @@ const RobotProfile = ({
 
         <Grid item sx={{ width: `13.5em` }}>
           <RobotAvatar
-            hashId={robot?.hashId}
+            hashId={slot?.hashId}
             smooth={true}
             style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
             placeholderType='generating'
@@ -150,9 +150,7 @@ const RobotProfile = ({
           )}
         </Grid>
 
-        {Boolean(robot?.activeOrderId) &&
-        Boolean(slot?.avatarLoaded) &&
-        Boolean(robot?.nickname) ? (
+        {Boolean(robot?.activeOrderId) && Boolean(slot?.hashId) ? (
           <Grid item>
             <Button
               onClick={() => {
@@ -166,7 +164,7 @@ const RobotProfile = ({
           </Grid>
         ) : null}
 
-        {Boolean(robot?.lastOrderId) && Boolean(slot?.avatarLoaded) && Boolean(robot?.nickname) ? (
+        {Boolean(robot?.lastOrderId) && Boolean(slot?.hashId) ? (
           <Grid item container direction='column' alignItems='center'>
             <Grid item>
               <Button
@@ -262,11 +260,6 @@ const RobotProfile = ({
                   </MenuItem>
                 ) : (
                   Object.values(garage.slots).map((slot: Slot, index: number) => {
-                    console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
-                    console.log(slot);
-                    console.log(slot.getRobot());
-                    console.log(slot?.getRobot()?.hashId);
-                    console.log('BBBBBBBBBBBBBBBBBBBBBBBBBBBB');
                     return (
                       <MenuItem key={index} value={slot.token}>
                         <Grid
@@ -279,7 +272,7 @@ const RobotProfile = ({
                         >
                           <Grid item>
                             <RobotAvatar
-                              hashId={slot?.getRobot()?.hashId}
+                              hashId={slot?.hashId}
                               smooth={true}
                               style={{ width: '2.6em', height: '2.6em' }}
                               placeholderType='loading'
@@ -288,7 +281,7 @@ const RobotProfile = ({
                           </Grid>
                           <Grid item>
                             <Typography variant={windowSize.width < 26 ? 'caption' : undefined}>
-                              {slot?.getRobot()?.nickname}
+                              {slot?.nickname}
                             </Typography>
                           </Grid>
                         </Grid>

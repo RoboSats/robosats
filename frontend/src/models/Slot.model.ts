@@ -1,27 +1,34 @@
+import { sha256 } from 'js-sha256';
 import { Robot, type Order } from '.';
+import { robohash } from '../components/RobotAvatar/RobohashGenerator';
+import { generate_roboname } from 'robo-identities-wasm';
 
 class Slot {
   constructor(token: string) {
     this.token = token;
+
+    this.hashId = sha256(sha256(this.token));
+    this.nickname = generate_roboname(this.hashId);
+    // trigger RoboHash avatar generation in webworker and store in RoboHash class cache.
+    robohash.generate(this.hashId, 'small');
+    robohash.generate(this.hashId, 'large');
+
     this.robots = {};
     this.order = null;
+
     this.activeShortAlias = null;
     this.lastShortAlias = null;
     this.copiedToken = false;
-    this.avatarLoaded = false;
   }
 
   token: string | null;
+  hashId: string | null;
+  nickname: string | null;
   robots: Record<string, Robot>;
   order: Order | null;
   activeShortAlias: string | null;
   lastShortAlias: string | null;
   copiedToken: boolean;
-  avatarLoaded: boolean;
-
-  setAvatarLoaded = (avatarLoaded: boolean): void => {
-    this.avatarLoaded = avatarLoaded;
-  };
 
   setCopiedToken = (copied: boolean): void => {
     this.copiedToken = copied;

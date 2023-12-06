@@ -33,17 +33,9 @@ const Main: React.FC = () => {
     useContext<UseAppStoreType>(AppContext);
   const { garage } = useContext<UseGarageStoreType>(GarageContext);
 
-  const onLoad = (): void => {
-    garage.updateSlot({ avatarLoaded: true });
-  };
-
   return (
     <Router>
-      <RobotAvatar
-        style={{ display: 'none' }}
-        hashId={garage.getSlot()?.getRobot()?.hashId}
-        onLoad={onLoad}
-      />
+      <RobotAvatar style={{ display: 'none' }} hashId={garage.getSlot()?.hashId} />
       <Notifications
         page={page}
         openProfile={() => {

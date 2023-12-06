@@ -152,10 +152,9 @@ export const useFederationStore = (): UseFederationStoreType => {
     const robot = slot?.getRobot();
 
     if (robot != null && garage.currentSlot != null) {
-      if (open.profile && slot?.avatarLoaded === true && slot.token != null) {
-        void federation.fetchRobot(garage, slot.token); // refresh/update existing robot
+      if (open.profile && Boolean(slot?.hashId) && slot?.token) {
+        void federation.fetchRobot(garage, slot?.token); // refresh/update existing robot
       } else if (
-        !(slot?.avatarLoaded === true) &&
         robot.token !== undefined &&
         robot.encPrivKey !== undefined &&
         robot.pubKey !== undefined

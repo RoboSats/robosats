@@ -151,7 +151,7 @@ const Onboarding = ({
           <Grid container direction='column' alignItems='center' spacing={1}>
             <Grid item>
               <Typography>
-                {slot?.avatarLoaded === true && Boolean(robot?.nickname) ? (
+                {Boolean(slot?.hashId) ? (
                   t('This is your trading avatar')
                 ) : (
                   <>
@@ -164,7 +164,7 @@ const Onboarding = ({
 
             <Grid item sx={{ width: '13.5em' }}>
               <RobotAvatar
-                hashId={robot?.hashId}
+                hashId={slot?.hashId}
                 smooth={true}
                 style={{ maxWidth: '12.5em', maxHeight: '12.5em' }}
                 placeholderType='generating'
@@ -179,7 +179,7 @@ const Onboarding = ({
               />
             </Grid>
 
-            {slot?.avatarLoaded === true && Boolean(robot?.nickname) ? (
+            {Boolean(slot?.hashId) ? (
               <Grid item>
                 <Typography align='center'>{t('Hi! My name is')}</Typography>
                 <Typography component='h5' variant='h5'>
@@ -198,7 +198,7 @@ const Onboarding = ({
                         width: '1.5em',
                       }}
                     />
-                    <b>{robot.nickname}</b>
+                    <b>{slot?.nickname}</b>
                     <Bolt
                       sx={{
                         color: '#fcba03',
@@ -211,7 +211,7 @@ const Onboarding = ({
               </Grid>
             ) : null}
             <Grid item>
-              <Collapse in={!!(slot?.avatarLoaded === true && Boolean(robot?.nickname))}>
+              <Collapse in={!!Boolean(slot?.hashId)}>
                 <Button
                   onClick={() => {
                     setStep('3');
