@@ -31,6 +31,7 @@ This is a non-exhaustive compilation based on past experience of users. We have 
 |[Blink](#blink-mobile-former-bitcoin-beach-wallet)|[2.2.73](https://www.blink.sv/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Blixt](#blixt-androidios-lnd-light-backend-on-device)|[v0.4.1](https://github.com/hsjoberg/blixt-wallet)|{{page.phone}}|{{page.soso}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Blue](#bluewallet-mobile)|[1.4.4](https://bluewallet.io/)|{{page.phone}}|{{page.good}}|{{page.unclear}}|{{page.unclear}}|{{page.good}}|{{page.unclear}}|
+|[Breez](#breez-mobile)|[0.16](https://breez.technology/mobile/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|
 |[Cash App](#cash-app-mobile)|[4.7](https://cash.app/)|{{page.phone}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}} |{{page.thumbsup}}|
 |[Core Lightning](#core-lightning--cln-cli-interface)|[v0.11.1](https://github.com/ElementsProject/lightning)|{{page.cli}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}|
 |[Electrum](#electrum-desktop)|[4.1.4](https://github.com/spesmilo/electrum)|{{page.laptop}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.good}}|{{page.thumbsup}}||
@@ -64,6 +65,9 @@ Most development testing for RoboSats has been done using Blixt. This is one of 
 
 ### Bluewallet (Mobile)
 It works well. Bluewallet has discontinued their custodial service. Previously, the custodial service would cause issues where escrows that RoboSats returns are charged to users and where slashed bonds are charged twice by Bluewallet! This was a known bug for long time in Bluewallet, so they shut down their LN custodial service (which ended up making RoboSats a smoother experience for users).
+
+### Breez (Mobile)
+It works well with RoboSats. Breez is a non-custodial wallet. So keep in mind channels managment and stuff like that. It's a versatile and easy-to-use interface.
 
 ### Cash App (Mobile)
 Works well with RoboSats. Hodl invoices (Bonds) show as "Pending" in the transaction history. Payouts to the Cash App wallet function as intended. Custodial wallet by Block, Inc., formerly known as Square, Inc., which is led by Jack Dorsey.
