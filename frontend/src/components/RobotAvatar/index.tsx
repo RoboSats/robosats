@@ -45,7 +45,6 @@ const RobotAvatar: React.FC<Props> = ({
   onLoad = () => {},
 }) => {
   const [avatarSrc, setAvatarSrc] = useState<string>('');
-  const [avatarReady, setAvatarReady] = useState<boolean>(false);
   const [activeBackground, setActiveBackground] = useState<boolean>(true);
   const { hostUrl } = useContext<UseAppStoreType>(AppContext);
   const backgroundFadeTime = 3000;
@@ -67,7 +66,6 @@ const RobotAvatar: React.FC<Props> = ({
         .catch(() => {
           setAvatarSrc('');
         });
-      setAvatarReady(true);
       setTimeout(() => {
         setActiveBackground(false);
       }, backgroundFadeTime);
@@ -87,12 +85,10 @@ const RobotAvatar: React.FC<Props> = ({
           }.webp`,
         );
       }
-      setAvatarReady(true);
       setTimeout(() => {
         setActiveBackground(false);
       }, backgroundFadeTime);
     } else {
-      setAvatarReady(false);
       setActiveBackground(true);
     }
   }, [shortAlias]); // TODO: should hashId
@@ -111,7 +107,6 @@ const RobotAvatar: React.FC<Props> = ({
   );
 
   const avatar = useMemo(() => {
-    console.log(avatarSrc, avatarReady);
     if (smooth) {
       return (
         <div
@@ -127,7 +122,7 @@ const RobotAvatar: React.FC<Props> = ({
         >
           <div className={className}>
             <SmoothImage
-              src={avatarReady ? avatarSrc : null}
+              src={avatarSrc}
               imageStyles={{
                 borderRadius: '50%',
                 border: '0.3px solid #55555',
@@ -144,7 +139,7 @@ const RobotAvatar: React.FC<Props> = ({
           className={avatarClass}
           style={style}
           alt={hashId ?? shortAlias ?? 'unknown'}
-          src={avatarReady ? avatarSrc : ''}
+          src={avatarSrc}
           imgProps={{
             sx: { transform: flipHorizontally ? 'scaleX(-1)' : '' },
             style: { transform: flipHorizontally ? 'scaleX(-1)' : '' },
@@ -153,7 +148,7 @@ const RobotAvatar: React.FC<Props> = ({
         />
       );
     }
-  }, [hashId, shortAlias, avatarReady, avatarSrc, statusColor, tooltip, avatarClass]);
+  }, [hashId, shortAlias, avatarSrc, statusColor, tooltip, avatarClass]);
 
   const getAvatarWithBadges = useCallback(() => {
     let component = avatar;

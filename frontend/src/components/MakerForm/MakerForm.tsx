@@ -577,7 +577,7 @@ const MakerForm = ({
           setOpenDialogs(false);
         }}
         onClickDone={handleCreateOrder}
-        hasRobot={garage.getSlot()?.avatarLoaded ?? false}
+        hasRobot={Boolean(garage.getSlot()?.hashId)}
         onClickGenerateRobot={onClickGenerateRobot}
       />
       <F2fMapDialog
