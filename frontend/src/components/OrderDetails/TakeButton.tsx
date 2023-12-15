@@ -372,7 +372,7 @@ const TakeButton = ({
           setLoadingTake(true);
           setOpen(closeAll);
         }}
-        hasRobot={garage.getSlot()?.avatarLoaded ?? false}
+        hasRobot={Boolean(garage.getSlot()?.hashId)}
         onClickGenerateRobot={onClickGenerateRobot}
       />
       <InactiveMakerDialog />

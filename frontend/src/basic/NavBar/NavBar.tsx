@@ -32,7 +32,7 @@ const NavBar = (): JSX.Element => {
     navbarHeight,
     hostUrl,
   } = useContext<UseAppStoreType>(AppContext);
-  const { garage, orderUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
+  const { garage, orderUpdatedAt, robotUpdatedAt } = useContext<UseGarageStoreType>(GarageContext);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,7 +42,7 @@ const NavBar = (): JSX.Element => {
   const tabSx = smallBar
     ? {
         position: 'relative',
-        bottom: garage.getSlot()?.avatarLoaded === true ? '0.9em' : '0.13em',
+        bottom: Boolean(garage.getSlot()?.hashId) ? '0.9em' : '0.13em',
         minWidth: '1em',
       }
     : { position: 'relative', bottom: '1em', minWidth: '2em' };
@@ -65,7 +65,7 @@ const NavBar = (): JSX.Element => {
     if (isPage(pathPage)) {
       setPage(pathPage);
     }
-  }, [location, navigate, setPage, orderUpdatedAt]);
+  }, [location, navigate, setPage, orderUpdatedAt, robotUpdatedAt]);
 
   const handleSlideDirection = function (oldPage: Page, newPage: Page): void {
     const oldPos: number = pagesPosition[oldPage];
@@ -121,17 +121,16 @@ const NavBar = (): JSX.Element => {
         <Tab
           sx={{ ...tabSx, minWidth: '2.5em', width: '2.5em', maxWidth: '4em' }}
           value='none'
-          disabled={slot?.getRobot()?.nickname === null}
+          disabled={slot?.nickname === null}
           onClick={() => {
             setOpen({ ...closeAll, profile: !open.profile });
           }}
           icon={
-            slot?.getRobot()?.nickname != null && slot?.avatarLoaded ? (
+            slot?.hashId ? (
               <RobotAvatar
                 style={{ width: '2.3em', height: '2.3em', position: 'relative', top: '0.2em' }}
                 avatarClass={theme.palette.mode === 'dark' ? 'navBarAvatarDark' : 'navBarAvatar'}
-                nickname={slot?.getRobot()?.nickname}
-                baseUrl={hostUrl}
+                hashId={slot?.hashId}
               />
             ) : (
               <></>
@@ -166,7 +165,7 @@ const NavBar = (): JSX.Element => {
           label={smallBar ? undefined : t('Order')}
           value='order'
           disabled={
-            slot?.avatarLoaded === false ||
+            !Boolean(slot?.hashId) ||
             !(slot?.getRobot(slot?.activeShortAlias ?? '')?.activeOrderId != null)
           }
           icon={<Assignment />}

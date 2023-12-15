@@ -264,12 +264,7 @@ const OrderDetails = ({
             {' '}
             <Grid container direction='row' justifyContent='center' alignItems='center'>
               <Grid item xs={2}>
-                <RobotAvatar
-                  nickname={coordinator.shortAlias}
-                  coordinator={true}
-                  baseUrl={hostUrl}
-                  small={true}
-                />
+                <RobotAvatar shortAlias={coordinator.shortAlias} coordinator={true} small={true} />
               </Grid>
               <Grid item xs={4}>
                 <ListItemText primary={coordinator.longAlias} secondary={t('Order host')} />
@@ -283,10 +278,9 @@ const OrderDetails = ({
             <ListItemAvatar sx={{ width: '4em', height: '4em' }}>
               <RobotAvatar
                 statusColor={statusBadgeColor(currentOrder?.maker_status ?? '')}
-                nickname={currentOrder?.maker_nick}
+                hashId={currentOrder?.maker_hash_id}
                 tooltip={t(currentOrder?.maker_status ?? '')}
                 orderType={currentOrder?.type}
-                baseUrl={baseUrl}
                 small={true}
               />
             </ListItemAvatar>
@@ -315,12 +309,11 @@ const OrderDetails = ({
                 <RobotAvatar
                   avatarClass='smallAvatar'
                   statusColor={statusBadgeColor(currentOrder?.taker_status ?? '')}
-                  nickname={
-                    currentOrder?.taker_nick === 'None' ? undefined : currentOrder?.taker_nick
+                  hashId={
+                    currentOrder?.taker_hash_id === 'None' ? undefined : currentOrder?.taker_hash_id
                   }
                   tooltip={t(currentOrder?.taker_status ?? '')}
                   orderType={currentOrder?.type === 0 ? 1 : 0}
-                  baseUrl={baseUrl}
                   small={true}
                 />
               </ListItemAvatar>

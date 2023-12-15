@@ -2,15 +2,14 @@ import React, { useCallback, useContext, useEffect, useMemo, useState } from 're
 import SmoothImage from 'react-smooth-image';
 import { Avatar, Badge, Tooltip } from '@mui/material';
 import { SendReceiveIcon } from '../Icons';
-import { apiClient } from '../../services/api';
 import placeholder from './placeholder.json';
-import { type UseAppStoreType, AppContext } from '../../contexts/AppContext';
-import { type UseFederationStoreType, FederationContext } from '../../contexts/FederationContext';
+import { robohash } from './RobohashGenerator';
+import { AppContext, UseAppStoreType } from '../../contexts/AppContext';
 
 interface Props {
-  nickname: string | undefined;
+  shortAlias?: string | undefined;
+  hashId?: string | undefined;
   smooth?: boolean;
-  coordinator?: boolean;
   small?: boolean;
   flipHorizontally?: boolean;
   style?: object;
@@ -22,7 +21,6 @@ interface Props {
   tooltipPosition?: string;
   avatarClass?: string;
   onLoad?: () => void;
-  baseUrl: string;
 }
 
 interface BackgroundData {
@@ -31,7 +29,8 @@ interface BackgroundData {
 }
 
 const RobotAvatar: React.FC<Props> = ({
-  nickname,
+  shortAlias,
+  hashId,
   orderType,
   statusColor,
   tooltip,
@@ -44,14 +43,12 @@ const RobotAvatar: React.FC<Props> = ({
   avatarClass = 'flippedSmallAvatar',
   imageStyle = {},
   onLoad = () => {},
-  coordinator = false,
-  baseUrl,
 }) => {
-  const [avatarSrc, setAvatarSrc] = useState<string>();
-  const [nicknameReady, setNicknameReady] = useState<boolean>(false);
+  const [avatarSrc, setAvatarSrc] = useState<string>('');
   const [activeBackground, setActiveBackground] = useState<boolean>(true);
+  const { hostUrl } = useContext<UseAppStoreType>(AppContext);
+  const backgroundFadeTime = 3000;
 
-  const path = coordinator ? '/static/federation/avatars/' : '/static/assets/avatars/';
   const [backgroundData] = useState<BackgroundData>(
     placeholderType === 'generating' ? placeholder.generating : placeholder.loading,
   );
@@ -59,21 +56,42 @@ const RobotAvatar: React.FC<Props> = ({
   const className = placeholderType === 'loading' ? 'loadingAvatar' : 'generatingAvatar';
 
   useEffect(() => {
-    if (nickname !== undefined) {
+    // TODO: HANDLE ANDROID AVATARS TOO (when window.NativeRobosats !== undefined)
+    if (hashId !== undefined) {
+      robohash
+        .generate(hashId, small ? 'small' : 'large')
+        .then((avatar) => {
+          setAvatarSrc(avatar);
+        })
+        .catch(() => {
+          setAvatarSrc('');
+        });
+      setTimeout(() => {
+        setActiveBackground(false);
+      }, backgroundFadeTime);
+    }
+  }, [hashId]);
+
+  useEffect(() => {
+    if (shortAlias !== undefined) {
       if (window.NativeRobosats === undefined) {
-        setAvatarSrc(`${baseUrl}${path}${nickname}${small ? '.small' : ''}.webp`);
-        setNicknameReady(true);
-      } else if (baseUrl != null && apiClient.fileImageUrl !== undefined) {
-        setNicknameReady(true);
-        void apiClient
-          .fileImageUrl(baseUrl, `${path}${nickname}${small ? '.small' : ''}.webp`)
-          .then(setAvatarSrc);
+        setAvatarSrc(
+          `${hostUrl}/static/federation/avatars/${shortAlias}${small ? '.small' : ''}.webp`,
+        );
+      } else {
+        setAvatarSrc(
+          `file:///android_asset/Web.bundle/assets/federation/avatars/${shortAlias}${
+            small ? ' .small' : ''
+          }.webp`,
+        );
       }
+      setTimeout(() => {
+        setActiveBackground(false);
+      }, backgroundFadeTime);
     } else {
-      setNicknameReady(false);
       setActiveBackground(true);
     }
-  }, [nickname]);
+  }, [shortAlias]); // TODO: should hashId
 
   const statusBadge = (
     <div style={{ position: 'relative', left: '0.428em', top: '0.07em' }}>
@@ -104,15 +122,12 @@ const RobotAvatar: React.FC<Props> = ({
         >
           <div className={className}>
             <SmoothImage
-              src={nicknameReady ? avatarSrc : null}
+              src={avatarSrc}
               imageStyles={{
                 borderRadius: '50%',
                 border: '0.3px solid #55555',
                 filter: 'dropShadow(0.5px 0.5px 0.5px #000000)',
                 ...imageStyle,
-                onLoad: setTimeout(() => {
-                  setActiveBackground(false);
-                }, 5000),
               }}
             />
           </div>
@@ -123,8 +138,8 @@ const RobotAvatar: React.FC<Props> = ({
         <Avatar
           className={avatarClass}
           style={style}
-          alt={nickname}
-          src={nicknameReady ? avatarSrc : null}
+          alt={hashId ?? shortAlias ?? 'unknown'}
+          src={avatarSrc}
           imgProps={{
             sx: { transform: flipHorizontally ? 'scaleX(-1)' : '' },
             style: { transform: flipHorizontally ? 'scaleX(-1)' : '' },
@@ -133,7 +148,7 @@ const RobotAvatar: React.FC<Props> = ({
         />
       );
     }
-  }, [nickname, nicknameReady, avatarSrc, statusColor, tooltip, avatarClass]);
+  }, [hashId, shortAlias, avatarSrc, statusColor, tooltip, avatarClass]);
 
   const getAvatarWithBadges = useCallback(() => {
     let component = avatar;

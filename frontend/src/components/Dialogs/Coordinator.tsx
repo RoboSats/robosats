@@ -362,12 +362,10 @@ const CoordinatorDialog = ({ open = false, onClose, network, shortAlias }: Props
             <Grid container direction='column' alignItems='center' padding={0}>
               <Grid item>
                 <RobotAvatar
-                  nickname={coordinator?.shortAlias}
-                  coordinator={true}
+                  shortAlias={coordinator?.shortAlias}
                   style={{ width: '7.5em', height: '7.5em' }}
                   smooth={true}
                   flipHorizontally={false}
-                  baseUrl={hostUrl}
                 />
               </Grid>
               <Grid item>

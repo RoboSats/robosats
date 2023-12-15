@@ -63,7 +63,7 @@ const EncryptedSocketChat: React.FC<Props> = ({
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    if (!connected && garage.getSlot()?.avatarLoaded === true) {
+    if (!connected && Boolean(garage.getSlot()?.hashId)) {
       connectWebsocket();
     }
   }, [connected, robotUpdatedAt]);

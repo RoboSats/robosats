@@ -20,7 +20,6 @@ class Robot {
     }
   }
 
-  public nickname?: string;
   public token?: string;
   public bitsEntropy?: number;
   public shannonEntropy?: number;
